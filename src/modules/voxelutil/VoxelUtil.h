@@ -57,5 +57,10 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
 
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
+/**
+ * @brief Remaps the voxel colors to the new given palette
+ * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
+ */
+voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalette, const voxel::Palette &newPalette, int skipColorIndex = -1);
 
 } // namespace voxelutil

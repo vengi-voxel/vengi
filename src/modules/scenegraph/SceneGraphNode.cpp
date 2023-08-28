@@ -15,6 +15,7 @@
 #include "voxel/Region.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VoxelUtil.h"
 
 #include <glm/gtc/epsilon.hpp>
 #include <glm/ext/quaternion_common.hpp>
@@ -371,23 +372,11 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 	return true;
 }
 
-// TODO: extract into voxel-util module
 voxel::Region SceneGraphNode::remapToPalette(const voxel::Palette &newPalette, int skipColorIndex) {
 	if (type() != SceneGraphNodeType::Model) {
 		return voxel::Region::InvalidRegion;
 	}
-	voxel::RawVolumeWrapper wrapper(volume());
-	const voxel::Palette &oldPalette = palette();
-	voxelutil::visitVolume(
-		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
-			const core::RGBA rgba = oldPalette.color(voxel.getColor());
-			const int newColor = newPalette.getClosestMatch(rgba, nullptr, skipColorIndex);
-			if (newColor != voxel::PaletteColorNotFound) {
-				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
-				wrapper.setVoxel(x, y, z, newVoxel);
-			}
-		});
-	return wrapper.dirtyRegion();
+	return voxelutil::remapToPalette(volume(), palette(), newPalette, skipColorIndex);
 }
 
 void SceneGraphNode::setPalette(const voxel::Palette &palette) {

@@ -10,7 +10,9 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "voxel/Face.h"
+#include "voxel/Palette.h"
 #include "voxel/PaletteLookup.h"
+#include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -436,6 +438,23 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 	};
 
 	return walkPlane(in, position, face, -1, check, exec);
+}
+
+voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalette, const voxel::Palette &newPalette, int skipColorIndex) {
+	if (v == nullptr) {
+		return voxel::Region::InvalidRegion;
+	}
+	voxel::RawVolumeWrapper wrapper(v);
+	voxelutil::visitVolume(
+		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA rgba = oldPalette.color(voxel.getColor());
+			const int newColor = newPalette.getClosestMatch(rgba, nullptr, skipColorIndex);
+			if (newColor != voxel::PaletteColorNotFound) {
+				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
+				wrapper.setVoxel(x, y, z, newVoxel);
+			}
+		});
+	return wrapper.dirtyRegion();
 }
 
 } // namespace voxelutil
