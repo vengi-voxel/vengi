@@ -153,14 +153,14 @@ void Viewport::dragAndDrop(float headerSize) {
 					updateViewportTrace(headerSize);
 					ModifierFacade &modifier = sceneMgr().modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
-					modifier.aabbStart();
+					modifier.start();
 					auto callback = [nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
 							sceneMgr().modified(nodeId, region, markUndo);
 						}
 					};
-					modifier.aabbAction(node->volume(), callback);
-					modifier.aabbAbort();
+					modifier.execute(sceneMgr().sceneGraph(), node->volume(), callback);
+					modifier.stop();
 				}
 			}
 		}

@@ -21,7 +21,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		return initialDown;
 	}
 	Modifier& modifier = sceneMgr().modifier();
-	if (_secondAction && !modifier.aabbAborted()) {
+	if (_furtherAction && !modifier.aborted()) {
 		execute(false);
 		return initialDown;
 	}
@@ -31,22 +31,22 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 			modifier.setModifierType(_newType);
 			sceneMgr().trace(false, true);
 		}
-		modifier.aabbStart();
+		modifier.start();
 	}
 	return initialDown;
 }
 
 bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	const bool allUp = Super::handleUp(key, releasedMillis);
-	if (_secondAction) {
-		_secondAction = false;
+	if (_furtherAction) {
+		_furtherAction = false;
 		return allUp;
 	}
 	if (allUp) {
 		Modifier& modifier = sceneMgr().modifier();
-		_secondAction = modifier.needsSecondAction();
-		if (_secondAction) {
-			modifier.aabbStep();
+		_furtherAction = modifier.needsFurtherAction();
+		if (_furtherAction) {
+			modifier.executeAdditionalAction();
 			return allUp;
 		}
 		execute(false);
@@ -69,7 +69,7 @@ void ModifierButton::execute(bool single) {
 			if (v == nullptr) {
 				return;
 			}
-			modifier.aabbAction(v, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
+			modifier.execute(sceneMgr().sceneGraph(), v, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
 				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
 					sceneMgr().modified(nodeId, region, markUndo);
 				}
@@ -84,7 +84,7 @@ void ModifierButton::execute(bool single) {
 		_oldType = ModifierType::None;
 	}
 	if (!single) {
-		modifier.aabbAbort();
+		modifier.stop();
 	}
 	if (nodes == 0) {
 		Log::warn("Could not execute the desired action on any visible node");

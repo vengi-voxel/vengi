@@ -4,6 +4,12 @@ set(SRCS
 	AxisUtil.h AxisUtil.cpp
 	Config.h
 
+	modifier/brush/Brush.cpp modifier/brush/Brush.h
+	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
+	modifier/brush/ScriptBrush.cpp modifier/brush/ScriptBrush.h
+	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
+	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
+
 	modifier/IModifierRenderer.h
 	modifier/Modifier.h modifier/Modifier.cpp
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
@@ -32,6 +38,8 @@ set(TEST_SRCS
 	tests/ModifierTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
+	tests/ShapeBrushTest.cpp
+	tests/StampBrushTest.cpp
 )
 
 gtest_suite_sources(tests

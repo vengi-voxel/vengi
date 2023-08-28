@@ -23,9 +23,8 @@
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/PalettePanel.h"
-#include "voxedit-ui/ScriptPanel.h"
+#include "voxedit-ui/BrushPanel.h"
 #include "voxedit-ui/StatusBar.h"
-#include "voxedit-ui/ModifierPanel.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -69,7 +68,7 @@ private:
 	io::FileDescription _loadFile;
 	LastExecutedCommand _lastExecutedCommand;
 	LSystemPanel _lsystemPanel;
-	ScriptPanel _scriptPanel;
+	BrushPanel _brushPanel;
 	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
 	AnimationPanel _animationPanel;
@@ -80,7 +79,6 @@ private:
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;
 	PositionsPanel _positionsPanel;
-	ModifierPanel _modifierPanel;
 	PalettePanel _palettePanel;
 	MenuBar _menuBar;
 	StatusBar _statusBar;

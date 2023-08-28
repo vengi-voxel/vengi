@@ -1454,7 +1454,9 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
 		_sceneRenderer->renderUI(renderContext, camera, _sceneGraph);
-		_modifier.render(camera, activePalette());
+		if (!renderContext.sceneMode) {
+			_modifier.render(camera, activePalette());
+		}
 	}
 }
 
@@ -1472,8 +1474,8 @@ void SceneManager::construct() {
 			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
 		}
-		const core::String luaScript = _luaGenerator.load(args[0]);
-		if (luaScript.empty()) {
+		const core::String luaCode = _modifier.scriptBrush().luaGenerator().load(args[0]);
+		if (luaCode.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
 		}
@@ -1483,7 +1485,7 @@ void SceneManager::construct() {
 			luaArgs.push_back(args[i]);
 		}
 
-		if (!runScript(luaScript, luaArgs)) {
+		if (!runScript(luaCode, luaArgs)) {
 			Log::error("Failed to execute %s", args[0].c_str());
 		} else {
 			Log::info("Executed script %s", args[0].c_str());
@@ -1657,7 +1659,7 @@ void SceneManager::construct() {
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new node");
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
-		_modifier.aabbAbort();
+		_modifier.stop();
 	}).setHelp("Aborts the current modifier action");
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
@@ -2225,10 +2227,6 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the movement controller");
 		return false;
 	}
-	if (!_luaGenerator.init()) {
-		Log::error("Failed to initialize the lua generator bindings");
-		return false;
-	}
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
@@ -2239,19 +2237,28 @@ bool SceneManager::init() {
 	return true;
 }
 
-bool SceneManager::runScript(const core::String& script, const core::DynamicArray<core::String>& args) {
+bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
 	const int nodeId = activeNode();
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return false;
 	}
-	const voxel::Region& region = _modifier.createRegion(v);
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
-	const bool retVal = _luaGenerator.exec(script, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args);
-	if (_sceneGraph.hasNode(nodeId)) {
-		modified(nodeId, dirtyRegion);
+
+	_modifier.setBrushType(BrushType::Script);
+	_modifier.scriptBrush().setScriptCode(luaCode, args);
+
+	_modifier.start();
+	auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, bool markUndo) {
+		if (_sceneGraph.hasNode(nodeId)) {
+			modified(nodeId, region, markUndo);
+		}
+	};
+	const bool state = _modifier.execute(_sceneGraph, v, callback);
+	_modifier.stop();
+	if (!state) {
+		Log::warn("Failed to execute script");
 	}
-	return retVal;
+	return state;
 }
 
 bool SceneManager::animateActive() const {
@@ -2362,7 +2369,6 @@ void SceneManager::shutdown() {
 	_mementoHandler.clearStates();
 
 	_movement.shutdown();
-	_luaGenerator.shutdown();
 	_modifier.shutdown();
 	_mementoHandler.shutdown();
 	_voxelFont.shutdown();

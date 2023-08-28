@@ -11,11 +11,10 @@ set(SRCS
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
 	MementoPanel.h MementoPanel.cpp
-	ModifierPanel.h ModifierPanel.cpp
 	PalettePanel.h PalettePanel.cpp
 	RenderPanel.h RenderPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
-	ScriptPanel.h ScriptPanel.cpp
+	BrushPanel.h BrushPanel.cpp
 	StatusBar.h StatusBar.cpp
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
