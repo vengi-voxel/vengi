@@ -14,6 +14,9 @@ namespace voxedit {
 namespace tool {
 
 voxel::RawVolume* copy(const voxel::RawVolume *volume, const Selections &selections) {
+	if (volume == nullptr) {
+		return nullptr;
+	}
 	if (selections.empty()) {
 		Log::debug("Copy failed: no selection active");
 		return nullptr;
