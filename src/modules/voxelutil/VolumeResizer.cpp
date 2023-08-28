@@ -10,6 +10,9 @@
 namespace voxelutil {
 
 voxel::RawVolume* resize(const voxel::RawVolume* source, const voxel::Region &region) {
+	if (source == nullptr) {
+		return nullptr;
+	}
 	if (!app::App::getInstance()->hasEnoughMemory(voxel::RawVolume::size(region))) {
 		return nullptr;
 	}
