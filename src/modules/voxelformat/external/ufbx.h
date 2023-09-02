@@ -59,11 +59,14 @@
 
 #if defined(_MSC_VER)
 	#pragma warning(push)
+	#pragma warning(disable: 4061) // enumerator 'ENUM' in switch of enum 'enum' is not explicitly handled by a case label
 	#pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
 	#pragma warning(disable: 4505) // unreferenced local function has been removed
+	#pragma warning(disable: 4820) // type': 'N' bytes padding added after data member 'member'
 #elif defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wpedantic"
+	#pragma clang diagnostic ignored "-Wpadded"
 	#if defined(__cplusplus)
 		#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
 		#pragma clang diagnostic ignored "-Wold-style-cast"
@@ -71,9 +74,15 @@
 #elif defined(__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
+	#pragma GCC diagnostic ignored "-Wpadded"
 	#if defined(__cplusplus)
 		#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 		#pragma GCC diagnostic ignored "-Wold-style-cast"
+	#else
+		#if __GNUC__ >= 5
+			#pragma GCC diagnostic ignored "-Wc90-c99-compat"
+			#pragma GCC diagnostic ignored "-Wc99-c11-compat"
+		#endif
 	#endif
 #endif
 
@@ -127,7 +136,10 @@
 	#define UFBX_LIST_TYPE(p_name, p_type) typedef struct p_name { p_type *data; size_t count; } p_name
 #endif
 
-#if UFBX_STDC >= 202311L || UFBX_CPP11
+// This cannot be enabled automatically if supported as the source file may be
+// compiled with a different compiler using different settings than the header
+// consumers, in practice it should work but it causes issues such as #70.
+#if (UFBX_STDC >= 202311L || UFBX_CPP11) && defined(UFBX_USE_EXPLICIT_ENUM)
 	#define UFBX_ENUM_REPR : int
 	#define UFBX_ENUM_FORCE_WIDTH(p_prefix)
 	#define UFBX_FLAG_REPR : int
@@ -166,7 +178,7 @@
 #define ufbx_version_minor(version) ((uint32_t)(version)/1000u%1000u)
 #define ufbx_version_patch(version) ((uint32_t)(version)%1000u)
 
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 5, 0)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 6, 1)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -4651,7 +4663,7 @@ ufbx_inline void ufbx_free(ufbx_geometry_cache *cache) { ufbx_free_geometry_cach
 template <typename T>
 struct ufbx_ref {
 	ufbx_ref() noexcept : ptr(nullptr) { }
-	explicit ufbx_ref(T *ptr) noexcept : ptr(ptr) { }
+	explicit ufbx_ref(T *ptr_) noexcept : ptr(ptr_) { }
 	ufbx_ref(const ufbx_ref &ref) noexcept : ptr(ref.ptr) { ufbx_retain(ref.ptr); }
 	ufbx_ref(ufbx_ref &&ref) noexcept : ptr(ref.ptr) { ref.ptr = nullptr; }
 	~ufbx_ref() { ufbx_free(ptr); }

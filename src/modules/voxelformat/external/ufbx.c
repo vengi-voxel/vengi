@@ -260,11 +260,14 @@
 
 #if defined(_MSC_VER)
 	#pragma warning(push)
+	#pragma warning(disable: 4061) // enumerator 'ENUM' in switch of enum 'enum' is not explicitly handled by a case label
 	#pragma warning(disable: 4200) // nonstandard extension used: zero-sized array in struct/union
 	#pragma warning(disable: 4201) // nonstandard extension used: nameless struct/union
+	#pragma warning(disable: 4210) // nonstandard extension used: function given file scope
 	#pragma warning(disable: 4127) // conditional expression is constant
 	#pragma warning(disable: 4706) // assignment within conditional expression
 	#pragma warning(disable: 4789) // buffer 'type_and_name' of size 8 bytes will be overrun; 16 bytes will be written starting at offset 0
+	#pragma warning(disable: 4820) // type': 'N' bytes padding added after data member 'member'
 	#if defined(UFBX_STANDARD_C)
 		#pragma warning(disable: 4996) // 'fopen': This function or variable may be unsafe. Consider using fopen_s instead.
 	#endif
@@ -280,6 +283,16 @@
 	#pragma clang diagnostic ignored "-Wmissing-braces"
 	#pragma clang diagnostic ignored "-Wdouble-promotion"
 	#pragma clang diagnostic ignored "-Wpedantic"
+	#pragma clang diagnostic ignored "-Wcast-qual"
+	#pragma clang diagnostic ignored "-Wcast-align"
+	#pragma clang diagnostic ignored "-Wcovered-switch-default"
+	#pragma clang diagnostic ignored "-Wpadded"
+	#pragma clang diagnostic ignored "-Wswitch-enum"
+	#pragma clang diagnostic ignored "-Wfloat-equal"
+	#pragma clang diagnostic ignored "-Wformat-nonliteral"
+	#if __has_warning("-Watomic-implicit-seq-cst")
+		#pragma clang diagnostic ignored "-Watomic-implicit-seq-cst"
+	#endif
 	#if defined(UFBX_STANDARD_C)
 		#pragma clang diagnostic ignored "-Wunused-function"
 	#endif
@@ -290,6 +303,9 @@
 	#if defined(__cplusplus)
 		#pragma clang diagnostic ignored "-Wold-style-cast"
 		#pragma clang diagnostic ignored "-Wzero-as-null-pointer-constant"
+	#else
+		#pragma clang diagnostic ignored "-Wdeclaration-after-statement"
+		#pragma clang diagnostic ignored "-Wbad-function-cast"
 	#endif
 #endif
 
@@ -299,6 +315,13 @@
 	#pragma GCC diagnostic ignored "-Wmissing-braces"
 	#pragma GCC diagnostic ignored "-Wdouble-promotion"
 	#pragma GCC diagnostic ignored "-Wpedantic"
+	#pragma GCC diagnostic ignored "-Wcast-qual"
+	#pragma GCC diagnostic ignored "-Wcast-align"
+	#pragma GCC diagnostic ignored "-Wpadded"
+	#pragma GCC diagnostic ignored "-Wswitch-enum"
+	#pragma GCC diagnostic ignored "-Wfloat-equal"
+	#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+	#pragma GCC diagnostic ignored "-Wlong-long"
 	#if defined(UFBX_STANDARD_C)
 		#pragma GCC diagnostic ignored "-Wunused-function"
 	#endif
@@ -309,6 +332,13 @@
 	#if defined(__cplusplus)
 		#pragma GCC diagnostic ignored "-Wold-style-cast"
 		#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+	#else
+		#pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
+		#pragma GCC diagnostic ignored "-Wbad-function-cast"
+		#if __GNUC__ >= 5
+			#pragma GCC diagnostic ignored "-Wc90-c99-compat"
+			#pragma GCC diagnostic ignored "-Wc99-c11-compat"
+		#endif
 	#endif
 #endif
 
@@ -654,7 +684,7 @@ ufbx_static_assert(sizeof_f64, sizeof(double) == 8);
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 5, 0)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 6, 1)
 const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -1717,7 +1747,7 @@ ufbxi_huff_build_imp(ufbxi_huff_tree *tree, uint8_t *sym_bits, uint32_t sym_coun
 			if ((extra & 0xffff001f) != 0 && (extra & 0x20) == 0) {
 				uint32_t ix = ++num_extra;
 				tree->extra_shift_base[ix] = (extra & 0xffff0000) | bits;
-				tree->extra_mask[ix] = (1u << (extra & 0x1f)) - 1;
+				tree->extra_mask[ix] = (uint16_t)((1u << (extra & 0x1f)) - 1);
 				sym = (sym & 0xff) | ix << 8;
 			}
 
@@ -1977,9 +2007,9 @@ ufbxi_init_dynamic_huff(ufbxi_deflate_context *dc, ufbxi_trees *trees)
 	trees->fast_bits = dc->fast_bits;
 
 	// The header contains the number of Huffman codes in each of the three trees.
-	uint32_t num_lit_lengths = 257 + (bits & 0x1f);
-	uint32_t num_dists = 1 + (bits >> 5 & 0x1f);
-	uint32_t num_code_lengths = 4 + (bits >> 10 & 0xf);
+	uint32_t num_lit_lengths = 257 + (uint32_t)(bits & 0x1f);
+	uint32_t num_dists = 1 + (uint32_t)(bits >> 5 & 0x1f);
+	uint32_t num_code_lengths = 4 + (uint32_t)(bits >> 10 & 0xf);
 	bits >>= 14;
 	left -= 14;
 
@@ -2203,7 +2233,7 @@ ufbxi_inflate_block_slow(ufbxi_deflate_context *dc, ufbxi_trees *trees, size_t m
 		uint32_t sym0_value = ufbxi_huff_sym_value(sym0);
 		uint32_t len_shift_base = trees->lit_length.extra_shift_base[sym0_value];
 		uint16_t len_mask = trees->lit_length.extra_mask[sym0_value];
-		uint32_t length = (len_shift_base >> 16) + (ufbxi_wrap_shr64(sym_bits, len_shift_base) & len_mask);
+		uint32_t length = (len_shift_base >> 16) + (uint32_t)(ufbxi_wrap_shr64(sym_bits, len_shift_base) & len_mask);
 
 		ufbxi_huff_sym sym1 = ufbxi_huff_decode_bits(&trees->dist, bits, fast_bits, fast_mask);
 		ufbxi_regression_assert(sym1 != UFBXI_HUFF_UNINITIALIZED_SYM);
@@ -2217,7 +2247,7 @@ ufbxi_inflate_block_slow(ufbxi_deflate_context *dc, ufbxi_trees *trees, size_t m
 		uint32_t sym1_value = ufbxi_huff_sym_value(sym1);
 		uint32_t dist_shift_base = trees->dist.extra_shift_base[sym1_value];
 		uint16_t dist_mask = trees->dist.extra_mask[sym1_value];
-		uint32_t distance = (dist_shift_base >> 16) + (ufbxi_wrap_shr64(sym_bits, dist_shift_base + sym0) & dist_mask);
+		uint32_t distance = (dist_shift_base >> 16) + (uint32_t)(ufbxi_wrap_shr64(sym_bits, dist_shift_base + sym0) & dist_mask);
 
 		// Bounds checking
 		size_t out_space = ufbxi_to_size(out_end - out_ptr);
@@ -2396,12 +2426,12 @@ ufbxi_inflate_block_fast(ufbxi_deflate_context *dc, ufbxi_trees *trees)
 		uint32_t sym0_value = ufbxi_huff_sym_value(sym0);
 		uint32_t len_shift_base = trees->lit_length.extra_shift_base[sym0_value];
 		uint16_t len_mask = trees->lit_length.extra_mask[sym0_value];
-		uint32_t length = (len_shift_base >> 16) + (ufbxi_wrap_shr64(sym01_bits, len_shift_base) & len_mask);
+		uint32_t length = (len_shift_base >> 16) + (uint32_t)(ufbxi_wrap_shr64(sym01_bits, len_shift_base) & len_mask);
 
 		uint32_t sym1_value = ufbxi_huff_sym_value(sym1);
 		uint32_t dist_shift_base = trees->dist.extra_shift_base[sym1_value];
 		uint16_t dist_mask = trees->dist.extra_mask[sym1_value];
-		uint32_t distance = (dist_shift_base >> 16) + (ufbxi_wrap_shr64(sym01_bits, dist_shift_base + sym0) & dist_mask);
+		uint32_t distance = (dist_shift_base >> 16) + (uint32_t)(ufbxi_wrap_shr64(sym01_bits, dist_shift_base + sym0) & dist_mask);
 
 		ufbxi_fast_inflate_refill_and_decode();
 
@@ -3717,7 +3747,7 @@ static ufbxi_noinline bool ufbxi_map_grow_size_imp(ufbxi_map *map, size_t item_s
 			// `new_element` if it has a shorter scan distance (Robin Hood).
 			uint32_t scan = 1;
 			while ((entry = new_entries[slot]) != 0) {
-				uint32_t entry_scan = (entry & new_mask);
+				uint32_t entry_scan = (uint32_t)(entry & new_mask);
 				if (entry_scan < scan) {
 					new_entries[slot] = new_entry + scan;
 					new_entry = (entry & ~(uint64_t)new_mask);
@@ -3801,7 +3831,7 @@ static ufbxi_noinline void *ufbxi_map_insert_size(ufbxi_map *map, size_t size, u
 	uint64_t entry, new_entry = (uint64_t)index << 32u | (hash & ~mask);
 	uint32_t scan = 1;
 	while ((entry = entries[slot]) != 0) {
-		uint32_t entry_scan = (entry & mask);
+		uint32_t entry_scan = (uint32_t)(entry & mask);
 		if (entry_scan < scan) {
 			entries[slot] = new_entry + scan;
 			new_entry = (entry & ~(uint64_t)mask);
@@ -4628,6 +4658,7 @@ static const char ufbxi_MaterialAssignation[] = "MaterialAssignation";
 static const char ufbxi_Material[] = "Material";
 static const char ufbxi_Materials[] = "Materials";
 static const char ufbxi_Matrix[] = "Matrix";
+static const char ufbxi_Media[] = "Media";
 static const char ufbxi_Mesh[] = "Mesh";
 static const char ufbxi_Model[] = "Model";
 static const char ufbxi_Name[] = "Name";
@@ -4917,6 +4948,7 @@ static ufbx_string ufbxi_strings[] = {
 	{ ufbxi_MaterialAssignation, 19 },
 	{ ufbxi_Materials, 9 },
 	{ ufbxi_Matrix, 6 },
+	{ ufbxi_Media, 5 },
 	{ ufbxi_Mesh, 4 },
 	{ ufbxi_Model, 5 },
 	{ ufbxi_Name, 4 },
@@ -6669,6 +6701,8 @@ typedef enum {
 	UFBXI_PARSE_GEOMETRY,
 	UFBXI_PARSE_NODE_ATTRIBUTE,
 	UFBXI_PARSE_LEGACY_MODEL,
+	UFBXI_PARSE_LEGACY_MEDIA,
+	UFBXI_PARSE_LEGACY_VIDEO,
 	UFBXI_PARSE_LEGACY_SWITCHER,
 	UFBXI_PARSE_LEGACY_SCENE_PERSISTENCE,
 	UFBXI_PARSE_REFERENCES,
@@ -6731,6 +6765,7 @@ static ufbxi_noinline ufbxi_parse_state ufbxi_update_parse_state(ufbxi_parse_sta
 		if (name == ufbxi_Model) return UFBXI_PARSE_LEGACY_MODEL;
 		if (!strcmp(name, "References")) return UFBXI_PARSE_REFERENCES;
 		if (!strcmp(name, "Relations")) return UFBXI_PARSE_RELATIONS;
+		if (name == ufbxi_Media) return UFBXI_PARSE_LEGACY_MEDIA;
 		if (!strcmp(name, "Switcher")) return UFBXI_PARSE_LEGACY_SWITCHER;
 		if (!strcmp(name, "SceneGenericPersistence")) return UFBXI_PARSE_LEGACY_SCENE_PERSISTENCE;
 		break;
@@ -6776,6 +6811,13 @@ static ufbxi_noinline ufbxi_parse_state ufbxi_update_parse_state(ufbxi_parse_sta
 	case UFBXI_PARSE_DEFORMER:
 		if (!strcmp(name, "AssociateModel")) return UFBXI_PARSE_ASSOCIATE_MODEL;
 		break;
+
+	case UFBXI_PARSE_LEGACY_MEDIA:
+		if (name == ufbxi_Video) return UFBXI_PARSE_LEGACY_VIDEO;
+		break;
+
+	case UFBXI_PARSE_LEGACY_VIDEO:
+		return UFBXI_PARSE_VIDEO;
 
 	case UFBXI_PARSE_LEGACY_MODEL:
 		if (name == ufbxi_GeometryUVInfo) return UFBXI_PARSE_GEOMETRY_UV_INFO;
@@ -7256,7 +7298,7 @@ static ufbxi_noinline bool ufbxi_is_raw_string(ufbxi_context *uc, ufbxi_parse_st
 
 	case UFBXI_PARSE_TEXTURE:
 		if (!strcmp(name, "TextureName")) return true;
-		if (!strcmp(name, "Media")) return true;
+		if (name == ufbxi_Media) return true;
 		break;
 
 	case UFBXI_PARSE_GEOMETRY:
@@ -7365,8 +7407,8 @@ ufbxi_nodiscard static ufbxi_noinline char *ufbxi_swap_endian(ufbxi_context *uc,
 ufbxi_nodiscard static ufbxi_noinline const char *ufbxi_swap_endian_array(ufbxi_context *uc, const void *src, size_t count, char type)
 {
 	switch (type) {
-	case 'i': case 'f': return ufbxi_swap_endian(uc, src, count, 4); break;
-	case 'l': case 'd': return ufbxi_swap_endian(uc, src, count, 8); break;
+	case 'i': case 'f': return ufbxi_swap_endian(uc, src, count, 4);
+	case 'l': case 'd': return ufbxi_swap_endian(uc, src, count, 8);
 	default: return (const char*)src;
 	}
 }
@@ -7375,11 +7417,11 @@ ufbxi_nodiscard static ufbxi_noinline const char *ufbxi_swap_endian_array(ufbxi_
 ufbxi_nodiscard static ufbxi_noinline const char *ufbxi_swap_endian_value(ufbxi_context *uc, const void *src, char type)
 {
 	switch (type) {
-	case 'Y': return ufbxi_swap_endian(uc, src, 1, 2); break;
-	case 'I': case 'F': return ufbxi_swap_endian(uc, src, 1, 4); break;
-	case 'L': case 'D': return ufbxi_swap_endian(uc, src, 1, 8); break;
-	case 'S': case 'R': return ufbxi_swap_endian(uc, src, 1, 4); break;
-	case 'i': case 'l': case 'f': case 'd': case 'b': return ufbxi_swap_endian(uc, src, 3, 4); break;
+	case 'Y': return ufbxi_swap_endian(uc, src, 1, 2);
+	case 'I': case 'F': return ufbxi_swap_endian(uc, src, 1, 4);
+	case 'L': case 'D': return ufbxi_swap_endian(uc, src, 1, 8);
+	case 'S': case 'R': return ufbxi_swap_endian(uc, src, 1, 4);
+	case 'i': case 'l': case 'f': case 'd': case 'b': return ufbxi_swap_endian(uc, src, 3, 4);
 	default: return (const char*)src;
 	}
 }
@@ -7405,15 +7447,17 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_convert_array(ufbxi_conte
 	switch (dst_type)
 	{
 
-	#define ufbxi_convert_loop_fast(m_dst, m_cast, m_size, m_expr) { \
+	#define ufbxi_convert_loop_fast(m_dst, m_cast, m_size, m_expr) do { \
 		const char *val = (const char*)src, *val_end = val + size*m_size; \
 		m_dst *d = (m_dst*)dst; \
-		while (val != val_end) { *d++ = m_cast(m_expr); val += m_size; } }
+		while (val != val_end) { *d++ = m_cast(m_expr); val += m_size; } \
+	} while (0)
 
-	#define ufbxi_convert_loop_slow(m_dst, m_cast, m_size, m_expr) { \
+	#define ufbxi_convert_loop_slow(m_dst, m_cast, m_size, m_expr) do { \
 		const char *val = (const char*)src, *val_end = val + size*m_size; \
 		m_dst *d = (m_dst*)dst; \
-		ufbxi_nounroll while (val != val_end) { *d++ = m_cast(m_expr); val += m_size; } }
+		ufbxi_nounroll while (val != val_end) { *d++ = m_cast(m_expr); val += m_size; } \
+	} while (0)
 
 	case 'c':
 		switch (src_type) {
@@ -7486,7 +7530,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_parse_multivalue_array(uf
 
 	bool file_big_endian = uc->file_big_endian;
 
-	#define ufbxi_convert_parse_fast(m_dst, m_type, m_expr) { \
+	#define ufbxi_convert_parse_fast(m_dst, m_type, m_expr) do { \
 		m_dst *d = (m_dst*)dst; \
 		for (; base < size; base++) { \
 			val = ufbxi_peek_bytes(uc, 13); \
@@ -7496,7 +7540,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_parse_multivalue_array(uf
 			*d++ = (m_dst)(m_expr); \
 			ufbxi_consume_bytes(uc, 1 + sizeof(m_dst)); \
 		} \
-	}
+	} while (0)
 
 	// String array special case
 	if (dst_type == 's' || dst_type == 'S' || dst_type == 'C') {
@@ -7536,6 +7580,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_parse_multivalue_array(uf
 		case 'l': ufbxi_convert_parse_fast(int64_t, 'L', ufbxi_read_i64(val)); break;
 		case 'f': ufbxi_convert_parse_fast(float, 'F', ufbxi_read_f32(val)); break;
 		case 'd': ufbxi_convert_parse_fast(double, 'D', ufbxi_read_f64(val)); break;
+		default: break; // Fallthrough to rest
 		}
 
 		// Early return if we handled everything
@@ -7548,7 +7593,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_parse_multivalue_array(uf
 	#define ufbxi_convert_parse(m_cast, m_size, m_expr) \
 		*d++ = m_cast(m_expr); val_size = m_size + 1; \
 
-	#define ufbxi_convert_parse_switch(m_dst, m_cast_int, m_cast_float) { \
+	#define ufbxi_convert_parse_switch(m_dst, m_cast_int, m_cast_float) do { \
 		m_dst *d = (m_dst*)dst + base; \
 		for (size_t i = base; i < size; i++) { \
 			val = ufbxi_peek_bytes(uc, 13); \
@@ -7570,7 +7615,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_binary_parse_multivalue_array(uf
 			} \
 			ufbxi_consume_bytes(uc, val_size); \
 		} \
-	} \
+	} while (0)
 
 	case 'c': ufbxi_convert_parse_switch(uint8_t, (uint8_t), (uint8_t)); break;
 	case 'i': ufbxi_convert_parse_switch(int32_t, (int32_t), ufbxi_f64_to_i32); break;
@@ -8802,6 +8847,8 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_ascii_parse_node(ufbxi_context *
 			case 'd': { double *v = ufbxi_push(&uc->tmp_stack, double, 1); ufbxi_check(v); *v = (double)val; } break;
 			case '-': num_values--; break;
 
+			default:
+				ufbxi_fail("Bad array dst type");
 			}
 
 		} else if (ufbxi_ascii_accept(uc, '*')) {
@@ -8966,7 +9013,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_retain_dom_node(ufbxi_context *u
 		case 's': val->type = UFBX_DOM_VALUE_ARRAY_RAW_STRING; break;
 		case 'C': val->type = UFBX_DOM_VALUE_ARRAY_RAW_STRING; break;
 		case '-': val->type = UFBX_DOM_VALUE_ARRAY_IGNORED; break;
-		default: ufbxi_fail("Bad array type"); break;
+		default: ufbxi_fail("Bad array type");
 		}
 	} else {
 		size_t ix;
@@ -9105,6 +9152,7 @@ static ufbxi_noinline const char *ufbxi_match_skip(const char *fmt, bool alterna
 		case ')':
 		case '\0':
 			return fmt - 1;
+		default: break;
 		}
 	}
 }
@@ -9134,7 +9182,7 @@ static ufbxi_noinline bool ufbxi_match_imp(const char **p_str, const char *end, 
 
 		if (case_insensitive) {
 			if (ref >= 'A' && ref <= 'Z') {
-				ref = (ref - 'A') + 'a';
+				ref = (char)((int)(ref - 'A') + 'a');
 			}
 		}
 
@@ -10028,6 +10076,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_property(ufbxi_context *uc,
 			case 'H': flags |= UFBX_PROP_FLAG_HIDDEN; break;
 			case 'L': flags |= ((uint32_t)(next - '0') & 0xf) << 4; break; // UFBX_PROP_FLAG_LOCK_*
 			case 'M': flags |= ((uint32_t)(next - '0') & 0xf) << 8; break; // UFBX_PROP_FLAG_MUTE_*
+			default: break; // Ignore unknown flags
 			}
 		}
 	}
@@ -10701,7 +10750,6 @@ ufbxi_noinline static int ufbxi_fix_index(ufbxi_context *uc, uint32_t *p_dst, ui
 	case UFBX_INDEX_ERROR_HANDLING_ABORT_LOADING:
 		ufbxi_fmt_err_info(&uc->error, "%u (max %u)", index, one_past_max_val ? (one_past_max_val - 1) : 0);
 		ufbxi_fail_msg("UFBX_INDEX_ERROR_HANDLING_ABORT_LOADING", "Bad index");
-		break;
 	case UFBX_INDEX_ERROR_HANDLING_UNSAFE_IGNORE:
 		*p_dst = index;
 		break;
@@ -10779,7 +10827,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_vertex_element(ufbxi_contex
 	attrib->exists = true;
 	attrib->indices.count = mesh->num_indices;
 
-	const char *mapping;
+	const char *mapping = NULL;
 	ufbxi_check(ufbxi_find_val1(node, ufbxi_MappingInformationType, "C", (char**)&mapping));
 
 	attrib->values.count = num_elems ? num_elems : 1;
@@ -11510,14 +11558,14 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_mesh(ufbxi_context *uc, ufb
 			ufbxi_check(ufbxi_read_vertex_element(uc, mesh, n, (ufbx_vertex_attrib*)&mesh->vertex_crease,
 				ufbxi_VertexCrease, ufbxi_VertexCreaseIndex, 'r', 1));
 		} else if (n->name == ufbxi_LayerElementEdgeCrease) {
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByEdge) {
 				if (mesh->edge_crease.count) continue;
 				ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->edge_crease.data, &mesh->edge_crease.count, n, ufbxi_EdgeCrease, 'r', mesh->num_edges));
 			}
 		} else if (n->name == ufbxi_LayerElementSmoothing) {
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByEdge) {
 				if (mesh->edge_smoothing.count) continue;
@@ -11527,7 +11575,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_mesh(ufbxi_context *uc, ufb
 				ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->face_smoothing.data, &mesh->face_smoothing.count, n, ufbxi_Smoothing, 'b', mesh->num_faces));
 			}
 		} else if (n->name == ufbxi_LayerElementVisibility) {
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByEdge) {
 				if (mesh->edge_visibility.count) continue;
@@ -11535,7 +11583,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_mesh(ufbxi_context *uc, ufb
 			}
 		} else if (n->name == ufbxi_LayerElementMaterial) {
 			if (mesh->face_material.count) continue;
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByPolygon) {
 				ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->face_material.data, &mesh->face_material.count, n, ufbxi_Materials, 'i', mesh->num_faces));
@@ -11556,14 +11604,14 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_mesh(ufbxi_context *uc, ufb
 			}
 		} else if (n->name == ufbxi_LayerElementPolygonGroup) {
 			if (mesh->face_group.count) continue;
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByPolygon) {
 				ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->face_group.data, &mesh->face_group.count, n, ufbxi_PolygonGroup, 'i', mesh->num_faces));
 			}
 		} else if (n->name == ufbxi_LayerElementHole) {
 			if (mesh->face_group.count) continue;
-			const char *mapping;
+			const char *mapping = NULL;
 			ufbxi_check(ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping));
 			if (mapping == ufbxi_ByPolygon) {
 				ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->face_hole.data, &mesh->face_hole.count, n, ufbxi_Hole, 'b', mesh->num_faces));
@@ -11589,7 +11637,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_mesh(ufbxi_context *uc, ufb
 
 			if (prop_name.length > 0) {
 				ufbxi_check(ufbxi_push_string_place_str(&uc->string_pool, &prop_name, false));
-				const char *mapping;
+				const char *mapping = NULL;
 				if (ufbxi_find_val1(n, ufbxi_MappingInformationType, "c", (char**)&mapping)) {
 					ufbxi_value_array *arr = ufbxi_find_array(n, ufbxi_TextureId, 'i');
 
@@ -12797,7 +12845,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_anim_channel(ufbxi_con
 
 	if (uc->opts.ignore_animation) return 1;
 
-	size_t num_keys;
+	size_t num_keys = 0;
 	ufbxi_check(ufbxi_find_val1(node, ufbxi_KeyCount, "Z", &num_keys));
 	curve->keyframes.data = ufbxi_push(&uc->result, ufbx_keyframe, num_keys);
 	curve->keyframes.count = num_keys;
@@ -12995,7 +13043,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_prop_channel(ufbxi_con
 		ufbxi_for(ufbxi_node, child, node->children, node->num_children) {
 			if (child->name != ufbxi_Channel) continue;
 
-			const char *old_name;
+			const char *old_name = NULL;
 			ufbxi_check(ufbxi_get_val1(child, "C", (char**)&old_name));
 
 			ufbx_string new_name;
@@ -13066,7 +13114,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_take_object(ufbxi_context *
 	// Takes are used only in pre-7000 FBX versions so objects are identified
 	// by their unique Type::Name pair that we use as unique IDs through the
 	// pooled interned string pointers.
-	const char *type_and_name;
+	const char *type_and_name = NULL;
 	ufbxi_check(ufbxi_get_val1(node, "c", (char**)&type_and_name));
 	uint64_t target_fbx_id = ufbxi_synthetic_id_from_string(type_and_name);
 
@@ -13555,7 +13603,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_legacy_mesh(ufbxi_context *
 
 	// Material indices
 	{
-		const char *mapping;
+		const char *mapping = NULL;
 		ufbxi_check(ufbxi_find_val1(node, ufbxi_MaterialAssignation, "C", (char**)&mapping));
 		if (mapping == ufbxi_ByPolygon) {
 			ufbxi_check(ufbxi_read_truncated_array(uc, &mesh->face_material.data, &mesh->face_material.count, node, ufbxi_Materials, 'i', mesh->num_faces));
@@ -13614,6 +13662,23 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_legacy_mesh(ufbxi_context *
 	mesh->skinned_normal = mesh->vertex_normal;
 
 	ufbxi_patch_mesh_reals(mesh);
+
+	return 1;
+}
+
+ufbxi_nodiscard ufbxi_noinline static int ufbxi_read_legacy_media(ufbxi_context *uc, ufbxi_node *node)
+{
+	ufbxi_node *videos = ufbxi_find_child(node, ufbxi_Video);
+	if (videos) {
+		ufbxi_for(ufbxi_node, child, videos->children, videos->num_children) {
+			ufbxi_element_info video_info = { 0 };
+			ufbxi_check(ufbxi_get_val1(child, "S", &video_info.name));
+			ufbxi_check(ufbxi_push_synthetic_id(uc, &video_info.fbx_id));
+			video_info.dom_node = ufbxi_get_dom_node(uc, node);
+
+			ufbxi_check(ufbxi_read_video(uc, child, &video_info));
+		}
+	}
 
 	return 1;
 }
@@ -13711,8 +13776,8 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_read_legacy_root(ufbxi_context *
 		ufbxi_node *node = uc->top_node;
 		if (node->name == ufbxi_FBXHeaderExtension) {
 			ufbxi_check(ufbxi_read_header_extension(uc));
-		} else if (node->name == ufbxi_Takes) {
-			ufbxi_check(ufbxi_read_takes(uc));
+		} else if (node->name == ufbxi_Media) {
+			ufbxi_check(ufbxi_read_legacy_media(uc, node));
 		} else if (node->name == ufbxi_Takes) {
 			ufbxi_check(ufbxi_read_takes(uc));
 		} else if (node->name == ufbxi_Model) {
@@ -16976,6 +17041,9 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_add_constraint_prop(ufbxi_contex
 			target->weight = 1.0f;
 			target->transform = ufbx_identity_transform;
 		} break;
+		default:
+			ufbx_assert(0 && "Unexpected constraint prop");
+			break;
 		}
 	}
 
@@ -17417,10 +17485,10 @@ ufbxi_noinline static void ufbxi_propagate_main_textures(ufbx_scene *scene)
 			ufbx_shader_texture *shader = texture->shader;
 			if (!shader) continue;
 
-			ufbx_texture *main = shader->main_texture;
-			if (!main || shader->main_texture_output_index != 0) continue;
+			ufbx_texture *main_tex = shader->main_texture;
+			if (!main_tex || shader->main_texture_output_index != 0) continue;
 
-			ufbx_shader_texture *main_shader = main->shader;
+			ufbx_shader_texture *main_shader = main_tex->shader;
 			if (!main_shader || !main_shader->main_texture) continue;
 
 			shader->main_texture = main_shader->main_texture;
@@ -17433,8 +17501,8 @@ ufbxi_noinline static void ufbxi_propagate_main_textures(ufbx_scene *scene)
 		ufbx_texture *texture = *p_texture;
 		ufbx_shader_texture *shader = texture->shader;
 		if (!shader || !shader->main_texture || shader->main_texture_output_index != 0) continue;
-		ufbx_texture *main = shader->main_texture;
-		if (main && main->shader && main->shader->main_texture) {
+		ufbx_texture *main_tex = shader->main_texture;
+		if (main_tex && main_tex->shader && main_tex->shader->main_texture) {
 			// Should have been propagated to `texture`
 			shader->main_texture = NULL;
 		}
@@ -17468,7 +17536,7 @@ ufbxi_noinline static void ufbxi_propagate_main_textures(ufbx_scene *scene)
 }
 
 #define ufbxi_patch_empty(m_dst, m_len, m_src) \
-	if (!(m_dst).m_len) m_dst = m_src;
+	do { if (!(m_dst).m_len) m_dst = m_src; } while (0)
 
 ufbxi_nodiscard ufbxi_noinline static int ufbxi_insert_texture_file(ufbxi_context *uc, ufbx_texture *texture)
 {
@@ -22579,7 +22647,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_curve_imp(ufbxi
 			if (ix < num_vertices) {
 				ufbx_real u = curve->basis.spans.data[span_ix];
 				if (sub_ix > 0) {
-					ufbx_real t = (ufbx_real)sub_ix / num_sub;
+					ufbx_real t = (ufbx_real)sub_ix / (ufbx_real)num_sub;
 					u = u * (1.0f - t) + t * curve->basis.spans.data[span_ix + 1];
 				}
 
@@ -22709,7 +22777,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 
 			ufbx_real v = surface->basis_v.spans.data[span_v];
 			if (split_v > 0) {
-				ufbx_real t = (ufbx_real)split_v / splits_v;
+				ufbx_real t = (ufbx_real)split_v / (ufbx_real)splits_v;
 				v = v * (1.0f - t) + t * surface->basis_v.spans.data[span_v + 1];
 			}
 			ufbx_real original_v = v;
@@ -22725,7 +22793,7 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_tessellate_nurbs_surface_imp(ufb
 
 					ufbx_real u = surface->basis_u.spans.data[span_u];
 					if (split_u > 0) {
-						ufbx_real t = (ufbx_real)split_u / splits_u;
+						ufbx_real t = (ufbx_real)split_u / (ufbx_real)splits_u;
 						u = u * (1.0f - t) + t * surface->basis_u.spans.data[span_u + 1];
 					}
 					ufbx_real original_u = u;
