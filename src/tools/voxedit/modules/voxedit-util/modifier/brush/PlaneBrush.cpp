@@ -20,6 +20,8 @@ bool PlaneBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 		voxelutil::erasePlane(planeWrapper, context.cursorPosition, context.cursorFace, hitVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Paint) {
 		voxelutil::paintPlane(planeWrapper, context.cursorPosition, context.cursorFace, hitVoxel, context.cursorVoxel);
+	} else if (wrapper.modifierType() == (ModifierType::Place | ModifierType::Erase)) {
+		voxelutil::overridePlane(planeWrapper, context.cursorPosition, context.cursorFace, context.cursorVoxel);
 	}
 	wrapper.addDirtyRegion(planeWrapper.dirtyRegion());
 	return true;

@@ -332,6 +332,19 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, voxel::Pale
 	}
 }
 
+void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = sceneMgr().modifier();
+	if (modifier.modifierType() == ModifierType::Place) {
+		ImGui::TextWrapped("Extrude voxels");
+	} else if (modifier.modifierType() == ModifierType::Erase) {
+		ImGui::TextWrapped("Erase voxels");
+	} else if (modifier.modifierType() == ModifierType::Paint) {
+		ImGui::TextWrapped("Paint voxels");
+	} else if (modifier.modifierType() == (ModifierType::Paint | ModifierType::Erase)) {
+		ImGui::TextWrapped("Override voxels");
+	}
+}
+
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
@@ -424,6 +437,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateShapeBrushPanel(listener);
 		} else if (modifier.brushType() == BrushType::Stamp) {
 			updateStampBrushPanel(listener);
+		} else if (modifier.brushType() == BrushType::Plane) {
+			updatePlaneBrushPanel(listener);
 		}
 	}
 }

@@ -55,7 +55,8 @@ int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Face
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
-
+int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+				  const voxel::Voxel &replaceVoxel);
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
 /**
  * @brief Remaps or converts the voxel colors to the new given palette by searching for the closest color

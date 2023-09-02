@@ -382,6 +382,16 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 	}
 }
 
+int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+			   const voxel::Voxel &replaceVoxel) {
+	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		const voxel::Voxel &v = in.voxel(pos);
+		return voxel::isBlocked(v.getMaterial());
+	};
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
+	return voxelutil::walkPlane(in, pos, face, -1, check, exec);
+}
+
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
