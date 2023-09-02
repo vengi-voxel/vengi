@@ -274,7 +274,7 @@ Available vector types are `vec2`, `vec3`, `vec4` and their integer types `ivec2
 Access these functions like this:
 
 ```lua
-local v1 = ivec3.new(1, 1, 1)
+local v1 = g_ivec3.new(1, 1, 1)
 ```
 
 There are 3 possible components for this vector. You can also call `g_ivec3.new(1)` to fill all three values with a one. Or call it like this: `g_ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
