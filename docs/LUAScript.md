@@ -167,7 +167,29 @@ The global `g_noise` supports a few noise generators:
 
 * `worley2(v)`, `worley3(v)`: Simplex cellular/worley noise. Uses the given `vec2` or `vec3` and returns a float value between `0.0` and `1.0`.
 
-They are available as e.g. `noise.noise2([...])`, `noise.fBm3([...])` and so on.
+They are available as e.g. `g_noise.noise2([...])`, `g_noise.fBm3([...])` and so on.
+
+## Shape
+
+The global `g_shape` supports a few shape generators:
+
+* `cylinder(centerBottom, axis, radius, height, voxel)`: Create a cylinder at the given position. The position is the center of the bottom plate with the given `axis` (`y` is default) as the direction.
+
+* `torus(center, minorRadius, majorRadius, voxel)`: Create a torus at the given position with the position being the center of the object.
+
+* `ellipse(centerBottom, axis, width, height, depth, voxel)`: Create an ellipse at the given position. The position is the center of the bottom plate with the given `axis` (`y` is default) as the direction.
+
+* `dome(centerBottom, axis, negative, width, height, depth, voxel)`: Create a dome at the given position. The position is the center of the bottom plate with the given `axis` (`y` is default) as the direction. `negative`: if true the dome will be placed in the negative direction of the axis.
+
+* `cone(centerBottom, axis, negative, width, height, depth, voxel)`: Create a cone at the given position. The position is the center of the bottom plate with the given `axis` (`y` is default) as the direction. `negative`: if true the cone will be placed in the negative direction of the axis.
+
+* `line(start, end, voxel)`: Create a line.
+
+* `cube(position, width, height, depth, voxel)`: Create a cube with the given dimensions. The position is the lower left corner.
+
+* `bezier(start, end, control, voxel)`: Create a bezier curve with the given `start`, `end` and `control` point
+
+They are available as e.g. `g_shape.line([...])`, `g_shape.ellipse([...])` and so on.
 
 ## Region
 

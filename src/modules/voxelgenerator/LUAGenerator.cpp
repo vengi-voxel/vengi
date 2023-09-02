@@ -24,6 +24,7 @@
 #include "app/App.h"
 #include "voxelfont/VoxelFont.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMover.h"
@@ -111,6 +112,10 @@ static const char *luaVoxel_metapalette_gc() {
 
 static const char *luaVoxel_metanoise() {
 	return "__meta_noise";
+}
+
+static const char *luaVoxel_metashape() {
+	return "__meta_shape";
 }
 
 static inline const char *luaVoxel_metaregion() {
@@ -363,6 +368,97 @@ static int luaVoxel_volumewrapper_gc(lua_State *s) {
 		}
 	}
 	delete volume;
+	return 0;
+}
+
+static int luaVoxel_shape_cylinder(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::vec3& centerBottom = clua_tovec<glm::vec3>(s, 2);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const int radius = (int)luaL_checkinteger(s, 4);
+	const int height = (int)luaL_checkinteger(s, 5);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 6);
+	shape::createCylinder(*volume, centerBottom, axis, radius, height, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_torus(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& center = clua_tovec<glm::ivec3>(s, 2);
+	const int minorRadius = (int)luaL_checkinteger(s, 3);
+	const int majorRadius = (int)luaL_checkinteger(s, 4);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
+	shape::createTorus(*volume, center, minorRadius, majorRadius, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_ellipse(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const int width = (int)luaL_checkinteger(s, 4);
+	const int height = (int)luaL_checkinteger(s, 5);
+	const int depth = (int)luaL_checkinteger(s, 6);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 7);
+	shape::createEllipse(*volume, centerBottom, axis, width, height, depth, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_dome(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const bool negative = (int)clua_optboolean(s, 4, false);
+	const int width = (int)luaL_checkinteger(s, 5);
+	const int height = (int)luaL_checkinteger(s, 6);
+	const int depth = (int)luaL_checkinteger(s, 7);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 8);
+	shape::createDome(*volume, centerBottom, axis, negative, width, height, depth, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_cube(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& position = clua_tovec<glm::ivec3>(s, 2);
+	const int width = (int)luaL_checkinteger(s, 3);
+	const int height = (int)luaL_checkinteger(s, 4);
+	const int depth = (int)luaL_checkinteger(s, 5);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 6);
+	shape::createCubeNoCenter(*volume, position, width, height, depth, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_cone(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Axis axis = luaVoxel_getAxis(s, 3);
+	const bool negative = (int)clua_optboolean(s, 4, false);
+	const int width = (int)luaL_checkinteger(s, 5);
+	const int height = (int)luaL_checkinteger(s, 6);
+	const int depth = (int)luaL_checkinteger(s, 7);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 8);
+	shape::createCone(*volume, centerBottom, axis, negative, width, height, depth, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_line(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
+	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 4);
+	shape::createLine(*volume, start, end, voxel);
+	return 0;
+}
+
+static int luaVoxel_shape_bezier(lua_State* s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
+	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const glm::ivec3& control = clua_tovec<glm::ivec3>(s, 4);
+	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
+	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& volume, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
+			shape::createLine(volume, pos, last, voxel, 1);
+	});
 	return 0;
 }
 
@@ -932,6 +1028,19 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, noiseFuncs, luaVoxel_metanoise(), "g_noise");
+
+	static const luaL_Reg shapeFuncs[] = {
+		{"cylinder", luaVoxel_shape_cylinder},
+		{"torus", luaVoxel_shape_torus},
+		{"ellipse", luaVoxel_shape_ellipse},
+		{"dome", luaVoxel_shape_dome},
+		{"cube", luaVoxel_shape_cube},
+		{"cone", luaVoxel_shape_cone},
+		{"line", luaVoxel_shape_line},
+		{"bezier", luaVoxel_shape_bezier},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
 
 	clua_mathregister(s);
 }
