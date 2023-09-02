@@ -12,6 +12,8 @@ The current reference position is rendered as a blue dot in the scene and is use
 
 The reference position can be set by pressing enter while hovering a particular voxel - or by using the command `setreferenceposition`.
 
+# Brushes
+
 ## Modifiers
 
 ### Place
@@ -45,3 +47,17 @@ You can either use it from the modifiers panel or by default with the key `p` to
 ### Select
 
 Span an selection box to operate in. Either for copy/pasting or to limit a certain action (like the [script](../LUAScript.md) execution). Don't forget to unselect (__Select__ -> __Select none__) before being able to operate on the whole volume again.
+
+## Shape brush
+
+You can use several shapes to create voxels via spanning a bounding box in the viewport volume by pressing and holding the left mouse button.
+
+## Script brush
+
+Execute [scripts](../LUAScript.md) in this brush.
+
+## Plane brush
+
+## Stamp brush
+
+Load stamps in form of other voxel assets via drag and drop or right click in the asset panel
