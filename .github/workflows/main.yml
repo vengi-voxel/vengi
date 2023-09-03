@@ -186,6 +186,14 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
+        - name: vcpkg build
+          uses: johnwason/vcpkg-action@v5
+          id: vcpkg
+          with:
+            pkgs: curl
+            triplet: x64-windows-release
+            token: ${{ github.token }}
+
         - name: Build
           run: |
             mkdir build
@@ -229,6 +237,14 @@ jobs:
 
         steps:
         - uses: actions/checkout@v3
+
+        - name: vcpkg build
+          uses: johnwason/vcpkg-action@v5
+          id: vcpkg
+          with:
+            pkgs: curl
+            triplet: x64-windows-release
+            token: ${{ github.token }}
 
         - name: Build
           run: |
