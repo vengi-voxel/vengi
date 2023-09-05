@@ -1,0 +1,8 @@
+{
+	"name": "vengi",
+	"version-string": "latest",
+	"dependencies": [
+		"freetype",
+		"curl"
+	]
+}
