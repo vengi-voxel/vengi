@@ -186,19 +186,21 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
-        - name: vcpkg build
-          uses: johnwason/vcpkg-action@v5
-          id: vcpkg
+        - name: Install vcpkg
+          uses: lukka/run-vcpkg@v11
+          id: runvcpkg
           with:
-            pkgs: curl
-            triplet: x64-windows-release
-            token: ${{ github.token }}
+            vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
+
+        - name: Integrate vcpkg
+          run: |
+            ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
 
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
             cmake --build .
 
         - name: Test
@@ -238,19 +240,21 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
-        - name: vcpkg build
-          uses: johnwason/vcpkg-action@v5
-          id: vcpkg
+        - name: Install vcpkg
+          uses: lukka/run-vcpkg@v11
+          id: runvcpkg
           with:
-            pkgs: curl
-            triplet: x64-windows-release
-            token: ${{ github.token }}
+            vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
+
+        - name: Integrate vcpkg
+          run: |
+            ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
 
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Install
