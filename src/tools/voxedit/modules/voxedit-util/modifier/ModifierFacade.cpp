@@ -86,11 +86,27 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 	_modifierRenderer->updateMirrorPlane(shapeBrush().mirrorAxis(), shapeBrush().mirrorPos());
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);
+
+
+	if (isMode(ModifierType::Select) && activeBrush()->active()) {
+		const voxel::Region &region = calcBrushRegion();
+		Selections selections = _selections;
+		if (region.isValid()) {
+			selections.push_back(region);
+		} else if (!_selectionValid) {
+			return;
+		}
+		_modifierRenderer->updateSelectionBuffers(selections);
+		_modifierRenderer->renderSelection(camera);
+		return;
+	}
+
 	if (_selectionValid) {
+		_modifierRenderer->updateSelectionBuffers(_selections);
 		_modifierRenderer->renderSelection(camera);
 	}
 
-	if (isMode(ModifierType::ColorPicker) || isMode(ModifierType::Select) || isMode(ModifierType::Line) ||
+	if (isMode(ModifierType::ColorPicker) || isMode(ModifierType::Line) ||
 		isMode(ModifierType::Path)) {
 		return;
 	}
@@ -102,34 +118,6 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 			updateBrushVolumePreview(palette);
 		}
 		_modifierRenderer->renderBrushVolume(camera);
-	}
-}
-
-bool ModifierFacade::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
-	if (Super::select(mins, maxs)) {
-		_modifierRenderer->updateSelectionBuffers(_selections);
-		return true;
-	}
-	return false;
-}
-
-void ModifierFacade::invert(const voxel::Region &region) {
-	if (_locked) {
-		return;
-	}
-	Super::invert(region);
-	if (_selectionValid) {
-		_modifierRenderer->updateSelectionBuffers(_selections);
-	}
-}
-
-void ModifierFacade::unselect() {
-	if (_locked) {
-		return;
-	}
-	Super::unselect();
-	if (_selectionValid) {
-		_modifierRenderer->updateSelectionBuffers(_selections);
 	}
 }
 
