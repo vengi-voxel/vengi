@@ -54,9 +54,11 @@ You can use several shapes to create voxels via spanning a bounding box in the v
 
 ## Script brush
 
-Execute [scripts](../LUAScript.md) in this brush.
+Execute [scripts](../LUAScript.md) with this brush.
 
 ## Plane brush
+
+This allows you to extrude a whole plane.
 
 ## Stamp brush
 
