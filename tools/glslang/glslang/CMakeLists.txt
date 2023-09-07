@@ -33,7 +33,7 @@
 
 if(WIN32)
     add_subdirectory(OSDependent/Windows)
-elseif(UNIX OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Fuchsia")
+elseif(UNIX OR "${CMAKE_SYSTEM_NAME}" STREQUAL "Fuchsia" OR ANDROID)
     add_subdirectory(OSDependent/Unix)
 else()
     message("unknown platform")
@@ -57,7 +57,6 @@ set_property(TARGET GenericCodeGen PROPERTY FOLDER glslang)
 # MachineIndependent
 ################################################################################
 set(MACHINEINDEPENDENT_SOURCES
-    MachineIndependent/glslang.m4
     MachineIndependent/glslang.y
     MachineIndependent/glslang_tab.cpp
     MachineIndependent/attribute.cpp
@@ -234,7 +233,7 @@ if(ENABLE_GLSLANG_INSTALL)
             message(WARNING \"Using `glslangTargets.cmake` is deprecated: use `find_package(glslang)` to find glslang CMake targets.\")
 
             if (NOT TARGET glslang::glslang)
-                include(\"\${CMAKE_CURRENT_LIST_DIR}/../../${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/glslang-targets.cmake\")
+                include(\"${CMAKE_INSTALL_FULL_LIBDIR}/cmake/${PROJECT_NAME}/glslang-targets.cmake\")
             endif()
 
             if(${BUILD_SHARED_LIBS})
@@ -267,7 +266,7 @@ if(ENABLE_GLSLANG_INSTALL)
         message(WARNING \"Using `glslang-default-resource-limitsTargets.cmake` is deprecated: use `find_package(glslang)` to find glslang CMake targets.\")
 
         if (NOT TARGET glslang::glslang-default-resource-limits)
-            include(\"\${CMAKE_CURRENT_LIST_DIR}/../../${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}/glslang-targets.cmake\")
+            include(\"\${CMAKE_INSTALL_FULL_LIBDIR}/cmake/${PROJECT_NAME}/glslang-targets.cmake\")
         endif()
 
         add_library(glslang-default-resource-limits ALIAS glslang::glslang-default-resource-limits)
