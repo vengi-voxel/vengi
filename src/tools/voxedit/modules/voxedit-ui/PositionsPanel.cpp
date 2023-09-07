@@ -3,6 +3,7 @@
  */
 
 #include "PositionsPanel.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
 #include "Util.h"
@@ -10,6 +11,7 @@
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IMGUIEx.h"
 #include "ui/dearimgui/ImGuizmo.h"
+#include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "scenegraph/SceneGraph.h"
@@ -248,7 +250,23 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 					}
 					ImGui::EndCombo();
 				}
-
+				core::Array<glm::dvec2, 100> data;
+				for (size_t i = 0; i < data.size(); ++i) {
+					const double t = (double)i / (double)data.size();
+					const double v = scenegraph::interpolate(sceneGraphKeyFrame.interpolation, t, 0.0, 1.0);
+					data[i] = glm::dvec2(t, v);
+				}
+				ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs;
+				if (ImPlot::BeginPlot("##plotintertype", ImVec2(-1, 0), flags)) {
+					ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+					ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+					ImPlot::SetupAxisLimits(ImAxis_X1, 0.0f, 1.0f, ImGuiCond_Once);
+					ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0f, 1.0f, ImGuiCond_Once);
+					const char *lineTitle = scenegraph::InterpolationTypeStr[currentInterpolation];
+					ImPlotLineFlags lineFlag = 0;
+					ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, data.size(), lineFlag, 0, sizeof(glm::dvec2));
+					ImPlot::EndPlot();
+				}
 			}
 			if (change) {
 				glm::mat4 matrix;

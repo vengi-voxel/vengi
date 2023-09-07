@@ -30,4 +30,6 @@ int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
 				  bool crop = false, bool createEmpty = false, const glm::ivec3 &maxSize = glm::ivec3(128));
 
+double interpolate(InterpolationType interpolationType, double current, double start, double end);
+
 } // namespace voxel

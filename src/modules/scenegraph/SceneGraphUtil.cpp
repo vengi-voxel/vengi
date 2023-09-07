@@ -4,6 +4,7 @@
 
 #include "SceneGraphUtil.h"
 #include "core/Log.h"
+#include "math/Easing.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeCropper.h"
@@ -199,5 +200,39 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	}
 	return !destSceneGraph.empty();
 }
+
+double interpolate(InterpolationType interpolationType, double current, double start, double end) {
+	double deltaFrameSeconds = 0.0f;
+	switch (interpolationType) {
+	case InterpolationType::Instant:
+		deltaFrameSeconds = util::easing::full(current, start, end);
+		break;
+	case InterpolationType::Linear:
+		deltaFrameSeconds = util::easing::linear(current, start, end);
+		break;
+	case InterpolationType::QuadEaseIn:
+		deltaFrameSeconds = util::easing::quadIn(current, start, end);
+		break;
+	case InterpolationType::QuadEaseOut:
+		deltaFrameSeconds = util::easing::quadOut(current, start, end);
+		break;
+	case InterpolationType::QuadEaseInOut:
+		deltaFrameSeconds = util::easing::quadInOut(current, start, end);
+		break;
+	case InterpolationType::CubicEaseIn:
+		deltaFrameSeconds = util::easing::cubicIn(current, start, end);
+		break;
+	case InterpolationType::CubicEaseOut:
+		deltaFrameSeconds = util::easing::cubicOut(current, start, end);
+		break;
+	case InterpolationType::CubicEaseInOut:
+		deltaFrameSeconds = util::easing::cubicInOut(current, start, end);
+		break;
+	case InterpolationType::Max:
+		break;
+	}
+	return deltaFrameSeconds;
+}
+
 
 } // namespace voxel

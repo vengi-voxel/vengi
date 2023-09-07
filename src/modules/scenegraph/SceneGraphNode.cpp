@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include <glm/gtx/matrix_decompose.hpp>
 #include "math/Easing.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
@@ -773,36 +774,7 @@ SceneGraphTransform SceneGraphNode::transformForFrame(const SceneGraphKeyFrames 
 		return *source;
 	}
 
-	double deltaFrameSeconds = 0.0f;
-	switch (interpolationType) {
-	case InterpolationType::Instant:
-		deltaFrameSeconds = util::easing::full((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::Linear:
-		deltaFrameSeconds = util::easing::linear((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::QuadEaseIn:
-		deltaFrameSeconds = util::easing::quadIn((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::QuadEaseOut:
-		deltaFrameSeconds = util::easing::quadOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::QuadEaseInOut:
-		deltaFrameSeconds = util::easing::quadInOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::CubicEaseIn:
-		deltaFrameSeconds = util::easing::cubicIn((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::CubicEaseOut:
-		deltaFrameSeconds = util::easing::cubicOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::CubicEaseInOut:
-		deltaFrameSeconds = util::easing::cubicInOut((float)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-		break;
-	case InterpolationType::Max:
-		deltaFrameSeconds = 0.0;
-		break;
-	}
+	const double deltaFrameSeconds = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 	scenegraph::SceneGraphTransform transform = *source;
 	transform.lerp(*target, deltaFrameSeconds);
 	return transform;
