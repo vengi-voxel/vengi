@@ -144,6 +144,11 @@ update-im-neo-sequencer:
 	cp $(UPDATEDIR)/im-neo-sequencer.sync/LICENSE src/modules/ui/dearimgui/LICENSE-sequencer
 	clang-format -i src/modules/ui/dearimgui/imgui_neo*
 
+update-implot:
+	$(call UPDATE_GIT,implot,https://github.com/epezent/implot.git)
+	cp $(UPDATEDIR)/implot.sync/implot* src/modules/ui/dearimgui
+	mv src/modules/ui/dearimgui/implot_demo.cpp src/tests/testimgui/implot_demo.cpp
+
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
 	cp $(UPDATEDIR)/imgui.sync/im*.h $(UPDATEDIR)/imgui.sync/im*.cpp $(UPDATEDIR)/imgui.sync/misc/cpp/* src/modules/ui/dearimgui

@@ -30,6 +30,9 @@ set(SRCS
 	dearimgui/imgui_neo_sequencer.cpp dearimgui/imgui_neo_sequencer.h
 	dearimgui/imgui_neo_internal.cpp dearimgui/imgui_neo_internal.h
 
+	dearimgui/implot.cpp dearimgui/implot.h
+	dearimgui/implot_items.cpp dearimgui/implot_internal.h
+
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
 

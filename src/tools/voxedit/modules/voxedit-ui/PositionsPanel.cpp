@@ -248,6 +248,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 					}
 					ImGui::EndCombo();
 				}
+
 			}
 			if (change) {
 				glm::mat4 matrix;

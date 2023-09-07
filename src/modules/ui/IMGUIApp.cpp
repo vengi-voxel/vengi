@@ -11,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "dearimgui/backends/imgui_impl_sdl2.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
+#include "dearimgui/implot.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
@@ -281,6 +282,7 @@ app::AppState IMGUIApp::onInit() {
 	IMGUI_CHECKVERSION();
 	ImGui::SetAllocatorFunctions(_imguiAlloc, _imguiFree);
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -545,6 +547,7 @@ app::AppState IMGUIApp::onCleanup() {
 		_imguiBackendInitialized = false;
 	}
 	if (ImGui::GetCurrentContext() != nullptr) {
+		ImPlot::DestroyContext();
 		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
 	}

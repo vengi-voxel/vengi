@@ -14,6 +14,7 @@ private:
 	using Super = ui::IMGUIApp;
 	bool _showTestWindow = false;
 	bool _showMetricsWindow = false;
+	bool _showImPlotWindow = false;
 
 public:
 	TestIMGUI(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);

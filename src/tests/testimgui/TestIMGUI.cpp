@@ -2,6 +2,7 @@
  * @file
  */
 #include "TestIMGUI.h"
+#include "implot.h"
 #include "testcore/TestAppMain.h"
 #include "core/Color.h"
 #include "core/Log.h"
@@ -25,12 +26,18 @@ void TestIMGUI::onRenderUI() {
 	if (ImGui::Button("Metrics Window")) {
 		_showMetricsWindow ^= true;
 	}
+	if (ImGui::Button("Implot")) {
+		_showImPlotWindow ^= true;
+	}
 	if (ImGui::Button("Quit")) {
 		requestQuit();
 	}
 
 	if (_showMetricsWindow) {
 		ImGui::ShowMetricsWindow(&_showMetricsWindow);
+	}
+	if (_showImPlotWindow) {
+		ImPlot::ShowDemoWindow();
 	}
 
 	if (_showTestWindow) {
