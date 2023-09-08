@@ -227,7 +227,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	return true;
 }
 
-bool MainWindow::load(const core::String &file, const io::FormatDescription *desc) {
+bool MainWindow::load(const core::String &file, const io::FormatDescription *formatDesc) {
 	if (file.empty()) {
 		_app->openDialog([this](const core::String file, const io::FormatDescription *desc) { load(file, desc); }, {},
 						 voxelformat::voxelLoad());
@@ -236,7 +236,7 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *des
 
 	if (!sceneMgr().dirty()) {
 		io::FileDescription fd;
-		fd.set(file, desc);
+		fd.set(file, formatDesc);
 		if (sceneMgr().load(fd)) {
 			afterLoad(file);
 			return true;
@@ -244,7 +244,7 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *des
 		return false;
 	}
 
-	_loadFile.set(file, desc);
+	_loadFile.set(file, formatDesc);
 	_popupUnsaved = true;
 	return false;
 }
