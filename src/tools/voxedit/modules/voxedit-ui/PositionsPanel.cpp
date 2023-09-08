@@ -3,20 +3,23 @@
  */
 
 #include "PositionsPanel.h"
+#include "IconsForkAwesome.h"
+#include "Util.h"
+#include "core/ArrayLength.h"
+#include "core/Color.h"
+#include "core/Log.h"
+#include "imgui.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsFontAwesome6.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
-#include "Util.h"
-#include "core/Color.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IMGUIEx.h"
 #include "ui/dearimgui/ImGuizmo.h"
 #include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "core/ArrayLength.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -173,6 +176,68 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	}
 }
 
+void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node,
+												   scenegraph::KeyFrameIndex keyFrameIdx) {
+	ui::ScopedStyle style;
+	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+		style.disableItem();
+	}
+	const scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	const int currentInterpolation = (int)keyFrame.interpolation;
+	if (ImGui::BeginCombo("Interpolation##interpolationstrings",
+						  scenegraph::InterpolationTypeStr[currentInterpolation])) {
+		for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
+			const bool isSelected = (currentInterpolation == n);
+			if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
+				// TODO: undo missing
+				node.keyFrame(keyFrameIdx).interpolation = (scenegraph::InterpolationType)n;
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::CollapsingHeader(ICON_FK_LINE_CHART " Interpolation details")) {
+		core::Array<glm::dvec2, 20> data;
+		for (size_t i = 0; i < data.size(); ++i) {
+			const double t = (double)i / (double)data.size();
+			const double v = scenegraph::interpolate(keyFrame.interpolation, t, 0.0, 1.0);
+			data[i] = glm::dvec2(t, v);
+		}
+		ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs;
+		if (ImPlot::BeginPlot("##plotintertype", ImVec2(-1, 0), flags)) {
+			ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+			ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
+			ImPlot::SetupAxisLimits(ImAxis_X1, 0.0f, 1.0f, ImGuiCond_Once);
+			ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0f, 1.0f, ImGuiCond_Once);
+			const char *lineTitle = scenegraph::InterpolationTypeStr[currentInterpolation];
+			const ImPlotLineFlags lineFlag = ImPlotLineFlags_None;
+			ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, data.size(), lineFlag, 0, sizeof(glm::dvec2));
+			ImPlot::EndPlot();
+		}
+	}
+}
+
+void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,
+											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
+											   scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (ImGui::Button("Reset all")) {
+		scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
+		if (_localSpace) {
+			transform.setLocalMatrix(glm::mat4(1.0f));
+		} else {
+			transform.setWorldMatrix(glm::mat4(1.0f));
+		}
+		node.setPivot({0.0f, 0.0f, 0.0f});
+		transform.update(sceneGraph, node, frameIdx);
+		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+	}
+	ImGui::SameLine();
+	ImGui::CheckboxVar("Auto Keyframe", cfg::VoxEditAutoKeyFrame);
+	ImGui::TooltipText("Automatically create keyframes when changing transforms");
+}
+
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
@@ -180,17 +245,15 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		if (activeNode != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 
-			const scenegraph::FrameIndex frame = sceneMgr().currentFrame();
-			const scenegraph::KeyFrameIndex keyFrame = node.keyFrameForFrame(frame);
-			scenegraph::SceneGraphKeyFrame &sceneGraphKeyFrame = node.keyFrame(keyFrame);
-			scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
+			const scenegraph::FrameIndex frameIdx = sceneMgr().currentFrame();
+			scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
+			const scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			const glm::mat4 &matrix = _localSpace ? transform.localMatrix() : transform.worldMatrix();
 			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), matrixTranslation, matrixRotation,
 												  matrixScale);
 			bool change = false;
 			ImGui::Checkbox("Local transforms", &_localSpace);
-			glm::vec3 pivot = node.pivot();
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resettr")) {
@@ -198,6 +261,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				change = true;
 			}
 			ImGui::TooltipText("Reset");
+
 			change |= ImGui::InputFloat3("Rt", matrixRotation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resetrt")) {
@@ -205,6 +269,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				change = true;
 			}
 			ImGui::TooltipText("Reset");
+
 			change |= ImGui::InputFloat3("Sc", matrixScale, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resetsc")) {
@@ -212,7 +277,10 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				change = true;
 			}
 			ImGui::TooltipText("Reset");
-			bool pivotChanged = ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+
+			glm::vec3 pivot = node.pivot();
+			bool pivotChanged =
+				ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			change |= pivotChanged;
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resetpv")) {
@@ -221,54 +289,20 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			ImGui::TooltipText("Reset");
 
-			if (ImGui::Button("Reset all")) {
-				if (_localSpace) {
-					transform.setLocalMatrix(glm::mat4(1.0f));
-				} else {
-					transform.setWorldMatrix(glm::mat4(1.0f));
-				}
-				node.setPivot({0.0f, 0.0f, 0.0f});
-				transform.update(sceneGraph, node, frame);
-				sceneMgr().mementoHandler().markNodeTransform(node, keyFrame);
-			}
+			keyFrameActionsAndOptions(sceneGraph, node, frameIdx, keyFrameIdx);
+			keyFrameInterpolationSettings(node, keyFrameIdx);
 
-			{
-				ui::ScopedStyle style;
-				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
-					style.disableItem();
-				}
-				const int currentInterpolation = (int)sceneGraphKeyFrame.interpolation;
-				if (ImGui::BeginCombo("Interpolation##interpolationstrings", scenegraph::InterpolationTypeStr[currentInterpolation])) {
-					for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
-						const bool isSelected = (currentInterpolation == n);
-						if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
-							sceneGraphKeyFrame.interpolation = (scenegraph::InterpolationType)n;
-						}
-						if (isSelected) {
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
-				core::Array<glm::dvec2, 100> data;
-				for (size_t i = 0; i < data.size(); ++i) {
-					const double t = (double)i / (double)data.size();
-					const double v = scenegraph::interpolate(sceneGraphKeyFrame.interpolation, t, 0.0, 1.0);
-					data[i] = glm::dvec2(t, v);
-				}
-				ImPlotFlags flags = ImPlotFlags_NoTitle | ImPlotFlags_NoLegend | ImPlotFlags_NoInputs;
-				if (ImPlot::BeginPlot("##plotintertype", ImVec2(-1, 0), flags)) {
-					ImPlot::SetupAxis(ImAxis_X1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
-					ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_NoLabel | ImPlotAxisFlags_NoTickLabels);
-					ImPlot::SetupAxisLimits(ImAxis_X1, 0.0f, 1.0f, ImGuiCond_Once);
-					ImPlot::SetupAxisLimits(ImAxis_Y1, 0.0f, 1.0f, ImGuiCond_Once);
-					const char *lineTitle = scenegraph::InterpolationTypeStr[currentInterpolation];
-					ImPlotLineFlags lineFlag = 0;
-					ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, data.size(), lineFlag, 0, sizeof(glm::dvec2));
-					ImPlot::EndPlot();
-				}
-			}
 			if (change) {
+				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
+				// check if a new keyframe should get generated automatically
+				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
+					if (sceneMgr().nodeAddKeyFrame(node.id(), frameIdx)) {
+						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+						core_assert(newKeyFrameIdx != keyFrameIdx);
+						core_assert(newKeyFrameIdx != InvalidKeyFrame);
+						keyFrameIdx = newKeyFrameIdx;
+					}
+				}
 				glm::mat4 matrix;
 				_lastChanged = true;
 
@@ -289,17 +323,18 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 														glm::value_ptr(matrix));
+				scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 				if (_localSpace) {
 					transform.setLocalMatrix(matrix);
 				} else {
 					transform.setWorldMatrix(matrix);
 				}
 
-				transform.update(sceneGraph, node, frame);
+				transform.update(sceneGraph, node, frameIdx);
 			}
 			if (!change && _lastChanged) {
 				_lastChanged = false;
-				sceneMgr().mementoHandler().markNodeTransform(node, keyFrame);
+				sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
 			}
 		}
 	}

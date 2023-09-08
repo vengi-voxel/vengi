@@ -2663,11 +2663,15 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix,
 }
 
 bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx) {
-	if (node.addKeyFrame(frameIdx) == InvalidKeyFrame) {
+	const scenegraph::KeyFrameIndex newKeyFrameIdx = node.addKeyFrame(frameIdx);
+	if (newKeyFrameIdx == InvalidKeyFrame) {
 		Log::warn("Failed to add keyframe for frame %i", (int)frameIdx);
 		return false;
 	}
-	const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+	Log::error("node has %i keyframes", (int)node.keyFrames()->size());
+	for (const auto& kf : *node.keyFrames()) {
+		Log::error("- keyframe %i", (int)kf.frameIdx);
+	}
 	if (newKeyFrameIdx > 0) {
 		node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
 		_mementoHandler.markKeyFramesChange(node);

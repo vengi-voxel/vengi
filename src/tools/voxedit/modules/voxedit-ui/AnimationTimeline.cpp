@@ -118,7 +118,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
 			if (ImGui::Selectable(ICON_FA_SQUARE_PLUS " Add")) {
-				sceneMgr().nodeAddKeyFrame(-1, currentFrame);
+				sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
 			}
