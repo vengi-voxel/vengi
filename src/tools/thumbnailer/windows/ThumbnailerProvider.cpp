@@ -39,7 +39,7 @@ protected:
 
 
 	bool saveImage(const image::ImagePtr &image) override {
-		*_phbmp = rgbaToBitmap((uint32_t *)image->data(), image->width(), image->height(), false);
+		*_phbmp = rgbaToBitmap((const uint32_t *)image->data(), image->width(), image->height(), false);
 		return true;
 	}
 

@@ -11,12 +11,12 @@ class Palette;
 struct ChunkMesh;
 
 struct SurfaceExtractionContext {
-	SurfaceExtractionContext(const RawVolume *volume, const Palette &palette, const Region &region, ChunkMesh &mesh,
-							 const glm::ivec3 &translate, bool marchingCubes, bool mergeQuads, bool reuseVertices,
-							 bool ambientOcclusion)
-		: volume(volume), palette(palette), region(region), mesh(mesh), translate(translate),
-		  marchingCubes(marchingCubes), mergeQuads(mergeQuads), reuseVertices(reuseVertices),
-		  ambientOcclusion(ambientOcclusion) {
+	SurfaceExtractionContext(const RawVolume *_volume, const Palette &_palette, const Region &_region, ChunkMesh &_mesh,
+							 const glm::ivec3 &_translate, bool _marchingCubes, bool _mergeQuads, bool _reuseVertices,
+							 bool _ambientOcclusion)
+		: volume(_volume), palette(_palette), region(_region), mesh(_mesh), translate(_translate),
+		  marchingCubes(_marchingCubes), mergeQuads(_mergeQuads), reuseVertices(_reuseVertices),
+		  ambientOcclusion(_ambientOcclusion) {
 	}
 	const RawVolume *volume;
 	const Palette &palette;
