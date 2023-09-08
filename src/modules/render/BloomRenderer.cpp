@@ -76,8 +76,8 @@ bool BloomRenderer::resize(int width, int height) {
 	}
 
 	for (int i = 0; i < passes(); ++i) {
-		const int h = height / (1 << (i + 1));
-		const int w = width / (1 << (i + 1));
+		const int h = core_max(1, height / (1 << (i + 1)));
+		const int w = core_max(1, width / (1 << (i + 1)));
 		video::FrameBufferConfig cfg;
 		cfg.dimension(glm::ivec2(w, h));
 		cfg.addTextureAttachment(tcfg, video::FrameBufferAttachment::Color0);

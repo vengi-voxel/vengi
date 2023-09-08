@@ -5,6 +5,7 @@
 #include "FrameBufferConfig.h"
 #include "TextureConfig.h"
 #include "core/Assert.h"
+#include "core/Log.h"
 #include "video/Renderer.h"
 #include <glm/common.hpp>
 
@@ -32,6 +33,9 @@ FrameBufferConfig& FrameBufferConfig::depthBufferFormat(TextureFormat format) {
 }
 
 FrameBufferConfig& FrameBufferConfig::dimension(const glm::ivec2& dimension) {
+	if (dimension.x <= 0 || dimension.y <= 0) {
+		Log::error("Invalid dimension for framebuffer: w: %i, h: %i", dimension.x, dimension.y);
+	}
 	_dimension = dimension;
 	return *this;
 }
