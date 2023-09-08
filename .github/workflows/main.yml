@@ -1,5 +1,8 @@
 name: Build
 
+env:
+  VCPKG_DEFAULT_TRIPLET: 'x64-windows-static'
+
 on:
   push:
     branches:
@@ -190,7 +193,6 @@ jobs:
           uses: lukka/run-vcpkg@v11
           id: runvcpkg
           with:
-            vcpkgTriplet: x64-windows-static
             vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
 
         - name: Integrate vcpkg
@@ -245,7 +247,6 @@ jobs:
           uses: lukka/run-vcpkg@v11
           id: runvcpkg
           with:
-            vcpkgTriplet: x64-windows-static
             vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
 
         - name: Integrate vcpkg
