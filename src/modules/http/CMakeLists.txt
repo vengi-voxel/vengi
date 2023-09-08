@@ -8,6 +8,9 @@ find_package(CURL)
 
 if(CURL_FOUND)
 	list(APPEND LIBS CURL::libcurl)
+	message(STATUS "Found libcurl")
+else()
+	message(WARNING "No libcurl found")
 endif()
 
 set(USE_CURL ${CURL_FOUND} CACHE BOOL "Use curl for https requests" FORCE)
