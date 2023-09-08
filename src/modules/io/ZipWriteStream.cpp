@@ -32,7 +32,7 @@ ZipWriteStream::~ZipWriteStream() {
 }
 
 int ZipWriteStream::write(const void *buf, size_t size) {
-	((z_stream*)_stream)->next_in = (unsigned char *)buf;
+	((z_stream*)_stream)->next_in = (const unsigned char *)buf;
 	((z_stream*)_stream)->avail_in = static_cast<unsigned int>(size);
 
 	uint32_t writtenBytes = 0;

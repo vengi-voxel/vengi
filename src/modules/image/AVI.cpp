@@ -168,7 +168,7 @@ bool AVI::writeHeader(io::SeekableWriteStream &stream, uint32_t riffSize, uint32
 			}
 
 			{
-				ScopedChunk strl(stream, FourCC('L','I','S','T'));
+				ScopedChunk list(stream, FourCC('L','I','S','T'));
 				wrapBool(stream.writeUInt32(FourCC('o','d','m','l')))
 				wrapBool(stream.writeUInt32(FourCC('d','m','l','h')))
 				wrapBool(stream.writeUInt32(4))

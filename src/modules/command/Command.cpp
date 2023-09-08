@@ -111,7 +111,7 @@ void Command::updateSortedList() {
 		_sortedCommandList[_sortedCommandListSize++] = &i->value;
 	}
 	SDL_qsort(_sortedCommandList, _sortedCommandListSize, sizeof(Command*), [] (const void *v1, const void *v2) {
-		return SDL_strcmp((*(const Command**)v1)->name(), (*(const Command**)v2)->name());
+		return SDL_strcmp((*(const Command*const *)v1)->name(), (*(const Command*const *)v2)->name());
 	});
 }
 
