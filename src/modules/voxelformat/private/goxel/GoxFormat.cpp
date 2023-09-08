@@ -529,7 +529,8 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictEntry(stream, "dist", &distance, sizeof(distance)))
 		const bool ortho = cam.isOrthographic();
 		wrapBool(saveChunk_DictEntry(stream, "ortho", &ortho, sizeof(ortho)))
-		const glm::mat4x4 &mat = cam.transformForFrame(0).worldMatrix();
+		const scenegraph::SceneGraphTransform &transform = cam.transformForFrame(0);
+		const glm::mat4x4 mat = transform.worldMatrix();
 		wrapBool(saveChunk_DictEntry(stream, "mat", &mat, sizeof(mat)))
 	}
 	return true;

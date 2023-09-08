@@ -102,14 +102,14 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		futures.emplace_back(threadPool.enqueue([file, &loadctx]() {
-			io::FileStream stream(file);
+			io::FileStream fileStream(file);
 			scenegraph::SceneGraph newSceneGraph;
-			if (stream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
+			if (fileStream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
 				Log::debug("Skip empty region file %s", file->name().c_str());
 				return core::move(newSceneGraph);
 			}
 			MCRFormat mcrFormat;
-			if (!mcrFormat.load(file->name(), stream, newSceneGraph, loadctx)) {
+			if (!mcrFormat.load(file->name(), fileStream, newSceneGraph, loadctx)) {
 				Log::warn("Could not load %s", file->name().c_str());
 			}
 			const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();

@@ -815,9 +815,9 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true,
 						 sceneGraph.resolveRegion(node));
 
-			for (int i = 0; i < 12; ++i) {
-				const int col = i % 4;
-				const int row = i / 4;
+			for (int j = 0; j < 12; ++j) {
+				const int col = j % 4;
+				const int row = j / 4;
 				float val = vxlMatrix.matrix[col][row];
 				wrapBool(stream.writeFloat(val))
 			}

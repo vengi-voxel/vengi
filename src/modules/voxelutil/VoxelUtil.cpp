@@ -384,8 +384,8 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &replaceVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		const voxel::Voxel &v = in.voxel(pos);
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+		const voxel::Voxel &v = volume.voxel(p);
 		return voxel::isBlocked(v.getMaterial());
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
@@ -394,8 +394,8 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
 
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		const voxel::Voxel &v = in.voxel(pos);
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(searchVoxel);
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
@@ -404,8 +404,8 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		const voxel::Voxel &v = in.voxel(pos);
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(groundVoxel);
 	};
 	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, voxel::Voxel()); };
@@ -414,8 +414,8 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		const voxel::Voxel &v = in.voxel(pos);
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(groundVoxel);
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, newPlaneVoxel); };
@@ -428,23 +428,23 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 
 	const voxel::Region &region = in.region();
 
-	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
 		if (voxel::isAir(searchedVoxel.getMaterial())) {
 			return true;
 		}
-		const voxel::Voxel &v = in.voxel(pos);
+		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(searchedVoxel);
 	};
 
-	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		const glm::vec2 &uv = calcUV(pos, region, face);
+	auto exec = [&](voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+		const glm::vec2 &uv = calcUV(p, region, face);
 		const core::RGBA rgba = image->colorAt(uv);
 		if (rgba.a == 0) {
 			return true;
 		}
 		const uint8_t index = palLookup.findClosestIndex(rgba);
 		voxel::Voxel v = voxel::createVoxel(palLookup.palette(), index);
-		return in.setVoxel(pos, v);
+		return volume.setVoxel(p, v);
 	};
 
 	return walkPlane(in, position, face, -1, check, exec);

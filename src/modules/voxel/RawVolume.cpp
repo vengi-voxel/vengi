@@ -134,7 +134,7 @@ RawVolume::RawVolume(RawVolume&& move) noexcept {
 RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
 	initialise(region);
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	core_memcpy((void*)_data, (void*)data, size);
+	core_memcpy((void*)_data, (const void*)data, size);
 }
 
 RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :

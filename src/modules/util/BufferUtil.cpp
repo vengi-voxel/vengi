@@ -15,10 +15,10 @@ static uint32_t maxIndexValue(const uint8_t *in, size_t inSize, size_t inIndexSi
 	const uint8_t *buf = in;
 	for (size_t i = 0; i < inSize / inIndexSize; ++i) {
 		if (inIndexSize == 4) {
-			const uint32_t index = *(uint32_t*)buf;
+			const uint32_t index = *(const uint32_t*)buf;
 			v = core_max(index, v);
 		} else if (inIndexSize == 2) {
-			const uint16_t index = *(uint16_t*)buf;
+			const uint16_t index = *(const uint16_t*)buf;
 			v = core_max(index, v);
 		} else if (inIndexSize == 1) {
 			v = core_max(*buf, v);

@@ -491,8 +491,8 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 	Log::debug("loading %i faces", element.count);
 	faces.reserve(element.count);
 	for (int i = 0; i < element.count; ++i) {
-		for (size_t i = 0; i < element.properties.size(); ++i) {
-			const Property &prop = element.properties[i];
+		for (size_t j = 0; j < element.properties.size(); ++j) {
+			const Property &prop = element.properties[j];
 			if (!prop.isList) {
 				Log::error("Invalid ply face property: %s", prop.name.c_str());
 				return false;
@@ -767,8 +767,8 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::Palette &palette = graphNode.palette();
 
-			for (int i = 0; i < nv; ++i) {
-				const voxel::VoxelVertex &v = vertices[i];
+			for (int j = 0; j < nv; ++j) {
+				const voxel::VoxelVertex &v = vertices[j];
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
 					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
@@ -805,18 +805,18 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			}
 			const voxel::IndexType *indices = mesh.getRawIndexData();
 			if (quad) {
-				for (int i = 0; i < ni; i += 6) {
-					const uint32_t one = idxOffset + indices[i + 0];
-					const uint32_t two = idxOffset + indices[i + 1];
-					const uint32_t three = idxOffset + indices[i + 2];
-					const uint32_t four = idxOffset + indices[i + 5];
+				for (int j = 0; j < ni; j += 6) {
+					const uint32_t one = idxOffset + indices[j + 0];
+					const uint32_t two = idxOffset + indices[j + 1];
+					const uint32_t three = idxOffset + indices[j + 2];
+					const uint32_t four = idxOffset + indices[j + 5];
 					stream.writeStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
 				}
 			} else {
-				for (int i = 0; i < ni; i += 3) {
-					const uint32_t one = idxOffset + indices[i + 0];
-					const uint32_t two = idxOffset + indices[i + 1];
-					const uint32_t three = idxOffset + indices[i + 2];
+				for (int j = 0; j < ni; j += 3) {
+					const uint32_t one = idxOffset + indices[j + 0];
+					const uint32_t two = idxOffset + indices[j + 1];
+					const uint32_t three = idxOffset + indices[j + 2];
 					stream.writeStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
 				}
 			}

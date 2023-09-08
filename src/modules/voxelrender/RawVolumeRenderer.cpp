@@ -327,7 +327,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 		core_memcpy(verticesPos, &vertexVector[0], vertexVector.size() * sizeof(voxel::VoxelVertex));
 		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
 
-		for (size_t i = 0; i < indexVector.size(); ++i) {
+		for (size_t j = 0; j < indexVector.size(); ++j) {
 			*indicesPos++ += offset;
 		}
 
@@ -376,8 +376,8 @@ bool RawVolumeRenderer::empty(int idx) const {
 	}
 	const int bufferIndex = resolveIdx(idx);
 	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto& i : _meshes[i]) {
-			const Meshes& meshes = i.second;
+		for (auto& m : _meshes[i]) {
+			const Meshes& meshes = m.second;
 			if (meshes[bufferIndex] != nullptr && meshes[bufferIndex]->getNoOfIndices() > 0) {
 				return false;
 			}
@@ -671,7 +671,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	{
 		core::DynamicArray<int> sorted;
 		sorted.reserve(MAX_VOLUMES);
-		video::ScopedState scopedBlend(video::State::Blend, true);
+		video::ScopedState scopedBlendTrans(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;

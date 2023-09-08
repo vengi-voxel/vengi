@@ -69,19 +69,19 @@ TEST_F(ZipStreamTest, testZipStreamNoSize) {
 	{
 		ZipReadStream r(stream, expectedZippedSize);
 		for (int i = 0; i < n; ++i) {
-			int32_t n;
+			int32_t val;
 			ASSERT_FALSE(r.eos());
-			ASSERT_EQ(0, r.readInt32(n)) << "unexpected read failure for step: " << i;
-			ASSERT_EQ(n, i + 0) << "unexpected extracted value for step: " << i;
+			ASSERT_EQ(0, r.readInt32(val)) << "unexpected read failure for step: " << i;
+			ASSERT_EQ(val, i + 0) << "unexpected extracted value for step: " << i;
 			ASSERT_FALSE(r.eos());
-			ASSERT_EQ(0, r.readInt32(n)) << "unexpected read failure for step: " << i;
-			ASSERT_EQ(n, i + 1) << "unexpected extracted value for step: " << i;
+			ASSERT_EQ(0, r.readInt32(val)) << "unexpected read failure for step: " << i;
+			ASSERT_EQ(val, i + 1) << "unexpected extracted value for step: " << i;
 			ASSERT_FALSE(r.eos());
-			ASSERT_EQ(0, r.readInt32(n)) << "unexpected read failure for step: " << i;
-			ASSERT_EQ(n, i + 2) << "unexpected extracted value for step: " << i;
+			ASSERT_EQ(0, r.readInt32(val)) << "unexpected read failure for step: " << i;
+			ASSERT_EQ(val, i + 2) << "unexpected extracted value for step: " << i;
 			ASSERT_FALSE(r.eos());
-			ASSERT_EQ(0, r.readInt32(n)) << "unexpected read failure for step: " << i;
-			ASSERT_EQ(n, i + 3) << "unexpected extracted value for step: " << i;
+			ASSERT_EQ(0, r.readInt32(val)) << "unexpected read failure for step: " << i;
+			ASSERT_EQ(val, i + 3) << "unexpected extracted value for step: " << i;
 		}
 		ASSERT_TRUE(r.eos());
 		ASSERT_EQ(0, r.remaining());
