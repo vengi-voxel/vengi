@@ -84,8 +84,6 @@ if (GLSLANG_EXECUTABLE)
 	message(STATUS "Found glslang tool at ${GLSLANG_EXECUTABLE}")
 elseif(USE_GLSLANG_VALIDATOR)
 	message(WARNING "Couldn't find glslang tool but using it was requested")
-else()
-	message(STATUS "Found glslang tool at ${GLSLANG_EXECUTABLE}")
 endif()
 
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)
