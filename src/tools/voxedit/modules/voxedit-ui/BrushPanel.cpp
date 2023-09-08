@@ -243,7 +243,6 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type,
 }
 
 void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
 	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None, listener);
 	ImGui::SameLine();
 	mirrorAxisRadioButton("X##mirror", math::Axis::X, listener);

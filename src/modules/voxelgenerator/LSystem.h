@@ -138,7 +138,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 
 		case 'L': {
 			// Leaf
-			for (int i = 0; i < leavesVoxelCnt; i++) {
+			for (int j = 0; j < leavesVoxelCnt; j++) {
 				const glm::vec3& r = glm::ballRand(leafRadius);
 				const glm::ivec3 p = position + glm::ivec3(glm::round(step.pos + r));
 				volume.setVoxel(p, step.voxel);

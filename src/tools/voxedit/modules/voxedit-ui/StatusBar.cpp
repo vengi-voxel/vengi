@@ -28,7 +28,6 @@ void StatusBar::update(const char *title, float height, const core::String &last
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
 		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
-		const voxedit::ModifierFacade& modifier = sceneMgr.modifier();
 		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Only active", cfg::VoxEditHideInactive);
