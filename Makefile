@@ -9,7 +9,7 @@ EMSDK_DIR      ?= $(HOME)/dev/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
-CMAKE_OPTIONS  ?= -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
+CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
 else
@@ -191,25 +191,6 @@ update-lzfse:
 	cp $(UPDATEDIR)/lzfse.sync/src/lzfse_fse.c contrib/libs/lzfse
 	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_decode_base.c contrib/libs/lzfse
 	cp $(UPDATEDIR)/lzfse.sync/src/lzvn_encode_base.c contrib/libs/lzfse
-
-update-glslang:
-	$(call UPDATE_GIT,glslang,https://github.com/KhronosGroup/glslang.git)
-	rm -rf tools/glslang/External
-	cp -r $(UPDATEDIR)/glslang.sync/External tools/glslang/
-	rm -rf tools/glslang/glslang
-	cp -r $(UPDATEDIR)/glslang.sync/glslang tools/glslang/
-	rm -rf tools/glslang/OGLCompilersDLL
-	cp -r $(UPDATEDIR)/glslang.sync/OGLCompilersDLL tools/glslang/
-	rm -rf tools/glslang/SPIRV
-	cp -r $(UPDATEDIR)/glslang.sync/SPIRV tools/glslang/
-	rm -rf tools/glslang/StandAlone
-	cp -r $(UPDATEDIR)/glslang.sync/StandAlone tools/glslang/
-	cp $(UPDATEDIR)/glslang.sync/gen_extension_headers.py tools/glslang/
-	cp $(UPDATEDIR)/glslang.sync/*.cmake tools/glslang/
-	cp $(UPDATEDIR)/glslang.sync/README* tools/glslang/
-	dos2unix tools/glslang/SPIRV/spirv.hpp
-	python3 tools/glslang/gen_extension_headers.py -i tools/glslang/glslang/ExtensionHeaders -o tools/glslang/glslang/glsl_intrinsic_header.h
-	git checkout -f tools/glslang/glslang/build_info.h
 
 update-simplecpp:
 	$(call UPDATE_GIT,simplecpp,https://github.com/danmar/simplecpp.git)

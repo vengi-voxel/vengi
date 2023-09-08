@@ -26,7 +26,7 @@ bool ShaderTool::parse(const core::String& filename, const core::String& buffer,
 }
 
 app::AppState ShaderTool::onConstruct() {
-	registerArg("--glslang").setShort("-g").setDescription("Path to glslangvalidator binary").setMandatory();
+	registerArg("--glslang").setShort("-g").setDescription("Path to glslang validator binary");
 	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
 	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
 	registerArg("--constantstemplate").setShort("-t").setDescription("The shader constants template file");
@@ -46,6 +46,9 @@ app::AppState ShaderTool::onConstruct() {
 }
 
 void ShaderTool::validate(const core::String& name) {
+	if (_glslangValidatorBin.empty()) {
+		return;
+	}
 	const core::String& writePath = filesystem()->homePath();
 	core::DynamicArray<core::String> args;
 	args.push_back(writePath + name);
@@ -139,7 +142,9 @@ app::AppState ShaderTool::onRunning() {
 		_shaderDirectory = core::string::sanitizeDirPath(_shaderDirectory);
 		_sourceDirectory = core::string::sanitizeDirPath(_sourceDirectory);
 
-		Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
+		if (!_glslangValidatorBin.empty()) {
+			Log::debug("Using glslangvalidator binary: %s", _glslangValidatorBin.c_str());
+		}
 		Log::debug("Using %s as output directory", _sourceDirectory.c_str());
 		Log::debug("Using %s as namespace", _namespaceSrc.c_str());
 		Log::debug("Using %s as shader directory", _shaderDirectory.c_str());

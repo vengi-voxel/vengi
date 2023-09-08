@@ -80,20 +80,25 @@ function(generate_shaders TARGET)
 			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
 			set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
 			if (NOT CMAKE_CROSSCOMPILING)
+				set(_args
+					${SHADERTOOL_INCLUDE_DIRS_PARAM}
+					--shader ${_dir}/${_file}
+					--constantstemplate ${_template_constants_header}
+					--headertemplate ${_template_header}
+					--sourcetemplate ${_template_cpp}
+					--buffertemplate ${_template_ub}
+					--sourcedir ${GEN_DIR}
+				)
+				if (USE_GLSLANG_VALIDATOR AND GLSLANG_EXECUTABLE)
+					list(APPEND _args --glslang ${GLSLANG_EXECUTABLE})
+				endif()
 				add_custom_command(
 					OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
 					IMPLICIT_DEPENDS C ${_shaders}
 					COMMENT "Validate ${_file}"
 					COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
 						$<TARGET_FILE:shadertool>
-						--glslang $<TARGET_FILE:glslangValidator>
-						${SHADERTOOL_INCLUDE_DIRS_PARAM}
-						--shader ${_dir}/${_file}
-						--constantstemplate  ${_template_constants_header}
-						--headertemplate ${_template_header}
-						--sourcetemplate ${_template_cpp}
-						--buffertemplate ${_template_ub}
-						--sourcedir ${GEN_DIR}
+						${_args}
 					DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 				)
 			else()

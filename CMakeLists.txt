@@ -15,6 +15,7 @@ option(USE_CPPCHECK "Enable cppcheck" OFF)
 option(USE_CLANG_TIDY "Enable Clang Tidy" OFF)
 option(USE_STACKTRACES "Enable stacktraces" ON)
 option(USE_SANITIZERS "Enable sanitizer" OFF)
+option(USE_GLSLANG_VALIDATOR "Enable the use of the standalone glslang validator" OFF)
 
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
 
@@ -76,6 +77,15 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
 	else()
 		include(${SCRIPTS_CMAKE_DIR}/toolchains/linux-toolchain.cmake)
 	endif()
+endif()
+
+find_program(GLSLANG_EXECUTABLE NAMES glslangValidator glslang-standalone)
+if (GLSLANG_EXECUTABLE)
+	message(STATUS "Found glslang tool at ${GLSLANG_EXECUTABLE}")
+elseif(USE_GLSLANG_VALIDATOR)
+	message(WARNING "Couldn't find glslang tool but using it was requested")
+else()
+	message(STATUS "Found glslang tool at ${GLSLANG_EXECUTABLE}")
 endif()
 
 include(${SCRIPTS_CMAKE_DIR}/common.cmake)

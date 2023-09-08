@@ -14,7 +14,6 @@ set(SRCS
 )
 engine_add_build_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} NOINSTALL)
 set_target_properties(${PROJECT_NAME} PROPERTIES UNITY_BUILD FALSE)
-add_dependencies(${PROJECT_NAME} glslangValidator)
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES app video simplecpp)
 
 set(TEST_FILES tests/testshader.glsl)
