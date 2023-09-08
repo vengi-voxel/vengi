@@ -64,6 +64,10 @@ bool BloomRenderer::resize(int width, int height) {
 	tcfg.filterMag(video::TextureFilter::Linear);
 	tcfg.borderColor(glm::vec4(0.0f));
 
+	if (width <= (1 << passes()) || height <= (1 << passes())) {
+		Log::debug("Given width and height of the bloom renderer is not enough: %i:%i", width, height);
+	}
+
 	video::FrameBufferConfig bloomCfg;
 	bloomCfg.dimension(glm::ivec2(width, height));
 	bloomCfg.addTextureAttachment(tcfg, video::FrameBufferAttachment::Color0);
