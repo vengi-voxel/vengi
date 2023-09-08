@@ -49,8 +49,8 @@ public:
 			func();
 		}
 		if (tooltip != nullptr && tooltip[0] != '\0') {
-			ui::ScopedStyle style;
-			style.setFont(imguiApp()->defaultFont());
+			ui::ScopedStyle tooltipStyle;
+			tooltipStyle.setFont(imguiApp()->defaultFont());
 			ImGui::TooltipText("%s", tooltip);
 		}
 		next();

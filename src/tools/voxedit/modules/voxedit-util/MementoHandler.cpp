@@ -37,8 +37,8 @@ static const MementoState InvalidMementoState{MementoType::Max,
 											  glm::mat4(1.0f),
 											  0};
 
-MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &_region)
-	: _compressedSize(bufSize), _region(_region) {
+MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
+	: _compressedSize(bufSize), _region(region) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = buf;
@@ -48,8 +48,8 @@ MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &_reg
 }
 
 MementoData::MementoData(const uint8_t* buf, size_t bufSize,
-		const voxel::Region& _region) :
-		_compressedSize(bufSize), _region(_region) {
+		const voxel::Region& region) :
+		_compressedSize(bufSize), _region(region) {
 	if (buf != nullptr) {
 		core_assert(_compressedSize > 0);
 		_buffer = (uint8_t*)core_malloc(_compressedSize);
