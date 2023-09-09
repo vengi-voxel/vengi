@@ -5,6 +5,7 @@
 #include "core/Assert.h"
 #include "core/StandardLib.h"
 #include <limits.h>
+#include <stdint.h>
 
 namespace core {
 
