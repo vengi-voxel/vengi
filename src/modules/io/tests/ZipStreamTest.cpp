@@ -11,7 +11,21 @@ namespace io {
 
 class ZipStreamTest : public testing::Test {};
 
-TEST_F(ZipStreamTest, testZipStream) {
+TEST_F(ZipStreamTest, testZipStreamWrite) {
+	BufferedReadWriteStream stream(1024);
+	{
+		ZipWriteStream w(stream);
+		for (int i = 0; i < 64; ++i) {
+			ASSERT_TRUE(w.writeInt32(i + 0)) << "unexpected write failure for step: " << i;
+			ASSERT_TRUE(w.writeInt32(i + 1)) << "unexpected write failure for step: " << i;
+			ASSERT_TRUE(w.writeInt32(i + 2)) << "unexpected write failure for step: " << i;
+			ASSERT_TRUE(w.writeInt32(i + 3)) << "unexpected write failure for step: " << i;
+		}
+		ASSERT_TRUE(w.flush());
+	}
+}
+
+TEST_F(ZipStreamTest, testZipStreamWriteAndRead) {
 	BufferedReadWriteStream stream(1024);
 	{
 		ZipWriteStream w(stream);
