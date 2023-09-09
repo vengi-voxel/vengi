@@ -206,7 +206,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
             cmake --build .
 
         - name: Test
