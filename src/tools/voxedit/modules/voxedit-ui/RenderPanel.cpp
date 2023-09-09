@@ -5,7 +5,6 @@
 #include "RenderPanel.h"
 #include "IMGUIApp.h"
 #include "core/SharedPtr.h"
-#include "imgui.h"
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "video/Texture.h"

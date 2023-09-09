@@ -13,6 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "core/GLM.h"
 #include <SDL_timer.h>
 
 class PathTracerTest : public app::AbstractTest {

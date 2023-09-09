@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "math/Math.h"
+
 namespace voxel {
 class RawVolume;
 class Region;

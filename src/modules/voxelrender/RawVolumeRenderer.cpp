@@ -8,6 +8,7 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include "core/collection/DynamicArray.h"
+#include <glm/gtx/norm.hpp>
 #include "video/FrameBufferConfig.h"
 #include "video/ScopedFrameBuffer.h"
 #include "video/Texture.h"

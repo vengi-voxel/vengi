@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/SharedPtr.h"
+#include "core/GLM.h"
 #include <yocto_scene.h>
 #include <yocto_trace.h>
 

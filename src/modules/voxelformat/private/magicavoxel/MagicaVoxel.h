@@ -9,6 +9,8 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
+#include "core/GLM.h"
+#include <glm/mat4x4.hpp>
 #include "voxelformat/external/ogt_vox.h"
 
 namespace voxel {
