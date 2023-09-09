@@ -42,12 +42,14 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 				   const ogt_vox_instance &ogtInstance, const ogt_vox_scene *scene) {
 	scenegraph::SceneGraphKeyFrames kf;
 
-	uint32_t numKeyframes = ogtInstance.transform_anim.num_keyframes;
+	const ogt_vox_anim_transform &transformAnim = ogtInstance.transform_anim;
+	uint32_t numKeyframes = transformAnim.num_keyframes;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
-		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
+		const ogt_vox_keyframe_transform &keyFrameTransform = transformAnim.keyframes[keyFrameIdx];
+		const uint32_t frameIdx = keyFrameTransform.frame_index;
 		const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, frameIdx, scene, ogtModel);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;
