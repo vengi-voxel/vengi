@@ -122,7 +122,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=ON
             cmake --build .
             cmake --install . --component voxedit --prefix install-voxedit/usr
 
@@ -306,7 +306,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug
+            cmake .. -DCMAKE_BUILD_TYPE=Release
             cmake --build .
 
         - name: Install
@@ -318,11 +318,11 @@ jobs:
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v3
           with:
-            name: voxedit-debug
+            name: voxedit-msys-release
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v3
           with:
-            name: voxconvert-debug
+            name: voxconvert-msys-release
             path: build/voxconvert-install/
