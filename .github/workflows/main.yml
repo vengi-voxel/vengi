@@ -224,6 +224,13 @@ jobs:
             name: voxedit
             path: build/voxedit-install/
 
+        - name: Upload the tests artifacts
+          uses: actions/upload-artifact@v3
+          if: ${{ failure() }}
+          with:
+            name: windows-release-tests
+            path: build/tests-*/*
+
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v3
           with:
