@@ -125,7 +125,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF
+            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=ON -DUSE_LINK_TIME_OPTIMIZATION=OFF
             cmake --build .
             cmake --install . --component voxedit --prefix install-voxedit/usr
 
