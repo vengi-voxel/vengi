@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 include(CMakeLists.local OPTIONAL)
 
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Compile Type" FORCE)
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo Profile)
+
 option(UNITTESTS "Builds with unittests" ON)
 option(VISUALTESTS "Builds with visual tests (src/tests)" ON)
 
@@ -16,7 +21,11 @@ option(USE_CLANG_TIDY "Enable Clang Tidy" OFF)
 option(USE_STACKTRACES "Enable stacktraces" ON)
 option(USE_SANITIZERS "Enable sanitizer" OFF)
 option(USE_GLSLANG_VALIDATOR "Enable the use of the standalone glslang validator" OFF)
-
+if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+	option(USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" ON)
+else()
+	option(USE_LINK_TIME_OPTIMIZATION "Enable link time optimization" OFF)
+endif()
 set(PKGDATADIR "" CACHE STRING "System directory to search for data files (must end on /)")
 
 set(ROOT_PROJECT_MAJOR_VERSION 0)
