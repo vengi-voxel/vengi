@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/RGBA.h"
 #include <gtest/gtest.h>
+#include <iomanip>
 
 namespace core {
 
