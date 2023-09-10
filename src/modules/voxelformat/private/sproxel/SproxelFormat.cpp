@@ -30,12 +30,15 @@ namespace voxelformat {
 size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 								  const LoadContext &ctx) {
 	char buf[512];
-	wrapBool(stream.readLine(sizeof(buf), buf))
+	if (!stream.readLine(sizeof(buf), buf)) {
+		Log::error("Could not load sproxel csv file");
+		return 0u;
+	}
 
 	core::Tokenizer tok(buf, ",");
 	if (tok.size() != 3u) {
 		Log::error("Invalid size components found - expected x,y,z");
-		return false;
+		return 0u;
 	}
 
 	const int32_t x = core::string::toInt(tok.tokens()[0]);
@@ -49,14 +52,14 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 				char hex[10];
 				if ((stream.read(hex, 9)) == -1) {
 					Log::error("Could not load sproxel csv color line");
-					return false;
+					return 0u;
 				}
 				hex[sizeof(hex) - 1] = '\0';
 				uint8_t r, g, b, a;
 				const int n = core::string::parseHex(hex, r, g, b, a);
 				if (n != 4) {
 					Log::error("Failed to parse color %i (%s)", n, hex);
-					return false;
+					return 0u;
 				}
 				if (a != 0) {
 					const core::RGBA color(r, g, b, a);

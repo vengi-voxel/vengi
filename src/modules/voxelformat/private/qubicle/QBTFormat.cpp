@@ -597,13 +597,19 @@ bool QBTFormat::loadHeader(io::SeekableReadStream &stream, Header &state) {
 size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
 	Header state;
-	wrapBool(loadHeader(stream, state))
+	if (!loadHeader(stream, state)) {
+		Log::error("Could not load qbt file: Could not read header");
+		return 0u;
+	}
 
 	const int64_t pos = stream.pos();
 
 	while (stream.remaining() > 0) {
 		char buf[8];
-		wrapBool(stream.readString(sizeof(buf), buf));
+		if (!stream.readString(sizeof(buf), buf)) {
+			Log::error("Could not load qbt file: Could not read chunk id");
+			return 0u;
+		}
 		if (0 == memcmp(buf, "COLORMAP", 7)) {
 			if (!loadColorMap(stream, palette)) {
 				Log::error("Failed to load color map");
@@ -629,12 +635,15 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 
 	while (stream.remaining() > 0) {
 		char buf[8];
-		wrapBool(stream.readString(sizeof(buf), buf));
+		if (!stream.readString(sizeof(buf), buf)) {
+			Log::error("Could not load qbt file: Could not read chunk id");
+			return 0u;
+		}
 		if (0 == memcmp(buf, "DATATREE", 8)) {
 			scenegraph::SceneGraph sceneGraph;
 			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
 				Log::error("Failed to load node");
-				return false;
+				return 0u;
 			}
 		} else {
 			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],

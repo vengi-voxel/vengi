@@ -62,7 +62,7 @@ private:
 	char_type _char;
 
 public:
-	StdIStreamBuf(io::ReadStream &stream) : _stream(stream) {
+	StdIStreamBuf(io::ReadStream &stream) : _stream(stream), _char(0) {
 	}
 
 	/**

@@ -112,7 +112,7 @@ struct MementoState {
 	core::Optional<voxel::Palette> palette;
 
 	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0), keyFrameIdx(0) {
+			type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max), keyFrameIdx(0) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,

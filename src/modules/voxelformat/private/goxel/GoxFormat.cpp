@@ -185,11 +185,19 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	uint32_t blockCount;
 
 	voxel::PaletteLookup palLookup(palette);
-	wrap(stream.readUInt32(blockCount))
+	if ((stream.readUInt32(blockCount)) != 0) {
+		Log ::error("Could not load gox file: Failed to read blockCount");
+		delete modelVolume;
+		return false;
+	}
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
 	for (uint32_t i = 0; i < blockCount; ++i) {
 		uint32_t index;
-		wrap(stream.readUInt32(index))
+		if ((stream.readUInt32(index)) != 0) {
+			Log ::error("Could not load gox file: Failure to read block index");
+			delete modelVolume;
+			return false;
+		}
 		if (index > state.images.size()) {
 			Log::error("Index out of bounds: %u", index);
 			return false;
@@ -208,9 +216,21 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		(void)bpp;(void)w;(void)h;
 
 		int32_t x, y, z;
-		wrap(stream.readInt32(x))
-		wrap(stream.readInt32(y))
-		wrap(stream.readInt32(z))
+		if (stream.readInt32(x) != 0) {
+			Log ::error("Could not load gox file: Failure to read block coordinate");
+			delete modelVolume;
+			return false;
+		}
+		if (stream.readInt32(y) != 0) {
+			Log ::error("Could not load gox file: Failure to read block coordinate");
+			delete modelVolume;
+			return false;
+		}
+		if (stream.readInt32(z) != 0) {
+			Log ::error("Could not load gox file: Failure to read block coordinate");
+			delete modelVolume;
+			return false;
+		}
 		// Previous version blocks pos.
 		if (state.version == 1) {
 			x -= 8;
@@ -218,7 +238,11 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			z -= 8;
 		}
 
-		wrap(stream.skip(4))
+		if (stream.skip(4) == -1) {
+			Log::error("Could not load gox file: Failed to skip");
+			delete modelVolume;
+			return false;
+		}
 		const voxel::Region blockRegion(x, z, y, x + (BlockSize - 1), z + (BlockSize - 1), y + (BlockSize - 1));
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);

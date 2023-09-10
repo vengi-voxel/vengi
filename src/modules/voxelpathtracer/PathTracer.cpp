@@ -330,7 +330,9 @@ bool PathTracer::started() const {
 
 bool PathTracer::update(int *currentSample) {
 	if (!_state.started) {
-		*currentSample = 0;
+		if (currentSample) {
+			*currentSample = 0;
+		}
 		return true;
 	}
 	if (yocto::trace_done(_state.context)) {

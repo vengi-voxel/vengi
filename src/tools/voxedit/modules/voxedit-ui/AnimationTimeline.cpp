@@ -15,7 +15,7 @@
 
 namespace voxedit {
 
-void AnimationTimeline::header(scenegraph::FrameIndex &currentFrame, scenegraph::FrameIndex maxFrame) {
+void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
 		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}

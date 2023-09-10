@@ -16,7 +16,7 @@ namespace image {
 
 class AVIRecorder {
 private:
-	image::AVI _avi;
+	image::AVI _avi{};
 	io::FileStream *_videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;

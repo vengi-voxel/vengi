@@ -155,11 +155,11 @@ bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
 }
 
 bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
-	uint16_t length = str.size();
+	uint32_t length = str.size();
 	if (!writeUInt32BE(length)) {
 		return false;
 	}
-	for (uint16_t i = 0u; i < length; ++i) {
+	for (uint32_t i = 0u; i < length; ++i) {
 		uint8_t chr = str[i];
 		if (!writeUInt8(chr)) {
 			return false;

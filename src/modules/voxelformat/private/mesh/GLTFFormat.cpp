@@ -165,7 +165,7 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 				nodeMatrixArray.push_back(pSource[i]);
 			}
 
-			gltfNode.matrix = nodeMatrixArray;
+			gltfNode.matrix = core::move(nodeMatrixArray);
 		}
 	}
 

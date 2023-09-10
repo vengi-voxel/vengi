@@ -64,6 +64,11 @@ protected:
 			message = o.message;
 			o.message = nullptr;
 		}
+		LogLine(const LogLine& o) noexcept {
+			category = o.category;
+			priority = o.priority;
+			message = o.message != nullptr ? core_strdup(o.message) : nullptr;
+		}
 		int category;
 		int priority;
 		char* message;
@@ -72,6 +77,9 @@ protected:
 			if (this != &o) {
 				category = o.category;
 				priority = o.priority;
+				if (message) {
+					core_free(message);
+				}
 				message = o.message;
 				o.message = nullptr;
 			}

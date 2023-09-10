@@ -256,18 +256,14 @@ void RawVolumeRenderer::update() {
 			continue;
 		}
 		Meshes& meshes = _meshes[MeshType_Opaque][result.mins];
-		if (meshes[result.idx] != nullptr) {
-			delete meshes[result.idx];
-		}
+		delete meshes[result.idx];
 		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Opaque]));
 		if (!updateBufferForVolume(result.idx, MeshType_Opaque)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
 
 		Meshes& meshesT = _meshes[MeshType_Transparency][result.mins];
-		if (meshesT[result.idx] != nullptr) {
-			delete meshesT[result.idx];
-		}
+		delete meshesT[result.idx];
 		meshesT[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Transparency]));
 		if (!updateBufferForVolume(result.idx, MeshType_Transparency)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);

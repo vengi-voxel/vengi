@@ -30,12 +30,9 @@ enum ImGuiToastPhase_ {
 	ImGuiToastPhase_COUNT
 };
 
-ImGuiToast::ImGuiToast(ImGuiToastType type, const core::String &message) {
+ImGuiToast::ImGuiToast(ImGuiToastType type, const core::String &message) : _type(type), _message(message) {
 	IM_ASSERT(type < ImGuiToastType_COUNT);
-
-	_type = type;
 	_creationTime = SDL_GetTicks();
-	_message = message;
 }
 
 const char *ImGuiToast::defaultTitle() const {

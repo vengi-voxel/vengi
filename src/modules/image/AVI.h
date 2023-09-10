@@ -51,9 +51,9 @@ private:
 
 	struct AVIMAINHEADER {
 		// Specifies a FOURCC code. The value must be 'avih'.
-		uint32_t fcc;
+		uint32_t fcc = 0;
 		// Specifies the size of the structure, not including the initial 8 bytes.
-		uint32_t cb;
+		uint32_t cb = 0;
 		// Specifies the number of microseconds between frames. This value indicates the overall timing for the
 		// file.
 		uint32_t dwMicroSecPerFrame = 0;
@@ -94,14 +94,14 @@ private:
 	 */
 	struct AVISTREAMHEADER {
 		// Specifies a FOURCC code. The value must be 'strh'.
-		int32_t fcc;
+		int32_t fcc = 0;
 		// Specifies the size of the structure, not including the initial 8 bytes.
-		uint32_t cb;
+		uint32_t cb = 0;
 		// Contains a FOURCC that specifies the type of the data contained in the stream. - 'vids' in our case
-		uint32_t fccType;
+		uint32_t fccType = 0;
 		// Optionally, contains a FOURCC that identifies a specific data handler. The data handler is the preferred
 		// handler for the stream. For audio and video streams, this specifies the codec for decoding the stream.
-		uint32_t fccHandler;
+		uint32_t fccHandler = 0;
 		// Contains any flags for the data stream. The bits in the high-order word of these flags are specific to the
 		// type of data contained in the stream. The following standard flags are defined.
 		uint32_t dwFlags = 0;

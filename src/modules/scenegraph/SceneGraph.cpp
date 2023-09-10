@@ -629,7 +629,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 				if (palette.addColorToPalette(rgba, true, &index, true, skipIndex)) {
 					if (nodePalette.hasGlow(i)) {
-						palette.setGlow(index, true);
+						palette.setGlow(index, 1.0f);
 					}
 				}
 			}

@@ -179,6 +179,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	int chunkAmount = 0;
 	wrapBool(stream.writeUInt8(chunkAmount));
+	// always false - but the format support multiple chunks - so leave this here as a reference
 	for (int c = 0; c < chunkAmount; ++c) {
 		core::String id = "";
 		stream.writeString(id);

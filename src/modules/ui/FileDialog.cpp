@@ -418,11 +418,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 			}
 			const char *icon = iconForType(entry.type);
 			const float x = ImGui::GetCursorPosX();
-			if (icon != nullptr) {
-				ImGui::TextUnformatted(icon);
-			} else {
-				ImGui::TextUnformatted("");
-			}
+			ImGui::TextUnformatted(icon);
 			ImGui::SameLine();
 			ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 			if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {

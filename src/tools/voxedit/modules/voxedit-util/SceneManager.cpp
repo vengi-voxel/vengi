@@ -701,6 +701,7 @@ voxel::RawVolume* SceneManager::volume(int nodeId) {
 	if (node == nullptr) {
 		return nullptr;
 	}
+	// TODO: use _sceneGraph.resolveVolume(*node); here, too?
 	return node->volume();
 }
 

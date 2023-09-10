@@ -387,12 +387,12 @@ void BrushPanel::brushRegion() {
 	if (brush == nullptr) {
 		return;
 	}
-	voxel::Region region = modifier.calcBrushRegion();
 	if (ImGui::CollapsingHeader("Brush region")) {
 		ui::ScopedStyle style;
 		if (brush->singleMode()) {
 			style.disableItem();
 		}
+		voxel::Region region = modifier.calcBrushRegion();
 		glm::ivec3 mins = region.getLowerCorner();
 		glm::ivec3 maxs = region.getUpperCorner();
 		if (ImGui::InputInt3("mins##regionbrush", glm::value_ptr(mins))) {
