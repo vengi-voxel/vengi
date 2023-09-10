@@ -176,7 +176,7 @@ jobs:
             cmake --build build --target codegen
             mkdir -p build/emscripten
             cp -r build/generated build/emscripten
-            emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
+            emcmake cmake -H. -Bbuild/emscripten -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON
             cmake --build build/emscripten --target voxedit
 
         - name: Upload the build artifacts
