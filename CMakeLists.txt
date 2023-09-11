@@ -46,11 +46,6 @@ include(CheckCCompilerFlag)
 include(CheckIncludeFiles)
 include(GNUInstallDirs)
 
-if (APPLE)
-	enable_language(OBJC)
-	enable_language(OBJCXX)
-endif()
-
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 	set(WINDOWS 1)
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Android")
@@ -149,7 +144,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # These includes are needed to let the include for IMPLICIT_DEPENDS for shaders work
 include_directories(src/modules/video/shaders)
-include_directories(src/modules/compute/shaders)
 
 include_directories(src/modules)
 
