@@ -108,7 +108,7 @@ check_c_compiler_flag("-fexpensive-optimizations" HAVE_EXPENSIVE_OPTIMIZATIONS)
 unset(CMAKE_REQUIRED_FLAGS)
 
 if (USE_CCACHE)
-	find_host_program(CCACHE "ccache")
+	find_program(CCACHE "ccache")
 	if (CCACHE)
 		message(STATUS "Using ccache")
 		set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
