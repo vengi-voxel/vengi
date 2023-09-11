@@ -206,7 +206,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
             cmake --build .
 
         - name: Test
@@ -267,7 +267,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
+            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Install
