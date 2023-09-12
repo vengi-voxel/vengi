@@ -3,14 +3,10 @@
  */
 
 #include "StatusBar.h"
-#include "core/StringUtil.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
-#include "voxedit-util/SceneManager.h"
 #include "ui/ScopedStyle.h"
-#include "ui/Console.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IMGUIApp.h"
 
 namespace voxedit {
 
@@ -24,10 +20,8 @@ void StatusBar::update(const char *title, float height, const core::String &last
 	ImGui::SetNextWindowPos(statusBarPos);
 	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
-		core_trace_scoped(StatusBar);
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
-		voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);
 		ImGui::SameLine();
 		ImGui::CheckboxVar("Only active", cfg::VoxEditHideInactive);
