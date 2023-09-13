@@ -12,6 +12,8 @@ if (USE_SANITIZERS)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fsanitize=address")
 endif()
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # /INCREMENTAL:NO: disable incremental linking
 # /DEBUG: generate debug info (event in release builds)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /INCREMENTAL:NO /DEBUG")
@@ -29,18 +31,16 @@ set(MSVC_DISABLED_WARNINGS "/wd4100 /wd4201 /wd4244 /wd4245 /wd4267 /wd4324 /wd4
 # /Od: disable optimizations
 # /Oy-: disable Omit Frame Pointers
 # /Ox: maximum optimizations
-# /MTd: use multithreaded debug runtime
-# /MT: use multithreaded release runtime
 # /DNOMINMAX: don't define min/max macros
 # /D_CRT_SECURE_NO_WARNINGS: don't warn about unsafe functions
 # /errorReport:queue: queue error reports
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /errorReport:queue /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS ${MSVC_DISABLED_WARNINGS}")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /Oy- /MTd /D_DEBUG /DDEBUG=1")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Ox /MT /DNDEBUG")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /errorReport:queue /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS ${MSVC_DISABLED_WARNINGS}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /Oy- /D_DEBUG /DDEBUG=1")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /DNDEBUG")
 # /EHsc: enable C++ exceptions
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS ${MSVC_DISABLED_WARNINGS}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy- /MTd /D_DEBUG /DDEBUG=1")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /MT /DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS ${MSVC_DISABLED_WARNINGS}")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy- /D_DEBUG /DDEBUG=1")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /DNDEBUG")
 
 # Visual Studio 2018 15.8 implemented conformant support for std::aligned_storage, but the conformant
 # support is only enabled when the following flag is passed, to avoid
@@ -78,15 +78,3 @@ if (USE_CCACHE)
 		endif()
 	endif()
 endif()
-
-foreach(flag_var
-	CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-	CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
-	CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-	CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-	# /MD: use multithreaded release runtime (DLL)
-	if (${flag_var} MATCHES "/MD")
-		string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-	endif()
-	string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
-endforeach()
