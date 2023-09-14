@@ -3,15 +3,17 @@
  */
 
 #include "KVXFormat.h"
+#include "SLABShared.h"
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/collection/Vector.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
-#include "SLABShared.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
@@ -44,16 +46,11 @@ namespace priv {
  * char col[slabzleng];       //The array of colors from top to bottom
  * @endcode
  */
-struct slab {
-	int x_low_w = 0;
-	int y_low_d = 0;
-	int z_low_h = 0;
-	uint8_t col = 0;
-
-	uint8_t slabztop = 0;
-	uint8_t slabzleng = 0;
+struct VoxtypeKVX {
+	uint8_t ztop = 0;
+	uint8_t zlength = 0;
 	SLABVisibility vis = SLABVisibility::None;
-	// followed by array of colors
+	core::Vector<uint8_t, 256> colors; // zlength entries
 };
 
 } // namespace priv
@@ -67,7 +64,7 @@ struct slab {
 bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	// Total # of bytes (not including numbytes) in each mip-map level
-	// but there is only 1 mip-map level
+	// but there is only 1 mip-map level (or 5 in unstripped kvx files)
 	uint32_t numbytes;
 	wrap(stream.readUInt32(numbytes))
 
@@ -76,6 +73,8 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readUInt32(xsiz_w))
 	wrap(stream.readUInt32(ysiz_d))
 	wrap(stream.readUInt32(zsiz_h))
+
+	Log::debug("Dimensions: %i:%i:%i", xsiz_w, ysiz_d, zsiz_h);
 
 	if (xsiz_w > 256 || ysiz_d > 256 || zsiz_h > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz_w, zsiz_h, ysiz_d);
@@ -181,15 +180,18 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			int32_t n = end - start;
 
 			while (n > 0) {
-				priv::slab header;
-				wrap(stream.readUInt8(header.slabztop))
-				wrap(stream.readUInt8(header.slabzleng))
-				wrap(stream.readUInt8((uint8_t&)header.vis))
-				for (uint8_t i = 0u; i < header.slabzleng; ++i) {
+				priv::VoxtypeKVX header;
+				wrap(stream.readUInt8(header.ztop))
+				wrap(stream.readUInt8(header.zlength))
+				wrap(stream.readUInt8((uint8_t &)header.vis))
+				for (uint8_t i = 0u; i < header.zlength; ++i) {
 					uint8_t col;
 					wrap(stream.readUInt8(col))
 					lastCol = voxel::createVoxel(palette, col);
-					volume->setVoxel((int)x, (int)((zsiz_h - 1) - (header.slabztop + i)), (int)y, lastCol);
+					const int nx = (int)x;
+					const int ny = region.getUpperY() - (int)header.ztop - (int)i;
+					const int nz = (int)y;
+					volume->setVoxel(nx, ny, nz, lastCol);
 				}
 
 				/**
@@ -197,14 +199,17 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				 * fill the inner voxels
 				 */
 				if ((header.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::Up) {
-					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
-						volume->setVoxel((int)x, (int)((zsiz_h - 1) - i), (int)y, lastCol);
+					for (uint32_t i = lastZ + 1; i < header.ztop; ++i) {
+						const int nx = (int)x;
+						const int ny = region.getUpperY() - (int)i;
+						const int nz = (int)y;
+						volume->setVoxel(nx, ny, nz, lastCol);
 					}
 				}
 				if ((header.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::Down) {
-					lastZ = header.slabztop + header.slabzleng;
+					lastZ = header.ztop + header.zlength;
 				}
-				n -= (int32_t)(header.slabzleng + sizeof(header));
+				n -= (int32_t)(header.zlength + 3 /* 3 byte slab header */);
 			}
 		}
 	}
@@ -222,7 +227,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
-#if 0
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -234,89 +238,126 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
-	int32_t xlen[256] {};
-	uint16_t xyoffset[256][256] {}; // our z
+	voxel::RawVolume &volume = *node->volume();
 
-	core::DynamicArray<priv::slab> voxdata;
-	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		priv::slab vd;
-		vd.x_low_w = x - region.getLowerX();
-		// flip y and z here
-		vd.y_low_d = z - region.getLowerZ();
-		vd.col = voxel.getColor();
-		vd.slabzleng = 0; // TODO
-		vd.slabztop = region.getHeightInCells() - (y - region.getLowerY()); // TODO
-		vd.vis = priv::calculateVisibility(node->volume(), x, y, z);
-		voxdata.push_back(vd);
-		++xlen[x];
-		++xyoffset[vd.x_low_w][vd.y_low_d];
-	}, voxelutil::VisitorOrder::XZY);
-
-	constexpr uint32_t MAXVOXS = 1048576;
-	if (numvoxs > MAXVOXS) {
-		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, MAXVOXS);
-		return false;
-	}
-
-	const int xsiz_w = dim.x;
-	// flip y and z here
-	const int ysiz_d = dim.z;
-	const int zsiz_h = dim.y;
+	const int64_t numBytesPos = stream.pos();
+	core_assert(numBytesPos == 0);
 	wrapBool(stream.writeUInt32(0)) // numbytes
 
-	wrapBool(stream.writeUInt32(xsiz_w))
-	wrapBool(stream.writeUInt32(ysiz_d))
-	wrapBool(stream.writeUInt32(zsiz_h))
+	// flip y and z here
+	wrapBool(stream.writeUInt32(dim.x))
+	wrapBool(stream.writeUInt32(dim.z))
+	wrapBool(stream.writeUInt32(dim.y))
+	Log::debug("Dimensions: %i:%i:%i", dim.x, dim.z, dim.y);
 
 	glm::ivec3 pivot(0); // normalized pivot
 	wrapBool(stream.writeInt32(-pivot.x))
 	wrapBool(stream.writeInt32(pivot.z))
 	wrapBool(stream.writeInt32(-pivot.y))
 
-	for (int x = 0u; x <= xsiz_w; ++x) {
-		wrapBool(stream.writeInt32(xlen[x]))
-		Log::debug("xlen[%u]: %i", x, xlen[x]);
+	const int64_t offsetPos = stream.pos();
+	const size_t xoffsetSize = (dim.x + 1) * sizeof(uint32_t);
+	const size_t xyoffsetSize = dim.x * (dim.z + 1) * sizeof(uint16_t);
+	// skip offset tables for now - filled later
+	if (stream.seek(xoffsetSize + xyoffsetSize, SEEK_CUR) == -1) {
+		Log::error("Can't seek past offset tables");
+		return false;
 	}
 
-	for (int x = 0u; x < xsiz_w; ++x) {
-		for (int y = ysiz_d - 1; y >= 0; --y) {
-			wrapBool(stream.writeUInt16(xyoffset[x][y]))
-			Log::debug("xyoffset[%u][%u]: %u", x, y, xyoffset[x][y]);
+	priv::VoxtypeKVX voxdat;
+	int32_t xoffsets[256 + 1];
+	uint16_t xyoffets[256][256 + 1];
+	int32_t xoffset = xoffsetSize + xyoffsetSize;
+	for (int32_t x = 0; x < dim.x; x++) {
+		xoffsets[x] = xoffset;
+		for (int32_t y = 0; y < dim.z; y++) {
+			xyoffets[x][y] = (uint16_t)(xoffset - xoffsets[x]);
+			int32_t bytes = 0;
+			for (int32_t z = 0; z < dim.y; z++) {
+				const int nx = region.getLowerX() + x;
+				const int ny = region.getUpperY() - z;
+				const int nz = region.getLowerZ() + y;
+				priv::SLABVisibility vis = priv::calculateVisibility(&volume, nx, ny, nz);
+				if (vis == priv::SLABVisibility::None) {
+					continue;
+				}
+
+				if (!bytes || z > voxdat.ztop + voxdat.zlength) {
+					if (bytes) {
+						stream.writeUInt8(voxdat.ztop);
+						stream.writeUInt8(voxdat.zlength);
+						stream.writeUInt8((uint8_t)voxdat.vis);
+						for (uint8_t k = 0u; k < voxdat.zlength; ++k) {
+							stream.writeUInt8(voxdat.colors[k]);
+						}
+
+						xoffset += bytes;
+					}
+					voxdat.ztop = (uint8_t)z;
+					voxdat.zlength = 0;
+					voxdat.vis = priv::SLABVisibility::None;
+					voxdat.colors.clear();
+					bytes = 3; // header bytes
+				}
+				voxdat.zlength++;
+				voxdat.vis |= vis;
+				const voxel::Voxel &voxel = volume.voxel(nx, ny, nz);
+				const uint8_t palIdx = voxel.getColor();
+				voxdat.colors.push_back(palIdx);
+				bytes++;
+			}
+			if (bytes) {
+				stream.writeUInt8(voxdat.ztop);
+				stream.writeUInt8(voxdat.zlength);
+				stream.writeUInt8((uint8_t)voxdat.vis);
+				for (uint8_t k = 0u; k < voxdat.zlength; ++k) {
+					stream.writeUInt8(voxdat.colors[k]);
+				}
+				xoffset += bytes;
+			}
 		}
+		xyoffets[x][dim.z] = (uint16_t)(xoffset - xoffsets[x]);
 	}
-
-	// TODO: this is not correct
-	for (const priv::slab &data : voxdata) {
-		const core::RGBA color = node->palette().color(data.col);
-		wrapBool(stream.writeUInt8(color.b))
-		wrapBool(stream.writeUInt8(color.g))
-		wrapBool(stream.writeUInt8(color.r))
-		wrapBool(stream.writeUInt8(data.z_low_h))
-		wrapBool(stream.writeUInt8((uint8_t)data.vis))
-	}
+	xoffsets[dim.x] = xoffset;
 
 	// palette is last
-	for (int i = 0; i < node->palette().colorCount(); ++i) {
-		const core::RGBA color = node->palette().color(i);
-		wrapBool(stream.writeUInt8((uint8_t)(float)(color.b * 255.0f / 63.0f)))
-		wrapBool(stream.writeUInt8((uint8_t)(float)(color.g * 255.0f / 63.0f)))
-		wrapBool(stream.writeUInt8((uint8_t)(float)(color.r * 255.0f / 63.0f)))
+	const voxel::Palette &palette = node->palette();
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA color = palette.color(i);
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
 	}
-	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 	}
 
-	const uint32_t numBytes = stream.pos() - sizeof(uint32_t);
-	stream.seek(0);
-	wrapBool(stream.writeUInt32(numBytes))
-	stream.seek(0, SEEK_END);
+	if (stream.seek(offsetPos) == -1) {
+		Log::error("Can't seek to offset tables");
+		return false;
+	}
+	for (int x = 0u; x <= dim.x; ++x) {
+		wrapBool(stream.writeInt32(xoffsets[x]))
+	}
+	for (int x = 0u; x < dim.x; ++x) {
+		for (int y = 0; y <= dim.z; ++y) {
+			wrapBool(stream.writeUInt16(xyoffets[x][y]))
+		}
+	}
+	if (stream.seek(numBytesPos) == -1) {
+		Log::error("Can't seek to numbytes");
+		return false;
+	}
+	wrapBool(stream.writeUInt32(xoffsets[dim.x] + 24)); // header size
+
+	if (stream.seek(0, SEEK_END) == -1) {
+		Log::error("Can't seek to end of file");
+		return false;
+	}
 
 	return true;
-#else
-	return false;
-#endif
 }
 
 #undef wrapBool

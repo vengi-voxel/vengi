@@ -14,7 +14,7 @@ TEST_F(KVXFormatTest, testLoad) {
 	canLoad("test.kvx");
 }
 
-TEST_F(KVXFormatTest, DISABLED_testSaveSmallVoxel) {
+TEST_F(KVXFormatTest, testSaveSmallVoxel) {
 	KVXFormat f;
 	testSaveLoadVoxel("kvx-smallvolumesavetest.kvx", &f, -16, 15);
 }

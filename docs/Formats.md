@@ -8,7 +8,7 @@
 | :------------------------- | --------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
 | Ace Of Spades              | vxl       | X       | X      | X          | X       |            | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
 | BinVox                     | binvox    | X       | X      | X          |         |            | [spec](https://www.patrickmin.com/binvox/binvox.html)                    |
-| Build engine               | kvx       | X       |        | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
+| Build engine               | kvx       | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
 | Chronovox-Studio           | csm       | X       |        | X          |         |            |                                                                          |
 | Command and Conquer        | vxl/hva   | X       | X      | X          | X       | X          | [spec](http://xhp.xwis.net/documents/VXL_Format.txt)                     |
 | CubeWorld                  | cub       | X       | X      | X          | X       |            |                                                                          |

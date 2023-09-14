@@ -181,6 +181,7 @@ const io::FormatDescription *voxelSave() {
 												 {"MagicaVoxel", {"vox"}, nullptr, 0u},
 												 {"MagicaVoxel", {"xraw"}, nullptr, 0u},
 												 {"AceOfSpades", {"kv6"}, nullptr, 0u},
+												 {"Build engine", {"kvx"}, nullptr, 0u},
 												 {"SLAB6 vox", {"vox"}, nullptr, 0u},
 												 {"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
 												 {"Qubicle Project", {"qbcl"}, nullptr, 0u},
