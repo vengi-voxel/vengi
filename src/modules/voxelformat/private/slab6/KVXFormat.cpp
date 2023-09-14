@@ -8,54 +8,16 @@
 #include "core/StringUtil.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
+#include "SLABShared.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
 
 namespace priv {
-
-enum KVXVisibility {
-	Left = 1,
-	Right = 2,
-	Front = 4,
-	Back = 8,
-	Up = 16,
-	Down = 32
-};
-
-#if 0
-static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
-	uint8_t vis = 0;
-	voxel::FaceBits visBits = voxel::visibleFaces(*v, x, y, z);
-	if (visBits == voxel::FaceBits::None) {
-		return vis;
-	}
-	// x
-	if ((visBits & voxel::FaceBits::NegativeX) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Left;
-	}
-	if ((visBits & voxel::FaceBits::PositiveX) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Right;
-	}
-	// y (our z)
-	if ((visBits & voxel::FaceBits::NegativeZ) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Front;
-	}
-	if ((visBits & voxel::FaceBits::PositiveZ) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Back;
-	}
-	// z (our y) is running from top to bottom
-	if ((visBits & voxel::FaceBits::NegativeY) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Up;
-	}
-	if ((visBits & voxel::FaceBits::PositiveY) != voxel::FaceBits::None) {
-		vis |= KVXVisibility::Down;
-	}
-	return vis;
-}
-#endif
 
 /**
  * voxdata: stored in sequential format.  Here's how you can get pointers to
@@ -83,13 +45,14 @@ static uint8_t calculateVisibility(const voxel::RawVolume *v, int x, int y, int 
  * @endcode
  */
 struct slab {
-	// int x_low_w;
-	// int y_low_d;
-	// int z_low_h;
-	// uint8_t col;
-	uint8_t slabztop;
-	uint8_t slabzleng;
-	uint8_t slabbackfacecullinfo;
+	int x_low_w = 0;
+	int y_low_d = 0;
+	int z_low_h = 0;
+	uint8_t col = 0;
+
+	uint8_t slabztop = 0;
+	uint8_t slabzleng = 0;
+	SLABVisibility vis = SLABVisibility::None;
 	// followed by array of colors
 };
 
@@ -221,7 +184,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				priv::slab header;
 				wrap(stream.readUInt8(header.slabztop))
 				wrap(stream.readUInt8(header.slabzleng))
-				wrap(stream.readUInt8(header.slabbackfacecullinfo))
+				wrap(stream.readUInt8((uint8_t&)header.vis))
 				for (uint8_t i = 0u; i < header.slabzleng; ++i) {
 					uint8_t col;
 					wrap(stream.readUInt8(col))
@@ -233,12 +196,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				 * the format only saves the visible voxels - we have to take the face info to
 				 * fill the inner voxels
 				 */
-				if (!(header.slabbackfacecullinfo & priv::KVXVisibility::Up)) {
+				if ((header.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::Up) {
 					for (uint32_t i = lastZ + 1; i < header.slabztop; ++i) {
 						volume->setVoxel((int)x, (int)((zsiz_h - 1) - i), (int)y, lastCol);
 					}
 				}
-				if (!(header.slabbackfacecullinfo & priv::KVXVisibility::Down)) {
+				if ((header.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::Down) {
 					lastZ = header.slabztop + header.slabzleng;
 				}
 				n -= (int32_t)(header.slabzleng + sizeof(header));
@@ -283,7 +246,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		vd.col = voxel.getColor();
 		vd.slabzleng = 0; // TODO
 		vd.slabztop = region.getHeightInCells() - (y - region.getLowerY()); // TODO
-		vd.slabbackfacecullinfo = priv::calculateVisibility(node->volume(), x, y, z);
+		vd.vis = priv::calculateVisibility(node->volume(), x, y, z);
 		voxdata.push_back(vd);
 		++xlen[x];
 		++xyoffset[vd.x_low_w][vd.y_low_d];
@@ -329,7 +292,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
 		wrapBool(stream.writeUInt8(data.z_low_h))
-		wrapBool(stream.writeUInt8(data.slabbackfacecullinfo))
+		wrapBool(stream.writeUInt8((uint8_t)data.vis))
 	}
 
 	// palette is last

@@ -19,64 +19,32 @@
 #include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "SLABShared.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
 
 namespace priv {
 
-enum class KV6Visibility : uint8_t { None = 0, Left = 1, Right = 2, Front = 4, Back = 8, Up = 16, Down = 32 };
-CORE_ENUM_BIT_OPERATIONS(KV6Visibility)
+constexpr uint32_t MAXVOXS = 1048576;
 
-static KV6Visibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
-	KV6Visibility vis = KV6Visibility::None;
-	voxel::FaceBits visBits = voxel::visibleFaces(*v, x, y, z);
-	if (visBits == voxel::FaceBits::None) {
-		return vis;
-	}
-	// x
-	if ((visBits & voxel::FaceBits::NegativeX) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Left;
-	}
-	if ((visBits & voxel::FaceBits::PositiveX) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Right;
-	}
-	// y (our z)
-	if ((visBits & voxel::FaceBits::NegativeZ) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Front;
-	}
-	if ((visBits & voxel::FaceBits::PositiveZ) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Back;
-	}
-	// z (our y) is running from top to bottom
-	if ((visBits & voxel::FaceBits::NegativeY) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Up;
-	}
-	if ((visBits & voxel::FaceBits::PositiveY) != voxel::FaceBits::None) {
-		vis |= KV6Visibility::Down;
-	}
-	return vis;
-}
+struct Voxtype {
+	uint8_t z_low_h = 0; ///< z coordinate of this surface voxel (height - our y)
+	uint8_t z_high = 0;	 ///< always 0
+	uint8_t col = 0;	 ///< palette index
+	SLABVisibility vis = SLABVisibility::None;	 ///< Low 6 bits say if neighbor is solid or air - @sa priv::SLABVisibility
+	uint8_t dir = 0;	 ///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
+};
+
+struct State {
+	Voxtype voxdata[MAXVOXS];
+	int32_t xlen[256]{};
+	uint16_t xyoffset[256][256]{};
+};
 
 static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel::Voxel &) {
 	return 255u; // TODO
 }
-
-struct voxtype {
-	uint8_t z_low_h = 0; ///< z coordinate of this surface voxel (height - our y)
-	uint8_t z_high = 0;	 ///< always 0
-	uint8_t col = 0;	 ///< palette index
-	KV6Visibility vis = KV6Visibility::None;	 ///< Low 6 bits say if neighbor is solid or air - @sa priv::KV6Visibility
-	uint8_t dir = 0;	 ///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
-};
-
-constexpr uint32_t MAXVOXS = 1048576;
-
-struct State {
-	priv::voxtype voxdata[MAXVOXS];
-	int32_t xlen[256]{};
-	uint16_t xyoffset[256][256]{};
-};
 
 } // namespace priv
 
@@ -147,7 +115,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	// Dimensions of voxel. (our depth is kvx height)
+	// Dimensions of voxel. (our depth is kv6 height)
 	uint32_t xsiz_w, ysiz_d, zsiz_h;
 	wrap(stream.readUInt32(xsiz_w))
 	wrap(stream.readUInt32(ysiz_d))
@@ -241,7 +209,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype &vox = state->voxdata[idx];
+				const priv::Voxtype &vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
 				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z_low_h), (int)y, col);
 			}
@@ -254,12 +222,12 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			voxel::Voxel lastCol;
 			uint32_t lastZ = 256;
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::voxtype &vox = state->voxdata[idx];
-				if ((vox.vis & priv::KV6Visibility::Up) != priv::KV6Visibility::None) {
+				const priv::Voxtype &vox = state->voxdata[idx];
+				if ((vox.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::None) {
 					lastZ = vox.z_low_h;
 					lastCol = voxel::createVoxel(palette, vox.col);
 				}
-				if ((vox.vis & priv::KV6Visibility::Down) != priv::KV6Visibility::None) {
+				if ((vox.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::None) {
 					for (; lastZ < vox.z_low_h; ++lastZ) {
 						volume->setVoxel((int)x, (int)((zsiz_h - 1) - lastZ), (int)y, lastCol);
 					}
@@ -304,11 +272,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	int32_t xlen[256]{};
 	uint16_t xyoffset[256][256]{}; // our z
 
-	core::DynamicArray<priv::voxtype> voxdata;
+	core::DynamicArray<priv::Voxtype> voxdata;
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
 		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			priv::voxtype vd;
+			priv::Voxtype vd;
 			const int x_low_w = x - region.getLowerX();
 			// flip y and z here
 			const int y_low_d = z - region.getLowerZ();
@@ -346,7 +314,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	wrapBool(stream.writeUInt32(numvoxs))
 
-	for (const priv::voxtype &data : voxdata) {
+	for (const priv::Voxtype &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))

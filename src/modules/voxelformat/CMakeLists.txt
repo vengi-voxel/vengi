@@ -49,6 +49,7 @@ set(SRCS
 	private/slab6/KVXFormat.h                private/slab6/KVXFormat.cpp
 	private/slab6/KV6Format.h                private/slab6/KV6Format.cpp
 	private/slab6/SLAB6VoxFormat.h           private/slab6/SLAB6VoxFormat.cpp
+	private/slab6/SLABShared.h
 	private/sproxel/SproxelFormat.h          private/sproxel/SproxelFormat.cpp
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
