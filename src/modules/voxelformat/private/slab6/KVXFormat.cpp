@@ -191,7 +191,10 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
-		palette.color(i) = core::RGBA(r, g, b);
+		const float rf = ((float)r / 63.0f * 255.0f);
+		const float gf = ((float)g / 63.0f * 255.0f);
+		const float bf = ((float)b / 63.0f * 255.0f);
+		palette.color(i) = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
 	}
 	stream.seek(currentPos);
 
@@ -332,9 +335,9 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	// palette is last
 	for (int i = 0; i < node->palette().colorCount(); ++i) {
 		const core::RGBA color = node->palette().color(i);
-		wrapBool(stream.writeUInt8(color.b))
-		wrapBool(stream.writeUInt8(color.g))
-		wrapBool(stream.writeUInt8(color.r))
+		wrapBool(stream.writeUInt8((uint8_t)(float)(color.b * 255.0f / 63.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)(float)(color.g * 255.0f / 63.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)(float)(color.r * 255.0f / 63.0f)))
 	}
 	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))

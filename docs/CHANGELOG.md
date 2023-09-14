@@ -28,6 +28,7 @@ General:
    - Fixed regression with GLTF exports
    - Added a new lua script to slice a node into smaller pieces
    - Expose shape generators to lua
+   - Fixed color intensity handling for `kvx` files
 
 VoxEdit:
 
