@@ -129,10 +129,10 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 * Centroid of voxel. For extra precision, this location has been shifted up by 8 bits.
 	 */
 	scenegraph::SceneGraphTransform transform;
-	uint32_t pivx_w, pivy_d, pivz_h;
-	wrap(stream.readUInt32(pivx_w))
-	wrap(stream.readUInt32(pivy_d))
-	wrap(stream.readUInt32(pivz_h))
+	int32_t pivx_w, pivy_d, pivz_h;
+	wrap(stream.readInt32(pivx_w))
+	wrap(stream.readInt32(pivy_d))
+	wrap(stream.readInt32(pivz_h))
 
 	pivx_w >>= 8;
 	pivy_d >>= 8;
@@ -305,10 +305,10 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(ysiz_d))
 	wrapBool(stream.writeUInt32(zsiz_h))
 
-	glm::vec3 pivot(0.0f); // normalized pivot
-	wrapBool(stream.writeFloat(-pivot.x))
-	wrapBool(stream.writeFloat(pivot.z))
-	wrapBool(stream.writeFloat(-pivot.y))
+	glm::ivec3 pivot(0); // normalized pivot
+	wrapBool(stream.writeInt32(-pivot.x))
+	wrapBool(stream.writeInt32(pivot.z))
+	wrapBool(stream.writeInt32(-pivot.y))
 
 	for (int x = 0u; x <= xsiz_w; ++x) {
 		wrapBool(stream.writeInt32(xlen[x]))
@@ -348,6 +348,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t numBytes = stream.pos() - sizeof(uint32_t);
 	stream.seek(0);
 	wrapBool(stream.writeUInt32(numBytes))
+	stream.seek(0, SEEK_END);
 
 	return true;
 #else
