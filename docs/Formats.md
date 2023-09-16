@@ -34,6 +34,7 @@
 | Sproxel                    | csv       | X       | X      | X          | X       |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
 | StarMade                   | sment     | X       |        | X          | X       |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
 | Vengi                      | vengi     | X       | X      | X          | X       | X          |                                                                          |
+| Voxel3d                    | v3a       | X       | X      |            |         |            |                                                                          |
 | VoxelBuilder               | vbx       | X       |        | X          | X       | X          |                                                                          |
 | VoxelMax                   | vmax      | X       |        | X          | X       |            |                                                                          |
 

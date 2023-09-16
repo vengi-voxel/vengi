@@ -51,6 +51,7 @@
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/private/starmade/SMFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
+#include "voxelformat/private/voxel3d/V3AFormat.h"
 #include "voxelformat/private/voxelbuilder/VBXFormat.h"
 #include "voxelformat/private/voxelmax/VMaxFormat.h"
 
@@ -156,6 +157,7 @@ const io::FormatDescription *voxelLoad() {
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Voxel3D", {"v3a"}, nullptr, 0u},
 		{"AceOfSpades",
 		 {"kv6"},
 		 [](uint32_t magic) { return magic == FourCC('K', 'v', 'x', 'l'); },
@@ -183,6 +185,7 @@ const io::FormatDescription *voxelSave() {
 												 {"AceOfSpades", {"kv6"}, nullptr, 0u},
 												 {"Build engine", {"kvx"}, nullptr, 0u},
 												 {"SLAB6 vox", {"vox"}, nullptr, 0u},
+												 {"Voxel3D", {"v3a"}, nullptr, 0u},
 												 {"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
 												 {"Qubicle Project", {"qbcl"}, nullptr, 0u},
 												 {"Sandbox VoxEdit Model", {"vxm"}, nullptr, 0u},
@@ -327,6 +330,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<VBXFormat>();
 		} else if (ext == "xraw") {
 			format = core::make_shared<XRawFormat>();
+		} else if (ext == "v3a") {
+			format = core::make_shared<V3AFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
 			format = core::make_shared<GLTFFormat>();
 		} else {

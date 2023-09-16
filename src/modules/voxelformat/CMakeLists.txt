@@ -53,6 +53,7 @@ set(SRCS
 	private/sproxel/SproxelFormat.h          private/sproxel/SproxelFormat.cpp
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
+	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp
 	private/voxelmax/BinaryPList.h           private/voxelmax/BinaryPList.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
@@ -87,6 +88,7 @@ set(TEST_SRCS
 	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
