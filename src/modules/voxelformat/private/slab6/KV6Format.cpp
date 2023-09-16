@@ -28,7 +28,7 @@ namespace priv {
 
 constexpr uint32_t MAXVOXS = 1048576;
 
-struct Voxtype {
+struct VoxtypeKV6 {
 	uint8_t z_low_h = 0; ///< z coordinate of this surface voxel (height - our y)
 	uint8_t z_high = 0;	 ///< always 0
 	uint8_t col = 0;	 ///< palette index
@@ -37,7 +37,7 @@ struct Voxtype {
 };
 
 struct State {
-	Voxtype voxdata[MAXVOXS];
+	VoxtypeKV6 voxdata[MAXVOXS];
 	int32_t xlen[256]{};
 	uint16_t xyoffset[256][256]{};
 };
@@ -209,7 +209,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::Voxtype &vox = state->voxdata[idx];
+				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
 				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z_low_h), (int)y, col);
 			}
@@ -222,7 +222,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			voxel::Voxel lastCol;
 			uint32_t lastZ = 256;
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
-				const priv::Voxtype &vox = state->voxdata[idx];
+				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
 				if ((vox.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::None) {
 					lastZ = vox.z_low_h;
 					lastCol = voxel::createVoxel(palette, vox.col);
@@ -272,11 +272,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	int32_t xlen[256]{};
 	uint16_t xyoffset[256][256]{}; // our z
 
-	core::DynamicArray<priv::Voxtype> voxdata;
+	core::DynamicArray<priv::VoxtypeKV6> voxdata;
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
 		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			priv::Voxtype vd;
+			priv::VoxtypeKV6 vd;
 			const int x_low_w = x - region.getLowerX();
 			// flip y and z here
 			const int y_low_d = z - region.getLowerZ();
@@ -314,7 +314,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	wrapBool(stream.writeUInt32(numvoxs))
 
-	for (const priv::Voxtype &data : voxdata) {
+	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
