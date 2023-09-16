@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Enum.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
