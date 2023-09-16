@@ -96,8 +96,6 @@ int64_t BufferedReadWriteStream::seek(int64_t position, int whence) {
 	}
 	if (newPos < 0) {
 		newPos = 0;
-	} else if (newPos > s) {
-		newPos = s;
 	}
 	_pos = newPos;
 	return 0;
