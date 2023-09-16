@@ -138,6 +138,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	}
 
 	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
+		Log::debug("Merge volumes before saving as the target format only supports one volume");
 		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
 		scenegraph::SceneGraph mergedSceneGraph(2);
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
@@ -148,6 +149,7 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	}
 
 	if (needsSplit) {
+		Log::debug("Split volumes before saving as the target format only supports smaller volume sizes");
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::splitVolumes(sceneGraph, newSceneGraph, false, false, maxsize);
 		return saveGroups(newSceneGraph, filename, stream, ctx);
