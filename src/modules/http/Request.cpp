@@ -4,10 +4,12 @@
 
 #include "Request.h"
 #include "app/App.h"
+#include "core/ArrayLength.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "engine-config.h"
+
 #if __WINDOWS__
 #define WIN32_LEAN_AND_MEAN (1)
 #include <windows.h>
@@ -21,16 +23,23 @@ namespace http {
 #ifdef __WINDOWS__
 static void printLastError(const char *ctx) {
 	DWORD errnum = ::GetLastError();
-	LPTSTR errmsg = nullptr;
-	::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-					nullptr, errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errmsg, 0, nullptr);
-	if (errmsg == nullptr) {
+	char buffer[512] = "";
+	if (::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
+						 GetModuleHandleA("winhttp.dll"), errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buffer,
+						 sizeof(buffer), NULL) == 0) {
 		Log::error("%s: %d - Unknown error", ctx, errnum);
 	} else {
-		Log::error("%s: %d - %s", ctx, errnum, errmsg);
-		::LocalFree(errmsg);
+		Log::error("%s: %d - %s", ctx, errnum, buffer);
 	}
 }
+
+static std::wstring s2ws(const std::string &str) {
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), NULL, 0);
+	std::wstring wstrTo(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)str.size(), &wstrTo[0], size_needed);
+	return wstrTo;
+}
+
 #elif USE_CURL
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 	return ((io::WriteStream *)userp)->write(contents, size * nmemb);
@@ -69,56 +78,73 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 		return false;
 	}
 
-	std::wstring urlw(url.begin(), url.end());
-	// Open a connection to the remote server
-	HINTERNET hConnect = WinHttpOpenRequest(hSession, L"GET", urlw.c_str(), nullptr, WINHTTP_NO_REFERER,
-											WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
-	if (hConnect == nullptr) {
-		printLastError("Failed to connect to url");
+	std::wstring urlw = s2ws(url.c_str());
+	URL_COMPONENTS url_components = {};
+	wchar_t scheme[32];
+	wchar_t hostname[128];
+	wchar_t url_path[4096];
+
+	/* Convert the URL to its components. */
+	url_components.dwStructSize = sizeof(url_components);
+	url_components.lpszScheme = scheme;
+	url_components.dwSchemeLength = lengthof(scheme);
+	url_components.lpszHostName = hostname;
+	url_components.dwHostNameLength = lengthof(hostname);
+	url_components.lpszUrlPath = url_path;
+	url_components.dwUrlPathLength = lengthof(url_path);
+	url_components.nPort = INTERNET_DEFAULT_HTTP_PORT;
+	WinHttpCrackUrl(urlw.c_str(), 0, 0, &url_components);
+
+	/* Create the HTTP connection. */
+	HINTERNET hConnection = WinHttpConnect(hSession, url_components.lpszHostName, url_components.nPort, 0);
+	if (hConnection == nullptr) {
+		printLastError("Failed to connect");
 		WinHttpCloseHandle(hSession);
+		return false;
+	}
+
+	HINTERNET hRequest = WinHttpOpenRequest(hConnection, L"GET", url_components.lpszUrlPath, nullptr,
+											WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES,
+											url_components.nScheme == INTERNET_SCHEME_HTTPS ? WINHTTP_FLAG_SECURE : 0);
+	if (hRequest == nullptr) {
+		printLastError("Failed to create request");
+		WinHttpCloseHandle(hSession);
+		WinHttpCloseHandle(hConnection);
 		return false;
 	}
 
 	// add request headers
-	const wchar_t *reqHeaders = L"User-Agent: Mozilla/5.0\r\n"
-								L"Connection: keep-alive\r\n"
-								L"Accept-Encoding: gzip, deflate";
-	if (!WinHttpAddRequestHeaders(hConnect, reqHeaders, -1L, WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
+	const wchar_t *reqHeaders = L"User-Agent: Mozilla/5.0\r\n";
+	if (!WinHttpAddRequestHeaders(hRequest, reqHeaders, -1L, WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
 		Log::warn("Failed to add request headers to url: %s", url.c_str());
 	}
 
 	// Send the request
-	if (!WinHttpSendRequest(hConnect, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
-		printLastError("Failed to send request");
-		WinHttpCloseHandle(hConnect);
-		WinHttpCloseHandle(hSession);
-		return false;
-	}
-
-	if (!WinHttpReceiveResponse(hConnect, nullptr)) {
-		printLastError("Failed to receive response");
-		WinHttpCloseHandle(hConnect);
-		WinHttpCloseHandle(hSession);
-		return false;
-	}
+	WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
+	WinHttpReceiveResponse(hRequest, nullptr);
+	WinHttpQueryDataAvailable(hRequest, nullptr);
 
 	DWORD dwStatusCode = 0;
 	DWORD dwSize = sizeof(dwStatusCode);
-	WinHttpQueryHeaders(hConnect, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, nullptr, &dwStatusCode,
-						&dwSize, nullptr);
-	if (dwStatusCode != 200) {
+	WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX,
+						&dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX);
+	if (dwStatusCode != HTTP_STATUS_OK) {
 		Log::warn("Failed to download url: %s with status code: %d", url.c_str(), dwStatusCode);
 	}
 
 	// Read and save the response data
 	DWORD bytesRead;
 	BYTE buffer[4096];
-	while (WinHttpReadData(hConnect, buffer, sizeof(buffer), &bytesRead)) {
+	while (WinHttpReadData(hRequest, buffer, sizeof(buffer), &bytesRead)) {
 		// Write the 'bytesRead' bytes from the buffer
+		if (bytesRead == 0) {
+			break;
+		}
 		stream.write(buffer, bytesRead);
 	}
-	WinHttpCloseHandle(hConnect);
+	WinHttpCloseHandle(hRequest);
 	WinHttpCloseHandle(hSession);
+	WinHttpCloseHandle(hConnection);
 	return true;
 #elif USE_CURL
 	CURL *curl = curl_easy_init();
