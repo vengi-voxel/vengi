@@ -9,7 +9,7 @@
 namespace voxelformat {
 
 /**
- * @brief EveryGraph Voxel3D format
+ * @brief EveryGraph Voxel3D format (v3b is compressed - see http://advsys.net/ken/util/v3b2vox.zip)
  *
  * @ingroup Formats
  */
