@@ -4,16 +4,18 @@ set(SRCS
 
 set(LIB http)
 set(LIBS core io)
-find_package(CURL)
+if (UNIX)
+	find_package(CURL)
 
-if(CURL_FOUND)
-	list(APPEND LIBS CURL::libcurl)
-	message(STATUS "Found libcurl")
-else()
-	message(WARNING "No libcurl found")
+	if(CURL_FOUND)
+		list(APPEND LIBS CURL::libcurl)
+		message(STATUS "Found libcurl")
+	else()
+		message(WARNING "No libcurl found")
+	endif()
+
+	set(USE_CURL ${CURL_FOUND} CACHE BOOL "Use curl for https requests" FORCE)
 endif()
-
-set(USE_CURL ${CURL_FOUND} CACHE BOOL "Use curl for https requests" FORCE)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 

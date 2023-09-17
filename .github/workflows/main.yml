@@ -25,7 +25,7 @@ jobs:
         - uses: actions/checkout@v3
 
         - name: Setup
-          run: brew install sdl2 python glslang ninja ccache pkg-config
+          run: brew install sdl2 python curl glslang ninja ccache pkg-config
 
         - name: ccache
           uses: actions/cache@v3
@@ -192,21 +192,11 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
-        - name: Install vcpkg
-          uses: lukka/run-vcpkg@v11
-          id: runvcpkg
-          with:
-            vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
-
-        - name: Integrate vcpkg
-          run: |
-            ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
-
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Release -DUSE_SANITIZERS=OFF
+            cmake .. -DCMAKE_BUILD_TYPE=Release
             cmake --build .
 
         - name: Test
@@ -253,21 +243,11 @@ jobs:
         steps:
         - uses: actions/checkout@v3
 
-        - name: Install vcpkg
-          uses: lukka/run-vcpkg@v11
-          id: runvcpkg
-          with:
-            vcpkgGitCommitId: 56954f1db97f38635782d5ad7cdfd45d2731c854
-
-        - name: Integrate vcpkg
-          run: |
-            ${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/vcpkg integrate install
-
         - name: Build
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE=${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
+            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Install
@@ -310,7 +290,6 @@ jobs:
               freetype:p
               ninja:p
               SDL2:p
-              curl-winssl:p
 
         - name: Build
           run: |
