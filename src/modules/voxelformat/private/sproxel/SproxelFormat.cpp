@@ -27,6 +27,38 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
+static bool skipNewline(io::SeekableReadStream &stream) {
+	uint8_t chr;
+	if (stream.readUInt8(chr) == -1) {
+		Log::error("Failed to read newline character from stream");
+		return false;
+	}
+	if (chr == '\r') {
+		if (stream.peekUInt8(chr) != -1) {
+			if (chr == '\n') {
+				if (stream.skip(1) == -1) {
+					Log::error("Failed to skip newline character from stream");
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+static bool skipComma(io::SeekableReadStream &stream) {
+	uint8_t chr;
+	if (stream.readUInt8(chr) == -1) {
+		Log::error("Failed to read comma character from stream");
+		return false;
+	}
+	if (chr != ',') {
+		Log::error("Got unexpected character, expected , - got %c", chr);
+		return false;
+	}
+	return true;
+}
+
 size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 								  const LoadContext &ctx) {
 	char buf[512];
@@ -66,46 +98,21 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 					palette.addColorToPalette(color, false);
 				}
 				if (x != size.x - 1) {
-					stream.skip(1);
+					if (!skipComma(stream)) {
+						Log::error("Failed to skip 1 byte");
+						return false;
+					}
 				}
 			}
-			stream.skip(1);
+			if (!skipNewline(stream)) {
+				return false;
+			}
 		}
-		stream.skip(1);
+		if (!skipNewline(stream)) {
+			return false;
+		}
 	}
 	return palette.colorCount();
-}
-
-static bool skipNewline(io::SeekableReadStream &stream) {
-	uint8_t chr;
-	if (stream.readUInt8(chr) == -1) {
-		Log::error("Failed to read newline character from stream");
-		return false;
-	}
-	if (chr == '\r') {
-		if (stream.peekUInt8(chr) != -1) {
-			if (chr == '\n') {
-				if (stream.skip(1) == -1) {
-					Log::error("Failed to skip newline character from stream");
-					return false;
-				}
-			}
-		}
-	}
-	return true;
-}
-
-static bool skipComma(io::SeekableReadStream &stream) {
-	uint8_t chr;
-	if (stream.readUInt8(chr) == -1) {
-		Log::error("Failed to read comma character from stream");
-		return false;
-	}
-	if (chr != ',') {
-		Log::error("Got unexpected character, expected , - got %c", chr);
-		return false;
-	}
-	return true;
 }
 
 bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
