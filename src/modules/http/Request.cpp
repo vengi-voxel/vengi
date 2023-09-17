@@ -93,7 +93,11 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 	url_components.lpszUrlPath = url_path;
 	url_components.dwUrlPathLength = lengthof(url_path);
 	url_components.nPort = INTERNET_DEFAULT_HTTP_PORT;
-	WinHttpCrackUrl(urlw.c_str(), 0, 0, &url_components);
+	if (!WinHttpCrackUrl(urlw.c_str(), 0, 0, &url_components)) {
+		printLastError("Failed to parse url");
+		WinHttpCloseHandle(hSession);
+		return false;
+	}
 
 	/* Create the HTTP connection. */
 	HINTERNET hConnection = WinHttpConnect(hSession, url_components.lpszHostName, url_components.nPort, 0);
