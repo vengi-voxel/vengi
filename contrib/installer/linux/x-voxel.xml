@@ -118,6 +118,10 @@
     <comment>Voxel model used by the Build engine</comment>
     <glob pattern="*.kvx"/>
   </mime-type>
+  <mime-type type="application/x-voxel3d">
+    <comment>Voxel model used by Voxel3D</comment>
+    <glob pattern="*.v3a"/>
+  </mime-type>
   <mime-type type="application/x-slab6">
     <comment>Voxel model used by the SLAB6 editor</comment>
     <magic priority="50">
