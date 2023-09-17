@@ -18,7 +18,20 @@
 
 namespace http {
 
-#if USE_CURL
+#ifdef __WINDOWS__
+static void printLastError(const char *ctx) {
+	DWORD errnum = ::GetLastError();
+	LPTSTR errmsg = nullptr;
+	::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					nullptr, errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errmsg, 0, nullptr);
+	if (errmsg == nullptr) {
+		Log::error("%s: %d - Unknown error", ctx, errnum);
+	} else {
+		Log::error("%s: %d - %s", ctx, errnum, errmsg);
+		::LocalFree(errmsg);
+	}
+}
+#elif USE_CURL
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 	return ((io::WriteStream *)userp)->write(contents, size * nmemb);
 }
@@ -40,7 +53,7 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 	HINTERNET hSession =
 		WinHttpOpen(nullptr, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
 	if (hSession == nullptr) {
-		Log::error("Failed to create session for http download");
+		printLastError("Failed to create session for http download");
 		return false;
 	}
 
@@ -51,7 +64,7 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 	DWORD dwSendTimeout = httpTimeoutMillis;
 	DWORD dwReceiveTimeout = httpTimeoutMillis;
 	if (!WinHttpSetTimeouts(hSession, dwResolveTimeout, dwConnectTimeout, dwSendTimeout, dwReceiveTimeout)) {
-		Log::error("Failed to set http timeouts");
+		printLastError("Failed to set http timeouts");
 		WinHttpCloseHandle(hSession);
 		return false;
 	}
@@ -61,7 +74,7 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 	HINTERNET hConnect = WinHttpOpenRequest(hSession, L"GET", urlw.c_str(), nullptr, WINHTTP_NO_REFERER,
 											WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
 	if (hConnect == nullptr) {
-		Log::error("Failed to connect to url: %s", url.c_str());
+		printLastError("Failed to connect to url");
 		WinHttpCloseHandle(hSession);
 		return false;
 	}
@@ -76,14 +89,14 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 
 	// Send the request
 	if (!WinHttpSendRequest(hConnect, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
-		Log::error("Failed to send request to url: %s", url.c_str());
+		printLastError("Failed to send request");
 		WinHttpCloseHandle(hConnect);
 		WinHttpCloseHandle(hSession);
 		return false;
 	}
 
 	if (!WinHttpReceiveResponse(hConnect, nullptr)) {
-		Log::error("Failed to receive response from url: %s", url.c_str());
+		printLastError("Failed to receive response");
 		WinHttpCloseHandle(hConnect);
 		WinHttpCloseHandle(hSession);
 		return false;
