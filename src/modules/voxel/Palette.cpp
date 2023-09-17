@@ -454,6 +454,18 @@ bool Palette::load(const image::ImagePtr &img) {
 	return true;
 }
 
+bool Palette::downloadLospec(const core::String &lospecId, const core::String &gimpPalette) const {
+	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
+	http::Request request;
+	io::FilePtr file = io::filesystem()->open(gimpPalette, io::FileMode::Write);
+	io::FileStream stream(file);
+	if (!request.request(url, stream)) {
+		Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
+		return false;
+	}
+	return true;
+}
+
 bool Palette::load(const char *paletteName) {
 	if (paletteName == nullptr || paletteName[0] == '\0') {
 		return false;
@@ -462,15 +474,11 @@ bool Palette::load(const char *paletteName) {
 	if (SDL_strncmp(paletteName, "lospec:", 7) == 0) {
 		const core::String lospecId = paletteName + 7;
 		const core::String gimpPalette = lospecId + ".gpl";
-		const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
-		http::Request request;
-		io::FilePtr file = io::filesystem()->open(gimpPalette, io::FileMode::Write);
-		io::FileStream stream(file);
-		if (request.request(url, stream)) {
-			return loadGimpPalette(gimpPalette.c_str());
+		if (!downloadLospec(lospecId, gimpPalette)) {
+			return false;
 		}
-		Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
-		return false;
+
+		return loadGimpPalette(gimpPalette.c_str());
 	}
 
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {

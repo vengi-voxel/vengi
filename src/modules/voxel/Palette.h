@@ -35,6 +35,8 @@ private:
 	PaletteColorArray _glowColors {};
 	int _colorCount = 0;
 	PaletteIndicesArray _indices;
+
+	bool downloadLospec(const core::String &lospecId, const core::String &gimpPalette) const;
 public:
 	Palette();
 
