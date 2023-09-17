@@ -56,8 +56,9 @@ bool Request::request(const core::String &url, io::WriteStream &stream) {
 		return false;
 	}
 
+	std::wstring urlw(url.begin(), url.end());
 	// Open a connection to the remote server
-	HINTERNET hConnect = WinHttpOpenRequest(hSession, L"GET", L"/path/to/resource", nullptr, WINHTTP_NO_REFERER,
+	HINTERNET hConnect = WinHttpOpenRequest(hSession, L"GET", urlw.c_str(), nullptr, WINHTTP_NO_REFERER,
 											WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
 	if (hConnect == nullptr) {
 		Log::error("Failed to connect to url: %s", url.c_str());
