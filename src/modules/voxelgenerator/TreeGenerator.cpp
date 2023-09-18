@@ -14,7 +14,7 @@ Tree::Tree(const glm::ivec3& position, int trunkHeight, int branchLength,
 			_trunkHeight(trunkHeight), _trunkSizeFactor(trunkSizeFactor) {
 	_root->_position.y -= (float)trunkHeight;
 	_position.y -= (float)trunkHeight;
-	generateBranches(_branches, glm::up, (float)_trunkHeight, (float)_branchLength);
+	generateBranches(_branches, glm::up(), (float)_trunkHeight, (float)_branchLength);
 }
 
 // TODO: use the PoolAllocator here

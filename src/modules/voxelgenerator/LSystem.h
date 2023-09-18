@@ -27,7 +27,7 @@ namespace lsystem {
 
 struct TurtleStep {
 	glm::vec3 pos { 0.0f };
-	glm::vec3 rotation = glm::up;
+	glm::vec3 rotation = glm::up();
 	float width;
 	voxel::Voxel voxel;
 };

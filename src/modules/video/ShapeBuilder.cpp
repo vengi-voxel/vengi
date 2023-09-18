@@ -284,7 +284,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	const glm::vec3& planeNormal = plane.norm();
 	const float planeScale = plane.dist();
 
-	const glm::vec3& right = glm::cross(planeNormal, glm::up);
+	const glm::vec3& right = glm::cross(planeNormal, glm::up());
 	const glm::vec3& up = glm::cross(right, planeNormal);
 	const glm::mat4 rot(
 		right.x, up.x, -planeNormal.x, 0.0f,
@@ -575,13 +575,13 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
 	setColor(core::Color::Red);
-	line(glm::zero<glm::vec3>(), glm::right * scale);
+	line(glm::zero<glm::vec3>(), glm::right() * scale);
 
 	setColor(core::Color::Green);
-	line(glm::zero<glm::vec3>(), glm::up * scale);
+	line(glm::zero<glm::vec3>(), glm::up() * scale);
 
 	setColor(core::Color::Blue);
-	line(glm::zero<glm::vec3>(), glm::forward * scale);
+	line(glm::zero<glm::vec3>(), glm::forward() * scale);
 }
 
 void ShapeBuilder::plane(uint32_t tesselation) {

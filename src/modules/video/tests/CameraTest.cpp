@@ -17,7 +17,7 @@ public:
 	virtual ~CameraTest() {}
 protected:
 	// looking straight down is the default
-	Camera setup(const glm::vec2& dimension = glm::vec2(1024, 768), const glm::vec3& position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3& lookAt = glm::vec3(0.0), const glm::vec3& lookAlong = glm::forward) {
+	Camera setup(const glm::vec2& dimension = glm::vec2(1024, 768), const glm::vec3& position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3& lookAt = glm::vec3(0.0), const glm::vec3& lookAlong = glm::forward()) {
 		Camera camera;
 		camera.setNearPlane(0.1f);
 		camera.setFarPlane(100.0f);
@@ -64,7 +64,7 @@ TEST_F(CameraTest, testMotion) {
 }
 
 TEST_F(CameraTest, testParallelLookAt) {
-	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 10.0, 0.0), glm::vec3(0.0), glm::up);
+	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 10.0, 0.0), glm::vec3(0.0), glm::up());
 	camera.update(0.0);
 	const glm::vec4 invecs[6] = {
 		// left bottom, right bottom, right top
@@ -103,7 +103,7 @@ TEST_F(CameraTest, DISABLED_testCameraFrustumCullingOrthogonal) {
 	camera.setSize(glm::vec2(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
 	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
-	camera.lookAt(glm::vec3(0.0), glm::forward);
+	camera.lookAt(glm::vec3(0.0), glm::forward());
 	camera.update(0.0);
 	const math::Frustum& frustum = camera.frustum();
 	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));

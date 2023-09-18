@@ -45,14 +45,14 @@ void Movement::update(double nowSeconds) {
 glm::vec3 Movement::calculateDelta(const glm::quat& rot, double speed) {
 	glm::vec3 delta(0.0f);
 	if (left()) {
-		delta += rot * (glm::left * (float)speed);
+		delta += rot * (glm::left() * (float)speed);
 	} else if (right()) {
-		delta += rot * (glm::right * (float)speed);
+		delta += rot * (glm::right() * (float)speed);
 	}
 	if (forward()) {
-		delta += rot * (glm::forward * (float)speed);
+		delta += rot * (glm::forward() * (float)speed);
 	} else if (backward()) {
-		delta += rot * (glm::backward * (float)speed);
+		delta += rot * (glm::backward() * (float)speed);
 	}
 	return delta;
 }
@@ -62,7 +62,7 @@ glm::vec3 Movement::moveDelta(double speed, float orientation) {
 		return glm::zero<glm::vec3>();
 	}
 
-	const glm::quat& rot = glm::angleAxis(orientation, glm::up);
+	const glm::quat& rot = glm::angleAxis(orientation, glm::up());
 	speed *= _deltaSeconds;
 	const glm::vec3& delta = calculateDelta(rot, speed);
 	_deltaSeconds = 0.0;

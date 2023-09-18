@@ -32,7 +32,7 @@ SpaceColonization::SpaceColonization(const glm::ivec3& position, int branchLengt
 		_attractionPointDepth(attractionPointDepth), _attractionPointHeight(attractionPointHeight),
 		_minDistance2(minDistance * minDistance), _maxDistance2(maxDistance * maxDistance),
 		_branchLength(branchLength), _branchSize(branchSize), _random(seed) {
-	_root = new Branch(nullptr, _position, glm::up, _branchSize);
+	_root = new Branch(nullptr, _position, glm::up(), _branchSize);
 	_branches.put(_root->_position, _root);
 
 	fillAttractionPoints();

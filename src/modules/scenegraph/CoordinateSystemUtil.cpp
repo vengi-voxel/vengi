@@ -14,9 +14,9 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 	glm::vec3 forward;
 	switch (sys) {
 	case CoordinateSystem::Vengi:
-		right = glm::right;
-		up = glm::up;
-		forward = glm::forward;
+		right = glm::right();
+		up = glm::up();
+		forward = glm::forward();
 		break;
 	case CoordinateSystem::MagicaVoxel:
 	case CoordinateSystem::VXL:

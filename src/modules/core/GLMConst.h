@@ -15,13 +15,29 @@
 
 namespace glm {
 
-// clang-format off
-const vec3 forward  = vec3( 0.0f,  0.0f, -1.0f);
-const vec3 backward = vec3( 0.0f,  0.0f,  1.0f);
-const vec3 right    = vec3( 1.0f,  0.0f,  0.0f);
-const vec3 left     = vec3(-1.0f,  0.0f,  0.0f);
-const vec3 up       = vec3( 0.0f,  1.0f,  0.0f);
-const vec3 down     = vec3( 0.0f, -1.0f,  0.0f);
-// clang-format on
+inline const vec3 &forward() {
+	static const vec3 v(0.0f, 0.0f, -1.0f);
+	return v;
+}
+inline const vec3 &backward() {
+	static const vec3 v(0.0f, 0.0f, 1.0f);
+	return v;
+}
+inline const vec3 &right() {
+	static const vec3 v(1.0f, 0.0f, 0.0f);
+	return v;
+}
+inline const vec3 &left() {
+	static const vec3 v(-1.0f, 0.0f, 0.0f);
+	return v;
+}
+inline const vec3 &up() {
+	static const vec3 v(0.0f, 1.0f, 0.0f);
+	return v;
+}
+inline const vec3 &down() {
+	static const vec3 v(0.0f, -1.0f, 0.0f);
+	return v;
+}
 
 } // namespace glm

@@ -153,7 +153,7 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 		const glm::vec3 angles(c.angle[0], c.angle[2], c.angle[1]);
 		const glm::quat quat(glm::radians(angles));
 		const float distance = (float)c.radius;
-		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward;
+		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward();
 		const glm::vec3 &backward = -forward;
 		const glm::vec3 &newPosition = target + backward * distance;
 		const glm::mat4 &orientation = glm::mat4_cast(quat);

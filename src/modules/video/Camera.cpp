@@ -39,22 +39,22 @@ float Camera::yaw() const {
 }
 
 void Camera::setYaw(float radians) {
-	rotate(radians, glm::up);
+	rotate(radians, glm::up());
 }
 
 void Camera::setRoll(float radians) {
-	rotate(radians, glm::backward);
+	rotate(radians, glm::backward());
 }
 
 bool Camera::lookAt(const glm::vec3& position) {
-	return lookAt(position, glm::up);
+	return lookAt(position, glm::up());
 }
 
 void Camera::turn(float radians) {
 	if (fabs((double)radians) < 0.00001) {
 		return;
 	}
-	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up);
+	const glm::quat& quat = glm::angleAxis(radians, _quat * glm::up());
 	rotate(quat);
 }
 
@@ -83,15 +83,15 @@ void Camera::pan(int x, int y) {
 }
 
 glm::vec3 Camera::forward() const {
-	return glm::conjugate(_quat) * glm::forward;
+	return glm::conjugate(_quat) * glm::forward();
 }
 
 glm::vec3 Camera::right() const {
-	return glm::conjugate(_quat) * glm::right;
+	return glm::conjugate(_quat) * glm::right();
 }
 
 glm::vec3 Camera::up() const {
-	return glm::conjugate(_quat) * glm::up;
+	return glm::conjugate(_quat) * glm::up();
 }
 
 void Camera::setWorldPosition(const glm::vec3& worldPos) {
@@ -180,7 +180,7 @@ void Camera::move(const glm::vec3& delta) {
 	_worldPos += right() * delta.x;
 	_worldPos += up() * delta.y;
 	if (_rotationType == CameraRotationType::Target) {
-		lookAt(_target, glm::up);
+		lookAt(_target, glm::up());
 		_dirty |= DIRTY_TARGET;
 	}
 }
@@ -206,7 +206,7 @@ void Camera::rotate(const glm::vec3& radians) {
 float Camera::horizontalYaw() const {
 	const glm::vec3& dir = direction();
 	const glm::vec3 yawDirection(dir.x, 0.0f, dir.z);
-	const float dotResult = glm::dot(glm::normalize(yawDirection), glm::backward);
+	const float dotResult = glm::dot(glm::normalize(yawDirection), glm::backward());
 	const float yaw = glm::acos(dotResult);
 	if (yawDirection.x < 0.0f) {
 		return yaw * -1.0f;
@@ -216,7 +216,7 @@ float Camera::horizontalYaw() const {
 
 void Camera::setPitch(float radians) {
 	if (_type == CameraType::FirstPerson) {
-		const float dotResult = glm::dot(direction(), glm::down);
+		const float dotResult = glm::dot(direction(), glm::down());
 		float curPitch = glm::acos(dotResult) - glm::half_pi<float>();
 		const float maxPitch = glm::half_pi<float>() - 0.1f;
 		if (curPitch > maxPitch) {
@@ -227,7 +227,7 @@ void Camera::setPitch(float radians) {
 		}
 	}
 	if (radians != 0) {
-		rotate(radians, glm::right);
+		rotate(radians, glm::right());
 	}
 }
 
@@ -250,20 +250,20 @@ bool Camera::lookAt(const glm::vec3& position, const glm::vec3& upDirection) {
 
 	glm::vec3 targetDir = glm::normalize(position - _worldPos);
 	if (glm::length2(targetDir) == 0) {
-		targetDir = glm::forward;
+		targetDir = glm::forward();
 	}
 
 	glm::vec3 upDir;
 	if (glm::epsilonEqual(glm::length2(upDirection), 0.0f, glm::epsilon<float>())) {
-		upDir = glm::up;
+		upDir = glm::up();
 	} else {
 		upDir = upDirection;
 	}
 
 	if (glm::epsilonEqual(glm::length2(glm::cross(upDir, targetDir)), 0.0f, glm::epsilon<float>())) {
-		upDir = glm::cross(targetDir, glm::right);
+		upDir = glm::cross(targetDir, glm::right());
 		if (glm::epsilonEqual(glm::length2(upDir), 0.0f, glm::epsilon<float>())) {
-			upDir = glm::cross(targetDir, glm::backward);
+			upDir = glm::cross(targetDir, glm::backward());
 		}
 	}
 

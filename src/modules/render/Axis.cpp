@@ -70,17 +70,17 @@ bool Axis::init() {
 	}
 
 	_shapeBuilder.setColor(core::Color::Red);
-	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::right);
+	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::right());
 	_meshXIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Green);
-	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::up);
+	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::up());
 	_meshYIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Blue);
-	_shapeBuilder.line(glm::zero<glm::vec3>(), _flipZ ? glm::backward : glm::forward);
+	_shapeBuilder.line(glm::zero<glm::vec3>(), _flipZ ? glm::backward() : glm::forward());
 	_meshZIndex = _shapeRenderer.create(_shapeBuilder);
 
 	createCones();
