@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Lock.h"
 #include <string.h>
 
 namespace core {
@@ -59,6 +60,7 @@ protected:
 	friend class SharedPtr<Var>;
 	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
 	static VarMap _vars;
+	static Lock _lock;
 
 	const core::String _name;
 	const char* _help = nullptr;
@@ -82,9 +84,6 @@ protected:
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty = false;
 	ValidatorFunc _validator = nullptr;
-
-	static void lock();
-	static void unlock();
 
 	void addValueToHistory(const core::String& value);
 	static bool _ivec3ListValidator(const core::String& value, int nmin, int nmax);
@@ -164,11 +163,10 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		lock();
+		ScopedLock scoped(_lock);
 		for (auto i = _vars.begin(); i != _vars.end(); ++i) {
 			func(i->second);
 		}
-		unlock();
 	}
 
 	template<class Functor>

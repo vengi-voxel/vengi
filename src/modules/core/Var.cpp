@@ -14,18 +14,10 @@
 
 namespace core {
 
-static ReadWriteLock _lock{"Var"};
 
 Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
-
-void Var::lock() {
-	_lock.lockWrite();
-}
-
-void Var::unlock() {
-	_lock.unlockWrite();
-}
+Lock Var::_lock;
 
 VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 	char buf[64];
@@ -34,7 +26,7 @@ VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 }
 
 void Var::shutdown() {
-	ScopedWriteLock lock(_lock);
+	ScopedLock lock(_lock);
 	_vars.clear();
 }
 
@@ -127,7 +119,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 	VarMap::iterator i;
 	bool missing;
 	{
-		ScopedReadLock lock(_lock);
+		ScopedLock lock(_lock);
 		i = _vars.find(name);
 		missing = i == _vars.end();
 	}
@@ -156,7 +148,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 		}
 
 		const VarPtr& p = core::make_shared<Var>(name, value, flagsMask, help, validatorFunc);
-		ScopedWriteLock lock(_lock);
+		ScopedLock lock(_lock);
 		_vars.put(name, p);
 		return p;
 	}
