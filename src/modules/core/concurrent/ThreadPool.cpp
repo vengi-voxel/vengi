@@ -51,6 +51,7 @@ void ThreadPool::init() {
 							if (this->_stop) {
 								return true;
 							}
+							core::ScopedLock lock(this->_queueMutex);
 							if (!this->_tasks.empty()) {
 								return true;
 							}
