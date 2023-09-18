@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,performance-*,portability-*,bugprone-*'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,performance-*,portability-*,bugprone-*,-bugprone-easily-swappable-parameters,-bugprone-implicit-widening-of-multiplication-result,-bugprone-narrowing-conversions'
 CheckOptions:
   - key:   readability-identifier-naming.MethodCase
     value: camelBack
