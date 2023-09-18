@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
@@ -24,16 +25,19 @@ namespace util {
 
 namespace {
 
-static const glm::ivec4 colors[MAX_COLORS] = {
-	glm::ivec4(255, 255, 255, 255),
-	glm::ivec4(0, 0, 0, 255),
-	glm::ivec4(127, 127, 127, 255),
-	glm::ivec4(0, 0, 255, 255),
-	glm::ivec4(0, 255, 0, 255),
-	glm::ivec4(255, 255, 0, 255),
-	glm::ivec4(255, 0, 0, 255),
-};
-static_assert(lengthof(colors) == MAX_COLORS, "Color count doesn't match");
+static const core::Array<glm::ivec4, MAX_COLORS> &colors() {
+	static const core::Array<glm::ivec4, MAX_COLORS> c {
+		glm::ivec4(255, 255, 255, 255),
+		glm::ivec4(0, 0, 0, 255),
+		glm::ivec4(127, 127, 127, 255),
+		glm::ivec4(0, 0, 255, 255),
+		glm::ivec4(0, 255, 0, 255),
+		glm::ivec4(255, 255, 0, 255),
+		glm::ivec4(255, 0, 0, 255)
+	};
+	core_assert_msg(c.size() == MAX_COLORS, "Color count doesn't match");
+	return c;
+}
 
 static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
 	GRAY,
@@ -55,7 +59,7 @@ Console::~Console() {
 }
 
 core::String Console::getColor(ConsoleColor color) {
-	core_assert(color >= 0 && color <= (int)SDL_arraysize(colors));
+	core_assert(color >= 0 && color <= (int)MAX_COLORS);
 	core::String s;
 	s += _colorMark;
 	s += core::string::toString((int)color);
@@ -594,14 +598,14 @@ inline void Console::clearCommandLine() {
 
 void Console::drawString(int x, int y, const core::String& str, int len) {
 	const char *cstr = str.c_str();
-	glm::ivec4 color = colors[WHITE];
+	glm::ivec4 color = colors()[WHITE];
 	int colorIndex = -1;
 	if (isColor(cstr)) {
 		skipColor(&cstr);
 		len -= 2;
 		colorIndex = str[1] - '0';
-		if (colorIndex >= 0 && colorIndex < (int)SDL_arraysize(colors)) {
-			color = colors[colorIndex];
+		if (colorIndex >= 0 && colorIndex < (int)MAX_COLORS) {
+			color = colors()[colorIndex];
 		}
 	}
 	drawString(x, y, &color[0], colorIndex, cstr, len);

@@ -12,13 +12,6 @@
 
 namespace math {
 
-static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
-	glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
-	glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
-	glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
-	glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
-};
-
 Frustum::Frustum(const glm::vec3& mins, const glm::vec3& maxs) {
 	update(glm::mat4(1.0f), mins, maxs);
 }
@@ -96,6 +89,13 @@ math::AABB<float> Frustum::aabb() const {
 }
 
 void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX]) const {
+	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+	};
+
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * cornerVecs[i];
 		out[i] = glm::vec3(v) / v.w;
@@ -126,6 +126,13 @@ void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection) {
 
 void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection) {
 	const glm::mat4& transform = glm::inverse(projection * view);
+	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
+		glm::vec4(-1.0f,  1.0f,  1.0f, 1.0f), glm::vec4(-1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f,  1.0f, 1.0f), glm::vec4( 1.0f, -1.0f,  1.0f, 1.0f),
+		glm::vec4(-1.0f,  1.0f, -1.0f, 1.0f), glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f),
+		glm::vec4( 1.0f,  1.0f, -1.0f, 1.0f), glm::vec4( 1.0f, -1.0f, -1.0f, 1.0f)
+	};
+
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 		const glm::vec4& v = transform * cornerVecs[i];
 		_frustumVertices[i] = v / v.w;

@@ -55,7 +55,7 @@ app::AppState TestIMGUI::onInit() {
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 
-	video::clearColor(::core::Color::Black);
+	video::clearColor(::core::Color::Black());
 	//video::enableDebug(video::DebugSeverity::Medium);
 	return state;
 }

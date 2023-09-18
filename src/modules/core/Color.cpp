@@ -3,7 +3,6 @@
  */
 
 #include "Color.h"
-#include <SDL_stdinc.h>
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
@@ -14,14 +13,15 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Octree.h"
+#include <SDL_stdinc.h>
+#include <glm/ext/scalar_integer.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
-#include <glm/ext/scalar_integer.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/type_aligned.hpp>
 #include <glm/gtx/color_space.hpp>
+#include <glm/gtx/type_aligned.hpp>
 
 #include <SDL.h>
 #include <random>
@@ -29,47 +29,122 @@
 
 namespace core {
 
-const glm::vec4 Color::Clear = glm::vec4(0.f, 0, 0, 0) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::White = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Black = glm::vec4(0.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Lime = glm::vec4(109.f, 198, 2, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Pink = glm::vec4(248.f, 4, 62, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightBlue = glm::vec4(0.f, 153, 203, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkBlue = glm::vec4(55.f, 116, 145, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Orange = glm::vec4(252.f, 167, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Yellow = glm::vec4(255.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Sandy = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightGray = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Gray = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkGray = glm::vec4(84.f, 84, 84, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightRed = glm::vec4(255.f, 96, 96, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Red = glm::vec4(255.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkRed = glm::vec4(128.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightGreen = glm::vec4(96.f, 255, 96, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Green = glm::vec4(0.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkGreen = glm::vec4(0.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Blue = glm::vec4(0.f, 0, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::SteelBlue = glm::vec4(35.f, 107, 142, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Olive = glm::vec4(128.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Purple = glm::vec4(128.f, 0, 128, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Cyan = glm::vec4(0.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::Brown = glm::vec4(107.f, 66, 38, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::LightBrown = glm::vec4(150.f, 107, 72, 255) / glm::vec4(Color::magnitudef);
-const glm::vec4 Color::DarkBrown = glm::vec4(82.f, 43, 26, 255) / glm::vec4(Color::magnitudef);
-
+const glm::vec4 &Color::Clear() {
+	static const glm::vec4 v = glm::vec4(0.f, 0, 0, 0) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::White() {
+	static const glm::vec4 v = glm::vec4(255.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Black() {
+	static const glm::vec4 v = glm::vec4(0.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Lime() {
+	static const glm::vec4 v = glm::vec4(109.f, 198, 2, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Pink() {
+	static const glm::vec4 v = glm::vec4(248.f, 4, 62, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::LightBlue() {
+	static const glm::vec4 v = glm::vec4(0.f, 153, 203, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::DarkBlue() {
+	static const glm::vec4 v = glm::vec4(55.f, 116, 145, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Orange() {
+	static const glm::vec4 v = glm::vec4(252.f, 167, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Yellow() {
+	static const glm::vec4 v = glm::vec4(255.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Sandy() {
+	static const glm::vec4 v = glm::vec4(237.f, 232, 160, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::LightGray() {
+	static const glm::vec4 v = glm::vec4(192.f, 192, 192, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Gray() {
+	static const glm::vec4 v = glm::vec4(128.f, 128, 128, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::DarkGray() {
+	static const glm::vec4 v = glm::vec4(84.f, 84, 84, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::LightRed() {
+	static const glm::vec4 v = glm::vec4(255.f, 96, 96, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Red() {
+	static const glm::vec4 v = glm::vec4(255.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::DarkRed() {
+	static const glm::vec4 v = glm::vec4(128.f, 0, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::LightGreen() {
+	static const glm::vec4 v = glm::vec4(96.f, 255, 96, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Green() {
+	static const glm::vec4 v = glm::vec4(0.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::DarkGreen() {
+	static const glm::vec4 v = glm::vec4(0.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Blue() {
+	static const glm::vec4 v = glm::vec4(0.f, 0, 255, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::SteelBlue() {
+	static const glm::vec4 v = glm::vec4(35.f, 107, 142, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Olive() {
+	static const glm::vec4 v = glm::vec4(128.f, 128, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Purple() {
+	static const glm::vec4 v = glm::vec4(128.f, 0, 128, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Cyan() {
+	static const glm::vec4 v = glm::vec4(0.f, 255, 255, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::Brown() {
+	static const glm::vec4 v = glm::vec4(107.f, 66, 38, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::LightBrown() {
+	static const glm::vec4 v = glm::vec4(150.f, 107, 72, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
+const glm::vec4 &Color::DarkBrown() {
+	static const glm::vec4 v = glm::vec4(82.f, 43, 26, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
 const float Color::magnitudef = 255.0f;
 const float Color::scaleFactor = 0.7f;
 
-static constexpr const char* ColorReductionAlgorithmStr[] {
-	"Octree",
-	"Wu",
-	"MedianCut",
-	"KMeans",
-	"NeuQuant"
-};
-static_assert((int)core::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr), "Array size doesn't match with enum");
+static constexpr const char *ColorReductionAlgorithmStr[]{"Octree", "Wu", "MedianCut", "KMeans", "NeuQuant"};
+static_assert((int)core::Color::ColorReductionType::Max == lengthof(ColorReductionAlgorithmStr),
+			  "Array size doesn't match with enum");
 
-const char* Color::toColorReductionTypeString(Color::ColorReductionType type) {
+const char *Color::toColorReductionTypeString(Color::ColorReductionType type) {
 	return ColorReductionAlgorithmStr[(int)type];
 }
 
@@ -556,12 +631,12 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 	}
 
 	size_t n = 0;
-	for (const ColorBox& box : boxes) {
+	for (const ColorBox &box : boxes) {
 		if (box.pixels.empty()) {
 			continue;
 		}
 		RGBA average(0, 0, 0, 255);
-		for (const RGBA& pixel : box.pixels) {
+		for (const RGBA &pixel : box.pixels) {
 			average.r += pixel.r;
 			average.g += pixel.g;
 			average.b += pixel.b;
@@ -578,7 +653,8 @@ static int quantizeWu(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *in
 	return (int)n;
 }
 
-int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors, ColorReductionType type) {
+int Color::quantize(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors,
+					ColorReductionType type) {
 	if (inputBufColors <= maxTargetBufColors) {
 		size_t n;
 		for (n = 0; n < inputBufColors; ++n) {

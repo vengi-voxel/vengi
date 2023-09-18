@@ -20,7 +20,7 @@
 namespace video {
 
 ShapeBuilder::ShapeBuilder(int initialSize) :
-		_initialSize(initialSize), _color(core::Color::White) {
+		_initialSize(initialSize), _color(core::Color::White()) {
 	if (_initialSize > 0) {
 		reserve(initialSize, initialSize);
 	}
@@ -303,7 +303,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 
 	reserve(lengthof(corners) + 2, 16);
 
-	setColor(core::Color::Green);
+	setColor(core::Color::Green());
 	for (uint32_t i = 0; i < lengthof(corners); ++i) {
 		const glm::vec4& v = result * corners[i];
 		addVertex(glm::vec3(v), planeNormal);
@@ -312,7 +312,7 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	if (normals) {
 		const float normalVecScale = 10.0f;
 		const glm::vec3& pvn = planeNormal * normalVecScale;
-		setColor(core::Color::Red);
+		setColor(core::Color::Red());
 		addVertex(glm::zero<glm::vec3>(), planeNormal);
 		addVertex(pvn, planeNormal);
 	}
@@ -568,19 +568,19 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	}
 
 	if (camera.rotationType() == CameraRotationType::Target) {
-		setColor(core::Color::Green);
+		setColor(core::Color::Green());
 		line(camera.worldPosition(), camera.target());
 	}
 }
 
 void ShapeBuilder::axis(const glm::vec3& scale) {
-	setColor(core::Color::Red);
+	setColor(core::Color::Red());
 	line(glm::zero<glm::vec3>(), glm::right() * scale);
 
-	setColor(core::Color::Green);
+	setColor(core::Color::Green());
 	line(glm::zero<glm::vec3>(), glm::up() * scale);
 
-	setColor(core::Color::Blue);
+	setColor(core::Color::Blue());
 	line(glm::zero<glm::vec3>(), glm::forward() * scale);
 }
 

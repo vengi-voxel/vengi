@@ -232,7 +232,7 @@ void Viewport::renderViewport() {
 
 		if (sceneMgr().isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
-			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White, core::Color::Gray);
+			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White(), core::Color::Gray());
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
 			updateViewportTrace(headerSize);
@@ -685,7 +685,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 
 void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	video::clearColor(core::Color::Clear);
+	video::clearColor(core::Color::Clear());
 	_renderContext.frameBuffer.bind(true);
 	sceneMgr().render(_renderContext, camera());
 	_renderContext.frameBuffer.unbind();

@@ -16,9 +16,6 @@ namespace core {
 
 static ReadWriteLock _lock{"Var"};
 
-const core::String VAR_TRUE("true");
-const core::String VAR_FALSE("false");
-
 Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
 
@@ -39,6 +36,13 @@ VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 void Var::shutdown() {
 	ScopedWriteLock lock(_lock);
 	_vars.clear();
+}
+
+bool Var::setVal(bool value) {
+	if (boolVal() == value) {
+		return true;
+	}
+	return setVal(value ? "true" : "false");
 }
 
 bool Var::setVal(int value) {
@@ -210,7 +214,7 @@ Var::~Var() {
 void Var::addValueToHistory(const core::String& value) {
 	Value v;
 	v._value = value;
-	const bool isTrue = v._value == VAR_TRUE;
+	const bool isTrue = v._value == "true";
 	v._intValue = isTrue ? 1 : string::toInt(v._value);
 	v._longValue = isTrue ? 1l : (long)string::toLong(v._value);
 	v._floatValue = isTrue ? 1.0f : string::toFloat(v._value);

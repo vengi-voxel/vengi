@@ -150,7 +150,7 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 		return;
 	}
 
-	const glm::vec4 colors[] = {core::Color::LightRed, core::Color::LightGreen, core::Color::LightBlue};
+	const glm::vec4 colors[] = {core::Color::LightRed(), core::Color::LightGreen(), core::Color::LightBlue()};
 	updateShapeBuilderForPlane(_shapeBuilder, sceneGraph.region(), false, cursorPosition, axis,
 							   core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
@@ -174,9 +174,9 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		if (node.id() == sceneGraph.activeNode()) {
 			continue;
 		} else if (node.isReference()) {
-			_shapeBuilder.setColor(core::Color::Yellow);
+			_shapeBuilder.setColor(core::Color::Yellow());
 		} else {
-			_shapeBuilder.setColor(core::Color::Gray);
+			_shapeBuilder.setColor(core::Color::Gray());
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = sceneGraph.resolvePivot(node);
@@ -187,7 +187,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 	if (activeNode.isAnyModelNode() && activeNode.visible()) {
-		_shapeBuilder.setColor(core::Color::White);
+		_shapeBuilder.setColor(core::Color::White());
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
@@ -248,7 +248,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	if (highlightMillis > 0) {
 		video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
 		_shapeBuilder.clear();
-		_shapeBuilder.setColor(core::Color::alpha(core::Color::Green, 0.2f));
+		_shapeBuilder.setColor(core::Color::alpha(core::Color::Green(), 0.2f));
 		_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
 						   _highlightRegion.value().getUpperCornerf() + 1.0f);
 		_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);

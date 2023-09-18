@@ -31,7 +31,7 @@ bool ModifierRenderer::init() {
 	}
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue, 0.8f));
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::SteelBlue(), 0.8f));
 	_shapeBuilder.sphere(8, 6, 0.5f);
 	_referencePointMesh = _shapeRenderer.create(_shapeBuilder);
 
@@ -98,14 +98,14 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 	case voxel::FaceNames::Max:
 		return;
 	}
-	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red, 0.6f));
+	_shapeBuilder.setColor(core::Color::alpha(core::Color::Red(), 0.6f));
 	_shapeBuilder.cube(glm::vec3(0.0f), glm::vec3(1.0f), flags);
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
 void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeBuilder.clear();
-	_shapeBuilder.setColor(core::Color::Yellow);
+	_shapeBuilder.setColor(core::Color::Yellow());
 	for (const Selection &selection : selections) {
 		core_assert(selection.isValid());
 		_shapeBuilder.aabb(selection.getLowerCorner(), selection.getUpperCorner() + glm::one<glm::ivec3>());
@@ -163,7 +163,7 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirr
 	}
 
 	const voxel::Region region = sceneMgr().sceneGraph().region();
-	const glm::vec4 color = core::Color::alpha(core::Color::LightGray, 0.3f);
+	const glm::vec4 color = core::Color::alpha(core::Color::LightGray(), 0.3f);
 	updateShapeBuilderForPlane(_shapeBuilder, region, true, mirrorPos, axis, color);
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }

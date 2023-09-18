@@ -36,9 +36,6 @@ const uint32_t CV_FROMFILE = 1 << 6;
 const uint32_t CV_FROMCOMMANDLINE = 1 << 7;
 const uint32_t CV_FROMENV = 1 << 8;
 
-extern const core::String VAR_TRUE;
-extern const core::String VAR_FALSE;
-
 class Var;
 typedef core::SharedPtr<Var> VarPtr;
 
@@ -283,12 +280,7 @@ public:
 		}
 		return setVal(core::String(value));
 	}
-	inline bool setVal(bool value) {
-		if (boolVal() == value) {
-			return true;
-		}
-		return setVal(value ? VAR_TRUE : VAR_FALSE);
-	}
+	bool setVal(bool value);
 	bool setVal(int value);
 	bool setVal(float value);
 	/**

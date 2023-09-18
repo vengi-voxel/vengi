@@ -25,8 +25,8 @@
 namespace voxedit {
 
 PalettePanel::PalettePanel()
-	: _redColor(ImGui::GetColorU32(core::Color::Red)), _yellowColor(ImGui::GetColorU32(core::Color::Yellow)),
-	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed)) {
+	: _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
+	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())) {
 	_currentSelectedPalette = voxel::Palette::getDefaultPaletteName();
 }
 

@@ -17,34 +17,33 @@ public:
 	static const uint32_t magnitude = 255;
 	static const float magnitudef;
 	static const float scaleFactor;
-	static const glm::vec4
-		Clear,
-		White,
-		Black,
-		LightGray,
-		Gray,
-		DarkGray,
-		LightRed,
-		Red,
-		DarkRed,
-		LightGreen,
-		Green,
-		DarkGreen,
-		Lime,
-		LightBlue,
-		Blue,
-		DarkBlue,
-		SteelBlue,
-		Olive,
-		Pink,
-		Purple,
-		Yellow,
-		Sandy,
-		Cyan,
-		Orange,
-		Brown,
-		LightBrown,
-		DarkBrown;
+	static const glm::vec4& Clear();
+	static const glm::vec4& White();
+	static const glm::vec4& Black();
+	static const glm::vec4& LightGray();
+	static const glm::vec4& Gray();
+	static const glm::vec4& DarkGray();
+	static const glm::vec4& LightRed();
+	static const glm::vec4& Red();
+	static const glm::vec4& DarkRed();
+	static const glm::vec4& LightGreen();
+	static const glm::vec4& Green();
+	static const glm::vec4& DarkGreen();
+	static const glm::vec4& Lime();
+	static const glm::vec4& LightBlue();
+	static const glm::vec4& Blue();
+	static const glm::vec4& DarkBlue();
+	static const glm::vec4& SteelBlue();
+	static const glm::vec4& Olive();
+	static const glm::vec4& Pink();
+	static const glm::vec4& Purple();
+	static const glm::vec4& Yellow();
+	static const glm::vec4& Sandy();
+	static const glm::vec4& Cyan();
+	static const glm::vec4& Orange();
+	static const glm::vec4& Brown();
+	static const glm::vec4& LightBrown();
+	static const glm::vec4& DarkBrown();
 
 	static float getDistance(RGBA rgba, RGBA rgba2);
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);

@@ -443,7 +443,7 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	video::clearColor(::core::Color::Black);
+	video::clearColor(::core::Color::Black());
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);

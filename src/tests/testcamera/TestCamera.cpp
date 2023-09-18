@@ -38,7 +38,7 @@ app::AppState TestCamera::onInit() {
 		}
 	}
 
-	const glm::vec4 colors[CAMERAS] = { core::Color::Red, core::Color::Yellow, core::Color::Pink };
+	const glm::vec4 colors[CAMERAS] = { core::Color::Red(), core::Color::Yellow(), core::Color::Pink() };
 	static_assert(CAMERAS == 3, "Unexpected amount of cameras");
 	for (int i = 0; i < CAMERAS; ++i) {
 		bool renderAABB = i == 0;

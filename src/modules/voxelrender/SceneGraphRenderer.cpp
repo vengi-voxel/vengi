@@ -38,7 +38,7 @@ void SceneGraphRenderer::construct() {
 }
 
 bool SceneGraphRenderer::init() {
-	if (!_cameraRenderer.init(core::Color::White, 0)) {
+	if (!_cameraRenderer.init(core::Color::White(), 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
 	return _renderer.init();

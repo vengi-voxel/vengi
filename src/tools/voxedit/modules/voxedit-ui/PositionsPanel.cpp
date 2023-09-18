@@ -38,7 +38,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 	core::string::formatBuf(buf, sizeof(buf), "%i", v.x);
 	{
 		ui::ScopedStyle style;
-		style.setColor(ImGuiCol_Text, core::Color::Red);
+		style.setColor(ImGuiCol_Text, core::Color::Red());
 		ImGui::PushItemWidth(width);
 		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
 							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
@@ -49,7 +49,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 		id.c_str()[id.size() - 1] = '1';
 		core::string::formatBuf(buf, sizeof(buf), "%i", v.y);
-		style.setColor(ImGuiCol_Text, core::Color::Green);
+		style.setColor(ImGuiCol_Text, core::Color::Green());
 		ImGui::PushItemWidth(width);
 		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
 							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
@@ -60,7 +60,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 		id.c_str()[id.size() - 1] = '2';
 		core::string::formatBuf(buf, sizeof(buf), "%i", v.z);
-		style.setColor(ImGuiCol_Text, core::Color::Blue);
+		style.setColor(ImGuiCol_Text, core::Color::Blue());
 		ImGui::PushItemWidth(width);
 		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
 							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {

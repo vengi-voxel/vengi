@@ -16,21 +16,21 @@ void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X:
 		style.setColor(ImGuiCol_Text, glm::vec4(1.0f, bright, bright, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkRed);
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkRed);
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkRed);
+		style.setColor(ImGuiCol_Button, core::Color::DarkRed());
+		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkRed());
+		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkRed());
 		break;
 	case math::Axis::Y:
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, 1.0f, bright, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkGreen);
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkGreen);
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkGreen);
+		style.setColor(ImGuiCol_Button, core::Color::DarkGreen());
+		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkGreen());
+		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkGreen());
 		break;
 	case math::Axis::Z:
 		style.setColor(ImGuiCol_Text, glm::vec4(bright, bright, 1.0f, 1.0f));
-		style.setColor(ImGuiCol_Button, core::Color::DarkBlue);
-		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkBlue);
-		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkBlue);
+		style.setColor(ImGuiCol_Button, core::Color::DarkBlue());
+		style.setColor(ImGuiCol_ButtonHovered, core::Color::DarkBlue());
+		style.setColor(ImGuiCol_ButtonActive, core::Color::DarkBlue());
 		break;
 	default:
 		break;
@@ -40,13 +40,13 @@ void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 void AxisStyleText(ui::ScopedStyle &style, math::Axis axis, bool dark) {
 	switch (axis) {
 	case math::Axis::X:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkRed : core::Color::Red);
+		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkRed() : core::Color::Red());
 		break;
 	case math::Axis::Y:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkGreen : core::Color::Green);
+		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkGreen() : core::Color::Green());
 		break;
 	case math::Axis::Z:
-		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkBlue : core::Color::Blue);
+		style.setColor(ImGuiCol_Text, dark ? core::Color::DarkBlue() : core::Color::Blue());
 		break;
 	default:
 		break;
