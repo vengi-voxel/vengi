@@ -200,11 +200,13 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		}
 		if (index > state.images.size()) {
 			Log::error("Index out of bounds: %u", index);
+			delete modelVolume;
 			return false;
 		}
 		const image::ImagePtr &img = state.images[index];
 		if (!img) {
 			Log::error("Invalid image index: %u", index);
+			delete modelVolume;
 			return false;
 		}
 		Log::debug("LAYR references BL16 image with index %i", index);
