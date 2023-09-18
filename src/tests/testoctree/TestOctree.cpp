@@ -193,13 +193,12 @@ void TestOctree::onRenderUI() {
 						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z)});
 			}
 		}
-		static bool resolve(void* pmds, int idx, const char** pOut) {
+		static const char* resolve(void* pmds, int idx) {
 			const _VectorGetter& mds = *((const _VectorGetter*) pmds);
 			if (idx < 0 || idx > (int)mds._itemVector.size()) {
-				return false;
+				return nullptr;
 			}
-			*pOut = mds._itemVector[idx].info.c_str();
-			return true;
+			return mds._itemVector[idx].info.c_str();
 		}
 	} VectorGetter;
 	VectorGetter mds(_itemVector);
