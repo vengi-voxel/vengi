@@ -67,12 +67,12 @@
 namespace voxedit {
 
 // clang-format off
-#define TM_ENTRY(name, id) {name, id##_data, id##_size, id##_png_data, id##_png_size}
+#define TM_ENTRY(name, id) {name, id##_data, id##_png_data, id##_size, id##_png_size}
 static const struct TemplateModel {
 	const char *name;
 	const unsigned int *data;
-	const unsigned int size;
 	const unsigned int *imageData;
+	const unsigned int size;
 	const unsigned int imageSize;
 } TEMPLATEMODELS[] = {
 	TM_ENTRY("Chess", chess),
