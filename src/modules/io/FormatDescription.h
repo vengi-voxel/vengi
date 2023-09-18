@@ -73,7 +73,10 @@ struct FileDescription {
 	}
 };
 
-static const io::FormatDescription ALL_SUPPORTED {"All supported", {}, nullptr, FORMAT_FLAG_ALL};
+inline const io::FormatDescription& ALL_SUPPORTED() {
+	static const io::FormatDescription v{"All supported", {}, nullptr, FORMAT_FLAG_ALL};
+	return v;
+}
 
 /**
  * @param desc a terminated list of @c FormatDescription objects

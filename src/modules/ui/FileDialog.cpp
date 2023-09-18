@@ -157,7 +157,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		_filterAll = io::convertToAllFilePattern(formats);
 		if (!_filterAll.empty()) {
 			// must be the first entry - see applyFilter()
-			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED);
+			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
 		}
 
 		int lastFilter = 0;
