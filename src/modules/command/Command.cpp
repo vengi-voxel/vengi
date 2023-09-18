@@ -11,7 +11,7 @@
 namespace command {
 
 Command::CommandMap Command::_cmds;
-core::ReadWriteLock Command::_lock("Command");
+core::Lock Command::_lock;
 core::DynamicArray<core::String> Command::_delayedTokens;
 double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;
@@ -26,24 +26,19 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 Command& Command::registerCommand(const char* name, FunctionType&& func) {
 	const core::String cname(name);
 	const Command c(cname, std::forward<FunctionType>(func));
-	core::ScopedWriteLock lock(_lock);
+	core::ScopedLock lock(_lock);
 	_cmds.put(cname, c);
-	updateSortedList();
 	return (Command&)_cmds.find(cname)->value;
 }
 
 bool Command::unregisterCommand(const char* name) {
 	const core::String cname(name);
-	core::ScopedWriteLock lock(_lock);
-	const bool removed = _cmds.remove(cname);
-	if (removed) {
-		updateSortedList();
-	}
-	return removed;
+	core::ScopedLock lock(_lock);
+	return _cmds.remove(cname);
 }
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const char *help) {
-	core::ScopedWriteLock lock(_lock);
+	core::ScopedLock lock(_lock);
 	Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
 		const double seconds = args.size() >= 2 ? core::string::toDouble(args[1]) : 0.0;
@@ -58,17 +53,15 @@ ActionButtonCommands Command::registerActionButton(const core::String& name, Act
 	});
 	cReleased.setHelp(help);
 	_cmds.put(cReleased.name(), cReleased);
-	updateSortedList();
 	return ActionButtonCommands(COMMAND_PRESSED + name, COMMAND_RELEASED + name);
 }
 
 bool Command::unregisterActionButton(const core::String& name) {
-	core::ScopedWriteLock lock(_lock);
+	core::ScopedLock lock(_lock);
 	const core::String downB(COMMAND_PRESSED + name);
 	const core::String upB(COMMAND_RELEASED + name);
 	int amount = _cmds.remove(downB);
 	amount += _cmds.remove(upB);
-	updateSortedList();
 	return amount == 2;
 }
 
@@ -105,6 +98,7 @@ int Command::update(double deltaFrameSeconds) {
 }
 
 void Command::updateSortedList() {
+	core::ScopedLock lock(_lock);
 	core_assert((int)_cmds.size() < lengthof(_sortedCommandList));
 	_sortedCommandListSize = 0u;
 	for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
@@ -181,7 +175,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 	}
 	Command cmd;
 	{
-		core::ScopedReadLock scoped(_lock);
+		core::ScopedLock scoped(_lock);
 		auto i = _cmds.find(command);
 		if (i == _cmds.end()) {
 			Log::debug("could not find command callback for %s", command.c_str());
@@ -205,7 +199,7 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 }
 
 void Command::shutdown() {
-	core::ScopedWriteLock lock(_lock);
+	core::ScopedLock lock(_lock);
 	_cmds.clear();
 }
 

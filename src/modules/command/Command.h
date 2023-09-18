@@ -9,7 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
-#include "core/concurrent/ReadWriteLock.h"
+#include "core/concurrent/Lock.h"
 #include "command/ActionButton.h"
 #include <functional>
 
@@ -40,7 +40,7 @@ private:
 	typedef std::function<void(const CmdArgs&)> FunctionType;
 
 	static CommandMap _cmds core_thread_guarded_by(_lock);
-	static core::ReadWriteLock _lock;
+	static core::Lock _lock;
 	static size_t _sortedCommandListSize;
 	static Command* _sortedCommandList[4096];
 
@@ -96,7 +96,7 @@ public:
 	static bool execute(const core::String& command, const CmdArgs& args);
 
 	static Command* getCommand(const core::String& name) {
-		core::ScopedReadLock lock(_lock);
+		core::ScopedLock lock(_lock);
 		auto i = _cmds.find(name);
 		if (i == _cmds.end()) {
 			return nullptr;
@@ -106,7 +106,7 @@ public:
 
 	template<class Functor>
 	static void visit(Functor&& func) {
-		core::ScopedReadLock lock(_lock);
+		core::ScopedLock lock(_lock);
 		for (auto i = _cmds.begin(); i != _cmds.end(); ++i) {
 			func(i->value);
 		}
@@ -114,7 +114,8 @@ public:
 
 	template<class Functor>
 	static void visitSorted(Functor&& func) {
-		core::ScopedReadLock lock(_lock);
+		updateSortedList();
+		core::ScopedLock lock(_lock);
 		for (size_t i = 0; i < _sortedCommandListSize; ++i) {
 			func(*_sortedCommandList[i]);
 		}
