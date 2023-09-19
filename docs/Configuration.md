@@ -103,6 +103,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 |
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
 | `voxformat_fillhollow`        | Fill the inner parts of completely close objects                                         |
+| `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        |
 | `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |
 | `voxformat_scale_x`           | Scale the vertices on X axis by the given factor                                         |
 | `voxformat_scale_y`           | Scale the vertices on Y axis by the given factor                                         |
