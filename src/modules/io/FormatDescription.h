@@ -44,6 +44,8 @@ struct FormatDescription {
 		return name == rhs.name;
 	}
 
+	core::String mainExtension(bool includeDot = false) const;
+
 	/**
 	 * @brief Return the comma separated wildcard for the extensions of this format description
 	 */

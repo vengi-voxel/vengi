@@ -61,6 +61,16 @@ const FormatDescription* lua() {
 
 }
 
+core::String FormatDescription::mainExtension(bool includeDot) const {
+	if (exts.empty()) {
+		return "";
+	}
+	if (!includeDot) {
+		return exts[0];
+	}
+	return "." + exts[0];
+}
+
 bool FormatDescription::matchesExtension(const core::String &fileExt) const {
 	const core::String &lowerExt = fileExt.toLower();
 	for (const core::String& ext : exts) {
