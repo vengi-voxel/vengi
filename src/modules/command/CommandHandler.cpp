@@ -13,41 +13,6 @@
 
 namespace command {
 
-bool replacePlaceholders(const core::String& str, char *buf, size_t bufSize) {
-	int idx = 0;
-	for (size_t i = 0u; i < str.size(); ++i) {
-		const char *c = &str.c_str()[i];
-		if (SDL_strncmp(c, "<cvar:", 6) == 0) {
-			const char *l = SDL_strchr(c, '>');
-			if (l != nullptr) {
-				c += 6;
-				const intptr_t len = l - c;
-				const core::String name(c, len);
-				core_assert((int)len == (int)name.size());
-				const core::VarPtr& var = core::Var::get(name);
-				i += 6 + len;
-				const core::String& value = var->strVal();
-				const size_t remaining = bufSize - idx;
-				SDL_strlcpy(&buf[idx], value.c_str(), remaining);
-				idx += (int)value.size();
-				if (idx >= (int)bufSize) {
-					return false;
-				}
-				continue;
-			}
-		}
-		buf[idx++] = *c;
-		if (idx >= (int)bufSize) {
-			return false;
-		}
-	}
-	if (idx >= (int)bufSize) {
-		return false;
-	}
-	buf[idx] = '\0';
-	return true;
-}
-
 static core::String findPotentialMatch(const core::String& arg) {
 	core::String match;
 	size_t leastCost = 1000000u;
@@ -79,11 +44,9 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		if (trimmed.empty()) {
 			continue;
 		}
-		char buf[512];
-		replacePlaceholders(trimmed, buf, sizeof(buf));
 		core::TokenizerConfig innerCfg;
 		innerCfg.skipComments = false;
-		const core::Tokenizer tokInner(innerCfg, buf, " ");
+		const core::Tokenizer tokInner(innerCfg, trimmed, " ");
 		if (tokInner.tokens().empty()) {
 			continue;
 		}

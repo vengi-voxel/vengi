@@ -8,6 +8,7 @@ set(SRCS
 	IncludeUtil.h IncludeUtil.cpp
 	IniParser.h IniParser.cpp
 	Movement.cpp Movement.h
+	TextProcessor.cpp
 	VarUtil.h
 )
 set(LIB util)
@@ -22,6 +23,7 @@ set(TEST_SRCS
 	tests/IniParserTest.cpp
 	tests/KeybindingParserTest.cpp
 	tests/KeybindingHandlerTest.cpp
+	tests/TextProcessorTest.cpp
 )
 set(TEST_FILES
 	testutil/main.h

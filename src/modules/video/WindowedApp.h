@@ -93,6 +93,7 @@ public:
 	bool isSingleWindowMode() const;
 
 	void *windowHandle();
+	const util::KeyBindingHandler &keybindingHandler() const;
 
 	bool isDarkMode() const;
 
@@ -159,6 +160,10 @@ public:
 	}
 	static WindowedApp* getInstance();
 };
+
+inline const util::KeyBindingHandler &WindowedApp::keybindingHandler() const {
+	return _keybindingHandler;
+}
 
 inline void* WindowedApp::windowHandle() {
 	return _window;
