@@ -12,7 +12,7 @@ namespace voxel {
  * @brief A wrapper for a RawVolume that performs a sanity check for the setVoxel call.
  */
 class RawVolumeWrapper {
-private:
+protected:
 	RawVolume* _volume;
 	Region _region;
 	Region _dirtyRegion = Region::InvalidRegion;
@@ -41,14 +41,12 @@ public:
 
 		bool setVoxel(const Voxel& voxel) override {
 			if (Super::setVoxel(voxel)) {
-				core_assert(_rawVolumeWrapper);
-				if (!_rawVolumeWrapper) {
-					return true;
-				}
-				if (_rawVolumeWrapper->_dirtyRegion.isValid()) {
-					_rawVolumeWrapper->_dirtyRegion.accumulate(position());
+				voxel::Region &placeholder = _rawVolumeWrapper->_dirtyRegion;
+				const glm::ivec3 &pos = position();
+				if (placeholder.isValid()) {
+					placeholder.accumulate(pos);
 				} else {
-					_rawVolumeWrapper->_dirtyRegion = Region(position(), position());
+					placeholder = Region(pos, pos);
 				}
 				return true;
 			}
