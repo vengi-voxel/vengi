@@ -2258,7 +2258,7 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 			modified(nodeId, region, markUndo);
 		}
 	};
-	const bool state = _modifier.execute(_sceneGraph, v, callback);
+	const bool state = _modifier.execute(_sceneGraph, *node, callback);
 	_modifier.stop();
 	if (!state) {
 		Log::warn("Failed to execute script");

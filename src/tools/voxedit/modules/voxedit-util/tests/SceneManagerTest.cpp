@@ -77,8 +77,10 @@ protected:
 			modifier.setModifierType(ModifierType::Paint);
 		}
 		scenegraph::SceneGraph sceneGraph;
-		modifier.execute(sceneGraph,
-			v, [&](const voxel::Region &region, ModifierType, bool) { _sceneMgr.modified(nodeId, region); });
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(v, false);
+		modifier.execute(sceneGraph, node,
+						 [&](const voxel::Region &region, ModifierType, bool) { _sceneMgr.modified(nodeId, region); });
 		modifier.setModifierType(ModifierType::Place);
 	}
 
@@ -92,7 +94,8 @@ protected:
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier.executeAdditionalAction();
 		scenegraph::SceneGraph sceneGraph;
-		EXPECT_TRUE(modifier.execute(sceneGraph, nullptr, [&](const voxel::Region &, ModifierType, bool) {}));
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, bool) {}));
 		modifier.setModifierType(ModifierType::Place);
 	}
 

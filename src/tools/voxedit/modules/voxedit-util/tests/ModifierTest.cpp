@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
 #include "../modifier/Modifier.h"
+#include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Voxel.h"
@@ -34,7 +34,9 @@ protected:
 		prepare(modifier, mins, maxs, ModifierType::Select);
 		int executed = 0;
 		scenegraph::SceneGraph sceneGraph;
-		modifier.execute(sceneGraph, &volume, [&] (const voxel::Region& region, ModifierType type, bool markUndo) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(&volume, false);
+		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType type, bool markUndo) {
 			EXPECT_EQ(ModifierType::Select, type);
 			EXPECT_EQ(voxel::Region(mins, maxs), region);
 			++executed;
@@ -52,7 +54,9 @@ TEST_F(ModifierTest, testModifierAction) {
 	voxel::RawVolume volume(region);
 	bool modifierExecuted = false;
 	scenegraph::SceneGraph sceneGraph;
-	modifier.execute(sceneGraph, &volume, [&] (const voxel::Region &region, ModifierType modifierType, bool markUndo) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+	modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 		modifierExecuted = true;
 		EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 	});
@@ -71,7 +75,9 @@ TEST_F(ModifierTest, testModifierSelection) {
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place);
 	int modifierExecuted = 0;
 	scenegraph::SceneGraph sceneGraph;
-	modifier.execute(sceneGraph, &volume, [&] (const voxel::Region &region, ModifierType modifierType, bool markUndo) {
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+	modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 		++modifierExecuted;
 		EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 	});

@@ -5,6 +5,7 @@
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Palette.h"
@@ -21,8 +22,10 @@ TEST_F(StampBrushTest, testExecute) {
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	voxel::RawVolume volume(voxel::Region(-3, 3));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(&volume, ModifierType::Place, {});
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
 	voxel::Palette palette;
 	palette.nippon();
 

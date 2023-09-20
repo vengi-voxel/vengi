@@ -38,7 +38,9 @@ protected:
 		const voxel::Region region(-3, 3);
 		voxel::RawVolume volume(region);
 		scenegraph::SceneGraph sceneGraph;
-		ModifierVolumeWrapper wrapper(&volume, ModifierType::Place, {});
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(&volume, false);
+		ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
 		brush.execute(sceneGraph, wrapper, brushContext);
 		const voxel::Region dirtyRegion = wrapper.dirtyRegion();
 		EXPECT_TRUE(dirtyRegion.isValid());

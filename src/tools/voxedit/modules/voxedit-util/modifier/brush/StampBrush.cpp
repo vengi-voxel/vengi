@@ -66,8 +66,7 @@ bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	const voxel::Region &region = calcRegion(context);
 	const glm::ivec3 &offset = region.getLowerCorner();
 	voxelutil::visitVolume(*_volume, [&](int x, int y, int z, const voxel::Voxel &v) {
-		const glm::ivec3 position = offset + glm::ivec3(x, y, z);
-		wrapper.setVoxel(position, v);
+		wrapper.setVoxel(offset.x + x, offset.y + y, offset.z + z, v);
 	});
 
 	return true;

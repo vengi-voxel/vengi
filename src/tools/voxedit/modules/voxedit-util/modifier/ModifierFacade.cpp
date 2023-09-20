@@ -51,11 +51,15 @@ void ModifierFacade::updateBrushVolumePreview(voxel::Palette &palette) {
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
 			_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
-			runModifier(sceneMgr().sceneGraph(), _mirrorVolume, modifierType, voxel);
+			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
+			mirrorDummyNode.setVolume(_mirrorVolume, false);
+			runModifier(sceneMgr().sceneGraph(), mirrorDummyNode, modifierType, voxel);
 			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &palette);
 		}
 		_volume = new voxel::RawVolume(region);
-		runModifier(sceneMgr().sceneGraph(), _volume, modifierType, voxel);
+		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+		dummyNode.setVolume(_volume, false);
+		runModifier(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
 		_modifierRenderer->updateBrushVolume(0, _volume, &palette);
 		break;
 	}
@@ -64,7 +68,9 @@ void ModifierFacade::updateBrushVolumePreview(voxel::Palette &palette) {
 		if (v != nullptr) {
 			const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
 			_volume = new voxel::RawVolume(region);
-			runModifier(sceneMgr().sceneGraph(), _volume, modifierType, voxel);
+			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+			dummyNode.setVolume(_volume, false);
+			runModifier(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
 			// TODO: use _stampBrush palette?
 			_modifierRenderer->updateBrushVolume(0, _volume, &palette);
 		}

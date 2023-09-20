@@ -159,7 +159,7 @@ void Viewport::dragAndDrop(float headerSize) {
 							sceneMgr().modified(nodeId, region, markUndo);
 						}
 					};
-					modifier.execute(sceneMgr().sceneGraph(), node->volume(), callback);
+					modifier.execute(sceneMgr().sceneGraph(), *node, callback);
 					modifier.stop();
 				}
 			}

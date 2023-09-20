@@ -10,11 +10,12 @@
 #include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
-#include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/Face.h"
+#include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -293,7 +294,7 @@ bool Modifier::pathModifier(voxel::RawVolume *volume, const Callback &callback) 
 	return true;
 }
 
-bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, const Callback &callback) {
+bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback) {
 	if (_locked) {
 		return false;
 	}
@@ -310,6 +311,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *vol
 		return true;
 	}
 
+	voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
 		Log::debug("No volume given - can't perform action");
 		return true;
@@ -326,14 +328,14 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *vol
 		return pathModifier(volume, callback);
 	}
 
-	runModifier(sceneGraph, volume, _modifierType, _brushContext.cursorVoxel, callback);
+	runModifier(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
 
 	return true;
 }
 
-bool Modifier::runModifier(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, ModifierType modifierType,
-						   const voxel::Voxel &voxel, const Callback &callback) {
-	ModifierVolumeWrapper wrapper(volume, modifierType, _selections);
+bool Modifier::runModifier(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+						   ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
+	ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	_brushContext.cursorVoxel = voxel;
 	activeBrush()->execute(sceneGraph, wrapper, _brushContext);

@@ -63,10 +63,11 @@ protected:
 	bool pathModifier(voxel::RawVolume *volume, const Callback &callback);
 
 	bool runModifier(
-		scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, ModifierType modifierType,
+		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
 
 	Brush *activeBrush();
+
 public:
 	Modifier();
 
@@ -109,11 +110,11 @@ public:
 	bool start();
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.
-	 * @param[out,in] volume The volume to modify
+	 * @param[out,in] node The model node to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 * @note @c start() and @c stop() must be called before and after this method
 	 */
-	bool execute(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, const Callback &callback);
+	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback);
 	void stop();
 	/**
 	 * @brief Actions could get aborted by some external action like hitting esc

@@ -63,6 +63,8 @@ public:
 		_region.cropTo(volume->region());
 	}
 
+	virtual ~RawVolumeWrapper() {}
+
 	inline operator RawVolume& () const {
 		return *_volume;
 	}
@@ -129,7 +131,7 @@ public:
 	 * true if the voxel was placed in the region.
 	 * @note The return values have a different meaning as for the wrapped RawVolume.
 	 */
-	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
+	virtual bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		const glm::ivec3 p(x, y, z);
 		if (!_region.containsPoint(p)) {
 			return false;
