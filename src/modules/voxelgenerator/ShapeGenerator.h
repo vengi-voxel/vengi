@@ -42,15 +42,13 @@ void createCirclePlane(Volume& volume, const glm::ivec3& center, math::Axis axis
 			if (distance > radius) {
 				continue;
 			}
-			glm::ivec3 pos;
 			if (axis == math::Axis::X) {
-				pos = glm::ivec3(center.x, center.y + x, center.z + z);
+				volume.setVoxel(center.x, center.y + x, center.z + z, voxel);
 			} else if (axis == math::Axis::Y) {
-				pos = glm::ivec3(center.x + x, center.y, center.z + z);
+				volume.setVoxel(center.x + x, center.y, center.z + z, voxel);
 			} else {
-				pos = glm::ivec3(center.x + x, center.y + z, center.z);
+				volume.setVoxel(center.x + x, center.y + z, center.z, voxel);
 			}
-			volume.setVoxel(pos, voxel);
 		}
 	}
 }
