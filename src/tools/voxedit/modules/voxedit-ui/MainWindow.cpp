@@ -233,7 +233,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	io::FileDescription fd;
 	const core::String &ext = core::string::extractExtension(file);
 	if (ext.empty()) {
-		core::String newExt = "vengi";
+		core::String newExt = voxelformat::vengi().mainExtension();
 		if (desc && !desc->exts.empty()) {
 			newExt = desc->exts[0];
 		}
@@ -435,7 +435,7 @@ void MainWindow::dialog(const char *icon, const char *text) {
 void MainWindow::addTemplate(const TemplateModel &model) {
 	io::FileDescription fileDesc;
 	const core::String name = model.name;
-	fileDesc.name = name + ".vengi";
+	fileDesc.name = name + voxelformat::vengi().mainExtension(true);
 	fileDesc.desc = voxelformat::vengi();
 	ImGui::TableNextColumn();
 	const video::TexturePtr &texture = _texturePool.get(name);

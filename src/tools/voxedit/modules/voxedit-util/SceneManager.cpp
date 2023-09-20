@@ -239,7 +239,7 @@ void SceneManager::autosave() {
 	}
 	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename.set("autosave-noname." + voxelformat::vengi().exts[0]);
+		autoSaveFilename.set("autosave-noname." + voxelformat::vengi().mainExtension());
 	} else {
 		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
 			autoSaveFilename = _lastFilename;
@@ -2240,7 +2240,11 @@ bool SceneManager::init() {
 
 bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
 	const int nodeId = activeNode();
-	voxel::RawVolume* v = volume(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return false;
+	}
+	voxel::RawVolume* v = node->volume();
 	if (v == nullptr) {
 		return false;
 	}
