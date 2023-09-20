@@ -41,22 +41,16 @@ public:
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &ctx) = 0;
 	virtual void reset();
-	virtual void update(const BrushContext &ctx, double nowSeconds) {
-	}
+	virtual void update(const BrushContext &ctx, double nowSeconds);
 
 	/**
 	 * @brief Determine whether the brush should get rendered
 	 */
-	virtual bool active() const {
-		return true;
-	}
+	virtual bool active() const;
 	bool dirty() const;
 	void markClean();
-	bool init() override {
-		return true;
-	}
-	void shutdown() override {
-	}
+	bool init() override;
+	void shutdown() override;
 };
 
 } // namespace voxedit

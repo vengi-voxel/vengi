@@ -22,4 +22,21 @@ void Brush::markClean() {
 	_dirty = false;
 }
 
+void Brush::update(const BrushContext &ctx, double nowSeconds) {
+}
+
+/**
+ * @brief Determine whether the brush should get rendered
+ */
+bool Brush::active() const {
+	return true;
+}
+
+bool Brush::init() {
+	return true;
+}
+
+void Brush::shutdown() {
+}
+
 } // namespace voxedit
