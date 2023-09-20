@@ -3,15 +3,14 @@
  */
 
 #include "ModifierButton.h"
+#include "../SceneManager.h"
 #include "core/BindingContext.h"
 #include "core/Log.h"
-#include "../SceneManager.h"
 #include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 
-ModifierButton::ModifierButton(ModifierType newType) :
-		_newType(newType) {
+ModifierButton::ModifierButton(ModifierType newType) : _newType(newType) {
 }
 
 bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
@@ -20,7 +19,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	if (core::bindingContext() == core::BindingContext::Context1) {
 		return initialDown;
 	}
-	Modifier& modifier = sceneMgr().modifier();
+	Modifier &modifier = sceneMgr().modifier();
 	if (_furtherAction && !modifier.aborted()) {
 		execute(false);
 		return initialDown;
@@ -43,7 +42,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 		return allUp;
 	}
 	if (allUp) {
-		Modifier& modifier = sceneMgr().modifier();
+		Modifier &modifier = sceneMgr().modifier();
 		_furtherAction = modifier.needsFurtherAction();
 		if (_furtherAction) {
 			modifier.executeAdditionalAction();
@@ -57,15 +56,15 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 }
 
 void ModifierButton::execute(bool single) {
-	Modifier& modifier = sceneMgr().modifier();
+	Modifier &modifier = sceneMgr().modifier();
 	int nodes = 0;
-	auto func = [&] (int nodeId) {
+	auto func = [&](int nodeId) {
 		if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
 			if (!node->visible()) {
 				return;
 			}
 			Log::debug("Execute modifier action for node %i", nodeId);
-			voxel::RawVolume* v = sceneMgr().volume(nodeId);
+			voxel::RawVolume *v = sceneMgr().volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
@@ -91,4 +90,4 @@ void ModifierButton::execute(bool single) {
 	}
 }
 
-}
+} // namespace voxedit
