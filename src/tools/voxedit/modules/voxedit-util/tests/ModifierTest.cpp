@@ -11,9 +11,9 @@
 
 namespace voxedit {
 
-class ModifierTest: public app::AbstractTest {
+class ModifierTest : public app::AbstractTest {
 protected:
-	void prepare(Modifier& modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType) {
+	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType) {
 		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(modifierType);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -30,7 +30,7 @@ protected:
 		}
 	}
 
-	void select(voxel::RawVolume& volume, Modifier& modifier, const glm::ivec3& mins, const glm::ivec3& maxs) {
+	void select(voxel::RawVolume &volume, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		prepare(modifier, mins, maxs, ModifierType::Select);
 		int executed = 0;
 		scenegraph::SceneGraph sceneGraph;
@@ -87,4 +87,4 @@ TEST_F(ModifierTest, DISABLED_testLine) {
 	// TODO: implement me
 }
 
-}
+} // namespace voxedit
