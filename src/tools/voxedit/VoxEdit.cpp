@@ -123,6 +123,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<2, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui - restart on change", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditTipOftheDay, "true", "Show the tip of the day on startup", core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();
 

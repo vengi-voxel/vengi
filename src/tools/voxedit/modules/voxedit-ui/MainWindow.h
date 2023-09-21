@@ -49,6 +49,7 @@ private:
 	core::VarPtr _lastOpenedFiles;
 	core::VarPtr _simplifiedView;
 	core::VarPtr _numViewports;
+	core::VarPtr _tipOfTheDay;
 
 	core::DynamicArray<Viewport*> _scenes;
 	Viewport* _lastHoveredScene = nullptr;
@@ -57,9 +58,11 @@ private:
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _popupVolumeSplit = false;
-	bool _forceQuit = false;
+	bool _popupTipOfTheDay = false;
 	bool _popupUnsavedChangesQuit = false;
+	bool _forceQuit = false;
 	bool _lastSceneMode = false;
+	uint32_t _currentTip = 0;
 
 	ui::IMGUIApp* _app;
 
@@ -108,10 +111,13 @@ private:
 
 	void dialog(const char *icon, const char *text);
 
+	const char *getTip() const;
+
 	void afterLoad(const core::String &file);
 	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
 	void popupNewScene();
+	void popupTipOfTheDay();
 	void popupFailedSave();
 	void popupUnsavedChanges();
 	void popupUnsavedDiscard();

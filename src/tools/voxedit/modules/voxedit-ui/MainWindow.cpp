@@ -20,6 +20,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
 #include "ui/IconsForkAwesome.h"
+#include "util/TextProcessor.h"
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -62,6 +63,7 @@
 #define POPUP_TITLE_UNSAVED_SCENE "Unsaved scene##popuptitle"
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 #define POPUP_TITLE_MODEL_NODE_SETTINGS "Model settings##popuptitle"
+#define POPUP_TITLE_TIPOFTHEDAY "Tip of the day##popuptitle"
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
 
 namespace voxedit {
@@ -84,13 +86,32 @@ static const struct TemplateModel {
 };
 #undef TM_ENTRY
 
+static const char *TIPOFTHEDAY[]{
+	"Switch between scene and model mode by pressing the <cmd:togglescene> key",
+	"Use the file dialog options for format specific options",
+	"Change the color reduction mode to improve the quality of the palette especially for importing RGBA based formats",
+	"Drag a model from the assets panel to the stamp brush to use it",
+	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel"
+};
+
 // clang-format on
 
 MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
+	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
 
 MainWindow::~MainWindow() {
 	shutdownScenes();
+}
+
+const char *MainWindow::getTip() const {
+	static char buf[4096];
+	int len = 0;
+	const char *tip = TIPOFTHEDAY[_currentTip];
+	if (!util::replacePlaceholders(_app->keybindingHandler(), tip, buf, sizeof(buf)))  {
+		return tip;
+	}
+	return buf;
 }
 
 void MainWindow::loadLastOpenedFiles(const core::String &string) {
@@ -158,10 +179,13 @@ bool MainWindow::initScenes() {
 bool MainWindow::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
+	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
 
 	if (!initScenes()) {
 		return false;
 	}
+
+	_popupTipOfTheDay = _tipOfTheDay->boolVal();
 
 #if ENABLE_RENDER_PANEL
 	_renderPanel.init();
@@ -403,7 +427,7 @@ void MainWindow::dialog(const char *icon, const char *text) {
 	ImGui::SameLine();
 	ImGui::Spacing();
 	ImGui::SameLine();
-	ImGui::TextUnformatted(text);
+	ImGui::TextWrapped("%s", text);
 	ImGui::Spacing();
 	ImGui::Separator();
 }
@@ -419,7 +443,7 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	const ImVec2 size((float)texture->width(), (float)texture->height());
 	if (ImGui::ImageButton(texture->handle(), size)) {
 		ImGui::CloseCurrentPopup();
-		sceneMgr().load(fileDesc, (const uint8_t*)model.data, (size_t)model.size);
+		sceneMgr().load(fileDesc, (const uint8_t *)model.data, (size_t)model.size);
 	}
 	ImGui::TooltipText("%s", name.c_str());
 }
@@ -430,6 +454,29 @@ void MainWindow::newSceneTemplates() {
 			addTemplate(TEMPLATEMODELS[i]);
 		}
 		ImGui::EndTable();
+	}
+}
+
+void MainWindow::popupTipOfTheDay() {
+	ImGui::SetNextWindowSize(ImVec2(_app->fontSize() * 30, 0));
+	if (ImGui::BeginPopupModal(POPUP_TITLE_TIPOFTHEDAY)) {
+		const char *tip = getTip();
+		dialog(ICON_FK_LIGHTBULB_O, tip);
+		float height = (_app->fontSize() * 8.0f) - ImGui::GetCursorPosY();
+		if (height > 0.0f) {
+			ImGui::Dummy(ImVec2(0, height));
+		}
+		ImGui::CheckboxVar("Show again", _tipOfTheDay);
+		if (ImGui::Button(ICON_FA_CHECK " Next##tipoftheday")) {
+			++_currentTip;
+			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK " Close##tipoftheday")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
 	}
 }
 
@@ -627,7 +674,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
 		_sceneGraphPanel._popupNewModelNode = false;
 	}
-
+	if (_popupTipOfTheDay) {
+		ImGui::OpenPopup(POPUP_TITLE_TIPOFTHEDAY);
+		_popupTipOfTheDay = false;
+	}
 	popupModelNodeSettings();
 	popupSceneSettings();
 	popupUnsavedDiscard();
@@ -635,6 +685,7 @@ void MainWindow::registerPopups() {
 	popupFailedSave();
 	popupNewScene();
 	popupVolumeSplit();
+	popupTipOfTheDay();
 }
 
 QuitDisallowReason MainWindow::allowToQuit() {
