@@ -190,6 +190,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
 					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
 					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
+					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
 					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
