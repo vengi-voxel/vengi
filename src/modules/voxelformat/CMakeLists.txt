@@ -148,6 +148,7 @@ set(TEST_FILES
 	tests/crabby.qbcl
 	tests/crabby.vox
 	tests/chr_knight.gox
+	tests/kvx_save.qb
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
 	tests/rgb.vxl
