@@ -324,8 +324,9 @@ TEST_F(ConvertTest, DISABLED_testQBToKV6) {
 TEST_F(ConvertTest, DISABLED_testQbToKVX) {
 	QBFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
+	// KVX has all colors set
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags, 0.0013);
 }
 
 TEST_F(ConvertTest, DISABLED_testQbToKV6) {
