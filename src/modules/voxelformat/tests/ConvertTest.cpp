@@ -307,4 +307,25 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
+TEST_F(ConvertTest, DISABLED_testQbToKVX) {
+	QBFormat src;
+	KVXFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testQbToKV6) {
+	QBFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testKVXToKV6) {
+	KVXFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags);
+}
+
 }
