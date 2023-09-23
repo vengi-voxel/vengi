@@ -170,7 +170,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	node.setPivot(normalizedPivot);
 	sceneGraph.emplace(core::move(node));
 
-	uint32_t lastZ = 0;
 	voxel::Voxel lastCol;
 
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
@@ -178,6 +177,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			const uint16_t end = xyoffset[x][y + 1];
 			const uint16_t start = xyoffset[x][y];
 			int32_t n = end - start;
+			uint32_t lastZ = 0;
 
 			while (n > 0) {
 				priv::VoxtypeKVX header;
@@ -199,15 +199,15 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				 * fill the inner voxels
 				 */
 				if ((header.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::Up) {
-					for (uint32_t i = lastZ + 1; i < header.ztop; ++i) {
-						const int nx = (int)x;
-						const int ny = region.getUpperY() - (int)i;
-						const int nz = (int)y;
-						volume->setVoxel(nx, ny, nz, lastCol);
-					}
+					lastZ = header.ztop + header.zlength;
 				}
 				if ((header.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::Down) {
-					lastZ = header.ztop + header.zlength;
+					const int nx = (int)x;
+					const int nz = (int)y;
+					for (uint32_t i = lastZ; i < header.ztop; ++i) {
+						const int ny = region.getUpperY() - (int)i;
+						volume->setVoxel(nx, ny, nz, lastCol);
+					}
 				}
 				n -= (int32_t)(header.zlength + 3 /* 3 byte slab header */);
 			}
