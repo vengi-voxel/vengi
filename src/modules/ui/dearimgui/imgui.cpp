@@ -7635,8 +7635,9 @@ void ImGui::FocusWindow(ImGuiWindow* window, ImGuiFocusRequestFlags flags)
     window->LastFrameJustFocused = g.FrameCount;
 
     // Select in dock node
-    if (dock_node && dock_node->TabBar)
-        dock_node->TabBar->SelectedTabId = dock_node->TabBar->NextSelectedTabId = window->TabId;
+    // For #2304 we avoid applying focus immediately before the tabbar is visible.
+    //if (dock_node && dock_node->TabBar)
+    //    dock_node->TabBar->SelectedTabId = dock_node->TabBar->NextSelectedTabId = window->TabId;
 
     // Bring to front
     BringWindowToFocusFront(focus_front_window);
@@ -8493,6 +8494,7 @@ bool ImGui::IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max)
 // - IsMouseDragPastThreshold() [Internal]
 // - IsMouseDragging()
 // - GetMousePos()
+// - SetMousePos() [Internal]
 // - GetMousePosOnOpeningCurrentPopup()
 // - IsMousePosValid()
 // - IsAnyMouseDown()
@@ -9022,6 +9024,17 @@ ImVec2 ImGui::GetMousePos()
     return g.IO.MousePos;
 }
 
+// This is called TeleportMousePos() and not SetMousePos() to emphasis that setting MousePosPrev will effectively clear mouse delta as well.
+// It is expected you only call this if (io.BackendFlags & ImGuiBackendFlags_HasSetMousePos) is set and supported by backend.
+void ImGui::TeleportMousePos(const ImVec2& pos)
+{
+    ImGuiContext& g = *GImGui;
+    g.IO.MousePos = g.IO.MousePosPrev = pos;
+    g.IO.MouseDelta = ImVec2(0.0f, 0.0f);
+    g.IO.WantSetMousePos = true;
+    //IMGUI_DEBUG_LOG_IO("TeleportMousePos: (%.1f,%.1f)\n", io.MousePos.x, io.MousePos.y);
+}
+
 // NB: prefer to call right after BeginPopup(). At the time Selectable/MenuItem is activated, the popup is already closed!
 ImVec2 ImGui::GetMousePosOnOpeningCurrentPopup()
 {
@@ -9514,6 +9527,8 @@ void ImGui::UpdateInputEvents(bool trickle_fast_inputs)
         ImGuiInputEvent* e = &g.InputEventsQueue[event_n];
         if (e->Type == ImGuiInputEventType_MousePos)
         {
+            if (g.IO.WantSetMousePos)
+                continue;
             // Trickling Rule: Stop processing queued events if we already handled a mouse button change
             ImVec2 event_pos(e->MousePos.PosX, e->MousePos.PosY);
             if (trickle_fast_inputs && (mouse_button_changed != 0 || mouse_wheeled || key_changed || text_inputted))
@@ -12219,11 +12234,7 @@ static void ImGui::NavUpdate()
     // Update mouse position if requested
     // (This will take into account the possibility that a Scroll was queued in the window to offset our absolute mouse position before scroll has been applied)
     if (set_mouse_pos && (io.ConfigFlags & ImGuiConfigFlags_NavEnableSetMousePos) && (io.BackendFlags & ImGuiBackendFlags_HasSetMousePos))
-    {
-        io.MousePos = io.MousePosPrev = NavCalcPreferredRefPos();
-        io.WantSetMousePos = true;
-        //IMGUI_DEBUG_LOG_IO("SetMousePos: (%.1f,%.1f)\n", io.MousePos.x, io.MousePos.y);
-    }
+        TeleportMousePos(NavCalcPreferredRefPos());
 
     // [DEBUG]
     g.NavScoringDebugCount = 0;
@@ -15802,6 +15813,9 @@ void ImGui::DockContextProcessUndockNode(ImGuiContext* ctx, ImGuiDockNode* node)
 // This is mostly used for automation.
 bool ImGui::DockContextCalcDropPosForDocking(ImGuiWindow* target, ImGuiDockNode* target_node, ImGuiWindow* payload_window, ImGuiDockNode* payload_node, ImGuiDir split_dir, bool split_outer, ImVec2* out_pos)
 {
+    if (target != NULL && target_node == NULL)
+        target_node = target->DockNode;
+
     // In DockNodePreviewDockSetup() for a root central node instead of showing both "inner" and "outer" drop rects
     // (which would be functionally identical) we only show the outer one. Reflect this here.
     if (target_node && target_node->ParentNode == NULL && target_node->IsCentralNode() && split_dir != ImGuiDir_None)
@@ -16831,7 +16845,11 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
     {
         IMGUI_DEBUG_LOG_DOCKING("[docking] In node 0x%08X: %d new appearing tabs:%s\n", node->ID, tab_bar->Tabs.Size - tabs_unsorted_start, (tab_bar->Tabs.Size > tabs_unsorted_start + 1) ? " (will sort)" : "");
         for (int tab_n = tabs_unsorted_start; tab_n < tab_bar->Tabs.Size; tab_n++)
-            IMGUI_DEBUG_LOG_DOCKING("[docking] - Tab '%s' Order %d\n", tab_bar->Tabs[tab_n].Window->Name, tab_bar->Tabs[tab_n].Window->DockOrder);
+        {
+            ImGuiTabItem* tab = &tab_bar->Tabs[tab_n];
+            IMGUI_DEBUG_LOG_DOCKING("[docking] - Tab 0x%08X '%s' Order %d\n", tab->ID, TabBarGetTabName(tab_bar, tab), tab->Window ? tab->Window->DockOrder : -1);
+        }
+        IMGUI_DEBUG_LOG_DOCKING("[docking] SelectedTabId = 0x%08X, NavWindow->TabId = 0x%08X\n", node->SelectedTabId, g.NavWindow ? g.NavWindow->TabId : -1);
         if (tab_bar->Tabs.Size > tabs_unsorted_start + 1)
             ImQsort(tab_bar->Tabs.Data + tabs_unsorted_start, tab_bar->Tabs.Size - tabs_unsorted_start, sizeof(ImGuiTabItem), TabItemComparerByDockOrder);
     }
