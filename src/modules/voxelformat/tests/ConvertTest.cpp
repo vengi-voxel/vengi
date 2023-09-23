@@ -321,6 +321,13 @@ TEST_F(ConvertTest, DISABLED_testQBToKV6) {
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
 }
 
+TEST_F(ConvertTest, DISABLED_testKV6ToKV6) {
+	KV6Format src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
+}
+
 TEST_F(ConvertTest, DISABLED_testQbToKVX) {
 	QBFormat src;
 	KVXFormat target;
