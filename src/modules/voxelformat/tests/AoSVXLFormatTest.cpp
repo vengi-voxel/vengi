@@ -61,7 +61,7 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	bufferedStream.seek(0);
 	scenegraph::SceneGraph sceneGraphLoad;
 	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
-	EXPECT_EQ(sceneGraphLoad.size(), 1);
+	EXPECT_EQ(sceneGraphLoad.size(), 1u);
 }
 
 }

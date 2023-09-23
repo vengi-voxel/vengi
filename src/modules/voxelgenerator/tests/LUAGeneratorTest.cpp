@@ -265,14 +265,14 @@ TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
 TEST_F(LUAGeneratorTest, testScriptSlice) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "slice.lua", {"1", "1", "1"});
-	const int slices = _region.getWidthInVoxels() * _region.getHeightInVoxels() * _region.getDepthInVoxels();
-	EXPECT_EQ(slices + 1, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
+	const uint32_t slices = _region.getWidthInVoxels() * _region.getHeightInVoxels() * _region.getDepthInVoxels();
+	EXPECT_EQ(slices + 1u, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitcolor.lua");
-	EXPECT_EQ(3, sceneGraph.nodeSize());
+	EXPECT_EQ(3u, sceneGraph.nodeSize());
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitObjects) {

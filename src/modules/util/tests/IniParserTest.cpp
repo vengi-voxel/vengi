@@ -28,5 +28,5 @@ TEST_F(IniParserTest, testParseIni) {
 	ASSERT_TRUE(ini.hasKey("empty"));
 	ASSERT_TRUE(ini.find("empty")->second.empty());
 	ASSERT_TRUE(ini.hasKey("filled"));
-	ASSERT_EQ(3, ini.find("filled")->second.size());
+	ASSERT_EQ(3u, ini.find("filled")->second.size());
 }
