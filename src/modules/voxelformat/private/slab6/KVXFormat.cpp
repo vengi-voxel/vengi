@@ -266,12 +266,12 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	priv::VoxtypeKVX voxdat;
 	int32_t xoffsets[256 + 1];
-	uint16_t xyoffets[256][256 + 1];
+	uint16_t xyoffsets[256][256 + 1];
 	int32_t xoffset = xoffsetSize + xyoffsetSize;
 	for (int32_t x = 0; x < dim.x; x++) {
 		xoffsets[x] = xoffset;
 		for (int32_t y = 0; y < dim.z; y++) {
-			xyoffets[x][y] = (uint16_t)(xoffset - xoffsets[x]);
+			xyoffsets[x][y] = (uint16_t)(xoffset - xoffsets[x]);
 			int32_t bytes = 0;
 			for (int32_t z = 0; z < dim.y; z++) {
 				const int nx = region.getLowerX() + x;
@@ -316,7 +316,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				xoffset += bytes;
 			}
 		}
-		xyoffets[x][dim.z] = (uint16_t)(xoffset - xoffsets[x]);
+		xyoffsets[x][dim.z] = (uint16_t)(xoffset - xoffsets[x]);
 	}
 	xoffsets[dim.x] = xoffset;
 
@@ -343,7 +343,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	for (int x = 0u; x < dim.x; ++x) {
 		for (int y = 0; y <= dim.z; ++y) {
-			wrapBool(stream.writeUInt16(xyoffets[x][y]))
+			wrapBool(stream.writeUInt16(xyoffsets[x][y]))
 		}
 	}
 	if (stream.seek(numBytesPos) == -1) {

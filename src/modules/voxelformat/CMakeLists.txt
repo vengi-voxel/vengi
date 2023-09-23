@@ -169,6 +169,7 @@ set(TEST_FILES
 	tests/rgb_small.vxm
 	tests/vox_character.vox
 	tests/vox_glasses.vox
+	tests/voxlap5.kv6
 	tests/glTF/cube/Cube_BaseColor.png
 	tests/glTF/cube/Cube_MetallicRoughness.png
 	tests/glTF/cube/Cube.bin
