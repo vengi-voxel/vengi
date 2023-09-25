@@ -206,13 +206,13 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	for (uint32_t x = 0u; x < width; ++x) {
 		wrap(stream.readInt32(state->xoffsets[x]))
-		Log::debug("xlen[%u]: %i", x, state->xoffsets[x]);
+		Log::debug("xoffsets[%u]: %i", x, state->xoffsets[x]);
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {
 		for (uint32_t y = 0u; y < depth; ++y) {
 			wrap(stream.readUInt16(state->xyoffsets[x][y]))
-			Log::debug("xyoffset[%u][%u]: %u", x, y, state->xyoffsets[x][y]);
+			Log::debug("xyoffsets[%u][%u]: %u", x, y, state->xyoffsets[x][y]);
 		}
 	}
 
