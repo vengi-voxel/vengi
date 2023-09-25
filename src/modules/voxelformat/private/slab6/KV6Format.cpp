@@ -132,30 +132,27 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	// Dimensions of voxel. (our depth is kv6 height)
-	uint32_t xsiz_w, ysiz_d, zsiz_h;
-	wrap(stream.readUInt32(xsiz_w))
-	wrap(stream.readUInt32(ysiz_d))
-	wrap(stream.readUInt32(zsiz_h))
+	uint32_t width, depth, height;
+	wrap(stream.readUInt32(width))
+	wrap(stream.readUInt32(depth))
+	wrap(stream.readUInt32(height))
 
-	if (xsiz_w > 256 || ysiz_d > 256 || zsiz_h > 255) {
-		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", xsiz_w, zsiz_h, ysiz_d);
+	if (width > 256 || depth > 256 || height > 255) {
+		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", width, height, depth);
 		return false;
 	}
 
 	scenegraph::SceneGraphTransform transform;
 	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x))
-	wrap(stream.readFloat(pivot.y))
-	wrap(stream.readFloat(pivot.z))
+	wrap(stream.readFloat(pivot.x)) // width
+	wrap(stream.readFloat(pivot.z)) // depth
+	wrap(stream.readFloat(pivot.y)) // height
 
-	pivot.z = (float)zsiz_h - 1.0f - pivot.z;
+	glm::vec3 normalizedPivot = pivot / glm::vec3(width, height, depth);
 
-	glm::vec3 normalizedPivot = pivot / glm::vec3(xsiz_w, ysiz_d, zsiz_h);
-	core::exchange(normalizedPivot.y, normalizedPivot.z);
-
-	const voxel::Region region(0, 0, 0, (int)xsiz_w - 1, (int)zsiz_h - 1, (int)ysiz_d - 1);
+	const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
 	if (!region.isValid()) {
-		Log::error("Invalid region: %i:%i:%i", xsiz_w, zsiz_h, ysiz_d);
+		Log::error("Invalid region: %i:%i:%i", width, height, depth);
 		return false;
 	}
 
@@ -168,8 +165,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	const int64_t headerSize = 32;
-	const int64_t xLenSize = (int64_t)(xsiz_w * sizeof(uint32_t));
-	const int64_t yLenSize = (int64_t)((size_t)xsiz_w * (size_t)ysiz_d * sizeof(uint16_t));
+	const int64_t xLenSize = (int64_t)(width * sizeof(uint32_t));
+	const int64_t yLenSize = (int64_t)((size_t)width * (size_t)depth * sizeof(uint16_t));
 	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xLenSize + yLenSize;
 	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
@@ -206,13 +203,13 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		Log::debug("voxel %u/%u z-low: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
 	}
-	for (uint32_t x = 0u; x < xsiz_w; ++x) {
+	for (uint32_t x = 0u; x < width; ++x) {
 		wrap(stream.readInt32(state->xlen[x]))
 		Log::debug("xlen[%u]: %i", x, state->xlen[x]);
 	}
 
-	for (uint32_t x = 0u; x < xsiz_w; ++x) {
-		for (uint32_t y = 0u; y < ysiz_d; ++y) {
+	for (uint32_t x = 0u; x < width; ++x) {
+		for (uint32_t y = 0u; y < depth; ++y) {
 			wrap(stream.readUInt16(state->xyoffset[x][y]))
 			Log::debug("xyoffset[%u][%u]: %u", x, y, state->xyoffset[x][y]);
 		}
@@ -221,19 +218,19 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
 	int idx = 0;
-	for (uint32_t x = 0; x < xsiz_w; ++x) {
-		for (uint32_t y = 0; y < ysiz_d; ++y) {
+	for (uint32_t x = 0; x < width; ++x) {
+		for (uint32_t y = 0; y < depth; ++y) {
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
 				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
-				volume->setVoxel((int)x, (int)((zsiz_h - 1) - vox.z), (int)y, col);
+				volume->setVoxel((int)x, (int)((height - 1) - vox.z), (int)y, col);
 			}
 		}
 	}
 
 	idx = 0;
-	for (uint32_t x = 0; x < xsiz_w; ++x) {
-		for (uint32_t y = 0; y < ysiz_d; ++y) {
+	for (uint32_t x = 0; x < width; ++x) {
+		for (uint32_t y = 0; y < depth; ++y) {
 			voxel::Voxel lastCol;
 			uint32_t lastZ = 256;
 			for (int end = idx + state->xyoffset[x][y]; idx < end; ++idx) {
@@ -244,7 +241,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				}
 				if ((vox.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::None) {
 					for (; lastZ < vox.z; ++lastZ) {
-						volume->setVoxel((int)x, (int)((zsiz_h - 1) - lastZ), (int)y, lastCol);
+						volume->setVoxel((int)x, (int)((height - 1) - lastZ), (int)y, lastCol);
 					}
 				}
 			}
@@ -287,7 +284,10 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	int32_t xoffsets[256]{};
 	uint16_t xyoffsets[256][256]{}; // our z
 
+	constexpr uint32_t MAXVOXS = 1048576;
 	core::DynamicArray<priv::VoxtypeKV6> voxdata;
+	voxdata.reserve(MAXVOXS);
+
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
 		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
@@ -306,7 +306,6 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		},
 		voxelutil::VisitorOrder::XZY);
 
-	constexpr uint32_t MAXVOXS = 1048576;
 	if (numvoxs > MAXVOXS) {
 		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, MAXVOXS);
 		return false;
@@ -322,10 +321,10 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(ysiz_d))
 	wrapBool(stream.writeUInt32(zsiz_h))
 
-	glm::vec3 pivot(0.0f);
-	wrapBool(stream.writeFloat(-pivot.x))
+	glm::vec3 pivot = node->pivot() * glm::vec3(region.getDimensionsInVoxels());
+	wrapBool(stream.writeFloat(pivot.x))
 	wrapBool(stream.writeFloat(pivot.z))
-	wrapBool(stream.writeFloat(-pivot.y))
+	wrapBool(stream.writeFloat(pivot.y))
 
 	wrapBool(stream.writeUInt32(numvoxs))
 
