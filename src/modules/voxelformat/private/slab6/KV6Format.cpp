@@ -107,7 +107,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		wrap(stream.readUInt8(palb))
 		wrap(stream.readUInt8(palg))
 		wrap(stream.readUInt8(palr))
-		core::RGBA color(palr, palg, palb, 255);
+		core::RGBA color(palr, palg, palb);
 		palette.addColorToPalette(color);
 		stream.skip(5);
 	}
@@ -179,7 +179,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 					wrap(stream.readUInt8(b))
 					wrap(stream.readUInt8(g))
 					wrap(stream.readUInt8(r))
-					palette.color(i) = core::RGBA(r, g, b, 255u);
+					palette.color(i) = core::RGBA(r, g, b);
 				}
 			}
 		}
@@ -188,21 +188,22 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	core::ScopedPtr<priv::State> state(new priv::State());
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
-		uint8_t palr, palg, palb, pala;
+		uint8_t palr, palg, palb;
 		wrap(stream.readUInt8(palb))
 		wrap(stream.readUInt8(palg))
 		wrap(stream.readUInt8(palr))
-		wrap(stream.readUInt8(pala)) // always 128
-		core::RGBA color(palr, palg, palb, 255);
-		palette.addColorToPalette(color, false, &state->voxdata[c].col);
+		wrap(stream.skip(1))
 		wrap(stream.readUInt8(state->voxdata[c].z))
-		uint8_t zhigh;
-		wrap(stream.readUInt8(zhigh))
+		wrap(stream.skip(1))
 		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
+
+		core::RGBA color(palr, palg, palb);
+		palette.addColorToPalette(color, false, &state->voxdata[c].col);
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
 	}
+
 	for (uint32_t x = 0u; x < width; ++x) {
 		wrap(stream.readInt32(state->xoffsets[x]))
 		Log::debug("xlen[%u]: %i", x, state->xoffsets[x]);
