@@ -17,7 +17,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Face.h"
 #include "voxel/Palette.h"
-#include "voxel/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
@@ -29,11 +28,14 @@ namespace priv {
 constexpr uint32_t MAXVOXS = 1048576;
 
 struct VoxtypeKV6 {
-	uint8_t z = 0;	 ///< z coordinate of this surface voxel (height - our y)
-	uint8_t col = 0; ///< palette index
-	SLABVisibility vis =
-		SLABVisibility::None; ///< Low 6 bits say if neighbor is solid or air - @sa priv::SLABVisibility
-	uint8_t dir = 0;		  ///< Uses 256-entry lookup table - lighting bit - @sa priv::directions
+	/** z coordinate of this surface voxel (height - our y) */
+	uint8_t z = 0;
+	/** palette index */
+	uint8_t col = 0;
+	/** Low 6 bits say if neighbor is solid or air - @sa priv::SLABVisibility */
+	SLABVisibility vis = SLABVisibility::None;
+	/** Uses 256-entry lookup table - lighting bit - @sa priv::directions */
+	uint8_t dir = 0;
 };
 
 struct State {
@@ -42,8 +44,9 @@ struct State {
 	uint16_t xyoffset[256][256]{};
 };
 
+// lighting value that distributes above a radius of 3 around the position
 static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel::Voxel &) {
-	return 255u; // TODO
+	return 0u; // TODO
 }
 
 } // namespace priv
@@ -96,7 +99,20 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 			return palette.size();
 		}
 	}
-	return 0;
+
+	stream.seek(headerSize);
+
+	for (uint32_t c = 0u; c < numvoxs; ++c) {
+		uint8_t palr, palg, palb;
+		wrap(stream.readUInt8(palb))
+		wrap(stream.readUInt8(palg))
+		wrap(stream.readUInt8(palr))
+		core::RGBA color(palr, palg, palb, 255);
+		palette.addColorToPalette(color);
+		stream.skip(5);
+	}
+
+	return palette.size();
 }
 
 #undef wrap
@@ -174,15 +190,14 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	stream.seek(headerSize);
 
 	core::ScopedPtr<priv::State> state(new priv::State());
-	voxel::PaletteLookup palLookup(palette);
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		uint8_t palr, palg, palb, pala;
 		wrap(stream.readUInt8(palb))
 		wrap(stream.readUInt8(palg))
 		wrap(stream.readUInt8(palr))
 		wrap(stream.readUInt8(pala)) // always 128
-		const glm::vec4 &color = core::Color::fromRGBA(palr, palg, palb, 255);
-		state->voxdata[c].col = palLookup.findClosestIndex(color);
+		core::RGBA color(palr, palg, palb, 255);
+		palette.addColorToPalette(color, false, &state->voxdata[c].col);
 		wrap(stream.readUInt8(state->voxdata[c].z))
 		uint8_t zhigh;
 		wrap(stream.readUInt8(zhigh))
@@ -242,7 +257,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setPivot(normalizedPivot);
 	node.setTransform(keyFrameIdx, transform);
-	node.setPalette(palLookup.palette());
+	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 
 	return true;
@@ -276,17 +291,18 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
 		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			priv::VoxtypeKV6 vd;
 			const int shiftedX = x - region.getLowerX();
-			// flip y and z here
+			const int shiftedY = y - region.getLowerY();
 			const int shiftedZ = z - region.getLowerZ();
-			vd.z = region.getHeightInCells() - (y - region.getLowerY());
+			++xoffsets[shiftedX];
+			++xyoffsets[shiftedX][shiftedZ];
+
+			priv::VoxtypeKV6 vd;
+			vd.z = region.getHeightInCells() - shiftedY;
 			vd.col = voxel.getColor();
 			vd.vis = priv::calculateVisibility(node->volume(), x, y, z);
 			vd.dir = priv::calculateDir(node->volume(), x, y, z, voxel);
 			voxdata.push_back(vd);
-			++xoffsets[shiftedX];
-			++xyoffsets[shiftedX][shiftedZ];
 		},
 		voxelutil::VisitorOrder::XZY);
 
@@ -318,7 +334,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeUInt8(color.b))
 		wrapBool(stream.writeUInt8(color.g))
 		wrapBool(stream.writeUInt8(color.r))
-		wrapBool(stream.writeUInt8(128))
+		wrapBool(stream.writeUInt8(0)) // 128
 		wrapBool(stream.writeUInt8(data.z))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8((uint8_t)data.vis))
@@ -328,13 +344,13 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (int x = 0u; x < xsiz_w; ++x) {
 		wrapBool(stream.writeInt32(xoffsets[x]))
-		Log::debug("xlen[%u]: %i", x, xoffsets[x]);
+		Log::debug("xoffsets[%u]: %i", x, xoffsets[x]);
 	}
 
 	for (int x = 0; x < xsiz_w; ++x) {
 		for (int y = ysiz_d - 1; y >= 0; --y) {
 			wrapBool(stream.writeUInt16(xyoffsets[x][y]))
-			Log::debug("xyoffset[%u][%u]: %u", x, y, xyoffsets[x][y]);
+			Log::debug("xyoffsets[%u][%u]: %u", x, y, xyoffsets[x][y]);
 		}
 	}
 
