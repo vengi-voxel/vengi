@@ -216,6 +216,13 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 	return true;
 }
 
+void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
+	const glm::ivec3& lowerCorner = _region.getLowerCorner();
+	const glm::ivec3 localPos = pos - lowerCorner;
+	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
+	_data[index] = voxel;
+}
+
 /**
  * This function should probably be made internal...
  */

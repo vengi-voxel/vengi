@@ -199,6 +199,7 @@ public:
 	 * Sets the voxel at the position given by a 3D vector
 	 */
 	bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
+	void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
 
 	void clear();
 
