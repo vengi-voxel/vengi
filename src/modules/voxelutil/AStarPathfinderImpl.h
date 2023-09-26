@@ -97,7 +97,7 @@ public:
 
 	void insert(AllNodesContainer::iterator node) {
 		open.push_back(node);
-		push_heap(open.begin(), open.end(), NodeSort());
+		std::push_heap(open.begin(), open.end(), NodeSort());
 	}
 
 	inline AllNodesContainer::iterator getFirst() {
@@ -105,13 +105,13 @@ public:
 	}
 
 	void removeFirst() {
-		pop_heap(open.begin(), open.end(), NodeSort());
+		std::pop_heap(open.begin(), open.end(), NodeSort());
 		open.pop_back();
 	}
 
 	void remove(iterator iterToRemove) {
 		open.erase(iterToRemove);
-		make_heap(open.begin(), open.end(), NodeSort());
+		std::make_heap(open.begin(), open.end(), NodeSort());
 	}
 
 	inline iterator begin() {
