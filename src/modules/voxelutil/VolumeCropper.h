@@ -40,6 +40,9 @@ voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& m
  */
 template<class CropSkipCondition = CropSkipEmpty>
 voxel::RawVolume *cropVolume(const voxel::RawVolume *volume) {
+	if (volume == nullptr) {
+		return nullptr;
+	}
 	core_trace_scoped(CropRawVolume);
 	glm::ivec3 newMins((std::numeric_limits<int>::max)() / 2);
 	glm::ivec3 newMaxs((std::numeric_limits<int>::min)() / 2);
