@@ -58,6 +58,7 @@
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
+#include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include "voxelutil/ImageUtils.h"
@@ -616,13 +617,42 @@ void SceneManager::scaleDown(int nodeId) {
 	modified(nodeId, srcRegion);
 }
 
+void SceneManager::splitObjects() {
+	const int nodeId = activeNode();
+	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return;
+	}
+	voxel::RawVolume* v = node->volume();
+	if (v == nullptr) {
+		return;
+	}
+	core::DynamicArray<voxel::RawVolume *> volumes;
+	voxelutil::splitObjects(v, volumes);
+	if (volumes.empty()) {
+		return;
+	}
+
+	for (voxel::RawVolume *newVolume : volumes) {
+		scenegraph::SceneGraphNode newNode;
+		newNode.setVolume(newVolume, true);
+		newNode.setName(node->name());
+		newNode.setPalette(node->palette());
+		addNodeToSceneGraph(newNode, nodeId);
+	}
+}
+
 void SceneManager::crop() {
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
-	voxel::RawVolume* newVolume = voxelutil::cropVolume(node->volume());
+	voxel::RawVolume* v = node->volume();
+	if (v == nullptr) {
+		return;
+	}
+	voxel::RawVolume* newVolume = voxelutil::cropVolume(v);
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -1628,6 +1658,10 @@ void SceneManager::construct() {
 	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
 	}).setHelp("Crop the current active node to the voxel boundaries");
+
+	command::Command::registerCommand("splitobjects", [&] (const command::CmdArgs& args) {
+		splitObjects();
+	}).setHelp("Split the current active node into multiple nodes");
 
 	command::Command::registerCommand("scaledown", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
