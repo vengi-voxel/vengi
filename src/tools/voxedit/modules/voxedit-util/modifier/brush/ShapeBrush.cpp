@@ -216,6 +216,9 @@ bool ShapeBrush::needsFurtherAction(const BrushContext &context) const {
 
 bool ShapeBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context) {
+	if (_aabbFace == voxel::FaceNames::Max) {
+		return false;
+	}
 	const voxel::Region region = calcRegion(context);
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
