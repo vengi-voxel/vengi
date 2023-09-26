@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -22,6 +23,16 @@ protected:
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+
+	/**
+	 * @brief KWALK kv6 sprite animations
+	 *
+	 * The kfa file and the kv6 file must have the same basename
+	 *
+	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/share/documentation/kwalkhlp.txt
+	 */
+	bool loadKFA(const core::String &filename, const voxel::RawVolume *volume, scenegraph::SceneGraph &sceneGraph,
+				 const voxel::Palette &palette);
 
 public:
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,

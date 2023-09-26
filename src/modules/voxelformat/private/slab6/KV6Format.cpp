@@ -4,6 +4,7 @@
 
 #include "KV6Format.h"
 #include "SLABShared.h"
+#include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Enum.h"
@@ -13,11 +14,16 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/Vector.h"
+#include "io/FileStream.h"
+#include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/Face.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
@@ -44,10 +50,39 @@ struct State {
 	uint16_t xyoffsets[256][256]{};
 };
 
+struct KFAPoint3d {
+	float x;
+	float y;
+	float z;
+};
+
+struct KFAHinge {
+	int32_t parent;	 // index to parent sprite (-1=none)
+	KFAPoint3d p[2]; // "velcro" point of each object
+	KFAPoint3d v[2]; // axis of rotation for each object
+	int16_t vmin;	 // min value
+	int16_t vmax;	 // max value
+	int8_t type;
+	int8_t filler[7]{};
+};
+
+struct KFASeqTyp {
+	int32_t time;
+	int32_t frame;
+};
+
+struct KFAData {
+	core::Buffer<KFAHinge> hinge;				//[numhinge]
+	core::Buffer<core::Buffer<int16_t>> frmval; //[numfrm][numhin]
+	core::Buffer<KFASeqTyp> seq;				//[seqnum]
+};
+
 // lighting value that distributes above a radius of 3 around the position
 static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel::Voxel &) {
 	return 0u; // TODO
 }
+
+const uint32_t MAXSPRITES = 1024;
 
 } // namespace priv
 
@@ -55,6 +90,12 @@ static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel
 	if ((read) != 0) {                                                                                                 \
 		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read));                        \
 		return 0;                                                                                                      \
+	}
+
+#define wrapBool(read)                                                                                                 \
+	if ((read) == false) {                                                                                             \
+		Log::error("Could not load kv6 file: Not enough space in stream " CORE_STRINGIFY(read));                       \
+		return false;                                                                                                  \
 	}
 
 size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
@@ -122,6 +163,114 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		return false;                                                                                                  \
 	}
 
+bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *volume,
+						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	const io::FilePtr &kfaFile = filesystem->open(filename);
+	if (!kfaFile->validHandle()) {
+		// if there is no hva file, we still don't show an error
+		return false;
+	}
+	io::FileStream stream(kfaFile);
+	uint32_t magic;
+	wrap(stream.readUInt32(magic))
+	if (magic != FourCC('K', 'w', 'l', 'k')) {
+		Log::error("Invalid magic number");
+		return false;
+	}
+	core::String kv6Name;
+	wrapBool(stream.readPascalStringUInt32LE(kv6Name))
+	Log::debug("kv6Name: %s", kv6Name.c_str());
+
+	priv::KFAData kfa;
+	uint32_t numHinge;
+	wrap(stream.readUInt32(numHinge))
+	if (numHinge >= priv::MAXSPRITES) {
+		Log::error("Max allowed hinges exceeded: %u (max is %u)", numHinge, priv::MAXSPRITES);
+		return false;
+	}
+	Log::debug("numhinge: %u", numHinge);
+	kfa.hinge.reserve(numHinge);
+	for (uint32_t i = 0; i < numHinge; ++i) {
+		priv::KFAHinge hinge;
+		wrap(stream.readInt32(hinge.parent))
+		for (int n = 0; n < 2; ++n) {
+			wrap(stream.readFloat(hinge.p[n].x))
+			wrap(stream.readFloat(hinge.p[n].z))
+			wrap(stream.readFloat(hinge.p[n].y))
+		}
+		for (int n = 0; n < 2; ++n) {
+			wrap(stream.readFloat(hinge.v[n].x))
+			wrap(stream.readFloat(hinge.v[n].z))
+			wrap(stream.readFloat(hinge.v[n].y))
+		}
+		wrap(stream.readInt16(hinge.vmin))
+		wrap(stream.readInt16(hinge.vmax))
+		wrap(stream.readInt8(hinge.type))
+		wrap(stream.skip(7))
+		kfa.hinge.push_back(hinge);
+	}
+	uint32_t numFrames;
+	wrap(stream.readUInt32(numFrames))
+	Log::debug("numfrm: %u", numFrames);
+	kfa.frmval.resize(numFrames);
+	for (uint32_t i = 0; i < numFrames; ++i) {
+		kfa.frmval[i].reserve(numHinge);
+		for (uint32_t j = 0; j < numHinge; ++j) {
+			int16_t val;
+			wrap(stream.readInt16(val))
+			kfa.frmval[i].push_back(val);
+		}
+	}
+	uint32_t numSequences;
+	wrap(stream.readUInt32(numSequences))
+	Log::debug("numseq: %u", numSequences);
+	kfa.seq.reserve(numSequences);
+	for (uint32_t i = 0; i < numSequences; ++i) {
+		priv::KFASeqTyp seq;
+		wrap(stream.readInt32(seq.time))
+		wrap(stream.readInt32(seq.frame))
+		kfa.seq.push_back(seq);
+	}
+
+	core::DynamicArray<voxel::RawVolume *> volumes;
+	// TODO: the order here matters for the references in the kfa structs
+	voxelutil::splitObjects(volume, volumes);
+	if (volumes.empty()) {
+		Log::error("Could not split volume into single objects");
+		return false;
+	}
+
+	Log::debug("Split into %i objects", (int)volumes.size());
+	if (kfa.hinge.size() > volumes.size() + 1) {
+		Log::error("kfa hinge count doesn't match kv6 objects");
+		return false;
+	}
+
+	for (voxel::RawVolume *v : volumes) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		scenegraph::SceneGraphTransform transform;
+		const uint32_t fps = 20; // TODO fps?
+		const uint32_t div = 1000 / fps;
+		for (const priv::KFASeqTyp &seq : kfa.seq) {
+			scenegraph::KeyFrameIndex kexFrameIdx = node.addKeyFrame(seq.time / div);
+			(void)kexFrameIdx;
+			// TODO: implement keyframe loading
+		}
+		node.setVolume(v, true);
+		node.setName(filename);
+		node.setPalette(palette);
+		// TODO: proper parenting
+		int parent = 0;
+		if (sceneGraph.emplace(core::move(node), parent) == InvalidNodeId) {
+			Log::error("Failed to add node to scene graph");
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
@@ -142,7 +291,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	scenegraph::SceneGraphTransform transform;
 	glm::vec3 pivot;
 	wrap(stream.readFloat(pivot.x)) // width
 	wrap(stream.readFloat(pivot.z)) // depth
@@ -249,18 +397,23 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		}
 	}
 
-	scenegraph::SceneGraphNode node;
+	const core::String &basename = core::string::stripExtension(filename);
+	if (loadKFA(basename + ".kfa", volume, sceneGraph, palette)) {
+		delete volume;
+		return true;
+	}
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
 	node.setName(filename);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setPivot(normalizedPivot);
+	scenegraph::SceneGraphTransform transform;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palette);
-	sceneGraph.emplace(core::move(node));
-
-	return true;
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 
+#undef wrapBool
 #undef wrap
 
 #define wrapBool(read)                                                                                                 \
