@@ -207,10 +207,8 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 		return false;
 	}
 	const glm::ivec3& lowerCorner = _region.getLowerCorner();
-	const int32_t localXPos = pos.x - lowerCorner.x;
-	const int32_t localYPos = pos.y - lowerCorner.y;
-	const int32_t iLocalZPos = pos.z - lowerCorner.z;
-	const int index = localXPos + localYPos * width() + iLocalZPos * width() * height();
+	const glm::ivec3 localPos = pos - lowerCorner;
+	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
 	if (_data[index].isSame(voxel)) {
 		return false;
 	}
