@@ -16,4 +16,6 @@ namespace voxelutil {
 void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 				 core::DynamicArray<voxel::RawVolume *> &rawVolumes, bool createEmpty = false);
 
+void splitObjects(const voxel::RawVolume *v, core::DynamicArray<voxel::RawVolume *> &rawVolumes);
+
 } // namespace voxelutil

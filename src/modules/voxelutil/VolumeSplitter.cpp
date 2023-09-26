@@ -5,10 +5,76 @@
 #include "VolumeSplitter.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "voxelutil/VoxelUtil.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
+#include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VoxelUtil.h"
 
 namespace voxelutil {
+
+namespace priv {
+
+const glm::ivec3 neighbours[6] = {glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0),
+								  glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0), glm::ivec3(+1, 0, 0)};
+
+// special voxel to mark already visited voxels
+const uint8_t visitedFlag = 1u;
+const voxel::Voxel visited(voxel::VoxelType::Air, 1, visitedFlag);
+
+} // namespace priv
+
+static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object, const glm::ivec3 position) {
+	if (!volume.region().containsPoint(position)) {
+		return;
+	}
+	voxel::Voxel voxel = volume.voxel(position);
+	if (voxel.getFlags() == priv::visitedFlag) {
+		return;
+	}
+	if (voxel::isAir(voxel.getMaterial())) {
+		volume.setVoxelUnsafe(position, priv::visited);
+		return;
+	}
+
+	object.setVoxel(position, voxel);
+	volume.setVoxelUnsafe(position, priv::visited);
+
+	for (int i = 0; i < 6; ++i) {
+		const glm::ivec3 p = position + priv::neighbours[i];
+		processNeighbours(volume, object, p);
+	}
+}
+
+void splitObjects(const voxel::RawVolume *v, core::DynamicArray<voxel::RawVolume *> &rawVolumes) {
+	voxel::RawVolume copy(*v);
+	copy.setBorderValue(priv::visited);
+	voxel::Region region = copy.region();
+	const glm::ivec3 &mins = region.getLowerCorner();
+	const glm::ivec3 &maxs = region.getUpperCorner();
+
+	for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			for (int x = mins.x; x <= maxs.x; ++x) {
+				const voxel::Voxel voxel = copy.voxel(x, y, z);
+				if (voxel.getFlags() == priv::visitedFlag) {
+					continue;
+				}
+				const glm::ivec3 position(x, y, z);
+				if (voxel::isAir(voxel.getMaterial())) {
+					copy.setVoxelUnsafe(position, priv::visited);
+					continue;
+				}
+
+				voxel::RawVolume *object = new voxel::RawVolume(copy.region());
+				processNeighbours(copy, *object, position);
+
+				voxel::RawVolume *cropped = voxelutil::cropVolume(object);
+				core_assert(cropped != nullptr);
+				rawVolumes.push_back(cropped);
+			}
+		}
+	}
+}
 
 void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 				 core::DynamicArray<voxel::RawVolume *> &rawVolumes, bool createEmpty) {
