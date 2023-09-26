@@ -16,10 +16,10 @@
 | MagicaVoxel                | vox       | X       | X      | X          | X       |            | [spec](https://github.com/ephtracy/voxel-model)                          |
 | MagicaVoxel                | xraw      | X       | X      | X          | X       |            |                                                                          |
 | Minecraft Level            | dat       | X       |        | X          | X       |            |                                                                          |
-| Minecraft Region           | mcr       | X       | X      | X          | X       |            | [spec](https://minecraft.gamepedia.com/Region_file_format)               |
-| Minecraft Schematics       | schematic | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
-| Minecraft Schematics       | schem     | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
-| Minecraft Schematics       | nbt       | X       |        | X          | X       |            | [spec](https://minecraft.fandom.com/wiki/Schematic_file_format)          |
+| Minecraft Region           | mcr       | X       | X      | X          | X       |            | [spec](https://minecraft.wiki/w/Region_file_format)               |
+| Minecraft Schematics       | schematic | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)          |
+| Minecraft Schematics       | schem     | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)          |
+| Minecraft Schematics       | nbt       | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)          |
 | Minetest                   | mts       | X       |        | X          | X       |            | [spec](https://dev.minetest.net/Minetest_Schematic_File_Format)          |
 | Nick's Voxel Model         | nvm       | X       |        | X          |         |            |                                                                          |
 | Qubicle Binary Tree        | qbt       | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |

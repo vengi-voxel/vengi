@@ -11,7 +11,7 @@ namespace voxelformat {
 /**
  * @brief Minecraft level dat format
  *
- * https://minecraft.fandom.com/wiki/Level.dat
+ * https://minecraft.wiki/w/Level.dat
  *
  * @ingroup Formats
  */
