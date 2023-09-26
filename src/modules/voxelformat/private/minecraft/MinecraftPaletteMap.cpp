@@ -826,8 +826,8 @@ int findPaletteIndex(const core::String &name, int defaultValue) {
 const PaletteMap &getPaletteMap() {
 	// https://gitlab.com/bztsrc/mtsedit/blob/master/etc/Mineclone2.gpl
 	// https://github.com/mcedit/mcedit2/tree/master/src/mceditlib/blocktypes
-	// https://minecraft.gamepedia.com/Java_Edition_data_values
-	// https://minecraft.gamepedia.com/Java_Edition_data_values/Pre-flattening#Block_IDs
+	// https://minecraft.wiki/w/Java_Edition_data_values
+	// https://minecraft.wiki/w/Java_Edition_data_values/Pre-flattening#Block_IDs
 	// https://github.com/erich666/Mineways/blob/c84d1dad8ef9c5d59008b3eabff0161aae9600d6/Win/nbt.cpp#L370
 	#define MCENTRY(name, pal, alpha) {name, {pal, alpha}}
 	static const PaletteMap mcPalette MCCOLORS;

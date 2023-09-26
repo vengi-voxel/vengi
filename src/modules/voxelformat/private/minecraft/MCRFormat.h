@@ -60,8 +60,8 @@ using NBTList = core::DynamicArray<NamedBinaryTag>;
  * @endcode
  *
  * @note https://github.com/Voxtric/Minecraft-Level-Ripper/blob/master/WorldConverterV2/Processor.cs
- * @note https://minecraft.fandom.com/wiki/Region_file_format
- * @note https://minecraft.fandom.com/wiki/Chunk_format
+ * @note https://minecraft.wiki/w/Region_file_format
+ * @note https://minecraft.wiki/w/Chunk_format
  * @note https://github.com/UnknownShadow200/ClassiCube/blob/master/src/Formats.c
  *
  * @ingroup Formats

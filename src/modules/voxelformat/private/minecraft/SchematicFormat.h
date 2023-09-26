@@ -18,7 +18,7 @@ class NamedBinaryTag;
 }
 
 /**
- * @note https://minecraft.fandom.com/wiki/Schematic_file_format
+ * @note https://minecraft.wiki/w/Schematic_file_format
  * @note https://github.com/SpongePowered/Schematic-Specification/tree/master/versions
  *
  * @ingroup Formats

@@ -99,7 +99,7 @@ struct NamedBinaryTagContext {
 };
 
 /**
- * @note https://minecraft.fandom.com/wiki/NBT_format
+ * @note https://minecraft.wiki/w/NBT_format
  * @note https://wiki.vg/NBT
  */
 class NamedBinaryTag {
