@@ -56,13 +56,23 @@ struct KFAPoint3d {
 	float z;
 };
 
+// Each hinge is a 1-D axis of rotation
 struct KFAHinge {
-	int32_t parent;	 // index to parent sprite (-1=none)
-	KFAPoint3d p[2]; // "velcro" point of each object
-	KFAPoint3d v[2]; // axis of rotation for each object
+	int32_t id;		// index to this sprite
+	int32_t parent; // index to parent sprite (-1=none)
+	// if parent is -1 the p[0] values are the mins of the object - the pivot
+	KFAPoint3d p[2]; // "velcro" point of each object [0 = child (self), 1 = parent]
+	// given vector v[0], returns a and b that makes (v[0], a, b) orthonormal
+	// r1.x = a.x * cos(frmval) + b.x * sin(frmval);
+	// r1.y = a.y * cos(frmval) + b.y * sin(frmval);
+	// r1.z = a.z * cos(frmval) + b.z * sin(frmval);
+	// r2.x = a.x * sin(frmval) - b.x * cos(frmval);
+	// r2.y = a.y * sin(frmval) - b.y * cos(frmval);
+	// r2.z = a.z * sin(frmval) - b.z * cos(frmval);
+	KFAPoint3d v[2]; // axis vector of rotation for each object [0 = child (self), 1 = parent]
 	int16_t vmin;	 // min value
 	int16_t vmax;	 // max value
-	int8_t type;
+	int8_t type;	 // 0 == rotate
 	int8_t filler[7]{};
 };
 
@@ -72,7 +82,8 @@ struct KFASeqTyp {
 };
 
 struct KFAData {
-	core::Buffer<KFAHinge> hinge;				//[numhinge]
+	core::Buffer<KFAHinge> hinge; //[numhinge]
+	// These are the hinge angles. 0 is 0 degrees, 16384 is 90 degrees, -16384 is -90 degrees
 	core::Buffer<core::Buffer<int16_t>> frmval; //[numfrm][numhin]
 	core::Buffer<KFASeqTyp> seq;				//[seqnum]
 };
@@ -193,6 +204,7 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 	kfa.hinge.reserve(numHinge);
 	for (uint32_t i = 0; i < numHinge; ++i) {
 		priv::KFAHinge hinge;
+		hinge.id = i;
 		wrap(stream.readInt32(hinge.parent))
 		for (int n = 0; n < 2; ++n) {
 			wrap(stream.readFloat(hinge.p[n].x))
@@ -217,9 +229,9 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		kfa.frmval[i].reserve(numHinge);
 		for (uint32_t j = 0; j < numHinge; ++j) {
-			int16_t val;
-			wrap(stream.readInt16(val))
-			kfa.frmval[i].push_back(val);
+			int16_t angle;
+			wrap(stream.readInt16(angle))
+			kfa.frmval[i].push_back(angle);
 		}
 	}
 	uint32_t numSequences;
@@ -242,9 +254,20 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 	}
 
 	Log::debug("Split into %i objects", (int)volumes.size());
+	for (const voxel::RawVolume *v : volumes) {
+		const voxel::Region &region = v->region();
+		Log::debug("region: %s", region.toString().c_str());
+	}
 	if (kfa.hinge.size() > volumes.size() + 1) {
 		Log::error("kfa hinge count doesn't match kv6 objects");
 		return false;
+	}
+
+	core::sort(kfa.hinge.begin(), kfa.hinge.end(),
+			   [](const priv::KFAHinge &a, const priv::KFAHinge &b) { return a.parent < b.parent; });
+
+	for (const priv::KFAHinge &hinge : kfa.hinge) {
+		Log::debug("id: %i, parent: %i", hinge.id, hinge.parent);
 	}
 
 	for (voxel::RawVolume *v : volumes) {
@@ -253,9 +276,15 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 		const uint32_t fps = 20; // TODO fps?
 		const uint32_t div = 1000 / fps;
 		for (const priv::KFASeqTyp &seq : kfa.seq) {
-			scenegraph::KeyFrameIndex kexFrameIdx = node.addKeyFrame(seq.time / div);
-			(void)kexFrameIdx;
+			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(seq.time / div);
+			if (keyFrameIdx == InvalidKeyFrame) {
+				Log::error("Failed to load keyframe %i", seq.time);
+				return false;
+			}
+			scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 			// TODO: implement keyframe loading
+			(void)transform;
 		}
 		node.setVolume(v, true);
 		node.setName(filename);
