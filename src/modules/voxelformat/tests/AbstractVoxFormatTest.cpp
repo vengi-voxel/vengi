@@ -277,6 +277,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename, Format &srcFormat,
 												const core::String &destFilename, Format &destFormat,
 												voxel::ValidateFlags flags, float maxDelta) {
+	SCOPED_TRACE("src: " + srcFilename);
 	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, sceneGraph)) << "Failed to load " << srcFilename;
 
@@ -285,6 +286,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 
 #if WRITE_TO_FILE
 	io::FilePtr sfile = open(destFilename, io::FileMode::SysWrite);
+	SCOPED_TRACE("target: " + sfile->name());
 	io::FileStream fileWriteStream(sfile);
 	writeStream = &fileWriteStream;
 #else
@@ -315,6 +317,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
 														  const core::String &destFilename, Format &destFormat,
 														  voxel::ValidateFlags flags, float maxDelta) {
+	SCOPED_TRACE("src: " + srcFilename);
 	scenegraph::SceneGraph srcSceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
 #if WRITE_TO_FILE
@@ -331,6 +334,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 	scenegraph::SceneGraph destSceneGraph;
 #if WRITE_TO_FILE
 	{
+		SCOPED_TRACE("target: " + destFilename);
 		io::FileStream stream(open(destFilename));
 		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx))
 			<< "Failed to load the target format";
