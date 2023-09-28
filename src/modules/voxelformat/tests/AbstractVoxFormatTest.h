@@ -61,6 +61,8 @@ protected:
 	void testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
 									   const core::String &destFilename, Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All,
 									   float maxDelta = 0.001f);
+	void testLoadSceneGraph(const core::String &srcFilename1, Format &srcFormat1, const core::String &srcFilename2,
+							Format &srcFormat2, voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 
 	io::FilePtr open(const core::String &filename, io::FileMode mode = io::FileMode::Read);
 

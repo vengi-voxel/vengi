@@ -315,6 +315,18 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, flags, maxDelta);
 }
 
+void AbstractVoxFormatTest::testLoadSceneGraph(const core::String &srcFilename1, Format &srcFormat1,
+									 const core::String &srcFilename2, Format &srcFormat2, voxel::ValidateFlags flags,
+									 float maxDelta) {
+	SCOPED_TRACE("src1: " + srcFilename1);
+	scenegraph::SceneGraph srcSceneGraph1;
+	ASSERT_TRUE(loadGroups(srcFilename1, srcFormat1, srcSceneGraph1)) << "Failed to load " << srcFilename1;
+	SCOPED_TRACE("src2: " + srcFilename2);
+	scenegraph::SceneGraph srcSceneGraph2;
+	ASSERT_TRUE(loadGroups(srcFilename2, srcFormat2, srcSceneGraph2)) << "Failed to load " << srcFilename2;
+	voxel::sceneGraphComparator(srcSceneGraph1, srcSceneGraph2, flags, maxDelta);
+}
+
 void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFilename, Format &srcFormat,
 														  const core::String &destFilename, Format &destFormat,
 														  voxel::ValidateFlags flags, float maxDelta) {
