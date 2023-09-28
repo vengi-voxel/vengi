@@ -109,6 +109,18 @@ const uint32_t MAXSPRITES = 1024;
 		return false;                                                                                                  \
 	}
 
+bool KV6Format::readColor(io::SeekableReadStream &stream, core::RGBA &color) const {
+	uint8_t r, g, b;
+	wrap(stream.readUInt8(b))
+	wrap(stream.readUInt8(g))
+	wrap(stream.readUInt8(r))
+	const float rf = ((float)r / 63.0f * 255.0f);
+	const float gf = ((float)g / 63.0f * 255.0f);
+	const float bf = ((float)b / 63.0f * 255.0f);
+	color = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
+	return true;
+}
+
 size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
 	uint32_t magic;
@@ -155,11 +167,8 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 	stream.seek(headerSize);
 
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
-		uint8_t palr, palg, palb;
-		wrap(stream.readUInt8(palb))
-		wrap(stream.readUInt8(palg))
-		wrap(stream.readUInt8(palr))
-		core::RGBA color(palr, palg, palb);
+		core::RGBA color;
+		wrap(readColor(stream, color))
 		palette.addColorToPalette(color);
 		stream.skip(5);
 	}
@@ -352,11 +361,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
-					uint8_t r, g, b;
-					wrap(stream.readUInt8(b))
-					wrap(stream.readUInt8(g))
-					wrap(stream.readUInt8(r))
-					palette.color(i) = core::RGBA(r, g, b);
+					core::RGBA color;
+					wrapBool(readColor(stream, color));
+					palette.color(i) = color;
 				}
 			}
 		}
@@ -365,17 +372,14 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	core::ScopedPtr<priv::State> state(new priv::State());
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
-		uint8_t palr, palg, palb;
-		wrap(stream.readUInt8(palb))
-		wrap(stream.readUInt8(palg))
-		wrap(stream.readUInt8(palr))
+		core::RGBA color;
+		wrapBool(readColor(stream, color));
 		wrap(stream.skip(1))
 		wrap(stream.readUInt8(state->voxdata[c].z))
 		wrap(stream.skip(1))
 		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 
-		core::RGBA color(palr, palg, palb);
 		palette.addColorToPalette(color, false, &state->voxdata[c].col);
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
@@ -451,6 +455,13 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;                                                                                                  \
 	}
 
+bool KV6Format::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
+	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
+	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
+	wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
+	return true;
+}
+
 bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -513,9 +524,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
-		wrapBool(stream.writeUInt8(color.b))
-		wrapBool(stream.writeUInt8(color.g))
-		wrapBool(stream.writeUInt8(color.r))
+		wrapBool(writeColor(stream, color))
 		wrapBool(stream.writeUInt8(0)) // 128
 		wrapBool(stream.writeUInt8(data.z))
 		wrapBool(stream.writeUInt8(0))
@@ -540,14 +549,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(palMagic))
 	for (int i = 0; i < node->palette().colorCount(); ++i) {
 		const core::RGBA color = node->palette().color(i);
-		wrapBool(stream.writeUInt8(color.b))
-		wrapBool(stream.writeUInt8(color.g))
-		wrapBool(stream.writeUInt8(color.r))
+		wrapBool(writeColor(stream, color))
 	}
 	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
-		wrapBool(stream.writeUInt8(0))
-		wrapBool(stream.writeUInt8(0))
-		wrapBool(stream.writeUInt8(0))
+		core::RGBA color(0);
+		wrapBool(writeColor(stream, color))
 	}
 
 	return true;

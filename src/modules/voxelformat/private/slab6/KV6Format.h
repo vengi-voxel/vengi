@@ -18,6 +18,9 @@ namespace voxelformat {
  */
 class KV6Format : public PaletteFormat {
 protected:
+	bool readColor(io::SeekableReadStream &stream, core::RGBA &color) const;
+	bool writeColor(io::SeekableWriteStream &stream, core::RGBA color) const;
+
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 						   const LoadContext &ctx) override;
