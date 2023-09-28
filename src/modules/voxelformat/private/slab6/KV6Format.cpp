@@ -114,10 +114,7 @@ bool KV6Format::readColor(io::SeekableReadStream &stream, core::RGBA &color) con
 	wrap(stream.readUInt8(b))
 	wrap(stream.readUInt8(g))
 	wrap(stream.readUInt8(r))
-	const float rf = ((float)r / 63.0f * 255.0f);
-	const float gf = ((float)g / 63.0f * 255.0f);
-	const float bf = ((float)b / 63.0f * 255.0f);
-	color = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
+	color = core::RGBA(r, g, b);
 	return true;
 }
 
@@ -456,9 +453,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 bool KV6Format::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
+	wrapBool(stream.writeUInt8(color.b))
+	wrapBool(stream.writeUInt8(color.g))
+	wrapBool(stream.writeUInt8(color.r))
 	return true;
 }
 
