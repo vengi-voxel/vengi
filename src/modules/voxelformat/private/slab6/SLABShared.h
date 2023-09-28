@@ -36,10 +36,10 @@ inline SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int 
 	}
 	// z (our y) is running from top to bottom
 	if ((visBits & voxel::FaceBits::NegativeY) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Up;
+		vis |= SLABVisibility::Down;
 	}
 	if ((visBits & voxel::FaceBits::PositiveY) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Down;
+		vis |= SLABVisibility::Up;
 	}
 	return vis;
 }

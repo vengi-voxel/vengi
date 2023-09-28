@@ -487,7 +487,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			vd.dir = priv::calculateDir(node->volume(), x, y, z, voxel);
 			voxdata.push_back(vd);
 		},
-		voxelutil::VisitorOrder::XZY);
+		voxelutil::VisitorOrder::XZmY);
 
 	if (numvoxs > MAXVOXS) {
 		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, MAXVOXS);
