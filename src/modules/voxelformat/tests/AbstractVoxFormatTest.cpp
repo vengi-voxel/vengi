@@ -297,6 +297,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, *writeStream, testSaveCtx)) << "Could not save " << destFilename;
 
 #if WRITE_TO_FILE
+	sfile->close();
 	io::FilePtr readfile = open(destFilename);
 	io::FileStream fileReadStream(readfile);
 	readStream = &fileReadStream;
