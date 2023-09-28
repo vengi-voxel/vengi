@@ -310,22 +310,29 @@ TEST_F(ConvertTest, testQbToGox) {
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testQBToKV6) {
 	QBFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testKV6ToKV6) {
+TEST_F(ConvertTest, testKV6ToKV6) {
 	KV6Format src;
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
 	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testKVXToKVX) {
+	KVXFormat src;
+	KVXFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testQbToKVX) {
@@ -333,7 +340,7 @@ TEST_F(ConvertTest, DISABLED_testQbToKVX) {
 	KVXFormat target;
 	// KVX has all colors in the palette set - and thus the color amount doesn't match
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags, 0.0013);
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testQbToKV6) {

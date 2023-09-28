@@ -5,14 +5,14 @@
 #include "TestHelper.h"
 #include "core/Common.h"
 #include "math/Random.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
@@ -62,8 +62,8 @@ namespace voxel {
 	return os << voxel::Palette::print(palette).c_str();
 }
 
-static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent) {
-	const scenegraph::SceneGraphNode& node = sceneGraph.node(nodeId);
+static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph, int nodeId, int indent) {
+	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const scenegraph::SceneGraphNodeType type = node.type();
 
 	os << os.iword(indent) << "Node: " << nodeId << "(parent " << node.parent() << ")" << std::endl;
@@ -74,7 +74,8 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph& sceneGr
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		voxel::RawVolume *v = node.volume();
 		int voxels = 0;
-		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume") << std::endl;
+		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume")
+		   << std::endl;
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++voxels; });
 		}
@@ -86,27 +87,32 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph& sceneGr
 		os << os.iword(indent) << "  |- farplane: " << cameraNode.farPlane() << std::endl;
 		os << os.iword(indent) << "  |- mode: " << (cameraNode.isOrthographic() ? "ortho" : "perspective") << std::endl;
 	}
-	for (const auto & entry : node.properties()) {
+	for (const auto &entry : node.properties()) {
 		os << os.iword(indent) << "  |- " << entry->key.c_str() << ": " << entry->value.c_str() << std::endl;
 	}
 	for (const scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
 		os << os.iword(indent) << "  |- keyframe: " << kf.frameIdx << std::endl;
 		os << os.iword(indent) << "    |- long rotation: " << (kf.longRotation ? "true" : "false") << std::endl;
-		os << os.iword(indent) << "    |- interpolation: " << scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)] << std::endl;
+		os << os.iword(indent)
+		   << "    |- interpolation: " << scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]
+		   << std::endl;
 		os << os.iword(indent) << "    |- transform" << std::endl;
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &tr  = transform.worldTranslation();
+		const glm::vec3 &tr = transform.worldTranslation();
 		os << os.iword(indent) << "      |- translation " << tr.x << ":" << tr.y << ":" << tr.z << std::endl;
 		const glm::vec3 &ltr = transform.localTranslation();
 		os << os.iword(indent) << "      |- local translation " << ltr.x << ":" << ltr.y << ":" << ltr.z << std::endl;
 		const glm::quat &rt = transform.worldOrientation();
 		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
-		os << os.iword(indent) << "      |- orientation :%f" << rt.x << ":" << rt.y << ":" << rt.z << ":" << rt.w << std::endl;
+		os << os.iword(indent) << "      |- orientation :%f" << rt.x << ":" << rt.y << ":" << rt.z << ":" << rt.w
+		   << std::endl;
 		os << os.iword(indent) << "        |- euler " << rtEuler.x << ":" << rtEuler.y << ":" << rtEuler.z << std::endl;
 		const glm::quat &lrt = transform.localOrientation();
 		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
-		os << os.iword(indent) << "      |- local orientation :%f" << lrt.x << ":" << lrt.y << ":" << lrt.z << ":" << lrt.w << std::endl;
-		os << os.iword(indent) << "        |- euler " << lrtEuler.x << ":" << lrtEuler.y << ":" << lrtEuler.z << std::endl;
+		os << os.iword(indent) << "      |- local orientation :%f" << lrt.x << ":" << lrt.y << ":" << lrt.z << ":"
+		   << lrt.w << std::endl;
+		os << os.iword(indent) << "        |- euler " << lrtEuler.x << ":" << lrtEuler.y << ":" << lrtEuler.z
+		   << std::endl;
 		const glm::vec3 &sc = transform.worldScale();
 		os << os.iword(indent) << "      |- scale " << sc.x << ":" << sc.y << ":" << sc.z << std::endl;
 		const glm::vec3 &lsc = transform.localScale();
@@ -118,7 +124,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph& sceneGr
 	}
 }
 
-::std::ostream &operator<<(::std::ostream &os, const scenegraph::SceneGraph& sceneGraph) {
+::std::ostream &operator<<(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph) {
 	dumpNode_r(os, sceneGraph, sceneGraph.root().id(), 0);
 	return os;
 }
@@ -141,12 +147,30 @@ void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, f
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
-		const float delta = core::Color::getDistance(c1, c2);
-		ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
-								   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
-								   << "\nPalette 1:\n"
-								   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
-								   << voxel::Palette::print(pal2);
+		if (c1 != c2) {
+			const float delta = core::Color::getDistance(c1, c2);
+			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
+									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+									   << "\nPalette 1:\n"
+									   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
+									   << voxel::Palette::print(pal2);
+		}
+	}
+}
+
+void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
+	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
+	for (int i = 0; i < n; ++i) {
+		const core::RGBA &c1 = pal1.color(i);
+		const core::RGBA &c2 = pal2.color(i);
+		if (c1 != c2) {
+			const float delta = core::Color::getDistance(c1, c2);
+			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
+									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+									   << "\nPalette 1:\n"
+									   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
+									   << voxel::Palette::print(pal2);
+		}
 	}
 }
 
@@ -174,7 +198,6 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 				const glm::mat3x3 lrot2 = t2.localMatrix();
 				ASSERT_EQ(wrot1, wrot2) << "Matrix failed for frame " << i;
 				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i;
-
 			}
 			if ((flags & ValidateFlags::Scale) == ValidateFlags::Scale) {
 				ASSERT_EQ(t1.worldScale(), t2.worldScale()) << "Scale failed for frame " << i;
@@ -197,9 +220,10 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 	}
 }
 
-void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, ValidateFlags flags, float maxDelta) {
-	const Region& r1 = volume1.region();
-	const Region& r2 = volume2.region();
+void volumeComparator(const voxel::RawVolume &volume1, const voxel::Palette &pal1, const voxel::RawVolume &volume2,
+					  const voxel::Palette &pal2, ValidateFlags flags, float maxDelta) {
+	const Region &r1 = volume1.region();
+	const Region &r2 = volume2.region();
 	if ((flags & ValidateFlags::Region) == ValidateFlags::Region) {
 		ASSERT_EQ(r1, r2) << "regions differ: " << r1.toString() << " vs " << r2.toString();
 	}
@@ -224,14 +248,14 @@ void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal
 			for (int32_t x1 = lowerX, x2 = lower2X; x1 <= upperX && x2 <= upper2X; ++x1, ++x2) {
 				s1.setPosition(x1, y1, z1);
 				s2.setPosition(x2, y2, z2);
-				const voxel::Voxel& voxel1 = s1.voxel();
-				const voxel::Voxel& voxel2 = s2.voxel();
+				const voxel::Voxel &voxel1 = s1.voxel();
+				const voxel::Voxel &voxel2 = s2.voxel();
 				ASSERT_EQ(voxel1.getMaterial(), voxel2.getMaterial())
-					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
-					<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
-					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "], color1["
-					<< core::Color::print(voxel1.getColor()) << "], color2[" << core::Color::print(voxel2.getColor())
-					<< "]";
+					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":" << z2
+					<< " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
+					<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", "
+					<< (int)voxel2.getColor() << "], color1[" << core::Color::print(voxel1.getColor()) << "], color2["
+					<< core::Color::print(voxel2.getColor()) << "]";
 				if (voxel::isAir(voxel1.getMaterial())) {
 					continue;
 				}
@@ -246,22 +270,26 @@ void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal
 					continue;
 				}
 
-				const core::RGBA& c1 = pal1.color(voxel1.getColor());
-				const core::RGBA& c2 = pal2.color(voxel2.getColor());
-				const float delta = core::Color::getDistance(c1, c2);
-				ASSERT_LT(delta, maxDelta)
-					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " in material - voxel1["
-					<< voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", " << (int)voxel1.getColor() << "], voxel2["
-					<< voxel::VoxelTypeStr[(int)voxel2.getMaterial()] << ", " << (int)voxel2.getColor() << "], color1["
-					<< core::Color::print(c1) << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]\n"
-					<< voxel::Palette::print(pal1) << "\n"
-					<< voxel::Palette::print(pal2);
+				const core::RGBA &c1 = pal1.color(voxel1.getColor());
+				const core::RGBA &c2 = pal2.color(voxel2.getColor());
+				if (c1 != c2) {
+					const float delta = core::Color::getDistance(c1, c2);
+					ASSERT_LT(delta, maxDelta)
+						<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"
+						<< z2 << " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
+						<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
+						<< ", " << (int)voxel2.getColor() << "], color1[" << core::Color::print(c1) << "], color2["
+						<< core::Color::print(c2) << "], delta[" << delta << "]\n"
+						<< voxel::Palette::print(pal1) << "\n"
+						<< voxel::Palette::print(pal2);
+				}
 			}
 		}
 	}
 }
 
-void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta) {
+void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
+						  ValidateFlags flags, float maxDelta) {
 	ASSERT_EQ(graph1.size(), graph2.size());
 	auto iter1 = graph1.beginModel();
 	auto iter2 = graph2.beginModel();
@@ -270,6 +298,8 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		const scenegraph::SceneGraphNode &node2 = *iter2;
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			paletteComparator(node1.palette(), node2.palette(), maxDelta);
+		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
+			partialPaletteComparator(node1.palette(), node2.palette(), maxDelta);
 		}
 		// it's intended that includingRegion is false here!
 		volumeComparator(*node1.volume(), node1.palette(), *node2.volume(), node2.palette(), flags, maxDelta);
@@ -280,4 +310,4 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 	}
 }
 
-}
+} // namespace voxel

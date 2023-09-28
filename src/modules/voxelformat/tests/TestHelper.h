@@ -47,14 +47,20 @@ enum class ValidateFlags {
 
 	IgnoreHollow = 128, // used in combination with mesh formats that got their hollows filled with generic,2 voxel
 
+	PaletteMinMatchingColors = 256, // only check the first n colors of a palette. There are formats that always have
+									// 256 colors, and if we compare those palettes to a palette of a format which also
+									// supports less colors, we would get a false negative
+
 	Transform = Animations | Scale | Pivot | Translation,
 	All = Palette | Color | Transform, // no region here
+	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform, // no region here
 
 	Max
 };
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags);
 
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel);
+void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
 void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
