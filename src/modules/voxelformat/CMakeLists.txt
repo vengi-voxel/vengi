@@ -125,6 +125,7 @@ set(TEST_FILES
 	tests/test.binvox
 	tests/test.kvx
 	tests/test.kv6
+	tests/test2.kv6
 	tests/minecraft_110.mca
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox

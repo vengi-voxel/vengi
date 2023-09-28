@@ -328,6 +328,13 @@ TEST_F(ConvertTest, testKV6ToKV6) {
 	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
 }
 
+TEST_F(ConvertTest, DISABLED_testKV6ToKV62) {
+	KV6Format src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test2.kv6", src, "convert-test2.kv6", target, flags);
+}
+
 TEST_F(ConvertTest, DISABLED_testKVXToKVX) {
 	KVXFormat src;
 	KVXFormat target;
