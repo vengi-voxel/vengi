@@ -46,6 +46,45 @@ TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
 	EXPECT_EQ(8, cnt);
 }
 
+TEST_F(VolumeVisitorTest, testVisitVisibleSurface) {
+	const voxel::Region region(0, 0, 0, 3, 5, 3);
+	const voxel::Voxel voxel1 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	const voxel::Voxel voxel2 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel voxel3 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
+	voxel::RawVolume volume(region);
+	EXPECT_TRUE(volume.setVoxel(1, 1, 1, voxel1));
+	EXPECT_TRUE(volume.setVoxel(1, 2, 1, voxel2));
+	EXPECT_TRUE(volume.setVoxel(1, 3, 1, voxel3));
+
+	int idx = 0;
+	int cnt = visitSurfaceVolume(
+		volume, [&](int, int, int, const voxel::Voxel &voxel) {
+			if (idx == 0) {
+				EXPECT_EQ(1, voxel.getColor());
+			} else if (idx == 1) {
+				EXPECT_EQ(2, voxel.getColor());
+			} else if (idx == 2) {
+				EXPECT_EQ(3, voxel.getColor());
+			}
+			++idx;
+		}, VisitorOrder::XZY);
+	EXPECT_EQ(3, cnt);
+
+	idx = 0;
+	cnt = visitSurfaceVolume(
+		volume, [&](int, int, int, const voxel::Voxel &voxel) {
+			if (idx == 0) {
+				EXPECT_EQ(3, voxel.getColor());
+			} else if (idx == 1) {
+				EXPECT_EQ(2, voxel.getColor());
+			} else if (idx == 2) {
+				EXPECT_EQ(1, voxel.getColor());
+			}
+			++idx;
+		}, VisitorOrder::XZmY);
+	EXPECT_EQ(3, cnt);
+}
+
 class VolumeVisitorParamTest :
 		public app::AbstractTest,
 		public ::testing::WithParamInterface<VisitorOrder> {
