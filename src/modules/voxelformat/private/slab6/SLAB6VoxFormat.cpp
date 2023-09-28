@@ -48,8 +48,10 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 		wrap(stream.readUInt8(r))
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
-
-		palette.color(i) = core::RGBA(r, g, b);
+		const float rf = ((float)r / 63.0f * 255.0f);
+		const float gf = ((float)g / 63.0f * 255.0f);
+		const float bf = ((float)b / 63.0f * 255.0f);
+		palette.color(i) = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
@@ -67,7 +69,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 				}
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, palIdx);
 				// we have to flip depth with height for our own coordinate system
-				volume->setVoxel((int)width - (int)w - 1, (int)height - (int)h - 1, (int)d, voxel);
+				volume->setVoxel(w, (int)height - (int)h - 1, (int)d, voxel);
 			}
 		}
 	}
@@ -93,7 +95,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	wrapBool(stream.writeUInt32(dim.y))
 
 	// we have to flip depth with height for our own coordinate system
-	for (int w = region.getUpperX(); w >= region.getLowerX(); --w) {
+	for (int w = region.getLowerX(); w <= region.getUpperX(); ++w) {
 		for (int d = region.getLowerZ(); d <= region.getUpperZ(); ++d) {
 			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
 				const voxel::Voxel &voxel = node->volume()->voxel(w, h, d);
@@ -109,13 +111,12 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		const core::RGBA &rgba = palette.color(i);
-		wrapBool(stream.writeUInt8(rgba.r))
-		wrapBool(stream.writeUInt8(rgba.g))
-		wrapBool(stream.writeUInt8(rgba.b))
+		const core::RGBA &color = palette.color(i);
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
+		wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
 	}
 	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
-		;
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
