@@ -331,7 +331,7 @@ TEST_F(ConvertTest, DISABLED_testKV6ToKV6) {
 TEST_F(ConvertTest, DISABLED_testQbToKVX) {
 	QBFormat src;
 	KVXFormat target;
-	// KVX has all colors set
+	// KVX has all colors in the palette set - and thus the color amount doesn't match
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags, 0.0013);
 }

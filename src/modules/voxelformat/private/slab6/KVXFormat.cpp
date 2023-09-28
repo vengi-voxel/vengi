@@ -110,20 +110,20 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 * overhead in calculating the positions.  See example of usage in voxdata.
 	 * NOTE: xoffset[0] = (xsiz+1)*4 + xsiz*(ysiz+1)*2 (ALWAYS)
 	 */
-	uint16_t xyoffset[256][257];
-	uint32_t xoffset[257];
+	uint16_t xyoffsets[256][257];
+	uint32_t xoffsets[257];
 	for (uint32_t x = 0u; x <= xsiz_w; ++x) {
-		wrap(stream.readUInt32(xoffset[x]))
+		wrap(stream.readUInt32(xoffsets[x]))
 	}
 
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
 		for (uint32_t y = 0u; y <= ysiz_d; ++y) {
-			wrap(stream.readUInt16(xyoffset[x][y]))
+			wrap(stream.readUInt16(xyoffsets[x][y]))
 		}
 	}
 
 	const uint32_t offset = (xsiz_w + 1) * 4 + xsiz_w * (ysiz_d + 1) * 2;
-	if (xoffset[0] != offset) {
+	if (xoffsets[0] != offset) {
 		Log::error("Invalid offset values found");
 		return false;
 	}
@@ -170,8 +170,8 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
-			const uint16_t end = xyoffset[x][y + 1];
-			const uint16_t start = xyoffset[x][y];
+			const uint16_t end = xyoffsets[x][y + 1];
+			const uint16_t start = xyoffsets[x][y];
 			int32_t n = end - start;
 			uint32_t lastZ = 0;
 
