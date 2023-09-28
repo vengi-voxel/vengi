@@ -86,6 +86,8 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 	const char *fmode = "rb";
 	if (mode == FileMode::Write || mode == FileMode::SysWrite) {
 		fmode = "wb";
+	} else if (mode == FileMode::Append) {
+		fmode = "ab";
 	}
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
 	if (rwops == nullptr) {
@@ -246,6 +248,9 @@ int File::read(void *buf, size_t size, size_t maxnum) {
 bool File::flush() {
 	if (_file != nullptr) {
 		SDL_RWclose(_file);
+		if (_mode == FileMode::Write || _mode == FileMode::SysWrite) {
+			_mode = FileMode::Append;
+		}
 		_file = createRWops(_mode);
 		return _file != nullptr;
 	}

@@ -19,6 +19,7 @@ class Filesystem;
 enum class FileMode {
 	Read,		/**< reading from the virtual file system */
 	Write,		/**< writing into the virtual file system */
+	Append,		/**< appending to an existing file or create a new one */
 	SysRead,	/**< reading from the given path */
 	SysWrite,	/**< writing into the given path */
 	ReadNoHome	/**< reading from the virtual file system but skip user setting files in the home directories */
