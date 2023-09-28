@@ -168,6 +168,9 @@ set(TEST_FILES
 	tests/rgb_small.qbt
 	tests/rgb_small.vox
 	tests/rgb_small.vxm
+	tests/slab6_vox_test.kv6
+	tests/slab6_vox_test.kvx
+	tests/slab6_vox_test.vox
 	tests/vox_character.vox
 	tests/vox_glasses.vox
 	tests/voxlap5.kv6

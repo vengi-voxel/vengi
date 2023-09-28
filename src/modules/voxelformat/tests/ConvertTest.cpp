@@ -22,6 +22,7 @@
 #include "voxelformat/private/sandbox/VXRFormat.h"
 #include "voxelformat/private/slab6/KV6Format.h"
 #include "voxelformat/private/slab6/KVXFormat.h"
+#include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 
 namespace voxelformat {
@@ -279,6 +280,27 @@ TEST_F(ConvertTest, testVXLToVXR) {
 	testLoadSaveAndLoadSceneGraph("cc.vxl", src, "convert-cc.vxr", target, flags);
 }
 
+TEST_F(ConvertTest, testKV6ToKV6) {
+	KV6Format src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, testKV6ToKV62) {
+	KV6Format src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("test2.kv6", src, "convert-test2.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, testQBToSLAB6Vox) {
+	SLAB6VoxFormat src;
+	SLAB6VoxFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("slab6_vox_test.vox", src, "convert-slab6_vox_test.vox", target, flags);
+}
+
 // TODO: pivot broken
 // TODO: broken keyframes
 // TODO: broken voxels
@@ -319,20 +341,6 @@ TEST_F(ConvertTest, DISABLED_testQBToKV6) {
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
-}
-
-TEST_F(ConvertTest, testKV6ToKV6) {
-	KV6Format src;
-	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
-}
-
-TEST_F(ConvertTest, testKV6ToKV62) {
-	KV6Format src;
-	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testLoadSaveAndLoad("test2.kv6", src, "convert-test2.kv6", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testKVXToKVX) {
