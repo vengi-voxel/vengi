@@ -96,10 +96,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	wrap(stream.readInt32(pivy_d))
 	wrap(stream.readInt32(pivz_h))
 
-	pivx_w >>= 8;
-	pivy_d >>= 8;
-	pivz_h >>= 8;
-
 	pivz_h = zsiz_h - 1 - pivz_h;
 
 	glm::vec3 normalizedPivot;
