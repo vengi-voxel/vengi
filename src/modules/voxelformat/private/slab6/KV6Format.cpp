@@ -337,12 +337,12 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	const int64_t headerSize = 32;
-	const int64_t xLenSize = (int64_t)(width * sizeof(uint32_t));
-	const int64_t xyLenSize = (int64_t)((size_t)width * (size_t)depth * sizeof(uint16_t));
-	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xLenSize + xyLenSize;
+	const int64_t xoffsetSize = (int64_t)(width * sizeof(uint32_t));
+	const int64_t xyoffsetSize = (int64_t)((size_t)width * (size_t)depth * sizeof(uint16_t));
+	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xoffsetSize + xyoffsetSize;
+	uint32_t palMagic = 0u;
 	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
-			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				palette.setSize(voxel::PaletteMaxColors);
@@ -366,7 +366,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 
-		palette.addColorToPalette(color, false, &state->voxdata[c].col);
+		if (palMagic != 0u) {
+			state->voxdata[c].col = palette.getClosestMatch(color);
+		} else {
+			palette.addColorToPalette(color, false, &state->voxdata[c].col);
+		}
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
 	}
