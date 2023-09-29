@@ -23,9 +23,9 @@ namespace voxelformat {
 
 bool SLAB6VoxFormat::readColor(io::SeekableReadStream &stream, core::RGBA &color) const {
 	uint8_t r, g, b;
-	wrap(stream.readUInt8(b))
-	wrap(stream.readUInt8(g))
 	wrap(stream.readUInt8(r))
+	wrap(stream.readUInt8(g))
+	wrap(stream.readUInt8(b))
 	const float rf = ((float)r / 63.0f * 255.0f);
 	const float gf = ((float)g / 63.0f * 255.0f);
 	const float bf = ((float)b / 63.0f * 255.0f);
@@ -110,9 +110,9 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 }
 
 bool SLAB6VoxFormat::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
 	wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
+	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
+	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
 	return true;
 }
 
