@@ -337,6 +337,14 @@ TEST_F(ConvertTest, testQBToKVX) {
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
+TEST_F(ConvertTest, testQBChrKnightToKVX) {
+	QBFormat src;
+	KVXFormat target;
+	// KVX has all colors in the palette set - and thus the color amount doesn't match
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette | voxel::ValidateFlags::IgnoreHollow;
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
+}
+
 TEST_F(ConvertTest, testQBToKV6) {
 	QBFormat src;
 	KV6Format target;
@@ -351,18 +359,10 @@ TEST_F(ConvertTest, DISABLED_testKVXToKVX) {
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQbToKVX) {
-	QBFormat src;
-	KVXFormat target;
-	// KVX has all colors in the palette set - and thus the color amount doesn't match
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
-}
-
 TEST_F(ConvertTest, DISABLED_testQbToKV6) {
 	QBFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
 }
 
