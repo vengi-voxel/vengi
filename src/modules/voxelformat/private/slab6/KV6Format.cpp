@@ -150,11 +150,9 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
-					uint8_t r, g, b;
-					wrap(stream.readUInt8(b))
-					wrap(stream.readUInt8(g))
-					wrap(stream.readUInt8(r))
-					palette.color(i) = core::RGBA(r, g, b, 255u);
+					core::RGBA color;
+					wrapBool(readColor(stream, color))
+					palette.color(i) = color;
 				}
 			}
 			return palette.size();
@@ -165,8 +163,8 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrap(readColor(stream, color))
-		palette.addColorToPalette(color);
+		wrapBool(readColor(stream, color))
+		palette.addColorToPalette(color, false);
 		stream.skip(5);
 	}
 
