@@ -4,9 +4,11 @@
 
 #include "TestHelper.h"
 #include "core/Common.h"
+#include "core/Log.h"
 #include "math/Random.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
@@ -250,6 +252,17 @@ void volumeComparator(const voxel::RawVolume &volume1, const voxel::Palette &pal
 				s2.setPosition(x2, y2, z2);
 				const voxel::Voxel &voxel1 = s1.voxel();
 				const voxel::Voxel &voxel2 = s2.voxel();
+
+				if (voxel::isAir(voxel1.getMaterial()) ^ voxel::isAir(voxel2.getMaterial())) {
+					if ((flags & ValidateFlags::IgnoreHollow) == ValidateFlags::IgnoreHollow) {
+						FaceBits vis1 = visibleFaces(volume1, x1, y1, z1);
+						FaceBits vis2 = visibleFaces(volume2, x2, y2, z2);
+						if (vis1 == FaceBits::None || vis2 == FaceBits::None) {
+							continue;
+						}
+					}
+				}
+
 				ASSERT_EQ(voxel1.getMaterial(), voxel2.getMaterial())
 					<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":" << z2
 					<< " in material - voxel1[" << voxel::VoxelTypeStr[(int)voxel1.getMaterial()] << ", "
@@ -263,11 +276,11 @@ void volumeComparator(const voxel::RawVolume &volume1, const voxel::Palette &pal
 					continue;
 				}
 
-				// TODO: could get improved by checking if the current voxel is surrounded by others on all sides
-				if ((flags & ValidateFlags::IgnoreHollow) == ValidateFlags::IgnoreHollow &&
-					voxel2.getColor() == voxelformat::MeshFormat::FillColorIndex &&
-					voxel1.getColor() != voxelformat::MeshFormat::FillColorIndex) {
-					continue;
+				if ((flags & ValidateFlags::IgnoreHollow) == ValidateFlags::IgnoreHollow) {
+					if (voxel2.getColor() == voxelformat::MeshFormat::FillColorIndex &&
+						voxel1.getColor() != voxelformat::MeshFormat::FillColorIndex) {
+						continue;
+					}
 				}
 
 				const core::RGBA &c1 = pal1.color(voxel1.getColor());

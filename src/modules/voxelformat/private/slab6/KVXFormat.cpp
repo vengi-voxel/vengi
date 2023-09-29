@@ -179,7 +179,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			const uint16_t end = xyoffsets[x][y + 1];
 			const uint16_t start = xyoffsets[x][y];
 			int32_t n = end - start;
-			uint32_t lastZ = 0;
 
 			while (n > 0) {
 				priv::VoxtypeKVX header;
@@ -194,22 +193,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 					const int ny = region.getUpperY() - (int)header.ztop - (int)i;
 					const int nz = (int)y;
 					volume->setVoxel(nx, ny, nz, lastCol);
-				}
-
-				/**
-				 * the format only saves the visible voxels - we have to take the face info to
-				 * fill the inner voxels
-				 */
-				if ((header.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::Up) {
-					lastZ = header.ztop + header.zlength;
-				}
-				if ((header.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::Down) {
-					const int nx = (int)x;
-					const int nz = (int)y;
-					for (uint32_t i = lastZ; i < header.ztop; ++i) {
-						const int ny = region.getUpperY() - (int)i;
-						volume->setVoxel(nx, ny, nz, lastCol);
-					}
 				}
 				n -= (int32_t)(header.zlength + 3 /* 3 byte slab header */);
 			}

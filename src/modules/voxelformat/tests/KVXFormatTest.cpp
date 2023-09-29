@@ -20,7 +20,7 @@ TEST_F(KVXFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("kvx-smallvolumesavetest.kvx", &f, -16, 15);
 }
 
-TEST_F(KVXFormatTest, DISABLED_testChrKnight) {
+TEST_F(KVXFormatTest, testChrKnight) {
 	KVXFormat f1;
 	KV6Format f2;
 	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot;

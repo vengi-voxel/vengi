@@ -71,7 +71,7 @@ TEST_F(KV6FormatTest, testLoadSave) {
 	testLoadSaveAndLoad("voxlap5.kv6", f, "kv6-voxlap5.kv6", f);
 }
 
-TEST_F(KV6FormatTest, DISABLED_testChrKnight) {
+TEST_F(KV6FormatTest, testChrKnight) {
 	KV6Format f1;
 	KVXFormat f2;
 	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot;

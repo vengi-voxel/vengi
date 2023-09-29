@@ -23,8 +23,11 @@
 #include "voxel/Face.h"
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "voxelutil/VoxelUtil.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -407,26 +410,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
 				const voxel::Voxel col = voxel::createVoxel(palette, vox.col);
 				volume->setVoxel((int)x, (int)((height - 1) - vox.z), (int)y, col);
-			}
-		}
-	}
-
-	idx = 0;
-	for (uint32_t x = 0; x < width; ++x) {
-		for (uint32_t y = 0; y < depth; ++y) {
-			voxel::Voxel lastCol;
-			uint32_t lastZ = 256;
-			for (int end = idx + state->xyoffsets[x][y]; idx < end; ++idx) {
-				const priv::VoxtypeKV6 &vox = state->voxdata[idx];
-				if ((vox.vis & priv::SLABVisibility::Up) != priv::SLABVisibility::None) {
-					lastZ = vox.z;
-					lastCol = voxel::createVoxel(palette, vox.col);
-				}
-				if ((vox.vis & priv::SLABVisibility::Down) != priv::SLABVisibility::None) {
-					for (; lastZ < vox.z; ++lastZ) {
-						volume->setVoxel((int)x, (int)((height - 1) - lastZ), (int)y, lastCol);
-					}
-				}
 			}
 		}
 	}
