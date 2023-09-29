@@ -65,7 +65,7 @@ TEST_F(KV6FormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("kv6-smallvolumesavetest.kv6", &f, -16, 15);
 }
 
-TEST_F(KV6FormatTest, DISABLED_testLoadSave) {
+TEST_F(KV6FormatTest, testLoadSave) {
 	KV6Format f;
 	testLoadSaveAndLoad("voxlap5.kv6", f, "kv6-voxlap5.kv6", f);
 }
