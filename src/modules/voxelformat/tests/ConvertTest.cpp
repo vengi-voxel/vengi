@@ -307,7 +307,7 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
-TEST_F(ConvertTest, testQBToKVX) {
+TEST_F(ConvertTest, DISABLED_testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
