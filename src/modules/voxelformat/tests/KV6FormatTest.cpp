@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/slab6/KV6Format.h"
 #include "AbstractVoxFormatTest.h"
+#include "voxelformat/private/slab6/KVXFormat.h"
 
 namespace voxelformat {
 
@@ -68,6 +69,13 @@ TEST_F(KV6FormatTest, testSaveSmallVoxel) {
 TEST_F(KV6FormatTest, testLoadSave) {
 	KV6Format f;
 	testLoadSaveAndLoad("voxlap5.kv6", f, "kv6-voxlap5.kv6", f);
+}
+
+TEST_F(KV6FormatTest, DISABLED_testChrKnight) {
+	KV6Format f1;
+	KVXFormat f2;
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot;
+	testLoadSceneGraph("slab6_vox_test.kv6", f1, "slab6_vox_test.kvx", f2, flags);
 }
 
 } // namespace voxelformat
