@@ -109,15 +109,6 @@ const uint32_t MAXSPRITES = 1024;
 		return false;                                                                                                  \
 	}
 
-bool KV6Format::readColor(io::SeekableReadStream &stream, core::RGBA &color) const {
-	uint8_t r, g, b;
-	wrap(stream.readUInt8(b))
-	wrap(stream.readUInt8(g))
-	wrap(stream.readUInt8(r))
-	color = core::RGBA(r, g, b);
-	return true;
-}
-
 size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
 							  const LoadContext &ctx) {
 	uint32_t magic;
@@ -151,7 +142,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					core::RGBA color;
-					wrapBool(readColor(stream, color))
+					wrapBool(priv::readBGRColor(stream, color))
 					palette.color(i) = color;
 				}
 			}
@@ -163,7 +154,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(readColor(stream, color))
+		wrapBool(priv::readBGRColor(stream, color))
 		palette.addColorToPalette(color, false);
 		stream.skip(5);
 	}
@@ -357,7 +348,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					core::RGBA color;
-					wrapBool(readColor(stream, color));
+					wrapBool(priv::readRGBScaledColor(stream, color));
 					palette.color(i) = color;
 				}
 			}
@@ -368,7 +359,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	core::ScopedPtr<priv::State> state(new priv::State());
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(readColor(stream, color));
+		wrapBool(priv::readRGBColor(stream, color));
 		wrap(stream.skip(1))
 		wrap(stream.readUInt8(state->voxdata[c].z))
 		wrap(stream.skip(1))
@@ -450,13 +441,6 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;                                                                                                  \
 	}
 
-bool KV6Format::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
-	wrapBool(stream.writeUInt8(color.b))
-	wrapBool(stream.writeUInt8(color.g))
-	wrapBool(stream.writeUInt8(color.r))
-	return true;
-}
-
 bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -519,7 +503,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBColor(stream, color)) // range 0.255
 		wrapBool(stream.writeUInt8(0)) // 128
 		wrapBool(stream.writeUInt8(data.z))
 		wrapBool(stream.writeUInt8(0))
@@ -544,11 +528,11 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(palMagic))
 	for (int i = 0; i < node->palette().colorCount(); ++i) {
 		const core::RGBA color = node->palette().color(i);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color)) // range 0..63
 	}
 	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
 
 	return true;

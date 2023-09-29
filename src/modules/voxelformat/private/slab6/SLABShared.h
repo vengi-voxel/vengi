@@ -5,6 +5,8 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "core/RGBA.h"
+#include "io/Stream.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 
@@ -13,35 +15,41 @@ namespace priv {
 
 enum class SLABVisibility : uint8_t { None = 0, Left = 1, Right = 2, Front = 4, Back = 8, Up = 16, Down = 32 };
 CORE_ENUM_BIT_OPERATIONS(SLABVisibility)
+SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z);
 
-inline SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int z) {
-	SLABVisibility vis = SLABVisibility::None;
-	voxel::FaceBits visBits = voxel::visibleFaces(*v, x, y, z);
-	if (visBits == voxel::FaceBits::None) {
-		return vis;
-	}
-	// x
-	if ((visBits & voxel::FaceBits::NegativeX) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Left;
-	}
-	if ((visBits & voxel::FaceBits::PositiveX) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Right;
-	}
-	// y (our z)
-	if ((visBits & voxel::FaceBits::NegativeZ) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Front;
-	}
-	if ((visBits & voxel::FaceBits::PositiveZ) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Back;
-	}
-	// z (our y) is running from top to bottom
-	if ((visBits & voxel::FaceBits::NegativeY) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Down;
-	}
-	if ((visBits & voxel::FaceBits::PositiveY) != voxel::FaceBits::None) {
-		vis |= SLABVisibility::Up;
-	}
-	return vis;
+bool readColor(io::SeekableReadStream &stream, core::RGBA &color, bool bgr, bool scale);
+bool writeColor(io::SeekableWriteStream &stream, core::RGBA color, bool bgr, bool scale);
+
+inline bool readBGRScaledColor(io::SeekableReadStream &stream, core::RGBA &color) {
+	return readColor(stream, color, true, true);
+}
+
+inline bool writeBGRScaledColor(io::SeekableWriteStream &stream, core::RGBA color) {
+	return writeColor(stream, color, true, true);
+}
+
+inline bool readRGBScaledColor(io::SeekableReadStream &stream, core::RGBA &color) {
+	return readColor(stream, color, false, true);
+}
+
+inline bool writeRGBScaledColor(io::SeekableWriteStream &stream, core::RGBA color) {
+	return writeColor(stream, color, false, true);
+}
+
+inline bool readRGBColor(io::SeekableReadStream &stream, core::RGBA &color) {
+	return readColor(stream, color, false, false);
+}
+
+inline bool writeRGBColor(io::SeekableWriteStream &stream, core::RGBA color) {
+	return writeColor(stream, color, false, false);
+}
+
+inline bool readBGRColor(io::SeekableReadStream &stream, core::RGBA &color) {
+	return readColor(stream, color, true, false);
+}
+
+inline bool writeBGRColor(io::SeekableWriteStream &stream, core::RGBA color) {
+	return writeColor(stream, color, true, false);
 }
 
 } // namespace priv

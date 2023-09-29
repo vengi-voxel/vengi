@@ -67,18 +67,6 @@ struct VoxtypeKVX {
 		return false;                                                                                                  \
 	}
 
-bool KVXFormat::readColor(io::SeekableReadStream &stream, core::RGBA &color) const {
-	uint8_t r, g, b;
-	wrap(stream.readUInt8(b))
-	wrap(stream.readUInt8(g))
-	wrap(stream.readUInt8(r))
-	const float rf = ((float)r / 63.0f * 255.0f);
-	const float gf = ((float)g / 63.0f * 255.0f);
-	const float bf = ((float)b / 63.0f * 255.0f);
-	color = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
-	return true;
-}
-
 bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
 	// Total # of bytes (not including numbytes) in each mip-map level
@@ -169,7 +157,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 */
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(readColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(stream, color))
 		palette.color(i) = color;
 	}
 	stream.seek(currentPos);
@@ -239,13 +227,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		Log::error("Could not write kv6 file: Not enough space in stream " CORE_STRINGIFY(read));                      \
 		return false;                                                                                                  \
 	}
-
-bool KVXFormat::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
-	return true;
-}
 
 bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
@@ -346,11 +327,11 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const voxel::Palette &palette = node->palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA color = palette.color(i);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
 	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
 
 	if (stream.seek(offsetPos) == -1) {

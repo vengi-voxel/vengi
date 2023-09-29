@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
+#include "SLABShared.h"
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -20,18 +21,6 @@
 	}
 
 namespace voxelformat {
-
-bool SLAB6VoxFormat::readColor(io::SeekableReadStream &stream, core::RGBA &color) const {
-	uint8_t r, g, b;
-	wrap(stream.readUInt8(r))
-	wrap(stream.readUInt8(g))
-	wrap(stream.readUInt8(b))
-	const float rf = ((float)r / 63.0f * 255.0f);
-	const float gf = ((float)g / 63.0f * 255.0f);
-	const float bf = ((float)b / 63.0f * 255.0f);
-	color = core::RGBA((uint8_t)rf, (uint8_t)gf, (uint8_t)bf);
-	return true;
-}
 
 size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 								   voxel::Palette &palette, const LoadContext &ctx) {
@@ -49,7 +38,7 @@ size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableRea
 	palette.setSize(voxel::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(readColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(stream, color))
 		palette.color(i) = color;
 	}
 	return palette.colorCount();
@@ -79,7 +68,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	palette.setSize(voxel::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(readColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(stream, color))
 		palette.color(i) = color;
 	}
 
@@ -106,13 +95,6 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 
-	return true;
-}
-
-bool SLAB6VoxFormat::writeColor(io::SeekableWriteStream &stream, core::RGBA color) const {
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.r * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.g * 63.0f / 255.0f)))
-	wrapBool(stream.writeUInt8((uint8_t)((float)color.b * 63.0f / 255.0f)))
 	return true;
 }
 
@@ -148,11 +130,11 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA &color = palette.color(i);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
 	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(writeColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
 
 	return true;
