@@ -139,10 +139,11 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 			uint32_t palMagic;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
+				// slab6 suggest palette
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					core::RGBA color;
-					wrapBool(priv::readBGRColor(stream, color))
+					wrapBool(priv::readRGBScaledColor(stream, color))
 					palette.color(i) = color;
 				}
 			}
@@ -150,11 +151,12 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		}
 	}
 
+	// SPal not found, most likely slab5
 	stream.seek(headerSize);
 
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(priv::readBGRColor(stream, color))
+		wrapBool(priv::readBGRColor(stream, color));
 		palette.addColorToPalette(color, false);
 		stream.skip(5);
 	}
@@ -340,11 +342,15 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const int64_t xoffsetSize = (int64_t)(width * sizeof(uint32_t));
 	const int64_t xyoffsetSize = (int64_t)((size_t)width * (size_t)depth * sizeof(uint16_t));
 	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xoffsetSize + xyoffsetSize;
-	uint32_t palMagic = 0u;
+	// palette SPal (suggested palette) added in slab6
+	bool slab5 = true;
 	if (stream.seek(paletteOffset) != -1) {
 		if (stream.remaining() != 0) {
+			uint32_t palMagic = 0u;
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
+				Log::debug("Found embedded palette of slab6");
+				slab5 = false; // slab6
 				palette.setSize(voxel::PaletteMaxColors);
 				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
 					core::RGBA color;
@@ -354,22 +360,27 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			}
 		}
 	}
+	if (slab5) {
+		Log::debug("Found slab5");
+	} else {
+		Log::debug("Found slab6");
+	}
 	stream.seek(headerSize);
 
 	core::ScopedPtr<priv::State> state(new priv::State());
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(priv::readRGBColor(stream, color));
-		wrap(stream.skip(1))
+		wrapBool(priv::readBGRColor(stream, color));
+		wrap(stream.skip(1)) // slab6 always 128
 		wrap(stream.readUInt8(state->voxdata[c].z))
-		wrap(stream.skip(1))
+		wrap(stream.skip(1)) // slab6 always 0
 		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 
-		if (palMagic != 0u) {
-			state->voxdata[c].col = palette.getClosestMatch(color);
+		if (slab5) {
+			palette.addColorToPalette(color, false, &state->voxdata[c].col, false);
 		} else {
-			palette.addColorToPalette(color, false, &state->voxdata[c].col);
+			state->voxdata[c].col = palette.getClosestMatch(color);
 		}
 		Log::debug("voxel %u/%u z: %u, vis: %i. dir: %u, pal: %u", c, numvoxs, state->voxdata[c].z,
 				   (uint8_t)state->voxdata[c].vis, state->voxdata[c].dir, state->voxdata[c].col);
@@ -507,10 +518,10 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
-		wrapBool(priv::writeRGBColor(stream, color)) // range 0.255
-		wrapBool(stream.writeUInt8(0)) // 128
+		wrapBool(priv::writeBGRColor(stream, color)) // range 0.255
+		wrapBool(stream.writeUInt8(128)) // 128 as we save slab6
 		wrapBool(stream.writeUInt8(data.z))
-		wrapBool(stream.writeUInt8(0))
+		wrapBool(stream.writeUInt8(0)) // 0 as we save slab6
 		wrapBool(stream.writeUInt8((uint8_t)data.vis))
 		wrapBool(stream.writeUInt8(data.dir))
 		Log::debug("voxel z-low: %u, vis: %i. dir: %u, pal: %u", data.z, (uint8_t)data.vis, data.dir, data.col);
