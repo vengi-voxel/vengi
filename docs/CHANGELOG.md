@@ -12,6 +12,13 @@ Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+
 
 General:
 
+   - Improved SLAB5/6 support of `kvx`, `kv6`, `kfa` and `vox`
+   - Don't fill the inner voxels of the SLAB5/6 models anymore
+
+VoxEdit:
+
+   - Added alternative split-object implementation and expose it to the editor tool panel
+
 ## 0.0.27 (2023-09-19)
 
 Breaking changes:
