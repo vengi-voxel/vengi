@@ -24,6 +24,7 @@
 #include "voxelformat/private/slab6/KVXFormat.h"
 #include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/sproxel/SproxelFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -329,17 +330,17 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQBToKVX) {
+TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testQBToKV6) {
+TEST_F(ConvertTest, testQBToKV6) {
 	QBFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
 }
 
