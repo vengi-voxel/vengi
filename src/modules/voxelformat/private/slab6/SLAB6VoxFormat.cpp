@@ -33,6 +33,28 @@ bool SLAB6VoxFormat::readColor(io::SeekableReadStream &stream, core::RGBA &color
 	return true;
 }
 
+size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream,
+								   voxel::Palette &palette, const LoadContext &ctx) {
+	uint32_t depth, height, width;
+	wrap(stream.readUInt32(width))
+	wrap(stream.readUInt32(depth))
+	wrap(stream.readUInt32(height))
+
+	if (width > 2048 || height > 2048 || depth > 2048) {
+		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
+		return false;
+	}
+
+	stream.skip((int64_t)width * height * depth);
+	palette.setSize(voxel::PaletteMaxColors);
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		core::RGBA color;
+		wrapBool(readColor(stream, color))
+		palette.color(i) = color;
+	}
+	return palette.colorCount();
+}
+
 bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 									   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
 									   const LoadContext &ctx) {
