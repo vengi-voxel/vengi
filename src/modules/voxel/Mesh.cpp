@@ -24,6 +24,7 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGe
 
 Mesh::Mesh(Mesh&& other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
+	_normals = core::move(other._normals);
 	_vecVertices = core::move(other._vecVertices);
 	_compressedIndices = other._compressedIndices;
 	other._compressedIndices = nullptr;
@@ -35,6 +36,7 @@ Mesh::Mesh(Mesh&& other) noexcept {
 
 Mesh::Mesh(const Mesh& other) {
 	_vecIndices = other._vecIndices;
+	_normals = other._normals;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
 	if (other._compressedIndices != nullptr) {
@@ -52,6 +54,7 @@ Mesh& Mesh::operator=(const Mesh& other) {
 		return *this;
 	}
 	_vecIndices = other._vecIndices;
+	_normals = other._normals;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
 	core_free(_compressedIndices);
@@ -68,6 +71,7 @@ Mesh& Mesh::operator=(const Mesh& other) {
 
 Mesh& Mesh::operator=(Mesh&& other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
+	_normals = core::move(other._normals);
 	_vecVertices = core::move(other._vecVertices);
 	core_free(_compressedIndices);
 	_compressedIndices = other._compressedIndices;
@@ -177,7 +181,7 @@ IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
 	// We should not add more vertices than our chosen index type will let us index.
 	core_assert_msg(_normals.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more normals that the chosen index type allows.");
-	_normals.resize(_vecVertices.capacity());
+	_normals.resize(_vecVertices.size());
 	_normals[index] = normal;
 }
 
