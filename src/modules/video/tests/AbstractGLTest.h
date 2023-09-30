@@ -44,6 +44,7 @@ protected:
 		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
+		core::Var::get(cfg::VoxelMeshMode, "0", core::CV_SHADER);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
 

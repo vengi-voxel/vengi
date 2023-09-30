@@ -1,16 +1,18 @@
+// shader for marching cubes
+
 // attributes from the VAOs
 $in vec3 a_pos;
 $in uvec2 a_info;
-$out float v_ambientocclusion;
+$in vec3 a_normal;
 
 #include "_sharedvert.glsl"
 #include "_shared.glsl"
 
 void main(void) {
-	uint a_ao = (a_info[0] & 3u);
 	uint a_flags = ((a_info[0] & ~3u) >> 2u);
 	uint a_colorindex = a_info[1];
 	v_pos = u_model * vec4(a_pos - u_pivot, 1.0);
+	v_normal = a_normal;
 
 	int materialColorIndex = int(a_colorindex);
 	vec4 materialColor = u_materialcolor[materialColorIndex];
@@ -30,7 +32,6 @@ void main(void) {
 		v_color = materialColor;
 	}
 	v_glow = glowColor;
-	v_ambientocclusion = aovalues[a_ao];
 
 #if cl_shadowmap == 1
 	v_lightspacepos = v_pos.xyz;

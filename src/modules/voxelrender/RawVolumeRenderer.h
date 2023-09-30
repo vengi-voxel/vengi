@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ShadowmapData.h"
+#include "VoxelnormShader.h"
 #include "core/NonCopyable.h"
 #include "core/Optional.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
@@ -73,6 +74,7 @@ protected:
 		bool _culled = false;
 		bool _gray = false;
 		int32_t _vertexBufferIndex[MeshType_Max] {-1, -1};
+		int32_t _normalBufferIndex[MeshType_Max] {-1, -1};
 		int32_t _indexBufferIndex[MeshType_Max] {-1, -1};
 		glm::mat4 _model{1.0f};
 		glm::vec3 _pivot{0.0f};
@@ -106,6 +108,7 @@ protected:
 	alignas(16) shader::VoxelData::VertData _voxelShaderVertData;
 
 	shader::VoxelShader& _voxelShader;
+	shader::VoxelnormShader& _voxelNormShader;
 	shader::ShadowmapData _shadowMapUniformBlock;
 	shader::ShadowmapShader& _shadowMapShader;
 	voxelrender::Shadow _shadow;

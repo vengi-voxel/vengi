@@ -8,10 +8,13 @@ set(SRCS
 )
 set(SHADERS
 	voxel
+	voxelnorm
 	shadowmap
 )
 set(SRCS_SHADERS
 	shaders/_shared.glsl
+	shaders/_sharedvert.glsl
+	shaders/_sharedfrag.glsl
 )
 foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.vert")

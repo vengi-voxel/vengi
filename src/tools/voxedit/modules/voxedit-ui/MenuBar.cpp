@@ -118,7 +118,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
 				ImGui::CheckboxVar("Tip of the day", cfg::VoxEditTipOftheDay);
-				// TODO: activate me - but we first have to upload the normals - see voxel.frag
+				// TODO: activate me - the RawVolumeRenderer doesn't yet update the shader attributes correctly when switching between shaders
 				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt("Autosave delay in seconds", cfg::VoxEditAutoSaveSeconds);

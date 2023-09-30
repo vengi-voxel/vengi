@@ -12,7 +12,7 @@
 
 namespace voxelrender {
 
-inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components = sizeof(voxel::VoxelVertex::position) / sizeof(decltype(voxel::VoxelVertex::position)::value_type)) {
+inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
 	video::Attribute attrib;
 	attrib.bufferIndex = (int32_t)bufferIndex;
 	attrib.location = (int32_t)attributeLocation;
@@ -20,6 +20,17 @@ inline video::Attribute getPositionVertexAttribute(uint32_t bufferIndex, uint32_
 	attrib.size = components;
 	attrib.type = video::mapType<decltype(voxel::VoxelVertex::position)::value_type>();
 	attrib.offset = offsetof(voxel::VoxelVertex, position);
+	return attrib;
+}
+
+inline video::Attribute getNormalVertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
+	video::Attribute attrib;
+	attrib.bufferIndex = (int32_t)bufferIndex;
+	attrib.location = (int32_t)attributeLocation;
+	attrib.stride = sizeof(glm::vec3);
+	attrib.size = components;
+	attrib.type = video::mapType<glm::vec3::value_type>();
+	attrib.offset = 0;
 	return attrib;
 }
 
