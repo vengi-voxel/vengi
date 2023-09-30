@@ -54,6 +54,7 @@ public:
 	void shutdown();
 
 	bool addAttribute(const Attribute& attribute);
+	void markAttributesDirty();
 
 	/**
 	 * This will only destroy the vao - not the buffer handles. Thus a new @c bind() call
@@ -131,6 +132,10 @@ public:
 	 */
 	Id handle() const;
 };
+
+inline void Buffer::markAttributesDirty() {
+	_dirtyAttributes = true;
+}
 
 inline Id Buffer::handle() const {
 	return _vao;
