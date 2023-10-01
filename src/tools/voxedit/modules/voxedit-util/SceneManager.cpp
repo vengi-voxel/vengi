@@ -1260,6 +1260,37 @@ int SceneManager::addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int pare
 
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 	core_trace_scoped(LoadSceneGraph);
+	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
+	if (createDiff) {
+		for (const auto &entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isModelNode()) {
+				continue;
+			}
+
+			scenegraph::SceneGraphNode *existingNode = _sceneGraph.findNodeByName(node.name());
+			if (existingNode == nullptr) {
+				int activeNode = _sceneGraph.activeNode();
+				existingNode = &_sceneGraph.node(activeNode);
+				if (existingNode == nullptr) {
+					Log::warn("Failed to find node with name %s", node.name().c_str());
+					continue;
+				}
+			}
+
+			voxel::RawVolume *v = voxelutil::diffVolumes(existingNode->volume(), node.volume());
+			if (v == nullptr) {
+				Log::info("No diff between volumes of node %s", node.name().c_str());
+				continue;
+			}
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+			newNode.setVolume(v, true);
+			newNode.setName("Diff " + node.name());
+			_sceneGraph.emplace(core::move(newNode), existingNode->id());
+		}
+		return true;
+	}
+
 	_sceneGraph = core::move(sceneGraph);
 	_sceneRenderer->clear();
 

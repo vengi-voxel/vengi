@@ -5,6 +5,7 @@
 #include "VoxelUtil.h"
 #include "core/ArrayLength.h"
 #include "core/GLM.h"
+#include "core/Log.h"
 #include "core/collection/Array3DView.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -465,6 +466,39 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalet
 			}
 		});
 	return wrapper.dirtyRegion();
+}
+
+voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2) {
+	const voxel::Region& r1 = v1->region();
+	const voxel::Region& r2 = v2->region();
+
+	const glm::ivec3 &r1mins = r1.getLowerCorner();
+	const glm::ivec3 &r1maxs = r1.getUpperCorner();
+	const glm::ivec3 &r2mins = r2.getLowerCorner();
+	const glm::ivec3 &r2maxs = r2.getUpperCorner();
+	voxel::RawVolume *v = nullptr;
+	for (int r1z = r1mins.z, r2z = r2mins.z; r1z <= r1maxs.z && r2z <= r2maxs.z; ++r1z, ++r2z) {
+		for (int r1y = r1mins.y, r2y = r2mins.y; r1y <= r1maxs.y && r2y <= r2maxs.y; ++r1y, ++r2y) {
+			for (int r1x = r1mins.x, r2x = r2mins.x; r1x <= r1maxs.x && r2x <= r2maxs.x; ++r1x, ++r2x) {
+				const voxel::Voxel &vox1 = v1->voxel(r1x, r1y, r1z);
+				voxel::Voxel vox2 = v2->voxel(r2x, r2y, r2z);
+				if (vox1.isSame(vox2)) {
+					continue;
+				}
+
+				if (voxel::isAir(vox2.getMaterial())) {
+					vox2 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+					Log::debug("Voxel at %i/%i/%i is air", r1x, r1y, r1z);
+				}
+
+				if (v == nullptr) {
+					v = new voxel::RawVolume(r1);
+				}
+				v->setVoxel(r1x, r1y, r1z, vox2);
+			}
+		}
+	}
+	return v;
 }
 
 } // namespace voxelutil

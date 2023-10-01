@@ -64,4 +64,11 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
  */
 voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalette, const voxel::Palette &newPalette, int skipColorIndex = -1);
 
+/**
+ * @brief Creates a diff between the two given volumes
+ * @note The caller has to free the volume
+ * @return nullptr if the volumes don't differ in the shared region dimensions
+ */
+voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
+
 } // namespace voxelutil

@@ -172,8 +172,6 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	node.setPivot(normalizedPivot);
 	sceneGraph.emplace(core::move(node));
 
-	voxel::Voxel lastCol;
-
 	for (uint32_t x = 0; x < xsiz_w; ++x) {
 		for (uint32_t y = 0; y < ysiz_d; ++y) {
 			const uint16_t end = xyoffsets[x][y + 1];
@@ -188,11 +186,11 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				for (uint8_t i = 0u; i < header.zlength; ++i) {
 					uint8_t col;
 					wrap(stream.readUInt8(col))
-					lastCol = voxel::createVoxel(palette, col);
+					voxel::Voxel voxel = voxel::createVoxel(palette, col);
 					const int nx = (int)x;
 					const int ny = region.getUpperY() - (int)header.ztop - (int)i;
 					const int nz = (int)y;
-					volume->setVoxel(nx, ny, nz, lastCol);
+					volume->setVoxel(nx, ny, nz, voxel);
 				}
 				n -= (int32_t)(header.zlength + 3 /* 3 byte slab header */);
 			}
