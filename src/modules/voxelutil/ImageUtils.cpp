@@ -189,6 +189,10 @@ voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const voxel::Palet
 }
 
 voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides) {
+	return importAsVolume(image, voxel::getPalette(), maxDepth, bothSides);
+}
+
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const voxel::Palette &palette, uint8_t maxDepth, bool bothSides) {
 	if (maxDepth <= 0) {
 		Log::error("Max height can't be 0");
 		return nullptr;
@@ -223,7 +227,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	}
 	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
-	voxel::PaletteLookup palLookup(voxel::getPalette());
+	voxel::PaletteLookup palLookup(palette);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(volume);
 	for (int x = 0; x < imageWidth; ++x) {

@@ -169,13 +169,15 @@ bool SceneManager::importPalette(const core::String& file) {
 
 bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
 	const image::ImagePtr& img = image::loadImage(file);
-	voxel::RawVolume *v = voxelutil::importAsVolume(img, maxDepth, bothSides);
+	const voxel::Palette &palette = voxedit::sceneMgr().activePalette();
+	voxel::RawVolume *v = voxelutil::importAsVolume(img, palette, maxDepth, bothSides);
 	if (v == nullptr) {
 		return false;
 	}
 	scenegraph::SceneGraphNode newNode;
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
+	newNode.setPalette(palette);
 	return addNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
@@ -214,6 +216,10 @@ bool SceneManager::importHeightmap(const core::String& file) {
 bool SceneManager::importColoredHeightmap(const core::String& file) {
 	const int nodeId = activeNode();
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
+	if (!node->isModelNode()) {
+		Log::error("Selected node is no model node - failed to import heightmap");
+		return false;
+	}
 	core_assert(node != nullptr);
 	voxel::RawVolume* v = node->volume();
 	if (v == nullptr) {
