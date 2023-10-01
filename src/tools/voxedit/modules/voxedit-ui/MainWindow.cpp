@@ -296,6 +296,7 @@ void MainWindow::checkPossibleVolumeSplit() {
 		const voxel::Region &region = node.region();
 		const glm::ivec3 &dim = region.getDimensionsInVoxels();
 		if (dim.x * dim.y * dim.z > maxVoxels) {
+			Log::debug("node: %s exceeds the max size with %i:%i:%i", node.name().c_str(), dim.x, dim.y, dim.z);
 			_popupVolumeSplit = true;
 			return;
 		}
