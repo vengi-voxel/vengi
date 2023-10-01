@@ -113,6 +113,10 @@ private:
 
 	const char *getTip() const;
 
+	/**
+	 * called directly after loading a file. But the loading is async and might not yet have finished
+	 * @sa onNewScene()
+	 */
 	void afterLoad(const core::String &file);
 	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
@@ -142,6 +146,10 @@ public:
 
 	void toggleScene();
 	void resetCamera();
+	/**
+	 * called directly after the scene manager has finished loading a new scene
+	 * @sa afterLoad()
+	 */
 	void onNewScene();
 	void update();
 	QuitDisallowReason allowToQuit();

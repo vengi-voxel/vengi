@@ -276,12 +276,12 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *for
 void MainWindow::onNewScene() {
 	resetCamera();
 	_animationTimeline.resetFrames();
+	checkPossibleVolumeSplit();
 }
 
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();
-	checkPossibleVolumeSplit();
 }
 
 void MainWindow::checkPossibleVolumeSplit() {
