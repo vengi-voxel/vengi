@@ -28,7 +28,9 @@
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include <float.h>
 #include <glm/common.hpp>
+#include <glm/gtc/constants.hpp>
 
 namespace voxelformat {
 
@@ -91,9 +93,68 @@ struct KFAData {
 	core::Buffer<KFASeqTyp> seq;				//[seqnum]
 };
 
+
 // lighting value that distributes above a radius of 3 around the position
-static uint8_t calculateDir(const voxel::RawVolume *, int, int, int, const voxel::Voxel &) {
-	return 0u; // TODO
+static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, const voxel::Voxel &) {
+	const int radius = 3;
+	const int radiusVal = (radius + 1) * (radius + 1);
+	int offsetX = 0, offsetY = 0, offsetZ = 0;
+	voxel::RawVolume::Sampler sampler(*v);
+	for (int xr = -radius; xr <= radius; xr++) {
+		sampler.setPosition(x + xr, y - radius, z - radius);
+		if (!sampler.currentPositionValid()) {
+			continue;
+		}
+		const int xVal = xr * xr;
+		for (int yr = -radius; yr <= radius; yr++) {
+			if (!sampler.currentPositionValid()) {
+				continue;
+			}
+			const int yVal = yr * yr;
+			const int sum = xVal + yVal;
+			for (int zr = -radius; zr <= radius; zr++) {
+				if (!sampler.currentPositionValid()) {
+					continue;
+				}
+				if (sum + zr * zr <= radiusVal) {
+					offsetX += xr;
+					offsetY += yr;
+					offsetZ += zr;
+				}
+				sampler.movePositiveZ();
+			}
+			sampler.movePositiveY();
+		}
+	}
+
+	// If voxels aren't directional (thin), return the 0 vector (no direction)
+	const int contribution = offsetX * offsetX + offsetY * offsetY + offsetZ * offsetZ;
+	if (contribution < 32 * 32) {
+		return 255u;
+	}
+
+	// this is disabled in slab6 - but appears to be easier to re-implement. Let's see if it works...
+	float maxF = FLT_MIN;
+	uint8_t j = 0u;
+	float zmulk = 2.0f / 255.0f;
+	float zaddk = zmulk * 0.5f - 1.0f;
+	const float GOLDRAT = 0.3819660112501052;
+	const float goldratpi2 = GOLDRAT * glm::two_pi<float>();
+
+	for (uint8_t i = 0; i < 255u; ++i) {
+		glm::vec3 result;
+		result.z = i * zmulk + zaddk;
+		const float r = glm::sqrt(1.0f - result.z * result.z);
+		const float val = i * goldratpi2;
+		result.x = glm::cos(val) * r;
+		result.y = glm::sin(val) * r;
+		const float f2 = result.x * (float)offsetX + result.z * (float)offsetY - result.y * (float)offsetZ;
+		if (f2 > maxF) {
+			maxF = f2;
+			j = i;
+		}
+	}
+	return j;
 }
 
 const uint32_t MAXSPRITES = 1024;
@@ -502,7 +563,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
 		wrapBool(priv::writeBGRColor(stream, color)) // range 0.255
-		wrapBool(stream.writeUInt8(128)) // 128 as we save slab6
+		wrapBool(stream.writeUInt8(128))			 // 128 as we save slab6
 		wrapBool(stream.writeUInt8(data.z))
 		wrapBool(stream.writeUInt8(0)) // 0 as we save slab6
 		wrapBool(stream.writeUInt8((uint8_t)data.vis))
