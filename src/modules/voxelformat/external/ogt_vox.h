@@ -1162,13 +1162,12 @@
         // if hashes match, they might be equal OR there might be a hash collision.
         if (lhs->voxel_hash != rhs->voxel_hash)
             return false;
-        // early out: if number of voxels in the model's grid don't match, they can't be equal.
-        uint32_t num_voxels_lhs = lhs->size_x * lhs->size_y * lhs->size_z;
-        uint32_t num_voxels_rhs = rhs->size_x * rhs->size_y * rhs->size_z;
-        if (num_voxels_lhs != num_voxels_rhs)
+        // early out: if size of voxels in the model's grid don't match, they can't be equal.
+        if (lhs->size_x != rhs->size_x || lhs->size_y != rhs->size_y || lhs->size_z != rhs->size_z )
             return false;
         // Finally, we know their hashes are the same, and their dimensions are the same
         // but they are only equal if they have exactly the same voxel data.
+        uint32_t num_voxels_lhs = lhs->size_x * lhs->size_y * lhs->size_z;
         return memcmp(lhs->voxel_data, rhs->voxel_data, num_voxels_lhs) == 0 ? true : false;
     }
 
