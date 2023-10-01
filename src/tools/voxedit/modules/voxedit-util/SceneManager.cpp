@@ -181,13 +181,15 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 
 bool SceneManager::importAsPlane(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file);
-	voxel::RawVolume *v = voxelutil::importAsPlane(img);
+	const voxel::Palette &palette = activePalette();
+	voxel::RawVolume *v = voxelutil::importAsPlane(img, palette);
 	if (v == nullptr) {
 		return false;
 	}
 	scenegraph::SceneGraphNode newNode;
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
+	newNode.setPalette(palette);
 	return addNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
@@ -554,30 +556,27 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 }
 
 void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
-	const voxel::Region &region = _sceneGraph.groupRegion();
-	if (!region.isValid()) {
-		Log::warn("Invalid node region");
+	const int nodeId = _sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
+	if (v == nullptr) {
 		return;
 	}
+	const voxel::Region &region = v->region();
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
-	_sceneGraph.foreachGroup([&] (int nodeId) {
-		voxel::RawVolume *v = volume(nodeId);
-		if (v == nullptr) {
-			return;
+	voxel::RawVolumeWrapper wrapper(v);
+	voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
+		if (voxel.getColor() == voxelColor.getColor()) {
+			newVolume->setVoxel(x, y, z, voxel);
+			wrapper.setVoxel(x, y, z, voxel::Voxel());
 		}
-		voxel::RawVolumeWrapper wrapper(v);
-		voxelutil::visitVolume(wrapper, [&] (int32_t x, int32_t y, int32_t z, const voxel::Voxel& voxel) {
-			if (voxel.getColor() == voxelColor.getColor()) {
-				newVolume->setVoxel(x, y, z, voxel);
-				wrapper.setVoxel(x, y, z, voxel::Voxel());
-			}
-		});
-		modified(nodeId, wrapper.dirtyRegion());
 	});
-	scenegraph::SceneGraphNode newNode;
+	modified(nodeId, wrapper.dirtyRegion());
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume, true);
 	newNode.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
-	addNodeToSceneGraph(newNode);
+	addNodeToSceneGraph(newNode, node.parent());
 }
 
 void SceneManager::scaleUp(int nodeId) {
