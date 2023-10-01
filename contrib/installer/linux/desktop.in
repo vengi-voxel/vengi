@@ -9,3 +9,4 @@ Terminal=false
 Type=Application
 Categories=@CATEGORIES@
 StartupNotify=true
+Keywords=voxel;pixel;modeling;art;3D
