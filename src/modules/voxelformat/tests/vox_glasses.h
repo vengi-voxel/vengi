@@ -1,5 +1,7 @@
 /**
- * @file Created with AbstractVoxFormatTest::dump from data/tests/vox_glasses.vox
+ * @file
+ *
+ * Created with AbstractVoxFormatTest::dump from data/tests/vox_glasses.vox
  */
 
 #pragma once

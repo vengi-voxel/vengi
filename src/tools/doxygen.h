@@ -3,7 +3,7 @@
  */
 
 /**
- * @defgroup Tools
+ * @defgroup Tools Tools
  * @{
  * @}
  */

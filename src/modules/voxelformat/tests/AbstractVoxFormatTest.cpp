@@ -27,7 +27,7 @@
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 
-#define WRITE_TO_FILE 0
+#define WRITE_TO_FILE 1
 
 namespace voxelformat {
 

@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup Voxel
+ * @defgroup Voxel Voxel
  * @{
  */
 

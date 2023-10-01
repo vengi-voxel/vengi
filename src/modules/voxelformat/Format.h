@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup Formats
+ * @defgroup Formats Formats
  * @{
  * File formats.
  * @}

@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup UI
+ * @defgroup UI UI
  * @{
  */
 

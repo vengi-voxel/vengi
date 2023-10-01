@@ -3,7 +3,7 @@
  */
 
 /**
- * @defgroup Collections
+ * @defgroup Collections Collections
  * @{
  * @}
  */

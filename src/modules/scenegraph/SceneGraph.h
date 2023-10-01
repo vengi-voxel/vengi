@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup SceneGraph
+ * @defgroup SceneGraph SceneGraph
  * @{
  * Stores the node hierarchy of a scene.
  * @}

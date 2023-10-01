@@ -1,5 +1,7 @@
 /**
- * @file Created with AbstractVoxFormatTest::dump from data/tests/8ontop.vox
+ * @file
+ *
+ * Created with AbstractVoxFormatTest::dump from data/tests/8ontop.vox
  */
 
 #pragma once

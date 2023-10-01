@@ -1,6 +1,6 @@
 /**
  * @file
- * @mainpage VoxelEngine documentation
+ * @mainpage Vengi documentation
  *
  * @ref about
  *

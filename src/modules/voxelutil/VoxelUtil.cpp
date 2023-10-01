@@ -488,7 +488,7 @@ voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume
 
 				if (voxel::isAir(vox2.getMaterial())) {
 					vox2 = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-					Log::debug("Voxel at %i/%i/%i is air", r1x, r1y, r1z);
+					Log::info("Voxel at %i/%i/%i is air", r1x, r1y, r1z);
 				}
 
 				if (v == nullptr) {

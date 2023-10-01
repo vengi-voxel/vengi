@@ -1,6 +1,6 @@
 /**
  * @file
- * @defgroup Video
+ * @defgroup Video Video
  * @{
  * The video subsystem implements rendering and window management.
  * @}

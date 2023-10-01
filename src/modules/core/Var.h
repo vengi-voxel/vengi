@@ -15,7 +15,7 @@
 namespace core {
 
 /**
- * @defgroup Var
+ * @defgroup Var Var
  * @{
  */
 
