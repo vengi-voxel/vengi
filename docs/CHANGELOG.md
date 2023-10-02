@@ -14,10 +14,13 @@ General:
 
    - Improved SLAB5/6 support of `kvx`, `kv6`, `kfa` and `vox`
    - Don't fill the inner voxels of the SLAB5/6 models anymore
+   - Improved palette support for plane and volume import
 
 VoxEdit:
 
    - Added alternative split-object implementation and expose it to the editor tool panel
+   - Fixed split dialog appearing too late
+   - Added shader for marching cubes
 
 ## 0.0.27 (2023-09-19)
 
