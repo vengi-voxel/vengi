@@ -130,6 +130,10 @@ bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 
 void SceneRenderer::updateLockedPlanes(math::Axis lockedAxis, const scenegraph::SceneGraph &sceneGraph,
 									   const glm::ivec3 &cursorPosition) {
+	if (_lockedAxis == lockedAxis) {
+		return;
+	}
+	_lockedAxis = lockedAxis;
 	updateLockedPlane(lockedAxis, math::Axis::X, sceneGraph, cursorPosition);
 	updateLockedPlane(lockedAxis, math::Axis::Y, sceneGraph, cursorPosition);
 	updateLockedPlane(lockedAxis, math::Axis::Z, sceneGraph, cursorPosition);

@@ -103,7 +103,7 @@ public:
 	 * @return @c true if @c start() was called without calling @c stop() or aborting the action otherwise
 	 */
 	bool active() const override;
-	bool aborted() const;
+	bool aborted(const BrushContext &context) const;
 	/**
 	 * @return @c true if the aabb has the size of 1 in one direction. This means that the second position can still be
 	 * modified.

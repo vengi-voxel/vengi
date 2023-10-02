@@ -89,6 +89,9 @@ public:
 		return _locked;
 	}
 
+	math::Axis lockedAxis() const;
+	void setLockedAxis(math::Axis axis, bool unlock);
+
 	void shutdown() override;
 
 	virtual bool select(const glm::ivec3 &mins, const glm::ivec3 &maxs);
@@ -171,6 +174,10 @@ public:
 	void reset();
 };
 
+inline math::Axis Modifier::lockedAxis() const {
+	return _brushContext.lockedAxis;
+}
+
 inline BrushContext &Modifier::brushContext() {
 	return _brushContext;
 }
@@ -213,7 +220,7 @@ inline bool Modifier::isMode(ModifierType modifierType) const {
 
 inline bool Modifier::aborted() const {
 	if (const ShapeBrush *brush = activeShapeBrush()) {
-		return brush->aborted();
+		return brush->aborted(_brushContext);
 	}
 	return false;
 }

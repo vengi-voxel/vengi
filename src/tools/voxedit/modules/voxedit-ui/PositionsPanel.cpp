@@ -145,7 +145,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
 		glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
-		math::Axis lockedAxis = sceneMgr().lockedAxis();
+		math::Axis lockedAxis = sceneMgr().modifier().lockedAxis();
 		if (veui::CheckboxAxisFlags(math::Axis::X, "X##cursorlock", &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}

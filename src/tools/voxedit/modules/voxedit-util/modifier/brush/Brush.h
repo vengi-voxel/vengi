@@ -28,6 +28,7 @@ struct BrushContext {
 	glm::ivec3 cursorPosition{0};
 	/** the face where the trace hit */
 	voxel::FaceNames cursorFace = voxel::FaceNames::Max;
+	math::Axis lockedAxis = math::Axis::None;
 
 	int gridResolution = 1;
 };

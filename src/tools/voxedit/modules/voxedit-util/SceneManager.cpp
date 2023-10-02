@@ -1514,6 +1514,8 @@ bool SceneManager::setGridResolution(int resolution) {
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
+	_sceneRenderer->updateLockedPlanes(_modifier.lockedAxis(), _sceneGraph, cursorPosition());
+
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
 		_sceneRenderer->renderScene(renderContext, camera, _sceneGraph, _currentFrameIdx);
@@ -2012,34 +2014,6 @@ void SceneManager::construct() {
 		flip(axis);
 	}).setHelp("Flip the selected nodes around the given axis").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
-	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
-		if (args.size() != 1) {
-			Log::info("Usage: lock <x|y|z>");
-			return;
-		}
-		const math::Axis axis = math::toAxis(args[0]);
-		const bool unlock = (_lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the given axis at the current cursor position").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
-
-	command::Command::registerCommand("lockx", [&] (const command::CmdArgs& args) {
-		const math::Axis axis = math::Axis::X;
-		const bool unlock = (_lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the x axis at the current cursor position");
-
-	command::Command::registerCommand("locky", [&] (const command::CmdArgs& args) {
-		const math::Axis axis = math::Axis::Y;
-		const bool unlock = (_lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the y axis at the current cursor position");
-
-	command::Command::registerCommand("lockz", [&] (const command::CmdArgs& args) {
-		const math::Axis axis = math::Axis::Z;
-		const bool unlock = (_lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
-
 	command::Command::registerCommand("modeladd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
 		const char *width = args.size() > 1 ? args[1].c_str() : "64";
@@ -2303,7 +2277,7 @@ bool SceneManager::init() {
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	_lastAutoSave = timeProvider->tickSeconds();
 
-	_lockedAxis = math::Axis::None;
+	_modifier.setLockedAxis(math::Axis::None, true);
 	return true;
 }
 
@@ -2515,17 +2489,20 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (delta.z % res != 0) {
 		pos.z = mins.z + (delta.z / res) * res;
 	}
+
+	const math::Axis lockedAxis = _modifier.lockedAxis();
+
 	// make a copy here - no reference - otherwise the comparison below won't
 	// do anything else than comparing the same values.
 	const glm::ivec3 oldCursorPos = cursorPosition();
 	if (!force) {
-		if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
+		if ((lockedAxis & math::Axis::X) != math::Axis::None) {
 			pos.x = oldCursorPos.x;
 		}
-		if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
+		if ((lockedAxis & math::Axis::Y) != math::Axis::None) {
 			pos.y = oldCursorPos.y;
 		}
-		if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
+		if ((lockedAxis & math::Axis::Z) != math::Axis::None) {
 			pos.z = oldCursorPos.z;
 		}
 	}
@@ -2538,7 +2515,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_sceneRenderer->updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
+	_sceneRenderer->updateLockedPlanes(lockedAxis, _sceneGraph, cursorPosition());
 }
 
 bool SceneManager::trace(bool sceneMode, bool force) {
@@ -2654,6 +2631,7 @@ bool SceneManager::mouseRayTrace(bool force) {
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
 
+	const math::Axis lockedAxis = _modifier.lockedAxis();
 	// TODO: we could optionally limit the raycast to the selection
 
 	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
@@ -2671,19 +2649,19 @@ bool SceneManager::mouseRayTrace(bool force) {
 		}
 		if (sampler.currentPositionValid()) {
 			// while having an axis locked, we should end the trace if we hit the plane
-			if (_lockedAxis != math::Axis::None) {
+			if (lockedAxis != math::Axis::None) {
 				const glm::ivec3& cursorPos = cursorPosition();
-				if ((_lockedAxis & math::Axis::X) != math::Axis::None) {
+				if ((lockedAxis & math::Axis::X) != math::Axis::None) {
 					if (sampler.position()[0] == cursorPos[0]) {
 						return false;
 					}
 				}
-				if ((_lockedAxis & math::Axis::Y) != math::Axis::None) {
+				if ((lockedAxis & math::Axis::Y) != math::Axis::None) {
 					if (sampler.position()[1] == cursorPos[1]) {
 						return false;
 					}
 				}
-				if ((_lockedAxis & math::Axis::Z) != math::Axis::None) {
+				if ((lockedAxis & math::Axis::Z) != math::Axis::None) {
 					if (sampler.position()[2] == cursorPos[2]) {
 						return false;
 					}
@@ -2708,15 +2686,6 @@ bool SceneManager::mouseRayTrace(bool force) {
 	updateCursor();
 
 	return true;
-}
-
-void SceneManager::setLockedAxis(math::Axis axis, bool unlock) {
-	if (unlock) {
-		_lockedAxis &= ~axis;
-	} else {
-		_lockedAxis |= axis;
-	}
-	_sceneRenderer->updateLockedPlanes(_lockedAxis, _sceneGraph, cursorPosition());
 }
 
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,

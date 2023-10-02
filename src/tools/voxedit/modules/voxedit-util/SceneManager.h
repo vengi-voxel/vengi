@@ -77,8 +77,6 @@ private:
 	core::VarPtr _gridSize;
 	core::VarPtr _movementSpeed;
 
-	math::Axis _lockedAxis = math::Axis::None;
-
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop
 	// auto-saving once we saved a dirty state
@@ -386,8 +384,6 @@ public:
 
 	void updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 
-	math::Axis lockedAxis() const;
-	void setLockedAxis(math::Axis axis, bool unlock);
 	bool setGridResolution(int resolution);
 
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
@@ -462,10 +458,6 @@ inline void SceneManager::setActiveCamera(video::Camera *camera) {
 
 inline video::Camera *SceneManager::activeCamera() {
 	return _camera;
-}
-
-inline math::Axis SceneManager::lockedAxis() const {
-	return _lockedAxis;
 }
 
 inline const MementoHandler &SceneManager::mementoHandler() const {

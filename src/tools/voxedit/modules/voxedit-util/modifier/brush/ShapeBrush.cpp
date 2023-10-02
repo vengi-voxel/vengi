@@ -93,9 +93,13 @@ bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	int width = 0;
 	int height = 0;
 	int depth = 0;
-	const math::Axis axis = getShapeDimensionForAxis(_aabbFace, dimensions, width, height, depth);
+	voxel::FaceNames face = _aabbFace;
+	if (face == voxel::FaceNames::Max) {
+		face = voxel::FaceNames::PositiveX;
+	}
+	const math::Axis axis = getShapeDimensionForAxis(face, dimensions, width, height, depth);
 	const double size = (glm::max)(width, depth);
-	const bool negative = voxel::isNegativeFace(_aabbFace);
+	const bool negative = voxel::isNegativeFace(face);
 
 	const int axisIdx = math::getIndexForAxis(axis);
 	const glm::ivec3 &center = region.getCenter();
@@ -197,7 +201,7 @@ bool ShapeBrush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 }
 
 bool ShapeBrush::needsFurtherAction(const BrushContext &context) const {
-	if (_fixedRegion) {
+	if (_fixedRegion || context.lockedAxis != math::Axis::None) {
 		return false;
 	}
 	const voxel::Region &region = calcRegion(context);
@@ -216,9 +220,6 @@ bool ShapeBrush::needsFurtherAction(const BrushContext &context) const {
 
 bool ShapeBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context) {
-	if (_aabbFace == voxel::FaceNames::Max) {
-		return false;
-	}
 	const voxel::Region region = calcRegion(context);
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
@@ -286,12 +287,12 @@ bool ShapeBrush::active() const {
 	return _aabbMode;
 }
 
-bool ShapeBrush::aborted() const {
-	return _aabbFace == voxel::FaceNames::Max;
+bool ShapeBrush::aborted(const BrushContext &context) const {
+	return _aabbFace == voxel::FaceNames::Max && context.lockedAxis == math::Axis::None;
 }
 
 void ShapeBrush::step(const BrushContext &context) {
-	if (!_aabbMode || _fixedRegion) {
+	if (!_aabbMode || _fixedRegion || context.lockedAxis != math::Axis::None) {
 		return;
 	}
 	_aabbSecondPos = currentCursorPosition(context.cursorPosition);
@@ -329,7 +330,6 @@ void ShapeBrush::setRegion(const voxel::Region &region, voxel::FaceNames face) {
 	_aabbMode = true;
 	_fixedRegion = true;
 	_aabbFace = face;
-	core_assert(_aabbFace != voxel::FaceNames::Max);
 	markDirty();
 }
 

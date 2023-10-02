@@ -65,10 +65,46 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
 
+	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Usage: lock <x|y|z>");
+			return;
+		}
+		const math::Axis axis = math::toAxis(args[0]);
+		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the given axis at the current cursor position").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
+
+	command::Command::registerCommand("lockx", [&] (const command::CmdArgs& args) {
+		const math::Axis axis = math::Axis::X;
+		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the x axis at the current cursor position");
+
+	command::Command::registerCommand("locky", [&] (const command::CmdArgs& args) {
+		const math::Axis axis = math::Axis::Y;
+		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the y axis at the current cursor position");
+
+	command::Command::registerCommand("lockz", [&] (const command::CmdArgs& args) {
+		const math::Axis axis = math::Axis::Z;
+		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+		setLockedAxis(axis, unlock);
+	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
+
 	_planeBrush.construct();
 	_scriptBrush.construct();
 	_shapeBrush.construct();
 	_stampBrush.construct();
+}
+
+void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
+	if (unlock) {
+		_brushContext.lockedAxis &= ~axis;
+	} else {
+		_brushContext.lockedAxis |= axis;
+	}
 }
 
 bool Modifier::init() {
