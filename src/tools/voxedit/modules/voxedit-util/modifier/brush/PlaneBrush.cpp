@@ -13,6 +13,7 @@ bool PlaneBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 						 const BrushContext &context) {
 	voxel::Voxel hitVoxel = context.hitCursorVoxel;
 	// TODO: context.gridResolution
+	// TODO: context.lockedAxis support
 	if (wrapper.modifierType() == ModifierType::Place) {
 		voxelutil::extrudePlane(wrapper, context.cursorPosition, context.cursorFace, hitVoxel, context.cursorVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Erase) {

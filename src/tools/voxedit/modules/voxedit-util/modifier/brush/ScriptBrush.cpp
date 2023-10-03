@@ -17,6 +17,7 @@ bool ScriptBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		return false;
 	}
 	const int nodeId = sceneGraph.activeNode();
+	// TODO: context.lockedAxis support
 	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 	bool state =
 		_luaGenerator.exec(_luaCode, sceneGraph, nodeId, wrapper.region(), context.cursorVoxel, dirtyRegion, _args);

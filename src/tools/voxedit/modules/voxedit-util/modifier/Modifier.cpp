@@ -170,6 +170,12 @@ void Modifier::reset() {
 }
 
 bool Modifier::start() {
+	if (isMode(ModifierType::Select)) {
+		_selectStartPosition = _brushContext.cursorPosition;
+		_selectStartPositionValid = true;
+		return true;
+	}
+
 	if (ShapeBrush *brush = activeShapeBrush()) {
 		return brush->start(_brushContext);
 	}
@@ -227,6 +233,9 @@ void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 }
 
 bool Modifier::needsFurtherAction() {
+	if (isMode(ModifierType::Select)) {
+		return false;
+	}
 	if (const ShapeBrush *brush = activeShapeBrush()) {
 		return brush->needsFurtherAction(_brushContext);
 	}
@@ -241,14 +250,12 @@ glm::ivec3 Modifier::currentCursorPosition() {
 }
 
 voxel::Region Modifier::calcBrushRegion() {
-	if (ShapeBrush *brush = activeShapeBrush()) {
-		return brush->calcRegion(_brushContext);
+	if (_brushType == BrushType::Shape) {
+		return _shapeBrush.calcRegion(_brushContext);
+	} else if (_brushType == BrushType::Stamp) {
+		return _stampBrush.calcRegion(_brushContext);
 	}
 	return voxel::Region::InvalidRegion;
-}
-
-glm::ivec3 Modifier::calcShapeBrushRegionSize() {
-	return calcBrushRegion().getDimensionsInVoxels();
 }
 
 voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volume) const {
@@ -330,6 +337,12 @@ bool Modifier::pathModifier(voxel::RawVolume *volume, const Callback &callback) 
 	return true;
 }
 
+voxel::Region Modifier::calcSelectionRegion() const {
+	const glm::ivec3 &mins = glm::min(_selectStartPosition, _brushContext.cursorPosition);
+	const glm::ivec3 &maxs = glm::max(_selectStartPosition, _brushContext.cursorPosition);
+	return voxel::Region(mins, maxs);
+}
+
 bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback) {
 	if (_locked) {
 		return false;
@@ -338,9 +351,11 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		return false;
 	}
 	if (isMode(ModifierType::Select)) {
-		const voxel::Region a = calcBrushRegion(); // TODO: only works for shape brush
-		Log::debug("select mode");
-		select(a.getLowerCorner(), a.getUpperCorner());
+		const voxel::Region &region = calcSelectionRegion();
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const glm::ivec3 &maxs = region.getUpperCorner();
+		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		select(mins, maxs);
 		if (_selectionValid) {
 			callback(accumulate(_selections), _modifierType, false);
 		}
@@ -415,6 +430,9 @@ const ShapeBrush *Modifier::activeShapeBrush() const {
 }
 
 void Modifier::stop() {
+	if (isMode(ModifierType::Select)) {
+		_selectStartPositionValid = false;
+	}
 	if (ShapeBrush *brush = activeShapeBrush()) {
 		brush->stop(_brushContext);
 	}

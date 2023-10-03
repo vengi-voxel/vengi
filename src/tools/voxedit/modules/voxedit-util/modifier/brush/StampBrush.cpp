@@ -63,6 +63,7 @@ bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 		return false;
 	}
 
+	// TODO: context.lockedAxis support
 	const voxel::Region &region = calcRegion(context);
 	const glm::ivec3 &offset = region.getLowerCorner();
 	voxelutil::visitVolume(*_volume, [&](int x, int y, int z, const voxel::Voxel &v) {

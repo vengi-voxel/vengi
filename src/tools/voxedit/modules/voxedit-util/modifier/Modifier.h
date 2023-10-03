@@ -41,6 +41,7 @@ public:
 protected:
 	Selections _selections;
 	bool _selectionValid = false;
+	bool _selectStartPositionValid = false;
 	bool _locked = false;
 	/**
 	 * timer value which indicates the next execution time in case you keep the
@@ -48,6 +49,7 @@ protected:
 	 */
 	double _nextSingleExecution = 0;
 	ModifierType _modifierType = ModifierType::Place;
+	glm::ivec3 _selectStartPosition{0};
 
 	BrushContext _brushContext;
 	BrushType _brushType = BrushType::Shape;
@@ -67,6 +69,8 @@ protected:
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
 
 	Brush *activeBrush();
+
+	voxel::Region calcSelectionRegion() const;
 
 public:
 	Modifier();
@@ -129,7 +133,6 @@ public:
 
 	const ShapeBrush *activeShapeBrush() const;
 	ShapeBrush *activeShapeBrush();
-	glm::ivec3 calcShapeBrushRegionSize();
 	voxel::Region calcBrushRegion();
 
 	ScriptBrush &scriptBrush();
@@ -219,6 +222,9 @@ inline bool Modifier::isMode(ModifierType modifierType) const {
 }
 
 inline bool Modifier::aborted() const {
+	if (isMode(ModifierType::Select)) {
+		return false;
+	}
 	if (const ShapeBrush *brush = activeShapeBrush()) {
 		return brush->aborted(_brushContext);
 	}

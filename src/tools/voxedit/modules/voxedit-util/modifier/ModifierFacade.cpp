@@ -93,9 +93,8 @@ void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);
 
-
-	if (isMode(ModifierType::Select) && activeBrush()->active()) {
-		const voxel::Region &region = calcBrushRegion();
+	if (isMode(ModifierType::Select) && _selectStartPositionValid) {
+		const voxel::Region &region = calcSelectionRegion();
 		Selections selections = _selections;
 		if (region.isValid()) {
 			selections.push_back(region);
