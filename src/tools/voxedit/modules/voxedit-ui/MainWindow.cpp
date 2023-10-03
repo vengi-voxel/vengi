@@ -87,11 +87,13 @@ static const struct TemplateModel {
 #undef TM_ENTRY
 
 static const char *TIPOFTHEDAY[]{
-	"Switch between scene and model mode by pressing the <cmd:togglescene> key",
-	"Use the file dialog options for format specific options",
-	"Change the color reduction mode to improve the quality of the palette especially for importing RGBA based formats",
-	"Drag a model from the assets panel to the stamp brush to use it",
-	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel"
+	"Switch between scene and edit mode by pressing the <cmd:togglescene> key.",
+	"Use the file dialog options for format specific options.",
+	"Change the color reduction mode to improve the quality of the palette especially for importing RGBA based formats.",
+	"Drag a model from the assets panel to the stamp brush to use it.",
+	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel.",
+	"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier.",
+	"You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."
 };
 
 // clang-format on
