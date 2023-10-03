@@ -514,6 +514,7 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	ASSERT_TRUE(format->save(sceneGraph, filename, *writeStream, testSaveCtx)) << "Could not save the scene graph";
 
 #if WRITE_TO_FILE
+	sfile->close();
 	io::FilePtr readfile = open(filename);
 	io::FileStream fileReadStream(readfile);
 	readStream = &fileReadStream;
