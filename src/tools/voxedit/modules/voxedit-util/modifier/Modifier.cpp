@@ -12,6 +12,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/dearimgui/imgui_internal.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/Face.h"
@@ -21,6 +22,7 @@
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/AStarPathfinder.h"
+#include "voxelutil/Raycast.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
@@ -179,10 +181,13 @@ bool Modifier::start() {
 	if (ShapeBrush *brush = activeShapeBrush()) {
 		return brush->start(_brushContext);
 	}
-	return true;
+	return false;
 }
 
 void Modifier::executeAdditionalAction() {
+	if (isMode(ModifierType::Select) || isMode(ModifierType::ColorPicker)) {
+		return;
+	}
 	if (ShapeBrush *brush = activeShapeBrush()) {
 		brush->step(_brushContext);
 	}
@@ -432,6 +437,7 @@ const ShapeBrush *Modifier::activeShapeBrush() const {
 void Modifier::stop() {
 	if (isMode(ModifierType::Select)) {
 		_selectStartPositionValid = false;
+		return;
 	}
 	if (ShapeBrush *brush = activeShapeBrush()) {
 		brush->stop(_brushContext);
