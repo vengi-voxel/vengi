@@ -100,8 +100,38 @@ TEST_F(ModifierTest, testModifierSelection) {
 	modifier.shutdown();
 }
 
-TEST_F(ModifierTest, DISABLED_testPath) {
-	// TODO: implement me
+TEST_F(ModifierTest, testPath) {
+	const voxel::Region region(-10, 10);
+	voxel::RawVolume volume(region);
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	Modifier modifier;
+	ASSERT_TRUE(modifier.init());
+
+	const glm::ivec3 mins = region.getLowerCorner();
+	const glm::ivec3 maxs(region.getUpperX(), region.getLowerY(), region.getUpperZ());
+	prepare(modifier, mins, maxs, ModifierType::Place);
+	EXPECT_TRUE(modifier.execute(
+		sceneGraph, node, [&](const voxel::Region &modifiedRegion, ModifierType modifierType, bool markUndo) {}));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(mins).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(volume.voxel(maxs).getMaterial()));
+
+	int modifierExecuted = 0;
+	modifier.setModifierType(ModifierType::Path);
+	const glm::ivec3 referencePosition(region.getLowerX(), region.getLowerY() + 1, region.getLowerZ());
+	modifier.setReferencePosition(referencePosition);
+	const glm::ivec3 cursorPosition(region.getUpperX(), region.getLowerY() + 1, region.getUpperZ());
+	modifier.setCursorPosition(cursorPosition, voxel::FaceNames::PositiveY);
+	EXPECT_TRUE(modifier.execute(sceneGraph, node,
+								 [&](const voxel::Region &modifiedRegion, ModifierType modifierType, bool markUndo) {
+									 ++modifierExecuted;
+									 EXPECT_EQ(referencePosition, modifiedRegion.getLowerCorner());
+									 EXPECT_EQ(cursorPosition, modifiedRegion.getUpperCorner());
+								 }));
+	EXPECT_EQ(1, modifierExecuted);
+	modifier.shutdown();
 }
 
 TEST_F(ModifierTest, DISABLED_testLine) {
