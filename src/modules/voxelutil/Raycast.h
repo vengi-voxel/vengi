@@ -107,41 +107,37 @@ RaycastResult raycastWithEndpoints(Volume* volData, const glm::vec3& v3dStart, c
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
-	const float offset = 0.0f;
-	const float x1 = v3dStart.x + offset;
-	const float y1 = v3dStart.y + offset;
-	const float z1 = v3dStart.z + offset;
-	const float x2 = v3dEnd.x + offset;
-	const float y2 = v3dEnd.y + offset;
-	const float z2 = v3dEnd.z + offset;
+	const float x1 = v3dStart.x;
+	const float y1 = v3dStart.y;
+	const float z1 = v3dStart.z;
+	const float x2 = v3dEnd.x;
+	const float y2 = v3dEnd.y;
+	const float z2 = v3dEnd.z;
 
-	int i = (int) floorf(x1);
-	int j = (int) floorf(y1);
-	int k = (int) floorf(z1);
-
-	const int iend = (int) floorf(x2);
-	const int jend = (int) floorf(y2);
-	const int kend = (int) floorf(z2);
+	const glm::ivec3 floorEnd(glm::floor(v3dEnd));
+	const int iend = floorEnd.x;
+	const int jend = floorEnd.y;
+	const int kend = floorEnd.z;
 
 	const int di = ((x1 < x2) ? 1 : ((x1 > x2) ? -1 : 0));
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float distX = glm::abs(x2 - x1);
-	const float distY = glm::abs(y2 - y1);
-	const float distZ = glm::abs(z2 - z1);
+	const glm::vec3 dist = glm::abs(v3dEnd - v3dStart);
+	const float deltatx = dist.x < glm::epsilon<float>() ? 1.0f : 1.0f / dist.x;
+	const float deltaty = dist.y < glm::epsilon<float>() ? 1.0f : 1.0f / dist.y;
+	const float deltatz = dist.z < glm::epsilon<float>() ? 1.0f : 1.0f / dist.z;
 
-	const float deltatx = glm::abs(distX) < glm::epsilon<float>() ? 1.0f : 1.0f / distX;
-	const float deltaty = glm::abs(distY) < glm::epsilon<float>() ? 1.0f : 1.0f / distY;
-	const float deltatz = glm::abs(distZ) < glm::epsilon<float>() ? 1.0f : 1.0f / distZ;
+	const glm::vec3 floorStart(glm::floor(v3dStart));
+	const glm::vec3 maxs = floorStart + 1.0f;
 
-	const float minx = floorf(x1), maxx = minx + 1.0f;
-	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
-	const float miny = floorf(y1), maxy = miny + 1.0f;
-	float ty = ((y1 > y2) ? (y1 - miny) : (maxy - y1)) * deltaty;
-	const float minz = floorf(z1), maxz = minz + 1.0f;
-	float tz = ((z1 > z2) ? (z1 - minz) : (maxz - z1)) * deltatz;
+	float tx = ((di == -1) ? (x1 - floorStart.x) : (maxs.x - x1)) * deltatx;
+	float ty = ((dj == -1) ? (y1 - floorStart.y) : (maxs.y - y1)) * deltaty;
+	float tz = ((dk == -1) ? (z1 - floorStart.z) : (maxs.z - z1)) * deltatz;
 
+	int i = (int)floorStart.x;
+	int j = (int)floorStart.y;
+	int k = (int)floorStart.z;
 	sampler.setPosition(i, j, k);
 
 	for (;;) {
