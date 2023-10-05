@@ -51,16 +51,21 @@ enum class ValidateFlags {
 									// 256 colors, and if we compare those palettes to a palette of a format which also
 									// supports less colors, we would get a false negative
 
-	Transform = Animations | Scale | Pivot | Translation,
-	All = Palette | Color | Transform, // no region here
-	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform, // no region here
+	PaletteColorOrderDiffers = 512, // colors must match, but might have a different order in the palette. This happens
+									// often for rgb(a) based formats - when the coordinate system between format
+									// conversions differ, the first voxel color will get the first palette entry.
 
+	Transform = Animations | Scale | Pivot | Translation,
+	All = Palette | Color | Transform,											// no region here
+	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform, // no region here
+	AllPaletteColorOrderDiffers = PaletteColorOrderDiffers | Color | Transform, // no region here
 	Max
 };
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags);
 
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel);
 void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
+void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
 void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);

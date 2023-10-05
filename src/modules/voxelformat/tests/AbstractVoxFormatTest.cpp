@@ -314,9 +314,11 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 	scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> src(merged.first);
 	if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
-		paletteComparator(merged.second, mergedLoad.second, maxDelta);
+		voxel::paletteComparator(merged.second, mergedLoad.second, maxDelta);
 	} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
-		partialPaletteComparator(merged.second, mergedLoad.second, maxDelta);
+		voxel::partialPaletteComparator(merged.second, mergedLoad.second, maxDelta);
+	} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
+		voxel::orderPaletteComparator(merged.second, mergedLoad.second, maxDelta);
 	}
 	voxel::volumeComparator(*src, merged.second, *loaded, mergedLoad.second, flags, maxDelta);
 }
@@ -534,9 +536,11 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
 	if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
-		paletteComparator(pal, merged.second, maxDelta);
+		voxel::paletteComparator(pal, merged.second, maxDelta);
 	} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
-		partialPaletteComparator(pal, merged.second, maxDelta);
+		voxel::partialPaletteComparator(pal, merged.second, maxDelta);
+	} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
+		voxel::orderPaletteComparator(pal, merged.second, maxDelta);
 	}
 	voxel::volumeComparator(original, pal, *loaded, merged.second, flags);
 }

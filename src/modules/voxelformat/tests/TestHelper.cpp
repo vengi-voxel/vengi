@@ -160,6 +160,24 @@ void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, f
 	}
 }
 
+void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
+	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
+	for (int i = 0; i < pal1.colorCount(); ++i) {
+		const core::RGBA &c1 = pal1.color(i);
+		bool found = false;
+		for (int j = 0; j < pal2.colorCount(); ++j) {
+			if (pal2.color(j) == c1) {
+				found = true;
+				break;
+			}
+		}
+
+		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << core::Color::print(c1)
+						   << "] wasn't found in second palette 2:\n"
+						   << voxel::Palette::print(pal2);
+	}
+}
+
 void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
 	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < n; ++i) {

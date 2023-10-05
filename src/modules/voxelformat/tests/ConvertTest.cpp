@@ -141,8 +141,7 @@ TEST_F(ConvertTest, testQbToCub) {
 	QBFormat src;
 	CubFormat target;
 	// order of colors in palette differs
-	// TODO: this could be an own flag to still validate the colors are the same, without taking care about the order)
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorOrderDiffers;
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.cub", target, flags);
 }
 
@@ -252,7 +251,6 @@ TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
 	// qb doesn't store a pivot
-	// TODO: this could be an own flag to still validate the colors are the same, without taking care about the order)
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
 }
