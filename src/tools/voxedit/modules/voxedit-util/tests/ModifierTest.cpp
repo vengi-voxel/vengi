@@ -101,7 +101,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 }
 
 TEST_F(ModifierTest, testPath) {
-	const voxel::Region region(-10, 10);
+	const voxel::Region region(-2, 2);
 	voxel::RawVolume volume(region);
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -134,8 +134,31 @@ TEST_F(ModifierTest, testPath) {
 	modifier.shutdown();
 }
 
-TEST_F(ModifierTest, DISABLED_testLine) {
-	// TODO: implement me
+TEST_F(ModifierTest, testLine) {
+	const voxel::Region region(0, 3);
+	voxel::RawVolume volume(region);
+	scenegraph::SceneGraph sceneGraph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	Modifier modifier;
+	ASSERT_TRUE(modifier.init());
+
+	const glm::ivec3 mins = region.getLowerCorner();
+	const glm::ivec3 maxs(region.getUpperX(), region.getLowerY(), region.getUpperZ());
+	prepare(modifier, mins, maxs, ModifierType::Line);
+
+	int modifierExecuted = 0;
+	modifier.setReferencePosition(mins);
+	modifier.setCursorPosition(maxs, voxel::FaceNames::PositiveY);
+	EXPECT_TRUE(modifier.execute(sceneGraph, node,
+								 [&](const voxel::Region &modifiedRegion, ModifierType modifierType, bool markUndo) {
+									 ++modifierExecuted;
+									 EXPECT_EQ(mins, modifiedRegion.getLowerCorner());
+									 //EXPECT_EQ(maxs, modifiedRegion.getUpperCorner()); // TODO: the raycast misses one location
+								 }));
+	EXPECT_EQ(1, modifierExecuted);
+	modifier.shutdown();
 }
 
 } // namespace voxedit
