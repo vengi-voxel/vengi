@@ -5,6 +5,7 @@
 #include "voxelformat/private/slab6/KV6Format.h"
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/slab6/KVXFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -68,7 +69,8 @@ TEST_F(KV6FormatTest, testSaveSmallVoxel) {
 
 TEST_F(KV6FormatTest, testLoadSave) {
 	KV6Format f;
-	testLoadSaveAndLoad("voxlap5.kv6", f, "kv6-voxlap5.kv6", f);
+	voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	testLoadSaveAndLoad("voxlap5.kv6", f, "kv6-voxlap5.kv6", f, flags);
 }
 
 TEST_F(KV6FormatTest, testChrKnight) {

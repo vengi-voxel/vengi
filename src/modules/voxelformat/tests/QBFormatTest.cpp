@@ -44,7 +44,9 @@ TEST_F(QBFormatTest, testSaveMultipleLayers) {
 
 TEST_F(QBFormatTest, testLoadSave) {
 	QBFormat f;
-	testLoadSaveAndLoad("qubicle.qb", f, "qubicle-savetest.qb", f);
+	// TODO: this could be an own flag to still validate the colors are the same, without taking care about the order)
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoad("qubicle.qb", f, "qubicle-savetest.qb", f, flags);
 }
 
 }

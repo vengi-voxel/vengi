@@ -24,6 +24,7 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/FormatThumbnail.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -312,7 +313,12 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
 	scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> src(merged.first);
-	volumeComparator(*src, merged.second, *loaded, mergedLoad.second, flags, maxDelta);
+	if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
+		paletteComparator(merged.second, mergedLoad.second, maxDelta);
+	} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
+		partialPaletteComparator(merged.second, mergedLoad.second, maxDelta);
+	}
+	voxel::volumeComparator(*src, merged.second, *loaded, mergedLoad.second, flags, maxDelta);
 }
 
 void AbstractVoxFormatTest::testLoadSceneGraph(const core::String &srcFilename1, Format &srcFormat1,
@@ -471,7 +477,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 }
 
 void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original,
-											   Format *format, voxel::ValidateFlags flags) {
+											   Format *format, voxel::ValidateFlags flags, float maxDelta) {
 	voxel::Palette pal;
 	pal.magicaVoxel();
 
@@ -527,6 +533,11 @@ void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, con
 	scenegraph::SceneGraph::MergedVolumePalette merged = load(filename, *readStream, *format);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load the merged volumes";
+	if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
+		paletteComparator(pal, merged.second, maxDelta);
+	} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
+		partialPaletteComparator(pal, merged.second, maxDelta);
+	}
 	voxel::volumeComparator(original, pal, *loaded, merged.second, flags);
 }
 

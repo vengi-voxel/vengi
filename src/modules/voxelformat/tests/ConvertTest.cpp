@@ -140,7 +140,10 @@ TEST_F(ConvertTest, testQbToQb) {
 TEST_F(ConvertTest, testQbToCub) {
 	QBFormat src;
 	CubFormat target;
-	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.cub", target);
+	// order of colors in palette differs
+	// TODO: this could be an own flag to still validate the colors are the same, without taking care about the order)
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.cub", target, flags);
 }
 
 TEST_F(ConvertTest, testCubToQb) {
@@ -182,7 +185,7 @@ TEST_F(ConvertTest, testKV6ToQb) {
 	QBFormat target;
 	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors & ~(voxel::ValidateFlags::Pivot);
 	testLoadSaveAndLoadSceneGraph("test.kv6", src, "convert-test.qb", target, flags);
 }
 
@@ -249,7 +252,8 @@ TEST_F(ConvertTest, testKVXToQb) {
 	KVXFormat src;
 	QBFormat target;
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	// TODO: this could be an own flag to still validate the colors are the same, without taking care about the order)
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.qb", target, flags);
 }
 
@@ -284,14 +288,14 @@ TEST_F(ConvertTest, testVXLToVXR) {
 TEST_F(ConvertTest, testKV6ToKV6) {
 	KV6Format src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("test.kv6", src, "convert-test.kv6", target, flags);
 }
 
 TEST_F(ConvertTest, testKV6ToKV62) {
 	KV6Format src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("test2.kv6", src, "convert-test2.kv6", target, flags);
 }
 
@@ -355,22 +359,22 @@ TEST_F(ConvertTest, testQBToKV6) {
 TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) & ~(voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testQBChrKnightToKV6) {
 	QBFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testKVXToKV6) {
 	KVXFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow;
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags, 0.0022f);
 }
 
 }

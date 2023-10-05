@@ -5,6 +5,7 @@
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -35,7 +36,7 @@ TEST_F(CubFormatTest, testLoadRGBSmallSaveLoad) {
 
 TEST_F(CubFormatTest, testSaveSmallVoxel) {
 	CubFormat f;
-	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f);
+	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f, 0, 1);
 }
 
 }

@@ -73,8 +73,7 @@ TEST_F(GLTFFormatTest, testRGB) {
 
 TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	GLTFFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
+	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10);
 }
 
 TEST_F(GLTFFormatTest, testVoxelizeLantern) {
