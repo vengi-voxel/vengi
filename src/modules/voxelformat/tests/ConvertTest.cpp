@@ -304,34 +304,6 @@ TEST_F(ConvertTest, testQBToSLAB6Vox) {
 	testLoadSaveAndLoad("slab6_vox_test.vox", src, "convert-slab6_vox_test.vox", target, flags);
 }
 
-// TODO: pivot broken
-// TODO: broken keyframes
-// TODO: broken voxels
-TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
-	GLTFFormat src;
-	GLTFFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target, flags);
-}
-
-// TODO: pivot broken
-// TODO: translation broken
-TEST_F(ConvertTest, testVoxToVXR) {
-	VoxFormat src;
-	VXMFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
-	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
-}
-
-// TODO: translation broken
-TEST_F(ConvertTest, testQbToGox) {
-	QBFormat src;
-	GoxFormat target;
-	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Palette);
-	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
-}
-
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
@@ -359,6 +331,34 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat target;
 	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) & ~(voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
+}
+
+// TODO: pivot broken
+// TODO: broken keyframes
+// TODO: broken voxels
+TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
+	GLTFFormat src;
+	GLTFFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target, flags);
+}
+
+// TODO: pivot broken
+// TODO: translation broken
+TEST_F(ConvertTest, testVoxToVXR) {
+	VoxFormat src;
+	VXMFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Pivot);
+	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
+}
+
+// TODO: translation broken
+TEST_F(ConvertTest, testQbToGox) {
+	QBFormat src;
+	GoxFormat target;
+	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Palette);
+	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
 TEST_F(ConvertTest, DISABLED_testQBChrKnightToKV6) {
