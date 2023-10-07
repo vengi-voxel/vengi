@@ -315,7 +315,7 @@ TEST_F(ConvertTest, testQBChrKnightToKVX) {
 	QBFormat src;
 	KVXFormat target;
 	// KVX has all colors in the palette set - and thus the color amount doesn't match
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::IgnoreHollow);
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All | voxel::ValidateFlags::IgnoreHollow) & ~(voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
 }
 
