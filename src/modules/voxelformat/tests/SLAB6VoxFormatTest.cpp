@@ -19,7 +19,7 @@ TEST_F(SLAB6VoxFormatTest, testSaveSmallVoxel) {
 TEST_F(SLAB6VoxFormatTest, testChrKnight) {
 	SLAB6VoxFormat f1;
 	KV6Format f2;
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot | voxel::ValidateFlags::IgnoreHollow;
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::IgnoreHollow);
 	testLoadSceneGraph("slab6_vox_test.vox", f1, "slab6_vox_test.kv6", f2, flags);
 }
 
