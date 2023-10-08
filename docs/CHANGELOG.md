@@ -24,7 +24,7 @@ VoxEdit:
    - Added shader for marching cubes
    - Fixed selection handling
    - Added tip of the day dialog
-
+   - Resize to selection
 
 ## 0.0.27 (2023-09-19)
 

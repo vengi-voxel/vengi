@@ -21,6 +21,7 @@ static const char *TIPOFTHEDAY[]{
 	"The editor shows the last executed console command in the status bar. You can use these commands and bind when to keys.",
 	"You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport.",
 	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel.",
+	"When importing meshes, you can switch between different voxelization methods in the options menu.",
 	"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier.",
 	"Switch between different color themes in the options menu.",
 	"You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."
