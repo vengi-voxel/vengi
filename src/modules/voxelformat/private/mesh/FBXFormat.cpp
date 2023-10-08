@@ -290,7 +290,7 @@ static inline core::String _ufbx_to_string(const ufbx_string &s) {
 	return core::String(s.data, s.length);
 }
 
-static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
+static inline glm::mat4 _ufbx_to_mat(const ufbx_matrix &m) {
 	// clang-format off
 	return glm::mat4{
 		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03,
@@ -303,7 +303,7 @@ static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node,
 									  const glm::vec3 &scale) {
-	const glm::mat4 &mat = _ufbx_to_um_mat(node->node_to_parent);
+	const glm::mat4 &mat = _ufbx_to_mat(node->node_to_parent);
 	const glm::vec3 lt = transform.localTranslation();
 	transform.setLocalMatrix(mat);
 	transform.setLocalTranslation(transform.localTranslation() + lt);
