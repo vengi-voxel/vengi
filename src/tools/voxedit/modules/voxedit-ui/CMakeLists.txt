@@ -16,6 +16,7 @@ set(SRCS
 	SceneGraphPanel.h SceneGraphPanel.cpp
 	BrushPanel.h BrushPanel.cpp
 	StatusBar.h StatusBar.cpp
+	TipOfTheDay.h
 	ToolsPanel.h ToolsPanel.cpp
 	TreePanel.h TreePanel.cpp
 	Util.h Util.cpp
