@@ -291,10 +291,14 @@ static inline core::String _ufbx_to_string(const ufbx_string &s) {
 }
 
 static inline glm::mat4 _ufbx_to_um_mat(const ufbx_matrix &m) {
+	// clang-format off
 	return glm::mat4{
-		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03, (float)m.m10, (float)m.m11, (float)m.m12, (float)m.m13,
-		(float)m.m20, (float)m.m21, (float)m.m22, (float)m.m23, 0.0f,		  0.0f,			0.0f,		  1.0f,
+		(float)m.m00, (float)m.m01, (float)m.m02, (float)m.m03,
+		(float)m.m10, (float)m.m11, (float)m.m12, (float)m.m13,
+		(float)m.m20, (float)m.m21, (float)m.m22, (float)m.m23,
+		0.0f,		  0.0f,			0.0f,		  1.0f,
 	};
+	// clang-format on
 }
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_node *node,
