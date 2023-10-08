@@ -35,6 +35,11 @@ void Modifier::construct() {
 	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton,
 										   "Execute the modifier action in delete mode");
 
+	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
+		const voxel::Region &region = accumulate(_selections);
+		sceneMgr().resize(sceneMgr().sceneGraph().activeNode(), region);
+	}).setHelp("Resize the volume to the current selection");
+
 	command::Command::registerCommand("actionselect", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Select);
 	}).setHelp("Change the modifier type to 'select'");
