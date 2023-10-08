@@ -299,7 +299,7 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(&scene->anim, node, 1.0);
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
-	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale) * scale);
+	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
 }
 
 } // namespace priv
