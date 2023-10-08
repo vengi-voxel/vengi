@@ -328,12 +328,12 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		voxelizeTris(node, posMap, fillHollow);
 	}
 
-	scenegraph::SceneGraphTransform transform;
-	transform.setLocalTranslation(region.getLowerCornerf());
-	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-
 	if (resetOrigin) {
+		scenegraph::SceneGraphTransform transform;
+		transform.setLocalTranslation(region.getLowerCornerf());
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		node.setTransform(keyFrameIdx, transform);
+
 		node.volume()->translate(-region.getLowerCorner());
 	}
 
