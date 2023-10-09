@@ -71,24 +71,30 @@ public:
 	struct Face {
 		int indices[3]{0, 0, 0};
 	};
+	struct Polygon {
+		core::DynamicArray<int> indices;
+	};
+
 protected:
 	static bool skipElementBinary(const Element &element, io::SeekableReadStream &stream, const Header &header);
 	static int dataSize(DataType type);
 	static DataType dataType(const core::String &in);
 	static PropertyUse use(const core::String &in);
 	static bool parseHeader(io::SeekableReadStream &stream, Header &header);
-	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces) const;
+	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces,
+						 core::DynamicArray<Polygon> &polygons) const;
 	bool parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
 							core::DynamicArray<Vertex> &vertices) const;
-
+	void triangulatePolygons(const core::DynamicArray<Polygon> &polygons, const core::DynamicArray<Vertex> &vertices,
+							 core::DynamicArray<Face> &faces) const;
 	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces,
-						  const Header &header) const;
+						  core::DynamicArray<Polygon> &polygons, const Header &header) const;
 	bool parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
 							 core::DynamicArray<Vertex> &vertices, const Header &header) const;
 
 	bool parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
-							  scenegraph::SceneGraph &sceneGraph, const Header &header,
-							  core::DynamicArray<Vertex> &vertices) const;
+							   scenegraph::SceneGraph &sceneGraph, const Header &header,
+							   core::DynamicArray<Vertex> &vertices) const;
 	bool parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, const Header &header,
 							  core::DynamicArray<Vertex> &vertices) const;
@@ -98,7 +104,8 @@ protected:
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						 TriCollection &tris) const;
-	void convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &vertices, core::DynamicArray<Face> &faces) const;
+	void convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &vertices,
+					   core::DynamicArray<Face> &faces) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						TriCollection &tris) const;

@@ -20,6 +20,7 @@
 #include "voxel/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VoxelVertex.h"
+#include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/Tri.h"
 
 namespace voxelformat {
@@ -279,8 +280,8 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 	return true;
 }
 
-bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream,
-								core::DynamicArray<Face> &faces) const {
+bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces,
+								core::DynamicArray<Polygon> &polygons) const {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(32);
 
@@ -315,8 +316,13 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 			face2.indices[2] = core::string::toInt(tokens[4]);
 			faces.push_back(face2);
 		} else {
-			Log::error("Invalid or unsupported ply face: %s", line.c_str());
-			return false;
+			Polygon polygon;
+			polygon.indices.reserve(indices);
+			for (int64_t i = 0; i < indices; ++i) {
+				const int idx = core::string::toInt(tokens[i + 1]);
+				polygon.indices.push_back(idx);
+			}
+			polygons.push_back(polygon);
 		}
 	}
 	return true;
@@ -485,8 +491,35 @@ void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &v
 	}
 }
 
+/**
+ * @param[out] faces The triangulated faces
+ * @param[in] polygons The indices of the polygon
+ */
+void PLYFormat::triangulatePolygons(const core::DynamicArray<Polygon> &polygons,
+									const core::DynamicArray<Vertex> &vertices, core::DynamicArray<Face> &faces) const {
+	if (polygons.empty()) {
+		return;
+	}
+
+	Log::debug("triangulate %i polygons", (int)polygons.size());
+#if 0
+	// TODO: implement me
+	std::vector<int> indices = mapbox::earcut<int>(polygon);
+	assert(indices.size() % 3 == 0);
+
+	for (size_t k = 0; k < indices.size() / 3; k++) {
+		int idx0 = indices[3 * k + 0];
+		int idx1 = indices[3 * k + 1];
+		int idx2 = indices[3 * k + 2];
+
+		faces.push_back(Face{idx0, idx1, idx2});
+	}
+#endif
+}
+
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
-								 core::DynamicArray<Face> &faces, const Header &header) const {
+								 core::DynamicArray<Face> &faces, core::DynamicArray<Polygon> &polygons,
+								 const Header &header) const {
 	io::EndianStreamReadWrapper es(stream, header.format == PlyFormatType::BinaryBigEndian);
 	Log::debug("loading %i faces", element.count);
 	faces.reserve(element.count);
@@ -518,8 +551,13 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 				face2.indices[2] = read<int>(es, prop.type);
 				faces.push_back(face2);
 			} else {
-				Log::error("Invalid or unsupported ply face with %i indices", (int)indices);
-				return false;
+				Polygon polygon;
+				polygon.indices.reserve(indices);
+				for (int64_t i = 0; i < indices; ++i) {
+					const int idx = read<int>(es, prop.type);
+					polygon.indices.push_back(idx);
+				}
+				polygons.push_back(polygon);
 			}
 		}
 	}
@@ -600,6 +638,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 								TriCollection &tris) const {
 	core::DynamicArray<Vertex> vertices;
 	core::DynamicArray<Face> faces;
+	core::DynamicArray<Polygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -607,7 +646,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesBinary(element, stream, faces, header)) {
+			if (!parseFacesBinary(element, stream, faces, polygons, header)) {
 				return false;
 			}
 		} else {
@@ -619,6 +658,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 		}
 	}
 
+	triangulatePolygons(polygons, vertices, faces);
 	convertToTris(tris, vertices, faces);
 
 	return true;
@@ -629,6 +669,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 							   TriCollection &tris) const {
 	core::DynamicArray<Vertex> vertices;
 	core::DynamicArray<Face> faces;
+	core::DynamicArray<Polygon> polygons;
 	for (int i = 0; i < (int)header.elements.size(); ++i) {
 		const Element &element = header.elements[i];
 		if (element.name == "vertex") {
@@ -636,7 +677,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 				return false;
 			}
 		} else if (element.name == "face") {
-			if (!parseFacesAscii(element, stream, faces)) {
+			if (!parseFacesAscii(element, stream, faces, polygons)) {
 				return false;
 			}
 		} else {
@@ -648,6 +689,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 		}
 	}
 
+	triangulatePolygons(polygons, vertices, faces);
 	convertToTris(tris, vertices, faces);
 
 	return true;
