@@ -498,23 +498,67 @@ void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &v
 void PLYFormat::triangulatePolygons(const core::DynamicArray<Polygon> &polygons,
 									const core::DynamicArray<Vertex> &vertices, core::DynamicArray<Face> &faces) const {
 	if (polygons.empty()) {
+		Log::debug("No polygons to triangulate");
 		return;
 	}
 
 	Log::debug("triangulate %i polygons", (int)polygons.size());
-#if 0
-	// TODO: implement me
-	std::vector<int> indices = mapbox::earcut<int>(polygon);
-	assert(indices.size() % 3 == 0);
 
-	for (size_t k = 0; k < indices.size() / 3; k++) {
-		int idx0 = indices[3 * k + 0];
-		int idx1 = indices[3 * k + 1];
-		int idx2 = indices[3 * k + 2];
+	// this code was taken from tinyobjloader
+	for (const Polygon &p : polygons) {
+		const size_t nPolygons = p.indices.size();
+		glm::vec3 norm(0.0f);
+		for (size_t k = 0; k < nPolygons; ++k) {
+			const int i0 = p.indices[k % nPolygons];
+			const int i0_2 = p.indices[(k + 1) % nPolygons];
+			const glm::vec3 &point1 = vertices[i0].position;
+			const glm::vec3 &point2 = vertices[i0_2].position;
+			const glm::vec3 a(point1 - point2);
+			const glm::vec3 b(point1 + point2);
+			norm.x += (a.y * b.z);
+			norm.y += (a.z * b.x);
+			norm.z += (a.x * b.y);
+		}
+		const float len = glm::length(norm);
+		if (len <= 0.0f) {
+			continue;
+		}
+		const float invLength = -1.0f / len;
+		norm *= invLength;
 
-		faces.push_back(Face{idx0, idx1, idx2});
+		const glm::vec3 axis_w = norm;
+		glm::vec3 a;
+		if (glm::abs(axis_w.x) > 0.9999999f) {
+			a = glm::vec3(0.0f, 1.0f, 0.0f);
+		} else {
+			a = glm::vec3(1.0f, 0.0f, 0.0f);
+		}
+		const glm::vec3 axis_v = glm::normalize(glm::cross(axis_w, a));
+		const glm::vec3 axis_u = glm::cross(axis_w, axis_v);
+		using Point = std::array<float, 2>;
+
+		std::vector<std::vector<Point>> polygon;
+		std::vector<Point> polyline;
+		for (size_t k = 0; k < nPolygons; k++) {
+			const glm::vec3 polypoint = vertices[p.indices[k]].position;
+			const glm::vec3 loc(glm::dot(polypoint, axis_u), glm::dot(polypoint, axis_v), glm::dot(polypoint, axis_w));
+			polyline.push_back({loc.x, loc.y});
+		}
+
+		polygon.push_back(polyline);
+
+		std::vector<int> indices = mapbox::earcut<int>(polygon);
+		core_assert((int)indices.size() % 3 == 0);
+		Log::debug("triangulated %i tris", (int)indices.size() / 3);
+
+		for (size_t k = 0; k < indices.size() / 3; k++) {
+			int idx0 = indices[3 * k + 0];
+			int idx1 = indices[3 * k + 1];
+			int idx2 = indices[3 * k + 2];
+
+			faces.push_back(Face{idx0, idx1, idx2});
+		}
 	}
-#endif
 }
 
 bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream &stream,
@@ -561,7 +605,7 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 			}
 		}
 	}
-	return false;
+	return true;
 }
 
 bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
