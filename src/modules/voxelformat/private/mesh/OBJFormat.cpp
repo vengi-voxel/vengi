@@ -23,7 +23,10 @@
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 
+#define TINYOBJLOADER_USE_MAPBOX_EARCUT
+#define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT
 #define TINYOBJLOADER_IMPLEMENTATION
+#include "voxelformat/external/earcut.hpp"
 #include "voxelformat/external/tiny_obj_loader.h"
 
 namespace voxelformat {
