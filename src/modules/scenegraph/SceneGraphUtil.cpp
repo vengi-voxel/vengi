@@ -164,6 +164,7 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
 }
 
 // TODO: split is destroying groups
+// TODO: for referenced nodes we should have to create new model references for each newly splitted model node, too
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
 				  bool createEmpty, const glm::ivec3 &maxSize) {
 	core_assert(&srcSceneGraph != &destSceneGraph);
