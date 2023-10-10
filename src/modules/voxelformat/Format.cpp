@@ -137,9 +137,10 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		return false;
 	}
 
+	const bool saveVisibleOnly = core::Var::getSafe(cfg::VoxformatSaveVisibleOnly)->boolVal();
 	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
 		Log::debug("Merge volumes before saving as the target format only supports one volume");
-		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true);
+		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(true, saveVisibleOnly);
 		scenegraph::SceneGraph mergedSceneGraph(2);
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
 		mergedNode.setVolume(merged.first, true);
@@ -151,7 +152,23 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	if (needsSplit) {
 		Log::debug("Split volumes before saving as the target format only supports smaller volume sizes");
 		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::splitVolumes(sceneGraph, newSceneGraph, false, false, maxsize);
+		scenegraph::splitVolumes(sceneGraph, newSceneGraph, false, false, saveVisibleOnly, maxsize);
+		return saveGroups(newSceneGraph, filename, stream, ctx);
+	}
+
+	if (saveVisibleOnly) {
+		scenegraph::SceneGraph newSceneGraph;
+		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
+		core::DynamicArray<int> nodes;
+		for (auto iter = newSceneGraph.nodes().begin(); iter != newSceneGraph.nodes().end(); ++iter) {
+			const scenegraph::SceneGraphNode &node = iter->second;
+			if (!node.visible()) {
+				nodes.push_back(node.id());
+			}
+		}
+		for (int nodeId : nodes) {
+			newSceneGraph.removeNode(nodeId, false);
+		}
 		return saveGroups(newSceneGraph, filename, stream, ctx);
 	}
 	return saveGroups(sceneGraph, filename, stream, ctx);

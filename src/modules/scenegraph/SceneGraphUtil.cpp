@@ -166,11 +166,14 @@ int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
 // TODO: split is destroying groups
 // TODO: for referenced nodes we should have to create new model references for each newly splitted model node, too
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
-				  bool createEmpty, const glm::ivec3 &maxSize) {
+				  bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
 	core_assert(&srcSceneGraph != &destSceneGraph);
 	destSceneGraph.reserve(srcSceneGraph.size());
 	for (auto iter = srcSceneGraph.beginModel(); iter != srcSceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
+		if (skipHidden && !node.visible()) {
+			continue;
+		}
 		const voxel::Region &region = node.region();
 		if (!region.isValid()) {
 			Log::warn("invalid region for node %i", node.id());

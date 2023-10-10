@@ -660,7 +660,7 @@ voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
 	return n.volume();
 }
 
-SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform) const {
+SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skipHidden) const {
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
 		return MergedVolumePalette{};
@@ -668,7 +668,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform) const {
 		auto iter = beginModel();
 		if (iter != end()) {
 			const SceneGraphNode &node = *iter;
-			if (node.visible()) {
+			if (skipHidden && !node.visible()) {
 				return MergedVolumePalette{};
 			}
 			return MergedVolumePalette{new voxel::RawVolume(node.volume()), node.palette()};
@@ -684,7 +684,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform) const {
 
 	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
 		const SceneGraphNode &node = *iter;
-		if (!node.visible()) {
+		if (skipHidden && !node.visible()) {
 			continue;
 		}
 		nodes.push_back(&node);

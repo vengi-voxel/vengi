@@ -30,6 +30,8 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= 0 && type <= 255;
 				   });
+	core::Var::get(cfg::VoxformatSaveVisibleOnly, "false", core::CV_NOPERSIST, "Save only visible nodes",
+				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST,
 				   "Scale the vertices on all axis by the given factor");
 	core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices on X axis by the given factor");

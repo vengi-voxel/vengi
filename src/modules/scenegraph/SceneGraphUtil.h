@@ -30,9 +30,12 @@ int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
 /**
  * @param createEmpty if @c true, for empty parts of the source volume empty volumes will be created, too. Otherwise
  * they will be ignored.
+ * @param skipHidden if @c true, hidden nodes will be skipped from splitting. They won't appear in the new
+ * @c scenegraph::SceneGraph instance.
  */
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
-				  bool crop = false, bool createEmpty = false, const glm::ivec3 &maxSize = glm::ivec3(128));
+				  bool crop = false, bool createEmpty = false, bool skipHidden = false,
+				  const glm::ivec3 &maxSize = glm::ivec3(128));
 
 double interpolate(InterpolationType interpolationType, double current, double start, double end);
 

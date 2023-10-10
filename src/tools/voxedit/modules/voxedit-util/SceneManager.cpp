@@ -1314,8 +1314,11 @@ bool SceneManager::splitVolumes() {
 	scenegraph::SceneGraph newSceneGraph;
 	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false)) {
 		return loadSceneGraph(core::move(newSceneGraph));
-	} else if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, true)) {
-		return loadSceneGraph(core::move(newSceneGraph));
+	}
+
+	scenegraph::SceneGraph newSceneGraph2;
+	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph2, false, true)) {
+		return loadSceneGraph(core::move(newSceneGraph2));
 	}
 	return false;
 }

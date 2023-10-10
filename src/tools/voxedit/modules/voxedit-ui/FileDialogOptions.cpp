@@ -67,6 +67,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		if (forceApplyOptions || !meshFormat) {
 			ImGui::CheckboxVar("Single object", cfg::VoxformatMerge);
 		}
+		ImGui::CheckboxVar("Save visible only", cfg::VoxformatSaveVisibleOnly);
 		if (forceApplyOptions || *desc == voxelformat::qubicleBinaryTree()) {
 			ImGui::CheckboxVar("Palette mode", cfg::VoxformatQBTPaletteMode);
 			ImGui::CheckboxVar("Merge compounds", cfg::VoxformatQBTMergeCompounds);
