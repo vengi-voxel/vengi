@@ -148,6 +148,7 @@ update-implot:
 	$(call UPDATE_GIT,implot,https://github.com/epezent/implot.git)
 	cp $(UPDATEDIR)/implot.sync/implot* src/modules/ui/dearimgui
 	mv src/modules/ui/dearimgui/implot_demo.cpp src/tests/testimgui/implot_demo.cpp
+	sed -i 's/[ \t]*$$//' src/modules/ui/dearimgui/implot*
 
 update-dearimgui:
 	$(call UPDATE_GIT,imgui,https://github.com/ocornut/imgui.git -b docking)
