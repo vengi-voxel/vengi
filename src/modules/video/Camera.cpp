@@ -382,7 +382,11 @@ math::Ray Camera::mouseRay(const glm::ivec2& pixelPos) const {
 }
 
 glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {
-	glm::vec4 trans = viewProjectionMatrix() * glm::vec4(worldPos, 1.0f);
+	return worldToScreen(viewProjectionMatrix(), worldPos);
+}
+
+glm::ivec2 Camera::worldToScreen(const glm::mat4& matrix, const glm::vec3& worldPos) const {
+	glm::vec4 trans = matrix * glm::vec4(worldPos, 1.0f);
 	trans *= 0.5f / trans.w;
 	trans += glm::vec4(0.5f, 0.5f, 0.0f, 0.0f);
 	trans.y = 1.0f - trans.y;

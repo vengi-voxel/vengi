@@ -237,6 +237,7 @@ public:
 	math::Ray mouseRay(const glm::ivec2& pixelPos) const;
 
 	glm::ivec2 worldToScreen(const glm::vec3& worldPos) const;
+	glm::ivec2 worldToScreen(const glm::mat4& matrix, const glm::vec3& worldPos) const;
 
 	void update(double deltaFrameSeconds);
 
