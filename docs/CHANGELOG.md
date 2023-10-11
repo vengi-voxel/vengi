@@ -16,6 +16,8 @@ General:
    - Don't fill the inner voxels of the SLAB5/6 models anymore
    - Improved palette support for plane and volume import
    - Fixed an error in de-duplicating Magicavoxel models
+   - Allow to save/convert only visible nodes
+   - `ply` format got support for converting polygons into triangles
 
 VoxEdit:
 
