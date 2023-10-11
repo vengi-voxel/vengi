@@ -231,11 +231,13 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 							 const scenegraph::SceneGraph &sceneGraph) {
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	video::ScopedState blend(video::State::Blend, true);
+	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
 	if (renderContext.sceneMode) {
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
-	} else if (scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode())) {
+		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
+	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
 		_gridRenderer.render(camera, toAABB(region));
 
