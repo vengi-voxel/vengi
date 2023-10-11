@@ -18,6 +18,10 @@ namespace io {
 struct FormatDescription;
 }
 
+namespace video {
+class Camera;
+}
+
 namespace ImGui {
 
 IMGUI_API void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0 = glm::vec2(0),
@@ -111,5 +115,6 @@ IMGUI_API void URLItem(const char *title, const char *url, float width = 0.0f);
 IMGUI_API bool ButtonFullWidth(const char *title);
 
 IMGUI_API void TooltipCommand(const char *command);
+IMGUI_API void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix, const float gridSize);
 
 } // namespace ImGui

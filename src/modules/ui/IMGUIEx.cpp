@@ -12,6 +12,7 @@
 #include "command/Command.h"
 #include "core/collection/Array.h"
 #include "io/FormatDescription.h"
+#include "video/Camera.h"
 #include "video/FileDialogOptions.h"
 #include "video/WindowedApp.h"
 #include <SDL_stdinc.h>
@@ -504,6 +505,54 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 		color.w = 1.0f;
 		window->DrawList->AddCircleFilled(ImVec2(pos.x + indicator_radius + x, pos.y + indicator_radius - y),
 										  circle_radius + growth * circle_radius, GetColorU32(color));
+	}
+}
+
+// ImGuizmo
+void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix, const float gridSize) {
+	glm::mat4 res = matrix * camera.viewProjectionMatrix();
+
+	for (float f = -gridSize; f <= gridSize; f += 1.f) {
+		for (int dir = 0; dir < 2; dir++) {
+			glm::vec3 ptA(dir ? -gridSize : f, 0.f, dir ? f : -gridSize);
+			glm::vec3 ptB(dir ? gridSize : f, 0.f, dir ? f : gridSize);
+			bool visible = true;
+			for (int i = 0; i < math::FRUSTUM_PLANES_MAX; i++) {
+				const math::Plane plane = camera.frustum().plane((math::FrustumPlanes)i);
+				float dA = plane.distanceToPlane(ptA);
+				float dB = plane.distanceToPlane(ptB);
+				if (dA < 0.0f && dB < 0.0f) {
+					visible = false;
+					break;
+				}
+				if (dA > 0.0f && dB > 0.0f) {
+					continue;
+				}
+				if (dA < 0.0f) {
+					float len = fabsf(dA - dB);
+					float t = fabsf(dA) / len;
+					ptA = glm::mix(ptA, ptB, t);
+				}
+				if (dB < 0.0f) {
+					float len = fabsf(dB - dA);
+					float t = fabsf(dB) / len;
+					ptB = glm::mix(ptB, ptA, t);
+				}
+			}
+			if (visible) {
+				uint32_t col = IM_COL32(0x80, 0x80, 0x80, 0xFF);
+				col = (glm::mod(glm::abs(f), 10.f) < FLT_EPSILON) ? IM_COL32(0x90, 0x90, 0x90, 0xFF) : col;
+				col = (glm::abs(f) < FLT_EPSILON) ? IM_COL32(0x40, 0x40, 0x40, 0xFF) : col;
+
+				float thickness = 1.f;
+				thickness = (glm::mod(glm::abs(f), 10.f) < FLT_EPSILON) ? 1.5f : thickness;
+				thickness = (glm::abs(f) < FLT_EPSILON) ? 2.3f : thickness;
+
+				const glm::ivec2 wA = camera.worldToScreen(res, ptA);
+				const glm::ivec2 wB = camera.worldToScreen(res, ptB);
+				drawList->AddLine(wA, wB, col, thickness);
+			}
+		}
 	}
 }
 

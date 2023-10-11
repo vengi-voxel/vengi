@@ -36,7 +36,6 @@ bool ShapeRenderer::init() {
 	core_assert_always(_uniformBlock.create(_uniformBlockData));
 	core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 
-
 	return true;
 }
 
