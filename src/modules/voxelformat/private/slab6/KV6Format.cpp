@@ -134,21 +134,21 @@ static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, cons
 	}
 
 	// this is disabled in slab6 - but appears to be easier to re-implement. Let's see if it works...
-	float maxF = FLT_MIN;
+	double maxF = DBL_MIN;
 	uint8_t j = 0u;
-	float zmulk = 2.0f / 255.0f;
-	float zaddk = zmulk * 0.5f - 1.0f;
-	const float GOLDRAT = 0.3819660112501052;
-	const float goldratpi2 = GOLDRAT * glm::two_pi<float>();
+	double zmulk = 2.0 / 255.0;
+	double zaddk = zmulk * 0.5 - 1.0;
+	const double GOLDRAT = 0.3819660112501052;
+	const float goldratpi2 = GOLDRAT * glm::two_pi<double>();
 
 	for (uint8_t i = 0; i < 255u; ++i) {
-		glm::vec3 result;
+		glm::dvec3 result;
 		result.z = i * zmulk + zaddk;
-		const float r = glm::sqrt(1.0f - result.z * result.z);
-		const float val = i * goldratpi2;
+		const double r = glm::sqrt(1.0 - result.z * result.z);
+		const double val = i * goldratpi2;
 		result.x = glm::cos(val) * r;
 		result.y = glm::sin(val) * r;
-		const float f2 = result.x * (float)offsetX + result.z * (float)offsetY - result.y * (float)offsetZ;
+		const double f2 = result.x * (double)offsetX + result.z * (double)offsetY - result.y * (double)offsetZ;
 		if (f2 > maxF) {
 			maxF = f2;
 			j = i;
