@@ -22,6 +22,7 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/Tri.h"
+#include <array>
 
 namespace voxelformat {
 
@@ -552,9 +553,9 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<Polygon> &polygons,
 		Log::debug("triangulated %i tris", (int)indices.size() / 3);
 
 		for (size_t k = 0; k < indices.size() / 3; k++) {
-			int idx0 = indices[3 * k + 0];
-			int idx1 = indices[3 * k + 1];
-			int idx2 = indices[3 * k + 2];
+			const int idx0 = indices[3 * k + 0];
+			const int idx1 = indices[3 * k + 1];
+			const int idx2 = indices[3 * k + 2];
 
 			faces.push_back(Face{idx0, idx1, idx2});
 		}
