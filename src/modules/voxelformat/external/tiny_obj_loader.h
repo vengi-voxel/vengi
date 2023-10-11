@@ -1672,7 +1672,7 @@ static bool exportGroupsToShape(shape_t *shape, const PrimGroup &prim_group,
             TinyObjPoint polypoint(v0x,v0y,v0z);
             TinyObjPoint loc = WorldToLocal(polypoint, axis_u, axis_v, axis_w);
 
-            polyline.push_back({loc.x, loc.y});
+            polyline.push_back(Point{loc.x, loc.y});
           }
 
           polygon.push_back(polyline);
