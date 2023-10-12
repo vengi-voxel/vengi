@@ -36,7 +36,7 @@ distclean:
 	$(Q)git clean -fdx
 
 %.png: data/voxedit/%.vengi
-	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer $< data/voxedit/$@
+	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer --use-scene-camera -a 0:-45:0 -p 100:0:200 $< data/voxedit/$@
 	$(Q)pngquant -f --ext .png data/voxedit/$@
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
