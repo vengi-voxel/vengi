@@ -60,7 +60,7 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setTargetDistance(distance);
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setRotationType(video::CameraRotationType::Target);
-		camera.setFarPlane(5000.0f);
+		camera.setFarPlane(ctx.farPlane);
 		camera.setTarget(sceneGraph.center());
 	}
 	camera.setOmega(ctx.omega);

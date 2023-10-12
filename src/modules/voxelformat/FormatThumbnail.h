@@ -23,6 +23,7 @@ struct ThumbnailContext {
 	float yaw = 0.0f;
 	float roll = 0.0f;
 	float distance = -1.0f;
+	float farPlane = 5000.0f;
 	glm::vec3 omega{0.0f, 0.0f, 0.0f};
 	double deltaFrameSeconds = 0.001;
 	bool useSceneCamera = false;
