@@ -54,12 +54,16 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		}
 		const voxel::Region &regionSize = sceneGraph.region();
 		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
-		const int height = regionSize.getHeightInCells();
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
-		camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
+		if (ctx.useWorldPosition) {
+			camera.setWorldPosition(ctx.worldPosition);
+		} else {
+			const int height = regionSize.getHeightInCells();
+			camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
+		}
 		camera.setTargetDistance(distance);
-		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setRotationType(video::CameraRotationType::Target);
+		camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
 		camera.setFarPlane(ctx.farPlane);
 		camera.setTarget(sceneGraph.center());
 	}

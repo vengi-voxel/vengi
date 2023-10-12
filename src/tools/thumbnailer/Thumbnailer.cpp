@@ -3,24 +3,25 @@
  */
 
 #include "Thumbnailer.h"
-#include "core/Color.h"
 #include "command/Command.h"
+#include "core/Color.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
-#include "glm/gtc/constants.hpp"
+#include "core/TimeProvider.h"
+#include "core/Var.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "core/TimeProvider.h"
-#include "core/Var.h"
 #include "io/FormatDescription.h"
 #include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
-#include "core/Log.h"
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-Thumbnailer::Thumbnailer(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, timeProvider) {
+Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
+	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
@@ -32,11 +33,25 @@ app::AppState Thumbnailer::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
-	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
+	registerArg("--size")
+		.setShort("-s")
+		.setDescription("Size of the thumbnail in pixels")
+		.setDefaultValue("128")
+		.setMandatory();
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
-	registerArg("--fallback").setDescription("Create a fallback thumbnail if an error occurs");
-	registerArg("--use-scene-camera").setShort("-c").setDescription("Use the first scene camera for rendering the thumbnail");
-	registerArg("--distance").setShort("-d").setDefaultValue("-1").setDescription("Set the camera distance to the target");
+	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs");
+	registerArg("--use-scene-camera")
+		.setShort("-c")
+		.setDescription("Use the first scene camera for rendering the thumbnail");
+	registerArg("--distance")
+		.setShort("-d")
+		.setDefaultValue("-1")
+		.setDescription("Set the camera distance to the target");
+	registerArg("--angles")
+		.setShort("-a")
+		.setDefaultValue("0:0:0")
+		.setDescription("Set the camera angles (pitch:yaw:roll))");
+	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
 
 	return state;
 }
@@ -51,7 +66,7 @@ app::AppState Thumbnailer::onInit() {
 			}
 			image::ImagePtr image = image::createEmptyImage(_outfile);
 			core::RGBA black(0, 0, 0, 255);
-			image->loadRGBA((const uint8_t*)&black, 1, 1);
+			image->loadRGBA((const uint8_t *)&black, 1, 1);
 			saveImage(image);
 			return app::AppState::Cleanup;
 		}
@@ -81,7 +96,8 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream, voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream,
+									   voxelformat::ThumbnailContext &ctx) {
 	voxelformat::LoadContext loadctx;
 	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
 	if (image && image->isLoaded()) {
@@ -100,7 +116,8 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, io::Seekabl
 	return voxelrender::volumeThumbnail(sceneGraph, ctx);
 }
 
-static bool volumeTurntable(const core::String &fileName, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
+static bool volumeTurntable(const core::String &fileName, const core::String &imageFile,
+							voxelformat::ThumbnailContext ctx, int loops) {
 	scenegraph::SceneGraph sceneGraph;
 	io::FileStream stream(io::filesystem()->open(fileName, io::FileMode::SysRead));
 	stream.seek(0);
@@ -127,6 +144,22 @@ app::AppState Thumbnailer::onRunning() {
 	ctx.outputSize = glm::ivec2(outputSize);
 	ctx.useSceneCamera = hasArg("--use-scene-camera");
 	ctx.distance = core::string::toFloat(getArgVal("--distance", "-1.0"));
+	ctx.useWorldPosition = hasArg("--position");
+	if (ctx.useWorldPosition) {
+		const core::String &pos = getArgVal("--position");
+		core::string::parseVec3(pos, glm::value_ptr(ctx.worldPosition), ":");
+		Log::info("Use position %f:%f:%f", ctx.worldPosition.x, ctx.worldPosition.y, ctx.worldPosition.z);
+	}
+	if (hasArg("--angles")) {
+		const core::String &anglesStr = getArgVal("--angles");
+		glm::vec3 angles(0.0f);
+		core::string::parseVec3(anglesStr, glm::value_ptr(angles), ":");
+		ctx.pitch = angles.x;
+		ctx.yaw = angles.y;
+		ctx.roll = angles.z;
+		Log::info("Use euler angles %f:%f:%f", ctx.pitch, ctx.yaw, ctx.roll);
+	}
+
 	const bool renderTurntable = hasArg("--turntable");
 	if (renderTurntable) {
 		volumeTurntable(_infile->name(), _outfile, ctx, 16);
@@ -146,7 +179,7 @@ app::AppState Thumbnailer::onRunning() {
 
 bool Thumbnailer::saveImage(const image::ImagePtr &image) {
 	if (image) {
-		const io::FilePtr& outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
+		const io::FilePtr &outfile = io::filesystem()->open(_outfile, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
 		if (!outStream.valid()) {
 			Log::error("Failed to open %s for writing", _outfile.c_str());
@@ -169,8 +202,8 @@ app::AppState Thumbnailer::onCleanup() {
 
 #ifndef WINDOWS_THUMBNAILER_DLL
 int main(int argc, char *argv[]) {
-	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
 	Thumbnailer app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

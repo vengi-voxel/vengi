@@ -29,6 +29,10 @@ VoxEdit:
    - Resize to selection
    - Fixed palette panel issue if you changed the order of colors
 
+Thumbnailer:
+
+   - Add a few more command line options to control the camera
+
 ## 0.0.27 (2023-09-19)
 
 Breaking changes:
