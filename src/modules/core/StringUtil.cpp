@@ -827,10 +827,10 @@ void parseReal3(float *x, float *y, float *z, const char **token, float default_
 	*z = parseReal(token, default_z);
 }
 
-void parseIVec3(const core::String &in, int32_t *out) {
+void parseIVec3(const core::String &in, int32_t *out, const char* delimiters) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
-	splitString(in, tokens);
+	splitString(in, tokens, delimiters);
 	if (tokens.size() > 3) {
 		tokens.resize(3);
 	}
@@ -839,10 +839,10 @@ void parseIVec3(const core::String &in, int32_t *out) {
 	}
 }
 
-void parseVec3(const core::String &in, float *out) {
+void parseVec3(const core::String &in, float *out, const char* delimiters) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
-	splitString(in, tokens);
+	splitString(in, tokens, delimiters);
 	if (tokens.size() > 3) {
 		tokens.resize(3);
 	}

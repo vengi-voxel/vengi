@@ -322,8 +322,8 @@ void parseReal2(float *x, float *y, const char **token, float default_x = 0.0f,
 void parseReal3(float *x, float *y, float *z, const char **token, float default_x = 0.0f,
 					   float default_y = 0.0f, float default_z = 0.0f);
 bool parseReal(const char **token, float *out);
-void parseIVec3(const core::String &in, int32_t *out);
-void parseVec3(const core::String &in, float *out);
+void parseIVec3(const core::String &in, int32_t *out, const char* delimiters = " \t\r\n\f\v");
+void parseVec3(const core::String &in, float *out, const char* delimiters = " \t\r\n\f\v");
 
 }
 }
