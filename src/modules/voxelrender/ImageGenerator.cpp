@@ -48,6 +48,9 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		if (ctx.distance > 0.01f) {
 			camera.setTargetDistance(ctx.distance);
 		}
+		if (ctx.useWorldPosition) {
+			camera.setWorldPosition(ctx.worldPosition);
+		}
 	} else {
 		if (ctx.useSceneCamera) {
 			Log::warn("Could not find any camera in the scene");
@@ -55,6 +58,7 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		const voxel::Region &regionSize = sceneGraph.region();
 		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
+		Log::debug("Use distance: %f", distance);
 		if (ctx.useWorldPosition) {
 			camera.setWorldPosition(ctx.worldPosition);
 		} else {
