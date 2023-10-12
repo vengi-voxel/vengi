@@ -839,6 +839,18 @@ void parseIVec3(const core::String &in, int32_t *out) {
 	}
 }
 
+void parseVec3(const core::String &in, float *out) {
+	core::DynamicArray<core::String> tokens;
+	tokens.reserve(3);
+	splitString(in, tokens);
+	if (tokens.size() > 3) {
+		tokens.resize(3);
+	}
+	for (size_t i = 0; i < tokens.size(); ++i) {
+		out[(int)i] = tokens[i].toFloat();
+	}
+}
+
 char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize) {
 	core_assert(targetSize > 0);
 	while (--targetSize > 0 && inputSize > 0 && *input != '\0') {

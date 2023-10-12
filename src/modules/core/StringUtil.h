@@ -323,6 +323,7 @@ void parseReal3(float *x, float *y, float *z, const char **token, float default_
 					   float default_y = 0.0f, float default_z = 0.0f);
 bool parseReal(const char **token, float *out);
 void parseIVec3(const core::String &in, int32_t *out);
+void parseVec3(const core::String &in, float *out);
 
 }
 }
