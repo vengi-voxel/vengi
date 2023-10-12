@@ -39,13 +39,14 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	volumeRenderer.prepare(const_cast<scenegraph::SceneGraph&>(sceneGraph));
 
-	{
+	video::Camera camera;
+
+	if (sceneGraph.size(scenegraph::SceneGraphNodeType::Camera) == 0) {
 		const voxel::Region &regionSize = sceneGraph.region();
 		const glm::vec3 &center = sceneGraph.center();
 		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
 		const int height = regionSize.getHeightInCells();
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
-		video::Camera camera;
 		camera.setSize(ctx.outputSize);
 		camera.setMode(video::CameraMode::Perspective);
 		camera.setType(video::CameraType::Free);
@@ -57,10 +58,14 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setOmega(ctx.omega);
 		camera.update(ctx.deltaFrameSeconds);
-		renderContext.frameBuffer.bind(true);
-		volumeRenderer.render(renderContext, camera, true, true);
-		renderContext.frameBuffer.unbind();
+	} else {
+		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(*sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera));
+		camera = toCamera(ctx.outputSize, cameraNode);
 	}
+
+	renderContext.frameBuffer.bind(true);
+	volumeRenderer.render(renderContext, camera, true, true);
+	renderContext.frameBuffer.unbind();
 
 	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
 }
