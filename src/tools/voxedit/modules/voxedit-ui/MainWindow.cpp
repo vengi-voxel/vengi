@@ -37,12 +37,24 @@
 #include "chr_dwarf_png.h"
 #include "chr_knight.h"
 #include "chr_knight_png.h"
+#include "chr_blacksmith.h"
+#include "chr_blacksmith_png.h"
+#include "chr_female.h"
+#include "chr_female_png.h"
+#include "chr_knight2.h"
+#include "chr_knight2_png.h"
+#include "chr_man.h"
+#include "chr_man_png.h"
+#include "chr_oldman.h"
+#include "chr_oldman_png.h"
 #include "head.h"
 #include "head_png.h"
 #include "robo.h"
 #include "robo_png.h"
 #include "twinsen.h"
 #include "twinsen_png.h"
+#include "river.h"
+#include "river_png.h"
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE ICON_FA_PALETTE " Palette##title"
@@ -81,9 +93,15 @@ static const struct TemplateModel {
 } TEMPLATEMODELS[] = {
 	TM_ENTRY("Chess", chess),
 	TM_ENTRY("Dwarf", chr_dwarf),
+	TM_ENTRY("Blacksmith", chr_blacksmith),
+	TM_ENTRY("Female", chr_female),
+	TM_ENTRY("Man", chr_man),
+	TM_ENTRY("Old man", chr_oldman),
+	TM_ENTRY("Knight 2", chr_knight2),
 	TM_ENTRY("Knight", chr_knight),
 	TM_ENTRY("Head", head),
 	TM_ENTRY("Robo", robo),
+	TM_ENTRY("River", river),
 	TM_ENTRY("Twinsen", twinsen)
 };
 #undef TM_ENTRY

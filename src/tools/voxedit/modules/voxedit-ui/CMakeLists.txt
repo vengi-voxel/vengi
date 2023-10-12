@@ -27,11 +27,17 @@ set(SRCS
 # vengi model files in data/voxedit
 set(VENGI_MODELS
 	robo
-	chr_knight
+	chr_blacksmith
 	chr_dwarf
+	chr_female
+	chr_knight
+	chr_knight2
+	chr_man
+	chr_oldman
 	chess
 	head
 	twinsen
+	river
 )
 foreach (vengi_model ${VENGI_MODELS})
 	set(header ${GENERATE_DIR}/${vengi_model}.h)
