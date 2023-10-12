@@ -41,27 +41,30 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 
 	video::Camera camera;
 
-	if (sceneGraph.size(scenegraph::SceneGraphNodeType::Camera) == 0) {
+	if (ctx.useSceneCamera && sceneGraph.size(scenegraph::SceneGraphNodeType::Camera) == 0) {
+		const scenegraph::SceneGraphNodeCamera &cameraNode =
+			scenegraph::toCameraNode(*sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera));
+		camera = toCamera(ctx.outputSize, cameraNode);
+		if (ctx.distance > 0.01f) {
+			camera.setTargetDistance(ctx.distance);
+		}
+	} else {
 		const voxel::Region &regionSize = sceneGraph.region();
-		const glm::vec3 &center = sceneGraph.center();
 		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
 		const int height = regionSize.getHeightInCells();
 		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
-		camera.setSize(ctx.outputSize);
-		camera.setMode(video::CameraMode::Perspective);
-		camera.setType(video::CameraType::Free);
-		camera.setRotationType(video::CameraRotationType::Target);
 		camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
-		camera.setFarPlane(5000.0f);
-		camera.setTarget(center);
 		camera.setTargetDistance(distance);
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
-		camera.setOmega(ctx.omega);
-		camera.update(ctx.deltaFrameSeconds);
-	} else {
-		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(*sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera));
-		camera = toCamera(ctx.outputSize, cameraNode);
+		camera.setRotationType(video::CameraRotationType::Target);
 	}
+	camera.setFarPlane(5000.0f);
+	camera.setTarget(sceneGraph.center());
+	camera.setOmega(ctx.omega);
+	camera.setSize(ctx.outputSize);
+	camera.setMode(video::CameraMode::Perspective);
+	camera.setType(video::CameraType::Free);
+	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.frameBuffer.bind(true);
 	volumeRenderer.render(renderContext, camera, true, true);

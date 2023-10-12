@@ -25,6 +25,7 @@ struct ThumbnailContext {
 	float distance = -1.0f;
 	glm::vec3 omega{0.0f, 0.0f, 0.0f};
 	double deltaFrameSeconds = 0.001;
+	bool useSceneCamera = false;
 };
 
 /**
