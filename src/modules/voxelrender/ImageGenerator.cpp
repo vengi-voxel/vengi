@@ -41,7 +41,7 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 
 	video::Camera camera;
 
-	if (ctx.useSceneCamera && sceneGraph.size(scenegraph::SceneGraphNodeType::Camera) == 0) {
+	if (ctx.useSceneCamera && sceneGraph.size(scenegraph::SceneGraphNodeType::Camera) > 0) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode =
 			scenegraph::toCameraNode(*sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera));
 		camera = toCamera(ctx.outputSize, cameraNode);
@@ -49,6 +49,9 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 			camera.setTargetDistance(ctx.distance);
 		}
 	} else {
+		if (ctx.useSceneCamera) {
+			Log::warn("Could not find any camera in the scene");
+		}
 		const voxel::Region &regionSize = sceneGraph.region();
 		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
 		const int height = regionSize.getHeightInCells();
@@ -57,9 +60,9 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setTargetDistance(distance);
 		camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		camera.setRotationType(video::CameraRotationType::Target);
+		camera.setFarPlane(5000.0f);
+		camera.setTarget(sceneGraph.center());
 	}
-	camera.setFarPlane(5000.0f);
-	camera.setTarget(sceneGraph.center());
 	camera.setOmega(ctx.omega);
 	camera.setSize(ctx.outputSize);
 	camera.setMode(video::CameraMode::Perspective);

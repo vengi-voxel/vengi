@@ -35,6 +35,8 @@ app::AppState Thumbnailer::onConstruct() {
 	registerArg("--size").setShort("-s").setDescription("Size of the thumbnail in pixels").setDefaultValue("128").setMandatory();
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
 	registerArg("--fallback").setDescription("Create a fallback thumbnail if an error occurs");
+	registerArg("--use-scene-camera").setShort("-c").setDescription("Use the first scene camera for rendering the thumbnail");
+	registerArg("--distance").setShort("-d").setDefaultValue("-1").setDescription("Set the camera distance to the target");
 
 	return state;
 }
@@ -123,6 +125,8 @@ app::AppState Thumbnailer::onRunning() {
 
 	voxelformat::ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(outputSize);
+	ctx.useSceneCamera = hasArg("--use-scene-camera");
+	ctx.distance = core::string::toFloat(getArgVal("--distance", "-1.0"));
 	const bool renderTurntable = hasArg("--turntable");
 	if (renderTurntable) {
 		volumeTurntable(_infile->name(), _outfile, ctx, 16);
