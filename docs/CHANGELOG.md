@@ -27,6 +27,7 @@ VoxEdit:
    - Fixed selection handling
    - Added tip of the day dialog
    - Resize to selection
+   - Fixed palette panel issue if you changed the order of colors
 
 ## 0.0.27 (2023-09-19)
 

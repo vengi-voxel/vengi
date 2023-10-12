@@ -72,21 +72,23 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", palIdx);
 	const bool existingColor = palIdx < maxPaletteEntries;
 	if (existingColor) {
+		const core::RGBA color = palette.color(palIdx);
 		if (palette.color(palIdx).a != 255) {
 			core::RGBA other = palette.color(palIdx);
 			other.a = 255;
-			drawList->AddRectFilledMultiColor(v1, v2, palette.color(palIdx), palette.color(palIdx), palette.color(palIdx), other);
+			drawList->AddRectFilledMultiColor(v1, v2, color, color, color, other);
 		} else {
-			drawList->AddRectFilled(v1, v2, palette.color(palIdx));
+			drawList->AddRectFilled(v1, v2, color);
 		}
 	} else {
 		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
 	}
 
+	const uint8_t rawPaletteIndex = palette.index(palIdx);
 	const core::String &id = core::string::format("##palitem-%i", palIdx);
 	if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 		if (usableColor) {
-			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, palIdx));
+			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, rawPaletteIndex));
 		}
 	}
 
@@ -123,9 +125,9 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 			if (!existingColor) {
 				palette.setSize(palIdx + 1);
 			} else if (hasAlpha && palette.color(palIdx).a == 255) {
-				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+				sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Generic);
 			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-				sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+				sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Transparent);
 			}
 			palette.markDirty();
 			palette.markSave();
@@ -170,11 +172,11 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 	if (!_colorHovered && ImGui::IsItemHovered()) {
 		_colorHovered = true;
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
-	} else if (palIdx == currentSceneColor()) {
+	} else if (rawPaletteIndex == currentSceneColor()) {
 		if (palette.color(currentSceneColor()).a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
 		}
-	} else if (palIdx == currentPaletteIndex()) {
+	} else if (rawPaletteIndex == currentPaletteIndex()) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 	globalCursorPos.x += colorButtonSize.x;
@@ -366,9 +368,9 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 		if (!existingColor) {
 			palette.setSize(palIdx + 1);
 		} else if (hasAlpha && palette.color(palIdx).a == 255) {
-			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			sceneMgr().updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Generic);
 		} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+			sceneMgr().updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Transparent);
 		}
 		palette.markDirty();
 		palette.markSave();

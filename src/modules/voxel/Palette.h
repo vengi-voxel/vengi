@@ -46,6 +46,13 @@ public:
 
 	void setColor(uint8_t i, const core::RGBA &rgba);
 
+	/**
+	 * In case the palette indices are changed, this gives you access to the real texture index
+	 */
+	inline uint8_t index(uint8_t i) const {
+		return _indices[i];
+	}
+
 	inline core::RGBA color(uint8_t i) const {
 		return _colors[_indices[i]];
 	}
