@@ -299,6 +299,7 @@ app::AppState VoxEdit::onConstruct() {
 }
 
 void VoxEdit::loadKeymap(int keymap) {
+	Super::loadKeymap(keymap);
 	_keybindingHandler.registerBinding("ctrl+z",               "undo",                         "all");
 	_keybindingHandler.registerBinding("shift+ctrl+z",         "redo",                         "all");
 	_keybindingHandler.registerBinding("ctrl+y",               "redo",                         "all");

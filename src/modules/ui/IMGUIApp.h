@@ -59,6 +59,7 @@ protected:
 	bool _resetKeybindings = false;
 	bool _showBindingsDialog = false;
 	bool _showTexturesDialog = false;
+	bool _closeModalPopup = false;
 	bool _showFileDialog = false;
 	bool _persistUISettings = true;
 	bool _imguiBackendInitialized = false;
@@ -89,7 +90,7 @@ protected:
 	 * @param[in] keymap The application can support several different keymaps - you get the keymap id here to load the desired keymap
 	 * @note this is saved in the cvar @c cfg::UIKeyMap
 	 */
-	virtual void loadKeymap(int keymap) {}
+	virtual void loadKeymap(int keymap);
 
 	virtual bool onKeyRelease(int32_t key, int16_t modifier) override;
 	virtual bool onKeyPress(int32_t key, int16_t modifier) override;

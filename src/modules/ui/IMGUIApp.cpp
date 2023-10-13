@@ -3,6 +3,8 @@
  */
 
 #include "IMGUIApp.h"
+#include "imgui.h"
+#include "imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
 #include "misc/freetype/imgui_freetype.h"
 #endif
@@ -192,6 +194,10 @@ app::AppState IMGUIApp::onConstruct() {
 	command::Command::registerCommand("ui_showtextures", [&] (const command::CmdArgs& args) {
 		_showTexturesDialog = true;
 	});
+	command::Command::registerCommand("ui_close", [&] (const command::CmdArgs& args) {
+		_closeModalPopup = true;
+	});
+
 	return state;
 }
 
@@ -396,6 +402,13 @@ app::AppState IMGUIApp::onRunning() {
 			}
 		}
 
+		if (_closeModalPopup) {
+			if (ImGui::GetTopMostPopupModal() != nullptr) {
+				GImGui->OpenPopupStack.resize(GImGui->OpenPopupStack.size() - 1);
+			}
+			_closeModalPopup = false;
+		}
+
 		if (_showTexturesDialog) {
 			if (ImGui::Begin("Textures", &_showTexturesDialog)) {
 				const core::Set<video::Id>& textures = video::textures();
@@ -538,6 +551,10 @@ app::AppState IMGUIApp::onRunning() {
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return app::AppState::Running;
+}
+
+void IMGUIApp::loadKeymap(int keymap) {
+	_keybindingHandler.registerBinding("escape", "ui_close", "ui");
 }
 
 app::AppState IMGUIApp::onCleanup() {
