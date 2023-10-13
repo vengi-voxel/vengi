@@ -128,7 +128,7 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}
-	if (!Super::onKeyPress(key, modifier)) {
+	if (!Super::onKeyPress(key, modifier) || (core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev {};
 		ev.type = SDL_KEYDOWN;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
