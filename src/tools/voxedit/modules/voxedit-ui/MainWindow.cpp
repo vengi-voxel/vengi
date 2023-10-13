@@ -494,27 +494,30 @@ void MainWindow::popupTipOfTheDay() {
 
 void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		newSceneTemplates();
-		ImGui::Separator();
+		if (ImGui::CollapsingHeader("Templates", ImGuiTreeNodeFlags_DefaultOpen)) {
+			newSceneTemplates();
+		}
 
-		ImGui::Text("Name");
-		ImGui::Separator();
-		ImGui::InputText("##newscenename", &_modelNodeSettings.name);
-		ImGui::NewLine();
+		if (ImGui::CollapsingHeader("Empty scene", ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Text("Name");
+			ImGui::Separator();
+			ImGui::InputText("##newscenename", &_modelNodeSettings.name);
+			ImGui::NewLine();
 
-		ImGui::Text("Position");
-		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
-		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
-		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
-		ImGui::NewLine();
+			ImGui::Text("Position");
+			ImGui::Separator();
+			veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
+			veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
+			veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
+			ImGui::NewLine();
 
-		ImGui::Text("Size");
-		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
-		ImGui::NewLine();
+			ImGui::Text("Size");
+			ImGui::Separator();
+			veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
+			veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
+			veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
+			ImGui::NewLine();
+		}
 
 		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
 			ImGui::CloseCurrentPopup();
