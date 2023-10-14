@@ -22,12 +22,12 @@ private:
 	core::StringMap<core::String> _headers;
 
 public:
-	Request(const core::String &url, RequestType type = RequestType::GET);
+	Request(const core::String &url, RequestType type);
 	void setConnectTimeoutSecond(int timeoutSecond);
 	void setTimeoutSecond(int timeoutSecond);
 	bool setBody(const core::String &body);
 	void addHeader(const core::String &key, const core::String &value);
-	bool get(io::WriteStream &stream);
+	bool execute(io::WriteStream &stream);
 	void noCache();
 
 	static bool supported();

@@ -16,8 +16,8 @@ TEST_F(RequestTest, testRequest) {
 		GTEST_SKIP() << "No http support available";
 	}
 	io::BufferedReadWriteStream stream;
-	Request request("https://www.google.com");
-	ASSERT_TRUE(request.get(stream));
+	Request request("https://www.google.com", http::RequestType::GET);
+	ASSERT_TRUE(request.execute(stream));
 	// stream.seek(0);
 	// core::String response;
 	// stream.readString((int)stream.size(), response);

@@ -80,7 +80,7 @@ void Request::noCache() {
 	addHeader("Cache-Control", "no-cache");
 }
 
-bool Request::get(io::WriteStream &stream) {
+bool Request::execute(io::WriteStream &stream) {
 	Log::debug("Starting http request for %s", _url.c_str());
 #if __WINDOWS__
 	// Initialize WinHTTP and create a session

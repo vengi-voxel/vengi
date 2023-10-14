@@ -62,12 +62,12 @@ bool isNewVersionAvailable(int timeout) {
 		return false;
 	}
 	io::BufferedReadWriteStream stream;
-	http::Request request(GitHubURL + "/releases/latest");
+	http::Request request(GitHubURL + "/releases/latest", http::RequestType::GET);
 	if (timeout > 0) {
 		request.setTimeoutSecond(timeout);
 		request.setConnectTimeoutSecond(timeout);
 	}
-	if (!request.get(stream)) {
+	if (!request.execute(stream)) {
 		Log::error("Could not check for new version: HTTP request failed");
 		return false;
 	}
