@@ -59,7 +59,7 @@ bool Request::supported() {
 
 Request::Request(const core::String &url, RequestType type) : _type(type), _url(url) {
 	_timeoutSecond = core::Var::get(cfg::HttpTimeout, "5")->intVal();
-	_connectTimeoutSecond = core::Var::get(cfg::HttpConnectTimeout, "5")->intVal();
+	_connectTimeoutSecond = core::Var::get(cfg::HttpConnectTimeout, "1")->intVal();
 	_userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 }
 
