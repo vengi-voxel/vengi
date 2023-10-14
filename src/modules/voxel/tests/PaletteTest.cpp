@@ -63,6 +63,12 @@ TEST_F(PaletteTest, testSaveGimpPalette) {
 	_testApp->filesystem()->exists("nippon.gpl");
 }
 
+TEST_F(PaletteTest, testLospec) {
+	Palette pal;
+	ASSERT_TRUE(pal.load("lospec:raspberry"));
+	ASSERT_EQ(4, pal.colorCount());
+}
+
 TEST_F(PaletteTest, testCopyPalette) {
 	Palette copy;
 	Palette pal;
