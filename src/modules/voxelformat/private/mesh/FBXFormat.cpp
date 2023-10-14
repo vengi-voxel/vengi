@@ -108,7 +108,7 @@ Definitions: {
 Objects: {
 
 )",
-							 PROJECT_VERSION, app::App::getInstance()->appname().c_str(), PROJECT_VERSION, meshCount);
+							 PROJECT_VERSION, app::App::getInstance()->fullAppname().c_str(), PROJECT_VERSION, meshCount);
 
 	Log::debug("Exporting %i models", meshCount);
 

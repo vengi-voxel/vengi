@@ -236,7 +236,8 @@ core::String WindowedApp::getKeyBindingsString(const char *cmd) const {
 }
 
 SDL_Window *WindowedApp::createWindow(int width, int height, int displayIndex, uint32_t flags) {
-	return SDL_CreateWindow(_appname.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
+	const core::String windowName = fullAppname();
+	return SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
 }
 
 app::AppState WindowedApp::onInit() {

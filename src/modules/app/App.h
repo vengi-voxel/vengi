@@ -162,6 +162,9 @@ public:
 
 	bool hasEnoughMemory(size_t bytes) const;
 
+	// includes organisation - but not the version
+	core::String fullAppname() const;
+	// name without organisation
 	const core::String& appname() const;
 
 	class Argument {
@@ -276,6 +279,10 @@ inline io::FilesystemPtr App::filesystem() const {
 
 inline core::TimeProviderPtr App::timeProvider() const {
 	return _timeProvider;
+}
+
+inline core::String App::fullAppname() const {
+	return _organisation + "-" + _appname;
 }
 
 inline const core::String& App::appname() const {

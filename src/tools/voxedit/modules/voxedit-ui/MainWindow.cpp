@@ -759,10 +759,10 @@ void MainWindow::update() {
 
 		core::String windowTitle = core::string::extractFilenameWithExtension(_lastOpenedFile->strVal());
 		if (windowTitle.empty()) {
-			windowTitle = _app->appname();
+			windowTitle = _app->fullAppname();
 		} else {
 			windowTitle.append(" - ");
-			windowTitle.append(_app->appname());
+			windowTitle.append(_app->fullAppname());
 		}
 		windowTitle.append("###app");
 		static bool keepRunning = true;

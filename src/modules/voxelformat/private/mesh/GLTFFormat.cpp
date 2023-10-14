@@ -207,7 +207,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	}
 
 	const size_t modelNodes = meshes.size();
-	const core::String &appname = app::App::getInstance()->appname();
+	const core::String &appname = app::App::getInstance()->fullAppname();
 	const core::String &generator = core::string::format("%s " PROJECT_VERSION, appname.c_str());
 	// Define the asset. The version is required
 	gltfModel.asset.generator = generator.c_str();
