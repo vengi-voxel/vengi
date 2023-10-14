@@ -1,6 +1,6 @@
-.\" This man page was written by Martin Gerhardy in May 2020. It is provided
+.\" This man page was written by Martin Gerhardy in @COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@. It is provided
 .\" under the GNU General Public License 3 or (at your option) any later version.
-.TH @COMMANDLINE@ "1" "May 2020" "@COMMANDLINE@"
+.TH @COMMANDLINE@ "1" "@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@" "@COMMANDLINE@"
 .SH NAME
 @COMMANDLINE@ \- create thumbnail images from voxel models
 

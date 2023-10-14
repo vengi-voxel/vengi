@@ -6,14 +6,20 @@
   <string>en-US</string>
   <key>CFBundleExecutable</key>
   <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
+  <key>CFBundleShortVersionString</key>
+  <string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>
+  <key>CFBundleLongVersionString</key>
+  <string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
   <key>CFBundleIdentifier</key>
-  <string>@CMAKE_PROJECT_NAME@.@_EXE_TARGET@</string>
+  <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleIconFile</key>
-  <string>@APPICON@</string>
+  <string>${MACOSX_BUNDLE_ICON_FILE}</string>
+  <key>NSHumanReadableCopyright</key>
+  <string>${MACOSX_BUNDLE_COPYRIGHT}</string>
   <key>CFBundleName</key>
-  <string>@_EXE_TARGET@</string>
+  <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>NSHighResolutionCapable</key>
