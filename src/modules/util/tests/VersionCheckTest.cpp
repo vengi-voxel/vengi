@@ -8,7 +8,7 @@
 class VersionCheckTest : public app::AbstractTest {};
 
 TEST_F(VersionCheckTest, DISABLED_testIsNewVersionAvailable) {
-	ASSERT_TRUE(util::isNewVersionAvailable());
+	ASSERT_FALSE(util::isNewVersionAvailable());
 }
 
 TEST_F(VersionCheckTest, testIsNewerVersion) {
