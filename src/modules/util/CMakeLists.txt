@@ -10,9 +10,10 @@ set(SRCS
 	Movement.cpp Movement.h
 	TextProcessor.cpp
 	VarUtil.h
+	VersionCheck.h VersionCheck.cpp
 )
 set(LIB util)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command http json io)
 
 set(TEST_SRCS
 	tests/Base64Test.cpp
@@ -24,6 +25,7 @@ set(TEST_SRCS
 	tests/KeybindingParserTest.cpp
 	tests/KeybindingHandlerTest.cpp
 	tests/TextProcessorTest.cpp
+	tests/VersionCheckTest.cpp
 )
 set(TEST_FILES
 	testutil/main.h
