@@ -467,7 +467,12 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 }
 
 void MainWindow::newSceneTemplates() {
-	if (ImGui::BeginTable("##templates", 4, ImGuiTableFlags_SizingStretchProp)) {
+	if (_texturePool.cache().empty()) {
+		return;
+	}
+	const float height = _texturePool.cache().begin()->second->height();
+
+	if (ImGui::BeginTable("##templates", 4, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY, ImVec2(0.0f, height * 3))) {
 		for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 			addTemplate(TEMPLATEMODELS[i]);
 		}
