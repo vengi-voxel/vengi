@@ -37,6 +37,8 @@ set(VENGI_MODELS
 	chess
 	head
 	twinsen
+	undead
+	skeleton
 	river
 )
 foreach (vengi_model ${VENGI_MODELS})

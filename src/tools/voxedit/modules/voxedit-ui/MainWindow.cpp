@@ -55,6 +55,10 @@
 #include "twinsen_png.h"
 #include "river.h"
 #include "river_png.h"
+#include "undead.h"
+#include "undead_png.h"
+#include "skeleton.h"
+#include "skeleton_png.h"
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE ICON_FA_PALETTE " Palette##title"
@@ -102,6 +106,8 @@ static const struct TemplateModel {
 	TM_ENTRY("Head", head),
 	TM_ENTRY("Robo", robo),
 	TM_ENTRY("River", river),
+	TM_ENTRY("undead", undead),
+	TM_ENTRY("skeleton", skeleton),
 	TM_ENTRY("Twinsen", twinsen)
 };
 #undef TM_ENTRY
