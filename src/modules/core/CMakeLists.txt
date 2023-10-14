@@ -107,6 +107,7 @@ set(TEST_SRCS
 	tests/ConcurrentQueueTest.cpp
 	tests/CoreTest.cpp
 	tests/DynamicArrayTest.cpp
+	tests/HashTest.cpp
 	tests/ListTest.cpp
 	tests/MapTest.cpp
 	tests/DynamicMapTest.cpp
