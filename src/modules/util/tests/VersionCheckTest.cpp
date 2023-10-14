@@ -13,6 +13,7 @@ TEST_F(VersionCheckTest, testIsNewVersionAvailable) {
 
 TEST_F(VersionCheckTest, testIsNewerVersion) {
 	EXPECT_TRUE(util::isNewerVersion("2.0.0", "1.0.0"));
+	EXPECT_FALSE(util::isNewerVersion("0.0.27", "0.0.28.0"));
 	EXPECT_FALSE(util::isNewerVersion("1.0.0", "2.0.0"));
 	EXPECT_FALSE(util::isNewerVersion("1.0.0.0", "1.0.0.0"));
 	EXPECT_FALSE(util::isNewerVersion("invalidversion", "1.0.0.0"));
