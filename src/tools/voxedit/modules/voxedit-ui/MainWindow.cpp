@@ -123,7 +123,6 @@ MainWindow::~MainWindow() {
 
 const char *MainWindow::getTip() const {
 	static char buf[4096];
-	int len = 0;
 	const char *tip = TIPOFTHEDAY[_currentTip];
 	if (!util::replacePlaceholders(_app->keybindingHandler(), tip, buf, sizeof(buf)))  {
 		return tip;

@@ -26,6 +26,12 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
+#if defined(__WIN32__)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+#include <sys/utsname.h>
+#endif
 
 namespace app {
 
@@ -71,6 +77,35 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 #ifdef FE_TONEAREST
 	std::fesetround(FE_TONEAREST);
 #endif
+
+#if defined(__WIN32__)
+	_osName = "Windows";
+#elif defined(__MACOSX__)
+	_osName = "MacOSX";
+#elif defined(__LINUX__)
+	_osName = "Linux";
+#elif defined(__EMSCRIPTEN__)
+	_osName = "Emscripten";
+#endif
+
+#if defined(__WIN32__)
+	OSVERSIONINFOA osInfo;
+	info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+	::GetVersionExA(&osInfo);
+	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion, (int)osInfo.dwBuildNumber);
+#elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+	struct utsname details;
+	if (uname(&details) == 0) {
+		_osVersion = core::string::format("%s %s", details.release, details.version);
+	}
+#endif
+
+	if  (_osName.empty()) {
+		_osName = "unknown";
+	}
+	if  (_osVersion.empty()) {
+		_osVersion = "undetected";
+	}
 
 	signal(SIGSEGV, catch_function);
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;

@@ -61,6 +61,8 @@ protected:
 	core::String _organisation;
 	core::String _appname;
 	core::String _additionalUsage; //!< allow to specify options or filenames for the usage() screen per app */
+	core::String _osName;
+	core::String _osVersion;
 
 	AppState _curState = AppState::Construct;
 	AppState _nextState = AppState::InvalidAppState;
@@ -167,6 +169,9 @@ public:
 	// name without organisation
 	const core::String& appname() const;
 
+	const core::String &osName();
+	const core::String &osVersion();
+
 	class Argument {
 	private:
 		core::String _longArg;
@@ -264,6 +269,13 @@ public:
 private:
 	core::DynamicArray<Argument> _arguments;
 };
+
+inline const core::String &App::osName() {
+	return _osName;
+}
+inline const core::String &App::osVersion() {
+	return _osVersion;
+}
 
 inline double App::nowSeconds() const {
 	return _nowSeconds;
