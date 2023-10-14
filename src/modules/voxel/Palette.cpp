@@ -456,10 +456,10 @@ bool Palette::load(const image::ImagePtr &img) {
 
 bool Palette::downloadLospec(const core::String &lospecId, const core::String &gimpPalette) const {
 	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
-	http::Request request;
+	http::Request request(url);
 	io::FilePtr file = io::filesystem()->open(gimpPalette, io::FileMode::Write);
 	io::FileStream stream(file);
-	if (!request.request(url, stream)) {
+	if (!request.get(stream)) {
 		Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
 		return false;
 	}

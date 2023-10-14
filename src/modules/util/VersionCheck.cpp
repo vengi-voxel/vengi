@@ -56,14 +56,18 @@ bool isNewerVersion(const core::String &versionLatest, const core::String &vengi
 	return false;
 }
 
-bool isNewVersionAvailable() {
+bool isNewVersionAvailable(int timeout) {
 	if (!http::Request::supported()) {
 		Log::error("Could not check for new version: HTTP requests are not supported");
 		return false;
 	}
 	io::BufferedReadWriteStream stream;
-	http::Request request;
-	if (!request.request(GitHubURL + "/releases/latest", stream)) {
+	http::Request request(GitHubURL + "/releases/latest");
+	if (timeout > 0) {
+		request.setTimeoutSecond(timeout);
+		request.setConnectTimeoutSecond(timeout);
+	}
+	if (!request.get(stream)) {
 		Log::error("Could not check for new version: HTTP request failed");
 		return false;
 	}
