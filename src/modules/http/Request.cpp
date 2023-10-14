@@ -162,12 +162,17 @@ bool Request::execute(io::WriteStream &stream) {
 	}
 
 	// Send the request
+	int maxRedirects = 3;
 	bool requestState = false;
 	if (_type == RequestType::GET) {
 		while (!requestState) {
 			requestState =
 				WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
 			if (!requestState && GetLastError() == ERROR_WINHTTP_RESEND_REQUEST) {
+				if (maxRedirects <= 0) {
+					break;
+				}
+				--maxRedirects;
 				continue;
 			}
 			if (!requestState) {
@@ -181,6 +186,10 @@ bool Request::execute(io::WriteStream &stream) {
 			requestState = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)body.c_str(), body.size(),
 											  body.size(), 0);
 			if (!requestState && GetLastError() == ERROR_WINHTTP_RESEND_REQUEST) {
+				if (maxRedirects <= 0) {
+					break;
+				}
+				--maxRedirects;
 				continue;
 			}
 			if (!requestState) {
