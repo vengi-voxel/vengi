@@ -233,6 +233,9 @@ bool Request::execute(io::WriteStream &stream) {
 	}
 	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, _type == RequestType::GET ? "GET" : "POST");
 	curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+	curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectTimeoutSecond);
