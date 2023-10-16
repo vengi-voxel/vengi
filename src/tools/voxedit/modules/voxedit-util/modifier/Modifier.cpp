@@ -223,6 +223,13 @@ bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		return false;
 	}
 	_selectionValid = true;
+	for (size_t i = 0; i < _selections.size(); ++i) {
+		const Selection &s = _selections[i];
+		if (s.containsRegion(sel)) {
+			return true;
+		}
+	}
+
 	for (size_t i = 0; i < _selections.size();) {
 		Selection &s = _selections[i];
 		if (sel.containsRegion(s)) {
