@@ -68,7 +68,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
+            sudo apt-get install cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
 
         - name: ccache
           uses: actions/cache@v3
@@ -108,7 +108,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl
 
         - name: ccache
           uses: actions/cache@v3
