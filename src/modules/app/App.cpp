@@ -99,7 +99,7 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 
 #if defined(__WIN32__)
 	OSVERSIONINFOA osInfo;
-	info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
+	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 	::GetVersionExA(&osInfo);
 	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion, (int)osInfo.dwBuildNumber);
 #elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
