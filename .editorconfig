@@ -7,3 +7,12 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 vc_generate_documentation_comments = doxygen_slash_star
 charset = utf-8
+
+[src/modules/voxelformat/external/ogt_vox.h]
+indent_style = space
+
+[src/modules/voxelformat/external/tiny_gltf.h]
+indent_style = space
+
+[src/modules/voxelformat/external/tiny_obj_loader.h]
+indent_style = space
