@@ -16,7 +16,7 @@ if (WINDOWS)
 	set_target_properties(${LIB} PROPERTIES UNITY_BUILD FALSE)
 endif()
 if (APPLE)
-	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
+	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation -framework AppKit")
 endif()
 
 set(TEST_MODULE_SRCS
