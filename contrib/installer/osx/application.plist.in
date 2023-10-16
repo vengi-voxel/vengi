@@ -26,5 +26,54 @@
   <true/>
   <key>NSRequiresAquaSystemAppearance</key>
   <false/>
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>binvox</string>
+        <string>bsp</string>
+        <string>csm</string>
+        <string>cub</string>
+        <string>dat</string>
+        <string>gox</string>
+        <string>kv6</string>
+        <string>kvx</string>
+        <string>mca</string>
+        <string>mcr</string>
+        <string>md2</string>
+        <string>mts</string>
+        <string>nbt</string>
+        <string>nvm</string>
+        <string>ply</string>
+        <string>qb</string>
+        <string>qbcl</string>
+        <string>qbt</string>
+        <string>qef</string>
+        <string>schem</string>
+        <string>schematic</string>
+        <string>sment</string>
+        <string>v3a</string>
+        <string>vbx</string>
+        <string>vengi</string>
+        <string>vmaxb</string>
+        <string>vmax.zip</string>
+        <string>vox</string>
+        <string>vxc</string>
+        <string>vxl</string>
+        <string>vxl</string>
+        <string>vxm</string>
+        <string>vxr</string>
+        <string>vxt</string>
+        <string>xraw</string>
+      </array>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>NSDocumentClass</key>
+      <string>AppDocument</string>
+      <key>CFBundleTypeName</key>
+      <string>Voxel formats</string>
+    </dict>
+  </array>
 </dict>
 </plist>

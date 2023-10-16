@@ -23,6 +23,15 @@
 #include <signal.h>
 #include <cfenv>
 
+// osx delayed loading of a NSDocument derived file type
+static core::String _loadingDocument;
+void setLoadingDocument(const char *path) {
+	_loadingDocument = path;
+}
+const core::String &loadingDocument() {
+	return _loadingDocument;
+}
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif

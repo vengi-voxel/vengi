@@ -464,6 +464,15 @@ app::AppState VoxEdit::onInit() {
 			const core::String &filePath = filesystem()->absolutePath(filePtr->name());
 			_mainWindow->load(filePath, nullptr);
 		}
+	} else {
+		const core::String &file = loadingDocument();
+		if (!file.empty()) {
+			const io::FilePtr& filePtr = filesystem()->open(file);
+			if (filePtr->exists()) {
+				const core::String &filePath = filesystem()->absolutePath(filePtr->name());
+				_mainWindow->load(filePath, nullptr);
+			}
+		}
 	}
 
 	return state;

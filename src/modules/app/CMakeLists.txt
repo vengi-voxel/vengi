@@ -3,6 +3,9 @@ set(SRCS
 	AppCommand.cpp AppCommand.h
 	CommandlineApp.h CommandlineApp.cpp
 )
+if (APPLE)
+	list(APPEND SRCS AppDocument.m)
+endif()
 
 set(LIB app)
 
@@ -11,6 +14,9 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 if (WINDOWS)
 	# All this windows.h insanities ... giving up on this module
 	set_target_properties(${LIB} PROPERTIES UNITY_BUILD FALSE)
+endif()
+if (APPLE)
+	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
 endif()
 
 set(TEST_MODULE_SRCS
