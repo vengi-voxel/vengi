@@ -16,6 +16,8 @@ struct AssertData {
 	struct AssertData *next;
 };
 
+void core_assert_init();
+void core_get_stacktrace(char *buf, size_t size);
 void core_stacktrace();
 bool core_report_assert(AssertData &data, const char *file, int line, const char *function);
 
@@ -51,9 +53,6 @@ bool core_assert_impl_message(AssertData &assert_data, char *buf, int bufSize, c
 	do {                                                                                                               \
 		while (!(conditionCheck)) {                                                                                    \
 			static struct AssertData assert_data = {0, 0, nullptr, 0, 0, 0, 0};                                        \
-			if (assert_data.always_ignore == 0) {                                                                      \
-				core_stacktrace();                                                                                     \
-			}                                                                                                          \
 			static char __assertBuf[1024];                                                                             \
 			if (core_assert_impl_message(assert_data, __assertBuf, sizeof(__assertBuf), CORE_FUNCTION, CORE_FILE,      \
 										 CORE_LINE, ##__VA_ARGS__)) {                                                  \
@@ -64,7 +63,7 @@ bool core_assert_impl_message(AssertData &assert_data, char *buf, int bufSize, c
 	} while (CORE_NULL_WHILE_LOOP_CONDITION)
 #endif
 
-#define core_assert_always(condition)                                                                                         \
+#define core_assert_always(condition)                                                                                  \
 	do {                                                                                                               \
 		while (!(condition)) {                                                                                         \
 			static struct AssertData assert_data = {0, 0, #condition, 0, 0, 0, 0};                                     \

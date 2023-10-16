@@ -116,6 +116,7 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 		_osVersion = "undetected";
 	}
 
+	core_assert_init();
 	signal(SIGSEGV, catch_function);
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
@@ -283,6 +284,12 @@ AppState App::onConstruct() {
 	}).setHelp("Set a variable value");
 
 	command::Command::registerCommand("quit", [&] (const command::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+
+#ifdef DEBUG
+	command::Command::registerCommand("assert", [&] (const command::CmdArgs& args) {
+		core_assert_msg(false, "assert triggered");
+	}).setHelp("Trigger an assert");
+#endif
 
 	AppCommand::init(_timeProvider);
 
