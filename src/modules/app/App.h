@@ -30,7 +30,7 @@ typedef core::SharedPtr<TimeProvider> TimeProviderPtr;
 
 // osx delayed loading of a NSDocument derived file type
 const core::String &loadingDocument();
-extern void setLoadingDocument(const char *path);
+extern "C" void setLoadingDocument(const char *path);
 
 namespace app {
 /**

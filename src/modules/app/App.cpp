@@ -25,7 +25,7 @@
 
 // osx delayed loading of a NSDocument derived file type
 static core::String _loadingDocument;
-void setLoadingDocument(const char *path) {
+extern "C" void setLoadingDocument(const char *path) {
 	_loadingDocument = path;
 }
 const core::String &loadingDocument() {
