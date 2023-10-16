@@ -24,12 +24,12 @@
 #include <cfenv>
 
 // osx delayed loading of a NSDocument derived file type
-static core::String _loadingDocument;
+static core::String g_loadingDocument;
 extern "C" void setLoadingDocument(const char *path) {
-	_loadingDocument = path;
+	g_loadingDocument = path;
 }
 const core::String &loadingDocument() {
-	return _loadingDocument;
+	return g_loadingDocument;
 }
 
 #ifdef __EMSCRIPTEN__
