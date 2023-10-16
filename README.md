@@ -1,29 +1,28 @@
 # About {#about}
 
-[![Actions Status](https://github.com/mgerhardy/vengi/workflows/build/badge.svg)](https://github.com/mgerhardy/vengi/actions)
- [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Total downloads](https://img.shields.io/github/downloads/mgerhardy/vengi/total?longCache=true&style=for-the-badge&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/mgerhardy/vengi/releases/latest)
+ [![Discord server](https://img.shields.io/discord/622817134682177555?label=Discord&logo=Discord&logoColor=fff&style=for-the-badge)](https://discord.gg/AgjCPXy)
+ [![Mastodon](https://img.shields.io/mastodon/follow/000355843?longCache=true&style=for-the-badge&label=Mastodon&logoColor=fff)](https://mastodon.social/@mgerhardy)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?longCache=true&style=for-the-badge&label=License&logoColor=fff)](https://opensource.org/licenses/MIT)
+ [![Youtube](https://img.shields.io/youtube/channel/views/UCbnJUW0d4tYvdmsJ-R6iUpA?longCache=true&style=for-the-badge&label=Youtube&logoColor=fff)](https://www.youtube.com/channel/UCbnJUW0d4tYvdmsJ-R6iUpA)
 
-Voxel engine and tools like a voxel editor or volume converter.
+The mission: Create a free, open-source and multi-platform voxel editor and command line tools with animation support to support artists and developers.
+
+Join our [discord server](https://discord.gg/AgjCPXy) and get help or support the development with feature request or bug reports.
+
+Download your copy [here from github](https://github.com/mgerhardy/vengi/releases/latest) and find documentation about how to use it [here](https://mgerhardy.github.io/vengi/).
+
+There is an online version of [voxedit](https://mgerhardy.github.io/vengi-voxedit-html5/) available to test the editor without having to install it. But this is not the most recent version.
+
+[![image showing minecraft greenfield](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/greenfield-water.png)](https://www.greenfieldmc.net)
+
+[![image showing oasis](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/oasis.png)](https://github.com/Phyronnaz/VoxelAssets/tree/master/Oasis)
+
+## Support
+
+If you encounter a bug or have a feature request, please let me know (via discord or ticket on github).
 
 Please consider donating to help to continue the work on this project. See the sponsor button.
-
-Find more information about how to compile and run the tools [here](https://mgerhardy.github.io/vengi/).
-
-Join our [discord server](https://discord.gg/AgjCPXy) and help developing by feature request or bug reports.
-
-## Download
-
-Find downloads [here](https://github.com/mgerhardy/vengi/releases/)
-
-Or "nightly"-builds here at [github action artifacts](https://github.com/mgerhardy/vengi/actions) (Login at github is required).
-
-## Images
-
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-2023-01.png)
-
-## Online version
-
-[voxedit](https://mgerhardy.github.io/vengi-voxedit-html5/)
 
 ## SAST Tools
 
