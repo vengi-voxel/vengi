@@ -18,6 +18,8 @@ General:
    - Fixed an error in de-duplicating Magicavoxel models
    - Allow to save/convert only visible nodes
    - `ply` format got support for converting polygons into triangles
+   - Show the full application name as window title
+   - Improved esc handling for menus and popups
 
 VoxEdit:
 
@@ -28,6 +30,8 @@ VoxEdit:
    - Added tip of the day dialog
    - Resize to selection
    - Fixed palette panel issue if you changed the order of colors
+   - Added more templates to the new-scene-dialog
+   - Made the new-scene-dialog scrollable
 
 Thumbnailer:
 
