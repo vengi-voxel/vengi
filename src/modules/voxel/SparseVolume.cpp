@@ -3,7 +3,6 @@
  */
 
 #include "SparseVolume.h"
-#include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {
 
@@ -28,19 +27,6 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 		return iter->second;
 	}
 	return _emptyVoxel;
-}
-
-void SparseVolume::copyTo(voxel::RawVolumeWrapper &target) const {
-	for (auto iter = _map.begin(); iter != _map.end(); ++iter) {
-		const glm::ivec3 &pos = iter->first;
-		const voxel::Voxel &voxel = iter->second;
-		target.setVoxel(pos.x, pos.y, pos.z, voxel);
-	}
-}
-
-void SparseVolume::copyFrom(const voxel::RawVolume &source) {
-	auto visitor = [this](int x, int y, int z, const voxel::Voxel &voxel) { setVoxel(x, y, z, voxel); };
-	voxelutil::visitVolume(source, visitor);
 }
 
 SparseVolume::Sampler::Sampler(const SparseVolume *volume) : _volume(const_cast<SparseVolume *>(volume)) {

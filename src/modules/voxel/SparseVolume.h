@@ -6,10 +6,14 @@
 
 #include "core/GLM.h"
 #include "core/collection/DynamicMap.h"
-#include "voxel/RawVolumeWrapper.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {
 
+/**
+ * Sparse volume implementation which stores data in a hashmap. This is useful for volumes where most of the voxels are
+ * empty.
+ */
 class SparseVolume {
 private:
 	core::DynamicMap<glm::ivec3, voxel::Voxel, 1031, glm::hash<glm::ivec3>> _map;
@@ -146,9 +150,20 @@ public:
 	 */
 	int32_t depth() const;
 
-	void copyTo(voxel::RawVolumeWrapper &target) const;
+	template<class Volume>
+	void copyTo(Volume &target) const {
+		for (auto iter = _map.begin(); iter != _map.end(); ++iter) {
+			const glm::ivec3 &pos = iter->first;
+			const voxel::Voxel &voxel = iter->second;
+			target.setVoxel(pos.x, pos.y, pos.z, voxel);
+		}
+	}
 
-	void copyFrom(const voxel::RawVolume &source);
+	template<class Volume>
+	void copyFrom(const Volume &source) {
+		auto visitor = [this](int x, int y, int z, const voxel::Voxel &voxel) { setVoxel(x, y, z, voxel); };
+		voxelutil::visitVolume(source, visitor);
+	}
 };
 
 inline int32_t SparseVolume::width() const {
