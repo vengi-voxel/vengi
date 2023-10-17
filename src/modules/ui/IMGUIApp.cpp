@@ -9,43 +9,42 @@
 #include "misc/freetype/imgui_freetype.h"
 #endif
 
+#include "command/Command.h"
+#include "core/ArrayLength.h"
 #include "core/BindingContext.h"
+#include "core/Color.h"
+#include "core/Common.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
-#include "dearimgui/backends/imgui_impl_sdl2.h"
+#include "core/TimeProvider.h"
+#include "core/UTF8.h"
+#include "core/Var.h"
 #include "dearimgui/backends/imgui_impl_opengl3.h"
+#include "dearimgui/backends/imgui_impl_sdl2.h"
 #include "dearimgui/implot.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
-#include "command/Command.h"
-#include "core/Var.h"
-#include "core/TimeProvider.h"
-#include "core/Color.h"
-#include "core/UTF8.h"
-#include "core/Common.h"
-#include "core/ArrayLength.h"
-#include "core/Log.h"
 #include "io/FormatDescription.h"
 #include "math/Rect.h"
 #include "util/KeybindingHandler.h"
 #include "video/Renderer.h"
-#include "video/Shader.h"
 #include "video/ScopedViewPort.h"
+#include "video/Shader.h"
 #include "video/TextureConfig.h"
 #include "video/Types.h"
 
-#include "IMGUIEx.h"
+#include "ArimoRegular.h"
+#include "FileDialog.h"
 #include "FontAwesomeSolid.h"
 #include "ForkAwesomeWebFont.h"
-#include "ArimoRegular.h"
+#include "IMGUIEx.h"
+#include "IMGUIStyle.h"
 #include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
-#include "IMGUIStyle.h"
-#include "FileDialog.h"
 
 #include <SDL.h>
-#include <SDL_syswm.h>
 #include <SDL_events.h>
-#include <string.h>
+#include <SDL_syswm.h>
 #include <glm/mat4x4.hpp>
 
 namespace ui {
@@ -60,11 +59,11 @@ IMGUIApp::~IMGUIApp() {
 void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	Super::onMouseMotion(windowHandle, x, y, relX, relY);
 
-	SDL_Event ev {};
+	SDL_Event ev{};
 	ev.type = SDL_MOUSEMOTION;
 	ev.motion.x = x;
 	ev.motion.y = y;
-	ev.motion.windowID = SDL_GetWindowID((SDL_Window*)windowHandle);
+	ev.motion.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
@@ -73,9 +72,9 @@ bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 		return true;
 	}
 	if (!Super::onMouseWheel(x, y)) {
-		SDL_Event ev {};
+		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
-#if SDL_VERSION_ATLEAST(2,0,18)
+#if SDL_VERSION_ATLEAST(2, 0, 18)
 		ev.wheel.preciseX = (float)x;
 		ev.wheel.preciseY = (float)y;
 #endif
@@ -91,7 +90,7 @@ void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 		return;
 	}
 	Super::onMouseButtonRelease(x, y, button);
-	SDL_Event ev {};
+	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONUP;
 	ev.button.button = button;
 	ev.button.x = x;
@@ -104,7 +103,7 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 		return;
 	}
 	Super::onMouseButtonPress(x, y, button, clicks);
-	SDL_Event ev {};
+	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONDOWN;
 	ev.button.button = button;
 	ev.button.clicks = clicks;
@@ -113,11 +112,11 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-bool IMGUIApp::onTextInput(const core::String& text) {
+bool IMGUIApp::onTextInput(const core::String &text) {
 	if (_console.onTextInput(text)) {
 		return true;
 	}
-	SDL_Event ev {};
+	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
 	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
 	ImGui_ImplSDL2_ProcessEvent(&ev);
@@ -128,8 +127,9 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 	if (_console.onKeyPress(key, modifier)) {
 		return true;
 	}
-	if (!Super::onKeyPress(key, modifier) || (core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
-		SDL_Event ev {};
+	if (!Super::onKeyPress(key, modifier) ||
+		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
+		SDL_Event ev{};
 		ev.type = SDL_KEYDOWN;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = (SDL_Keycode)key;
@@ -145,7 +145,7 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 		return true;
 	}
 	if (!Super::onKeyRelease(key, modifier) || _keys.has(key)) {
-		SDL_Event ev {};
+		SDL_Event ev{};
 		ev.type = SDL_KEYUP;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = key;
@@ -156,7 +156,7 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 	return true;
 }
 
-bool IMGUIApp::handleSDLEvent(SDL_Event& event) {
+bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 	const bool state = Super::handleSDLEvent(event);
 	if (event.type == SDL_WINDOWEVENT) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
@@ -174,35 +174,35 @@ app::AppState IMGUIApp::onConstruct() {
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = "2";
 	}
-	_uistyle = core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]", [](const core::String &val) {
-		const int themeIdx = core::string::toInt(val);
-		return themeIdx >= 0 && themeIdx <= 3;
-	});
+	_uistyle =
+		core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]", [](const core::String &val) {
+			const int themeIdx = core::string::toInt(val);
+			return themeIdx >= 0 && themeIdx <= 3;
+		});
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
-	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart", core::Var::boolValidator);
+	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart",
+				   core::Var::boolValidator);
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", "Render the ui", core::Var::boolValidator);
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, "Show metric and debug window", core::Var::boolValidator);
-	_uiFontSize = core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size",
-								[](const core::String &val) {
-									const float size = core::string::toFloat(val);
-									return size >= 2.0f;
-								});
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, "Show metric and debug window",
+								  core::Var::boolValidator);
+	_uiFontSize =
+		core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size", [](const core::String &val) {
+			const float size = core::string::toFloat(val);
+			return size >= 2.0f;
+		});
 
 	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", "Which keybinding to use");
 	core_assert(!_uiKeyMap->isDirty());
 
-	command::Command::registerCommand("ui_showtextures", [&] (const command::CmdArgs& args) {
-		_showTexturesDialog = true;
-	});
-	command::Command::registerCommand("ui_close", [&] (const command::CmdArgs& args) {
-		_closeModalPopup = true;
-	});
+	command::Command::registerCommand("ui_showtextures",
+									  [&](const command::CmdArgs &args) { _showTexturesDialog = true; });
+	command::Command::registerCommand("ui_close", [&](const command::CmdArgs &args) { _closeModalPopup = true; });
 
 	return state;
 }
 
 void IMGUIApp::loadFonts() {
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io = ImGui::GetIO();
 	io.Fonts->Clear();
 
 	const ImWchar *rangesBasic = io.Fonts->GetGlyphRangesDefault();
@@ -232,26 +232,27 @@ void IMGUIApp::loadFonts() {
 	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
 
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											fontSize, nullptr, rangesBasic);
+															fontSize, nullptr, rangesBasic);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											fontSize, &fontIconCfg, rangesFAIcons);
+											 fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											fontSize, &fontIconCfg, rangesFKIcons);
+											 fontSize, &fontIconCfg, rangesFKIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											fontSize * 2.0f, nullptr, rangesBasic);
+														fontSize * 2.0f, nullptr, rangesBasic);
 
-	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											fontSize * 1.5f, &bigFontIconCfg, rangesFAIcons);
+	_bigIconFont =
+		io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
+												 fontSize * 1.5f, &bigFontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											fontSize * 1.5f, &bigFontIconCfg, rangesFKIcons);
+											 fontSize * 1.5f, &bigFontIconCfg, rangesFKIcons);
 
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-											fontSize * 0.8f, nullptr, rangesBasic	);
+														  fontSize * 0.8f, nullptr, rangesBasic);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											fontSize, &fontIconCfg, rangesFAIcons);
+											 fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											fontSize, &fontIconCfg, rangesFKIcons);
+											 fontSize, &fontIconCfg, rangesFKIcons);
 
 	unsigned char *pixels;
 	int width, height;
@@ -270,11 +271,11 @@ void IMGUIApp::loadFonts() {
 	io.Fonts->TexID = (ImTextureID)(intptr_t)_texture;
 }
 
-static void* _imguiAlloc(size_t size, void*) {
+static void *_imguiAlloc(size_t size, void *) {
 	return core_malloc(size);
 }
 
-static void _imguiFree(void *mem, void*) {
+static void _imguiFree(void *mem, void *) {
 	core_free(mem);
 }
 
@@ -290,7 +291,7 @@ app::AppState IMGUIApp::onInit() {
 	ImGui::CreateContext();
 	ImPlot::CreateContext();
 
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode() && core::Var::getSafe(cfg::UIMultiMonitor)->boolVal()) {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -411,10 +412,10 @@ app::AppState IMGUIApp::onRunning() {
 
 		if (_showTexturesDialog) {
 			if (ImGui::Begin("Textures", &_showTexturesDialog)) {
-				const core::Set<video::Id>& textures = video::textures();
+				const core::Set<video::Id> &textures = video::textures();
 				const ImVec2 size(512, 512);
 				int textureCnt = 0;
-				for (const auto& e : textures) {
+				for (const auto &e : textures) {
 					ImGui::Image(e->first, size, ImVec2(), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
 					// TODO GL_INVALID_OPERATION error generated. Target doesn't match the texture's target.
 					++textureCnt;
@@ -432,10 +433,10 @@ app::AppState IMGUIApp::onRunning() {
 		}
 		bool showBindings_unused = true;
 		if (ImGui::BeginPopupModal("Bindings", &showBindings_unused, ImGuiWindowFlags_AlwaysAutoResize)) {
-			const util::BindMap& bindings = _keybindingHandler.bindings();
-			static const uint32_t TableFlags =
-				ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-				ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+			const util::BindMap &bindings = _keybindingHandler.bindings();
+			static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+											   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
+											   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 			const ImVec2 outerSize(0.0f, 400.0f);
 			if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
 				ImGui::TableSetupColumn("Keys##bindingslist", ImGuiTableColumnFlags_WidthFixed);
@@ -446,10 +447,11 @@ app::AppState IMGUIApp::onRunning() {
 
 				int n = 0;
 				for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-					const util::CommandModifierPair& pair = i->second;
-					const core::String& command = pair.command;
-					const core::String& keyBinding = util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
-					const command::Command* cmd = nullptr;
+					const util::CommandModifierPair &pair = i->second;
+					const core::String &command = pair.command;
+					const core::String &keyBinding =
+						util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
+					const command::Command *cmd = nullptr;
 					if (command.contains(" ")) {
 						cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
 					} else {
@@ -572,7 +574,9 @@ app::AppState IMGUIApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats, const core::String &filename) {
+void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback &callback, const video::FileDialogOptions &options,
+						  video::OpenFileMode mode, const io::FormatDescription *formats,
+						  const core::String &filename) {
 	_showFileDialog = true;
 	_fileDialogCallback = callback;
 	_fileDialogOptions = options;
@@ -580,4 +584,4 @@ void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback& callback, co
 	_fileDialog.openDir(mode, formats, filename);
 }
 
-}
+} // namespace ui
