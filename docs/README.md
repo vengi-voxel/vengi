@@ -7,9 +7,9 @@ your filemanager and a command line tool to [convert or modify](voxconvert/Index
 Find out more about features and status updates on my [twitter profile](https://twitter.com/MartinGerhardy).
 
 The project source code is located at [github/mgerhardy/vengi](https://github.com/mgerhardy/vengi). We also
-provide debian and windows binaries here.
+provide linux, osx and windows binaries here.
 
-Join our [discord server](https://discord.gg/AgjCPXy).
+Join our [discord server](https://discord.gg/AgjCPXy) to get support or submit your feature requests or bugs.
 
 If you just came here to use a voxel editor or to convert your voxel models into an obj or ply file,
 you should just go to the [download page](https://github.com/mgerhardy/vengi/releases) and check out
