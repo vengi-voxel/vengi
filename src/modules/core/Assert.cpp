@@ -68,8 +68,6 @@ void core_get_stacktrace(char *buf, size_t size) {
 	}
 	memcpy(buf, str.c_str(), size);
 	buf[size - 1] = '\0';
-#else
-	return "";
 #endif
 }
 
