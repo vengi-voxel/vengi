@@ -174,6 +174,7 @@ set(TEST_FILES
 	tests/vox_character.vox
 	tests/vox_glasses.vox
 	tests/voxlap5.kv6
+	tests/vox-to-kv6-broken.vox
 	tests/glTF/cube/Cube_BaseColor.png
 	tests/glTF/cube/Cube_MetallicRoughness.png
 	tests/glTF/cube/Cube.bin

@@ -333,6 +333,13 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
+TEST_F(ConvertTest, DISABLED_testVoxToKV6) {
+	VoxFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
+}
+
 // TODO: pivot broken
 // TODO: broken keyframes
 // TODO: broken voxels
