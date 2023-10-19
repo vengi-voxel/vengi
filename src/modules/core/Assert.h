@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include <string.h> // size_t
 
 struct AssertData {
 	int always_ignore;
