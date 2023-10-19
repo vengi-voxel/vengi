@@ -327,7 +327,8 @@ app::AppState VoxConvert::onInit() {
 		if (infiles.size() > 1) {
 			Log::warn("The format and path of the first input file is used for exporting all models");
 		}
-		exportModelsIntoSingleObjects(sceneGraph, infiles[0]);
+		exportModelsIntoSingleObjects(sceneGraph, infiles[0], outputFile ? outputFile->extension() : "");
+		return state;
 	}
 
 	if (_mergeModels) {
@@ -394,8 +395,8 @@ app::AppState VoxConvert::onInit() {
 	return state;
 }
 
-core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName, int id) {
-	const core::String &ext = core::string::extractExtension(inputfile);
+core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName, const core::String &outExt, int id) {
+	const core::String &ext = outExt.empty() ? core::string::extractExtension(inputfile) : outExt;
 	core::String name;
 	if (modelName.empty()) {
 		name = core::string::format("model-%i.%s", id, ext.c_str());
@@ -521,7 +522,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 	return true;
 }
 
-void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile) {
+void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext) {
 	Log::info("Export models into single objects");
 	int id = 0;
 	voxelformat::SaveContext saveCtx;
@@ -531,7 +532,7 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGrap
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		const core::String& filename = getFilenameForModelName(inputfile, node.name(), id);
+		const core::String& filename = getFilenameForModelName(inputfile, node.name(), ext, id);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {

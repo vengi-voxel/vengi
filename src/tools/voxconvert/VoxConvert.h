@@ -62,7 +62,7 @@ private:
 	};
 protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
-	core::String getFilenameForModelName(const core::String& inputfile, const core::String &modelName, int id);
+	core::String getFilenameForModelName(const core::String& inputfile, const core::String &modelName, const core::String &outExt, int id);
 	bool handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
@@ -78,7 +78,7 @@ protected:
 	void dump(const scenegraph::SceneGraph& sceneGraph);
 	void dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph);
 	void filterModels(scenegraph::SceneGraph& sceneGraph);
-	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile);
+	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext);
 	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
 public:
 	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
