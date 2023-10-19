@@ -400,7 +400,7 @@ core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, 
 	if (modelName.empty()) {
 		name = core::string::format("model-%i.%s", id, ext.c_str());
 	} else {
-		name = core::string::format("%s.%s", modelName.c_str(), ext.c_str());
+		name = core::string::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
 	}
 	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
 }
@@ -523,7 +523,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 
 void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile) {
 	Log::info("Export models into single objects");
-	int n = 0;
+	int id = 0;
 	voxelformat::SaveContext saveCtx;
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -531,12 +531,13 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGrap
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		const core::String& filename = getFilenameForModelName(inputfile, node.name(), n);
+		const core::String& filename = getFilenameForModelName(inputfile, node.name(), id);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
 			Log::error(" .. %s", filename.c_str());
 		}
+		++id;
 	}
 }
 
