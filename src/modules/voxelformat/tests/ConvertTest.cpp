@@ -24,6 +24,7 @@
 #include "voxelformat/private/slab6/KVXFormat.h"
 #include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/sproxel/SproxelFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
@@ -338,6 +339,20 @@ TEST_F(ConvertTest, DISABLED_testVoxToKV6) {
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
 	testLoadSaveAndLoad("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testVengiToKV6) {
+	VENGIFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kv6-broken.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, DISABLED_testVengiToKVX) {
+	VENGIFormat src;
+	KVXFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags);
 }
 
 // TODO: pivot broken

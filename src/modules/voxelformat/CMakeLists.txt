@@ -175,6 +175,7 @@ set(TEST_FILES
 	tests/vox_glasses.vox
 	tests/voxlap5.kv6
 	tests/vox-to-kv6-broken.vox
+	tests/testkv6-multiple-slots.vengi
 	tests/glTF/cube/Cube_BaseColor.png
 	tests/glTF/cube/Cube_MetallicRoughness.png
 	tests/glTF/cube/Cube.bin
