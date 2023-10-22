@@ -338,6 +338,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 														  const core::String &destFilename, Format &destFormat,
 														  voxel::ValidateFlags flags, float maxDelta) {
 	SCOPED_TRACE("src: " + srcFilename);
+	SCOPED_TRACE("target: " + destFilename);
 	scenegraph::SceneGraph srcSceneGraph;
 	ASSERT_TRUE(loadGroups(srcFilename, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
 #if WRITE_TO_FILE
@@ -354,7 +355,6 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 	scenegraph::SceneGraph destSceneGraph;
 #if WRITE_TO_FILE
 	{
-		SCOPED_TRACE("target: " + destFilename);
 		io::FileStream stream(open(destFilename));
 		ASSERT_TRUE(destFormat.load(destFilename, stream, destSceneGraph, testLoadCtx))
 			<< "Failed to load the target format";
