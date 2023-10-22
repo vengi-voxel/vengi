@@ -26,6 +26,9 @@ protected:
 	bool singleVolume() const override {
 		return true;
 	}
+	int emptyPaletteIndex() const override {
+		return 255;
+	}
 };
 
 } // namespace voxelformat

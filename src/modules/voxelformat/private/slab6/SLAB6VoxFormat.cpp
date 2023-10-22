@@ -77,12 +77,13 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	node.setVolume(volume, true);
 
 	stream.seek(voxelPos);
+	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 	for (uint32_t w = 0u; w < width; ++w) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t h = 0u; h < height; ++h) {
 				uint8_t palIdx;
 				wrap(stream.readUInt8(palIdx))
-				if (palIdx == 255) {
+				if (palIdx == emptyColorIndex) {
 					continue;
 				}
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, palIdx);
@@ -105,7 +106,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 
 	const voxel::Region &region = node->region();
 	const voxel::Palette &palette = node->palette();
-	const uint8_t emptyColorReplacement = palette.findReplacement(255);
+	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
 	wrapBool(stream.writeUInt32(dim.x))
@@ -118,10 +119,9 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
 				const voxel::Voxel &voxel = node->volume()->voxel(w, h, d);
 				if (voxel::isAir(voxel.getMaterial())) {
-					wrapBool(stream.writeUInt8(255))
-				} else if (voxel.getColor() == 255) {
-					wrapBool(stream.writeUInt8(emptyColorReplacement))
+					wrapBool(stream.writeUInt8(emptyColorIndex))
 				} else {
+					core_assert(voxel.getColor() != emptyColorIndex);
 					wrapBool(stream.writeUInt8(voxel.getColor()))
 				}
 			}

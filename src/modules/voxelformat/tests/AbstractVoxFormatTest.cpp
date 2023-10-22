@@ -96,6 +96,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 																   Format &destFormat, voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume original(region);
+	const voxel::Palette pal1 = voxel::getPalette();
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
 	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255u)));
 	io::BufferedReadWriteStream srcFormatStream((int64_t)(10 * 1024 * 1024));
@@ -103,6 +104,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 		scenegraph::SceneGraph sceneGraphsave(2);
 		scenegraph::SceneGraphNode node;
 		node.setVolume(&original, false);
+		node.setPalette(pal1);
 		sceneGraphsave.emplace(core::move(node));
 		EXPECT_TRUE(srcFormat.save(sceneGraphsave, destFilename, srcFormatStream, testSaveCtx))
 			<< "Could not save " << destFilename;
@@ -111,16 +113,14 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	scenegraph::SceneGraph::MergedVolumePalette merged = load(destFilename, srcFormatStream, srcFormat);
 	ASSERT_NE(nullptr, merged.first);
 	core::ScopedPtr<voxel::RawVolume> origReloaded(merged.first);
-	if ((flags & voxel::ValidateFlags::Region) == voxel::ValidateFlags::Region) {
-		ASSERT_EQ(original.region(), origReloaded->region());
-	}
-	voxel::volumeComparator(original, voxel::getPalette(), *origReloaded, merged.second, flags);
+	voxel::volumeComparator(original, pal1, *origReloaded, merged.second, flags);
 
 	io::BufferedReadWriteStream stream((int64_t)(10 * 1024 * 1024));
 	{
 		scenegraph::SceneGraph sceneGraphsave(2);
 		scenegraph::SceneGraphNode node;
 		node.setVolume(merged.first, false);
+		node.setPalette(merged.second);
 		sceneGraphsave.emplace(core::move(node));
 		EXPECT_TRUE(destFormat.save(sceneGraphsave, destFilename, stream, testSaveCtx))
 			<< "Could not save " << destFilename;
@@ -129,10 +129,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 	scenegraph::SceneGraph::MergedVolumePalette merged2 = load(destFilename, stream, destFormat);
 	core::ScopedPtr<voxel::RawVolume> loaded(merged2.first);
 	ASSERT_NE(nullptr, loaded) << "Could not load " << destFilename;
-	if ((flags & voxel::ValidateFlags::Region) == voxel::ValidateFlags::Region) {
-		ASSERT_EQ(original.region(), loaded->region());
-	}
-	voxel::volumeComparator(original, voxel::getPalette(), *loaded, merged2.second, flags);
+	voxel::volumeComparator(original, pal1, *loaded, merged2.second, flags);
 }
 
 void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,

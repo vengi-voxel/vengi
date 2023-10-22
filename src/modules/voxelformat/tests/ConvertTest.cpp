@@ -35,7 +35,13 @@ class ConvertTest: public AbstractVoxFormatTest {
 TEST_F(ConvertTest, testVoxToVXMPalette) {
 	VoxFormat src;
 	VXMFormat target;
-	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, voxel::ValidateFlags::Region);
+	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, voxel::ValidateFlags::All);
+}
+
+TEST_F(ConvertTest, testVoxToSLAB6VoxPalette) {
+	VoxFormat src;
+	SLAB6VoxFormat target;
+	testFirstAndLastPaletteIndexConversion(src, "palette-check.vox", target, voxel::ValidateFlags::All);
 }
 
 TEST_F(ConvertTest, testVoxToVXM) {
