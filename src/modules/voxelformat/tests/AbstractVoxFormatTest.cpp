@@ -317,6 +317,8 @@ void AbstractVoxFormatTest::testLoadSaveAndLoad(const core::String &srcFilename,
 		voxel::paletteComparator(merged.second, mergedLoad.second, maxDelta);
 	} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
 		voxel::partialPaletteComparator(merged.second, mergedLoad.second, maxDelta);
+	} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
+		voxel::paletteComparatorScaled(merged.second, mergedLoad.second, (int)maxDelta);
 	} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
 		voxel::orderPaletteComparator(merged.second, mergedLoad.second, maxDelta);
 	}

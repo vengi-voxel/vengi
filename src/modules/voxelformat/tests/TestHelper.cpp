@@ -160,6 +160,18 @@ void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, f
 	}
 }
 
+void paletteComparatorScaled(const voxel::Palette &pal1, const voxel::Palette &pal2, int maxDelta) {
+	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
+	for (int i = 0; i < pal1.colorCount(); ++i) {
+		const core::RGBA &c1 = pal1.color(i);
+		const core::RGBA &c2 = pal2.color(i);
+		EXPECT_NEAR(c1.r, c2.r, maxDelta);
+		EXPECT_NEAR(c1.g, c2.g, maxDelta);
+		EXPECT_NEAR(c1.b, c2.b, maxDelta);
+		EXPECT_NEAR(c1.a, c2.a, maxDelta);
+	}
+}
+
 void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
