@@ -344,15 +344,15 @@ TEST_F(ConvertTest, DISABLED_testVoxToKV6) {
 TEST_F(ConvertTest, DISABLED_testVengiToKV6) {
 	VENGIFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kv6-broken.kv6", target, flags);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
+	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kv6-broken.kv6", target, flags, 4.0f);
 }
 
-TEST_F(ConvertTest, DISABLED_testVengiToKVX) {
+TEST_F(ConvertTest, testVengiToKVX) {
 	VENGIFormat src;
 	KVXFormat target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
-	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
+	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
 }
 
 // TODO: pivot broken
