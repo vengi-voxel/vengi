@@ -334,14 +334,6 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-// TODO: one color is missing
-TEST_F(ConvertTest, testVoxToKV6) {
-	VoxFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
-	testLoadSaveAndLoad("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
-}
-
 TEST_F(ConvertTest, testVengiToKV6) {
 	VENGIFormat src;
 	KV6Format target;
@@ -361,6 +353,14 @@ TEST_F(ConvertTest, testKVXToKV6) {
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags, 0.026f);
+}
+
+// TODO: one color is missing
+TEST_F(ConvertTest, testVoxToKV6) {
+	VoxFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
+	testLoadSaveAndLoad("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 
 // TODO: pivot broken
