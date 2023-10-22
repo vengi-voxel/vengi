@@ -577,7 +577,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 
 	for (int x = 0; x < xsiz_w; ++x) {
-		for (int y = ysiz_d - 1; y >= 0; --y) {
+		for (int y = 0; y < ysiz_d; ++y) {
 			wrapBool(stream.writeUInt16(xyoffsets[x][y]))
 			Log::debug("xyoffsets[%u][%u]: %u", x, y, xyoffsets[x][y]);
 		}

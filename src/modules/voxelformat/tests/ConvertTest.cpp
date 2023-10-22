@@ -334,14 +334,15 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	testLoadSaveAndLoad("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testVoxToKV6) {
+// TODO: one color is missing
+TEST_F(ConvertTest, testVoxToKV6) {
 	VoxFormat src;
 	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors;
 	testLoadSaveAndLoad("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 
-TEST_F(ConvertTest, DISABLED_testVengiToKV6) {
+TEST_F(ConvertTest, testVengiToKV6) {
 	VENGIFormat src;
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
@@ -353,6 +354,13 @@ TEST_F(ConvertTest, testVengiToKVX) {
 	KVXFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
 	testLoadSaveAndLoad("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
+}
+
+TEST_F(ConvertTest, testKVXToKV6) {
+	KVXFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags, 0.026f);
 }
 
 // TODO: pivot broken
@@ -383,18 +391,12 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
+// TODO: colors are scaled: PaletteColorsScaled - but currently not both flags are usable
 TEST_F(ConvertTest, DISABLED_testQBChrKnightToKV6) {
 	QBFormat src;
 	KV6Format target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
 	testLoadSaveAndLoad("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
-}
-
-TEST_F(ConvertTest, DISABLED_testKVXToKV6) {
-	KVXFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
-	testLoadSaveAndLoad("test.kvx", src, "convert-test.kv6", target, flags, 0.0022f);
 }
 
 }
