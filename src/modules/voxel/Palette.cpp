@@ -189,7 +189,7 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 		line += c;
 	}
 	if (!line.empty()) {
-		palStr.append(core::string::format("%03i %s\n", palette._colorCount / 16 * 16, line.c_str()));
+		palStr.append(core::string::format("%03i %s\n", (palette._colorCount - 1) / 16 * 16, line.c_str()));
 	}
 	return palStr;
 }
