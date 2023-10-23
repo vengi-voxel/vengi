@@ -21,6 +21,10 @@ General:
    - Show the full application name as window title
    - Improved esc handling for menus and popups
 
+VoxConvet:
+
+   - Improved `--export-models` to work with the output format given by `--output`
+
 VoxEdit:
 
    - Added alternative split-object implementation and expose it to the editor tool panel

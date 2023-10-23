@@ -24,6 +24,18 @@ The `--input` with e.g. `infile.png` will pick the depth map next to the image p
 
 `./vengi-voxconvert --input input.vox --script "replacepalette built-in:minecraft true" --output mincraft.vox`
 
+## Export all nodes as single files
+
+Save all nodes in the `input.vengi` file as dedicated files named after the names of the nodes.
+
+`./vengi-voxconvert --export-models --input input.vengi`
+
+Same as above, but change the target format to `kv6` in this example
+
+`./vengi-voxconvert --export-models --input input.vengi --output output.kv6`
+
+> Please keep in mind that the target format must be able to save the particular nodes of the source format. There might be restrictions on dimensions. They are not automatically split. See the other available options regarding splitting of nodes.
+
 ## Merge several models
 
 Merge several models into one:
