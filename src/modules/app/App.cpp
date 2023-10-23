@@ -3,27 +3,27 @@
  */
 
 #include "App.h"
-#include <SDL_cpuinfo.h>
 #include "app/AppCommand.h"
-#include "core/Hash.h"
-#include "core/Var.h"
-#include "core/concurrent/ThreadPool.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
-#include "io/Filesystem.h"
 #include "core/Common.h"
+#include "core/Hash.h"
 #include "core/Log.h"
 #include "core/Tokenizer.h"
+#include "core/Var.h"
 #include "core/concurrent/Concurrency.h"
+#include "core/concurrent/ThreadPool.h"
+#include "engine-config.h"
+#include "io/Filesystem.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
-#include "engine-config.h"
+#include <SDL_cpuinfo.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
-#include <signal.h>
 #include <cfenv>
+#include <signal.h>
 
 // osx delayed loading of a NSDocument derived file type
 static core::String g_loadingDocument;
@@ -75,16 +75,16 @@ static void loop_debug_log(int signo) {
 	Log::init();
 }
 
-App* App::_staticInstance;
+App *App::_staticInstance;
 
-App* App::getInstance() {
+App *App::getInstance() {
 	core_assert(_staticInstance != nullptr);
 	return _staticInstance;
 }
 
-App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
-		_filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
-		_timeProvider(timeProvider) {
+App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
+	: _filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
+	  _timeProvider(timeProvider) {
 #ifdef FE_TONEAREST
 	std::fesetround(FE_TONEAREST);
 #endif
@@ -103,7 +103,8 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 	OSVERSIONINFOA osInfo;
 	osInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 	::GetVersionExA(&osInfo);
-	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion, (int)osInfo.dwBuildNumber);
+	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion,
+									  (int)osInfo.dwBuildNumber);
 #elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
 	struct utsname details;
 	if (uname(&details) == 0) {
@@ -111,10 +112,10 @@ App::App(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeP
 	}
 #endif
 
-	if  (_osName.empty()) {
+	if (_osName.empty()) {
 		_osName = "unknown";
 	}
-	if  (_osVersion.empty()) {
+	if (_osVersion.empty()) {
 		_osVersion = "undetected";
 	}
 
@@ -133,7 +134,7 @@ App::~App() {
 	_threadPool = core::ThreadPoolPtr();
 }
 
-void App::init(const core::String& organisation, const core::String& appname) {
+void App::init(const core::String &organisation, const core::String &appname) {
 	_organisation = organisation;
 	_appname = appname;
 }
@@ -269,7 +270,7 @@ AppState App::onConstruct() {
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
-	const core::String& logLevelVal = getArgVal("--loglevel");
+	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
@@ -277,7 +278,7 @@ AppState App::onConstruct() {
 
 	Log::init();
 
-	command::Command::registerCommand("set", [] (const command::CmdArgs& args) {
+	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
 		if (args.size() < 2) {
 			Log::info("usage: set <name> <value>");
 			return;
@@ -285,10 +286,12 @@ AppState App::onConstruct() {
 		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
 	}).setHelp("Set a variable value");
 
-	command::Command::registerCommand("quit", [&] (const command::CmdArgs& args) {requestQuit();}).setHelp("Quit the application");
+	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
+		requestQuit();
+	}).setHelp("Quit the application");
 
 #ifdef DEBUG
-	command::Command::registerCommand("assert", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("assert", [&](const command::CmdArgs &args) {
 		core_assert_msg(false, "assert triggered");
 	}).setHelp("Trigger an assert");
 #endif
@@ -336,8 +339,8 @@ AppState App::onConstruct() {
 		Log::warn("Failed to initialize the filesystem");
 	}
 
-	const io::FilesystemPtr& fs = io::filesystem();
-	const core::String& logfilePath = fs->writePath("log.txt");
+	const io::FilesystemPtr &fs = io::filesystem();
+	const core::String &logfilePath = fs->writePath("log.txt");
 	Log::init(logfilePath.c_str());
 
 	metric::init(_appname);
@@ -350,18 +353,18 @@ void App::onBeforeInit() {
 
 AppState App::onInit() {
 	Log::debug("Initialize sdl");
-	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
 
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	Log::debug("Initialize the cvars");
-	const io::FilePtr& varsFile = _filesystem->open(_appname + ".vars");
+	const io::FilePtr &varsFile = _filesystem->open(_appname + ".vars");
 	const core::String &content = varsFile->load();
 	core::Tokenizer t(content);
 	while (t.hasNext()) {
-		const core::String& name = t.next();
+		const core::String &name = t.next();
 		if (name.empty()) {
 			Log::warn("%s contains invalid configuration name", varsFile->name().c_str());
 			break;
@@ -370,11 +373,11 @@ AppState App::onInit() {
 			Log::warn("%s contains invalid configuration value for %s", varsFile->name().c_str(), name.c_str());
 			break;
 		}
-		const core::String& value = t.next();
+		const core::String &value = t.next();
 		if (!t.hasNext()) {
 			break;
 		}
-		const core::String& flags = t.next();
+		const core::String &flags = t.next();
 		uint32_t flagsMaskFromFile = core::CV_FROMFILE;
 		for (char c : flags) {
 			if (c == 'R') {
@@ -388,7 +391,7 @@ AppState App::onInit() {
 				Log::debug("secret flag for %s", name.c_str());
 			}
 		}
-		const core::VarPtr& old = core::Var::get(name);
+		const core::VarPtr &old = core::Var::get(name);
 		int32_t flagsMask;
 		if (old) {
 			flagsMask = (int32_t)(flagsMaskFromFile | old->getFlags());
@@ -407,9 +410,7 @@ AppState App::onInit() {
 	_syslogVar = core::Var::getSafe(cfg::CoreSysLog);
 
 	core::Var::needsSaving();
-	core::Var::visit([&] (const core::VarPtr& var) {
-		var->markClean();
-	});
+	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
 
 	for (int i = 0; i < _argc; ++i) {
 		if (SDL_strcmp(_argv[i], "--help") == 0 || SDL_strcmp(_argv[i], "-h") == 0) {
@@ -433,7 +434,7 @@ void App::onAfterInit() {
 	Log::debug("handle %i command line arguments", _argc);
 	for (int i = 0; i < _argc; ++i) {
 		// every command is started with a '-'
-		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' &&_argv[i][1] == '-')) {
+		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' && _argv[i][1] == '-')) {
 			continue;
 		}
 
@@ -458,7 +459,7 @@ void App::onAfterInit() {
 		Log::debug("Execute %s with %i arguments", command.c_str(), (int)args.size());
 		command::executeCommands(command + " " + args);
 	}
-	const core::String& autoexecCommands = filesystem()->load("autoexec.cfg");
+	const core::String &autoexecCommands = filesystem()->load("autoexec.cfg");
 	if (!autoexecCommands.empty()) {
 		Log::debug("execute autoexec.cfg");
 		command::Command::execute(autoexecCommands);
@@ -466,7 +467,7 @@ void App::onAfterInit() {
 		Log::debug("skip autoexec.cfg");
 	}
 
-	const core::String& autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
+	const core::String &autoexecAppCommands = filesystem()->load("%s-autoexec.cfg", _appname.c_str());
 	if (!autoexecAppCommands.empty()) {
 		Log::debug("execute %s-autoexec.cfg", _appname.c_str());
 		command::Command::execute(autoexecAppCommands);
@@ -490,86 +491,88 @@ bool App::hasEnoughMemory(size_t bytes) const {
 }
 
 void App::usage() const {
-	const core::VarPtr& logLevel = core::Var::get(cfg::CoreLogLevel, "");
+	const core::VarPtr &logLevel = core::Var::get(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
 	Log::info("Version " PROJECT_VERSION);
-	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", _appname.c_str(), _additionalUsage.c_str());
+	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", _appname.c_str(),
+			  _additionalUsage.c_str());
 	Log::info("------------");
 
 	int maxWidthLong = 0;
 	int maxWidthShort = 0;
-	for (const Argument& a : _arguments) {
+	for (const Argument &a : _arguments) {
 		maxWidthLong = core_max(maxWidthLong, (int)a.longArg().size());
 		maxWidthShort = core_max(maxWidthShort, (int)a.shortArg().size());
 	};
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
-	for (const Argument& a : _arguments) {
-		const core::String defaultVal = a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
+	for (const Argument &a : _arguments) {
+		const core::String defaultVal =
+			a.defaultValue().empty() ? "" : core::string::format(" (default: %s)", a.defaultValue().c_str());
 		if (a.shortArg().empty()) {
-			Log::info("%-*s - %s %s", maxWidthOnlyLong,
-				a.longArg().c_str(), a.description().c_str(), defaultVal.c_str());
+			Log::info("%-*s - %s %s", maxWidthOnlyLong, a.longArg().c_str(), a.description().c_str(),
+					  defaultVal.c_str());
 		} else {
-			Log::info("%-*s | %-*s - %s %s", maxWidthLong,
-				a.longArg().c_str(), maxWidthShort, a.shortArg().c_str(), a.description().c_str(), defaultVal.c_str());
+			Log::info("%-*s | %-*s - %s %s", maxWidthLong, a.longArg().c_str(), maxWidthShort, a.shortArg().c_str(),
+					  a.description().c_str(), defaultVal.c_str());
 		}
 	}
 
 	int maxWidth = 0;
-	core::Var::visit([&] (const core::VarPtr& v) {
-		maxWidth = core_max(maxWidth, (int)v->name().size());
-	});
-	command::Command::visit([&] (const command::Command& c) {
-		maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name()));
-	});
+	core::Var::visit([&](const core::VarPtr &v) { maxWidth = core_max(maxWidth, (int)v->name().size()); });
+	command::Command::visit(
+		[&](const command::Command &c) { maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name())); });
 
 	Log::info("------------");
 	Log::info("Config variables:");
-	util::visitVarSorted([=] (const core::VarPtr& v) {
-		const uint32_t flags = v->getFlags();
-		core::String flagsStr = "     ";
-		const char *value = v->strVal().c_str();
-		if ((flags & core::CV_READONLY) != 0) {
-			flagsStr[0]  = 'R';
-		}
-		if ((flags & core::CV_NOPERSIST) != 0) {
-			flagsStr[1]  = 'N';
-		}
-		if ((flags & core::CV_SHADER) != 0) {
-			flagsStr[2]  = 'S';
-		}
-		if ((flags & core::CV_SECRET) != 0) {
-			flagsStr[3]  = 'X';
-			value = "***secret***";
-		}
-		if (v->isDirty()) {
-			flagsStr[4]  = 'D';
-		}
-		Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
-		if (v->help() != nullptr) {
-			Log::info("   -- %s", v->help());
-		}
-	}, 0u);
+	util::visitVarSorted(
+		[=](const core::VarPtr &v) {
+			const uint32_t flags = v->getFlags();
+			core::String flagsStr = "     ";
+			const char *value = v->strVal().c_str();
+			if ((flags & core::CV_READONLY) != 0) {
+				flagsStr[0] = 'R';
+			}
+			if ((flags & core::CV_NOPERSIST) != 0) {
+				flagsStr[1] = 'N';
+			}
+			if ((flags & core::CV_SHADER) != 0) {
+				flagsStr[2] = 'S';
+			}
+			if ((flags & core::CV_SECRET) != 0) {
+				flagsStr[3] = 'X';
+				value = "***secret***";
+			}
+			if (v->isDirty()) {
+				flagsStr[4] = 'D';
+			}
+			Log::info("   %-*s %s %s", maxWidth, v->name().c_str(), flagsStr.c_str(), value);
+			if (v->help() != nullptr) {
+				Log::info("   -- %s", v->help());
+			}
+		},
+		0u);
 	Log::info("Flags:");
 	Log::info("   %-*s Readonly  can't get modified at runtime - only at startup", maxWidth, "R");
 	Log::info("   %-*s Nopersist value won't get persisted in the cfg file", maxWidth, "N");
 	Log::info("   %-*s Shader    changing the value would result in a recompilation of the shaders", maxWidth, "S");
-	Log::info("   %-*s Dirty     the config variable is dirty, means that the initial value was changed", maxWidth, "D");
+	Log::info("   %-*s Dirty     the config variable is dirty, means that the initial value was changed", maxWidth,
+			  "D");
 	Log::info("   %-*s Secret    the value of the config variable won't be shown in the logs", maxWidth, "X");
 
 	Log::info("------------");
 	Log::info("Commands:");
-	command::Command::visitSorted([=] (const command::Command& c) {
-		Log::info("   %-*s %s", maxWidth, c.name(), c.help());
-	});
+	command::Command::visitSorted(
+		[=](const command::Command &c) { Log::info("   %-*s %s", maxWidth, c.name(), c.help()); });
 	Log::info("------------");
 	Log::info("Search paths:");
-	const io::Paths& paths = _filesystem->paths();
-	for (const core::String& path : paths) {
+	const io::Paths &paths = _filesystem->paths();
+	for (const core::String &path : paths) {
 		Log::info(" * %s", path.c_str());
 	}
 	Log::info("------------");
-	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.", _appname.c_str());
+	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.",
+			  _appname.c_str());
 	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
 	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");
 	Log::info("take precendence over the one the is found in the configuration file. Next is the configuration");
@@ -606,13 +609,13 @@ AppState App::onRunning() {
 	return AppState::Cleanup;
 }
 
-bool App::hasArg(const core::String& arg) const {
+bool App::hasArg(const core::String &arg) const {
 	for (int i = 1; i < _argc; ++i) {
 		if (arg == _argv[i]) {
 			return true;
 		}
 	}
-	for (const Argument& a : _arguments) {
+	for (const Argument &a : _arguments) {
 		if (a.longArg() == arg || a.shortArg() == arg) {
 			for (int i = 1; i < _argc; ++i) {
 				if (a.longArg() == _argv[i] || a.shortArg() == _argv[i]) {
@@ -625,7 +628,7 @@ bool App::hasArg(const core::String& arg) const {
 	return false;
 }
 
-core::String App::getArgVal(const core::String& arg, const core::String& defaultVal, int* argi) {
+core::String App::getArgVal(const core::String &arg, const core::String &defaultVal, int *argi) {
 	int start = argi == nullptr ? 1 : core_max(1, *argi);
 	for (int i = start; i < _argc; ++i) {
 		if (arg != _argv[i]) {
@@ -638,7 +641,7 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 			return _argv[i + 1];
 		}
 	}
-	for (const Argument& a : _arguments) {
+	for (const Argument &a : _arguments) {
 		if (a.longArg() != arg && a.shortArg() != arg) {
 			continue;
 		}
@@ -671,7 +674,7 @@ core::String App::getArgVal(const core::String& arg, const core::String& default
 	return "";
 }
 
-App::Argument& App::registerArg(const core::String& arg) {
+App::Argument &App::registerArg(const core::String &arg) {
 	const App::Argument argument(arg);
 	_arguments.push_back(argument);
 	return _arguments.back();
@@ -686,30 +689,32 @@ bool App::saveConfiguration() {
 	Log::debug("save the config variables to '%s'", filename.c_str());
 	core::String ss;
 	ss.reserve(16384);
-	util::visitVarSorted([&](const core::VarPtr& var) {
-		if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
-			return;
-		}
-		const uint32_t flags = var->getFlags();
-		core::String flagsStr;
-		const char *value = var->strVal().c_str();
-		if ((flags & core::CV_READONLY) == core::CV_READONLY) {
-			flagsStr.append("R");
-		}
-		if ((flags & core::CV_SHADER) == core::CV_SHADER) {
-			flagsStr.append("S");
-		}
-		if ((flags & core::CV_SECRET) == core::CV_SECRET) {
-			flagsStr.append("X");
-		}
-		ss += "\"";
-		ss += var->name();
-		ss += "\" \"";
-		ss += value;
-		ss += "\" \"";
-		ss += flagsStr;
-		ss += "\"\n";
-	}, 0u);
+	util::visitVarSorted(
+		[&](const core::VarPtr &var) {
+			if ((var->getFlags() & core::CV_NOPERSIST) != 0u) {
+				return;
+			}
+			const uint32_t flags = var->getFlags();
+			core::String flagsStr;
+			const char *value = var->strVal().c_str();
+			if ((flags & core::CV_READONLY) == core::CV_READONLY) {
+				flagsStr.append("R");
+			}
+			if ((flags & core::CV_SHADER) == core::CV_SHADER) {
+				flagsStr.append("S");
+			}
+			if ((flags & core::CV_SECRET) == core::CV_SECRET) {
+				flagsStr.append("X");
+			}
+			ss += "\"";
+			ss += var->name();
+			ss += "\" \"";
+			ss += value;
+			ss += "\" \"";
+			ss += flagsStr;
+			ss += "\"\n";
+		},
+		0u);
 	return _filesystem->write(filename, ss);
 }
 
@@ -730,9 +735,8 @@ AppState App::onCleanup() {
 
 	const SDL_AssertData *item = SDL_GetAssertionReport();
 	while (item != nullptr) {
-		Log::warn("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
-				item->condition, item->function, item->filename, item->linenum,
-				item->trigger_count, item->always_ignore != 0 ? "yes" : "no");
+		Log::warn("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n", item->condition, item->function,
+				  item->filename, item->linenum, item->trigger_count, item->always_ignore != 0 ? "yes" : "no");
 		item = item->next;
 	}
 	SDL_ResetAssertionReport();
@@ -774,12 +778,12 @@ void App::requestSuspend() {
 	_suspendRequested = true;
 }
 
-const core::String& App::currentWorkingDir() const {
+const core::String &App::currentWorkingDir() const {
 	return _filesystem->basePath();
 }
 
-core::ThreadPool& App::threadPool() {
+core::ThreadPool &App::threadPool() {
 	return *_threadPool.get();
 }
 
-}
+} // namespace app
