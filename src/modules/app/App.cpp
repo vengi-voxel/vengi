@@ -5,6 +5,7 @@
 #include "App.h"
 #include <SDL_cpuinfo.h>
 #include "app/AppCommand.h"
+#include "core/Hash.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
 #include "command/Command.h"
@@ -14,6 +15,7 @@
 #include "core/Log.h"
 #include "core/Tokenizer.h"
 #include "core/concurrent/Concurrency.h"
+#include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
 #include "engine-config.h"
@@ -338,6 +340,8 @@ AppState App::onConstruct() {
 	const core::String& logfilePath = fs->writePath("log.txt");
 	Log::init(logfilePath.c_str());
 
+	metric::init(_appname);
+
 	return AppState::Init;
 }
 
@@ -349,6 +353,8 @@ AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS);
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
+
+	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	Log::debug("Initialize the cvars");
 	const io::FilePtr& varsFile = _filesystem->open(_appname + ".vars");
@@ -712,6 +718,8 @@ AppState App::onCleanup() {
 		addBlocker(AppState::Init);
 		return AppState::Init;
 	}
+
+	metric::shutdown();
 
 	saveConfiguration();
 

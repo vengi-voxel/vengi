@@ -5,7 +5,7 @@
 #include "metric/Metric.h"
 #include "core/Var.h"
 #include "metric/IMetricSender.h"
-#include <gtest/gtest.h>
+#include "core/tests/TestHelper.h"
 
 namespace metric {
 
@@ -32,6 +32,7 @@ protected:
 	void SetUp() override {
 		sender = core::make_shared<BufferSender>();
 		ASSERT_TRUE(sender->init());
+		core::Var::get(cfg::MetricUUID, "fake");
 	}
 
 	void TearDown() override {
@@ -102,11 +103,11 @@ TEST_F(MetricTest, testTimingValueTwo) {
 TEST_F(MetricTest, testTimingSingleTag) {
 	const TagMap map{{"key1", "value1"}};
 	EXPECT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms") << "Expected to get no tags on etsy flavor";
-	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,uuid=fake,key1=value1:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1")
+	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#uuid:fake,key1:value1")
 		<< "Expected to get tags after type in datadog flavor";
-	EXPECT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,key1=value1 value=1")
+	EXPECT_EQ(timing("testkey", 1, Flavor::Influx, map), PREFIX "_testkey,type=ms,uuid=fake,key1=value1 value=1")
 		<< "Unexpected influx format";
 }
 
@@ -114,9 +115,9 @@ TEST_F(MetricTest, testTimingSingleTag) {
 TEST_F(MetricTest, DISABLED_testTimingMultipleTags) {
 	const TagMap map{{"key1", "value1"}, {"key2", "value2"}};
 	EXPECT_EQ(timing("test", 1, Flavor::Etsy, map), PREFIX ".test:1|ms") << "Expected to get no tags on etsy flavor";
-	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,key1=value1,key2=value2:1|ms")
+	EXPECT_EQ(timing("test", 1, Flavor::Telegraf, map), PREFIX ".test,uuid=fake,key1=value1,key2=value2:1|ms")
 		<< "Expected to get tags after key in telegraf flavor";
-	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#key1:value1,key2:value2")
+	EXPECT_EQ(timing("test", 1, Flavor::Datadog, map), PREFIX ".test:1|ms|#uuid:fake,key1:value1,key2:value2")
 		<< "Expected to get tags after type in datadog flavor";
 }
 

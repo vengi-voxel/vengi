@@ -20,7 +20,11 @@ struct MetricState {
 };
 
 bool MetricState::init(const core::String &appname) {
-	core::Var::get(cfg::MetricFlavor, "telegraf");
+	const core::VarPtr &flavor = core::Var::get(cfg::MetricFlavor, "");
+	if (flavor->strVal().empty()) {
+		Log::debug("No metrics activated - skip init");
+		return false;
+	}
 	const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
 	const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
 	_sender = core::make_shared<metric::UDPMetricSender>(host, port);
@@ -32,6 +36,7 @@ bool MetricState::init(const core::String &appname) {
 		Log::warn("Failed to init metrics");
 		return false;
 	}
+	Log::info("Initialized metrics");
 	return true;
 }
 

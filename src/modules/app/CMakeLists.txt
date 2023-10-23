@@ -9,7 +9,7 @@ endif()
 
 set(LIB app)
 
-set(LIBS command)
+set(LIBS command metric)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 if (WINDOWS)
 	# All this windows.h insanities ... giving up on this module

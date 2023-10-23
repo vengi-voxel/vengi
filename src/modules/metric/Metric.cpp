@@ -3,13 +3,13 @@
  */
 
 #include "Metric.h"
+#include "core/Assert.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/GameConfig.h"
-#include "core/Assert.h"
+#include <SDL_stdinc.h>
 #include <stdio.h>
 #include <string.h>
-#include <SDL_stdinc.h>
 
 namespace metric {
 
@@ -17,9 +17,16 @@ Metric::~Metric() {
 	shutdown();
 }
 
-bool Metric::init(const char *prefix, const IMetricSenderPtr& messageSender) {
+bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	_prefix = prefix;
-	const core::String& flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
+	core::VarPtr uuid = core::Var::get(cfg::MetricUUID, "");
+	if (uuid->strVal().empty()) {
+		uuid->setVal(core::generateUUID());
+	}
+	_uuid = uuid->strVal();
+	Log::debug("Use uuid for metrics: %s", _uuid.c_str());
+
+	const core::String &flavor = core::Var::getSafe(cfg::MetricFlavor)->strVal();
 	if (flavor == "telegraf") {
 		_flavor = Flavor::Telegraf;
 		Log::debug("Using metric flavor 'telegraf'");
@@ -43,10 +50,8 @@ void Metric::shutdown() {
 	_messageSender = IMetricSenderPtr();
 }
 
-bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split) {
-	if (tags.empty()) {
-		return true;
-	}
+bool Metric::createTags(char *buffer, size_t len, const TagMap &tags, const char *sep, const char *preamble,
+						const char *split) const {
 	const size_t preambleLen = SDL_strlen(preamble);
 	if (preambleLen >= len) {
 		return false;
@@ -54,9 +59,21 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 	SDL_strlcpy(buffer, preamble, len);
 	buffer += preambleLen;
 	int remainingLen = (int)(len - preambleLen);
-	bool first = true;
+
+	const int uuidWritten = SDL_snprintf(buffer, remainingLen, "uuid%s%s", sep, _uuid.c_str());
+	if (uuidWritten >= remainingLen) {
+		return false;
+	}
+	size_t uuidKeyValueLen = 4 + SDL_strlen(sep) + _uuid.size();
+	buffer += uuidKeyValueLen;
+	remainingLen -= uuidKeyValueLen;
+
+	const char illegal[] = {
+		' ', '#', ';', ',', ':', '=', '(', ')', '[', ']', '|'
+	};
+
 	const size_t splitLen = SDL_strlen(split);
-	for (const auto& e : tags) {
+	for (const auto &e : tags) {
 		if (remainingLen <= 0) {
 			return false;
 		}
@@ -64,24 +81,22 @@ bool Metric::createTags(char* buffer, size_t len, const TagMap& tags, const char
 			continue;
 		}
 		size_t keyValueLen = e->key.size() + SDL_strlen(sep) + e->value.size();
-		int written;
-		if (first) {
-			written = SDL_snprintf(buffer, remainingLen, "%s%s%s", e->key.c_str(), sep, e->value.c_str());
-		} else {
-			keyValueLen += splitLen;
-			written = SDL_snprintf(buffer, remainingLen, "%s%s%s%s", split, e->key.c_str(), sep, e->value.c_str());
+		keyValueLen += splitLen;
+		core::String val = e->value;
+		for (char c : illegal) {
+			val.replaceAllChars(c, '_');
 		}
+		const int written = SDL_snprintf(buffer, remainingLen, "%s%s%s%s", split, e->key.c_str(), sep, val.c_str());
 		if (written >= remainingLen) {
 			return false;
 		}
 		buffer += keyValueLen;
 		remainingLen -= (int)keyValueLen;
-		first = false;
 	}
 	return true;
 }
 
-bool Metric::assemble(const char* key, int value, const char* type, const TagMap& tags) const {
+bool Metric::assemble(const char *key, int value, const char *type, const TagMap &tags) const {
 	if (!_messageSender) {
 		return false;
 	}
@@ -104,7 +119,8 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 		if (!createTags(tagsBuffer, sizeof(tagsBuffer), tags, "=", ",", ",")) {
 			return false;
 		}
-		written = SDL_snprintf(buffer, sizeof(buffer), "%s_%s,type=%s%s value=%i", _prefix.c_str(), key, type, tagsBuffer, value);
+		written = SDL_snprintf(buffer, sizeof(buffer), "%s_%s,type=%s%s value=%i", _prefix.c_str(), key, type,
+							   tagsBuffer, value);
 		break;
 	case Flavor::Telegraf:
 	default:
@@ -120,4 +136,4 @@ bool Metric::assemble(const char* key, int value, const char* type, const TagMap
 	return _messageSender->send(buffer);
 }
 
-}
+} // namespace metric

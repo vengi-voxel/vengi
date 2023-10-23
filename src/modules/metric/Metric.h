@@ -39,6 +39,7 @@ using TagMap = core::StringMap<core::String, 4>;
 class Metric : public core::NonCopyable {
 private:
 	core::String _prefix;
+	core::String _uuid;
 	Flavor _flavor = Flavor::Telegraf;
 	IMetricSenderPtr _messageSender;
 
@@ -51,7 +52,7 @@ private:
 	 * @param[in] split The separator between key/value pairs
 	 * @return @c false if not all tags could get written into the specified target buffer, @c true otherwise
 	 */
-	static bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",");
+	bool createTags(char *buffer, size_t len, const TagMap& tags, const char* sep, const char* preamble, const char *split = ",") const;
 	bool assemble(const char* key, int value, const char* type, const TagMap& tags = {}) const;
 public:
 	~Metric();
