@@ -65,6 +65,7 @@ detail message line 2
 | image            | Image loading and writing                                                  |
 | io               | Stream and file handling                                                   |
 | math             | Based on glm                                                               |
+| metric           | telegraf, influx and other metrics                                         |
 | noise            | Different noise implementations                                            |
 | render           | General renderer implementations and helpers                               |
 | testcore         | Visual test helpers                                                        |

@@ -56,6 +56,10 @@ constexpr const char *VoxelMeshMode = "voxel_meshmode";
 
 constexpr const char *AppHomePath = "app_homepath";
 
+constexpr const char *MetricPort = "metric_port";
+constexpr const char *MetricHost = "metric_host";
+constexpr const char *MetricFlavor = "metric_flavor";
+
 constexpr const char *VoxelPalette = "palette";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
