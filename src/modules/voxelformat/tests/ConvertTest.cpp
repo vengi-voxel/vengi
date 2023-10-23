@@ -372,6 +372,8 @@ TEST_F(ConvertTest, testVoxToKV6) {
 // TODO: pivot broken
 // TODO: broken keyframes
 // TODO: broken voxels
+// TODO: the voxels are loaded correctly - but got the wrong region and world position after
+//       loading. This might be related to the pivot, too.
 TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
 	GLTFFormat src;
 	GLTFFormat target;
