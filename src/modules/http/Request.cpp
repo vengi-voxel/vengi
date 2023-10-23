@@ -229,7 +229,7 @@ bool Request::execute(io::WriteStream &stream) {
 	return true;
 #elif EMSCRIPTEN
 	emscripten_fetch_attr_t attr;
-	core_memset(&attr, 0, sizeof(attr));
+	emscripten_fetch_attr_init(&attr);
 	attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_SYNCHRONOUS;
 	const core::String method = _type == RequestType::GET ? "GET" : "POST";
 	core::string::strncpyz(method.c_str(), method.size(), attr.requestMethod, sizeof(attr.requestMethod));
@@ -256,8 +256,10 @@ bool Request::execute(io::WriteStream &stream) {
 	Log::debug("Got status code %i for %s", (int)fetch->status, _url.c_str());
 	if (stream.write(fetch->data, fetch->numBytes) == -1) {
 		Log::error("Failed to write response with %i bytes for url %s", (int)fetch->numBytes, _url.c_str());
+		emscripten_fetch_close(fetch);
 		return false;
 	}
+	emscripten_fetch_close(fetch);
 	return true;
 #elif USE_CURL
 	CURL *curl = curl_easy_init();
