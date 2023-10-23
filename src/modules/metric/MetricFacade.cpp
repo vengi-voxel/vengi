@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Singleton.h"
 #include "core/Var.h"
+#include "metric/HTTPMetricSender.h"
 
 namespace metric {
 
@@ -25,9 +26,15 @@ bool MetricState::init(const core::String &appname) {
 		Log::debug("No metrics activated - skip init");
 		return false;
 	}
-	const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
-	const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
-	_sender = core::make_shared<metric::UDPMetricSender>(host, port);
+
+	if (flavor->strVal() == "json") {
+		const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://127.0.0.1/metric")->strVal();
+		_sender = core::make_shared<metric::HTTPMetricSender>(url);
+	} else {
+		const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
+		const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();
+		_sender = core::make_shared<metric::UDPMetricSender>(host, port);
+	}
 	if (!_sender->init()) {
 		Log::warn("Failed to init metric sender");
 		return false;

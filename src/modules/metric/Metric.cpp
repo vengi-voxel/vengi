@@ -39,6 +39,9 @@ bool Metric::init(const char *prefix, const IMetricSenderPtr &messageSender) {
 	} else if (flavor == "influx") {
 		_flavor = Flavor::Influx;
 		Log::debug("Using metric flavor 'influx'");
+	} else if (flavor == "json") {
+		_flavor = Flavor::JSON;
+		Log::debug("Using metric flavor 'json'");
 	} else {
 		Log::warn("Invalid %s given - using telegraf", cfg::MetricFlavor);
 	}
@@ -106,6 +109,22 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 	char tagsBuffer[tagsSize] = "";
 	int written;
 	switch (_flavor) {
+	case Flavor::JSON: {
+		core::String json;
+		json.append("{");
+		json.append("\"name\": \"").append(key).append("\",");
+		json.append("\"value\": \"").append(value).append(type).append("\",");
+		json.append("\"tags\": [");
+		json.append("{\"uuid\": \"").append(_uuid).append("\"}");
+		for (const auto &e : tags) {
+			json.append(",");
+			json.append("{\"").append(e->first).append("\": \"").append(e->second).append("\"}");
+		}
+		json.append("]");
+		json.append("}");
+		written = json.size();
+		return _messageSender->send(json.c_str());
+	}
 	case Flavor::Etsy:
 		written = SDL_snprintf(buffer, sizeof(buffer), "%s.%s:%i|%s", _prefix.c_str(), key, value, type);
 		break;

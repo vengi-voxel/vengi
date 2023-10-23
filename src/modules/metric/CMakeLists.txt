@@ -1,12 +1,14 @@
 set(SRCS
 	Metric.h Metric.cpp
 	MetricFacade.h MetricFacade.cpp
+
+	HTTPMetricSender.h HTTPMetricSender.cpp
 	UDPMetricSender.h UDPMetricSender.cpp
 	IMetricSender.h
 )
 
 set(LIB metric)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core http)
 
 set(TEST_SRCS
 	tests/MetricTest.cpp
