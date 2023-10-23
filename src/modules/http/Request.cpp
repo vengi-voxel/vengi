@@ -243,6 +243,7 @@ bool Request::execute(io::WriteStream &stream) {
 	}
 	headers.push_back(nullptr);
 	attr.requestHeaders = headers.data();
+	attr.timeoutMSecs = _timeoutSecond * 1000;
 
 	if (!_body.empty()) {
 		attr.requestData = _body.c_str();
