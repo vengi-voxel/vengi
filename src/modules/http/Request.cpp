@@ -230,6 +230,7 @@ bool Request::execute(io::WriteStream &stream) {
 #elif EMSCRIPTEN
 	emscripten_fetch_attr_t attr;
 	emscripten_fetch_attr_init(&attr);
+	// TODO: use EMSCRIPTEN_FETCH_STREAM_DATA
 	attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_SYNCHRONOUS;
 	const core::String method = _type == RequestType::GET ? "GET" : "POST";
 	core::string::strncpyz(method.c_str(), method.size(), attr.requestMethod, sizeof(attr.requestMethod));
