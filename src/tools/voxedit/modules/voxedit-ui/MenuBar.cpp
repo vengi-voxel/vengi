@@ -18,8 +18,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
 
-#define POPUP_TITLE_ABOUT "About##popuptitle"
-
 namespace voxedit {
 
 bool MenuBar::actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener) {
@@ -179,116 +177,11 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_FK_INFO " About")) {
-				ImGui::OpenPopup(POPUP_TITLE_ABOUT);
+				_popupAbout = true;
 			}
 			ImGui::EndMenu();
 		}
 
-		// TODO: doesn't show anymore
-		if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-			if (ImGui::BeginTabBar("##abouttabbar")) {
-				const float w = ImGui::GetContentRegionAvail().x;
-
-				if (ImGui::BeginTabItem("vengi")) {
-					ImGui::Text("VoxEdit " PROJECT_VERSION);
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("This is a beta release!");
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi/issues", w);
-					ImGui::URLItem(ICON_FK_QUESTION " Help", "https://mgerhardy.github.io/vengi/", w);
-					ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
-					ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
-					ImGui::EndTabItem();
-				}
-
-				if (ImGui::BeginTabItem("Credits")) {
-					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
-#ifdef USE_CURL
-					ImGui::Text("libCURL");
-#endif
-					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
-					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
-					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
-					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
-					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
-					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
-					ImGui::URLItem("lua", "https://www.lua.org/", w);
-					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
-					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
-					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
-					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", w);
-					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", w);
-					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", w);
-					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", w);
-					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", w);
-#ifdef USE_ZLIB
-					ImGui::Text("zlib");
-#endif
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("Formats")) {
-					ImGui::Text("Voxel load");
-					if (ImGui::BeginTable("##voxelload", 2, ImGuiTableFlags_Borders)) {
-						for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Voxel save");
-					if (ImGui::BeginTable("##voxelsave", 2, ImGuiTableFlags_Borders)) {
-						for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Palettes");
-					if (ImGui::BeginTable("##palettes", 2, ImGuiTableFlags_Borders)) {
-						for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Images");
-					if (ImGui::BeginTable("##images", 2, ImGuiTableFlags_Borders)) {
-						for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::EndTabItem();
-				}
-
-				if (ImGui::BeginTabItem("Paths")) {
-					for (const core::String &path : io::filesystem()->paths()) {
-						const core::String &abspath = io::filesystem()->absolutePath(path);
-						if (abspath.empty()) {
-							continue;
-						}
-						core::String fileurl = "file://" + abspath;
-						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
-					}
-					ImGui::EndTabItem();
-				}
-				ImGui::EndTabBar();
-			}
-			ImGui::EndPopup();
-		}
 		ImGui::EndMenuBar();
 	}
 	return resetDockLayout;

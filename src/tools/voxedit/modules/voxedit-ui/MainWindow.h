@@ -126,6 +126,7 @@ private:
 	void popupUnsavedChanges();
 	void popupUnsavedDiscard();
 	void popupSceneSettings();
+	void popupAbout();
 	void popupModelNodeSettings();
 	void popupVolumeSplit();
 	void registerPopups();
