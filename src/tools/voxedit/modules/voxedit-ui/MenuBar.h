@@ -25,6 +25,7 @@ public:
 	void colorReductionOptions();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
+	bool _popupTipOfTheDay = false;
 };
 
 inline void MenuBar::setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles) {

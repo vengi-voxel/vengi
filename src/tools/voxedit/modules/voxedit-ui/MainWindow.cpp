@@ -699,9 +699,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
 		_sceneGraphPanel._popupNewModelNode = false;
 	}
-	if (_popupTipOfTheDay) {
+	if (_popupTipOfTheDay || _menuBar._popupTipOfTheDay) {
 		ImGui::OpenPopup(POPUP_TITLE_TIPOFTHEDAY);
 		_popupTipOfTheDay = false;
+		_menuBar._popupTipOfTheDay = false;
 	}
 	popupModelNodeSettings();
 	popupSceneSettings();
