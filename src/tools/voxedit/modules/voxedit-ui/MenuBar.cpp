@@ -163,15 +163,15 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			actionMenuItem("All", "select all", listener);
 			ImGui::EndMenu();
 		}
-#ifdef DEBUG
-		if (ImGui::BeginMenu(ICON_FK_BUG " Debug")) {
-			if (ImGui::Button("Textures")) {
-				app->showTexturesDialog();
-			}
-			ImGui::EndMenu();
-		}
-#endif
 		if (ImGui::BeginMenu(ICON_FK_QUESTION " Help")) {
+#ifdef DEBUG
+			if (ImGui::BeginMenu(ICON_FK_BUG " Debug")) {
+				if (ImGui::Button("Textures")) {
+					app->showTexturesDialog();
+				}
+				ImGui::EndMenu();
+			}
+#endif
 			// TODO: show tip of the day
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_FK_INFO " About")) {
