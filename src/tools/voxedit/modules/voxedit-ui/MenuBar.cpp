@@ -171,8 +171,13 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 #endif
-		if (ImGui::MenuItem(ICON_FK_INFO " About")) {
-			ImGui::OpenPopup("About##popuptitle");
+		if (ImGui::BeginMenu(ICON_FK_QUESTION " Help")) {
+			// TODO: show tip of the day
+			ImGui::Separator();
+			if (ImGui::MenuItem(ICON_FK_INFO " About")) {
+				ImGui::OpenPopup("About##popuptitle");
+			}
+			ImGui::EndMenu();
 		}
 
 		bool aboutOpen = true;
