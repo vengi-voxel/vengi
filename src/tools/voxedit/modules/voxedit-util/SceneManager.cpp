@@ -26,6 +26,7 @@
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "math/Ray.h"
+#include "metric/MetricFacade.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/ScopedPolygonMode.h"
@@ -403,6 +404,8 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
+			const core::String &ext = core::string::extractExtension(file.name);
+			metric::count("save", 1, {{"type", ext}});
 			core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
 		}
 		_needAutoSave = false;
@@ -520,6 +523,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(filePtr->name(), &file.desc);
+	metric::count("load", 1, {{"type", filePtr->extension()}});
 	return true;
 }
 

@@ -724,6 +724,8 @@ AppState App::onCleanup() {
 		return AppState::Init;
 	}
 
+	metric::count("stop");
+
 	metric::shutdown();
 
 	saveConfiguration();
