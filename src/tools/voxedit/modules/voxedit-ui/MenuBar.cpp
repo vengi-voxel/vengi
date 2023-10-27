@@ -18,6 +18,8 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
 
+#define POPUP_TITLE_ABOUT "About##popuptitle"
+
 namespace voxedit {
 
 bool MenuBar::actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener) {
@@ -177,13 +179,13 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_FK_INFO " About")) {
-				ImGui::OpenPopup("About##popuptitle");
+				ImGui::OpenPopup(POPUP_TITLE_ABOUT);
 			}
 			ImGui::EndMenu();
 		}
 
-		bool aboutOpen = true;
-		if (ImGui::BeginPopupModal("About##popuptitle", &aboutOpen)) {
+		// TODO: doesn't show anymore
+		if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 			if (ImGui::BeginTabBar("##abouttabbar")) {
 				const float w = ImGui::GetContentRegionAvail().x;
 
