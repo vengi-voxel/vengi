@@ -118,6 +118,18 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
 				ImGui::CheckboxVar("Tip of the day", cfg::VoxEditTipOftheDay);
+
+				const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
+				bool metrics = !metricFlavor->strVal().empty();
+				if (ImGui::Checkbox("Enable sending metrics", &metrics)) {
+					if (metrics) {
+						metricFlavor->setVal("json");
+					} else {
+						metricFlavor->setVal("");
+					}
+				}
+				ImGui::TooltipText("Send anonymous usage statistics");
+
 				// TODO: activate me - the RawVolumeRenderer doesn't yet update the shader attributes correctly when switching between shaders
 				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
