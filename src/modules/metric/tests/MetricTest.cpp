@@ -4,8 +4,8 @@
 
 #include "metric/Metric.h"
 #include "core/Var.h"
-#include "metric/IMetricSender.h"
 #include "core/tests/TestHelper.h"
+#include "metric/IMetricSender.h"
 
 namespace metric {
 
@@ -72,6 +72,8 @@ protected:
 			core::Var::get("metric_flavor", "")->setVal("datadog");
 		} else if (flavor == Flavor::Influx) {
 			core::Var::get("metric_flavor", "")->setVal("influx");
+		} else if (flavor == Flavor::JSON) {
+			core::Var::get("metric_flavor", "")->setVal("json");
 		}
 	}
 };
@@ -82,6 +84,15 @@ TEST_F(MetricTest, testCounterIncreaseOne) {
 
 TEST_F(MetricTest, testCounterIncreaseTwo) {
 	EXPECT_EQ(count("test2", 2, Flavor::Etsy), PREFIX ".test2:2|c");
+}
+
+TEST_F(MetricTest, testCounterJSON) {
+	EXPECT_EQ(count("test1", 1, Flavor::JSON), R"({"name": "test.test1","value": "1","type": "c","tags": [{"uuid": "fake"}]})");
+}
+
+TEST_F(MetricTest, testCounterTagsJSON) {
+	EXPECT_EQ(count("test1", 1, Flavor::JSON, {{"foo", "bar"}}),
+			  R"({"name": "test.test1","value": "1","type": "c","tags": [{"uuid": "fake"},{"foo": "bar"}]})");
 }
 
 TEST_F(MetricTest, testGaugeValueOne) {

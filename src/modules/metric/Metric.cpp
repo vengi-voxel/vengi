@@ -112,8 +112,9 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 	case Flavor::JSON: {
 		core::String json;
 		json.append("{");
-		json.append("\"name\": \"").append(key).append("\",");
-		json.append("\"value\": \"").append(value).append(type).append("\",");
+		json.append("\"name\": \"").append(_prefix).append(".").append(key).append("\",");
+		json.append("\"value\": \"").append(value).append("\",");
+		json.append("\"type\": \"").append(type).append("\",");
 		json.append("\"tags\": [");
 		json.append("{\"uuid\": \"").append(_uuid).append("\"}");
 		for (const auto &e : tags) {
