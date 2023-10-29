@@ -24,6 +24,7 @@ bool HTTPMetricSender::send(const char *buffer) const {
 }
 
 bool HTTPMetricSender::init() {
+	_request.noCache();
 	return true;
 }
 
