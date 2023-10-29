@@ -115,13 +115,13 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 		json.append("\"name\": \"").append(_prefix).append(".").append(key).append("\",");
 		json.append("\"value\": \"").append(value).append("\",");
 		json.append("\"type\": \"").append(type).append("\",");
-		json.append("\"tags\": [");
-		json.append("{\"uuid\": \"").append(_uuid).append("\"}");
+		json.append("\"tags\": {");
+		json.append("\"uuid\": \"").append(_uuid).append("\"");
 		for (const auto &e : tags) {
 			json.append(",");
-			json.append("{\"").append(e->first).append("\": \"").append(e->second).append("\"}");
+			json.append("\"").append(e->first).append("\": \"").append(e->second).append("\"");
 		}
-		json.append("]");
+		json.append("}");
 		json.append("}");
 		written = json.size();
 		return _messageSender->send(json.c_str());
