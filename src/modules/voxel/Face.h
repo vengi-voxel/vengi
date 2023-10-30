@@ -42,15 +42,10 @@ enum class FaceBits : uint8_t {
 };
 CORE_ENUM_BIT_OPERATIONS(FaceBits)
 
-template<class Volume>
-static FaceBits visibleFaces(const Volume &v, int x, int y, int z) {
+template<class Sampler>
+static FaceBits visibleFaces(const Sampler &sampler, bool skipEmpty = true) {
 	FaceBits vis = FaceBits::None;
-
-	typename Volume::Sampler sampler(v);
-	if (!sampler.setPosition(x, y, z)) {
-		return vis;
-	}
-	if (voxel::isAir(sampler.voxel().getMaterial())) {
+	if (skipEmpty && voxel::isAir(sampler.voxel().getMaterial())) {
 		return vis;
 	}
 	if (voxel::isAir(sampler.peekVoxel1px0py0pz().getMaterial())) {
@@ -73,6 +68,21 @@ static FaceBits visibleFaces(const Volume &v, int x, int y, int z) {
 	}
 	return vis;
 }
+
+template<class Volume>
+static FaceBits visibleFaces(const Volume &v, int x, int y, int z) {
+	typename Volume::Sampler sampler(v);
+	if (!sampler.setPosition(x, y, z)) {
+		return FaceBits::None;
+	}
+	return visibleFaces(sampler);
+}
+
+template<class Volume>
+static FaceBits visibleFaces(const Volume &v, const glm::ivec3 &pos) {
+	return visibleFaces(v, pos.x, pos.y, pos.z);
+}
+
 
 extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& hitPos, float offsetMins = -0.5f, float offsetMaxs = 0.5f);
 extern FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float offsetMins = -0.5f, float offsetMaxs = 0.5f);
