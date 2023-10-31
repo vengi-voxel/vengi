@@ -226,6 +226,27 @@ TEST(BufferedReadWriteStreamTest, testFormatStringTerminated) {
 	EXPECT_STREQ("foobar barfoo", buf);
 }
 
+TEST(BufferedReadWriteStreamTest, testSkipDelta) {
+	BufferedReadWriteStream stream;
+	for (int i = 0; i < 100; ++i) {
+		stream.writeUInt32(i);
+	}
+	EXPECT_EQ(0, stream.seek(0));
+	uint32_t val;
+	EXPECT_EQ(0, stream.readUInt32(val));
+	EXPECT_EQ(0, val);
+	EXPECT_EQ(0, stream.skipDelta(2 * sizeof(uint32_t)));
+	EXPECT_EQ(0, stream.readUInt32(val));
+	EXPECT_EQ(3, val);
+	EXPECT_EQ(0, stream.skipDelta(4 * sizeof(uint32_t)));
+	EXPECT_EQ(0, stream.readUInt32(val));
+	EXPECT_EQ(8, val);
+	EXPECT_EQ(0, stream.skipDelta(1));
+	EXPECT_EQ(0, stream.skipDelta(3));
+	EXPECT_EQ(0, stream.readUInt32(val));
+	EXPECT_EQ(10, val);
+}
+
 TEST(BufferedReadWriteStreamTest, testFormat) {
 	BufferedReadWriteStream stream;
 	EXPECT_TRUE(stream.writeFormat("bsil", 1, 2, 3, 4));

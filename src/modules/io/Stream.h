@@ -34,6 +34,13 @@ public:
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
 	virtual bool eos() const = 0;
 
+	/**
+	 * @brief Skips bytes
+	 * @param delta the bytes to skip
+	 * @return -1 on error
+	 */
+	int64_t skipDelta(int64_t delta);
+
 	bool readBool();
 	/**
 	 * @return -1 on error - 0 on success

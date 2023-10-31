@@ -44,7 +44,7 @@ public:
 
 	bool load(const io::FilePtr& file);
 	bool load(const uint8_t* buffer, int length);
-	bool load(io::SeekableReadStream &stream, int length);
+	bool load(io::ReadStream &stream, int length);
 	/**
 	 * Loads a raw RGBA buffer
 	 */

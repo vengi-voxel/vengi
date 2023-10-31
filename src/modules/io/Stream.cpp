@@ -385,6 +385,18 @@ int ReadStream::readInt8(int8_t &val) {
 	return -1;
 }
 
+int64_t ReadStream::skipDelta(int64_t delta) {
+	while (delta > 0) {
+		uint64_t val;
+		const size_t ds = core_min((size_t)delta, sizeof(val));
+		if (read(&val, ds) == -1) {
+			return -1;
+		}
+		delta -= ds;
+	}
+	return delta;
+}
+
 bool ReadStream::readBool() {
 	uint8_t boolean;
 	if (readUInt8(boolean) != 0) {

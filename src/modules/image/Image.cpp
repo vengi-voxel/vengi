@@ -189,22 +189,22 @@ bool Image::load(const uint8_t *buffer, int length) {
 }
 
 static int stream_read(void *user, char *data, int size) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	io::ReadStream *stream = (io::ReadStream *)user;
 	const int readSize = stream->read(data, size);
 	return readSize;
 }
 
 static void stream_skip(void *user, int n) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
-	stream->skip(n);
+	io::ReadStream *stream = (io::ReadStream *)user;
+	stream->skipDelta(n);
 }
 
 static int stream_eos(void *user) {
-	io::SeekableReadStream *stream = (io::SeekableReadStream *)user;
+	io::ReadStream *stream = (io::ReadStream *)user;
 	return stream->eos() ? 1 : 0;
 }
 
-bool Image::load(io::SeekableReadStream &stream, int length) {
+bool Image::load(io::ReadStream &stream, int length) {
 	if (length <= 0) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: buffer empty", _name.c_str());
