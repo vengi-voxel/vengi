@@ -22,7 +22,6 @@ protected:
 
 public:
 	MemoryReadStream(const void *buf, uint32_t size);
-	MemoryReadStream(ReadStream &stream, uint32_t size);
 	virtual ~MemoryReadStream();
 
 	int64_t size() const override;

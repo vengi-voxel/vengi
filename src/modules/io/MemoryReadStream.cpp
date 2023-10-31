@@ -12,9 +12,6 @@ namespace io {
 MemoryReadStream::MemoryReadStream(const void *buf, uint32_t size) : _buf((const uint8_t*)buf), _size(size) {
 }
 
-MemoryReadStream::MemoryReadStream(ReadStream &stream, uint32_t size) : _ownBuf((uint8_t*)core_malloc(size)), _size(size) {
-}
-
 MemoryReadStream::~MemoryReadStream() {
 	core_free(_ownBuf);
 }
