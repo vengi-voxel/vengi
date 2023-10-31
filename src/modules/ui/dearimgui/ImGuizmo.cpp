@@ -926,7 +926,11 @@ namespace IMGUIZMO_NAMESPACE
    static bool IsHoveringWindow()
    {
       ImGuiContext& g = *ImGui::GetCurrentContext();
+      IM_ASSERT(gContext.mDrawList != NULL);
       ImGuiWindow* window = ImGui::FindWindowByName(gContext.mDrawList->_OwnerName);
+      if (window == nullptr) {
+         return false;
+      }
       if (g.HoveredWindow == window)   // Mouse hovering drawlist window
          return true;
       if (g.HoveredWindow != NULL)     // Any other window is hovered

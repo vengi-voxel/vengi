@@ -8,6 +8,10 @@ insert_final_newline = true
 vc_generate_documentation_comments = doxygen_slash_star
 charset = utf-8
 
+[src/modules/ui/dearimgui/ImGuizmo.*]
+indent_style = space
+indent_size = 3
+
 [*.py]
 indent_style = space
 
