@@ -615,6 +615,9 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			const int bufferIndex = resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
+			if (!i.second[bufferIndex]) {
+				continue;
+			}
 			if (i.second[bufferIndex]->sort(camera.eye())) {
 				updateBufferForVolume(bufferIndex, MeshType_Transparency);
 			}
