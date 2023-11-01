@@ -35,6 +35,15 @@ TEST_F(FileStreamTest, testInvalidFile) {
 	EXPECT_EQ(0, stream.size());
 }
 
+TEST_F(FileStreamTest, testFileStreamReadPastEndOfFile) {
+	const FilePtr &file = _fs.open("iotest.txt");
+	int8_t val = 0;
+	FileStream stream(file);
+	EXPECT_EQ(0, stream.readInt8(val));
+	EXPECT_TRUE(stream.seek(0, SEEK_END) > 0);
+	EXPECT_EQ(-1, stream.readInt8(val));
+}
+
 TEST_F(FileStreamTest, testFileStreamRead) {
 	const FilePtr &file = _fs.open("iotest.txt");
 	ASSERT_TRUE(file->exists());
