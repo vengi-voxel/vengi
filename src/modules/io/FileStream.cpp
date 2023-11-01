@@ -84,7 +84,7 @@ int64_t FileStream::seek(int64_t position, int whence) {
 	if (p == -1) {
 		return -1;
 	}
-	return 0;
+	return _pos;
 }
 
 } // namespace io
