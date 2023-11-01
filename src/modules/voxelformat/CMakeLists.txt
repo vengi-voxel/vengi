@@ -17,6 +17,7 @@ set(SRCS
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
 	private/commandconquer/VXLFormat.h       private/commandconquer/VXLFormat.cpp
 	private/cubeworld/CubFormat.h            private/cubeworld/CubFormat.cpp
+	private/cubzh/CubzhFormat.h              private/cubzh/CubzhFormat.cpp
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
@@ -69,6 +70,7 @@ set(TEST_SRCS
 	tests/FormatPaletteTest.cpp
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
+	tests/CubzhFormatTest.cpp
 	tests/GLTFFormatTest.cpp
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp
@@ -151,6 +153,7 @@ set(TEST_FILES
 	tests/crabby.vox
 	tests/chr_knight.gox
 	tests/kvx_save.qb
+	tests/particubes.pcubes
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
 	tests/rgb.vxl

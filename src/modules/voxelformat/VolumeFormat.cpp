@@ -23,6 +23,7 @@
 #include "voxelformat/private/chronovox/CSMFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
+#include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
@@ -157,6 +158,8 @@ const io::FormatDescription *voxelLoad() {
 		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
 		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		{"Particubes", {"pcubes", "particubes"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		{"Cubzh", {"3zh"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 		{"Voxel3D", {"v3a"}, nullptr, 0u},
 		{"AceOfSpades",
 		 {"kv6"},
@@ -332,6 +335,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			format = core::make_shared<XRawFormat>();
 		} else if (ext == "v3a") {
 			format = core::make_shared<V3AFormat>();
+		} else if (ext == "pcubes" || ext == "3zh") {
+			format = core::make_shared<CubzhFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
 			format = core::make_shared<GLTFFormat>();
 		} else {

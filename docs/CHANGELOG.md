@@ -20,6 +20,7 @@ General:
    - `ply` format got support for converting polygons into triangles
    - Show the full application name as window title
    - Improved esc handling for menus and popups
+   - Added support for particube `pcubes` and `3zh` support
 
 VoxConvet:
 
