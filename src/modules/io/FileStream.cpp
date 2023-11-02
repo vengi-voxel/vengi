@@ -72,6 +72,9 @@ int FileStream::read(void *dataPtr, size_t dataSize) {
 		completeBytesRead += bytesRead;
 	}
 	_pos = SDL_RWtell(_rwops);
+	if (completeBytesRead != dataSize) {
+		return -1;
+	}
 	return (int)completeBytesRead;
 }
 
