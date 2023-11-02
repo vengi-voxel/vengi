@@ -283,6 +283,8 @@ public:
 	 */
 	bool writeFormat(const char *fmt, ...);
 
+	bool writePascalStringUInt8(const core::String &str);
+
 	bool writePascalStringUInt32LE(const core::String &str);
 	bool writePascalStringUInt32BE(const core::String &str);
 
