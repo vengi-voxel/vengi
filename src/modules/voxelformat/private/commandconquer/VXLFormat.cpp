@@ -366,9 +366,15 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 	const uint64_t afterBodyPos = stream.pos();
 	const uint64_t bodySize = afterBodyPos - bodyStart;
 	Log::debug("write %u bytes as body size", (uint32_t)bodySize);
-	wrap(stream.seek(HeaderBodySizeOffset));
+	if (stream.seek(HeaderBodySizeOffset) == -1) {
+		Log::error("Failed to seek to body size");
+		return false;
+	}
 	wrapBool(stream.writeUInt32(bodySize))
-	wrap(stream.seek(afterBodyPos));
+	if (stream.seek(afterBodyPos) == -1) {
+		Log::error("Failed to seek to after body");
+		return false;
+	}
 
 	core_assert((uint64_t)stream.pos() == (uint64_t)(HeaderSize + LayerHeaderSize * numLayers + bodySize));
 
@@ -485,7 +491,10 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 			continue;
 		}
 
-		wrap(stream.seek(dataStart + colStart[i]))
+		if (stream.seek(dataStart + colStart[i]) == -1) {
+			Log::error("Failed to seek to column start");
+			return false;
+		}
 
 		const uint8_t x = (uint8_t)(i % footer.xsize);
 		const uint8_t y = (uint8_t)(i / footer.xsize);
@@ -598,7 +607,10 @@ bool VXLFormat::readLayerInfo(io::SeekableReadStream &stream, VXLModel &mdl, uin
 
 bool VXLFormat::readLayerInfos(io::SeekableReadStream &stream, VXLModel &mdl) const {
 	const VXLHeader &hdr = mdl.header;
-	wrap(stream.seek(HeaderSize + LayerHeaderSize * hdr.layerCount + hdr.dataSize))
+	if (stream.seek(HeaderSize + LayerHeaderSize * hdr.layerCount + hdr.dataSize) == -1) {
+		Log::error("Failed to seek to layer info");
+		return false;
+	}
 	for (uint32_t i = 0; i < hdr.layerInfoCount; ++i) {
 		wrapBool(readLayerInfo(stream, mdl, i))
 	}
