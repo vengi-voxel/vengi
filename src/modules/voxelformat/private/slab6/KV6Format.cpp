@@ -166,7 +166,11 @@ const uint32_t MAXSPRITES = 1024;
 		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read));                        \
 		return 0;                                                                                                      \
 	}
-
+#define wrap2(read)                                                                                                     \
+	if ((read) == -1) {                                                                                                 \
+		Log::error("Could not load kv6 file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
+	}
 #define wrapBool(read)                                                                                                 \
 	if ((read) == false) {                                                                                             \
 		Log::error("Could not load kv6 file: Not enough space in stream " CORE_STRINGIFY(read));                       \
@@ -222,7 +226,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(stream, color));
 		palette.addColorToPalette(color, false);
-		stream.skip(5);
+		wrap2(stream.skip(5));
 	}
 
 	return palette.size();
@@ -280,7 +284,7 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 		wrap(stream.readInt16(hinge.vmin))
 		wrap(stream.readInt16(hinge.vmax))
 		wrap(stream.readInt8(hinge.type))
-		wrap(stream.skip(7))
+		wrap2(stream.skip(7))
 		kfa.hinge.push_back(hinge);
 	}
 	uint32_t numFrames;
@@ -435,9 +439,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(stream, color));
-		wrap(stream.skip(1)) // slab6 always 128
+		wrap2(stream.skip(1)) // slab6 always 128
 		wrap(stream.readUInt8(state->voxdata[c].z))
-		wrap(stream.skip(1)) // slab6 always 0
+		wrap2(stream.skip(1)) // slab6 always 0
 		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 
@@ -597,6 +601,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	return true;
 }
 
+#undef wrap2
 #undef wrapBool
 
 } // namespace voxelformat
