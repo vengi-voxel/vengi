@@ -433,9 +433,9 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 	//sorting inside the std::set works (i.e. one system swaps values which are identical
 	//while the other one doesn't - both approaches are valid). For the same reason we want
 	//to make sure that position (x,y,z) has a different hash from e.g. position (x,z,y).
-	const uint32_t aX = (a.x << 16) & 0x00FF0000;
-	const uint32_t aY = (a.y << 8) & 0x0000FF00;
-	const uint32_t aZ = (a.z) & 0x000000FF;
+	const uint32_t aX = (*(uint32_t*)&a.x << 16) & 0x00FF0000;
+	const uint32_t aY = (*(uint32_t*)&a.y << 8) & 0x0000FF00;
+	const uint32_t aZ = (*(uint32_t*)&a.z) & 0x000000FF;
 	uint32_t hashVal = hash(aX | aY | aZ);
 
 	//Stop hashVal going over 65535, and divide by 1000000 to make sure it is small.
