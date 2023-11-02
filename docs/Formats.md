@@ -22,7 +22,7 @@
 | Minecraft Schematics       | nbt         | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)                   |
 | Minetest                   | mts         | X       |        | X          | X       |            | [spec](https://dev.minetest.net/Minetest_Schematic_File_Format)          |
 | Nick's Voxel Model         | nvm         | X       |        | X          |         |            |                                                                          |
-| Particubes/Cubzh           | pcubes/3zh  | X       |        | X          | X       |            | [spec](https://github.com/cubzh/cubzh/)                                  |
+| Particubes/Cubzh           | pcubes/3zh  | X       | X      | X          | X       |            | [spec](https://github.com/cubzh/cubzh/)                                  |
 | Qubicle Binary Tree        | qbt         | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
 | Qubicle Binary             | qb          | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qb/)       |
 | Qubicle Exchange           | qef         | X       | X      | X          |         |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |

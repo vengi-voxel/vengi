@@ -7,10 +7,13 @@
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
+#include <glm/gtc/quaternion.hpp>
 #include "image/Image.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Palette.h"
@@ -65,11 +68,14 @@ enum ChunkId {
 	CHUNK_ID_MAX = 24
 };
 
+bool supportsCompression(uint32_t chunkId) {
+	return chunkId == priv::CHUNK_ID_PALETTE_V6 || chunkId == priv::CHUNK_ID_SHAPE_V6 ||
+		   chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6 || chunkId == priv::CHUNK_ID_PALETTE_ID_V6;
+}
 } // namespace priv
 
 bool CubzhFormat::Chunk::supportsCompression() const {
-	return chunkId == priv::CHUNK_ID_PALETTE_V6 || chunkId == priv::CHUNK_ID_SHAPE_V6 ||
-		   chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6 || chunkId == priv::CHUNK_ID_PALETTE_ID_V6;
+	return priv::supportsCompression(chunkId);
 }
 
 CubzhFormat::CubzhReadStream::CubzhReadStream(const Header &header, const Chunk &chunk,
@@ -552,9 +558,11 @@ size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadSt
 		wrapBool(loadChunkHeader(header, stream, chunk))
 		if (header.version == 5 && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
 			wrapBool(loadPalette(filename, header, chunk, stream, palette))
-		} else if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_PALETTE_V6) {
+			return palette.size();
+		} else if (header.version == 6 && (chunk.chunkId == priv::CHUNK_ID_PALETTE_V6 || chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6)) {
 			CubzhReadStream zhs(header, chunk, stream);
 			wrapBool(loadPalette(filename, header, chunk, zhs, palette))
+			return palette.size();
 		} else {
 			wrapBool(loadSkipChunk(header, chunk, stream))
 		}
@@ -590,10 +598,263 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, io::Se
 #undef wrap
 #undef wrapBool
 
+class WriteChunkStream : public io::SeekableWriteStream {
+private:
+	uint32_t _chunkId;
+	io::SeekableWriteStream &_stream;
+	int64_t _chunkSizePos;
+	int64_t _uncompressedSizePos = -1;
+	int64_t _chunkHeaderEndPos;
+	uint32_t _uncompressedChunkSize = 0;
+	io::WriteStream *_stream2 = nullptr;
+public:
+	WriteChunkStream(uint32_t chunkId, io::SeekableWriteStream &stream) : _chunkId(chunkId), _stream(stream) {
+		stream.writeUInt8(_chunkId);
+		_chunkSizePos = stream.pos();
+		stream.writeUInt32(0); // chunkSize
+		if (priv::supportsCompression(_chunkId)) {
+			stream.writeUInt8(1);
+			_uncompressedSizePos = stream.pos();
+			stream.writeUInt32(0); // uncompressedSize
+			_stream2 = new io::ZipWriteStream(stream);
+		}
+		_chunkHeaderEndPos = stream.pos();
+	}
+	~WriteChunkStream() {
+		delete _stream2;
+		_stream2 = nullptr;
+		const int64_t chunkSize = _stream.pos() - _chunkHeaderEndPos;
+		if (_stream.seek(_chunkSizePos) == -1) {
+			Log::error("Failed to seek to the chunk size position in the header");
+			return;
+		}
+		_stream.writeUInt32(chunkSize);
+		if (_uncompressedSizePos != -1) {
+			if (_stream.seek(_uncompressedSizePos) == -1) {
+				Log::error("Failed to seek to the uncompressed size position in the header");
+				return;
+			}
+			_stream.writeUInt32(_uncompressedChunkSize);
+		}
+		_stream.seek(0, SEEK_END);
+	}
+	int write(const void *buf, size_t size) override {
+		const int bytes = _stream2 ? _stream2->write(buf, size) : _stream.write(buf, size);
+		if (bytes == -1) {
+			return -1;
+		}
+		_uncompressedChunkSize += size;
+		return bytes;
+	}
+	// don't seek in the middle of writing to the zip stream
+	int64_t seek(int64_t position, int whence = SEEK_SET) override {
+		return _stream.seek(position, whence);
+	}
+	int64_t size() const override {
+		return _stream.size();
+	}
+	int64_t pos() const override {
+		return _stream.pos();
+	}
+};
+
+class WriteSubChunkStream : public io::SeekableWriteStream {
+private:
+	uint32_t _chunkId;
+	io::SeekableWriteStream &_stream;
+	io::BufferedReadWriteStream _buffer;
+public:
+	WriteSubChunkStream(uint32_t chunkId, io::SeekableWriteStream &stream) : _chunkId(chunkId), _stream(stream) {
+		stream.writeUInt8(_chunkId);
+	}
+	~WriteSubChunkStream() {
+		_buffer.seek(0);
+		_stream.writeUInt32(_buffer.size());
+		_stream.write(_buffer.getBuffer(), _buffer.size());
+	}
+	int write(const void *buf, size_t size) override {
+		return _buffer.write(buf, size);
+	}
+	int64_t seek(int64_t position, int whence = SEEK_SET) override {
+		return _buffer.seek(position, whence);
+	}
+	int64_t size() const override {
+		return _buffer.size();
+	}
+	int64_t pos() const override {
+		return _buffer.pos();
+	}
+};
+
+#define wrapBool(read)                                                                                                 \
+	if (!(read)) {                                                                                                     \
+		Log::error("Could not save 3zh file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		return false;                                                                                                  \
+	}
+
 bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	Log::error("Saving is not yet supported");
-	return false;
+	stream.write("CUBZH!", 6);
+	wrapBool(stream.writeUInt32(6)) // version
+	wrapBool(stream.writeUInt8(1))	// zip compression
+	const int64_t totalSizePos = stream.pos();
+	wrapBool(stream.writeUInt32(0)) // total size is written at the end
+
+	ThumbnailContext thumbnailCtx;
+	thumbnailCtx.outputSize = glm::ivec2(128);
+	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailCtx);
+	if (image) {
+		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, stream);
+		image->writePng(ws);
+	}
+
+	{
+		WriteChunkStream ws(priv::CHUNK_ID_PALETTE_V6, stream);
+		const voxel::Palette &palette = sceneGraph.firstPalette();
+		const uint8_t colorCount = palette.colorCount();
+		ws.writeUInt8(colorCount);
+		for (uint8_t i = 0; i < colorCount; ++i) {
+			const core::RGBA rgba = palette.color(i);
+			wrapBool(ws.writeUInt8(rgba.r))
+			wrapBool(ws.writeUInt8(rgba.g))
+			wrapBool(ws.writeUInt8(rgba.b))
+			wrapBool(ws.writeUInt8(rgba.a))
+		}
+		for (uint8_t i = 0; i < colorCount; ++i) {
+			wrapBool(ws.writeBool(palette.hasGlow(i)))
+		}
+	}
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, stream);
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_ID_V6, ws);
+			wrapBool(sub.writeUInt16(node.id()))
+		}
+		if (node.parent() != sceneGraph.root().id()) {
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PARENT_ID_V6, ws);
+			wrapBool(sub.writeUInt16(node.parent()))
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_TRANSFORM_V6, ws);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+			const glm::vec3 pos = transform.localTranslation();
+			const glm::vec3 eulerAngles = glm::eulerAngles(transform.localOrientation());
+			const glm::vec3 scale = transform.localScale();
+			wrapBool(sub.writeFloat(pos.x))
+			wrapBool(sub.writeFloat(pos.y))
+			wrapBool(sub.writeFloat(pos.z))
+			wrapBool(sub.writeFloat(eulerAngles.x))
+			wrapBool(sub.writeFloat(eulerAngles.y))
+			wrapBool(sub.writeFloat(eulerAngles.z))
+			wrapBool(sub.writeFloat(scale.x))
+			wrapBool(sub.writeFloat(scale.y))
+			wrapBool(sub.writeFloat(scale.z))
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
+			const voxel::Region &region = node.region();
+			const glm::vec3 &pivot = node.pivot();
+			const glm::vec3 absPivot = region.getLowerCornerf() + pivot * glm::vec3(region.getDimensionsInVoxels());
+			wrapBool(sub.writeFloat(absPivot.x))
+			wrapBool(sub.writeFloat(absPivot.y))
+			wrapBool(sub.writeFloat(absPivot.z))
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_PALETTE_V6, ws);
+			const voxel::Palette &palette = node.palette();
+			const uint8_t colorCount = palette.colorCount();
+			sub.writeUInt8(colorCount);
+			for (uint8_t i = 0; i < colorCount; ++i) {
+				const core::RGBA rgba = palette.color(i);
+				wrapBool(sub.writeUInt8(rgba.r))
+				wrapBool(sub.writeUInt8(rgba.g))
+				wrapBool(sub.writeUInt8(rgba.b))
+				wrapBool(sub.writeUInt8(rgba.a))
+			}
+			for (uint8_t i = 0; i < colorCount; ++i) {
+				wrapBool(sub.writeBool(palette.hasGlow(i)))
+			}
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6, ws);
+			const voxel::Region &region = node.region();
+			const glm::ivec3 mins = region.getLowerCorner();
+			const glm::ivec3 maxs = region.getUpperCorner() + 1;
+			wrapBool(sub.writeFloat(mins.x))
+			wrapBool(sub.writeFloat(mins.y))
+			wrapBool(sub.writeFloat(mins.z))
+			wrapBool(sub.writeFloat(maxs.x))
+			wrapBool(sub.writeFloat(maxs.y))
+			wrapBool(sub.writeFloat(maxs.z))
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6, ws);
+			sub.writeBool(!node.visible());
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_NAME_V6, ws);
+			sub.writePascalStringUInt8(node.name());
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
+			const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
+			wrapBool(sub.writeUInt16(dimensions.x))
+			wrapBool(sub.writeUInt16(dimensions.y))
+			wrapBool(sub.writeUInt16(dimensions.z))
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_BLOCKS_V6, ws);
+			voxel::RawVolume *volume = node.volume();
+			const voxel::Region &region = volume->region();
+			for (int x = region.getLowerX(); x <= region.getUpperX(); x++) {
+				for (int y = region.getLowerY(); y <= region.getUpperY(); y++) {
+					for (int z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
+						const voxel::Voxel &voxel = volume->voxel(x, y, z);
+						wrapBool(sub.writeUInt8(voxel.getColor()))
+					}
+				}
+			}
+		}
+#if 0
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_V6, ws);
+			core::String name = "TODO";
+			glm::vec3 pos;
+			core::string::parseVec3(node.property(name), &pos[0]);
+			wrapBool(stream.writePascalStringUInt8(name))
+			wrapBool(sub.writeFloat(pos.x))
+			wrapBool(sub.writeFloat(pos.y))
+			wrapBool(sub.writeFloat(pos.z))
+		}
+#endif
+#if 0
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6, ws);
+			core::String name = "TODO";
+			wrapBool(sub.writePascalStringUInt8(name))
+			glm::vec3 poiPos;
+			wrapBool(sub.writeFloat(poiPos.x))
+			wrapBool(sub.writeFloat(poiPos.y))
+			wrapBool(sub.writeFloat(poiPos.z))
+		}
+#endif
+	}
+
+	const uint32_t totalSize = stream.size();
+	if (stream.seek(totalSizePos) == -1) {
+		Log::error("Failed to seek to the total size position in the header");
+		return false;
+	}
+	wrapBool(stream.writeUInt32(totalSize))
+	stream.seek(0, SEEK_END);
+	return true;
 }
+
+#undef wrapBool
 
 } // namespace voxelformat

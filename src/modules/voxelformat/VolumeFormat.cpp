@@ -196,6 +196,7 @@ const io::FormatDescription *voxelSave() {
 												 {"BinVox", {"binvox"}, nullptr, 0u},
 												 {"Goxel", {"gox"}, nullptr, 0u},
 												 {"Sproxel csv", {"csv"}, nullptr, 0u},
+												 {"Cubzh", {"3zh"}, nullptr, 0u},
 												 {"CubeWorld", {"cub"}, nullptr, 0u},
 												 //{"Build engine", {"kvx"}, nullptr, 0u},
 												 tiberianSun(),

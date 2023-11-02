@@ -274,6 +274,10 @@ TEST_F(ConvertTest, testLoadRGBSmallQbToVox) {
 	testRGBSmallSaveLoad("rgb_small.qb", "test.vox");
 }
 
+TEST_F(ConvertTest, testLoadRGBSmallQbTo3ZH) {
+	testRGBSmallSaveLoad("rgb_small.qb", "test.3zh");
+}
+
 TEST_F(ConvertTest, testLoadRGBSmallVoxToQbcl) {
 	testRGBSmallSaveLoad("rgb_small.vox", "test.qbcl");
 }
