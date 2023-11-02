@@ -98,7 +98,7 @@ int64_t BufferedReadWriteStream::seek(int64_t position, int whence) {
 		newPos = 0;
 	}
 	_pos = newPos;
-	return 0;
+	return _pos;
 }
 
 int64_t BufferedReadWriteStream::pos() const {
