@@ -358,6 +358,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))
+			node.setProperty("shapeId", core::string::format("%d", shapeId));
 			break;
 		case priv::CHUNK_ID_SHAPE_PARENT_ID_V6:
 			wrap(stream.readUInt16(parentShapeId))
@@ -484,8 +485,15 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	}
 	node.setPivot(pivot);
 	node.setPalette(nodePalette);
-	// TODO: parent support
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	int parent = 0;
+	if (parentShapeId != 0) {
+		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByPropertyValue("shapeId", core::string::format("%d", parentShapeId))) {
+			parent = parentNode->id();
+		} else {
+			Log::warn("Could not find node with parent shape id %d", parentShapeId);
+		}
+	}
+	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 
 bool CubzhFormat::loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
