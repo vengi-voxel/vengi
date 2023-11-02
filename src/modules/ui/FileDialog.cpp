@@ -266,7 +266,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
 	const float height = 25.0f * ImGui::GetFontSize();
 	const float width = 17.0f * ImGui::GetFontSize();
-	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(width, height), true);
+	ImGui::BeginChild("Bookmarks##filedialog", ImVec2(width, height), ImGuiChildFlags_Border);
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
@@ -360,7 +360,7 @@ static const char *iconForType(io::FilesystemEntry::Type type) {
 bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 	const float height = 25 * ImGui::GetFontSize();
 	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
-	ImGui::BeginChild("Files##1", childSize, true, ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("Files##1", childSize, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClickedFile = false;
 	static const uint32_t TableFlags =
