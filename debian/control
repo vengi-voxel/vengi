@@ -10,7 +10,7 @@ Build-Depends:
  debhelper,
  binutils-dev,
  libunwind-dev,
- libcurl4-gnutls-dev,
+ libcurl-ssl-dev,
  libsdl2-dev,
  libfreetype-dev,
  liblua5.4-dev,
