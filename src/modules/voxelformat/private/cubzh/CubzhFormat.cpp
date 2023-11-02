@@ -239,7 +239,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		break;
 	case priv::CHUNK_ID_SHAPE_BLOCKS_V5: {
 		if (width == 0) {
-			// TODO: support for blocks-before-size-chunk loading via stream seeking
+			// TODO: support for blocks-before-size-chunk loading
 			Log::error("Size chunk not yet loaded");
 			return false;
 		}
@@ -256,7 +256,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
-		for (uint16_t x = 0; x < width; x++) { // shape blocks
+		for (uint16_t x = 0; x < width; x++) {
 			for (uint16_t y = 0; y < height; y++) {
 				for (uint16_t z = 0; z < depth; z++) {
 					uint8_t index;
@@ -431,7 +431,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			node.setVolume(volume, true);
-			for (uint16_t x = 0; x < width; x++) { // shape blocks
+			for (uint16_t x = 0; x < width; x++) {
 				for (uint16_t y = 0; y < height; y++) {
 					for (uint16_t z = 0; z < depth; z++) {
 						uint8_t index;
