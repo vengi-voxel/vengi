@@ -19,6 +19,21 @@
       <match type="string" offset="0" value="GOX "/>
     </magic>
   </mime-type>
+  <mime-type type="application/x-cubzh">
+    <comment>Cubzh voxel models</comment>
+    <glob pattern="*.3zh"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="CUBZH!"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-particubes">
+    <comment>Particubes voxel models</comment>
+    <glob pattern="*.pcubes"/>
+	<glob pattern="*.particubes"/>
+    <magic priority="50">
+      <match type="string" offset="0" value="PARTICUBES!"/>
+    </magic>
+  </mime-type>
   <mime-type type="application/x-magicavoxel">
     <comment>Voxel model MagicaVoxel</comment>
     <magic priority="50">
