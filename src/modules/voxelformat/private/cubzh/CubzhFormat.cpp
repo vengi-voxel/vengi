@@ -133,7 +133,7 @@ bool CubzhFormat::CubzhReadStream::empty() const {
 
 bool CubzhFormat::loadSkipChunk(const Header &header, const Chunk &chunk, io::ReadStream &stream) const {
 	Log::debug("skip chunk %u with size %d", chunk.chunkId, (int)chunk.chunkSize);
-	if (header.version == 6 && chunk.supportsCompression()) {
+	if (header.version == 6u && chunk.supportsCompression()) {
 		Log::debug("skip additional header bytes for compressed chunk");
 		stream.skipDelta(5);
 	}
@@ -165,7 +165,7 @@ bool CubzhFormat::loadHeader(io::SeekableReadStream &stream, Header &header) con
 	}
 
 	wrap(stream.readUInt32(header.version))
-	if (header.version != 5 && header.version != 6) {
+	if (header.version != 5u && header.version != 6u) {
 		Log::warn("Unsupported version %d", header.version);
 	} else {
 		Log::debug("Found version %d", header.version);
@@ -187,7 +187,7 @@ bool CubzhFormat::loadHeader(io::SeekableReadStream &stream, Header &header) con
 bool CubzhFormat::loadPalette(const core::String &filename, const Header &header, const Chunk &chunk,
 							  io::ReadStream &stream, voxel::Palette &palette) const {
 	const bool legacy =
-		header.version == 5 || (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6);
+		header.version == 5u || (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6);
 	uint8_t colorCount;
 	if (legacy) {
 		Log::debug("Found legacy palette");
@@ -320,7 +320,7 @@ bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, 
 	wrap(stream.readUInt8(chunk.chunkId))
 	wrap(stream.readUInt32(chunk.chunkSize))
 	Log::debug("Chunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
-	if (header.version == 6 && chunk.supportsCompression()) {
+	if (header.version == 6u && chunk.supportsCompression()) {
 		wrap(stream.readUInt8(chunk.compressed))
 		wrap(stream.readUInt32(chunk.uncompressedSize))
 		Log::debug("Compressed: %u", chunk.compressed);
@@ -341,7 +341,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 							 const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	uint16_t shapeId = 1;
 	uint16_t parentShapeId = 0;
 	glm::vec3 pivot{0.5f}; // default is center of shape
@@ -557,10 +557,10 @@ size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadSt
 	while (!stream.eos()) {
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
-		if (header.version == 5 && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
+		if (header.version == 5u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
 			wrapBool(loadPalette(filename, header, chunk, stream, palette))
 			return palette.size();
-		} else if (header.version == 6 && (chunk.chunkId == priv::CHUNK_ID_PALETTE_V6 || chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6)) {
+		} else if (header.version == 6u && (chunk.chunkId == priv::CHUNK_ID_PALETTE_V6 || chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6)) {
 			CubzhReadStream zhs(header, chunk, stream);
 			wrapBool(loadPalette(filename, header, chunk, zhs, palette))
 			return palette.size();
