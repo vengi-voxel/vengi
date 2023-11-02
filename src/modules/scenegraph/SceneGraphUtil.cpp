@@ -132,6 +132,7 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	copy(sourceNode, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
 		newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
+		newNode.setPivot(sourceNode.pivot());
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
 	if (newNodeId == InvalidNodeId) {
