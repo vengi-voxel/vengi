@@ -857,7 +857,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 #endif
 	}
 
-	const uint32_t totalSize = stream.size();
+	const uint32_t totalSize = stream.size() - 9;
 	if (stream.seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
