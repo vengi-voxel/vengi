@@ -766,12 +766,10 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
-			const voxel::Region &region = node.region();
-			const glm::vec3 &pivot = node.pivot();
-			const glm::vec3 absPivot = region.getLowerCornerf() + pivot * glm::vec3(region.getDimensionsInVoxels());
-			wrapBool(sub.writeFloat(absPivot.x))
-			wrapBool(sub.writeFloat(absPivot.y))
-			wrapBool(sub.writeFloat(absPivot.z))
+			const glm::vec3 &pivot = node.worldPivot();
+			wrapBool(sub.writeFloat(pivot.x))
+			wrapBool(sub.writeFloat(pivot.y))
+			wrapBool(sub.writeFloat(pivot.z))
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_PALETTE_V6, ws);
