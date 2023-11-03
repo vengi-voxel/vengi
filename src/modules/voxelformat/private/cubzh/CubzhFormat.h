@@ -146,7 +146,7 @@ namespace voxelformat {
  * 2        | uint16     | id
  * -------------------------------------------------------------------------------
  *
- * 9. SubChunk id 'OBJECT_NAME' (17) : only for serialization in parent id
+ * 9. SubChunk id 'OBJECT_NAME' (18) : only for serialization in parent id
  * -------------------------------------------------------------------------------
  * # Bytes  | Type       | Value
  * -------------------------------------------------------------------------------
