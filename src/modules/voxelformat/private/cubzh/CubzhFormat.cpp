@@ -37,12 +37,25 @@ namespace voxelformat {
 
 namespace priv {
 enum ChunkId {
+	CHUNK_ID_MIN = 1,
+
 	CHUNK_ID_PREVIEW = 1,
+
 	CHUNK_ID_PALETTE_V5 = 2,
+	CHUNK_ID_SELECTED_COLOR_V5 = 3,
+	CHUNK_ID_SELECTED_BACKGROUND_COLOR_V5 = 4,
 	CHUNK_ID_SHAPE_V5 = 5,
 	CHUNK_ID_SHAPE_SIZE_V5 = 6,
 	CHUNK_ID_SHAPE_BLOCKS_V5 = 7,
 	CHUNK_ID_SHAPE_POINT_V5 = 8,
+	CHUNK_ID_SHAPE_CAMERA_V5 = 9,
+	CHUNK_ID_DIRECTIONAL_LIGHT = 10,
+	CHUNK_ID_SOURCE_METADATA = 11,
+	CHUNK_ID_SHAPE_NAME_V5 = 12,
+	CHUNK_ID_GENERAL_RENDERING_OPTIONS_V5 = 13,
+	CHUNK_ID_SHAPE_BAKED_LIGHTING_V5 = 14,
+	CHUNK_ID_MAX_V5 = 14,
+
 	CHUNK_ID_PALETTE_LEGACY_V6 = 2,
 	CHUNK_ID_SHAPE_V6 = 3,
 	CHUNK_ID_SHAPE_SIZE_V6 = 4,
@@ -64,8 +77,8 @@ enum ChunkId {
 	CHUNK_ID_SHAPE_PALETTE_V6 = 22,
 	CHUNK_ID_OBJECT_COLLISION_BOX_V6 = 23,
 	CHUNK_ID_OBJECT_IS_HIDDEN_V6 = 24,
-	CHUNK_ID_MIN = 1,
-	CHUNK_ID_MAX = 24
+
+	CHUNK_ID_MAX_V6 = 24
 };
 
 bool supportsCompression(uint32_t chunkId) {
@@ -273,7 +286,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 	}
 	case priv::CHUNK_ID_SHAPE_POINT_V5: {
 		core::String name;
-		wrapBool(stream.readPascalStringUInt8(name))
+		wrapBool(stream.readString(chunk.chunkSize, name))
 		float f3x, f3y, f3z;
 		wrap(stream.readFloat(f3x))
 		wrap(stream.readFloat(f3y))
@@ -509,7 +522,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 		Log::debug("Remaining stream data: %d", (int)stream.remaining());
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
-		if (chunk.chunkId < priv::CHUNK_ID_MIN || chunk.chunkId > priv::CHUNK_ID_MAX) {
+		if (chunk.chunkId < priv::CHUNK_ID_MIN || chunk.chunkId > priv::CHUNK_ID_MAX_V6) {
 			Log::warn("Invalid chunk id found: %u", chunk.chunkId);
 			break;
 		}
@@ -714,6 +727,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	wrapBool(stream.writeUInt8(1))	// zip compression
 	const int64_t totalSizePos = stream.pos();
 	wrapBool(stream.writeUInt32(0)) // total size is written at the end
+	const int64_t afterHeaderPos = stream.pos();
 
 	ThumbnailContext thumbnailCtx;
 	thumbnailCtx.outputSize = glm::ivec2(128);
@@ -863,7 +877,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 	}
 
-	const uint32_t totalSize = stream.size() - 15;
+	const uint32_t totalSize = stream.size() - afterHeaderPos;
 	if (stream.seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
