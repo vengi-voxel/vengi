@@ -318,7 +318,13 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 
 bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const {
 	wrap(stream.readUInt8(chunk.chunkId))
-	wrap(stream.readUInt32(chunk.chunkSize))
+	if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_SHAPE_NAME_V6) {
+		uint8_t strLen;
+		wrap(stream.readUInt8(strLen))
+		chunk.chunkSize = strLen;
+	} else {
+		wrap(stream.readUInt32(chunk.chunkSize))
+	}
 	Log::debug("Chunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
 	if (header.version == 6u && chunk.supportsCompression()) {
 		wrap(stream.readUInt8(chunk.compressed))
@@ -404,7 +410,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_NAME_V6: {
 			core::String name;
-			stream.readPascalStringUInt8(name);
+			stream.readString(chunk.chunkSize, name);
 			node.setName(name);
 			break;
 		}
@@ -771,8 +777,8 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 			wrapBool(sub.writeFloat(pivot.y))
 			wrapBool(sub.writeFloat(pivot.z))
 		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_PALETTE_V6, ws);
+		if (node.palette().colorCount() > 0) {
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PALETTE_V6, ws);
 			const voxel::Palette &palette = node.palette();
 			const uint8_t colorCount = palette.colorCount();
 			sub.writeUInt8(colorCount);
@@ -803,9 +809,9 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6, ws);
 			sub.writeBool(!node.visible());
 		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_NAME_V6, ws);
-			sub.writePascalStringUInt8(node.name());
+		if (!node.name().empty()) {
+			ws.writeUInt8(priv::CHUNK_ID_SHAPE_NAME_V6);
+			ws.writePascalStringUInt8(node.name());
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
@@ -857,7 +863,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 #endif
 	}
 
-	const uint32_t totalSize = stream.size() - 9;
+	const uint32_t totalSize = stream.size() - 15;
 	if (stream.seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
