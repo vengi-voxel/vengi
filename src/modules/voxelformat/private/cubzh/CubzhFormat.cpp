@@ -809,10 +809,6 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6, ws);
 			sub.writeBool(!node.visible());
 		}
-		if (!node.name().empty()) {
-			ws.writeUInt8(priv::CHUNK_ID_SHAPE_NAME_V6);
-			ws.writePascalStringUInt8(node.name());
-		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
 			const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
@@ -840,27 +836,31 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 #if 0
 		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_V6, ws);
 			core::String name = "TODO";
 			glm::vec3 pos;
 			core::string::parseVec3(node.property(name), &pos[0]);
-			wrapBool(stream.writePascalStringUInt8(name))
-			wrapBool(sub.writeFloat(pos.x))
-			wrapBool(sub.writeFloat(pos.y))
-			wrapBool(sub.writeFloat(pos.z))
+			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_V6))
+			wrapBool(ws.writePascalStringUInt8(name))
+			wrapBool(ws.writeFloat(pos.x))
+			wrapBool(ws.writeFloat(pos.y))
+			wrapBool(ws.writeFloat(pos.z))
 		}
 #endif
 #if 0
 		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6, ws);
 			core::String name = "TODO";
-			wrapBool(sub.writePascalStringUInt8(name))
 			glm::vec3 poiPos;
-			wrapBool(sub.writeFloat(poiPos.x))
-			wrapBool(sub.writeFloat(poiPos.y))
-			wrapBool(sub.writeFloat(poiPos.z))
+			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6))
+			wrapBool(ws.writePascalStringUInt8(name))
+			wrapBool(ws.writeFloat(poiPos.x))
+			wrapBool(ws.writeFloat(poiPos.y))
+			wrapBool(ws.writeFloat(poiPos.z))
 		}
 #endif
+		if (!node.name().empty()) {
+			ws.writeUInt8(priv::CHUNK_ID_SHAPE_NAME_V6);
+			ws.writePascalStringUInt8(node.name());
+		}
 	}
 
 	const uint32_t totalSize = stream.size() - 15;
