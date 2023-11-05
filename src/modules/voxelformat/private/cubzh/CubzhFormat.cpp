@@ -63,8 +63,11 @@ enum ChunkId {
 	CHUNK_ID_SHAPE_POINT_V6 = 6,
 	CHUNK_ID_SHAPE_BAKED_LIGHTING_V6 = 7,
 	CHUNK_ID_SHAPE_POINT_ROTATION_V6 = 8,
+	// store the state of the camera (distance from item, angle)
 	CHUNK_ID_CAMERA_V6 = 10,
 	CHUNK_ID_DIRECTIONAL_LIGHT_V6 = 11,
+	// store unsupported metadata when importing other formats (like .vox) to support writing them back if
+	// exporting to that same original format at some point.
 	CHUNK_ID_SOURCE_METADATA_V6 = 12,
 	CHUNK_ID_GENERAL_RENDERING_OPTIONS_V6 = 14,
 	CHUNK_ID_PALETTE_ID_V6 = 15,
