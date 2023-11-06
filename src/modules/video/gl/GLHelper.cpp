@@ -319,6 +319,11 @@ int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& sha
 			glGetActiveUniformBlockName(program, i, uniformNameSize, nullptr, name);
 			core_assert(glGetUniformBlockIndex != nullptr);
 			location = glGetUniformBlockIndex(program, name);
+			if (location < 0) {
+				Log::debug("Could not get uniform block location for %s is %i (shader %s)", name, location, shaderNameC);
+				continue;
+			}
+			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 		} else {
 			GLint size = 0;
 			GLenum type = 0;
@@ -326,10 +331,11 @@ int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& sha
 			glGetActiveUniform(program, i, uniformNameSize, nullptr, &size, &type, name);
 			core_assert(glGetUniformLocation != nullptr);
 			location = glGetUniformLocation(program, name);
-		}
-		if (location < 0) {
-			Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
-			continue;
+			if (location < 0) {
+				Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
+				continue;
+			}
+			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 		}
 		char* array = SDL_strchr(name, '[');
 		if (array != nullptr) {
@@ -346,7 +352,6 @@ int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& sha
 			uniform.blockBinding = i;
 		}
 		uniformMap.put(core::String(name), uniform);
-		Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 	}
 	return numUniforms;
 }
