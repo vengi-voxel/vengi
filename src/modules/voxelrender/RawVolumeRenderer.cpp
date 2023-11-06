@@ -155,12 +155,12 @@ bool RawVolumeRenderer::init() {
 	}
 
 	if (_voxelShader.getLocationPos() != _voxelNormShader.getLocationPos()) {
-		Log::error("Shader attribute order doesn't match for pos");
+		Log::error("Shader attribute order doesn't match for pos (%i/%i)", _voxelShader.getLocationPos(), _voxelNormShader.getLocationPos());
 		return false;
 	}
 
 	if (_voxelShader.getLocationInfo() != _voxelNormShader.getLocationInfo()) {
-		Log::error("Shader attribute order doesn't match for info");
+		Log::error("Shader attribute order doesn't match for info (%i/%i)", _voxelShader.getLocationInfo(), _voxelNormShader.getLocationInfo());
 		return false;
 	}
 
