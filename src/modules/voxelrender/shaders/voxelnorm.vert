@@ -1,9 +1,9 @@
 // shader for marching cubes
 
 // attributes from the VAOs
-$in vec3 a_pos;
-$in uvec2 a_info;
-$in vec3 a_normal;
+layout (location = 0) $in vec3 a_pos;
+layout (location = 1) $in uvec2 a_info;
+layout (location = 2) $in vec3 a_normal;
 
 #include "_sharedvert.glsl"
 #include "_shared.glsl"
