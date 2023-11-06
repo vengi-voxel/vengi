@@ -14,8 +14,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 extern void clua_assert(lua_State* s, bool pass, const char *msg);
@@ -364,7 +362,14 @@ int clua_vecnegate(lua_State* s) {
 template<class T>
 int clua_vectostring(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
-	lua_pushfstring(s, "%s", glm::to_string(a).c_str());
+	core::String str;
+	for (int i = 0; i < T::length(); ++i) {
+		if (i != 0) {
+			str.append(":");
+		}
+		str.append(core::string::toString(a[i]));
+	}
+	lua_pushfstring(s, "%s", str.c_str());
 	return 1;
 }
 
