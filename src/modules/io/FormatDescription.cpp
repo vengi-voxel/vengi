@@ -12,7 +12,8 @@ namespace io {
 
 namespace format {
 
-const FormatDescription* images() {
+const FormatDescription *images() {
+	// clang-format: off
 	static FormatDescription desc[] = {
 		{"Portable Network Graphics", {"png"}, nullptr, 0u},
 		{"JPEG", {"jpeg", "jpg"}, nullptr, 0u},
@@ -28,38 +29,45 @@ const FormatDescription* images() {
 		{"Portable Anymap", {"pnm"}, nullptr, 0u},
 		{"", {}, nullptr, 0u}
 	};
+	// clang-format: on
 	return desc;
 }
 
-const FormatDescription* fonts() {
+const FormatDescription *fonts() {
+	// clang-format: off
 	static FormatDescription desc[] = {
 		{"TrueType Font", {"ttf"}, nullptr, 0u},
 		{"", {}, nullptr, 0u}
 	};
+	// clang-format: on
 	return desc;
 }
 
-const FormatDescription* palettes() {
+const FormatDescription *palettes() {
+	// clang-format: off
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
 		{"Qubicle Palette", {"qsm"}, nullptr, 0u},
 		{"RGB Palette", {"pal"}, nullptr, 0u},
 		{"CSV Palette", {"csv"}, nullptr, 0u},
-		{"Portable Network Graphics", {"png"}, nullptr, 0u},
+		{"Portable Network Graphics", {"png"}, [](uint32_t magic) { return magic == FourCC('\x89', 'P', 'N', 'G'); }, 0u},
 		{"", {}, nullptr, 0u}
 	};
+	// clang-format: on
 	return desc;
 }
 
-const FormatDescription* lua() {
+const FormatDescription *lua() {
+	// clang-format: off
 	static FormatDescription desc[] = {
 		{"LUA script", {"lua"}, nullptr, 0},
 		{"", {}, nullptr, 0u}
 	};
+	// clang-format: on
 	return desc;
 }
 
-}
+} // namespace format
 
 core::String FormatDescription::mainExtension(bool includeDot) const {
 	if (exts.empty()) {
