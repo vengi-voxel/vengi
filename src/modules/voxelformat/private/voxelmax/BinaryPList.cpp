@@ -450,21 +450,8 @@ BinaryPList BinaryPList::readReal(io::SeekableReadStream &stream, BPListFormats 
 BinaryPList BinaryPList::readUTF16Str(io::SeekableReadStream &stream, BPListFormats size) {
 	const uint32_t length = readLength(stream, size);
 	Log::debug("BPLIST: Read utf16 string of length %u", length);
-	core::DynamicArray<uint16_t> utf16str;
-	utf16str.reserve(length);
-	for (uint32_t i = 0; i < length; ++i) {
-		uint16_t c;
-		stream.readUInt16BE(c);
-		utf16str.push_back(c);
-	}
-	core::DynamicArray<uint8_t> utf8str;
-	utf8str.resize((size_t)length * 4);
-	const int len = core::utf8::toUtf8(utf16str.data(), length, (char *)utf8str.data(), utf8str.size());
-	if (len == -1) {
-		Log::error("Failed to convert string to utf8");
-		return BinaryPList{};
-	}
-	core::String str((const char *)utf8str.data(), len);
+	core::String str;
+	stream.readUTF16BE(length, str);
 	Log::debug("Read string %s", str.c_str());
 	return BinaryPList{core::move(str)};
 }

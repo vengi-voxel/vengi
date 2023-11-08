@@ -5,6 +5,8 @@
 #include "Stream.h"
 #include "core/String.h"
 #include "core/Assert.h"
+#include "core/UTF8.h"
+#include "core/collection/DynamicArray.h"
 #include <SDL_endian.h>
 #include <SDL_stdinc.h>
 #include <fcntl.h>
@@ -391,6 +393,28 @@ bool ReadStream::readPascalStringUInt32BE(core::String &str) {
 		return false;
 	}
 	return readString((int)length, str, false);
+}
+
+bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
+	str.clear();
+	core::DynamicArray<uint16_t> utf16str;
+	utf16str.reserve(characters);
+	for (uint32_t i = 0; i < characters; ++i) {
+		uint16_t c;
+		if (!readUInt16BE(c)) {
+			return false;
+		}
+		utf16str.push_back(c);
+	}
+
+	core::DynamicArray<uint8_t> utf8str;
+	utf8str.resize((size_t)characters * 4);
+	const int len = core::utf8::toUtf8(utf16str.data(), characters, (char *)utf8str.data(), utf8str.size());
+	if (len == -1) {
+		return false;
+	}
+	str = core::String((const char *)utf8str.data(), len);
+	return true;
 }
 
 int ReadStream::readUInt8(uint8_t &val) {

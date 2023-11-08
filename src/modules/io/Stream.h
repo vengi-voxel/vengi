@@ -148,6 +148,8 @@ public:
 	bool readPascalStringUInt16BE(core::String &str);
 	bool readPascalStringUInt32LE(core::String &str);
 	bool readPascalStringUInt32BE(core::String &str);
+
+	bool readUTF16BE(uint16_t characters, core::String &str);
 };
 
 /**
