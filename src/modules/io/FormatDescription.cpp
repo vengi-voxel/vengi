@@ -81,7 +81,7 @@ core::String FormatDescription::mainExtension(bool includeDot) const {
 
 bool FormatDescription::matchesExtension(const core::String &fileExt) const {
 	const core::String &lowerExt = fileExt.toLower();
-	for (const core::String& ext : exts) {
+	for (const core::String &ext : exts) {
 		if (lowerExt == ext) {
 			return true;
 		}
@@ -104,7 +104,6 @@ core::String FormatDescription::wildCard() const {
 	return pattern;
 }
 
-
 void FileDescription::set(const core::String &s, const io::FormatDescription *f) {
 	if (f != nullptr) {
 		desc = *f;
@@ -119,8 +118,8 @@ void FileDescription::clear() {
 	desc = {};
 }
 
-bool isA(const core::String& file, const io::FormatDescription *desc) {
-	const core::String& ext = core::string::extractExtension(file);
+bool isA(const core::String &file, const io::FormatDescription *desc) {
+	const core::String &ext = core::string::extractExtension(file);
 	for (; desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext)) {
 			return true;
@@ -129,7 +128,7 @@ bool isA(const core::String& file, const io::FormatDescription *desc) {
 	return false;
 }
 
-bool isImage(const core::String& file) {
+bool isImage(const core::String &file) {
 	return isA(file, io::format::images());
 }
 
