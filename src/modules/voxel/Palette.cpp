@@ -728,7 +728,7 @@ bool Palette::loadGimpPalette(const char *filename) {
 			continue;
 		}
 		if (_colorCount >= PaletteMaxColors) {
-			Log::warn("Not all _colors were loaded");
+			Log::warn("Not all colors were loaded");
 			break;
 		}
 		_colors[_colorCount++] = core::RGBA(r, g, b);
