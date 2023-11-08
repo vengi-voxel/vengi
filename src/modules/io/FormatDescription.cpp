@@ -49,6 +49,7 @@ const FormatDescription *palettes() {
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
 		{"Qubicle Palette", {"qsm"}, nullptr, 0u},
+		{"JASC Palette", {"pal"}, [](uint32_t magic) { return magic == FourCC('J', 'A', 'S', 'C'); }, 0u},
 		{"RGB Palette", {"pal"}, nullptr, 0u},
 		{"CSV Palette", {"csv"}, nullptr, 0u},
 		{"Portable Network Graphics", {"png"}, [](uint32_t magic) { return magic == FourCC('\x89', 'P', 'N', 'G'); }, 0u},

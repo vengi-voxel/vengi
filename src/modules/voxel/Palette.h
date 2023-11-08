@@ -36,7 +36,7 @@ private:
 	int _colorCount = 0;
 	PaletteIndicesArray _indices;
 
-	bool downloadLospec(const core::String &lospecId, const core::String &gimpPalette) const;
+	bool loadLospec(const core::String &lospecId, const core::String &gimpPalette);
 public:
 	Palette();
 
@@ -113,14 +113,6 @@ public:
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
 
-	bool loadGimpPalette(const char *filename);
-	bool loadRGBPalette(const char *filename);
-	bool loadQubiclePalette(const char *filename);
-	bool loadCSVPalette(const char *filename);
-
-	bool saveGimpPalette(const char *filename, const char *name = "Noname") const;
-	bool saveRGBPalette(const char *filename) const;
-	bool saveCSVPalette(const char *filename) const;
 	bool saveGlow(const char *name = nullptr) const;
 
 	void changeIntensity(float scale);

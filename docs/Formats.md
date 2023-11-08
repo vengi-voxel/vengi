@@ -53,13 +53,14 @@
 
 ## Palettes
 
-| Name                        | Extension | Loading | Saving |
-| :-------------------------- | --------- | ------- | ------ |
-| Portable Network Graphics   | png       | X       | X      |
-| Gimp Palette                | gpl       | X       | X      |
-| Qubicle Palette             | qsm       | X       |        |
-| RGB Palette                 | pal       | X       | X      |
-| CSV Palette                 | csv       | X       | X      |
+| Name                         | Extension | Loading | Saving |
+| :--------------------------- | --------- | ------- | ------ |
+| Portable Network Graphics    | png       | X       | X      |
+| Gimp Palette                 | gpl       | X       | X      |
+| Qubicle Palette              | qsm       | X       |        |
+| Paintshop Pro Palette (JASC) | pal       | X       | X      |
+| RGB Palette                  | pal       | X       | X      |
+| CSV Palette                  | csv       | X       | X      |
 
 ## Images/textures
 

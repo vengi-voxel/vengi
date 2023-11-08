@@ -31,8 +31,35 @@ TEST_F(PaletteTest, testGimpPalette) {
 	Palette pal;
 	pal.nippon();
 	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.saveGimpPalette("test.gpl", "test"));
+	ASSERT_TRUE(pal.save("test.gpl"));
 	EXPECT_TRUE(pal.load("test.gpl"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+}
+
+TEST_F(PaletteTest, testPNGPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.png"));
+	EXPECT_TRUE(pal.load("test.png"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+}
+
+TEST_F(PaletteTest, testCSVPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.csv"));
+	EXPECT_TRUE(pal.load("test.csv"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+}
+
+TEST_F(PaletteTest, testRGBPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.pal"));
+	EXPECT_TRUE(pal.load("test.pal"));
 	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
@@ -43,24 +70,10 @@ TEST_F(PaletteTest, testReduce) {
 	EXPECT_LE(pal.colorCount(), 16);
 }
 
-TEST_F(PaletteTest, testSavePngPalette) {
-	Palette pal;
-	pal.nippon();
-	ASSERT_TRUE(pal.save());
-	_testApp->filesystem()->exists("nippon.png");
-}
-
 TEST_F(PaletteTest, testSaveBuiltInPalette) {
 	Palette pal;
 	pal.load(pal.getDefaultPaletteName());
 	EXPECT_EQ("nippon", pal.name());
-}
-
-TEST_F(PaletteTest, testSaveGimpPalette) {
-	Palette pal;
-	pal.nippon();
-	ASSERT_TRUE(pal.save("nippon.gpl"));
-	_testApp->filesystem()->exists("nippon.gpl");
 }
 
 TEST_F(PaletteTest, testLospec) {
@@ -106,15 +119,6 @@ TEST_F(PaletteTest, testGetClosestMatch) {
 		const int match = pal.getClosestMatch(pal.color(i));
 		EXPECT_EQ(i, match);
 	}
-}
-
-TEST_F(PaletteTest, testRGBPalette) {
-	Palette pal;
-	pal.nippon();
-	const int cnt = pal.colorCount();
-	ASSERT_TRUE(pal.save("test.pal"));
-	EXPECT_TRUE(pal.load("test.pal"));
-	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
 TEST_F(PaletteTest, testAddColorsNoDup) {

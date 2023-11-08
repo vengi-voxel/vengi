@@ -3,6 +3,15 @@ set(SRCS
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
+
+	private/paletteformat/PaletteFormat.cpp private/paletteformat/PaletteFormat.h
+	private/paletteformat/CSVPalette.cpp private/paletteformat/CSVPalette.h
+	private/paletteformat/GimpPalette.cpp private/paletteformat/GimpPalette.h
+	private/paletteformat/JASCPalette.cpp private/paletteformat/JASCPalette.h
+	private/paletteformat/PNGPalette.cpp private/paletteformat/PNGPalette.h
+	private/paletteformat/QBCLPalette.cpp private/paletteformat/QBCLPalette.h
+	private/paletteformat/RGBPalette.cpp private/paletteformat/RGBPalette.h
+
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
 	Face.h Face.cpp

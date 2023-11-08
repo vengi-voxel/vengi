@@ -23,6 +23,7 @@
 #include "io/Filesystem.h"
 #include "io/MemoryReadStream.h"
 #include "math/Math.h"
+#include "private/paletteformat/PaletteFormat.h"
 
 #include <SDL_endian.h>
 #include <float.h>
@@ -351,41 +352,9 @@ bool Palette::save(const char *name) const {
 		}
 		name = _name.c_str();
 	}
-	Log::info("Save palette to %s", name);
-	const core::String &extension = core::string::extractExtension(name);
-	if (extension == "gpl") {
-		if (!saveGimpPalette(name)) {
-			Log::warn("Failed to write the gimp palette file '%s'", name);
-			return false;
-		}
-		return true;
-	} else if (extension == "pal") {
-		if (!saveRGBPalette(name)) {
-			Log::warn("Failed to write the rgb palette file '%s'", name);
-			return false;
-		}
-		return true;
-	} else if (extension == "csv") {
-		if (!saveCSVPalette(name)) {
-			Log::warn("Failed to write the csv palette file '%s'", name);
-			return false;
-		}
-		return true;
-	}
-	const core::String &pngName = core::string::replaceExtension(name, "png");
-	image::Image img(pngName);
-	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)_colors, lengthof(_colors), 1);
-	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
+	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
 	io::FileStream stream(file);
-	if (!stream.valid()) {
-		return false;
-	}
-	if (!img.writePng(stream)) {
-		Log::warn("Failed to write the palette file '%s'", pngName.c_str());
-		return false;
-	}
-	return true;
+	return voxel::savePalette(*this, name, stream);
 }
 
 bool Palette::saveGlow(const char *name) const {
@@ -456,16 +425,22 @@ bool Palette::load(const image::ImagePtr &img) {
 	return true;
 }
 
-bool Palette::downloadLospec(const core::String &lospecId, const core::String &gimpPalette) const {
+bool Palette::loadLospec(const core::String &lospecId, const core::String &gimpPalette) {
 	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
 	http::Request request(url, http::RequestType::GET);
-	io::FilePtr file = io::filesystem()->open(gimpPalette, io::FileMode::Write);
-	io::FileStream stream(file);
-	if (!request.execute(stream)) {
-		Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
-		return false;
+	{
+		// scoped because we want to flush the stream and close the file before we read from it
+		io::FilePtr fileWrite = io::filesystem()->open(gimpPalette, io::FileMode::Write);
+		io::FileStream streamWrite(fileWrite);
+		if (!request.execute(streamWrite)) {
+			Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
+			return false;
+		}
+		streamWrite.flush();
 	}
-	return true;
+	io::FilePtr fileRead = io::filesystem()->open(gimpPalette, io::FileMode::Read);
+	io::FileStream streamRead(fileRead);
+	return voxel::loadPalette(gimpPalette, streamRead, *this);
 }
 
 bool Palette::load(const char *paletteName) {
@@ -476,11 +451,7 @@ bool Palette::load(const char *paletteName) {
 	if (SDL_strncmp(paletteName, "lospec:", 7) == 0) {
 		const core::String lospecId = paletteName + 7;
 		const core::String gimpPalette = lospecId + ".gpl";
-		if (!downloadLospec(lospecId, gimpPalette)) {
-			return false;
-		}
-
-		return loadGimpPalette(gimpPalette.c_str());
+		return loadLospec(lospecId, gimpPalette);
 	}
 
 	// this is handled in the scene manager is is just ignored here
@@ -503,32 +474,27 @@ bool Palette::load(const char *paletteName) {
 	} else if (SDL_strcmp(paletteName, builtIn[4]) == 0) {
 		return commandAndConquer();
 	}
+	static_assert(lengthof(builtIn) == 5, "Unexpected amount of built-in palettes");
 
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	io::FilePtr paletteFile = filesystem->open(paletteName);
 	if (!paletteFile->validHandle()) {
 		paletteFile = filesystem->open(core::string::format("palette-%s.png", paletteName));
+		if (!paletteFile->validHandle()) {
+			Log::error("Failed to load palette file %s", paletteName);
+			return false;
+		}
 	}
-	if (!paletteFile->validHandle()) {
-		Log::error("Failed to load palette file %s", paletteName);
-		return false;
+	io::FileStream stream(paletteFile);
+	if (!voxel::loadPalette(paletteName, stream, *this)) {
+		const image::ImagePtr &img = image::loadImage(paletteFile);
+		if (!img->isLoaded()) {
+			Log::error("Failed to load image %s", paletteFile->name().c_str());
+			return false;
+		}
+		return load(img);
 	}
-	const core::String &extension = paletteFile->extension();
-	if (extension == "gpl") {
-		return loadGimpPalette(paletteName);
-	} else if (extension == "qsm") {
-		return loadQubiclePalette(paletteName);
-	} else if (extension == "csv") {
-		return loadCSVPalette(paletteName);
-	} else if (extension == "pal") {
-		return loadRGBPalette(paletteName);
-	}
-	const image::ImagePtr &img = image::loadImage(paletteFile);
-	if (!img->isLoaded()) {
-		Log::error("Failed to load image %s", paletteFile->name().c_str());
-		return false;
-	}
-	return load(img);
+	return true;
 }
 
 bool Palette::isBuiltIn() const {
@@ -538,224 +504,6 @@ bool Palette::isBuiltIn() const {
 		}
 	}
 	return false;
-}
-
-bool Palette::loadRGBPalette(const char *filename) {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr paletteFile = filesystem->open(filename);
-	if (!paletteFile->validHandle() || paletteFile->length() != 768) {
-		Log::error("Failed to load rgb palette file %s - file length: %i", filename, (int)paletteFile->length());
-		return false;
-	}
-	io::FileStream stream(paletteFile);
-	_colorCount = PaletteMaxColors;
-	_name = paletteFile->name();
-	for (int i = 0; i < _colorCount; ++i) {
-		if (stream.readUInt8(_colors[i].r) == -1) {
-			Log::error("Failed to read color %i", i);
-			return false;
-		}
-		if (stream.readUInt8(_colors[i].g) == -1) {
-			Log::error("Failed to read color %i", i);
-			return false;
-		}
-		if (stream.readUInt8(_colors[i].b) == -1) {
-			Log::error("Failed to read color %i", i);
-			return false;
-		}
-		_colors[i].a = 255;
-	}
-	markDirty();
-	return true;
-}
-
-bool Palette::saveCSVPalette(const char *filename) const {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
-	io::FileStream stream(paletteFile);
-	if (!stream.valid()) {
-		Log::error("Failed to open file %s for saving the rgb csv palette", filename);
-		return false;
-	}
-	for (int i = 0; i < _colorCount; ++i) {
-		if (!stream.writeStringFormat(false, "%i, %i, %i, ", _colors[i].r, _colors[i].g, _colors[i].b)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-bool Palette::saveRGBPalette(const char *filename) const {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
-	if (!paletteFile->validHandle()) {
-		Log::error("Failed to open file %s for saving the rgb palette", filename);
-		return false;
-	}
-	io::FileStream stream(paletteFile);
-	for (int i = 0; i < _colorCount; ++i) {
-		stream.writeUInt8(_colors[i].r);
-		stream.writeUInt8(_colors[i].g);
-		stream.writeUInt8(_colors[i].b);
-	}
-	return true;
-}
-
-bool Palette::loadCSVPalette(const char *filename) {
-	const core::String &content = io::filesystem()->load("%s", filename);
-	if (content.empty()) {
-		return false;
-	}
-
-	io::MemoryReadStream stream(content.c_str(), content.size());
-	char line[2048];
-	_colorCount = 0;
-	_name = filename;
-
-	while (stream.readLine(sizeof(line), line)) {
-		int r, g, b;
-		if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
-			Log::error("Failed to parse line '%s'", line);
-			continue;
-		}
-		if (_colorCount >= PaletteMaxColors) {
-			Log::warn("Not all _colors were loaded");
-			break;
-		}
-		_colors[_colorCount++] = core::RGBA(r, g, b);
-	}
-	markDirty();
-	return _colorCount > 0;
-}
-
-bool Palette::loadQubiclePalette(const char *filename) {
-	io::FileStream stream(io::filesystem()->open(filename));
-	if (!stream.valid()) {
-		Log::error("Failed to load qubicle palette file %s", filename);
-		return false;
-	}
-	_name = filename;
-
-	core::String name;
-	stream.readPascalStringUInt8(name);
-	core::String version;
-	stream.readPascalStringUInt8(version);
-
-	uint8_t unknown1;
-	stream.readUInt8(unknown1);
-	uint8_t unknown2;
-	stream.readUInt8(unknown2);
-	uint8_t unknown3;
-	stream.readUInt8(unknown3);
-	uint8_t unknown4;
-	stream.readUInt8(unknown4);
-	uint8_t colorformat;
-	stream.readUInt8(colorformat);
-	uint8_t unknown6;
-	stream.readUInt8(unknown6);
-	uint8_t unknown7;
-	stream.readUInt8(unknown7);
-
-	struct entry {
-		core::RGBA palColor = 0;
-		bool valid = false;
-		core::RGBA color1 = 0;
-		core::RGBA color2 = 0;
-	};
-
-	_colorCount = 0;
-	for (int i = 0; i < PaletteMaxColors; ++i) {
-		entry e;
-		stream.readUInt8(e.palColor.a);
-		stream.readUInt8(e.palColor.r);
-		stream.readUInt8(e.palColor.g);
-		stream.readUInt8(e.palColor.b);
-
-		e.valid = stream.readBool();
-		stream.readUInt32(e.color1.rgba);
-		stream.readUInt32(e.color2.rgba);
-		if (!e.valid) {
-			continue;
-		}
-
-		// ignore alpha here
-		_colors[_colorCount++] = core::RGBA(e.palColor.r, e.palColor.g, e.palColor.b);
-	}
-	markDirty();
-	return _colorCount > 0;
-}
-
-bool Palette::loadGimpPalette(const char *filename) {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr paletteFile = filesystem->open(filename);
-	if (!paletteFile->validHandle()) {
-		Log::error("Failed to load gimp palette file %s", filename);
-		return false;
-	}
-	Log::debug("Load gimp palette %s", filename);
-	const core::String &gpl = paletteFile->load();
-	io::MemoryReadStream stream(gpl.c_str(), gpl.size());
-	char line[2048];
-	_colorCount = 0;
-	_name = paletteFile->name();
-	while (stream.readLine(sizeof(line), line)) {
-		if (strncmp("#Palette Name", line, 13) == 0) {
-			// _name = line + 13;
-			// if (_name[0] == ':') {
-			// 	_name = _name.substr(1);
-			// }
-			// _name = _name.trim();
-			Log::debug("found name %s", _name.c_str());
-			continue;
-		}
-		if (strncmp("Name", line, 4) == 0) {
-			// _name = line + 4;
-			// if (_name[0] == ':') {
-			// 	_name = _name.substr(1);
-			// }
-			// _name = _name.trim();
-			Log::debug("found name %s", _name.c_str());
-			continue;
-		}
-		if (line[0] == '#') {
-			Log::debug("skip comment line: %s", line);
-			continue;
-		}
-		if (strcmp("GIMP Palette", line) == 0) {
-			continue;
-		}
-
-		int r, g, b;
-		if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
-			Log::error("Failed to parse line '%s'", line);
-			continue;
-		}
-		if (_colorCount >= PaletteMaxColors) {
-			Log::warn("Not all colors were loaded");
-			break;
-		}
-		_colors[_colorCount++] = core::RGBA(r, g, b);
-	}
-	markDirty();
-	return _colorCount > 0;
-}
-
-bool Palette::saveGimpPalette(const char *filename, const char *name) const {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr paletteFile = filesystem->open(filename, io::FileMode::SysWrite);
-	if (!paletteFile->validHandle()) {
-		Log::error("Failed to open file %s for saving the gimp palette", filename);
-		return false;
-	}
-	io::FileStream stream(paletteFile);
-	stream.writeString("GIMP Palette\n", false);
-	stream.writeStringFormat(false, "Name: %s\n", name);
-	stream.writeStringFormat(false, "#Palette Name: %s\n", name);
-	stream.writeString("# Generated by vengi " PROJECT_VERSION " github.com/mgerhardy/vengi\n", false);
-	for (int i = 0; i < _colorCount; ++i) {
-		stream.writeStringFormat(false, "%3i %3i %3i\tcolor index %i\n", _colors[i].r, _colors[i].g, _colors[i].b, i);
-	}
-	return true;
 }
 
 bool Palette::minecraft() {
