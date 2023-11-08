@@ -44,6 +44,21 @@ TEST_F(FileStreamTest, testFileStreamReadPastEndOfFile) {
 	EXPECT_EQ(-1, stream.readInt8(val));
 }
 
+TEST_F(FileStreamTest, testFileStreamReadLine) {
+	const FilePtr &file = _fs.open("iotest.txt");
+	FileStream stream(file);
+	core::String line;
+	EXPECT_TRUE(stream.readLine(line));
+	EXPECT_EQ("WindowInfo", line);
+	EXPECT_TRUE(stream.readLine(line));
+	EXPECT_EQ("\ttitle Camera mode", line);
+	for (int i = 0; i < 15; ++i) {
+		EXPECT_TRUE(stream.readLine(line));
+	}
+	EXPECT_EQ("\t\t\t\tid 2", line);
+	EXPECT_FALSE(stream.readLine(line));
+}
+
 TEST_F(FileStreamTest, testFileStreamRead) {
 	const FilePtr &file = _fs.open("iotest.txt");
 	ASSERT_TRUE(file->exists());

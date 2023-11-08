@@ -65,14 +65,16 @@ int FileStream::read(void *dataPtr, size_t dataSize) {
 	}
 	uint8_t *b = (uint8_t*)dataPtr;
 	size_t completeBytesRead = 0;
-	size_t bytesRead = 1;
-	while (completeBytesRead < dataSize && bytesRead != 0) {
-		bytesRead = SDL_RWread(_rwops, b, 1, (dataSize - completeBytesRead));
+	while (completeBytesRead < dataSize) {
+		size_t bytesRead = SDL_RWread(_rwops, b, 1, (dataSize - completeBytesRead));
 		b += bytesRead;
 		completeBytesRead += bytesRead;
+		if (bytesRead == 0) {
+			break;
+		}
 	}
 	_pos = SDL_RWtell(_rwops);
-	if (completeBytesRead != dataSize) {
+	if (completeBytesRead == 0) {
 		return -1;
 	}
 	return (int)completeBytesRead;
