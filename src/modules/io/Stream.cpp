@@ -610,6 +610,10 @@ bool SeekableReadStream::readLine(core::String &str) {
 }
 
 bool SeekableReadStream::readLine(int length, char *strbuff) {
+	const int64_t n = remaining();
+	if (n == 0) {
+		return false;
+	}
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
 		if (readUInt8(chr) != 0) {
