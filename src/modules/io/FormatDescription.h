@@ -108,6 +108,8 @@ const FormatDescription* fonts();
 const FormatDescription *lua();
 const FormatDescription* palettes();
 
+FormatDescription jascPalette();
+
 } // namespace format
 
 } // namespace io

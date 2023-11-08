@@ -9,6 +9,7 @@
 
 namespace voxel {
 
+// TODO: http://www.selapa.net/swatches/colors/fileformats.php
 class PaletteFormat {
 public:
 	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) = 0;

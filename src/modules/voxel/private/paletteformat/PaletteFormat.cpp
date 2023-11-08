@@ -30,7 +30,7 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 		} else if (ext == "png") {
 			return core::make_shared<PNGPalette>();
 		} else if (ext == "pal") {
-			if (magic == FourCC('J', 'A', 'S', 'C')) {
+			if (desc.name == io::format::jascPalette().name || magic == FourCC('J', 'A', 'S', 'C')) {
 				return core::make_shared<JASCPalette>();
 			}
 			return core::make_shared<RGBPalette>();
@@ -67,14 +67,11 @@ bool savePalette(const voxel::Palette &palette, const core::String &filename, io
 	Log::info("Save palette to %s", filename.c_str());
 	const core::String &extension = core::string::extractExtension(filename);
 	const core::String &ext = core::string::extractExtension(filename);
-	if (desc) {
-		if (!desc->matchesExtension(ext)) {
-			desc = nullptr;
-		}
+	if (desc && !desc->matchesExtension(ext)) {
+		desc = nullptr;
 	}
 	if (desc != nullptr) {
-		core::SharedPtr<PaletteFormat> f = getFormat(*desc, 0u);
-		if (f) {
+		if (core::SharedPtr<PaletteFormat> f = getFormat(*desc, 0u)) {
 			if (f->save(palette, filename, stream)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
@@ -84,16 +81,16 @@ bool savePalette(const voxel::Palette &palette, const core::String &filename, io
 		}
 	}
 	for (desc = io::format::palettes(); desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
-			core::SharedPtr<PaletteFormat> f = getFormat(*desc, 0u);
-			if (f) {
-				if (f->save(palette, filename, stream)) {
-					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
-					return true;
-				}
-				Log::error("Failed to save %s file", desc->name.c_str());
-				return false;
+		if (!desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
+			continue;
+		}
+		if (core::SharedPtr<PaletteFormat> f = getFormat(*desc, 0u)) {
+			if (f->save(palette, filename, stream)) {
+				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+				return true;
 			}
+			Log::error("Failed to save %s file", desc->name.c_str());
+			return false;
 		}
 	}
 	return false;

@@ -44,12 +44,16 @@ const FormatDescription *fonts() {
 	return desc;
 }
 
+FormatDescription jascPalette() {
+	return {"JASC Palette", {"pal"}, [](uint32_t magic) { return magic == FourCC('J', 'A', 'S', 'C'); }, 0u};
+}
+
 const FormatDescription *palettes() {
 	// clang-format: off
 	static FormatDescription desc[] = {
 		{"Gimp Palette", {"gpl"}, nullptr, 0u},
 		{"Qubicle Palette", {"qsm"}, nullptr, 0u},
-		{"JASC Palette", {"pal"}, [](uint32_t magic) { return magic == FourCC('J', 'A', 'S', 'C'); }, 0u},
+		jascPalette(),
 		{"RGB Palette", {"pal"}, nullptr, 0u},
 		{"CSV Palette", {"csv"}, nullptr, 0u},
 		{"Portable Network Graphics", {"png"}, [](uint32_t magic) { return magic == FourCC('\x89', 'P', 'N', 'G'); }, 0u},
