@@ -89,6 +89,10 @@ public:
 		return _name;
 	}
 
+	void setName(const core::String &name) {
+		_name = name;
+	}
+
 	inline uint64_t hash() const {
 		return _hash._hash;
 	}

@@ -3,30 +3,30 @@
  */
 
 #include "Palette.h"
-#include "core/Common.h"
-#include "core/StandardLib.h"
 #include "app/App.h"
+#include "core/ArrayLength.h"
 #include "core/Color.h"
+#include "core/Common.h"
 #include "core/Log.h"
+#include "core/RGBA.h"
+#include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include "core/ArrayLength.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
-#include "core/RGBA.h"
 #include "core/collection/Set.h"
+#include "engine-config.h"
 #include "http/Request.h"
-#include <glm/gtx/norm.hpp>
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/MemoryReadStream.h"
 #include "math/Math.h"
-#include "engine-config.h"
 
 #include <SDL_endian.h>
 #include <float.h>
+#include <glm/gtx/norm.hpp>
 
 namespace voxel {
 
@@ -62,7 +62,8 @@ void Palette::exchange(uint8_t idx1, uint8_t idx2) {
 }
 
 void Palette::reduce(uint8_t targetColors) {
-	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	core::Color::ColorReductionType reductionType =
+		core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	PaletteColorArray oldcolors;
 	core_memcpy(oldcolors, _colors, sizeof(PaletteColorArray));
 	_colorCount = core::Color::quantize(_colors, targetColors, oldcolors, _colorCount, reductionType);
@@ -71,7 +72,8 @@ void Palette::reduce(uint8_t targetColors) {
 
 void Palette::quantize(const core::RGBA *inputColors, const size_t inputColorCount) {
 	Log::debug("quantize %i colors", (int)inputColorCount);
-	core::Color::ColorReductionType reductionType = core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
+	core::Color::ColorReductionType reductionType =
+		core::Color::toColorReductionType(core::Var::getSafe(cfg::CoreColorReduction)->strVal().c_str());
 	_colorCount = core::Color::quantize(_colors, lengthof(_colors), inputColors, inputColorCount, reductionType);
 	markDirty();
 }
@@ -481,6 +483,7 @@ bool Palette::load(const char *paletteName) {
 		return loadGimpPalette(gimpPalette.c_str());
 	}
 
+	// this is handled in the scene manager is is just ignored here
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
 		if (_colorCount == 0) {
 			nippon();
@@ -974,22 +977,22 @@ bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palett
 		Log::error("Failed to convert image to palette - scale it down to max 512:512");
 		return false;
 	}
-	core::Set<core::RGBA> colorset((size_t)(imageWidth * imageHeight));
+	core::Set<core::RGBA> colorSet((size_t)(imageWidth * imageHeight));
 	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
-			colorset.insert(data);
+			colorSet.insert(data);
 		}
 	}
 
-	core::Buffer<core::RGBA, 1024> _colors;
-	_colors.reserve(colorset.size());
-	for (const auto &e : colorset) {
-		_colors.push_back(e->first);
+	core::Buffer<core::RGBA, 1024> colors;
+	colors.reserve(colorSet.size());
+	for (const auto &e : colorSet) {
+		colors.push_back(e->first);
 	}
-	palette._name = image->name();
-	palette.quantize(_colors.data(), _colors.size());
+	palette.setName(image->name());
+	palette.quantize(colors.data(), colors.size());
 	palette.markDirty();
 	return true;
 }
