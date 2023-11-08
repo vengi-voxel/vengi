@@ -270,6 +270,8 @@ public:
 	 * @return @c false if not everything was written
 	 */
 	bool writeString(const core::String &string, bool terminate = true);
+	bool writeLine(const core::String &string, const char *lineEnding = "\n");
+
 	/**
 	 * @brief Allows you to write values by specifying a format string and the values to add to the stream
 	 * @code

@@ -112,6 +112,13 @@ bool WriteStream::writeString(const core::String &string, bool terminate) {
 	return writeUInt8(uint8_t('\0'));
 }
 
+bool WriteStream::writeLine(const core::String &string, const char *lineEnding) {
+	if (!writeString(string, false)) {
+		return false;
+	}
+	return writeString(lineEnding, false);
+}
+
 bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 	uint16_t length = str.size();
 	if (!writeUInt16(length)) {
