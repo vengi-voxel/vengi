@@ -7,6 +7,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
+#include "io/Stream.h"
 #include <stdint.h>
 
 namespace io {
@@ -91,6 +92,9 @@ core::String convertToAllFilePattern(const FormatDescription *desc);
 core::String convertToFilePattern(const FormatDescription &desc);
 bool isImage(const core::String &file);
 bool isA(const core::String& file, const FormatDescription *desc);
+uint32_t loadMagic(io::SeekableReadStream &stream);
+const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic, const io::FormatDescription *descriptions);
+const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic, const io::FormatDescription *descriptions);
 
 /**
  * @brief Add additional filter groups like "All Minecraft", "All Qubicle" filters

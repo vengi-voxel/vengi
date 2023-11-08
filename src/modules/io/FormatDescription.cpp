@@ -5,6 +5,7 @@
 #include "FormatDescription.h"
 #include "core/Algorithm.h"
 #include "core/FourCC.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 
@@ -209,4 +210,53 @@ core::String convertToAllFilePattern(const FormatDescription *desc) {
 	return j > 1 ? pattern : "";
 }
 
+uint32_t loadMagic(io::SeekableReadStream &stream) {
+	uint32_t magicWord = 0u;
+	stream.peekUInt32(magicWord);
+	return magicWord;
 }
+
+const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic,
+											const io::FormatDescription *descriptions) {
+	const core::String ext = core::string::extractExtension(filename);
+	const core::String extFull = core::string::extractAllExtensions(filename);
+	for (const io::FormatDescription *desc = descriptions; desc->valid(); ++desc) {
+		if (!desc->matchesExtension(ext) && !desc->matchesExtension(extFull)) {
+			continue;
+		}
+		if (magic > 0 && desc->isA && !desc->isA(magic)) {
+			Log::debug("File doesn't have the expected magic number");
+			continue;
+		}
+		return desc;
+	}
+	if (magic > 0) {
+		// search again - but this time only the magic bytes...
+		for (const io::FormatDescription *desc = descriptions; desc->valid(); ++desc) {
+			if (!desc->isA) {
+				continue;
+			}
+			if (!desc->isA(magic)) {
+				continue;
+			}
+			return desc;
+		}
+	}
+	if (extFull.empty()) {
+		Log::warn("Could not identify the format");
+	} else {
+		Log::warn("Could not find a supported format description for %s", extFull.c_str());
+	}
+	return nullptr;
+}
+
+const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic,
+											const io::FormatDescription *descriptions) {
+	if (fileDesc.desc.valid()) {
+		return &fileDesc.desc;
+	}
+	const core::String filename = fileDesc.name;
+	return io::getDescription(filename, magic, descriptions);
+}
+
+} // namespace io

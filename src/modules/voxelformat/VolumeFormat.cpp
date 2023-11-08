@@ -213,148 +213,97 @@ const io::FormatDescription *voxelSave() {
 	return desc;
 }
 
-static uint32_t loadMagic(io::SeekableReadStream &stream) {
-	uint32_t magicWord = 0u;
-	stream.peekUInt32(magicWord);
-	return magicWord;
-}
-
-static const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic) {
-	const core::String ext = core::string::extractExtension(filename);
-	const core::String extFull = core::string::extractAllExtensions(filename);
-	for (const io::FormatDescription *desc = voxelLoad(); desc->valid(); ++desc) {
-		if (!desc->matchesExtension(ext) && !desc->matchesExtension(extFull)) {
-			continue;
-		}
-		if (magic > 0 && desc->isA && !desc->isA(magic)) {
-			Log::debug("File doesn't have the expected magic number");
-			continue;
-		}
-		return desc;
-	}
-	if (magic > 0) {
-		// search again - but this time only the magic bytes...
-		for (const io::FormatDescription *desc = voxelLoad(); desc->valid(); ++desc) {
-			if (!desc->isA) {
-				continue;
-			}
-			if (!desc->isA(magic)) {
-				continue;
-			}
-			return desc;
-		}
-	}
-	if (extFull.empty()) {
-		Log::warn("Could not identify the format");
-	} else {
-		Log::warn("Could not find a supported format description for %s", extFull.c_str());
-	}
-	return nullptr;
-}
-
-static const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic) {
-	if (fileDesc.desc.valid()) {
-		return &fileDesc.desc;
-	}
-	const core::String filename = fileDesc.name;
-	return getDescription(filename, magic);
-}
-
-static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic, bool load) {
-	core::SharedPtr<Format> format;
+static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic) {
 	for (const core::String &ext : desc.exts) {
 		// you only have to check one of the supported extensions here
 		if (ext == "vengi") {
-			format = core::make_shared<VENGIFormat>();
+			return core::make_shared<VENGIFormat>();
 		} else if (ext == "qb") {
-			format = core::make_shared<QBFormat>();
+			return core::make_shared<QBFormat>();
 		} else if (ext == "vox" && desc.name == magicaVoxel().name) {
-			format = core::make_shared<VoxFormat>();
+			return core::make_shared<VoxFormat>();
 		} else if (ext == "vox") {
-			format = core::make_shared<SLAB6VoxFormat>();
+			return core::make_shared<SLAB6VoxFormat>();
 		} else if (ext == "qbt" || magic == FourCC('Q', 'B', ' ', '2')) {
-			format = core::make_shared<QBTFormat>();
+			return core::make_shared<QBTFormat>();
 		} else if (ext == "kvx") {
-			format = core::make_shared<KVXFormat>();
+			return core::make_shared<KVXFormat>();
 		} else if (ext == "kv6") {
-			format = core::make_shared<KV6Format>();
+			return core::make_shared<KV6Format>();
 		} else if (ext == "csv") {
-			format = core::make_shared<SproxelFormat>();
+			return core::make_shared<SproxelFormat>();
 		} else if (ext == "cub") {
-			format = core::make_shared<CubFormat>();
+			return core::make_shared<CubFormat>();
 		} else if (ext == "gox") {
-			format = core::make_shared<GoxFormat>();
+			return core::make_shared<GoxFormat>();
 		} else if (ext == "scn") {
-			format = core::make_shared<AnimaToonFormat>();
+			return core::make_shared<AnimaToonFormat>();
 		} else if (ext == "mca") {
-			format = core::make_shared<MCRFormat>();
+			return core::make_shared<MCRFormat>();
 		} else if (ext == "mts") {
-			format = core::make_shared<MTSFormat>();
+			return core::make_shared<MTSFormat>();
 		} else if (ext == "dat") {
-			format = core::make_shared<DatFormat>();
+			return core::make_shared<DatFormat>();
 		} else if (ext == "sment") {
-			format = core::make_shared<SMFormat>();
+			return core::make_shared<SMFormat>();
 		} else if (ext == "vxm") {
-			format = core::make_shared<VXMFormat>();
+			return core::make_shared<VXMFormat>();
 		} else if (ext == "vxr") {
-			format = core::make_shared<VXRFormat>();
+			return core::make_shared<VXRFormat>();
 		} else if (ext == "vmax.zip") {
-			format = core::make_shared<VMaxFormat>();
+			return core::make_shared<VMaxFormat>();
 		} else if (ext == "vxc") {
-			format = core::make_shared<VXCFormat>();
+			return core::make_shared<VXCFormat>();
 		} else if (ext == "vxt") {
-			format = core::make_shared<VXTFormat>();
+			return core::make_shared<VXTFormat>();
 		} else if (ext == "vxl" && desc.name == tiberianSun().name) {
-			format = core::make_shared<VXLFormat>();
+			return core::make_shared<VXLFormat>();
 		} else if (ext == "vxl" && desc.name == aceOfSpades().name) {
-			format = core::make_shared<AoSVXLFormat>();
+			return core::make_shared<AoSVXLFormat>();
 		} else if (ext == "csm" || ext == "nvm") {
-			format = core::make_shared<CSMFormat>();
+			return core::make_shared<CSMFormat>();
 		} else if (ext == "binvox") {
-			format = core::make_shared<BinVoxFormat>();
+			return core::make_shared<BinVoxFormat>();
 		} else if (ext == "qef") {
-			format = core::make_shared<QEFFormat>();
+			return core::make_shared<QEFFormat>();
 		} else if (ext == "qbcl") {
-			format = core::make_shared<QBCLFormat>();
+			return core::make_shared<QBCLFormat>();
 		} else if (ext == "obj") {
-			format = core::make_shared<OBJFormat>();
+			return core::make_shared<OBJFormat>();
 		} else if (ext == "stl") {
-			format = core::make_shared<STLFormat>();
+			return core::make_shared<STLFormat>();
 		} else if (ext == "bsp") {
-			format = core::make_shared<QuakeBSPFormat>();
+			return core::make_shared<QuakeBSPFormat>();
 		} else if (ext == "ply") {
-			format = core::make_shared<PLYFormat>();
+			return core::make_shared<PLYFormat>();
 		} else if (ext == "fbx") {
-			format = core::make_shared<FBXFormat>();
+			return core::make_shared<FBXFormat>();
 		} else if (ext == "md2") {
-			format = core::make_shared<MD2Format>();
+			return core::make_shared<MD2Format>();
 		} else if (ext == "schematic") {
-			format = core::make_shared<SchematicFormat>();
+			return core::make_shared<SchematicFormat>();
 		} else if (ext == "vbx") {
-			format = core::make_shared<VBXFormat>();
+			return core::make_shared<VBXFormat>();
 		} else if (ext == "xraw") {
-			format = core::make_shared<XRawFormat>();
+			return core::make_shared<XRawFormat>();
 		} else if (ext == "v3a") {
-			format = core::make_shared<V3AFormat>();
+			return core::make_shared<V3AFormat>();
 		} else if (ext == "pcubes" || ext == "3zh") {
-			format = core::make_shared<CubzhFormat>();
+			return core::make_shared<CubzhFormat>();
 		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
-			format = core::make_shared<GLTFFormat>();
+			return core::make_shared<GLTFFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
 		}
-		if (format) {
-			return format;
-		}
 	}
-	return format;
+	return {};
 }
 
 image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeScreenshot);
 	const uint32_t magic = loadMagic(stream);
 
-	const io::FormatDescription *desc = getDescription(filename, magic);
+	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", filename.c_str());
 		return image::ImagePtr();
@@ -363,7 +312,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 		Log::warn("Format %s doesn't have a screenshot embedded", desc->name.c_str());
 		return image::ImagePtr();
 	}
-	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
+	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
 		stream.seek(0);
 		return f->loadScreenshot(filename, stream, ctx);
@@ -399,7 +348,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 				   const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);
-	const io::FormatDescription *desc = getDescription(filename, magic);
+	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", filename.c_str());
 		return 0;
@@ -408,8 +357,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 		Log::warn("Format %s doesn't have a palette embedded", desc->name.c_str());
 		return 0;
 	}
-	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
-	if (f) {
+	if (const core::SharedPtr<Format> &f = getFormat(*desc, magic)) {
 		stream.seek(0);
 		const size_t n = f->loadPalette(filename, stream, palette, ctx);
 		palette.markDirty();
@@ -423,12 +371,12 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 				scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(stream);
-	const io::FormatDescription *desc = getDescription(fileDesc, magic);
+	const io::FormatDescription *desc = io::getDescription(fileDesc, magic, voxelLoad());
 	if (desc == nullptr) {
 		return false;
 	}
 	const core::String &filename = fileDesc.name;
-	const core::SharedPtr<Format> &f = getFormat(*desc, magic, true);
+	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
 		if (!f->load(filename, stream, newSceneGraph, ctx)) {
 			Log::error("Error while loading %s", filename.c_str());
@@ -491,7 +439,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		}
 	}
 	if (desc != nullptr) {
-		core::SharedPtr<Format> f = getFormat(*desc, 0u, false);
+		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
 			if (f->save(sceneGraph, filename, stream, ctx)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
@@ -503,7 +451,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 	}
 	for (desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
-			core::SharedPtr<Format> f = getFormat(*desc, 0u, false);
+			core::SharedPtr<Format> f = getFormat(*desc, 0u);
 			if (f) {
 				if (f->save(sceneGraph, filename, stream, ctx)) {
 					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
