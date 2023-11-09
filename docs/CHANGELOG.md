@@ -21,6 +21,9 @@ General:
    - Show the full application name as window title
    - Improved esc handling for menus and popups
    - Added support for particube `pcubes` and `3zh` support
+   - Added support for Photoshop `ase` palette
+   - Added support for Paintshop Pro (JASC) `pal` palette
+   - Extended support for the Gimp `gpl` palette format to support the AseSprite alpha channel extension
 
 VoxConvet:
 
