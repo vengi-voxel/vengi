@@ -451,7 +451,10 @@ BinaryPList BinaryPList::readUTF16Str(io::SeekableReadStream &stream, BPListForm
 	const uint32_t length = readLength(stream, size);
 	Log::debug("BPLIST: Read utf16 string of length %u", length);
 	core::String str;
-	stream.readUTF16BE(length, str);
+	if (!stream.readUTF16BE(length, str)) {
+		Log::error("Failed to read or convert string");
+		return BinaryPList{};
+	}
 	Log::debug("Read string %s", str.c_str());
 	return BinaryPList{core::move(str)};
 }
