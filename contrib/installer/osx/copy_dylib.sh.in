@@ -52,6 +52,7 @@ function copydeps {
 				z=0
 			else
 				cp $i $EXEPATH
+				codesign -f -s - ${EXEPATH}/$i
 				chmod 755 $EXEPATH/$BASE
 			fi
 
@@ -72,3 +73,4 @@ function copydeps {
 }
 
 copydeps $EXEPATH/$EXE_NAME
+codesign -f -s - $EXEPATH/$EXE_NAME
