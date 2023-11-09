@@ -3,6 +3,7 @@
  */
 
 #include "PaletteFormat.h"
+#include "ASEPalette.h"
 #include "CSVPalette.h"
 #include "GimpPalette.h"
 #include "JASCPalette.h"
@@ -25,6 +26,8 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 			return core::make_shared<GimpPalette>();
 		} else if (ext == "qsm") {
 			return core::make_shared<QBCLPalette>();
+		} else if (ext == "ase") {
+			return core::make_shared<ASEPalette>();
 		} else if (ext == "csv") {
 			return core::make_shared<CSVPalette>();
 		} else if (ext == "png") {

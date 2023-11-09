@@ -5,6 +5,7 @@ set(SRCS
 	private/MarchingCubesTables.h
 
 	private/paletteformat/PaletteFormat.cpp private/paletteformat/PaletteFormat.h
+	private/paletteformat/ASEPalette.cpp private/paletteformat/ASEPalette.h
 	private/paletteformat/CSVPalette.cpp private/paletteformat/CSVPalette.h
 	private/paletteformat/GimpPalette.cpp private/paletteformat/GimpPalette.h
 	private/paletteformat/JASCPalette.cpp private/paletteformat/JASCPalette.h

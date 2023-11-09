@@ -45,6 +45,15 @@ TEST_F(PaletteTest, testPNGPalette) {
 	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
+TEST_F(PaletteTest, testASEPalette) {
+	Palette pal;
+	pal.nippon();
+	const int cnt = pal.colorCount();
+	ASSERT_TRUE(pal.save("test.ase"));
+	EXPECT_TRUE(pal.load("test.ase"));
+	EXPECT_EQ(pal.colorCount(), cnt);
+}
+
 TEST_F(PaletteTest, testCSVPalette) {
 	Palette pal;
 	pal.nippon();
