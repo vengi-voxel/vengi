@@ -11,7 +11,7 @@ namespace voxel {
 
 bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
 	char line[2048];
-
+	bool alpha = false;
 	int colorCount = 0;
 	while (stream.readLine(sizeof(line), line)) {
 		if (strncmp("#Palette Name", line, 13) == 0) {
@@ -39,9 +39,18 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 		if (strcmp("GIMP Palette", line) == 0) {
 			continue;
 		}
+		// asesprite extension: https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md
+		if (strcmp("Channels: RGBA", line) == 0) {
+			alpha = true;
+		}
 
-		int r, g, b;
-		if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
+		int r, g, b, a = 255;
+		if (alpha) {
+			if (SDL_sscanf(line, "%i %i %i %i", &r, &g, &b, &a) != 4) {
+				Log::error("Failed to parse line '%s'", line);
+				continue;
+			}
+		} else if (SDL_sscanf(line, "%i %i %i", &r, &g, &b) != 3) {
 			Log::error("Failed to parse line '%s'", line);
 			continue;
 		}
@@ -49,7 +58,7 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 			Log::warn("Not all colors were loaded");
 			break;
 		}
-		palette.setColor(colorCount, core::RGBA(r, g, b));
+		palette.setColor(colorCount, core::RGBA(r, g, b, a));
 		++colorCount;
 	}
 	palette.setSize(colorCount);
