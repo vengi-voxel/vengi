@@ -130,11 +130,12 @@ static void GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *
     }
 
     devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
-    if (devices == NULL) {
+    if (!devices) {
         return;
     }
 
-    if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+    device_count = GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST));
+    if (device_count == (UINT)-1) {
         SDL_free(devices);
         return; /* oh well. */
     }
@@ -276,7 +277,7 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
     }
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
-    if (pNewJoystick == NULL) {
+    if (!pNewJoystick) {
         return; /* better luck next time? */
     }
 
@@ -422,7 +423,7 @@ static void UpdateXInputJoystickBatteryInformation(SDL_Joystick *joystick, XINPU
     }
 }
 
-static void UpdateXInputJoystickState_OLD(SDL_Joystick *joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
+static void UpdateXInputJoystickState_OLD(SDL_Joystick *joystick, XINPUT_STATE *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
@@ -448,7 +449,7 @@ static void UpdateXInputJoystickState_OLD(SDL_Joystick *joystick, XINPUT_STATE_E
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
+static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXInputState, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
@@ -512,7 +513,7 @@ Uint32 SDL_XINPUT_JoystickGetCapabilities(SDL_Joystick *joystick)
 void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
     HRESULT result;
-    XINPUT_STATE_EX XInputState;
+    XINPUT_STATE XInputState;
     XINPUT_BATTERY_INFORMATION_EX XBatteryInformation;
 
     if (!XINPUTGETSTATE) {
@@ -551,6 +552,12 @@ void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
 
 void SDL_XINPUT_JoystickQuit(void)
 {
+    int iuserid;
+
+    for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
+        DelXInputDevice(iuserid);
+    }
+
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
     }

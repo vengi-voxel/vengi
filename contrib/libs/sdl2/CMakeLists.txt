@@ -1065,7 +1065,6 @@ if(SDL_LIBC)
       string(REGEX REPLACE "[./]" "_" _HAVE_H ${_UPPER})
       check_include_file("${_HEADER}" ${_HAVE_H})
     endforeach()
-    check_include_file(linux/input.h HAVE_LINUX_INPUT_H)
 
     set(STDC_HEADER_NAMES "stddef.h;stdarg.h;stdlib.h;string.h;stdio.h;wchar.h;float.h")
     check_include_files("${STDC_HEADER_NAMES}" STDC_HEADERS)
@@ -1507,7 +1506,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         #ifndef EVIOCGNAME
         #error EVIOCGNAME() ioctl not available
         #endif
-        int main(int argc, char** argv) { return 0; }" HAVE_INPUT_EVENTS)
+        int main(int argc, char** argv) { return 0; }" HAVE_LINUX_INPUT_H)
 
     if(LINUX)
       check_c_source_compiles("
@@ -1543,11 +1542,11 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           }" HAVE_INPUT_WSCONS)
     endif()
 
-    if(HAVE_INPUT_EVENTS)
+    if(HAVE_LINUX_INPUT_H)
       set(SDL_INPUT_LINUXEV 1)
     endif()
 
-    if(SDL_HAPTIC AND HAVE_INPUT_EVENTS)
+    if(SDL_HAPTIC AND HAVE_LINUX_INPUT_H)
       set(SDL_HAPTIC_LINUX 1)
       file(GLOB HAPTIC_SOURCES ${SDL2_SOURCE_DIR}/src/haptic/linux/*.c)
       list(APPEND SOURCE_FILES ${HAPTIC_SOURCES})
@@ -1633,7 +1632,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_udev.c")
     endif()
 
-    if(HAVE_INPUT_EVENTS)
+    if(HAVE_LINUX_INPUT_H)
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev.c")
       list(APPEND SOURCE_FILES "${SDL2_SOURCE_DIR}/src/core/linux/SDL_evdev_kbd.c")
     endif()
@@ -1825,16 +1824,6 @@ elseif(WINDOWS)
       #include <windows.h>
       #include <xinput.h>
       int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <xinput.h>
-      XINPUT_GAMEPAD_EX x1;
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_GAMEPAD_EX)
-    check_c_source_compiles("
-      #include <windows.h>
-      #include <xinput.h>
-      XINPUT_STATE_EX s1;
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_STATE_EX)
     check_c_source_compiles("
       #define COBJMACROS
       #include <windows.gaming.input.h>
@@ -3108,9 +3097,17 @@ else()
   set(sdl_static_libname "SDL2")
 endif()
 
-set(prefix ${CMAKE_INSTALL_PREFIX})
+# CMAKE_PREFIX_PATH and CMAKE_INSTALL_FULL_BINDIR can be a non-absolute path
+# when a master-project does e.g. `set(CMAKE_INSTALL_PREFIX "libs/SDL2" CACHE PATH "prefix" FORCE)`.
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+endif()
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_FULL_BINDIR}")
+  set(CMAKE_INSTALL_FULL_BINDIR "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_FULL_BINDIR}")
+endif()
 file(RELATIVE_PATH bin_prefix_relpath "${CMAKE_INSTALL_FULL_BINDIR}" "${CMAKE_INSTALL_PREFIX}")
 
+set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
 set(bindir "\${exec_prefix}/${CMAKE_INSTALL_BINDIR}")
@@ -3354,6 +3351,12 @@ if(ANDROID)
 endif()
 
 if(APPLE)
+  cmake_push_check_state(RESET)
+  check_c_compiler_flag(-fobjc-arc COMPILER_SUPPORTS_FOBJC_ARC)
+  cmake_pop_check_state()
+  if(NOT COMPILER_SUPPORTS_FOBJC_ARC)
+    message(FATAL_ERROR "Compiler does not support -fobjc-arc: this is required on Apple platforms")
+  endif()
   target_compile_options(sdl-build-options INTERFACE "-fobjc-arc")
 endif()
 
@@ -3507,6 +3510,9 @@ if(NOT SDL2_DISABLE_INSTALL)
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    if(MSVC)
+      SDL_install_pdb(SDL2 "${CMAKE_INSTALL_BINDIR}")
+    endif()
   endif()
 
   if(NOT WINDOWS_STORE AND NOT SDL2_DISABLE_SDL2MAIN)
@@ -3514,6 +3520,9 @@ if(NOT SDL2_DISABLE_INSTALL)
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    if(MSVC)
+      SDL_install_pdb(SDL2main "${CMAKE_INSTALL_LIBDIR}")
+    endif()
   endif()
 
   if(SDL_STATIC)
@@ -3521,6 +3530,9 @@ if(NOT SDL2_DISABLE_INSTALL)
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    if(MSVC)
+      SDL_install_pdb(SDL2-static "${CMAKE_INSTALL_LIBDIR}")
+    endif()
   endif()
 
   if(SDL_TEST)
@@ -3528,6 +3540,9 @@ if(NOT SDL2_DISABLE_INSTALL)
       LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
       RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    if(MSVC)
+      SDL_install_pdb(SDL2_test "${CMAKE_INSTALL_LIBDIR}")
+    endif()
   endif()
 
   ##### Export files #####

@@ -102,7 +102,7 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != NULL) {
+        if (ret) {
             X11_XFree(ret);
         }
         X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
@@ -224,7 +224,7 @@ static int X11_URIDecode(char *buf, int len)
 {
     int ri, wi, di;
     char decode = '\0';
-    if (buf == NULL || len < 0) {
+    if (!buf || len < 0) {
         errno = EINVAL;
         return -1;
     }
@@ -300,7 +300,7 @@ static char *X11_URIToLocal(char *uri)
     /* got a hostname? */
     if (!local && uri[0] == '/' && uri[2] != '/') {
         char *hostname_end = SDL_strchr(uri + 1, '/');
-        if (hostname_end != NULL) {
+        if (hostname_end) {
             char hostname[257];
             if (gethostname(hostname, 255) == 0) {
                 hostname[256] = '\0';
@@ -756,7 +756,7 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
 {
     int result = X11_XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return, status_in_out);
     if (IsHighLatin1(buffer_return, result)) {
-        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result);
+        char *utf8_text = SDL_iconv_string("UTF-8", "ISO-8859-1", buffer_return, result + 1);
         if (utf8_text) {
             SDL_strlcpy(buffer_return, utf8_text, bytes_buffer);
             SDL_free(utf8_text);
@@ -906,7 +906,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
             }
         }
     }
-    if (data == NULL) {
+    if (!data) {
         /* The window for KeymapNotify, etc events is 0 */
         if (xevent->type == KeymapNotify) {
 #ifdef DEBUG_XEVENTS
@@ -1570,7 +1570,7 @@ static void X11_DispatchEvent(_THIS, XEvent *xevent)
                 char *name = X11_XGetAtomName(display, target);
                 if (name) {
                     char *token = SDL_strtokr((char *)p.data, "\r\n", &saveptr);
-                    while (token != NULL) {
+                    while (token) {
                         if (SDL_strcmp("text/plain", name) == 0) {
                             SDL_SendDropText(data->window, token);
                         } else if (SDL_strcmp("text/uri-list", name) == 0) {

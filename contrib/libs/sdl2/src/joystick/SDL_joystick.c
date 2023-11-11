@@ -265,7 +265,7 @@ static SDL_bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID
 
     if (player_index >= SDL_joystick_player_count) {
         SDL_JoystickID *new_players = (SDL_JoystickID *)SDL_realloc(SDL_joystick_players, (player_index + 1) * sizeof(*SDL_joystick_players));
-        if (new_players == NULL) {
+        if (!new_players) {
             SDL_OutOfMemory();
             return SDL_FALSE;
         }
@@ -406,7 +406,7 @@ const char *SDL_JoystickPathForIndex(int device_index)
     SDL_UnlockJoysticks();
 
     /* FIXME: Really we should reference count this path so it doesn't go away after unlock */
-    if (path == NULL) {
+    if (!path) {
         SDL_Unsupported();
     }
     return path;
@@ -509,7 +509,7 @@ SDL_Joystick *SDL_JoystickOpen(int device_index)
 
     /* Create and initialize the joystick */
     joystick = (SDL_Joystick *)SDL_calloc(sizeof(*joystick), 1);
-    if (joystick == NULL) {
+    if (!joystick) {
         SDL_OutOfMemory();
         SDL_UnlockJoysticks();
         return NULL;
@@ -1474,7 +1474,7 @@ static void UpdateEventsForDeviceRemoval(int device_index, Uint32 type)
     }
 
     events = SDL_small_alloc(SDL_Event, num_events, &isstack);
-    if (events == NULL) {
+    if (!events) {
         return;
     }
 
@@ -1962,11 +1962,13 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
     } replacements[] = {
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
+        { "Guangzhou Chicken Run Network Technology Co., Ltd.", "GameSir" },
+        { "HORI CO.,LTD", "HORI" },
+        { "HORI CO.,LTD.", "HORI" },
+        { "Mad Catz Inc.", "Mad Catz" },
+        { "Nintendo Co., Ltd.", "Nintendo" },
         { "NVIDIA Corporation ", "" },
         { "Performance Designed Products", "PDP" },
-        { "HORI CO.,LTD.", "HORI" },
-        { "HORI CO.,LTD", "HORI" },
-        { "Mad Catz Inc.", "Mad Catz" },
         { "QANBA USA, LLC", "Qanba" },
         { "QANBA USA,LLC", "Qanba" },
         { "Unknown ", "" },
@@ -1980,10 +1982,10 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         return SDL_strdup(custom_name);
     }
 
-    if (vendor_name == NULL) {
+    if (!vendor_name) {
         vendor_name = "";
     }
-    if (product_name == NULL) {
+    if (!product_name) {
         product_name = "";
     }
 
@@ -2026,7 +2028,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         default:
             len = (6 + 1 + 6 + 1);
             name = (char *)SDL_malloc(len);
-            if (name != NULL) {
+            if (name) {
                 (void)SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
             }
             break;
@@ -2035,7 +2037,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         name = SDL_strdup("Controller");
     }
 
-    if (name == NULL) {
+    if (!name) {
         return NULL;
     }
 
@@ -2077,7 +2079,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
     for (i = 1; i < (len - 1); ++i) {
         int matchlen = PrefixMatch(name, &name[i]);
         while (matchlen > 0) {
-            if (name[matchlen] == ' ') {
+            if (name[matchlen] == ' ' || name[matchlen] == '-') {
                 SDL_memmove(name, name + matchlen + 1, len - matchlen);
                 break;
             }
@@ -2099,7 +2101,7 @@ SDL_JoystickGUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 produc
 
     SDL_zero(guid);
 
-    if (name == NULL) {
+    if (!name) {
         name = "";
     }
 
@@ -2346,7 +2348,13 @@ SDL_bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_8BITDO) {
-        if (product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER) {
+        if (product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER1 ||
+            product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER2) {
+            return SDL_TRUE;
+        }
+    }
+    if (vendor_id == USB_VENDOR_GAMESIR) {
+        if (product_id == USB_PRODUCT_GAMESIR_G7) {
             return SDL_TRUE;
         }
     }
@@ -2507,6 +2515,10 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
         MAKE_VIDPID(0x0eb7, 0x038e), /* Fanatec ClubSport Wheel Base V1 */
         MAKE_VIDPID(0x0eb7, 0x0e03), /* Fanatec CSL Elite Wheel Base */
         MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
+        MAKE_VIDPID(0x2433, 0xf300), /* Asetek SimSports Invicta Wheelbase */
+        MAKE_VIDPID(0x2433, 0xf301), /* Asetek SimSports Forte Wheelbase */
+        MAKE_VIDPID(0x2433, 0xf303), /* Asetek SimSports La Prima Wheelbase */
+        MAKE_VIDPID(0x2433, 0xf306), /* Asetek SimSports Tony Kannan Wheelbase */
     };
     int i;
 

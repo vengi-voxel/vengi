@@ -29,6 +29,7 @@
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_VENDOR_ASTRO        0x9886
 #define USB_VENDOR_BACKBONE     0x358a
+#define USB_VENDOR_GAMESIR      0x3537
 #define USB_VENDOR_DRAGONRISE   0x0079
 #define USB_VENDOR_GOOGLE       0x18d1
 #define USB_VENDOR_HORI         0x0f0d
@@ -52,13 +53,16 @@
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
 
-#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER                0x2002
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER1               0x2002 /* Ultimate Wired Controller for Xbox */
+#define USB_PRODUCT_8BITDO_XBOX_CONTROLLER2               0x3106 /* Ultimate Wireless / Pro 2 Wired Controller */
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
+#define USB_PRODUCT_GAMESIR_G7                            0x1001
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
-#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER             0x1846
+#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1            0x1843
+#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2            0x1846
 #define USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X 0x0150
 #define USB_PRODUCT_HORI_HORIPAD_PRO_SERIES_X             0x014f
 #define USB_PRODUCT_HORI_FIGHTING_STICK_ALPHA_PS4         0x011c
