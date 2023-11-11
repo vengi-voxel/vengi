@@ -170,7 +170,7 @@ const glm::vec3 &SceneGraphTransform::worldScale() const {
 	return _worldScale;
 }
 
-void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx) {
+void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren) {
 	if (_dirty == 0u) {
 		return;
 	}
@@ -230,13 +230,23 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w,
 				   _worldScale.x, _worldScale.y, _worldScale.z);
 
-		// after world matrix update - inform the children
-		for (int childId : node.children()) {
-			SceneGraphNode &child = sceneGraph.node(childId);
-			const KeyFrameIndex keyFrameIdx = child.keyFrameForFrame(frameIdx);
-			SceneGraphTransform &transform = child.transform(keyFrameIdx);
-			transform._dirty |= DIRTY_PARENT;
-			transform.update(sceneGraph, child, frameIdx);
+		if (!updateChildren) {
+			for (int childId : node.children()) {
+				SceneGraphNode &child = sceneGraph.node(childId);
+				const KeyFrameIndex keyFrameIdx = child.keyFrameForFrame(frameIdx);
+				SceneGraphTransform &transform = child.transform(keyFrameIdx);
+				transform._dirty |= DIRTY_WORLDVALUES;
+				transform.update(sceneGraph, child, frameIdx, true);
+			}
+		} else {
+			// after world matrix update - inform the children
+			for (int childId : node.children()) {
+				SceneGraphNode &child = sceneGraph.node(childId);
+				const KeyFrameIndex keyFrameIdx = child.keyFrameForFrame(frameIdx);
+				SceneGraphTransform &transform = child.transform(keyFrameIdx);
+				transform._dirty |= DIRTY_PARENT;
+				transform.update(sceneGraph, child, frameIdx, updateChildren);
+			}
 		}
 	}
 
@@ -264,7 +274,7 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			const KeyFrameIndex keyFrameIdx = child.keyFrameForFrame(frameIdx);
 			SceneGraphTransform &transform = child.transform(keyFrameIdx);
 			transform._dirty |= DIRTY_PARENT;
-			transform.update(sceneGraph, child, frameIdx);
+			transform.update(sceneGraph, child, frameIdx, updateChildren);
 		}
 	}
 

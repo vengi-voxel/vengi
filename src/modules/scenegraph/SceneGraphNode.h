@@ -131,7 +131,7 @@ public:
 	const glm::quat &localOrientation() const;
 	const glm::vec3 &localScale() const;
 
-	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx);
+	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren);
 
 	/**
 	 * @brief Uses the matrix to perform the transformation

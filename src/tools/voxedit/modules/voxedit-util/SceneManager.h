@@ -76,6 +76,7 @@ private:
 	core::VarPtr _autoSaveSecondsDelay;
 	core::VarPtr _gridSize;
 	core::VarPtr _movementSpeed;
+	core::VarPtr _transformUpdateChildren;
 
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop

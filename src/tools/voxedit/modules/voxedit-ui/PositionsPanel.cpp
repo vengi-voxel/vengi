@@ -230,7 +230,8 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 			transform.setWorldMatrix(glm::mat4(1.0f));
 		}
 		node.setPivot({0.0f, 0.0f, 0.0f});
-		transform.update(sceneGraph, node, frameIdx);
+		const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
+		transform.update(sceneGraph, node, frameIdx, updateChildren);
 		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
 	}
 	ImGui::SameLine();
@@ -254,6 +255,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 												  matrixScale);
 			bool change = false;
 			ImGui::Checkbox("Local transforms", &_localSpace);
+			ImGui::CheckboxVar("Update children", cfg::VoxEditTransformUpdateChildren);
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_X "##resettr")) {
@@ -329,8 +331,8 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				} else {
 					transform.setWorldMatrix(matrix);
 				}
-
-				transform.update(sceneGraph, node, frameIdx);
+				const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
+				transform.update(sceneGraph, node, frameIdx, updateChildren);
 			}
 			if (!change && _lastChanged) {
 				_lastChanged = false;

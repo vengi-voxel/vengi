@@ -15,6 +15,7 @@ constexpr const char *VoxEditLastFile = "ve_lastfile";
 constexpr const char *VoxEditLastFiles = "ve_lastfiles";
 constexpr const char *VoxEditAutoSaveSeconds = "ve_autosaveseconds";
 constexpr const char *VoxEditMovementSpeed = "ve_movementspeed";
+constexpr const char *VoxEditTransformUpdateChildren = "ve_transformupdatechildren";
 constexpr const char *VoxEditAmbientColor = "ve_ambientcolor";
 constexpr const char *VoxEditColorWheel = "ve_usercolorwheel";
 constexpr const char *VoxEditShowColorPicker = "ve_showcolorpicker";

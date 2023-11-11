@@ -928,7 +928,7 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 			node->setPivot(s.pivot);
 			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 			transform.setWorldMatrix(s.worldMatrix);
-			transform.update(_sceneGraph, *node, s.keyFrameIdx);
+			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
 			return true;
 		}
 		return false;
@@ -1544,6 +1544,7 @@ void SceneManager::construct() {
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, "Delay in second between autosaves - 0 disables autosaves");
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
+	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -2796,7 +2797,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	transform.setLocalTranslation(translation);
 	transform.setLocalOrientation(orientation);
 	transform.setLocalScale(scale);
-	transform.update(_sceneGraph, node, keyFrame.frameIdx);
+	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
 
 	_mementoHandler.markNodeTransform(node, keyFrameIdx);
 	markDirty();

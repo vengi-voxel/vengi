@@ -268,7 +268,7 @@ int SceneGraph::nextModelNode(int nodeId) const {
 
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
 	for (SceneGraphKeyFrame &keyframe : *n.keyFrames()) {
-		keyframe.transform().update(*this, n, keyframe.frameIdx);
+		keyframe.transform().update(*this, n, keyframe.frameIdx, true);
 	}
 	for (int childrenId : n.children()) {
 		updateTransforms_r(node(childrenId));
