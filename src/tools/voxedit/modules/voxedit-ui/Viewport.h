@@ -38,6 +38,7 @@ private:
 	 */
 	bool _transformMementoLocked = false;
 	bool _gizmoActivated = false;
+
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	image::AVIRecorder _avi;
 	/**
