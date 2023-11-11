@@ -1544,7 +1544,7 @@ void SceneManager::construct() {
 
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, "Delay in second between autosaves - 0 disables autosaves");
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
-	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true");
+	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, "Update the children of a node when the transform of the node changes");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
