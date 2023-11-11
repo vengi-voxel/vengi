@@ -83,9 +83,6 @@
 #define GLM_COMPILER_CUDA90			0x10000004
 #define GLM_COMPILER_CUDA_RTC			0x10000100
 
-// SYCL
-#define GLM_COMPILER_SYCL			0x00300000
-
 // Clang
 #define GLM_COMPILER_CLANG			0x20000000
 #define GLM_COMPILER_CLANG34		0x20000050
@@ -143,10 +140,6 @@
 #elif defined(__HIP__)
 #	define GLM_COMPILER GLM_COMPILER_HIP
 
-// SYCL
-#elif defined(__SYCL_DEVICE_ONLY__)
-#	define GLM_COMPILER GLM_COMPILER_SYCL
-
 // Clang
 #elif defined(__clang__)
 #	if defined(__apple_build_version__)
@@ -187,6 +180,11 @@
 
 // Visual C++
 #elif defined(_MSC_VER)
+#	if INTPTR_MAX == INT64_MAX // 64bits compiler has always at least SSE2 support
+#		ifndef GLM_FORCE_INTRINSICS
+#			define GLM_FORCE_INTRINSICS
+#		endif
+#	endif
 #	if _MSC_VER >= 1920
 #		define GLM_COMPILER GLM_COMPILER_VC16
 #	elif _MSC_VER >= 1916

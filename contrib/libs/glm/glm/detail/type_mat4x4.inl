@@ -629,15 +629,15 @@ namespace glm
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER mat<4, 4, T, Q> operator*(mat<4, 4, T, Q> const& m1, mat<4, 4, T, Q> const& m2)
 	{
-		typename mat<4, 4, T, Q>::col_type const SrcA0 = m1[0];
-		typename mat<4, 4, T, Q>::col_type const SrcA1 = m1[1];
-		typename mat<4, 4, T, Q>::col_type const SrcA2 = m1[2];
-		typename mat<4, 4, T, Q>::col_type const SrcA3 = m1[3];
+		typename mat<4, 4, T, Q>::col_type const &SrcA0 = m1[0];
+		typename mat<4, 4, T, Q>::col_type const &SrcA1 = m1[1];
+		typename mat<4, 4, T, Q>::col_type const &SrcA2 = m1[2];
+		typename mat<4, 4, T, Q>::col_type const &SrcA3 = m1[3];
 
-		typename mat<4, 4, T, Q>::col_type const SrcB0 = m2[0];
-		typename mat<4, 4, T, Q>::col_type const SrcB1 = m2[1];
-		typename mat<4, 4, T, Q>::col_type const SrcB2 = m2[2];
-		typename mat<4, 4, T, Q>::col_type const SrcB3 = m2[3];
+		typename mat<4, 4, T, Q>::col_type const &SrcB0 = m2[0];
+		typename mat<4, 4, T, Q>::col_type const &SrcB1 = m2[1];
+		typename mat<4, 4, T, Q>::col_type const &SrcB2 = m2[2];
+		typename mat<4, 4, T, Q>::col_type const &SrcB3 = m2[3];
 
 		mat<4, 4, T, Q> Result;
 		Result[0] = SrcA0 * SrcB0[0] + SrcA1 * SrcB0[1] + SrcA2 * SrcB0[2] + SrcA3 * SrcB0[3];

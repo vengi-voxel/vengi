@@ -169,14 +169,14 @@ namespace glm
 		return glm::inverse(q) * v;
 	}
 
-	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER vec<4, T, Q> operator*(tdualquat<T, Q> const& q, vec<4, T, Q> const& v)
+	template<typename T, qualifier Q, qualifier Q2>
+	GLM_FUNC_QUALIFIER vec<4, T, Q2> operator*(tdualquat<T, Q> const& q, vec<4, T, Q2> const& v)
 	{
-		return vec<4, T, Q>(q * vec<3, T, Q>(v), v.w);
+		return vec<4, T, Q2>(q * vec<3, T, Q>(v), v.w);
 	}
 
-	template<typename T, qualifier Q>
-	GLM_FUNC_QUALIFIER vec<4, T, Q> operator*(vec<4, T, Q> const& v,	tdualquat<T, Q> const& q)
+	template<typename T, qualifier Q, qualifier Q2>
+	GLM_FUNC_QUALIFIER vec<4, T, Q2> operator*(vec<4, T, Q2> const& v,	tdualquat<T, Q> const& q)
 	{
 		return glm::inverse(q) * v;
 	}

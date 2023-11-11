@@ -59,8 +59,13 @@ namespace detail
 	{
 		GLM_FUNC_QUALIFIER GLM_CONSTEXPR static T call(vec<4, T, Q> const& a, vec<4, T, Q> const& b)
 		{
-			vec<4, T, Q> tmp(a * b);
-			return (tmp.x + tmp.y) + (tmp.z + tmp.w);
+			// VS 17.7.4 generates longer assembly (~20 instructions vs 11 instructions)
+			#if defined(_MSC_VER)
+				return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+			#else
+				vec<4, T, Q> tmp(a * b);
+				return (tmp.x + tmp.y) + (tmp.z + tmp.w);
+			#endif
 		}
 	};
 
@@ -167,14 +172,14 @@ namespace detail
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR T dot(vec<L, T, Q> const& x, vec<L, T, Q> const& y)
 	{
 		GLM_STATIC_ASSERT(std::numeric_limits<T>::is_iec559, "'dot' accepts only floating-point inputs");
-		return detail::compute_dot<vec<L, T, Q>, T, detail::is_aligned<Q>::value>::call(x, y);
+		return detail::compute_dot<vec<L, T, Q>, T, detail::use_simd<Q>::value>::call(x, y);
 	}
 
 	// cross
 	template<typename T, qualifier Q>
 	GLM_FUNC_QUALIFIER GLM_CONSTEXPR vec<3, T, Q> cross(vec<3, T, Q> const& x, vec<3, T, Q> const& y)
 	{
-		return detail::compute_cross<T, Q, detail::is_aligned<Q>::value>::call(x, y);
+		return detail::compute_cross<T, Q, detail::use_simd<Q>::value>::call(x, y);
 	}
 /*
 	// normalize
