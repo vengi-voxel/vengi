@@ -2696,18 +2696,18 @@ bool SceneManager::mouseRayTrace(bool force) {
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
-									   scenegraph::KeyFrameIndex keyFrameIdx) {
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
+									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
 		nodeForeachGroup([&] (int nodeId) {
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-				nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
+				nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, local);
 			}
 		});
 		return true;
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeUpdateTransform(*node, localMatrix, deltaMatrix, keyFrameIdx);
+		return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, local);
 	}
 	return false;
 }
@@ -2784,19 +2784,15 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, s
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &localMatrix,
-									   const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx) {
-	glm::vec3 translation;
-	glm::quat orientation;
-	glm::vec3 scale;
-	glm::vec3 skew;
-	glm::vec4 perspective;
+bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
+									   const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-	glm::decompose(localMatrix, scale, orientation, translation, skew, perspective);
-	transform.setLocalTranslation(translation);
-	transform.setLocalOrientation(orientation);
-	transform.setLocalScale(scale);
+	if (local) {
+		transform.setLocalMatrix(matrix);
+	} else {
+		transform.setWorldMatrix(matrix);
+	}
 	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
 
 	_mementoHandler.markNodeTransform(node, keyFrameIdx);

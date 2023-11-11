@@ -521,13 +521,13 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 }
 
 void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
-						   const glm::mat4 &localMatrix) {
+						   const glm::mat4 &worldMatrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
 		glm::vec3 translate;
 		glm::vec3 rotation;
 		glm::vec3 scale;
-		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), glm::value_ptr(translate),
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(worldMatrix), glm::value_ptr(translate),
 											  glm::value_ptr(rotation), glm::value_ptr(scale));
 		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
 			_bounds.maxs = _boundsNode.maxs * scale;
@@ -565,7 +565,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const glm::vec3 size = region.getDimensionsInVoxels();
 	const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 
-	glm::mat4 localMatrix(1.0f);
+	glm::mat4 worldMatrix(1.0f);
 	int operation = ImGuizmo::TRANSLATE;
 	bool bounds = false;
 	if (sceneMode) {
@@ -575,7 +575,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		}
 		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 		const glm::vec3 mins = -node.pivot() * size;
-		localMatrix = transform.localMatrix();
+		worldMatrix = transform.worldMatrix();
 		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
 			_bounds.mins = mins;
 			_bounds.maxs = mins + size;
@@ -586,21 +586,21 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		return false;
 	}
 
-	bool shiftRegionBoundaries = true; // TODO: make this an option
+	bool shiftRegionBoundaries = false; // TODO: make this an option
 	if (shiftRegionBoundaries) {
 		const glm::vec3 &shift = region.getLowerCornerf();
-		localMatrix = glm::translate(localMatrix, shift);
+		worldMatrix = glm::translate(worldMatrix, shift);
 	}
 	const bool manipulated = ImGuizmo::Manipulate(
 		glm::value_ptr(camera.viewMatrix()), glm::value_ptr(camera.projectionMatrix()), (ImGuizmo::OPERATION)operation,
-		ImGuizmo::MODE::LOCAL, glm::value_ptr(localMatrix), glm::value_ptr(deltaMatrix),
+		ImGuizmo::MODE::WORLD, glm::value_ptr(worldMatrix), glm::value_ptr(deltaMatrix),
 		_gizmoSnap->boolVal() ? snap : nullptr, bounds ? glm::value_ptr(_bounds.mins) : nullptr, boundsSnap);
 	if (sceneMode) {
 		if (shiftRegionBoundaries) {
 			const glm::vec3 &shift = region.getLowerCornerf();
-			localMatrix = glm::translate(localMatrix, -shift);
+			worldMatrix = glm::translate(worldMatrix, -shift);
 		}
-		handleGizmo(node, keyFrameIdx, localMatrix);
+		handleGizmo(node, keyFrameIdx, worldMatrix);
 
 		if (!_gizmoActivated && node.isModelNode() &&
 			ImGui::IsKeyPressed(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
@@ -612,11 +612,11 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 			}
 		}
 		if (manipulated) {
-			sceneMgr().nodeUpdateTransform(activeNode, localMatrix, &deltaMatrix, keyFrameIdx);
+			sceneMgr().nodeUpdateTransform(activeNode, worldMatrix, &deltaMatrix, keyFrameIdx, false);
 		}
 		_gizmoActivated = ImGuizmo::IsUsingAny();
 	} else {
-		handleGizmo(node, InvalidKeyFrame, localMatrix);
+		handleGizmo(node, InvalidKeyFrame, worldMatrix);
 		_gizmoActivated = ImGuizmo::IsUsingAny();
 		if (manipulated) {
 			sceneMgr().shift(activeNode, deltaMatrix[3]);

@@ -406,8 +406,8 @@ private:
 	void onNewNodeAdded(int newNodeId, bool isChildren = false);
 	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &localMatrix,
-							 const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
+							 const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
@@ -416,8 +416,8 @@ private:
 	bool nodeUnreference(scenegraph::SceneGraphNode &node);
 
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &localMatrix, const glm::mat4 *deltaMatrix,
-							 scenegraph::KeyFrameIndex keyFrameIdx);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
+							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
