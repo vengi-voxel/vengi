@@ -86,7 +86,7 @@ private:
 
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &localMatrix);
+	void handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &matrix);
 	/**
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()
