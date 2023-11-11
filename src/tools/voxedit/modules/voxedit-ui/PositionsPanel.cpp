@@ -309,30 +309,19 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				_lastChanged = true;
 
 				if (pivotChanged) {
-					const glm::vec3 oldPivot = node.pivot();
-					const glm::vec3 deltaPivot = oldPivot - pivot;
-					const glm::vec3 size = node.region().getDimensionsInVoxels();
-					if (node.setPivot(pivot)) {
-						for (int i = 0; i < 3; ++i) {
-							matrixTranslation[i] -= deltaPivot[i] * size[i];
-						}
-					}
-
-					for (int nodeId : node.children()) {
-						sceneGraph.node(nodeId).translate(deltaPivot * size);
-					}
-				}
-
-				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
-														glm::value_ptr(matrix));
-				scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-				if (_localSpace) {
-					transform.setLocalMatrix(matrix);
+					sceneMgr().nodeUpdatePivot(node.id(), pivot);
 				} else {
-					transform.setWorldMatrix(matrix);
+					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
+															glm::value_ptr(matrix));
+					scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
+					if (_localSpace) {
+						transform.setLocalMatrix(matrix);
+					} else {
+						transform.setWorldMatrix(matrix);
+					}
+					const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
+					transform.update(sceneGraph, node, frameIdx, updateChildren);
 				}
-				const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
-				transform.update(sceneGraph, node, frameIdx, updateChildren);
 			}
 			if (!change && _lastChanged) {
 				_lastChanged = false;
