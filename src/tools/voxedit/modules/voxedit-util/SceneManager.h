@@ -408,6 +408,7 @@ private:
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
 	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
 							 const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
 	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
@@ -418,6 +419,7 @@ private:
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);

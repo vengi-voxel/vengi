@@ -2696,6 +2696,32 @@ bool SceneManager::mouseRayTrace(bool force) {
 	return true;
 }
 
+bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+	const glm::vec3 oldPivot = node.pivot();
+	if (node.setPivot(pivot)) {
+		const glm::vec3 deltaPivot = oldPivot - pivot;
+		const glm::vec3 size = node.region().getDimensionsInVoxels();
+		node.translate(-deltaPivot * size);
+		for (int nodeId : node.children()) {
+			sceneGraph().node(nodeId).translate(deltaPivot * size);
+		}
+		sceneGraph().updateTransforms();
+		markDirty();
+		_mementoHandler.markKeyFramesChange(node);
+	}
+	return true;
+}
+
+bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeUpdatePivot(*node, pivot);
+	}
+	return false;
+}
+
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
