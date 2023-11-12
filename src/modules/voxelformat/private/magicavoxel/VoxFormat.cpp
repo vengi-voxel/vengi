@@ -29,7 +29,7 @@ int VoxFormat::emptyPaletteIndex() const {
 	return EMPTY_PALETTE;
 }
 
-size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
@@ -43,7 +43,7 @@ size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette) {
+							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
@@ -94,7 +94,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
 						  int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-						  const voxel::Palette &palette) {
+						  const palette::Palette &palette) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = ogt_group.name ? ogt_group.name : "Group";
@@ -146,7 +146,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 }
 
 bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	const size_t size = stream.size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
 	if (stream.read(buffer, size) == -1) {
@@ -183,7 +183,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 }
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
-						  const voxel::Palette &palette) {
+						  const palette::Palette &palette) {
 	core::DynamicArray<MVModelToNode> models = loadModels(scene, palette);
 	core::Set<uint32_t> addedInstances;
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
@@ -395,7 +395,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	ogt_vox_palette &pal = output_scene.palette;
 	ogt_vox_matl_array &mat = output_scene.materials;
 
-	const voxel::Palette &palette = sceneGraph.firstPalette();
+	const palette::Palette &palette = sceneGraph.firstPalette();
 	Log::debug("vox save color count: %i (including first transparent slot)", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA &rgba = palette.color(i);

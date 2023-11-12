@@ -29,7 +29,7 @@ namespace voxelformat {
 	}
 
 bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	char buf[64];
 
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -78,7 +78,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 
-	if (paletteSize > voxel::PaletteMaxColors) {
+	if (paletteSize > palette::PaletteMaxColors) {
 		Log::error("Max palette size exceeded");
 		return false;
 	}
@@ -133,7 +133,7 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
 	stream.writeStringFormat(false, "%i %i %i\n", width, depth, height);
-	const voxel::Palette &palette = node->palette();
+	const palette::Palette &palette = node->palette();
 	stream.writeStringFormat(false, "%i\n", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA c = palette.color(i);

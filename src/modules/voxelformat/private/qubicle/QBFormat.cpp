@@ -54,7 +54,7 @@ class MatrixWriter {
 private:
 	io::SeekableWriteStream &_stream;
 	const voxel::RawVolume *_volume;
-	const voxel::Palette &_palette;
+	const palette::Palette &_palette;
 	const glm::ivec3 _maxs;
 
 	const bool _leftHanded;
@@ -199,7 +199,7 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, voxel::PaletteLookup &palLookup) {
+voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup) {
 	core::RGBA color(0);
 	if (!readColor(state, stream, color)) {
 		return voxel::Voxel();
@@ -235,7 +235,7 @@ bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, core::RGB
 }
 
 bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-						  voxel::PaletteLookup &palLookup) {
+						  palette::PaletteLookup &palLookup) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
@@ -362,7 +362,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	return true;
 }
 
-bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette::Palette &palette) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -446,7 +446,7 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, voxel::
 	return true;
 }
 
-size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							 const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
@@ -481,7 +481,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 }
 
 bool QBFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
 	State state;
 	wrap(stream.readUInt32(state._version))
@@ -513,7 +513,7 @@ bool QBFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	Log::debug("NumMatrices: %u", numMatrices);
 
 	sceneGraph.reserve(numMatrices);
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
 		if (!readMatrix(state, stream, sceneGraph, palLookup)) {

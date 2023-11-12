@@ -43,7 +43,7 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3 &pos) {
 	return false;
 }
 
-void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette) {
+void fillInterpolated(voxel::RawVolume *v, const palette::Palette &palette) {
 	const voxel::Region &region = v->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
@@ -92,7 +92,7 @@ void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette) {
 					color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
 				const glm::vec4 colorAvg = colorSum / (float)blocked;
 				const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
-				if (idx == voxel::PaletteColorNotFound) {
+				if (idx == palette::PaletteColorNotFound) {
 					continue;
 				}
 				sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));
@@ -425,7 +425,7 @@ int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Face
 
 int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
-	voxel::PaletteLookup palLookup;
+	palette::PaletteLookup palLookup;
 
 	const voxel::Region &region = in.region();
 
@@ -451,7 +451,7 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 	return walkPlane(in, position, face, -1, check, exec);
 }
 
-voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalette, const voxel::Palette &newPalette, int skipColorIndex) {
+voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette, const palette::Palette &newPalette, int skipColorIndex) {
 	if (v == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
@@ -460,7 +460,7 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalet
 		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());
 			const int newColor = newPalette.getClosestMatch(rgba, nullptr, skipColorIndex);
-			if (newColor != voxel::PaletteColorNotFound) {
+			if (newColor != palette::PaletteColorNotFound) {
 				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
 				wrapper.setVoxel(x, y, z, newVoxel);
 			}

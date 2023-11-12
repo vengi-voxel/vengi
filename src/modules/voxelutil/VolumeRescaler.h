@@ -46,7 +46,7 @@ static bool isHidden(Sampler &srcSampler) {
  * be exactly half of the size of the sourceRegion.
  */
 template<typename SourceVolume, typename DestVolume>
-void scaleDown(const SourceVolume& sourceVolume, const voxel::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
+void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
 	core_trace_scoped(ScaleVolumeDown);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
@@ -208,7 +208,7 @@ void scaleDown(const SourceVolume& sourceVolume, const voxel::Palette &palette, 
 }
 
 template<typename SourceVolume, typename DestVolume>
-void scaleDown(const SourceVolume& sourceVolume, const voxel::Palette &palette, DestVolume& destVolume) {
+void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette, DestVolume& destVolume) {
 	scaleDown(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
 }
 

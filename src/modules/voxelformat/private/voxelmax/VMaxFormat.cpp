@@ -156,7 +156,7 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 }
 
 bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								   const LoadContext &ctx) {
 	VMaxScene scene;
 	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
@@ -181,7 +181,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 			Log::debug("Skip to load object %s", obj.data.c_str());
 			continue;
 		}
-		voxel::Palette vmaxPalette;
+		palette::Palette vmaxPalette;
 		if (!loadPaletteFromArchive(archive, obj.pal, vmaxPalette, ctx)) {
 			return false;
 		}
@@ -251,7 +251,7 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) cons
 
 bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
-									   const VMaxObject &obj, const voxel::Palette &palette) const {
+									   const VMaxObject &obj, const palette::Palette &palette) const {
 	io::BufferedReadWriteStream data;
 	if (!archive->load(obj.data, data)) {
 		Log::error("Failed to load %s", obj.data.c_str());
@@ -441,7 +441,7 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 }
 
 bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
-										voxel::Palette &palette, const LoadContext &ctx) const {
+										palette::Palette &palette, const LoadContext &ctx) const {
 	io::BufferedReadWriteStream stream;
 	if (!archive->load(paletteName, stream)) {
 		Log::error("Failed to load %s", paletteName.c_str());
@@ -465,7 +465,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	return true;
 }
 
-size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx) {
 	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
 	if (!archive) {

@@ -17,13 +17,13 @@ private:
 	ModifierRendererPtr _modifierRenderer;
 	core::ScopedPtr<voxel::RawVolume> _mirrorVolume;
 	core::ScopedPtr<voxel::RawVolume> _volume;
-	void updateBrushVolumePreview(voxel::Palette &palette);
+	void updateBrushVolumePreview(palette::Palette &palette);
 
 public:
 	ModifierFacade(const ModifierRendererPtr &modifierRenderer);
 	bool init() override;
 	void shutdown() override;
-	void render(const video::Camera &camera, voxel::Palette &palette);
+	void render(const video::Camera &camera, palette::Palette &palette);
 };
 
 } // namespace voxedit

@@ -50,7 +50,7 @@ static core::RGBA readColor(io::SeekableReadStream &stream) {
  *  16: 32768 colors: ~0 for empty voxel
  *  0: no palette
  */
-static int readVoxel(io::SeekableReadStream &stream, const voxel::Palette &palette, uint32_t paletteSize,
+static int readVoxel(io::SeekableReadStream &stream, const palette::Palette &palette, uint32_t paletteSize,
 					 uint8_t bitsPerIndex) {
 	if (paletteSize == 0 || bitsPerIndex == 0u) {
 		const core::RGBA rgba = readColor(stream);
@@ -71,7 +71,7 @@ static int readVoxel(io::SeekableReadStream &stream, const voxel::Palette &palet
 	return -1;
 }
 
-size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -146,7 +146,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 }
 
 bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-								scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -244,12 +244,12 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	wrapBool(stream.writeUInt32(region.getDepthInVoxels()))
 	wrapBool(stream.writeUInt32(region.getHeightInVoxels()))
 
-	wrapBool(stream.writeUInt32(voxel::PaletteMaxColors))
+	wrapBool(stream.writeUInt32(palette::PaletteMaxColors))
 
-	voxel::Palette palette = node->palette();
+	palette::Palette palette = node->palette();
 	uint8_t replacement = palette.findReplacement(0);
 	const core::RGBA color = palette.color(0);
-	if (palette.colorCount() < voxel::PaletteMaxColors) {
+	if (palette.colorCount() < palette::PaletteMaxColors) {
 		palette.color(0) = core::RGBA(0, 0, 0, 0);
 		palette.addColorToPalette(color, false, &replacement, false, 0);
 	}
@@ -272,7 +272,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const core::RGBA rgba = palette.color(i);
 		wrapBool(stream.writeUInt32(rgba.rgba))
 	}
-	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt32(0))
 	}
 

@@ -98,7 +98,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-			const voxel::Palette &palette = graphNode.palette();
+			const palette::Palette &palette = graphNode.palette();
 
 			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 

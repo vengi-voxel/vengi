@@ -70,7 +70,7 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 }
 
 bool VBXFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	core::StringMap<core::StringMap<core::String>> ini;
 	if (!util::parseIni(stream, ini)) {
@@ -138,7 +138,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	util::IniMap ini;
 	if (!util::parseIni(stream, ini)) {

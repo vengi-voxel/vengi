@@ -34,7 +34,7 @@ namespace voxelformat {
 	} while (0)
 
 bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	const int64_t length = stream.size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
@@ -90,7 +90,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 }
 
 bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream,
-									const voxel::Palette &palette) {
+									const palette::Palette &palette) {
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		if (_offsets[i].sectorCount == 0u || _offsets[i].offset < sizeof(_offsets)) {
 			continue;
@@ -111,7 +111,7 @@ bool MCRFormat::loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::Seek
 }
 
 bool MCRFormat::readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector,
-								  const voxel::Palette &palette) {
+								  const palette::Palette &palette) {
 	uint32_t nbtSize;
 	wrap(stream.readUInt32BE(nbtSize));
 	if (nbtSize == 0) {
@@ -202,7 +202,7 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 	return cropped;
 }
 
-bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data,
+bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
 								 SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal) {
 	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
@@ -336,7 +336,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const voxel::Palette &palette,
 }
 
 voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-										   const voxel::Palette &pal) {
+										   const palette::Palette &pal) {
 	const priv::NamedBinaryTag &sections = root.get("sections");
 	if (!sections.valid()) {
 		Log::error("Could not find 'sections' tag");
@@ -396,7 +396,7 @@ voxel::RawVolume *MCRFormat::parseSections(int dataVersion, const priv::NamedBin
 }
 
 voxel::RawVolume *MCRFormat::parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-												const voxel::Palette &pal) {
+												const palette::Palette &pal) {
 	const priv::NamedBinaryTag &levels = root.get("Level");
 	if (!levels.valid()) {
 		Log::error("Could not find 'Level' tag");

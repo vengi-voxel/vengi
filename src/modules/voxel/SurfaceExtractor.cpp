@@ -18,7 +18,7 @@ SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region
 }
 
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-												   const Palette &palette) {
+												   const palette::Palette &palette) {
 	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), true, false, false, false);
 }
 

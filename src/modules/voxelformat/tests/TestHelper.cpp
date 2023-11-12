@@ -60,8 +60,8 @@ namespace glm {
 
 namespace voxel {
 
-::std::ostream &operator<<(::std::ostream &os, const voxel::Palette &palette) {
-	return os << voxel::Palette::print(palette).c_str();
+::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette) {
+	return os << palette::Palette::print(palette).c_str();
 }
 
 static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph, int nodeId, int indent) {
@@ -144,7 +144,7 @@ int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
 	return cnt;
 }
 
-void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
+void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
@@ -154,13 +154,13 @@ void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, f
 			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
 									   << "\nPalette 1:\n"
-									   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
-									   << voxel::Palette::print(pal2);
+									   << palette::Palette::print(pal1) << "\nPalette 2:\n"
+									   << palette::Palette::print(pal2);
 		}
 	}
 }
 
-void paletteComparatorScaled(const voxel::Palette &pal1, const voxel::Palette &pal2, int maxDelta) {
+void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
@@ -172,7 +172,7 @@ void paletteComparatorScaled(const voxel::Palette &pal1, const voxel::Palette &p
 	}
 }
 
-void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
+void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	ASSERT_EQ(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < pal1.colorCount(); ++i) {
 		const core::RGBA &c1 = pal1.color(i);
@@ -186,11 +186,11 @@ void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pa
 
 		ASSERT_TRUE(found) << "Palette color at " << i << ", color1[" << core::Color::print(c1)
 						   << "] wasn't found in second palette 2:\n"
-						   << voxel::Palette::print(pal2);
+						   << palette::Palette::print(pal2);
 	}
 }
 
-void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta) {
+void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
 	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < n; ++i) {
 		const core::RGBA &c1 = pal1.color(i);
@@ -200,8 +200,8 @@ void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &
 			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
 									   << "\nPalette 1:\n"
-									   << voxel::Palette::print(pal1) << "\nPalette 2:\n"
-									   << voxel::Palette::print(pal2);
+									   << palette::Palette::print(pal1) << "\nPalette 2:\n"
+									   << palette::Palette::print(pal2);
 		}
 	}
 }
@@ -252,8 +252,8 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 	}
 }
 
-void volumeComparator(const voxel::RawVolume &volume1, const voxel::Palette &pal1, const voxel::RawVolume &volume2,
-					  const voxel::Palette &pal2, ValidateFlags flags, float maxDelta) {
+void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &pal1, const voxel::RawVolume &volume2,
+					  const palette::Palette &pal2, ValidateFlags flags, float maxDelta) {
 	const Region &r1 = volume1.region();
 	const Region &r2 = volume2.region();
 	if ((flags & ValidateFlags::Region) == ValidateFlags::Region) {
@@ -324,8 +324,8 @@ void volumeComparator(const voxel::RawVolume &volume1, const voxel::Palette &pal
 							<< (int)voxel1.getColor() << "], voxel2[" << voxel::VoxelTypeStr[(int)voxel2.getMaterial()]
 							<< ", " << (int)voxel2.getColor() << "], color1[" << core::Color::print(c1) << "], color2["
 							<< core::Color::print(c2) << "], delta[" << delta << "]\n"
-							<< voxel::Palette::print(pal1) << "\n"
-							<< voxel::Palette::print(pal2);
+							<< palette::Palette::print(pal1) << "\n"
+							<< palette::Palette::print(pal2);
 					} else {
 						ASSERT_LT(delta, maxDelta)
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"

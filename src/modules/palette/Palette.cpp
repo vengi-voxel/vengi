@@ -29,7 +29,7 @@
 #include <float.h>
 #include <glm/gtx/norm.hpp>
 
-namespace voxel {
+namespace palette {
 
 Palette::Palette() {
 	for (int i = 0; i < PaletteMaxColors; ++i) {
@@ -354,7 +354,7 @@ bool Palette::save(const char *name) const {
 	}
 	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
 	io::FileStream stream(file);
-	return voxel::savePalette(*this, name, stream);
+	return palette::savePalette(*this, name, stream);
 }
 
 bool Palette::saveGlow(const char *name) const {
@@ -363,7 +363,7 @@ bool Palette::saveGlow(const char *name) const {
 	}
 	image::Image img(name);
 	Log::info("Save glow palette _colors to %s", name);
-	// must be voxel::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
+	// must be palette::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)_glowColors, lengthof(_glowColors), 1);
 	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
 	io::FileStream stream(file);
@@ -440,7 +440,7 @@ bool Palette::loadLospec(const core::String &lospecId, const core::String &gimpP
 	}
 	io::FilePtr fileRead = io::filesystem()->open(gimpPalette, io::FileMode::Read);
 	io::FileStream streamRead(fileRead);
-	return voxel::loadPalette(gimpPalette, streamRead, *this);
+	return palette::loadPalette(gimpPalette, streamRead, *this);
 }
 
 bool Palette::load(const char *paletteName) {
@@ -486,7 +486,7 @@ bool Palette::load(const char *paletteName) {
 		}
 	}
 	io::FileStream stream(paletteFile);
-	if (!voxel::loadPalette(paletteName, stream, *this)) {
+	if (!palette::loadPalette(paletteName, stream, *this)) {
 		const image::ImagePtr &img = image::loadImage(paletteFile);
 		if (!img->isLoaded()) {
 			Log::error("Failed to load image %s", paletteFile->name().c_str());
@@ -715,7 +715,7 @@ core::String Palette::extractPaletteName(const core::String &file) {
 	return nameWithExtension;
 }
 
-bool Palette::createPalette(const image::ImagePtr &image, voxel::Palette &palette) {
+bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &palette) {
 	if (!image || !image->isLoaded()) {
 		return false;
 	}

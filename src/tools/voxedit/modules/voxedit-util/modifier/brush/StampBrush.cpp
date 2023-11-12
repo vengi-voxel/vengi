@@ -91,7 +91,7 @@ void StampBrush::setSize(const glm::ivec3 &size) {
 	}
 }
 
-void StampBrush::setVolume(const voxel::RawVolume &volume, const voxel::Palette &palette) {
+void StampBrush::setVolume(const voxel::RawVolume &volume, const palette::Palette &palette) {
 	_volume = voxelutil::cropVolume(&volume);
 	if (_volume) {
 		if (glm::any(glm::greaterThan(_volume->region().getDimensionsInVoxels(), glm::ivec3(MaxSize)))) {
@@ -112,7 +112,7 @@ void StampBrush::update(const BrushContext &ctx, double nowSeconds) {
 	}
 }
 
-void StampBrush::setVoxel(const voxel::Voxel &voxel, const voxel::Palette &palette) {
+void StampBrush::setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette) {
 	if (_volume) {
 		voxelutil::visitVolume(*_volume,
 							   [&](int x, int y, int z, const voxel::Voxel &v) { _volume->setVoxel(x, y, z, voxel); });
@@ -124,7 +124,7 @@ void StampBrush::setVoxel(const voxel::Voxel &voxel, const voxel::Palette &palet
 	markDirty();
 }
 
-void StampBrush::convertToPalette(const voxel::Palette &palette) {
+void StampBrush::convertToPalette(const palette::Palette &palette) {
 	const voxel::Region &dirtyRegion = voxelutil::remapToPalette(_volume, _palette, palette);
 	if (dirtyRegion.isValid()) {
 		_palette = palette;

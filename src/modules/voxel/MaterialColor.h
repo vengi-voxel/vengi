@@ -4,12 +4,14 @@
 
 #pragma once
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 
-class Palette;
-
-void initPalette(const voxel::Palette &palette);
-Palette& getPalette();
+void initPalette(const palette::Palette &palette);
+palette::Palette& getPalette();
 bool hasPalette();
 
 }

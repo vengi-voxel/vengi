@@ -91,9 +91,9 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 inline auto paletteCompleter() {
 	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		int i = 0;
-		for (i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
-			if (core::string::startsWith(voxel::Palette::builtIn[i], str.c_str())) {
-				matches.push_back(voxel::Palette::builtIn[i]);
+		for (i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
+			if (core::string::startsWith(palette::Palette::builtIn[i], str.c_str())) {
+				matches.push_back(palette::Palette::builtIn[i]);
 			}
 		}
 		return i;
@@ -112,7 +112,7 @@ SceneManager::~SceneManager() {
 }
 
 bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestColors, bool save) {
-	voxel::Palette palette;
+	palette::Palette palette;
 
 	const bool isNodePalette = core::string::startsWith(paletteName, "node:");
 	if (isNodePalette) {
@@ -149,7 +149,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 }
 
 bool SceneManager::importPalette(const core::String& file) {
-	voxel::Palette palette;
+	palette::Palette palette;
 	if (!voxelformat::importPalette(file, palette)) {
 		Log::warn("Failed to import a palette from file '%s'", file.c_str());
 		return false;
@@ -170,7 +170,7 @@ bool SceneManager::importPalette(const core::String& file) {
 
 bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
 	const image::ImagePtr& img = image::loadImage(file);
-	const voxel::Palette &palette = voxedit::sceneMgr().activePalette();
+	const palette::Palette &palette = voxedit::sceneMgr().activePalette();
 	voxel::RawVolume *v = voxelutil::importAsVolume(img, palette, maxDepth, bothSides);
 	if (v == nullptr) {
 		return false;
@@ -184,7 +184,7 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 
 bool SceneManager::importAsPlane(const core::String& file) {
 	const image::ImagePtr& img = image::loadImage(file);
-	const voxel::Palette &palette = activePalette();
+	const palette::Palette &palette = activePalette();
 	voxel::RawVolume *v = voxelutil::importAsPlane(img, palette);
 	if (v == nullptr) {
 		return false;
@@ -231,7 +231,7 @@ bool SceneManager::importColoredHeightmap(const core::String& file) {
 		return false;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	voxel::PaletteLookup palLookup(node->palette());
+	palette::PaletteLookup palLookup(node->palette());
 	const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	voxelutil::importColoredHeightmap(wrapper, palLookup, img, dirtVoxel);
 	modified(nodeId, wrapper.dirtyRegion());
@@ -758,7 +758,7 @@ int SceneManager::activeNode() const {
 	return _sceneGraph.activeNode();
 }
 
-voxel::Palette &SceneManager::activePalette() const {
+palette::Palette &SceneManager::activePalette() const {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
 		return _sceneGraph.firstPalette();
@@ -766,7 +766,7 @@ voxel::Palette &SceneManager::activePalette() const {
 	return _sceneGraph.node(nodeId).palette();
 }
 
-bool SceneManager::setActivePalette(const voxel::Palette &palette, bool searchBestColors) {
+bool SceneManager::setActivePalette(const palette::Palette &palette, bool searchBestColors) {
 	const int nodeId = activeNode();
 	if (!_sceneGraph.hasNode(nodeId)) {
 		Log::warn("Failed to set the active palette - node with id %i not found", nodeId);
@@ -1583,7 +1583,7 @@ void SceneManager::construct() {
 		const float scale = core::string::toFloat(args[0]);
 		const int nodeId = activeNode();
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-		voxel::Palette &pal = node.palette();
+		palette::Palette &pal = node.palette();
 		pal.changeIntensity(scale);
 		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
@@ -1601,7 +1601,7 @@ void SceneManager::construct() {
 		const core::String &type = args[0];
 		const int nodeId = activeNode();
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-		voxel::Palette &pal = node.palette();
+		palette::Palette &pal = node.palette();
 		if (type == "hue") {
 			pal.sortHue();
 		} else if (type == "brightness") {
@@ -1989,7 +1989,7 @@ void SceneManager::construct() {
 		const float blue = core::string::toFloat(args[2]);
 		const glm::vec4 color(red / 255.0f, green / 255.0, blue / 255.0, 1.0f);
 		core::DynamicArray<glm::vec4> materialColors;
-		const voxel::Palette &palette = activePalette();
+		const palette::Palette &palette = activePalette();
 		palette.toVec4f(materialColors);
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
@@ -2174,10 +2174,10 @@ void SceneManager::removeUnusedColors(int nodeId) {
 	if (v == nullptr) {
 		return;
 	}
-	core::Array<bool, voxel::PaletteMaxColors> usedColors;
+	core::Array<bool, palette::PaletteMaxColors> usedColors;
 	usedColors.fill(false);
 
-	voxel::Palette &pal = node.palette();
+	palette::Palette &pal = node.palette();
 	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
 		usedColors[voxel.getColor()] = true;
 		return true;
@@ -2188,7 +2188,7 @@ void SceneManager::removeUnusedColors(int nodeId) {
 			++unused;
 		}
 	}
-	if (unused >= voxel::PaletteMaxColors) {
+	if (unused >= palette::PaletteMaxColors) {
 		Log::warn("Removing all colors from the palette is not allowed");
 		return;
 	}
@@ -2260,7 +2260,7 @@ bool SceneManager::init() {
 		return true;
 	}
 
-	voxel::Palette palette;
+	palette::Palette palette;
 	if (!palette.load(core::Var::getSafe(cfg::VoxEditLastPalette)->strVal().c_str())) {
 		palette = voxel::getPalette();
 	}
@@ -3028,7 +3028,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		camera->lerp(nodeCamera);
 	}
 	_sceneGraph.setActiveNode(nodeId);
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		if (palette.color(i).a > 0) {
 			_modifier.setCursorVoxel(voxel::createVoxel(palette, i));

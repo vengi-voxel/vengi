@@ -321,7 +321,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 	return image::ImagePtr();
 }
 
-bool importPalette(const core::String &filename, voxel::Palette &palette) {
+bool importPalette(const core::String &filename, palette::Palette &palette) {
 	if (io::isA(filename, io::format::palettes())) {
 		return palette.load(filename.c_str());
 	}
@@ -344,7 +344,7 @@ bool importPalette(const core::String &filename, voxel::Palette &palette) {
 	return false;
 }
 
-size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 				   const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumePalette);
 	const uint32_t magic = loadMagic(stream);

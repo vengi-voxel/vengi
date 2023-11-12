@@ -18,6 +18,8 @@
 namespace voxel {
 class RawVolume;
 class Region;
+}
+namespace palette {
 class Palette;
 }
 
@@ -233,7 +235,7 @@ protected:
 	SceneGraphKeyFrames *_keyFrames = nullptr;
 	core::Buffer<int, 32> _children;
 	SceneGraphNodeProperties _properties;
-	mutable core::Optional<voxel::Palette> _palette;
+	mutable core::Optional<palette::Palette> _palette;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -268,8 +270,8 @@ public:
 	bool setReference(int nodeId);
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
-	voxel::Palette &palette() const;
-	void setPalette(const voxel::Palette &palette);
+	palette::Palette &palette() const;
+	void setPalette(const palette::Palette &palette);
 
 	bool setPivot(const glm::vec3 &pivot);
 	const glm::vec3 &pivot() const;
@@ -302,7 +304,7 @@ public:
 	 * @brief Remaps the voxel colors to the new given palette
 	 * @note The palette is not set by this method - you have to call @c setPalette() on your own.
 	 */
-	voxel::Region remapToPalette(const voxel::Palette &palette, int skipColorIndex = -1);
+	voxel::Region remapToPalette(const palette::Palette &palette, int skipColorIndex = -1);
 	/**
 	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return an invalid
 	 * region - use @c SceneGraph::resolveRegion() instead.

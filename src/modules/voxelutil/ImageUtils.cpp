@@ -49,7 +49,7 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alpha) {
 	return maxHeight;
 }
 
-void importColoredHeightmap(voxel::RawVolumeWrapper& volume, voxel::PaletteLookup &palLookup, const image::ImagePtr& image, const voxel::Voxel &underground) {
+void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLookup &palLookup, const image::ImagePtr& image, const voxel::Voxel &underground) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	const voxel::Region& region = volume.region();
@@ -146,11 +146,11 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 }
 
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
-	const voxel::Palette &palette = voxel::getPalette();
+	const palette::Palette &palette = voxel::getPalette();
 	return importAsPlane(image, palette, thickness);
 }
 
-voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const voxel::Palette &palette, uint8_t thickness) {
+voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness) {
 	if (thickness <= 0) {
 		Log::error("Thickness can't be 0");
 		return nullptr;
@@ -192,7 +192,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth,
 	return importAsVolume(image, voxel::getPalette(), maxDepth, bothSides);
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const voxel::Palette &palette, uint8_t maxDepth, bool bothSides) {
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides) {
 	if (maxDepth <= 0) {
 		Log::error("Max height can't be 0");
 		return nullptr;
@@ -227,7 +227,7 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const voxel::Pale
 	}
 	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume* volume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(volume);
 	for (int x = 0; x < imageWidth; ++x) {

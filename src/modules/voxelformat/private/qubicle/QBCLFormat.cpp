@@ -174,7 +174,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z * 32);
 
 	const voxel::RawVolume *v = node.volume();
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			core::RGBA currentColor;
@@ -328,7 +328,7 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	return saveNode(stream, sceneGraph, sceneGraph.root());
 }
 
-size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
@@ -343,7 +343,7 @@ size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 
 bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-							voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+							palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	scenegraph::SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
@@ -393,7 +393,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
 	uint32_t index = 0;
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 
 	while (!zipStream.eos()) {
 		int y = 0;
@@ -482,7 +482,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 
 bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream &stream,
 						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-						   voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	const size_t skip = 3 * 3 * sizeof(float);
 	stream.skip((int64_t)skip); // TODO: rotation matrix?
 	uint32_t childCount;
@@ -505,7 +505,7 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream 
 
 bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-							  voxel::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
+							  palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	if (name.empty()) {
 		node.setName("Compound");
@@ -526,7 +526,7 @@ bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStre
 }
 
 bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, int parent, voxel::Palette &palette, Header &header) {
+						   scenegraph::SceneGraph &sceneGraph, int parent, palette::Palette &palette, Header &header) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t unknown;
@@ -605,12 +605,12 @@ bool QBCLFormat::readHeader(io::SeekableReadStream &stream, Header &header) {
 }
 
 bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-								scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) {
 	Header header;
 	wrapBool(readHeader(stream, header))
 
-	voxel::Palette palCopy = palette;
+	palette::Palette palCopy = palette;
 	wrapBool(readNodes(filename, stream, sceneGraph, -1, palCopy, header))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());

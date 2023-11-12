@@ -45,7 +45,7 @@ static inline uint8_t vxl_red(uint32_t c) {
 }
 
 bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	uint8_t *data = (uint8_t *)core_malloc(size);
@@ -76,7 +76,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 
 	for (int x = 0; x < (int)mapSize; x++) {
 		for (int y = 0; y < (int)mapSize; y++) {
@@ -100,7 +100,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 								 const LoadContext &ctx) {
 	const int64_t size = stream.size();
 	uint8_t *data = (uint8_t *)core_malloc(size);

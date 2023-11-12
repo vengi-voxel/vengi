@@ -177,7 +177,7 @@ SceneGraphNode *SceneGraph::firstModelNode() const {
 	return nullptr;
 }
 
-voxel::Palette &SceneGraph::firstPalette() const {
+palette::Palette &SceneGraph::firstPalette() const {
 	SceneGraphNode *node = firstModelNode();
 	if (node == nullptr) {
 		return voxel::getPalette();
@@ -574,12 +574,12 @@ bool SceneGraph::hasMoreThanOnePalette() const {
 	return false;
 }
 
-voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
-	voxel::Palette palette;
+palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
+	palette::Palette palette;
 	bool tooManyColors = false;
 	for (auto iter = beginAllModels(); iter != end(); ++iter) {
 		const SceneGraphNode &node = *iter;
-		const voxel::Palette &nodePalette = node.palette();
+		const palette::Palette &nodePalette = node.palette();
 		for (int i = 0; i < nodePalette.colorCount(); ++i) {
 			const core::RGBA rgba = nodePalette.color(i);
 			if (palette.hasColor(rgba)) {
@@ -604,12 +604,12 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 	if (tooManyColors) {
 		Log::debug("too many colors - restart, but skip similar");
 		palette.setSize(0);
-		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			palette.removeGlow(i);
 		}
 		for (auto iter = beginAllModels(); iter != end(); ++iter) {
 			const SceneGraphNode &node = *iter;
-			core::Array<bool, voxel::PaletteMaxColors> used;
+			core::Array<bool, palette::PaletteMaxColors> used;
 			if (removeUnused) {
 				used.fill(false);
 				voxelutil::visitVolume(*node.volume(), [&used] (int, int, int, const voxel::Voxel &voxel) {
@@ -618,7 +618,7 @@ voxel::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) cons
 			} else {
 				used.fill(true);
 			}
-			const voxel::Palette &nodePalette = node.palette();
+			const palette::Palette &nodePalette = node.palette();
 			for (int i = 0; i < nodePalette.colorCount(); ++i) {
 				if (!used[i]) {
 					Log::trace("color %i not used, skip it for this node", i);
@@ -679,7 +679,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skip
 	nodes.reserve(n);
 
 	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
-	const voxel::Palette &palette = mergePalettes(true);
+	const palette::Palette &palette = mergePalettes(true);
 	const KeyFrameIndex keyFrameIdx = 0;
 
 	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {

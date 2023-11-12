@@ -30,7 +30,7 @@ namespace glm {
 
 namespace voxel {
 
-::std::ostream &operator<<(::std::ostream &os, const voxel::Palette &palette);
+::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette);
 
 enum class ValidateFlags {
 	None = 0,
@@ -67,12 +67,12 @@ enum class ValidateFlags {
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags);
 
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel);
-void partialPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
-void paletteComparatorScaled(const voxel::Palette &pal1, const voxel::Palette &pal2, int maxDelta = 4);
-void orderPaletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
-void paletteComparator(const voxel::Palette &pal1, const voxel::Palette &pal2, float maxDelta = 0.001f);
+void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
+void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta = 4);
+void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
+void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
-void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
+void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
 
 }

@@ -6,9 +6,9 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 
-namespace voxel {
+namespace palette {
 
-bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	for (int i = 0; i < PaletteMaxColors; ++i) {
 		core::RGBA color;
 		if (stream.readUInt8(color.r) == -1) {
@@ -30,7 +30,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return true;
 }
 
-bool RGBPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool RGBPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const core::RGBA color = palette.color(i);
 		stream.writeUInt8(color.r);

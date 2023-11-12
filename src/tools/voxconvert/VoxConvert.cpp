@@ -128,8 +128,8 @@ void VoxConvert::usage() const {
 		}
 	}
 	Log::info("Built-in palettes:");
-	for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
-		Log::info(" * %s", voxel::Palette::builtIn[i]);
+	for (int i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
+		Log::info(" * %s", palette::Palette::builtIn[i]);
 	}
 	Log::info("Links:");
 	Log::info(" * Bug reports: https://github.com/mgerhardy/vengi");
@@ -220,7 +220,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (io::isA(outfile, io::format::palettes()) && infiles.size() == 1) {
-		voxel::Palette palette;
+		palette::Palette palette;
 		if (!voxelformat::importPalette(infiles[0], palette)) {
 			Log::error("Failed to import the palette from %s", infiles[0].c_str());
 			return app::AppState::InitFailure;
@@ -449,7 +449,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 			if (coloredHeightmap) {
-				voxel::PaletteLookup palLookup;
+				palette::PaletteLookup palLookup;
 				voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
 				node.setPalette(palLookup.palette());
 			} else {
@@ -485,7 +485,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			sceneGraph.emplace(core::move(node));
 		}
 		if (_exportPalette) {
-			voxel::Palette pal;
+			palette::Palette pal;
 			const core::String &filename = core::string::replaceExtension(infile, "png");
 			pal.convertImageToPalettePng(image, filename.c_str());
 		}

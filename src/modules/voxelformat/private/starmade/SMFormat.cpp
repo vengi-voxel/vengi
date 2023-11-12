@@ -106,7 +106,7 @@ static const struct BlockPalIdx {
 	{917, 12}, {918, 12}, {919, 12}, {920, 12}, {921, 12}};
 
 bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
 	io::ZipArchive archive;
 	if (!archive.init(filename, &stream)) {
@@ -178,7 +178,7 @@ static glm::ivec3 posByIndex(uint32_t blockIndex) {
 	return glm::ivec3(x, y, z);
 }
 
-size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							 const LoadContext &ctx) {
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
@@ -191,7 +191,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 						   const core::Map<int, int> &blockPal) {
 	const int64_t startHeader = stream.pos();
 	Log::debug("read segment");
-	voxel::Palette palette;
+	palette::Palette palette;
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
 		palette.color(i) = priv::paletteColors[i];

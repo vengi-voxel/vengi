@@ -203,7 +203,7 @@ bool CubzhFormat::loadHeader(io::SeekableReadStream &stream, Header &header) con
 }
 
 bool CubzhFormat::loadPalette(const core::String &filename, const Header &header, const Chunk &chunk,
-							  io::ReadStream &stream, voxel::Palette &palette) const {
+							  io::ReadStream &stream, palette::Palette &palette) const {
 	const bool legacy =
 		header.version == 5u || (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6);
 	uint8_t colorCount;
@@ -242,7 +242,7 @@ bool CubzhFormat::loadPalette(const core::String &filename, const Header &header
 }
 
 bool CubzhFormat::loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-							 scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
@@ -309,7 +309,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 }
 
 bool CubzhFormat::loadVersion5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 							   const LoadContext &ctx) const {
 	while (!stream.eos()) {
 		Chunk chunk;
@@ -361,7 +361,7 @@ bool CubzhFormat::loadSubChunkHeader(io::ReadStream &stream, Chunk &chunk) const
 }
 
 bool CubzhFormat::loadShape6(const core::String &filename, const Header &header, CubzhReadStream &stream,
-							 scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
@@ -372,7 +372,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	glm::vec3 pos{0};
 	glm::vec3 eulerAngles{0};
 	glm::vec3 scale{1};
-	voxel::Palette nodePalette = palette;
+	palette::Palette nodePalette = palette;
 	bool hasPivot = false;
 
 	while (!stream.eos()) {
@@ -521,7 +521,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 }
 
 bool CubzhFormat::loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 							   const LoadContext &ctx) const {
 	while (!stream.eos()) {
 		Log::debug("Remaining stream data: %d", (int)stream.remaining());
@@ -570,7 +570,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 }
 
 bool CubzhFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-									scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+									scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									const LoadContext &ctx) {
 	Header header;
 	wrapBool(loadHeader(stream, header))
@@ -582,7 +582,7 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, io::SeekableRe
 	return false;
 }
 
-size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 								const LoadContext &ctx) {
 	Header header;
 	wrapBool(loadHeader(stream, header))
@@ -744,7 +744,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 
 	{
 		WriteChunkStream ws(priv::CHUNK_ID_PALETTE_V6, stream);
-		const voxel::Palette &palette = sceneGraph.firstPalette();
+		const palette::Palette &palette = sceneGraph.firstPalette();
 		const uint8_t colorCount = palette.colorCount();
 		ws.writeUInt8(colorCount);
 		for (uint8_t i = 0; i < colorCount; ++i) {
@@ -798,7 +798,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 		if (node.palette().colorCount() > 0) {
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PALETTE_V6, ws);
-			const voxel::Palette &palette = node.palette();
+			const palette::Palette &palette = node.palette();
 			const uint8_t colorCount = palette.colorCount();
 			sub.writeUInt8(colorCount);
 			for (uint8_t i = 0; i < colorCount; ++i) {

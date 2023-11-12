@@ -42,7 +42,7 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 	const uint32_t numVoxels = state._w * state._h * state._d;
 	uint32_t index = 0;
 	uint32_t endIndex = 0;
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 	while (endIndex < numVoxels) {
 		uint8_t value;
 		uint8_t count;

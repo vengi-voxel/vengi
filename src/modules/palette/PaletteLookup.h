@@ -6,17 +6,16 @@
 
 #include "core/Color.h"
 #include "core/collection/Map.h"
-#include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 
-namespace voxel {
+namespace palette {
 
 class PaletteLookup {
 private:
-	voxel::Palette _palette;
+	palette::Palette _palette;
 	core::Map<core::RGBA, uint8_t, 521> _paletteMap;
 public:
-	PaletteLookup(const voxel::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
+	PaletteLookup(const palette::Palette &palette, int maxSize = 32768) : _palette(palette), _paletteMap(maxSize) {
 		if (_palette.colorCount() <= 0) {
 			_palette.nippon();
 		}
@@ -25,11 +24,11 @@ public:
 		_palette.nippon();
 	}
 
-	inline const voxel::Palette &palette() const {
+	inline const palette::Palette &palette() const {
 		return _palette;
 	}
 
-	inline voxel::Palette &palette() {
+	inline palette::Palette &palette() {
 		return _palette;
 	}
 

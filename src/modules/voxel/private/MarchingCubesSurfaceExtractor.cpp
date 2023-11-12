@@ -25,7 +25,7 @@ static inline float convertToDensity(const Voxel &voxel) {
 	return isAir(voxel.getMaterial()) ? 0.0f : MarchingCubeMaxDensity;
 }
 
-static inline Voxel blendMaterials(const Palette &palette, const Voxel &v1, const Voxel &v2, float val) {
+static inline Voxel blendMaterials(const palette::Palette &palette, const Voxel &v1, const Voxel &v2, float val) {
 	if (isAir(v1.getMaterial())) {
 		return v2;
 	}
@@ -53,7 +53,7 @@ static glm::vec3 computeCentralDifferenceGradient(const RawVolume::Sampler &volI
 	return glm::vec3(voxel1nx - voxel1px, voxel1ny - voxel1py, voxel1nz - voxel1pz);
 }
 
-void extractMarchingCubesMesh(const RawVolume *volume, const Palette &palette, const Region &region, ChunkMesh *result) {
+void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &region, ChunkMesh *result) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
 

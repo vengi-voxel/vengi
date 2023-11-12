@@ -59,7 +59,7 @@ static bool skipComma(io::SeekableReadStream &stream) {
 	return true;
 }
 
-size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 								  const LoadContext &ctx) {
 	char buf[512];
 	if (!stream.readLine(sizeof(buf), buf)) {
@@ -116,7 +116,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 }
 
 bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-								   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								   const LoadContext &ctx) {
 	char buf[512];
 	wrapBool(stream.readLine(sizeof(buf), buf))
@@ -141,7 +141,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	for (int y = sizey - 1; y >= 0; y--) {
 		for (int z = 0; z < sizez; z++) {
 			for (int x = 0; x < sizex; x++) {
@@ -189,7 +189,7 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 	core_assert(node);
 
 	const voxel::Region &region = node->region();
-	const voxel::Palette &palette = node->palette();
+	const palette::Palette &palette = node->palette();
 	voxel::RawVolume::Sampler sampler(node->volume());
 	const glm::ivec3 &lower = region.getLowerCorner();
 

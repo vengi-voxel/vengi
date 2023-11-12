@@ -96,7 +96,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 																   Format &destFormat, voxel::ValidateFlags flags) {
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume original(region);
-	const voxel::Palette pal1 = voxel::getPalette();
+	const palette::Palette pal1 = voxel::getPalette();
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
 	EXPECT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255u)));
 	io::BufferedReadWriteStream srcFormatStream((int64_t)(10 * 1024 * 1024));
@@ -143,7 +143,7 @@ void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const co
 	ASSERT_EQ(expectedVolumes, sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::checkColor(core::RGBA c1, const voxel::Palette &palette, uint8_t index, float maxDelta) {
+void AbstractVoxFormatTest::checkColor(core::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
 	const core::RGBA c2 = palette.color(index);
 	const float delta = core::Color::getDistance(c1, c2);
 	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
@@ -157,7 +157,7 @@ void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::Seeka
 	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
 	EXPECT_EQ(1u, sceneGraph.size());
 
-	voxel::Palette palette;
+	palette::Palette palette;
 	EXPECT_TRUE(palette.nippon());
 
 	const core::RGBA red(255, 0, 0);
@@ -230,7 +230,7 @@ void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta
 		<< "Failed to load " << filename.c_str();
 	EXPECT_EQ(1u, sceneGraph.size()) << "Unexpected scene graph size for " << filename.c_str();
 
-	voxel::Palette palette;
+	palette::Palette palette;
 	EXPECT_TRUE(palette.nippon());
 
 	const core::RGBA red = palette.color(37);
@@ -387,7 +387,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String &filename, Fo
 }
 
 void AbstractVoxFormatTest::testSaveSmallVolume(const core::String &filename, Format *format) {
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
 	voxel::RawVolume original(region);
@@ -479,7 +479,7 @@ void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Form
 
 void AbstractVoxFormatTest::testSaveLoadVolume(const core::String &filename, const voxel::RawVolume &original,
 											   Format *format, voxel::ValidateFlags flags, float maxDelta) {
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.magicaVoxel();
 
 	scenegraph::SceneGraph sceneGraph;
@@ -589,7 +589,7 @@ bool AbstractVoxFormatTest::loadGroups(const core::String &filename, Format &for
 	return format.load(filename, stream, sceneGraph, testLoadCtx);
 }
 
-int AbstractVoxFormatTest::loadPalette(const core::String &filename, Format &format, voxel::Palette &palette) {
+int AbstractVoxFormatTest::loadPalette(const core::String &filename, Format &format, palette::Palette &palette) {
 	const io::FilePtr &file = open(filename);
 	if (!file->validHandle()) {
 		Log::error("Could not open %s for reading the palette", filename.c_str());

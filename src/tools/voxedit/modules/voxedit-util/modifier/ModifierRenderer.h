@@ -31,7 +31,7 @@ public:
 	void renderBrushVolume(const video::Camera &camera) override;
 	void renderSelection(const video::Camera& camera) override;
 	void clearBrushMeshes() override;
-	void updateBrushVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette) override;
+	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos) override;
 	void updateSelectionBuffers(const Selections &selections) override;

@@ -345,7 +345,7 @@ void createSpaceColonizationTree(Volume& volume, const voxelgenerator::TreeSpace
  */
 template<class Volume>
 void createTree(Volume& volume, const voxelgenerator::TreeContext& ctx, math::Random& random) {
-	const voxel::Palette &palette = voxel::getPalette();
+	const palette::Palette &palette = voxel::getPalette();
 	const uint8_t green = palette.getClosestMatch(core::RGBA(123, 162, 63));
 	const uint8_t brown = palette.getClosestMatch(core::RGBA(143, 90, 60));
 	const voxel::Voxel trunkVoxel = voxel::createVoxel(palette, brown);

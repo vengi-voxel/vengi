@@ -108,7 +108,7 @@ core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 
 glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	// 1 x 256 is the texture format that we are using for our palette
-	const glm::vec2 &uv = image::Image::uv(colorIndex, 0, voxel::PaletteMaxColors, 1);
+	const glm::vec2 &uv = image::Image::uv(colorIndex, 0, palette::PaletteMaxColors, 1);
 	return uv;
 }
 
@@ -256,7 +256,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		voxelizeTris(node, posMap, fillHollow);
 	} else if (voxelizeMode == 1) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
-		voxel::Palette palette;
+		palette::Palette palette;
 
 		const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (createPalette) {
@@ -281,7 +281,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		}
 
 		Log::debug("create voxels");
-		voxel::PaletteLookup palLookup(palette);
+		palette::PaletteLookup palLookup(palette);
 		for (const Tri &tri : tris) {
 			voxelizeTriangle(trisMins, tri, [&] (const Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = tri.colorAt(uv);
@@ -358,7 +358,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 
 void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
 	voxel::RawVolumeWrapper wrapper(node.volume());
-	voxel::Palette palette;
+	palette::Palette palette;
 	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (createPalette) {
 		RGBAMap colors;

@@ -7,9 +7,9 @@
 #include "core/StringUtil.h"
 #include "engine-config.h"
 
-namespace voxel {
+namespace palette {
 
-bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	char line[2048];
 	bool alpha = false;
 	int colorCount = 0;
@@ -65,7 +65,7 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 	return colorCount > 0;
 }
 
-bool GimpPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool GimpPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeLine("GIMP Palette");
 	stream.writeStringFormat(false, "Name: %s\n", palette.name().c_str());
 	stream.writeStringFormat(false, "#Palette Name: %s\n", palette.name().c_str());

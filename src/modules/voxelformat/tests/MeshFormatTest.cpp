@@ -143,7 +143,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	ASSERT_NE(nullptr, node);
 	voxel::getPalette() = node->palette();
 	const voxel::RawVolume *v = node->volume();
-	const voxel::PaletteColorArray &paletteColors = node->palette().colors();
+	const palette::PaletteColorArray &paletteColors = node->palette().colors();
 	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(0, 0, 0).getColor()], 0.01f);
 	EXPECT_COLOR_NEAR(nipponRed, paletteColors[v->voxel(size * 2, 0, size * 2).getColor()], 0.01f);
 	EXPECT_COLOR_NEAR(nipponBlue, paletteColors[v->voxel(0, 0, size * 2).getColor()], 0.06f);

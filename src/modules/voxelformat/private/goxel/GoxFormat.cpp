@@ -179,12 +179,12 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 }
 
 bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
 	const int size = (int)sceneGraph.size();
 	voxel::RawVolume *modelVolume = new voxel::RawVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 	uint32_t blockCount;
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	if ((stream.readUInt32(blockCount)) != 0) {
 		Log ::error("Could not load gox file: Failed to read blockCount");
 		delete modelVolume;
@@ -445,7 +445,7 @@ bool GoxFormat::loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -489,7 +489,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -589,7 +589,7 @@ bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream &stream) {
 
 bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) {
 	GoxScopedChunkWriter scoped(stream, FourCC('M', 'A', 'T', 'E'));
-	const voxel::Palette &palette = sceneGraph.firstPalette();
+	const palette::Palette &palette = sceneGraph.firstPalette();
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::String &name = core::string::format("mat%i", i);
@@ -692,7 +692,7 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 					const size_t size = (size_t)BlockSize * BlockSize * BlockSize * 4;
 					uint32_t *data = (uint32_t *)core_malloc(size);
 					int offset = 0;
-					const voxel::Palette &palette = node.palette();
+					const palette::Palette &palette = node.palette();
 					voxelutil::visitVolume(
 						*mirrored, blockRegion,
 						[&](int, int, int, const voxel::Voxel &voxel) {

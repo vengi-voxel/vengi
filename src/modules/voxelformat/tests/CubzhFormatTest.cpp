@@ -17,7 +17,7 @@ TEST_F(CubzhFormatTest, testLoad) {
 
 TEST_F(CubzhFormatTest, testLoadPalette) {
 	CubzhFormat f;
-	voxel::Palette pal;
+	palette::Palette pal;
 	EXPECT_EQ(96, loadPalette("particubes.pcubes", f, pal));
 }
 

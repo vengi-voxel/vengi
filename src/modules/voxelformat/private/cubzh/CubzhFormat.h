@@ -296,7 +296,7 @@ protected:
 	};
 
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
 	bool loadSubChunkHeader(io::ReadStream &stream, Chunk &chunk) const;
@@ -308,19 +308,19 @@ protected:
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 
 	bool loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-					  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) const;
+					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 	bool loadShape6(const core::String &filename, const Header &header, CubzhReadStream &stream,
-					scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) const;
+					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
 
 	bool loadVersion5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-					  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) const;
+					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 	bool loadPalette(const core::String &filename, const Header &header, const Chunk &chunk, io::ReadStream &stream,
-					 voxel::Palette &palette) const;
+					 palette::Palette &palette) const;
 	bool loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
-					scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette, const LoadContext &ctx) const;
+					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,

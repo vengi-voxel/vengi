@@ -88,7 +88,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
 			case voxelgenerator::LUAParameterType::ColorIndex: {
-				const voxel::Palette &palette = sceneMgr().activePalette();
+				const palette::Palette &palette = sceneMgr().activePalette();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
 				if (val >= 0 && val < palette.colorCount()) {
@@ -255,7 +255,7 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener) {
 	ImGui::TooltipText("Mirror along the z axis at the reference position");
 }
 
-void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, voxel::Palette &palette) {
+void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
 	Modifier &modifier = sceneMgr().modifier();
 	ui::ScopedStyle selectionStyle;
 	if (modifier.selections().empty()) {
@@ -273,7 +273,7 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, voxel:
 	ImGui::TooltipText("Use the current selection as new stamp");
 }
 
-void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, voxel::Palette &palette, command::CommandExecutionListener &listener) {
+void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette, command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	StampBrush &brush = modifier.stampBrush();
 	ImGui::InputTextWithHint("Model", "Select a model from the asset panel", &_stamp, ImGuiInputTextFlags_ReadOnly);
@@ -348,7 +348,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-	voxel::Palette &palette = node.palette();
+	palette::Palette &palette = node.palette();
 
 	Modifier &modifier = sceneMgr().modifier();
 	if (!modifier.stampBrush().active()) {

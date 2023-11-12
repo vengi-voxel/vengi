@@ -540,7 +540,7 @@ bool VXRFormat::loadVXA(scenegraph::SceneGraph &sceneGraph, const core::String &
 }
 
 bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))

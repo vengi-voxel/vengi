@@ -312,7 +312,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	return true;
 }
 
-bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, const voxel::Palette &palette) {
+bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, const palette::Palette &palette) {
 	VXLHeader header;
 	SDL_strlcpy(header.filetype, "Voxel Animation", sizeof(header.filetype));
 	header.paletteCount = 1;
@@ -334,7 +334,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 		wrapBool(stream.writeUInt8(rgba.g))
 		wrapBool(stream.writeUInt8(rgba.b))
 	}
-	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(0))
@@ -431,7 +431,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 }
 
 bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_t nodeIdx,
-						  scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) const {
+						  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) const {
 	const uint64_t nodeStart = stream.pos();
 	const VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
 	const VXLLayerHeader &header = mdl.layerHeaders[nodeIdx];
@@ -527,7 +527,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 }
 
 bool VXLFormat::readLayers(io::SeekableReadStream &stream, VXLModel &mdl, scenegraph::SceneGraph &sceneGraph,
-						   const voxel::Palette &palette) const {
+						   const palette::Palette &palette) const {
 	const VXLHeader &hdr = mdl.header;
 	sceneGraph.reserve(hdr.layerCount);
 	const int64_t bodyPos = stream.pos();
@@ -617,7 +617,7 @@ bool VXLFormat::readLayerInfos(io::SeekableReadStream &stream, VXLModel &mdl) co
 	return true;
 }
 
-bool VXLFormat::readHeader(io::SeekableReadStream &stream, VXLModel &mdl, voxel::Palette &palette) {
+bool VXLFormat::readHeader(io::SeekableReadStream &stream, VXLModel &mdl, palette::Palette &palette) {
 	VXLHeader &hdr = mdl.header;
 	wrapBool(stream.readString(lengthof(hdr.filetype), hdr.filetype, false))
 	if (SDL_strcmp(hdr.filetype, "Voxel Animation") != 0) {
@@ -634,7 +634,7 @@ bool VXLFormat::readHeader(io::SeekableReadStream &stream, VXLModel &mdl, voxel:
 	Log::debug("Tailers: %u", hdr.layerInfoCount);
 	Log::debug("BodySize: %u", hdr.dataSize);
 
-	palette.setSize(voxel::PaletteMaxColors);
+	palette.setSize(palette::PaletteMaxColors);
 	bool valid = false;
 	for (uint32_t n = 0; n < hdr.paletteCount; ++n) {
 		wrap(stream.readUInt8(hdr.palette.startPaletteRemap)) // 0x1f
@@ -850,7 +850,7 @@ bool VXLFormat::saveHVA(const core::String &filename, const scenegraph::SceneGra
 	return true;
 }
 
-bool VXLFormat::loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+bool VXLFormat::loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 							 const LoadContext &ctx) {
 	const io::FilePtr &file = io::filesystem()->open(filename);
 	if (file && file->validHandle()) {
@@ -860,7 +860,7 @@ bool VXLFormat::loadFromFile(const core::String &filename, scenegraph::SceneGrap
 	return true;
 }
 
-size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	VXLModel mdl;
 	if (!readHeader(stream, mdl, palette)) {
@@ -870,7 +870,7 @@ size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	VXLModel mdl;
 
 	wrapBool(readHeader(stream, mdl, palette))

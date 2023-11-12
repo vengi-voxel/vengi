@@ -117,7 +117,7 @@ void ModifierRenderer::clearBrushMeshes() {
 	_volumeRenderer.clear();
 }
 
-void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
+void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	delete _volumeRenderer.setVolume(idx, volume, palette);
 	if (volume != nullptr) {
 		_volumeRenderer.extractRegion(idx, volume->region());

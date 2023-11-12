@@ -12,7 +12,7 @@ namespace voxelformat {
 class VolumeFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(VolumeFormatTest, testImportPalette) {
-	voxel::Palette palette;
+	palette::Palette palette;
 	EXPECT_EQ(0, palette.colorCount());
 	EXPECT_TRUE(importPalette("vox_character.vox", palette));
 	EXPECT_EQ(255, palette.colorCount());

@@ -50,10 +50,10 @@ inline ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
 }
 }
 
-namespace voxel {
+namespace palette {
 
-inline ::std::ostream &operator<<(::std::ostream &os, const voxel::Palette &palette) {
-	return os << voxel::Palette::print(palette).c_str();
+inline ::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette) {
+	return os << palette::Palette::print(palette).c_str();
 }
 
 }

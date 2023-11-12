@@ -23,7 +23,7 @@ protected:
 
 	static image::ImagePtr testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph, const ThumbnailContext &ctx);
 
-	void checkColor(core::RGBA, const voxel::Palette &palette, uint8_t index, float maxDelta);
+	void checkColor(core::RGBA, const palette::Palette &palette, uint8_t index, float maxDelta);
 
 	void dump(const core::String &srcFilename, const scenegraph::SceneGraph &sceneGraph);
 	void dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename);
@@ -73,7 +73,7 @@ protected:
 
 	bool loadGroups(const core::String& filename, Format& format, scenegraph::SceneGraph &sceneGraph);
 
-	int loadPalette(const core::String& filename, Format& format, voxel::Palette &palette);
+	int loadPalette(const core::String& filename, Format& format, palette::Palette &palette);
 
 	bool onInitApp() override;
 };

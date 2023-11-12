@@ -10,15 +10,18 @@
 namespace voxel {
 class RawVolume;
 class Voxel;
-class Palette;
 } // namespace voxel
+
+namespace palette {
+class Palette;
+}
 
 namespace voxelutil {
 
 /**
  * @brief Rotate the given volume by the given angles in degree
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const voxel::Palette &palette, const glm::ivec3 &angles,
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *source, const palette::Palette &palette, const glm::ivec3 &angles,
 									  const glm::vec3 &normalizedPivot);
 /**
  * @brief Rotate the given volume on the given axis by 90 degree. This method does not lose any voxels

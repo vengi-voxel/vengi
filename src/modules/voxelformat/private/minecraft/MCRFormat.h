@@ -84,7 +84,7 @@ private:
 	struct MinecraftSectionPalette {
 		core::Buffer<uint8_t> pal;
 		uint32_t numBits = 0u;
-		voxel::Palette mcpal;
+		palette::Palette mcpal;
 	};
 
 	using SectionVolumes = core::DynamicArray<voxel::RawVolume *>;
@@ -96,21 +96,21 @@ private:
 
 	// shared across versions
 	bool parsePaletteList(int dataVersion, const priv::NamedBinaryTag &palette, MinecraftSectionPalette &sectionPal);
-	bool parseBlockStates(int dataVersion, const voxel::Palette &palette, const priv::NamedBinaryTag &data,
+	bool parseBlockStates(int dataVersion, const palette::Palette &palette, const priv::NamedBinaryTag &data,
 						  SectionVolumes &volumes, int sectionY, const MinecraftSectionPalette &secPal);
 
 	// new version (>= 2844)
 	voxel::RawVolume *parseSections(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-									const voxel::Palette &palette);
+									const palette::Palette &palette);
 
 	// old version (< 2844)
 	voxel::RawVolume *parseLevelCompound(int dataVersion, const priv::NamedBinaryTag &root, int sector,
-										 const voxel::Palette &palette);
+										 const palette::Palette &palette);
 
 	bool readCompressedNBT(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream, int sector,
-						   const voxel::Palette &palette);
+						   const palette::Palette &palette);
 	bool loadMinecraftRegion(scenegraph::SceneGraph &sceneGraph, io::SeekableReadStream &stream,
-							 const voxel::Palette &palette);
+							 const palette::Palette &palette);
 
 	bool saveSections(const scenegraph::SceneGraph &sceneGraph, priv::NBTList &sections, int sector);
 	bool saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream, int sector);
@@ -118,7 +118,7 @@ private:
 
 protected:
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;

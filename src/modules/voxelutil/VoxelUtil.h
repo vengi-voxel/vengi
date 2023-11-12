@@ -12,16 +12,18 @@
 namespace voxel {
 class RawVolume;
 class Region;
-class Palette;
 class Voxel;
 class RawVolumeWrapper;
+}
+namespace palette {
+class Palette;
 }
 
 namespace voxelutil {
 
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
 
-void fillInterpolated(voxel::RawVolume *v, const voxel::Palette &palette);
+void fillInterpolated(voxel::RawVolume *v, const palette::Palette &palette);
 
 bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
 		  const voxel::Region &outRegion);
@@ -62,7 +64,7 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
  * @brief Remaps or converts the voxel colors to the new given palette by searching for the closest color
  * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
  */
-voxel::Region remapToPalette(voxel::RawVolume *v, const voxel::Palette &oldPalette, const voxel::Palette &newPalette, int skipColorIndex = -1);
+voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette, const palette::Palette &newPalette, int skipColorIndex = -1);
 
 /**
  * @brief Creates a diff between the two given volumes

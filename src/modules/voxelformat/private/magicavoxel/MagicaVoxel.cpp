@@ -63,7 +63,7 @@ bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNod
 	return node.setKeyFrames(kf);
 }
 
-void loadPaletteFromScene(const ogt_vox_scene *scene, voxel::Palette &palette) {
+void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette) {
 	palette.setSize(0);
 	int palIdx = 0;
 	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
@@ -84,7 +84,7 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, voxel::Palette &palette) {
 	Log::debug("vox load color count: %i", palette.colorCount());
 }
 
-bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, voxel::Palette &palette) {
+bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, palette::Palette &palette) {
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, 0);
 	if (scene == nullptr) {
 		Log::error("Could not load scene");
@@ -138,7 +138,7 @@ void checkRotation(const ogt_vox_transform &transform) {
 #endif
 }
 
-int findClosestPaletteIndex(const voxel::Palette &palette) {
+int findClosestPaletteIndex(const palette::Palette &palette) {
 	core::DynamicArray<glm::vec4> materialColors;
 	palette.toVec4f(materialColors);
 	const glm::vec4 first = materialColors[0];
@@ -217,7 +217,7 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 	return false;
 }
 
-core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const voxel::Palette &palette) {
+core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const palette::Palette &palette) {
 	core::DynamicArray<MVModelToNode> models;
 	models.reserve(scene->num_models);
 	for (uint32_t i = 0; i < scene->num_models; ++i) {

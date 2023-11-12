@@ -109,7 +109,7 @@ struct MementoState {
 	 */
 	voxel::Region region;
 	glm::vec3 pivot{0.0f};
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 
 	MementoState() :
 			type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max), keyFrameIdx(0) {
@@ -118,7 +118,7 @@ struct MementoState {
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
 				 const glm::vec3 &_pivot, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
-				 const core::Optional<voxel::Palette> &_palette = {})
+				 const core::Optional<palette::Palette> &_palette = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
 		  palette(_palette) {
@@ -127,7 +127,7 @@ struct MementoState {
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
 				 glm::vec3 &&_pivot, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
-				 core::Optional<voxel::Palette> &&_palette)
+				 core::Optional<palette::Palette> &&_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
 		  palette(_palette) {
@@ -136,7 +136,7 @@ struct MementoState {
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
 				 const glm::vec3 &_pivot, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
-				 const core::Optional<voxel::Palette> &_palette = {},
+				 const core::Optional<palette::Palette> &_palette = {},
 				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), pivot(_pivot),
@@ -146,7 +146,7 @@ struct MementoState {
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
 				 glm::vec3 &&_pivot, core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
-				 core::Optional<voxel::Palette> &&_palette,
+				 core::Optional<palette::Palette> &&_palette,
 				 core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), pivot(_pivot),
@@ -228,11 +228,11 @@ public:
 	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region, const glm::vec3 &pivot, const glm::mat4 &transformMatrix, scenegraph::KeyFrameIndex keyFrameIdx,
-				  const core::Optional<voxel::Palette> &palette = {});
+				  const core::Optional<palette::Palette> &palette = {});
 	void markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name,
 						   scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 						   const voxel::Region &region, const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &keyFrames,
-						   const core::Optional<voxel::Palette> &palette = {},
+						   const core::Optional<palette::Palette> &palette = {},
 						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
 	bool removeLast();
 

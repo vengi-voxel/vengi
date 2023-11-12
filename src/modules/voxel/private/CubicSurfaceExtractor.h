@@ -6,12 +6,15 @@
 
 #include <glm/fwd.hpp>
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 
 class RawVolume;
 class Region;
 struct ChunkMesh;
-class Palette;
 
 /**
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube

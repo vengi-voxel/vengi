@@ -34,16 +34,16 @@ private:
 
 	bool skipNode(io::SeekableReadStream &stream);
 	bool loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-					voxel::Palette &palette, Header &state);
+					palette::Palette &palette, Header &state);
 	bool loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-					  voxel::Palette &palette, Header &state);
+					  palette::Palette &palette, Header &state);
 	bool loadModel(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-				   voxel::Palette &palette, Header &state);
+				   palette::Palette &palette, Header &state);
 	bool loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
-				  voxel::Palette &palette, Header &state);
-	bool loadColorMap(io::SeekableReadStream &stream, voxel::Palette &palette);
+				  palette::Palette &palette, Header &state);
+	bool loadColorMap(io::SeekableReadStream &stream, palette::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 	bool saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
@@ -51,14 +51,14 @@ private:
 	bool saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					  const scenegraph::SceneGraphNode &node, bool colorMap) const;
 	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool colorMap) const;
-	bool saveColorMap(io::SeekableWriteStream &stream, const voxel::Palette &palette) const;
+	bool saveColorMap(io::SeekableWriteStream &stream, const palette::Palette &palette) const;
 	bool saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 				   const scenegraph::SceneGraphNode &node, bool colorMap) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

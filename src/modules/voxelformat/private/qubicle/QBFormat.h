@@ -6,7 +6,7 @@
 
 #include "voxelformat/Format.h"
 
-namespace voxel {
+namespace palette {
 class PaletteLookup;
 }
 
@@ -44,12 +44,12 @@ private:
 	enum class VisMaskSides : uint8_t { Invisble, Left, Right, Top, Bottom, Front, Back };
 
 	bool readColor(State &state, io::SeekableReadStream &stream, core::RGBA &color);
-	voxel::Voxel getVoxel(State &state, io::SeekableReadStream &stream, voxel::PaletteLookup &palLookup);
+	voxel::Voxel getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup);
 	bool readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					voxel::PaletteLookup &palLookup);
-	bool readPalette(State &state, io::SeekableReadStream &stream, voxel::Palette &palette);
+					palette::PaletteLookup &palLookup);
+	bool readPalette(State &state, io::SeekableReadStream &stream, palette::Palette &palette);
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, bool leftHanded) const;
@@ -57,7 +57,7 @@ private:
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

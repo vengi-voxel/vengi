@@ -457,7 +457,7 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
 	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	const voxel::Palette &palette = voxel::getPalette();
+	const palette::Palette &palette = voxel::getPalette();
 	for (const Vertex &vertex : vertices) {
 		const glm::ivec3 pos = glm::round(vertex.position);
 		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(vertex.color));
@@ -852,7 +852,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-			const voxel::Palette &palette = graphNode.palette();
+			const palette::Palette &palette = graphNode.palette();
 
 			for (int j = 0; j < nv; ++j) {
 				const voxel::VoxelVertex &v = vertices[j];

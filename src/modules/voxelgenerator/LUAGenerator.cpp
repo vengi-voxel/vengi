@@ -130,12 +130,12 @@ static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
-static voxel::Palette* luaVoxel_toPalette(lua_State* s, int n) {
-	voxel::Palette** palette = (voxel::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
+static palette::Palette* luaVoxel_toPalette(lua_State* s, int n) {
+	palette::Palette** palette = (palette::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
 	if (palette != nullptr) {
 		return *palette;
 	}
-	return *(voxel::Palette**)clua_getudata<voxel::Palette*>(s, n, luaVoxel_metapalette());
+	return *(palette::Palette**)clua_getudata<palette::Palette*>(s, n, luaVoxel_metapalette());
 }
 
 static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
@@ -173,11 +173,11 @@ static int luaVoxel_pushvolumewrapper(lua_State* s, scenegraph::SceneGraphNode* 
 	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 
-static int luaVoxel_pushpalette(lua_State* s, voxel::Palette& palette) {
+static int luaVoxel_pushpalette(lua_State* s, palette::Palette& palette) {
 	return clua_pushudata(s, &palette, luaVoxel_metapalette());
 }
 
-static int luaVoxel_pushpalette(lua_State* s, voxel::Palette* palette) {
+static int luaVoxel_pushpalette(lua_State* s, palette::Palette* palette) {
 	if (palette == nullptr) {
 		return clua_error(s, "No palette given - can't push");
 	}
@@ -303,7 +303,7 @@ static int luaVoxel_volumewrapper_importcoloredheightmap(lua_State *s) {
 	if (!image || !image->isLoaded()) {
 		return clua_error(s, "Image %s could not get loaded", imageName.c_str());
 	}
-	voxel::PaletteLookup palLookup(volume->node()->palette());
+	palette::PaletteLookup palLookup(volume->node()->palette());
 	const voxel::Voxel dirt = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	const voxel::Voxel underground = luaVoxel_getVoxel(s, 3, dirt.getColor());
 	voxelutil::importColoredHeightmap(*volume, palLookup, image, underground);
@@ -463,13 +463,13 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 }
 
 static int luaVoxel_palette_gc(lua_State *s) {
-	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	delete palette;
 	return 0;
 }
 
 static int luaVoxel_palette_colors(lua_State* s) {
-	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
 	for (int i = 0; i < palette->colorCount(); ++i) {
 		const glm::vec4& c = core::Color::fromRGBA(palette->color(i));
@@ -481,15 +481,15 @@ static int luaVoxel_palette_colors(lua_State* s) {
 }
 
 static int luaVoxel_palette_load(lua_State* s) {
-	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const char *filename = luaL_checkstring(s, 2);
 	if (!palette->load(filename)) {
 		core::String builtInPalettes;
-		for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
+		for (int i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
 			if (!builtInPalettes.empty()) {
 				builtInPalettes.append(", ");
 			}
-			builtInPalettes.append(voxel::Palette::builtIn[i]);
+			builtInPalettes.append(palette::Palette::builtIn[i]);
 		}
 		core::String supportedPaletteFormats;
 		for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
@@ -507,14 +507,14 @@ static int luaVoxel_palette_load(lua_State* s) {
 }
 
 static int luaVoxel_palette_color(lua_State* s) {
-	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
 	const glm::vec4& rgba = core::Color::fromRGBA(palette->color(color));
 	return clua_push(s, rgba);
 }
 
 static int luaVoxel_palette_setcolor(lua_State* s) {
-	voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
 	const uint8_t r = luaL_checkinteger(s, 3);
 	const uint8_t g = luaL_checkinteger(s, 4);
@@ -525,7 +525,7 @@ static int luaVoxel_palette_setcolor(lua_State* s) {
 }
 
 static int luaVoxel_palette_closestmatch(lua_State* s) {
-	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	core::DynamicArray<glm::vec4> materialColors;
 	palette->toVec4f(materialColors);
 	const float r = (float)luaL_checkinteger(s, 2) / 255.0f;
@@ -540,11 +540,11 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 }
 
 static int luaVoxel_palette_new(lua_State* s) {
-	return luaVoxel_pushpalette(s, new voxel::Palette());
+	return luaVoxel_pushpalette(s, new palette::Palette());
 }
 
 static int luaVoxel_palette_similar(lua_State* s) {
-	const voxel::Palette *palette = luaVoxel_toPalette(s, 1);
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const int paletteIndex = lua_tointeger(s, 2);
 	const int colorCount = lua_tointeger(s, 3);
 	if (paletteIndex < 0 || paletteIndex >= palette->colorCount()) {
@@ -870,7 +870,7 @@ static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_palette(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	voxel::Palette &palette = node->palette();
+	palette::Palette &palette = node->palette();
 	return luaVoxel_pushpalette(s, palette);
 }
 
@@ -889,7 +889,7 @@ static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	voxel::Palette *palette = luaVoxel_toPalette(s, 2);
+	palette::Palette *palette = luaVoxel_toPalette(s, 2);
 	if (clua_optboolean(s, 3, false)) {
 		node->remapToPalette(*palette);
 	}
@@ -1145,7 +1145,7 @@ bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArra
 						minValue = -1; // empty voxel is lua bindings
 					}
 					if (!maxSet) {
-						maxValue = voxel::PaletteMaxColors;
+						maxValue = palette::PaletteMaxColors;
 					}
 					if (!defaultSet) {
 						defaultValue = "1";

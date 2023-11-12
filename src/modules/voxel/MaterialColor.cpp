@@ -10,10 +10,10 @@
 namespace voxel {
 
 namespace _priv {
-static core::Optional<voxel::Palette> globalPalette;
+static core::Optional<palette::Palette> globalPalette;
 }
 
-void initPalette(const Palette &palette) {
+void initPalette(const palette::Palette &palette) {
 	_priv::globalPalette.setValue(palette);
 }
 
@@ -21,14 +21,14 @@ bool hasPalette() {
 	return _priv::globalPalette.hasValue();
 }
 
-Palette &getPalette() {
+palette::Palette &getPalette() {
 	if (!hasPalette()) {
-		Palette palette;
-		const core::VarPtr &var = core::Var::get(cfg::VoxelPalette, voxel::Palette::getDefaultPaletteName());
+		palette::Palette palette;
+		const core::VarPtr &var = core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName());
 		const core::String &defaultPalette = var->strVal();
 		if (!palette.load(defaultPalette.c_str())) {
 			palette.nippon();
-			var->setVal(voxel::Palette::getDefaultPaletteName());
+			var->setVal(palette::Palette::getDefaultPaletteName());
 		}
 		_priv::globalPalette.setValue(palette);
 	}

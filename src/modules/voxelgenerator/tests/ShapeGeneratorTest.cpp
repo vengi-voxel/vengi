@@ -50,7 +50,7 @@ protected:
 #endif
 	}
 
-	inline void volumeComparator(const voxel::RawVolume& volume1, const voxel::Palette &pal1, const voxel::RawVolume& volume2, const voxel::Palette &pal2) {
+	inline void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2) {
 		const voxel::Region& r1 = volume1.region();
 		const voxel::Region& r2 = volume2.region();
 		ASSERT_EQ(r1, r2) << "regions differ: " << r1.toString() << " vs " << r2.toString();

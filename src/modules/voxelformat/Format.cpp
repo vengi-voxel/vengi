@@ -89,11 +89,11 @@ void Format::calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize
 	Log::debug("maxs(%i:%i:%i)", maxs.x, maxs.y, maxs.z);
 }
 
-size_t Format::loadPalette(const core::String &, io::SeekableReadStream &, voxel::Palette &, const LoadContext &) {
+size_t Format::loadPalette(const core::String &, io::SeekableReadStream &, palette::Palette &, const LoadContext &) {
 	return 0;
 }
 
-size_t PaletteFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t PaletteFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 								  const LoadContext &ctx) {
 	scenegraph::SceneGraph sceneGraph;
 	loadGroupsPalette(filename, stream, sceneGraph, palette, ctx);
@@ -185,7 +185,7 @@ bool Format::stopExecution() {
 
 bool PaletteFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	voxel::Palette palette;
+	palette::Palette palette;
 	if (!loadGroupsPalette(filename, stream, sceneGraph, palette, ctx)) {
 		return false;
 	}
@@ -197,7 +197,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 						 io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
 		Log::debug("Need to merge palettes before saving");
-		const voxel::Palette &palette = sceneGraph.mergePalettes(true, emptyPaletteIndex());
+		const palette::Palette &palette = sceneGraph.mergePalettes(true, emptyPaletteIndex());
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 		for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
@@ -206,16 +206,16 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 			node.setPalette(palette);
 		}
 		return Format::save(newSceneGraph, filename, stream, ctx);
-	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < voxel::PaletteMaxColors) {
+	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < palette::PaletteMaxColors) {
 		Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyPaletteIndex());
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 		for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
-			voxel::Palette palette = node.palette();
+			palette::Palette palette = node.palette();
 			if (palette.color(emptyPaletteIndex()).a > 0) {
 				Log::debug("Need to replace %i", emptyPaletteIndex());
-				if (palette.colorCount() < voxel::PaletteMaxColors) {
+				if (palette.colorCount() < palette::PaletteMaxColors) {
 					Log::debug("Shift colors in palettes to make slot %i empty", emptyPaletteIndex());
 					for (int i = palette.colorCount(); i >= emptyPaletteIndex(); --i) {
 						palette.color(i) = palette.color(i - 1);
@@ -269,7 +269,7 @@ core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const 
 
 bool RGBAFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	voxel::Palette palette;
+	palette::Palette palette;
 	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette);
 	if (createPalette) {
 		const int64_t resetToPos = stream.pos();

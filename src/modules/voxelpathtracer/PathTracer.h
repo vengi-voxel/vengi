@@ -18,9 +18,12 @@ class Image;
 typedef core::SharedPtr<Image> ImagePtr;
 } // namespace image
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 class Mesh;
-class Palette;
 } // namespace voxel
 
 namespace scenegraph {

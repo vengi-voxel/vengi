@@ -29,7 +29,7 @@ TEST_F(AoSVXLFormatTest, testLoad) {
 
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	AoSVXLFormat f;
-	voxel::Palette pal;
+	palette::Palette pal;
 	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);
 }
 

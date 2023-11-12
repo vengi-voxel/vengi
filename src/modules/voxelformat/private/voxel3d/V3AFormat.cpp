@@ -28,7 +28,7 @@ namespace voxelformat {
 	}
 
 bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	core::String line;
 	int width, depth, height;
@@ -79,7 +79,7 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		return false;
 	}
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
@@ -164,7 +164,7 @@ bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	wrapBool(stream.writeString("DATA ", false))
 	voxel::RawVolume &volume = *node->volume();
-	const voxel::Palette &palette = node->palette();
+	const palette::Palette &palette = node->palette();
 	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {

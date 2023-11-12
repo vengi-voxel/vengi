@@ -383,14 +383,14 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 	return true;
 }
 
-voxel::Region SceneGraphNode::remapToPalette(const voxel::Palette &newPalette, int skipColorIndex) {
+voxel::Region SceneGraphNode::remapToPalette(const palette::Palette &newPalette, int skipColorIndex) {
 	if (type() != SceneGraphNodeType::Model) {
 		return voxel::Region::InvalidRegion;
 	}
 	return voxelutil::remapToPalette(volume(), palette(), newPalette, skipColorIndex);
 }
 
-void SceneGraphNode::setPalette(const voxel::Palette &palette) {
+void SceneGraphNode::setPalette(const palette::Palette &palette) {
 	if (palette.size() <= 0) {
 		return;
 	}
@@ -398,9 +398,9 @@ void SceneGraphNode::setPalette(const voxel::Palette &palette) {
 	_palette.value()->markDirty();
 }
 
-voxel::Palette &SceneGraphNode::palette() const {
+palette::Palette &SceneGraphNode::palette() const {
 	if (!_palette.hasValue()) {
-		voxel::Palette palette;
+		palette::Palette palette;
 		palette.nippon();
 		_palette.setValue(palette);
 	}

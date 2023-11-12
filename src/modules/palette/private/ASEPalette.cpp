@@ -9,7 +9,7 @@
 #include "core/StringUtil.h"
 #include "palette/Palette.h"
 
-namespace voxel {
+namespace palette {
 
 namespace priv {
 
@@ -17,7 +17,7 @@ enum BlockTypes { COLOR_START = 0x0001, GROUP_START = 0xc001, GROUP_END = 0xc002
 
 }
 
-bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	int colorCount = 0;
 
 	uint32_t magic;
@@ -110,7 +110,7 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return colorCount > 0;
 }
 
-bool ASEPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool ASEPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeUInt32(FourCC('A', 'S', 'E', 'F'));
 	stream.writeUInt16BE(1);						// versionMajor
 	stream.writeUInt16BE(0);						// versionMinor

@@ -49,7 +49,7 @@ public:
 	/**
 	 * @brief Returns the first valid palette from any of the nodes
 	 */
-	voxel::Palette &firstPalette() const;
+	palette::Palette &firstPalette() const;
 	/**
 	 * @brief Returns the first model node or @c nullptr if no model node exists
 	 */
@@ -69,7 +69,7 @@ public:
 	 * Inform the merge process about skipping that voxel slot
 	 * @sa hasMoreThanOnePalette()
 	 */
-	voxel::Palette mergePalettes(bool removeUnused, int emptyIndex = -1) const;
+	palette::Palette mergePalettes(bool removeUnused, int emptyIndex = -1) const;
 	/**
 	 * @brief Checks if the scene graph model nodes are using the same palette.
 	 * @note This is important for some formats that only support one palette for all nodes and can be used to
@@ -169,7 +169,7 @@ public:
 
 	glm::vec3 center() const;
 
-	using MergedVolumePalette = core::Pair<voxel::RawVolume*, voxel::Palette>;
+	using MergedVolumePalette = core::Pair<voxel::RawVolume*, palette::Palette>;
 	/**
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr for the volume and a dummy value for the palette

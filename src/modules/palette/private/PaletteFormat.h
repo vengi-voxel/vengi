@@ -7,17 +7,17 @@
 #include "io/Stream.h"
 #include "palette/Palette.h"
 
-namespace voxel {
+namespace palette {
 
 // TODO: http://www.selapa.net/swatches/colors/fileformats.php
 class PaletteFormat {
 public:
 	virtual ~PaletteFormat() = default;
-	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) = 0;
-	virtual bool save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) = 0;
+	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) = 0;
+	virtual bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) = 0;
 };
 
-bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette);
-bool savePalette(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream, const io::FormatDescription *desc = nullptr);
+bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette);
+bool savePalette(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream, const io::FormatDescription *desc = nullptr);
 
 } // namespace voxel

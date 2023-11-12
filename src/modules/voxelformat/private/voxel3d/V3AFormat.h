@@ -16,7 +16,7 @@ namespace voxelformat {
 class V3AFormat : public RGBAFormat {
 protected:
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;

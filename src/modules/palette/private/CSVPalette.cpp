@@ -5,9 +5,9 @@
 #include "CSVPalette.h"
 #include "core/Log.h"
 
-namespace voxel {
+namespace palette {
 
-bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	char line[2048];
 	int colorCount = 0;
 
@@ -28,7 +28,7 @@ bool CSVPalette::load(const core::String &filename, io::SeekableReadStream &stre
 	return colorCount > 0;
 }
 
-bool CSVPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool CSVPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	for (size_t i = 0; i < palette.size(); ++i) {
 		const core::RGBA &color = palette.color(i);
 		if (!stream.writeStringFormat(false, "%i, %i, %i\n", color.r, color.g, color.b)) {

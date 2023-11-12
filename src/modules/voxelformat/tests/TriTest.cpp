@@ -45,7 +45,7 @@ TEST_F(TriTest, testColorAt) {
 	ASSERT_EQ(256, texture->width());
 	ASSERT_EQ(1, texture->height());
 
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.nippon();
 
 	Tri tri;

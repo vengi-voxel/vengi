@@ -31,7 +31,7 @@ void ModifierFacade::shutdown() {
 	_modifierRenderer->shutdown();
 }
 
-void ModifierFacade::updateBrushVolumePreview(voxel::Palette &palette) {
+void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _modifierType;
 	if ((modifierType & ModifierType::Erase) == ModifierType::Erase) {
@@ -81,7 +81,7 @@ void ModifierFacade::updateBrushVolumePreview(voxel::Palette &palette) {
 	}
 }
 
-void ModifierFacade::render(const video::Camera &camera, voxel::Palette &palette) {
+void ModifierFacade::render(const video::Camera &camera, palette::Palette &palette) {
 	if (_locked) {
 		return;
 	}

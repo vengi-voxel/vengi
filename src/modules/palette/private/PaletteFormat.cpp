@@ -16,7 +16,7 @@
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
 
-namespace voxel {
+namespace palette {
 
 static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &desc, uint32_t magic) {
 	core::SharedPtr<PaletteFormat> format;
@@ -44,7 +44,7 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 	return {};
 }
 
-bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	const uint32_t magic = loadMagic(stream);
 	const io::FormatDescription *desc = io::getDescription(filename, magic, io::format::palettes());
 	if (desc == nullptr) {
@@ -65,7 +65,7 @@ bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, v
 	return false;
 }
 
-bool savePalette(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream,
+bool savePalette(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream,
 				 const io::FormatDescription *desc) {
 	Log::info("Save palette to %s", filename.c_str());
 	const core::String &extension = core::string::extractExtension(filename);

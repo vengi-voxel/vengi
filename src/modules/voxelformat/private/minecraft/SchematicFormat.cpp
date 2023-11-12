@@ -31,7 +31,7 @@
 namespace voxelformat {
 
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-										scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 										const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);
@@ -72,7 +72,7 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 }
 
 bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-									  voxel::Palette &palette) {
+									  palette::Palette &palette) {
 	const priv::NamedBinaryTag &blockData = schematic.get("BlockData");
 	if (blockData.valid() && blockData.type() == priv::TagType::BYTE_ARRAY) {
 		return parseBlockData(schematic, sceneGraph, palette, blockData);
@@ -82,7 +82,7 @@ bool SchematicFormat::loadSponge1And2(const priv::NamedBinaryTag &schematic, sce
 }
 
 bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-								  voxel::Palette &palette, int version) {
+								  palette::Palette &palette, int version) {
 	const priv::NamedBinaryTag &blocks = schematic.get("Blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::BYTE_ARRAY) {
 		return parseBlocks(schematic, sceneGraph, palette, blocks, version);
@@ -92,7 +92,7 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegr
 }
 
 bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-							  voxel::Palette &palette, int dataVersion) {
+							  palette::Palette &palette, int dataVersion) {
 	const priv::NamedBinaryTag &blocks = schematic.get("blocks");
 	if (blocks.valid() && blocks.type() == priv::TagType::LIST) {
 		const priv::NBTList &list = *blocks.list();
@@ -157,7 +157,7 @@ static glm::ivec3 voxelPosFromIndex(int width, int depth, int idx) {
 }
 
 bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-									 voxel::Palette &palette, const priv::NamedBinaryTag &blockData) {
+									 palette::Palette &palette, const priv::NamedBinaryTag &blockData) {
 	const core::DynamicArray<int8_t> *blocks = blockData.byteArray();
 	if (blocks == nullptr) {
 		Log::error("Invalid BlockData - expected byte array");
@@ -175,7 +175,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 		return false;
 	}
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	SchematicIntReader reader(blocks);
 	int index = 0;
@@ -213,7 +213,7 @@ bool SchematicFormat::parseBlockData(const priv::NamedBinaryTag &schematic, scen
 }
 
 bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-								  voxel::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
+								  palette::Palette &palette, const priv::NamedBinaryTag &blocks, int version) {
 	core::Buffer<int> mcpal;
 	const int paletteEntry = parsePalette(schematic, mcpal);
 
@@ -226,7 +226,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 0, 0, width - 1, height - 1, depth - 1));
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
@@ -265,7 +265,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 int SchematicFormat::parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const {
 	const priv::NamedBinaryTag &blockIds = schematic.get("BlockIDs"); // MCEdit2
 	if (blockIds.valid()) {
-		mcpal.resize(voxel::PaletteMaxColors);
+		mcpal.resize(palette::PaletteMaxColors);
 		int paletteEntry = 0;
 		const int blockCnt = (int)blockIds.compound()->size();
 		for (int i = 0; i < blockCnt; ++i) {

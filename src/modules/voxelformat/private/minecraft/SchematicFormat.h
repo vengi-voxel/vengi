@@ -26,16 +26,16 @@ class NamedBinaryTag;
 class SchematicFormat : public PaletteFormat {
 protected:
 	bool loadSponge1And2(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-						 voxel::Palette &palette);
+						 palette::Palette &palette);
 	bool parseBlockData(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
-						voxel::Palette &palette, const priv::NamedBinaryTag &blocks);
+						palette::Palette &palette, const priv::NamedBinaryTag &blocks);
 
-	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 				 int dataVersion);
 
-	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 					 int version);
-	bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+	bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 					 const priv::NamedBinaryTag &blocks, int version);
 
 	void addMetadata_r(const core::String &key, const priv::NamedBinaryTag &schematic,
@@ -44,7 +44,7 @@ protected:
 					   scenegraph::SceneGraphNode &node);
 	int parsePalette(const priv::NamedBinaryTag &schematic, core::Buffer<int> &mcpal) const;
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;

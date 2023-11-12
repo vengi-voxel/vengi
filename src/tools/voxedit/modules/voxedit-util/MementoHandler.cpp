@@ -366,7 +366,7 @@ void MementoHandler::markNodeRemoved(const scenegraph::SceneGraphNode &node) {
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	palette.setValue(node.palette());
 	Log::debug("palette node added hash: %" PRIu64, node.palette().hash());
 	markUndoKeyFrames(parentId, nodeId, node.reference(), name, node.type(), volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, node.pivot(), node.allKeyFrames(), palette);
@@ -378,7 +378,7 @@ void MementoHandler::markNodeAdded(const scenegraph::SceneGraphNode &node) {
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	palette.setValue(node.palette());
 	Log::debug("palette node added hash: %" PRIu64, node.palette().hash());
 	markUndoKeyFrames(parentId, nodeId, node.reference(), name, node.type(), volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, node.pivot(), node.allKeyFrames(), palette);
@@ -390,7 +390,7 @@ void MementoHandler::markInitialNodeState(const scenegraph::SceneGraphNode &node
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	if (_states.empty()) {
 		palette.setValue(node.palette());
 		Log::debug("palette modification hash: %" PRIu64, node.palette().hash());
@@ -406,7 +406,7 @@ void MementoHandler::markModification(const scenegraph::SceneGraphNode &node, co
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	if (_states.empty()) {
 		palette.setValue(node.palette());
 		Log::debug("palette modification hash: %" PRIu64, node.palette().hash());
@@ -426,7 +426,7 @@ void MementoHandler::markPaletteChange(const scenegraph::SceneGraphNode &node, c
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i palette change (%s)", nodeId, name.c_str());
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	palette.setValue(node.palette());
 	Log::debug("palette change hash: %" PRIu64, node.palette().hash());
 	markUndo(parentId, nodeId, node.reference(), name, node.type(), volume, MementoType::SceneNodePaletteChanged, modifiedRegion, node.pivot(), transformMatrix, keyFrameIdx, palette);
@@ -476,7 +476,7 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 
 void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
 							  MementoType type, const voxel::Region &region, const glm::vec3 &pivot, const glm::mat4 &worldMatrix,
-							  scenegraph::KeyFrameIndex keyFrameIdx, const core::Optional<voxel::Palette> &palette) {
+							  scenegraph::KeyFrameIndex keyFrameIdx, const core::Optional<palette::Palette> &palette) {
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}
@@ -498,7 +498,7 @@ bool MementoHandler::removeLast() {
 void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name, scenegraph::SceneGraphNodeType nodeType,
 									   const voxel::RawVolume *volume, MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
 									   const scenegraph::SceneGraphKeyFramesMap &keyFrames,
-									   const core::Optional<voxel::Palette> &palette,
+									   const core::Optional<palette::Palette> &palette,
 									   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties) {
 	if (!markUndoPreamble(nodeId)) {
 		return;

@@ -46,7 +46,7 @@ static const uint8_t EMPTY_PALETTE = 0xFFu;
 	}
 
 bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel &voxel,
-						 const voxel::Palette &nodePalette, const voxel::Palette &palette) const {
+						 const palette::Palette &nodePalette, const palette::Palette &palette) const {
 	if (length == 0) {
 		return true;
 	}
@@ -130,10 +130,10 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		}
 	}
 
-	voxel::Palette palette = sceneGraph.mergePalettes(true, EMPTY_PALETTE);
+	palette::Palette palette = sceneGraph.mergePalettes(true, EMPTY_PALETTE);
 	int numColors = palette.colorCount();
-	if (numColors >= voxel::PaletteMaxColors) {
-		numColors = voxel::PaletteMaxColors - 1;
+	if (numColors >= palette::PaletteMaxColors) {
+		numColors = palette::PaletteMaxColors - 1;
 	}
 	if (numColors <= 0) {
 		Log::error("No palette entries found - can't save");
@@ -148,7 +148,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeUInt8(matcolor.b))
 		wrapBool(stream.writeUInt8(matcolor.a))
 	}
-	for (int i = numColors; i < voxel::PaletteMaxColors; ++i) {
+	for (int i = numColors; i < palette::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(255))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(255))
@@ -170,7 +170,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			wrapBool(stream.writeUInt8(255))
 		}
 	}
-	for (int i = numColors; i < voxel::PaletteMaxColors; ++i) {
+	for (int i = numColors; i < palette::PaletteMaxColors; ++i) {
 		wrapBool(stream.writeUInt8(255))
 		wrapBool(stream.writeUInt8(0))
 		wrapBool(stream.writeUInt8(255))
@@ -256,7 +256,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 }
 
 bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))

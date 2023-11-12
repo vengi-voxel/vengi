@@ -83,7 +83,7 @@ protected:
 		video::Buffer _vertexBuffer[MeshType_Max];
 		int _reference = -1;
 		voxel::RawVolume* _rawVolume = nullptr;
-		core::Optional<voxel::Palette> _palette;
+		core::Optional<palette::Palette> _palette;
 
 		uint32_t indices(MeshType type) const {
 			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
@@ -190,7 +190,7 @@ public:
 	}
 
 	bool extractRegion(int idx, const voxel::Region& region);
-	const voxel::Palette &palette(int idx = 0) const;
+	const palette::Palette &palette(int idx = 0) const;
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
@@ -198,7 +198,7 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette, bool meshDelete = true);
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete = true);
 	voxel::RawVolume* setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
 	/**
 	 * @brief Allows to render the same model with different transforms

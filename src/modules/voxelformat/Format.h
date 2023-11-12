@@ -15,9 +15,12 @@
 #include "voxelformat/FormatThumbnail.h"
 #include <glm/fwd.hpp>
 
+namespace palette {
+class Palette;
+}
+
 namespace voxel {
 class Mesh;
-class Palette;
 } // namespace voxel
 
 namespace scenegraph {
@@ -159,7 +162,7 @@ public:
 	 *
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx);
 	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  const LoadContext &ctx);
@@ -182,7 +185,7 @@ class NoColorFormat : public Format {};
 class PaletteFormat : public Format {
 protected:
 	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								   const LoadContext &ctx) = 0;
 
 	/**
@@ -193,7 +196,7 @@ protected:
 	}
 	/**
 	 * A few formats are using a palette index to indicate an empty voxel.
-	 * @return A palette index of @c -1 means that the format doesn't support this feature. Otherwise an index between @c [0,voxel::PaletteMaxColors] must be used
+	 * @return A palette index of @c -1 means that the format doesn't support this feature. Otherwise an index between @c [0,palette::PaletteMaxColors] must be used
 	 */
 	virtual int emptyPaletteIndex() const {
 		return -1;
@@ -202,7 +205,7 @@ protected:
 					const LoadContext &ctx) override final;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 	bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
 			  const SaveContext &ctx) override final;
@@ -217,7 +220,7 @@ public:
 class RGBAFormat : public Format {
 protected:
 	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-								scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) = 0;
 	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;

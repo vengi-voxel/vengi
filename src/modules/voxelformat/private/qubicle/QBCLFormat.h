@@ -53,24 +53,24 @@ private:
 
 	bool readHeader(io::SeekableReadStream &stream, Header &header);
 	bool readMatrix(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					int parent, const core::String &name, voxel::Palette &palette, Header &header,
+					int parent, const core::String &name, palette::Palette &palette, Header &header,
 					const NodeHeader &nodeHeader);
 	bool readModel(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   int parent, const core::String &name, voxel::Palette &palette, Header &header,
+				   int parent, const core::String &name, palette::Palette &palette, Header &header,
 				   const NodeHeader &nodeHeader);
 	bool readCompound(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					  int parent, const core::String &name, voxel::Palette &palette, Header &header,
+					  int parent, const core::String &name, palette::Palette &palette, Header &header,
 					  const NodeHeader &nodeHeader);
 	bool readNodes(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   int parent, voxel::Palette &palette, Header &header);
+				   int parent, palette::Palette &palette, Header &header);
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 								   const LoadContext &ctx) override;

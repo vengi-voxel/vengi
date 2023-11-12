@@ -4,9 +4,9 @@
 
 #include "QBCLPalette.h"
 
-namespace voxel {
+namespace palette {
 
-bool QBCLPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool QBCLPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	palette.setName(filename);
 
 	core::String name;
@@ -60,7 +60,7 @@ bool QBCLPalette::load(const core::String &filename, io::SeekableReadStream &str
 	return colorCount > 0;
 }
 
-bool QBCLPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool QBCLPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	return false;
 }
 

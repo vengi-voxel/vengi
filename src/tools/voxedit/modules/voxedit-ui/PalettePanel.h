@@ -13,7 +13,7 @@ namespace scenegraph {
 class SceneGraphNode;
 }
 
-namespace voxel {
+namespace palette {
 class Palette;
 }
 

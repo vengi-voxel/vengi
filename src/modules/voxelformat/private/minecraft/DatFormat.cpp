@@ -30,7 +30,7 @@
 namespace voxelformat {
 
 bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								  const LoadContext &loadctx) {
 	palette.minecraft();
 	io::ZipReadStream zipStream(stream);

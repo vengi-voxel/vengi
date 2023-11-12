@@ -23,7 +23,7 @@
 namespace voxelformat {
 
 size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream,
-								   voxel::Palette &palette, const LoadContext &ctx) {
+								   palette::Palette &palette, const LoadContext &ctx) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(width))
 	wrap(stream.readUInt32(depth))
@@ -35,7 +35,7 @@ size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableRea
 	}
 
 	stream.skip((int64_t)width * height * depth);
-	palette.setSize(voxel::PaletteMaxColors);
+	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
 		wrapBool(priv::readRGBScaledColor(stream, color))
@@ -45,7 +45,7 @@ size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableRea
 }
 
 bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-									   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									   const LoadContext &ctx) {
 	uint32_t depth, height, width;
 	wrap(stream.readUInt32(width))
@@ -65,7 +65,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 
 	const int64_t voxelPos = stream.pos();
 	stream.skip((int64_t)width * height * depth);
-	palette.setSize(voxel::PaletteMaxColors);
+	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
 		wrapBool(priv::readRGBScaledColor(stream, color))
@@ -105,7 +105,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	core_assert(node);
 
 	const voxel::Region &region = node->region();
-	const voxel::Palette &palette = node->palette();
+	const palette::Palette &palette = node->palette();
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
@@ -132,7 +132,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 		const core::RGBA &color = palette.color(i);
 		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}
-	for (int i = palette.colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
 		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}

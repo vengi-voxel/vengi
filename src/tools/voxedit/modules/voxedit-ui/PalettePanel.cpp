@@ -27,7 +27,7 @@ namespace voxedit {
 PalettePanel::PalettePanel()
 	: _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
 	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())) {
-	_currentSelectedPalette = voxel::Palette::getDefaultPaletteName();
+	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }
 
 void PalettePanel::reloadAvailablePalettes() {
@@ -38,7 +38,7 @@ void PalettePanel::reloadAvailablePalettes() {
 		if (file.type != io::FilesystemEntry::Type::file) {
 			continue;
 		}
-		const core::String& name = voxel::Palette::extractPaletteName(file.name);
+		const core::String& name = palette::Palette::extractPaletteName(file.name);
 		_availablePalettes.push_back(name);
 	}
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
@@ -55,7 +55,7 @@ void PalettePanel::reloadAvailablePalettes() {
 }
 
 void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	voxel::Palette &palette = node.palette();
+	palette::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
@@ -212,9 +212,9 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 					_currentSelectedPalette = palette;
 				}
 			}
-			for (int i = 0; i < lengthof(voxel::Palette::builtIn); ++i) {
-				if (ImGui::Selectable(voxel::Palette::builtIn[i], voxel::Palette::builtIn[i] == _currentSelectedPalette)) {
-					_currentSelectedPalette = voxel::Palette::builtIn[i];
+			for (int i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
+				if (ImGui::Selectable(palette::Palette::builtIn[i], palette::Palette::builtIn[i] == _currentSelectedPalette)) {
+					_currentSelectedPalette = palette::Palette::builtIn[i];
 				}
 			}
 			ImGui::EndCombo();
@@ -240,7 +240,7 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 }
 
 void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	voxel::Palette &palette = node.palette();
+	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu(ICON_FA_PALETTE" File")) {
 			ImGui::CommandMenuItem(ICON_FA_PALETTE " Load##loadpalette", "importpalette", true, &listener);
@@ -291,7 +291,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 		_intensityChange = 0.0f;
 	}
 
-	voxel::Palette &palette = node.palette();
+	palette::Palette &palette = node.palette();
 	if (ImGui::ColorEdit4("Color closest match", glm::value_ptr(_closestColor), ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs)) {
 		const core::RGBA rgba = core::Color::getRGBA(_closestColor);
 		_closestMatch = palette.getClosestMatch(rgba);
@@ -322,7 +322,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 		if (node.isModelNode()) {
 			paletteMenuBar(node, listener);
 			const ImVec2 &pos = ImGui::GetCursorScreenPos();
-			for (int palIdx = 0; palIdx < voxel::PaletteMaxColors; ++palIdx) {
+			for (int palIdx = 0; palIdx < palette::PaletteMaxColors; ++palIdx) {
 				addColor(pos.x, palIdx, node, listener);
 			}
 			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
@@ -350,7 +350,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 }
 
 bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	voxel::Palette &palette = node.palette();
+	palette::Palette &palette = node.palette();
 	ImGuiColorEditFlags flags = ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB;
 	flags |= ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_AlphaBar;
 	if (core::Var::getSafe(cfg::VoxEditColorWheel)->boolVal()) {

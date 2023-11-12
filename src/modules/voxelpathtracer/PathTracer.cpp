@@ -80,7 +80,7 @@ PathTracer::~PathTracer() {
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							 const voxel::Mesh &mesh, bool opaque) {
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const voxel::IndexArray &indices = mesh.getIndexVector();
@@ -119,7 +119,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		const glm::vec3 pos1 = transform.apply(vertex1.position, pivot * size);
 		const glm::vec3 pos2 = transform.apply(vertex2.position, pivot * size);
 		// uv is the same for all three vertices
-		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, voxel::PaletteMaxColors, 1);
+		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette::PaletteMaxColors, 1);
 		yocto::shape_data *shape;
 		// color is the same for all three vertices
 		core::RGBA rgba;
@@ -194,7 +194,7 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 void PathTracer::setupBaseColorMaterial(const scenegraph::SceneGraphNode &node) {
 	yocto::texture_data texture;
 	texture.height = 1;
-	texture.width = voxel::PaletteMaxColors;
+	texture.width = palette::PaletteMaxColors;
 	for (int i = 0; i < node.palette().colorCount(); ++i) {
 		const core::RGBA color = node.palette().color(i);
 		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
@@ -224,7 +224,7 @@ void PathTracer::setupBaseColorMaterial(const scenegraph::SceneGraphNode &node) 
 void PathTracer::setupGlowMaterial(const scenegraph::SceneGraphNode &node) {
 	yocto::texture_data texture;
 	texture.height = 1;
-	texture.width = voxel::PaletteMaxColors;
+	texture.width = palette::PaletteMaxColors;
 	for (int i = 0; i < node.palette().colorCount(); ++i) {
 		const core::RGBA color = node.palette().glowColor(i);
 		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});

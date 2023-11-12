@@ -74,7 +74,7 @@ static core::String makeNameUnique(const scenegraph::SceneGraph &sceneGraph, cor
 }
 
 bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	uint32_t magic, version, blank, matrixCount;
 	wrap(stream.readUInt32(magic))
@@ -93,7 +93,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;

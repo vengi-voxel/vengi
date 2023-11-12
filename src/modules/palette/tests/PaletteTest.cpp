@@ -7,10 +7,9 @@
 #include "app/tests/AbstractTest.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
-#include "voxel/MaterialColor.h"
 #include "palette/PaletteLookup.h"
 
-namespace voxel {
+namespace palette {
 
 class PaletteTest : public app::AbstractTest {
 protected:
@@ -206,7 +205,7 @@ TEST_F(PaletteTest, testAddColorsQuantize) {
 	for (int i = 0; i < lengthof(colors); ++i) {
 		pal.addColorToPalette(colors[i], false);
 	}
-	EXPECT_EQ(voxel::PaletteMaxColors, pal.colorCount());
+	EXPECT_EQ(palette::PaletteMaxColors, pal.colorCount());
 }
 
 TEST_F(PaletteTest, testExtractPaletteName) {
@@ -216,8 +215,8 @@ TEST_F(PaletteTest, testExtractPaletteName) {
 TEST_F(PaletteTest, testCreateAndLoadPalette) {
 	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
-	voxel::Palette palette;
-	EXPECT_TRUE(voxel::Palette::createPalette(img, palette)) << "Failed to create palette image";
+	palette::Palette palette;
+	EXPECT_TRUE(palette::Palette::createPalette(img, palette)) << "Failed to create palette image";
 }
 
 } // namespace voxel

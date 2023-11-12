@@ -117,7 +117,7 @@ private:
 	bool voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 				  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
 				  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
-				  voxel::PaletteLookup &palLookup, const core::String &name);
+				  palette::PaletteLookup &palLookup, const core::String &name);
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
 

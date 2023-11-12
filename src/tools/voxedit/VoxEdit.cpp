@@ -121,7 +121,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditGizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoBounds, "false", "Allow to change the volume bounds in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModelGizmo, "false", "Show the gizmo to also translate the region", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditLastPalette, voxel::Palette::builtIn[0]);
+	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<2, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui - restart on change", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", "Show the tip of the day on startup", core::Var::boolValidator);

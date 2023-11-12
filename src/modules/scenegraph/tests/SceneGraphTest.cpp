@@ -70,7 +70,7 @@ TEST_F(SceneGraphTest, testNode) {
 
 TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 	SceneGraph sceneGraph;
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.nippon();
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
@@ -80,14 +80,14 @@ TEST_F(SceneGraphTest, testPaletteMergeSingleNode) {
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	const palette::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
 
 TEST_F(SceneGraphTest, testPaletteMergeSkipFirst) {
 	SceneGraph sceneGraph;
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.nippon();
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
@@ -97,13 +97,13 @@ TEST_F(SceneGraphTest, testPaletteMergeSkipFirst) {
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true, 0);
+	const palette::Palette &palette = sceneGraph.mergePalettes(true, 0);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
 }
 
 TEST_F(SceneGraphTest, testPaletteMergeSkipLast) {
 	SceneGraph sceneGraph;
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.nippon();
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
@@ -113,13 +113,13 @@ TEST_F(SceneGraphTest, testPaletteMergeSkipLast) {
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true, 255);
+	const palette::Palette &palette = sceneGraph.mergePalettes(true, 255);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
 }
 
 TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 	SceneGraph sceneGraph;
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.nippon();
 	voxel::RawVolume v(voxel::Region(0, 1));
 	{
@@ -136,7 +136,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	const palette::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount(), pal.colorCount()) << palette << pal;
 	ASSERT_EQ(palette.hash(), pal.hash()) << palette << pal;
 }
@@ -144,7 +144,7 @@ TEST_F(SceneGraphTest, testPaletteMergeSamePalettes) {
 TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 	SceneGraph sceneGraph;
 	{
-		voxel::Palette pal;
+		palette::Palette pal;
 		pal.nippon();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
@@ -154,7 +154,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
 	{
-		voxel::Palette pal;
+		palette::Palette pal;
 		pal.magicaVoxel();
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
@@ -163,7 +163,7 @@ TEST_F(SceneGraphTest, testPaletteMergeTooManyColors) {
 		node.setPalette(pal);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
-	const voxel::Palette &palette = sceneGraph.mergePalettes(true);
+	const palette::Palette &palette = sceneGraph.mergePalettes(true);
 	ASSERT_EQ(palette.colorCount(), 2) << palette;
 }
 

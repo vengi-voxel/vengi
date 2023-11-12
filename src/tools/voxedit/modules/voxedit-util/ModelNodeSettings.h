@@ -18,7 +18,7 @@ static constexpr const int MaxVolumeSize = 256;
 
 struct ModelNodeSettings {
 	core::String name;
-	core::Optional<voxel::Palette> palette;
+	core::Optional<palette::Palette> palette;
 	glm::ivec3 position;
 	glm::ivec3 size;
 	int parent = 0;

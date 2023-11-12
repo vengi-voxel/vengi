@@ -238,11 +238,11 @@ private:
 	bool loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const;
 	bool loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const VMaxObject &obj,
-							   const voxel::Palette &palette) const;
-	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName, voxel::Palette &palette,
+							   const palette::Palette &palette) const;
+	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName, palette::Palette &palette,
 								const LoadContext &ctx) const;
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 public:
@@ -252,7 +252,7 @@ public:
 	}
 	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 								   const LoadContext &ctx) override;
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

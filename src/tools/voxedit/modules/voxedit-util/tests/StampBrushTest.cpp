@@ -26,7 +26,7 @@ TEST_F(StampBrushTest, testExecute) {
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
-	voxel::Palette palette;
+	palette::Palette palette;
 	palette.nippon();
 
 	EXPECT_FALSE(brush.active());

@@ -41,8 +41,8 @@ private:
 
 	void updateScriptBrushPanel(command::CommandExecutionListener &listener);
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
-	void stampBrushUseSelection(scenegraph::SceneGraphNode &node, voxel::Palette &palette);
-	void stampBrushOptions(scenegraph::SceneGraphNode &node, voxel::Palette &palette, command::CommandExecutionListener &listener);
+	void stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette);
+	void stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette, command::CommandExecutionListener &listener);
 	void updateStampBrushPanel(command::CommandExecutionListener &listener);
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
 	void reloadScriptParameters(const core::String& script);

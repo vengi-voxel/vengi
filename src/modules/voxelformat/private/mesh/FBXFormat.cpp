@@ -130,7 +130,7 @@ Objects: {
 				return false;
 			}
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
-			const voxel::Palette &palette = graphNode.palette();
+			const palette::Palette &palette = graphNode.palette();
 			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();

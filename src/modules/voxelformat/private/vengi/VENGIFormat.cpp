@@ -117,7 +117,7 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyfram
 bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph,
 										const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
 	wrapBool(stream.writeUInt32(FourCC('P', 'A', 'L', 'C')))
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 	wrapBool(stream.writeUInt32(palette.colorCount()))
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt32(palette.color(i).rgba))
@@ -125,7 +125,7 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt32(palette.glowColor(i).rgba))
 	}
-	const voxel::PaletteIndicesArray &indices = palette.indices();
+	const palette::PaletteIndicesArray &indices = palette.indices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt8(indices[i]))
 	}
@@ -197,7 +197,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	node.setVolume(v, true);
-	const voxel::Palette &palette = node.palette();
+	const palette::Palette &palette = node.palette();
 
 	auto visitor = [&stream, v, &palette](int x, int y, int z, const voxel::Voxel &voxel) {
 		const bool air = stream.readBool();
@@ -216,7 +216,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 
 bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 										uint32_t version, io::ReadStream &stream) {
-	voxel::Palette palette;
+	palette::Palette palette;
 	uint32_t colorCount;
 	wrap(stream.readUInt32(colorCount))
 	Log::debug("Load node palette with %u color", colorCount);
@@ -227,7 +227,7 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(palette.glowColor(i).rgba))
 	}
-	voxel::PaletteIndicesArray &indices = palette.indices();
+	palette::PaletteIndicesArray &indices = palette.indices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt8(indices[i]))
 	}
@@ -241,7 +241,7 @@ bool VENGIFormat::loadNodePaletteIdentifier(scenegraph::SceneGraph &sceneGraph, 
 											uint32_t version, io::ReadStream &stream) {
 	core::String name;
 	wrapBool(stream.readPascalStringUInt16LE(name))
-	voxel::Palette palette;
+	palette::Palette palette;
 	Log::debug("Load node palette %s", name.c_str());
 	palette.load(name.c_str());
 	if (palette.colorCount() == 0) {

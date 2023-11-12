@@ -18,7 +18,7 @@ TEST_F(CubFormatTest, testLoad) {
 
 TEST_F(CubFormatTest, testLoadPalette) {
 	CubFormat f;
-	voxel::Palette pal;
+	palette::Palette pal;
 	EXPECT_EQ(5, loadPalette("rgb.cub", f, pal));
 }
 

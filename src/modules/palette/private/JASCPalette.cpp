@@ -6,9 +6,9 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 
-namespace voxel {
+namespace palette {
 
-bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette) {
+bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	char line[512];
 	if (!stream.readLine(sizeof(line), line)) {
 		Log::error("Failed to read first line of JASC palette file %s", filename.c_str());
@@ -48,7 +48,7 @@ bool JASCPalette::load(const core::String &filename, io::SeekableReadStream &str
 	return colorCount > 0;
 }
 
-bool JASCPalette::save(const voxel::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+bool JASCPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
 	stream.writeLine("JASC-PAL");
 	stream.writeLine("0100");
 	stream.writeLine(core::string::format("%i", (int)palette.size()));

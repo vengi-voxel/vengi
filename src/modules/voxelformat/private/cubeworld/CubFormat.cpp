@@ -24,7 +24,7 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
@@ -56,7 +56,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 }
 
 bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	uint32_t width, depth, height;
 	wrap(stream.readUInt32(width))
@@ -76,7 +76,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
-	voxel::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette);
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -122,7 +122,7 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(depth))
 	wrapBool(stream.writeUInt32(height))
 
-	const voxel::Palette &palette = node->palette();
+	const palette::Palette &palette = node->palette();
 	for (uint32_t y = 0u; y < height; ++y) {
 		for (uint32_t z = 0u; z < depth; ++z) {
 			for (uint32_t x = 0u; x < width; ++x) {

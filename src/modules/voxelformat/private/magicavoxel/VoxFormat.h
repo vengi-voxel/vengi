@@ -33,14 +33,14 @@ private:
 
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					 uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
-	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette);
+	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-					  int parent, core::DynamicArray<MVModelToNode> &models, const voxel::Palette &palette);
+					  int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
 				   int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-				   const voxel::Palette &palette);
+				   const palette::Palette &palette);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 	void saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
@@ -49,7 +49,7 @@ private:
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 public:
 	VoxFormat();
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

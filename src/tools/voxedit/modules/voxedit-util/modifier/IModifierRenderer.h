@@ -12,7 +12,7 @@
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 
-namespace voxel {
+namespace palette {
 class Palette;
 }
 
@@ -30,7 +30,7 @@ public:
 	}
 	virtual void clearBrushMeshes() {
 	}
-	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette) {
+	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	}
 
 	virtual void render(const video::Camera &camera, const glm::mat4 &model) {

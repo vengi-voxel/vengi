@@ -225,7 +225,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	while (!stack.empty()) {
 		const int nodeId = stack.back().first;
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-		const voxel::Palette &palette = node.palette();
+		const palette::Palette &palette = node.palette();
 
 		int materialId = -1;
 		int texcoordIndex = 0;
@@ -241,10 +241,10 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				{
 					tinygltf::Image gltfPaletteImage;
 					image::Image image("pal");
-					image.loadRGBA((const unsigned char *)palette.colors(), voxel::PaletteMaxColors, 1);
+					image.loadRGBA((const unsigned char *)palette.colors(), palette::PaletteMaxColors, 1);
 					const core::String &pal64 = image.pngBase64();
 					gltfPaletteImage.uri = "data:image/png;base64,";
-					gltfPaletteImage.width = voxel::PaletteMaxColors;
+					gltfPaletteImage.width = palette::PaletteMaxColors;
 					gltfPaletteImage.height = 1;
 					gltfPaletteImage.component = 4;
 					gltfPaletteImage.bits = 32;

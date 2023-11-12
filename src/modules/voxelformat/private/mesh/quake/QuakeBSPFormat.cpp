@@ -145,7 +145,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		SDL_strlcpy(texture.name, miptex[texture.surfaceFlags].name, sizeof(texture.name));
 	}
 
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.quake1();
 
 	for (int32_t i = 0; i < texInfoCount; i++) {
@@ -494,7 +494,7 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 		return false;
 	}
 
-	voxel::PaletteLookup palLookup;
+	palette::PaletteLookup palLookup;
 	palLookup.palette().quake1();
 	const core::String &name = core::string::extractFilename(filename);
 	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, palLookup, name)) {
@@ -606,7 +606,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 	bool state = false;
 
 	// make one palette for all 8 levels
-	voxel::PaletteLookup palLookup;
+	palette::PaletteLookup palLookup;
 
 	core::DynamicArray<Face> facesLevel;
 	for (int i = 0; i < maxLevel; ++i) {
@@ -629,7 +629,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionBsp(const core::String &filename, io::S
 bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
 							  const core::DynamicArray<BspEdge> &edges, const core::DynamicArray<int32_t> &surfEdges,
 							  const core::DynamicArray<BspVertex> &vertices, scenegraph::SceneGraph &sceneGraph,
-							  voxel::PaletteLookup &palLookup, const core::String &name) {
+							  palette::PaletteLookup &palLookup, const core::String &name) {
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {

@@ -148,9 +148,9 @@ bool RawVolumeRenderer::init() {
 	}
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::VertData::materialcolor);
-	if constexpr (shaderMaterialColorsArraySize != voxel::PaletteMaxColors) {
+	if constexpr (shaderMaterialColorsArraySize != palette::PaletteMaxColors) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, voxel::PaletteMaxColors);
+				shaderMaterialColorsArraySize, palette::PaletteMaxColors);
 		return false;
 	}
 
@@ -200,7 +200,7 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
-const voxel::Palette &RawVolumeRenderer::palette(int idx) const {
+const palette::Palette &RawVolumeRenderer::palette(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return voxel::getPalette();
 	}
@@ -236,7 +236,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			const voxel::Palette &pal = palette(idx);
+			const palette::Palette &pal = palette(idx);
 			++_pendingExtractorTasks;
 			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;
@@ -540,7 +540,7 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 }
 
 void RawVolumeRenderer::updatePalette(int idx) {
-	const voxel::Palette *palette;
+	const palette::Palette *palette;
 	const int bufferIndex = resolveIdx(idx);
 	const State& state = _state[bufferIndex];
 	if (state._palette.hasValue()) {
@@ -555,7 +555,7 @@ void RawVolumeRenderer::updatePalette(int idx) {
 		palette->toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
 		palette->glowToVec4f(glowColors);
-		for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			_voxelShaderVertData.materialcolor[i] = materialColors[i];
 			_voxelShaderVertData.glowcolor[i] = glowColors[i];
 		}
@@ -879,7 +879,7 @@ void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, Meshes &array) {
 	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
 }
 
-voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, voxel::Palette *palette,
+voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
 											   bool meshDelete) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;

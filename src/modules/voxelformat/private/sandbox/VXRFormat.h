@@ -45,7 +45,7 @@ private:
 				 io::SeekableWriteStream &stream, const core::String &animation, const SaveContext &ctx);
 	bool loadVXA(scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath, const LoadContext &ctx);
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;

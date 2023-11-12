@@ -177,7 +177,7 @@ const uint32_t MAXSPRITES = 1024;
 		return false;                                                                                                  \
 	}
 
-size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							  const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
@@ -208,8 +208,8 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 			wrap(stream.readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				// slab6 suggest palette
-				palette.setSize(voxel::PaletteMaxColors);
-				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+				palette.setSize(palette::PaletteMaxColors);
+				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
 					wrapBool(priv::readRGBScaledColor(stream, color))
 					palette.color(i) = color;
@@ -240,7 +240,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 
 bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *volume,
-						scenegraph::SceneGraph &sceneGraph, const voxel::Palette &palette) {
+						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
 	const io::FilesystemPtr &filesystem = io::filesystem();
 	const io::FilePtr &kfaFile = filesystem->open(filename);
 	if (!kfaFile->validHandle()) {
@@ -366,7 +366,7 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 }
 
 bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	uint32_t magic;
 	wrap(stream.readUInt32(magic))
 	if (magic != FourCC('K', 'v', 'x', 'l')) {
@@ -419,8 +419,8 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				Log::debug("Found embedded palette of slab6");
 				slab5 = false; // slab6
-				palette.setSize(voxel::PaletteMaxColors);
-				for (int i = 0; i < voxel::PaletteMaxColors; ++i) {
+				palette.setSize(palette::PaletteMaxColors);
+				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
 					wrapBool(priv::readRGBScaledColor(stream, color));
 					palette.color(i) = color;
@@ -593,7 +593,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const core::RGBA color = node->palette().color(i);
 		wrapBool(priv::writeRGBScaledColor(stream, color)) // range 0..63
 	}
-	for (int i = node->palette().colorCount(); i < voxel::PaletteMaxColors; ++i) {
+	for (int i = node->palette().colorCount(); i < palette::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
 		wrapBool(priv::writeRGBScaledColor(stream, color))
 	}

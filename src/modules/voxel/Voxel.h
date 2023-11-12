@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include "core/ArrayLength.h"
 
+namespace palette {
+class Palette;
+}
+
 /**
  * Voxel manipulation, meshing and storage
  */
@@ -124,6 +128,8 @@ private:
 constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex) {
 	return Voxel(type, colorIndex);
 }
+
+voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index);
 
 inline bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;

@@ -28,7 +28,7 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 		GTEST_SKIP() << "No or empty blocks.json found";
 		return;
 	}
-	voxel::Palette pal;
+	palette::Palette pal;
 	pal.minecraft();
 	nlohmann::json j = nlohmann::json::parse(str);
 	for (const auto &e : j) {

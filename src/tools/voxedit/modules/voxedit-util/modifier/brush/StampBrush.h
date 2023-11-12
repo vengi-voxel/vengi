@@ -17,7 +17,7 @@ private:
 
 protected:
 	core::ScopedPtr<voxel::RawVolume> _volume;
-	voxel::Palette _palette;
+	palette::Palette _palette;
 	glm::ivec3 _lastCursorPosition{0};
 	bool _center = true;
 	bool _continuous = false;
@@ -28,7 +28,7 @@ public:
 	void construct() override;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 				 const BrushContext &context) override;
-	void setVolume(const voxel::RawVolume &volume, const voxel::Palette &palette);
+	void setVolume(const voxel::RawVolume &volume, const palette::Palette &palette);
 	voxel::RawVolume *volume() const;
 	bool active() const override;
 	void reset() override;
@@ -45,8 +45,8 @@ public:
 	/**
 	 * @brief Either convert all voxels of the stamp to the given voxel, or create a new stamp with the given voxel
 	 */
-	void setVoxel(const voxel::Voxel &voxel, const voxel::Palette &palette);
-	void convertToPalette(const voxel::Palette &palette);
+	void setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette);
+	void convertToPalette(const palette::Palette &palette);
 
 	void setSize(const glm::ivec3 &size);
 

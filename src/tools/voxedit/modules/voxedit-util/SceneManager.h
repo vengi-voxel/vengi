@@ -244,8 +244,8 @@ public:
 				  uint64_t renderRegionMillis = 0);
 	voxel::RawVolume *volume(int nodeId);
 	const voxel::RawVolume *volume(int nodeId) const;
-	voxel::Palette &activePalette() const;
-	bool setActivePalette(const voxel::Palette &palette, bool searchBestColors = false);
+	palette::Palette &activePalette() const;
+	bool setActivePalette(const palette::Palette &palette, bool searchBestColors = false);
 
 	/**
 	 * @brief Import a heightmap in the current node of the scene

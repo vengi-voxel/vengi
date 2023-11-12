@@ -140,15 +140,15 @@ private:
 						  uint32_t nodeIdx) const;
 	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
 						const VXLLayerOffset &offsets) const;
-	bool writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, const voxel::Palette &palette);
+	bool writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, const palette::Palette &palette);
 
 	// reading
 	bool readLayerHeader(io::SeekableReadStream &stream, VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayerInfo(io::SeekableReadStream &stream, VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_t nodeIdx, scenegraph::SceneGraph &sceneGraph,
-				   const voxel::Palette &palette) const;
+				   const palette::Palette &palette) const;
 	bool readLayers(io::SeekableReadStream &stream, VXLModel &mdl, scenegraph::SceneGraph &sceneGraph,
-					const voxel::Palette &palette) const;
+					const palette::Palette &palette) const;
 	bool readLayerInfos(io::SeekableReadStream &stream, VXLModel &mdl) const;
 	bool readLayerHeaders(io::SeekableReadStream &stream, VXLModel &mdl) const;
 
@@ -168,9 +168,9 @@ private:
 				 io::SeekableWriteStream &stream);
 
 	bool prepareModel(VXLModel &mdl) const;
-	bool readHeader(io::SeekableReadStream &stream, VXLModel &mdl, voxel::Palette &palette);
+	bool readHeader(io::SeekableReadStream &stream, VXLModel &mdl, palette::Palette &palette);
 
-	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 					  const LoadContext &ctx);
 
 	static void convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva);
@@ -178,11 +178,11 @@ private:
 							 bool hva, const voxel::Region &region);
 
 protected:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
 	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, voxel::Palette &palette,
+						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

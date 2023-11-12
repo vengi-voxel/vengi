@@ -13,7 +13,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "video/Texture.h"
 
-namespace voxel {
+namespace palette {
 class Palette;
 }
 
@@ -32,12 +32,12 @@ io::FormatDescription vengi();
  * @brief Tries to load a palette from the given file. This can either be an image which is reduced to 256 colors or a
  * volume format with an embedded palette
  */
-bool importPalette(const core::String &filename, voxel::Palette &palette);
+bool importPalette(const core::String &filename, palette::Palette &palette);
 /**
  * @brief Tries to load the embedded palette from the given file. If the format doesn't have a palette embedded, this
  * returns @c 0
  */
-size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, voxel::Palette &palette,
+size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 				   const LoadContext &ctx);
 image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx);
 bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
