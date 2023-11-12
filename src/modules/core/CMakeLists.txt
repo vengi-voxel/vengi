@@ -35,6 +35,7 @@ set(SRCS
 	Bits.h
 	Color.cpp Color.h
 	Common.cpp Common.h
+	CMYK.cpp CMYK.h
 	Enum.h
 	FixedString.h
 	FourCC.h

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/CMYK.h"
 #include "core/String.h"
 #include "core/RGBA.h"
 #include <glm/fwd.hpp>
