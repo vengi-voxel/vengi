@@ -87,6 +87,10 @@ private:
 
 	bool wantGizmo() const;
 	bool createReference(const scenegraph::SceneGraphNode &node) const;
+	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
+	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);
+	uint32_t gizmoMode() const;
+	uint32_t gizmoOperation() const;
 	void renderToFrameBuffer();
 	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
 	void updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &matrix);

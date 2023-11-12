@@ -209,12 +209,12 @@ void Viewport::renderCursor() {
 		const glm::ivec3 &mins = v->region().getLowerCorner();
 		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
 		if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
-			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y, mins.z,
-								size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
+			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y, mins.z, size.x,
+							   size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
 		} else {
-			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i", mins.x,
-								mins.y, mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
-								cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
+			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i", mins.x, mins.y,
+							   mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
+							   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
 		}
 	}
 }
@@ -521,7 +521,7 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 }
 
 void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
-						   const glm::mat4 &matrix) {
+								 const glm::mat4 &matrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
 		glm::vec3 translate;
@@ -544,7 +544,13 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 }
 
 bool Viewport::wantGizmo() const {
-	return _renderContext.sceneMode || _modelGizmo->boolVal();
+	if (_renderContext.sceneMode) {
+		return true;
+	}
+	if (_modelGizmo->boolVal()) {
+		return true;
+	}
+	return false;
 }
 
 bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
@@ -560,14 +566,57 @@ bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
 	return ImGui::IsKeyPressed(ImGuiKey_MouseLeft);
 }
 
+uint32_t Viewport::gizmoOperation() const {
+	uint32_t operation = ImGuizmo::TRANSLATE;
+	if (isSceneMode()) {
+		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
+		if (_gizmoRotation->boolVal()) {
+			operation |= ImGuizmo::ROTATE;
+		}
+	}
+	return operation;
+}
+
+glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
+	if (isSceneMode()) {
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
+		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		return transform.worldMatrix();
+	}
+	return glm::mat4(1.0f);
+}
+
+uint32_t Viewport::gizmoMode() const {
+	uint32_t mode = ImGuizmo::MODE::WORLD;
+	return mode;
+}
+
+const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
+	const float *boundsPtr = nullptr;
+	if (isSceneMode() && _gizmoBounds->boolVal()) {
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		const glm::vec3 size = region.getDimensionsInVoxels();
+		const glm::vec3 mins = -node.pivot() * size;
+		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
+			_bounds.mins = mins;
+			_bounds.maxs = mins + size;
+			_boundsNode.maxs = size;
+		}
+		boundsPtr = glm::value_ptr(_bounds.mins);
+	}
+	return boundsPtr;
+}
+
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
-	const bool sceneMode = _renderContext.sceneMode;
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	int activeNode = sceneGraph.activeNode();
 	if (activeNode == InvalidNodeId) {
 		reset();
 		return false;
 	}
+	const bool sceneMode = isSceneMode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 	if (!sceneMode && node.type() != scenegraph::SceneGraphNodeType::Model) {
 		reset();
@@ -579,30 +628,11 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	}
 
 	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
-	glm::mat4 matrix(1.0f);
-	uint32_t operation = ImGuizmo::TRANSLATE;
-	bool bounds = false;
-	ImGuizmo::MODE mode = ImGuizmo::MODE::WORLD;
-	if (sceneMode) {
-		keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
-		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
-		if (_gizmoRotation->boolVal()) {
-			operation |= ImGuizmo::ROTATE;
-		}
-		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const glm::vec3 size = region.getDimensionsInVoxels();
-		const glm::vec3 mins = -node.pivot() * size;
-		matrix = transform.worldMatrix();
-		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
-			_bounds.mins = mins;
-			_bounds.maxs = mins + size;
-			_boundsNode.maxs = size;
-		}
-		bounds = _gizmoBounds->boolVal();
-	}
-
+	glm::mat4 matrix = gizmoMatrix(node, keyFrameIdx);
 	glm::mat4 deltaMatrix(0.0f);
+	const uint32_t operation = gizmoOperation();
+	const uint32_t mode = gizmoMode();
+	const float *boundsPtr = gizmoBounds(node);
 	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 	const float *viewMatrixPtr = glm::value_ptr(camera.viewMatrix());
 	const float *projectionMatrixPtr = glm::value_ptr(camera.projectionMatrix());
@@ -611,9 +641,9 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
 	const float snap[]{step, step, step};
 	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
-	const float *boundsPtr = bounds ? glm::value_ptr(_bounds.mins) : nullptr;
-	const bool manipulated = ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, (ImGuizmo::OPERATION)operation,
-												  mode, matrixPtr, deltaMatrixPtr, snapPtr, boundsPtr, boundsSnap);
+	const bool manipulated =
+		ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, (ImGuizmo::OPERATION)operation, (ImGuizmo::MODE)mode,
+							 matrixPtr, deltaMatrixPtr, snapPtr, boundsPtr, boundsSnap);
 	updateGizmoValues(node, keyFrameIdx, matrix);
 	if (sceneMode) {
 		if (createReference(node)) {
