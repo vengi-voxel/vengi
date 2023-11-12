@@ -661,6 +661,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	const uint32_t operation = gizmoOperation(node);
 	const bool manipulated = gizmoManipulate(camera, boundsPtr, matrix, deltaMatrix, operation);
 	updateGizmoValues(node, keyFrameIdx, matrix);
+	// check to create a reference before we update the node transform
+	// otherwise the new reference node will not get the correct transform
 	if (createReference(node)) {
 		const int newNode = sceneMgr().nodeReference(node.id());
 		// we need to activate the node - otherwise we end up in
