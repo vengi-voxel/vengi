@@ -669,7 +669,6 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 			activeNode = newNode;
 		}
 	}
-	_gizmoActivated = ImGuizmo::IsUsingAny();
 	if (manipulated) {
 		if (sceneMode) {
 			if (_pivotMode->boolVal()) {
