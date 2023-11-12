@@ -11,6 +11,8 @@ namespace palette {
 /**
  * Adobe Swatch Exchange (ASE) Format
  *
+ * @ingroup Formats
+ *
  * Byte-order: Big-endian
  *
  * File Structure:
@@ -64,4 +66,4 @@ public:
 	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
 };
 
-} // namespace voxel
+} // namespace palette
