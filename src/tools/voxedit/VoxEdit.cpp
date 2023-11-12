@@ -116,6 +116,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditCursorDetails, "1", "Print cursor details in edit mode", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", "Set auto keyframe", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoRotation, "false", "Activate rotations for the gizmo in scene mode", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, "Activate the pivot mode for the gizmo in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoBounds, "false", "Allow to change the volume bounds in scene mode", core::Var::boolValidator);

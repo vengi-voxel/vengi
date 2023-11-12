@@ -32,6 +32,7 @@ constexpr const char *VoxEditShowaxis = "ve_showaxis";
 constexpr const char *VoxEditCursorDetails = "ve_cursordetails";
 constexpr const char *VoxEditAutoKeyFrame = "ve_autokeyframe";
 constexpr const char *VoxEditGizmoRotation = "ve_gizmorotation";
+constexpr const char *VoxEditGizmoPivot = "ve_gizmopivot";
 constexpr const char *VoxEditGizmoAllowAxisFlip = "ve_gizmoallowaxisflip";
 constexpr const char *VoxEditGizmoSnap = "ve_gizmosnap";
 constexpr const char *VoxEditGizmoBounds = "ve_gizmobounds";

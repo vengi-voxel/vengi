@@ -3006,6 +3006,9 @@ void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 }
 
 bool SceneManager::nodeActivate(int nodeId) {
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
 	if (!_sceneGraph.hasNode(nodeId)) {
 		Log::warn("Given node id %i doesn't exist", nodeId);
 		return false;

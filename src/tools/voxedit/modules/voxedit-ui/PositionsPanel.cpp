@@ -338,6 +338,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGizmoRotation);
 		ImGui::CheckboxVar("Size", cfg::VoxEditGizmoBounds);
 		ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
+		ImGui::CheckboxVar("Pivot", cfg::VoxEditGizmoPivot);
 	}
 }
 

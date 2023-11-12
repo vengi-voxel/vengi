@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "ui/IMGUIEx.h"
 #include "image/AVIRecorder.h"
-#include "video/gl/GLTypes.h"
-#include "video/Camera.h"
-#include "voxel/Region.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "ui/IMGUIEx.h"
+#include "video/Camera.h"
+#include "video/gl/GLTypes.h"
+#include "voxel/Region.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace io {
@@ -20,9 +20,7 @@ namespace voxedit {
 
 class Viewport {
 private:
-	enum class SceneCameraMode : uint8_t {
-		Free, Top, Bottom, Left, Right, Front, Back, Max
-	};
+	enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Bottom", "Left", "Right", "Front", "Back"};
 	static_assert(lengthof(SceneCameraModeStr) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
 	const int _id;
@@ -84,16 +82,20 @@ private:
 	core::VarPtr _simplifiedView;
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _cursorDetails;
+	core::VarPtr _pivotMode;
 
 	bool wantGizmo() const;
 	bool createReference(const scenegraph::SceneGraphNode &node) const;
 	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
 	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);
+	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix,
+						 glm::mat4 &deltaMatrix, uint32_t operation) const;
 	uint32_t gizmoMode() const;
-	uint32_t gizmoOperation() const;
+	uint32_t gizmoOperation(const scenegraph::SceneGraphNode &node) const;
 	void renderToFrameBuffer();
-	bool setupFrameBuffer(const glm::ivec2& frameBufferSize);
-	void updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, const glm::mat4 &matrix);
+	bool setupFrameBuffer(const glm::ivec2 &frameBufferSize);
+	void updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
+						   const glm::mat4 &matrix);
 	/**
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()
@@ -119,9 +121,10 @@ private:
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
 	void resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size);
-	void resize(const glm::ivec2& frameBufferSize);
+	void resize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
+
 public:
 	Viewport(int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
@@ -131,7 +134,7 @@ public:
 	void toggleScene();
 	bool isSceneMode() const;
 
-	video::Camera& camera();
+	video::Camera &camera();
 
 	bool isHovered() const;
 	/**
@@ -144,10 +147,10 @@ public:
 	int id() const;
 
 	void resetCamera();
-	bool saveImage(const char* filename);
+	bool saveImage(const char *filename);
 };
 
-inline video::Camera& Viewport::camera() {
+inline video::Camera &Viewport::camera() {
 	return _camera;
 }
 
@@ -159,4 +162,4 @@ inline bool Viewport::isHovered() const {
 	return _hovered;
 }
 
-}
+} // namespace voxedit

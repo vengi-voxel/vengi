@@ -62,6 +62,7 @@ bool Viewport::init() {
 	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
+	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -554,21 +555,31 @@ bool Viewport::wantGizmo() const {
 }
 
 bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
-	if (_gizmoActivated) {
+	if (!isSceneMode()) {
 		return false;
 	}
 	if (!node.isModelNode()) {
 		return false;
 	}
-	if (!ImGui::IsKeyPressed(ImGuiKey_LeftShift)) {
+	if (!ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
 		return false;
 	}
-	return ImGui::IsKeyPressed(ImGuiKey_MouseLeft);
+	if (!ImGuizmo::IsOver()) {
+		return false;
+	}
+	if (!ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
+		return false;
+	}
+	return true;
 }
 
-uint32_t Viewport::gizmoOperation() const {
+uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const {
 	uint32_t operation = ImGuizmo::TRANSLATE;
-	if (isSceneMode()) {
+	if (isSceneMode() && !_pivotMode->boolVal()) {
+		if (node.isModelNode() && ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
+			return operation;
+		}
+
 		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
 		if (_gizmoRotation->boolVal()) {
 			operation |= ImGuizmo::ROTATE;
@@ -578,18 +589,17 @@ uint32_t Viewport::gizmoOperation() const {
 }
 
 glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
-	if (isSceneMode()) {
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-		keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
-		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		return transform.worldMatrix();
+	if (!isSceneMode()) {
+		return glm::mat4(1.0f);
 	}
-	return glm::mat4(1.0f);
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
+	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+	return transform.worldMatrix();
 }
 
 uint32_t Viewport::gizmoMode() const {
-	uint32_t mode = ImGuizmo::MODE::WORLD;
-	return mode;
+	return ImGuizmo::MODE::WORLD;
 }
 
 const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
@@ -609,6 +619,21 @@ const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
 	return boundsPtr;
 }
 
+bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix,
+							   glm::mat4 &deltaMatrix, uint32_t operation) const {
+	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
+	float *mPtr = glm::value_ptr(matrix);
+	float *dMatPtr = glm::value_ptr(deltaMatrix);
+	const ImGuizmo::OPERATION op = (ImGuizmo::OPERATION)operation;
+	const ImGuizmo::MODE mode = (ImGuizmo::MODE)gizmoMode();
+	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
+	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
+	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
+	const float snap[]{step, step, step};
+	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
+	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
+}
+
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	int activeNode = sceneGraph.activeNode();
@@ -618,7 +643,7 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	}
 	const bool sceneMode = isSceneMode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-	if (!sceneMode && node.type() != scenegraph::SceneGraphNodeType::Model) {
+	if (!sceneMode && node.isModelNode()) {
 		reset();
 		return false;
 	}
@@ -629,41 +654,35 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 
 	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
 	glm::mat4 matrix = gizmoMatrix(node, keyFrameIdx);
-	glm::mat4 deltaMatrix(0.0f);
-	const uint32_t operation = gizmoOperation();
-	const uint32_t mode = gizmoMode();
+	glm::mat4 deltaMatrix(1.0f);
 	const float *boundsPtr = gizmoBounds(node);
-	const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
-	const float *viewMatrixPtr = glm::value_ptr(camera.viewMatrix());
-	const float *projectionMatrixPtr = glm::value_ptr(camera.projectionMatrix());
-	float *matrixPtr = glm::value_ptr(matrix);
-	float *deltaMatrixPtr = glm::value_ptr(deltaMatrix);
-	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
-	const float snap[]{step, step, step};
-	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
-	const bool manipulated =
-		ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, (ImGuizmo::OPERATION)operation, (ImGuizmo::MODE)mode,
-							 matrixPtr, deltaMatrixPtr, snapPtr, boundsPtr, boundsSnap);
+	const uint32_t operation = gizmoOperation(node);
+	const bool manipulated = gizmoManipulate(camera, boundsPtr, matrix, deltaMatrix, operation);
 	updateGizmoValues(node, keyFrameIdx, matrix);
-	if (sceneMode) {
-		if (createReference(node)) {
-			const int newNode = sceneMgr().nodeReference(node.id());
-			if (newNode != InvalidNodeId) {
-				// we need to activate the node - otherwise we end up in
-				// endlessly creating new reference nodes
-				if (sceneMgr().nodeActivate(newNode)) {
-					activeNode = newNode;
-				}
-			}
-		}
-		if (manipulated) {
-			sceneMgr().nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
+	if (createReference(node)) {
+		const int newNode = sceneMgr().nodeReference(node.id());
+		// we need to activate the node - otherwise we end up in
+		// endlessly creating new reference nodes
+		if (sceneMgr().nodeActivate(newNode)) {
+			activeNode = newNode;
 		}
 	}
 	_gizmoActivated = ImGuizmo::IsUsingAny();
-	if (!sceneMode && manipulated) {
-		sceneMgr().shift(activeNode, deltaMatrix[3]);
-		return true;
+	if (manipulated) {
+		if (sceneMode) {
+			if (_pivotMode->boolVal()) {
+				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+				const glm::vec3 size = node.region().getDimensionsInVoxels();
+				const glm::vec3 pivot = (glm::vec3(matrix[3]) - transform.worldTranslation()) / size;
+				sceneMgr().nodeUpdatePivot(activeNode, pivot);
+			} else {
+				sceneMgr().nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
+			}
+		} else {
+			sceneMgr().shift(activeNode, deltaMatrix[3]);
+			// only true in edit mode
+			return true;
+		}
 	}
 	return false;
 }
