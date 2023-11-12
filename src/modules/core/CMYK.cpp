@@ -2,8 +2,6 @@
  * @file
  */
 
-#pragma once
-
 #include "CMYK.h"
 #include "core/Common.h"
 

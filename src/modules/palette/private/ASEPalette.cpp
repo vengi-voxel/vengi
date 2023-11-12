@@ -3,6 +3,7 @@
  */
 
 #include "ASEPalette.h"
+#include "core/CMYK.h"
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
@@ -95,7 +96,13 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			stream.readFloatBE(color[1]);
 			stream.readFloatBE(color[2]);
 			stream.readFloatBE(color[3]);
-		} else if (colorMode == FourCC('R', 'G', 'B', ' ') || colorMode == FourCC('L', 'A', 'B', ' ')) {
+			const core::CMYK cmyk(color[0], color[1], color[2], color[3]);
+			palette.setColor(colorCount, cmyk.toRGB());
+			++colorCount;
+			continue;
+		}
+
+		if (colorMode == FourCC('R', 'G', 'B', ' ') || colorMode == FourCC('L', 'A', 'B', ' ')) {
 			stream.readFloatBE(color[0]);
 			stream.readFloatBE(color[1]);
 			stream.readFloatBE(color[1]);

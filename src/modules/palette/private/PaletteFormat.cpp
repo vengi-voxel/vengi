@@ -99,4 +99,4 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 	return false;
 }
 
-} // namespace voxel
+} // namespace palette
