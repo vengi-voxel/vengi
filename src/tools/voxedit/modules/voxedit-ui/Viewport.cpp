@@ -520,7 +520,7 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	_transformMementoLocked = true;
 }
 
-void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
+void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
 						   const glm::mat4 &matrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
@@ -543,6 +543,23 @@ void Viewport::handleGizmo(const scenegraph::SceneGraphNode &node, scenegraph::K
 	}
 }
 
+bool Viewport::wantGizmo() const {
+	return _renderContext.sceneMode || _modelGizmo->boolVal();
+}
+
+bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
+	if (_gizmoActivated) {
+		return false;
+	}
+	if (!node.isModelNode()) {
+		return false;
+	}
+	if (!ImGui::IsKeyPressed(ImGuiKey_LeftShift)) {
+		return false;
+	}
+	return ImGui::IsKeyPressed(ImGuiKey_MouseLeft);
+}
+
 bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const bool sceneMode = _renderContext.sceneMode;
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
@@ -554,6 +571,10 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 	if (!sceneMode && node.type() != scenegraph::SceneGraphNodeType::Model) {
 		reset();
+		return false;
+	}
+
+	if (!wantGizmo()) {
 		return false;
 	}
 
@@ -579,8 +600,6 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 			_boundsNode.maxs = size;
 		}
 		bounds = _gizmoBounds->boolVal();
-	} else if (!_modelGizmo->boolVal()) {
-		return false;
 	}
 
 	glm::mat4 deltaMatrix(0.0f);
@@ -595,10 +614,9 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 	const float *boundsPtr = bounds ? glm::value_ptr(_bounds.mins) : nullptr;
 	const bool manipulated = ImGuizmo::Manipulate(viewMatrixPtr, projectionMatrixPtr, (ImGuizmo::OPERATION)operation,
 												  mode, matrixPtr, deltaMatrixPtr, snapPtr, boundsPtr, boundsSnap);
-	handleGizmo(node, keyFrameIdx, matrix);
+	updateGizmoValues(node, keyFrameIdx, matrix);
 	if (sceneMode) {
-		if (!_gizmoActivated && node.isModelNode() &&
-			ImGui::IsKeyPressed(ImGuiKey_LeftShift) && ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
+		if (createReference(node)) {
 			const int newNode = sceneMgr().nodeReference(node.id());
 			if (newNode != InvalidNodeId) {
 				// we need to activate the node - otherwise we end up in
@@ -611,13 +629,11 @@ bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
 		if (manipulated) {
 			sceneMgr().nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
 		}
-		_gizmoActivated = ImGuizmo::IsUsingAny();
-	} else {
-		_gizmoActivated = ImGuizmo::IsUsingAny();
-		if (manipulated) {
-			sceneMgr().shift(activeNode, deltaMatrix[3]);
-			return true;
-		}
+	}
+	_gizmoActivated = ImGuizmo::IsUsingAny();
+	if (!sceneMode && manipulated) {
+		sceneMgr().shift(activeNode, deltaMatrix[3]);
+		return true;
 	}
 	return false;
 }
