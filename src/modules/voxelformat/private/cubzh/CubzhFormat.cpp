@@ -22,6 +22,8 @@
 
 namespace voxelformat {
 
+// TODO: z-axis must be flipped
+
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
 		Log::error("Could not load 3zh file: Not enough data in stream " CORE_STRINGIFY(read));                        \
