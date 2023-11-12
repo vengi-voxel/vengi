@@ -88,8 +88,8 @@ private:
 	bool createReference(const scenegraph::SceneGraphNode &node) const;
 	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
 	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);
-	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix,
-						 glm::mat4 &deltaMatrix, uint32_t operation) const;
+	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix, glm::mat4 &deltaMatrix,
+						 uint32_t operation) const;
 	uint32_t gizmoMode() const;
 	uint32_t gizmoOperation(const scenegraph::SceneGraphNode &node) const;
 	void renderToFrameBuffer();
@@ -100,7 +100,7 @@ private:
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()
 	 */
-	bool renderSceneAndModelGizmo(const video::Camera &camera);
+	bool runGizmo(const video::Camera &camera);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
 	/**
 	 * @return @c true if the the gizmo was used in edit mode.

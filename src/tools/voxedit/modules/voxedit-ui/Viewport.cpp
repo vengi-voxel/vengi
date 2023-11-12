@@ -636,7 +636,7 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
 }
 
-bool Viewport::renderSceneAndModelGizmo(const video::Camera &camera) {
+bool Viewport::runGizmo(const video::Camera &camera) {
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	int activeNode = sceneGraph.activeNode();
 	if (activeNode == InvalidNodeId) {
@@ -741,9 +741,9 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
-	const bool modified = renderSceneAndModelGizmo(camera);
+	const bool editModeModified = runGizmo(camera);
 	renderCameraManipulator(camera, headerSize);
-	return modified;
+	return editModeModified;
 }
 
 void Viewport::renderToFrameBuffer() {
