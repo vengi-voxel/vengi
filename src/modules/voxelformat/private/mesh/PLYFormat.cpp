@@ -17,7 +17,7 @@
 #include "video/Types.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/external/earcut.hpp"

@@ -4,22 +4,11 @@ set(SRCS
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
 
-	private/paletteformat/PaletteFormat.cpp private/paletteformat/PaletteFormat.h
-	private/paletteformat/ASEPalette.cpp private/paletteformat/ASEPalette.h
-	private/paletteformat/CSVPalette.cpp private/paletteformat/CSVPalette.h
-	private/paletteformat/GimpPalette.cpp private/paletteformat/GimpPalette.h
-	private/paletteformat/JASCPalette.cpp private/paletteformat/JASCPalette.h
-	private/paletteformat/PNGPalette.cpp private/paletteformat/PNGPalette.h
-	private/paletteformat/QBCLPalette.cpp private/paletteformat/QBCLPalette.h
-	private/paletteformat/RGBPalette.cpp private/paletteformat/RGBPalette.h
-
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
-	Palette.h Palette.cpp
-	PaletteLookup.h
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
@@ -28,7 +17,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image commonlua http)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette)
 set(MARCH native)
 #set(MARCH generic)
 # http://christian-seiler.de/projekte/fpmath/
@@ -47,19 +36,13 @@ set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/FaceTest.cpp
 	tests/MortonTest.cpp
-	tests/PaletteTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp
 	tests/SparseVolumeTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 )
 
-set(TEST_FILES
-	tests/test-palette-in.png
-)
-
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app)
-gtest_suite_files(tests-${LIB} ${FILES} ${TEST_FILES})
 gtest_suite_end(tests-${LIB})

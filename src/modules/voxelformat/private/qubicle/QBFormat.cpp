@@ -14,8 +14,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {

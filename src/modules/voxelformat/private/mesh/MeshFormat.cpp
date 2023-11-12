@@ -24,7 +24,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"

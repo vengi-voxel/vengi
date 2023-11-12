@@ -6,7 +6,7 @@
 
 #include "Brush.h"
 #include "core/ScopedPtr.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {

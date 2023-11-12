@@ -6,7 +6,7 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

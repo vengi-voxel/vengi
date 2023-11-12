@@ -11,8 +11,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
-#include "voxel/Palette.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #define libvxl_assert core_assert_msg

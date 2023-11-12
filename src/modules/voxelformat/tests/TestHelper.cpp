@@ -10,7 +10,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"

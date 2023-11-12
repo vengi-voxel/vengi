@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 
 namespace voxelformat {
 

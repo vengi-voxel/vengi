@@ -9,7 +9,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 #include <iomanip>
 

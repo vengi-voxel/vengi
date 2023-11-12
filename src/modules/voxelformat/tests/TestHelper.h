@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Enum.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "core/tests/TestHelper.h"

@@ -8,7 +8,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace io {
 class ZipReadStream;

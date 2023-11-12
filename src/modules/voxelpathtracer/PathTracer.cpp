@@ -14,7 +14,7 @@
 #include "video/Camera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelrender/SceneGraphRenderer.h"

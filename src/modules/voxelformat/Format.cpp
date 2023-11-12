@@ -19,7 +19,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"

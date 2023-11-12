@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraphNode.h"

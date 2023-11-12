@@ -6,7 +6,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxel {
 

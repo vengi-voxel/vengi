@@ -19,7 +19,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "video/ScopedLineWidth.h"
 #include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"

@@ -8,7 +8,7 @@
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
 

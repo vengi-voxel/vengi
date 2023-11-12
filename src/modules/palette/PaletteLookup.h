@@ -7,7 +7,7 @@
 #include "core/Color.h"
 #include "core/collection/Map.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxel {
 

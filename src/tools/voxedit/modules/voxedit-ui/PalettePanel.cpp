@@ -13,7 +13,7 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsForkAwesome.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

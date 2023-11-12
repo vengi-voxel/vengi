@@ -8,7 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "image/Image.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 
 namespace voxelformat {
 

@@ -11,7 +11,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 #include <glm/gtc/quaternion.hpp>
 

@@ -12,7 +12,7 @@
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"

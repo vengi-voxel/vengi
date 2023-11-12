@@ -9,14 +9,14 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxelutil {

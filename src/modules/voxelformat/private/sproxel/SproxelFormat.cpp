@@ -9,7 +9,7 @@
 #include "core/Tokenizer.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 
 namespace voxelformat {
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "io/Stream.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxel {
 

@@ -6,7 +6,7 @@
 
 #include "core/Optional.h"
 #include "core/String.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 

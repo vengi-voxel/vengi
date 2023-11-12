@@ -9,7 +9,7 @@
 #include "math/AABB.h"
 #include "math/Axis.h"
 #include "math/Math.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"

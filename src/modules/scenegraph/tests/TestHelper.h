@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "math/Math.h"
 #include <gtest/gtest.h>
 

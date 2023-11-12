@@ -11,7 +11,7 @@
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"

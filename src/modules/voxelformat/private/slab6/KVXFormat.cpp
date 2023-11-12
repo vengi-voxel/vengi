@@ -12,7 +12,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>

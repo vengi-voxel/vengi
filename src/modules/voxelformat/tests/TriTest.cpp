@@ -6,7 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "image/Image.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

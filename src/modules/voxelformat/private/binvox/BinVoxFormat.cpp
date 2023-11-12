@@ -9,7 +9,7 @@
 #include "io/FileStream.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxelformat {

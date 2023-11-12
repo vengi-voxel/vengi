@@ -12,7 +12,7 @@
 #include "math/AABB.h"
 #include "core/Log.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 
 namespace voxelgenerator {

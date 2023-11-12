@@ -2,13 +2,13 @@
  * @file
  */
 
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "core/ArrayLength.h"
 #include "app/tests/AbstractTest.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/PaletteLookup.h"
 
 namespace voxel {
 

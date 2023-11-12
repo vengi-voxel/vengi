@@ -8,7 +8,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {

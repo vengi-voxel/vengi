@@ -15,7 +15,7 @@
 #include "core/concurrent/ThreadPool.h"
 #include "render/BloomRenderer.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "video/Buffer.h"

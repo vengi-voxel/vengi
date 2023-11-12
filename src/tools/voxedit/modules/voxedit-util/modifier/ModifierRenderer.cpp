@@ -14,7 +14,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 
 namespace voxedit {
 

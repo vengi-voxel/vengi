@@ -23,7 +23,7 @@
 #include "io/Filesystem.h"
 #include "io/MemoryReadStream.h"
 #include "math/Math.h"
-#include "private/paletteformat/PaletteFormat.h"
+#include "private/PaletteFormat.h"
 
 #include <SDL_endian.h>
 #include <float.h>

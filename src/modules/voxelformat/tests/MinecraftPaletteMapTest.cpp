@@ -7,7 +7,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include <json.hpp>
 #include <glm/vec3.hpp>
 

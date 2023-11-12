@@ -8,7 +8,7 @@
 #include "core/Trace.h"
 #include "core/Color.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"

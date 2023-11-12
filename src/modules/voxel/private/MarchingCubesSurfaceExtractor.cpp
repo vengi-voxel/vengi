@@ -7,7 +7,7 @@
 #include "core/collection/Array2DView.h"
 #include "MarchingCubesTables.h"
 #include "voxel/ChunkMesh.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/VoxelVertex.h"

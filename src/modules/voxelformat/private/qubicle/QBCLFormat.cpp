@@ -18,8 +18,8 @@
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Palette.h"
-#include "voxel/PaletteLookup.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include <glm/gtc/type_ptr.hpp>

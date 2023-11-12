@@ -14,7 +14,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "util/Base64.h"
 #include "util/IniParser.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/VolumeFormat.h"

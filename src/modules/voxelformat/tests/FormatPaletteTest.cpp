@@ -5,7 +5,7 @@
 #include "AbstractVoxFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
-#include "voxel/Palette.h"
+#include "palette/Palette.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
