@@ -59,7 +59,7 @@ function copydeps {
 
 			# Fix the paths using install_name_tool and then
 			# call this function recursively for each dependency
-			# of this library. 
+			# of this library.
 			if [ $BASE_OF_EXE != $BASE ]; then
 				# Fix the paths
 				install_name_tool -id @executable_path/$BASE $EXEPATH/$BASE
@@ -75,3 +75,4 @@ function copydeps {
 
 copydeps $EXEPATH/$EXE_NAME
 #sudo codesign -f -s - $EXEPATH/$EXE_NAME
+echo "APPL????" > $APPPATH/Contents/PkgInfo
