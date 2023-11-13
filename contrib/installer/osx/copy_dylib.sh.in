@@ -4,9 +4,10 @@
 # The name of the executable. It is assumed
 # that it is in the current working directory.
 EXE_NAME=@COMMANDLINE@
+APPPATH=$PWD/@_EXE_TARGET@/@COMMANDLINE@.app
 # Path to the executable directory inside the bundle.
 # This must be an absolute path, so use $PWD.
-EXEPATH=$PWD/@_EXE_TARGET@/@COMMANDLINE@.app/Contents/MacOS
+EXEPATH=$APPPATH/Contents/MacOS
 # Libraries to explicitly bundle, even though they
 # may not be in /opt/local. One per line. These
 # are used with grep, so only a portion of the name
