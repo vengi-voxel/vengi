@@ -105,9 +105,10 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		if (colorMode == FourCC('R', 'G', 'B', ' ') || colorMode == FourCC('L', 'A', 'B', ' ')) {
 			stream.readFloatBE(color[0]);
 			stream.readFloatBE(color[1]);
-			stream.readFloatBE(color[1]);
+			stream.readFloatBE(color[2]);
 		} else if (colorMode == FourCC('G', 'R', 'A', 'Y')) {
 			stream.readFloatBE(color[0]);
+			color[1] = color[2] = color[0];
 		}
 		palette.setColor(colorCount, core::Color::getRGBA(color));
 		++colorCount;
