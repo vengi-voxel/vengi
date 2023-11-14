@@ -424,6 +424,7 @@ public:
 	int nodeReference(int nodeId);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
+	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);
 	bool nodeMove(int sourceNodeId, int targetNodeId);
 	bool nodeSetProperty(int nodeId, const core::String &key, const core::String &value);
 	bool nodeRemoveProperty(int nodeId, const core::String &key);

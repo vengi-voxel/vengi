@@ -345,6 +345,7 @@ public:
 
 	FrameIndex maxFrame(const core::String &animation) const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
+	bool hasKeyFrame(FrameIndex frameIdx) const;
 	bool removeKeyFrame(FrameIndex frameIdx);
 	bool removeKeyFrameByIndex(KeyFrameIndex keyFrameIdx);
 	const SceneGraphKeyFrames &keyFrames() const;

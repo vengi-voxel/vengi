@@ -654,6 +654,20 @@ bool SceneGraphNode::hasActiveAnimation() const {
 	return _keyFrames != nullptr;
 }
 
+bool SceneGraphNode::hasKeyFrame(FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames *kfs = _keyFrames;
+	if (kfs == nullptr) {
+		return false;
+	}
+	for (size_t i = 0; i < kfs->size(); ++i) {
+		const SceneGraphKeyFrame &kf = (*kfs)[i];
+		if (kf.frameIdx == frameIdx) {
+			return true;
+		}
+	}
+	return false;
+}
+
 KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	SceneGraphKeyFrames *kfs = keyFrames();
 	if (kfs == nullptr) {

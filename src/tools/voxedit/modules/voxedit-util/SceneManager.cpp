@@ -2771,6 +2771,16 @@ bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) 
 	return false;
 }
 
+bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
+	for (auto iter = sceneGraph().beginAllModels(); iter != sceneGraph().end(); ++iter) {
+		scenegraph::SceneGraphNode &node = *iter;
+		if (!node.hasKeyFrame(frameIdx)) {
+			nodeAddKeyframe(node, frameIdx);
+		}
+	}
+	return true;
+}
+
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
 	if (nodeId == InvalidNodeId) {
 		nodeForeachGroup([&](int nodeId) {
