@@ -20,6 +20,10 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::SameLine();
+	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add all", _play)) {
+		sceneMgr().nodeAllAddKeyFrames(currentFrame);
+	}
+	ImGui::SameLine();
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
 		sceneMgr().nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
