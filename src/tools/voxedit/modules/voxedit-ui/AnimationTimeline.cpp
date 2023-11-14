@@ -19,15 +19,17 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
 		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
+	ImGui::TooltipText("Add a new keyframe to the current active node");
 	ImGui::SameLine();
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add all", _play)) {
 		sceneMgr().nodeAllAddKeyFrames(currentFrame);
 	}
+	ImGui::TooltipText("Add a new keyframe to all model nodes");
 	ImGui::SameLine();
 	if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
 		sceneMgr().nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
-	ImGui::TooltipText("Delete the current keyframe on all nodes");
+	ImGui::TooltipText("Delete the current keyframe of the active nodes");
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_FA_ARROW_RIGHT_ARROW_LEFT)) {
 		_startFrame = 0;
