@@ -290,8 +290,8 @@ public:
 		}
 	}
 
-	inline void erase(const iterator& iter) {
-		remove(iter->key);
+	inline bool erase(const iterator& iter) {
+		return remove(iter->key);
 	}
 
 	bool remove(const KEYTYPE& key) {
