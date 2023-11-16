@@ -769,7 +769,7 @@ SceneGraphTransform SceneGraphNode::transformForFrame(const core::String &animat
 }
 
 SceneGraphTransform SceneGraphNode::transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const {
-	// TODO ik solver https://github.com/mgerhardy/vengi/issues/182
+	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
 	const SceneGraphTransform *source = nullptr;
 	const SceneGraphTransform *target = nullptr;
 	FrameIndex startFrameIdx = 0;

@@ -6,13 +6,13 @@ your filemanager and a command line tool to [convert or modify](voxconvert/Index
 
 Find out more about features and status updates on my [twitter profile](https://twitter.com/MartinGerhardy).
 
-The project source code is located at [github/mgerhardy/vengi](https://github.com/mgerhardy/vengi). We also
+The project source code is located at [github/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi). We also
 provide linux, osx and windows binaries here.
 
 Join our [discord server](https://discord.gg/AgjCPXy) to get support or submit your feature requests or bugs.
 
 If you just came here to use a voxel editor or to convert your voxel models into an obj or ply file,
-you should just go to the [download page](https://github.com/mgerhardy/vengi/releases) and check out
+you should just go to the [download page](https://github.com/vengi-voxel/vengi/releases) and check out
 the documentation of the tool as given in the navigation bar.
 
 If you came here as a developer, make sure to check out the [dependencies](Dependencies.md) and set up
@@ -22,11 +22,11 @@ the [compilation](Compilation.md) guide.
 
 ## Images
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/voxedit-02_2023.png)
+![image](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxedit-02_2023.png)
 
 ## Online version
 
-[voxedit](https://mgerhardy.github.io/vengi-voxedit-html5/)
+[voxedit](https://vengi-voxel.github.io/vengi-voxedit-html5/)
 
 ## OSX
 

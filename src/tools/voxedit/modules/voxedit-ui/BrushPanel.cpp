@@ -204,7 +204,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::TooltipText("Edit the selected lua script");
 	}
 
-	ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://mgerhardy.github.io/vengi/voxedit/LUAScript/");
+	ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://vengi-voxel.github.io/vengi/voxedit/LUAScript/");
 }
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {

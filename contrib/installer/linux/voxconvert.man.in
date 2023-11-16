@@ -305,7 +305,7 @@ This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \f
 
 This is doing exactly the same as above - just with a full path.
 
-The scripting docs are available at https://mgerhardy.github.io/vengi/LUAScript/.
+The scripting docs are available at https://vengi-voxel.github.io/vengi/LUAScript/.
 
 .SS Extract palette png
 Saves the png in the same dir as the vox file:
@@ -375,10 +375,10 @@ Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too.
 \fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 
 .SH HOMEPAGE
-https://github.com/mgerhardy/vengi
+https://github.com/vengi-voxel/vengi
 
 .SH COPYRIGHT
 Copyright \[co] 2015\-2023 by Martin Gerhardy.
 
 .SH BUGS
-If you find a bug, please report it at https://github.com/mgerhardy/vengi/issues
+If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues

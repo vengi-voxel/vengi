@@ -736,8 +736,8 @@ void MainWindow::popupAbout() {
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::Text("This is a beta release!");
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/mgerhardy/vengi/issues", w);
-					ImGui::URLItem(ICON_FK_QUESTION " Help", "https://mgerhardy.github.io/vengi/", w);
+					ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
+					ImGui::URLItem(ICON_FK_QUESTION " Help", "https://vengi-voxel.github.io/vengi/", w);
 					ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
 					ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
 					ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);

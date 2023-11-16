@@ -1,6 +1,6 @@
 # About
 
-![image](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/thumbnailer.jpg)
+![image](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/thumbnailer.jpg)
 
 This application needs an opengl context. It is a command line tool running headless (meaning you don't see a window popping up).
 

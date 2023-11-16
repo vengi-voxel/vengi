@@ -262,7 +262,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		const bool addLayers = core::Var::getSafe(cfg::VoxformatVOXCreateLayers)->boolVal();
 		if (node.type() == scenegraph::SceneGraphNodeType::Root || addLayers) {
 			// TODO: only add the layer if there are models in this group?
-			// https://github.com/mgerhardy/vengi/issues/186
+			// https://github.com/vengi-voxel/vengi/issues/186
 			ogt_vox_layer ogt_layer;
 			core_memset(&ogt_layer, 0, sizeof(ogt_layer));
 			ogt_layer.name = node.name().c_str();

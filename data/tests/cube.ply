@@ -1,6 +1,6 @@
 ply
 format ascii 1.0
-comment version 0.0.27.0 github.com/mgerhardy/vengi
+comment version 0.0.27.0 github.com/vengi-voxel/vengi
 comment TextureFile nippon.png
 element vertex 8
 property float x

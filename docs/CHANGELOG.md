@@ -1,14 +1,16 @@
 # Changelog
 
-A more detailed changelog can be found on [github](https://github.com/mgerhardy/vengi/commits/).
+A more detailed changelog can be found on [github](https://github.com/vengi-voxel/vengi/commits/).
 
 Join our [discord server](https://discord.gg/AgjCPXy).
 
-See [the documentation](https://mgerhardy.github.io/vengi/) for further details.
+See [the documentation](https://vengi-voxel.github.io/vengi/) for further details.
 
-Known [issues](https://github.com/mgerhardy/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
+Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
 ## 0.0.28 (2023-XX-XX)
+
+> moved the the github project into an organization named **vengi-voxel** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).
 
 General:
 
@@ -271,7 +273,7 @@ General:
 
 Packaging:
 
-   - There is a snap package available now (`io.github.mgerhardy.vengi.voxedit`)
+   - There is a snap package available now (`io.github.vengi-voxel.vengi.voxedit`)
 
 VoxEdit:
 
@@ -405,7 +407,7 @@ VoxConvert:
 
 ## 0.0.18 (2022-02-12)
 
-> renamed the github project to **vengi** - the url changed to [https://github.com/mgerhardy/vengi](https://github.com/mgerhardy/vengi).
+> renamed the github project to **vengi** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).
 
 Build:
 

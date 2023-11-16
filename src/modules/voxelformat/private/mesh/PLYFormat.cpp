@@ -812,7 +812,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 	const core::String paletteName = core::string::replaceExtension(voxel::getPalette().name(), "png");
 	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
-	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
+	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
 	stream.writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
 
 	stream.writeStringFormat(false, "element vertex %i\n", elements);

@@ -13,7 +13,7 @@
 
 namespace util {
 
-static const core::String GitHubURL = "https://api.github.com/repos/mgerhardy/vengi";
+static const core::String GitHubURL = "https://api.github.com/repos/vengi-voxel/vengi";
 
 bool isNewerVersion(const core::String &versionLatest, const core::String &vengiVersion) {
 	struct Version {

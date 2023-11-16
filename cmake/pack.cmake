@@ -12,10 +12,10 @@ set(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 #set(CPACK_PACKAGE_INSTALL_DIRECTORY "${ROOT_PROJECT_NAME}")
 
 set(CPACK_NSIS_DISPLAY_NAME "vengi voxel tools")
-set(CPACK_NSIS_URL_INFO_ABOUT "https://mgerhardy.github.io/vengi")
+set(CPACK_NSIS_URL_INFO_ABOUT "https://vengi-voxel.github.io/vengi")
 set(CPACK_NSIS_MODIFY_PATH ON)
 set(CPACK_NSIS_COMPRESSOR bzip2)
-set(CPACK_NSIS_MENU_LINKS "https://mgerhardy.github.io/vengi" "vengi help")
+set(CPACK_NSIS_MENU_LINKS "https://vengi-voxel.github.io/vengi" "vengi help")
 
 if (APPLE)
 	set(CPACK_GENERATOR "DragNDrop")

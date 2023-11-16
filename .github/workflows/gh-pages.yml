@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    if: github.repository == 'mgerhardy/vengi'
+    if: github.repository == 'vengi-voxel/vengi'
     name: Deploy docs
     runs-on: ubuntu-latest
     steps:

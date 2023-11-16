@@ -165,7 +165,7 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	stream.writeStringFormat(false, "github.com/mgerhardy/vengi");
+	stream.writeStringFormat(false, "github.com/vengi-voxel/vengi");
 	const size_t delta = priv::BinaryHeaderSize - stream.pos();
 	for (size_t i = 0; i < delta; ++i) {
 		stream.writeUInt8(0);

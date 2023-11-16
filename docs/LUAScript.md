@@ -344,4 +344,4 @@ Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node fo
 
 ### others
 
-There are other scripts available [in the repository](https://github.com/mgerhardy/vengi/blob/master/src/modules/voxelgenerator/lua/scripts/).
+There are other scripts available [in the repository](https://github.com/vengi-voxel/vengi/blob/master/src/modules/voxelgenerator/lua/scripts/).

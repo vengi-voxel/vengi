@@ -60,7 +60,7 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
 						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n");
+	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
 	wrapBool(stream.writeStringFormat(false, "\n"))
 	wrapBool(stream.writeStringFormat(false, "g Model\n"))
 
@@ -75,7 +75,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		return false;
 	}
 	io::FileStream matlstream(file);
-	wrapBool(matlstream.writeString("# version " PROJECT_VERSION " github.com/mgerhardy/vengi\n", false))
+	wrapBool(matlstream.writeString("# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n", false))
 	wrapBool(matlstream.writeString("\n", false))
 
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());

@@ -60,7 +60,7 @@ jobs:
 
     packages:
         timeout-minutes: 45
-        if: github.repository == 'mgerhardy/vengi'
+        if: github.repository == 'vengi-voxel/vengi'
         runs-on: ubuntu-22.04
         steps:
         - uses: actions/checkout@v3

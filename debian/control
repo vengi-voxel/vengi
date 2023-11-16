@@ -17,9 +17,9 @@ Build-Depends:
  wayland-protocols,
  pkg-config
 Standards-Version: 4.1.4
-Homepage: https://github.com/mgerhardy/vengi
-Vcs-Git: https://github.com/mgerhardy/vengi
-Vcs-browser: https://github.com/mgerhardy/vengi
+Homepage: https://github.com/vengi-voxel/vengi
+Vcs-Git: https://github.com/vengi-voxel/vengi
+Vcs-browser: https://github.com/vengi-voxel/vengi
 
 Package: vengi-shared
 Architecture: any

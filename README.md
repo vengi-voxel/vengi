@@ -1,4 +1,4 @@
-[![Total downloads](https://img.shields.io/github/downloads/mgerhardy/vengi/total?longCache=true&style=for-the-badge&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/mgerhardy/vengi/releases/latest)
+[![Total downloads](https://img.shields.io/github/vengi-voxel/vengi-voxel/vengi/total?longCache=true&style=for-the-badge&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/vengi-voxel/vengi/releases/latest)
  [![Discord server](https://img.shields.io/discord/622817134682177555?label=Discord&logo=Discord&logoColor=fff&style=for-the-badge)](https://discord.gg/AgjCPXy)
  [![Mastodon](https://img.shields.io/mastodon/follow/000355843?longCache=true&style=for-the-badge&label=Mastodon&logoColor=fff)](https://mastodon.social/@mgerhardy)
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?longCache=true&style=for-the-badge&label=License&logoColor=fff)](https://opensource.org/licenses/MIT)
@@ -8,13 +8,13 @@ The mission: Create a free, open-source and multi-platform voxel editor and comm
 
 Join our [discord server](https://discord.gg/AgjCPXy) and get help or support the development with feature request or bug reports.
 
-Download your copy [here from github](https://github.com/mgerhardy/vengi/releases/latest) and find documentation about how to use it [here](https://mgerhardy.github.io/vengi/).
+Download your copy [here from github](https://github.com/vengi-voxel/vengi/releases/latest) and find documentation about how to use it [here](https://vengi-voxel.github.io/vengi/).
 
-There is an online version of [voxedit](https://mgerhardy.github.io/vengi-voxedit-html5/) available to test the editor without having to install it. But this is not the most recent version.
+There is an online version of [voxedit](https://vengi-voxel.github.io/vengi-voxedit-html5/) available to test the editor without having to install it. But this is not the most recent version.
 
-[![image showing minecraft greenfield](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/greenfield-water.png)](https://www.greenfieldmc.net)
+[![image showing minecraft greenfield](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/greenfield-water.png)](https://www.greenfieldmc.net)
 
-[![image showing oasis](https://raw.githubusercontent.com/wiki/mgerhardy/vengi/images/oasis.png)](https://github.com/Phyronnaz/VoxelAssets/tree/master/Oasis)
+[![image showing oasis](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/oasis.png)](https://github.com/Phyronnaz/VoxelAssets/tree/master/Oasis)
 
 ## Support
 
