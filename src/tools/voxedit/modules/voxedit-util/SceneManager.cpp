@@ -2703,7 +2703,8 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 		const glm::vec3 size = node.region().getDimensionsInVoxels();
 		node.translate(-deltaPivot * size);
 		for (int nodeId : node.children()) {
-			sceneGraph().node(nodeId).translate(deltaPivot * size);
+			scenegraph::SceneGraphNode &cnode = sceneGraph().node(nodeId);
+			cnode.translate(deltaPivot * size);
 		}
 		sceneGraph().updateTransforms();
 		markDirty();

@@ -486,8 +486,9 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	}
 	bool state = true;
 	const int parent = iter->value.parent();
+	core_assert(parent != InvalidNodeId);
 	SceneGraphNode &parentNode = node(parent);
-	parentNode.removeChild(nodeId);
+	core_assert_always(parentNode.removeChild(nodeId));
 
 	if (recursive) {
 		state = iter->value.children().empty();
@@ -497,11 +498,13 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	} else {
 		// reparent any children
 		for (int childId : iter->value.children()) {
-			node(childId).setParent(parent);
-			parentNode.addChild(childId);
+			SceneGraphNode &cnode = node(childId);
+			core_assert(cnode.parent() == nodeId);
+			cnode.setParent(parent);
+			core_assert_always(parentNode.addChild(childId));
 		}
 	}
-	_nodes.erase(iter);
+	core_assert_always(_nodes.erase(iter));
 	if (_activeNodeId == nodeId) {
 		if (!empty(SceneGraphNodeType::Model)) {
 			// get the first model node
