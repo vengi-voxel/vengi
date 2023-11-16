@@ -54,11 +54,16 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 								  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 								  const scenegraph::SceneGraphNode &modelNode) {
 	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
+	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
+			int32_t oldFrameIdx = kf.frameIdx;
 			ImGui::NeoKeyframe(&kf.frameIdx);
 			if (kf.frameIdx < 0) {
 				kf.frameIdx = 0;
+			}
+			if (oldFrameIdx != kf.frameIdx) {
+				sceneGraph.markMaxFramesDirty();
 			}
 
 			if (ImGui::IsNeoKeyframeHovered()) {
