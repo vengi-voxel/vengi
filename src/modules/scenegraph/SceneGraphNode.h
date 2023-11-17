@@ -367,7 +367,8 @@ public:
 	bool removeAnimation(const core::String &anim);
 	bool setAnimation(const core::String &anim);
 	/**
-	 * @brief Get the index of the keyframe for the given frame
+	 * @brief Get the index of the keyframe for the given frame.
+	 * Or if no direct key frame exists, the key frame that is interpolated towards
 	 */
 	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
 	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
