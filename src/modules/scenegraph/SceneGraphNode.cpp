@@ -685,7 +685,15 @@ KeyFrameIndex SceneGraphNode::addKeyFrame(FrameIndex frameIdx) {
 	keyFrame.frameIdx = frameIdx;
 	kfs->push_back(keyFrame);
 	sortKeyFrames();
-	return (KeyFrameIndex)(kfs->size() - 1);
+	size_t i = 0;
+	for (; i < kfs->size(); ++i) {
+		const SceneGraphKeyFrame &kf = (*kfs)[i];
+		if (kf.frameIdx == frameIdx) {
+			break;
+		}
+	}
+	core_assert(i != kfs->size());
+	return i;
 }
 
 void SceneGraphNode::sortKeyFrames() {
