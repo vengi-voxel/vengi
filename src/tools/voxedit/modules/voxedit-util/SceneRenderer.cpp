@@ -184,7 +184,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = sceneGraph.resolvePivot(node);
-		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(frameIdx);
+		const scenegraph::SceneGraphTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
 		_shapeBuilder.obb(obb);
 	}
@@ -195,7 +195,8 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
-		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(activeNode), activeNode.transformForFrame(frameIdx)));
+		const scenegraph::SceneGraphTransform &transform = sceneGraph.transformForFrame(activeNode, frameIdx);
+		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(activeNode), transform));
 	}
 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);

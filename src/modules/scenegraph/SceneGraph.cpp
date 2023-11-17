@@ -8,10 +8,11 @@
 #include "core/Log.h"
 #include "core/Pair.h"
 #include "core/StringUtil.h"
-#include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
-#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -67,7 +68,7 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 	return true;
 }
 
-const SceneGraphAnimationIds& SceneGraph::animations() const {
+const SceneGraphAnimationIds &SceneGraph::animations() const {
 	return _animations;
 }
 
@@ -125,7 +126,7 @@ bool SceneGraph::removeAnimation(const core::String &animation) {
 }
 
 bool SceneGraph::hasAnimations() const {
-	for (const core::String &animation : animations())  {
+	for (const core::String &animation : animations()) {
 		for (const auto &entry : _nodes) {
 			if (entry->value.keyFrames(animation).size() > 1) {
 				return true;
@@ -185,7 +186,7 @@ palette::Palette &SceneGraph::firstPalette() const {
 	return node->palette();
 }
 
-SceneGraphNode& SceneGraph::node(int nodeId) const {
+SceneGraphNode &SceneGraph::node(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
 		Log::error("No node for id %i found in the scene graph - returning root node", nodeId);
@@ -201,13 +202,13 @@ bool SceneGraph::hasNode(int nodeId) const {
 	return _nodes.find(nodeId) != _nodes.end();
 }
 
-const SceneGraphNode& SceneGraph::root() const {
+const SceneGraphNode &SceneGraph::root() const {
 	return node(0);
 }
 
 int SceneGraph::prevModelNode(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
-	if (iter ==  _nodes.end()) {
+	if (iter == _nodes.end()) {
 		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
@@ -237,7 +238,7 @@ int SceneGraph::prevModelNode(int nodeId) const {
 
 int SceneGraph::nextModelNode(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
-	if (iter ==  _nodes.end()) {
+	if (iter == _nodes.end()) {
 		return InvalidNodeId;
 	}
 	const SceneGraphNode &ownNode = iter->second;
@@ -264,6 +265,71 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		}
 	}
 	return InvalidNodeId;
+}
+
+void SceneGraph::calcSourceAndTarget(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx,
+									 const SceneGraphKeyFrame **source, const SceneGraphKeyFrame **target) const {
+	for (const SceneGraphKeyFrame &kf : node.keyFrames(animation)) {
+		if (kf.frameIdx <= frameIdx) {
+			*source = &kf;
+		}
+		if (kf.frameIdx > frameIdx && !*target) {
+			*target = &kf;
+		}
+	}
+	if (*source == nullptr && node.parent() != InvalidNodeId) {
+		const SceneGraphKeyFrame *targetParent = nullptr;
+		calcSourceAndTarget(this->node(node.parent()), animation, frameIdx, source, &targetParent);
+		if (*target == nullptr) {
+			*target = targetParent;
+		}
+	}
+	if (*target == nullptr && node.parent() != InvalidNodeId) {
+		const SceneGraphKeyFrame *ignoreParent = nullptr;
+		calcSourceAndTarget(this->node(node.parent()), animation, frameIdx, &ignoreParent, target);
+	}
+}
+
+SceneGraphTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	return transformForFrame(node, _activeAnimation, frameIdx);
+}
+
+SceneGraphTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const core::String &animation,
+												  FrameIndex frameIdx) const {
+	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
+	const SceneGraphTransform *source = nullptr;
+	const SceneGraphTransform *target = nullptr;
+	FrameIndex startFrameIdx = 0;
+	FrameIndex endFrameIdx = 0;
+	InterpolationType interpolationType = InterpolationType::Linear;
+
+	for (const SceneGraphKeyFrame &kf : node.keyFrames(animation)) {
+		if (kf.frameIdx <= frameIdx) {
+			source = &kf.transform();
+			startFrameIdx = kf.frameIdx;
+			interpolationType = kf.interpolation;
+		}
+		if (kf.frameIdx > frameIdx && !target) {
+			target = &kf.transform();
+			endFrameIdx = kf.frameIdx;
+		}
+		if (source && target) {
+			break;
+		}
+	}
+
+	if (source == nullptr) {
+		return node.transform(0);
+	}
+	if (target == nullptr) {
+		return *source;
+	}
+
+	const double deltaFrameSeconds =
+		scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
+	scenegraph::SceneGraphTransform transform = *source;
+	transform.lerp(*target, deltaFrameSeconds);
+	return transform;
 }
 
 void SceneGraph::updateTransforms_r(SceneGraphNode &n) {
@@ -293,7 +359,7 @@ voxel::Region SceneGraph::groupRegion() const {
 	if (node(nodeId).locked()) {
 		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
 			if ((*iter).locked()) {
-				const voxel::Region& childRegion = (*iter).region();
+				const voxel::Region &childRegion = (*iter).region();
 				if (childRegion.isValid()) {
 					region.accumulate(childRegion);
 				}
@@ -332,8 +398,8 @@ glm::vec3 SceneGraph::center() const {
 	return center;
 }
 
-SceneGraphNode* SceneGraph::findNodeByPropertyValue(const core::String &key, const core::String &value) const {
-	for (const auto& entry : _nodes) {
+SceneGraphNode *SceneGraph::findNodeByPropertyValue(const core::String &key, const core::String &value) const {
+	for (const auto &entry : _nodes) {
 		if (entry->value.property(key) == value) {
 			return &entry->value;
 		}
@@ -341,8 +407,8 @@ SceneGraphNode* SceneGraph::findNodeByPropertyValue(const core::String &key, con
 	return nullptr;
 }
 
-SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
-	for (const auto& entry : _nodes) {
+SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) {
+	for (const auto &entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());
 		if (entry->value.name() == name) {
 			return &entry->value;
@@ -351,8 +417,8 @@ SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) {
 	return nullptr;
 }
 
-const SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) const {
-	for (const auto& entry : _nodes) {
+const SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) const {
+	for (const auto &entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());
 		if (entry->value.name() == name) {
 			return &entry->value;
@@ -361,7 +427,7 @@ const SceneGraphNode* SceneGraph::findNodeByName(const core::String& name) const
 	return nullptr;
 }
 
-SceneGraphNode* SceneGraph::first() {
+SceneGraphNode *SceneGraph::first() {
 	if (!_nodes.empty()) {
 		return &_nodes.begin()->value;
 	}
@@ -408,7 +474,8 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	node.setParent(parent);
 	node.setAnimation(_activeAnimation);
-	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(), node.parent());
+	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(),
+			   node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
 	markMaxFramesDirty();
 	return nodeId;
@@ -442,7 +509,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 	if (!hasNode(nodeId)) {
 		return false;
 	}
-	SceneGraphNode& n = node(nodeId);
+	SceneGraphNode &n = node(nodeId);
 	if (!canChangeParent(n, newParentId)) {
 		return false;
 	}
@@ -461,7 +528,8 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
 				SceneGraphTransform &transform = keyframe.transform();
-				const SceneGraphTransform &parentFrameTransform = parentNode.transformForFrame(animation, keyframe.frameIdx);
+				const SceneGraphTransform &parentFrameTransform =
+					transformForFrame(parentNode, animation, keyframe.frameIdx);
 				const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.worldTranslation();
 				const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.worldOrientation();
 				transform.setLocalTranslation(tdelta);
@@ -520,7 +588,7 @@ void SceneGraph::reserve(size_t size) {
 }
 
 bool SceneGraph::empty(SceneGraphNodeType type) const {
-	for (const auto& entry : _nodes) {
+	for (const auto &entry : _nodes) {
 		if (entry->value.type() == type) {
 			return false;
 		}
@@ -533,7 +601,7 @@ size_t SceneGraph::size(SceneGraphNodeType type) const {
 		return _nodes.size();
 	}
 	size_t n = 0;
-	for (const auto& entry : _nodes) {
+	for (const auto &entry : _nodes) {
 		if (entry->value.type() == type) {
 			++n;
 		} else if (type == SceneGraphNodeType::AllModels) {
@@ -615,7 +683,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 			core::Array<bool, palette::PaletteMaxColors> used;
 			if (removeUnused) {
 				used.fill(false);
-				voxelutil::visitVolume(*node.volume(), [&used] (int, int, int, const voxel::Voxel &voxel) {
+				voxelutil::visitVolume(*node.volume(), [&used](int, int, int, const voxel::Voxel &voxel) {
 					used[voxel.getColor()] = true;
 				});
 			} else {
@@ -705,10 +773,10 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skip
 		}
 	}
 
-	voxel::RawVolume* merged = new voxel::RawVolume(mergedRegion);
+	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
 	for (size_t i = 0; i < nodes.size(); ++i) {
-		const SceneGraphNode* node = nodes[i];
-		const voxel::Region& sourceRegion = resolveRegion(*node);
+		const SceneGraphNode *node = nodes[i];
+		const voxel::Region &sourceRegion = resolveRegion(*node);
 		voxel::Region destRegion = sourceRegion;
 		if (applyTransform) {
 			const SceneGraphTransform &transform = node->transform(keyFrameIdx);
@@ -717,17 +785,18 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skip
 			// TODO: rotation
 		}
 
-		voxelutil::mergeVolumes(merged, resolveVolume(*node), destRegion, sourceRegion, [node, &palette] (voxel::Voxel& voxel) {
-			if (isAir(voxel.getMaterial())) {
-				return false;
-			}
-			const core::RGBA color = node->palette().color(voxel.getColor());
-			const uint8_t index = palette.getClosestMatch(color);
-			voxel.setColor(index);
-			return true;
-		});
+		voxelutil::mergeVolumes(merged, resolveVolume(*node), destRegion, sourceRegion,
+								[node, &palette](voxel::Voxel &voxel) {
+									if (isAir(voxel.getMaterial())) {
+										return false;
+									}
+									const core::RGBA color = node->palette().color(voxel.getColor());
+									const uint8_t index = palette.getClosestMatch(color);
+									voxel.setColor(index);
+									return true;
+								});
 	}
 	return MergedVolumePalette{merged, palette};
 }
 
-} // namespace voxel
+} // namespace scenegraph

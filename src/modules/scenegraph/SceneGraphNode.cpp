@@ -6,35 +6,35 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include <glm/gtx/matrix_decompose.hpp>
-#include "math/Easing.h"
+#include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
-#include <glm/gtc/epsilon.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace scenegraph {
 
-SceneGraphTransform::SceneGraphTransform() :
-	_worldOrientation{glm::quat_identity<float, glm::defaultp>()},
-	_localOrientation{glm::quat_identity<float, glm::defaultp>()} {
+SceneGraphTransform::SceneGraphTransform()
+	: _worldOrientation{glm::quat_identity<float, glm::defaultp>()},
+	  _localOrientation{glm::quat_identity<float, glm::defaultp>()} {
 }
 
-void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation, const glm::vec3 &worldScale,
-					const glm::vec3 &localTranslation, const glm::quat &localOrientation, const glm::vec3 &localScale) {
+void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation,
+										const glm::vec3 &worldScale, const glm::vec3 &localTranslation,
+										const glm::quat &localOrientation, const glm::vec3 &localScale) {
 	_worldTranslation = worldTranslation;
 	_worldOrientation = worldOrientation;
 	_worldScale = worldScale;
@@ -170,7 +170,8 @@ const glm::vec3 &SceneGraphTransform::worldScale() const {
 	return _worldScale;
 }
 
-void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren) {
+void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx,
+								 bool updateChildren) {
 	if (_dirty == 0u) {
 		return;
 	}
@@ -188,7 +189,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			_localScale = _worldScale;
 		} else {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(),
+							node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const SceneGraphTransform &parentTransform = parent.transform(keyFrameIdx);
@@ -199,8 +201,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		Log::debug("node %3i (%i): World transform is dirty - new local values: t(%0.2f:%0.2f:%0.2f), "
 				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _localTranslation.x, _localTranslation.y, _localTranslation.z,
-				   _localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w,
-				   _localScale.x, _localScale.y, _localScale.z);
+				   _localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w, _localScale.x,
+				   _localScale.y, _localScale.z);
 		// now ensure that we update the local matrix
 		_dirty |= DIRTY_LOCALVALUES;
 		_dirty &= ~(DIRTY_WORLDVALUES | DIRTY_PARENT);
@@ -208,7 +210,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 
 	if (_dirty & DIRTY_LOCALVALUES) {
 		core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "local and world were modified");
-		_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+		_localMat =
+			glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
 		_dirty &= ~DIRTY_LOCALVALUES;
 
 		// update own world matrix
@@ -216,7 +219,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			_worldMat = _localMat;
 		} else {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(),
+							node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const glm::mat4 &parentWorldMat = parent.transform(keyFrameIdx).worldMatrix();
@@ -227,8 +231,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		Log::debug("node %3i (%i): Local transform is dirty - new world values: t(%0.2f:%0.2f:%0.2f), "
 				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _worldTranslation.x, _worldTranslation.y, _worldTranslation.z,
-				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w,
-				   _worldScale.x, _worldScale.y, _worldScale.z);
+				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w, _worldScale.x,
+				   _worldScale.y, _worldScale.z);
 
 		if (!updateChildren) {
 			for (int childId : node.children()) {
@@ -254,7 +258,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		// update own world matrix
 		if (node.type() != SceneGraphNodeType::Root) {
 			const int parentId = node.parent();
-			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(), node.name().c_str());
+			core_assert_msg(parentId != InvalidNodeId, "node %i (%s) doesn't have a root", node.id(),
+							node.name().c_str());
 			const SceneGraphNode &parent = sceneGraph.node(parentId);
 			const KeyFrameIndex keyFrameIdx = parent.keyFrameForFrame(frameIdx);
 			const glm::mat4 &parentWorldMat = parent.transform(keyFrameIdx).worldMatrix();
@@ -265,8 +270,8 @@ void SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 		Log::debug("node %3i (%i): Parent transform is dirty - new world values: t(%0.2f:%0.2f:%0.2f), "
 				   "r(%0.2f:%0.2f:%0.2f:%0.2f), s(%0.2f, %0.2f, %0.2f)",
 				   node.id(), (int)node.type(), _worldTranslation.x, _worldTranslation.y, _worldTranslation.z,
-				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w,
-				   _worldScale.x, _worldScale.y, _worldScale.z);
+				   _worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w, _worldScale.x,
+				   _worldScale.y, _worldScale.z);
 
 		// after world matrix update - inform the children
 		for (int childId : node.children()) {
@@ -333,8 +338,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	return *this;
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type)
-	: _type(type), _flags(VolumeOwned | Visible), _properties(128) {
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type), _flags(VolumeOwned | Visible), _properties(128) {
 	// ensure that there is at least one animation with keyframes
 	setAnimation(DEFAULT_ANIMATION);
 }
@@ -427,14 +431,13 @@ glm::vec3 SceneGraphNode::worldPivot() const {
  * @brief Apply the given @c translation vector to all keyframe transform of this node
  */
 void SceneGraphNode::translate(const glm::vec3 &translation) {
-	for (auto* keyFrames : _keyFramesMap) {
+	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
 			transform.setLocalTranslation(transform.localTranslation() + translation);
 		}
 	}
 }
-
 
 void SceneGraphNode::release() {
 	if (_flags & VolumeOwned) {
@@ -449,7 +452,8 @@ void SceneGraphNode::releaseOwnership() {
 }
 
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
-	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i", (int)_type);
+	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
+					(int)_type);
 	// keep the pivot - this is because it's stored in the region of the volume...
 	const glm::vec3 p = pivot();
 	release();
@@ -463,7 +467,8 @@ void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership)
 }
 
 void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {
-	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i", (int)_type);
+	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
+					(int)_type);
 	release();
 	_volume = (voxel::RawVolume *)volume;
 }
@@ -567,7 +572,7 @@ core::String SceneGraphNode::property(const core::String &key) const {
 	return value;
 }
 
-float SceneGraphNode::propertyf(const core::String& key) const {
+float SceneGraphNode::propertyf(const core::String &key) const {
 	return property(key).toFloat();
 }
 
@@ -577,7 +582,7 @@ void SceneGraphNode::addProperties(const core::StringMap<core::String> &map) {
 	}
 }
 
-bool SceneGraphNode::setProperty(const core::String& key, const char *value) {
+bool SceneGraphNode::setProperty(const core::String &key, const char *value) {
 	if (_properties.size() >= _properties.capacity()) {
 		return false;
 	}
@@ -585,7 +590,7 @@ bool SceneGraphNode::setProperty(const core::String& key, const char *value) {
 	return true;
 }
 
-bool SceneGraphNode::setProperty(const core::String& key, bool value) {
+bool SceneGraphNode::setProperty(const core::String &key, bool value) {
 	if (_properties.size() >= _properties.capacity()) {
 		return false;
 	}
@@ -593,7 +598,7 @@ bool SceneGraphNode::setProperty(const core::String& key, bool value) {
 	return true;
 }
 
-bool SceneGraphNode::setProperty(const core::String& key, const core::String& value) {
+bool SceneGraphNode::setProperty(const core::String &key, const core::String &value) {
 	if (_properties.size() >= _properties.capacity()) {
 		return false;
 	}
@@ -610,11 +615,11 @@ SceneGraphKeyFrame &SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	return (*kfs)[keyFrameIdx];
 }
 
-SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
+SceneGraphTransform &SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
 	return keyFrame(keyFrameIdx).transform();
 }
 
-const SceneGraphTransform& SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) const {
+const SceneGraphTransform &SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
 	while (keyFrameIdx > 0 && keyFrameIdx >= (int)kfs.size()) {
 		--keyFrameIdx;
@@ -786,51 +791,6 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	return n - 1;
 }
 
-SceneGraphTransform SceneGraphNode::transformForFrame(const core::String &animation, FrameIndex frameIdx) const {
-	const SceneGraphKeyFrames &kfs = keyFrames(animation);
-	return transformForFrame(kfs, frameIdx);
-}
-
-SceneGraphTransform SceneGraphNode::transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const {
-	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
-	const SceneGraphTransform *source = nullptr;
-	const SceneGraphTransform *target = nullptr;
-	FrameIndex startFrameIdx = 0;
-	FrameIndex endFrameIdx = 0;
-	InterpolationType interpolationType = InterpolationType::Linear;
-
-	for (const SceneGraphKeyFrame &kf : kfs) {
-		if (kf.frameIdx <= frameIdx) {
-			source = &kf.transform();
-			startFrameIdx = kf.frameIdx;
-			interpolationType = kf.interpolation;
-		}
-		if (kf.frameIdx > frameIdx && !target) {
-			target = &kf.transform();
-			endFrameIdx = kf.frameIdx;
-		}
-		if (source && target) {
-			break;
-		}
-	}
-
-	if (source == nullptr) {
-		return transform(0);
-	}
-	if (target == nullptr) {
-		return *source;
-	}
-
-	const double deltaFrameSeconds = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-	scenegraph::SceneGraphTransform transform = *source;
-	transform.lerp(*target, deltaFrameSeconds);
-	return transform;
-}
-
-SceneGraphTransform SceneGraphNode::transformForFrame(FrameIndex frameIdx) const {
-	return transformForFrame(keyFrames(), frameIdx);
-}
-
 FrameIndex SceneGraphNode::maxFrame(const core::String &animation) const {
 	FrameIndex maxFrameIdx = 0;
 	const SceneGraphKeyFrames &kfs = keyFrames(animation);
@@ -907,4 +867,4 @@ void SceneGraphNodeCamera::setAspectRatio(float val) {
 	setProperty(PropAspect, core::string::toString(val));
 }
 
-} // namespace voxelformat
+} // namespace scenegraph

@@ -2563,7 +2563,7 @@ void SceneManager::traceScene(bool force) {
 		float distance = 0.0f;
 		const voxel::Region& region = _sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = _sceneGraph.resolvePivot(node);
-		const scenegraph::SceneGraphTransform &transform = node.transformForFrame(_currentFrameIdx);
+		const scenegraph::SceneGraphTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
 		if (obb.intersect(ray.origin, ray.direction, distance)) {
 			if (distance < intersectDist) {

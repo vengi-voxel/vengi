@@ -377,15 +377,6 @@ public:
 	const SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0) const;
 
 	/**
-	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
-	 * the given input frame and interpolates according to the given delta frames between the particular
-	 * keyframes.
-	 */
-	SceneGraphTransform transformForFrame(FrameIndex frameIdx) const;
-	SceneGraphTransform transformForFrame(const core::String &animation, FrameIndex frameIdx) const;
-	SceneGraphTransform transformForFrame(const SceneGraphKeyFrames &kfs, FrameIndex frameIdx) const;
-
-	/**
 	 * @note Only use this accessor if you know that the given key frame index exists
 	 */
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);

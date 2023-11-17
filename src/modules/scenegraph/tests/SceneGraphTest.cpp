@@ -385,15 +385,15 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 		sceneGraph.updateTransforms();
 	}
 	{
-		SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
-		const SceneGraphTransform &transform = parentNode1.transformForFrame(20);
+		const SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
+		const SceneGraphTransform &transform = sceneGraph.transformForFrame(parentNode1, 20);
 		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 100.0f);
 		EXPECT_FLOAT_EQ(transform.localTranslation().x, 100.0f);
 		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(90.0f));
 	}
 	{
-		SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
-		const SceneGraphTransform &transform = childNode2.transformForFrame(20);
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const SceneGraphTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
 		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 100.0f)
 			<< "The child node should also get the world translation of the parent";
 		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(90.0f));
@@ -401,8 +401,8 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	}
 	if (0) { // TODO: this is broken because transformForFrame doesn't take the parent into account if the own node
 			 // doesn't have that particular key frame
-		SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
-		const SceneGraphTransform &transform = childNode2.transformForFrame(10);
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const SceneGraphTransform &transform = sceneGraph.transformForFrame(childNode2, 10);
 		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 50.0f)
 			<< "The child node should also get the world translation of the parent";
 		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(45.0f));

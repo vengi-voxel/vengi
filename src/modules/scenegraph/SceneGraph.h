@@ -36,6 +36,8 @@ protected:
 	mutable FrameIndex _cachedMaxFrame = -1;
 
 	void updateTransforms_r(SceneGraphNode &node);
+	void calcSourceAndTarget(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx,
+							 const SceneGraphKeyFrame **source, const SceneGraphKeyFrame **target) const;
 
 public:
 	SceneGraph(int nodes = 262144);
@@ -101,6 +103,14 @@ public:
 	 * Checks if at least one of the nodes has multiple keyframes
 	 */
 	bool hasAnimations() const;
+
+	/**
+	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
+	 * the given input frame and interpolates according to the given delta frames between the particular
+	 * keyframes.
+	 */
+	SceneGraphTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
+	SceneGraphTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
 
 	/**
 	 * @brief Change the active animation for all nodes to the given animation
