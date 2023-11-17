@@ -752,6 +752,21 @@ SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() {
 	return _keyFramesMap;
 }
 
+KeyFrameIndex SceneGraphNode::previousKeyFrameForFrame(FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	// this assumes that the key frames are sorted by their frame
+	const int n = (int)kfs.size();
+	core_assert(n > 0);
+	int closest = 0;
+	for (int i = 0; i < n; ++i) {
+		const SceneGraphKeyFrame &kf = kfs[i];
+		if (kf.frameIdx < frameIdx) {
+			closest = i;
+		}
+	}
+	return closest;
+}
+
 KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
 	// this assumes that the key frames are sorted by their frame
