@@ -2,23 +2,24 @@
  * @file
  */
 
+#include "scenegraph/SceneGraph.h"
+#include "TestHelper.h"
 #include "app/tests/AbstractTest.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "TestHelper.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace scenegraph {
 
-class SceneGraphTest: public app::AbstractTest {
-};
+class SceneGraphTest : public app::AbstractTest {};
 
 TEST_F(SceneGraphTest, testSize) {
 	SceneGraph sceneGraph;
-	EXPECT_EQ(1u, sceneGraph.size(SceneGraphNodeType::Root)) << "Each scene graph should contain a root node by default";
+	EXPECT_EQ(1u, sceneGraph.size(SceneGraphNodeType::Root))
+		<< "Each scene graph should contain a root node by default";
 	EXPECT_TRUE(sceneGraph.empty()) << "There are no model nodes yet - thus empty should return true";
 	{
 		SceneGraphNode node(SceneGraphNodeType::Group);
@@ -50,7 +51,7 @@ TEST_F(SceneGraphTest, testHasNode) {
 
 TEST_F(SceneGraphTest, testNodeRoot) {
 	SceneGraph sceneGraph;
-	const SceneGraphNode& root = sceneGraph.node(0);
+	const SceneGraphNode &root = sceneGraph.node(0);
 	EXPECT_EQ(0, root.id());
 	EXPECT_EQ(SceneGraphNodeType::Root, root.type());
 }
@@ -62,7 +63,7 @@ TEST_F(SceneGraphTest, testNode) {
 		node.setName("node");
 		sceneGraph.emplace(core::move(node));
 	}
-	const SceneGraphNode& groupNode = sceneGraph.node(1);
+	const SceneGraphNode &groupNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Group, groupNode.type());
 	EXPECT_EQ(1, groupNode.id());
 	EXPECT_EQ("node", groupNode.name());
@@ -173,7 +174,8 @@ TEST_F(SceneGraphTest, testChildren) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("model");
-		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+		EXPECT_EQ(1, sceneGraph.emplace(core::move(node), 0))
+			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Group);
@@ -194,7 +196,7 @@ TEST_F(SceneGraphTest, testChildren) {
 	}
 	EXPECT_EQ(1, sceneGraph.root().children()[0]);
 	ASSERT_TRUE(sceneGraph.hasNode(1));
-	const SceneGraphNode& modelNode = sceneGraph.node(1);
+	const SceneGraphNode &modelNode = sceneGraph.node(1);
 	EXPECT_EQ(SceneGraphNodeType::Model, modelNode.type());
 	EXPECT_EQ(1, modelNode.id());
 	EXPECT_EQ("model", modelNode.name());
@@ -234,7 +236,7 @@ TEST_F(SceneGraphTest, testMerge) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node1");
-		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(0, 1));
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 1));
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v, true);
@@ -243,7 +245,7 @@ TEST_F(SceneGraphTest, testMerge) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setName("node2");
-		voxel::RawVolume* v = new voxel::RawVolume(voxel::Region(1, 2));
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 2));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		sceneGraph.emplace(core::move(node));
@@ -259,13 +261,15 @@ TEST_F(SceneGraphTest, testKeyframes) {
 	SceneGraphNode node(SceneGraphNodeType::Group);
 	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(0));
 	for (int i = 0; i < 10; ++i) {
-		EXPECT_EQ((scenegraph::KeyFrameIndex)0, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
+		EXPECT_EQ((scenegraph::KeyFrameIndex)0, node.keyFrameForFrame(i))
+			<< "Failed to get the correct key frame for frame " << i;
 	}
 	const SceneGraphKeyFrames &kfs = *node.keyFrames();
 	EXPECT_EQ(1u, kfs.size());
 	EXPECT_NE(InvalidKeyFrame, node.addKeyFrame(6));
 	for (int i = 6; i < 10; ++i) {
-		EXPECT_EQ((scenegraph::KeyFrameIndex)1, node.keyFrameForFrame(i)) << "Failed to get the correct key frame for frame " << i;
+		EXPECT_EQ((scenegraph::KeyFrameIndex)1, node.keyFrameForFrame(i))
+			<< "Failed to get the correct key frame for frame " << i;
 	}
 	EXPECT_EQ(2u, kfs.size());
 	EXPECT_TRUE(node.removeKeyFrame(6));
@@ -283,7 +287,8 @@ TEST_F(SceneGraphTest, testMoveParentAsNewChild) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("originalparent");
-		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
+			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
@@ -302,7 +307,8 @@ TEST_F(SceneGraphTest, testMove) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("model1");
-		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0)) << "Unexpected node id returned - root node is 0 - next should be 1";
+		EXPECT_EQ(originalParentNodeId, sceneGraph.emplace(core::move(node), 0))
+			<< "Unexpected node id returned - root node is 0 - next should be 1";
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
@@ -318,8 +324,90 @@ TEST_F(SceneGraphTest, testMove) {
 	ASSERT_EQ(originalParentNodeId, newParentNode.children().front());
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const SceneGraphNode &node = *iter;
-		EXPECT_FALSE(node.transform(0).dirty()) << "node " << node.name().c_str() << " still has a dirty transform after the move";
+		EXPECT_FALSE(node.transform(0).dirty())
+			<< "node " << node.name().c_str() << " still has a dirty transform after the move";
 	}
 }
 
+TEST_F(SceneGraphTest, testAddKeyFrame) {
+	SceneGraphNode node;
+	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(0));
+	EXPECT_EQ(1, node.addKeyFrame(10));
+	EXPECT_EQ(2, node.addKeyFrame(20));
+	EXPECT_EQ(InvalidKeyFrame, node.addKeyFrame(20));
 }
+
+TEST_F(SceneGraphTest, testAddKeyFrameValidateTranslate) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(0, 0));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		sceneGraph.emplace(core::move(node));
+	}
+	ASSERT_FALSE(sceneGraph.animations().empty());
+	ASSERT_TRUE(sceneGraph.setAnimation(sceneGraph.animations()[0]));
+
+	{
+		SceneGraphNode &node = sceneGraph.node(1);
+		EXPECT_EQ(1, node.addKeyFrame(1));
+		EXPECT_EQ(2, node.addKeyFrame(10));
+		EXPECT_EQ(3, node.addKeyFrame(20));
+		EXPECT_EQ(3, node.addKeyFrame(15)) << "Expected to insert a new key frame at index 3 (sorting by frameIdx)";
+		EXPECT_EQ(5, node.addKeyFrame(30));
+	}
+}
+
+TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(0, 0));
+	int firstNodeId;
+	int secondNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		firstNodeId = sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
+	}
+	ASSERT_FALSE(sceneGraph.animations().empty());
+	ASSERT_TRUE(sceneGraph.setAnimation(sceneGraph.animations()[0]));
+	{
+		SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(100.0f, 0.0, 0.0f));
+		transform.setWorldOrientation(glm::quat(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f)));
+		EXPECT_EQ(1, parentNode1.addKeyFrame(20)) << "Expected to get key frame index 1";
+		parentNode1.keyFrame(1).setTransform(transform);
+		sceneGraph.updateTransforms();
+	}
+	{
+		SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
+		const SceneGraphTransform &transform = parentNode1.transformForFrame(20);
+		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 100.0f);
+		EXPECT_FLOAT_EQ(transform.localTranslation().x, 100.0f);
+		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(90.0f));
+	}
+	{
+		SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const SceneGraphTransform &transform = childNode2.transformForFrame(20);
+		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 100.0f)
+			<< "The child node should also get the world translation of the parent";
+		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(90.0f));
+		EXPECT_FLOAT_EQ(transform.localTranslation().x, 0.0f);
+	}
+	if (0) { // TODO: this is broken because transformForFrame doesn't take the parent into account if the own node
+			 // doesn't have that particular key frame
+		SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const SceneGraphTransform &transform = childNode2.transformForFrame(10);
+		EXPECT_FLOAT_EQ(transform.worldTranslation().x, 50.0f)
+			<< "The child node should also get the world translation of the parent";
+		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.worldOrientation()).x, glm::radians(45.0f));
+		EXPECT_FLOAT_EQ(transform.localTranslation().x, 0.0f);
+	}
+}
+
+} // namespace scenegraph

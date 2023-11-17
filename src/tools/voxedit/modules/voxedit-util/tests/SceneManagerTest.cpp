@@ -5,6 +5,7 @@
 #include "../SceneManager.h"
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
@@ -326,8 +327,25 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	EXPECT_EQ(nullptr, _sceneMgr.sceneGraphNode(thirdNodeId));
 }
 
-TEST_F(SceneManagerTest, DISABLED_testMergeTransform) {
-	// TODO:
+TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldTranslation(glm::vec3(100.0f, 0.0, 0.0f));
+
+	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 1));
+	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 10));
+	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 20));
+
+	scenegraph::SceneGraphNode &node = _sceneMgr.sceneGraph().node(1);
+	node.keyFrame(2).setTransform(transform);
+	_sceneMgr.sceneGraph().updateTransforms();
+
+	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 15))
+		<< "Expected to insert a new key frame at index 3 (sorting by frameIdx)";
+	EXPECT_FLOAT_EQ(100.0f, node.keyFrame(3).transform().worldTranslation().x)
+		<< "Expected to get the transform of key frame 2";
+
+	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 30));
+	EXPECT_FLOAT_EQ(0.0f, node.keyFrame(5).transform().worldTranslation().x);
 }
 
 } // namespace voxedit

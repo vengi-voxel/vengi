@@ -2750,7 +2750,13 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 		Log::debug("- keyframe %i", (int)kf.frameIdx);
 	}
 	if (newKeyFrameIdx > 0) {
-		node.keyFrame(newKeyFrameIdx).setTransform(node.keyFrame(newKeyFrameIdx - 1).transform());
+		scenegraph::KeyFrameIndex copyFromKeyFrameIdx = node.previousKeyFrameForFrame(frameIdx);
+		core_assert(copyFromKeyFrameIdx != newKeyFrameIdx);
+		scenegraph::SceneGraphTransform copyFromTransform = node.keyFrame(copyFromKeyFrameIdx).transform();
+		Log::debug("Assign transform from key frame %d to frame %d", (int)copyFromKeyFrameIdx, (int)frameIdx);
+		scenegraph::SceneGraphKeyFrame &copyToKeyFrame = node.keyFrame(newKeyFrameIdx);
+		copyToKeyFrame.setTransform(copyFromTransform);
+		core_assert_msg(copyToKeyFrame.frameIdx == frameIdx, "Expected frame idx %d, got %d", (int)frameIdx, (int)copyToKeyFrame.frameIdx);
 		_mementoHandler.markKeyFramesChange(node);
 		markDirty();
 		return true;
