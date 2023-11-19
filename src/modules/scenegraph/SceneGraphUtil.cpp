@@ -4,6 +4,7 @@
 
 #include "SceneGraphUtil.h"
 #include "core/Log.h"
+#include <glm/ext/scalar_constants.hpp>
 #include "math/Easing.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -207,6 +208,9 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 }
 
 double interpolate(InterpolationType interpolationType, double current, double start, double end) {
+	if (glm::abs(start - end) < glm::epsilon<double>()) {
+		return start;
+	}
 	double deltaFrameSeconds = 0.0f;
 	switch (interpolationType) {
 	case InterpolationType::Instant:
