@@ -347,6 +347,7 @@ void IMGUIApp::setColorTheme() {
 		break;
 	default:
 		_uistyle->setVal("0");
+		ImGui::StyleColorsCorporateGrey();
 		break;
 	}
 }
