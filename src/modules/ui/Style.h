@@ -8,7 +8,7 @@
 
 namespace style {
 
-enum StyleColor { ColorReferenceNode, ColorInactiveNode, ColorActiveNode };
+enum StyleColor { ColorReferenceNode, ColorInactiveNode, ColorActiveNode, ColorHighlightArea };
 
 const glm::vec4 &color(StyleColor color);
 

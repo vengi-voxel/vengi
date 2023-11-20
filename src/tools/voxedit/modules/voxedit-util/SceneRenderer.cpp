@@ -255,7 +255,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	if (highlightMillis > 0) {
 		video::ScopedPolygonMode o(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
 		_shapeBuilder.clear();
-		_shapeBuilder.setColor(core::Color::alpha(core::Color::Green(), 0.2f));
+		_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
 		_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(),
 						   _highlightRegion.value().getUpperCornerf() + 1.0f);
 		_shapeRenderer.createOrUpdate(_highlightMeshIndex, _shapeBuilder);

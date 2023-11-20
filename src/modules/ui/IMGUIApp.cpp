@@ -358,6 +358,10 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		return core::Color::Gray();
 	case style::ColorReferenceNode:
 		return core::Color::LightGreen();
+	case style::ColorHighlightArea: {
+		static const glm::vec4 c = core::Color::alpha(core::Color::Green(), 0.2f);
+		return c;
+	}
 	case style::ColorActiveNode: {
 		const int style = _uistyle->intVal();
 		if (style == 2 || style == 3) {
