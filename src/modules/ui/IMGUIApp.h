@@ -9,6 +9,7 @@
 #include "video/WindowedApp.h"
 #include "video/Buffer.h"
 #include "Console.h"
+#include "Style.h"
 #include "core/collection/Array.h"
 
 struct SDL_Cursor;
@@ -112,6 +113,7 @@ public:
 	virtual app::AppState onRunning() override;
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
+	const glm::vec4 &color(style::StyleColor color);
 
 	ImFont *defaultFont();
 	ImFont *bigFont();

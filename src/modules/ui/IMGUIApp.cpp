@@ -351,6 +351,23 @@ void IMGUIApp::setColorTheme() {
 	}
 }
 
+const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
+	switch (color) {
+	case style::ColorInactiveNode:
+		return core::Color::Gray();
+	case style::ColorReferenceNode:
+		return core::Color::LightGreen();
+	case style::ColorActiveNode: {
+		const int style = _uistyle->intVal();
+		if (style == 2 || style == 3) {
+			return core::Color::DarkGreen();
+		}
+		return core::Color::White();
+	}
+	}
+	return core::Color::White();
+}
+
 void IMGUIApp::beforeUI() {
 }
 

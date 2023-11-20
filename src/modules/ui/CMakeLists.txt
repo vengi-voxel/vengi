@@ -10,6 +10,7 @@ set(SRCS
 	IMGUIStyle.cpp IMGUIStyle.h
 	Notify.cpp Notify.h
 	ScopedStyle.h
+	Style.cpp Style.h
 	TextEditor.h TextEditor.cpp
 	Toolbar.h Toolbar.cpp
 

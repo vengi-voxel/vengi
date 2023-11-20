@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
+#include "ui/Style.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
@@ -174,13 +175,12 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		if (!node.visible()) {
 			continue;
 		}
-		// TODO: these colors don't work in all the color themes
 		if (node.id() == sceneGraph.activeNode()) {
 			continue;
 		} else if (node.isReference()) {
-			_shapeBuilder.setColor(core::Color::Yellow());
+			_shapeBuilder.setColor(style::color(style::ColorReferenceNode));
 		} else {
-			_shapeBuilder.setColor(core::Color::Gray());
+			_shapeBuilder.setColor(style::color(style::ColorInactiveNode));
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = sceneGraph.resolvePivot(node);
@@ -191,7 +191,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 	if (activeNode.isAnyModelNode() && activeNode.visible()) {
-		_shapeBuilder.setColor(core::Color::White());
+		_shapeBuilder.setColor(style::color(style::ColorActiveNode));
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
