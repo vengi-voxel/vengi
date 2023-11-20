@@ -20,6 +20,22 @@ namespace scenegraph {
 
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
+
+struct AnimState {
+	glm::mat4 worldMatrix{1.0f};
+	glm::vec3 scale{1.0f};
+	FrameIndex frameIdx = 0;
+	InterpolationType interpolation = InterpolationType::Linear;
+	bool longRotation = false;
+};
+
+struct FrameTransform {
+	glm::mat4 worldMatrix;
+	glm::quat orientation;
+	glm::vec3 translation;
+	glm::vec3 scale;
+};
+
 /**
  * @brief The internal format for the save/load methods.
  *
@@ -36,8 +52,10 @@ protected:
 	mutable FrameIndex _cachedMaxFrame = -1;
 
 	void updateTransforms_r(SceneGraphNode &node);
-	void calcSourceAndTarget(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx,
-							 const SceneGraphKeyFrame **source, const SceneGraphKeyFrame **target) const;
+	AnimState transformFrameSource_r(const SceneGraphNode &node, const core::String &animation,
+									 FrameIndex frameIdx) const;
+	AnimState transformFrameTarget_r(const SceneGraphNode &node, const core::String &animation,
+									 FrameIndex frameIdx) const;
 
 public:
 	SceneGraph(int nodes = 262144);
@@ -109,8 +127,8 @@ public:
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
 	 */
-	SceneGraphTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
-	SceneGraphTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
+	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
+	FrameTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
 
 	/**
 	 * @brief Change the active animation for all nodes to the given animation
