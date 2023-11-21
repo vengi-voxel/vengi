@@ -211,6 +211,7 @@ bool MainWindow::init() {
 	_lsystemPanel.init();
 	_treePanel.init();
 	_texturePool.init();
+	_positionsPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool.load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -243,6 +244,7 @@ void MainWindow::shutdown() {
 #endif
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
+	_positionsPanel.shutdown();
 	_texturePool.shutdown();
 }
 

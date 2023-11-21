@@ -8,7 +8,7 @@
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/Log.h"
-#include "imgui.h"
+#include "Gizmo.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -74,10 +74,19 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 	return retVal;
 }
 
+bool PositionsPanel::init() {
+	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
+	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
+	return true;
+}
+
+void PositionsPanel::shutdown() {
+}
+
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = sceneMgr().sceneGraph().activeNode();
-		const core::String &sizes = core::Var::getSafe(cfg::VoxEditRegionSizes)->strVal();
+		const core::String &sizes = _regionSizes->strVal();
 		if (!sizes.empty()) {
 			static const char *max = "888x888x888";
 			const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
@@ -335,7 +344,16 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
-		ImGui::CheckboxVar("Activate rotate", cfg::VoxEditGizmoRotation);
+
+		int operations = _gizmoOperations->intVal();
+		bool dirty = false;
+		dirty |= ImGui::CheckboxFlags("Activate rotate", &operations, GizmoOperation_Rotate);
+		dirty |= ImGui::CheckboxFlags("Activate translate", &operations, GizmoOperation_Translate);
+		// dirty |= ImGui::CheckboxFlags("Activate bounds", &operations, GizmoOperation_Bounds);
+		dirty |= ImGui::CheckboxFlags("Activate scale", &operations, GizmoOperation_Scale);
+		if (dirty) {
+			_gizmoOperations->setVal(operations);
+		}
 		ImGui::CheckboxVar("Size", cfg::VoxEditGizmoBounds);
 		ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
 		ImGui::CheckboxVar("Pivot", cfg::VoxEditGizmoPivot);

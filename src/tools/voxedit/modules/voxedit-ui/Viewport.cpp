@@ -3,6 +3,7 @@
  */
 
 #include "Viewport.h"
+#include "Gizmo.h"
 #include "DragAndDropPayload.h"
 #include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
@@ -55,7 +56,7 @@ bool Viewport::init() {
 	_rotationSpeed = core::Var::getSafe(cfg::ClientMouseRotationSpeed);
 	_cursorDetails = core::Var::getSafe(cfg::VoxEditCursorDetails);
 	_showAxisVar = core::Var::getSafe(cfg::VoxEditShowaxis);
-	_gizmoRotation = core::Var::getSafe(cfg::VoxEditGizmoRotation);
+	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_gizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGizmoAllowAxisFlip);
 	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
 	_gizmoBounds = core::Var::getSafe(cfg::VoxEditGizmoBounds);
@@ -576,18 +577,29 @@ bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
 }
 
 uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const {
-	uint32_t operation = ImGuizmo::TRANSLATE;
 	if (isSceneMode() && !_pivotMode->boolVal()) {
+		// create reference mode - only allow translation
 		if (node.isModelNode() && ImGui::IsKeyDown(ImGuiKey_LeftShift)) {
-			return operation;
+			return ImGuizmo::TRANSLATE;
 		}
 
-		operation |= ImGuizmo::BOUNDS | ImGuizmo::SCALE;
-		if (_gizmoRotation->boolVal()) {
+		const uint32_t mask = _gizmoOperations->intVal();
+		uint32_t operation = 0;
+		if (mask & GizmoOperation_Translate) {
+			operation |= ImGuizmo::TRANSLATE;
+		}
+		if (mask & GizmoOperation_Bounds) {
+			operation |= ImGuizmo::BOUNDS;
+		}
+		if (mask & GizmoOperation_Scale) {
+			operation |= ImGuizmo::SCALE;
+		}
+		if (mask & GizmoOperation_Rotate) {
 			operation |= ImGuizmo::ROTATE;
 		}
+		return operation;
 	}
-	return operation;
+	return ImGuizmo::TRANSLATE;
 }
 
 glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {

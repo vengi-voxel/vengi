@@ -72,7 +72,7 @@ private:
 	video::Camera _camera;
 
 	core::VarPtr _showAxisVar;
-	core::VarPtr _gizmoRotation;
+	core::VarPtr _gizmoOperations;
 	core::VarPtr _gizmoAllowAxisFlip;
 	core::VarPtr _gizmoSnap;
 	core::VarPtr _gizmoBounds;

@@ -6,6 +6,7 @@ set(SRCS
 	AssetPanel.h AssetPanel.cpp
 	DragAndDropPayload.h
 	FileDialogOptions.h FileDialogOptions.cpp
+	Gizmo.h
 	PositionsPanel.h PositionsPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp
