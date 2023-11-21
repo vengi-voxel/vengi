@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsFontAwesome6.h"
+#include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
 #include "ui/dearimgui/ImGuizmo.h"
@@ -342,21 +343,21 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	ImGui::NewLine();
 
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
-		ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
+		ImGui::CheckboxVar(ICON_LC_AXIS_3D " Show gizmo", cfg::VoxEditShowaxis);
+		ImGui::CheckboxVar(ICON_LC_FLIP_HORIZONTAL_2 " Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
 
 		int operations = _gizmoOperations->intVal();
 		bool dirty = false;
-		dirty |= ImGui::CheckboxFlags("Activate rotate", &operations, GizmoOperation_Rotate);
-		dirty |= ImGui::CheckboxFlags("Activate translate", &operations, GizmoOperation_Translate);
-		// dirty |= ImGui::CheckboxFlags("Activate bounds", &operations, GizmoOperation_Bounds);
-		dirty |= ImGui::CheckboxFlags("Activate scale", &operations, GizmoOperation_Scale);
+		dirty |= ImGui::CheckboxFlags(ICON_LC_ROTATE_3D, &operations, GizmoOperation_Rotate);
+		dirty |= ImGui::CheckboxFlags(ICON_LC_MOVE_3D, &operations, GizmoOperation_Translate);
+		// dirty |= ImGui::CheckboxFlags(ICON_LC_BOX, &operations, GizmoOperation_Bounds);
+		dirty |= ImGui::CheckboxFlags(ICON_LC_SCALE_3D, &operations, GizmoOperation_Scale);
 		if (dirty) {
 			_gizmoOperations->setVal(operations);
 		}
-		ImGui::CheckboxVar("Size", cfg::VoxEditGizmoBounds);
-		ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
-		ImGui::CheckboxVar("Pivot", cfg::VoxEditGizmoPivot);
+		ImGui::CheckboxVar(ICON_LC_BOX " Size", cfg::VoxEditGizmoBounds);
+		ImGui::CheckboxVar(ICON_LC_MAGNET " Snap", cfg::VoxEditGizmoSnap);
+		ImGui::CheckboxVar(ICON_LC_REFRESH_CCW_DOT " Pivot", cfg::VoxEditGizmoPivot);
 	}
 }
 

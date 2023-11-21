@@ -3,6 +3,7 @@
  */
 
 #include "IMGUIApp.h"
+#include "IconsLucide.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
@@ -35,10 +36,12 @@
 
 #include "ArimoRegular.h"
 #include "FileDialog.h"
-#include "FontAwesomeSolid.h"
-#include "ForkAwesomeWebFont.h"
 #include "IMGUIEx.h"
 #include "IMGUIStyle.h"
+
+#include "FontAwesomeSolid.h"
+#include "FontLucide.h"
+#include "ForkAwesomeWebFont.h"
 #include "IconsFontAwesome6.h"
 #include "IconsForkAwesome.h"
 
@@ -49,7 +52,8 @@
 
 namespace ui {
 
-IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
+IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
+				   size_t threadPoolSize)
 	: Super(filesystem, timeProvider, threadPoolSize) {
 }
 
@@ -230,6 +234,7 @@ void IMGUIApp::loadFonts() {
 
 	static const ImWchar rangesFAIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
 	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
+	static const ImWchar rangesLCIcons[] = {ICON_MIN_LC, ICON_MAX_LC, 0};
 
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 															fontSize, nullptr, rangesBasic);
@@ -237,6 +242,8 @@ void IMGUIApp::loadFonts() {
 											 fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
 											 fontSize, &fontIconCfg, rangesFKIcons);
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
+											 fontSize, &fontIconCfg, rangesLCIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 														fontSize * 2.0f, nullptr, rangesBasic);
@@ -253,6 +260,8 @@ void IMGUIApp::loadFonts() {
 											 fontSize, &fontIconCfg, rangesFAIcons);
 	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
 											 fontSize, &fontIconCfg, rangesFKIcons);
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
+											 fontSize, &fontIconCfg, rangesLCIcons);
 
 	unsigned char *pixels;
 	int width, height;

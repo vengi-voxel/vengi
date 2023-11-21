@@ -54,6 +54,7 @@ macro(imgui_build_font NAME TTF_FILE)
 endmacro()
 
 imgui_build_font(FontAwesomeSolid fa-solid-900.ttf)
+imgui_build_font(FontLucide lucide.ttf)
 imgui_build_font(ForkAwesomeWebFont forkawesome-webfont.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 

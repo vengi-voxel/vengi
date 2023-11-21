@@ -247,6 +247,8 @@ update-icons:
 	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/ui
 	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsForkAwesome.h src/modules/ui/
 	cp $(UPDATEDIR)/fork-awesome.sync/fonts/forkawesome-webfont.ttf data/ui
+	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsLucide.h src/modules/ui/
+	curl -L https://unpkg.com/lucide-static@latest/font/lucide.ttf -o data/ui/lucide.ttf
 
 update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
