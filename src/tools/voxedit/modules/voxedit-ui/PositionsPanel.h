@@ -16,6 +16,7 @@ private:
 	bool _localSpace = false;
 	core::VarPtr _gizmoOperations;
 	core::VarPtr _regionSizes;
+	core::VarPtr _showGizmo;
 
 	void modelView(command::CommandExecutionListener &listener);
 	void keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);

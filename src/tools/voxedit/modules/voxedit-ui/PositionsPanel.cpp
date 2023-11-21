@@ -78,6 +78,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 bool PositionsPanel::init() {
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
+	_showGizmo = core::Var::getSafe(cfg::VoxEditShowaxis);
 	return true;
 }
 
@@ -343,21 +344,38 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	ImGui::NewLine();
 
 	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::CheckboxVar(ICON_LC_AXIS_3D " Show gizmo", cfg::VoxEditShowaxis);
-		ImGui::CheckboxVar(ICON_LC_FLIP_HORIZONTAL_2 " Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
+		ImGui::CheckboxVar(ICON_LC_AXIS_3D " Show gizmo", _showGizmo);
+
+		ImGui::Indent();
+		if (!_showGizmo->boolVal())
+			ImGui::BeginDisabled();
 
 		int operations = _gizmoOperations->intVal();
 		bool dirty = false;
-		dirty |= ImGui::CheckboxFlags(ICON_LC_ROTATE_3D, &operations, GizmoOperation_Rotate);
-		dirty |= ImGui::CheckboxFlags(ICON_LC_MOVE_3D, &operations, GizmoOperation_Translate);
-		// dirty |= ImGui::CheckboxFlags(ICON_LC_BOX, &operations, GizmoOperation_Bounds);
-		dirty |= ImGui::CheckboxFlags(ICON_LC_SCALE_3D, &operations, GizmoOperation_Scale);
+
+		dirty |= ImGui::CheckboxFlags(ICON_LC_ROTATE_3D " Rotate", &operations, GizmoOperation_Rotate);
+		ImGui::TooltipText("Activate the rotate operation");
+
+		dirty |= ImGui::CheckboxFlags(ICON_LC_MOVE_3D " Translate", &operations, GizmoOperation_Translate);
+		ImGui::TooltipText("Activate the translate operation");
+
+		// dirty |= ImGui::CheckboxFlags(ICON_LC_BOX " Bounds", &operations, GizmoOperation_Bounds);
+		// ImGui::TooltipText("Activate the bounds operation");
+
+		// dirty |= ImGui::CheckboxFlags(ICON_LC_SCALE_3D " Scale", &operations, GizmoOperation_Scale);
+		// ImGui::TooltipText("Activate the uniform scale operation");
+
 		if (dirty) {
 			_gizmoOperations->setVal(operations);
 		}
-		ImGui::CheckboxVar(ICON_LC_BOX " Size", cfg::VoxEditGizmoBounds);
-		ImGui::CheckboxVar(ICON_LC_MAGNET " Snap", cfg::VoxEditGizmoSnap);
+		ImGui::CheckboxVar(ICON_LC_MAGNET " Snap to grid", cfg::VoxEditGizmoSnap);
 		ImGui::CheckboxVar(ICON_LC_REFRESH_CCW_DOT " Pivot", cfg::VoxEditGizmoPivot);
+		ImGui::CheckboxVar(ICON_LC_FLIP_HORIZONTAL_2 " Flip axis", cfg::VoxEditGizmoAllowAxisFlip);
+
+		if (!_showGizmo->boolVal())
+			ImGui::EndDisabled();
+
+		ImGui::Unindent();
 	}
 }
 

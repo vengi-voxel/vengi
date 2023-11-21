@@ -75,7 +75,6 @@ private:
 	core::VarPtr _gizmoOperations;
 	core::VarPtr _gizmoAllowAxisFlip;
 	core::VarPtr _gizmoSnap;
-	core::VarPtr _gizmoBounds;
 	core::VarPtr _modelGizmo;
 	core::VarPtr _viewDistance;
 	core::VarPtr _simplifiedView;
@@ -86,6 +85,7 @@ private:
 	bool wantGizmo() const;
 	bool createReference(const scenegraph::SceneGraphNode &node) const;
 	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
+	void updateBounds(const scenegraph::SceneGraphNode &node);
 	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);
 	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix, glm::mat4 &deltaMatrix,
 						 uint32_t operation) const;

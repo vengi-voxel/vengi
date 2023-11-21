@@ -59,7 +59,6 @@ bool Viewport::init() {
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_gizmoAllowAxisFlip = core::Var::getSafe(cfg::VoxEditGizmoAllowAxisFlip);
 	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
-	_gizmoBounds = core::Var::getSafe(cfg::VoxEditGizmoBounds);
 	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
@@ -543,6 +542,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
 			sceneMgr().resize(node.id(), newRegion);
+			updateBounds(node);
 		}
 	}
 }
@@ -616,17 +616,18 @@ uint32_t Viewport::gizmoMode() const {
 	return ImGuizmo::MODE::WORLD;
 }
 
+void Viewport::updateBounds(const scenegraph::SceneGraphNode &node) {
+	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
+	_bounds.mins = region.getLowerCornerf();
+	_bounds.maxs = region.getUpperCornerf() + 1.0f;
+}
+
 const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
 	const float *boundsPtr = nullptr;
-	if (isSceneMode() && _gizmoBounds->boolVal()) {
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
-		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const glm::vec3 size = region.getDimensionsInVoxels();
-		const glm::vec3 mins = -node.pivot() * size;
-		if (glm::any(glm::epsilonNotEqual(mins, _bounds.mins, glm::epsilon<float>()))) {
-			_bounds.mins = mins;
-			_bounds.maxs = mins + size;
-			_boundsNode.maxs = size;
+	if (isSceneMode() && (_gizmoOperations->uintVal() & GizmoOperation_Bounds) != 0) {
+		if (!ImGuizmo::IsUsing()) {
+			updateBounds(node);
 		}
 		boundsPtr = glm::value_ptr(_bounds.mins);
 	}

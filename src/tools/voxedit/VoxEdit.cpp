@@ -115,11 +115,10 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditShowaxis, "true", "Show the axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditCursorDetails, "1", "Print cursor details in edit mode", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", "Set auto keyframe", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGizmoOperations, "9", "Bitmask of gizmo operations in scene mode");
+	core::Var::get(cfg::VoxEditGizmoOperations, "3", "Bitmask of gizmo operations in scene mode");
 	core::Var::get(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, "Activate the pivot mode for the gizmo in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoAllowAxisFlip, "true", "Flip axis or stay along the positive world/local axis", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoSnap, "true", "Use the grid size for snap", core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditGizmoBounds, "false", "Allow to change the volume bounds in scene mode", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditModelGizmo, "false", "Show the gizmo to also translate the region", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<2, cfg::MaxViewports>);
