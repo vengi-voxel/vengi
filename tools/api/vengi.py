@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
 from flask import Flask, request, Response
-import sqlite3
+from influxdb import InfluxDBClient
 import atexit
 import threading
 import queue
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 q = queue.Queue()
 
@@ -18,15 +22,16 @@ def worker():
         metric_name = item[0]
         value = item[1]
         tags = item[2]
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO metrics (timestamp, metric_name, value) VALUES (unixepoch(), ?, ?)", (metric_name, value))
-        db.commit()
-        metric_id = cursor.lastrowid
-        tag_items = []
-        for tag in tags:
-            tag_items.append((metric_id, tag, tags[tag]))
-        cursor.executemany("INSERT INTO tags (metric_id, tag_key, tag_value) VALUES (?, ?, ?)", tag_items)
-        db.commit()
+        metric_json = [
+            {
+                "measurement": metric_name,
+                "tags": tags,
+                "fields": {
+                    "value": value
+                }
+            }
+        ]
+        db.write_points(metric_json)
         q.task_done()
 
 app = Flask(__name__)
@@ -67,36 +72,17 @@ def metric():
 
     return Response(status = 204)
 
-def initDB():
-    print("Initializing database tables\n")
-    cursor = db.cursor()
-    # Create the 'metrics' table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS metrics (
-            id INTEGER PRIMARY KEY,
-            timestamp INTEGER,
-            metric_name TEXT,
-            value REAL
-        )
-    ''')
-    # Create the 'tags' table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tags (
-            metric_id INTEGER,
-            tag_key TEXT,
-            tag_value TEXT,
-            FOREIGN KEY (metric_id) REFERENCES metrics(id)
-        )
-    ''')
-    cursor.close()
-
 if __name__ == "__main__":
-    db = sqlite3.connect(DATABASE, check_same_thread = False)
+    host = config.get('influx', 'host')
+    port = int(config.get('influx', 'port'))
+    database = config.get('influx', 'database')
+    username = config.get('influx', 'username')
+    password = config.get('influx', 'password')
+
+    db = InfluxDBClient(host, port, username, password, database)
     def shutdown():
         db.close()
     atexit.register(shutdown)
-
-    initDB()
 
     threading.Thread(target=worker, daemon=True).start()
 
