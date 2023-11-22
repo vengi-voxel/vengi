@@ -752,11 +752,13 @@ void MainWindow::popupAbout() {
 #endif
 					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
+					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", w);
 					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
 					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
 					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
 					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
+					ImGui::URLItem("lucide", "https://lucide.dev/", w);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
 					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
 					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
