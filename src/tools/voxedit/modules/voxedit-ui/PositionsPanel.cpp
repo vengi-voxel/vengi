@@ -3,7 +3,6 @@
  */
 
 #include "PositionsPanel.h"
-#include "IconsForkAwesome.h"
 #include "Util.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -13,7 +12,6 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsFontAwesome6.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
@@ -86,7 +84,7 @@ void PositionsPanel::shutdown() {
 }
 
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
-	if (ImGui::CollapsingHeader(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_LC_RULER " Region", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = sceneMgr().sceneGraph().activeNode();
 		const core::String &sizes = _regionSizes->strVal();
 		if (!sizes.empty()) {
@@ -127,7 +125,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 					sceneMgr().resize(nodeId, newRegion);
 				}
 
-				if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+				if (ImGui::CollapsingHeader(ICON_LC_BOX " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 					ImGui::CheckboxVar("Show gizmo", cfg::VoxEditModelGizmo);
 					ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
 					ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
@@ -140,21 +138,21 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_LC_ARROW_UP " Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
 		static glm::ivec3 translate{0};
 		veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
 		veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
 		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandButton(ICON_FA_BORDER_ALL " Volumes", shiftCmd.c_str(), listener);
+		ImGui::CommandButton(ICON_LC_GRID_3X3 " Volumes", shiftCmd.c_str(), listener);
 		ImGui::SameLine();
 		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandButton(ICON_FA_CUBES " Voxels", moveCmd.c_str(), listener);
+		ImGui::CommandButton(ICON_LC_BOXES " Voxels", moveCmd.c_str(), listener);
 	}
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_LC_BOX " Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
 		glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
 		math::Axis lockedAxis = sceneMgr().modifier().lockedAxis();
 		if (veui::CheckboxAxisFlags(math::Axis::X, "X##cursorlock", &lockedAxis)) {
@@ -209,7 +207,7 @@ void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &n
 		}
 		ImGui::EndCombo();
 	}
-	if (ImGui::CollapsingHeader(ICON_FK_LINE_CHART " Interpolation details")) {
+	if (ImGui::CollapsingHeader(ICON_LC_LINE_CHART " Interpolation details")) {
 		core::Array<glm::dvec2, 20> data;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
@@ -251,7 +249,7 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 }
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
-	if (ImGui::CollapsingHeader(ICON_FA_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_LC_ARROW_UP " Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != InvalidNodeId) {
@@ -269,7 +267,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			ImGui::CheckboxVar("Update children", cfg::VoxEditTransformUpdateChildren);
 			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_X "##resettr")) {
+			if (ImGui::Button(ICON_LC_X "##resettr")) {
 				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
 				change = true;
 			}
@@ -277,7 +275,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 			change |= ImGui::InputFloat3("Rt", matrixRotation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_X "##resetrt")) {
+			if (ImGui::Button(ICON_LC_X "##resetrt")) {
 				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
 				change = true;
 			}
@@ -285,7 +283,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 			change |= ImGui::InputFloat3("Sc", matrixScale, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_X "##resetsc")) {
+			if (ImGui::Button(ICON_LC_X "##resetsc")) {
 				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
 				change = true;
 			}
@@ -296,7 +294,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			change |= pivotChanged;
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_X "##resetpv")) {
+			if (ImGui::Button(ICON_LC_X "##resetpv")) {
 				pivot[0] = pivot[1] = pivot[2] = 0.0f;
 				pivotChanged = change = true;
 			}
@@ -343,7 +341,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader(ICON_FA_CUBE " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_LC_BOX " Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::CheckboxVar(ICON_LC_AXIS_3D " Show gizmo", _showGizmo);
 
 		ImGui::Indent();

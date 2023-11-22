@@ -5,8 +5,7 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
-#include "IconsFontAwesome6.h"
-#include "IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -316,8 +315,8 @@ void Viewport::toggleVideoRecording() {
 }
 
 void Viewport::menuBarView(command::CommandExecutionListener *listener) {
-	if (ImGui::BeginMenu(ICON_FA_EYE " View")) {
-		ImGui::CommandMenuItem(ICON_FK_VIDEO_CAMERA " Reset camera", "resetcamera", true, listener);
+	if (ImGui::BeginMenu(ICON_LC_EYE " View")) {
+		ImGui::CommandMenuItem(ICON_LC_VIDEO " Reset camera", "resetcamera", true, listener);
 
 		glm::vec3 omega = _camera.omega();
 		if (ImGui::InputFloat("Camera rotation", &omega.y)) {
@@ -325,9 +324,9 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		}
 
 		const core::String command = core::string::format("screenshot %i", _id);
-		ImGui::CommandMenuItem(ICON_FA_CAMERA " Screenshot", command.c_str(), listener);
+		ImGui::CommandMenuItem(ICON_LC_CAMERA " Screenshot", command.c_str(), listener);
 
-		if (ImGui::MenuItem(_avi.isRecording() ? ICON_FA_STOP " Video" : ICON_FA_CAMERA " Video")) {
+		if (ImGui::MenuItem(_avi.isRecording() ? ICON_LC_STOP_CIRCLE " Video" : ICON_LC_CLAPPERBOARD " Video")) {
 			toggleVideoRecording();
 		}
 		const uint32_t pendingFrames = _avi.pendingFrames();
@@ -379,8 +378,8 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
-		ImGui::CommandMenuItem(ICON_FA_ROTATE_LEFT " Undo", "undo", mementoHandler.canUndo(), listener);
-		ImGui::CommandMenuItem(ICON_FA_ROTATE_RIGHT " Redo", "redo", mementoHandler.canRedo(), listener);
+		ImGui::CommandMenuItem(ICON_LC_ROTATE_CCW " Undo", "undo", mementoHandler.canUndo(), listener);
+		ImGui::CommandMenuItem(ICON_LC_ROTATE_CW " Redo", "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraProjection();
 		menuBarCameraMode();

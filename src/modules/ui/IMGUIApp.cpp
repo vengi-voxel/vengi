@@ -39,11 +39,7 @@
 #include "IMGUIEx.h"
 #include "IMGUIStyle.h"
 
-#include "FontAwesomeSolid.h"
 #include "FontLucide.h"
-#include "ForkAwesomeWebFont.h"
-#include "IconsFontAwesome6.h"
-#include "IconsForkAwesome.h"
 
 #include <SDL.h>
 #include <SDL_events.h>
@@ -232,36 +228,23 @@ void IMGUIApp::loadFonts() {
 	fontIconCfg.GlyphMinAdvanceX = fontSize;
 	fontIconCfg.GlyphMaxAdvanceX = bigFontIconCfg.GlyphMinAdvanceX;
 
-	static const ImWchar rangesFAIcons[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-	static const ImWchar rangesFKIcons[] = {ICON_MIN_FK, ICON_MAX_FK, 0};
 	static const ImWchar rangesLCIcons[] = {ICON_MIN_LC, ICON_MAX_LC, 0};
 
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 															fontSize, nullptr, rangesBasic);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											 fontSize, &fontIconCfg, rangesFAIcons);
-	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											 fontSize, &fontIconCfg, rangesFKIcons);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
-											 fontSize, &fontIconCfg, rangesLCIcons);
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
+											 &fontIconCfg, rangesLCIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 														fontSize * 2.0f, nullptr, rangesBasic);
 
-	_bigIconFont =
-		io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-												 fontSize * 1.5f, &bigFontIconCfg, rangesFAIcons);
-	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											 fontSize * 1.5f, &bigFontIconCfg, rangesFKIcons);
+	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
+															fontSize * 1.5f, &bigFontIconCfg, rangesLCIcons);
 
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
 														  fontSize * 0.8f, nullptr, rangesBasic);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontAwesomeSolid_compressed_data, FontAwesomeSolid_compressed_size,
-											 fontSize, &fontIconCfg, rangesFAIcons);
-	io.Fonts->AddFontFromMemoryCompressedTTF(ForkAwesomeWebFont_compressed_data, ForkAwesomeWebFont_compressed_size,
-											 fontSize, &fontIconCfg, rangesFKIcons);
-	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
-											 fontSize, &fontIconCfg, rangesLCIcons);
+	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
+											 &fontIconCfg, rangesLCIcons);
 
 	unsigned char *pixels;
 	int width, height;
@@ -498,7 +481,7 @@ app::AppState IMGUIApp::onRunning() {
 					}
 					ImGui::TableNextColumn();
 					// TODO: change binding
-					const core::String &deleteButton = core::string::format(ICON_FA_TRASH "##del-key-%i", n++);
+					const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
 					if (ImGui::Button(deleteButton.c_str())) {
 						command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
 					}

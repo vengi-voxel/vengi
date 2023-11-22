@@ -4,8 +4,7 @@
 
 #include "IMGUIEx.h"
 #include "IMGUIApp.h"
-#include "IconsFontAwesome6.h"
-#include "IconsForkAwesome.h"
+#include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
@@ -104,7 +103,7 @@ bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFl
 bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags) {
 	const bool v = InputText(label, file, flags);
 	SameLine();
-	if (Button(ICON_FK_FONT)) {
+	if (Button(ICON_LC_FILE)) {
 		video::FileDialogOptions options;
 		imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
 			*file = filename;
@@ -447,7 +446,7 @@ void URLItem(const char *title, const char *url, float width) {
 			command::executeCommands(cmd);
 		}
 		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-		ImGui::SetTooltip(ICON_FA_LINK "  Open in browser\n%s", url);
+		ImGui::SetTooltip(ICON_LC_LINK " Open in browser\n%s", url);
 	}
 }
 

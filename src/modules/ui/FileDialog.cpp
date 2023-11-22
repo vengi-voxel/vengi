@@ -4,8 +4,7 @@
 
 #include "FileDialog.h"
 #include "IMGUIEx.h"
-#include "IconsFontAwesome6.h"
-#include "IconsForkAwesome.h"
+#include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
@@ -270,7 +269,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {"Download", "Desktop", "Documents", "Pictures", "Public", "Recent", "Cloud"};
-	static const char *folderIcons[] = {ICON_FK_DOWNLOAD, ICON_FK_DESKTOP, ICON_FA_FILE, ICON_FA_IMAGE, ICON_FA_FOLDER, ICON_FA_FOLDER, ICON_FA_CLOUD};
+	static const char *folderIcons[] = {ICON_LC_DOWNLOAD, ICON_LC_MONITOR_DOT, ICON_LC_FILE, ICON_LC_IMAGE, ICON_LC_FOLDER, ICON_LC_FOLDER, ICON_LC_CLOUD};
 	static_assert(lengthof(folderNames) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 	static_assert(lengthof(folderIcons) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 
@@ -292,7 +291,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			if (absPath.empty()) {
 				continue;
 			}
-			quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER);
+			quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
 		}
 		ImGui::TreePop();
 	}
@@ -313,9 +312,9 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 				removeBookmark(path);
 				continue;
 			}
-			if (quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_FA_FOLDER)) {
+			if (quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
 				if (ImGui::BeginPopupContextItem()) {
-					if (ImGui::Button(ICON_FK_TRASH " Remove bookmark")) {
+					if (ImGui::Button(ICON_LC_TRASH " Remove bookmark")) {
 						removeBookmark(path);
 						ImGui::CloseCurrentPopup();
 					}
@@ -346,11 +345,11 @@ bool FileDialog::hide(const core::String &file) const {
 static const char *iconForType(io::FilesystemEntry::Type type) {
 	switch (type) {
 	case io::FilesystemEntry::Type::dir:
-		return ICON_FA_FOLDER;
+		return ICON_LC_FOLDER;
 	case io::FilesystemEntry::Type::file:
-		return ICON_FA_FILE_IMPORT;
+		return ICON_LC_FILE_PLUS;
 	case io::FilesystemEntry::Type::link:
-		return ICON_FA_LINK;
+		return ICON_LC_LINK;
 	default:
 		break;
 	}
@@ -479,7 +478,7 @@ void FileDialog::addBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::currentPathPanel(video::OpenFileMode type) {
-	if (ImGui::Button(ICON_FK_BOOKMARK)) {
+	if (ImGui::Button(ICON_LC_BOOKMARK)) {
 		addBookmark(_currentPath);
 	}
 	ImGui::TooltipText("Add a bookmark for the current active folder");
@@ -559,7 +558,7 @@ bool FileDialog::popupAlreadyExists() {
 	if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(imguiApp()->bigFont());
-		ImGui::TextUnformatted(ICON_FA_TRIANGLE_EXCLAMATION);
+		ImGui::TextUnformatted(ICON_LC_ALERT_TRIANGLE);
 		ImGui::PopFont();
 		ImGui::SameLine();
 		ImGui::Spacing();

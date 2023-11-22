@@ -3,11 +3,11 @@
  */
 
 #include "AnimationTimeline.h"
+#include "IconsLucide.h"
 #include "core/ArrayLength.h"
 #include "core/collection/DynamicArray.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/SceneManager.h"
 #include "scenegraph/SceneGraph.h"
@@ -16,22 +16,22 @@
 namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
-	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add", _play)) {
+	if (ImGui::DisabledButton(ICON_LC_PLUS " Add", _play)) {
 		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to the current active node");
 	ImGui::SameLine();
-	if (ImGui::DisabledButton(ICON_FA_SQUARE_PLUS " Add all", _play)) {
+	if (ImGui::DisabledButton(ICON_LC_PLUS_SQUARE " Add all", _play)) {
 		sceneMgr().nodeAllAddKeyFrames(currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to all model nodes");
 	ImGui::SameLine();
-	if (ImGui::DisabledButton(ICON_FA_SQUARE_MINUS " Remove", _play)) {
+	if (ImGui::DisabledButton(ICON_LC_MINUS_SQUARE " Remove", _play)) {
 		sceneMgr().nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Delete the current keyframe of the active nodes");
 	ImGui::SameLine();
-	if (ImGui::Button(ICON_FA_ARROW_RIGHT_ARROW_LEFT)) {
+	if (ImGui::Button(ICON_LC_ARROW_RIGHT_LEFT)) {
 		_startFrame = 0;
 		_endFrame = core_max(64, maxFrame + 1);
 	}
@@ -39,11 +39,11 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::SameLine();
 
 	if (_play) {
-		if (ImGui::Button(ICON_FA_STOP)) {
+		if (ImGui::Button(ICON_LC_STOP_CIRCLE)) {
 			_play = false;
 		}
 	} else {
-		if (ImGui::DisabledButton(ICON_FA_PLAY, maxFrame <= 0)) {
+		if (ImGui::DisabledButton(ICON_LC_PLAY, maxFrame <= 0)) {
 			_play = true;
 		}
 		ImGui::TooltipText("Max frames for this animation: %i", maxFrame);
@@ -128,28 +128,28 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoTitleBar;
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
-			if (ImGui::Selectable(ICON_FA_SQUARE_PLUS " Add")) {
+			if (ImGui::Selectable(ICON_LC_PLUS_SQUARE " Add")) {
 				sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
 			}
 			if (!_selectionBuffer.empty()) {
 #if 0
-				if (ImGui::Selectable(ICON_FA_COPY " Copy")) {
+				if (ImGui::Selectable(ICON_LC_COPY " Copy")) {
 					// TODO: implement copy
 				}
-				if (ImGui::Selectable(ICON_FA_PASTE " Paste")) {
+				if (ImGui::Selectable(ICON_LC_PASTE " Paste")) {
 					// TODO: implement paste
 				}
 #endif
-				if (ImGui::Selectable(ICON_FA_COPY " Duplicate keyframe")) {
+				if (ImGui::Selectable(ICON_LC_COPY " Duplicate keyframe")) {
 					for (const Selection &sel : _selectionBuffer) {
 						sceneMgr().nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
 				}
-				if (ImGui::Selectable(ICON_FA_TRASH " Delete keyframes")) {
+				if (ImGui::Selectable(ICON_LC_TRASH " Delete keyframes")) {
 					for (const Selection &sel : _selectionBuffer) {
 						sceneMgr().nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
 					}

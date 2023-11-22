@@ -3,6 +3,7 @@
  */
 
 #include "LSystemPanel.h"
+#include "IconsLucide.h"
 #include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
 
@@ -25,7 +26,7 @@ void LSystemPanel::update(const char *title) {
 		ImGui::InputInt("Iterations##noise", &_lsystemData.iterations);
 		ImGui::InputFloat("Leaves Radius##noise", &_lsystemData.leavesRadius);
 
-		if (ImGui::Button(ICON_FA_CHECK " OK##lsystem")) {
+		if (ImGui::Button(ICON_LC_PLAY " OK##lsystem")) {
 			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr, rules)) {
 				sceneMgr().lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,

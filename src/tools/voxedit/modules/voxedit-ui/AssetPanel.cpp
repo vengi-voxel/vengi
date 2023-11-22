@@ -12,8 +12,7 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
@@ -56,7 +55,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		core_trace_scoped(AssetPanel);
 
 		if (ImGui::CollapsingHeader("Models", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button(ICON_FK_FILE_ARCHIVE_O " Open model directory")) {
+			if (ImGui::Button(ICON_LC_FOLDER_TREE " Open model directory")) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadModels(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}
@@ -98,7 +97,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 			}
 		}
 		if (ImGui::CollapsingHeader("Images", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button(ICON_FK_FILE_IMAGE_O " Open image directory")) {
+			if (ImGui::Button(ICON_LC_FOLDER_TREE " Open image directory")) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadTextures(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}

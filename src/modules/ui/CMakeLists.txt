@@ -3,8 +3,7 @@ set(LIB ui)
 set(SRCS
 	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
-	IconsFontAwesome6.h
-	IconsForkAwesome.h
+	IconsLucide.h
 	IMGUIEx.cpp IMGUIEx.h
 	IMGUIApp.cpp IMGUIApp.h
 	IMGUIStyle.cpp IMGUIStyle.h
@@ -53,9 +52,7 @@ macro(imgui_build_font NAME TTF_FILE)
 	list(APPEND SRCS ${OUTPUT_FILE})
 endmacro()
 
-imgui_build_font(FontAwesomeSolid fa-solid-900.ttf)
 imgui_build_font(FontLucide lucide.ttf)
-imgui_build_font(ForkAwesomeWebFont forkawesome-webfont.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)

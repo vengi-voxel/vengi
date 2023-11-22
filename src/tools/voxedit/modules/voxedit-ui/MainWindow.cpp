@@ -18,8 +18,7 @@
 #include "ui/FileDialog.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "util/TextProcessor.h"
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
@@ -61,19 +60,19 @@
 #include "undead_png.h"
 
 #define TITLE_STATUSBAR "##statusbar"
-#define TITLE_PALETTE ICON_FA_PALETTE " Palette##title"
-#define TITLE_POSITIONS ICON_FA_LOCATION_CROSSHAIRS " Positions##title"
-#define TITLE_ANIMATION_TIMELINE ICON_FA_TABLE_LIST " Animation##animationtimeline"
-#define TITLE_TOOLS ICON_FA_TOOLBOX " Tools##title"
-#define TITLE_MEMENTO ICON_FA_BOOK_OPEN " History##title"
-#define TITLE_ASSET ICON_FA_LIST_UL " Assets##title"
-#define TITLE_SCENEGRAPH ICON_FA_SHARE_NODES " Scene##title"
-#define TITLE_RENDER ICON_FA_IMAGE " Render##title"
-#define TITLE_TREES ICON_FA_TREE " Trees##title"
-#define TITLE_BRUSHPANEL ICON_FA_BRUSH " Brush##title"
-#define TITLE_LSYSTEMPANEL ICON_FA_LEAF " L-System##title"
-#define TITLE_ANIMATION_SETTINGS ICON_FA_ARROWS_SPIN " Animation##animationsettings"
-#define TITLE_SCRIPT_EDITOR ICON_FK_CODE " Script Editor##scripteditor"
+#define TITLE_PALETTE ICON_LC_PALETTE " Palette##title"
+#define TITLE_POSITIONS ICON_LC_LOCATE " Positions##title"
+#define TITLE_ANIMATION_TIMELINE ICON_LC_TABLE " Animation##animationtimeline"
+#define TITLE_TOOLS ICON_LC_WRENCH " Tools##title"
+#define TITLE_MEMENTO ICON_LC_BOOK_OPEN " History##title"
+#define TITLE_ASSET ICON_LC_LIST " Assets##title"
+#define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene##title"
+#define TITLE_RENDER ICON_LC_IMAGE " Render##title"
+#define TITLE_TREES ICON_LC_TREE_PINE " Trees##title"
+#define TITLE_BRUSHPANEL ICON_LC_BRUSH " Brush##title"
+#define TITLE_LSYSTEMPANEL ICON_LC_LEAF " L-System##title"
+#define TITLE_ANIMATION_SETTINGS ICON_LC_LAYOUT_LIST " Animation##animationsettings"
+#define TITLE_SCRIPT_EDITOR ICON_LC_CODE " Script Editor##scripteditor"
 
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications##popuptitle"
 #define POPUP_TITLE_NEW_SCENE "New scene##popuptitle"
@@ -487,19 +486,19 @@ void MainWindow::popupTipOfTheDay() {
 	ImGui::SetNextWindowSize(ImVec2(_app->fontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_TIPOFTHEDAY)) {
 		const char *tip = getTip();
-		dialog(ICON_FK_LIGHTBULB_O, tip);
+		dialog(ICON_LC_LIGHTBULB, tip);
 		float height = (_app->fontSize() * 8.0f) - ImGui::GetCursorPosY();
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
 		}
 		ImGui::CheckboxVar("Show again", _tipOfTheDay);
-		if (ImGui::Button(ICON_FA_CHECK " Next##tipoftheday")) {
+		if (ImGui::Button(ICON_LC_CHECK " Next##tipoftheday")) {
 			++_currentTip;
 			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Close##tipoftheday")) {
+		if (ImGui::Button(ICON_LC_X " Close##tipoftheday")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -533,7 +532,7 @@ void MainWindow::popupNewScene() {
 			ImGui::NewLine();
 		}
 
-		if (ImGui::Button(ICON_FA_CHECK " OK##newscene")) {
+		if (ImGui::Button(ICON_LC_CHECK " OK##newscene")) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (voxedit::sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
@@ -542,7 +541,7 @@ void MainWindow::popupNewScene() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Close##newscene")) {
+		if (ImGui::Button(ICON_LC_X " Close##newscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -551,8 +550,8 @@ void MainWindow::popupNewScene() {
 
 void MainWindow::popupFailedSave() {
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_TRIANGLE_EXCLAMATION, "Failed to save the model!");
-		if (ImGui::Button(ICON_FA_CHECK " OK##failedsave")) {
+		dialog(ICON_LC_ALERT_TRIANGLE, "Failed to save the model!");
+		if (ImGui::Button(ICON_LC_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -562,15 +561,15 @@ void MainWindow::popupFailedSave() {
 
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_QUESTION, "Unsaved changes - are you sure to quit?");
-		if (ImGui::Button(ICON_FA_CHECK " OK##unsavedscene")) {
+		dialog(ICON_LC_HELP_CIRCLE, "Unsaved changes - are you sure to quit?");
+		if (ImGui::Button(ICON_LC_CHECK " OK##unsavedscene")) {
 			_forceQuit = true;
 			_app->requestQuit();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Cancel##unsavedscene")) {
+		if (ImGui::Button(ICON_LC_X " Cancel##unsavedscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -579,8 +578,8 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_QUESTION, "There are unsaved modifications.\nDo you wish to discard them?");
-		if (ImGui::Button(ICON_FA_CHECK " Yes##unsaved")) {
+		dialog(ICON_LC_HELP_CIRCLE, "There are unsaved modifications.\nDo you wish to discard them?");
+		if (ImGui::Button(ICON_LC_CHECK " Yes##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				sceneMgr().load(_loadFile);
@@ -590,7 +589,7 @@ void MainWindow::popupUnsavedDiscard() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " No##unsaved")) {
+		if (ImGui::Button(ICON_LC_X " No##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -607,7 +606,7 @@ void MainWindow::popupSceneSettings() {
 		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
 		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
 
-		if (ImGui::Button(ICON_FA_CHECK " Done##scenesettings")) {
+		if (ImGui::Button(ICON_LC_CHECK " Done##scenesettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -617,15 +616,15 @@ void MainWindow::popupSceneSettings() {
 
 void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_FA_QUESTION, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+		dialog(ICON_LC_HELP_CIRCLE, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?");
-		if (ImGui::Button(ICON_FA_CHECK " Yes##volumesplit")) {
+		if (ImGui::Button(ICON_LC_CHECK " Yes##volumesplit")) {
 			ImGui::CloseCurrentPopup();
 			sceneMgr().splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " No##volumesplit")) {
+		if (ImGui::Button(ICON_LC_X " No##volumesplit")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -653,7 +652,7 @@ void MainWindow::popupModelNodeSettings() {
 		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::Button(ICON_FA_CHECK " OK##modelsettings")) {
+		if (ImGui::Button(ICON_LC_CHECK " OK##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode;
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -666,7 +665,7 @@ void MainWindow::popupModelNodeSettings() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK " Cancel##modelsettings")) {
+		if (ImGui::Button(ICON_LC_X " Cancel##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -738,11 +737,11 @@ void MainWindow::popupAbout() {
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::Text("This is a beta release!");
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLItem(ICON_FK_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
-					ImGui::URLItem(ICON_FK_QUESTION " Help", "https://vengi-voxel.github.io/vengi/", w);
-					ImGui::URLItem(ICON_FK_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
-					ImGui::URLItem(ICON_FK_MASTODON " Mastodon", "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLItem(ICON_FK_DISCORD " Discord", "https://discord.gg/AgjCPXy", w);
+					ImGui::URLItem(ICON_LC_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
+					ImGui::URLItem(ICON_LC_HELP_CIRCLE " Help", "https://vengi-voxel.github.io/vengi/", w);
+					ImGui::URLItem(ICON_LC_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
+					ImGui::URLItem(ICON_LC_SQUARE " Mastodon", "https://mastodon.social/@mgerhardy", w);
+					ImGui::URLItem(ICON_LC_SQUARE " Discord", "https://discord.gg/AgjCPXy", w);
 					ImGui::EndTabItem();
 				}
 
@@ -839,7 +838,7 @@ void MainWindow::popupAbout() {
 		}
 		ImGui::EndChild();
 		ImGui::Separator();
-		if (ImGui::Button(ICON_FA_CHECK " Close##about")) {
+		if (ImGui::Button(ICON_LC_CHECK " Close##about")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();

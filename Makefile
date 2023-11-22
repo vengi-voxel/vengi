@@ -240,13 +240,7 @@ update-ufbx:
 	cp $(UPDATEDIR)/ufbx.sync/ufbx.h $(UPDATEDIR)/ufbx.sync/ufbx.c src/modules/voxelformat/external
 
 update-icons:
-	$(call UPDATE_GIT,font-awesome,https://github.com/FortAwesome/Font-Awesome)
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
-	$(call UPDATE_GIT,fork-awesome,https://github.com/ForkAwesome/Fork-Awesome)
-	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsFontAwesome6.h src/modules/ui/
-	cp $(UPDATEDIR)/font-awesome.sync/webfonts/fa-solid-900.ttf data/ui
-	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsForkAwesome.h src/modules/ui/
-	cp $(UPDATEDIR)/fork-awesome.sync/fonts/forkawesome-webfont.ttf data/ui
 	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsLucide.h src/modules/ui/
 	curl -L https://unpkg.com/lucide-static@latest/font/lucide.ttf -o data/ui/lucide.ttf
 

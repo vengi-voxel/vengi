@@ -13,8 +13,7 @@
 #include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsFontAwesome6.h"
-#include "ui/IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "voxedit-ui/Util.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
@@ -30,7 +29,7 @@
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_FA_CUBES, ICON_FA_CODE, ICON_FA_LAYER_GROUP, ICON_FA_STAMP};
+static constexpr const char *BrushTypeIcons[] = {ICON_LC_BOXES, ICON_LC_CODE, ICON_LC_GROUP, ICON_LC_STAMP};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::reloadScriptParameters(const core::String &script) {
@@ -204,7 +203,7 @@ void BrushPanel::updateScriptBrushPanel(command::CommandExecutionListener &liste
 		ImGui::TooltipText("Edit the selected lua script");
 	}
 
-	ImGui::URLButton(ICON_FA_BOOK " Scripting manual", "https://vengi-voxel.github.io/vengi/voxedit/LUAScript/");
+	ImGui::URLButton(ICON_LC_BOOK " Scripting manual", "https://vengi-voxel.github.io/vengi/voxedit/LUAScript/");
 }
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -401,25 +400,25 @@ void BrushPanel::brushRegion() {
 		if (ImGui::InputInt3("maxs##regionbrush", glm::value_ptr(maxs))) {
 			brush->setRegion(voxel::Region(mins, maxs), _face);
 		}
-		if (ImGui::Button(ICON_FK_ARROW_RIGHT)) {
+		if (ImGui::Button(ICON_LC_ARROW_RIGHT)) {
 			_face = voxel::FaceNames::PositiveX;
 			brush->setRegion(voxel::Region(mins, maxs), _face);
 		}
 		ImGui::TooltipText("Generate in positive x direction");
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FK_ARROW_LEFT)) {
+		if (ImGui::Button(ICON_LC_ARROW_LEFT)) {
 			_face = voxel::FaceNames::NegativeX;
 			brush->setRegion(voxel::Region(mins, maxs), _face);
 		}
 		ImGui::TooltipText("Generate in negative x direction");
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FK_ARROW_UP)) {
+		if (ImGui::Button(ICON_LC_ARROW_UP)) {
 			_face = voxel::FaceNames::PositiveY;
 			brush->setRegion(voxel::Region(mins, maxs), _face);
 		}
 		ImGui::TooltipText("Generate in positive y direction");
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FK_ARROW_DOWN)) {
+		if (ImGui::Button(ICON_LC_ARROW_DOWN)) {
 			_face = voxel::FaceNames::NegativeY;
 			brush->setRegion(voxel::Region(mins, maxs), _face);
 		}
@@ -452,14 +451,14 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	const bool mplace = !moverride && modifier.isMode(ModifierType::Place);
 	const bool merase = !moverride && modifier.isMode(ModifierType::Erase);
 
-	toolbar.button(ICON_FA_CUBE, "actionplace", !mplace);
-	toolbar.button(ICON_FA_ERASER, "actionerase", !merase);
-	toolbar.button(ICON_FA_DIAGRAM_NEXT, "actionoverride", !moverride);
-	toolbar.button(ICON_FA_PAINTBRUSH, "actionpaint", !modifier.isMode(ModifierType::Paint));
-	toolbar.button(ICON_FA_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
-	toolbar.button(ICON_FA_ELLIPSIS, "actionpath", !modifier.isMode(ModifierType::Path));
-	toolbar.button(ICON_FA_ELLIPSIS, "actionline", !modifier.isMode(ModifierType::Line));
-	toolbar.button(ICON_FA_EYE_DROPPER, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
+	toolbar.button(ICON_LC_BOX, "actionplace", !mplace);
+	toolbar.button(ICON_LC_ERASER, "actionerase", !merase);
+	toolbar.button(ICON_LC_PEN_SQUARE, "actionoverride", !moverride);
+	toolbar.button(ICON_LC_PAINTBRUSH, "actionpaint", !modifier.isMode(ModifierType::Paint));
+	toolbar.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
+	toolbar.button(ICON_LC_PEN_LINE, "actionpath", !modifier.isMode(ModifierType::Path));
+	toolbar.button(ICON_LC_PEN_LINE, "actionline", !modifier.isMode(ModifierType::Line));
+	toolbar.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
 }
 
 void BrushPanel::update(const char *title, command::CommandExecutionListener &listener) {
@@ -500,13 +499,13 @@ bool BrushPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 	}
 	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginMenu(ICON_FA_FILE " File##scripteditor")) {
-				if (ImGui::MenuItem(ICON_FA_CHECK " Apply and execute##scripteditor")) {
+			if (ImGui::BeginMenu(ICON_LC_FILE " File##scripteditor")) {
+				if (ImGui::MenuItem(ICON_LC_CHECK " Apply and execute##scripteditor")) {
 					_activeScript = _textEditor.GetText();
 					reloadScriptParameters(_activeScript);
 				}
 				if (!_activeScriptFilename.empty()) {
-					if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save##scripteditor")) {
+					if (ImGui::MenuItem(ICON_LC_SAVE " Save##scripteditor")) {
 						if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
 													 _textEditor.GetText())) {
 							_activeScript = _textEditor.GetText();
@@ -515,7 +514,7 @@ bool BrushPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 					}
 					ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
 				}
-				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK " Save As##scripteditor")) {
+				if (ImGui::MenuItem(ICON_LC_SAVE " Save As##scripteditor")) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 					app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
@@ -534,29 +533,29 @@ bool BrushPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu(ICON_FK_PENCIL " Edit##scripteditor")) {
-				if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT " Undo##scripteditor", nullptr, nullptr,
+			if (ImGui::BeginMenu(ICON_LC_PENCIL " Edit##scripteditor")) {
+				if (ImGui::MenuItem(ICON_LC_ROTATE_CCW " Undo##scripteditor", nullptr, nullptr,
 									_textEditor.CanUndo())) {
 					_textEditor.Undo();
 				}
-				if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT " Redo##scripteditor", nullptr, nullptr,
+				if (ImGui::MenuItem(ICON_LC_ROTATE_CW " Redo##scripteditor", nullptr, nullptr,
 									_textEditor.CanRedo())) {
 					_textEditor.Redo();
 				}
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem(ICON_FA_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection())) {
+				if (ImGui::MenuItem(ICON_LC_COPY " Copy##scripteditor", nullptr, nullptr, _textEditor.HasSelection())) {
 					_textEditor.Copy();
 				}
-				if (ImGui::MenuItem(ICON_FA_SCISSORS " Cut##scripteditor", nullptr, nullptr,
+				if (ImGui::MenuItem(ICON_LC_SCISSORS " Cut##scripteditor", nullptr, nullptr,
 									_textEditor.HasSelection())) {
 					_textEditor.Cut();
 				}
 				if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection())) {
 					_textEditor.Delete();
 				}
-				if (ImGui::MenuItem(ICON_FA_PASTE " Paste##scripteditor", nullptr, nullptr,
+				if (ImGui::MenuItem(ICON_LC_CLIPBOARD_PASTE " Paste##scripteditor", nullptr, nullptr,
 									ImGui::GetClipboardText() != nullptr)) {
 					_textEditor.Paste();
 				}

@@ -3,7 +3,7 @@
  */
 
 #include "SceneGraphPanel.h"
-#include "IconsForkAwesome.h"
+#include "ui/IconsLucide.h"
 #include "Util.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
@@ -13,7 +13,6 @@
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "ui/IconsFontAwesome6.h"
 #include "ui/IMGUIEx.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
@@ -102,7 +101,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 				}
 			}
 			ImGui::TableNextColumn();
-			const core::String &deleteId = core::string::format(ICON_FA_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+			const core::String &deleteId = core::string::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
 			if (ImGui::Button(deleteId.c_str())) {
 				deleteKey = entry->key;
 			}
@@ -115,7 +114,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::TableNextColumn();
 		ImGui::InputText("##newpropertyvalue", &_propertyValue);
 		ImGui::TableNextColumn();
-		if (ImGui::Button(ICON_FA_PLUS "##nodepropertyadd")) {
+		if (ImGui::Button(ICON_LC_PLUS "##nodepropertyadd")) {
 			sceneMgr().nodeSetProperty(node.id(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
@@ -147,38 +146,38 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 
 		// don't access node data below this - the commands that are executed here can make the node reference invalid
 
-		commandNodeMenu(ICON_FA_EYE " Show all" SCENEGRAPHPOPUP, "nodeshowallchildren", node, true, &listener);
-		commandNodeMenu(ICON_FA_EYE_SLASH " Hide all" SCENEGRAPHPOPUP, "nodehideallchildren", node, true, &listener);
-		commandNodeMenu(ICON_FA_EYE_SLASH " Hide others" SCENEGRAPHPOPUP, "nodehideothers", node, validModels > 1, &listener);
-		ImGui::CommandMenuItem(ICON_FA_LOCK " Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
-		ImGui::CommandMenuItem(ICON_FA_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
-		commandNodeMenu(ICON_FA_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", node, true, &listener);
-		commandNodeMenu(ICON_FA_TRASH " Delete" SCENEGRAPHPOPUP, "nodedelete", node, true, &listener);
+		commandNodeMenu(ICON_LC_EYE " Show all" SCENEGRAPHPOPUP, "nodeshowallchildren", node, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF " Hide all" SCENEGRAPHPOPUP, "nodehideallchildren", node, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF " Hide others" SCENEGRAPHPOPUP, "nodehideothers", node, validModels > 1, &listener);
+		ImGui::CommandMenuItem(ICON_LC_LOCK " Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
+		ImGui::CommandMenuItem(ICON_LC_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
+		commandNodeMenu(ICON_LC_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", node, true, &listener);
+		commandNodeMenu(ICON_LC_TRASH " Delete" SCENEGRAPHPOPUP, "nodedelete", node, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
-			commandNodeMenu(ICON_FA_COPY " Create reference" SCENEGRAPHPOPUP, "modelref", node, true, &listener);
+			commandNodeMenu(ICON_LC_COPY " Create reference" SCENEGRAPHPOPUP, "modelref", node, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(node.id());
-			commandNodeMenu(ICON_FA_OBJECT_GROUP " Merge" SCENEGRAPHPOPUP, "modelmerge", node, prevNode != InvalidNodeId, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge all" SCENEGRAPHPOPUP, "modelsmergeall", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge visible" SCENEGRAPHPOPUP, "modelsmergevisible", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_OBJECT_GROUP " Merge locked" SCENEGRAPHPOPUP, "modelsmergelocked", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_FA_DOWN_LEFT_AND_UP_RIGHT_TO_CENTER " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
-			ImGui::CommandMenuItem(ICON_FA_ARROWS_TO_CIRCLE " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
-			commandNodeMenu(ICON_FA_FLOPPY_DISK " Save" SCENEGRAPHPOPUP, "modelsave", node, true, &listener);
+			commandNodeMenu(ICON_LC_GROUP " Merge" SCENEGRAPHPOPUP, "modelmerge", node, prevNode != InvalidNodeId, &listener);
+			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge all" SCENEGRAPHPOPUP, "modelsmergeall", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge visible" SCENEGRAPHPOPUP, "modelsmergevisible", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge locked" SCENEGRAPHPOPUP, "modelsmergelocked", validModels > 1, &listener);
+			ImGui::CommandMenuItem(ICON_LC_SHRINK " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
+			ImGui::CommandMenuItem(ICON_LC_SHRINK " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
+			commandNodeMenu(ICON_LC_SAVE " Save" SCENEGRAPHPOPUP, "modelsave", node, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
-			if (ImGui::MenuItem(ICON_FA_CUBES_STACKED " Convert to model" SCENEGRAPHPOPUP)) {
+			if (ImGui::MenuItem(ICON_LC_CODESANDBOX " Convert to model" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeUnreference(node.id());
 			}
 			ImGui::TooltipText("Unreference from model and allow to edit the voxels for this node");
 		}
-		ImGui::CommandMenuItem(ICON_FA_FLOPPY_DISK " Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
+		ImGui::CommandMenuItem(ICON_LC_SAVE " Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
 
-		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new group" SCENEGRAPHPOPUP)) {
+		if (ImGui::MenuItem(ICON_LC_PLUS_SQUARE " Add new group" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
 			sceneMgr().addNodeToSceneGraph(groupNode, node.id());
 		}
-		if (ImGui::MenuItem(ICON_FA_SQUARE_PLUS " Add new camera" SCENEGRAPHPOPUP)) {
+		if (ImGui::MenuItem(ICON_LC_PLUS_SQUARE " Add new camera" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
@@ -239,20 +238,20 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		core::String name;
 		switch (node.type()) {
 		case scenegraph::SceneGraphNodeType::ModelReference:
-			name = ICON_FA_CUBES_STACKED;
+			name = ICON_LC_CODESANDBOX;
 			break;
 		case scenegraph::SceneGraphNodeType::Model:
-			name = ICON_FA_CUBES;
+			name = ICON_LC_BOXES;
 			break;
 		case scenegraph::SceneGraphNodeType::Root:
 		case scenegraph::SceneGraphNodeType::Group:
-			name = ICON_FA_OBJECT_GROUP;
+			name = ICON_LC_GROUP;
 			break;
 		case scenegraph::SceneGraphNodeType::Camera:
-			name = ICON_FA_CAMERA;
+			name = ICON_LC_CAMERA;
 			break;
 		case scenegraph::SceneGraphNodeType::Unknown:
-			name = ICON_FA_CIRCLE_QUESTION;
+			name = ICON_LC_HELP_CIRCLE;
 			break;
 		case scenegraph::SceneGraphNodeType::AllModels:
 		case scenegraph::SceneGraphNodeType::All:
@@ -313,7 +312,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 	{ // column 5
 		ImGui::TableNextColumn();
 
-		const core::String &deleteId = core::string::format(ICON_FA_TRASH"##delete-node-%i", nodeId);
+		const core::String &deleteId = core::string::format(ICON_LC_TRASH"##delete-node-%i", nodeId);
 		if (ImGui::Button(deleteId.c_str())) {
 			sceneMgr().nodeRemove(nodeId, false);
 		}
@@ -359,7 +358,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar(buttonSize);
 
-			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
+			toolbar.button(ICON_LC_PLUS_SQUARE, "Add a new model node", [&sceneGraph, this, modelNodeSettings] () {
 				const int nodeId = sceneGraph.activeNode();
 				modelNodeSettings->palette.setValue(nullptr);
 				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -377,18 +376,18 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				_popupNewModelNode = true;
 			});
 
-			toolbar.button(ICON_FA_SQUARE_PLUS, "Add a new group", [&sceneGraph, &sceneMgr] () {
+			toolbar.button(ICON_LC_GROUP, "Add a new group", [&sceneGraph, &sceneMgr] () {
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 				node.setName("new group");
 				sceneMgr.addNodeToSceneGraph(node, sceneGraph.activeNode());
 			});
 
-			toolbar.button(ICON_FA_TRASH, "Remove the active node with all its children", [&sceneGraph, &sceneMgr]() {
+			toolbar.button(ICON_LC_TRASH, "Remove the active node with all its children", [&sceneGraph, &sceneMgr]() {
 				sceneMgr.nodeRemove(sceneGraph.activeNode(), true);
 			});
 
 			toolbar.custom([&sceneMgr, onlyOneModel, &listener, this, buttonSize] () {
-				if (ImGui::DisabledButton(ICON_FA_PLAY, onlyOneModel, buttonSize)) {
+				if (ImGui::DisabledButton(ICON_LC_PLAY, onlyOneModel, buttonSize)) {
 					if (sceneMgr.animateActive()) {
 						command::executeCommands("animate 0", &listener);
 					} else {
@@ -398,8 +397,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				}
 				ImGui::TooltipCommand("animate");
 			});
-			toolbar.button(ICON_FA_EYE, "showall");
-			toolbar.button(ICON_FA_EYE_SLASH, "hideall");
+			toolbar.button(ICON_LC_EYE, "showall");
+			toolbar.button(ICON_LC_EYE_OFF, "hideall");
 			toolbar.end();
 			static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 												ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
@@ -411,8 +410,8 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
 											ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-				ImGui::TableSetupColumn(ICON_FA_EYE "##visiblenode", colFlags);
-				ImGui::TableSetupColumn(ICON_FA_LOCK "##lockednode", colFlags);
+				ImGui::TableSetupColumn(ICON_LC_EYE "##visiblenode", colFlags);
+				ImGui::TableSetupColumn(ICON_LC_LOCK "##lockednode", colFlags);
 				ImGui::TableSetupColumn("##nodecolor", colFlags);
 				ImGui::TableSetupColumn("Name##node", ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableSetupColumn("##nodedelete", colFlags);
@@ -452,7 +451,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
-				if (ImGui::Button(ICON_FK_LINK " Merge onto##mergeonto")) {
+				if (ImGui::Button(ICON_LC_LINK " Merge onto##mergeonto")) {
 					sceneMgr.mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
 					ImGui::CloseCurrentPopup();
 				}
@@ -460,7 +459,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			}
 		}
 		if (sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId)) {
-			if (ImGui::Button(ICON_FK_INDENT " Move below")) {
+			if (ImGui::Button(ICON_LC_INDENT " Move below")) {
 				if (!sceneMgr.nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
 					Log::error("Failed to move node");
 				}

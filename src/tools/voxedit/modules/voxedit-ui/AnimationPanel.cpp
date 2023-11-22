@@ -3,9 +3,9 @@
  */
 
 #include "AnimationPanel.h"
-#include "IconsForkAwesome.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "ui/IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-util/SceneManager.h"
@@ -18,7 +18,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FK_PLUS " Add##animationpanel")) {
+		if (ImGui::Button(ICON_LC_PLUS " Add##animationpanel")) {
 			if (!sceneMgr().duplicateAnimation(sceneMgr().sceneGraph().activeAnimation(), _newAnimation)) {
 				Log::error("Failed to add animation %s", _newAnimation.c_str());
 			} else {
@@ -44,7 +44,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			ImGui::EndCombo();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FK_MINUS " Delete##animationpanel")) {
+		if (ImGui::Button(ICON_LC_MINUS " Delete##animationpanel")) {
 			if (!sceneMgr().removeAnimation(currentAnimation)) {
 				Log::error("Failed to remove animation %s", currentAnimation.c_str());
 			}

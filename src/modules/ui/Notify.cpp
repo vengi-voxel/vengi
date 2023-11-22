@@ -3,7 +3,7 @@
  */
 
 #include "Notify.h"
-#include "IconsFontAwesome6.h"
+#include "IconsLucide.h"
 #include "core/Trace.h"
 #include "core/Var.h"
 #include <SDL.h>
@@ -74,14 +74,14 @@ const char *ImGuiToast::icon() const {
 	case ImGuiToastType_None:
 		return nullptr;
 	case ImGuiToastType_Debug:
-		return ICON_FA_CIRCLE_CHECK;
+		return ICON_LC_INFO;
 	case ImGuiToastType_Warning:
-		return ICON_FA_TRIANGLE_EXCLAMATION;
+		return ICON_LC_ALERT_TRIANGLE;
 	case ImGuiToastType_Error:
-		return ICON_FA_CIRCLE_XMARK;
+		return ICON_LC_ALERT_OCTAGON;
 	case ImGuiToastType_Info:
 	default:
-		return ICON_FA_CIRCLE_INFO;
+		return ICON_LC_INFO;
 	}
 }
 
