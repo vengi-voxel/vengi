@@ -39,6 +39,7 @@ SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
 	other._activeNodeId = InvalidNodeId;
 	_animations = core::move(other._animations);
 	_activeAnimation = core::move(other._activeAnimation);
+	_cachedMaxFrame = other._cachedMaxFrame;
 }
 
 SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
@@ -50,6 +51,7 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		other._activeNodeId = InvalidNodeId;
 		_animations = core::move(other._animations);
 		_activeAnimation = core::move(other._activeAnimation);
+		_cachedMaxFrame = other._cachedMaxFrame;
 	}
 	return *this;
 }
