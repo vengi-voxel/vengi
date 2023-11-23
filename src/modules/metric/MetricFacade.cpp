@@ -21,14 +21,14 @@ struct MetricState {
 };
 
 bool MetricState::init(const core::String &appname) {
-	const core::VarPtr &flavor = core::Var::get(cfg::MetricFlavor, "");
+	const core::VarPtr &flavor = core::Var::getSafe(cfg::MetricFlavor);
 	if (flavor->strVal().empty()) {
 		Log::debug("No metrics activated - skip init");
 		return false;
 	}
 
 	if (flavor->strVal() == "json") {
-		const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://127.0.0.1/metric")->strVal();
+		const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
 		_sender = core::make_shared<metric::HTTPMetricSender>(url);
 	} else {
 		const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();

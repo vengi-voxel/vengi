@@ -3,6 +3,7 @@
  */
 
 #include "HTTPMetricSender.h"
+#include "core/Log.h"
 #include "io/Stream.h"
 
 namespace metric {
@@ -15,12 +16,21 @@ public:
 };
 
 HTTPMetricSender::HTTPMetricSender(const core::String &url) : _request(url, http::RequestType::POST) {
+	_request.addHeader("Content-Type", "application/json");
 }
 
 bool HTTPMetricSender::send(const char *buffer) const {
-	_request.setBody(buffer);
+	if (!_request.setBody(buffer)) {
+		Log::debug("Failed to set body");
+		return false;
+	}
 	NOPWriteStream stream;
-	return _request.execute(stream);
+	if (!_request.execute(stream)) {
+		Log::debug("Failed to send metric %s", buffer);
+		return false;
+	}
+	Log::debug("Sent metric %s", buffer);
+	return true;
 }
 
 bool HTTPMetricSender::init() {

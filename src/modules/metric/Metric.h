@@ -42,7 +42,7 @@ private:
 	core::String _prefix;
 	core::String _uuid;
 	Flavor _flavor = Flavor::Telegraf;
-	IMetricSenderPtr _messageSender;
+	mutable IMetricSenderPtr _messageSender;
 
 	/**
 	 * @brief Create the needed tag list if it is supported by the specified flavor

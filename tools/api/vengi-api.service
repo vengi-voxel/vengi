@@ -1,0 +1,16 @@
+[Unit]
+Description=Vengi API
+After=network.target
+
+[Service]
+Type=notify
+WorkingDirectory=/var/www/api
+RuntimeDirectory=gunicorn
+ExecStart=/usr/bin/gunicorn --reload vengi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -275,7 +275,7 @@ AppState App::onConstruct() {
 		logVar->setVal(logLevelVal);
 	}
 	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false", "Log to the system log", core::Var::boolValidator);
-
+	core::Var::get(cfg::MetricFlavor, "");
 	Log::init();
 
 	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
@@ -343,8 +343,6 @@ AppState App::onConstruct() {
 	const core::String &logfilePath = fs->writePath("log.txt");
 	Log::init(logfilePath.c_str());
 
-	metric::init(_appname);
-
 	return AppState::Init;
 }
 
@@ -356,8 +354,6 @@ AppState App::onInit() {
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
-
-	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	Log::debug("Initialize the cvars");
 	const io::FilePtr &varsFile = _filesystem->open(_appname + ".vars");
@@ -424,6 +420,9 @@ AppState App::onInit() {
 	}
 
 	_availableMemoryMiB = SDL_GetSystemRAM();
+
+	metric::init(_appname);
+	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	core_trace_init();
 

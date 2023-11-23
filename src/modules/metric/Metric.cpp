@@ -124,7 +124,12 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 		json.append("}");
 		json.append("}");
 		written = json.size();
-		return _messageSender->send(json.c_str());
+		if (!_messageSender->send(json.c_str())) {
+			_messageSender = IMetricSenderPtr();
+			Log::warn("Failed to send metric - disable metrics for this session");
+			return false;
+		}
+		return true;
 	}
 	case Flavor::Etsy:
 		written = SDL_snprintf(buffer, sizeof(buffer), "%s.%s:%i|%s", _prefix.c_str(), key, value, type);

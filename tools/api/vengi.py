@@ -47,16 +47,24 @@ def home():
 def metric():
     data = request.json
     if data is None:
-        return Response(status_code = 400)
+        return Response("Missing data", status_code = 400)
 
     tags = data['tags']
     if tags is None:
-        return Response(status_code = 400)
+        return Response("Missing tags", status_code = 400)
 
     name = data['name']
+    if name is None:
+        return Response("Missing name", status_code = 400)
+
     value = data['value']
+    if value is None:
+        return Response("Missing value", status_code = 400)
 
     userAgent = request.headers['User-Agent']
+    if userAgent is None:
+        return Response("Missing User-Agent", status_code = 400)
+
     if ' ' in userAgent:
         userAgent = userAgent[0 : userAgent.index(' ')]
 
@@ -86,5 +94,5 @@ if __name__ == "__main__":
 
     threading.Thread(target=worker, daemon=True).start()
 
-    app.run()
+    app.run(port=8000)
     q.join()

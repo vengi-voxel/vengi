@@ -2,11 +2,20 @@
 
 Install dependencies
 
-`sudo apt-get install python3-flask python3-gunicorn nginx`
+`sudo apt-get install python3-flask gunicorn nginx`
 
 # run
 
 `./vengi.py`
+
+# systemd
+
+copy `vengi-api.service` to `/etc/systemd/system`
+
+```sh
+sudo systemctl daemon-reload
+sudo systemctl start vengi-api.service
+```
 
 # test
 
