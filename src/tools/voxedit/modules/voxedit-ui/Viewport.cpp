@@ -406,9 +406,9 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	core::String name;
 	if (_detailedTitle) {
-		name = core::string::format("%s %s###viewport%i", SceneCameraModeStr[(int)_camMode], modeStr, _id);
+		name = core::string::format("%s %s%s", SceneCameraModeStr[(int)_camMode], modeStr, _uiId.c_str());
 	} else {
-		name = core::string::format("%s###viewport%i", modeStr, _id);
+		name = core::string::format("%s%s", modeStr, _uiId.c_str());
 	}
 	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
 		renderMenuBar(listener);
