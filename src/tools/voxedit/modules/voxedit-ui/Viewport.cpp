@@ -750,8 +750,6 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	ImGuizmo::Enable(_renderContext.sceneMode || _modelGizmo->boolVal());
 	ImGuizmo::AllowAxisFlip(_gizmoAllowAxisFlip->boolVal());
-	// set the drawlist to the viewport window to clip the gizmo
-	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
 	ImGuizmo::SetOrthographic(orthographic);
 	const bool editModeModified = runGizmo(camera);
