@@ -671,6 +671,8 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       ImDrawList* mDrawList;
+      // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
+      ImGuiWindow *mWindow;
       Style mStyle;
 
       MODE mMode;
@@ -926,8 +928,8 @@ namespace IMGUIZMO_NAMESPACE
    static bool IsHoveringWindow()
    {
       ImGuiContext& g = *ImGui::GetCurrentContext();
-      IM_ASSERT(gContext.mDrawList != NULL);
-      ImGuiWindow* window = ImGui::FindWindowByName(gContext.mDrawList->_OwnerName);
+      // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
+      ImGuiWindow* window = gContext.mWindow;
       if (window == nullptr) {
          return false;
       }
@@ -961,6 +963,12 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mDrawList = drawlist ? drawlist : ImGui::GetWindowDrawList();
    }
 
+   // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
+   void SetWindow(ImGuiWindow* window)
+   {
+      gContext.mWindow = window ? window : ImGui::GetCurrentWindow();
+   }
+
    void SetImGuiContext(ImGuiContext* ctx)
    {
       ImGui::SetCurrentContext(ctx);
@@ -985,6 +993,8 @@ namespace IMGUIZMO_NAMESPACE
 
       ImGui::Begin("gizmo", NULL, flags);
       gContext.mDrawList = ImGui::GetWindowDrawList();
+      // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
+      gContext.mWindow = ImGui::GetCurrentWindow();
       ImGui::End();
       ImGui::PopStyleVar();
       ImGui::PopStyleColor(2);
