@@ -735,7 +735,7 @@ struct OcclusionTextureInfo {
 
 // pbrMetallicRoughness class defined in glTF 2.0 spec.
 struct PbrMetallicRoughness {
-  std::vector<double> baseColorFactor;  // len = 4. default [1,1,1,1]
+  std::vector<double> baseColorFactor{1.0, 1.0, 1.0, 1.0};  // len = 4. default [1,1,1,1]
   TextureInfo baseColorTexture;
   double metallicFactor{1.0};   // default 1
   double roughnessFactor{1.0};  // default 1
@@ -748,9 +748,9 @@ struct PbrMetallicRoughness {
   std::string extras_json_string;
   std::string extensions_json_string;
 
-  PbrMetallicRoughness()
-      : baseColorFactor(std::vector<double>{1.0, 1.0, 1.0, 1.0}) {}
+  PbrMetallicRoughness() = default;
   DEFAULT_METHODS(PbrMetallicRoughness)
+
   bool operator==(const PbrMetallicRoughness &) const;
 };
 
@@ -760,10 +760,10 @@ struct PbrMetallicRoughness {
 struct Material {
   std::string name;
 
-  std::vector<double> emissiveFactor;  // length 3. default [0, 0, 0]
-  std::string alphaMode;               // default "OPAQUE"
-  double alphaCutoff{0.5};             // default 0.5
-  bool doubleSided{false};             // default false;
+  std::vector<double> emissiveFactor{0.0, 0.0, 0.0};  // length 3. default [0, 0, 0]
+  std::string alphaMode{"OPAQUE"}; // default "OPAQUE"
+  double alphaCutoff{0.5};        // default 0.5
+  bool doubleSided{false};        // default false
 
   PbrMetallicRoughness pbrMetallicRoughness;
 
@@ -783,7 +783,7 @@ struct Material {
   std::string extras_json_string;
   std::string extensions_json_string;
 
-  Material() : alphaMode("OPAQUE") {}
+  Material() = default;
   DEFAULT_METHODS(Material)
 
   bool operator==(const Material &) const;
@@ -7752,7 +7752,7 @@ static void SerializeGltfNode(const Node &node, detail::json &o) {
       detail::JsonSetObject(lights_punctual);
       detail::JsonAddMember(extensions, "KHR_lights_punctual",
                             std::move(lights_punctual));
-      detail::FindMember(o, "KHR_lights_punctual", it);
+      detail::FindMember(extensions, "KHR_lights_punctual", it);
     }
     SerializeNumberProperty("light", node.light, detail::GetValue(it));
   } else {
@@ -8036,6 +8036,16 @@ static void SerializeGltfModel(const Model *model, detail::json &o) {
     for (unsigned int i = 0; i < model->nodes.size(); ++i) {
       detail::json node;
       SerializeGltfNode(model->nodes[i], node);
+
+      if (detail::JsonIsNull(node)) {
+        // Issue 457.
+        // `node` does not have any required parameters,
+        // so the result may be null(unmodified) when all node parameters
+        // have default value.
+        //
+        // null is not allowed thus we create an empty JSON object.
+        detail::JsonSetObject(node);
+      }
       detail::JsonPushBack(nodes, std::move(node));
     }
     detail::JsonAddMember(o, "nodes", std::move(nodes));
@@ -8053,6 +8063,15 @@ static void SerializeGltfModel(const Model *model, detail::json &o) {
     for (unsigned int i = 0; i < model->scenes.size(); ++i) {
       detail::json currentScene;
       SerializeGltfScene(model->scenes[i], currentScene);
+      if (detail::JsonIsNull(currentScene)) {
+        // Issue 464.
+        // `scene` does not have any required parameters,
+        // so the result may be null(unmodified) when all scene parameters
+        // have default value.
+        //
+        // null is not allowed thus we create an empty JSON object.
+        detail::JsonSetObject(currentScene);
+      }
       detail::JsonPushBack(scenes, std::move(currentScene));
     }
     detail::JsonAddMember(o, "scenes", std::move(scenes));
