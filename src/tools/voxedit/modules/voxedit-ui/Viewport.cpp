@@ -746,7 +746,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
 
 	ImGuizmo::SetID(_id);
-	ImGuizmo::BeginFrame();
+	ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	ImGuizmo::Enable(_renderContext.sceneMode || _modelGizmo->boolVal());
 	ImGuizmo::AllowAxisFlip(_gizmoAllowAxisFlip->boolVal());
