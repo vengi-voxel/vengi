@@ -21,7 +21,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
 
 /* SDL internals */
 #include "../SDL_sysvideo.h"
@@ -290,7 +290,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
     device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
 
-#if SDL_VIDEO_VULKAN
+#ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = KMSDRM_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = KMSDRM_Vulkan_GetInstanceExtensions;
@@ -1206,6 +1206,7 @@ cleanup:
     return ret;
 }
 
+#ifdef SDL_INPUT_LINUXEV
 static void KMSDRM_ReleaseVT(void *userdata)
 {
     SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
@@ -1235,6 +1236,7 @@ static void KMSDRM_AcquireVT(void *userdata)
         }
     }
 }
+#endif /* defined SDL_INPUT_LINUXEV */
 
 int KMSDRM_VideoInit(_THIS)
 {

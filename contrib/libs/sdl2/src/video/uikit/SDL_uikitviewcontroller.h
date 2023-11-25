@@ -33,7 +33,11 @@
 #define SDLRootViewController UIViewController
 #endif
 
-#if SDL_IPHONE_KEYBOARD
+@interface SDLUITextField : UITextField
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
+@end
+
+#ifdef SDL_IPHONE_KEYBOARD
 @interface SDL_uikitviewcontroller : SDLRootViewController <UITextFieldDelegate>
 #else
 @interface SDL_uikitviewcontroller : SDLRootViewController
@@ -64,7 +68,7 @@
 @property (nonatomic, assign) int homeIndicatorHidden;
 #endif
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 - (void)showKeyboard;
 - (void)hideKeyboard;
 - (void)initKeyboard;
@@ -82,7 +86,7 @@
 
 @end
 
-#if SDL_IPHONE_KEYBOARD
+#ifdef SDL_IPHONE_KEYBOARD
 SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);
 void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);

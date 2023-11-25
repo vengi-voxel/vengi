@@ -237,7 +237,7 @@ static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *s
         device->ffdevice = NULL;
         device->ff_initialized = SDL_FALSE;
     }
-#if SDL_HAPTIC_IOKIT
+#ifdef SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
 
@@ -557,7 +557,7 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
-#if SDL_HAPTIC_IOKIT
+#ifdef SDL_HAPTIC_IOKIT
         MacHaptic_MaybeAddDevice(ioservice);
 #endif
     }
@@ -657,8 +657,8 @@ static SDL_bool CreateHIDManager(void)
 
 static int DARWIN_JoystickInit(void)
 {
-    if (gpDeviceList) {
-        return SDL_SetError("Joystick: Device list already inited.");
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_IOKIT, SDL_TRUE)) {
+        return 0;
     }
 
     if (!CreateHIDManager()) {
@@ -694,10 +694,12 @@ static void DARWIN_JoystickDetect(void)
         }
     }
 
-    /* run this after the checks above so we don't set device->removed and delete the device before
-       DARWIN_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
-    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
-        /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+    if (hidman) {
+        /* run this after the checks above so we don't set device->removed and delete the device before
+           DARWIN_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
+        while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
+            /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+        }
     }
 }
 
