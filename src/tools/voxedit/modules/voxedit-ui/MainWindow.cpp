@@ -159,6 +159,7 @@ void MainWindow::shutdownScenes() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		delete _scenes[i];
 	}
+	sceneMgr().setActiveCamera(nullptr);
 	_scenes.clear();
 	_lastHoveredScene = nullptr;
 }
