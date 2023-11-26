@@ -23,6 +23,7 @@ public:
 	 * @return true if the dock layout should get reset
 	 */
 	void colorReductionOptions();
+	static void metricOption();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
 	bool _popupTipOfTheDay = false;

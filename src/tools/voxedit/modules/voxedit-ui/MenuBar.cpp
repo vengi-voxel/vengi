@@ -43,6 +43,19 @@ void MenuBar::colorReductionOptions() {
 		"The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
 }
 
+void MenuBar::metricOption() {
+	const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
+	bool metrics = !metricFlavor->strVal().empty();
+	if (ImGui::Checkbox("Enable sending anonymous metrics", &metrics)) {
+		if (metrics) {
+			metricFlavor->setVal("json");
+		} else {
+			metricFlavor->setVal("");
+		}
+	}
+	ImGui::TooltipText("Send anonymous usage statistics");
+}
+
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
@@ -118,16 +131,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
 				ImGui::CheckboxVar("Tip of the day", cfg::VoxEditTipOftheDay);
 
-				const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
-				bool metrics = !metricFlavor->strVal().empty();
-				if (ImGui::Checkbox("Enable sending metrics", &metrics)) {
-					if (metrics) {
-						metricFlavor->setVal("json");
-					} else {
-						metricFlavor->setVal("");
-					}
-				}
-				ImGui::TooltipText("Send anonymous usage statistics");
+				metricOption();
 
 				// TODO: activate me - the RawVolumeRenderer doesn't yet update the shader attributes correctly when switching between shaders
 				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
