@@ -657,7 +657,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	}
 	const bool sceneMode = isSceneMode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-	if (!sceneMode && node.isModelNode()) {
+	if (!sceneMode && !node.isModelNode()) {
 		reset();
 		return false;
 	}
