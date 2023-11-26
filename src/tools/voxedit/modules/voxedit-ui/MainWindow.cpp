@@ -741,6 +741,7 @@ void MainWindow::popupAbout() {
 					} else {
 						ImGui::Text("You are using the latest version.");
 					}
+					MenuBar::metricOption();
 
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::URLItem(ICON_LC_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
