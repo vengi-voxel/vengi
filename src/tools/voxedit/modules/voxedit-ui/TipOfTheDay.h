@@ -24,6 +24,7 @@ static const char *TIPOFTHEDAY[]{
 	"When importing meshes, you can switch between different voxelization methods in the options menu.",
 	"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier.",
 	"Switch between different color themes in the options menu.",
+	"Please activate anonymous usage metrics in the options or the about dialog.",
 	"You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu.",
 	"You can save your viewport as AVI video or as screenshot.",
 	"Press <cmd:pickcolor> to pick a color from the scene.",
