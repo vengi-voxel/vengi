@@ -18,6 +18,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "util/TextProcessor.h"
+#include "util/VersionCheck.h"
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -194,6 +195,7 @@ bool MainWindow::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
 	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
+	_isNewVersionAvailable = util::isNewVersionAvailable(1);
 
 	if (!initScenes()) {
 		return false;
@@ -734,6 +736,12 @@ void MainWindow::popupAbout() {
 					ImGui::Text("%s " PROJECT_VERSION, _app->appname().c_str());
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::Text("This is a beta release!");
+					if (_isNewVersionAvailable) {
+						ImGui::Text("A new version is available!");
+					} else {
+						ImGui::Text("You are using the latest version.");
+					}
+
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::URLItem(ICON_LC_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
 					ImGui::URLItem(ICON_LC_HELP_CIRCLE " Help", "https://vengi-voxel.github.io/vengi/", w);

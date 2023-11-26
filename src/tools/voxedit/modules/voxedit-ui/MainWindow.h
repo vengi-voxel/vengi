@@ -55,6 +55,7 @@ private:
 	bool _popupUnsavedChangesQuit = false;
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
+	bool _isNewVersionAvailable = false;
 	uint32_t _currentTip = 0;
 
 	ui::IMGUIApp* _app;
