@@ -6,7 +6,7 @@
 #include "command/Command.h"
 #include "core/Log.h"
 #include "voxedit-util/AxisUtil.h"
-#include "voxedit-util/SceneManager.h" // TODO: get rid of this include the refernece position is in the BrushContext
+#include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/ShapeGenerator.h"

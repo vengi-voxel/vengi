@@ -3,13 +3,10 @@
  */
 
 #include "ModifierFacade.h"
-#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxedit-util/modifier/ShapeType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
-#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>

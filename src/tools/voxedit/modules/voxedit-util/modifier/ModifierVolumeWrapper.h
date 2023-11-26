@@ -6,10 +6,7 @@
 
 #include "ModifierType.h"
 #include "Selection.h"
-#include "core/Color.h"
-#include "core/RGBA.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 
 namespace voxedit {

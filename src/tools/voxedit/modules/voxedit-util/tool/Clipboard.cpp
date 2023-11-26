@@ -5,7 +5,6 @@
 #include "Clipboard.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "voxelutil/VolumeMerger.h"
-#include "voxelutil/VolumeCropper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "core/Log.h"
 #include <glm/common.hpp>

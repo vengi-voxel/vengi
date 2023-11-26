@@ -3,15 +3,11 @@
  */
 
 #include "Modifier.h"
-#include "../AxisUtil.h"
 #include "../SceneManager.h"
 #include "command/Command.h"
-#include "core/Color.h"
-#include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "ui/dearimgui/imgui_internal.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
@@ -20,7 +16,6 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/AStarPathfinder.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VoxelUtil.h"

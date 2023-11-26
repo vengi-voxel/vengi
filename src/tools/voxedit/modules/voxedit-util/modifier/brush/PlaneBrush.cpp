@@ -4,7 +4,6 @@
 
 #include "PlaneBrush.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
