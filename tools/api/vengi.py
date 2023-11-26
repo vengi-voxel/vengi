@@ -55,10 +55,6 @@ def insertMetric(metric_name, value, tags):
 def home():
     return redirect("http://vengi-voxel.github.io/vengi/", code=302)
 
-@app.route('/discord')
-def discord():
-    return redirect("https://discord.gg/AgjCPXy", code=302)
-
 @app.route('/metric', methods = ['POST'])
 def metric():
     data = request.json

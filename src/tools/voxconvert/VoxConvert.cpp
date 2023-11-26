@@ -135,7 +135,7 @@ void VoxConvert::usage() const {
 	Log::info(" * Bug reports: https://github.com/vengi-voxel/vengi");
 	Log::info(" * Twitter: https://twitter.com/MartinGerhardy");
 	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
-	Log::info(" * Discord: https://discord.gg/AgjCPXy");
+	Log::info(" * Discord: https://vengi-voxel.de/discord");
 }
 
 app::AppState VoxConvert::onInit() {

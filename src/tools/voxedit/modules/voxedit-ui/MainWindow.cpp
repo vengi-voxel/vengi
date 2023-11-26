@@ -748,7 +748,7 @@ void MainWindow::popupAbout() {
 					ImGui::URLItem(ICON_LC_HELP_CIRCLE " Help", "https://vengi-voxel.github.io/vengi/", w);
 					ImGui::URLItem(ICON_LC_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
 					ImGui::URLItem(ICON_LC_SQUARE " Mastodon", "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLItem(ICON_LC_SQUARE " Discord", "https://discord.gg/AgjCPXy", w);
+					ImGui::URLItem(ICON_LC_SQUARE " Discord", "https://vengi-voxel.de/discord", w);
 					ImGui::EndTabItem();
 				}
 

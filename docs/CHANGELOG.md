@@ -2,7 +2,7 @@
 
 A more detailed changelog can be found on [github](https://github.com/vengi-voxel/vengi/commits/).
 
-Join our [discord server](https://discord.gg/AgjCPXy).
+Join our [discord server](https://vengi-voxel.de/discord).
 
 See [the documentation](https://vengi-voxel.github.io/vengi/) for further details.
 

@@ -7,6 +7,6 @@ Thank you for considering contributing to vengi.
 * License: MIT
 
 If you have any questions or need support, feel free to join the
-[discord server](https://discord.gg/AgjCPXy) and please also make sure to
+[discord server](https://vengi-voxel.de/discord) and please also make sure to
 read [the docs](https://vengi-voxel.github.io/vengi/) regarding the dependencies
 and compilation of the project.
