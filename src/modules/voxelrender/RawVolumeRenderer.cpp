@@ -229,7 +229,11 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		}
 		const voxel::Region& finalRegion = extractRegion.region;
 		bool onlyAir = true;
-		voxel::RawVolume copy(v, voxel::Region(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2), &onlyAir);
+		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
+		if (!copyRegion.isValid()) {
+			continue;
+		}
+		voxel::RawVolume copy(v, copyRegion, &onlyAir);
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
 			const palette::Palette &pal = palette(idx);
