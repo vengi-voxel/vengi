@@ -84,7 +84,7 @@ void Request::noCache() {
 	addHeader("Cache-Control", "no-cache");
 }
 
-bool Request::execute(io::WriteStream &stream) {
+bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	Log::debug("Starting http request for %s", _url.c_str());
 #if __WINDOWS__
 	// Initialize WinHTTP and create a session
@@ -212,6 +212,9 @@ bool Request::execute(io::WriteStream &stream) {
 	if (dwStatusCode != HTTP_STATUS_OK) {
 		Log::warn("Failed to download url: %s with status code: %d", _url.c_str(), dwStatusCode);
 	}
+	if (statusCode) {
+		*statusCode = (int)dwStatusCode;
+	}
 
 	// Read and save the response data
 	DWORD bytesRead;
@@ -255,6 +258,9 @@ bool Request::execute(io::WriteStream &stream) {
 		Log::error("Http request for '%s' failed", _url.c_str());
 		return false;
 	}
+	if (statusCode) {
+		*statusCode = (int)fetch->status;
+	}
 	Log::debug("Got status code %i for %s", (int)fetch->status, _url.c_str());
 	if (stream.write(fetch->data, fetch->numBytes) == -1) {
 		Log::error("Failed to write response with %i bytes for url %s", (int)fetch->numBytes, _url.c_str());
@@ -296,9 +302,12 @@ bool Request::execute(io::WriteStream &stream) {
 		curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
 		Log::error("Http request for '%s' failed with error %s", url, curl_easy_strerror(res));
 	}
-	long statusCode = 0;
-	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCode);
-	Log::debug("Got status code %i for %s", (int)statusCode, _url.c_str());
+	long statusCodeCurl = 0;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &statusCodeCurl);
+	Log::debug("Got status code %i for %s", (int)statusCodeCurl, _url.c_str());
+	if (statusCode) {
+		*statusCode = (int)statusCodeCurl;
+	}
 	curl_slist_free_all(headers);
 	curl_easy_cleanup(curl);
 	return res == CURLE_OK;

@@ -27,7 +27,7 @@ public:
 	void setTimeoutSecond(int timeoutSecond);
 	bool setBody(const core::String &body);
 	void addHeader(const core::String &key, const core::String &value);
-	bool execute(io::WriteStream &stream);
+	bool execute(io::WriteStream &stream, int *statusCode = nullptr);
 	void noCache();
 
 	static bool supported();
