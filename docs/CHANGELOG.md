@@ -44,6 +44,7 @@ VoxEdit:
    - Made the new-scene-dialog scrollable
    - Allow to change the transform of a node with updating the children
    - Fixed a few crashes
+   - Improved gizmo settings panel
 
 Thumbnailer:
 
