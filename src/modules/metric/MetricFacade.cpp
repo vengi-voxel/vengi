@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/Singleton.h"
 #include "core/Var.h"
+#include "core/concurrent/ThreadPool.h"
 #include "metric/HTTPMetricSender.h"
 
 namespace metric {
@@ -15,6 +16,7 @@ namespace metric {
 struct MetricState {
 	metric::IMetricSenderPtr _sender;
 	metric::Metric _metric;
+	core::ThreadPool _threadPool{1, "metric"};
 
 	bool init(const core::String &appname);
 	void shutdown();
@@ -43,11 +45,13 @@ bool MetricState::init(const core::String &appname) {
 		Log::warn("Failed to init metrics");
 		return false;
 	}
+	_threadPool.init();
 	Log::info("Initialized metrics");
 	return true;
 }
 
 void MetricState::shutdown() {
+	_threadPool.shutdown();
 	if (_sender) {
 		_sender->shutdown();
 		_sender = metric::IMetricSenderPtr();
@@ -55,12 +59,15 @@ void MetricState::shutdown() {
 	_metric.shutdown();
 }
 
-bool count(const char *key, int delta, const TagMap &tags) {
+bool count(const core::String &key, int delta, const TagMap &tags) {
 	MetricState &s = core::Singleton<MetricState>::getInstance();
 	if (!s._sender) {
 		return false;
 	}
-	return s._metric.count(key, delta, tags);
+	s._threadPool.enqueue([=, &s]() {
+		s._metric.count(key.c_str(), delta, tags);
+	});
+	return true;
 }
 
 bool init(const core::String &appname) {
