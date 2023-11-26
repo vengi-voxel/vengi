@@ -22,7 +22,7 @@ jobs:
         timeout-minutes: 60
         runs-on: macos-11
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Setup
           run: brew install sdl2 python curl glslang ninja ccache pkg-config
@@ -63,7 +63,7 @@ jobs:
         if: github.repository == 'vengi-voxel/vengi'
         runs-on: ubuntu-22.04
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Setup
           run: |
@@ -103,7 +103,7 @@ jobs:
         runs-on: ubuntu-22.04
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Setup
           run: |
@@ -151,14 +151,14 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Setup
           run: |
             sudo apt-get update
             sudo apt-get install libfreetype-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
 
-        - uses: mymindstorm/setup-emsdk@v12
+        - uses: mymindstorm/setup-emsdk@v13
 
         - name: ccache
           uses: actions/cache@v3
@@ -188,7 +188,7 @@ jobs:
         runs-on: windows-2019
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Build
           run: |
@@ -239,7 +239,7 @@ jobs:
         runs-on: windows-2019
 
         steps:
-        - uses: actions/checkout@v3
+        - uses: actions/checkout@v4
 
         - name: Build
           run: |
