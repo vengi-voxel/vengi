@@ -115,10 +115,14 @@ void Region::accumulate(const Region& reg) {
  * of this Region and the one it was cropped to.
  * @param other The Region to crop to.
  */
-void Region::cropTo(const Region& other) {
+bool Region::cropTo(const Region& other) {
+	if (!intersects(*this, other)) {
+		return false;
+	}
 	_mins = (glm::max)(_mins, other._mins);
 	_maxs = (glm::min)(_maxs, other._maxs);
 	update();
+	return true;
 }
 
 /**

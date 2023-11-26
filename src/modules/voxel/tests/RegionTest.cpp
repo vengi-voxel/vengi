@@ -74,6 +74,13 @@ TEST_F(RegionTest, testRotateAxisY90) {
 	EXPECT_EQ(dimensionBeforeRotation, dimensionAfterRotation);
 }
 
+TEST_F(RegionTest, testCrop) {
+	voxel::Region region1(-2, -2, -2, 65, 65, 65);
+	voxel::Region region2(0, 0, 68, 31, 31, 99);
+	EXPECT_FALSE(region1.cropTo(region2));
+	EXPECT_TRUE(region1.cropTo(region1));
+}
+
 TEST_F(RegionTest, testRotateAxisPivotMins) {
 	const voxel::Region region(-10, 10);
 	rotateAroundPivot(region, region.getLowerCornerf());
