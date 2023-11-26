@@ -80,17 +80,22 @@ RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &cop
 
 RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
 	setBorderValue(src.borderValue());
-	if (!src.region().containsRegion(_region)) {
-		_region.cropTo(src._region);
-	}
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel *)core_malloc(size);
-	if (src.region() == _region) {
+	if (!intersects(src.region(), _region)) {
+		if (onlyAir) {
+			*onlyAir = true;
+		}
+		core_memset((void *)_data, 0, size);
+	} else if (src.region() == _region) {
 		core_memcpy((void *)_data, (void *)src._data, size);
 		if (onlyAir) {
 			*onlyAir = false;
 		}
 	} else {
+		if (!src.region().containsRegion(_region)) {
+			_region.cropTo(src._region);
+		}
 		if (onlyAir) {
 			*onlyAir = true;
 		}
