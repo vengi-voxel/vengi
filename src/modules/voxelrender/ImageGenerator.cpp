@@ -4,7 +4,6 @@
 
 #include "ImageGenerator.h"
 #include "app/App.h"
-#include "core/Color.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
 #include "image/Image.h"
@@ -14,11 +13,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
-#include "video/Renderer.h"
 #include "video/Texture.h"
-#include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
-#include "voxelformat/VolumeFormat.h"
 #include "voxelrender/SceneGraphRenderer.h"
 
 namespace voxelrender {

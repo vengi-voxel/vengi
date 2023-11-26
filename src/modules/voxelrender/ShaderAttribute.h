@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include "video/Buffer.h"
 #include "video/Types.h"
 #include "video/Renderer.h"
 #include "voxel/VoxelVertex.h"
-#include "core/GLM.h"
 
 namespace voxelrender {
 

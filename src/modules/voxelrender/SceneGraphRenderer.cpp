@@ -3,33 +3,14 @@
  */
 
 #include "SceneGraphRenderer.h"
-#include "ShaderAttribute.h"
-#include "VoxelShaderConstants.h"
-#include "core/Algorithm.h"
-#include "core/ArrayLength.h"
 #include "core/Color.h"
-#include "core/Common.h"
-#include "core/GLM.h"
-#include "core/GameConfig.h"
 #include "core/Log.h"
-#include "core/StandardLib.h"
-#include "core/Trace.h"
-#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/Set.h"
 #include "video/Camera.h"
-#include "video/Renderer.h"
-#include "video/ScopedLineWidth.h"
-#include "video/ScopedPolygonMode.h"
-#include "video/ScopedState.h"
-#include "video/Shader.h"
-#include "video/Types.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include "voxelutil/VolumeMerger.h"
 
 namespace voxelrender {
 
