@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request, Response
+from flask import Flask, request, redirect, Response
 from influxdb import InfluxDBClient
 import atexit
 import threading
 import queue
 import configparser
+import logging
 
 config = configparser.ConfigParser()
 config.read('config.ini')
-
+app = Flask(__name__)
 q = queue.Queue()
-
-DATABASE = 'metrics.db'
-
 db = None
 
-def worker():
+def worker(db, q):
     while True:
         item = q.get()
         metric_name = item[0]
@@ -34,14 +32,32 @@ def worker():
         db.write_points(metric_json)
         q.task_done()
 
-app = Flask(__name__)
+def init():
+    logging.basicConfig(level=logging.INFO)
+    host = config.get('influx', 'host')
+    port = int(config.get('influx', 'port'))
+    database = config.get('influx', 'database')
+    username = config.get('influx', 'username')
+    password = config.get('influx', 'password')
+    db = InfluxDBClient(host, port, username, password, database)
+    def shutdown():
+        db.close()
+    atexit.register(shutdown)
+
+    threading.Thread(target=worker, name='vengi-api-worker', daemon=True, args=(db, q)).start()
+
+init()
 
 def insertMetric(metric_name, value, tags):
     q.put((metric_name, value, tags))
 
 @app.route('/')
 def home():
-    return "<p>Vengi Voxel Tools API</p>"
+    return redirect("http://vengi-voxel.github.io/vengi/", code=302)
+
+@app.route('/discord')
+def discord():
+    return redirect("https://discord.gg/AgjCPXy", code=302)
 
 @app.route('/metric', methods = ['POST'])
 def metric():
@@ -78,21 +94,9 @@ def metric():
 
     insertMetric(name, value, tags)
 
+    app.logger.debug('Got a metric - with {} in queue'.format(q.qsize()))
     return Response(status = 204)
 
 if __name__ == "__main__":
-    host = config.get('influx', 'host')
-    port = int(config.get('influx', 'port'))
-    database = config.get('influx', 'database')
-    username = config.get('influx', 'username')
-    password = config.get('influx', 'password')
-
-    db = InfluxDBClient(host, port, username, password, database)
-    def shutdown():
-        db.close()
-    atexit.register(shutdown)
-
-    threading.Thread(target=worker, daemon=True).start()
-
-    app.run(port=8000)
+    app.run(debug = True, port= 8000)
     q.join()
