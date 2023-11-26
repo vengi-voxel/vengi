@@ -4,7 +4,6 @@
 
 #include "EventHandler.h"
 #include "video/IEventObserver.h"
-#include "core/Common.h"
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include <glm/common.hpp>
@@ -171,9 +170,13 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 				observer->onWindowFocusLost((void*)window);
 			}
 			break;
+		default:
+			break;
 		}
 		break;
 	}
+	default:
+		break;
 	}
 
 	// Traverse through the list and try to find the specified observer

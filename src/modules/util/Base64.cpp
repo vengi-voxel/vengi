@@ -5,7 +5,6 @@
 #include "Base64.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
-#include "core/Log.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include <ctype.h>

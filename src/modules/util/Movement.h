@@ -8,7 +8,6 @@
 #include "core/IComponent.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
-#include <stdint.h>
 
 namespace util {
 

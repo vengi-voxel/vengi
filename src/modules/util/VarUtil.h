@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Var.h"
-#include "core/Algorithm.h"
 #include "core/collection/DynamicArray.h"
 
 namespace util {

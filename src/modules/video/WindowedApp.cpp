@@ -4,12 +4,8 @@
 
 #include "WindowedApp.h"
 #include "Renderer.h"
-#include "Shader.h"
 #include "ShaderManager.h"
 #include "command/Command.h"
-#include "core/ArrayLength.h"
-#include "core/Assert.h"
-#include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Process.h"
@@ -18,12 +14,10 @@
 #include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#include "gl/GLVersion.h"
 #include "io/FormatDescription.h"
 #include "io/Filesystem.h"
 #include "util/CustomButtonNames.h"
 #include "util/KeybindingHandler.h"
-#include "util/KeybindingParser.h"
 #include "video/EventHandler.h"
 #include <glm/common.hpp>
 #include <SDL.h>

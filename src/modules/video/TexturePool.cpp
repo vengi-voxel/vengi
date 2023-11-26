@@ -3,7 +3,6 @@
  */
 
 #include "TexturePool.h"
-#include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
 

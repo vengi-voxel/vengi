@@ -6,7 +6,6 @@
 #include "ScopedStyle.h"
 #include "Util.h"
 #include "Viewport.h"
-#include "command/CommandHandler.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -14,7 +13,6 @@
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphUtil.h"
 #include "ui/FileDialog.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
@@ -23,10 +21,9 @@
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/modifier/Modifier.h"
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
-
+#include "engine-config.h"
 #include "TipOfTheDay.h"
 
 // generated models

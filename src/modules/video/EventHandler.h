@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <vector>
 #include "core/String.h"
+#include "core/collection/DynamicArray.h"
 #include <stdint.h>
 
 union SDL_Event;
@@ -21,7 +21,7 @@ class EventHandler {
 private:
 	bool _multiGesture;
 
-	typedef std::vector<IEventObserver*> EventObservers;
+	typedef core::DynamicArray<IEventObserver*> EventObservers;
 	EventObservers _observers;
 	struct Event {
 		Event(IEventObserver* _observer, bool _remove) : observer(_observer), remove(_remove) {
@@ -30,7 +30,7 @@ private:
 		IEventObserver* observer;
 		bool remove;
 	};
-	std::vector<Event> _events;
+	core::DynamicArray<Event> _events;
 
 	static core::String getControllerButtonName(uint8_t button);
 

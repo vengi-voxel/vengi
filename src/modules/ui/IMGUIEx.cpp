@@ -9,7 +9,6 @@
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
-#include "core/collection/Array.h"
 #include "io/FormatDescription.h"
 #include "video/Camera.h"
 #include "video/FileDialogOptions.h"

@@ -9,7 +9,6 @@
 #pragma once
 
 #include "RendererInterface.h"
-#include "core/collection/Set.h"
 #include <type_traits>
 
 namespace video {

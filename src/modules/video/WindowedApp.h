@@ -8,7 +8,6 @@
 #include "video/IEventObserver.h"
 #include "util/KeybindingHandler.h"
 #include "video/Types.h"
-#include "video/Version.h"
 #include "video/FileDialogOptions.h"
 #include <SDL_main.h>
 #include <glm/vec2.hpp>

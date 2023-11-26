@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "io/Filesystem.h"
 #include "Texture.h"
 #include "image/Image.h"
 #include "core/String.h"

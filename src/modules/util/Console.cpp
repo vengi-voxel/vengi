@@ -14,7 +14,6 @@
 #include "command/Command.h"
 #include "core/collection/Set.h"
 #include "core/Common.h"
-#include "core/Color.h"
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
 #include "VarUtil.h"

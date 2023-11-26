@@ -8,7 +8,6 @@
 #include "command/CommandHandler.h"
 #include "core/Common.h"
 #include "core/Var.h"
-#include "core/collection/Array.h"
 #include "core/collection/Buffer.h"
 #include "dearimgui/imgui.h"
 #include "video/Types.h"

@@ -7,7 +7,6 @@
 #include "RenderBuffer.h"
 #include "ShaderTypes.h"
 #include "core/SharedPtr.h"
-#include "core/collection/List.h"
 #include "core/collection/Set.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>

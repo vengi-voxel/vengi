@@ -4,7 +4,6 @@
 
 #include "Buffer.h"
 #include "Renderer.h"
-#include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 

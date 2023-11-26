@@ -3,7 +3,6 @@
  */
 
 #include "VersionCheck.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
@@ -56,13 +55,18 @@ bool isNewerVersion(const core::String &versionLatest, const core::String &vengi
 	return false;
 }
 
+core::String releaseUrl() {
+	return GitHubURL + "/releases/latest";
+}
+
 bool isNewVersionAvailable(int timeout) {
 	if (!http::Request::supported()) {
 		Log::error("Could not check for new version: HTTP requests are not supported");
 		return false;
 	}
 	io::BufferedReadWriteStream stream;
-	http::Request request(GitHubURL + "/releases/latest", http::RequestType::GET);
+
+	http::Request request(releaseUrl(), http::RequestType::GET);
 	if (timeout > 0) {
 		request.setTimeoutSecond(timeout);
 		request.setConnectTimeoutSecond(timeout);

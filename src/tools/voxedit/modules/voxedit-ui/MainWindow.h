@@ -2,15 +2,10 @@
  * @file
  */
 
-#include "core/Common.h"
-#include "core/StringUtil.h"
-#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
-#include "math/Axis.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
-#include "ui/TextEditor.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
@@ -18,7 +13,6 @@
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
-#include "voxedit-ui/RenderPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
 #include "voxedit-ui/ToolsPanel.h"
@@ -27,7 +21,6 @@
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
-#include "voxedit-util/modifier/ModifierType.h"
 
 #define ENABLE_RENDER_PANEL 0
 

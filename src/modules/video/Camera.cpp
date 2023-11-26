@@ -6,7 +6,6 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/GLMConst.h"
-#include "core/Singleton.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
 #include <glm/gtx/quaternion.hpp>

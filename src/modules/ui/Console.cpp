@@ -3,9 +3,7 @@
  */
 
 #include "Console.h"
-#include "IMGUIApp.h"
 #include "dearimgui/imgui_internal.h"
-#include "core/Color.h"
 #include <SDL_log.h>
 
 namespace ui {

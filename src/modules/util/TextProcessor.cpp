@@ -3,9 +3,6 @@
  */
 
 #include "TextProcessor.h"
-#include "command/Command.h"
-#include "core/Log.h"
-#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "util/KeybindingHandler.h"
 

@@ -3,11 +3,8 @@
 #include "core/Common.h"
 #include "core/UTF8.h"
 #include <glm/common.hpp>
-#include <algorithm>
 
 #include <SDL.h>
-
-#include "dearimgui/imgui_internal.h" // for imGui::GetCurrentWindow()
 
 template <class InputIt1, class InputIt2, class BinaryPredicate>
 bool equals(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate p) {

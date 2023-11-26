@@ -14,7 +14,6 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
-#include "image/Image.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Log.h"
@@ -23,7 +22,6 @@
 #include "core/Assert.h"
 #include "core/StringUtil.h"
 #include "core/StandardLib.h"
-#include "core/Algorithm.h"
 #include <glm/fwd.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
