@@ -25,11 +25,12 @@ bool HTTPMetricSender::send(const char *buffer) const {
 		return false;
 	}
 	NOPWriteStream stream;
-	if (!_request.execute(stream)) {
-		Log::debug("Failed to send metric %s", buffer);
+	int statusCode = -1;
+	if (!_request.execute(stream, &statusCode)) {
+		Log::debug("Failed to send metric %s - got status %i", buffer, statusCode);
 		return false;
 	}
-	Log::debug("Sent metric %s", buffer);
+	Log::debug("Sent metric %s - got status: %i", buffer, statusCode);
 	return true;
 }
 
