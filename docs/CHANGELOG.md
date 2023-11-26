@@ -26,6 +26,7 @@ General:
    - Added support for Photoshop `ase` palette
    - Added support for Paintshop Pro (JASC) `pal` palette
    - Extended support for the Gimp `gpl` palette format to support the AseSprite alpha channel extension
+   - Added support to collect anonymous metrics (disabled by default)
 
 VoxConvet:
 
