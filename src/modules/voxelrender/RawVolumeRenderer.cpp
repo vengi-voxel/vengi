@@ -495,6 +495,7 @@ void RawVolumeRenderer::clear() {
 			updateBufferForVolume(i);
 		}
 	}
+	resetReferences();
 }
 
 void RawVolumeRenderer::clearPendingExtractions() {
