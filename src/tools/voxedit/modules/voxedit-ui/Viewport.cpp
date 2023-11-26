@@ -602,10 +602,11 @@ uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const 
 }
 
 glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
-	if (!isSceneMode()) {
-		return glm::mat4(1.0f);
-	}
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	if (!isSceneMode()) {
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		return glm::translate(region.getLowerCornerf());
+	}
 	keyFrameIdx = node.keyFrameForFrame(sceneMgr().currentFrame());
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	return transform.worldMatrix();
