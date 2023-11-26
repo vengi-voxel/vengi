@@ -694,7 +694,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				sceneMgr().nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
 			}
 		} else {
-			sceneMgr().shift(activeNode, deltaMatrix[3]);
+			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();
+			sceneMgr().shift(activeNode, shift);
 			// only true in edit mode
 			return true;
 		}
