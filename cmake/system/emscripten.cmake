@@ -9,4 +9,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -Os")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -Os")
 
 # Temporary workaround for https://github.com/emscripten-core/emscripten/issues/16836.
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-u,ntohl -Wl,-u,htonl")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-u,ntohl -Wl,-u,htonl -Wl,-u,ntohs")
