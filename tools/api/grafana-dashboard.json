@@ -1,0 +1,225 @@
+{
+	"annotations": {
+	  "list": [
+		{
+		  "builtIn": 1,
+		  "datasource": {
+			"type": "grafana",
+			"uid": "-- Grafana --"
+		  },
+		  "enable": true,
+		  "hide": true,
+		  "iconColor": "rgba(0, 211, 255, 1)",
+		  "name": "Annotations & Alerts",
+		  "type": "dashboard"
+		}
+	  ]
+	},
+	"editable": true,
+	"fiscalYearStartMonth": 0,
+	"graphTooltip": 0,
+	"id": 1,
+	"links": [],
+	"liveNow": false,
+	"panels": [
+	  {
+		"datasource": {
+		  "type": "influxdb",
+		  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "thresholds"
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				},
+				{
+				  "color": "red",
+				  "value": 80
+				}
+			  ]
+			}
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 8,
+		  "w": 3,
+		  "x": 0,
+		  "y": 0
+		},
+		"id": 1,
+		"options": {
+		  "colorMode": "value",
+		  "graphMode": "area",
+		  "justifyMode": "auto",
+		  "orientation": "auto",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "textMode": "auto",
+		  "wideLayout": true
+		},
+		"pluginVersion": "10.2.2",
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "influxdb",
+			  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+			},
+			"groupBy": [
+			  {
+				"params": [
+				  "uuid::tag"
+				],
+				"type": "tag"
+			  }
+			],
+			"measurement": "voxedit.start",
+			"orderByTime": "ASC",
+			"policy": "default",
+			"query": "SELECT COUNT(mean)\nFROM (\nSELECT mean(\"value\") FROM \"voxedit.start\" WHERE $timeFilter GROUP BY time($__interval), \"uuid\" \n)\nGROUP BY  time($__interval)",
+			"rawQuery": true,
+			"refId": "A",
+			"resultFormat": "time_series",
+			"select": [
+			  [
+				{
+				  "params": [
+					"value"
+				  ],
+				  "type": "field"
+				},
+				{
+				  "params": [],
+				  "type": "mean"
+				}
+			  ]
+			],
+			"tags": []
+		  }
+		],
+		"title": "Unique User Count",
+		"type": "stat"
+	  },
+	  {
+		"datasource": {
+		  "type": "influxdb",
+		  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  }
+			},
+			"mappings": []
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 14,
+		  "w": 4,
+		  "x": 3,
+		  "y": 0
+		},
+		"id": 2,
+		"options": {
+		  "legend": {
+			"displayMode": "list",
+			"placement": "bottom",
+			"showLegend": true
+		  },
+		  "pieType": "pie",
+		  "reduceOptions": {
+			"calcs": [
+			  "lastNotNull"
+			],
+			"fields": "",
+			"values": false
+		  },
+		  "tooltip": {
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "influxdb",
+			  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+			},
+			"groupBy": [
+			  {
+				"params": [
+				  "$__interval"
+				],
+				"type": "time"
+			  },
+			  {
+				"params": [
+				  "type::tag"
+				],
+				"type": "tag"
+			  }
+			],
+			"measurement": "voxedit.load",
+			"orderByTime": "ASC",
+			"policy": "default",
+			"refId": "A",
+			"resultFormat": "time_series",
+			"select": [
+			  [
+				{
+				  "params": [
+					"value"
+				  ],
+				  "type": "field"
+				},
+				{
+				  "params": [],
+				  "type": "sum"
+				}
+			  ]
+			],
+			"tags": []
+		  }
+		],
+		"title": "Formats",
+		"type": "piechart"
+	  }
+	],
+	"refresh": "",
+	"schemaVersion": 38,
+	"tags": [],
+	"templating": {
+	  "list": []
+	},
+	"time": {
+	  "from": "now-1y",
+	  "to": "now"
+	},
+	"timepicker": {},
+	"timezone": "",
+	"title": "vengi metrics",
+	"uid": "b947d4f7-71b1-4442-a220-ff8b6c3cca6d",
+	"version": 1,
+	"weekStart": ""
+}
