@@ -273,9 +273,6 @@ void Viewport::menuBarCameraMode() {
 			if (ImGui::Selectable(SceneCameraModeStr[n], isSelected)) {
 				_camMode = (SceneCameraMode)n;
 				resetCamera();
-				if (_camMode != SceneCameraMode::Free) {
-					camera().setMode(video::CameraMode::Orthogonal);
-				}
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();
