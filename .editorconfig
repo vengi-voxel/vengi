@@ -12,7 +12,7 @@ charset = utf-8
 indent_style = space
 indent_size = 3
 
-[*.{py,html}]
+[*.{py,html,plist.in}]
 indent_style = space
 
 [src/modules/voxelformat/external/ogt_vox.h]

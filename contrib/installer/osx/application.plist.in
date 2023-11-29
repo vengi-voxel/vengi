@@ -31,6 +31,7 @@
     <dict>
       <key>CFBundleTypeExtensions</key>
       <array>
+        <string>3zh</string>
         <string>binvox</string>
         <string>bsp</string>
         <string>csm</string>
@@ -45,6 +46,8 @@
         <string>mts</string>
         <string>nbt</string>
         <string>nvm</string>
+        <string>pcubes</string>
+        <string>particubes</string>
         <string>ply</string>
         <string>qb</string>
         <string>qbcl</string>
