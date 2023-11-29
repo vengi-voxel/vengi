@@ -441,7 +441,7 @@ void URLItem(const char *title, const char *url, float width) {
 	ImGui::Text("%s", title);
 	if (ImGui::IsItemHovered()) {
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-			const core::String &cmd = core::String::format("url %s", url);
+			const core::String &cmd = core::String::format("url \"%s\"", url);
 			command::executeCommands(cmd);
 		}
 		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
