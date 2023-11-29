@@ -104,6 +104,7 @@ elseif(USE_GLSLANG_VALIDATOR)
 	message(WARNING "Couldn't find glslang tool but using it was requested")
 endif()
 
+include(${SCRIPTS_CMAKE_DIR}/git.cmake)
 include(${SCRIPTS_CMAKE_DIR}/util.cmake)
 include(${SCRIPTS_CMAKE_DIR}/genshader.cmake)
 include(${SCRIPTS_CMAKE_DIR}/externallib.cmake)
@@ -154,6 +155,7 @@ if (UNITTESTS)
 endif()
 add_subdirectory(src)
 
+configure_file(src/engine-git.h.in engine-git.h @ONLY)
 configure_file(src/engine-config.h.in engine-config.h @ONLY)
 message(STATUS "Generate engine-config.h in ${CMAKE_CURRENT_BINARY_DIR}")
 

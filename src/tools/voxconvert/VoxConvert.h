@@ -66,6 +66,7 @@ protected:
 	bool handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs);
 
 	void usage() const override;
+	void printUsageHeader() const override;
 	void mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
 	void rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph);
 	void scale(scenegraph::SceneGraph& sceneGraph);

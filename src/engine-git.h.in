@@ -1,0 +1,8 @@
+/**
+ * @file
+ */
+
+#pragma once
+
+#cmakedefine GIT_COMMIT "@GIT_COMMIT@"
+#cmakedefine GIT_COMMIT_DATE "@GIT_COMMIT_DATE@"

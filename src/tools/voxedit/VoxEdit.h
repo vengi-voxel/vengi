@@ -38,6 +38,8 @@ private:
 	};
 
 	void loadKeymap(int keymap) override;
+protected:
+	void printUsageHeader() const override;
 
 public:
 	VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);

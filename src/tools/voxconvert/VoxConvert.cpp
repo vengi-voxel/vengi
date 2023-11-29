@@ -3,8 +3,6 @@
  */
 
 #include "VoxConvert.h"
-#include "command/Command.h"
-#include "core/Color.h"
 #include "core/Enum.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
@@ -40,6 +38,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "engine-git.h"
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
@@ -99,6 +98,11 @@ app::AppState VoxConvert::onConstruct() {
 	}
 
 	return state;
+}
+
+void VoxConvert::printUsageHeader() const {
+	Super::printUsageHeader();
+	Log::info("Git commit " GIT_COMMIT " - " GIT_COMMIT_DATE);
 }
 
 void VoxConvert::usage() const {

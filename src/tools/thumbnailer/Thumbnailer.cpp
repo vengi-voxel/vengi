@@ -3,8 +3,6 @@
  */
 
 #include "Thumbnailer.h"
-#include "command/Command.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
@@ -13,10 +11,10 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
-#include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
+#include "engine-git.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -26,6 +24,11 @@ Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimePr
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
 	_additionalUsage = "<infile> <outfile>";
+}
+
+void Thumbnailer::printUsageHeader() const {
+	Super::printUsageHeader();
+	Log::info("Git commit " GIT_COMMIT " - " GIT_COMMIT_DATE);
 }
 
 app::AppState Thumbnailer::onConstruct() {

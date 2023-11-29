@@ -6,7 +6,6 @@
 #include "app/App.h"
 #include "core/BindingContext.h"
 #include "core/Color.h"
-#include "core/GameConfig.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
@@ -17,7 +16,6 @@
 #include "core/TimeProvider.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
-#include "video/Renderer.h"
 #include "io/Filesystem.h"
 #include "core/Log.h"
 
@@ -27,7 +25,7 @@
 #include "voxedit-ui/FileDialogOptions.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
-#include "core/StandardLib.h"
+#include "engine-git.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider, core::halfcpus()) {
@@ -45,6 +43,11 @@ VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 	_uiKeyMaps.push_back("Vengi");
 	_uiKeyMaps.push_back("Qubicle");
 	core_assert(KeyBindings::Max == (int)_uiKeyMaps.size());
+}
+
+void VoxEdit::printUsageHeader() const {
+	Super::printUsageHeader();
+	Log::info("Git commit " GIT_COMMIT " - " GIT_COMMIT_DATE);
 }
 
 app::AppState VoxEdit::onCleanup() {

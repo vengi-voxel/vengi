@@ -115,6 +115,8 @@ protected:
 	core::VarPtr _syslogVar;
 
 	virtual void usage() const;
+	virtual void printUsageHeader() const;
+
 	void setArgs(int argc, char *argv[]);
 
 #ifdef __EMSCRIPTEN__

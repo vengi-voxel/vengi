@@ -7,11 +7,9 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
-#include "core/Hash.h"
 #include "core/Log.h"
 #include "core/Tokenizer.h"
 #include "core/Var.h"
-#include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
@@ -489,11 +487,17 @@ bool App::hasEnoughMemory(size_t bytes) const {
 	return _availableMemoryMiB * (size_t)s >= bytes;
 }
 
+void App::printUsageHeader() const {
+	Log::info("Version " PROJECT_VERSION);
+}
+
 void App::usage() const {
 	const core::VarPtr &logLevel = core::Var::get(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);
 	Log::init();
-	Log::info("Version " PROJECT_VERSION);
+
+	printUsageHeader();
+
 	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", _appname.c_str(),
 			  _additionalUsage.c_str());
 	Log::info("------------");
@@ -570,12 +574,12 @@ void App::usage() const {
 		Log::info(" * %s", path.c_str());
 	}
 	Log::info("------------");
-	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or commandline parameter.",
+	Log::info("Config variables can either be set via autoexec.cfg, %s.vars, environment or command line parameter.",
 			  _appname.c_str());
 	Log::info("The highest order is the command line. If you specify it on the command line, every other method");
 	Log::info("will not be used. If the engine finds the cvar name in your environment variables, this one will");
-	Log::info("take precendence over the one the is found in the configuration file. Next is the configuration");
-	Log::info("file - this one will take precendence over the default settings that are specified in the code.");
+	Log::info("take precedence over the one the is found in the configuration file. Next is the configuration");
+	Log::info("file - this one will take precedence over the default settings that are specified in the code.");
 	Log::info("The environment variable can be either lower case or upper case. For example it will work if you");
 	Log::info("have CL_GAMMA or cl_gamma exported. The lower case variant has the higher priority.");
 	Log::info("Examples:");

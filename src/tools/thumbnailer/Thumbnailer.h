@@ -22,6 +22,7 @@ private:
 
 protected:
 	virtual bool saveImage(const image::ImagePtr &image);
+	void printUsageHeader() const override;
 
 public:
 	Thumbnailer(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
