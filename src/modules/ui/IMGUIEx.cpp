@@ -410,7 +410,7 @@ const char *CommandButton(const char *title, const char *command, command::Comma
 }
 
 bool URLButton(const char *title, const char *url) {
-	const core::String& cmd = core::String::format("url %s", url);
+	const core::String& cmd = core::String::format("url \"%s\"", url);
 	if (CommandButton(title, cmd.c_str())) {
 		imguiApp()->minimize();
 		return true;
