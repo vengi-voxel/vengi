@@ -8,6 +8,17 @@ set(CMAKE_XCODE_ATTRIBUTE_GCC_ENABLE_CPP_RTTI "YES")
 set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "NO")
 set(CMAKE_XCODE_GENERATE_SCHEME "YES")
 
+if(APPLE)
+	if(XCODE_VERSION VERSION_LESS 14)
+		set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "" CACHE INTERNAL "")
+	else()
+		# With xcode versions >= 14 it is no longer possible to build unsigned binaries
+		# - is for signing locally
+		set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-" CACHE INTERNAL "")
+		# --deep is for signing 3d party libraries
+		set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep -o linker-signed --timestamp" CACHE INTERNAL "")
+	endif()
+endif()
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstrict-aliasing -Wno-multichar -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-long-long -Wno-overloaded-virtual -Wno-unused-volatile-lvalue -Wno-deprecated-writable-strings -Wno-unknown-warning-option")
