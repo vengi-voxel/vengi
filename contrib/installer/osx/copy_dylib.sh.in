@@ -13,7 +13,7 @@ EXEPATH=$APPPATH/Contents/MacOS
 # are used with grep, so only a portion of the name
 # is required. eg: libFOX, libz, etc.
 LIBS_TO_BUNDLE=
-
+IDENTITY=-
 
 function copydeps {
 	local file=$1
@@ -53,7 +53,6 @@ function copydeps {
 				z=0
 			else
 				cp $i $EXEPATH
-				#sudo codesign -f -s - ${EXEPATH}/$i
 				chmod 755 $EXEPATH/$BASE
 			fi
 
@@ -64,6 +63,7 @@ function copydeps {
 				# Fix the paths
 				install_name_tool -id @executable_path/$BASE $EXEPATH/$BASE
 				install_name_tool -change $i @executable_path/$BASE $EXEPATH/$BASE_OF_EXE
+				codesign -f -s $IDENTITY $EXEPATH/$BASE
 
 				# Call this function (recursive) on
 				# on each dependency of this library.
@@ -74,5 +74,6 @@ function copydeps {
 }
 
 copydeps $EXEPATH/$EXE_NAME
-#sudo codesign -f -s - $EXEPATH/$EXE_NAME
 echo "APPL????" > $APPPATH/Contents/PkgInfo
+codesign -f -s $IDENTITY $EXEPATH/$EXE_NAME
+codesign -f -s $IDENTITY $APPPATH
