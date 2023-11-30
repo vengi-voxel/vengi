@@ -1,4 +1,5 @@
 add_subdirectory(shadertool)
+add_subdirectory(formatprinter)
 
 if (VOXEDIT)
 	add_subdirectory(voxedit)

@@ -71,7 +71,7 @@ release-%:
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
-thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
+formatprinter thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@/usr
 ifneq ($(OS),Windows_NT)
@@ -80,6 +80,12 @@ endif
 
 %-run %-memcheckxml %-memcheck %-debug %-perf tests-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
+
+tools/html/data.js: formatprinter
+	$(Q)echo -n "const jsonData = " > $@
+	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --palette --image --voxel | jq >> $@
+
+formats: tools/html/data.js
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
