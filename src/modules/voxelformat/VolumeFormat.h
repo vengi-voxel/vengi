@@ -21,12 +21,12 @@ namespace voxelformat {
 
 const io::FormatDescription *voxelLoad();
 const io::FormatDescription *voxelSave();
-io::FormatDescription aceOfSpades();
-io::FormatDescription tiberianSun();
-io::FormatDescription qubicleBinary();
-io::FormatDescription qubicleBinaryTree();
-io::FormatDescription magicaVoxel();
-io::FormatDescription vengi();
+const io::FormatDescription &aceOfSpades();
+const io::FormatDescription &tiberianSun();
+const io::FormatDescription &qubicleBinary();
+const io::FormatDescription &qubicleBinaryTree();
+const io::FormatDescription &magicaVoxel();
+const io::FormatDescription &vengi();
 
 /**
  * @brief Tries to load a palette from the given file. This can either be an image which is reduced to 256 colors or a
@@ -53,6 +53,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 
 bool isMeshFormat(const core::String &filename, bool save);
 bool isMeshFormat(const io::FormatDescription &desc);
+bool isAnimationSupported(const io::FormatDescription &desc);
 bool isModelFormat(const core::String &filename);
 
 } // namespace voxelformat

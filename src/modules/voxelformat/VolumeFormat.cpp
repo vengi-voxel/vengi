@@ -4,12 +4,12 @@
 
 #include "VolumeFormat.h"
 #include "app/App.h"
-#include "core/ArrayLength.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -58,40 +58,288 @@
 
 namespace voxelformat {
 
-io::FormatDescription aceOfSpades() {
-	return {"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &aceOfSpades() {
+	static io::FormatDescription f{
+		"AceOfSpades", {"vxl"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
-io::FormatDescription tiberianSun() {
-	return {"Tiberian Sun",
-			{"vxl"},
-			[](uint32_t magic) { return magic == FourCC('V', 'o', 'x', 'e'); },
-			VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &tiberianSun() {
+	static io::FormatDescription f{"Tiberian Sun",
+								   {"vxl"},
+								   [](uint32_t magic) { return magic == FourCC('V', 'o', 'x', 'e'); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
-io::FormatDescription qubicleBinary() {
-	return {"Qubicle Binary", {"qb"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &qubicleBinary() {
+	static io::FormatDescription f{
+		"Qubicle Binary", {"qb"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
-io::FormatDescription magicaVoxel() {
-	return {"MagicaVoxel",
-			{"vox"},
-			[](uint32_t magic) { return magic == FourCC('V', 'O', 'X', ' '); },
-			VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &magicaVoxel() {
+	static io::FormatDescription f{"MagicaVoxel",
+								   {"vox"},
+								   [](uint32_t magic) { return magic == FourCC('V', 'O', 'X', ' '); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
-io::FormatDescription qubicleBinaryTree() {
-	return {"Qubicle Binary Tree",
-			{"qbt"},
-			[](uint32_t magic) { return magic == FourCC('Q', 'B', ' ', '2'); },
-			VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &qubicleBinaryTree() {
+	static io::FormatDescription f{"Qubicle Binary Tree",
+								   {"qbt"},
+								   [](uint32_t magic) { return magic == FourCC('Q', 'B', ' ', '2'); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
-io::FormatDescription vengi() {
-	return {"Vengi",
-			{"vengi"},
-			[](uint32_t magic) { return magic == FourCC('V', 'E', 'N', 'G'); },
-			VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+const io::FormatDescription &vengi() {
+	static io::FormatDescription f{"Vengi",
+								   {"vengi"},
+								   [](uint32_t magic) { return magic == FourCC('V', 'E', 'N', 'G'); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &qubicleProject() {
+	static io::FormatDescription f{"Qubicle Project",
+								   {"qbcl"},
+								   [](uint32_t magic) { return magic == FourCC('Q', 'B', 'C', 'L'); },
+								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
+									   VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &qubicleExchange() {
+	static io::FormatDescription f{"Qubicle Exchange",
+								   {"qef"},
+								   [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); },
+								   VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &quakeBsp() {
+	static io::FormatDescription f{
+		"Quake BSP",
+		{"bsp"},
+		[](uint32_t magic) { return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0'); },
+		VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
+static const io::FormatDescription &quakeMd2() {
+	static io::FormatDescription f{"Quake 2 Model",
+								   {"md2"},
+								   [](uint32_t magic) { return magic == FourCC('I', 'D', 'P', '2'); },
+								   VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
+static const io::FormatDescription &sandboxVXM() {
+	static io::FormatDescription f{
+		"Sandbox VoxEdit Model",
+		{"vxm"},
+		[](uint32_t magic) {
+			return magic == FourCC('V', 'X', 'M', 'A') || magic == FourCC('V', 'X', 'M', 'B') ||
+				   magic == FourCC('V', 'X', 'M', 'C') || magic == FourCC('V', 'X', 'M', '9') ||
+				   magic == FourCC('V', 'X', 'M', '8') || magic == FourCC('V', 'X', 'M', '7') ||
+				   magic == FourCC('V', 'X', 'M', '6') || magic == FourCC('V', 'X', 'M', '5') ||
+				   magic == FourCC('V', 'X', 'M', '4') || magic == FourCC('V', 'X', 'M', '3');
+		},
+		VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &sandboxVXR() {
+	static io::FormatDescription f{
+		"Sandbox VoxEdit Hierarchy",
+		{"vxr"},
+		[](uint32_t magic) {
+			return magic == FourCC('V', 'X', 'R', '9') || magic == FourCC('V', 'X', 'R', '8') ||
+				   magic == FourCC('V', 'X', 'R', '7') || magic == FourCC('V', 'X', 'R', '6') ||
+				   magic == FourCC('V', 'X', 'R', '5') || magic == FourCC('V', 'X', 'R', '4') ||
+				   magic == FourCC('V', 'X', 'R', '3') || magic == FourCC('V', 'X', 'R', '2') ||
+				   magic == FourCC('V', 'X', 'R', '1');
+		},
+		VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &sandboxTilemap() {
+	static io::FormatDescription f{
+		"Sandbox VoxEdit Tilemap", {"vxt"}, [](uint32_t magic) { return magic == FourCC('V', 'X', 'T', '1'); }, 0u};
+	return f;
+}
+
+static const io::FormatDescription &sandboxCollection() {
+	static io::FormatDescription f{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u};
+	return f;
+}
+
+static const io::FormatDescription &binvox() {
+	static io::FormatDescription f{
+		"BinVox", {"binvox"}, [](uint32_t magic) { return magic == FourCC('#', 'b', 'i', 'n'); }, VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &goxel() {
+	static io::FormatDescription f{"Goxel",
+								   {"gox"},
+								   [](uint32_t magic) { return magic == FourCC('G', 'O', 'X', ' '); },
+								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
+									   VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &cubeWorld() {
+	static io::FormatDescription f{
+		"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &minetest() {
+	static io::FormatDescription f{"Minetest", {"mts"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &minecraftRegion() {
+	static io::FormatDescription f{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &minecraftLevelDat() {
+	static io::FormatDescription f{"Minecraft level dat", {"dat"}, nullptr, 0u};
+	return f;
+}
+
+static const io::FormatDescription &minecraftSchematic() {
+	static io::FormatDescription f{
+		"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static io::FormatDescription fbx() {
+	static io::FormatDescription f{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &sproxelCSV() {
+	static io::FormatDescription f{
+		"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &magicaVoxelXRAW() {
+	static io::FormatDescription f{"Magicavoxel XRAW",
+								   {"xraw"},
+								   [](uint32_t magic) { return magic == FourCC('X', 'R', 'A', 'W'); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &gltf() {
+	static io::FormatDescription f{"GL Transmission Format",
+								   {"gltf", "glb", "vrm"},
+								   nullptr,
+								   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &particubes() {
+	static io::FormatDescription f{"Particubes",
+								   {"pcubes", "particubes"},
+								   nullptr,
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &cubzh() {
+	static io::FormatDescription f{"Cubzh",
+								   {"3zh"},
+								   nullptr,
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
+									   VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &aceOfSpadesKV6() {
+	static io::FormatDescription f{"AceOfSpades",
+								   {"kv6"},
+								   [](uint32_t magic) { return magic == FourCC('K', 'v', 'x', 'l'); },
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &voxelMax() {
+	static io::FormatDescription f{"VoxelMax",
+								   {"vmax.zip", "vmaxb"},
+								   nullptr,
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &starMade() {
+	static io::FormatDescription f{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &animaToon() {
+	static io::FormatDescription f{
+		"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION};
+	return f;
+}
+
+static const io::FormatDescription &voxelBuilder() {
+	static io::FormatDescription f{
+		"VoxelBuilder", {"vbx"}, [](uint32_t magic) { return magic == FourCC(';', ' ', 'V', 'o'); }, 0};
+	return f;
+}
+
+static const io::FormatDescription &wavefrontObj() {
+	static io::FormatDescription f{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &standardTriangleLanguage() {
+	static io::FormatDescription f{
+		"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &polygonFileFormat() {
+	static io::FormatDescription f{
+		"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &buildKVX() {
+	static io::FormatDescription f{
+		"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &voxel3D() {
+	static io::FormatDescription f{"Voxel3D", {"v3a"}, nullptr, VOX_FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &chronoVox() {
+	static io::FormatDescription f{
+		"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u};
+	return f;
+}
+
+static const io::FormatDescription &nicksVoxelModel() {
+	static io::FormatDescription f{
+		"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u};
+	return f;
+}
+
+static const io::FormatDescription &slab6Vox() {
+	static io::FormatDescription f{
+		"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	return f;
 }
 
 const io::FormatDescription *voxelLoad() {
@@ -101,196 +349,137 @@ const io::FormatDescription *voxelLoad() {
 		qubicleBinary(),
 		magicaVoxel(),
 		qubicleBinaryTree(),
-		{"Qubicle Project",
-		 {"qbcl"},
-		 [](uint32_t magic) { return magic == FourCC('Q', 'B', 'C', 'L'); },
-		 VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Sandbox VoxEdit Tilemap", {"vxt"}, [](uint32_t magic) { return magic == FourCC('V', 'X', 'T', '1'); }, 0u},
-		{"Sandbox VoxEdit Collection", {"vxc"}, nullptr, 0u},
-		{"Sandbox VoxEdit Model",
-		 {"vxm"},
-		 [](uint32_t magic) {
-			 return magic == FourCC('V', 'X', 'M', 'A') || magic == FourCC('V', 'X', 'M', 'B') ||
-					magic == FourCC('V', 'X', 'M', 'C') || magic == FourCC('V', 'X', 'M', '9') ||
-					magic == FourCC('V', 'X', 'M', '8') || magic == FourCC('V', 'X', 'M', '7') ||
-					magic == FourCC('V', 'X', 'M', '6') || magic == FourCC('V', 'X', 'M', '5') ||
-					magic == FourCC('V', 'X', 'M', '4') || magic == FourCC('V', 'X', 'M', '3');
-		 },
-		 VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Sandbox VoxEdit Hierarchy",
-		 {"vxr"},
-		 [](uint32_t magic) {
-			 return magic == FourCC('V', 'X', 'R', '9') || magic == FourCC('V', 'X', 'R', '8') ||
-					magic == FourCC('V', 'X', 'R', '7') || magic == FourCC('V', 'X', 'R', '6') ||
-					magic == FourCC('V', 'X', 'R', '5') || magic == FourCC('V', 'X', 'R', '4') ||
-					magic == FourCC('V', 'X', 'R', '3') || magic == FourCC('V', 'X', 'R', '2') ||
-					magic == FourCC('V', 'X', 'R', '1');
-		 },
-		 0u},
-		{"BinVox", {"binvox"}, [](uint32_t magic) { return magic == FourCC('#', 'b', 'i', 'n'); }, 0u},
-		{"Goxel",
-		 {"gox"},
-		 [](uint32_t magic) { return magic == FourCC('G', 'O', 'X', ' '); },
-		 VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"CubeWorld", {"cub"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Minetest", {"mts"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Minecraft region", {"mca", "mcr"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Minecraft level dat", {"dat"}, nullptr, 0u},
-		{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Quake BSP",
-		 {"bsp"},
-		 [](uint32_t magic) {
-			 return magic == FourCC('I', 'B', 'S', 'P') || magic == FourCC('\x1d', '\0', '\0', '\0');
-		 },
-		 VOX_FORMAT_FLAG_MESH},
-		{"Quake 2 Model",
-		 {"md2"},
-		 [](uint32_t magic) { return magic == FourCC('I', 'D', 'P', '2'); },
-		 VOX_FORMAT_FLAG_MESH},
-		{"FBX", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"Sproxel csv", {"csv"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Magicavoxel XRAW", {"xraw"}, [](uint32_t magic) { return magic == FourCC('X', 'R', 'A', 'W'); }, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"StarMade", {"sment"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"AnimaToon", {"scn"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"VoxelBuilder", {"vbx"}, [](uint32_t magic) { return magic == FourCC(';', ' ', 'V', 'o'); }, 0},
-		{"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"GL Transmission Format", {"gltf", "glb", "vrm"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
-		{"Build engine", {"kvx"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"Particubes", {"pcubes", "particubes"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-		{"Cubzh", {"3zh"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
-		{"Voxel3D", {"v3a"}, nullptr, 0u},
-		{"AceOfSpades",
-		 {"kv6"},
-		 [](uint32_t magic) { return magic == FourCC('K', 'v', 'x', 'l'); },
-		 VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+		qubicleProject(),
+		sandboxTilemap(),
+		sandboxCollection(),
+		sandboxVXM(),
+		sandboxVXR(),
+		binvox(),
+		goxel(),
+		cubeWorld(),
+		minetest(),
+		minecraftRegion(),
+		minecraftLevelDat(),
+		minecraftSchematic(),
+		quakeBsp(),
+		quakeMd2(),
+		fbx(),
+		sproxelCSV(),
+		magicaVoxelXRAW(),
+		starMade(),
+		animaToon(),
+		voxelBuilder(),
+		wavefrontObj(),
+		gltf(),
+		standardTriangleLanguage(),
+		polygonFileFormat(),
+		buildKVX(),
+		particubes(),
+		cubzh(),
+		voxel3D(),
+		aceOfSpadesKV6(),
 		tiberianSun(),
 		aceOfSpades(),
-		{"Qubicle Exchange", {"qef"}, [](uint32_t magic) { return magic == FourCC('Q', 'u', 'b', 'i'); }, 0u},
-		{"Chronovox", {"csm"}, [](uint32_t magic) { return magic == FourCC('.', 'C', 'S', 'M'); }, 0u},
-		{"Nicks Voxel Model", {"nvm"}, [](uint32_t magic) { return magic == FourCC('.', 'N', 'V', 'M'); }, 0u},
-		{"SLAB6 vox", {"vox"}, nullptr, VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-		{"VoxelMax",
-		 {"vmax.zip", "vmaxb"},
-		 nullptr,
-		 VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+		qubicleExchange(),
+		chronoVox(),
+		nicksVoxelModel(),
+		slab6Vox(),
+		voxelMax(),
 		{"", {}, nullptr, 0u}};
 	return desc;
 }
 
 const io::FormatDescription *voxelSave() {
-	// this is the list of supported voxel or mesh formats that have exporters implemented
-	static const io::FormatDescription desc[] = {{"Vengi", {"vengi"}, nullptr, 0u},
-												 {"Qubicle Binary", {"qb"}, nullptr, 0u},
-												 {"MagicaVoxel", {"vox"}, nullptr, 0u},
-												 {"MagicaVoxel", {"xraw"}, nullptr, 0u},
-												 {"AceOfSpades", {"kv6"}, nullptr, 0u},
-												 {"Build engine", {"kvx"}, nullptr, 0u},
-												 {"SLAB6 vox", {"vox"}, nullptr, 0u},
-												 {"Voxel3D", {"v3a"}, nullptr, 0u},
-												 {"Qubicle Binary Tree", {"qbt"}, nullptr, 0u},
-												 {"Qubicle Project", {"qbcl"}, nullptr, 0u},
-												 {"Sandbox VoxEdit Model", {"vxm"}, nullptr, 0u},
-												 {"Sandbox VoxEdit Hierarchy", {"vxr"}, nullptr, 0u},
-												 {"BinVox", {"binvox"}, nullptr, 0u},
-												 {"Goxel", {"gox"}, nullptr, 0u},
-												 {"Sproxel csv", {"csv"}, nullptr, 0u},
-												 {"Cubzh", {"3zh"}, nullptr, 0u},
-												 {"CubeWorld", {"cub"}, nullptr, 0u},
-												 //{"Build engine", {"kvx"}, nullptr, 0u},
-												 tiberianSun(),
-												 {"Qubicle Exchange", {"qef"}, nullptr, 0u},
-												 {"AceOfSpades", {"vxl"}, nullptr, 0u},
-												 //{"Minecraft schematic", {"schematic", "schem", "nbt"}, nullptr, 0u},
-												 {"Wavefront Object", {"obj"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"Polygon File Format", {"ply"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"FBX Ascii", {"fbx"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"Standard Triangle Language", {"stl"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"GLTF Binary", {"glb"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"GLTF Text", {"gltf"}, nullptr, VOX_FORMAT_FLAG_MESH},
-												 {"", {}, nullptr, 0u}};
-	return desc;
+	static core::DynamicArray<io::FormatDescription> desc;
+	if (desc.empty()) {
+		for (const io::FormatDescription *d = voxelformat::voxelLoad(); d->valid(); ++d) {
+			if (d->flags & VOX_FORMAT_FLAG_SAVE) {
+				desc.push_back(*d);
+			}
+		}
+		desc.push_back({"", {}, nullptr, 0u});
+	}
+	return desc.data();
 }
 
 static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint32_t magic) {
 	for (const core::String &ext : desc.exts) {
 		// you only have to check one of the supported extensions here
-		if (ext == "vengi") {
+		if (ext == vengi().mainExtension()) {
 			return core::make_shared<VENGIFormat>();
-		} else if (ext == "qb") {
+		} else if (ext == qubicleBinary().mainExtension()) {
 			return core::make_shared<QBFormat>();
-		} else if (ext == "vox" && desc.name == magicaVoxel().name) {
+		} else if (ext == magicaVoxel().mainExtension() && desc.name == magicaVoxel().name) {
 			return core::make_shared<VoxFormat>();
-		} else if (ext == "vox") {
+		} else if (ext == slab6Vox().mainExtension()) {
 			return core::make_shared<SLAB6VoxFormat>();
-		} else if (ext == "qbt" || magic == FourCC('Q', 'B', ' ', '2')) {
+		} else if (ext == qubicleBinaryTree().mainExtension() || qubicleBinaryTree().isA(magic)) {
 			return core::make_shared<QBTFormat>();
-		} else if (ext == "kvx") {
+		} else if (ext == buildKVX().mainExtension()) {
 			return core::make_shared<KVXFormat>();
-		} else if (ext == "kv6") {
+		} else if (ext == buildKVX().mainExtension()) {
 			return core::make_shared<KV6Format>();
-		} else if (ext == "csv") {
+		} else if (ext == sproxelCSV().mainExtension()) {
 			return core::make_shared<SproxelFormat>();
-		} else if (ext == "cub") {
+		} else if (ext == cubeWorld().mainExtension()) {
 			return core::make_shared<CubFormat>();
-		} else if (ext == "gox") {
+		} else if (ext == goxel().mainExtension()) {
 			return core::make_shared<GoxFormat>();
-		} else if (ext == "scn") {
+		} else if (ext == animaToon().mainExtension()) {
 			return core::make_shared<AnimaToonFormat>();
-		} else if (ext == "mca") {
+		} else if (ext == minecraftRegion().mainExtension()) {
 			return core::make_shared<MCRFormat>();
-		} else if (ext == "mts") {
+		} else if (ext == minetest().mainExtension()) {
 			return core::make_shared<MTSFormat>();
-		} else if (ext == "dat") {
+		} else if (ext == minecraftLevelDat().mainExtension()) {
 			return core::make_shared<DatFormat>();
-		} else if (ext == "sment") {
+		} else if (ext == starMade().mainExtension()) {
 			return core::make_shared<SMFormat>();
-		} else if (ext == "vxm") {
+		} else if (ext == sandboxVXM().mainExtension()) {
 			return core::make_shared<VXMFormat>();
-		} else if (ext == "vxr") {
+		} else if (ext == sandboxVXR().mainExtension()) {
 			return core::make_shared<VXRFormat>();
-		} else if (ext == "vmax.zip") {
+		} else if (ext == voxelMax().mainExtension()) {
 			return core::make_shared<VMaxFormat>();
-		} else if (ext == "vxc") {
+		} else if (ext == sandboxCollection().mainExtension()) {
 			return core::make_shared<VXCFormat>();
-		} else if (ext == "vxt") {
+		} else if (ext == sandboxTilemap().mainExtension()) {
 			return core::make_shared<VXTFormat>();
-		} else if (ext == "vxl" && desc.name == tiberianSun().name) {
+		} else if (ext == tiberianSun().mainExtension() && desc.name == tiberianSun().name) {
 			return core::make_shared<VXLFormat>();
-		} else if (ext == "vxl" && desc.name == aceOfSpades().name) {
+		} else if (ext == aceOfSpades().mainExtension() && desc.name == aceOfSpades().name) {
 			return core::make_shared<AoSVXLFormat>();
-		} else if (ext == "csm" || ext == "nvm") {
+		} else if (ext == nicksVoxelModel().mainExtension() || ext == chronoVox().mainExtension()) {
 			return core::make_shared<CSMFormat>();
-		} else if (ext == "binvox") {
+		} else if (ext == binvox().mainExtension()) {
 			return core::make_shared<BinVoxFormat>();
-		} else if (ext == "qef") {
+		} else if (ext == qubicleExchange().mainExtension()) {
 			return core::make_shared<QEFFormat>();
-		} else if (ext == "qbcl") {
+		} else if (ext == qubicleProject().mainExtension()) {
 			return core::make_shared<QBCLFormat>();
-		} else if (ext == "obj") {
+		} else if (ext == wavefrontObj().mainExtension()) {
 			return core::make_shared<OBJFormat>();
-		} else if (ext == "stl") {
+		} else if (ext == standardTriangleLanguage().mainExtension()) {
 			return core::make_shared<STLFormat>();
-		} else if (ext == "bsp") {
+		} else if (ext == quakeBsp().mainExtension()) {
 			return core::make_shared<QuakeBSPFormat>();
-		} else if (ext == "ply") {
+		} else if (ext == polygonFileFormat().mainExtension()) {
 			return core::make_shared<PLYFormat>();
-		} else if (ext == "fbx") {
+		} else if (ext == fbx().mainExtension()) {
 			return core::make_shared<FBXFormat>();
-		} else if (ext == "md2") {
+		} else if (ext == quakeMd2().mainExtension()) {
 			return core::make_shared<MD2Format>();
-		} else if (ext == "schematic") {
+		} else if (ext == minecraftSchematic().mainExtension()) {
 			return core::make_shared<SchematicFormat>();
-		} else if (ext == "vbx") {
+		} else if (ext == voxelBuilder().mainExtension()) {
 			return core::make_shared<VBXFormat>();
-		} else if (ext == "xraw") {
+		} else if (ext == magicaVoxelXRAW().mainExtension()) {
 			return core::make_shared<XRawFormat>();
-		} else if (ext == "v3a") {
+		} else if (ext == voxel3D().mainExtension()) {
 			return core::make_shared<V3AFormat>();
-		} else if (ext == "pcubes" || ext == "3zh") {
+		} else if (ext == particubes().mainExtension() || ext == cubzh().mainExtension()) {
 			return core::make_shared<CubzhFormat>();
-		} else if (ext == "gltf" || ext == "glb" || ext == "vrm") {
+		} else if (gltf().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
@@ -397,6 +586,10 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 
 bool isMeshFormat(const io::FormatDescription &desc) {
 	return desc.flags & VOX_FORMAT_FLAG_MESH;
+}
+
+bool isAnimationSupported(const io::FormatDescription &desc) {
+	return desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 }
 
 bool isMeshFormat(const core::String &filename, bool save) {

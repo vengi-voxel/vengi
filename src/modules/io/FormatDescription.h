@@ -18,13 +18,20 @@ using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIP
 #define FORMAT_FLAG_ALL (1 << 0)
 #define FORMAT_FLAG_GROUP (1 << 1)
 
+// the format has a built-in renderer shot of the creating software
 #define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 8)
+// the format has a limited amount of colors or an embedded palette
 #define VOX_FORMAT_FLAG_PALETTE_EMBEDDED (1 << 9)
+// the format is a mesh format and no direct voxel format
 #define VOX_FORMAT_FLAG_MESH (1 << 10)
+// the format has support for animation and it is implemented
+#define VOX_FORMAT_FLAG_ANIMATION (1 << 11)
+// we also have saving implemented
+#define VOX_FORMAT_FLAG_SAVE (1 << 12)
 
 struct FormatDescription {
 	core::String name;						/**< the name of the format */
-	FormatDescriptionExtensions exts;		/**< the file extension - nullptr terminated list - all lower case */
+	FormatDescriptionExtensions exts;		/**< the file extension - all lower case */
 	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
 	uint32_t flags = 0u;					/**< flags for user defined properties */
 

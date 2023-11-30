@@ -115,7 +115,7 @@ core::Pair<core::String, bool> ShaderTool::getSource(const core::String& file) c
 }
 
 app::AppState ShaderTool::onRunning() {
-	const core::String& shaderfile         = getArgVal("--shader");
+	const core::String& shaderfile        = getArgVal("--shader");
 	const bool printIncludes              = hasArg("--printincludes");
 	if (!printIncludes) {
 		_glslangValidatorBin              = getArgVal("--glslang");
