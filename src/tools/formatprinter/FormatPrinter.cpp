@@ -3,11 +3,11 @@
  */
 
 #include "FormatPrinter.h"
-#include "SDL_stdinc.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
+#include <SDL_stdinc.h>
 
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -23,13 +23,35 @@ app::AppState FormatPrinter::onConstruct() {
 }
 
 template<class T>
-static void printStringArray(const T &array) {
+static void printJsonStringArray(const T &array) {
 	int i = 0;
 	for (const core::String &e : array) {
 		if (i != 0) {
 			printf(",");
 		}
 		printf("\"%s\"", e.c_str());
+		++i;
+	}
+}
+
+template<class T>
+static void printJsonMagicArray(const T &array) {
+	int i = 0;
+	for (const core::String &e : array) {
+		if (i != 0) {
+			printf(",");
+		}
+		printf("{");
+		if (SDL_isprint(e.first())) {
+			printf("\"type\": \"string\", \"value\": \"%s\"", e.c_str());
+		} else {
+			printf("\"type\": \"bytes\", \"value\": \"");
+			for (size_t i = 0; i < e.size(); ++i) {
+				printf("0x%02x", (int)e[i]);
+			}
+			printf("\"");
+		}
+		printf("}");
 		++i;
 	}
 }
@@ -128,9 +150,10 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 			printf("{");
 			printf("\"name\": \"%s\",", desc->name.c_str());
 			printf("\"extensions\": [");
-			printStringArray(desc->exts);
+			printJsonStringArray(desc->exts);
+			printf("],\"magics\": [");
+			printJsonMagicArray(desc->magics);
 			printf("]");
-			printf("}");
 			++i;
 		}
 		printf("]");
@@ -148,7 +171,9 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 			printf("{");
 			printf("\"name\": \"%s\",", desc->name.c_str());
 			printf("\"extensions\": [");
-			printStringArray(desc->exts);
+			printJsonStringArray(desc->exts);
+			printf("],\"magics\": [");
+			printJsonMagicArray(desc->magics);
 			printf("]");
 			printf("}");
 			++i;
@@ -168,7 +193,9 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 			printf("{");
 			printf("\"name\": \"%s\",", desc->name.c_str());
 			printf("\"extensions\": [");
-			printStringArray(desc->exts);
+			printJsonStringArray(desc->exts);
+			printf("],\"magics\": [");
+			printJsonMagicArray(desc->magics);
 			printf("],");
 			const core::String &m = uniqueMimetype(*desc);
 			printf("\"mimetype\": \"%s\",", m.c_str());
