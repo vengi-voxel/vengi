@@ -124,6 +124,7 @@ const jsonData = {
       "extensions": [
         "vengi"
       ],
+      "mimetype": "application/x-vengi",
       "animation": true,
       "save": true
     },
@@ -132,6 +133,7 @@ const jsonData = {
       "extensions": [
         "qb"
       ],
+      "mimetype": "application/x-qubicle-binary",
       "animation": false,
       "save": true
     },
@@ -140,6 +142,7 @@ const jsonData = {
       "extensions": [
         "vox"
       ],
+      "mimetype": "application/x-magicavoxel",
       "animation": false,
       "save": true
     },
@@ -148,6 +151,7 @@ const jsonData = {
       "extensions": [
         "qbt"
       ],
+      "mimetype": "application/x-qubicle-binary-tree",
       "animation": false,
       "save": true
     },
@@ -156,6 +160,7 @@ const jsonData = {
       "extensions": [
         "qbcl"
       ],
+      "mimetype": "application/x-qubicle-project",
       "animation": false,
       "save": true
     },
@@ -164,6 +169,7 @@ const jsonData = {
       "extensions": [
         "vxt"
       ],
+      "mimetype": "application/x-sandbox-voxedit-tilemap",
       "animation": false,
       "save": false
     },
@@ -172,6 +178,7 @@ const jsonData = {
       "extensions": [
         "vxc"
       ],
+      "mimetype": "application/x-sandbox-voxedit-collection",
       "animation": false,
       "save": false
     },
@@ -180,6 +187,7 @@ const jsonData = {
       "extensions": [
         "vxm"
       ],
+      "mimetype": "application/x-sandbox-voxedit-model",
       "animation": false,
       "save": true
     },
@@ -188,6 +196,7 @@ const jsonData = {
       "extensions": [
         "vxr"
       ],
+      "mimetype": "application/x-sandbox-voxedit-hierarchy",
       "animation": true,
       "save": true
     },
@@ -196,6 +205,7 @@ const jsonData = {
       "extensions": [
         "binvox"
       ],
+      "mimetype": "application/x-binvox",
       "animation": false,
       "save": true
     },
@@ -204,6 +214,7 @@ const jsonData = {
       "extensions": [
         "gox"
       ],
+      "mimetype": "application/x-goxel",
       "animation": false,
       "save": true
     },
@@ -212,6 +223,7 @@ const jsonData = {
       "extensions": [
         "cub"
       ],
+      "mimetype": "application/x-cubeworld",
       "animation": false,
       "save": true
     },
@@ -220,6 +232,7 @@ const jsonData = {
       "extensions": [
         "mts"
       ],
+      "mimetype": "application/x-minetest",
       "animation": false,
       "save": false
     },
@@ -229,6 +242,7 @@ const jsonData = {
         "mca",
         "mcr"
       ],
+      "mimetype": "application/x-minecraft-region",
       "animation": false,
       "save": false
     },
@@ -237,6 +251,7 @@ const jsonData = {
       "extensions": [
         "dat"
       ],
+      "mimetype": "application/x-minecraft-level-dat",
       "animation": false,
       "save": false
     },
@@ -247,6 +262,7 @@ const jsonData = {
         "schem",
         "nbt"
       ],
+      "mimetype": "application/x-minecraft-schematic",
       "animation": false,
       "save": false
     },
@@ -255,6 +271,7 @@ const jsonData = {
       "extensions": [
         "bsp"
       ],
+      "mimetype": "application/x-quake-bsp",
       "mesh": true,
       "animation": false,
       "save": false
@@ -264,6 +281,7 @@ const jsonData = {
       "extensions": [
         "md2"
       ],
+      "mimetype": "application/x-quake-2-model",
       "mesh": true,
       "animation": false,
       "save": false
@@ -273,6 +291,7 @@ const jsonData = {
       "extensions": [
         "fbx"
       ],
+      "mimetype": "application/x-fbx",
       "mesh": true,
       "animation": false,
       "save": true
@@ -282,6 +301,7 @@ const jsonData = {
       "extensions": [
         "csv"
       ],
+      "mimetype": "application/x-sproxel-csv",
       "animation": false,
       "save": true
     },
@@ -290,6 +310,7 @@ const jsonData = {
       "extensions": [
         "xraw"
       ],
+      "mimetype": "application/x-magicavoxel-xraw",
       "animation": false,
       "save": true
     },
@@ -298,6 +319,7 @@ const jsonData = {
       "extensions": [
         "sment"
       ],
+      "mimetype": "application/x-starmade",
       "animation": false,
       "save": false
     },
@@ -306,6 +328,7 @@ const jsonData = {
       "extensions": [
         "scn"
       ],
+      "mimetype": "application/x-animatoon",
       "animation": true,
       "save": false
     },
@@ -314,6 +337,7 @@ const jsonData = {
       "extensions": [
         "vbx"
       ],
+      "mimetype": "application/x-voxelbuilder",
       "animation": false,
       "save": false
     },
@@ -322,6 +346,7 @@ const jsonData = {
       "extensions": [
         "obj"
       ],
+      "mimetype": "application/x-wavefront-object",
       "mesh": true,
       "animation": false,
       "save": true
@@ -333,6 +358,7 @@ const jsonData = {
         "glb",
         "vrm"
       ],
+      "mimetype": "application/x-gl-transmission-format",
       "mesh": true,
       "animation": true,
       "save": true
@@ -342,6 +368,7 @@ const jsonData = {
       "extensions": [
         "stl"
       ],
+      "mimetype": "application/x-standard-triangle-language",
       "mesh": true,
       "animation": false,
       "save": true
@@ -351,6 +378,7 @@ const jsonData = {
       "extensions": [
         "ply"
       ],
+      "mimetype": "application/x-polygon-file-format",
       "mesh": true,
       "animation": false,
       "save": true
@@ -360,6 +388,7 @@ const jsonData = {
       "extensions": [
         "kvx"
       ],
+      "mimetype": "application/x-build-engine",
       "animation": false,
       "save": true
     },
@@ -369,6 +398,7 @@ const jsonData = {
         "pcubes",
         "particubes"
       ],
+      "mimetype": "application/x-particubes",
       "animation": false,
       "save": false
     },
@@ -377,6 +407,7 @@ const jsonData = {
       "extensions": [
         "3zh"
       ],
+      "mimetype": "application/x-cubzh",
       "animation": false,
       "save": true
     },
@@ -385,6 +416,7 @@ const jsonData = {
       "extensions": [
         "v3a"
       ],
+      "mimetype": "application/x-voxel3d",
       "animation": false,
       "save": true
     },
@@ -393,6 +425,7 @@ const jsonData = {
       "extensions": [
         "kv6"
       ],
+      "mimetype": "application/x-aceofspades",
       "animation": false,
       "save": true
     },
@@ -401,6 +434,7 @@ const jsonData = {
       "extensions": [
         "vxl"
       ],
+      "mimetype": "application/x-tiberian-sun",
       "animation": true,
       "save": true
     },
@@ -409,6 +443,7 @@ const jsonData = {
       "extensions": [
         "vxl"
       ],
+      "mimetype": "application/x-aceofspades-vxl",
       "animation": false,
       "save": true
     },
@@ -417,6 +452,7 @@ const jsonData = {
       "extensions": [
         "qef"
       ],
+      "mimetype": "application/x-qubicle-exchange",
       "animation": false,
       "save": true
     },
@@ -425,6 +461,7 @@ const jsonData = {
       "extensions": [
         "csm"
       ],
+      "mimetype": "application/x-chronovox",
       "animation": false,
       "save": false
     },
@@ -433,6 +470,7 @@ const jsonData = {
       "extensions": [
         "nvm"
       ],
+      "mimetype": "application/x-nicks-voxel-model",
       "animation": false,
       "save": false
     },
@@ -441,6 +479,7 @@ const jsonData = {
       "extensions": [
         "vox"
       ],
+      "mimetype": "application/x-slab6-vox",
       "animation": false,
       "save": true
     },
@@ -450,6 +489,7 @@ const jsonData = {
         "vmax.zip",
         "vmaxb"
       ],
+      "mimetype": "application/x-voxelmax",
       "animation": false,
       "save": false
     }

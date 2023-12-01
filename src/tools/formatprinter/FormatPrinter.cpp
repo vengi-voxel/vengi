@@ -3,10 +3,10 @@
  */
 
 #include "FormatPrinter.h"
+#include "SDL_stdinc.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
-#include "palette/Palette.h"
 #include "voxelformat/VolumeFormat.h"
 
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
@@ -18,6 +18,7 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--palette").setDescription("Print the supported palettes");
 	registerArg("--image").setDescription("Print the supported image");
 	registerArg("--voxel").setDescription("Print the supported voxel formats");
+	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file");
 	return Super::onConstruct();
 }
 
@@ -46,7 +47,7 @@ static bool voxelSaveSupported(const io::FormatDescription &desc) {
 			}
 			++foundExtensionMatch;
 			Log::debug("Found save format by extension %s but it does not match by name %s vs %s", ext.c_str(),
-						desc.name.c_str(), d->name.c_str());
+					   desc.name.c_str(), d->name.c_str());
 			break;
 		}
 		Log::debug("Found matches for %s with %i extensions", desc.name.c_str(), foundExtensionMatch);
@@ -58,13 +59,64 @@ static bool voxelSaveSupported(const io::FormatDescription &desc) {
 }
 
 app::AppState FormatPrinter::onRunning() {
-	const bool palette = hasArg("--palette");
-	const bool image = hasArg("--image");
-	const bool voxel = hasArg("--voxel");
-	if (!palette && !image && !voxel) {
-		usage();
-		return app::AppState::Cleanup;
+	if (hasArg("--mimeinfo")) {
+		// this is only for voxels
+		printMimeInfo();
+	} else {
+		const bool palette = hasArg("--palette");
+		const bool image = hasArg("--image");
+		const bool voxel = hasArg("--voxel");
+		if (!palette && !image && !voxel) {
+			usage();
+			return app::AppState::Cleanup;
+		}
+		printJson(palette, image, voxel);
 	}
+	return app::AppState::Cleanup;
+}
+
+core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
+	// TODO: maybe add a mimetype to the format description
+	core::String name = desc.name.toLower();
+	if (name.contains(" ")) {
+		core::string::replaceAllChars(name, ' ', '-');
+	}
+	core::String mt = core::string::format("application/x-%s", name.c_str());
+	if (_uniqueMimetypes.has(mt)) {
+		mt += "-" + desc.mainExtension();
+	}
+	_uniqueMimetypes.insert(mt);
+	return mt;
+}
+
+void FormatPrinter::printMimeInfo() {
+	_uniqueMimetypes.clear();
+	printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+	printf("<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n");
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		const core::String &m = uniqueMimetype(*desc);
+		printf("\t<mime-type type=\"%s\">\n", m.c_str());
+		printf("\t\t<comment>%s</comment>\n", desc->name.c_str());
+		for (const core::String &e : desc->exts) {
+			printf("\t\t<glob pattern=\"*.%s\"/>\n", e.c_str());
+		}
+		for (const core::String &e : desc->magics) {
+			printf("\t\t<magic priority=\"50\">\n");
+			if (SDL_isprint(e.first())) {
+				printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", e.c_str());
+			} else {
+				for (size_t i = 0; i < e.size(); ++i) {
+					printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"%i\"/>\n", (int)i, (int)e[i]);
+				}
+			}
+			printf("\t\t</magic>\n");
+		}
+		printf("\t</mime-type>\n");
+	}
+	printf("</mime-info>\n");
+}
+
+void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 	printf("{");
 	if (palette) {
 		printf("\"palettes\": [");
@@ -118,12 +170,8 @@ app::AppState FormatPrinter::onRunning() {
 			printf("\"extensions\": [");
 			printStringArray(desc->exts);
 			printf("],");
-			// TODO: maybe add a mimetype to the format description
-			core::String name = desc->name.toLower();
-			if (name.contains(" ")) {
-				core::string::replaceAllChars(name, ' ', '-');
-			}
-			printf("\"mimetype\": \"application/x-%s\",", name.c_str());
+			const core::String &m = uniqueMimetype(*desc);
+			printf("\"mimetype\": \"%s\",", m.c_str());
 			if (voxelformat::isMeshFormat(*desc)) {
 				printf("\"mesh\": true,");
 			}
@@ -143,7 +191,6 @@ app::AppState FormatPrinter::onRunning() {
 		printf("]");
 	}
 	printf("}\n");
-	return app::AppState::Cleanup;
 }
 
 int main(int argc, char *argv[]) {

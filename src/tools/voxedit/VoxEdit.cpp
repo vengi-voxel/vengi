@@ -138,7 +138,7 @@ app::AppState VoxEdit::onConstruct() {
 			_paletteFormats.push_back(*desc);
 		}
 	}
-	_paletteFormats.push_back(io::FormatDescription{"", {}, nullptr, 0u});
+	_paletteFormats.push_back(io::FormatDescription{"", {}, {}, 0u});
 
 	voxedit::sceneMgr().construct();
 

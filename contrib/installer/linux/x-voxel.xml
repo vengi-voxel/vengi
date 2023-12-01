@@ -1,200 +1,284 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="application/x-cubeworld">
-    <comment>Voxel model CubeWorld</comment>
-    <glob pattern="*.cub"/>
-  </mime-type>
-  <mime-type type="application/x-binvox">
-    <comment>Voxel model binvox</comment>
-    <glob pattern="*.binvox"/>
-  </mime-type>
-  <mime-type type="application/x-polygonfileformat">
-    <comment>Polygon File Format (Stanford Triangle Format)</comment>
-    <glob pattern="*.ply"/>
-  </mime-type>
-  <mime-type type="application/x-goxel">
-    <comment>Voxel model Goxel</comment>
-    <glob pattern="*.gox"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="GOX "/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-cubzh">
-    <comment>Cubzh voxel models</comment>
-    <glob pattern="*.3zh"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="CUBZH!"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-particubes">
-    <comment>Particubes voxel models</comment>
-    <glob pattern="*.pcubes"/>
-	<glob pattern="*.particubes"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="PARTICUBES!"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-magicavoxel">
-    <comment>Voxel model MagicaVoxel</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="VOX "/>
-    </magic>
-    <glob pattern="*.vox"/>
-  </mime-type>
-  <mime-type type="application/x-magicavoxel-xraw">
-    <comment>MagicaVoxel XRAW</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="XRAW"/>
-    </magic>
-    <glob pattern="*.xraw"/>
-  </mime-type>
-  <mime-type type="application/x-voxelmax">
-    <comment>VoxelMax</comment>
-    <glob pattern="*.vmax.zip"/>
-    <glob pattern="*.vmaxb"/>
-  </mime-type>
-  <mime-type type="application/x-minetest">
-    <comment>Minetest Schematic File</comment>
-    <glob pattern="*.mts"/>
-  </mime-type>
-  <mime-type type="application/x-minecraftregion">
-    <comment>Minecraft region file</comment>
-    <glob pattern="*.mca"/>
-    <glob pattern="*.mcr"/>
-  </mime-type>
-  <mime-type type="application/x-minecraftlevel">
-    <comment>Minecraft level file</comment>
-    <glob pattern="*.dat"/>
-  </mime-type>
-  <mime-type type="application/x-minecraftschematic">
-    <comment>Minecraft schematic file</comment>
-    <glob pattern="*.schem"/>
-    <glob pattern="*.schematic"/>
-    <glob pattern="*.nbt"/>
-  </mime-type>
-  <mime-type type="application/x-starmade">
-    <comment>StarMade model</comment>
-    <glob pattern="*.sment"/>
-  </mime-type>
-  <mime-type type="application/x-qubicle-binary">
-    <comment>Voxel model Qubicle binary</comment>
-    <glob pattern="*.qb"/>
-  </mime-type>
-  <mime-type type="application/x-qubicle-tree">
-    <comment>Voxel model Qubicle tree</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="QB 2"/>
-    </magic>
-    <glob pattern="*.qbt"/>
-  </mime-type>
-  <mime-type type="application/x-qubicle-exchange">
-    <comment>Voxel model Qubicle Exchange Format</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="Qubicle Exchange Format"/>
-    </magic>
-    <glob pattern="*.qef"/>
-  </mime-type>
-  <mime-type type="application/x-qubicle-project">
-    <comment>Voxel model Qubicle Project</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="QBCL"/>
-    </magic>
-    <glob pattern="*.qbcl"/>
-  </mime-type>
-  <mime-type type="application/x-sandbox-voxedit">
-    <comment>Voxel model Sandbox VoxEdit</comment>
-    <glob pattern="*.vxm"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="VXM"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-sandbox-voxedit-vxr">
-    <comment>Voxel model Sandbox VoxEdit</comment>
-    <glob pattern="*.vxr"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="VXR"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-sandbox-voxedit-vxt">
-    <comment>Voxel tileset Sandbox VoxEdit</comment>
-    <glob pattern="*.vxt"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="VXT"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-sandbox-voxedit-vxc">
-    <comment>Voxel collection Sandbox VoxEdit</comment>
-    <glob pattern="*.vxc"/>
-    <magic priority="50">
-      <match type="string" offset="0" value="VXC"/>
-    </magic>
-  </mime-type>
-  <mime-type type="application/x-build-engine">
-    <comment>Voxel model used by the Build engine</comment>
-    <glob pattern="*.kvx"/>
-  </mime-type>
-  <mime-type type="application/x-voxel3d">
-    <comment>Voxel model used by Voxel3D</comment>
-    <glob pattern="*.v3a"/>
-  </mime-type>
-  <mime-type type="application/x-slab6">
-    <comment>Voxel model used by the SLAB6 editor</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="Kvxl"/>
-    </magic>
-    <glob pattern="*.kv6"/>
-  </mime-type>
-  <mime-type type="application/x-cc-vxl">
-    <comment>Voxel model used by Command and Conquer</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="Voxel Animation"/>
-    </magic>
-    <glob pattern="*.vxl"/>
-  </mime-type>
-  <mime-type type="application/x-aos-vxl">
-    <comment>Voxel model used by Ace Of Spades</comment>
-    <glob pattern="*.vxl"/>
-  </mime-type>
-  <mime-type type="application/x-chronvox-studio-csm">
-    <comment>Chronovox Studio Model</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value=".CSM"/>
-    </magic>
-    <glob pattern="*.csm"/>
-  </mime-type>
-  <mime-type type="application/x-chronvox-studio-nvm">
-    <comment>Nicks Voxel Model</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value=".NVM"/>
-    </magic>
-    <glob pattern="*.nvm"/>
-  </mime-type>
-  <mime-type type="application/x-vengi">
-    <comment>Vengi Voxel Scene</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="VENG"/>
-    </magic>
-    <glob pattern="*.vengi"/>
-  </mime-type>
-  <mime-type type="application/x-quake-md2">
-    <comment>Quake2 Model</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="IDP2"/>
-    </magic>
-    <glob pattern="*.md2"/>
-  </mime-type>
-  <mime-type type="application/x-quake2-bsp">
-    <comment>Quake2 Map</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="IBSP"/>
-    </magic>
-    <glob pattern="*.bsp"/>
-  </mime-type>
-  <mime-type type="application/x-voxelbuilder">
-    <comment>VoxelBuilder</comment>
-    <magic priority="50">
-      <match type="string" offset="0" value="; Vo"/>
-    </magic>
-    <glob pattern="*.vbx"/>
-  </mime-type>
+	<mime-type type="application/x-vengi">
+		<comment>Vengi</comment>
+		<glob pattern="*.vengi"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VENG"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-qubicle-binary">
+		<comment>Qubicle Binary</comment>
+		<glob pattern="*.qb"/>
+	</mime-type>
+	<mime-type type="application/x-magicavoxel">
+		<comment>MagicaVoxel</comment>
+		<glob pattern="*.vox"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VOX "/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-qubicle-binary-tree">
+		<comment>Qubicle Binary Tree</comment>
+		<glob pattern="*.qbt"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="QB 2"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-qubicle-project">
+		<comment>Qubicle Project</comment>
+		<glob pattern="*.qbcl"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="QBCL"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-sandbox-voxedit-tilemap">
+		<comment>Sandbox VoxEdit Tilemap</comment>
+		<glob pattern="*.vxt"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXT1"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-sandbox-voxedit-collection">
+		<comment>Sandbox VoxEdit Collection</comment>
+		<glob pattern="*.vxc"/>
+	</mime-type>
+	<mime-type type="application/x-sandbox-voxedit-model">
+		<comment>Sandbox VoxEdit Model</comment>
+		<glob pattern="*.vxm"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXMA"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXMB"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXMC"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM9"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM8"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM7"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM6"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM5"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM4"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXM3"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-sandbox-voxedit-hierarchy">
+		<comment>Sandbox VoxEdit Hierarchy</comment>
+		<glob pattern="*.vxr"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR9"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR8"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR7"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR6"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR5"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR4"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR3"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR2"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="VXR1"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-binvox">
+		<comment>BinVox</comment>
+		<glob pattern="*.binvox"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="#binvox"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-goxel">
+		<comment>Goxel</comment>
+		<glob pattern="*.gox"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="GOX "/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-cubeworld">
+		<comment>CubeWorld</comment>
+		<glob pattern="*.cub"/>
+	</mime-type>
+	<mime-type type="application/x-minetest">
+		<comment>Minetest</comment>
+		<glob pattern="*.mts"/>
+	</mime-type>
+	<mime-type type="application/x-minecraft-region">
+		<comment>Minecraft region</comment>
+		<glob pattern="*.mca"/>
+		<glob pattern="*.mcr"/>
+	</mime-type>
+	<mime-type type="application/x-minecraft-level-dat">
+		<comment>Minecraft level dat</comment>
+		<glob pattern="*.dat"/>
+	</mime-type>
+	<mime-type type="application/x-minecraft-schematic">
+		<comment>Minecraft schematic</comment>
+		<glob pattern="*.schematic"/>
+		<glob pattern="*.schem"/>
+		<glob pattern="*.nbt"/>
+	</mime-type>
+	<mime-type type="application/x-quake-bsp">
+		<comment>Quake BSP</comment>
+		<glob pattern="*.bsp"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IBSP"/>
+		</magic>
+		<magic priority="50">
+			<match type="byte" offset="0" value="29"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-quake-2-model">
+		<comment>Quake 2 Model</comment>
+		<glob pattern="*.md2"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IDP2"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-fbx">
+		<comment>FBX</comment>
+		<glob pattern="*.fbx"/>
+	</mime-type>
+	<mime-type type="application/x-sproxel-csv">
+		<comment>Sproxel csv</comment>
+		<glob pattern="*.csv"/>
+	</mime-type>
+	<mime-type type="application/x-magicavoxel-xraw">
+		<comment>Magicavoxel XRAW</comment>
+		<glob pattern="*.xraw"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="XRAW"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-starmade">
+		<comment>StarMade</comment>
+		<glob pattern="*.sment"/>
+	</mime-type>
+	<mime-type type="application/x-animatoon">
+		<comment>AnimaToon</comment>
+		<glob pattern="*.scn"/>
+	</mime-type>
+	<mime-type type="application/x-voxelbuilder">
+		<comment>VoxelBuilder</comment>
+		<glob pattern="*.vbx"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="; Voxel Builder file format (VBX)"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-wavefront-object">
+		<comment>Wavefront Object</comment>
+		<glob pattern="*.obj"/>
+	</mime-type>
+	<mime-type type="application/x-gl-transmission-format">
+		<comment>GL Transmission Format</comment>
+		<glob pattern="*.gltf"/>
+		<glob pattern="*.glb"/>
+		<glob pattern="*.vrm"/>
+	</mime-type>
+	<mime-type type="application/x-standard-triangle-language">
+		<comment>Standard Triangle Language</comment>
+		<glob pattern="*.stl"/>
+	</mime-type>
+	<mime-type type="application/x-polygon-file-format">
+		<comment>Polygon File Format</comment>
+		<glob pattern="*.ply"/>
+	</mime-type>
+	<mime-type type="application/x-build-engine">
+		<comment>Build engine</comment>
+		<glob pattern="*.kvx"/>
+	</mime-type>
+	<mime-type type="application/x-particubes">
+		<comment>Particubes</comment>
+		<glob pattern="*.pcubes"/>
+		<glob pattern="*.particubes"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="PARTICUBES!"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-cubzh">
+		<comment>Cubzh</comment>
+		<glob pattern="*.3zh"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="CUBZH!"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-voxel3d">
+		<comment>Voxel3D</comment>
+		<glob pattern="*.v3a"/>
+	</mime-type>
+	<mime-type type="application/x-aceofspades">
+		<comment>AceOfSpades</comment>
+		<glob pattern="*.kv6"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="Kvxl"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-tiberian-sun">
+		<comment>Tiberian Sun</comment>
+		<glob pattern="*.vxl"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="Voxel Animation"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-aceofspades-vxl">
+		<comment>AceOfSpades</comment>
+		<glob pattern="*.vxl"/>
+	</mime-type>
+	<mime-type type="application/x-qubicle-exchange">
+		<comment>Qubicle Exchange</comment>
+		<glob pattern="*.qef"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="Qubicle Exchange Format"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-chronovox">
+		<comment>Chronovox</comment>
+		<glob pattern="*.csm"/>
+		<magic priority="50">
+			<match type="string" offset="0" value=".CSM"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-nicks-voxel-model">
+		<comment>Nicks Voxel Model</comment>
+		<glob pattern="*.nvm"/>
+		<magic priority="50">
+			<match type="string" offset="0" value=".NVM"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-slab6-vox">
+		<comment>SLAB6 vox</comment>
+		<glob pattern="*.vox"/>
+	</mime-type>
+	<mime-type type="application/x-voxelmax">
+		<comment>VoxelMax</comment>
+		<glob pattern="*.vmax.zip"/>
+		<glob pattern="*.vmaxb"/>
+	</mime-type>
 </mime-info>

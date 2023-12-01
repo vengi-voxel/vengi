@@ -82,7 +82,7 @@ TEST_F(FilesystemTest, testListDirectoryFilter) {
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpeg", "1"));
 	EXPECT_TRUE(fs.syswrite("listdirtestfilter/foobar.jpg", "1"));
 	core::DynamicArray<io::FilesystemEntry> entities;
-	const FormatDescription desc = {"", {"jpeg", "jpg"}, nullptr, 0u};
+	const FormatDescription desc = {"", {"jpeg", "jpg"}, {}, 0u};
 	const core::String &jpegFilePattern = convertToFilePattern(desc);
 	fs.list("listdirtestfilter/", entities, jpegFilePattern);
 	EXPECT_FALSE(entities.empty());

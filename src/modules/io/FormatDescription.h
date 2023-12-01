@@ -14,6 +14,8 @@ namespace io {
 
 #define MAX_FORMATDESCRIPTION_EXTENSIONS 8
 using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIPTION_EXTENSIONS>;
+#define MAX_FORMATDESCRIPTION_MAGICS 16
+using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION_MAGICS>;
 
 #define FORMAT_FLAG_ALL (1 << 0)
 #define FORMAT_FLAG_GROUP (1 << 1)
@@ -30,10 +32,10 @@ using FormatDescriptionExtensions = core::Vector<core::String, MAX_FORMATDESCRIP
 #define VOX_FORMAT_FLAG_SAVE (1 << 12)
 
 struct FormatDescription {
-	core::String name;						/**< the name of the format */
-	FormatDescriptionExtensions exts;		/**< the file extension - all lower case */
-	bool (*isA)(uint32_t magic) = nullptr;	/**< function to check whether a magic byte matches for the format description */
-	uint32_t flags = 0u;					/**< flags for user defined properties */
+	core::String name;				  /**< the name of the format */
+	FormatDescriptionExtensions exts; /**< the file extension - all lower case */
+	FormatDescriptionMagics magics;	  /**< magic bytes for the format description */
+	uint32_t flags = 0u;			  /**< flags for user defined properties */
 
 	// There are pseudo formats (like 'All supported') that are not valid format descriptions in the sense that they are not standing for a real format.
 	// These pseudo formats are used to group other formats together and usually don't have extensions.
@@ -84,7 +86,7 @@ struct FileDescription {
 };
 
 inline const io::FormatDescription& ALL_SUPPORTED() {
-	static const io::FormatDescription v{"All supported", {}, nullptr, FORMAT_FLAG_ALL};
+	static const io::FormatDescription v{"All supported", {}, {}, FORMAT_FLAG_ALL};
 	return v;
 }
 
@@ -99,6 +101,7 @@ core::String convertToAllFilePattern(const FormatDescription *desc);
 core::String convertToFilePattern(const FormatDescription &desc);
 bool isImage(const core::String &file);
 bool isA(const core::String& file, const FormatDescription *desc);
+bool isA(const io::FormatDescription &desc, uint32_t magic);
 uint32_t loadMagic(io::SeekableReadStream &stream);
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic, const io::FormatDescription *descriptions);
 const io::FormatDescription *getDescription(const io::FileDescription &fileDesc, uint32_t magic, const io::FormatDescription *descriptions);

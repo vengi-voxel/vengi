@@ -85,7 +85,11 @@ tools/html/data.js: formatprinter
 	$(Q)echo -n "const jsonData = " > $@
 	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --palette --image --voxel | jq >> $@
 
-formats: tools/html/data.js
+contrib/installer/linux/x-voxel.xml: formatprinter
+	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --mimeinfo > $@
+
+formats: tools/html/data.js contrib/installer/linux/x-voxel.xml
+	$(Q)contrib/installer/linux/mimetypes.sh
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)

@@ -16,19 +16,19 @@ namespace format {
 const FormatDescription *images() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"Portable Network Graphics", {"png"}, nullptr, 0u},
-		{"JPEG", {"jpeg", "jpg"}, nullptr, 0u},
-		{"Targa image file", {"tga"}, nullptr, 0u},
-		{"DDS", {"dds"}, nullptr, 0u},
-		{"PKM", {"pkm"}, nullptr, 0u},
-		{"PVR", {"pvr"}, nullptr, 0u},
-		{"Bitmap", {"bmp"}, nullptr, 0u},
-		{"Photoshop", {"psd"}, nullptr, 0u},
-		{"Graphics Interchange Format", {"gif"}, nullptr, 0u},
-		{"Radiance rgbE", {"hdr"}, nullptr, 0u},
-		{"Softimage PIC", {"pic"}, nullptr, 0u},
-		{"Portable Anymap", {"pnm"}, nullptr, 0u},
-		{"", {}, nullptr, 0u}
+		{"Portable Network Graphics", {"png"}, {}, 0u},
+		{"JPEG", {"jpeg", "jpg"}, {}, 0u},
+		{"Targa image file", {"tga"}, {}, 0u},
+		{"DDS", {"dds"}, {}, 0u},
+		{"PKM", {"pkm"}, {}, 0u},
+		{"PVR", {"pvr"}, {}, 0u},
+		{"Bitmap", {"bmp"}, {}, 0u},
+		{"Photoshop", {"psd"}, {}, 0u},
+		{"Graphics Interchange Format", {"gif"}, {}, 0u},
+		{"Radiance rgbE", {"hdr"}, {}, 0u},
+		{"Softimage PIC", {"pic"}, {}, 0u},
+		{"Portable Anymap", {"pnm"}, {}, 0u},
+		{"", {}, {}, 0u}
 	};
 	// clang-format: on
 	return desc;
@@ -37,28 +37,28 @@ const FormatDescription *images() {
 const FormatDescription *fonts() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"TrueType Font", {"ttf"}, nullptr, 0u},
-		{"", {}, nullptr, 0u}
+		{"TrueType Font", {"ttf"}, {}, 0u},
+		{"", {}, {}, 0u}
 	};
 	// clang-format: on
 	return desc;
 }
 
 FormatDescription jascPalette() {
-	return {"JASC Palette", {"pal"}, [](uint32_t magic) { return magic == FourCC('J', 'A', 'S', 'C'); }, 0u};
+	return {"JASC Palette", {"pal"}, {"JASC"}, 0u};
 }
 
 const FormatDescription *palettes() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"Gimp Palette", {"gpl"}, nullptr, 0u},
-		{"Qubicle Palette", {"qsm"}, nullptr, 0u},
+		{"Gimp Palette", {"gpl"}, {}, 0u},
+		{"Qubicle Palette", {"qsm"}, {}, 0u},
 		jascPalette(),
-		{"Photoshop Palette", {"ase"}, [](uint32_t magic) { return magic == FourCC('A', 'S', 'E', 'F'); }, 0u},
-		{"RGB Palette", {"pal"}, nullptr, 0u},
-		{"CSV Palette", {"csv"}, nullptr, 0u},
-		{"Portable Network Graphics", {"png"}, [](uint32_t magic) { return magic == FourCC('\x89', 'P', 'N', 'G'); }, 0u},
-		{"", {}, nullptr, 0u}
+		{"Photoshop Palette", {"ase"}, {"ASEF"}, 0u},
+		{"RGB Palette", {"pal"}, {}, 0u},
+		{"CSV Palette", {"csv"}, {}, 0u},
+		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, 0u},
+		{"", {}, {}, 0u}
 	};
 	// clang-format: on
 	return desc;
@@ -67,8 +67,8 @@ const FormatDescription *palettes() {
 const FormatDescription *lua() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"LUA script", {"lua"}, nullptr, 0},
-		{"", {}, nullptr, 0u}
+		{"LUA script", {"lua"}, {}, 0},
+		{"", {}, {}, 0u}
 	};
 	// clang-format: on
 	return desc;
@@ -163,7 +163,7 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 					}
 					flags |= tmpDesc.flags;
 				}
-				const io::FormatDescription val{lastName, exts, nullptr, flags};
+				const io::FormatDescription val{lastName, exts, {}, flags};
 				groups.push_back(val);
 			}
 			lastName = firstWord;
@@ -180,7 +180,7 @@ void createGroupPatterns(const FormatDescription *inputDesc, core::DynamicArray<
 			}
 			flags |= tmpDesc.flags;
 		}
-		const io::FormatDescription val{lastName, exts, nullptr, flags};
+		const io::FormatDescription val{lastName, exts, {}, flags};
 		groups.push_back(val);
 	}
 }
@@ -222,6 +222,20 @@ uint32_t loadMagic(io::SeekableReadStream &stream) {
 	return magicWord;
 }
 
+bool isA(const io::FormatDescription &desc, uint32_t magic) {
+	for (const core::String &m : desc.magics) {
+		const size_t l = m.size();
+		const char f1 = l > 0 ? m[0] : '\0';
+		const char f2 = l > 1 ? m[1] : '\0';
+		const char f3 = l > 2 ? m[2] : '\0';
+		const char f4 = l > 3 ? m[3] : '\0';
+		if (FourCC(f1, f2, f3, f4) == magic) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const io::FormatDescription *getDescription(const core::String &filename, uint32_t magic,
 											const io::FormatDescription *descriptions) {
 	const core::String ext = core::string::extractExtension(filename);
@@ -230,7 +244,7 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 		if (!desc->matchesExtension(ext) && !desc->matchesExtension(extFull)) {
 			continue;
 		}
-		if (magic > 0 && desc->isA && !desc->isA(magic)) {
+		if (magic > 0 && !desc->magics.empty() && !isA(*desc, magic)) {
 			Log::debug("File doesn't have the expected magic number");
 			continue;
 		}
@@ -239,10 +253,10 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 	if (magic > 0) {
 		// search again - but this time only the magic bytes...
 		for (const io::FormatDescription *desc = descriptions; desc->valid(); ++desc) {
-			if (!desc->isA) {
+			if (desc->magics.empty()) {
 				continue;
 			}
-			if (!desc->isA(magic)) {
+			if (!isA(*desc, magic)) {
 				continue;
 			}
 			return desc;
