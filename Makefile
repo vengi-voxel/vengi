@@ -88,9 +88,11 @@ tools/html/data.js: formatprinter
 contrib/installer/linux/x-voxel.xml: formatprinter
 	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --mimeinfo > $@
 	$(Q)contrib/installer/linux/mimetypes.sh
-	$(Q)contrib/installer/osx/mimetypes.sh
 
-formats: tools/html/data.js contrib/installer/linux/x-voxel.xml
+contrib/installer/osx/application.plist.in: formatprinter
+	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --plist > $@
+
+formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)

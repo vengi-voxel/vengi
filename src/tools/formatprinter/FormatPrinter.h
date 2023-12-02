@@ -15,6 +15,7 @@ private:
 	using Super = app::CommandlineApp;
 	void printJson(bool palette, bool image, bool voxel);
 	void printMimeInfo();
+	void printApplicationPlist();
 
 	core::StringSet _uniqueMimetypes;
 	core::String uniqueMimetype(const io::FormatDescription &desc);

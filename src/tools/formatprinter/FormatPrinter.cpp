@@ -18,7 +18,8 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--palette").setDescription("Print the supported palettes");
 	registerArg("--image").setDescription("Print the supported image");
 	registerArg("--voxel").setDescription("Print the supported voxel formats");
-	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file");
+	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats");
+	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
 	return Super::onConstruct();
 }
 
@@ -84,6 +85,8 @@ app::AppState FormatPrinter::onRunning() {
 	if (hasArg("--mimeinfo")) {
 		// this is only for voxels
 		printMimeInfo();
+	} else if (hasArg("--plist")) {
+		printApplicationPlist();
 	} else {
 		const bool palette = hasArg("--palette");
 		const bool image = hasArg("--image");
@@ -109,6 +112,65 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	}
 	_uniqueMimetypes.insert(mt);
 	return mt;
+}
+
+void FormatPrinter::printApplicationPlist() {
+	printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	printf("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n");
+	printf("<plist version=\"1.0\">\n");
+	printf("  <dict>\n");
+	printf("    <key>CFBundleDevelopmentRegion</key>\n");
+	printf("    <string>en-US</string>\n");
+	printf("    <key>CFBundleExecutable</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>\n");
+	printf("    <key>CFBundleShortVersionString</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>\n");
+	printf("    <key>CFBundleLongVersionString</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>\n");
+	printf("    <key>CFBundleIdentifier</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>\n");
+	printf("    <key>CFBundleInfoDictionaryVersion</key>\n");
+	printf("    <string>6.0</string>\n");
+	printf("    <key>CFBundleIconFile</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_ICON_FILE}</string>\n");
+	printf("    <key>NSHumanReadableCopyright</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_COPYRIGHT}</string>\n");
+	printf("    <key>CFBundleName</key>\n");
+	printf("    <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>\n");
+	printf("    <key>CFBundlePackageType</key>\n");
+	printf("    <string>APPL</string>\n");
+	printf("    <key>NSHighResolutionCapable</key>\n");
+	printf("    <true/>\n");
+	printf("    <key>NSRequiresAquaSystemAppearance</key>\n");
+	printf("    <false/>\n");
+	printf("    <key>CFBundleDocumentTypes</key>\n");
+	printf("    <array>\n");
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		const core::String &m = uniqueMimetype(*desc);
+		printf("      <dict>\n");
+		printf("        <key>CFBundleTypeName</key>\n");
+		printf("        <string>%s</string>\n", desc->name.c_str());
+		printf("        <key>CFBundleTypeIconFile</key>\n");
+		printf("        <string>icon.icns</string>\n");
+		printf("        <key>CFBundleTypeMIMETypes</key>\n");
+		printf("        <array>\n");
+		printf("          <string>%s</string>\n", m.c_str());
+		printf("        </array>\n");
+		printf("        <key>CFBundleTypeExtensions</key>\n");
+		printf("        <array>\n");
+		for (const core::String &e : desc->exts) {
+			printf("          <string>%s</string>\n", e.c_str());
+		}
+		printf("        </array>\n");
+		printf("        <key>CFBundleTypeRole</key>\n");
+		printf("        <string>Editor</string>\n");
+		printf("        <key>NSDocumentClass</key>\n");
+		printf("        <string>AppDocument</string>\n");
+		printf("      </dict>\n");
+	}
+	printf("    </array>\n");
+	printf("  </dict>\n");
+	printf("</plist>\n");
 }
 
 void FormatPrinter::printMimeInfo() {
