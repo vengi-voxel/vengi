@@ -47,8 +47,9 @@ static void printJsonMagicArray(const T &array) {
 			printf("\"type\": \"string\", \"value\": \"%s\"", e.c_str());
 		} else {
 			printf("\"type\": \"bytes\", \"value\": \"");
+			printf("0x");
 			for (size_t i = 0; i < e.size(); ++i) {
-				printf("0x%02x", (int)e[i]);
+				printf("%02X", (uint8_t)e[i]);
 			}
 			printf("\"");
 		}
@@ -216,6 +217,7 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 			printf("],\"magics\": [");
 			printJsonMagicArray(desc->magics);
 			printf("]");
+			printf("}");
 			++i;
 		}
 		printf("]");
