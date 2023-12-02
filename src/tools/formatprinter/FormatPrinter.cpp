@@ -113,9 +113,9 @@ app::AppState FormatPrinter::onRunning() {
 core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	// TODO: maybe add a mimetype to the format description
 	core::String name = desc.name.toLower();
-	if (name.contains(" ")) {
-		core::string::replaceAllChars(name, ' ', '-');
-	}
+	core::string::replaceAllChars(name, ' ', '-');
+	core::string::replaceAllChars(name, ':', '-');
+	core::string::replaceAllChars(name, '/', '-');
 	core::String mt = core::string::format("application/x-%s", name.c_str());
 	if (_uniqueMimetypes.has(mt)) {
 		mt += "-" + desc.mainExtension();
@@ -129,10 +129,12 @@ void FormatPrinter::printMarkdownTables() {
 	printf("\n");
 	printf("## Voxel formats\n");
 	printf("\n");
-	printf("> The `vengi` format is the best supported format. Saving into any other format might lose several details from your scene. This depends on the capabilities of the format and the completeness of the implementation for supporting that particular format.\n");
+	printf("> The `vengi` format is the best supported format. Saving into any other format might lose several details "
+		   "from your scene. This depends on the capabilities of the format and the completeness of the implementation "
+		   "for supporting that particular format.\n");
 	printf("\n");
-	printf("| Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |\n");
-	printf("| :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |\n");
+	printf("| Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations |\n");
+	printf("| :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- |\n");
 	core::DynamicArray<io::FormatDescription> formatDescriptions;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		formatDescriptions.push_back(*desc);
@@ -142,15 +144,13 @@ void FormatPrinter::printMarkdownTables() {
 		if (voxelformat::isMeshFormat(desc)) {
 			continue;
 		}
-		core::String spec;
 		const bool screenshot = desc.flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED;
 		const bool palette = desc.flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED;
 		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 		const bool save = voxelSaveSupported(desc);
-		printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s | %-72s |\n", desc.name.c_str(),
-			   desc.mainExtension().c_str(), "X", save ? "X" : " ", screenshot ? "X" : " ",
-			   palette ? "X" : " ",
-			   animation ? "X" : " ", spec.c_str());
+		printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s |\n", desc.name.c_str(),
+			   desc.mainExtension().c_str(), "X", save ? "X" : " ", screenshot ? "X" : " ", palette ? "X" : " ",
+			   animation ? "X" : " ");
 	}
 	printf("\n");
 	printf("## Mesh formats\n");
@@ -164,7 +164,7 @@ void FormatPrinter::printMarkdownTables() {
 		core::String spec;
 		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 		const bool save = voxelSaveSupported(desc);
-		printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(), " ",
+		printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(), "X",
 			   save ? "X" : " ", animation ? "X" : " ");
 	}
 	printf("\n");
@@ -179,7 +179,9 @@ void FormatPrinter::printMarkdownTables() {
 	}
 	formatDescriptions.sort(core::Greater<io::FormatDescription>());
 	for (const io::FormatDescription &desc : formatDescriptions) {
-		printf("| %-31s | %-9s | X       | %c      |\n", desc.name.c_str(), desc.exts[0].c_str(), (desc.flags & FORMAT_FLAG_SAVE) ? 'X' : ' ');
+		const bool save = desc.flags & FORMAT_FLAG_SAVE;
+		printf("| %-31s | %-9s | X       | %c      |\n", desc.name.c_str(), desc.mainExtension().c_str(),
+			   save ? 'X' : ' ');
 	}
 	printf("\n");
 	printf("## Images/textures\n");
@@ -198,7 +200,8 @@ void FormatPrinter::printMarkdownTables() {
 
 void FormatPrinter::printApplicationPlist() {
 	printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	printf("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n");
+	printf("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" "
+		   "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n");
 	printf("<plist version=\"1.0\">\n");
 	printf("  <dict>\n");
 	printf("    <key>CFBundleDevelopmentRegion</key>\n");

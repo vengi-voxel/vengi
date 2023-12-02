@@ -16,8 +16,8 @@ namespace format {
 const FormatDescription *images() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"Portable Network Graphics", {"png"}, {}, 0u},
-		{"JPEG", {"jpeg", "jpg"}, {}, 0u},
+		{"Portable Network Graphics", {"png"}, {}, FORMAT_FLAG_SAVE},
+		{"JPEG", {"jpeg", "jpg"}, {}, FORMAT_FLAG_SAVE},
 		{"Targa image file", {"tga"}, {}, 0u},
 		{"DDS", {"dds"}, {}, 0u},
 		{"PKM", {"pkm"}, {}, 0u},
@@ -45,19 +45,19 @@ const FormatDescription *fonts() {
 }
 
 FormatDescription jascPalette() {
-	return {"JASC Palette", {"pal"}, {"JASC"}, 0u};
+	return {"JASC Palette", {"pal"}, {"JASC"}, FORMAT_FLAG_SAVE};
 }
 
 const FormatDescription *palettes() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"Gimp Palette", {"gpl"}, {}, 0u},
+		{"Gimp Palette", {"gpl"}, {}, FORMAT_FLAG_SAVE},
 		{"Qubicle Palette", {"qsm"}, {}, 0u},
 		jascPalette(),
-		{"Photoshop Palette", {"ase"}, {"ASEF"}, 0u},
-		{"RGB Palette", {"pal"}, {}, 0u},
-		{"CSV Palette", {"csv"}, {}, 0u},
-		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, 0u},
+		{"Photoshop Palette", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE},
+		{"RGB Palette", {"pal"}, {}, FORMAT_FLAG_SAVE},
+		{"CSV Palette", {"csv"}, {}, FORMAT_FLAG_SAVE},
+		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE},
 		{"", {}, {}, 0u}
 	};
 	// clang-format: on
@@ -67,7 +67,7 @@ const FormatDescription *palettes() {
 const FormatDescription *lua() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"LUA script", {"lua"}, {}, 0},
+		{"LUA script", {"lua"}, {}, 0u},
 		{"", {}, {}, 0u}
 	};
 	// clang-format: on

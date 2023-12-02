@@ -321,12 +321,30 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
-        <string>Quake BSP</string>
+        <string>UFO:Alien Invasion</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-quake-bsp</string>
+          <string>application/x-ufo-alien-invasion</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bsp</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Quake 1</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quake-1</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>

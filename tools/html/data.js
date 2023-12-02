@@ -430,7 +430,7 @@ const jsonData = {
       "save": false
     },
     {
-      "name": "Quake BSP",
+      "name": "UFO:Alien Invasion",
       "extensions": [
         "bsp"
       ],
@@ -438,13 +438,25 @@ const jsonData = {
         {
           "type": "string",
           "value": "IBSP"
-        },
+        }
+      ],
+      "mimetype": "application/x-ufo-alien-invasion",
+      "mesh": true,
+      "animation": false,
+      "save": false
+    },
+    {
+      "name": "Quake 1",
+      "extensions": [
+        "bsp"
+      ],
+      "magics": [
         {
           "type": "bytes",
           "value": "0x1D"
         }
       ],
-      "mimetype": "application/x-quake-bsp",
+      "mimetype": "application/x-quake-1",
       "mesh": true,
       "animation": false,
       "save": false

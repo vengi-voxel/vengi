@@ -145,12 +145,16 @@
 		<glob pattern="*.schem"/>
 		<glob pattern="*.nbt"/>
 	</mime-type>
-	<mime-type type="application/x-quake-bsp">
-		<comment>Quake BSP</comment>
+	<mime-type type="application/x-ufo-alien-invasion">
+		<comment>UFO:Alien Invasion</comment>
 		<glob pattern="*.bsp"/>
 		<magic priority="50">
 			<match type="string" offset="0" value="IBSP"/>
 		</magic>
+	</mime-type>
+	<mime-type type="application/x-quake-1">
+		<comment>Quake 1</comment>
+		<glob pattern="*.bsp"/>
 		<magic priority="50">
 			<match type="byte" offset="0" value="29"/>
 		</magic>

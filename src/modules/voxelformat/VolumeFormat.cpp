@@ -111,8 +111,13 @@ static const io::FormatDescription &qubicleExchange() {
 	return f;
 }
 
-static const io::FormatDescription &quakeBsp() {
-	static io::FormatDescription f{"Quake 1/UFO:Alien Invasion", {"bsp"}, {"IBSP", "\x1d"}, VOX_FORMAT_FLAG_MESH};
+static const io::FormatDescription &ufoaiBsp() {
+	static io::FormatDescription f{"UFO:Alien Invasion", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
+static const io::FormatDescription &quake1Bsp() {
+	static io::FormatDescription f{"Quake 1", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
 	return f;
 }
 
@@ -317,7 +322,8 @@ const io::FormatDescription *voxelLoad() {
 												 minecraftRegion(),
 												 minecraftLevelDat(),
 												 minecraftSchematic(),
-												 quakeBsp(),
+												 ufoaiBsp(),
+												 quake1Bsp(),
 												 quakeMd2(),
 												 fbx(),
 												 sproxelCSV(),
@@ -374,7 +380,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<QBTFormat>();
 		} else if (ext == buildKVX().mainExtension()) {
 			return core::make_shared<KVXFormat>();
-		} else if (ext == buildKVX().mainExtension()) {
+		} else if (ext == aceOfSpadesKV6().mainExtension()) {
 			return core::make_shared<KV6Format>();
 		} else if (ext == sproxelCSV().mainExtension()) {
 			return core::make_shared<SproxelFormat>();
@@ -418,7 +424,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<OBJFormat>();
 		} else if (ext == standardTriangleLanguage().mainExtension()) {
 			return core::make_shared<STLFormat>();
-		} else if (ext == quakeBsp().mainExtension()) {
+		} else if (ext == ufoaiBsp().mainExtension() || ext == quake1Bsp().mainExtension()) {
 			return core::make_shared<QuakeBSPFormat>();
 		} else if (ext == polygonFileFormat().mainExtension()) {
 			return core::make_shared<PLYFormat>();
