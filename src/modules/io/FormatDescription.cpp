@@ -100,6 +100,10 @@ bool FormatDescription::operator<(const FormatDescription &rhs) const {
 	return name < rhs.name;
 }
 
+bool FormatDescription::operator>(const FormatDescription &rhs) const {
+	return name > rhs.name;
+}
+
 core::String FormatDescription::wildCard() const {
 	core::String pattern;
 	for (size_t i = 0; i < exts.size(); ++i) {

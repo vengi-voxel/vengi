@@ -19,6 +19,7 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 
 #define FORMAT_FLAG_ALL (1 << 0)
 #define FORMAT_FLAG_GROUP (1 << 1)
+#define FORMAT_FLAG_SAVE (1 << 2)
 
 // the format has a built-in renderer shot of the creating software
 #define VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED (1 << 8)
@@ -29,7 +30,6 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 // the format has support for animation and it is implemented
 #define VOX_FORMAT_FLAG_ANIMATION (1 << 11)
 // we also have saving implemented
-#define VOX_FORMAT_FLAG_SAVE (1 << 12)
 
 struct FormatDescription {
 	core::String name;				  /**< the name of the format */
@@ -43,6 +43,7 @@ struct FormatDescription {
 		return !name.empty() && !exts.empty();
 	}
 	bool operator<(const FormatDescription &rhs) const;
+	bool operator>(const FormatDescription &rhs) const;
 
 	bool operator==(const FormatDescription &rhs) const {
 		if (name.empty() || rhs.name.empty()) {

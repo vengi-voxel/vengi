@@ -59,7 +59,7 @@
 namespace voxelformat {
 
 const io::FormatDescription &aceOfSpades() {
-	static io::FormatDescription f{"AceOfSpades", {"vxl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"AceOfSpades", {"vxl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -67,25 +67,25 @@ const io::FormatDescription &tiberianSun() {
 	static io::FormatDescription f{"Tiberian Sun",
 								   {"vxl"},
 								   {"Voxel Animation"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 const io::FormatDescription &qubicleBinary() {
 	static io::FormatDescription f{
-		"Qubicle Binary", {"qb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"Qubicle Binary", {"qb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 const io::FormatDescription &magicaVoxel() {
 	static io::FormatDescription f{
-		"MagicaVoxel", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"MagicaVoxel", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 const io::FormatDescription &qubicleBinaryTree() {
 	static io::FormatDescription f{
-		"Qubicle Binary Tree", {"qbt"}, {"QB 2"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"Qubicle Binary Tree", {"qbt"}, {"QB 2"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -93,7 +93,7 @@ const io::FormatDescription &vengi() {
 	static io::FormatDescription f{"Vengi",
 								   {"vengi"},
 								   {"VENG"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -102,17 +102,17 @@ static const io::FormatDescription &qubicleProject() {
 								   {"qbcl"},
 								   {"QBCL"},
 								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
-									   VOX_FORMAT_FLAG_SAVE};
+									   FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &qubicleExchange() {
-	static io::FormatDescription f{"Qubicle Exchange", {"qef"}, {"Qubicle Exchange Format"}, VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Qubicle Exchange", {"qef"}, {"Qubicle Exchange Format"}, FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &quakeBsp() {
-	static io::FormatDescription f{"Quake BSP", {"bsp"}, {"IBSP", "\x1d"}, VOX_FORMAT_FLAG_MESH};
+	static io::FormatDescription f{"Quake 1/UFO:Alien Invasion", {"bsp"}, {"IBSP", "\x1d"}, VOX_FORMAT_FLAG_MESH};
 	return f;
 }
 
@@ -125,7 +125,7 @@ static const io::FormatDescription &sandboxVXM() {
 	static io::FormatDescription f{"Sandbox VoxEdit Model",
 								   {"vxm"},
 								   {"VXMA", "VXMB", "VXMC", "VXM9", "VXM8", "VXM7", "VXM6", "VXM5", "VXM4", "VXM3"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -133,7 +133,7 @@ static const io::FormatDescription &sandboxVXR() {
 	static io::FormatDescription f{"Sandbox VoxEdit Hierarchy",
 								   {"vxr"},
 								   {"VXR9", "VXR8", "VXR7", "VXR6", "VXR5", "VXR4", "VXR3", "VXR2", "VXR1"},
-								   VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -148,7 +148,7 @@ static const io::FormatDescription &sandboxCollection() {
 }
 
 static const io::FormatDescription &binvox() {
-	static io::FormatDescription f{"BinVox", {"binvox"}, {"#binvox"}, VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"BinVox", {"binvox"}, {"#binvox"}, FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -157,12 +157,12 @@ static const io::FormatDescription &goxel() {
 								   {"gox"},
 								   {"GOX "},
 								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
-									   VOX_FORMAT_FLAG_SAVE};
+									   FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &cubeWorld() {
-	static io::FormatDescription f{"CubeWorld", {"cub"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"CubeWorld", {"cub"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -188,18 +188,18 @@ static const io::FormatDescription &minecraftSchematic() {
 }
 
 static io::FormatDescription fbx() {
-	static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &sproxelCSV() {
-	static io::FormatDescription f{"Sproxel csv", {"csv"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Sproxel csv", {"csv"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &magicaVoxelXRAW() {
 	static io::FormatDescription f{
-		"Magicavoxel XRAW", {"xraw"}, {"XRAW"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"Magicavoxel XRAW", {"xraw"}, {"XRAW"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -207,7 +207,7 @@ static const io::FormatDescription &gltf() {
 	static io::FormatDescription f{"GL Transmission Format",
 								   {"gltf", "glb", "vrm"},
 								   {},
-								   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | VOX_FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -224,13 +224,13 @@ static const io::FormatDescription &cubzh() {
 								   {"3zh"},
 								   {"CUBZH!"},
 								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
-									   VOX_FORMAT_FLAG_SAVE};
+									   FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &aceOfSpadesKV6() {
 	static io::FormatDescription f{
-		"AceOfSpades", {"kv6"}, {"Kvxl"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"AceOfSpades", {"kv6"}, {"Kvxl"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -257,29 +257,29 @@ static const io::FormatDescription &voxelBuilder() {
 }
 
 static const io::FormatDescription &wavefrontObj() {
-	static io::FormatDescription f{"Wavefront Object", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Wavefront Object", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &standardTriangleLanguage() {
 	static io::FormatDescription f{
-		"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+		"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &polygonFileFormat() {
-	static io::FormatDescription f{"Polygon File Format", {"ply"}, {}, VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Polygon File Format", {"ply"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &buildKVX() {
 	static io::FormatDescription f{
-		"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+		"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &voxel3D() {
-	static io::FormatDescription f{"Voxel3D", {"v3a"}, {}, VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Voxel3D", {"v3a"}, {}, FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -294,7 +294,7 @@ static const io::FormatDescription &nicksVoxelModel() {
 }
 
 static const io::FormatDescription &slab6Vox() {
-	static io::FormatDescription f{"SLAB6 vox", {"vox"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"SLAB6 vox", {"vox"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -349,7 +349,7 @@ const io::FormatDescription *voxelSave() {
 	static core::DynamicArray<io::FormatDescription> desc;
 	if (desc.empty()) {
 		for (const io::FormatDescription *d = voxelformat::voxelLoad(); d->valid(); ++d) {
-			if (d->flags & VOX_FORMAT_FLAG_SAVE) {
+			if (d->flags & FORMAT_FLAG_SAVE) {
 				desc.push_back(*d);
 			}
 		}

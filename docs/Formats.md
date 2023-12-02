@@ -6,76 +6,77 @@
 
 | Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |
 | :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |
-| Ace Of Spades              | vxl         | X       | X      | X          | X       |            | [spec](https://silverspaceship.com/aosmap/aos_file_format.html)          |
-| BinVox                     | binvox      | X       | X      | X          |         |            | [spec](https://www.patrickmin.com/binvox/binvox.html)                    |
-| Build engine               | kvx         | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
-| Chronovox-Studio           | csm         | X       |        | X          |         |            |                                                                          |
-| Command and Conquer        | vxl/hva     | X       | X      | X          | X       | X          | [spec](http://xhp.xwis.net/documents/VXL_Format.txt)                     |
-| CubeWorld                  | cub         | X       | X      | X          | X       |            |                                                                          |
+| AceOfSpades                | kv6         | X       | X      |            | X       |            |                                                                          |
+| AceOfSpades                | vxl         | X       | X      |            | X       |            |                                                                          |
+| AnimaToon                  | scn         | X       |        |            | X       | X          |                                                                          |
+| BinVox                     | binvox      | X       | X      |            |         |            |                                                                          |
+| Build engine               | kvx         | X       | X      |            | X       |            |                                                                          |
+| Chronovox                  | csm         | X       |        |            |         |            |                                                                          |
+| CubeWorld                  | cub         | X       | X      |            | X       |            |                                                                          |
+| Cubzh                      | 3zh         | X       | X      | X          | X       |            |                                                                          |
 | Goxel                      | gox         | X       | X      | X          | X       |            |                                                                          |
-| MagicaVoxel                | vox         | X       | X      | X          | X       |            | [spec](https://github.com/ephtracy/voxel-model)                          |
-| MagicaVoxel                | xraw        | X       | X      | X          | X       |            |                                                                          |
-| Minecraft Level            | dat         | X       |        | X          | X       |            |                                                                          |
-| Minecraft Region           | mcr         | X       | X      | X          | X       |            | [spec](https://minecraft.wiki/w/Region_file_format)                      |
-| Minecraft Schematics       | schematic   | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)                   |
-| Minecraft Schematics       | schem       | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)                   |
-| Minecraft Schematics       | nbt         | X       |        | X          | X       |            | [spec](https://minecraft.wiki/w/Schematic_file_format)                   |
-| Minetest                   | mts         | X       |        | X          | X       |            | [spec](https://dev.minetest.net/Minetest_Schematic_File_Format)          |
-| Nick's Voxel Model         | nvm         | X       |        | X          |         |            |                                                                          |
-| Particubes/Cubzh           | pcubes/3zh  | X       | X      | X          | X       |            | [spec](https://github.com/cubzh/cubzh/)                                  |
-| Qubicle Binary Tree        | qbt         | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qbt/)      |
-| Qubicle Binary             | qb          | X       | X      | X          | X       |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qb/)       |
-| Qubicle Exchange           | qef         | X       | X      | X          |         |            | [spec](https://getqubicle.com/qubicle/documentation/docs/file/qef/)      |
-| Qubicle Project            | qbcl        | X       | X      | X          | X       |            | [spec](https://gist.github.com/tostc/7f049207a2e5a7ccb714499702b5e2fd)   |
+| MagicaVoxel                | vox         | X       | X      |            | X       |            |                                                                          |
+| Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |                                                                          |
+| Minecraft level dat        | dat         | X       |        |            |         |            |                                                                          |
+| Minecraft region           | mca         | X       |        |            | X       |            |                                                                          |
+| Minecraft schematic        | schematic   | X       |        |            | X       |            |                                                                          |
+| Minetest                   | mts         | X       |        |            | X       |            |                                                                          |
+| Nicks Voxel Model          | nvm         | X       |        |            |         |            |                                                                          |
+| Particubes                 | pcubes      | X       |        | X          | X       |            |                                                                          |
+| Qubicle Binary             | qb          | X       | X      |            | X       |            |                                                                          |
+| Qubicle Binary Tree        | qbt         | X       | X      |            | X       |            |                                                                          |
+| Qubicle Exchange           | qef         | X       | X      |            |         |            |                                                                          |
+| Qubicle Project            | qbcl        | X       | X      | X          | X       |            |                                                                          |
+| SLAB6 vox                  | vox         | X       | X      |            | X       |            |                                                                          |
 | Sandbox VoxEdit Collection | vxc         | X       |        |            |         |            |                                                                          |
-| Sandbox VoxEdit Model      | vxm         | X       | X      | X          | X       |            |                                                                          |
-| Sandbox VoxEdit Hierarchy  | vxr         | X       | X      | X          |         | X          |                                                                          |
-| Sandbox VoxEdit Tileset    | vxt         | X       |        |            |         |            |                                                                          |
-| SLAB6                      | kv6         | X       | X      | X          | X       |            | [spec](https://github.com/vuolen/slab6-mirror/blob/master/slab6.txt)     |
-| Sproxel                    | csv         | X       | X      | X          | X       |            | [spec](https://github.com/emilk/sproxel/blob/master/ImportExport.cpp)    |
-| StarMade                   | sment       | X       |        | X          | X       |            | [spec](https://starmadepedia.net/wiki/Blueprint_File_Formats)            |
-| Vengi                      | vengi       | X       | X      | X          | X       | X          |                                                                          |
-| Voxel3d                    | v3a         | X       | X      |            |         |            |                                                                          |
-| VoxelBuilder               | vbx         | X       |        | X          | X       | X          |                                                                          |
-| VoxelMax                   | vmax        | X       |        | X          | X       |            |                                                                          |
+| Sandbox VoxEdit Hierarchy  | vxr         | X       | X      |            |         | X          |                                                                          |
+| Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |                                                                          |
+| Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |                                                                          |
+| Sproxel csv                | csv         | X       | X      |            | X       |            |                                                                          |
+| StarMade                   | sment       | X       |        |            | X       |            |                                                                          |
+| Tiberian Sun               | vxl         | X       | X      |            | X       | X          |                                                                          |
+| Vengi                      | vengi       | X       | X      |            | X       | X          |                                                                          |
+| Voxel3D                    | v3a         | X       | X      |            |         |            |                                                                          |
+| VoxelBuilder               | vbx         | X       |        |            |         |            |                                                                          |
+| VoxelMax                   | vmax.zip    | X       |        | X          | X       |            |                                                                          |
 
 ## Mesh formats
 
 | Name                       | Extension | Loading | Saving    | Animations |
 | :------------------------- | --------- | ------- | --------- | ---------- |
-| Filmbox                    | fbx       | X       | X (ascii) |            |
-| GL Transmission Format     | gltf, glb | X       | X         | X          |
-| Polygon File Format        | ply       | X       | X         |            |
-| Quake 1/UFO:Alien Invasion | bsp       | X       |           |            |
-| Quake 2 Model              | md2       | X       |           |            |
-| Standard Triangle Language | stl       | X       | X         |            |
-| Wavefront Object           | obj       | X       | X         |            |
+| FBX                        | fbx       |         | X         |            |
+| GL Transmission Format     | gltf      |         | X         | X          |
+| Polygon File Format        | ply       |         | X         |            |
+| Quake 2 Model              | md2       |         |           |            |
+| Quake BSP                  | bsp       |         |           |            |
+| Standard Triangle Language | stl       |         | X         |            |
+| Wavefront Object           | obj       |         | X         |            |
 
 ## Palettes
 
 | Name                            | Extension | Loading | Saving |
 | :------------------------------ | --------- | ------- | ------ |
-| Photoshop Adobe Swatch Exchange | ase       | X       |        |
-| Portable Network Graphics       | png       | X       | X      |
-| Gimp Palette                    | gpl       | X       | X      |
+| CSV Palette                     | csv       | X       |        |
+| Gimp Palette                    | gpl       | X       |        |
+| JASC Palette                    | pal       | X       |        |
+| Photoshop Palette               | ase       | X       |        |
+| Portable Network Graphics       | png       | X       |        |
 | Qubicle Palette                 | qsm       | X       |        |
-| Paintshop Pro Palette (JASC)    | pal       | X       | X      |
-| RGB Palette                     | pal       | X       | X      |
-| CSV Palette                     | csv       | X       | X      |
+| RGB Palette                     | pal       | X       |        |
 
 ## Images/textures
 
 | Name                        | Extension |
 | :-------------------------- | --------- |
-| Portable Network Graphics   | png       |
-| JPEG                        | jpeg, jpg |
-| Targa image file            | tga       |
+| Bitmap                      | bmp       |
 | DDS                         | dds       |
+| Graphics Interchange Format | gif       |
+| JPEG                        | jpeg      |
 | PKM                         | pkm       |
 | PVR                         | pvr       |
-| Bitmap                      | bmp       |
 | Photoshop                   | psd       |
-| Graphics Interchange Format | gif       |
+| Portable Anymap             | pnm       |
+| Portable Network Graphics   | png       |
 | Radiance rgbE               | hdr       |
 | Softimage PIC               | pic       |
-| Portable Anymap             | pnm       |
+| Targa image file            | tga       |

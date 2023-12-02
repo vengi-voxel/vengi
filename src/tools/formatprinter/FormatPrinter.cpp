@@ -3,8 +3,10 @@
  */
 
 #include "FormatPrinter.h"
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
 #include <SDL_stdinc.h>
@@ -19,6 +21,7 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--image").setDescription("Print the supported image");
 	registerArg("--voxel").setDescription("Print the supported voxel formats");
 	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats");
+	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats");
 	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
 	return Super::onConstruct();
 }
@@ -59,6 +62,10 @@ static void printJsonMagicArray(const T &array) {
 }
 
 static bool voxelSaveSupported(const io::FormatDescription &desc) {
+	if ((desc.flags & FORMAT_FLAG_SAVE) == 0) {
+		Log::debug("Format %s does not support saving", desc.name.c_str());
+		return false;
+	}
 	for (const io::FormatDescription *d = voxelformat::voxelSave(); d->valid(); ++d) {
 		int foundExtensionMatch = 0;
 		for (const core::String &ext : d->exts) {
@@ -86,6 +93,8 @@ app::AppState FormatPrinter::onRunning() {
 	if (hasArg("--mimeinfo")) {
 		// this is only for voxels
 		printMimeInfo();
+	} else if (hasArg("--markdown")) {
+		printMarkdownTables();
 	} else if (hasArg("--plist")) {
 		printApplicationPlist();
 	} else {
@@ -113,6 +122,78 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	}
 	_uniqueMimetypes.insert(mt);
 	return mt;
+}
+
+void FormatPrinter::printMarkdownTables() {
+	printf("# Formats\n");
+	printf("\n");
+	printf("## Voxel formats\n");
+	printf("\n");
+	printf("> The `vengi` format is the best supported format. Saving into any other format might lose several details from your scene. This depends on the capabilities of the format and the completeness of the implementation for supporting that particular format.\n");
+	printf("\n");
+	printf("| Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations | Spec                                                                     |\n");
+	printf("| :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- | ------------------------------------------------------------------------ |\n");
+	core::DynamicArray<io::FormatDescription> formatDescriptions;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		formatDescriptions.push_back(*desc);
+	}
+	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		if (voxelformat::isMeshFormat(desc)) {
+			continue;
+		}
+		core::String spec;
+		const bool screenshot = desc.flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED;
+		const bool palette = desc.flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED;
+		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
+		const bool save = voxelSaveSupported(desc);
+		printf("| %-26s | %-11s | %-7s | %-6s | %-10s | %-7s | %-10s | %-72s |\n", desc.name.c_str(),
+			   desc.mainExtension().c_str(), "X", save ? "X" : " ", screenshot ? "X" : " ",
+			   palette ? "X" : " ",
+			   animation ? "X" : " ", spec.c_str());
+	}
+	printf("\n");
+	printf("## Mesh formats\n");
+	printf("\n");
+	printf("| Name                       | Extension | Loading | Saving    | Animations |\n");
+	printf("| :------------------------- | --------- | ------- | --------- | ---------- |\n");
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		if (!voxelformat::isMeshFormat(desc)) {
+			continue;
+		}
+		core::String spec;
+		const bool animation = desc.flags & VOX_FORMAT_FLAG_ANIMATION;
+		const bool save = voxelSaveSupported(desc);
+		printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(), " ",
+			   save ? "X" : " ", animation ? "X" : " ");
+	}
+	printf("\n");
+	printf("## Palettes\n");
+	printf("\n");
+	printf("| Name                            | Extension | Loading | Saving |\n");
+	printf("| :------------------------------ | --------- | ------- | ------ |\n");
+
+	formatDescriptions.clear();
+	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+		formatDescriptions.push_back(*desc);
+	}
+	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		printf("| %-31s | %-9s | X       | %c      |\n", desc.name.c_str(), desc.exts[0].c_str(), (desc.flags & FORMAT_FLAG_SAVE) ? 'X' : ' ');
+	}
+	printf("\n");
+	printf("## Images/textures\n");
+	printf("\n");
+	printf("| Name                        | Extension |\n");
+	printf("| :-------------------------- | --------- |\n");
+	formatDescriptions.clear();
+	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+		formatDescriptions.push_back(*desc);
+	}
+	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		printf("| %-27s | %-9s |\n", desc.name.c_str(), desc.exts[0].c_str());
+	}
 }
 
 void FormatPrinter::printApplicationPlist() {

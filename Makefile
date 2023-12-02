@@ -81,6 +81,9 @@ endif
 %-run %-memcheckxml %-memcheck %-debug %-perf tests-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
+docs/Formats.md: formatprinter
+	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --markdown > $@
+
 tools/html/data.js: formatprinter
 	$(Q)echo -n "const jsonData = " > $@
 	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --palette --image --voxel | jq >> $@
@@ -92,7 +95,7 @@ contrib/installer/linux/x-voxel.xml: formatprinter
 contrib/installer/osx/application.plist.in: formatprinter
 	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --plist > $@
 
-formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in
+formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
