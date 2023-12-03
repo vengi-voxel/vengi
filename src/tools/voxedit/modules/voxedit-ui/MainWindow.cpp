@@ -490,11 +490,11 @@ void MainWindow::newSceneTemplates() {
 }
 
 void MainWindow::popupTipOfTheDay() {
-	ImGui::SetNextWindowSize(ImVec2(_app->fontSize() * 30, 0));
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_TIPOFTHEDAY)) {
 		const char *tip = getTip();
 		dialog(ICON_LC_LIGHTBULB, tip);
-		float height = (_app->fontSize() * 8.0f) - ImGui::GetCursorPosY();
+		float height = (ImGui::GetFontSize() * 8.0f) - ImGui::GetCursorPosY();
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
 		}
@@ -513,7 +513,7 @@ void MainWindow::popupTipOfTheDay() {
 }
 
 void MainWindow::popupWelcome() {
-	ImGui::SetNextWindowSize(ImVec2(_app->fontSize() * 30, 0));
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_WELCOME)) {
 		dialog(ICON_LC_LIGHTBULB, "Welcome to VoxEdit!");
 		ImGui::TextWrapped("The mission: Create a free, open-source and multi-platform voxel "
