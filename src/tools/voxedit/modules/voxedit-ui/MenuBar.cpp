@@ -178,6 +178,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			if (ImGui::MenuItem("Tip of the day")) {
 				_popupTipOfTheDay = true;
 			}
+			if (ImGui::MenuItem("Welcome screen")) {
+				_popupWelcome = true;
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_LC_INFO " About")) {
 				_popupAbout = true;

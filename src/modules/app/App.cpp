@@ -7,6 +7,7 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Tokenizer.h"
 #include "core/Var.h"
@@ -267,6 +268,9 @@ AppState App::onConstruct() {
 	logVar->setHelp("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors.");
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
+	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
+	core::Var::get(cfg::AppVersion, "");
+
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
 	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {

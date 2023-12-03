@@ -79,6 +79,7 @@
 #define POPUP_TITLE_SCENE_SETTINGS "Scene settings##popuptitle"
 #define POPUP_TITLE_MODEL_NODE_SETTINGS "Model settings##popuptitle"
 #define POPUP_TITLE_TIPOFTHEDAY "Tip of the day##popuptitle"
+#define POPUP_TITLE_WELCOME "Welcome##popuptitle"
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
 #define POPUP_TITLE_ABOUT "About##popuptitle"
 
@@ -202,6 +203,12 @@ bool MainWindow::init() {
 	}
 
 	_popupTipOfTheDay = _tipOfTheDay->boolVal();
+
+	const core::VarPtr& appVersion = core::Var::getSafe(cfg::AppVersion);
+	if (appVersion->strVal().empty() || util::isNewerVersion(PROJECT_VERSION, appVersion->strVal())) {
+		appVersion->setVal(PROJECT_VERSION);
+		_popupWelcome = true;
+	}
 
 #if ENABLE_RENDER_PANEL
 	_renderPanel.init();
@@ -505,6 +512,24 @@ void MainWindow::popupTipOfTheDay() {
 	}
 }
 
+void MainWindow::popupWelcome() {
+	ImGui::SetNextWindowSize(ImVec2(_app->fontSize() * 30, 0));
+	if (ImGui::BeginPopupModal(POPUP_TITLE_WELCOME)) {
+		dialog(ICON_LC_LIGHTBULB, "Welcome to VoxEdit!");
+		ImGui::TextWrapped("The mission: Create a free, open-source and multi-platform voxel "
+						   "editor with animation support for artists and developers.");
+		ImGui::Separator();
+		ImGui::TextWrapped("We would like to enable anonymous usage metrics to improve the editor. "
+						   "Please consider enabling it.");
+		MenuBar::metricOption();
+		ImGui::Separator();
+		if (ImGui::Button(ICON_LC_X " Close##welcome")) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
 void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		if (ImGui::CollapsingHeader("Templates", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -707,6 +732,11 @@ void MainWindow::registerPopups() {
 		_popupTipOfTheDay = false;
 		_menuBar._popupTipOfTheDay = false;
 	}
+	if (_popupWelcome || _menuBar._popupWelcome) {
+		ImGui::OpenPopup(POPUP_TITLE_WELCOME);
+		_popupWelcome = false;
+		_menuBar._popupWelcome = false;
+	}
 	if (_menuBar._popupAbout) {
 		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
 		_menuBar._popupAbout = false;
@@ -721,6 +751,7 @@ void MainWindow::registerPopups() {
 	popupVolumeSplit();
 	popupTipOfTheDay();
 	popupAbout();
+	popupWelcome();
 }
 
 void MainWindow::popupAbout() {

@@ -27,6 +27,7 @@ public:
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 	bool _popupSceneSettings = false;
 	bool _popupTipOfTheDay = false;
+	bool _popupWelcome = false;
 	bool _popupAbout = false;
 };
 

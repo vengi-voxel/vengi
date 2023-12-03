@@ -52,6 +52,7 @@ private:
 	bool _popupFailedToSave = false;
 	bool _popupVolumeSplit = false;
 	bool _popupTipOfTheDay = false;
+	bool _popupWelcome = false;
 	bool _popupUnsavedChangesQuit = false;
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
@@ -115,6 +116,7 @@ private:
 	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
 	void popupNewScene();
+	void popupWelcome();
 	void popupTipOfTheDay();
 	void popupFailedSave();
 	void popupUnsavedChanges();
