@@ -28,7 +28,7 @@ General:
    - Extended support for the Gimp `gpl` palette format to support the AseSprite alpha channel extension
    - Added support to collect anonymous metrics (disabled by default)
 
-VoxConvet:
+VoxConvert:
 
    - Improved `--export-models` to work with the output format given by `--output`
 
