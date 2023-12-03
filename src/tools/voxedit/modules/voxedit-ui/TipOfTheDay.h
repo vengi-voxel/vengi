@@ -18,7 +18,7 @@ static const char *TIPOFTHEDAY[]{
 	"Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats.",
 	"Drag a model from the assets panel to the stamp brush to use it.",
 	"You can reset the camera simply by pressing <cmd:resetcamera>.",
-	"The editor shows the last executed console command in the status bar. You can use these commands and bind when to keys.",
+	"The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys.",
 	"You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport.",
 	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel.",
 	"When importing meshes, you can switch between different voxelization methods in the options menu.",
