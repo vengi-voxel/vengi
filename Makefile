@@ -123,6 +123,7 @@ update-stb:
 	find contrib/libs/stb_image -type f -exec sed -i 's/[ \t]*$$//' {} \;
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
+	cp $(UPDATEDIR)/stb.sync/stb_rect_pack.h src/modules/scenegraph/external/stb_rect_pack.h
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)

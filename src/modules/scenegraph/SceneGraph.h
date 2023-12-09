@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SceneGraphNode.h"
+#include "core/DirtyState.h"
 #include "core/Pair.h"
 #include "core/collection/DynamicArray.h"
 
@@ -42,7 +43,7 @@ struct FrameTransform {
  * @sa SceneGraph
  * @sa SceneGraphNode
  */
-class SceneGraph {
+class SceneGraph : public core::DirtyState {
 protected:
 	SceneGraphNodes _nodes;
 	int _nextNodeId = 0;
@@ -63,6 +64,11 @@ public:
 
 	SceneGraph(SceneGraph&& other) noexcept;
 	SceneGraph &operator=(SceneGraph &&move) noexcept;
+
+	/**
+	 * @brief Aligns all model nodes next to other without overlapping and put them to the group
+	 */
+	void align(int padding = 2);
 
 	int activeNode() const;
 	bool setActiveNode(int nodeId);

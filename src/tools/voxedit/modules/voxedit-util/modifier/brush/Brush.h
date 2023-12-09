@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/DirtyState.h"
 #include "core/IComponent.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
@@ -33,11 +34,7 @@ struct BrushContext {
 	int gridResolution = 1;
 };
 
-class Brush : public core::IComponent {
-protected:
-	bool _dirty = false;
-	void markDirty();
-
+class Brush : public core::IComponent, public core::DirtyState {
 public:
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &ctx) = 0;
@@ -48,8 +45,6 @@ public:
 	 * @brief Determine whether the brush should get rendered
 	 */
 	virtual bool active() const;
-	bool dirty() const;
-	void markClean();
 	bool init() override;
 	void shutdown() override;
 };

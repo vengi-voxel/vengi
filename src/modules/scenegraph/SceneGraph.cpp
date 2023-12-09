@@ -6,9 +6,9 @@
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "core/Pair.h"
 #include "core/StringUtil.h"
 #include <glm/gtx/matrix_decompose.hpp>
+#include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -16,6 +16,9 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
+#define STB_RECT_PACK_IMPLEMENTATION
+#define STBRP_ASSERT core_assert
+#include "external/stb_rect_pack.h"
 
 namespace scenegraph {
 
@@ -840,6 +843,50 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skip
 								});
 	}
 	return MergedVolumePalette{merged, palette};
+}
+
+void SceneGraph::align(int padding) {
+	core::DynamicArray<stbrp_rect> stbRects;
+	int width = 0;
+	int depth = 0;
+	for (const auto &entry : nodes()) {
+		const SceneGraphNode &node = entry->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		const voxel::Region &region = node.region();
+		width += region.getWidthInVoxels() + padding;
+		depth += region.getDepthInVoxels() + padding;
+		stbrp_rect rect;
+		core_memset(&rect, 0, sizeof(rect));
+		rect.id = node.id();
+		rect.w = region.getWidthInVoxels() + padding;
+		rect.h = region.getDepthInVoxels() + padding;
+		stbRects.emplace_back(rect);
+	}
+	core::DynamicArray<stbrp_node> stbNodes;
+	stbNodes.resize(width);
+
+	stbrp_context context;
+	stbrp_init_target(&context, width / 4, depth / 4, stbNodes.data(), stbNodes.size());
+	if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) != 1) {
+		stbrp_init_target(&context, width / 2, depth / 2, stbNodes.data(), stbNodes.size());
+		if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) != 1) {
+			Log::warn("Could not pack rects for alignment the scene graph nodes");
+			return;
+		}
+	}
+	for (const stbrp_rect &rect : stbRects) {
+		if (!rect.was_packed) {
+			continue;
+		}
+		SceneGraphNode &n = node(rect.id);
+		n.transform().setWorldTranslation(glm::vec3(0.0f));
+		n.volume()->translate(glm::ivec3(0));
+		n.volume()->translate(glm::ivec3(padding + rect.x, 0, padding + rect.y));
+	}
+	updateTransforms();
+	markDirty();
 }
 
 } // namespace scenegraph

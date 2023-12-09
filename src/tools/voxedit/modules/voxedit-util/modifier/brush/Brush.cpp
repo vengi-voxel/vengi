@@ -6,20 +6,8 @@
 
 namespace voxedit {
 
-void Brush::markDirty() {
-	_dirty = true;
-}
-
 void Brush::reset() {
 	markDirty();
-}
-
-bool Brush::dirty() const {
-	return _dirty;
-}
-
-void Brush::markClean() {
-	_dirty = false;
 }
 
 void Brush::update(const BrushContext &ctx, double nowSeconds) {

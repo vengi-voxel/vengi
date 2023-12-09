@@ -854,6 +854,13 @@ static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraph_align(lua_State* s) {
+	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	int padding = (int)luaL_optinteger(s, 1, 2);
+	sceneGraph->align(padding);
+	return 0;
+}
+
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
 	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
@@ -1014,6 +1021,7 @@ static void prepareState(lua_State* s) {
 	clua_registerfuncsglobal(s, globalRegionFuncs, luaVoxel_metaregionglobal(), "g_region");
 
 	static const luaL_Reg sceneGraphFuncs[] = {
+		{"align", luaVoxel_scenegraph_align},
 		{"new", luaVoxel_scenegraph_new_node},
 		{"get", luaVoxel_scenegraph_get_node},
 		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},

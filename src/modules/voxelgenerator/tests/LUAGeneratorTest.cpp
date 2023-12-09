@@ -285,4 +285,9 @@ TEST_F(LUAGeneratorTest, testScriptThicken) {
 	runFile(sceneGraph, "thicken.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptAlign) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "align.lua");
+}
+
 } // namespace voxelgenerator

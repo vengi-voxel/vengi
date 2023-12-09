@@ -36,6 +36,7 @@ set(SRCS
 	Color.cpp Color.h
 	Common.cpp Common.h
 	CMYK.cpp CMYK.h
+	DirtyState.h
 	Enum.h
 	FixedString.h
 	FourCC.h

@@ -2309,6 +2309,11 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	if (!state) {
 		Log::warn("Failed to execute script");
 	}
+	if (_sceneGraph.dirty()) {
+		markDirty();
+		_sceneRenderer->clear();
+		_sceneGraph.markClean();
+	}
 	return state;
 }
 
