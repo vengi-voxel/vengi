@@ -643,6 +643,20 @@ static int luaVoxel_region_size(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_region_intersects(lua_State* s) {
+	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region2 = luaVoxel_toRegion(s, 2);
+	lua_pushboolean(s, voxel::intersects(*region, *region2));
+	return 1;
+}
+
+static int luaVoxel_region_contains(lua_State* s) {
+	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region2 = luaVoxel_toRegion(s, 2);
+	lua_pushboolean(s, region->containsRegion(*region2));
+	return 1;
+}
+
 static int luaVoxel_region_setmins(lua_State* s) {
 	voxel::Region* region = luaVoxel_toRegion(s, 1);
 	const glm::ivec3& mins = clua_tovec<glm::ivec3>(s, 2);
@@ -828,6 +842,18 @@ static int luaVoxel_region_gc(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
+	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+
+	lua_newtable(s);
+	for (const auto &entry : sceneGraph->nodes()) {
+		lua_pushinteger(s, entry->key);
+		lua_rawseti(s, -2, lua_rawlen(s, -2) + 1);
+	}
+
+	return 1;
+}
+
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
 	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
@@ -865,6 +891,9 @@ static int luaVoxel_scenegraph_get_node(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	if (!node->isModelNode()) {
+		return clua_error(s, "Node is no model node");
+	}
 	return luaVoxel_pushvolumewrapper(s, node);
 }
 
@@ -874,9 +903,27 @@ static int luaVoxel_scenegraphnode_palette(lua_State* s) {
 	return luaVoxel_pushpalette(s, palette);
 }
 
+static int luaVoxel_scenegraphnode_is_model(lua_State* s) {
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->isModelNode() ? 1 : 0);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
 	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushstring(s, node->name().c_str());
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_id(lua_State* s) {
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushinteger(s, node->id());
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_parent(lua_State* s) {
+	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushinteger(s, node->parent());
 	return 1;
 }
 
@@ -950,6 +997,8 @@ static void prepareState(lua_State* s) {
 		{"mins", luaVoxel_region_mins},
 		{"maxs", luaVoxel_region_maxs},
 		{"size", luaVoxel_region_size},
+		{"intersects", luaVoxel_region_intersects},
+		{"contains", luaVoxel_region_contains},
 		{"setMins", luaVoxel_region_setmins},
 		{"setMaxs", luaVoxel_region_setmaxs},
 		{"__tostring", luaVoxel_region_tostring},
@@ -967,13 +1016,17 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg sceneGraphFuncs[] = {
 		{"new", luaVoxel_scenegraph_new_node},
 		{"get", luaVoxel_scenegraph_get_node},
+		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
 
 	static const luaL_Reg sceneGraphNodeFuncs[] = {
 		{"name", luaVoxel_scenegraphnode_name},
+		{"id", luaVoxel_scenegraphnode_id},
+		{"parent", luaVoxel_scenegraphnode_parent},
 		{"volume", luaVoxel_scenegraphnode_volume},
+		{"isModel", luaVoxel_scenegraphnode_is_model},
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},

@@ -101,17 +101,34 @@ The order in the arguments table defines the order in which the arguments are pa
 
 The functions are:
 
+* `align()`: Allow to align all nodes on the floor next to each other without overlapping.
+
 * `new(name, region[, visible])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter.
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 
+* `nodeIds()`: Returns a table with all node ids of the current scene graph.
+
+```lua
+local allNodeIds = g_scenegraph.nodeIds()
+for i, nodeId in ipairs(allNodeIds) do
+  -- Do something with each nodeId
+end
+```
+
 ## SceneGraphNode
+
+* `id()`: Returns the id of the current node
+
+* `isModel()`: Returns true if the node is a model node (it has a volume attached)
 
 * `name()`: Returns the current name of the node.
 
 * `setName(string)`: Set the name of the node.
 
 * `palette()`: Returns the current palette of the node.
+
+* `parent()`: Returns the id of the parent node - or `-1` if no parent exists (root node)
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
@@ -192,6 +209,10 @@ The global `g_shape` supports a few shape generators:
 They are available as e.g. `g_shape.line([...])`, `g_shape.ellipse([...])` and so on.
 
 ## Region
+
+* `contains(region)`: Check whether the current region contains the given one. The test is inclusive such that a region is considered to be inside of itself.
+
+* `intersects(region)`: Check whether the current region intersects with the given one.
 
 * `mins()`: The lower boundary of the region (inclusive).
 
