@@ -500,8 +500,11 @@ bool App::hasEnoughMemory(size_t bytes) const {
 
 void App::bashCompletion() const {
 	Log::printf("_%s_completion() {\n", appname().c_str());
-	Log::printf("\tlocal cur prev\n");
+	Log::printf("\tlocal cur prev prev_prev\n");
 	Log::printf("\t_init_completion || return\n");
+	Log::printf("\tif [[ $cword -gt 2 ]]; then\n");
+	Log::printf("\t\tprev_prev=${words[cword - 2]}\n");
+	Log::printf("\tfi\n");
 
 	// command line arguments or built-in commands
 	Log::printf("\tlocal options=\"");
@@ -521,6 +524,13 @@ void App::bashCompletion() const {
 	});
 	Log::printf("\"\n");
 
+	// don't do auto completion on cvar values - we don't know them at this level
+	Log::printf("\tcase $prev_prev in\n");
+	Log::printf("\t-set)\n");
+	Log::printf("\t\treturn 0\n");
+	Log::printf("\t\t;;\n");
+	Log::printf("\tesac\n");
+
 	Log::printf("\tcase $prev in\n");
 	for (const Argument & arg : arguments()) {
 		if (arg.needsFile()) {
@@ -533,7 +543,6 @@ void App::bashCompletion() const {
 			Log::printf("\t\t;;\n");
 		}
 	}
-	// TODO: add support for the variable values - currently another tab tries to complete the next command
 	Log::printf("\t-set)\n");
 	Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$variable_names\" -- \"$cur\") )\n");
 	Log::printf("\t\t;;\n");
