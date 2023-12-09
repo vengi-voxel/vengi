@@ -6,6 +6,7 @@
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include <glm/gtx/matrix_decompose.hpp>
 #include "core/collection/DynamicArray.h"
@@ -864,12 +865,21 @@ void SceneGraph::align(int padding) {
 		rect.h = region.getDepthInVoxels() + padding;
 		stbRects.emplace_back(rect);
 	}
+	if (width == 0 || depth == 0) {
+		return;
+	}
+
+	if (stbRects.size() <= 1) {
+		return;
+	}
+
 	core::DynamicArray<stbrp_node> stbNodes;
 	stbNodes.resize(width);
 
 	stbrp_context context;
 	int divisor = 16;
 	for (int i = 0; i < 5; ++i) {
+		core_memset(&context, 0, sizeof(context));
 		stbrp_init_target(&context, width / divisor, depth / divisor, stbNodes.data(), stbNodes.size());
 		if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) == 1) {
 			Log::debug("Used width: %i, depth: %i for packing", width / divisor, depth / divisor);
