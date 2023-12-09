@@ -16,6 +16,14 @@ a number of options.
 .SH OPTIONS
 
 .TP
+\fB\--bashcompletion\fR
+Generate a bashcompletion script
+
+.TP
+\fB\--colored-heightmap\fR
+Use the alpha channel of the heightmap as height and the rgb data as surface color.
+
+.TP
 \fB\--crop\fR
 Reduces the volume sizes to their voxel boundaries.
 
@@ -46,12 +54,12 @@ Will filter out models not mentioned in the expression. E.g. 1-2,4 will handle m
 Overwrite existing files.
 
 .TP
-\fB\--image-as-heightmap\fR
-Import input images as heightmaps (default).
+\fB\--help|-h\fR
+Print usage information with a a full list of cvars
 
 .TP
-\fB\--colored-heightmap\fR
-Use the alpha channel of the heightmap as height and the rgb data as surface color.
+\fB\--image-as-heightmap\fR
+Import input images as heightmaps (default).
 
 .TP
 \fB\--image-as-plane\fR
@@ -101,6 +109,12 @@ Resize the volume by the given x (right), y (up) and z (back) values.
 Rotate by 90 degree at the given axis (x, y or z).
 
 .TP
+\fB\-set <varname> <value>\fR
+Change the value of a config variable. \fB-set palette /path/to/palette.png\fR is
+going to use a different palette for importing and exporting the voxels. It should
+have the dimensions 1x256.
+
+.TP
 \fB\--scale|-s\fR
 Save the target volume with a down-sampled version of the input volume.
 
@@ -123,16 +137,6 @@ Remove any non surface voxel.
 .TP
 \fB\--translate|-t <x:y:z>\fR
 Translate the volumes by x (right), y (up), z (back).
-
-.TP
-\fB\--help\fR
-Print usage information with a a full list of cvars
-
-.TP
-\fB\-set <varname> <value>\fR
-Change the value of a config variable. \fB-set palette /path/to/palette.png\fR is
-going to use a different palette for importing and exporting the voxels. It should
-have the dimensions 1x256.
 
 .TP
 \fB\--trace|--debug|--info\fR
@@ -171,7 +175,11 @@ split
 
 .SH LOAD
 .TP
+AceOfSpades (*.kv6)
+.TP
 AceOfSpades (*.vxl)
+.TP
+AnimaToon (*.scn)
 .TP
 BinVox (*.binvox)
 .TP
@@ -179,85 +187,125 @@ Build engine (*.kvx)
 .TP
 Chronovox (*.csm)
 .TP
-Command and Conquer (*.vxl)
-.TP
 CubeWorld (*.cub)
 .TP
-GL Transmission Format (*.gltf, *.glb)
+Cubzh (*.3zh)
+.TP
+FBX (*.fbx)
+.TP
+GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
 Goxel (*.gox)
 .TP
 MagicaVoxel (*.vox)
 .TP
-Minecraft Level (*.dat)
+Magicavoxel XRAW (*.xraw)
 .TP
-Minecraft Region (*.mca, *.mcr)
+Minecraft level dat (*.dat)
 .TP
-Minecraft Schematic (*.schem, *.schematic, *.nbt)
+Minecraft region (*.mca, *.mcr)
+.TP
+Minecraft schematic (*.schematic, *.schem, *.nbt)
+.TP
+Minetest (*.mts)
 .TP
 Nicks Voxel Model (*.nvm)
 .TP
-Quake 1/UFO:Alien Invasion (*.bsp)
+Particubes (*.pcubes, *.particubes)
 .TP
-Quake 2 model (*.md2)
+Polygon File Format (*.ply)
 .TP
-Qubicle Binary Tree (*.qbt)
+Quake 1 (*.bsp)
+.TP
+Quake 2 Model (*.md2)
 .TP
 Qubicle Binary (*.qb)
+.TP
+Qubicle Binary Tree (*.qbt)
 .TP
 Qubicle Exchange (*.qef)
 .TP
 Qubicle Project (*.qbcl)
 .TP
-Sandbox VoxEdit Collection (*.vxc)
+SLAB6 vox (*.vox)
 .TP
-Sandbox VoxEdit Model (*.vxm)
+Sandbox VoxEdit Collection (*.vxc)
 .TP
 Sandbox VoxEdit Hierarchy (*.vxr)
 .TP
-Sandbox VoxEdit Tileset (*.vxt)
+Sandbox VoxEdit Model (*.vxm)
 .TP
-SLAB6 (*.kv6)
+Sandbox VoxEdit Tilemap (*.vxt)
 .TP
-StarMade (*.sment)
-.TP
-Sproxel (*.csv)
-.TP
-StarMade (*.sment)
+Sproxel csv (*.csv)
 .TP
 Standard Triangle Language (*.stl)
+.TP
+StarMade (*.sment)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+UFO:Alien Invasion (*.bsp)
+.TP
+Vengi (*.vengi)
+.TP
+Voxel3D (*.v3a)
+.TP
+VoxelBuilder (*.vbx)
+.TP
+VoxelMax (*.vmax.zip, *.vmaxb)
 .TP
 Wavefront Object (*.obj)
 
 .SH SAVE
 .TP
+AceOfSpades (*.kv6)
+.TP
+AceOfSpades (*.vxl)
+.TP
 BinVox (*.binvox)
 .TP
-Command and Conquer (*.vxl)
+Build engine (*.kvx)
 .TP
 CubeWorld (*.cub)
 .TP
-GL Transmission Format (*.gltf, *.glb)
+Cubzh (*.3zh)
+.TP
+FBX (*.fbx)
+.TP
+GL Transmission Format (*.gltf, *.glb, *.vrm)
 .TP
 Goxel (*.gox)
 .TP
 MagicaVoxel (*.vox)
 .TP
-Polygon File Format (*.ply)
+Magicavoxel XRAW (*.xraw)
 .TP
-Qubicle Binary Tree (*.qbt)
+Polygon File Format (*.ply)
 .TP
 Qubicle Binary (*.qb)
 .TP
+Qubicle Binary Tree (*.qbt)
+.TP
 Qubicle Exchange (*.qef)
 .TP
-Sandbox VoxEdit Model (*.vxm)
+Qubicle Project (*.qbcl)
+.TP
+SLAB6 vox (*.vox)
 .TP
 Sandbox VoxEdit Hierarchy (*.vxr)
+.TP
+Sandbox VoxEdit Model (*.vxm)
 .TP
 Sproxel csv (*.csv)
 .TP
 Standard Triangle Language (*.stl)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+Vengi (*.vengi)
+.TP
+Voxel3D (*.v3a)
 .TP
 Wavefront Object (*.obj)
 
@@ -378,7 +426,7 @@ Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too.
 https://github.com/vengi-voxel/vengi
 
 .SH COPYRIGHT
-Copyright \[co] 2015\-2023 by Martin Gerhardy.
+Copyright \[co] 2015\-@COPYRIGHT_YEAR@ by Martin Gerhardy.
 
 .SH BUGS
 If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues

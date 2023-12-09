@@ -16,7 +16,11 @@ voxel models. .
 Specify the size (same width and height) of the thumbnail.
 
 .TP
-\fB\--help\fR
+\fB\--bashcompletion\fR
+Generate a bashcompletion script
+
+.TP
+\fB\--help|-h\fR
 Print usage information with a a full list of cvars
 
 .TP
@@ -29,57 +33,93 @@ Print the version of the application.
 
 .SH LOAD
 .TP
-Qubicle Binary (*.qb)
-.TP
-MagicaVoxel (*.vox)
-.TP
-Qubicle Binary Tree (*.qbt)
-.TP
-Qubicle Project (*.qbcl)
-.TP
-Sandbox VoxEdit Model (*.vxc)
-.TP
-Sandbox VoxEdit Model (*.vxm)
-.TP
-Sandbox VoxEdit Hierarchy (*.vxr)
-.TP
-Sandbox VoxEdit Tileset (*.vxt)
-.TP
-StarMade (*.sment)
-.TP
-Minecraft Region (*.mca, *.mcr)
-.TP
-Minecraft Schematic (*.schem, *.schematic, *.nbt)
-.TP
-Minecraft Level (*.dat)
-.TP
-BinVox (*.binvox)
-.TP
-Goxel (*.gox)
-.TP
-CubeWorld (*.cub)
-.TP
-Sproxel csv (*.csv)
-.TP
-Build engine (*.kvx)
-.TP
-Ace of Spades (*.kv6)
-.TP
-Tiberian Sun (*.vxl)
+AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)
 .TP
-Qubicle Exchange (*.qef)
+AnimaToon (*.scn)
+.TP
+BinVox (*.binvox)
+.TP
+Build engine (*.kvx)
 .TP
 Chronovox (*.csm)
 .TP
+CubeWorld (*.cub)
+.TP
+Cubzh (*.3zh)
+.TP
+FBX (*.fbx)
+.TP
+GL Transmission Format (*.gltf, *.glb, *.vrm)
+.TP
+Goxel (*.gox)
+.TP
+MagicaVoxel (*.vox)
+.TP
+Magicavoxel XRAW (*.xraw)
+.TP
+Minecraft level dat (*.dat)
+.TP
+Minecraft region (*.mca, *.mcr)
+.TP
+Minecraft schematic (*.schematic, *.schem, *.nbt)
+.TP
+Minetest (*.mts)
+.TP
 Nicks Voxel Model (*.nvm)
+.TP
+Particubes (*.pcubes, *.particubes)
+.TP
+Polygon File Format (*.ply)
+.TP
+Quake 1 (*.bsp)
+.TP
+Quake 2 Model (*.md2)
+.TP
+Qubicle Binary (*.qb)
+.TP
+Qubicle Binary Tree (*.qbt)
+.TP
+Qubicle Exchange (*.qef)
+.TP
+Qubicle Project (*.qbcl)
+.TP
+SLAB6 vox (*.vox)
+.TP
+Sandbox VoxEdit Collection (*.vxc)
+.TP
+Sandbox VoxEdit Hierarchy (*.vxr)
+.TP
+Sandbox VoxEdit Model (*.vxm)
+.TP
+Sandbox VoxEdit Tilemap (*.vxt)
+.TP
+Sproxel csv (*.csv)
+.TP
+Standard Triangle Language (*.stl)
+.TP
+StarMade (*.sment)
+.TP
+Tiberian Sun (*.vxl)
+.TP
+UFO:Alien Invasion (*.bsp)
+.TP
+Vengi (*.vengi)
+.TP
+Voxel3D (*.v3a)
+.TP
+VoxelBuilder (*.vbx)
+.TP
+VoxelMax (*.vmax.zip, *.vmaxb)
+.TP
+Wavefront Object (*.obj)
 
 .SH HOMEPAGE
 https://github.com/vengi-voxel/vengi
 
 .SH COPYRIGHT
-Copyright \[co] 2015\-2023 by Martin Gerhardy.
+Copyright \[co] 2015\-@COPYRIGHT_YEAR@ by Martin Gerhardy.
 
 .SH BUGS
 If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues
