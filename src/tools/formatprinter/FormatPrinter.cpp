@@ -19,6 +19,7 @@ FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::Ti
 app::AppState FormatPrinter::onConstruct() {
 	registerArg("--palette").setDescription("Print the supported palettes");
 	registerArg("--image").setDescription("Print the supported image");
+	registerArg("--manpage").setDescription("Print the manpage entries for loading and saving");
 	registerArg("--voxel").setDescription("Print the supported voxel formats");
 	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats");
 	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats");
@@ -95,6 +96,8 @@ app::AppState FormatPrinter::onRunning() {
 		printMimeInfo();
 	} else if (hasArg("--markdown")) {
 		printMarkdownTables();
+	} else if (hasArg("--manpage")) {
+		printManPageLoadSaveFormats();
 	} else if (hasArg("--plist")) {
 		printApplicationPlist();
 	} else {
@@ -122,6 +125,49 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	}
 	_uniqueMimetypes.insert(mt);
 	return mt;
+}
+
+void FormatPrinter::printManPageLoadSaveFormats() {
+	core::DynamicArray<io::FormatDescription> formatDescriptions;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		formatDescriptions.push_back(*desc);
+	}
+	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+
+	printf(".SH LOAD\n");
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		printf(".TP\n");
+		printf("%s (", desc.name.c_str());
+		int ext = 0;
+		for (const core::String &e : desc.exts) {
+			if (ext > 0) {
+				printf(", ");
+			}
+			printf("*.%s", e.c_str());
+			++ext;
+		}
+		printf(")\n");
+	}
+	printf("\n");
+
+	printf(".SH SAVE\n");
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		if (!voxelSaveSupported(desc)) {
+			continue;
+		}
+		printf(".TP\n");
+		printf("%s (", desc.name.c_str());
+		int ext = 0;
+		for (const core::String &e : desc.exts) {
+			if (ext > 0) {
+				printf(", ");
+			}
+			printf("*.%s", e.c_str());
+			++ext;
+		}
+		printf(")\n");
+	}
+	printf("\n");
 }
 
 void FormatPrinter::printMarkdownTables() {
