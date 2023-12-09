@@ -868,21 +868,28 @@ void SceneGraph::align(int padding) {
 	stbNodes.resize(width);
 
 	stbrp_context context;
-	stbrp_init_target(&context, width / 4, depth / 4, stbNodes.data(), stbNodes.size());
-	if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) != 1) {
-		stbrp_init_target(&context, width / 2, depth / 2, stbNodes.data(), stbNodes.size());
-		if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) != 1) {
+	int divisor = 16;
+	for (int i = 0; i < 5; ++i) {
+		stbrp_init_target(&context, width / divisor, depth / divisor, stbNodes.data(), stbNodes.size());
+		if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) == 1) {
+			Log::debug("Used width: %i, depth: %i for packing", width / divisor, depth / divisor);
+			break;
+		}
+		if (divisor == 1) {
 			Log::warn("Could not pack rects for alignment the scene graph nodes");
 			return;
 		}
+		divisor /= 2;
 	}
 	for (const stbrp_rect &rect : stbRects) {
 		if (!rect.was_packed) {
+			Log::warn("Failed to pack node %i", rect.id);
 			continue;
 		}
 		SceneGraphNode &n = node(rect.id);
 		SceneGraphTransform transform;
 		n.setTransform(0, transform);
+		n.setPivot(glm::vec3(0.0f));
 		n.volume()->translate(-n.region().getLowerCorner());
 		n.volume()->translate(glm::ivec3(rect.x, 0, rect.y));
 	}
