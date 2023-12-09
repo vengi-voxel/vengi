@@ -881,9 +881,10 @@ void SceneGraph::align(int padding) {
 			continue;
 		}
 		SceneGraphNode &n = node(rect.id);
-		n.transform().setWorldTranslation(glm::vec3(0.0f));
-		n.volume()->translate(glm::ivec3(0));
-		n.volume()->translate(glm::ivec3(padding + rect.x, 0, padding + rect.y));
+		SceneGraphTransform transform;
+		n.setTransform(0, transform);
+		n.volume()->translate(-n.region().getLowerCorner());
+		n.volume()->translate(glm::ivec3(rect.x, 0, rect.y));
 	}
 	updateTransforms();
 	markDirty();
