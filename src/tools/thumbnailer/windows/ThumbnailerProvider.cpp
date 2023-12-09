@@ -89,16 +89,16 @@ IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_AL
 	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	DLLThumbnailer app(filesystem, timeProvider, phbmp);
 	char argv1[32];
-	core::string::formatBuf(argv1, sizeof(argv1), "thumbnailer");
+	core::string::formatBuf(argv1, sizeof(argv1), "%s", app.fullAppname().c_str);
 	char argv2[32];
 	core::string::formatBuf(argv2, sizeof(argv2), "--size");
 	char argv3[32];
 	core::string::formatBuf(argv3, sizeof(argv3), "%u", (unsigned int)cx);
-	char argv4[1024];
-	core::string::formatBuf(argv4, sizeof(argv4), "%s", m_pPathFile.c_str());
-	char argv5[1];
-	argv5[0] = '\0';
-	char *argv[] = {argv1, argv2, argv3, m_pPathFile.c_str(), ""};
+	char argv4[32];
+	core::string::formatBuf(argv4, sizeof(argv4), "--input");
+	char argv5[1024];
+	core::string::formatBuf(argv5, sizeof(argv5), "%s", m_pPathFile.c_str());
+	char *argv[] = {argv1, argv2, argv3, argv4, argv5};
 	app.startMainLoop(5, argv);
 	return (*phbmp) ? S_OK : S_FALSE;
 }

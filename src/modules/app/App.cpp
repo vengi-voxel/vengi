@@ -357,6 +357,7 @@ void App::onBeforeInit() {
 
 AppState App::onInit() {
 	Log::debug("Initialize sdl");
+
 	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
@@ -413,6 +414,17 @@ AppState App::onInit() {
 
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
+
+	for (const Argument &arg : _arguments) {
+		if (!arg.mandatory()) {
+			continue;
+		}
+		if (!hasArg(arg.longArg())) {
+			Log::error("Missing mandatory argument %s", arg.longArg().c_str());
+			usage();
+			return AppState::Destroy;
+		}
+	}
 
 	if (hasArg("--version")) {
 		Log::info("%s " PROJECT_VERSION, _appname.c_str());
@@ -500,7 +512,7 @@ bool App::hasEnoughMemory(size_t bytes) const {
 
 void App::bashCompletion() const {
 	Log::printf("_%s_completion() {\n", appname().c_str());
-	Log::printf("\tlocal cur prev prev_prev\n");
+	Log::printf("\tlocal cur prev prev_prev cword\n");
 	Log::printf("\t_init_completion || return\n");
 	Log::printf("\tif [[ $cword -gt 2 ]]; then\n");
 	Log::printf("\t\tprev_prev=${words[cword - 2]}\n");
@@ -578,7 +590,7 @@ void App::usage() const {
 
 	printUsageHeader();
 
-	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", _appname.c_str(),
+	Log::info("Usage: %s [--help] [--version] [-set configvar value] [-commandname] %s", fullAppname().c_str(),
 			  _additionalUsage.c_str());
 	Log::info("------------");
 
@@ -664,7 +676,7 @@ void App::usage() const {
 	Log::info("have CL_GAMMA or cl_gamma exported. The lower case variant has the higher priority.");
 	Log::info("Examples:");
 	Log::info("export the variable CORE_LOGLEVEL with the value 1 to override previous values.");
-	Log::info("%s -set core_loglevel 1.", _appname.c_str());
+	Log::info("%s -set core_loglevel 1.", fullAppname().c_str());
 }
 
 void App::onAfterRunning() {
@@ -746,7 +758,6 @@ core::String App::getArgVal(const core::String &arg, const core::String &default
 			return a.defaultValue();
 		}
 		if (defaultVal.empty() && a.defaultValue().empty()) {
-			usage();
 			requestQuit();
 		}
 		if (!defaultVal.empty()) {

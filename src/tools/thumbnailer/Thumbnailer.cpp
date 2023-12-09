@@ -36,6 +36,12 @@ app::AppState Thumbnailer::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
+	registerArg("--input")
+		.setShort("-i")
+		.setDescription("The input file to create a thumbnail for")
+		.addFlag(ARGUMENT_FLAG_FILE)
+		.addFlag(ARGUMENT_FLAG_MANDATORY);
+	registerArg("--output").setShort("-o").setDescription("The output image file").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--size")
 		.setShort("-s")
 		.setDescription("Size of the thumbnail in pixels")
@@ -61,12 +67,12 @@ app::AppState Thumbnailer::onConstruct() {
 
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
+
+	_outfile = getArgVal("--output", "");
+
 	if (state != app::AppState::Running) {
 		const bool fallback = hasArg("--fallback");
 		if (fallback) {
-			if (_argc >= 2) {
-				_outfile = _argv[_argc - 1];
-			}
 			image::ImagePtr image = image::createEmptyImage(_outfile);
 			core::RGBA black(0, 0, 0, 255);
 			image->loadRGBA((const uint8_t *)&black, 1, 1);
@@ -76,15 +82,10 @@ app::AppState Thumbnailer::onInit() {
 		return state;
 	}
 
-	if (_argc < 2) {
-		_logLevelVar->setVal(SDL_LOG_PRIORITY_INFO);
-		Log::init();
-		usage();
+	const core::String infile = getArgVal("--input");
+	if (infile.empty()) {
 		return app::AppState::InitFailure;
 	}
-
-	const core::String infile = _argv[_argc - 2];
-	_outfile = _argv[_argc - 1];
 
 	Log::debug("infile: %s", infile.c_str());
 	Log::debug("outfile: %s", _outfile.c_str());
@@ -92,7 +93,6 @@ app::AppState Thumbnailer::onInit() {
 	_infile = filesystem()->open(infile, io::FileMode::SysRead);
 	if (!_infile->exists()) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
-		usage();
 		return app::AppState::InitFailure;
 	}
 
