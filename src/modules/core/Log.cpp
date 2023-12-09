@@ -230,6 +230,16 @@ static void errorVA(uint32_t id, const char *msg, va_list args) {
 	}
 }
 
+static void printfVA(const char *msg, va_list args) {
+	char buf[priv::bufSize];
+	SDL_vsnprintf(buf, sizeof(buf), msg, args);
+	buf[sizeof(buf) - 1] = '\0';
+	if (priv::_logfile) {
+		fprintf(priv::_logfile, "%s", buf);
+	}
+	printf("%s", buf);
+}
+
 void Log::trace(const char* msg, ...) {
 	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
 		return;
@@ -277,6 +287,13 @@ void Log::error(const char* msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	errorVA(0u, msg, args);
+	va_end(args);
+}
+
+void Log::printf(const char* msg, ...) {
+	va_list args;
+	va_start(args, msg);
+	printfVA(msg, args);
 	va_end(args);
 }
 
