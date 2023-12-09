@@ -115,6 +115,7 @@ protected:
 	core::VarPtr _syslogVar;
 
 	virtual void usage() const;
+	void bashCompletion();
 	virtual void printUsageHeader() const;
 
 	void setArgs(int argc, char *argv[]);
@@ -178,26 +179,30 @@ public:
 	const core::String &osName();
 	const core::String &osVersion();
 
+	static const uint32_t ARGUMENT_FLAG_MANDATORY = 1 << 0;
+	static const uint32_t ARGUMENT_FLAG_FILE = 1 << 1;
+	static const uint32_t ARGUMENT_FLAG_DIRECTORY = 1 << 2;
+
 	class Argument {
 	private:
 		core::String _longArg;
 		core::String _shortArg;
 		core::String _description;
 		core::String _defaultValue;
-		bool _mandatory = false;
+		uint32_t _flag = 0;
 
 	public:
 		Argument(const core::String& longArg) :
 				_longArg(longArg) {
 		}
 
-		Argument& setShort(const core::String& shortArg) {
-			_shortArg = shortArg;
+		Argument& addFlag(uint32_t flag) {
+			_flag = flag;
 			return *this;
 		}
 
-		Argument& setMandatory() {
-			_mandatory = true;
+		Argument& setShort(const core::String& shortArg) {
+			_shortArg = shortArg;
 			return *this;
 		}
 
@@ -223,12 +228,20 @@ public:
 			return _longArg;
 		}
 
-		inline bool mandatory() const {
-			return _mandatory;
-		}
-
 		inline const core::String& shortArg() const {
 			return _shortArg;
+		}
+
+		inline bool mandatory() const {
+			return (_flag & ARGUMENT_FLAG_MANDATORY) == ARGUMENT_FLAG_MANDATORY;
+		}
+
+		inline bool needsFile() const {
+			return (_flag & ARGUMENT_FLAG_FILE) == ARGUMENT_FLAG_FILE;
+		}
+
+		inline bool needsDirectory() const {
+			return (_flag & ARGUMENT_FLAG_DIRECTORY) == ARGUMENT_FLAG_DIRECTORY;
 		}
 	};
 

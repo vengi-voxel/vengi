@@ -27,13 +27,13 @@ bool ShaderTool::parse(const core::String& filename, const core::String& buffer,
 
 app::AppState ShaderTool::onConstruct() {
 	registerArg("--glslang").setShort("-g").setDescription("Path to glslang validator binary");
-	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").setMandatory();
-	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").setMandatory();
+	registerArg("--shader").setShort("-s").setDescription("The base name of the shader to create the c++ bindings for").addFlag(ARGUMENT_FLAG_MANDATORY);
+	registerArg("--shadertemplate").setShort("-t").setDescription("The shader template file").addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("--constantstemplate").setShort("-t").setDescription("The shader constants template file");
-	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").setMandatory();
+	registerArg("--buffertemplate").setShort("-b").setDescription("The uniform buffer template file").addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("--namespace").setShort("-n").setDescription("Namespace to generate the source in").setDefaultValue("shader");
 	registerArg("--shaderdir").setShort("-d").setDescription("Directory to load the shader from").setDefaultValue("shaders/");
-	registerArg("--sourcedir").setDescription("Directory to generate the source in").setMandatory();
+	registerArg("--sourcedir").setDescription("Directory to generate the source in").addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("-I").setDescription("Add additional include dir");
 	registerArg("--printincludes").setDescription("Print the includes for the given shader");
 	Log::trace("Set some shader config vars to let the validation work");

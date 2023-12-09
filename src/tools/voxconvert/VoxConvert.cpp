@@ -66,11 +66,11 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--image-as-volume-both-sides").setDefaultValue("false").setDescription("Importing image as volume for both sides");
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
 	registerArg("--colored-heightmap").setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
-	registerArg("--input").setShort("-i").setDescription("Allow to specify input files");
+	registerArg("--input").setShort("-i").setDescription("Allow to specify input files").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--wildcard").setShort("-w").setDescription("Allow to specify input file filter if --input is a directory");
 	registerArg("--merge").setShort("-m").setDescription("Merge models into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
-	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file");
+	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");

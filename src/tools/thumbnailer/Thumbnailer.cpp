@@ -40,7 +40,7 @@ app::AppState Thumbnailer::onConstruct() {
 		.setShort("-s")
 		.setDescription("Size of the thumbnail in pixels")
 		.setDefaultValue("128")
-		.setMandatory();
+		.addFlag(ARGUMENT_FLAG_MANDATORY);
 	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
 	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs");
 	registerArg("--use-scene-camera")

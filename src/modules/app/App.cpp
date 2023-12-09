@@ -9,6 +9,7 @@
 #include "core/Common.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
@@ -419,6 +420,10 @@ AppState App::onInit() {
 			Log::info("%s " PROJECT_VERSION, _appname.c_str());
 			return AppState::Destroy;
 		}
+		if (SDL_strcmp(_argv[i], "--bashcompletion") == 0) {
+			bashCompletion();
+			return AppState::Destroy;
+		}
 	}
 
 	_availableMemoryMiB = SDL_GetSystemRAM();
@@ -495,6 +500,56 @@ void App::printUsageHeader() const {
 	Log::info("Version " PROJECT_VERSION);
 }
 
+void App::bashCompletion() {
+	printf("_%s_completion() {\n", _appname.c_str());
+	printf("\tlocal cur_word\n");
+	printf("\t_init_completion || return\n");
+	printf("\tlocal options=\"");
+	printf("-set --help -h --version -v --bashcompletion");
+	for (const Argument & arg : _arguments) {
+		printf(" ");
+		printf("%s", arg.longArg().c_str());
+		if (!arg.shortArg().empty()) {
+			printf(" %s", arg.shortArg().c_str());
+		}
+	}
+	printf("\"\n");
+	printf("\tlocal variable_names=\"");
+	core::Var::visit([](const core::VarPtr &var) {
+		printf("%s ", var->name().c_str());
+	});
+	printf("\"\n");
+	printf("\tcase $prev in\n");
+	for (const Argument & arg : _arguments) {
+		if (arg.needsFile()) {
+			printf("\t%s)\n", arg.longArg().c_str());
+			printf("\t\tCOMPREPLY=( $(compgen -f -- \"$cur_word\") )\n");
+			printf("\t\treturn 0\n");
+			printf("\t\t;;\n");
+		} else if (arg.needsDirectory()) {
+			printf("\t%s)\n", arg.longArg().c_str());
+			printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur_word\") )\n");
+			printf("\t\treturn 0\n");
+			printf("\t\t;;\n");
+		}
+	}
+	printf("\t-set)\n");
+	printf("\t\tCOMPREPLY=( $(compgen -W \"$variable_names\" -- \"$cur_word\") )\n");
+	printf("\t\treturn 0\n");
+	printf("\t\t;;\n");
+	printf("\t*)\n");
+	printf("\t\tCOMPREPLY=( $(compgen -W \"$options\" -- \"$cur_word\") )\n");
+	printf("\t\treturn 0\n");
+	printf("\t\t;;\n");
+	printf("\tesac\n");
+	printf("}\n");
+	core::String binary = core::string::extractFilenameWithExtension(_argv[0]);
+	if (binary.empty()) {
+		binary = _organisation + "-" + _appname;
+	}
+	printf("complete -F _%s_completion %s\n", _appname.c_str(), binary.c_str());
+}
+
 void App::usage() const {
 	const core::VarPtr &logLevel = core::Var::get(cfg::CoreLogLevel, "");
 	logLevel->setVal((int)Log::Level::Info);
@@ -511,7 +566,7 @@ void App::usage() const {
 	for (const Argument &a : _arguments) {
 		maxWidthLong = core_max(maxWidthLong, (int)a.longArg().size());
 		maxWidthShort = core_max(maxWidthShort, (int)a.shortArg().size());
-	};
+	}
 	int maxWidthOnlyLong = maxWidthLong + maxWidthShort + 3;
 	for (const Argument &a : _arguments) {
 		const core::String defaultVal =
