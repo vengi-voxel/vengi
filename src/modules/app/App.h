@@ -114,8 +114,10 @@ protected:
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
 
+	void bashCompletion() const;
+	bool handleCompletion(const core::String &type) const;
+
 	virtual void usage() const;
-	void bashCompletion();
 	virtual void printUsageHeader() const;
 
 	void setArgs(int argc, char *argv[]);
@@ -251,6 +253,7 @@ public:
 	bool hasArg(const core::String& arg) const;
 	core::String getArgVal(const core::String& arg, const core::String& defaultVal = "", int* argi = nullptr);
 	Argument& registerArg(const core::String& arg);
+	const core::DynamicArray<Argument> &arguments() const;
 
 	// handle the app state changes here
 	virtual void onFrame();
@@ -318,6 +321,10 @@ inline core::String App::fullAppname() const {
 
 inline const core::String& App::appname() const {
 	return _appname;
+}
+
+inline const core::DynamicArray<App::Argument> &App::arguments() const {
+	return _arguments;
 }
 
 inline AppState App::state() const {

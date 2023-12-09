@@ -272,6 +272,9 @@ AppState App::onConstruct() {
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
 	core::Var::get(cfg::AppVersion, "");
 
+	registerArg("--version").setShort("-v").setDescription("Print the version and quit");
+	registerArg("--help").setShort("-h").setDescription("Print this help and quit");
+	registerArg("--completion").setDescription("Generate completion for bash");
 	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
 	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {
@@ -411,19 +414,18 @@ AppState App::onInit() {
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
 
-	for (int i = 0; i < _argc; ++i) {
-		if (SDL_strcmp(_argv[i], "--help") == 0 || SDL_strcmp(_argv[i], "-h") == 0) {
-			usage();
-			return AppState::Destroy;
-		}
-		if (SDL_strcmp(_argv[i], "--version") == 0 || SDL_strcmp(_argv[i], "-v") == 0) {
-			Log::info("%s " PROJECT_VERSION, _appname.c_str());
-			return AppState::Destroy;
-		}
-		if (SDL_strcmp(_argv[i], "--bashcompletion") == 0) {
-			bashCompletion();
-			return AppState::Destroy;
-		}
+	if (hasArg("--version")) {
+		Log::info("%s " PROJECT_VERSION, _appname.c_str());
+		return AppState::Destroy;
+	}
+	if (hasArg("--help")) {
+		usage();
+		return AppState::Destroy;
+	}
+	if (hasArg("--completion")) {
+		const core::String type = getArgVal("--completion", "bash");
+		handleCompletion(type);
+		return AppState::Destroy;
 	}
 
 	_availableMemoryMiB = SDL_GetSystemRAM();
@@ -496,58 +498,68 @@ bool App::hasEnoughMemory(size_t bytes) const {
 	return _availableMemoryMiB * (size_t)s >= bytes;
 }
 
-void App::printUsageHeader() const {
-	Log::info("Version " PROJECT_VERSION);
-}
+void App::bashCompletion() const {
+	Log::printf("_%s_completion() {\n", appname().c_str());
+	Log::printf("\tlocal cur prev\n");
+	Log::printf("\t_init_completion || return\n");
 
-void App::bashCompletion() {
-	printf("_%s_completion() {\n", _appname.c_str());
-	printf("\tlocal cur_word\n");
-	printf("\t_init_completion || return\n");
-	printf("\tlocal options=\"");
-	printf("-set --help -h --version -v --bashcompletion");
-	for (const Argument & arg : _arguments) {
-		printf(" ");
-		printf("%s", arg.longArg().c_str());
+	// command line arguments or built-in commands
+	Log::printf("\tlocal options=\"");
+	for (const Argument & arg : arguments()) {
+		Log::printf("%s ", arg.longArg().c_str());
 		if (!arg.shortArg().empty()) {
-			printf(" %s", arg.shortArg().c_str());
+			Log::printf("%s ", arg.shortArg().c_str());
 		}
 	}
-	printf("\"\n");
-	printf("\tlocal variable_names=\"");
+	command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name()); });
+	Log::printf("\"\n");
+
+	// cvars
+	Log::printf("\tlocal variable_names=\"");
 	core::Var::visit([](const core::VarPtr &var) {
-		printf("%s ", var->name().c_str());
+		Log::printf("%s ", var->name().c_str());
 	});
-	printf("\"\n");
-	printf("\tcase $prev in\n");
-	for (const Argument & arg : _arguments) {
+	Log::printf("\"\n");
+
+	Log::printf("\tcase $prev in\n");
+	for (const Argument & arg : arguments()) {
 		if (arg.needsFile()) {
-			printf("\t%s)\n", arg.longArg().c_str());
-			printf("\t\tCOMPREPLY=( $(compgen -f -- \"$cur_word\") )\n");
-			printf("\t\treturn 0\n");
-			printf("\t\t;;\n");
+			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t\tCOMPREPLY=( $(compgen -f -- \"$cur\") )\n");
+			Log::printf("\t\t;;\n");
 		} else if (arg.needsDirectory()) {
-			printf("\t%s)\n", arg.longArg().c_str());
-			printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur_word\") )\n");
-			printf("\t\treturn 0\n");
-			printf("\t\t;;\n");
+			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur\") )\n");
+			Log::printf("\t\t;;\n");
 		}
 	}
-	printf("\t-set)\n");
-	printf("\t\tCOMPREPLY=( $(compgen -W \"$variable_names\" -- \"$cur_word\") )\n");
-	printf("\t\treturn 0\n");
-	printf("\t\t;;\n");
-	printf("\t*)\n");
-	printf("\t\tCOMPREPLY=( $(compgen -W \"$options\" -- \"$cur_word\") )\n");
-	printf("\t\treturn 0\n");
-	printf("\t\t;;\n");
-	printf("\tesac\n");
-	printf("}\n");
+	// TODO: add support for the variable values - currently another tab tries to complete the next command
+	Log::printf("\t-set)\n");
+	Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$variable_names\" -- \"$cur\") )\n");
+	Log::printf("\t\t;;\n");
+	Log::printf("\t*)\n");
+	Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$options\" -- \"$cur\") )\n");
+	Log::printf("\t\t;;\n");
+	Log::printf("\tesac\n");
+	Log::printf("}\n");
 	core::String binary = core::string::extractFilenameWithExtension(_argv[0]);
 	if (binary.empty()) {
-		binary = _organisation + "-" + _appname;
+		binary = fullAppname();
 	}
-	printf("complete -F _%s_completion %s\n", _appname.c_str(), binary.c_str());
+	Log::printf("complete -F _%s_completion %s\n", appname().c_str(), binary.c_str());
+}
+
+bool App::handleCompletion(const core::String &type) const {
+	if (type == "bash") {
+		bashCompletion();
+		return true;
+	}
+	Log::warn("Unknown completion type '%s' (only 'bash' is supported)", type.c_str());
+	return false;
+}
+
+void App::printUsageHeader() const {
+	Log::info("Version " PROJECT_VERSION);
 }
 
 void App::usage() const {
