@@ -1,6 +1,8 @@
 # Usage
 
-`./vengi-voxconvert --merge --scale --input infile --output outfile`
+```sh
+./vengi-voxconvert --merge --scale --input infile --output outfile
+```
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
@@ -39,6 +41,14 @@ You can convert to a different palette with this command. The closest possible c
 color from the source file palette to the specified palette.
 
 If something isn't working as you expected it to work, it might be an option to activate the debug logging. But the output can be a bit overwhelming. See the [configuration](../Configuration.md) logging section about more details.
+
+## bash completion
+
+You can also use the bash completion script by adding this to your `.bashrc`
+
+```sh
+source <(vengi-voxconvert --completion bash)
+```
 
 ## The order of execution is:
 
