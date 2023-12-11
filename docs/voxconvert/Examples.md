@@ -71,7 +71,7 @@ Voxelize an obj and save as magicavoxel (including colors):
 > glTF is supported both in ascii and binary - but the satellite files must also
 > reside in the same dir as the `glb` or `gltf` file.
 
-`./vengi-voxconvert -set voxformat_scale 2 -set palette /path/to/palette.png --input mesh.obj --output voxels.vox`
+`./vengi-voxconvert -set voxformat_scale 2 -set palette /path/to/palette.png -set voxformat_createpalette false --input mesh.obj --output voxels.vox`
 
 > See the [supported formats](../Formats.md) for a few more details.
 
