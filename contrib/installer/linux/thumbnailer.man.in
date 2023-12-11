@@ -16,8 +16,8 @@ voxel models. .
 Specify the size (same width and height) of the thumbnail.
 
 .TP
-\fB\--bashcompletion\fR
-Generate a bashcompletion script
+\fB\--completion bash\fR
+Generate a bash-completion script
 
 .TP
 \fB\--help|-h\fR

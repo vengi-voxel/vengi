@@ -16,8 +16,8 @@ a number of options.
 .SH OPTIONS
 
 .TP
-\fB\--bashcompletion\fR
-Generate a bashcompletion script
+\fB\--completion bash\fR
+Generate a bash-completion script
 
 .TP
 \fB\--colored-heightmap\fR
