@@ -10,7 +10,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.0.28 (2023-XX-XX)
 
-> moved the the github project into an organization named **vengi-voxel** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).
+> moved the github project into an organization named **vengi-voxel** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).
 
 General:
 
@@ -18,7 +18,7 @@ General:
    - Don't fill the inner voxels of the SLAB5/6 models anymore
    - Improved palette support for plane and volume import
    - Fixed an error in de-duplicating Magicavoxel models
-   - Allow to save/convert only visible nodes
+   - Allow one to save/convert only visible nodes
    - `ply` format got support for converting polygons into triangles
    - Show the full application name as window title
    - Improved esc handling for menus and popups
@@ -46,7 +46,7 @@ VoxEdit:
    - Fixed palette panel issue if you changed the order of colors
    - Added more templates to the new-scene-dialog
    - Made the new-scene-dialog scrollable
-   - Allow to change the transform of a node with updating the children
+   - Allow one to change the transform of a node with updating the children
    - Fixed a few crashes
    - Improved gizmo settings panel
 
@@ -90,7 +90,7 @@ VoxEdit:
 General:
 
    - Fixed pivot handling in VXR format
-   - Allow to export the GLTF vertex colors as byte values
+   - Allow one to export the GLTF vertex colors as byte values
    - Added NeuQuant color quantization algorithm
    - Optimized GLTF and MD2 import
    - Fixed Quake1 texture handling
@@ -143,10 +143,10 @@ VoxConvert:
 
 VoxEdit:
 
-   - Allow to export selections only
+   - Allow one to export selections only
    - Started to support different keymaps (blender, qubicle, magicavoxel and vengi own)
    - Added support for multiple animations in one scene
-   - Allow to duplicate all scene graph nodes
+   - Allow one to duplicate all scene graph nodes
    - (Re-)implemented WASD controls in camera eye mode
    - Fixed copy&paste errors with multiple selections
    - Updated new scene dialog to include the templates
@@ -188,7 +188,7 @@ General:
    - Update renderer to only use uniform buffers
    - Fixed rendering issue for windows users
    - Fixed fullscreen issues for windows users
-   - Extended lua script bindings to allow to render text as voxels
+   - Extended lua script bindings to Allow one to render text as voxels
    - Support GLES3 rendering
 
 VoxConvert:
@@ -198,7 +198,7 @@ VoxConvert:
 VoxEdit:
 
    - Disable animation window if there are no animations to show
-   - Allow to show the color picker in the palette panel
+   - Allow one to show the color picker in the palette panel
    - Reworked the modifiers panel
    - Made undo/redo more visible
    - Switched the camera modifier to the right side of the viewport
@@ -208,20 +208,20 @@ VoxEdit:
    - Added simple UI mode which removes some panels
    - Fixed a few memento (undo/redo) related issues
    - Added templates to the menu (`robo`, `chess`, `head` and `chr_knight`)
-   - Allow to control the amount of viewports
-   - Allow to define pre-defined region sizes (see `ve_regionsizes` cvar)
+   - Allow one to control the amount of viewports
+   - Allow one to define pre-defined region sizes (see `ve_regionsizes` cvar)
    - Some ui actions are only available in edit mode
    - Edit mode has support for the gizmo now - you can shift the volume boundaries
    - Highlight copy&paste volume region
    - Visually disable some buttons if they won't work in the current mode anyway
    - Don't execute actions for hidden nodes
    - New keybindings
-   - Allow to sort the palette colors by hue, saturation or brightness
-   - Allow to select and drag keyframes in the animation timeline
+   - Allow one to sort the palette colors by hue, saturation or brightness
+   - Allow one to select and drag keyframes in the animation timeline
    - Export animations as AVI
-   - Allow to import a whole directory into a scene
-   - Allow to select all node types in the scene graph panel
-   - Allow to edit node properties
+   - Allow one to import a whole directory into a scene
+   - Allow one to select all node types in the scene graph panel
+   - Allow one to edit node properties
    - Added voxel cursor tooltips about the position in the volume
    - WASM/HTML5 port
 
@@ -243,9 +243,9 @@ General:
 VoxEdit:
 
    - Added support for embedding screenshots in formats that support it
-   - Allow to export palettes
-   - Allow to change color intensity of the whole palette
-   - Allow to voxelize text
+   - Allow one to export palettes
+   - Allow one to change color intensity of the whole palette
+   - Allow one to voxelize text
    - Fixed orthographic cameras
    - Massive performance increase when using multiple viewports
    - More than 10 times gpu memory reduction
@@ -286,7 +286,7 @@ VoxEdit:
    - Fixed layer color selection if you have multiple layers
    - Fixed moving nodes in the scene graph panel
    - Fixed transforms in scene graph mode (translation, rotation)
-   - Allow to add group and camera nodes
+   - Allow one to add group and camera nodes
    - Don't just quit the application if you have unsaved data in your scene
 
 ## 0.0.21 (2022-09-05)
@@ -303,7 +303,7 @@ General:
    - Support wrap mode texture settings for gltf voxelization
    - Improved sanity check for Qubicle Binary format support
    - Fixed texture lookup error in gltf voxelization
-   - Extended lua vector bindings and allow to import heightmaps
+   - Extended lua vector bindings and Allow one to import heightmaps
    - Improved the file dialog filters
    - Added new lua scripts and extended lua integration in voxconvert
    - Added support for RGB (`pal`) and Gimp (`gpl`) palette loading
@@ -323,7 +323,7 @@ VoxEdit:
    - Fixed cursor face being on the wrong side of the voxel at the volume edges
    - Fixed last opened files with spaces in their names
    - Fixed loading files from command line again
-   - Allow to select scene graph node from the animation timeline
+   - Allow one to select scene graph node from the animation timeline
    - Fixed deleting key frames
    - Improved adding new key frames
 
@@ -337,10 +337,10 @@ General:
    - Added support for new magicavoxel format (animations)
    - Preserve node hierarchy when saving vxr
    - GLTF voxelization
-   - Allow to enable certain renderer features
+   - Allow one to enable certain renderer features
    - Expose more noise functions to the lua scripts
    - Expose more volume functions to the lua scripts
-   - Allow to delete voxels from within a lua script
+   - Allow one to delete voxels from within a lua script
    - Improved splitting of volumes (target volume size)
    - Expose more region functions to the lua scripts
    - Added more lua example scripts
@@ -356,13 +356,13 @@ General:
 VoxEdit:
 
    - Fixed start problems on some systems with multisampled framebuffers
-   - Allow to drag and drop colors from the palette
+   - Allow one to drag and drop colors from the palette
    - Change between the edit and scene mode is now bound to `tab`
    - Updated imgizmo to support clicking the view cube
    - Cursor is no volume anymore but a plane
    - Implemented plane filling
    - Added extrude feature
-   - Allow to place a single voxel
+   - Allow one to place a single voxel
    - Fixed keyboard input errors that made the ui unusable
    - Don't reload the last opened file with every start
 
@@ -377,16 +377,16 @@ General:
 
    - Replaced minecraft support with own implementation
    - Added support for Sandbox VXA format (via VXR) and improved VXR
-   - Allow to change the ui colors via cvar (`ui_style`)
+   - Allow one to change the ui colors via cvar (`ui_style`)
    - Added bloom render support for vox and vxm
    - Added support for loading key frames if the format supports it
    - Improved apple support in file dialog
    - The palette handling was refactored
-   - Allow to save the MATL chunk in magicavoxel vox files
+   - Allow one to save the MATL chunk in magicavoxel vox files
    - Ability to scale exported mesh with different values for each axis
    - Added stl voxelization support
-   - Allow to modify the camera zoom min/max values
-   - Allow to load different sizes for AoS VXL files
+   - Allow one to modify the camera zoom min/max values
+   - Allow one to load different sizes for AoS VXL files
    - Lerp the camera zooming
    - Added support for GLTF export
    - Added experimental export support for FBX ascii
@@ -409,7 +409,7 @@ VoxEdit:
 VoxConvert:
 
    - Added `--image-as-plane` and `--image-as-heightmap` parameters
-   - Allow to create a palette from input files
+   - Allow one to create a palette from input files
 
 ## 0.0.18 (2022-02-12)
 
@@ -483,7 +483,7 @@ General:
 VoxConvert:
 
    - Fixed `--force` handling for target files
-   - Allow to operate on multiple input files
+   - Allow one to operate on multiple input files
    - Added `--translate` command line option
    - Added `--pivot` command line option
    - nippon palette is not loaded if `--src-palette` is used and it's no hard error anymore if this fails
@@ -509,11 +509,11 @@ General:
 VoxConvert:
 
    - Added option to keep the input file palette and don't perform quantization
-   - Allow to export the palette to png
-   - Allow to generate models from heightmap images
-   - Allow to run lua scripts to modify volumes
-   - Allow to export or convert only single layers (`--filter`)
-   - Allow to mirror and rotate the volumes
+   - Allow one to export the palette to png
+   - Allow one to generate models from heightmap images
+   - Allow one to run lua scripts to modify volumes
+   - Allow one to export or convert only single layers (`--filter`)
+   - Allow one to mirror and rotate the volumes
 
 Thumbnailer:
 
@@ -521,7 +521,7 @@ Thumbnailer:
 
 VoxEdit:
 
-   - Allow to import palettes from volume formats, too
+   - Allow one to import palettes from volume formats, too
    - Implemented camera panning
    - Added more layer merge functions
 
@@ -683,7 +683,7 @@ VoxConvert:
 
    - Support different palette files (cvar `palette`)
    - Support writing outside the registered application paths
-   - Allow to overwrite existing files
+   - Allow one to overwrite existing files
 
 General:
 
@@ -715,7 +715,7 @@ General:
 
 Server:
 
-   - Allow to specify the database port
+   - Allow one to specify the database port
    - Fixed loading database chunks
 
 VoxEdit:

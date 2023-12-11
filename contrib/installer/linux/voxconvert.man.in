@@ -84,7 +84,7 @@ Importing image as volume and use the depth map for both sides.
 
 .TP
 \fB\--input|-i <file>\fR
-Allow to specify input files.
+Allow one to specify input files.
 
 .TP
 \fB\--merge|-m\fR
@@ -98,7 +98,7 @@ Mirror by the given axis (x, y or z).
 
 .TP
 \fB\--output|-o <file>\fR
-Allow to specify the output file.
+Allow one to specify the output file.
 
 .TP
 \fB\--resize <x:y:z>\fR
@@ -148,7 +148,7 @@ Print the version of the application.
 
 .TP
 \fB\--wildcard|-v\fR
-Allow to specify the wildcard that is used in cases where the \fB\--input\fR value is a directory
+Allow one to specify the wildcard that is used in cases where the \fB\--input\fR value is a directory
 
 .SH ORDER OF EXECUTION
 
