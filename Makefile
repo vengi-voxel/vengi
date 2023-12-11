@@ -45,15 +45,15 @@ deb-changelog:
 	$(Q)contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
 
 .PHONY: debian/vengi-voxconvert.bash-completion
-debian/vengi-voxconvert.bash-completion:
+debian/vengi-voxconvert.bash-completion: voxconvert
 	$(Q)$(BUILDDIR)/voxconvert/vengi-voxconvert --completion bash > $@
 
 .PHONY: debian/vengi-voxedit.bash-completion
-debian/vengi-voxedit.bash-completion:
+debian/vengi-voxedit.bash-completion: voxedit
 	$(Q)$(BUILDDIR)/voxedit/vengi-voxedit --completion bash > $@
 
 .PHONY: debian/vengi-thumbnailer.bash-completion
-debian/vengi-thumbnailer.bash-completion:
+debian/vengi-thumbnailer.bash-completion: thumbnailer
 	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer --completion bash > $@
 
 .PHONY: deb-bash-completion
