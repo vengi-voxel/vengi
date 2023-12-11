@@ -493,8 +493,11 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 		}
 		if (_exportPalette) {
 			palette::Palette pal;
-			const core::String &filename = core::string::replaceExtension(infile, "png");
+			core::String filename = infile;
+			filename = core::string::replaceExtension(filename, "png");
+			filename = core::string::addFilenamePrefix(filename, "palette-");
 			pal.convertImageToPalettePng(image, filename.c_str());
+			Log::info("Wrote palette %s", filename.c_str());
 		}
 	} else {
 		io::FileStream inputFileStream(inputFile);
@@ -523,6 +526,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 		if (_exportPalette) {
 			const core::String &paletteFile = core::string::replaceExtension(infile, "png");
 			sceneGraph.firstPalette().save(paletteFile.c_str());
+			Log::info("Wrote palette %s", paletteFile.c_str());
 		}
 	}
 
