@@ -4,9 +4,9 @@
 
 #include "ThumbnailerProvider.h"
 #include "../Thumbnailer.h"
-#include "io/Filesystem.h"
-#include "core/TimeProvider.h"
 #include "core/StringUtil.h"
+#include "core/TimeProvider.h"
+#include "io/Filesystem.h"
 
 #include <Shlwapi.h>
 #include <stdint.h>
@@ -37,14 +37,14 @@ protected:
 		return hbmp;
 	}
 
-
 	bool saveImage(const image::ImagePtr &image) override {
 		*_phbmp = rgbaToBitmap((const uint32_t *)image->data(), image->width(), image->height(), false);
 		return true;
 	}
 
 public:
-	DLLThumbnailer (const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, HBITMAP *phbmp) : Super(filesystem, timeProvider), _phbmp(phbmp) {
+	DLLThumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, HBITMAP *phbmp)
+		: Super(filesystem, timeProvider), _phbmp(phbmp) {
 	}
 };
 
@@ -85,8 +85,8 @@ IFACEMETHODIMP ThumbnailerProvider::Initialize(LPCWSTR pfilePath, DWORD grfMode)
 }
 
 IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) {
-	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
 	DLLThumbnailer app(filesystem, timeProvider, phbmp);
 	char argv1[32];
 	core::string::formatBuf(argv1, sizeof(argv1), "%s", app.fullAppname().c_str());
