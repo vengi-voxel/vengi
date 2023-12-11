@@ -3,6 +3,7 @@ Section: graphics
 Priority: optional
 Maintainer: Martin Gerhardy <martin.gerhardy@gmail.com>
 Build-Depends:
+ bash-completion,
  cmake,
  dh-cmake,
  dh-cmake-compat (= 1),

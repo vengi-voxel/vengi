@@ -68,7 +68,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
+            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
 
         - name: ccache
           uses: actions/cache@v3
@@ -80,8 +80,7 @@ jobs:
 
         - name: Ubuntu
           run: |
-            contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
-            debuild -b -ui -uc -us
+            make deb
             mv ../*.deb .
 
         - name: Upload the ubuntu artifacts

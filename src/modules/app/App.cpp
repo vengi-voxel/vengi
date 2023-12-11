@@ -415,17 +415,6 @@ AppState App::onInit() {
 	core::Var::needsSaving();
 	core::Var::visit([&](const core::VarPtr &var) { var->markClean(); });
 
-	for (const Argument &arg : _arguments) {
-		if (!arg.mandatory()) {
-			continue;
-		}
-		if (!hasArg(arg.longArg())) {
-			Log::error("Missing mandatory argument %s", arg.longArg().c_str());
-			usage();
-			return AppState::Destroy;
-		}
-	}
-
 	if (hasArg("--version")) {
 		Log::info("%s " PROJECT_VERSION, _appname.c_str());
 		return AppState::Destroy;
@@ -441,6 +430,17 @@ AppState App::onInit() {
 	}
 
 	_availableMemoryMiB = SDL_GetSystemRAM();
+
+	for (const Argument &arg : _arguments) {
+		if (!arg.mandatory()) {
+			continue;
+		}
+		if (!hasArg(arg.longArg())) {
+			Log::error("Missing mandatory argument %s", arg.longArg().c_str());
+			usage();
+			return AppState::Destroy;
+		}
+	}
 
 	metric::init(_appname);
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});

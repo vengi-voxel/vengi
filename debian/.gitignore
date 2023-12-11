@@ -5,3 +5,4 @@
 /*.substvars
 /vengi-*/*
 /changelog
+/*.bash-completion
