@@ -12,11 +12,12 @@
 #include <glm/vec2.hpp>
 #include "Rect.h"
 #include "core/Trace.h"
+#include "core/DirtyState.h"
 
 namespace math {
 
 template<class NODE, typename TYPE>
-class QuadTree {
+class QuadTree : public core::DirtyState {
 public:
 	typedef std::list<NODE> Contents;
 private:
@@ -208,11 +209,9 @@ private:
 	};
 
 	QuadTreeNode _root;
-	// dirty flag can be used for query caches
-	bool _dirty;
 public:
 	QuadTree(const Rect<TYPE>& rectangle, int maxDepth = 10) :
-			_root(rectangle, maxDepth, 0), _dirty(false) {
+			_root(rectangle, maxDepth, 0) {
 	}
 
 	inline int count() const {
@@ -221,7 +220,7 @@ public:
 
 	inline bool insert(const NODE& item) {
 		if (_root.insert(item)) {
-			_dirty = true;
+			markDirty();
 			return true;
 		}
 		return false;
@@ -229,7 +228,7 @@ public:
 
 	inline bool remove(const NODE& item) {
 		if (_root.remove(item)) {
-			_dirty = true;
+			markDirty();
 			return true;
 		}
 		return false;
@@ -241,18 +240,10 @@ public:
 	}
 
 	void clear() {
-		_dirty = true;
+		markDirty();
 		_root._contents.clear();
 		_root._nodes.clear();
 		_root._nodes.reserve(4);
-	}
-
-	inline void markAsClean() {
-		_dirty = false;
-	}
-
-	inline bool isDirty() {
-		return _dirty;
 	}
 
 	inline void getContents(Contents& results) const {
