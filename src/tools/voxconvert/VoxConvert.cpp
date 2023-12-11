@@ -314,6 +314,9 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (sceneGraph.empty()) {
+		if (_exportPalette) {
+			return state;
+		}
 		Log::error("No valid input found in the scenegraph to operate on.");
 		return app::AppState::InitFailure;
 	}
