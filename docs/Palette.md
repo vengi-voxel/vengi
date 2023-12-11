@@ -25,6 +25,7 @@ This would try to download a palette with the id `paletteid` from [lospec.com](h
 There are several color or palette related cvars available:
 
 * `voxformat_createpalette`: Allows you to disable the palette creation and use the palette specified via `palette` cvar
-* `core_colorreduction`: Allows you to specify a color reduction value when e.g. importing RGB(A) based voxel or mesh formats
+* `core_colorreduction`: Allows you to specify a color reduction value when e.g. importing RGB(A) based voxel or mesh formats. Possible values are: `Octree`, `Wu`, `MedianCut`, `KMeans`, `NeuQuant`.
+
 
 You can find the detailed description and more cvars by using e.g. the [voxconvert](voxconvert/Index.md) `--help` parameter
