@@ -89,7 +89,7 @@ IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_AL
 	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	DLLThumbnailer app(filesystem, timeProvider, phbmp);
 	char argv1[32];
-	core::string::formatBuf(argv1, sizeof(argv1), "%s", app.fullAppname().c_str);
+	core::string::formatBuf(argv1, sizeof(argv1), "%s", app.fullAppname().c_str());
 	char argv2[32];
 	core::string::formatBuf(argv2, sizeof(argv2), "--size");
 	char argv3[32];

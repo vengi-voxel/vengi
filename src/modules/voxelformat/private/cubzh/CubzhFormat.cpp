@@ -576,10 +576,8 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, io::SeekableRe
 	wrapBool(loadHeader(stream, header))
 	if (header.version == 5) {
 		return loadVersion5(filename, header, stream, sceneGraph, palette, ctx);
-	} else {
-		return loadVersion6(filename, header, stream, sceneGraph, palette, ctx);
 	}
-	return false;
+	return loadVersion6(filename, header, stream, sceneGraph, palette, ctx);
 }
 
 size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
