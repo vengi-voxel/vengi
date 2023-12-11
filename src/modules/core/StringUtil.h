@@ -154,6 +154,7 @@ core::String extractAllExtensions(const core::String& str);
  * example: given input is @c /foo/bar/file.txt - the result is @c file.txt
  */
 core::String extractFilenameWithExtension(const core::String& str);
+core::String addFilenamePrefix(const core::String& filename, const core::String &prefix);
 
 bool contains(const char *haystack, const char *needle);
 

@@ -917,5 +917,11 @@ core::String extractFilenameWithExtension(const core::String& str) {
 	return str.substr(pathPos + 1);
 }
 
+core::String addFilenamePrefix(const core::String& filename, const core::String &prefix) {
+	const core::String &path = extractPath(filename);
+	const core::String &file = extractFilenameWithExtension(filename);
+	return core::string::path(path, prefix + file);
+}
+
 } // namespace string
 } // namespace core

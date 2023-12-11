@@ -90,6 +90,10 @@ TEST_F(StringUtilTest, testStripExtension) {
 	EXPECT_EQ("foo.bar", core::string::stripExtension("foo.bar.foo"));
 }
 
+TEST_F(StringUtilTest, testAddFilenamePrefix) {
+	EXPECT_EQ("/path/to/some/prefix-file.ext", core::string::addFilenamePrefix("/path/to/some/file.ext", "prefix-"));
+}
+
 TEST_F(StringUtilTest, testReplaceExtension) {
 	EXPECT_EQ("foo.foo", core::string::replaceExtension("foo.bar", "foo"));
 	EXPECT_EQ("foo.foo", core::string::replaceExtension("foo", "foo"));
