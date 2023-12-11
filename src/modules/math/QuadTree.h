@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <list>
-#include "core/collection/Array.h"
 #include <algorithm>
 #include <limits>
 #include <glm/vec2.hpp>
