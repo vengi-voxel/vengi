@@ -59,6 +59,7 @@ public:
 		core::DynamicArray<Element> elements;
 		PlyFormatType format = PlyFormatType::Ascii;
 		core::String version = "1.0";
+		core::String comment;
 	};
 
 	struct Vertex {

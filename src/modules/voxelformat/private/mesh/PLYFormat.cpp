@@ -274,6 +274,7 @@ bool PLYFormat::parseHeader(io::SeekableReadStream &stream, Header &header) {
 			header.elements.back().properties.push_back(property);
 		} else if (tokens[0] == "comment" || tokens[0] == "obj_info") {
 			Log::debug("ply %s", line.c_str());
+			header.comment = line;
 		} else if (tokens[0] == "end_header") {
 			endHeader = true;
 		}
@@ -758,6 +759,11 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		tri.vertices[0] *= scale;
 		tri.vertices[1] *= scale;
 		tri.vertices[2] *= scale;
+	}
+
+	if (!header.comment.empty()) {
+		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
+		root.setProperty("comment", header.comment);
 	}
 
 	return voxelizeNode(filename, sceneGraph, tris);
