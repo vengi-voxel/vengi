@@ -468,7 +468,6 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
-			scenegraph::SceneGraphNode node;
 			const int maxDepth = glm::clamp(core::string::toInt(getArgVal("--image-as-volume-max-depth")), 1, 255);
 			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
 			voxel::RawVolume *v = voxelutil::importAsVolume(image, maxDepth, bothSides);
@@ -476,17 +475,18 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 				Log::warn("Failed to import image as volume: '%s'", image->name().c_str());
 				return false;
 			}
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
 			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsPlane) {
-			scenegraph::SceneGraphNode node;
 			voxel::RawVolume *v = voxelutil::importAsPlane(image);
 			if (v == nullptr) {
 				Log::warn("Failed to import image as plane: '%s'", image->name().c_str());
 				return false;
 			}
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
 			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
