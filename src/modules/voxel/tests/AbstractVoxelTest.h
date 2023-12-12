@@ -5,7 +5,6 @@
 #pragma once
 
 #include "app/tests/AbstractTest.h"
-#include "voxel/MaterialColor.h"
 #include "math/Random.h"
 #include "voxel/Region.h"
 #include <glm/geometric.hpp>

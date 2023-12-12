@@ -286,6 +286,13 @@ static bool performQuadMerging(QuadList& quads, Mesh* meshCurrent) {
 /**
  * @brief We are checking the voxels above us. There are four possible ambient occlusion values
  * for a vertex.
+ *
+ * @li https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
+ * @li https://www.reddit.com/r/gamedev/comments/1gvk18/comment/cao9n91/
+ *
+ * There are four states for the ambient occlusion value.
+ * @li @c 0: full occluded in the corner of three voxels
+ * @li @c 3: no occluded at all
  */
 CORE_FORCE_INLINE uint8_t vertexAmbientOcclusion(bool side1, bool side2, bool corner) {
 	if (side1 && side2) {

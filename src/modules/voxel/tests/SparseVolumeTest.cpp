@@ -3,8 +3,7 @@
  */
 
 #include "voxel/SparseVolume.h"
-#include "AbstractVoxelTest.h"
-#include "core/collection/DynamicArray.h"
+#include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"

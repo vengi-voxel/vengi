@@ -65,7 +65,7 @@ void AbstractVoxFormatTest::dump(const core::String &structName, voxel::RawVolum
 	stream.writeString("\tcore::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);\n", false);
 	voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		stream.writeString(
-			core::string::format("\tv->setVoxel(%i, %i, %i, voxel::createVoxel(%i));\n", x, y, z, voxel.getColor()),
+			core::string::format("\tv->setVoxel(%i, %i, %i, voxel::createVoxel(voxel::VoxelType::Generic, %i));\n", x, y, z, voxel.getColor()),
 			false);
 	});
 	stream.writeString("\treturn v;\n}\n};\n", false);
