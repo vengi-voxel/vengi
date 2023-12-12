@@ -114,6 +114,7 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/palette-nippon.png
 
+	tests/ambient-occlusion.vengi
 	tests/qubicle.qb
 	tests/qubicle.qbt
 	tests/qubicle.qef
