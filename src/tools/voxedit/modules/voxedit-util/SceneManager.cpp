@@ -1463,18 +1463,14 @@ void SceneManager::rotate(math::Axis axis) {
 }
 
 void SceneManager::move(int nodeId, const glm::ivec3& m) {
-	const voxel::RawVolume* v = volume(nodeId);
+	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolume* newVolume = new voxel::RawVolume(v->region());
-	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	voxelutil::moveVolume(&wrapper, v, m);
-	if (!setNewVolume(nodeId, newVolume)) {
-		delete newVolume;
-		return;
-	}
-	modified(nodeId, newVolume->region());
+
+	// TODO: only move the selected voxels
+	v->move(m);
+	modified(nodeId, v->region());
 }
 
 void SceneManager::move(int x, int y, int z) {
