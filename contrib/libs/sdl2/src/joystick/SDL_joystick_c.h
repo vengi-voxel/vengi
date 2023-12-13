@@ -125,6 +125,9 @@ extern SDL_bool SDL_IsJoystickNintendoSwitchJoyConPair(Uint16 vendor_id, Uint16 
 /* Function to return whether a joystick is a Steam Controller */
 extern SDL_bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 
+/* Function to return whether a joystick is a Steam Deck */
+extern SDL_bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
+
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 
@@ -230,6 +233,30 @@ typedef struct _SDL_GamepadMapping
 /* Function to get autodetected gamepad controller mapping from the driver */
 extern SDL_bool SDL_PrivateJoystickGetAutoGamepadMapping(int device_index,
                                                          SDL_GamepadMapping *out);
+
+
+typedef struct
+{
+    const char *included_hint_name;
+    int num_included_entries;
+    int max_included_entries;
+    Uint32 *included_entries;
+
+    const char *excluded_hint_name;
+    int num_excluded_entries;
+    int max_excluded_entries;
+    Uint32 *excluded_entries;
+
+    int num_initial_entries;
+    Uint32 *initial_entries;
+
+    SDL_bool initialized;
+} SDL_vidpid_list;
+
+extern void SDL_LoadVIDPIDList(SDL_vidpid_list *list);
+extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list);
+extern SDL_bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list *list);
+extern void SDL_FreeVIDPIDList(SDL_vidpid_list *list);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -156,70 +156,18 @@ struct _SDL_GameController
         return retval;                                                       \
     }
 
-typedef struct
-{
-    int num_entries;
-    int max_entries;
-    Uint32 *entries;
-} SDL_vidpid_list;
-
-static SDL_vidpid_list SDL_allowed_controllers;
-static SDL_vidpid_list SDL_ignored_controllers;
-
-static void SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
-{
-    Uint32 entry;
-    char *spot;
-    char *file = NULL;
-
-    list->num_entries = 0;
-
-    if (hint && *hint == '@') {
-        spot = file = (char *)SDL_LoadFile(hint + 1, NULL);
-    } else {
-        spot = (char *)hint;
-    }
-
-    if (!spot) {
-        return;
-    }
-
-    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
-        entry = (Uint16)SDL_strtol(spot, &spot, 0);
-        entry <<= 16;
-        spot = SDL_strstr(spot, "0x");
-        if (!spot) {
-            break;
-        }
-        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
-
-        if (list->num_entries == list->max_entries) {
-            int max_entries = list->max_entries + 16;
-            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries * sizeof(*list->entries));
-            if (!entries) {
-                /* Out of memory, go with what we have already */
-                break;
-            }
-            list->entries = entries;
-            list->max_entries = max_entries;
-        }
-        list->entries[list->num_entries++] = entry;
-    }
-
-    if (file) {
-        SDL_free(file);
-    }
-}
-
-static void SDLCALL SDL_GameControllerIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_LoadVIDPIDListFromHint(hint, &SDL_ignored_controllers);
-}
-
-static void SDLCALL SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_LoadVIDPIDListFromHint(hint, &SDL_allowed_controllers);
-}
+static SDL_vidpid_list SDL_allowed_controllers = {
+    SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT, 0, 0, NULL,
+    NULL, 0, 0, NULL,
+    0, NULL,
+    SDL_FALSE
+};
+static SDL_vidpid_list SDL_ignored_controllers = {
+    SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES, 0, 0, NULL,
+    NULL, 0, 0, NULL,
+    0, NULL,
+    SDL_FALSE
+};
 
 static ControllerMapping_t *SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority);
 static int SDL_PrivateGameControllerAxis(SDL_GameController *gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
@@ -1972,10 +1920,8 @@ int SDL_GameControllerInitMappings(void)
     /* load in any user supplied config */
     SDL_GameControllerLoadHints();
 
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
-                        SDL_GameControllerIgnoreDevicesChanged, NULL);
-    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
-                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
+    SDL_LoadVIDPIDList(&SDL_allowed_controllers);
+    SDL_LoadVIDPIDList(&SDL_ignored_controllers);
 
     return 0;
 }
@@ -2161,11 +2107,9 @@ static SDL_bool SDL_endswith(const char *string, const char *suffix)
  */
 SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
 {
-    int i;
     Uint16 vendor;
     Uint16 product;
     Uint16 version;
-    Uint32 vidpid;
 
 #if defined(__LINUX__)
     if (SDL_endswith(name, " Motion Sensors")) {
@@ -2190,8 +2134,8 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         return SDL_TRUE;
     }
 
-    if (SDL_allowed_controllers.num_entries == 0 &&
-        SDL_ignored_controllers.num_entries == 0) {
+    if (SDL_allowed_controllers.num_included_entries == 0 &&
+        SDL_ignored_controllers.num_included_entries == 0) {
         return SDL_FALSE;
     }
 
@@ -2214,20 +2158,14 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
         }
     }
 
-    vidpid = MAKE_VIDPID(vendor, product);
-
-    if (SDL_allowed_controllers.num_entries > 0) {
-        for (i = 0; i < SDL_allowed_controllers.num_entries; ++i) {
-            if (vidpid == SDL_allowed_controllers.entries[i]) {
-                return SDL_FALSE;
-            }
+    if (SDL_allowed_controllers.num_included_entries > 0) {
+        if (SDL_VIDPIDInList(vendor, product, &SDL_allowed_controllers)) {
+            return SDL_FALSE;
         }
         return SDL_TRUE;
     } else {
-        for (i = 0; i < SDL_ignored_controllers.num_entries; ++i) {
-            if (vidpid == SDL_ignored_controllers.entries[i]) {
-                return SDL_TRUE;
-            }
+        if (SDL_VIDPIDInList(vendor, product, &SDL_ignored_controllers)) {
+            return SDL_TRUE;
         }
         return SDL_FALSE;
     }
@@ -3133,19 +3071,8 @@ void SDL_GameControllerQuitMappings(void)
 
     SDL_DelEventWatch(SDL_GameControllerEventWatcher, NULL);
 
-    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
-                        SDL_GameControllerIgnoreDevicesChanged, NULL);
-    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
-                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
-
-    if (SDL_allowed_controllers.entries) {
-        SDL_free(SDL_allowed_controllers.entries);
-        SDL_zero(SDL_allowed_controllers);
-    }
-    if (SDL_ignored_controllers.entries) {
-        SDL_free(SDL_ignored_controllers.entries);
-        SDL_zero(SDL_ignored_controllers);
-    }
+    SDL_FreeVIDPIDList(&SDL_allowed_controllers);
+    SDL_FreeVIDPIDList(&SDL_ignored_controllers);
 }
 
 /*
