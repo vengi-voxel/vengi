@@ -16,6 +16,9 @@ namespace _priv {
 static constexpr const int MaxVolumeSize = 256;
 }
 
+/**
+ * @brief A struct that holds the information that are needed when creating new model nodes
+ */
 struct ModelNodeSettings {
 	core::String name;
 	core::Optional<palette::Palette> palette;
