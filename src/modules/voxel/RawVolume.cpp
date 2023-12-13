@@ -164,17 +164,21 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 	t.y = (t.y % h + h) % h;
 	t.z = (t.z % d + d) % d;
 
+	const int hwstride = h * w;
 	for (int z = 0; z < d; ++z) {
+		const int zhwstride = z * hwstride;
 		for (int y = 0; y < h; ++y) {
-			core::rotate(_data + z * h * w + y * w, _data + z * h * w + y * w + t.x, _data + z * h * w + (y + 1) * w);
+			const int begin = zhwstride + y * w;
+			core::rotate(_data + begin, _data + begin + t.x, _data + zhwstride + (y + 1) * w);
 		}
 	}
 
+	const int yoffset = t.y * w;
 	for (int z = 0; z < d; ++z) {
-		core::rotate(_data + z * h * w, _data + z * h * w + t.y * w, _data + (z + 1) * h * w);
+		core::rotate(_data + z * hwstride, _data + z * hwstride + yoffset, _data + (z + 1) * hwstride);
 	}
 
-	core::rotate(_data, _data + t.z * h * w, _data + d * h * w);
+	core::rotate(_data, _data + t.z * hwstride, _data + d * hwstride);
 
 	return true;
 }
