@@ -33,6 +33,28 @@ constexpr int distance(T first, T last) {
 	return d;
 }
 
+template<class Iter>
+Iter rotate(Iter first, Iter middle, Iter last) {
+	if (first == middle)
+		return last;
+
+	if (middle == last)
+		return first;
+
+	Iter write = first;
+	Iter next_read = first; // read position for when "read" hits "last"
+
+	for (Iter read = middle; read != last; ++write, ++read) {
+		if (write == next_read)
+			next_read = read; // track where "first" went
+		core::exchange(*write, *read);
+	}
+
+	// rotate the remaining sequence into place
+	rotate(write, next_read, last);
+	return write;
+}
+
 template<class Iter, class T>
 Iter find(Iter first, Iter last, const T &v) {
 	while (first != last) {
