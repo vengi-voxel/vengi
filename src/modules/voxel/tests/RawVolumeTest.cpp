@@ -95,6 +95,16 @@ TEST_F(RawVolumeTest, testSamplerPeekWithTipOfTheGeom) {
 	ASSERT_EQ(VoxelType::Generic, sampler.peekVoxel0px1ny0pz().getMaterial()) << "The voxel below the current position should have a different ";
 }
 
+TEST_F(RawVolumeTest, testMove) {
+	RawVolume v({glm::ivec3(0), glm::ivec3(1)});
+	v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 1));
+	v.move({1, 0, 0});
+	EXPECT_EQ((int)v.voxel(0, 0, 0).getColor(), 0);
+	EXPECT_EQ((int)v.voxel(0, 0, 0).getMaterial(), (int)VoxelType::Air);
+	EXPECT_EQ((int)v.voxel(1, 0, 0).getColor(), 1);
+	EXPECT_EQ((int)v.voxel(1, 0, 0).getMaterial(), (int)VoxelType::Generic);
+}
+
 TEST_F(RawVolumeTest, testFullSamplerLoop) {
 	RawVolume v(_region);
 	pageIn(v.region(), v);

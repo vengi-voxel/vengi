@@ -214,6 +214,13 @@ public:
 		_region.shift(t.x, t.y, t.z);
 	}
 
+	/**
+	 * @brief Move voxels in the volumes but doesn't cut of voxels, but moves them in from the other side again.
+	 * @param[in] t The translation vector that might not be bigger than the volume size
+	 * @return @c false if the move wasn't possible because @c t was invalid, @c true otherwise
+	 */
+	bool move(const glm::ivec3 &t);
+
 private:
 	void initialise(const Region &region);
 

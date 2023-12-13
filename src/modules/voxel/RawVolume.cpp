@@ -154,6 +154,31 @@ RawVolume::~RawVolume() {
 	_data = nullptr;
 }
 
+bool RawVolume::move(const glm::ivec3 &shift) {
+	const int w = width();
+	const int h = height();
+	const int d = depth();
+
+	glm::ivec3 t = shift;
+	t.x = (t.x % w + w) % w;
+	t.y = (t.y % h + h) % h;
+	t.z = (t.z % d + d) % d;
+
+	for (int z = 0; z < d; ++z) {
+		for (int y = 0; y < h; ++y) {
+			core::rotate(_data + z * h * w + y * w, _data + z * h * w + y * w + t.x, _data + z * h * w + (y + 1) * w);
+		}
+	}
+
+	for (int z = 0; z < d; ++z) {
+		core::rotate(_data + z * h * w, _data + z * h * w + t.y * w, _data + (z + 1) * h * w);
+	}
+
+	core::rotate(_data, _data + t.z * h * w, _data + d * h * w);
+
+	return true;
+}
+
 Voxel* RawVolume::copyVoxels() const {
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	Voxel* rawCopy = (Voxel*)core_malloc(size);
