@@ -60,7 +60,7 @@ protected:
 
 public:
 	SceneGraph(int nodes = 262144);
-	~SceneGraph();
+	virtual ~SceneGraph();
 
 	SceneGraph(SceneGraph&& other) noexcept;
 	SceneGraph &operator=(SceneGraph &&move) noexcept;
