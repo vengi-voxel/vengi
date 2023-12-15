@@ -298,6 +298,10 @@ function(engine_add_executable)
 		endif()
 	endif()
 
+	if (INSTALL_DATA)
+		cpack_add_component(${_EXE_TARGET} DISPLAY_NAME "${COMMANDLINE}" DESCRIPTION ${DESCRIPTION})
+	endif()
+
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_EXECUTABLE True)
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_INSTALL ${INSTALL_DATA})
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_FILES "${_EXE_FILES}")
