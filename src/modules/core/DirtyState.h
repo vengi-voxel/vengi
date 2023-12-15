@@ -11,6 +11,8 @@ protected:
 	bool _dirty = false;
 
 public:
+	virtual ~DirtyState() = default;
+
 	virtual void markDirty() {
 		_dirty = true;
 	}
