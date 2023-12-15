@@ -53,7 +53,7 @@ jobs:
             cmake --build . --target package
 
         - name: Upload the build artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: dmg
             path: build/*.dmg
@@ -84,7 +84,7 @@ jobs:
             mv ../*.deb .
 
         - name: Upload the ubuntu artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: debian
             path: vengi*.deb
@@ -140,7 +140,7 @@ jobs:
             ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit
 
         - name: Upload the AppImage artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: appimage
             path: voxedit*.AppImage
@@ -177,7 +177,7 @@ jobs:
             cmake --build build/emscripten --target voxedit
 
         - name: Upload the build artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: emscripten
             path: build/emscripten/voxedit
@@ -209,26 +209,26 @@ jobs:
             cpack
 
         - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxedit
             path: build/voxedit-install/
 
         - name: Upload the tests artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           if: ${{ failure() }}
           with:
             name: windows-release-tests
             path: build/tests-*/*
 
         - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxconvert
             path: build/voxconvert-install/
 
         - name: Upload the nsis installer artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: windows-installer
             path: build/vengi-*-Windows.exe
@@ -254,13 +254,13 @@ jobs:
             cmake --install . --component voxconvert --prefix voxconvert-install
 
         - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxedit-debug
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxconvert-debug
             path: build/voxconvert-install/
@@ -302,13 +302,13 @@ jobs:
             cmake --install . --component voxconvert --prefix voxconvert-install
 
         - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxedit-msys-release
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v4
           with:
             name: voxconvert-msys-release
             path: build/voxconvert-install/
