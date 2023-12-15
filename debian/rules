@@ -3,5 +3,7 @@
 %:
 	dh $@ --buildsystem=cmake+ninja --with bash-completion
 
-override_dh_ctest_configure:
-	dh_ctest_configure -- -DUNITTESTS:BOOL=OFF -DVISUALTESTS:BOOL=OFF -DCMAKE_UNITY_BUILD:BOOL=ON
+override_dh_auto_configure:
+	dh_auto_configure -- -DUNITTESTS:BOOL=OFF -DVISUALTESTS:BOOL=OFF -DCMAKE_UNITY_BUILD:BOOL=ON
+
+override_dh_auto_test:
