@@ -15,8 +15,9 @@ public:
 	}
 };
 
-HTTPMetricSender::HTTPMetricSender(const core::String &url) : _request(url, http::RequestType::POST) {
+HTTPMetricSender::HTTPMetricSender(const core::String &url, const core::String &userAgent) : _request(url, http::RequestType::POST) {
 	_request.addHeader("Content-Type", "application/json");
+	_request.setUserAgent(userAgent);
 }
 
 bool HTTPMetricSender::send(const char *buffer) const {

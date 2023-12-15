@@ -64,7 +64,7 @@ bool Request::supported() {
 Request::Request(const core::String &url, RequestType type) : _type(type), _url(url) {
 	_timeoutSecond = core::Var::get(cfg::HttpTimeout, "5")->intVal();
 	_connectTimeoutSecond = core::Var::get(cfg::HttpConnectTimeout, "1")->intVal();
-	_userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
+	_userAgent = "vengi/" PROJECT_VERSION;
 }
 
 bool Request::setBody(const core::String &body) {
@@ -149,9 +149,11 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	// add request headers
 
 	std::wstring reqHeaders;
-	reqHeaders += L"User-Agent: ";
-	reqHeaders += s2ws(_userAgent.c_str());
-	reqHeaders += L"\r\n";
+	if (!_userAgent.empty()) {
+		reqHeaders += L"User-Agent: ";
+		reqHeaders += s2ws(_userAgent.c_str());
+		reqHeaders += L"\r\n";
+	}
 	for (const auto &entry : _headers) {
 		reqHeaders += s2ws(entry->first.c_str());
 		reqHeaders += L": ";
@@ -160,7 +162,7 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	}
 
 	SIZE_T len = reqHeaders.size();
-	if (!WinHttpAddRequestHeaders(hRequest, reqHeaders.c_str(), DWORD(len),
+	if (len > 0 && !WinHttpAddRequestHeaders(hRequest, reqHeaders.c_str(), DWORD(len),
 								  WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
 		Log::warn("Failed to add request headers to url: %s", _url.c_str());
 	}
@@ -240,6 +242,10 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 
 	core::DynamicArray<const char*> headers;
 	headers.reserve(_headers.size() + 1);
+	if (!_userAgent.empty()) {
+		headers.push_back("User-Agent");
+		headers.push_back(_userAgent.c_str());
+	}
 	for (const auto &entry : _headers) {
 		headers.push_back(entry->first.c_str());
 		headers.push_back(entry->second.c_str());
@@ -295,7 +301,9 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectTimeoutSecond);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, _timeoutSecond);
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, _userAgent.c_str());
+	if (!_userAgent.empty()) {
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, _userAgent.c_str());
+	}
 	const CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK) {
 		char *url = nullptr;

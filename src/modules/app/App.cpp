@@ -442,7 +442,7 @@ AppState App::onInit() {
 		}
 	}
 
-	metric::init(_appname);
+	metric::init(fullAppname());
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	core_trace_init();

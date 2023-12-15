@@ -10,6 +10,7 @@
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
 #include "metric/HTTPMetricSender.h"
+#include "engine-config.h"
 
 namespace metric {
 
@@ -31,7 +32,8 @@ bool MetricState::init(const core::String &appname) {
 
 	if (flavor->strVal() == "json") {
 		const core::String &url = core::Var::get(cfg::MetricJsonUrl, "https://vengi-voxel.de/api/metric")->strVal();
-		_sender = core::make_shared<metric::HTTPMetricSender>(url);
+		const core::String userAgent = appname + "/" PROJECT_VERSION;
+		_sender = core::make_shared<metric::HTTPMetricSender>(url, userAgent);
 	} else {
 		const core::String &host = core::Var::get(cfg::MetricHost, "127.0.0.1")->strVal();
 		const int port = core::Var::get(cfg::MetricPort, "8125")->intVal();

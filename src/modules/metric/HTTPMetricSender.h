@@ -15,7 +15,7 @@ private:
 	mutable http::Request _request;
 
 public:
-	HTTPMetricSender(const core::String &url);
+	HTTPMetricSender(const core::String &url, const core::String &userAgent);
 	bool send(const char *buffer) const override;
 
 	bool init() override;

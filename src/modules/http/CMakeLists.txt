@@ -3,7 +3,7 @@ set(SRCS
 )
 
 set(LIB http)
-set(LIBS io app)
+set(LIBS core io)
 if (UNIX)
 	find_package(CURL)
 

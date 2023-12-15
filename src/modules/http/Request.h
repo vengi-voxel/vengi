@@ -23,6 +23,7 @@ private:
 
 public:
 	Request(const core::String &url, RequestType type);
+	void setUserAgent(const core::String &userAgent);
 	void setConnectTimeoutSecond(int timeoutSecond);
 	void setTimeoutSecond(int timeoutSecond);
 	bool setBody(const core::String &body);
@@ -32,6 +33,10 @@ public:
 
 	static bool supported();
 };
+
+inline void Request::setUserAgent(const core::String &userAgent) {
+	_userAgent = userAgent;
+}
 
 inline void Request::setConnectTimeoutSecond(int timeoutSecond) {
 	_connectTimeoutSecond = timeoutSecond;
