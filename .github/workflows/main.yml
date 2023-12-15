@@ -124,7 +124,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=ON -DUSE_LINK_TIME_OPTIMIZATION=OFF
+            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=ON -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On
             cmake --build .
             cmake --install . --component voxedit --prefix install-voxedit/usr
 
@@ -193,7 +193,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
             cmake --build .
 
         - name: Test
@@ -244,7 +244,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON
+            cmake .. -DCMAKE_BUILD_TYPE=Debug -DUSE_SANITIZERS=ON -DCMAKE_UNITY_BUILD=On
             cmake --build .
 
         - name: Install
@@ -292,7 +292,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Release
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On
             cmake --build .
 
         - name: Install
