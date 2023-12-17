@@ -357,8 +357,9 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::leftWidget() {
-	_palettePanel.update(TITLE_PALETTE, _lastExecutedCommand);
-	_brushPanel.update(TITLE_BRUSHPANEL, _lastExecutedCommand);
+	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	_palettePanel.update(TITLE_PALETTE, listener);
+	_brushPanel.update(TITLE_BRUSHPANEL, listener);
 }
 
 // end of left side
@@ -382,8 +383,9 @@ void MainWindow::mainWidget() {
 	if (scene != nullptr) {
 		_lastHoveredScene = scene;
 	}
+	command::CommandExecutionListener &listener = imguiApp()->commandListener();
 	for (size_t i = 0; i < _scenes.size(); ++i) {
-		_scenes[i]->update(&_lastExecutedCommand);
+		_scenes[i]->update(&listener);
 	}
 
 	// bottom
@@ -419,21 +421,23 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
+	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
 
 void MainWindow::rightWidget() {
 	if (const Viewport *viewport = hoveredScene()) {
 		_lastSceneMode = viewport->isSceneMode();
 	}
+	command::CommandExecutionListener &listener = imguiApp()->commandListener();
 	// top
-	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, _lastExecutedCommand);
-	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, _lastExecutedCommand);
-	_assetPanel.update(TITLE_ASSET, _lastSceneMode, _lastExecutedCommand);
-	_animationPanel.update(TITLE_ANIMATION_SETTINGS, _lastExecutedCommand, &_animationTimeline);
-	_mementoPanel.update(TITLE_MEMENTO, _lastExecutedCommand);
+	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, listener);
+	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
+	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
+	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
+	_mementoPanel.update(TITLE_MEMENTO, listener);
 
 	// bottom
-	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, _lastExecutedCommand);
+	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 #if ENABLE_RENDER_PANEL
 	_renderPanel.update(TITLE_RENDER, sceneMgr().sceneGraph());
 #endif
@@ -952,7 +956,8 @@ void MainWindow::update() {
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
 	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
-	if (_menuBar.update(_app, _lastExecutedCommand)) {
+	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	if (_menuBar.update(_app, listener)) {
 		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
 
@@ -967,7 +972,7 @@ void MainWindow::update() {
 
 	ImGui::End();
 
-	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, _lastExecutedCommand.command);
+	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, listener.command);
 
 	if (!existingLayout && viewport->WorkSize.x > 0.0f) {
 		ImGui::DockBuilderAddNode(dockIdMain, ImGuiDockNodeFlags_DockSpace);

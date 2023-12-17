@@ -7,10 +7,8 @@
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
 #include "video/WindowedApp.h"
-#include "video/Buffer.h"
 #include "Console.h"
 #include "Style.h"
-#include "core/collection/Array.h"
 
 struct SDL_Cursor;
 
@@ -25,6 +23,7 @@ private:
 	using Super = video::WindowedApp;
 	void loadFonts();
 protected:
+	command::CommandExecutionListener _lastExecutedCommand;
 	core::Set<int32_t> _keys;
 	core::VarPtr _renderUI;
 	core::VarPtr _showMetrics;
@@ -106,6 +105,10 @@ public:
 	virtual ~IMGUIApp();
 
 	virtual void beforeUI();
+
+	command::CommandExecutionListener &commandListener() {
+		return _lastExecutedCommand;
+	}
 
 	int fontSize() const;
 	virtual app::AppState onConstruct() override;

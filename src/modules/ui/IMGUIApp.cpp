@@ -23,7 +23,6 @@
 #include "dearimgui/implot.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
-#include "math/Rect.h"
 #include "util/KeybindingHandler.h"
 #include "video/Renderer.h"
 #include "video/TextureConfig.h"
@@ -160,8 +159,8 @@ bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 }
 
 app::AppState IMGUIApp::onConstruct() {
-	const app::AppState state = Super::onConstruct();
 	_console.construct();
+	const app::AppState state = Super::onConstruct();
 	_fileDialog.construct();
 	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 
@@ -412,6 +411,7 @@ app::AppState IMGUIApp::onRunning() {
 				_console.toggle();
 			}
 		}
+		_console.render(_deltaFrameSeconds, _lastExecutedCommand);
 
 		if (_closeModalPopup) {
 			if (ImGui::GetTopMostPopupModal() != nullptr) {
@@ -480,6 +480,7 @@ app::AppState IMGUIApp::onRunning() {
 					const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
 					if (ImGui::Button(deleteButton.c_str())) {
 						command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
+						// TODO: _lastExecutedCommand
 					}
 					ImGui::SameLine();
 					ImGui::TextUnformatted(keyBinding.c_str());
@@ -547,8 +548,6 @@ app::AppState IMGUIApp::onRunning() {
 		core::setBindingContext(core::BindingContext::All);
 	}
 
-	const math::Rect<int> rect(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
-	_console.render(rect, _deltaFrameSeconds);
 	ImGui::EndFrame();
 	ImGui::Render();
 

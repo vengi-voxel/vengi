@@ -567,7 +567,7 @@ inline void Console::clearCommandLine() {
 	_commandLine.clear();
 }
 
-void Console::drawString(int x, int y, const core::String& str, int len) {
+void Console::drawStringColored(const core::String& str, int len) {
 	const char *cstr = str.c_str();
 	ConsoleColor color = WHITE;
 	int colorIndex = -1;
@@ -579,10 +579,10 @@ void Console::drawString(int x, int y, const core::String& str, int len) {
 			color = (ConsoleColor)colorIndex;
 		}
 	}
-	drawString(x, y, color, cstr, len);
+	drawString(color, cstr, len);
 }
 
-void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
+bool Console::render(double deltaFrameSeconds, command::CommandExecutionListener &listener) {
 	_frame += deltaFrameSeconds;
 	if (_frame > 0.25) {
 		_frame = 0.0;
@@ -590,46 +590,10 @@ void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
 	}
 
 	if (!_consoleActive) {
-		return;
-	}
-	core_trace_scoped(ConsoleRender);
-
-	beforeRender(rect);
-
-	const int lineH = lineHeight();
-	_maxLines = (rect.getMaxZ() - rect.getMinZ()) / lineH;
-	if (_maxLines <= 0) {
-		afterRender(rect);
-		return;
-	}
-	const int maxY = (int)_messages.size() * lineH;
-	const glm::ivec2& commandLineSize = stringSize(_commandLine.c_str(), (int)_commandLine.size());
-	const int startY = core_min(rect.getMinZ() + rect.getMaxZ() - commandLineSize.y - 4, maxY);
-	if (!_messages.empty()) {
-		auto i = _messages.end();
-		--i;
-		core::prev(i, _scrollPos);
-		for (int y = startY; ; --i) {
-			if (y < rect.getMinZ()) {
-				break;
-			}
-			const glm::ivec2& size = stringSize(i->c_str(), (int)i->size());
-			y -= size.y;
-			drawString(_consoleMarginLeft, y, *i, (int)i->size());
-			if (i == _messages.begin()) {
-				break;
-			}
-		}
+		return false;
 	}
 
-	drawString(_consoleMarginLeft, startY, _consolePrompt, (int)_consolePrompt.size());
-	drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt, startY, _commandLine, (int)_commandLine.size());
-	if (_cursorBlink) {
-		const glm::ivec2& l = stringSize(_commandLine.c_str(), _cursorPos);
-		drawString(_consoleMarginLeft + _consoleMarginLeftBehindPrompt + l.x, startY + 1, _consoleCursor, (int)_consoleCursor.size());
-	}
-
-	afterRender(rect);
+	return true;
 }
 
 }

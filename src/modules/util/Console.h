@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "command/CommandHandler.h"
 #include "core/String.h"
 #include "core/collection/Array.h"
-#include "math/Rect.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/ConcurrentQueue.h"
@@ -32,15 +32,6 @@ protected:
 	core::String _consoleCursor = "_";
 	char _colorMark = '^';
 
-	core::Array<glm::u8vec4, MAX_COLORS> _colors {
-		glm::ivec4(255, 255, 255, 255),
-		glm::ivec4(0, 0, 0, 255),
-		glm::ivec4(127, 127, 127, 255),
-		glm::ivec4(0, 0, 255, 255),
-		glm::ivec4(0, 255, 0, 255),
-		glm::ivec4(255, 255, 0, 255),
-		glm::ivec4(255, 0, 0, 255)
-	};
 	core::Array<ConsoleColor, SDL_NUM_LOG_PRIORITIES> _priorityColors {
 		GRAY,
 		GRAY,
@@ -69,11 +60,6 @@ protected:
 	void skipColor(const char **cstr);
 
 	void printHistory();
-
-	const core::Array<glm::u8vec4, MAX_COLORS> &colors() const {
-		core_assert_msg(c.size() == MAX_COLORS, "Color count doesn't match");
-		return _colors;
-	}
 
 	/**
 	 * @brief Data structure to store a log entry call from a different thread.
@@ -156,10 +142,6 @@ protected:
 
 	void replaceLastParameter(const core::String& param);
 
-	// history 'scroll' methods
-	void cursorUp();
-	void cursorDown();
-
 	void scrollUp(const int lines = 1);
 	void scrollDown(const int lines = 1);
 	void scrollPageUp();
@@ -173,13 +155,9 @@ protected:
 
 	bool insertClipboard();
 	void insertText(const core::String& text);
-	void drawString(int x, int y, const core::String& str, int len);
+	void drawStringColored(const core::String& str, int len);
 
-	virtual void beforeRender(const math::Rect<int> &rect) {}
-	virtual void afterRender(const math::Rect<int> &rect) {}
-	virtual int lineHeight() = 0;
-	virtual glm::ivec2 stringSize(const char *c, int length) = 0;
-	virtual void drawString(int x, int y, ConsoleColor color, const char* str, int len) = 0;
+	virtual void drawString(ConsoleColor color, const char* str, int len) = 0;
 
 public:
 	Console();
@@ -191,12 +169,16 @@ public:
 	virtual void update(double deltaFrameSeconds);
 	void clear();
 	void clearCommandLine();
-	void render(const math::Rect<int> &rect, double deltaFrameSeconds);
+	virtual bool render(double deltaFrameSeconds, command::CommandExecutionListener &listener);
 	bool isActive() const;
 	bool onTextInput(const core::String& text);
 	bool onKeyPress(int32_t key, int16_t modifier);
 	bool onMouseWheel(int32_t x, int32_t y);
 	bool onMouseButtonPress(int32_t x, int32_t y, uint8_t button);
+
+	// history 'scroll' methods
+	void cursorUp();
+	void cursorDown();
 
 	void autoComplete();
 

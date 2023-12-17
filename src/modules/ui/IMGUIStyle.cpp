@@ -124,7 +124,6 @@ void StyleColorsNeoSequencer(int style) {
 	neoStyle.Colors[ImGuiNeoSequencerCol_SelectionBorder] = ImVec4{0.98f, 0.706f, 0.322f, 0.61f};
 	neoStyle.Colors[ImGuiNeoSequencerCol_Selection] = ImVec4{0.98f, 0.706f, 0.322f, 0.33f};
 
-#if 0
 	// TODO: see issue #359
 	switch (style) {
 	case StyleDark:
@@ -137,7 +136,6 @@ void StyleColorsNeoSequencer(int style) {
 	default:
 		break;
 	}
-#endif
 }
 
 } // namespace ImGui

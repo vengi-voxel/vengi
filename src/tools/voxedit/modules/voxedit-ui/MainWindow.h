@@ -31,13 +31,6 @@ struct TemplateModel;
 
 class MainWindow {
 private:
-	struct LastExecutedCommand : public command::CommandExecutionListener {
-		core::String command;
-		void operator()(const core::String& cmd, const core::DynamicArray<core::String> &args) override {
-			command = cmd;
-		}
-	};
-
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
 	core::VarPtr _simplifiedView;
@@ -64,7 +57,6 @@ private:
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
-	LastExecutedCommand _lastExecutedCommand;
 	LSystemPanel _lsystemPanel;
 	BrushPanel _brushPanel;
 	TreePanel _treePanel;
