@@ -90,7 +90,7 @@ int Command::update(double deltaFrameSeconds) {
 	_delayedTokens.clear();
 	int executed = 0;
 	for (const core::String& fullCmd : copy) {
-		Log::debug("execute %s", fullCmd.c_str());
+		Log::trace("execute delayed %s", fullCmd.c_str());
 		executed += execute(fullCmd);
 	}
 
@@ -137,21 +137,21 @@ int Command::execute(const core::String& command) {
 			continue;
 		}
 		if (_delaySeconds > 0.0) {
-			Log::debug("add command %s to delayed buffer", fullCmd.c_str());
+			Log::trace("add command %s to delayed buffer", fullCmd.c_str());
 			_delayedTokens.push_back(fullCmd);
 			continue;
 		}
-		Log::debug("full command: '%s'", fullCmd.c_str());
+		Log::trace("full command: '%s'", fullCmd.c_str());
 		core::Tokenizer commandTokenizer(cfg, fullCmd, " ");
 		if (!commandTokenizer.hasNext()) {
 			continue;
 		}
 		const core::String& c = commandTokenizer.next();
-		Log::debug("command: '%s'", c.c_str());
+		Log::trace("command: '%s'", c.c_str());
 		core::DynamicArray<core::String> args;
 		while (commandTokenizer.hasNext()) {
 			args.push_back(commandTokenizer.next());
-			Log::debug("arg: '%s'", args.back().c_str());
+			Log::trace("arg: '%s'", args.back().c_str());
 		}
 		if (execute(c, args)) {
 			++executed;
@@ -187,13 +187,13 @@ bool Command::execute(const core::String& command, const CmdArgs& args) {
 				fullCmd.append(" ");
 				fullCmd.append(arg);
 			}
-			Log::debug("delay %s", fullCmd.c_str());
+			Log::trace("delay %s", fullCmd.c_str());
 			_delayedTokens.push_back(fullCmd);
 			return true;
 		}
 		cmd = i->second;
 	}
-	Log::debug("execute %s with %i arguments", command.c_str(), (int)args.size());
+	Log::trace("execute %s with %i arguments", command.c_str(), (int)args.size());
 	cmd._func(args);
 	return true;
 }

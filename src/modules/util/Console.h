@@ -104,8 +104,6 @@ protected:
 
 	bool insertClipboard();
 
-	virtual void drawString(const Message& msg) = 0;
-
 public:
 	Console();
 	virtual ~Console();
