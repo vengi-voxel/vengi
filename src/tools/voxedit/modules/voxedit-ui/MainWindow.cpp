@@ -375,6 +375,7 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT_EDITOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_TIMELINE, dockId);
+	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
 
 void MainWindow::mainWidget() {
@@ -421,7 +422,6 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
-	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
 }
 
 void MainWindow::rightWidget() {
