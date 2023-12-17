@@ -49,6 +49,7 @@ VoxEdit:
    - Allow one to change the transform of a node with updating the children
    - Fixed a few crashes
    - Improved gizmo settings panel
+   - Added the console next to the animation timeline panel
 
 Thumbnailer:
 
