@@ -300,6 +300,10 @@ app::AppState IMGUIApp::onInit() {
 }
 
 void IMGUIApp::setColorTheme() {
+	// reset to default
+	ImGuiStyle &style = ImGui::GetStyle();
+	style = ImGuiStyle();
+
 	switch (_uistyle->intVal()) {
 	case ImGui::StyleCorporateGrey:
 		ImGui::StyleColorsCorporateGrey();
