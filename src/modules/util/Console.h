@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
@@ -18,9 +19,9 @@ namespace util {
 class Console : public core::IComponent {
 protected:
 	struct Message {
-		int priority;
+		Log::Level priority;
 		core::String message;
-		Message(int _priority, const core::String &_message) : priority(_priority), message(_message) {
+		Message(Log::Level _priority, const core::String &_message) : priority(_priority), message(_message) {
 		}
 	};
 	using Messages = core::DynamicArray<Message>;
@@ -36,7 +37,7 @@ protected:
 	 * @brief Data structure to store a log entry call from a different thread.
 	 */
 	struct LogLine {
-		LogLine(int _category = 0, int _priority = 0, const char *_message = nullptr)
+		LogLine(int _category = 0, Log::Level _priority = Log::Level::None, const char *_message = nullptr)
 			: category(_category), priority(_priority), message(_message ? core_strdup(_message) : nullptr) {
 		}
 		~LogLine() {
@@ -54,7 +55,7 @@ protected:
 			message = o.message != nullptr ? core_strdup(o.message) : nullptr;
 		}
 		int category;
-		int priority;
+		Log::Level priority;
 		char *message;
 
 		LogLine &operator=(LogLine &&o) noexcept {
@@ -94,8 +95,8 @@ protected:
 	bool _useOriginalLogFunction = true;
 
 	static core::String removeAnsiColors(const char *message);
-	static void logConsole(void *userdata, int category, int priority, const char *message);
-	virtual void addLogLine(int category, int priority, const char *message);
+	static void logConsole(void *userdata, int category, Log::Level priority, const char *message);
+	virtual void addLogLine(int category, Log::Level priority, const char *message);
 
 	void replaceLastParameter(const core::String &param);
 

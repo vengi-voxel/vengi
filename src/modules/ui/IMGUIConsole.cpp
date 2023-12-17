@@ -6,9 +6,9 @@
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "ScopedStyle.h"
+#include "core/Log.h"
 #include "imgui.h"
 #include "util/Console.h"
-#include <SDL_log.h>
 
 namespace ui {
 
@@ -40,26 +40,25 @@ static int ConsoleInputTextCallback(ImGuiInputTextCallbackData *data) {
 }
 
 
-void IMGUIConsole::addLogLine(int category, int priority, const char *message) {
+void IMGUIConsole::addLogLine(int category, Log::Level priority, const char *message) {
 	Super::addLogLine(category, priority, message);
-	if (priority <= SDL_LOG_PRIORITY_INFO) {
+	if (priority <= Log::Level::Info) {
 		return;
 	}
 
 	int toastType;
 	switch (priority) {
-	case SDL_LOG_PRIORITY_VERBOSE:
-	case SDL_LOG_PRIORITY_DEBUG:
+	case Log::Level::Trace:
+	case Log::Level::Debug:
 		toastType = ImGuiToastType_Debug;
 		break;
-	case SDL_LOG_PRIORITY_WARN:
+	case Log::Level::Warn:
 		toastType = ImGuiToastType_Warning;
 		break;
-	case SDL_LOG_PRIORITY_ERROR:
-	case SDL_LOG_PRIORITY_CRITICAL:
+	case Log::Level::Error:
 		toastType = ImGuiToastType_Error;
 		break;
-	case SDL_LOG_PRIORITY_INFO:
+	case Log::Level::Info:
 		toastType = ImGuiToastType_Info;
 		break;
 	default:
@@ -72,16 +71,12 @@ void IMGUIConsole::addLogLine(int category, int priority, const char *message) {
 void IMGUIConsole::drawString(const Message& msg) {
 	ScopedStyle style;
 	switch (msg.priority) {
-	case SDL_LOG_PRIORITY_WARN:
+	case Log::Level::Warn:
 		style.setColor(ImGuiCol_Text, ImColor(255, 127, 0, 255));
 		break;
-	case SDL_LOG_PRIORITY_ERROR:
-	case SDL_LOG_PRIORITY_CRITICAL:
+	case Log::Level::Error:
 		style.setColor(ImGuiCol_Text, ImColor(255, 0, 0, 255));
 		break;
-	case SDL_LOG_PRIORITY_VERBOSE:
-	case SDL_LOG_PRIORITY_DEBUG:
-	case SDL_LOG_PRIORITY_INFO:
 	default:
 		break;
 	}
@@ -113,7 +108,15 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		}
 		ImGui::SameLine();
 		ImGui::CommandButton("Clear", "clear", listener);
-		// TODO: log level change
+		ImGui::SameLine();
+		// don't offer trace here - it would flood the logs for the user
+		static const char *LogLevelNames[] = {Log::toLogLevel(Log::Level::Debug), Log::toLogLevel(Log::Level::Info),
+											  Log::toLogLevel(Log::Level::Warn), Log::toLogLevel(Log::Level::Error)};
+		int currentLogLevel = core::Var::getSafe(cfg::CoreLogLevel)->intVal();
+		if (ImGui::Combo("Log Level", &currentLogLevel, LogLevelNames, IM_ARRAYSIZE(LogLevelNames))) {
+			const char *logLevelNew = LogLevelNames[currentLogLevel];
+			core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::toLogLevel(logLevelNew));
+		}
 		// TODO: save log to file
 		ImGui::End();
 	}

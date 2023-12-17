@@ -71,7 +71,7 @@ void Console::printHistory() {
 }
 
 void Console::executeCommandLine(command::CommandExecutionListener *listener) {
-	_messages.emplace_back(SDL_LOG_PRIORITY_INFO, _consolePrompt + _commandLine);
+	_messages.emplace_back(Log::Level::Info, _consolePrompt + _commandLine);
 	if (_commandLine.empty()) {
 		return;
 	}
@@ -167,7 +167,7 @@ void Console::autoComplete() {
 			_commandLine.insert(cmdEraseIndex, matches.front().c_str());
 		}
 	} else {
-		_messages.emplace_back(SDL_LOG_PRIORITY_INFO, _consolePrompt + _commandLine);
+		_messages.emplace_back(Log::Level::Info, _consolePrompt + _commandLine);
 		int pos = 0;
 		const core::String first = matches.front();
 		for (char c : first) {
@@ -220,11 +220,11 @@ core::String Console::removeAnsiColors(const char* message) {
 	return out;
 }
 
-void Console::logConsole(void *userdata, int category, int priority, const char *message) {
-	if (priority < 0 || priority >= SDL_NUM_LOG_PRIORITIES) {
+void Console::logConsole(void *userdata, int category, Log::Level priority, const char *message) {
+	if (priority < Log::Level::None || priority > Log::Level::Error) {
 		return;
 	}
-	if (priority < SDL_LogGetPriority(category)) {
+	if (priority < (Log::Level)SDL_LogGetPriority(category)) {
 		return;
 	}
 	Console* console = (Console*)userdata;
@@ -236,7 +236,7 @@ void Console::logConsole(void *userdata, int category, int priority, const char 
 	console->addLogLine(category, priority, message);
 }
 
-void Console::addLogLine(int category, int priority, const char *message) {
+void Console::addLogLine(int category, Log::Level priority, const char *message) {
 	const core::String& cleaned = removeAnsiColors(message);
 	_messages.emplace_back(priority, cleaned);
 	if (_useOriginalLogFunction) {

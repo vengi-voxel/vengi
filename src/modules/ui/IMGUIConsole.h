@@ -21,7 +21,7 @@ private:
 
 	bool _autoScrollEnabled = true;
 	ImGui::ImGuiToasts _notifications;
-	void addLogLine(int category, int priority, const char *message) override;
+	void addLogLine(int category, Log::Level priority, const char *message) override;
 	void drawString(const Message& msg) override;
 
 public:
