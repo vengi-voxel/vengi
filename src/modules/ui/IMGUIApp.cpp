@@ -62,9 +62,6 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 }
 
 bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
-	if (_console.onMouseWheel(x, y)) {
-		return true;
-	}
 	if (!Super::onMouseWheel(x, y)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
@@ -80,9 +77,6 @@ bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
 }
 
 void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
-	if (_console.isActive()) {
-		return;
-	}
 	Super::onMouseButtonRelease(x, y, button);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONUP;
@@ -93,9 +87,6 @@ void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
 }
 
 void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
-	if (_console.onMouseButtonPress(x, y, button)) {
-		return;
-	}
 	Super::onMouseButtonPress(x, y, button, clicks);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONDOWN;
@@ -107,9 +98,6 @@ void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t 
 }
 
 bool IMGUIApp::onTextInput(const core::String &text) {
-	if (_console.onTextInput(text)) {
-		return true;
-	}
 	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
 	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
@@ -118,9 +106,6 @@ bool IMGUIApp::onTextInput(const core::String &text) {
 }
 
 bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (_console.onKeyPress(key, modifier)) {
-		return true;
-	}
 	if (!Super::onKeyPress(key, modifier) ||
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};
@@ -135,9 +120,6 @@ bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
 }
 
 bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
-	if (_console.isActive()) {
-		return true;
-	}
 	if (!Super::onKeyRelease(key, modifier) || _keys.has(key)) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYUP;
@@ -406,12 +388,7 @@ app::AppState IMGUIApp::onRunning() {
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
-		if (_console.isActive()) {
-			if (ImGui::IsPopupOpen(0u, ImGuiPopupFlags_AnyPopupId)) {
-				_console.toggle();
-			}
-		}
-		_console.render(_deltaFrameSeconds, _lastExecutedCommand);
+		_console.render(_lastExecutedCommand);
 
 		if (_closeModalPopup) {
 			if (ImGui::GetTopMostPopupModal() != nullptr) {

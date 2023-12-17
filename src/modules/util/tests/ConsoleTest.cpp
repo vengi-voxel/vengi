@@ -25,9 +25,6 @@ TEST_F(ConsoleTest, testAutoCompleteCvar) {
 	core::Var::get(cvarComplete, "1");
 	TestConsole c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);
-	c.toggle();
-	ASSERT_TRUE(c.isActive());
-	ASSERT_TRUE(c.onTextInput(cvar1));
 	ASSERT_EQ(cvar1, c.commandLine());
 	c.autoComplete();
 	ASSERT_EQ(cvarComplete + " ", c.commandLine());
@@ -40,9 +37,6 @@ TEST_F(ConsoleTest, testAutoCompleteCommand) {
 	command::Command::registerCommand(cmdComplete.c_str(), [] (const command::CmdArgs& args) {});
 	TestConsole c;
 	SDL_LogSetOutputFunction(nullptr, nullptr);
-	c.toggle();
-	ASSERT_TRUE(c.isActive());
-	ASSERT_TRUE(c.onTextInput(cmd1));
 	ASSERT_EQ(cmd1, c.commandLine());
 	c.autoComplete();
 	ASSERT_EQ(cmdComplete + " ", c.commandLine());

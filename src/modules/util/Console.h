@@ -17,15 +17,10 @@ enum ConsoleColor {
 	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
 };
 
-extern core::String getColor(ConsoleColor color);
-
 class Console : public core::IComponent {
 protected:
 	typedef core::DynamicArray<core::String> Messages;
 	Messages _messages;
-
-	int _consoleMarginLeft = 5;
-	int _consoleMarginLeftBehindPrompt = 13;
 
 	const char* _historyFilename = "history";
 	core::String _consolePrompt = "> ";
@@ -116,45 +111,20 @@ protected:
 	Messages _history;
 	uint32_t _historyPos = 0;
 	const unsigned long _mainThread;
-	bool _consoleActive = false;
 	void *_logFunction = nullptr;
 	void *_logUserData = nullptr;
 	core::String _commandLine;
-	// commandline character will get overwritten if this is true
-	bool _overwrite = false;
-	bool _cursorBlink = false;
 	bool _useOriginalLogFunction = true;
-	double _frame = 0.0;
-	int _cursorPos = 0;
-	int _scrollPos = 0;
-	int _maxLines = 0;
-	int _fontSize = 14;
 
 	static core::String removeAnsiColors(const char* message);
 	static void logConsole(void *userdata, int category, int priority, const char *message);
 	virtual void addLogLine(int category, int priority, const char *message);
 
-	// cursor move on the commandline
-	void cursorLeft();
-	void cursorRight();
-	void cursorWordLeft();
-	void cursorWordRight();
-
 	void replaceLastParameter(const core::String& param);
-
-	void scrollUp(const int lines = 1);
-	void scrollDown(const int lines = 1);
-	void scrollPageUp();
-	void scrollPageDown();
 
 	void executeCommandLine();
 
-	// removed the character under the cursor position
-	void cursorDelete(bool moveCursor = true);
-	void cursorDeleteWord();
-
 	bool insertClipboard();
-	void insertText(const core::String& text);
 	void drawStringColored(const core::String& str, int len);
 
 	virtual void drawString(ConsoleColor color, const char* str, int len) = 0;
@@ -165,16 +135,9 @@ public:
 	virtual void construct() override;
 	virtual bool init() override;
 	virtual void shutdown() override;
-	virtual bool toggle();
 	virtual void update(double deltaFrameSeconds);
 	void clear();
 	void clearCommandLine();
-	virtual bool render(double deltaFrameSeconds, command::CommandExecutionListener &listener);
-	bool isActive() const;
-	bool onTextInput(const core::String& text);
-	bool onKeyPress(int32_t key, int16_t modifier);
-	bool onMouseWheel(int32_t x, int32_t y);
-	bool onMouseButtonPress(int32_t x, int32_t y, uint8_t button);
 
 	// history 'scroll' methods
 	void cursorUp();
@@ -184,10 +147,6 @@ public:
 
 	const core::String& commandLine() const;
 };
-
-inline bool Console::isActive() const {
-	return _consoleActive;
-}
 
 inline const core::String& Console::commandLine() const {
 	return _commandLine;

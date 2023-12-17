@@ -30,7 +30,7 @@ private:
 public:
 	Console();
 
-	bool render(double deltaFrameSeconds, command::CommandExecutionListener &listener) override;
+	bool render(command::CommandExecutionListener &listener);
 	void renderNotifications();
 };
 

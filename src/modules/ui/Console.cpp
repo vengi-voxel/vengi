@@ -103,8 +103,7 @@ void Console::drawString(util::ConsoleColor color, const char* str, int len) {
 	ImGui::TextUnformatted(str, str + len);
 }
 
-bool Console::render(double deltaFrameSeconds, command::CommandExecutionListener &listener) {
-	Super::render(deltaFrameSeconds, listener);
+bool Console::render(command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar)) {
 		const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar);

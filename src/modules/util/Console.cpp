@@ -17,7 +17,6 @@
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
 #include "VarUtil.h"
-#include "util/CustomButtonNames.h"
 #include <SDL.h>
 
 namespace util {
@@ -50,7 +49,6 @@ void Console::skipColor(const char **cstr) {
 void Console::construct() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
-	command::Command::registerCommand("toggleconsole", [&] (const command::CmdArgs& args) { toggle(); }).setHelp("Toggle the built-in console");
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
 	command::Command::registerCommand("history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
 }
@@ -80,7 +78,6 @@ void Console::shutdown() {
 	}
 	clear();
 
-	command::Command::unregisterCommand("toggleconsole");
 	command::Command::unregisterCommand("clear");
 	command::Command::unregisterCommand("history");
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)_logFunction, _logUserData);
@@ -92,115 +89,8 @@ void Console::printHistory() {
 	}
 }
 
-bool Console::onKeyPress(int32_t key, int16_t modifier) {
-	if (!_consoleActive) {
-		return false;
-	}
-
-	if (modifier & KMOD_ALT) {
-		if (key == SDLK_BACKSPACE) {
-			cursorDeleteWord();
-		} else if (key == SDLK_LEFT) {
-			cursorWordLeft();
-		} else if (key == SDLK_RIGHT) {
-			cursorWordRight();
-		}
-		return true;
-	}
-
-	if (modifier & KMOD_CONTROL) {
-		if (key == SDLK_TAB || key == SDLK_d) {
-			toggle();
-		} else if (key == SDLK_a || key == SDLK_b) {
-			_cursorPos = 0;
-		} else if (key == SDLK_e) {
-			_cursorPos = (int)_commandLine.size();
-		} else if (key == SDLK_c) {
-			_messages.push_back(_consolePrompt + _commandLine);
-			clearCommandLine();
-		} else if (key == SDLK_l) {
-			clear();
-		} else if (key == SDLK_w) {
-			cursorDeleteWord();
-		} else if (key == SDLK_v) {
-			insertClipboard();
-		} else if (key == SDLK_LEFT) {
-			cursorWordLeft();
-		} else if (key == SDLK_RIGHT) {
-			cursorWordRight();
-		} else if (key == SDLK_PLUS || key == SDLK_KP_PLUS) {
-			++_fontSize;
-		} else if (key == SDLK_MINUS || key == SDLK_KP_MINUS) {
-			--_fontSize;
-		}
-		return true;
-	}
-
-	if (modifier & KMOD_SHIFT) {
-		if (key == SDLK_HOME) {
-			_scrollPos = (int)_messages.size() - _maxLines + 1;
-		} else if (key == SDLK_END) {
-			_scrollPos = 0;
-		} else if (key == SDLK_PAGEUP) {
-			scrollPageUp();
-		} else if (key == SDLK_PAGEDOWN) {
-			scrollPageDown();
-		}
-		return true;
-	}
-
-	switch (key) {
-	case SDLK_ESCAPE:
-		toggle();
-		return true;
-	case SDLK_HOME:
-		_cursorPos = 0;
-		return true;
-	case SDLK_END:
-		_cursorPos = (int)_commandLine.size();
-		return true;
-	case SDLK_RETURN:
-	case SDLK_KP_ENTER:
-		executeCommandLine();
-		return true;
-	case SDLK_BACKSPACE:
-		cursorDelete();
-		return true;
-	case SDLK_DELETE:
-		cursorDelete(false);
-		return true;
-	case SDLK_INSERT:
-		_overwrite ^= true;
-		return true;
-	case SDLK_LEFT:
-		cursorLeft();
-		return true;
-	case SDLK_RIGHT:
-		cursorRight();
-		return true;
-	case SDLK_UP:
-		cursorUp();
-		return true;
-	case SDLK_DOWN:
-		cursorDown();
-		return true;
-	case SDLK_PAGEUP:
-		scrollPageUp();
-		return true;
-	case SDLK_PAGEDOWN:
-		scrollPageDown();
-		return true;
-	case SDLK_TAB:
-		autoComplete();
-		return true;
-	}
-
-	return true;
-}
-
 void Console::executeCommandLine() {
 	_messages.push_back(_consolePrompt + _commandLine);
-	_scrollPos = 0;
 	if (_commandLine.empty()) {
 		return;
 	}
@@ -211,105 +101,6 @@ void Console::executeCommandLine() {
 	clearCommandLine();
 }
 
-bool Console::onMouseButtonPress(int32_t x, int32_t y, uint8_t button) {
-	if (!_consoleActive) {
-		return false;
-	}
-
-	if (button != SDL_BUTTON_MIDDLE) {
-		return false;
-	}
-
-	return insertClipboard();
-}
-
-bool Console::insertClipboard() {
-	if (!SDL_HasClipboardText()) {
-		return false;
-	}
-
-	char *str = SDL_GetClipboardText();
-	if (str == nullptr) {
-		return false;
-	}
-
-	insertText(str);
-	SDL_free(str);
-	return true;
-}
-
-bool Console::onMouseWheel(int32_t x, int32_t y) {
-	if (!_consoleActive) {
-		return false;
-	}
-
-	if (y > 0) {
-		scrollUp();
-	} else {
-		scrollDown();
-	}
-
-	return true;
-}
-
-void Console::insertText(const core::String& text) {
-	if (text.empty()) {
-		return;
-	}
-	const SDL_Keymod state = SDL_GetModState();
-	if (state & (KMOD_CONTROL | KMOD_ALT)) {
-		return;
-	}
-	if (_overwrite && _cursorPos < int(_commandLine.size())) {
-		cursorDelete();
-	}
-	_commandLine.insert(_cursorPos, text.c_str());
-	_cursorPos += (int)text.size();
-}
-
-bool Console::onTextInput(const core::String& text) {
-	if (!_consoleActive) {
-		return false;
-	}
-
-	insertText(text);
-
-	return true;
-}
-
-void Console::cursorLeft() {
-	if (_cursorPos > 0) {
-		_cursorPos--;
-	}
-}
-
-void Console::cursorRight() {
-	const int size = (int)_commandLine.size();
-	if (_cursorPos < size) {
-		_cursorPos++;
-	}
-}
-
-void Console::cursorWordLeft() {
-	auto prevWordEnd = _commandLine.find_last_of(" ", core_max(0, _cursorPos - 1));
-	if (core::String::npos == prevWordEnd) {
-		_cursorPos = 0;
-		return;
-	}
-	_cursorPos = (int)prevWordEnd;
-}
-
-void Console::cursorWordRight() {
-	const int spaceOffset = _commandLine[_cursorPos] == ' ' ? 1 : 0;
-	const core::String& partialCommandLine = _commandLine.substr(_cursorPos + spaceOffset);
-	const size_t nextWordEnd = partialCommandLine.find_first_of(" ");
-	if (core::String::npos == nextWordEnd) {
-		_cursorPos = (int)_commandLine.size();
-		return;
-	}
-	_cursorPos = core_min(_commandLine.size(), _cursorPos + nextWordEnd + spaceOffset);
-}
-
 void Console::cursorUp() {
 	if (_historyPos <= 0) {
 		return;
@@ -317,7 +108,6 @@ void Console::cursorUp() {
 
 	--_historyPos;
 	_commandLine = _history[_historyPos];
-	_cursorPos = (int)_commandLine.size();
 }
 
 void Console::cursorDown() {
@@ -330,45 +120,15 @@ void Console::cursorDown() {
 		return;
 	}
 	_commandLine = _history[_historyPos];
-	_cursorPos = (int)_commandLine.size();
-}
-
-void Console::scrollUp(const int lines) {
-	const int scrollableLines = (int)_messages.size() - _maxLines;
-	if (scrollableLines <= 0) {
-		return;
-	}
-	if (_scrollPos <= scrollableLines) {
-		_scrollPos += core_min(lines, scrollableLines - _scrollPos + 1);
-	}
-}
-
-void Console::scrollDown(const int lines) {
-	if (_scrollPos <= 0) {
-		return;
-	}
-	_scrollPos = core_max(_scrollPos - lines, 0);
-}
-
-void Console::scrollPageUp() {
-	// scroll one page minus one line minus prompt
-	scrollUp(_maxLines - 2);
-}
-
-
-void Console::scrollPageDown() {
-	// scroll one page minus one line minus prompt
-	scrollDown(_maxLines - 2);
 }
 
 void Console::autoComplete() {
-	// TODO: handle the cursor position properly
 	core::DynamicArray<core::String> matches;
 	const core::DynamicArray<core::String> allCommands = core::Tokenizer(_commandLine, ";").tokens();
 	const core::String& lastCmd = allCommands.empty() ? "" : allCommands.back();
 	const core::DynamicArray<core::String> strings = core::Tokenizer(lastCmd, " ").tokens();
 	core::String baseSearchString = "";
-	bool parameter = _commandLine[_cursorPos] == ' ' || strings.size() > 1;
+	bool parameter = _commandLine.last() == ' ' || strings.size() > 1;
 	if (parameter) {
 		const command::Command* cmd = command::Command::getCommand(strings.front());
 		if (cmd != nullptr) {
@@ -449,7 +209,6 @@ void Console::autoComplete() {
 			Log::info("%s", match.c_str());
 		}
 	}
-	_cursorPos = (int)_commandLine.size();
 }
 
 void Console::replaceLastParameter(const core::String& param) {
@@ -461,37 +220,6 @@ void Console::replaceLastParameter(const core::String& param) {
 
 	_commandLine.erase(iter + 1);
 	_commandLine.append(param.c_str());
-}
-
-void Console::cursorDelete(bool moveCursor) {
-	if (_commandLine.empty()) {
-		return;
-	}
-	if (moveCursor) {
-		if (_cursorPos <= 0) {
-			return;
-		}
-		cursorLeft();
-	}
-	_commandLine.erase(_cursorPos, 1);
-}
-
-void Console::cursorDeleteWord() {
-	if (_commandLine.empty()) {
-		return;
-	}
-	if (0 >= _cursorPos) {
-		return;
-	}
-	const int spaceOffset = _commandLine[_cursorPos - 1] == ' ' ? 1 : 0;
-	const size_t prevWordStart = _commandLine.find_last_of(" ", _cursorPos - spaceOffset - 1);
-	if (core::String::npos == prevWordStart) {
-		_commandLine.erase(0, _cursorPos);
-		_cursorPos = 0;
-		return;
-	}
-	_commandLine.erase(prevWordStart + 1, _cursorPos - prevWordStart - 1);
-	_cursorPos = (int)prevWordStart + 1;
 }
 
 core::String Console::removeAnsiColors(const char* message) {
@@ -542,11 +270,6 @@ void Console::addLogLine(int category, int priority, const char *message) {
 	}
 }
 
-bool Console::toggle() {
-	_consoleActive ^= true;
-	return _consoleActive;
-}
-
 void Console::update(double /*deltaFrameSeconds*/) {
 	core_assert(_mainThread == SDL_ThreadID());
 	LogLine msg;
@@ -559,11 +282,9 @@ void Console::update(double /*deltaFrameSeconds*/) {
 void Console::clear() {
 	clearCommandLine();
 	_messages.clear();
-	_scrollPos = 0;
 }
 
 inline void Console::clearCommandLine() {
-	_cursorPos = 0;
 	_commandLine.clear();
 }
 
@@ -580,20 +301,6 @@ void Console::drawStringColored(const core::String& str, int len) {
 		}
 	}
 	drawString(color, cstr, len);
-}
-
-bool Console::render(double deltaFrameSeconds, command::CommandExecutionListener &listener) {
-	_frame += deltaFrameSeconds;
-	if (_frame > 0.25) {
-		_frame = 0.0;
-		_cursorBlink ^= true;
-	}
-
-	if (!_consoleActive) {
-		return false;
-	}
-
-	return true;
 }
 
 }

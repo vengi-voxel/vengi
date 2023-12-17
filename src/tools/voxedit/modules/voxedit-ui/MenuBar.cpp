@@ -113,8 +113,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandMenuItem(ICON_LC_CLIPBOARD_PASTE " Paste as new node##pastenewnode", "pastenewnode",
 								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
-			actionMenuItem(ICON_LC_TERMINAL " Console", "toggleconsole", listener);
-			ImGui::Separator();
 			if (ImGui::BeginMenu(ICON_LC_MENU " Options")) {
 				ImGui::CheckboxVar(ICON_LC_GRID_3X3 " Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
