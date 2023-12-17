@@ -113,6 +113,8 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		}
 		ImGui::SameLine();
 		ImGui::CommandButton("Clear", "clear", listener);
+		// TODO: log level change
+		// TODO: save log to file
 		ImGui::End();
 	}
 	return true;
