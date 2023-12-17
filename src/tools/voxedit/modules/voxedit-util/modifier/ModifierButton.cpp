@@ -50,7 +50,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 		}
 		execute(false);
 	} else {
-		Log::debug("Not all modifier keys were released - skipped action execution");
+		Log::trace("Not all modifier keys were released - skipped action execution for %i", (int)_newType);
 	}
 	return allUp;
 }

@@ -571,9 +571,11 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 	_state[idx]._culled = false;
 	const int bufferIndex = resolveIdx(idx);
 	if (!_state[bufferIndex].hasData()) {
+#if 0
 		if (_state[bufferIndex]._rawVolume) {
 			Log::trace("No data, but volume: %i", bufferIndex);
 		}
+#endif
 		_state[idx]._culled = true;
 		return;
 	}
