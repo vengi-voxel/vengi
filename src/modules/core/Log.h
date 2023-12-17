@@ -5,10 +5,8 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Hash.h"
 #include <string.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <SDL_log.h>
 
 class Log {

@@ -3,7 +3,7 @@
  */
 
 #include "Metric.h"
-#include "core/Assert.h"
+#include "core/Hash.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
