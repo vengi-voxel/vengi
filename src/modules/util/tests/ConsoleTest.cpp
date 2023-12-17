@@ -17,7 +17,7 @@ class TestConsole : public util::Console {
 protected:
 	int lineHeight() override { return 0; };
 	glm::ivec2 stringSize(const char *c, int length) override { return glm::ivec2(0); }
-	void drawString(int x, int y, const int color[4], int colorIndex, const char* str, int len) override {}
+	void drawString(int x, int y, ConsoleColor color, const char* str, int len) override {}
 };
 
 TEST_F(ConsoleTest, testAutoCompleteCvar) {

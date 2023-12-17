@@ -4,6 +4,7 @@
 
 #include "Console.h"
 #include "dearimgui/imgui_internal.h"
+#include "util/Console.h"
 #include <SDL_log.h>
 
 namespace ui {
@@ -41,9 +42,10 @@ void Console::addLogLine(int category, int priority, const char *message) {
 	_notifications.emplace_back(toastType, rawMsg);
 }
 
-void Console::drawString(int x, int y, const int color[4], int, const char* str, int len) {
+void Console::drawString(int x, int y, util::ConsoleColor color, const char* str, int len) {
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->AddText(ImVec2(x, y), IM_COL32(color[0], color[1], color[2], color[3]), str);
+	const glm::u8vec4 &c = colors()[color];
+	drawList->AddText(ImVec2(x, y), IM_COL32(c[0], c[1], c[2], c[3]), str);
 }
 
 void Console::afterRender(const math::Rect<int> &rect) {

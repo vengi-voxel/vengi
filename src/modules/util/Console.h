@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "core/collection/Array.h"
 #include "math/Rect.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
@@ -31,6 +32,27 @@ protected:
 	core::String _consoleCursor = "_";
 	char _colorMark = '^';
 
+	core::Array<glm::u8vec4, MAX_COLORS> _colors {
+		glm::ivec4(255, 255, 255, 255),
+		glm::ivec4(0, 0, 0, 255),
+		glm::ivec4(127, 127, 127, 255),
+		glm::ivec4(0, 0, 255, 255),
+		glm::ivec4(0, 255, 0, 255),
+		glm::ivec4(255, 255, 0, 255),
+		glm::ivec4(255, 0, 0, 255)
+	};
+	core::Array<ConsoleColor, SDL_NUM_LOG_PRIORITIES> _priorityColors {
+		GRAY,
+		GRAY,
+		GREEN,
+		WHITE,
+		YELLOW,
+		RED,
+		RED
+	};
+	static_assert(7 == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
+	static_assert(7 == MAX_COLORS, "Colors count doesn't match");
+
 	core::String getColor(ConsoleColor color);
 
 	/**
@@ -47,6 +69,11 @@ protected:
 	void skipColor(const char **cstr);
 
 	void printHistory();
+
+	const core::Array<glm::u8vec4, MAX_COLORS> &colors() const {
+		core_assert_msg(c.size() == MAX_COLORS, "Color count doesn't match");
+		return _colors;
+	}
 
 	/**
 	 * @brief Data structure to store a log entry call from a different thread.
@@ -152,7 +179,7 @@ protected:
 	virtual void afterRender(const math::Rect<int> &rect) {}
 	virtual int lineHeight() = 0;
 	virtual glm::ivec2 stringSize(const char *c, int length) = 0;
-	virtual void drawString(int x, int y, const int color[4], int colorIndex, const char* str, int len) = 0;
+	virtual void drawString(int x, int y, ConsoleColor color, const char* str, int len) = 0;
 
 public:
 	Console();

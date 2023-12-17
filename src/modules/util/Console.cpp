@@ -22,34 +22,6 @@
 
 namespace util {
 
-namespace {
-
-static const core::Array<glm::ivec4, MAX_COLORS> &colors() {
-	static const core::Array<glm::ivec4, MAX_COLORS> c {
-		glm::ivec4(255, 255, 255, 255),
-		glm::ivec4(0, 0, 0, 255),
-		glm::ivec4(127, 127, 127, 255),
-		glm::ivec4(0, 0, 255, 255),
-		glm::ivec4(0, 255, 0, 255),
-		glm::ivec4(255, 255, 0, 255),
-		glm::ivec4(255, 0, 0, 255)
-	};
-	core_assert_msg(c.size() == MAX_COLORS, "Color count doesn't match");
-	return c;
-}
-
-static const ConsoleColor priorityColors[SDL_NUM_LOG_PRIORITIES] = {
-	GRAY,
-	GRAY,
-	GREEN,
-	WHITE,
-	YELLOW,
-	RED,
-	RED
-};
-static_assert(lengthof(priorityColors) == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
-}
-
 Console::Console() :
 		_mainThread(SDL_ThreadID()) {
 }
@@ -562,7 +534,7 @@ void Console::addLogLine(int category, int priority, const char *message) {
 		_messages.emplace_back(cleaned);
 		skipColor(&message);
 	} else {
-		const core::String& color = getColor(priorityColors[priority]);
+		const core::String& color = getColor(_priorityColors[priority]);
 		_messages.emplace_back(color + cleaned);
 	}
 	if (_useOriginalLogFunction) {
@@ -597,17 +569,17 @@ inline void Console::clearCommandLine() {
 
 void Console::drawString(int x, int y, const core::String& str, int len) {
 	const char *cstr = str.c_str();
-	glm::ivec4 color = colors()[WHITE];
+	ConsoleColor color = WHITE;
 	int colorIndex = -1;
 	if (isColor(cstr)) {
 		skipColor(&cstr);
 		len -= 2;
 		colorIndex = str[1] - '0';
 		if (colorIndex >= 0 && colorIndex < (int)MAX_COLORS) {
-			color = colors()[colorIndex];
+			color = (ConsoleColor)colorIndex;
 		}
 	}
-	drawString(x, y, &color[0], colorIndex, cstr, len);
+	drawString(x, y, color, cstr, len);
 }
 
 void Console::render(const math::Rect<int> &rect, double deltaFrameSeconds) {
