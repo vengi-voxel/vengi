@@ -165,12 +165,12 @@ app::AppState IMGUIApp::onConstruct() {
 	_fileDialog.construct();
 	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 
-	const char *uiStyleDefaultValue = "0";
+	core::String uiStyleDefaultValue = core::string::toString(ImGui::StyleCorporateGrey);
 	if (!isDarkMode()) {
-		uiStyleDefaultValue = "2";
+		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
 	}
 	_uistyle =
-		core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]", [](const core::String &val) {
+		core::Var::get(cfg::UIStyle, uiStyleDefaultValue.c_str(), "Change the ui colors - [0-3]", [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
 			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx <= ImGui::StyleClassic;
 		});
@@ -352,7 +352,7 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	}
 	case style::ColorActiveNode: {
 		const int style = _uistyle->intVal();
-		if (style == 2 || style == 3) {
+		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
 			return core::Color::DarkGreen();
 		}
 		return core::Color::White();
