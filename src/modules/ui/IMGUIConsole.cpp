@@ -133,8 +133,8 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 			executeCommandLine(&imguiApp()->commandListener());
 			ImGui::SetKeyboardFocusHere(-1);
 		}
-		ImGui::End();
 	}
+	ImGui::End();
 	return true;
 }
 

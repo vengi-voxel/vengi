@@ -34,6 +34,17 @@ public:
 	inline void brighter(ImGuiCol idx, float f = 1.0f) {
 		setColor(idx, core::Color::brighter(ImGui::GetStyle().Colors[idx], f));
 	}
+	/**
+	 * Does either make the color brighter or darker depending on the current color
+	 */
+	inline void highlight(ImGuiCol idx, float f = 1.0f) {
+		const glm::vec4 &c = ImGui::GetStyle().Colors[idx];
+		if (c.x < 0.1f && c.y < 0.1f && c.z < 0.1f) {
+			setColor(idx, core::Color::brighter(c, f));
+			return;
+		}
+		setColor(idx, core::Color::darker(c, f));
+	}
 	inline void setFont(ImFont *font) {
 		ImGui::PushFont(font);
 		++_font;
