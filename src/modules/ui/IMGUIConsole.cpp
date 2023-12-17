@@ -5,7 +5,9 @@
 #include "IMGUIConsole.h"
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
+#include "IconsLucide.h"
 #include "ScopedStyle.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "imgui.h"
 #include "util/Console.h"
@@ -84,7 +86,32 @@ void IMGUIConsole::drawString(const Message& msg) {
 }
 
 bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar)) {
+	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
+		if (ImGui::BeginMenuBar()) {
+			command::CommandExecutionListener &listener = imguiApp()->commandListener();
+			if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
+				ImGui::CommandMenuItem(ICON_LC_SQUARE " Clear", "clear", true, &listener);
+				ImGui::Separator();
+				if (ImGui::Button(ICON_LC_COPY " Copy to clipboard")) {
+					ImGui::LogToClipboard();
+					for (const Message &msg : _messages) {
+						ImGui::TextUnformatted(msg.message.c_str());
+					}
+					ImGui::LogFinish();
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu(ICON_LC_MENU " Options")) {
+				bool debug = (Log::Level)core::Var::getSafe(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
+				if (ImGui::Checkbox("Debug", &debug)) {
+					core::Var::getSafe(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
+				}
+				ImGui::TooltipText("Enable debug logging for the console");
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 		const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
 		for (int n = 0; n < (int)_messages.size(); ++n) {
@@ -106,18 +133,6 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 			executeCommandLine(&imguiApp()->commandListener());
 			ImGui::SetKeyboardFocusHere(-1);
 		}
-		ImGui::SameLine();
-		ImGui::CommandButton("Clear", "clear", listener);
-		ImGui::SameLine();
-		// don't offer trace here - it would flood the logs for the user
-		static const char *LogLevelNames[] = {Log::toLogLevel(Log::Level::Debug), Log::toLogLevel(Log::Level::Info),
-											  Log::toLogLevel(Log::Level::Warn), Log::toLogLevel(Log::Level::Error)};
-		int currentLogLevel = core::Var::getSafe(cfg::CoreLogLevel)->intVal();
-		if (ImGui::Combo("Log Level", &currentLogLevel, LogLevelNames, IM_ARRAYSIZE(LogLevelNames))) {
-			const char *logLevelNew = LogLevelNames[currentLogLevel];
-			core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::toLogLevel(logLevelNew));
-		}
-		// TODO: save log to file
 		ImGui::End();
 	}
 	return true;
