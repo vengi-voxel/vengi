@@ -322,7 +322,7 @@ void IMGUIApp::setColorTheme() {
 		ImGui::StyleColorsCorporateGrey();
 		break;
 	}
-	ImGui::StyleColorsNeoSequencer(_uistyle->intVal());
+	ImGui::StyleColorsNeoSequencer();
 }
 
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {

@@ -17,6 +17,6 @@ enum {
 };
 
 void StyleColorsCorporateGrey();
-void StyleColorsNeoSequencer(int style);
+void StyleColorsNeoSequencer();
 
 }
