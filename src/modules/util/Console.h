@@ -9,6 +9,10 @@
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
 
+namespace command {
+struct CommandExecutionListener;
+}
+
 namespace util {
 
 class Console : public core::IComponent {
@@ -95,7 +99,7 @@ protected:
 
 	void replaceLastParameter(const core::String &param);
 
-	void executeCommandLine();
+	void executeCommandLine(command::CommandExecutionListener *listener);
 
 	bool insertClipboard();
 

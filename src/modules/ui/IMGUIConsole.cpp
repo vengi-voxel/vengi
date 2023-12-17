@@ -3,6 +3,7 @@
  */
 
 #include "IMGUIConsole.h"
+#include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "ScopedStyle.h"
 #include "imgui.h"
@@ -107,7 +108,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion |
 								 ImGuiInputTextFlags_CallbackHistory,
 							 _priv::ConsoleInputTextCallback, this)) {
-			executeCommandLine();
+			executeCommandLine(&imguiApp()->commandListener());
 			ImGui::SetKeyboardFocusHere(-1);
 		}
 		ImGui::SameLine();

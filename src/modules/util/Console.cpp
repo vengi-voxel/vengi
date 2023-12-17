@@ -70,7 +70,7 @@ void Console::printHistory() {
 	}
 }
 
-void Console::executeCommandLine() {
+void Console::executeCommandLine(command::CommandExecutionListener *listener) {
 	_messages.emplace_back(SDL_LOG_PRIORITY_INFO, _consolePrompt + _commandLine);
 	if (_commandLine.empty()) {
 		return;
@@ -78,7 +78,7 @@ void Console::executeCommandLine() {
 	_history.push_back(_commandLine);
 	_historyPos = _history.size();
 
-	command::executeCommands(_commandLine);
+	command::executeCommands(_commandLine, listener);
 	clearCommandLine();
 }
 
