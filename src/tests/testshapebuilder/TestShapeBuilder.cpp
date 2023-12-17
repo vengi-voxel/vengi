@@ -2,6 +2,7 @@
  * @file
  */
 #include "TestShapeBuilder.h"
+#include "IMGUIEx.h"
 #include "math/AABB.h"
 #include "core/Color.h"
 #include "core/ArrayLength.h"

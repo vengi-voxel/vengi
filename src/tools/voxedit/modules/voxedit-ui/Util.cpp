@@ -6,7 +6,7 @@
 #include "IMGUIEx.h"
 #include "core/Color.h"
 #include "core/Enum.h"
-#include "imgui.h"
+#include "core/StringUtil.h"
 
 namespace voxedit {
 namespace veui {

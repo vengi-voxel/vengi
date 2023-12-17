@@ -3,7 +3,7 @@
  */
 
 #include "Console.h"
-#include "dearimgui/imgui_internal.h"
+#include "IMGUIEx.h"
 #include "util/Console.h"
 #include <SDL_log.h>
 

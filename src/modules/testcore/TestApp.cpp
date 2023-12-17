@@ -3,6 +3,7 @@
  */
 
 #include "TestApp.h"
+#include "IMGUIEx.h"
 #include "core/Color.h"
 #include "command/Command.h"
 #include "video/ScopedPolygonMode.h"

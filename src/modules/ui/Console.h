@@ -33,4 +33,4 @@ public:
 	void renderNotifications();
 };
 
-}
+} // namespace ui

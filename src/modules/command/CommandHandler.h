@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "core/StringUtil.h"
+#include "core/String.h"
+#include "core/collection/DynamicArray.h"
 
 namespace command {
 

@@ -3,6 +3,7 @@
  */
 
 #include "TestBloom.h"
+#include "IMGUIEx.h"
 #include "image/Image.h"
 #include "imgui.h"
 #include "testcore/TestAppMain.h"

@@ -11,6 +11,10 @@
 #include "voxel/Face.h"
 #include "voxelgenerator/LUAGenerator.h"
 
+namespace command {
+struct CommandExecutionListener;
+}
+
 namespace voxedit {
 
 /**
