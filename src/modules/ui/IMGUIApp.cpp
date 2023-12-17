@@ -172,7 +172,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_uistyle =
 		core::Var::get(cfg::UIStyle, uiStyleDefaultValue, "Change the ui colors - [0-3]", [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
-			return themeIdx >= 0 && themeIdx <= 3;
+			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx <= ImGui::StyleClassic;
 		});
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
 	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart",
@@ -320,23 +320,24 @@ app::AppState IMGUIApp::onInit() {
 
 void IMGUIApp::setColorTheme() {
 	switch (_uistyle->intVal()) {
-	case 0:
+	case ImGui::StyleCorporateGrey:
 		ImGui::StyleColorsCorporateGrey();
 		break;
-	case 1:
+	case ImGui::StyleDark:
 		ImGui::StyleColorsDark();
 		break;
-	case 2:
+	case ImGui::StyleLight:
 		ImGui::StyleColorsLight();
 		break;
-	case 3:
+	case ImGui::StyleClassic:
 		ImGui::StyleColorsClassic();
 		break;
 	default:
-		_uistyle->setVal("0");
+		_uistyle->setVal(ImGui::StyleCorporateGrey);
 		ImGui::StyleColorsCorporateGrey();
 		break;
 	}
+	ImGui::StyleColorsNeoSequencer(_uistyle->intVal());
 }
 
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {

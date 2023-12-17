@@ -3,7 +3,9 @@
  * @ingroup UI
  */
 
+#include "IMGUIStyle.h"
 #include "dearimgui/imgui.h"
+#include "imgui_neo_sequencer.h"
 
 namespace ImGui {
 
@@ -90,6 +92,52 @@ void StyleColorsCorporateGrey() {
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
+}
+
+void StyleColorsNeoSequencer(int style) {
+	ImGuiNeoSequencerStyle &neoStyle = GetNeoSequencerStyle();
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_Bg] = ImVec4{0.31f, 0.31f, 0.31f, 1.00f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_TopBarBg] = ImVec4{0.22f, 0.22f, 0.22f, 0.84f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_SelectedTimeline] = ImVec4{0.98f, 0.706f, 0.322f, 0.88f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_TimelinesBg] = neoStyle.Colors[ImGuiNeoSequencerCol_TopBarBg];
+	const ImVec4 &bg = neoStyle.Colors[ImGuiNeoSequencerCol_Bg];
+	neoStyle.Colors[ImGuiNeoSequencerCol_TimelineBorder] = ImVec4{bg.x * 0.5f, bg.y * 0.5f, bg.z * 0.5f, 1.0f};
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_FramePointer] = ImVec4{0.98f, 0.24f, 0.24f, 0.50f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_FramePointerHovered] = ImVec4{0.98f, 0.15f, 0.15f, 1.00f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_FramePointerPressed] = ImVec4{0.98f, 0.08f, 0.08f, 1.00f};
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_Keyframe] = ImVec4{0.59f, 0.59f, 0.59f, 0.50f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_KeyframeHovered] = ImVec4{0.98f, 0.39f, 0.36f, 1.00f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_KeyframePressed] = ImVec4{0.98f, 0.39f, 0.36f, 1.00f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_KeyframeSelected] = ImVec4{0.32f, 0.23f, 0.98f, 1.00f};
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_FramePointerLine] = ImVec4{0.98f, 0.98f, 0.98f, 0.8f};
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_ZoomBarBg] = ImVec4{0.59f, 0.59f, 0.59f, 0.90f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSlider] = ImVec4{0.8f, 0.8f, 0.8f, 0.60f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSliderHovered] = ImVec4{0.98f, 0.98f, 0.98f, 0.80f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSliderEnds] = ImVec4{0.59f, 0.59f, 0.59f, 0.90f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSliderEndsHovered] = ImVec4{0.93f, 0.93f, 0.93f, 0.93f};
+
+	neoStyle.Colors[ImGuiNeoSequencerCol_SelectionBorder] = ImVec4{0.98f, 0.706f, 0.322f, 0.61f};
+	neoStyle.Colors[ImGuiNeoSequencerCol_Selection] = ImVec4{0.98f, 0.706f, 0.322f, 0.33f};
+
+#if 0
+	// TODO: see issue #359
+	switch (style) {
+	case StyleDark:
+		break;
+	case StyleLight:
+		break;
+	case StyleClassic:
+		break;
+	case StyleCorporateGrey:
+	default:
+		break;
+	}
+#endif
 }
 
 } // namespace ImGui
