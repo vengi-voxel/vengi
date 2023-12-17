@@ -15,7 +15,7 @@ class ConsoleTest: public app::AbstractTest {
 
 class TestConsole : public util::Console {
 protected:
-	void drawString(ConsoleColor color, const char* str, int len) override {}
+	void drawString(const Message& msg) override {}
 };
 
 TEST_F(ConsoleTest, testAutoCompleteCvar) {

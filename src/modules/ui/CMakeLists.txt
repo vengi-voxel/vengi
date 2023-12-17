@@ -1,9 +1,9 @@
 set(LIB ui)
 
 set(SRCS
-	Console.cpp Console.h
 	FileDialog.cpp FileDialog.h
 	IconsLucide.h
+	IMGUIConsole.cpp IMGUIConsole.h
 	IMGUIEx.cpp IMGUIEx.h
 	IMGUIApp.cpp IMGUIApp.h
 	IMGUIStyle.cpp IMGUIStyle.h

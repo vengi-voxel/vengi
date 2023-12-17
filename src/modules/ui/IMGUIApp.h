@@ -7,7 +7,7 @@
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
 #include "video/WindowedApp.h"
-#include "Console.h"
+#include "IMGUIConsole.h"
 #include "Style.h"
 
 struct SDL_Cursor;
@@ -29,7 +29,7 @@ protected:
 	core::VarPtr _showMetrics;
 	core::VarPtr _uiFontSize;
 	video::Id _texture = video::InvalidId;
-	Console _console;
+	IMGUIConsole _console;
 	core::String _writePathIni;
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;

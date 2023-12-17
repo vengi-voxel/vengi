@@ -4,11 +4,9 @@
 
 #include "Console.h"
 #include "app/App.h"
-#include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
@@ -28,27 +26,10 @@ Console::Console() :
 Console::~Console() {
 }
 
-core::String Console::getColor(ConsoleColor color) {
-	core_assert(color >= 0 && color <= (int)MAX_COLORS);
-	core::String s;
-	s += _colorMark;
-	s += core::string::toString((int)color);
-	return s;
-}
-
-bool Console::isColor(const char *cstr) {
-	static const char maxColor = MAX_COLORS + '0';
-	return cstr[0] == _colorMark && cstr[1] >= '0' && cstr[1] <= maxColor;
-}
-
-void Console::skipColor(const char **cstr) {
-	static_assert((int)MAX_COLORS < 10, "max colors must not exceed one ascii char for encoding");
-	*cstr += 2;
-}
-
 void Console::construct() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
+
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
 	command::Command::registerCommand("history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
 }
@@ -90,7 +71,7 @@ void Console::printHistory() {
 }
 
 void Console::executeCommandLine() {
-	_messages.push_back(_consolePrompt + _commandLine);
+	_messages.emplace_back(SDL_LOG_PRIORITY_INFO, _consolePrompt + _commandLine);
 	if (_commandLine.empty()) {
 		return;
 	}
@@ -186,7 +167,7 @@ void Console::autoComplete() {
 			_commandLine.insert(cmdEraseIndex, matches.front().c_str());
 		}
 	} else {
-		_messages.push_back(_consolePrompt + _commandLine);
+		_messages.emplace_back(SDL_LOG_PRIORITY_INFO, _consolePrompt + _commandLine);
 		int pos = 0;
 		const core::String first = matches.front();
 		for (char c : first) {
@@ -257,14 +238,7 @@ void Console::logConsole(void *userdata, int category, int priority, const char 
 
 void Console::addLogLine(int category, int priority, const char *message) {
 	const core::String& cleaned = removeAnsiColors(message);
-	const bool hasColor = isColor(cleaned.c_str());
-	if (hasColor) {
-		_messages.emplace_back(cleaned);
-		skipColor(&message);
-	} else {
-		const core::String& color = getColor(_priorityColors[priority]);
-		_messages.emplace_back(color + cleaned);
-	}
+	_messages.emplace_back(priority, cleaned);
 	if (_useOriginalLogFunction) {
 		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, (SDL_LogPriority)priority, message);
 	}
@@ -286,21 +260,6 @@ void Console::clear() {
 
 inline void Console::clearCommandLine() {
 	_commandLine.clear();
-}
-
-void Console::drawStringColored(const core::String& str, int len) {
-	const char *cstr = str.c_str();
-	ConsoleColor color = WHITE;
-	int colorIndex = -1;
-	if (isColor(cstr)) {
-		skipColor(&cstr);
-		len -= 2;
-		colorIndex = str[1] - '0';
-		if (colorIndex >= 0 && colorIndex < (int)MAX_COLORS) {
-			color = (ConsoleColor)colorIndex;
-		}
-	}
-	drawString(color, cstr, len);
 }
 
 }

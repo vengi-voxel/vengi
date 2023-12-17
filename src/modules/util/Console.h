@@ -4,55 +4,27 @@
 
 #pragma once
 
-#include "command/CommandHandler.h"
-#include "core/String.h"
-#include "core/collection/Array.h"
 #include "core/IComponent.h"
-#include "core/collection/DynamicArray.h"
+#include "core/String.h"
 #include "core/collection/ConcurrentQueue.h"
+#include "core/collection/DynamicArray.h"
 
 namespace util {
 
-enum ConsoleColor {
-	WHITE, BLACK, GRAY, BLUE, GREEN, YELLOW, RED, MAX_COLORS
-};
-
 class Console : public core::IComponent {
 protected:
-	typedef core::DynamicArray<core::String> Messages;
+	struct Message {
+		int priority;
+		core::String message;
+		Message(int _priority, const core::String &_message) : priority(_priority), message(_message) {
+		}
+	};
+	using Messages = core::DynamicArray<Message>;
 	Messages _messages;
 
-	const char* _historyFilename = "history";
+	const char *_historyFilename = "history";
 	core::String _consolePrompt = "> ";
 	core::String _consoleCursor = "_";
-	char _colorMark = '^';
-
-	core::Array<ConsoleColor, SDL_NUM_LOG_PRIORITIES> _priorityColors {
-		GRAY,
-		GRAY,
-		GREEN,
-		WHITE,
-		YELLOW,
-		RED,
-		RED
-	};
-	static_assert(7 == SDL_NUM_LOG_PRIORITIES, "Priority count doesn't match");
-	static_assert(7 == MAX_COLORS, "Colors count doesn't match");
-
-	core::String getColor(ConsoleColor color);
-
-	/**
-	 * @brief Checks whether the given input string is a color string.
-	 *
-	 * A color string is started with ^ and followed by a number which indicates the color.
-	 */
-	bool isColor(const char *cstr);
-
-	/**
-	 * @brief Set the given pointer to the next character after a color string
-	 * @see isColor()
-	 */
-	void skipColor(const char **cstr);
 
 	void printHistory();
 
@@ -60,28 +32,28 @@ protected:
 	 * @brief Data structure to store a log entry call from a different thread.
 	 */
 	struct LogLine {
-		LogLine(int _category = 0, int _priority = 0, const char* _message = nullptr) :
-				category(_category), priority(_priority), message(_message ? core_strdup(_message) : nullptr) {
+		LogLine(int _category = 0, int _priority = 0, const char *_message = nullptr)
+			: category(_category), priority(_priority), message(_message ? core_strdup(_message) : nullptr) {
 		}
 		~LogLine() {
 			core_free(message);
 		}
-		LogLine(LogLine&& o) noexcept {
+		LogLine(LogLine &&o) noexcept {
 			category = o.category;
 			priority = o.priority;
 			message = o.message;
 			o.message = nullptr;
 		}
-		LogLine(const LogLine& o) noexcept {
+		LogLine(const LogLine &o) noexcept {
 			category = o.category;
 			priority = o.priority;
 			message = o.message != nullptr ? core_strdup(o.message) : nullptr;
 		}
 		int category;
 		int priority;
-		char* message;
+		char *message;
 
-		LogLine& operator=(LogLine&& o) noexcept {
+		LogLine &operator=(LogLine &&o) noexcept {
 			if (this != &o) {
 				category = o.category;
 				priority = o.priority;
@@ -94,7 +66,7 @@ protected:
 			return *this;
 		}
 
-		LogLine& operator=(const LogLine& o) {
+		LogLine &operator=(const LogLine &o) {
 			if (&o == this) {
 				return *this;
 			}
@@ -107,8 +79,9 @@ protected:
 			return *this;
 		}
 	};
+	// other threads are logging into this queue
 	core::ConcurrentQueue<LogLine> _messageQueue;
-	Messages _history;
+	core::DynamicArray<core::String> _history;
 	uint32_t _historyPos = 0;
 	const unsigned long _mainThread;
 	void *_logFunction = nullptr;
@@ -116,18 +89,17 @@ protected:
 	core::String _commandLine;
 	bool _useOriginalLogFunction = true;
 
-	static core::String removeAnsiColors(const char* message);
+	static core::String removeAnsiColors(const char *message);
 	static void logConsole(void *userdata, int category, int priority, const char *message);
 	virtual void addLogLine(int category, int priority, const char *message);
 
-	void replaceLastParameter(const core::String& param);
+	void replaceLastParameter(const core::String &param);
 
 	void executeCommandLine();
 
 	bool insertClipboard();
-	void drawStringColored(const core::String& str, int len);
 
-	virtual void drawString(ConsoleColor color, const char* str, int len) = 0;
+	virtual void drawString(const Message& msg) = 0;
 
 public:
 	Console();
@@ -145,11 +117,11 @@ public:
 
 	void autoComplete();
 
-	const core::String& commandLine() const;
+	const core::String &commandLine() const;
 };
 
-inline const core::String& Console::commandLine() const {
+inline const core::String &Console::commandLine() const {
 	return _commandLine;
 }
 
-}
+} // namespace util
