@@ -290,7 +290,7 @@ bool Filesystem::isReadableDir(const core::String &name) {
 bool Filesystem::isRelativePath(const core::String &name) {
 	const size_t size = name.size();
 #ifdef __WINDOWS__
-	if (size < 3) {
+	if (size < 2) {
 		return true;
 	}
 	if (name[0] == '/') {

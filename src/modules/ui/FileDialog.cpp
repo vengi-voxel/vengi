@@ -280,7 +280,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			quickAccessEntry(type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
 		for (const core::String &path : io::filesystem()->otherPaths()) {
-			quickAccessEntry(type, path, contentRegionWidth, path.c_str());
+			quickAccessEntry(type, path, contentRegionWidth);
 		}
 		ImGui::TreePop();
 	}
