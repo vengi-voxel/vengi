@@ -56,6 +56,7 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_animations = core::move(other._animations);
 		_activeAnimation = core::move(other._activeAnimation);
 		_cachedMaxFrame = other._cachedMaxFrame;
+		_dirty = other.dirty();
 	}
 	return *this;
 }
