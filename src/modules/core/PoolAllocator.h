@@ -8,7 +8,6 @@
 #include "core/NonCopyable.h"
 #include "core/StandardLib.h"
 #include <stdint.h>
-#include <type_traits>
 #include <new>
 #ifdef _WIN32
 #undef max
