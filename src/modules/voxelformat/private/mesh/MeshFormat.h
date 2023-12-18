@@ -29,10 +29,17 @@ public:
 	 */
 	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
+	/**
+	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
+	 */
 	static bool isVoxelMesh(const TriCollection &tris);
 
 protected:
+	/**
+	 * @brief Color flatten factor - see @c PosSampling::avgColor()
+	 */
 	uint8_t _flattenFactor;
+
 	struct MeshExt {
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
 		voxel::ChunkMesh *mesh;
@@ -61,6 +68,9 @@ protected:
 	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &file,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
+	/**
+	 * @return A particular uv value for the palette image for the given color index
+	 */
 	static glm::vec2 paletteUV(int colorIndex);
 
 	/**
@@ -69,6 +79,10 @@ protected:
 	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
 					 int parent = 0, bool resetOrigin = true) const;
 
+	/**
+	 * @brief Weighted color entry for a position for averaging the voxel color value over all positions that were found
+	 * during voxelization
+	 */
 	struct PosSamplingEntry {
 		inline PosSamplingEntry(float _area, core::RGBA _color) : area(_area), color(_color) {
 		}
@@ -76,6 +90,10 @@ protected:
 		core::RGBA color;
 	};
 
+	/**
+	 * @brief Weighted color entry for a position for averaging the voxel color value over all positions that were found
+	 * during voxelization
+	 */
 	struct PosSampling {
 		core::DynamicArray<PosSamplingEntry> entries;
 		inline PosSampling(float area, core::RGBA color) {
@@ -84,11 +102,39 @@ protected:
 		core::RGBA avgColor(uint8_t flattenFactor) const;
 	};
 
+	/**
+	 * @brief A map with positions and colors that can get averaged from the input triangles
+	 */
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
 
-	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool hillHollow) const;
-	static void transformTris(const TriCollection &subdivided, PosMap &posMap);
+	/**
+	 * @brief Convert the given input triangles into a list of positions to place the voxels at
+	 *
+	 * @param[in] tris The triangles to voxelize
+	 * @param[out] posMap The PosMap instance to fill with positions and colors
+	 * @sa transformTrisAxisAligned()
+	 * @sa voxelizeTris()
+	 */
+	static void transformTris(const TriCollection &tris, PosMap &posMap);
+	/**
+	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
+	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
+	 *
+	 * @param[in] tris The triangles to voxelize
+	 * @param[out] posMap The @c PosMap instance to fill with positions and colors
+	 * @sa transformTris()
+	 * @sa voxelizeTris()
+	 */
 	static void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap);
+	/**
+	 * @brief Convert the given @c PosMap into a volume
+	 *
+	 * @note The @c PosMap values can get calculated by @c transformTris() or @c transformTrisAxisAligned()
+	 * @param[in] posMap The @c PosMap values with voxel positions and colors
+	 * @param[in] fillHollow Fill the inner parts of a voxel volume
+	 * @param[out] node The node to create the volume in
+	 */
+	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const;
 
 public:
 	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);

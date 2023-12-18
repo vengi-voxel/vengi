@@ -112,9 +112,9 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return uv;
 }
 
-void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) {
-	Log::debug("subdivided into %i triangles", (int)subdivided.size());
-	for (const Tri &tri : subdivided) {
+void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
+	Log::debug("subdivided into %i triangles", (int)tris.size());
+	for (const Tri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -132,7 +132,7 @@ void MeshFormat::transformTris(const TriCollection &subdivided, PosMap &posMap) 
 }
 
 void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) {
-	Log::debug("%i triangles", (int)tris.size());
+	Log::debug("axis aligned %i triangles", (int)tris.size());
 	for (const Tri &tri : tris) {
 		if (stopExecution()) {
 			return;
