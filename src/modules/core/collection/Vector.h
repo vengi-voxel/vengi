@@ -26,7 +26,7 @@ public:
 	constexpr Vector() {
 	}
 
-	Vector(std::initializer_list<TYPE> other) {
+	Vector(std::initializer_list<TYPE> other) : _size(0) {
 		for (auto i = other.begin(); i != other.end(); ++i) {
 			core_assert_always(emplace_back(core::move(*i)));
 		}
