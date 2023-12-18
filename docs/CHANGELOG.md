@@ -50,6 +50,7 @@ VoxEdit:
    - Fixed a few crashes
    - Improved gizmo settings panel
    - Added the console next to the animation timeline panel
+   - Improved color themes (especially the light theme)
 
 Thumbnailer:
 
