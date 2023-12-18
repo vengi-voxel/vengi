@@ -43,6 +43,7 @@ SceneGraph::SceneGraph(SceneGraph &&other) noexcept : _nodes(core::move(other._n
 													  _cachedMaxFrame(other._cachedMaxFrame) {
 	other._nextNodeId = 0;
 	other._activeNodeId = InvalidNodeId;
+	_dirty = other.dirty();
 }
 
 SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {

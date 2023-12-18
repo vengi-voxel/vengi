@@ -409,10 +409,8 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 }
 
 MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGraphNode &node, bool _applyTransform)
-	: mesh(_mesh), name(node.name()), applyTransform(_applyTransform) {
-	size = node.region().getDimensionsInVoxels();
-	nodeId = node.id();
-	pivot = node.pivot();
+	: mesh(_mesh), name(node.name()), applyTransform(_applyTransform), size(node.region().getDimensionsInVoxels()),
+	  pivot(node.pivot()), nodeId(node.id()) {
 }
 
 bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream &file,

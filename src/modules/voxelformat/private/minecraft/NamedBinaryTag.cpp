@@ -67,12 +67,9 @@ void TagData::copy(TagType type, const TagData &data) {
 	}
 }
 
-NamedBinaryTag::NamedBinaryTag(NamedBinaryTag &&val) noexcept {
-	_tagType = val._tagType;
-	_tagData = val._tagData;
-
-	val._tagType = TagType::MAX;
-	val._tagData._compound = nullptr;
+NamedBinaryTag::NamedBinaryTag(NamedBinaryTag &&other) noexcept : _tagData(other._tagData), _tagType(other._tagType) {
+	other._tagType = TagType::MAX;
+	other._tagData._compound = nullptr;
 }
 
 NamedBinaryTag::~NamedBinaryTag() {
