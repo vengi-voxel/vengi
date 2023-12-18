@@ -18,5 +18,6 @@ enum {
 
 void StyleColorsCorporateGrey();
 void StyleColorsNeoSequencer();
+void StyleImGuizmo();
 
 }

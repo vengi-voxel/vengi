@@ -63,6 +63,7 @@ public:
 	 */
 	void update(const math::AABB<float>& region);
 	void clear();
+	void setColor(const glm::vec4 &color);
 
 	/**
 	 * @sa shutdown()

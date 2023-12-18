@@ -5,7 +5,8 @@
 
 #include "IMGUIStyle.h"
 #include "dearimgui/imgui.h"
-#include "imgui_neo_sequencer.h"
+#include "dearimgui/imgui_neo_sequencer.h"
+#include "dearimgui/ImGuizmo.h"
 
 namespace ImGui {
 
@@ -131,6 +132,30 @@ void StyleColorsNeoSequencer() {
 
 	neoStyle.Colors[ImGuiNeoSequencerCol_SelectionBorder] = style.Colors[ImGuiCol_Border];
 	neoStyle.Colors[ImGuiNeoSequencerCol_Selection] = style.Colors[ImGuiCol_FrameBgActive];
+}
+
+void StyleImGuizmo() {
+	ImGuizmo::Style &guizmoStyle = ImGuizmo::GetStyle();
+	const ImGuiStyle &style = ImGui::GetStyle();
+
+	// reset everything
+	guizmoStyle = ImGuizmo::Style();
+
+	// guizmoStyle.Colors[ImGuizmo::DIRECTION_X] = ;
+	// guizmoStyle.Colors[ImGuizmo::DIRECTION_Y] = ;
+	// guizmoStyle.Colors[ImGuizmo::DIRECTION_Z] = ;
+	// guizmoStyle.Colors[ImGuizmo::PLANE_X] = ;
+	// guizmoStyle.Colors[ImGuizmo::PLANE_Y] = ;
+	// guizmoStyle.Colors[ImGuizmo::PLANE_Z] = ;
+	// guizmoStyle.Colors[ImGuizmo::SELECTION] = ;
+	// guizmoStyle.Colors[ImGuizmo::INACTIVE] = ;
+	// guizmoStyle.Colors[ImGuizmo::TRANSLATION_LINE] = ;
+	// guizmoStyle.Colors[ImGuizmo::SCALE_LINE] = ;
+	// guizmoStyle.Colors[ImGuizmo::ROTATION_USING_BORDER] = ;
+	guizmoStyle.Colors[ImGuizmo::ROTATION_USING_FILL] = guizmoStyle.Colors[ImGuizmo::ROTATION_USING_BORDER];
+	// guizmoStyle.Colors[ImGuizmo::HATCHED_AXIS_LINES] = ;
+	guizmoStyle.Colors[ImGuizmo::TEXT] = style.Colors[ImGuiCol_Text];
+	guizmoStyle.Colors[ImGuizmo::TEXT_SHADOW] = style.Colors[ImGuiCol_Text];
 }
 
 } // namespace ImGui

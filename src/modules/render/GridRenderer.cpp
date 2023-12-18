@@ -38,6 +38,10 @@ int GridRenderer::gridResolution() const {
 	return _resolution;
 }
 
+void GridRenderer::setColor(const glm::vec4 &color) {
+	_shapeBuilder.setColor(color);
+}
+
 void GridRenderer::update(const math::AABB<float>& aabb) {
 	if (!_dirty && _aabb == aabb) {
 		return;

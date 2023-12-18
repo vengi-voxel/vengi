@@ -4,6 +4,7 @@
 
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
+#include "Style.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
@@ -323,25 +324,30 @@ void IMGUIApp::setColorTheme() {
 		break;
 	}
 	ImGui::StyleColorsNeoSequencer();
+	ImGui::StyleImGuizmo();
 }
 
 const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
+	const int style = _uistyle->intVal();
 	switch (color) {
 	case style::ColorInactiveNode:
 		return core::Color::Gray();
+	case style::ColorGridBorder:
+		if (style == ImGui::StyleLight) {
+			return core::Color::DarkGray();
+		}
+		return core::Color::White();
 	case style::ColorReferenceNode:
 		return core::Color::LightGreen();
 	case style::ColorHighlightArea: {
 		static const glm::vec4 c = core::Color::alpha(core::Color::Green(), 0.2f);
 		return c;
 	}
-	case style::ColorActiveNode: {
-		const int style = _uistyle->intVal();
+	case style::ColorActiveNode:
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
 			return core::Color::DarkGreen();
 		}
 		return core::Color::White();
-	}
 	}
 	return core::Color::White();
 }
