@@ -35,15 +35,14 @@ SceneGraph::~SceneGraph() {
 	_nodes.clear();
 }
 
-SceneGraph::SceneGraph(SceneGraph &&other) noexcept {
-	_nodes = core::move(other._nodes);
-	_nextNodeId = other._nextNodeId;
+SceneGraph::SceneGraph(SceneGraph &&other) noexcept : _nodes(core::move(other._nodes)),
+													  _nextNodeId(other._nextNodeId),
+													  _activeNodeId(other._activeNodeId),
+													  _animations(core::move(other._animations)),
+													  _activeAnimation(core::move(other._activeAnimation)),
+													  _cachedMaxFrame(other._cachedMaxFrame) {
 	other._nextNodeId = 0;
-	_activeNodeId = other._activeNodeId;
 	other._activeNodeId = InvalidNodeId;
-	_animations = core::move(other._animations);
-	_activeAnimation = core::move(other._activeAnimation);
-	_cachedMaxFrame = other._cachedMaxFrame;
 }
 
 SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {

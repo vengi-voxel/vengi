@@ -88,10 +88,7 @@ public:
 			put(i->key, i->value);
 		}
 	}
-	DynamicMap(DynamicMap&& other) noexcept {
-		_buckets = other._buckets;
-		_hasher = other._hasher;
-		_size = other._size;
+	DynamicMap(DynamicMap&& other) noexcept : _buckets(other._buckets), _hasher(other._hasher), _size(other._size) {
 		other._buckets.fill(nullptr);
 	}
 	~DynamicMap() {
