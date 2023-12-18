@@ -24,6 +24,16 @@ The `--input` with e.g. `infile.png` will pick the depth map next to the image p
 
 `./vengi-voxconvert --input input.vox --script "replacepalette built-in:minecraft true" --output mincraft.vox`
 
+## Export flat normal gltf
+
+If you want to export flat normals for your `gltf/glb` file, you can use disable to re-use existing vertices and duplicate the vertices. This gives you flat normals for each vertex.
+
+`./vengi-voxconvert -set voxformat_reusevertices false --input input.vengi --output output.gltf`
+
+By setting `voxformat_reusevertices` to `true` you get surface normals for your mesh.
+
+> **NOTE:** This only works for cubic voxels - if you use another meshing algorithm (see [voxel_meshmode](../Configuration.md) cvar), this setting most likely doesn't have the same effect.
+
 ## Export all nodes as single files
 
 Save all nodes in the `input.vengi` file as dedicated files named after the names of the nodes.
