@@ -726,7 +726,6 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 	result->removeUnusedVertices();
 	result->compressIndices();
-	result->calculateNormals();
 }
 
 }

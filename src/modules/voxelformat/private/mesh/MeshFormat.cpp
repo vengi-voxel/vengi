@@ -524,6 +524,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 							  : voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads,
 														 reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
+			mesh->calculateNormals();
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 		};
