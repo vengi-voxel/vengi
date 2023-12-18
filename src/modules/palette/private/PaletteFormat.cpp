@@ -68,7 +68,6 @@ bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, p
 bool savePalette(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream,
 				 const io::FormatDescription *desc) {
 	Log::info("Save palette to %s", filename.c_str());
-	const core::String &extension = core::string::extractExtension(filename);
 	const core::String &ext = core::string::extractExtension(filename);
 	if (desc && !desc->matchesExtension(ext)) {
 		desc = nullptr;

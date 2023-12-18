@@ -95,13 +95,13 @@ bool UDPMetricSender::send(const char* buffer) const {
 	}
 	core_assert(_statsd != nullptr);
 	core_assert(_socket != INVALID_SOCKET);
-	const void* buf = (const void*)buffer;
 	const size_t len = (size_t)SDL_strlen(buffer);
 	const struct sockaddr *sock = (const struct sockaddr *)_statsd;
 	const socklen_t socksize = (socklen_t)sizeof(*_statsd);
 #ifdef WIN32
 	const int ret = (int)sendto(_socket, buffer, len, 0, sock, socksize);
 #else
+	const void* buf = (const void*)buffer;
 	const int ret = sendto(_socket, buf, len, 0, sock, socksize);
 #endif
 	if (ret == -1) {
