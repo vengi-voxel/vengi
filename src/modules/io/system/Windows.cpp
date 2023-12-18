@@ -65,6 +65,16 @@ bool initState(io::FilesystemState &state) {
 	state._directories[FilesystemDirectories::FS_Dir_Public] = priv::knownFolderPath(FOLDERID_Public);
 	state._directories[FilesystemDirectories::FS_Dir_Recent] = priv::knownFolderPath(FOLDERID_Recent);
 	state._directories[FilesystemDirectories::FS_Dir_Cloud] = priv::knownFolderPath(FOLDERID_SkyDrive);
+
+	const DWORD drives = GetLogicalDrives();
+	for (int i = 0; i < 26; ++i) {
+		if ((drives & (1 << i)) == 0) {
+			continue;
+		}
+		const char driveStr[3] = {'A' + i, ':', '\0'};
+		state._other.push_back(driveStr);
+	}
+
 	return true;
 }
 

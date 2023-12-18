@@ -119,6 +119,10 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	return true;
 }
 
+const core::DynamicArray<core::String> Filesystem::otherPaths() const {
+	return _state._other;
+}
+
 core::String Filesystem::specialDir(FilesystemDirectories dir) const {
 	return _state._directories[dir];
 }

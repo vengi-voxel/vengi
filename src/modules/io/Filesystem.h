@@ -32,6 +32,7 @@ enum FilesystemDirectories {
 
 struct FilesystemState {
 	core::String _directories[FilesystemDirectories::FS_Dir_Max];
+	core::DynamicArray<core::String> _other;
 };
 
 
@@ -75,6 +76,7 @@ public:
 	bool registerPath(const core::String& path);
 
 	core::String specialDir(FilesystemDirectories dir) const;
+	const core::DynamicArray<core::String> otherPaths() const;
 
 	/**
 	 * @brief Get the path where the application resides.
