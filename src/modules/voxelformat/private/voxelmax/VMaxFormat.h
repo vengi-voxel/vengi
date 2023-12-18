@@ -164,21 +164,21 @@ private:
 	enum class SnapshotType : uint8_t { UndoRestore = 0, RedoRestore, Undo, Redo, Checkpoint, Selection };
 
 	struct VolumeExtent {
-		int o; // order: chunkOrder = t >> chunkExtent.order
-		int min[3];
-		int max[3];
+		int o = 0; // order: chunkOrder = t >> chunkExtent.order
+		int min[3] {0, 0, 0};
+		int max[3] {0, 0, 0};
 	};
 
 	struct VolumeStats {
-		int count;
-		int scount;
+		int count = 0;
+		int scount = 0;
 		// a snapshot doesn't start from 0, that's why you need stats.min
-		int min[4]; // morton32, x, y, z and sum
-		int max[4]; // morton32, x, y, z and sum
-		int emin;	// extent in case the workarea is less than 256^3
-		int emax;
-		int smin[4]; // s means selected
-		int smax[4];
+		int min[4]{0, 0, 0, 0}; // morton32, x, y, z and sum
+		int max[4]{0, 0, 0, 0}; // morton32, x, y, z and sum
+		int emin = 0;			// extent in case the workarea is less than 256^3
+		int emax = 0;
+		int smin[4]{0, 0, 0, 0}; // s means selected
+		int smax[4]{0, 0, 0, 0};
 		VolumeExtent extent;
 	};
 
