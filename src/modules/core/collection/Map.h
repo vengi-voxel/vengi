@@ -95,10 +95,7 @@ public:
 			put(i->key, i->value);
 		}
 	}
-	Map(Map&& other) noexcept {
-		_allocator = core::move(other._allocator);
-		_buckets = other._buckets;
-		_hasher = other._hasher;
+	Map(Map&& other) noexcept : _allocator(core::move(other._allocator)), _buckets(other._buckets), _hasher(other._hasher) {
 		other._buckets.fill(nullptr);
 	}
 	~Map() {

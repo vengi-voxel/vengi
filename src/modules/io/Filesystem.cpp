@@ -488,15 +488,15 @@ core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(path, tokens, "/");
 	while (!tokens.empty()) {
-		if (tokens.empty()) {
-			continue;
-		}
 		if (filesystem->isReadableDir(tokens[0])) {
 			Log::trace("readable dir: %s", tokens[0].c_str());
 			break;
 		}
 		Log::trace("not a readable dir: %s", tokens[0].c_str());
 		tokens.erase(0);
+		if (tokens.empty()) {
+			break;
+		}
 	}
 	core::String relativePath;
 	for (const core::String &t : tokens) {

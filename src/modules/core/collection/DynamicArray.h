@@ -347,7 +347,7 @@ public:
 		checkBufferSize(size);
 	}
 
-	void insert(size_t size, TYPE type) {
+	void insert(size_t size, const TYPE& type) {
 		checkBufferSize(size);
 		while (size > _size) {
 			push_back(type);

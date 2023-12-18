@@ -45,14 +45,12 @@ public:
 
 	PoolAllocator() {}
 
-	PoolAllocator(PoolAllocator&& other) noexcept {
-		_poolBuf = other._poolBuf;
+	PoolAllocator(PoolAllocator &&other) noexcept
+		: _poolBuf(other._poolBuf), _nextFreeSlot(other._nextFreeSlot), _maxPoolSize(other._maxPoolSize),
+		  _currentAllocatedItems(other._currentAllocatedItems) {
 		other._poolBuf = nullptr;
-		_nextFreeSlot = other._nextFreeSlot;
 		other._nextFreeSlot = nullptr;
-		_maxPoolSize = other._maxPoolSize;
 		other._maxPoolSize = 0u;
-		_currentAllocatedItems = other._currentAllocatedItems;
 		other._currentAllocatedItems = 0u;
 	}
 
@@ -71,7 +69,7 @@ public:
 		return *this;
 	}
 
-	bool init(SizeType poolSize) {
+	bool init(const SizeType& poolSize) {
 		if (_poolBuf != nullptr) {
 			if (_maxPoolSize == poolSize + 1) {
 				return true;
