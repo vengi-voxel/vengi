@@ -138,26 +138,23 @@ BinaryPList &BinaryPList::operator=(const BinaryPList &val) {
 	return *this;
 }
 
-BinaryPList &BinaryPList::operator=(BinaryPList &&val) noexcept {
-	if (this == &val) {
+BinaryPList &BinaryPList::operator=(BinaryPList &&other) noexcept {
+	if (this == &other) {
 		return *this;
 	}
 	this->~BinaryPList();
 
-	_tagData = val._tagData;
-	_tagType = val._tagType;
+	_tagData = other._tagData;
+	_tagType = other._tagType;
 
-	val._tagType = BPListFormats::MAX;
-	val._tagData._string = nullptr;
+	other._tagType = BPListFormats::MAX;
+	other._tagData._string = nullptr;
 	return *this;
 }
 
-BinaryPList::BinaryPList(BinaryPList &&val) noexcept {
-	_tagType = val._tagType;
-	_tagData = val._tagData;
-
-	val._tagType = BPListFormats::MAX;
-	val._tagData._string = nullptr;
+BinaryPList::BinaryPList(BinaryPList &&other) noexcept : _tagData(other._tagData), _tagType(other._tagType) {
+	other._tagType = BPListFormats::MAX;
+	other._tagData._string = nullptr;
 }
 
 BinaryPList::BinaryPList(PListDict &&val) : _tagType(BPListFormats::Dict) {
