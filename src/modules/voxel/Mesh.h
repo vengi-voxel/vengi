@@ -58,6 +58,7 @@ public:
 	void removeUnusedVertices();
 	void compressIndices();
 	void calculateBounds();
+	void calculateNormals();
 	glm::vec3 mins() const { return _mins; }
 	glm::vec3 maxs() const { return _maxs; }
 

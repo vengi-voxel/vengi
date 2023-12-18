@@ -44,6 +44,11 @@ struct ChunkMesh {
 			mesh[i].compressedIndices();
 		}
 	}
+	void calculateNormals() {
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].calculateNormals();
+		}
+	}
 };
 
 } // namespace voxel

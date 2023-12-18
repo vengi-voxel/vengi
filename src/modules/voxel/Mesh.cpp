@@ -233,6 +233,33 @@ void Mesh::compressIndices() {
 	util::indexCompress(&_vecIndices.front(), maxSize, _compressedIndexSize, _compressedIndices, maxSize);
 }
 
+void Mesh::calculateNormals() {
+	if (!_normals.empty()) {
+		return;
+	}
+	_normals.resize(_vecVertices.size());
+
+	for (size_t i = 0; i < _vecIndices.size(); i += 3) {
+		IndexType index0 = _vecIndices[i + 0];
+		IndexType index1 = _vecIndices[i + 1];
+		IndexType index2 = _vecIndices[i + 2];
+
+		const glm::vec3 &v0 = _vecVertices[index0].position;
+		const glm::vec3 &v1 = _vecVertices[index1].position;
+		const glm::vec3 &v2 = _vecVertices[index2].position;
+
+		glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+
+		_normals[index0] += normal;
+		_normals[index1] += normal;
+		_normals[index2] += normal;
+	}
+
+	for (size_t i = 0; i < _normals.size(); ++i) {
+		_normals[i] = glm::normalize(_normals[i]);
+	}
+}
+
 void Mesh::calculateBounds() {
 	_mins = glm::vec3(std::numeric_limits<float>::max());
 	_maxs = glm::vec3(std::numeric_limits<float>::min());

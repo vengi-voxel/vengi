@@ -29,7 +29,8 @@ General:
    - Added support to collect anonymous metrics (disabled by default)
    - Added support to align all models in a scene - useful for rendering all models for an overview
    - Extended lua bindings
-   - Added automatic bash completion generation for all apps. Just use e.g. `vengi-voxconvert --completion bash`.
+   - Added automatic bash completion generation for all apps. Just use e.g. `vengi-voxconvert --completion bash`
+   - Calculate normals for the cubic mesh extractor, too
 
 VoxConvert:
 
