@@ -238,6 +238,7 @@ void Mesh::calculateNormals() {
 		return;
 	}
 	_normals.resize(_vecVertices.size());
+	_normals.fill(glm::vec3(0.0f));
 
 	for (size_t i = 0; i < _vecIndices.size(); i += 3) {
 		IndexType index0 = _vecIndices[i + 0];
