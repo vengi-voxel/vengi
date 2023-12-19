@@ -9,7 +9,7 @@
 namespace core {
 
 Tokenizer::Tokenizer(const TokenizerConfig &cfg_, const char* s, size_t len, const char *sep, const char *split) :
-		_posIndex(0u), _len((int32_t)len), _skipComments(cfg_.skipComments) {
+		_posIndex(0u), _size(0), _len((int32_t)len), _skipComments(cfg_.skipComments) {
 	bool lastCharIsSep = false;
 	bool lastCharWasQuoteEnd = false;
 	for (;;) {
