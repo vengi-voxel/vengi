@@ -122,7 +122,7 @@ bool WriteStream::writeLine(const core::String &string, const char *lineEnding) 
 }
 
 bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
-	uint16_t length = str.size();
+	const uint16_t length = (uint16_t)str.size();
 	if (!writeUInt16(length)) {
 		return false;
 	}
@@ -136,7 +136,7 @@ bool WriteStream::writePascalStringUInt16LE(const core::String &str) {
 }
 
 bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
-	uint16_t length = str.size();
+	const uint16_t length = (uint16_t)str.size();
 	if (!writeUInt16BE(length)) {
 		return false;
 	}
@@ -150,7 +150,7 @@ bool WriteStream::writePascalStringUInt16BE(const core::String &str) {
 }
 
 bool WriteStream::writePascalStringUInt8(const core::String &str) {
-	uint8_t length = str.size();
+	const uint8_t length = (uint8_t)str.size();
 	if (!writeUInt8(length)) {
 		return false;
 	}
@@ -165,11 +165,11 @@ bool WriteStream::writePascalStringUInt8(const core::String &str) {
 
 
 bool WriteStream::writePascalStringUInt32LE(const core::String &str) {
-	uint16_t length = str.size();
+	uint32_t length = (uint32_t)str.size();
 	if (!writeUInt32(length)) {
 		return false;
 	}
-	for (uint16_t i = 0u; i < length; ++i) {
+	for (uint32_t i = 0u; i < length; ++i) {
 		uint8_t chr = str[i];
 		if (!writeUInt8(chr)) {
 			return false;
