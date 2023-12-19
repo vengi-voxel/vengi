@@ -7,7 +7,6 @@
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/RendererInterface.h"
-#include "video/ScopedPolygonMode.h"
 #include "video/Shader.h"
 #include "video/Types.h"
 #include <glm/gtc/type_ptr.hpp>

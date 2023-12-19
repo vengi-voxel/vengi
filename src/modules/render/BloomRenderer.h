@@ -9,7 +9,6 @@
 #include "Combine2Shader.h"
 #include "TextureShader.h"
 #include "video/Buffer.h"
-#include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
 #include <glm/fwd.hpp>

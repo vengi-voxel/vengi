@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "render/CameraFrustum.h"
 #include "scenegraph/SceneGraph.h"
+#include "video/Camera.h"
 
 /**
  * Basic voxel rendering

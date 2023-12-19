@@ -7,7 +7,6 @@
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "math/AABB.h"
-#include "core/IComponent.h"
 
 namespace video {
 class Video;
