@@ -351,7 +351,7 @@ int clua_ioloader(lua_State *s) {
 	name.append(".lua");
 	io::FilePtr file = io::filesystem()->open(name);
 	if (!file->exists()) {
-		file = io::FilePtr();
+		file.release();
 		return clua_error(s, "Could not open required file %s", name.c_str());
 	}
 	const core::String& content = file->load();
