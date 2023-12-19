@@ -192,9 +192,7 @@ bool fs_mkdir(const char *path) {
 	if (errno == EEXIST) {
 		return true;
 	}
-	if (ret != 0) {
-		Log::error("Failed to mkdir %s: %s", path, strerror(errno));
-	}
+	Log::error("Failed to mkdir %s: %s", path, strerror(errno));
 	return false;
 }
 
