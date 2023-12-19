@@ -320,9 +320,14 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "base_id") || !strcmp(dictKey, "material")) {
 			// "base_id" int
 			// "material" int (index)
-			node.setProperty(dictKey, core::string::toString(*(const int32_t *)dictValue));
+			io::MemoryReadStream subStream(dictValue, sizeof(uint32_t));
+			int32_t v;
+			subStream.readInt32(v);
+			node.setProperty(dictKey, core::string::toString(v));
 		} else if (!strcmp(dictKey, "color")) {
-			const core::RGBA color = *(const uint32_t *)dictValue;
+			io::MemoryReadStream subStream(dictValue, sizeof(uint32_t));
+			uint32_t color;
+			subStream.readUInt32(color);
 			node.setColor(core::RGBA(color));
 		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
