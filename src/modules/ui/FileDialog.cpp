@@ -494,7 +494,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	path = "";
 #endif
 	for (const core::String &c : components) {
-		path = core::string::path(path, c);
+		path = core::string::sanitizeDirPath(core::string::path(path, c));
 		ImGui::SameLine();
 		if (ImGui::Button(c.c_str())) {
 			setCurrentPath(type, path);
