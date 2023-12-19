@@ -1274,12 +1274,8 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 
 			scenegraph::SceneGraphNode *existingNode = _sceneGraph.findNodeByName(node.name());
 			if (existingNode == nullptr) {
-				int activeNode = _sceneGraph.activeNode();
+				const int activeNode = _sceneGraph.activeNode();
 				existingNode = &_sceneGraph.node(activeNode);
-				if (existingNode == nullptr) {
-					Log::warn("Failed to find node with name %s", node.name().c_str());
-					continue;
-				}
 			}
 
 			voxel::RawVolume *v = voxelutil::diffVolumes(existingNode->volume(), node.volume());
