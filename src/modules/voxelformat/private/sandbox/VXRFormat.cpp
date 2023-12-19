@@ -105,6 +105,7 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::S
 	wrapBool(stream.writeFloat(floatProperty(node, "ikRollMax", glm::two_pi<float>())))
 	int ikConstraintAmount = 0;
 	wrapBool(stream.writeUInt32(ikConstraintAmount)) // (max 10)
+	// we don't support this - but leave this disabled for loop as it is for reference reasons
 	for (int i = 0; i < ikConstraintAmount; ++i) {
 		wrapBool(stream.writeFloat(0.0f)) // ikConstraintX
 		wrapBool(stream.writeFloat(0.0f)) // ikConstraintZ

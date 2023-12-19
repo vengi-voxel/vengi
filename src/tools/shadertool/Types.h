@@ -33,7 +33,7 @@ struct Variable {
 		MAX
 		// TODO: atomics
 	};
-	Type type;
+	Type type = Type::MAX;
 	core::String name;
 	int arraySize = 0;
 
