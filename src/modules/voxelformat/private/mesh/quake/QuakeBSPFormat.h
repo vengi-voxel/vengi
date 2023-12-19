@@ -37,10 +37,10 @@ private:
 
 	// q1
 	struct BspTextureBase {
-		float vecS[3];
-		float distS;
-		float vecT[3];
-		float distT;
+		float vecS[3] = {0.0f, 0.0f, 0.0f};
+		float distS = 0.0f;
+		float vecT[3] = {0.0f, 0.0f, 0.0f};
+		float distT = 0.0f;
 		uint32_t surfaceFlags = 0; // miptex index in q1
 		uint32_t value = 0;
 	};
