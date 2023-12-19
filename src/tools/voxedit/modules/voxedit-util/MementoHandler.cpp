@@ -100,6 +100,25 @@ MementoData& MementoData::operator=(MementoData &&o) noexcept {
 	return *this;
 }
 
+MementoData &MementoData::operator=(const MementoData &o) noexcept {
+	if (this != &o) {
+		_compressedSize = o._compressedSize;
+		if (_buffer) {
+			core_free(_buffer);
+			_buffer = nullptr;
+		}
+		if (o._buffer != nullptr) {
+			core_assert(_compressedSize > 0);
+			_buffer = (uint8_t *)core_malloc(_compressedSize);
+			core_memcpy(_buffer, o._buffer, _compressedSize);
+		} else {
+			core_assert(_compressedSize == 0);
+		}
+		_region = o._region;
+	}
+	return *this;
+}
+
 MementoData MementoData::fromVolume(const voxel::RawVolume* volume, const voxel::Region &region) {
 	if (volume == nullptr) {
 		return MementoData();

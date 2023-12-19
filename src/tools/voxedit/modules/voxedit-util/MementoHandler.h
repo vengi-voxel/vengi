@@ -72,6 +72,7 @@ public:
 	inline size_t size() const { return _compressedSize; }
 
 	MementoData& operator=(MementoData &&o) noexcept;
+	MementoData& operator=(const MementoData &o) noexcept;
 
 	inline const voxel::Region& region() const {
 		return _region;
