@@ -140,6 +140,11 @@ void VoxConvert::usage() const {
 	Log::info(" * Twitter: https://twitter.com/MartinGerhardy");
 	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
 	Log::info(" * Discord: https://vengi-voxel.de/discord");
+
+	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
+		Log::info("Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
+		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
+	}
 }
 
 app::AppState VoxConvert::onInit() {
@@ -258,6 +263,11 @@ app::AppState VoxConvert::onInit() {
 	Log::info("* export palette:    - %s", (_exportPalette    ? "true" : "false"));
 	Log::info("* export models:     - %s", (_exportModels     ? "true" : "false"));
 	Log::info("* resize models:     - %s", (_resizeModels     ? "true" : "false"));
+
+	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
+		Log::info("Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
+		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
+	}
 
 	io::FilePtr outputFile;
 	if (!outfile.empty()) {
