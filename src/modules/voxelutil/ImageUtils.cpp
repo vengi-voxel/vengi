@@ -133,9 +133,9 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 						continue;
 					}
 					voxel::Voxel voxel;
-					if (y < heightValue) {
+					if (y < heightValue - 1) {
 						voxel = underground;
-					} else if (y == heightValue) {
+					} else {
 						voxel = surface;
 					}
 					volume.setVoxel(regionPos, voxel);
