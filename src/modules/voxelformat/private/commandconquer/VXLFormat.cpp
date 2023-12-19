@@ -118,8 +118,6 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
 									uint8_t normalType) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
-	core_assert(skipCount <= 255);
-	core_assert(voxelCount <= 255);
 
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
