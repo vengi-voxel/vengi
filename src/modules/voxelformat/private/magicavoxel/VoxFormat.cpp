@@ -46,6 +46,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
+	const ogt_vox_layer &ogtLayer = scene->layers[ogtInstance.layer_index];
 	const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, 0, scene, ogtModel);
 	const glm::vec4 &ogtPivot = ogtVolumePivot(ogtModel);
 	const glm::ivec3 &ogtMins = calcTransform(ogtMat, glm::ivec3(0), ogtPivot);
@@ -80,6 +81,8 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setColor(instanceColor(scene, ogtInstance));
+	node.setProperty("layer", ogtLayer.name);
+	node.setProperty("layerId", ogtInstance.layer_index);
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
 	node.setVolume(v, true);
