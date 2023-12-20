@@ -282,33 +282,31 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 }
 
 void BrushPanel::update(const char *title, command::CommandExecutionListener &listener) {
+	Modifier &modifier = sceneMgr().modifier();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addModifiers(listener);
-	}
 
-	Modifier &modifier = sceneMgr().modifier();
-	if (modifier.isMode(ModifierType::ColorPicker)) {
-		ImGui::TextWrapped("Click on a voxel to pick the color");
-	} else if (modifier.isMode(ModifierType::Line)) {
-		ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
-	} else if (modifier.isMode(ModifierType::Path)) {
-		ImGui::TextWrapped("Draws a path over existing voxels");
-	} else if (modifier.isMode(ModifierType::Select)) {
-		ImGui::TextWrapped("Select areas of voxels");
-	} else {
-		const int currentBrush = (int)modifier.brushType();
-		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-		ui::Toolbar toolbar(buttonSize, &listener);
-		for (int i = 0; i < (int)BrushType::Max; ++i) {
-			auto func = [&modifier, i]() { modifier.setBrushType((BrushType)i); };
-			toolbar.button(BrushTypeIcons[i], BrushTypeStr[i], func, currentBrush != i);
+		if (modifier.isMode(ModifierType::ColorPicker)) {
+			ImGui::TextWrapped("Click on a voxel to pick the color");
+		} else if (modifier.isMode(ModifierType::Line)) {
+			ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
+		} else if (modifier.isMode(ModifierType::Path)) {
+			ImGui::TextWrapped("Draws a path over existing voxels");
+		} else if (modifier.isMode(ModifierType::Select)) {
+			ImGui::TextWrapped("Select areas of voxels");
+		} else {
+			const int currentBrush = (int)modifier.brushType();
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+			ui::Toolbar toolbar(buttonSize, &listener);
+			for (int i = 0; i < (int)BrushType::Max; ++i) {
+				auto func = [&modifier, i]() { modifier.setBrushType((BrushType)i); };
+				toolbar.button(BrushTypeIcons[i], BrushTypeStr[i], func, currentBrush != i);
+			}
+			toolbar.end();
+
+			brushRegion();
+			brushSettings(listener);
 		}
-		toolbar.end();
-
-		brushRegion();
-		brushSettings(listener);
-
-		ImGui::Separator();
 	}
 	ImGui::End();
 }
