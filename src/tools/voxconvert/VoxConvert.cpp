@@ -59,6 +59,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
+	registerArg("--filter-property").setDescription("Model filter by property. For example 'name:foo'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
 	registerArg("--image-as-volume").setDescription("Import given input image as volume");
@@ -337,6 +338,23 @@ app::AppState VoxConvert::onInit() {
 			filterModels(sceneGraph);
 		} else {
 			Log::warn("Don't apply model filters for multiple input files");
+		}
+	}
+
+	const bool applyFilterProperty = hasArg("--filter-property");
+	if (applyFilterProperty) {
+		if (infiles.size() == 1u) {
+			const core::String &property = getArgVal("--filter-property");
+			core::String key = property;
+			core::String value;
+			const size_t colonPos = property.find(":");
+			if (colonPos != core::String::npos) {
+				key = property.substr(0, colonPos);
+				value = property.substr(colonPos + 1);
+			}
+			filterModelsByProperty(sceneGraph, key, value);
+		} else {
+			Log::warn("Don't apply model property filters for multiple input files");
 		}
 	}
 
@@ -800,6 +818,34 @@ void VoxConvert::filterModels(scenegraph::SceneGraph& sceneGraph) {
 		sceneGraph.removeNode(entry->key, false);
 	}
 	Log::info("Filtered models: %i", (int)models.size());
+}
+
+void VoxConvert::filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value) {
+	if (property.empty()) {
+		Log::warn("No property specified to filter");
+		return;
+	}
+
+	core::Set<int> removeNodes;
+	for (auto iter : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = iter->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		const core::String &pkey = node.property(property);
+		if (value.empty() && !pkey.empty()) {
+			continue;
+		}
+		if (pkey == value) {
+			continue;
+		}
+		Log::debug("Remove model %i - not part of the filter expression", node.id());
+		removeNodes.insert(node.id());
+	}
+	for (const auto &entry : removeNodes) {
+		sceneGraph.removeNode(entry->key, false);
+	}
+	Log::info("Filtered models: %i", (int)sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
 }
 
 void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {

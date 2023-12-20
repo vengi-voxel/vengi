@@ -79,6 +79,7 @@ protected:
 	void dump(const scenegraph::SceneGraph& sceneGraph);
 	void dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph);
 	void filterModels(scenegraph::SceneGraph& sceneGraph);
+	void filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value);
 	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext);
 	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
 public:
