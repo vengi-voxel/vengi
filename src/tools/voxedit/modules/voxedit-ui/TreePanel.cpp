@@ -59,24 +59,22 @@ void TreePanel::update(const char *title) {
 	static const struct {
 		const char *name;
 		voxelgenerator::TreeType type;
-	} treeTypes[] = {
-		{"Pine",				voxelgenerator::TreeType::Pine},
-		{"Dome",				voxelgenerator::TreeType::Dome},
-		{"Dome Hanging",		voxelgenerator::TreeType::DomeHangingLeaves},
-		{"Cone",				voxelgenerator::TreeType::Cone},
-		{"Fir",					voxelgenerator::TreeType::Fir},
-		{"Ellipsis2",			voxelgenerator::TreeType::BranchesEllipsis},
-		{"Ellipsis",			voxelgenerator::TreeType::Ellipsis},
-		{"Cube",				voxelgenerator::TreeType::Cube},
-		{"Cube Sides",			voxelgenerator::TreeType::CubeSideCubes},
-		{"Palm",				voxelgenerator::TreeType::Palm},
-		{"SpaceColonization",	voxelgenerator::TreeType::SpaceColonization}
-	};
+	} treeTypes[] = {{ICON_LC_TREE_PINE " Pine", voxelgenerator::TreeType::Pine},
+					 {"Dome", voxelgenerator::TreeType::Dome},
+					 {"Dome Hanging", voxelgenerator::TreeType::DomeHangingLeaves},
+					 {"Cone", voxelgenerator::TreeType::Cone},
+					 {"Fir", voxelgenerator::TreeType::Fir},
+					 {"Ellipsis2", voxelgenerator::TreeType::BranchesEllipsis},
+					 {"Ellipsis", voxelgenerator::TreeType::Ellipsis},
+					 {"Cube", voxelgenerator::TreeType::Cube},
+					 {"Cube Sides", voxelgenerator::TreeType::CubeSideCubes},
+					 {ICON_LC_PALMTREE " Palm", voxelgenerator::TreeType::Palm},
+					 {"SpaceColonization", voxelgenerator::TreeType::SpaceColonization}};
 	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
 
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);
-		if (ImGui::BeginCombo(ICON_LC_TREE_PINE " Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
+		if (ImGui::BeginCombo(ICON_LC_TREES " Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
 			for (int i = 0; i < lengthof(treeTypes); ++i) {
 				if (ImGui::Selectable(treeTypes[i].name, i == core::enumVal(_treeGeneratorContext.cfg.type))) {
 					switchTreeType((voxelgenerator::TreeType)i);

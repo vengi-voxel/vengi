@@ -90,7 +90,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		if (ImGui::BeginMenuBar()) {
 			command::CommandExecutionListener &listener = imguiApp()->commandListener();
 			if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
-				ImGui::CommandMenuItem(ICON_LC_SQUARE " Clear", "clear", true, &listener);
+				ImGui::CommandMenuItem(ICON_LC_LIST_X " Clear", "clear", true, &listener);
 				ImGui::Separator();
 				if (ImGui::Button(ICON_LC_COPY " Copy to clipboard")) {
 					ImGui::LogToClipboard();
