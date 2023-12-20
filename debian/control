@@ -33,13 +33,13 @@ Package: vengi-voxedit
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
-Recommends: vengi-thumbnailer
+Recommends: vengi-thumbnailer, vengi-voxconvert
 Description: Voxel editor
 
 Package: vengi-thumbnailer
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit
+Recommends: vengi-voxedit, vengi-voxconvert
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
 
