@@ -5,8 +5,7 @@
 #pragma once
 
 #include "Modifier.h"
-#include "ModifierRenderer.h"
-#include "core/IComponent.h"
+#include "IModifierRenderer.h"
 #include "core/ScopedPtr.h"
 
 namespace voxedit {
