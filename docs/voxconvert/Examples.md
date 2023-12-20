@@ -149,6 +149,20 @@ Extract just a few models from the input file.
 
 This will export models 1, 2 and 4.
 
+Another option is to filter by node properties:
+
+`./vengi-voxconvert --filter-property propertyName:propertyValue --input infile.vox --output outfile.vox`
+
+Or by just checking whether a property is set - no matter which value:
+
+`./vengi-voxconvert --filter-property propertyName --input infile.vox --output outfile.vox`
+
+So every model node that has the node property `propertyName` set will get exported into `outfile.vox`.
+
+You can find all node properties by using `--dump`:
+
+`./vengi-voxconvert --dump --input infile.vox`
+
 ## Convert to mesh
 
 You can export your volume model into a gltf, obj, stl or ply (see [Formats](../Formats.md) for more options)
