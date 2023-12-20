@@ -75,7 +75,19 @@ public:
 	core::String load(const core::String& scriptName) const;
 	core::DynamicArray<LUAScript> listScripts() const;
 	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
-	bool exec(const core::String& luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId, const voxel::Region& region, const voxel::Voxel& voxel, voxel::Region &dirtyRegion, const core::DynamicArray<core::String>& args = {});
+	/**
+	 * @param luaScript The lua script string to execute
+	 * @param sceneGraph The scene graph to operate on
+	 * @param nodeId The node ID of the active node
+	 * @param region The region to operate on
+	 * @param voxel The voxel color and material that is currently selected
+	 * @param dirtyRegion The region that was modified by the script
+	 * @param args The arguments to pass to the script
+	 * @return @c true if the script was executed successfully, @c false otherwise
+	 */
+	bool exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
+			  const voxel::Region &region, const voxel::Voxel &voxel, voxel::Region &dirtyRegion,
+			  const core::DynamicArray<core::String> &args = {});
 };
 
 inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {

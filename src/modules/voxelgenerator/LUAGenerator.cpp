@@ -38,6 +38,12 @@
 
 namespace voxelgenerator {
 
+struct LuaSceneGraphNode {
+	scenegraph::SceneGraphNode *node;
+	LuaSceneGraphNode(scenegraph::SceneGraphNode *node) : node(node) {
+	}
+};
+
 class LuaRawVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
@@ -152,24 +158,24 @@ static int luaVoxel_pushregion(lua_State* s, voxel::Region* region) {
 	return clua_pushudata(s, region, luaVoxel_metaregion_gc());
 }
 
-
-static scenegraph::SceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
-	return *(scenegraph::SceneGraphNode**)clua_getudata<scenegraph::SceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
+static LuaSceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
+	return *(LuaSceneGraphNode**)clua_getudata<LuaSceneGraphNode*>(s, n, luaVoxel_metascenegraphnode());
 }
 
 static int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode& node) {
-	return clua_pushudata(s, &node, luaVoxel_metascenegraphnode());
+	LuaSceneGraphNode *wrapper = new LuaSceneGraphNode(&node);
+	return clua_pushudata(s, wrapper, luaVoxel_metascenegraphnode());
 }
 
 static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
 	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
 }
 
-static int luaVoxel_pushvolumewrapper(lua_State* s, scenegraph::SceneGraphNode* node) {
+static int luaVoxel_pushvolumewrapper(lua_State* s, LuaSceneGraphNode* node) {
 	if (node == nullptr) {
 		return clua_error(s, "No node given - can't push");
 	}
-	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node);
+	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node->node);
 	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 
@@ -897,64 +903,70 @@ static int luaVoxel_scenegraph_get_node(lua_State* s) {
 }
 
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	if (!node->isModelNode()) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	if (!node->node->isModelNode()) {
 		return clua_error(s, "Node is no model node");
 	}
 	return luaVoxel_pushvolumewrapper(s, node);
 }
 
 static int luaVoxel_scenegraphnode_palette(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	palette::Palette &palette = node->palette();
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	palette::Palette &palette = node->node->palette();
 	return luaVoxel_pushpalette(s, palette);
 }
 
 static int luaVoxel_scenegraphnode_is_model(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushboolean(s, node->isModelNode() ? 1 : 0);
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->isModelNode() ? 1 : 0);
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushstring(s, node->name().c_str());
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushstring(s, node->node->name().c_str());
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_id(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushinteger(s, node->id());
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushinteger(s, node->node->id());
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_parent(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushinteger(s, node->parent());
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushinteger(s, node->node->parent());
 	return 1;
 }
 
 static int luaVoxel_scenegraphnode_setname(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const char *newName = lua_tostring(s, 2);
-	node->setName(newName);
+	node->node->setName(newName);
 	return 0;
 }
 
 static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	palette::Palette *palette = luaVoxel_toPalette(s, 2);
 	if (clua_optboolean(s, 3, false)) {
-		node->remapToPalette(*palette);
+		node->node->remapToPalette(*palette);
 	}
-	node->setPalette(*palette);
+	node->node->setPalette(*palette);
 	return 0;
 }
 
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
-	scenegraph::SceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushfstring(s, "node: [%d, %s]", node->id(), node->name().c_str());
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushfstring(s, "node: [%d, %s]", node->node->id(), node->node->name().c_str());
 	return 1;
+}
+
+static int luaVoxel_scenegraphnode_gc(lua_State *s) {
+	LuaSceneGraphNode *node = luaVoxel_toscenegraphnode(s, 1);
+	delete node;
+	return 0;
 }
 
 static void prepareState(lua_State* s) {
@@ -1039,6 +1051,7 @@ static void prepareState(lua_State* s) {
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
+		{"__gc", luaVoxel_scenegraphnode_gc},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, sceneGraphNodeFuncs, luaVoxel_metascenegraphnode());
