@@ -27,15 +27,13 @@
 #include "math/Ray.h"
 #include "metric/MetricFacade.h"
 #include "video/Camera.h"
-#include "video/Renderer.h"
-#include "video/Types.h"
+#include "voxedit-util/SceneRenderer.h"
 #include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
@@ -51,7 +49,6 @@
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
 #include "voxelutil/VolumeCropper.h"
-#include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeResizer.h"
 #include "voxelutil/VolumeRotator.h"
@@ -1538,7 +1535,7 @@ void SceneManager::construct() {
 			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
 		}
-		const core::String luaCode = _modifier.scriptBrush().luaGenerator().load(args[0]);
+		const core::String luaCode = _luaGenerator.load(args[0]);
 		if (luaCode.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
@@ -2267,6 +2264,10 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the movement controller");
 		return false;
 	}
+	if (!_luaGenerator.init()) {
+		Log::error("Failed to initialize the lua generator");
+		return false;
+	}
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
@@ -2277,36 +2278,26 @@ bool SceneManager::init() {
 }
 
 bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
-	const int nodeId = activeNode();
-	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
-	if (node == nullptr) {
+	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
+
+	if (luaCode.empty()) {
+		Log::warn("No script selected");
 		return false;
 	}
-	voxel::RawVolume* v = node->volume();
-	if (v == nullptr) {
+	const int nodeId = _sceneGraph.activeNode();
+	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
+	if (!_luaGenerator.exec(luaCode, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args)) {
 		return false;
 	}
-
-	_modifier.setBrushType(BrushType::Script);
-	_modifier.scriptBrush().setScriptCode(luaCode, args);
-
-	_modifier.start();
-	auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, bool markUndo) {
-		if (_sceneGraph.hasNode(nodeId)) {
-			modified(nodeId, region, markUndo);
-		}
-	};
-	const bool state = _modifier.execute(_sceneGraph, *node, callback);
-	_modifier.stop();
-	if (!state) {
-		Log::warn("Failed to execute script");
+	if (dirtyRegion.isValid()) {
+		modified(activeNode(), dirtyRegion, true);
 	}
 	if (_sceneGraph.dirty()) {
 		markDirty();
 		_sceneRenderer->clear();
 		_sceneGraph.markClean();
 	}
-	return state;
+	return true;
 }
 
 bool SceneManager::animateActive() const {
@@ -2420,6 +2411,7 @@ void SceneManager::shutdown() {
 	_modifier.shutdown();
 	_mementoHandler.shutdown();
 	_voxelFont.shutdown();
+	_luaGenerator.shutdown();
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");

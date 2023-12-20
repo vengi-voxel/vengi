@@ -9,17 +9,14 @@
 #include "command/ActionButton.h"
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
-#include "core/SharedPtr.h"
 #include "core/Singleton.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "modifier/ModifierFacade.h"
-#include "modifier/ModifierType.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
-#include "voxedit-util/SceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -67,6 +64,7 @@ private:
 	std::future<scenegraph::SceneGraph> _loadingFuture;
 	SceneRendererPtr _sceneRenderer;
 	ModifierFacade _modifier;
+	voxelgenerator::LUAGenerator _luaGenerator;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -399,6 +397,7 @@ public:
 	MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
+	voxelgenerator::LUAGenerator &luaGenerator();
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
@@ -498,6 +497,10 @@ inline const ModifierFacade &SceneManager::modifier() const {
 
 inline ModifierFacade &SceneManager::modifier() {
 	return _modifier;
+}
+
+inline voxelgenerator::LUAGenerator &SceneManager::luaGenerator() {
+	return _luaGenerator;
 }
 
 inline SceneManager &sceneMgr() {

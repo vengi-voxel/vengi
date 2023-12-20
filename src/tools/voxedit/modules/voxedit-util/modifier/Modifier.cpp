@@ -97,7 +97,6 @@ void Modifier::construct() {
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 
 	_planeBrush.construct();
-	_scriptBrush.construct();
 	_shapeBrush.construct();
 	_stampBrush.construct();
 }
@@ -112,15 +111,15 @@ void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
 
 bool Modifier::init() {
 	if (!_planeBrush.init()) {
-		return false;
-	}
-	if (!_scriptBrush.init()) {
+		Log::error("Failed to initialize the plane brush");
 		return false;
 	}
 	if (!_shapeBrush.init()) {
+		Log::error("Failed to initialize the shape brush");
 		return false;
 	}
 	if (!_stampBrush.init()) {
+		Log::error("Failed to initialize the stamp brush");
 		return false;
 	}
 	return true;
@@ -129,7 +128,6 @@ bool Modifier::init() {
 void Modifier::shutdown() {
 	reset();
 	_planeBrush.shutdown();
-	_scriptBrush.shutdown();
 	_shapeBrush.shutdown();
 	_stampBrush.shutdown();
 }
@@ -166,7 +164,6 @@ void Modifier::reset() {
 
 	_modifierType = ModifierType::Place;
 	_planeBrush.reset();
-	_scriptBrush.reset();
 	_shapeBrush.reset();
 	_stampBrush.reset();
 	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
@@ -416,8 +413,6 @@ Brush *Modifier::activeBrush() {
 	switch (_brushType) {
 	case BrushType::Plane:
 		return &_planeBrush;
-	case BrushType::Script:
-		return &_scriptBrush;
 	case BrushType::Shape:
 		return &_shapeBrush;
 	case BrushType::Stamp:

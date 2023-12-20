@@ -6,7 +6,6 @@ set(SRCS
 
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
-	modifier/brush/ScriptBrush.cpp modifier/brush/ScriptBrush.h
 	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 

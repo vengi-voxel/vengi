@@ -15,6 +15,7 @@
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneGraphPanel.h"
 #include "voxedit-ui/MenuBar.h"
+#include "voxedit-ui/ScriptPanel.h"
 #include "voxedit-ui/ToolsPanel.h"
 #include "voxedit-ui/PalettePanel.h"
 #include "voxedit-ui/BrushPanel.h"
@@ -72,6 +73,7 @@ private:
 	PalettePanel _palettePanel;
 	MenuBar _menuBar;
 	StatusBar _statusBar;
+	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;
 	video::TexturePool _texturePool;
 

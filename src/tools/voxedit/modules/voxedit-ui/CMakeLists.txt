@@ -15,6 +15,7 @@ set(SRCS
 	PalettePanel.h PalettePanel.cpp
 	RenderPanel.h RenderPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
+	ScriptPanel.h ScriptPanel.cpp
 	BrushPanel.h BrushPanel.cpp
 	StatusBar.h StatusBar.cpp
 	TipOfTheDay.h

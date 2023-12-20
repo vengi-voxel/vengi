@@ -64,6 +64,7 @@
 #define TITLE_TOOLS ICON_LC_WRENCH " Tools##title"
 #define TITLE_MEMENTO ICON_LC_BOOK_OPEN " History##title"
 #define TITLE_ASSET ICON_LC_LIST " Assets##title"
+#define TITLE_SCRIPT ICON_LC_CODE " Scripts##title"
 #define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene##title"
 #define TITLE_RENDER ICON_LC_IMAGE " Render##title"
 #define TITLE_TREES ICON_LC_TREE_PINE " Trees##title"
@@ -390,7 +391,7 @@ void MainWindow::mainWidget() {
 	}
 
 	// bottom
-	_brushPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
+	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
 	if (isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
@@ -422,6 +423,7 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_SCRIPT, dockId);
 }
 
 void MainWindow::rightWidget() {
@@ -444,6 +446,7 @@ void MainWindow::rightWidget() {
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
+		_scriptPanel.update(TITLE_SCRIPT, listener);
 	}
 }
 

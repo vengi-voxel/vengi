@@ -18,6 +18,7 @@
 #include "ui/Toolbar.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "DragAndDropPayload.h"
+#include "voxelrender/SceneGraphRenderer.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define SCENEGRAPHPOPUP "##scenegraphpopup"

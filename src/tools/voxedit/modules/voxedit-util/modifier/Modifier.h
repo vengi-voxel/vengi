@@ -13,7 +13,6 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
-#include "voxedit-util/modifier/brush/ScriptBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxel/Face.h"
@@ -50,7 +49,6 @@ protected:
 	BrushContext _brushContext;
 	BrushType _brushType = BrushType::Shape;
 	PlaneBrush _planeBrush;
-	ScriptBrush _scriptBrush;
 	ShapeBrush _shapeBrush;
 	StampBrush _stampBrush;
 
@@ -131,7 +129,6 @@ public:
 	ShapeBrush *activeShapeBrush();
 	voxel::Region calcBrushRegion();
 
-	ScriptBrush &scriptBrush();
 	ShapeBrush &shapeBrush();
 	StampBrush &stampBrush();
 	BrushContext &brushContext();
@@ -191,10 +188,6 @@ inline ShapeBrush &Modifier::shapeBrush() {
 
 inline StampBrush &Modifier::stampBrush() {
 	return _stampBrush;
-}
-
-inline ScriptBrush &Modifier::scriptBrush() {
-	return _scriptBrush;
 }
 
 inline int Modifier::gridResolution() const {
