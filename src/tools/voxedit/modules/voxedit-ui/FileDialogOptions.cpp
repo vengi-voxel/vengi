@@ -5,7 +5,6 @@
 #include "FileDialogOptions.h"
 #include "core/GameConfig.h"
 #include "io/FormatDescription.h"
-#include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
 

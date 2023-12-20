@@ -4,7 +4,6 @@
 
 #include "AssetPanel.h"
 #include "DragAndDropPayload.h"
-#include "Util.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/File.h"
@@ -18,7 +17,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 

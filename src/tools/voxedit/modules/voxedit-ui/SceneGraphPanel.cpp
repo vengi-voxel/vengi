@@ -4,11 +4,9 @@
 
 #include "SceneGraphPanel.h"
 #include "ui/IconsLucide.h"
-#include "Util.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "core/collection/DynamicArray.h"
 #include "core/Color.h"
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/Config.h"

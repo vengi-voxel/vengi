@@ -10,12 +10,10 @@
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
 #include "engine-config.h"
-#include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 

@@ -6,10 +6,7 @@
 
 #include "command/CommandHandler.h"
 #include "core/collection/DynamicArray.h"
-#include "image/Image.h"
 #include "io/Filesystem.h"
-#include "math/Axis.h"
-#include "video/Texture.h"
 #include "video/TexturePool.h"
 
 namespace voxedit {

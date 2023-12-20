@@ -15,7 +15,6 @@
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "math/Ray.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"

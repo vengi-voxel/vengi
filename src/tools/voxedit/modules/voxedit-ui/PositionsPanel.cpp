@@ -6,7 +6,6 @@
 #include "Util.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
-#include "core/Log.h"
 #include "Gizmo.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
