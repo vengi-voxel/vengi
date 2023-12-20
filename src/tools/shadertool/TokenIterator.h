@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include <simplecpp.h>
 
 namespace shadertool {
