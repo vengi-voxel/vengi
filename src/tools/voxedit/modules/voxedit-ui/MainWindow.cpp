@@ -358,9 +358,12 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::leftWidget() {
+	const bool editMode = isAnyEditMode();
 	command::CommandExecutionListener &listener = imguiApp()->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	_brushPanel.update(TITLE_BRUSHPANEL, listener);
+	if (editMode) {
+		_brushPanel.update(TITLE_BRUSHPANEL, listener);
+	}
 }
 
 // end of left side
