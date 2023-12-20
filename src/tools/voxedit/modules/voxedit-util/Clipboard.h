@@ -5,7 +5,7 @@
 #pragma once
 
 #include "voxel/RawVolume.h"
-#include "../modifier/Selection.h"
+#include "modifier/Selection.h"
 
 namespace voxedit {
 namespace tool {

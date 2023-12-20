@@ -18,7 +18,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
-#include "voxedit-util/tool/Clipboard.h"
+#include "voxedit-util/Clipboard.h"
 #include "voxel/Face.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"

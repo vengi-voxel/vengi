@@ -26,7 +26,7 @@ set(SRCS
 
 	ModelNodeSettings.h
 
-	tool/Clipboard.h tool/Clipboard.cpp
+	Clipboard.h Clipboard.cpp
 )
 
 set(LIB voxedit-util)

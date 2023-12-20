@@ -63,7 +63,7 @@
 #include "Config.h"
 #include "MementoHandler.h"
 #include "SceneUtil.h"
-#include "tool/Clipboard.h"
+#include "Clipboard.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

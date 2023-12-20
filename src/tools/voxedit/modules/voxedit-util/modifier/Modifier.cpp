@@ -9,6 +9,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/Face.h"
