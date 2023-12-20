@@ -392,6 +392,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
+	_visible = false;
 	ui::ScopedStyle style;
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
@@ -407,6 +408,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 		name = core::string::format("%s%s", modeStr, _uiId.c_str());
 	}
 	if (ImGui::Begin(name.c_str(), nullptr, sceneWindowFlags)) {
+		_visible = true;
 		renderMenuBar(listener);
 		renderViewport();
 	}

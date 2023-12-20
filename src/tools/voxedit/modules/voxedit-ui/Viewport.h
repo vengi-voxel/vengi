@@ -27,6 +27,7 @@ private:
 	const core::String _uiId;
 	const bool _detailedTitle;
 	bool _hovered = false;
+	bool _visible = false;
 	/**
 	 * while we are still modifying the transform or shifting the volume we don't want to
 	 * flood the memento states - thus we lock the memento handler and track this here.
@@ -136,6 +137,7 @@ public:
 	video::Camera &camera();
 
 	bool isHovered() const;
+	bool isVisible() const;
 	/**
 	 * Update the ui
 	 */
@@ -159,6 +161,10 @@ inline int Viewport::id() const {
 
 inline bool Viewport::isHovered() const {
 	return _hovered;
+}
+
+inline bool Viewport::isVisible() const {
+	return _visible;
 }
 
 } // namespace voxedit

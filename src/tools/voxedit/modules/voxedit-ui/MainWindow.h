@@ -145,6 +145,10 @@ public:
 	void update();
 	QuitDisallowReason allowToQuit();
 	Viewport* hoveredScene();
+	/**
+	 * @brief Checks if any of the viewports is in edit mode
+	 */
+	bool isAnyEditMode() const;
 
 	bool saveScreenshot(const core::String& file, const core::String &viewportId = "");
 };

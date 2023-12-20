@@ -1002,6 +1002,19 @@ void MainWindow::update() {
 	}
 }
 
+bool MainWindow::isAnyEditMode() const {
+	for (size_t i = 0; i < _scenes.size(); ++i) {
+		if (!_scenes[i]->isVisible()) {
+			continue;
+		}
+		if (_scenes[i]->isSceneMode()) {
+			continue;
+		}
+		return true;
+	}
+	return false;
+}
+
 Viewport *MainWindow::hoveredScene() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		if (_scenes[i]->isHovered()) {
