@@ -35,6 +35,7 @@ General:
 VoxConvert:
 
    - Improved `--export-models` to work with the output format given by `--output`
+   - Added `--filter-property` to filter by node property `key<:value>`
 
 VoxEdit:
 
@@ -52,6 +53,8 @@ VoxEdit:
    - Improved gizmo settings panel
    - Added the console next to the animation timeline panel
    - Improved color themes (especially the light theme)
+   - Only show the brush panel if in edit mode
+   - Converted the script brush back to a normal panel
 
 Thumbnailer:
 
