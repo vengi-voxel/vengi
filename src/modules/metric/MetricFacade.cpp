@@ -6,7 +6,6 @@
 #include "UDPMetricSender.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
-#include "core/Singleton.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
 #include "metric/HTTPMetricSender.h"
@@ -21,6 +20,11 @@ struct MetricState {
 
 	bool init(const core::String &appname);
 	void shutdown();
+
+	static MetricState &getInstance() {
+		static MetricState theInstance;
+		return theInstance;
+	}
 };
 
 bool MetricState::init(const core::String &appname) {
@@ -62,10 +66,7 @@ void MetricState::shutdown() {
 }
 
 bool count(const core::String &key, int delta, const TagMap &tags) {
-	MetricState &s = core::Singleton<MetricState>::getInstance();
-	if (!s._sender) {
-		return false;
-	}
+	MetricState &s = MetricState::getInstance();
 	s._threadPool.enqueue([=, &s]() {
 		s._metric.count(key.c_str(), delta, tags);
 	});
@@ -73,11 +74,11 @@ bool count(const core::String &key, int delta, const TagMap &tags) {
 }
 
 bool init(const core::String &appname) {
-	return core::Singleton<MetricState>::getInstance().init(appname);
+	return MetricState::getInstance().init(appname);
 }
 
 void shutdown() {
-	core::Singleton<MetricState>::getInstance().shutdown();
+	MetricState::getInstance().shutdown();
 }
 
 } // namespace metric
