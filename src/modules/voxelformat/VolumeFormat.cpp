@@ -625,6 +625,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 			if (f) {
 				if (f->save(sceneGraph, filename, stream, ctx)) {
 					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+					metric::count("save", 1, {{"type", ext}});
 					return true;
 				}
 				Log::error("Failed to save %s file", desc->name.c_str());
