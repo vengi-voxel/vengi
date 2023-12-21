@@ -59,7 +59,7 @@ set(SRCS
 	private/voxelmax/BinaryPList.h           private/voxelmax/BinaryPList.cpp
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric)
 
 set(TEST_SRCS
 	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp

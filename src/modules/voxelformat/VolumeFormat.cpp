@@ -15,6 +15,7 @@
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "metric/MetricFacade.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
@@ -553,6 +554,10 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 	// newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type",
 	// desc->name);
 	Log::info("Load file %s with %i model nodes", filename.c_str(), (int)newSceneGraph.size());
+	const core::String &ext = core::string::extractExtension(filename);
+	if (!ext.empty()) {
+		metric::count("load", 1, {{"type", ext}});
+	}
 	return true;
 }
 

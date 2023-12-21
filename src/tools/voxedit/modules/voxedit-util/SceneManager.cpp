@@ -515,7 +515,6 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(filePtr->name(), &file.desc);
-	metric::count("load", 1, {{"type", filePtr->extension()}});
 	return true;
 }
 
