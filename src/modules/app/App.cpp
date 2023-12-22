@@ -108,7 +108,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 #elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
 	struct utsname details;
 	if (uname(&details) == 0) {
-		_osVersion = core::string::format("%s %s", details.release, details.version);
+		_osVersion = core::string::format("%s %s", details.sysname, details.machine);
 	}
 #endif
 
