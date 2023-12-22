@@ -21,9 +21,6 @@
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_LC_BOXES, ICON_LC_GROUP, ICON_LC_STAMP};
-static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
-
 void ScriptPanel::reloadScriptParameters(const core::String &script) {
 	voxelgenerator::LUAGenerator &luaGenerator = sceneMgr().luaGenerator();
 	_scriptParameterDescription.clear();
