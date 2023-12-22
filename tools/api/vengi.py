@@ -19,13 +19,15 @@ def worker(db, q):
         item = q.get()
         metric_name = item[0]
         value = item[1]
-        tags = item[2]
+        uuid = item[2]
+        tags = item[3]
         metric_json = [
             {
                 "measurement": metric_name,
                 "tags": tags,
                 "fields": {
-                    "value": value
+                    "value": value,
+                    "uuid": uuid
                 }
             }
         ]
@@ -48,8 +50,8 @@ def init():
 
 init()
 
-def insertMetric(metric_name, value, tags):
-    q.put((metric_name, value, tags))
+def insertMetric(metric_name, value, uuid, tags):
+    q.put((metric_name, value, uuid, tags))
 
 @app.route('/')
 def home():
@@ -73,6 +75,10 @@ def metric():
     if value is None:
         return Response("Missing value", status_code = 400)
 
+    uuid = data['uuid']
+    if uuid is None:
+        return Response("Missing uuid", status_code = 400)
+
     userAgent = request.headers['User-Agent']
     if userAgent is None:
         return Response("Missing User-Agent", status_code = 400)
@@ -88,7 +94,7 @@ def metric():
     tags['application'] = application
     tags['version'] = version
 
-    insertMetric(name, value, tags)
+    insertMetric(name, value, uuid, tags)
 
     app.logger.debug('Got a metric - with {} in queue'.format(q.qsize()))
     return Response(status = 204)

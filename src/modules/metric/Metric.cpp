@@ -112,14 +112,19 @@ bool Metric::assemble(const char *key, int value, const char *type, const TagMap
 	case Flavor::JSON: {
 		core::String json;
 		json.append("{");
-		json.append("\"name\": \"").append(_prefix).append(".").append(key).append("\",");
+		// don't use the prefix here - the http metric sender is using the application as tag anyway
+		json.append("\"name\": \"").append(key).append("\",");
 		json.append("\"value\": ").append(value).append(",");
 		json.append("\"type\": \"").append(type).append("\",");
+		json.append("\"uuid\": \"").append(_uuid).append("\",");
 		json.append("\"tags\": {");
-		json.append("\"uuid\": \"").append(_uuid).append("\"");
+		bool firstTag = true;
 		for (const auto &e : tags) {
-			json.append(",");
+			if (!firstTag) {
+				json.append(",");
+			}
 			json.append("\"").append(e->first).append("\": \"").append(e->second).append("\"");
+			firstTag = false;
 		}
 		json.append("}");
 		json.append("}");
