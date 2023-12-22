@@ -57,7 +57,7 @@ bool MetricState::init(const core::String &appname) {
 }
 
 void MetricState::shutdown() {
-	_threadPool.shutdown();
+	_threadPool.shutdown(true);
 	if (_sender) {
 		_sender->shutdown();
 		_sender = metric::IMetricSenderPtr();
