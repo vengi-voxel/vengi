@@ -89,19 +89,26 @@ core::String encode(const uint8_t *buf, size_t len) {
 	return encode(stream);
 }
 
-bool decode(io::WriteStream &stream, const core::String &input) {
-	int base64StrLen = (int)input.size();
+bool decode(io::WriteStream &stream, io::ReadStream &input) {
 	int bytes = 0;
-	int inputPos = 0;
 	uint8_t src[4];
 	int REV_LUT[256];
 	for (int i = 0; i < lengthof(_priv::LUT); ++i) {
 		REV_LUT[(uint8_t)_priv::LUT[i]] = i;
 	}
 
-	while (base64StrLen-- && input[inputPos] != '=' && _priv::validbyte(input[inputPos])) {
-		src[bytes++] = REV_LUT[(uint8_t)input[inputPos++]];
-
+	while (!input.eos()) {
+		uint8_t val = 0;
+		if (input.readUInt8(val) != 0) {
+			return false;
+		}
+		if (val == '=') {
+			break;
+		}
+		if (!_priv::validbyte(val)) {
+			break;
+		}
+		src[bytes++] = REV_LUT[val];
 		if (bytes == 4) {
 			if (!_priv::decode0(src, stream, 3)) {
 				return false;
@@ -122,6 +129,11 @@ bool decode(io::WriteStream &stream, const core::String &input) {
 	}
 
 	return true;
+}
+
+bool decode(io::WriteStream &stream, const core::String &input) {
+	io::MemoryReadStream inputStream(input.c_str(), input.size());
+	return decode(stream, inputStream);
 }
 
 } // namespace Base64
