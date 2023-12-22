@@ -3,21 +3,18 @@
  */
 
 #include "CubzhFormat.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include <glm/gtc/quaternion.hpp>
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
-#include "palette/PaletteLookup.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {

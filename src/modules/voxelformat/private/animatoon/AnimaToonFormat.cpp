@@ -9,7 +9,7 @@
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "util/Base64.h"
+#include "io/Base64.h"
 
 namespace voxelformat {
 
@@ -40,7 +40,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 		} else if (token == "ModelSave") {
 			if (!parseJsonArray(tokenizer, [&error, &sceneGraph, &palette, &name](const core::String &token) {
 					io::BufferedReadWriteStream base64Stream;
-					if (!util::Base64::decode(base64Stream, token)) {
+					if (!io::Base64::decode(base64Stream, token)) {
 						error = true;
 						Log::error("Failed to decode ModelSave array entry");
 						return;

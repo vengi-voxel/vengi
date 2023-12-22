@@ -2,6 +2,7 @@ set(SRCS
 	external/miniz.h external/miniz.c
 
 	Archive.cpp Archive.h
+	Base64.cpp Base64.h
 	BufferedReadWriteStream.cpp BufferedReadWriteStream.h
 	BufferedSeekableWriteStream.h
 	BufferedWriteStream.h
@@ -44,6 +45,7 @@ set(TEST_FILES
 )
 
 set(TEST_SRCS
+	tests/Base64Test.cpp
 	tests/BufferedReadWriteStreamTest.cpp
 	tests/BufferedWriteStreamTest.cpp
 	tests/FilesystemTest.cpp

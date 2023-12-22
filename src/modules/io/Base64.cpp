@@ -9,7 +9,7 @@
 #include "io/Stream.h"
 #include <ctype.h>
 
-namespace util {
+namespace io {
 namespace Base64 {
 namespace _priv {
 /**

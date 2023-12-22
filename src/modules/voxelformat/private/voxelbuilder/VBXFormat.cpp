@@ -12,7 +12,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "util/Base64.h"
+#include "io/Base64.h"
 #include "util/IniParser.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -28,7 +28,7 @@ bool VBXFormat::loadGLB(const core::String &data, scenegraph::SceneGraph &sceneG
 		return false;
 	}
 	io::BufferedReadWriteStream stream;
-	if (!util::Base64::decode(stream, data.substr(37))) {
+	if (!io::Base64::decode(stream, data.substr(37))) {
 		Log::error("Failed to decode base64 data: %s", data.c_str());
 	}
 	stream.seek(0);

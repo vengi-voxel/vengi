@@ -10,14 +10,13 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"
-#include "core/concurrent/ThreadPool.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
-#include "util/Base64.h"
+#include "io/Base64.h"
 
 #include <glm/common.hpp>
 #include <glm/ext/scalar_common.hpp>
@@ -387,7 +386,7 @@ core::String Image::pngBase64() const {
 		return "";
 	}
 	s.seek(0);
-	return util::Base64::encode(s);
+	return io::Base64::encode(s);
 }
 
 core::String print(const image::ImagePtr &image) {

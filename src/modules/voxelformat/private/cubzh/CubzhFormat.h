@@ -5,7 +5,6 @@
 #pragma once
 
 #include "io/Stream.h"
-#include "io/ZipReadStream.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {

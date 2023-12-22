@@ -6,7 +6,7 @@
 #include "io/Stream.h"
 #include <stdint.h>
 
-namespace util {
+namespace io {
 namespace Base64 {
 
 core::String encode(const uint8_t *buf, size_t len);
