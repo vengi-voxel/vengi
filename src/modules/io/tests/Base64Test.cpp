@@ -5,6 +5,8 @@
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Base64WriteStream.h"
+#include "io/Base64ReadStream.h"
+#include "io/MemoryReadStream.h"
 #include <gtest/gtest.h>
 
 namespace io {
@@ -37,6 +39,16 @@ TEST(Base64Test, testBase64WriteStream) {
 	core::String base64;
 	stream.readString(stream.size(), base64);
 	EXPECT_STREQ("Zm9vYmFy", base64.c_str());
+}
+
+TEST(Base64Test, testBase64ReadStream) {
+	const core::String input = "Zm9vYmFy";
+	io::MemoryReadStream stream(input.c_str(), input.size());
+	Base64ReadStream base64Stream(stream);
+
+	core::String out;
+	base64Stream.readString(6, out);
+	EXPECT_EQ("foobar", out);
 }
 
 } // namespace util
