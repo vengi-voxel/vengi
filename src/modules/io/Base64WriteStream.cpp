@@ -32,7 +32,11 @@ int Base64WriteStream::write(const void *buf, size_t size) {
 		}
 	}
 
-	return written;
+	if (written == 0) {
+		return size;
+	}
+
+	return written + _bytes;
 }
 
 bool Base64WriteStream::flush() {

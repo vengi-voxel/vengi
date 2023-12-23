@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/tests/TestHelper.h"
 #include "io/Base64.h"
 #include "io/Base64ReadStream.h"
 #include "io/Base64WriteStream.h"
@@ -18,18 +19,21 @@ protected:
 		io::Base64ReadStream base64Stream(stream);
 
 		core::String out;
-		base64Stream.readString(expectedOutput.size(), out);
+		base64Stream.readString(expectedOutput.size(), out, false);
 		EXPECT_EQ(out, expectedOutput);
 	}
 
-	void encode(const core::String &input, const core::String &expectedBase64Output) {
+	void encode(const core::String &input, const core::String &expectedBase64Output, bool flush = true) {
 		io::BufferedReadWriteStream stream;
 		io::Base64WriteStream base64Stream(stream);
-		base64Stream.writeString(input);
+		base64Stream.writeString(input, false);
+		if (flush) {
+			base64Stream.flush();
+		}
 		stream.seek(0);
 		core::String base64;
 		EXPECT_EQ(expectedBase64Output.size(), stream.size());
-		stream.readString(stream.size(), base64);
+		stream.readString(stream.size(), base64, false);
 		EXPECT_EQ(expectedBase64Output, base64);
 	}
 };
@@ -54,10 +58,12 @@ TEST_F(Base64Test, testBase64Decode) {
 }
 
 TEST_F(Base64Test, testBase64WriteStream) {
+	encode("d", "ZA==");
 	encode("foobar", "Zm9vYmFy");
 }
 
 TEST_F(Base64Test, testBase64ReadStream) {
+	decode("ZA==", "d");
 	decode("Zm9vYmFy", "foobar");
 }
 

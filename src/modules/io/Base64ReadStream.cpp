@@ -34,7 +34,7 @@ int Base64ReadStream::read(void *buf, size_t size) {
 				return -1;
 			}
 			if (val == '=') {
-				return bytesWritten;
+				break;
 			}
 			if (!validbyte(val)) {
 				return -1;

@@ -11,7 +11,7 @@ class Base64WriteStream : public io::WriteStream, public Base64Stream {
 protected:
 	io::WriteStream &_stream;
 	int _bytes = 0;
-	uint8_t _buf[4];
+	uint8_t _buf[3];
 
 	static CORE_FORCE_INLINE bool encode(const uint8_t src[3], io::WriteStream &out, int bytes) {
 		uint8_t dst[4];
