@@ -81,7 +81,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setColor(instanceColor(scene, ogtInstance));
-	node.setProperty("layer", ogtLayer.name);
+	if (ogtLayer.name != nullptr) {
+		node.setProperty("layer", ogtLayer.name);
+	}
 	node.setProperty("layerId", ogtInstance.layer_index);
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
