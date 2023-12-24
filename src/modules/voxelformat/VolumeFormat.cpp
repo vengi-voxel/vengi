@@ -24,6 +24,7 @@
 #include "voxelformat/private/chronovox/CSMFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
+#include "voxelformat/private/cubzh/CubzhB64Format.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
@@ -225,6 +226,14 @@ static const io::FormatDescription &particubes() {
 	return f;
 }
 
+static const io::FormatDescription &cubzhB64() {
+	static io::FormatDescription f{"Cubzh World",
+								   {"b64"},
+								   {},
+								   0u};
+	return f;
+}
+
 static const io::FormatDescription &cubzh() {
 	static io::FormatDescription f{"Cubzh",
 								   {"3zh"},
@@ -339,6 +348,7 @@ const io::FormatDescription *voxelLoad() {
 												 buildKVX(),
 												 particubes(),
 												 cubzh(),
+												 cubzhB64(),
 												 voxel3D(),
 												 aceOfSpadesKV6(),
 												 tiberianSun(),
@@ -443,6 +453,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<V3AFormat>();
 		} else if (ext == particubes().mainExtension() || ext == cubzh().mainExtension()) {
 			return core::make_shared<CubzhFormat>();
+		} else if (ext == cubzhB64().mainExtension()) {
+			return core::make_shared<CubzhB64Format>();
 		} else if (gltf().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else {

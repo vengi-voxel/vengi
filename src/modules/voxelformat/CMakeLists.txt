@@ -18,6 +18,7 @@ set(SRCS
 	private/commandconquer/VXLFormat.h       private/commandconquer/VXLFormat.cpp
 	private/cubeworld/CubFormat.h            private/cubeworld/CubFormat.cpp
 	private/cubzh/CubzhFormat.h              private/cubzh/CubzhFormat.cpp
+	private/cubzh/CubzhB64Format.h           private/cubzh/CubzhB64Format.cpp
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
@@ -71,6 +72,7 @@ set(TEST_SRCS
 	tests/CSMFormatTest.cpp
 	tests/CubFormatTest.cpp
 	tests/CubzhFormatTest.cpp
+	tests/CubzhB64FormatTest.cpp
 	tests/GLTFFormatTest.cpp
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp
