@@ -135,12 +135,15 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFo
 void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 									size_t expectedVolumes) {
 	const io::FilePtr &file = open(filename);
-	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename;
-	io::FileStream stream(file);
-	io::FileDescription fileDesc;
-	fileDesc.set(filename);
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx)) << "Could not load " << filename;
-	ASSERT_EQ(expectedVolumes, sceneGraph.size());
+	if (!file->validHandle()) {
+		GTEST_SKIP() << "Could not open " << filename;
+	} else {
+		io::FileStream stream(file);
+		io::FileDescription fileDesc;
+		fileDesc.set(filename);
+		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx)) << "Could not load " << filename;
+		ASSERT_EQ(expectedVolumes, sceneGraph.size());
+	}
 }
 
 void AbstractVoxFormatTest::checkColor(core::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
