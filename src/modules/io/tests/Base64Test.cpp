@@ -38,12 +38,6 @@ protected:
 	}
 };
 
-TEST_F(Base64Test, testBase64Encode) {
-	const char *foobar = "foobar";
-	const core::String &base64 = io::Base64::encode((const uint8_t *)foobar, strlen(foobar));
-	EXPECT_STREQ("Zm9vYmFy", base64.c_str());
-}
-
 TEST_F(Base64Test, testBase64Decode) {
 	const core::String input = "Zm9vYmFy";
 	io::BufferedReadWriteStream stream;

@@ -84,12 +84,7 @@ core::String encode(io::ReadStream &stream) {
 	return str;
 }
 
-core::String encode(const uint8_t *buf, size_t len) {
-	io::MemoryReadStream stream(buf, len);
-	return encode(stream);
-}
-
-bool decode(io::WriteStream &stream, io::ReadStream &input) {
+static bool decode(io::WriteStream &stream, io::ReadStream &input) {
 	int bytes = 0;
 	uint8_t src[4];
 	int REV_LUT[256];
