@@ -3,10 +3,17 @@
  */
 
 #include "CubzhB64Format.h"
+#include "app/App.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/StringUtil.h"
 #include "io/Base64ReadStream.h"
+#include "io/File.h"
+#include "io/FileStream.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <cstdint>
 
 namespace voxelformat {
@@ -153,8 +160,32 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								 const palette::Palette &palette, const LoadContext &ctx, int version) {
+int CubzhB64Format::load3zh(const core::String &path, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+							const palette::Palette &palette, const LoadContext &ctx) {
+	const core::String path3zh = core::string::path(path, "..", "cache"); // TODO: search multiple paths - cvar, ...
+	const core::String &fullpath3zh = core::string::path(path3zh, filename);
+	const io::FilePtr &file = io::filesystem()->open(fullpath3zh, io::FileMode::SysRead);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		Log::error("Failed to open file: %s", fullpath3zh.c_str());
+		return InvalidNodeId;
+	}
+	CubzhFormat format;
+	scenegraph::SceneGraph modelScene;
+	if (!format.load(fullpath3zh, stream, modelScene, ctx)) {
+		Log::error("Failed to load 3zh file: %s", fullpath3zh.c_str());
+		return InvalidNodeId;
+	}
+	scenegraph::SceneGraph::MergedVolumePalette merged = modelScene.merge();
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setPalette(merged.second);
+	node.setVolume(merged.first, true);
+	return sceneGraph.emplace(core::move(node));
+}
+
+bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &stream,
+								 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								 const LoadContext &ctx, int version) {
 	if (version == 3) {
 		uint32_t chunkLen;
 		wrap(stream.readUInt32(chunkLen))
@@ -164,15 +195,30 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 	}
 	uint16_t numObjects;
 	wrap(stream.readUInt16(numObjects))
-	Log::debug("numObjects: %i", numObjects);
+	Log::trace("numObjects: %i", numObjects);
 	uint16_t instanceCount = 0;
+
+	const core::String &path = core::string::extractPath(filename);
+	// e.g. the hubmap.b64 is in bundle/misc, the 3zh files in bundle/cache
+	const core::String &path3zh = core::string::path(path, "..", "cache");
+
 	while (instanceCount < numObjects) {
-		core::String name;
-		wrapBool(stream.readPascalStringUInt16LE(name))
+		core::String fullname3zh;
+		wrapBool(stream.readPascalStringUInt16LE(fullname3zh))
+
 		uint16_t numInstances;
 		wrap(stream.readUInt16(numInstances))
-		Log::debug("numInstances: %i, instanceCount: %i, numObjects: %i",
-				numInstances, instanceCount, numObjects);
+		Log::trace("numInstances: %i, instanceCount: %i, numObjects: %i", numInstances, instanceCount, numObjects);
+
+		// load the 3zh file
+		fullname3zh.replaceAllChars('.', '/'); // replace the lua dir separator
+		fullname3zh.append(".3zh");
+
+		const int modelNodeId = load3zh(path, fullname3zh, sceneGraph, palette, ctx);
+		if (modelNodeId == InvalidNodeId) {
+			return false;
+		}
+
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
 			wrap(stream.readUInt8(numFields))
@@ -182,14 +228,14 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 			glm::vec3 rot{0.0f};
 			glm::vec3 scale{1.0f};
 			uint8_t physicMode = 0;
-			Log::debug("numFields: %i", numFields);
+			Log::trace("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
 				uint8_t fieldId[2];
 				if (stream.read(fieldId, sizeof(fieldId)) != sizeof(fieldId)) {
 					Log::error("Failed to read object field Id");
 					return false;
 				}
-				Log::debug("%c%c", fieldId[0], fieldId[1]);
+				Log::trace("%c%c", fieldId[0], fieldId[1]);
 				if (CHECK_ID(fieldId, "id")) {
 					wrapBool(stream.readPascalStringUInt8(uuid))
 				} else if (CHECK_ID(fieldId, "po")) {
@@ -220,19 +266,20 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 				}
 			}
 			++instanceCount;
-			Log::debug("Object: %s", name.c_str());
-			Log::debug("UUID: %s", uuid.c_str());
-			Log::debug("Position: %f %f %f", pos.x, pos.y, pos.z);
-			Log::debug("Rotation: %f %f %f", rot.x, rot.y, rot.z);
-			Log::debug("Scale: %f %f %f", scale.x, scale.y, scale.z);
-			Log::debug("Physic mode: %i", (int)physicMode);
+			Log::trace("Object: %s", name.c_str());
+			Log::trace("UUID: %s", uuid.c_str());
+			Log::trace("Position: %f %f %f", pos.x, pos.y, pos.z);
+			Log::trace("Rotation: %f %f %f", rot.x, rot.y, rot.z);
+			Log::trace("Scale: %f %f %f", scale.x, scale.y, scale.z);
+			Log::trace("Physic mode: %i", (int)physicMode);
 		}
 	}
 	return true;
 }
 
-bool CubzhB64Format::loadVersion1(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  const palette::Palette &palette, const LoadContext &ctx) {
+bool CubzhB64Format::loadVersion1(const core::String &filename, io::ReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								  const LoadContext &ctx) {
 	// TODO: not supported - base64 lua tables
 	uint8_t chunkId;
 	wrap(stream.readUInt8(chunkId))
@@ -244,8 +291,9 @@ bool CubzhB64Format::loadVersion1(io::ReadStream &stream, scenegraph::SceneGraph
 	return false;
 }
 
-bool CubzhB64Format::loadVersion2(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  const palette::Palette &palette, const LoadContext &ctx) {
+bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								  const LoadContext &ctx) {
 	while (!stream.eos()) {
 		uint8_t chunkId;
 		wrap(stream.readUInt8(chunkId))
@@ -257,7 +305,7 @@ bool CubzhB64Format::loadVersion2(io::ReadStream &stream, scenegraph::SceneGraph
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx))
 			break;
 		case 2:
-			wrapBool(readObjects(stream, sceneGraph, palette, ctx, 2))
+			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 2))
 			break;
 		case 3:
 			wrapBool(readBlocks(stream, sceneGraph, palette, ctx))
@@ -270,8 +318,9 @@ bool CubzhB64Format::loadVersion2(io::ReadStream &stream, scenegraph::SceneGraph
 	return true;
 }
 
-bool CubzhB64Format::loadVersion3(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  const palette::Palette &palette, const LoadContext &ctx) {
+bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								  const LoadContext &ctx) {
 	while (!stream.eos()) {
 		uint8_t chunkId;
 		wrap(stream.readUInt8(chunkId))
@@ -284,7 +333,7 @@ bool CubzhB64Format::loadVersion3(io::ReadStream &stream, scenegraph::SceneGraph
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx))
 			break;
 		case 2:
-			wrapBool(readObjects(stream, sceneGraph, palette, ctx, 3))
+			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 3))
 			break;
 		case 3:
 			wrapBool(readBlocks(stream, sceneGraph, palette, ctx))
@@ -304,11 +353,11 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, io::SeekableRe
 	uint8_t version;
 	wrap(base64Stream.readUInt8(version))
 	if (version == 1) {
-		return loadVersion1(base64Stream, sceneGraph, palette, ctx);
+		return loadVersion1(filename, base64Stream, sceneGraph, palette, ctx);
 	} else if (version == 2) {
-		return loadVersion2(base64Stream, sceneGraph, palette, ctx);
+		return loadVersion2(filename, base64Stream, sceneGraph, palette, ctx);
 	} else if (version == 3) {
-		return loadVersion3(base64Stream, sceneGraph, palette, ctx);
+		return loadVersion3(filename, base64Stream, sceneGraph, palette, ctx);
 	}
 
 	Log::error("Unsupported version found: %i", (int)version);
