@@ -88,7 +88,6 @@ void IMGUIConsole::drawString(const Message& msg) {
 bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
-			command::CommandExecutionListener &listener = imguiApp()->commandListener();
 			if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
 				ImGui::CommandMenuItem(ICON_LC_LIST_X " Clear", "clear", true, &listener);
 				ImGui::Separator();
