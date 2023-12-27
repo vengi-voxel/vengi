@@ -22,6 +22,10 @@ If you encounter a bug or have a feature request, please let me know (via discor
 
 Please consider donating to help to continue the work on this project. See the sponsor button.
 
+### Supporters and sponsors
+
+* KUVARS LLC & ARIVA DIGITAL PTE. LTD
+
 ## SAST Tools
 
 [PVS-Studio](https://pvs-studio.com/en/pvs-studio/?utm_source=github&utm_medium=organic&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
