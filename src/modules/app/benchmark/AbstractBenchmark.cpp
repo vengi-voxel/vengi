@@ -3,36 +3,35 @@
  */
 
 #include "AbstractBenchmark.h"
-#include "command/Command.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "command/Command.h"
 #include "io/Filesystem.h"
 
 #include <SDL.h>
 
 namespace app {
 
-SDL_AssertState Test_AssertionHandler(const SDL_AssertData *data, void *userdata) {
+SDL_AssertState Test_AssertionHandler(const SDL_AssertData* data, void* userdata) {
 	return SDL_ASSERTION_BREAK;
 }
 
-void AbstractBenchmark::SetUp(benchmark::State &st) {
+void AbstractBenchmark::SetUp(benchmark::State& st) {
 	SDL_SetAssertionHandler(Test_AssertionHandler, nullptr);
 	const io::FilesystemPtr filesystem = core::make_shared<io::Filesystem>();
 	const core::TimeProviderPtr timeProvider = core::make_shared<core::TimeProvider>();
 	_benchmarkApp = new BenchmarkApp(filesystem, timeProvider, this);
 }
 
-void AbstractBenchmark::TearDown(benchmark::State &st) {
+void AbstractBenchmark::TearDown(benchmark::State& st) {
 	// prevent cvars from begin saved and reloaded for the next fiture in the test
 	core::Var::shutdown();
 	delete _benchmarkApp;
 	_benchmarkApp = nullptr;
 }
 
-AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr &filesystem,
-											  const core::TimeProviderPtr &timeProvider, AbstractBenchmark *benchmark)
-	: Super(filesystem, timeProvider), _benchmark(benchmark) {
+AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractBenchmark* benchmark) :
+		Super(filesystem, timeProvider), _benchmark(benchmark) {
 	init(ORGANISATION, "benchmark");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 	while (_curState < AppState::Running) {
@@ -43,7 +42,6 @@ AbstractBenchmark::BenchmarkApp::BenchmarkApp(const io::FilesystemPtr &filesyste
 
 AppState AbstractBenchmark::BenchmarkApp::onCleanup() {
 	_benchmark->onCleanupApp();
-	benchmark::Shutdown();
 	return Super::onCleanup();
 }
 
@@ -53,7 +51,6 @@ AppState AbstractBenchmark::BenchmarkApp::onInit() {
 		return state;
 	}
 
-	benchmark::Initialize(&_argc, _argv);
 	if (!_benchmark->onInitApp()) {
 		return AppState::InitFailure;
 	}
@@ -68,4 +65,4 @@ AbstractBenchmark::BenchmarkApp::~BenchmarkApp() {
 	}
 }
 
-} // namespace app
+}

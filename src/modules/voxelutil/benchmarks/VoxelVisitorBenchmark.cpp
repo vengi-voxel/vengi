@@ -26,7 +26,7 @@ public:
 
 static void visitOrder(voxelutil::VisitorOrder order, const voxel::RawVolume &v) {
 	auto visitor = [&](int, int, int, const voxel::Voxel &) {};
-	int n = voxelutil::visitVolume(v, visitor, voxelutil::SkipEmpty(), order);
+	const int n = voxelutil::visitVolume(v, visitor, voxelutil::SkipEmpty(), order);
 	benchmark::DoNotOptimize(n);
 }
 
