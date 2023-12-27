@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "core/tests/TestHelper.h"
 #include "io/Base64.h"
+#include "core/tests/TestHelper.h"
 #include "io/Base64ReadStream.h"
 #include "io/Base64WriteStream.h"
 #include "io/BufferedReadWriteStream.h"
@@ -18,9 +18,14 @@ protected:
 		io::MemoryReadStream stream(base64Input.c_str(), base64Input.size());
 		io::Base64ReadStream base64Stream(stream);
 
+		EXPECT_EQ(0, base64Input.size() % 4) << "Unexpected input size: " << base64Input.size() << " for " << base64Input;
+
 		core::String out;
 		base64Stream.readString(expectedOutput.size(), out, false);
-		EXPECT_EQ(out, expectedOutput);
+		ASSERT_EQ(out, expectedOutput);
+		ASSERT_TRUE(stream.eos()) << "Still " << stream.remaining() << " bytes left in the stream of size "
+								  << stream.size() << " at pos " << stream.pos();
+		EXPECT_TRUE(base64Stream.eos());
 	}
 
 	void encode(const core::String &input, const core::String &expectedBase64Output, bool flush = true) {
@@ -55,6 +60,7 @@ TEST_F(Base64Test, testBase64WriteStream) {
 	encode("d", "ZA==");
 	encode("z", "eg==");
 	encode("fo", "Zm8=");
+	encode("foo", "Zm9v");
 	encode("foobar", "Zm9vYmFy");
 }
 
@@ -62,6 +68,7 @@ TEST_F(Base64Test, testBase64ReadStream) {
 	decode("ZA==", "d");
 	decode("eg==", "z");
 	decode("Zm8=", "fo");
+	decode("Zm9v", "foo");
 	decode("Zm9vYmFy", "foobar");
 }
 

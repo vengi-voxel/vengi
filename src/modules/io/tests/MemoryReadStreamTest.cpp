@@ -38,6 +38,13 @@ TEST_F(MemoryReadStreamTest, testSeekStream) {
 	EXPECT_EQ(1u, byte);
 }
 
+TEST_F(MemoryReadStreamTest, testEOS) {
+	const char buf[4]{0, 1, 2, 3};
+	MemoryReadStream stream(buf, sizeof(buf));
+	stream.skip(4);
+	EXPECT_TRUE(stream.eos());
+}
+
 TEST_F(MemoryReadStreamTest, testReadString) {
 	const core::String input = "name=foo\nbgcolor=bar\nvoxels=baz\n\r\n\n";
 	io::MemoryReadStream stream(input.c_str(), input.size());
