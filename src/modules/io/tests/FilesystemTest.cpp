@@ -2,21 +2,13 @@
  * @file
  */
 
+#include "core/tests/TestHelper.h"
 #include "io/Filesystem.h"
 #include "core/Algorithm.h"
 #include "core/Enum.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include <gtest/gtest.h>
-
-
-namespace core {
-
-inline std::ostream &operator<<(::std::ostream &os, const String &dt) {
-	return os << dt.c_str();
-}
-
-}
 
 namespace io {
 
