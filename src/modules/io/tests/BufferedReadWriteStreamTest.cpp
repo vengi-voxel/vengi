@@ -234,17 +234,17 @@ TEST(BufferedReadWriteStreamTest, testSkipDelta) {
 	EXPECT_EQ(0, stream.seek(0));
 	uint32_t val;
 	EXPECT_EQ(0, stream.readUInt32(val));
-	EXPECT_EQ(0, val);
+	EXPECT_EQ(0u, val);
 	EXPECT_EQ(0, stream.skipDelta(2 * sizeof(uint32_t)));
 	EXPECT_EQ(0, stream.readUInt32(val));
-	EXPECT_EQ(3, val);
+	EXPECT_EQ(3u, val);
 	EXPECT_EQ(0, stream.skipDelta(4 * sizeof(uint32_t)));
 	EXPECT_EQ(0, stream.readUInt32(val));
-	EXPECT_EQ(8, val);
+	EXPECT_EQ(8u, val);
 	EXPECT_EQ(0, stream.skipDelta(1));
 	EXPECT_EQ(0, stream.skipDelta(3));
 	EXPECT_EQ(0, stream.readUInt32(val));
-	EXPECT_EQ(10, val);
+	EXPECT_EQ(10u, val);
 }
 
 TEST(BufferedReadWriteStreamTest, testFormat) {
