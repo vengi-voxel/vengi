@@ -26,7 +26,9 @@ int Base64ReadStream::read(void *buf, size_t size) {
 		}
 
 		_readBufPos = 0;
+		_readBufSize = 0;
 
+		int decodedSize = 3;
 		uint8_t buf[4]{'\0', '\0', '\0', '\0'};
 		for (int i = 0; i < 4; ++i) {
 			uint8_t val = 0;
@@ -34,6 +36,9 @@ int Base64ReadStream::read(void *buf, size_t size) {
 				return -1;
 			}
 			if (val == '=') {
+				uint8_t endBuf[3];
+				_stream.read(endBuf, 3 - i);
+				decodedSize = (i * 3) / 4;
 				break;
 			}
 			if (!validbyte(val)) {
@@ -44,7 +49,8 @@ int Base64ReadStream::read(void *buf, size_t size) {
 		if (!decode(buf, _readBuf)) {
 			return -1;
 		}
-		_readBufSize = 3;
+
+		_readBufSize = decodedSize;
 		_readBufPos = 0;
 	}
 	return bytesWritten;
