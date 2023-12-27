@@ -27,7 +27,7 @@ namespace voxelformat {
 bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								  const palette::Palette &palette, const LoadContext &ctx) {
 	double scale;
-	wrap(stream.readDouble(scale))
+	wrap(stream.readDouble(scale)) // default is 5
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("map name: %s", name.c_str());
@@ -155,15 +155,24 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								 const palette::Palette &palette, const LoadContext &ctx, int version) {
-	uint32_t chunkLen;
-	wrap(stream.readUInt32(chunkLen))
+	if (version == 3) {
+		uint32_t chunkLen;
+		wrap(stream.readUInt32(chunkLen))
+	} else {
+		uint16_t chunkLen;
+		wrap(stream.readUInt16(chunkLen))
+	}
 	uint16_t numObjects;
 	wrap(stream.readUInt16(numObjects))
-	for (uint16_t i = 0; i < numObjects; ++i) {
+	Log::debug("numObjects: %i", numObjects);
+	uint16_t instanceCount = 0;
+	while (instanceCount < numObjects) {
 		core::String name;
 		wrapBool(stream.readPascalStringUInt16LE(name))
 		uint16_t numInstances;
 		wrap(stream.readUInt16(numInstances))
+		Log::debug("numInstances: %i, instanceCount: %i, numObjects: %i",
+				numInstances, instanceCount, numObjects);
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
 			wrap(stream.readUInt8(numFields))
@@ -173,12 +182,14 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 			glm::vec3 rot{0.0f};
 			glm::vec3 scale{1.0f};
 			uint8_t physicMode = 0;
+			Log::debug("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
 				uint8_t fieldId[2];
 				if (stream.read(fieldId, sizeof(fieldId)) != sizeof(fieldId)) {
 					Log::error("Failed to read object field Id");
 					return false;
 				}
+				Log::debug("%c%c", fieldId[0], fieldId[1]);
 				if (CHECK_ID(fieldId, "id")) {
 					wrapBool(stream.readPascalStringUInt8(uuid))
 				} else if (CHECK_ID(fieldId, "po")) {
@@ -196,7 +207,9 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 				} else if (CHECK_ID(fieldId, "na")) {
 					wrapBool(stream.readPascalStringUInt8(name))
 				} else if (CHECK_ID(fieldId, "de")) {
+					core_assert(version == 2);
 					core::String base64;
+					// itemDetailsCell table
 					wrapBool(stream.readPascalStringUInt16LE(base64))
 					// TODO
 				} else if (CHECK_ID(fieldId, "pm")) {
@@ -206,6 +219,7 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 					return false;
 				}
 			}
+			++instanceCount;
 			Log::debug("Object: %s", name.c_str());
 			Log::debug("UUID: %s", uuid.c_str());
 			Log::debug("Position: %f %f %f", pos.x, pos.y, pos.z);
@@ -219,6 +233,7 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 
 bool CubzhB64Format::loadVersion1(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 								  const palette::Palette &palette, const LoadContext &ctx) {
+	// TODO: not supported - base64 lua tables
 	uint8_t chunkId;
 	wrap(stream.readUInt8(chunkId))
 	wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
@@ -260,6 +275,7 @@ bool CubzhB64Format::loadVersion3(io::ReadStream &stream, scenegraph::SceneGraph
 	while (!stream.eos()) {
 		uint8_t chunkId;
 		wrap(stream.readUInt8(chunkId))
+		Log::debug("chunk id: %u", chunkId);
 		switch (chunkId) {
 		case 0:
 			wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
