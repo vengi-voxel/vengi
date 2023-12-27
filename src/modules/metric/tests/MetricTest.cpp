@@ -87,12 +87,12 @@ TEST_F(MetricTest, testCounterIncreaseTwo) {
 }
 
 TEST_F(MetricTest, testCounterJSON) {
-	EXPECT_EQ(count("test1", 1, Flavor::JSON), R"({"name": "test.test1","value": 1,"type": "c","tags": {"uuid": "fake"}})");
+	EXPECT_EQ(count("test1", 1, Flavor::JSON), R"({"name": "test1","value": 1,"type": "c","uuid": "fake","tags": {}})");
 }
 
 TEST_F(MetricTest, testCounterTagsJSON) {
 	EXPECT_EQ(count("test1", 1, Flavor::JSON, {{"foo", "bar"}}),
-			  R"({"name": "test.test1","value": 1,"type": "c","tags": {"uuid": "fake","foo": "bar"}})");
+			  R"({"name": "test1","value": 1,"type": "c","uuid": "fake","tags": {"foo": "bar"}})");
 }
 
 TEST_F(MetricTest, testGaugeValueOne) {
