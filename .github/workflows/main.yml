@@ -52,11 +52,29 @@ jobs:
             cd build
             cmake --build . --target package
 
-        - name: Upload the build artifacts
+        - name: Upload the dmg
           uses: actions/upload-artifact@v4
           with:
             name: dmg
             path: build/*.dmg
+
+        - name: Upload the voxedit app
+          uses: actions/upload-artifact@v4
+          with:
+            name: vengi-voxedit-app
+            path: build/voxedit/vengi-voxedit.app
+
+        - name: Upload the voxconvert app
+          uses: actions/upload-artifact@v4
+          with:
+            name: vengi-voxconvert-app
+            path: build/voxconvert/vengi-voxconvert.app
+
+        - name: Upload the thumbnailer app
+          uses: actions/upload-artifact@v4
+          with:
+            name: vengi-thumbnailer-app
+            path: build/thumbnailer/vengi-thumbnailer.app
 
     packages:
         timeout-minutes: 45
