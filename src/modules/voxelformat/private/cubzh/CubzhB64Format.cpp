@@ -30,6 +30,7 @@ bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph
 	wrap(stream.readDouble(scale))
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
+	Log::debug("map name: %s", name.c_str());
 	return true;
 }
 
@@ -195,9 +196,9 @@ bool CubzhB64Format::readObjects(io::ReadStream &stream, scenegraph::SceneGraph 
 				} else if (CHECK_ID(fieldId, "na")) {
 					wrapBool(stream.readPascalStringUInt8(name))
 				} else if (CHECK_ID(fieldId, "de")) {
-					uint16_t base64Len;
-					wrap(stream.readUInt16(base64Len))
-					stream.skipDelta(base64Len); // TODO
+					core::String base64;
+					wrapBool(stream.readPascalStringUInt16LE(base64))
+					// TODO
 				} else if (CHECK_ID(fieldId, "pm")) {
 					wrap(stream.readUInt8(physicMode))
 				} else {
