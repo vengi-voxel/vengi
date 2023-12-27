@@ -46,10 +46,9 @@ set(LIB benchmark)
 engine_add_library(
 	LIB ${LIB}
 	SRCS ${SRCS}
-	DEFINES HAVE_STD_REGEX=1
+	DEFINES HAVE_STD_REGEX=1 BENCHMARK_STATIC_DEFINE
 )
 target_include_directories(${LIB} PUBLIC include)
-
 if (WIN32)
 	target_link_libraries(${LIB} shlwapi)
 endif()
