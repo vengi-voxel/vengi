@@ -53,11 +53,15 @@ TEST_F(Base64Test, testBase64Decode) {
 
 TEST_F(Base64Test, testBase64WriteStream) {
 	encode("d", "ZA==");
+	encode("z", "eg==");
+	encode("fo", "Zm8=");
 	encode("foobar", "Zm9vYmFy");
 }
 
 TEST_F(Base64Test, testBase64ReadStream) {
 	decode("ZA==", "d");
+	decode("eg==", "z");
+	decode("Zm8=", "fo");
 	decode("Zm9vYmFy", "foobar");
 }
 
