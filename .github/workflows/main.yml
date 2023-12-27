@@ -176,6 +176,8 @@ jobs:
             sudo apt-get install libfreetype-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
 
         - uses: mymindstorm/setup-emsdk@v13
+          with:
+            version: 3.1.40
 
         - name: ccache
           uses: actions/cache@v3
