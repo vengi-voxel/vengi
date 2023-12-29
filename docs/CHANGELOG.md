@@ -31,6 +31,7 @@ General:
    - Extended lua bindings
    - Added automatic bash completion generation for all apps. Just use e.g. `vengi-voxconvert --completion bash`
    - Calculate normals for the cubic mesh extractor, too
+   - Added support for cubzh `b64` maps
 
 VoxConvert:
 
