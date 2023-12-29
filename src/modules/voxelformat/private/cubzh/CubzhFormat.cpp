@@ -150,7 +150,7 @@ bool CubzhFormat::loadSkipChunk(const Header &header, const Chunk &chunk, io::Re
 	Log::debug("skip chunk %u with size %d", chunk.chunkId, (int)chunk.chunkSize);
 	if (header.version == 6u && chunk.supportsCompression()) {
 		Log::debug("skip additional header bytes for compressed chunk");
-		stream.skipDelta(5);
+		// stream.skipDelta(5); // iscompressed byte and uncompressed size uint32
 	}
 	return stream.skipDelta(chunk.chunkSize) == 0;
 }
@@ -334,9 +334,9 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const {
 	wrap(stream.readUInt8(chunk.chunkId))
 	if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_SHAPE_NAME_V6) {
-		uint8_t strLen;
-		wrap(stream.readUInt8(strLen))
-		chunk.chunkSize = strLen;
+		uint8_t chunkSize;
+		wrap(stream.readUInt8(chunkSize))
+		chunk.chunkSize = chunkSize;
 	} else {
 		wrap(stream.readUInt32(chunk.chunkSize))
 	}
