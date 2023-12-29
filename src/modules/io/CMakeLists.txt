@@ -52,6 +52,7 @@ set(TEST_SRCS
 	tests/BufferedReadWriteStreamTest.cpp
 	tests/BufferedWriteStreamTest.cpp
 	tests/FilesystemTest.cpp
+	tests/FilesystemArchiveTest.cpp
 	tests/FileStreamTest.cpp
 	tests/FormatDescriptionTest.cpp
 	tests/FileTest.cpp

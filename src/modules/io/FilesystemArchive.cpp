@@ -12,33 +12,63 @@
 
 namespace io {
 
+FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath)
+	: _filesytem(filesytem), _fullPath(fullPath) {
+}
+
+FilesystemArchive::FilesystemArchive(bool fullPath) : FilesystemArchive(io::filesystem(), fullPath) {
+}
+
 FilesystemArchive::~FilesystemArchive() {
 	FilesystemArchive::shutdown();
 }
 
 bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *stream) {
-	_path = path;
-	return io::filesystem()->list(path, _files);
+	return add(path);
+}
+
+bool FilesystemArchive::add(const core::String &path) {
+	ArchiveFiles files;
+	const bool ret = _filesytem->list(path, files);
+	if (_fullPath) {
+		for (FilesystemEntry &e : files) {
+			e.fullPath = core::string::path(path, e.fullPath);
+		}
+	}
+	_files.append(files);
+	return ret;
+}
+
+io::FilePtr FilesystemArchive::open(const core::String &path) const {
+	for (const auto &e : _files) {
+		// TODO: implement case insensitive search
+		if (core::string::endsWith(e.fullPath, path)) {
+			const io::FilePtr &file = _filesytem->open(e.fullPath);
+			if (!file->validHandle()) {
+				continue;
+			}
+			return file;
+		}
+	}
+	return {};
+}
+
+bool FilesystemArchive::exists(const core::String &filePath) {
+	return open(filePath);
 }
 
 bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
-	// TODO: use the file list to implement case insensitive search
-	const core::String &archiveFilePath = core::string::path(_path, filePath);
-	io::FileStream stream(io::filesystem()->open(archiveFilePath));
-	if (!stream.valid()) {
-		Log::error("Failed to load archive file: %s", archiveFilePath.c_str());
+	const io::FilePtr &file = open(filePath);
+	if (!file) {
+		Log::error("Failed to load archive file: %s", filePath.c_str());
 		return false;
 	}
+	io::FileStream stream(file);
 	return out.write(stream);
 }
 
 SeekableReadStreamPtr FilesystemArchive::readStream(const core::String &filePath) {
-	const core::String &archiveFilePath = core::string::path(_path, filePath);
-	const io::FilePtr &file = io::filesystem()->open(archiveFilePath);
-	if (!file->validHandle()) {
-		return {};
-	}
-	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(file);
+	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath));
 	if (!stream->valid()) {
 		return {};
 	}
