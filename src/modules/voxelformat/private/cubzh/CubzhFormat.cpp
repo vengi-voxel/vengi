@@ -7,6 +7,7 @@
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include <glm/gtc/quaternion.hpp>
+#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
@@ -246,17 +247,46 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 
 	Chunk chunk;
 	wrapBool(loadSubChunkHeader(stream, chunk))
+	core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
 	switch (chunk.chunkId) {
 	case priv::CHUNK_ID_SHAPE_SIZE_V5:
 		wrap(stream.readUInt16(width))
 		wrap(stream.readUInt16(height))
 		wrap(stream.readUInt16(depth))
+
+		if (!volumeBuffer.empty()) {
+			const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
+			if (!region.isValid()) {
+				Log::error("Invalid region: %i:%i:%i", width, height, depth);
+				return false;
+			}
+
+			voxel::RawVolume *volume = new voxel::RawVolume(region);
+			node.setVolume(volume, true);
+			int i = 0;
+			for (uint16_t x = 0; x < width; x++) {
+				for (uint16_t y = 0; y < height; y++) {
+					for (uint16_t z = 0; z < depth; z++) {
+						const uint8_t index = volumeBuffer[i];
+						if (index == emptyPaletteIndex()) {
+							continue;
+						}
+						const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+						volume->setVoxel(x, y, z, voxel);
+					}
+				}
+			}
+		}
 		break;
 	case priv::CHUNK_ID_SHAPE_BLOCKS_V5: {
 		if (width == 0) {
-			// TODO: support for blocks-before-size-chunk loading
-			Log::error("Size chunk not yet loaded");
-			return false;
+			volumeBuffer.reserve(chunk.chunkSize);
+			for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
+				uint8_t index;
+				wrap(stream.readUInt8(index))
+				volumeBuffer.push_back(index);
+			}
+			break;
 		}
 		uint32_t voxelCount = (uint32_t)width * (uint32_t)height * (uint32_t)depth;
 		if (voxelCount * sizeof(uint8_t) != chunk.chunkSize) {
@@ -299,6 +329,10 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 	default:
 		wrapBool(loadSkipSubChunk(chunk, stream))
 		break;
+	}
+	if (node.volume() == nullptr) {
+		Log::error("No volume found");
+		return false;
 	}
 	node.setName(filename);
 	node.setPalette(palette);
@@ -376,6 +410,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
 		Chunk chunk;
 		wrapBool(loadSubChunkHeader(stream, chunk))
+		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))
@@ -433,12 +468,40 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			wrap(stream.readUInt16(width))
 			wrap(stream.readUInt16(height))
 			wrap(stream.readUInt16(depth))
+
+			if (!volumeBuffer.empty()) {
+				const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
+				if (!region.isValid()) {
+					Log::error("Invalid region: %i:%i:%i", width, height, depth);
+					return false;
+				}
+
+				voxel::RawVolume *volume = new voxel::RawVolume(region);
+				node.setVolume(volume, true);
+				int i = 0;
+				for (uint16_t x = 0; x < width; x++) {
+					for (uint16_t y = 0; y < height; y++) {
+						for (uint16_t z = 0; z < depth; z++) {
+							const uint8_t index = volumeBuffer[i];
+							if (index == emptyPaletteIndex()) {
+								continue;
+							}
+							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+							volume->setVoxel(x, y, z, voxel);
+						}
+					}
+				}
+			}
 			break;
 		case priv::CHUNK_ID_SHAPE_BLOCKS_V6: {
 			if (width == 0) {
-				// TODO: support for blocks-before-size-chunk loading
-				Log::error("Size chunk not yet loaded");
-				return false;
+				volumeBuffer.reserve(chunk.chunkSize);
+				for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
+					uint8_t index;
+					wrap(stream.readUInt8(index))
+					volumeBuffer.push_back(index);
+				}
+				break;
 			}
 			uint32_t voxelCount = (uint32_t)width * (uint32_t)height * (uint32_t)depth;
 			if (voxelCount * sizeof(uint8_t) != chunk.chunkSize) {
@@ -492,6 +555,11 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			wrapBool(loadSkipSubChunk(chunk, stream))
 			break;
 		}
+	}
+
+	if (node.volume() == nullptr) {
+		Log::error("No volume found");
+		return false;
 	}
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalTranslation(pos);
