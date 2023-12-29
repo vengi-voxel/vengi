@@ -119,7 +119,7 @@ CubzhFormat::CubzhReadStream::~CubzhReadStream() {
 
 int CubzhFormat::CubzhReadStream::read(void *dataPtr, size_t dataSize) {
 	if (dataSize > (size_t)remaining()) {
-		Log::warn("requested to read %d bytes, but only %d are left", (int)dataSize, (int)remaining());
+		Log::debug("requested to read %d bytes, but only %d are left", (int)dataSize, (int)remaining());
 	}
 	const int bytes = _stream->read(dataPtr, dataSize);
 	if (bytes > 0) {
