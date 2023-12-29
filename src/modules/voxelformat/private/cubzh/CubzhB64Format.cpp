@@ -11,6 +11,7 @@
 #include "io/Base64ReadStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
@@ -160,20 +161,17 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-int CubzhB64Format::load3zh(const core::String &path, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+int CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 							const palette::Palette &palette, const LoadContext &ctx) {
-	const core::String path3zh = core::string::path(path, "..", "cache"); // TODO: search multiple paths - cvar, ...
-	const core::String &fullpath3zh = core::string::path(path3zh, filename);
-	const io::FilePtr &file = io::filesystem()->open(fullpath3zh, io::FileMode::SysRead);
-	io::FileStream stream(file);
-	if (!stream.valid()) {
-		Log::error("Failed to open file: %s", fullpath3zh.c_str());
+	io::SeekableReadStreamPtr stream = archive.readStream(filename);
+	if (!stream) {
+		Log::error("Failed to open file: %s", filename.c_str());
 		return InvalidNodeId;
 	}
 	CubzhFormat format;
 	scenegraph::SceneGraph modelScene;
-	if (!format.load(fullpath3zh, stream, modelScene, ctx)) {
-		Log::error("Failed to load 3zh file: %s", fullpath3zh.c_str());
+	if (!format.load(filename, *stream.get(), modelScene, ctx)) {
+		Log::error("Failed to load 3zh file: %s", filename.c_str());
 		return InvalidNodeId;
 	}
 	scenegraph::SceneGraph::MergedVolumePalette merged = modelScene.merge();
@@ -199,8 +197,12 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 	uint16_t instanceCount = 0;
 
 	const core::String &path = core::string::extractPath(filename);
+
 	// e.g. the hubmap.b64 is in bundle/misc, the 3zh files in bundle/cache
-	const core::String &path3zh = core::string::path(path, "..", "cache");
+	io::FilesystemArchive archive(false);
+	archive.add(core::string::path(path, "..", "cache"), "", 1);
+	archive.add(path, "", 1);
+	archive.add(core::string::path(path, "cache"), "", 1);
 
 	while (instanceCount < numObjects) {
 		core::String fullname3zh;
@@ -214,7 +216,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 		fullname3zh.replaceAllChars('.', '/'); // replace the lua dir separator
 		fullname3zh.append(".3zh");
 
-		const int modelNodeId = load3zh(path, fullname3zh, sceneGraph, palette, ctx);
+		const int modelNodeId = load3zh(archive, fullname3zh, sceneGraph, palette, ctx);
 		if (modelNodeId == InvalidNodeId) {
 			return false;
 		}

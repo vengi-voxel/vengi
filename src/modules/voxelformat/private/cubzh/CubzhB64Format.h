@@ -7,6 +7,10 @@
 #include "io/Stream.h"
 #include "voxelformat/Format.h"
 
+namespace io {
+class FilesystemArchive;
+}
+
 namespace voxelformat {
 
 /**
@@ -24,7 +28,7 @@ namespace voxelformat {
  */
 class CubzhB64Format : public RGBAFormat {
 protected:
-	int load3zh(const core::String &path, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+	int load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 				const palette::Palette &palette, const LoadContext &ctx);
 	bool readObjects(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					 const palette::Palette &palette, const LoadContext &ctx, int version);

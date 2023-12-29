@@ -27,9 +27,9 @@ bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *s
 	return add(path);
 }
 
-bool FilesystemArchive::add(const core::String &path) {
+bool FilesystemArchive::add(const core::String &path, const core::String &filter, int depth) {
 	ArchiveFiles files;
-	const bool ret = _filesytem->list(path, files);
+	const bool ret = _filesytem->list(path, files, filter, depth);
 	if (_fullPath) {
 		for (FilesystemEntry &e : files) {
 			e.fullPath = core::string::path(path, e.fullPath);
@@ -45,11 +45,14 @@ io::FilePtr FilesystemArchive::open(const core::String &path) const {
 		if (core::string::endsWith(e.fullPath, path)) {
 			const io::FilePtr &file = _filesytem->open(e.fullPath);
 			if (!file->validHandle()) {
+				Log::debug("Could not open %s", e.fullPath.c_str());
 				continue;
 			}
 			return file;
 		}
+		Log::trace("%s doesn't match %s", e.fullPath.c_str(), path.c_str());
 	}
+	Log::warn("Could not open %s", path.c_str());
 	return {};
 }
 
