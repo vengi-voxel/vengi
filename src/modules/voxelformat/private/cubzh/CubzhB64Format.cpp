@@ -15,7 +15,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
-#include <cstdint>
+#include <stdint.h>
+#include <glm/gtx/euler_angles.hpp>
 
 namespace voxelformat {
 
@@ -161,8 +162,9 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-int CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-							const palette::Palette &palette, const LoadContext &ctx) {
+int CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename,
+							scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+							const LoadContext &ctx) {
 	io::SeekableReadStreamPtr stream = archive.readStream(filename);
 	if (!stream) {
 		Log::error("Failed to open file: %s", filename.c_str());
@@ -221,6 +223,8 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 			return false;
 		}
 
+		scenegraph::SceneGraphNode &node = sceneGraph.node(modelNodeId);
+
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
 			wrap(stream.readUInt8(numFields))
@@ -268,12 +272,19 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 				}
 			}
 			++instanceCount;
-			Log::trace("Object: %s", name.c_str());
-			Log::trace("UUID: %s", uuid.c_str());
-			Log::trace("Position: %f %f %f", pos.x, pos.y, pos.z);
-			Log::trace("Rotation: %f %f %f", rot.x, rot.y, rot.z);
-			Log::trace("Scale: %f %f %f", scale.x, scale.y, scale.z);
-			Log::trace("Physic mode: %i", (int)physicMode);
+			node.setProperty("Physic mode: %i", core::string::toString((int)physicMode));
+			if (!uuid.empty()) {
+				node.setProperty("uuid", uuid);
+			}
+			if (!name.empty()) {
+				node.setName(name);
+			}
+			scenegraph::SceneGraphTransform transform;
+			transform.setWorldTranslation(pos);
+			transform.setWorldOrientation(glm::quat(rot));
+			transform.setWorldScale(scale);
+			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			node.setTransform(keyFrameIdx, transform);
 		}
 	}
 	return true;
