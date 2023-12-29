@@ -11,8 +11,13 @@ namespace voxelformat {
 
 class CubzhFormatTest : public AbstractVoxFormatTest {};
 
-TEST_F(CubzhFormatTest, testLoad) {
+TEST_F(CubzhFormatTest, testLoadPCUBES) {
 	canLoad("particubes.pcubes");
+}
+
+// not included - copy the file manually to execute the test
+TEST_F(CubzhFormatTest, testLoad3ZH) {
+	canLoad("cubzh.3zh");
 }
 
 TEST_F(CubzhFormatTest, testLoadPalette) {
