@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
+#include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
@@ -253,6 +254,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		wrap(stream.readUInt16(width))
 		wrap(stream.readUInt16(height))
 		wrap(stream.readUInt16(depth))
+		Log::debug("Found size chunk: %i:%i:%i", width, height, depth);
 
 		if (!volumeBuffer.empty()) {
 			const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
@@ -279,6 +281,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		}
 		break;
 	case priv::CHUNK_ID_SHAPE_BLOCKS_V5: {
+		Log::debug("Shape with %u voxels found", chunk.chunkSize);
 		if (width == 0) {
 			volumeBuffer.reserve(chunk.chunkSize);
 			for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
@@ -331,6 +334,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		break;
 	}
 	if (node.volume() == nullptr) {
+		// TODO: support 0 size shapes
 		Log::error("No volume found");
 		return false;
 	}
@@ -405,7 +409,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	glm::vec3 scale{1};
 	palette::Palette nodePalette = palette;
 	bool hasPivot = false;
-
+	bool sizeChunkFound = false;
 	while (!stream.eos()) {
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
 		Chunk chunk;
@@ -461,13 +465,17 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		case priv::CHUNK_ID_SHAPE_NAME_V6: {
 			core::String name;
 			stream.readString(chunk.chunkSize, name);
-			node.setName(name);
+			if (!name.empty()) {
+				node.setName(name);
+			}
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_SIZE_V6:
 			wrap(stream.readUInt16(width))
 			wrap(stream.readUInt16(height))
 			wrap(stream.readUInt16(depth))
+			Log::debug("Found size chunk: %i:%i:%i", width, height, depth);
+			sizeChunkFound = true;
 
 			if (!volumeBuffer.empty()) {
 				const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
@@ -494,6 +502,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			}
 			break;
 		case priv::CHUNK_ID_SHAPE_BLOCKS_V6: {
+			Log::debug("Shape with %u voxels found", chunk.chunkSize);
 			if (width == 0) {
 				volumeBuffer.reserve(chunk.chunkSize);
 				for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
@@ -558,8 +567,12 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	}
 
 	if (node.volume() == nullptr) {
-		Log::error("No volume found");
-		return false;
+		if (sizeChunkFound) {
+			node.setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		} else {
+			Log::error("No volume found");
+			return false;
+		}
 	}
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalTranslation(pos);
