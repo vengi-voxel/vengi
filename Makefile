@@ -113,7 +113,7 @@ docs/Formats.md: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --markdown > $@
 
 tools/html/data.js: formatprinter
-	$(Q)echo -n "const jsonData = " > $@
+	$(Q)printf "const jsonData = " > $@
 	$(Q)$(call EXEC_PATH,formatprinter) --palette --image --voxel | jq >> $@
 
 contrib/installer/linux/x-voxel.xml: formatprinter
