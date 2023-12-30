@@ -15,6 +15,19 @@ ifneq ($(Q),@)
 else
 	CTEST_FLAGS ?=
 endif
+ifeq ($(OS),)
+	OS := $(shell uname -s)
+endif
+
+ifeq ($(OS),Darwin)
+define EXEC_PATH
+	$(BUILDDIR)/$1/vengi-$1.app/Contents/MacOS/vengi-$1
+endef
+else
+define EXEC_PATH
+	$(BUILDDIR)/$1/vengi-$1
+endef
+endif
 
 
 all: $(BUILDDIR)/CMakeCache.txt
@@ -36,7 +49,7 @@ distclean:
 	$(Q)git clean -fdx
 
 %.png: data/voxedit/%.vengi
-	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer --use-scene-camera -a 0:-45:0 -p 100:0:200 $< data/voxedit/$@
+	$(Q)$(call EXEC_PATH,thumbnailer) --use-scene-camera -a 0:-45:0 -p 100:0:200 $< data/voxedit/$@
 	$(Q)pngquant -f --ext .png data/voxedit/$@
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
@@ -46,15 +59,15 @@ deb-changelog:
 
 .PHONY: debian/vengi-voxconvert.bash-completion
 debian/vengi-voxconvert.bash-completion: voxconvert
-	$(Q)$(BUILDDIR)/voxconvert/vengi-voxconvert --completion bash > $@
+	$(Q)$(call EXEC_PATH,voxconvert) --completion bash > $@
 
 .PHONY: debian/vengi-voxedit.bash-completion
 debian/vengi-voxedit.bash-completion: voxedit
-	$(Q)$(BUILDDIR)/voxedit/vengi-voxedit --completion bash > $@
+	$(Q)$(call EXEC_PATH,voxedit) --completion bash > $@
 
 .PHONY: debian/vengi-thumbnailer.bash-completion
 debian/vengi-thumbnailer.bash-completion: thumbnailer
-	$(Q)$(BUILDDIR)/thumbnailer/vengi-thumbnailer --completion bash > $@
+	$(Q)$(call EXEC_PATH,thumbnailer) --completion bash > $@
 
 .PHONY: deb-bash-completion
 deb-bash-completion: debian/vengi-voxconvert.bash-completion debian/vengi-voxedit.bash-completion debian/vengi-thumbnailer.bash-completion
@@ -97,18 +110,18 @@ endif
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 
 docs/Formats.md: formatprinter
-	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --markdown > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --markdown > $@
 
 tools/html/data.js: formatprinter
 	$(Q)echo -n "const jsonData = " > $@
-	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --palette --image --voxel | jq >> $@
+	$(Q)$(call EXEC_PATH,formatprinter) --palette --image --voxel | jq >> $@
 
 contrib/installer/linux/x-voxel.xml: formatprinter
-	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --mimeinfo > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --mimeinfo > $@
 	$(Q)contrib/installer/linux/mimetypes.sh
 
 contrib/installer/osx/application.plist.in: formatprinter
-	$(Q)$(BUILDDIR)/formatprinter/vengi-formatprinter --plist > $@
+	$(Q)$(call EXEC_PATH,formatprinter) --plist > $@
 
 formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md
 
