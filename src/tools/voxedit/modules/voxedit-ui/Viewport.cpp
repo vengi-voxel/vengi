@@ -61,6 +61,7 @@ bool Viewport::init() {
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
+	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -452,20 +453,27 @@ void Viewport::resetCamera() {
 	const voxel::Region &sceneRegion = sceneGraph.region();
 	const int activeNode = sceneGraph.activeNode();
 	const voxel::RawVolume *v = sceneMgr().volume(activeNode);
-	glm::ivec3 center(0);
-	glm::ivec3 size(0);
+	const voxel::Region &region = v != nullptr ? v->region() : sceneRegion;
+	glm::ivec3 size = region.getDimensionsInVoxels();
+	glm::ivec3 center = region.getCenter();
+
 	if (_renderContext.sceneMode) {
-		center = sceneGraph.center();
-	} else if (v != nullptr) {
-		const voxel::Region &region = v->region();
-		size = region.getDimensionsInVoxels();
-		center = region.getCenter();
-	} else {
-		center = sceneRegion.getCenter();
+		if (_hideInactive->boolVal()) {
+			if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(activeNode)) {
+				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(sceneMgr().currentFrame());
+				const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
+				center = transform.worldTranslation() + glm::vec3(region.getCenter());
+			} else {
+				center = sceneGraph.center();
+				size = sceneRegion.getDimensionsInVoxels();
+			}
+		} else {
+			center = sceneGraph.center();
+			size = sceneRegion.getDimensionsInVoxels();
+		}
 	}
 
-	const glm::ivec3 &regionSize = sceneRegion.getDimensionsInVoxels();
-	const float maxDim = (float)glm::max(regionSize.x, glm::max(regionSize.y, regionSize.z));
+	const float maxDim = (float)glm::max(size.x, glm::max(size.y, size.z));
 	const float distance = maxDim * 2.0f;
 	resetCamera(distance, center, size);
 }

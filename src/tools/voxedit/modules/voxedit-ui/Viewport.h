@@ -82,6 +82,7 @@ private:
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _cursorDetails;
 	core::VarPtr _pivotMode;
+	core::VarPtr _hideInactive;
 
 	bool wantGizmo() const;
 	bool createReference(const scenegraph::SceneGraphNode &node) const;
