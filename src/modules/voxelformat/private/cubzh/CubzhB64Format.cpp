@@ -157,6 +157,7 @@ int CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &
 		Log::error("Failed to load 3zh file: %s", filename.c_str());
 		return InvalidNodeId;
 	}
+	// TODO: load all of them into a group node - this group node is the node we apply all properties to
 	scenegraph::SceneGraph::MergedVolumePalette merged = modelScene.merge();
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setPalette(merged.second);
@@ -254,6 +255,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 			++instanceCount;
 			scenegraph::SceneGraphNode *node;
 			if (instanceCount > 1) {
+				// TODO: don't load as reference - we would miss the rotations on merging the 3zh into a single node
 				scenegraph::SceneGraphNode refNode(scenegraph::SceneGraphNodeType::ModelReference);
 				core_assert_always(refNode.setReference(modelNodeId));
 				const int refNodeId = sceneGraph.emplace(core::move(refNode), 0);
