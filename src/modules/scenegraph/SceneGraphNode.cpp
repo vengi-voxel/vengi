@@ -4,6 +4,7 @@
 
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
+#include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "palette/Palette.h"
@@ -596,6 +597,14 @@ bool SceneGraphNode::setProperty(const core::String &key, bool value) {
 	}
 	_properties.put(key, core::string::toString(value));
 	return true;
+}
+
+bool SceneGraphNode::setProperty(const core::String& key, float value) {
+	return setProperty(key, core::string::toString(value));
+}
+
+bool SceneGraphNode::setProperty(const core::String& key, core::RGBA value) {
+	return setProperty(key, core::Color::toHex(value, true));
 }
 
 bool SceneGraphNode::setProperty(const core::String &key, const core::String &value) {

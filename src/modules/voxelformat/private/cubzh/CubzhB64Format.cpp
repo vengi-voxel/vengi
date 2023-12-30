@@ -4,6 +4,7 @@
 
 #include "CubzhB64Format.h"
 #include "app/App.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
@@ -44,31 +45,11 @@ bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph
 }
 
 bool CubzhB64Format::readAmbience(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  const palette::Palette &palette, const LoadContext &ctx) {
+								  const palette::Palette &palette, const LoadContext &ctx, Ambience &ambience) {
 	uint16_t size;
 	wrap(stream.readUInt16(size))
 	uint8_t nFields;
 	wrap(stream.readUInt8(nFields))
-
-	core::RGBA skyColor;
-	core::RGBA skyHorizonColor;
-	core::RGBA skyAbyssColor;
-	core::RGBA skyLightColor;
-	float skyLightIntensity;
-
-	core::RGBA fogColor;
-	float fogNear;
-	float fogFar;
-	float fogAbsorbtion;
-
-	core::RGBA sunColor;
-	float sunIntensity;
-	float sunRotation[2];
-
-	float ambientSkyLightFactor;
-	float ambientDirLightFactor;
-
-	core::String txt;
 
 	for (uint16_t i = 0; i < nFields; ++i) {
 		uint8_t fieldId[3];
@@ -77,55 +58,55 @@ bool CubzhB64Format::readAmbience(io::ReadStream &stream, scenegraph::SceneGraph
 			return false;
 		}
 		if (core_memcmp(fieldId, "ssc", 3) == 0) {
-			wrap(stream.readUInt8(skyColor.r))
-			wrap(stream.readUInt8(skyColor.g))
-			wrap(stream.readUInt8(skyColor.b))
-			wrap(stream.readUInt8(skyColor.a))
+			wrap(stream.readUInt8(ambience.skyColor.r))
+			wrap(stream.readUInt8(ambience.skyColor.g))
+			wrap(stream.readUInt8(ambience.skyColor.b))
+			wrap(stream.readUInt8(ambience.skyColor.a))
 		} else if (core_memcmp(fieldId, "shc", 3) == 0) {
-			wrap(stream.readUInt8(skyHorizonColor.r))
-			wrap(stream.readUInt8(skyHorizonColor.g))
-			wrap(stream.readUInt8(skyHorizonColor.b))
-			wrap(stream.readUInt8(skyHorizonColor.a))
+			wrap(stream.readUInt8(ambience.skyHorizonColor.r))
+			wrap(stream.readUInt8(ambience.skyHorizonColor.g))
+			wrap(stream.readUInt8(ambience.skyHorizonColor.b))
+			wrap(stream.readUInt8(ambience.skyHorizonColor.a))
 		} else if (core_memcmp(fieldId, "sac", 3) == 0) {
-			wrap(stream.readUInt8(skyAbyssColor.r))
-			wrap(stream.readUInt8(skyAbyssColor.g))
-			wrap(stream.readUInt8(skyAbyssColor.b))
-			wrap(stream.readUInt8(skyAbyssColor.a))
+			wrap(stream.readUInt8(ambience.skyAbyssColor.r))
+			wrap(stream.readUInt8(ambience.skyAbyssColor.g))
+			wrap(stream.readUInt8(ambience.skyAbyssColor.b))
+			wrap(stream.readUInt8(ambience.skyAbyssColor.a))
 		} else if (core_memcmp(fieldId, "slc", 3) == 0) {
-			wrap(stream.readUInt8(skyLightColor.r))
-			wrap(stream.readUInt8(skyLightColor.g))
-			wrap(stream.readUInt8(skyLightColor.b))
-			wrap(stream.readUInt8(skyLightColor.a))
+			wrap(stream.readUInt8(ambience.skyLightColor.r))
+			wrap(stream.readUInt8(ambience.skyLightColor.g))
+			wrap(stream.readUInt8(ambience.skyLightColor.b))
+			wrap(stream.readUInt8(ambience.skyLightColor.a))
 		} else if (core_memcmp(fieldId, "sli", 3) == 0) {
-			wrap(stream.readFloat(skyLightIntensity));
+			wrap(stream.readFloat(ambience.skyLightIntensity));
 		} else if (core_memcmp(fieldId, "foc", 3) == 0) {
-			wrap(stream.readUInt8(fogColor.r))
-			wrap(stream.readUInt8(fogColor.g))
-			wrap(stream.readUInt8(fogColor.b))
-			wrap(stream.readUInt8(fogColor.a))
+			wrap(stream.readUInt8(ambience.fogColor.r))
+			wrap(stream.readUInt8(ambience.fogColor.g))
+			wrap(stream.readUInt8(ambience.fogColor.b))
+			wrap(stream.readUInt8(ambience.fogColor.a))
 		} else if (core_memcmp(fieldId, "fon", 3) == 0) {
-			wrap(stream.readFloat(fogNear));
+			wrap(stream.readFloat(ambience.fogNear));
 		} else if (core_memcmp(fieldId, "fof", 3) == 0) {
-			wrap(stream.readFloat(fogFar));
+			wrap(stream.readFloat(ambience.fogFar));
 		} else if (core_memcmp(fieldId, "foa", 3) == 0) {
-			wrap(stream.readFloat(fogAbsorbtion));
+			wrap(stream.readFloat(ambience.fogAbsorbtion));
 		} else if (core_memcmp(fieldId, "suc", 3) == 0) {
-			wrap(stream.readUInt8(sunColor.r))
-			wrap(stream.readUInt8(sunColor.g))
-			wrap(stream.readUInt8(sunColor.b))
-			wrap(stream.readUInt8(sunColor.a))
+			wrap(stream.readUInt8(ambience.sunColor.r))
+			wrap(stream.readUInt8(ambience.sunColor.g))
+			wrap(stream.readUInt8(ambience.sunColor.b))
+			wrap(stream.readUInt8(ambience.sunColor.a))
 		} else if (core_memcmp(fieldId, "sui", 3) == 0) {
-			wrap(stream.readFloat(sunIntensity));
+			wrap(stream.readFloat(ambience.sunIntensity));
 		} else if (core_memcmp(fieldId, "sur", 3) == 0) {
-			wrap(stream.readFloat(sunRotation[0]));
-			wrap(stream.readFloat(sunRotation[1]));
+			wrap(stream.readFloat(ambience.sunRotation[0]));
+			wrap(stream.readFloat(ambience.sunRotation[1]));
 		} else if (core_memcmp(fieldId, "asl", 3) == 0) {
-			wrap(stream.readFloat(ambientSkyLightFactor));
+			wrap(stream.readFloat(ambience.ambientSkyLightFactor));
 		} else if (core_memcmp(fieldId, "adl", 3) == 0) {
-			wrap(stream.readFloat(ambientDirLightFactor));
+			wrap(stream.readFloat(ambience.ambientDirLightFactor));
 		} else if (core_memcmp(fieldId, "txt", 3) == 0) {
-			wrapBool(stream.readPascalStringUInt8(txt))
-			Log::debug("ambience: txt: %s", txt.c_str());
+			wrapBool(stream.readPascalStringUInt8(ambience.txt))
+			Log::debug("ambience: txt: %s", ambience.txt.c_str());
 		} else {
 			Log::error("Unknown field id: %c%c%c", fieldId[0], fieldId[1], fieldId[2]);
 			return false;
@@ -272,7 +253,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 				}
 			}
 			++instanceCount;
-			node.setProperty("Physic mode: %i", core::string::toString((int)physicMode));
+			node.setProperty("Physic mode", core::string::toString((int)physicMode));
 			if (!uuid.empty()) {
 				node.setProperty("uuid", uuid);
 			}
@@ -290,23 +271,49 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 	return true;
 }
 
+void CubzhB64Format::setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, const Ambience &ambience) const {
+	auto &root = sceneGraph.node(sceneGraph.root().id());
+	root.setProperty("sunColor", ambience.sunColor);
+	root.setProperty("skyHorizonColor", ambience.skyHorizonColor);
+	root.setProperty("skyAbyssColor", ambience.skyAbyssColor);
+	root.setProperty("skyLightColor", ambience.skyLightColor);
+	root.setProperty("skyLightIntensity", ambience.skyLightIntensity);
+
+	root.setProperty("fogColor", ambience.fogColor);
+	root.setProperty("fogNear", ambience.fogNear);
+	root.setProperty("fogFar", ambience.fogFar);
+	root.setProperty("fogAbsorbtion", ambience.fogAbsorbtion);
+
+	root.setProperty("sunIntensity", ambience.sunIntensity);
+	root.setProperty("sunRotation", core::string::format("%f:%f", ambience.sunRotation[0], ambience.sunRotation[1]));
+
+	root.setProperty("ambientSkyLightFactor", ambience.ambientSkyLightFactor);
+	root.setProperty("ambientDirLightFactor", ambience.ambientDirLightFactor);
+
+	root.setProperty("txt", ambience.txt);
+
+}
+
 bool CubzhB64Format::loadVersion1(const core::String &filename, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
 	// TODO: not supported - base64 lua tables
+	Ambience ambience;
 	uint8_t chunkId;
 	wrap(stream.readUInt8(chunkId))
 	wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
 	wrap(stream.readUInt8(chunkId))
-	wrapBool(readAmbience(stream, sceneGraph, palette, ctx))
+	wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 	wrap(stream.readUInt8(chunkId))
 	wrapBool(readBlocks(stream, sceneGraph, palette, ctx))
+	setAmbienceProperties(sceneGraph, ambience);
 	return false;
 }
 
 bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
+	Ambience ambience;
 	while (!stream.eos()) {
 		uint8_t chunkId;
 		wrap(stream.readUInt8(chunkId))
@@ -315,7 +322,7 @@ bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &
 			wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
 			break;
 		case 1:
-			wrapBool(readAmbience(stream, sceneGraph, palette, ctx))
+			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 			break;
 		case 2:
 			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 2))
@@ -328,12 +335,14 @@ bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &
 			return false;
 		}
 	}
+	setAmbienceProperties(sceneGraph, ambience);
 	return true;
 }
 
 bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
+	Ambience ambience;
 	while (!stream.eos()) {
 		uint8_t chunkId;
 		wrap(stream.readUInt8(chunkId))
@@ -343,7 +352,7 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &
 			wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
 			break;
 		case 1:
-			wrapBool(readAmbience(stream, sceneGraph, palette, ctx))
+			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 			break;
 		case 2:
 			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 3))
@@ -356,6 +365,7 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &
 			return false;
 		}
 	}
+	setAmbienceProperties(sceneGraph, ambience);
 	return true;
 }
 

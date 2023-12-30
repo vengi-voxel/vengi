@@ -28,6 +28,28 @@ namespace voxelformat {
  */
 class CubzhB64Format : public RGBAFormat {
 protected:
+	struct Ambience {
+		core::RGBA skyColor;
+		core::RGBA skyHorizonColor;
+		core::RGBA skyAbyssColor;
+		core::RGBA skyLightColor;
+		float skyLightIntensity;
+
+		core::RGBA fogColor;
+		float fogNear;
+		float fogFar;
+		float fogAbsorbtion;
+
+		core::RGBA sunColor;
+		float sunIntensity;
+		float sunRotation[2];
+
+		float ambientSkyLightFactor;
+		float ambientDirLightFactor;
+
+		core::String txt;
+	};
+	void setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, const Ambience &ambience) const;
 	int load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 				const palette::Palette &palette, const LoadContext &ctx);
 	bool readObjects(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
@@ -35,7 +57,7 @@ protected:
 	bool readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					  const LoadContext &ctx);
 	bool readAmbience(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-					  const LoadContext &ctx);
+					  const LoadContext &ctx, Ambience &ambience);
 	bool readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					const LoadContext &ctx);
 	bool loadVersion1(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
