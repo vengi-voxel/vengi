@@ -612,6 +612,24 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Cubzh World</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-cubzh-world</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>b64</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Voxel3D</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

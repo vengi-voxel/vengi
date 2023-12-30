@@ -233,6 +233,10 @@
 			<match type="string" offset="0" value="CUBZH!"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-cubzh-world">
+		<comment>Cubzh World</comment>
+		<glob pattern="*.b64"/>
+	</mime-type>
 	<mime-type type="application/x-voxel3d">
 		<comment>Voxel3D</comment>
 		<glob pattern="*.v3a"/>

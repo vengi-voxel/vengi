@@ -636,6 +636,16 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Cubzh World",
+      "extensions": [
+        "b64"
+      ],
+      "magics": [],
+      "mimetype": "application/x-cubzh-world",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Voxel3D",
       "extensions": [
         "v3a"

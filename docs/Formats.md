@@ -14,6 +14,7 @@
 | Chronovox                  | csm         | X       |        |            |         |            |
 | CubeWorld                  | cub         | X       | X      |            | X       |            |
 | Cubzh                      | 3zh         | X       | X      | X          | X       |            |
+| Cubzh World                | b64         | X       |        |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
 | MagicaVoxel                | vox         | X       | X      |            | X       |            |
 | Magicavoxel XRAW           | xraw        | X       | X      |            | X       |            |
