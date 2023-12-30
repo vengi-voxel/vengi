@@ -127,7 +127,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 	for (uint16_t i = 0; i < numBlocks; ++i) {
 		core::String key;
 		wrapBool(stream.readPascalStringUInt16LE(key))
-		Log::debug("key: %s", key.c_str());
+		Log::debug("block key: %s", key.c_str());
 		uint8_t blockAction;
 		wrap(stream.readUInt8(blockAction))
 		if (blockAction == 1) {
@@ -183,9 +183,9 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 
 	// e.g. the hubmap.b64 is in bundle/misc, the 3zh files in bundle/cache
 	io::FilesystemArchive archive(false);
-	archive.add(core::string::path(path, "..", "cache"), "", 1);
-	archive.add(path, "", 1);
-	archive.add(core::string::path(path, "cache"), "", 1);
+	archive.add(core::string::path(path, "..", "cache"), "*.3zh", 1);
+	archive.add(path, "*.3zh", 1);
+	archive.add(core::string::path(path, "cache"), "*.3zh", 1);
 
 	while (instanceCount < numObjects) {
 		core::String fullname3zh;
@@ -203,8 +203,6 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 		if (modelNodeId == InvalidNodeId) {
 			return false;
 		}
-
-		scenegraph::SceneGraphNode &node = sceneGraph.node(modelNodeId);
 
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
@@ -252,20 +250,36 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 					return false;
 				}
 			}
+
 			++instanceCount;
-			node.setProperty("Physic mode", core::string::toString((int)physicMode));
+			scenegraph::SceneGraphNode *node;
+			if (instanceCount > 1) {
+				scenegraph::SceneGraphNode refNode(scenegraph::SceneGraphNodeType::ModelReference);
+				core_assert_always(refNode.setReference(modelNodeId));
+				const int refNodeId = sceneGraph.emplace(core::move(refNode), 0);
+				if (refNodeId == InvalidNodeId) {
+					Log::error("Failed to create reference node for model %i", modelNodeId);
+					return false;
+				}
+				node = &sceneGraph.node(refNodeId);
+			} else {
+				node = &sceneGraph.node(modelNodeId);
+			}
+			node->setProperty("Physic mode", core::string::toString((int)physicMode));
 			if (!uuid.empty()) {
-				node.setProperty("uuid", uuid);
+				node->setProperty("uuid", uuid);
 			}
 			if (!name.empty()) {
-				node.setName(name);
+				node->setName(name);
 			}
+
 			scenegraph::SceneGraphTransform transform;
 			transform.setWorldTranslation(pos);
 			transform.setWorldOrientation(glm::quat(rot));
 			transform.setWorldScale(scale);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
-			node.setTransform(keyFrameIdx, transform);
+
+			node->setTransform(keyFrameIdx, transform);
 		}
 	}
 	return true;
