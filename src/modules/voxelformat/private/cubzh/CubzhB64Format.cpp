@@ -136,6 +136,12 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 			wrap(stream.readUInt8(color.g))
 			wrap(stream.readUInt8(color.b))
 			wrap(stream.readUInt8(color.a))
+			// the index is an encoded position
+			const int x = i % 1000;
+			const int y = i / 1000 % 1000;
+			const int z = i / 1000000;
+			// TODO: set the block
+			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, core::Color::toHex(color).c_str());
 		}
 	}
 	return true;
