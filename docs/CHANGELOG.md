@@ -56,6 +56,8 @@ VoxEdit:
    - Improved color themes (especially the light theme)
    - Only show the brush panel if in edit mode
    - Converted the script brush back to a normal panel
+   - Let `wasd` camera movement also work in target rotation mode
+   - Automatically reference all child nodes when creating a new reference
 
 Thumbnailer:
 
