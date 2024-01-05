@@ -170,9 +170,9 @@ void Camera::setSize(const glm::ivec2& windowSize) {
 	_dirty |= DIRTY_PERSPECTIVE;
 }
 
-void Camera::move(const glm::vec3& delta) {
+bool Camera::move(const glm::vec3& delta) {
 	if (glm::all(glm::epsilonEqual(delta, glm::zero<glm::vec3>(), 0.0001f))) {
-		return;
+		return false;
 	}
 	_dirty |= DIRTY_POSITION;
 	_worldPos += forward() * -delta.z;
@@ -180,8 +180,10 @@ void Camera::move(const glm::vec3& delta) {
 	_worldPos += up() * delta.y;
 	if (_rotationType == CameraRotationType::Target) {
 		lookAt(_target, glm::up());
+		_distance = glm::max(4.0f, glm::distance(_worldPos, _target));
 		_dirty |= DIRTY_TARGET;
 	}
+	return true;
 }
 
 void Camera::rotate(const glm::vec3& radians) {

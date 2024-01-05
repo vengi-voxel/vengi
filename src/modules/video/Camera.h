@@ -159,7 +159,7 @@ public:
 	 */
 	const glm::vec3& worldPosition() const;
 	void setWorldPosition(const glm::vec3& worldPos);
-	void move(const glm::vec3& delta);
+	bool move(const glm::vec3& delta);
 
 	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
 	glm::mat4 perspectiveMatrix(float nplane, float fplane) const;
@@ -293,6 +293,9 @@ inline CameraRotationType Camera::rotationType() const {
 }
 
 inline void Camera::setRotationType(CameraRotationType rotationType) {
+	if (_rotationType == rotationType) {
+		return;
+	}
 	_dirty |= DIRTY_TARGET;
 	_rotationType = rotationType;
 }
