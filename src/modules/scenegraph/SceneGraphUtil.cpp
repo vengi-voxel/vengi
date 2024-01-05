@@ -182,6 +182,16 @@ core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &sou
 		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent));
 	}
 
+	for (int nodeId : nodesAdded) {
+		SceneGraphNode &node = target.node(nodeId);
+		if (node.type() == SceneGraphNodeType::ModelReference) {
+			// this is not enough of course - the id might have already existed in the target scene graph
+			if (!target.hasNode(node.reference())) {
+				Log::warn("Reference node %i is not in the scene graph", node.reference());
+			}
+		}
+	}
+
 	// TODO: fix references - see copy() above
 
 	return nodesAdded;
