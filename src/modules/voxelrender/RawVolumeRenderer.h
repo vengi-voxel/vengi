@@ -14,6 +14,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "core/concurrent/ThreadPool.h"
 #include "render/BloomRenderer.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/ChunkMesh.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -48,6 +49,10 @@ namespace voxelrender {
 struct RenderContext : public core::NonCopyable {
 	video::FrameBuffer frameBuffer;
 	render::BloomRenderer bloomRenderer;
+	const scenegraph::SceneGraph *sceneGraph = nullptr;
+	scenegraph::FrameIndex frame = 0;
+	bool hideInactive = false;
+	bool grayInactive = false;
 	bool sceneMode = false;
 
 	bool init(const glm::ivec2 &size);

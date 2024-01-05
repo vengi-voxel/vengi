@@ -33,7 +33,6 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	textureCfg.format(video::TextureFormat::RGBA);
 
 	core_trace_scoped(EditorSceneRenderFramebuffer);
-	volumeRenderer.prepare(const_cast<scenegraph::SceneGraph&>(sceneGraph));
 
 	video::Camera camera;
 
@@ -90,7 +89,8 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 		return image::ImagePtr();
 	}
 
-	volumeRenderer.setSceneMode(true);
+	renderContext.sceneMode = true;
+	renderContext.sceneGraph = &sceneGraph;
 	const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
 	volumeRenderer.shutdown();
 	renderContext.shutdown();
@@ -107,7 +107,8 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		return image::ImagePtr();
 	}
 
-	volumeRenderer.setSceneMode(true);
+	renderContext.sceneMode = true;
+	renderContext.sceneGraph = &sceneGraph;
 
 	const core::String ext = core::string::extractExtension(imageFile);
 	const core::String baseFilePath = core::string::stripExtension(imageFile);

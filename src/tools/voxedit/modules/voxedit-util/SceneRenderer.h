@@ -70,10 +70,8 @@ public:
 	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) override;
 	void updateGridRegion(const voxel::Region &region) override;
 	void nodeRemove(int nodeId) override;
-	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-				  const scenegraph::SceneGraph &sceneGraph) override;
-	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-					 const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame) override;
+	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
+	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 };
 
 } // namespace voxedit

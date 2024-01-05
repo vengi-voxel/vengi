@@ -219,20 +219,25 @@ void SceneRenderer::update() {
 	_volumeRenderer.update();
 }
 
-void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-								const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frameIdx) {
+void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
+	if (renderContext.sceneGraph == nullptr) {
+		Log::error("No scenegraph given to render");
+		return;
+	}
 	video::ScopedState depthTest(video::State::DepthTest, true);
-	_volumeRenderer.setSceneMode(renderContext.sceneMode);
-	updateAABBMesh(renderContext.sceneMode, sceneGraph, frameIdx);
-	_volumeRenderer.prepare(sceneGraph, frameIdx, _hideInactive->boolVal(), _grayInactive->boolVal());
+	updateAABBMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);
-	extractVolume(sceneGraph);
+	extractVolume(*renderContext.sceneGraph);
 }
 
-void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-							 const scenegraph::SceneGraph &sceneGraph) {
+void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
+	if (renderContext.sceneGraph == nullptr) {
+		Log::error("No scenegraph given to render");
+		return;
+	}
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	video::ScopedState blend(video::State::Blend, true);
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
 	if (renderContext.sceneMode) {
 		if (_showAABB->boolVal()) {

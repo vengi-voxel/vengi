@@ -34,11 +34,15 @@ public:
 	}
 	virtual void nodeRemove(int nodeId) {
 	}
-	virtual void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-						  const scenegraph::SceneGraph &sceneGraph) {
+	/**
+	 * @brief Before calling this, make sure to set the SceneGraph pointer in the RenderContext
+	 */
+	virtual void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
-	virtual void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera,
-							 const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame) {
+	/**
+	 * @brief Before calling this, make sure to set the SceneGraph pointer in the RenderContext
+	 */
+	virtual void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
 };
 

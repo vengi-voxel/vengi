@@ -30,7 +30,7 @@ protected:
 	RawVolumeRenderer _renderer;
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
-	bool _sceneMode = true;
+	void prepare(const RenderContext &renderContext);
 
 public:
 	void construct();
@@ -43,10 +43,8 @@ public:
 
 	void nodeRemove(int nodeId);
 
-	void setSceneMode(bool sceneMode);
 	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region& region);
 	bool empty(scenegraph::SceneGraphNode &node);
-	void prepare(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame = 0, bool hideInactive = false, bool grayInactive = false);
 	void extractAll();
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
@@ -54,9 +52,5 @@ public:
 	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true, bool waitPending = false);
 	void clear();
 };
-
-inline void SceneGraphRenderer::setSceneMode(bool sceneMode) {
-	_sceneMode = sceneMode;
-}
 
 } // namespace voxelrender

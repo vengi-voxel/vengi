@@ -1510,13 +1510,16 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	renderContext.frameBuffer.bind(true);
 	_sceneRenderer->updateLockedPlanes(_modifier.lockedAxis(), _sceneGraph, cursorPosition());
 
+	renderContext.frame = _currentFrameIdx;
+	renderContext.sceneGraph = &_sceneGraph;
+
 	const bool renderScene = (renderMask & RenderScene) != 0u;
 	if (renderScene) {
-		_sceneRenderer->renderScene(renderContext, camera, _sceneGraph, _currentFrameIdx);
+		_sceneRenderer->renderScene(renderContext, camera);
 	}
 	const bool renderUI = (renderMask & RenderUI) != 0u;
 	if (renderUI) {
-		_sceneRenderer->renderUI(renderContext, camera, _sceneGraph);
+		_sceneRenderer->renderUI(renderContext, camera);
 		if (!renderContext.sceneMode) {
 			_modifier.render(camera, activePalette());
 		}

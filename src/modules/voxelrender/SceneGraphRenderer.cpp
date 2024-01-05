@@ -125,8 +125,13 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 	_renderer.setVolume(id, nullptr, nullptr, true);
 }
 
-void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scenegraph::FrameIndex frame, bool hideInactive,
-								 bool grayInactive) {
+void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
+	core_assert_always(renderContext.sceneGraph != nullptr);
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
+	const scenegraph::FrameIndex frame = renderContext.frame;
+	const bool hideInactive = renderContext.hideInactive;
+	const bool grayInactive = renderContext.grayInactive;
+	const bool sceneMode = renderContext.sceneMode;
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
@@ -165,7 +170,7 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		if (v != node.volume()) {
 			_renderer.extractRegion(id, region);
 		}
-		if (_sceneMode) {
+		if (sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const glm::vec3 maxs = transform.worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = transform.worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
@@ -186,7 +191,7 @@ void SceneGraphRenderer::prepare(const scenegraph::SceneGraph &sceneGraph, scene
 		}
 	}
 
-	if (_sceneMode) {
+	if (sceneMode) {
 		_renderer.resetReferences();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
@@ -225,6 +230,7 @@ void SceneGraphRenderer::extractAll() {
 }
 
 void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow, bool waitPending) {
+	prepare(renderContext);
 	if (waitPending) {
 		extractAll();
 		_renderer.waitForPendingExtractions();
