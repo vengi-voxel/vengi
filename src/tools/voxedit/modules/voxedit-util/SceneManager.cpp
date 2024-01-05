@@ -2353,9 +2353,14 @@ bool SceneManager::update(double nowSeconds) {
 
 	_movement.update(nowSeconds);
 	video::Camera *camera = activeCamera();
-	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
+	if (camera != nullptr) {
 		const glm::vec3& moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
-		camera->move(moveDelta);
+		if (camera->move(moveDelta)) {
+			const video::CameraRotationType r = camera->rotationType();
+			camera->setRotationType(video::CameraRotationType::Eye);
+			camera->update(0.0);
+			camera->setRotationType(r);
+		}
 	}
 
 	_modifier.update(nowSeconds);
