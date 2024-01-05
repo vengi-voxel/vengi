@@ -5,6 +5,15 @@ set -e
 BINARY=$1
 FILE=voxedit/chr_knight.qb
 
+if [ -z "$BINARY" ]; then
+  BINARY="@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@"
+fi
+
+if [ ! -x "$BINARY" ]; then
+  echo "Binary not executable: $BINARY"
+  exit 1
+fi
+
 function convert() {
   src_format=$1
   target_format=$2
