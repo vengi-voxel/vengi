@@ -50,7 +50,7 @@ protected:
 		core::String txt;
 	};
 	void setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, const Ambience &ambience) const;
-	int load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &sceneGraph,
+	bool load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &modelScene,
 				const palette::Palette &palette, const LoadContext &ctx);
 	bool readObjects(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					 const palette::Palette &palette, const LoadContext &ctx, int version);

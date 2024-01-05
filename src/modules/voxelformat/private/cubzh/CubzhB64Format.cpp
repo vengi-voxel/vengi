@@ -15,6 +15,7 @@
 #include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <stdint.h>
 #include <glm/gtx/euler_angles.hpp>
@@ -149,26 +150,16 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-int CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename,
-							scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+bool CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename,
+							scenegraph::SceneGraph &modelScene, const palette::Palette &palette,
 							const LoadContext &ctx) {
 	io::SeekableReadStreamPtr stream = archive.readStream(filename);
 	if (!stream) {
 		Log::error("Failed to open file: %s", filename.c_str());
-		return InvalidNodeId;
+		return false;
 	}
 	CubzhFormat format;
-	scenegraph::SceneGraph modelScene;
-	if (!format.load(filename, *stream.get(), modelScene, ctx)) {
-		Log::error("Failed to load 3zh file: %s", filename.c_str());
-		return InvalidNodeId;
-	}
-	// TODO: load all of them into a group node - this group node is the node we apply all properties to
-	scenegraph::SceneGraph::MergedVolumePalette merged = modelScene.merge();
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setPalette(merged.second);
-	node.setVolume(merged.first, true);
-	return sceneGraph.emplace(core::move(node));
+	return format.load(filename, *stream.get(), modelScene, ctx);
 }
 
 bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &stream,
@@ -206,11 +197,13 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 		fullname3zh.replaceAllChars('.', '/'); // replace the lua dir separator
 		fullname3zh.append(".3zh");
 
-		const int modelNodeId = load3zh(archive, fullname3zh, sceneGraph, palette, ctx);
-		if (modelNodeId == InvalidNodeId) {
+		scenegraph::SceneGraph modelScene;
+		if (!load3zh(archive, fullname3zh, modelScene, palette, ctx)) {
+			Log::error("Failed to load 3zh file: %s", fullname3zh.c_str());
 			return false;
 		}
 
+		core::DynamicArray<int> modelNodeIds;
 		for (uint16_t j = 0; j < numInstances; ++j) {
 			uint8_t numFields;
 			wrap(stream.readUInt8(numFields))
@@ -218,7 +211,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 			core::String name;
 			glm::vec3 pos{0.0f};
 			glm::vec3 rot{0.0f};
-			glm::vec3 scale{1.0f};
+			glm::vec3 scale{0.5f};
 			uint8_t physicMode = 0;
 			Log::trace("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
@@ -258,36 +251,46 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 				}
 			}
 
-			++instanceCount;
-			scenegraph::SceneGraphNode *node;
-			if (instanceCount > 1) {
-				// TODO: don't load as reference - we would miss the rotations on merging the 3zh into a single node
-				scenegraph::SceneGraphNode refNode(scenegraph::SceneGraphNodeType::ModelReference);
-				core_assert_always(refNode.setReference(modelNodeId));
-				const int refNodeId = sceneGraph.emplace(core::move(refNode), 0);
-				if (refNodeId == InvalidNodeId) {
-					Log::error("Failed to create reference node for model %i", modelNodeId);
-					return false;
-				}
-				node = &sceneGraph.node(refNodeId);
-			} else {
-				node = &sceneGraph.node(modelNodeId);
-			}
-			node->setProperty("Physic mode", core::string::toString((int)physicMode));
+			// create a group node to apply the transforms to - this is needed to keep the original transforms of the
+			// imported 3zh nodes
+			scenegraph::SceneGraphNode instanceGroupNode(scenegraph::SceneGraphNodeType::Group);
+			instanceGroupNode.setProperty("Physic mode", core::string::toString((int)physicMode));
 			if (!uuid.empty()) {
-				node->setProperty("uuid", uuid);
+				instanceGroupNode.setProperty("uuid", uuid);
 			}
 			if (!name.empty()) {
-				node->setName(name);
+				instanceGroupNode.setName(name);
 			}
 
-			scenegraph::SceneGraphTransform transform;
-			transform.setWorldTranslation(pos);
-			transform.setWorldOrientation(glm::quat(rot));
-			transform.setWorldScale(scale);
+			scenegraph::SceneGraphTransform instanceGroupTransform;
+			instanceGroupTransform.setWorldTranslation(pos);
+			instanceGroupTransform.setWorldOrientation(glm::quat(rot));
+			instanceGroupTransform.setWorldScale(scale);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			instanceGroupNode.setTransform(keyFrameIdx, instanceGroupTransform);
+			const int instanceGroupNodeId = sceneGraph.emplace(core::move(instanceGroupNode));
+			if (instanceGroupNodeId == InvalidNodeId) {
+				Log::error("Failed to create instance group node");
+				return false;
+			}
 
-			node->setTransform(keyFrameIdx, transform);
+			++instanceCount;
+			if (j == 0) {
+				modelNodeIds = scenegraph::copySceneGraph(sceneGraph, modelScene, instanceGroupNodeId);
+				if (modelNodeIds.empty()) {
+					Log::error("Failed to copy scene graph from %s", fullname3zh.c_str());
+					return false;
+				}
+				Log::debug("Added %i nodes from %s", (int)modelNodeIds.size(), fullname3zh.c_str());
+			} else {
+				for (int modelNodeId : modelNodeIds) {
+					const int refNodeId = scenegraph::createNodeReference(sceneGraph, sceneGraph.node(modelNodeId), instanceGroupNodeId);
+					if (refNodeId == InvalidNodeId) {
+						Log::error("Failed to create reference node for model %i", modelNodeId);
+						return false;
+					}
+				}
+			}
 		}
 	}
 	return true;
