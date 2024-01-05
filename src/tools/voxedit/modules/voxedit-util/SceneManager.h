@@ -208,6 +208,9 @@ public:
 	 */
 	void shift(int nodeId, const glm::ivec3 &m);
 
+	/**
+	 * @brief Update the cursor position used for tracing
+	 */
 	void setMousePos(int x, int y);
 
 	bool cameraRotate() const;
