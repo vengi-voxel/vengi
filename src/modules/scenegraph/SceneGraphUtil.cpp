@@ -5,6 +5,7 @@
 #include "SceneGraphUtil.h"
 #include "core/Log.h"
 #include <glm/ext/scalar_constants.hpp>
+#include "core/collection/DynamicArray.h"
 #include "math/Easing.h"
 #include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -47,7 +48,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	}
 }
 
-int createNodeReference(SceneGraph &target, const SceneGraphNode &node) {
+int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent) {
 	if (!node.isReferenceable()) {
 		return InvalidNodeId;
 	}
@@ -56,7 +57,27 @@ int createNodeReference(SceneGraph &target, const SceneGraphNode &node) {
 	newNode.setReference(node.id());
 	newNode.setName(node.name() + " reference");
 	newNode.setColor(node.color());
-	return addToGraph(target, core::move(newNode), node.parent());
+	newNode.setKeyFrames(node.keyFrames());
+	const int mainNodeId = addToGraph(sceneGraph, core::move(newNode), parent < 0 ? node.parent() : parent);
+	if (mainNodeId == InvalidNodeId) {
+		Log::error("Failed to add node to the scene graph");
+		return InvalidNodeId;
+	}
+	for (int child : node.children()) {
+		const SceneGraphNode &childNode = sceneGraph.node(child);
+		if (childNode.isReferenceable()) {
+			createNodeReference(sceneGraph, childNode, mainNodeId);
+		} else {
+#if 1
+			Log::warn("Don't add node %i - it is not referenceable", child);
+#else
+			SceneGraphNode newNode(childNode.type());
+			copy(childNode, newNode);
+			addToGraph(sceneGraph, core::move(newNode), mainNodeId);
+#endif
+		}
+	}
+	return mainNodeId;
 }
 
 void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume, bool copyKeyFrames) {
@@ -128,6 +149,9 @@ int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent) {
 	return nodesAdded;
 }
 
+/**
+ * @return the main node id that was added
+ */
 static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, const SceneGraphNode &sourceNode, int parent) {
 	SceneGraphNode newNode(sourceNode.type());
 	copy(sourceNode, newNode);
@@ -138,26 +162,24 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
 	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
-		return 0;
+		return InvalidNodeId;
 	}
 
-	int nodesAdded = sourceNode.type() == SceneGraphNodeType::Model ? 1 : 0;
 	for (int sourceNodeIdx : sourceNode.children()) {
 		core_assert(source.hasNode(sourceNodeIdx));
 		SceneGraphNode &sourceChildNode = source.node(sourceNodeIdx);
-		nodesAdded += copySceneGraphNode_r(target, source, sourceChildNode, newNodeId);
+		copySceneGraphNode_r(target, source, sourceChildNode, newNodeId);
 	}
 
-	return nodesAdded;
+	return newNodeId;
 }
 
-int copySceneGraph(SceneGraph &target, const SceneGraph &source) {
+core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent) {
 	const SceneGraphNode &sourceRoot = source.root();
-	int nodesAdded = 0;
-	const int parent = target.root().id();
+	core::DynamicArray<int> nodesAdded;
 	target.node(parent).addProperties(sourceRoot.properties());
 	for (int sourceNodeId : sourceRoot.children()) {
-		nodesAdded += copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent);
+		nodesAdded.push_back(copySceneGraphNode_r(target, source, source.node(sourceNodeId), parent));
 	}
 
 	// TODO: fix references - see copy() above

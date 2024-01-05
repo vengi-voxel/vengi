@@ -23,9 +23,12 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 
 int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent);
 
-int copySceneGraph(SceneGraph &target, const SceneGraph &source);
+core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &source, int parent = 0);
 
-int createNodeReference(SceneGraph &target, const SceneGraphNode &node);
+/**
+ * @param[in] parent The parent node id - if @c -1 it will use the node parent id
+ */
+int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent = -1);
 
 /**
  * @param createEmpty if @c true, for empty parts of the source volume empty volumes will be created, too. Otherwise
