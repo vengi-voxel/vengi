@@ -213,6 +213,11 @@ public:
 	 */
 	void setMousePos(int x, int y);
 
+	/**
+	 * @return @c true if the current node supports switching to edit mode
+	 */
+	bool supportsEditMode() const;
+
 	bool cameraRotate() const;
 	bool cameraPan() const;
 

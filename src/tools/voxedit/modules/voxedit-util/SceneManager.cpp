@@ -542,6 +542,12 @@ void SceneManager::setMousePos(int x, int y) {
 	_traceViaMouse = true;
 }
 
+bool SceneManager::supportsEditMode() const {
+	const int nodeId = _sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	return node.isModelNode();
+}
+
 void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, bool markUndo, uint64_t renderRegionMillis) {
 	Log::debug("Modified node %i, record undo state: %s", nodeId, markUndo ? "true" : "false");
 	voxel::logRegion("Modified", modifiedRegion);
