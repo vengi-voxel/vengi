@@ -1,22 +1,30 @@
 #!/bin/bash
 
 #set -e
+#set -x
 
 BINARY="$1"
-FILE="voxedit/chr_knight.qb"
+FILE="voxedit/robo.vengi"
 
 if [ -z "$BINARY" ]; then
   BINARY="@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@"
 fi
 
+if [ ! -x "$BINARY" ]; then
+  echo "Binary not executable: $BINARY"
+  exit 1
+fi
+
 OUTFILE="@CMAKE_BINARY_DIR@/${FILE%.*}.png"
-$BINARY -s 128 "@DATA_DIR@/$FILE" "$OUTFILE"
-if [ -f "$OUTPUT" ]; then
-  md5=`md5sum "$OUTPUT"`
-  if [ "$md5" != "de83e46c2ae5405a0fe7236dd6f14634" ]; then
+$BINARY -s 128 --use-scene-camera --input "@DATA_DIR@/$FILE" --output "$OUTFILE"
+if [ -f "$OUTFILE" ]; then
+  md5=`md5sum "$OUTFILE" | cut -d' ' -f1`
+  if [ "$md5" != "e37235777a5a0c39784b1d991e93f670" ]; then
     echo "Md5 sums don't match: $md5"
-    xdg-open "$OUTPUT"
+    xdg-open "$OUTFILE"
     exit 1;
   fi
   echo "Md5 of generated screenshot matches"
+else
+  echo "Output file not found: $OUTFILE"
 fi

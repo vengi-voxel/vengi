@@ -19,7 +19,12 @@
 
 namespace voxelrender {
 
-static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::ThumbnailContext &ctx) {
+	if (!renderContext.sceneGraph) {
+		Log::error("No scene graph set");
+		return image::ImagePtr();
+	}
+	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	video::clearColor(ctx.clearColor);
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -84,14 +89,15 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	volumeRenderer.construct();
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
+	renderContext.sceneMode = true;
+	renderContext.sceneGraph = &sceneGraph;
+
 	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
 
-	renderContext.sceneMode = true;
-	renderContext.sceneGraph = &sceneGraph;
-	const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
+	const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, ctx);
 	volumeRenderer.shutdown();
 	renderContext.shutdown();
 	return image;
@@ -101,14 +107,14 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
+	renderContext.sceneMode = true;
+	renderContext.sceneGraph = &sceneGraph;
+
 	volumeRenderer.construct();
 	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
-
-	renderContext.sceneMode = true;
-	renderContext.sceneGraph = &sceneGraph;
 
 	const core::String ext = core::string::extractExtension(imageFile);
 	const core::String baseFilePath = core::string::stripExtension(imageFile);
@@ -116,7 +122,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		const core::String &filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
 		const io::FilePtr &outfile = io::filesystem()->open(filepath, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
-		const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, sceneGraph, ctx);
+		const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, ctx);
 		if (image) {
 			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 				Log::error("Failed to write image %s", filepath.c_str());

@@ -23,7 +23,6 @@ Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimePr
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
-	_additionalUsage = "<infile> <outfile>";
 }
 
 void Thumbnailer::printUsageHeader() const {
@@ -68,11 +67,23 @@ app::AppState Thumbnailer::onConstruct() {
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
 
-	_outfile = getArgVal("--output", "");
+	const core::String infile = getArgVal("--input");
+	if (infile.empty()) {
+		Log::error("No input file given");
+		return app::AppState::InitFailure;
+	}
+
+	_outfile = getArgVal("--output");
+	if (_outfile.empty()) {
+		Log::error("No output file given");
+		return app::AppState::InitFailure;
+	}
 
 	if (state != app::AppState::Running) {
+		Log::error("Failed to initialize the renderers");
 		const bool fallback = hasArg("--fallback");
 		if (fallback) {
+			Log::warn("Use fallback (black) image");
 			image::ImagePtr image = image::createEmptyImage(_outfile);
 			core::RGBA black(0, 0, 0, 255);
 			image->loadRGBA((const uint8_t *)&black, 1, 1);
@@ -80,11 +91,6 @@ app::AppState Thumbnailer::onInit() {
 			return app::AppState::Cleanup;
 		}
 		return state;
-	}
-
-	const core::String infile = getArgVal("--input");
-	if (infile.empty()) {
-		return app::AppState::InitFailure;
 	}
 
 	Log::debug("infile: %s", infile.c_str());
@@ -132,6 +138,7 @@ static bool volumeTurntable(const core::String &fileName, const core::String &im
 		return false;
 	}
 
+	Log::info("Render turntable");
 	return voxelrender::volumeTurntable(sceneGraph, imageFile, ctx, loops);
 }
 
