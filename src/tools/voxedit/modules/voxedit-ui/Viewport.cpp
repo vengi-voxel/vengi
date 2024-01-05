@@ -428,9 +428,7 @@ void Viewport::shutdown() {
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
-	_renderContext.frameBuffer.bind(true);
 	sceneMgr().render(_renderContext, camera(), SceneManager::RenderScene);
-	_renderContext.frameBuffer.unbind();
 	return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
 }
 
@@ -769,9 +767,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear());
-	_renderContext.frameBuffer.bind(true);
 	sceneMgr().render(_renderContext, camera());
-	_renderContext.frameBuffer.unbind();
 }
 
 } // namespace voxedit

@@ -1507,6 +1507,7 @@ bool SceneManager::setGridResolution(int resolution) {
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
+	renderContext.frameBuffer.bind(true);
 	_sceneRenderer->updateLockedPlanes(_modifier.lockedAxis(), _sceneGraph, cursorPosition());
 
 	const bool renderScene = (renderMask & RenderScene) != 0u;
@@ -1520,6 +1521,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 			_modifier.render(camera, activePalette());
 		}
 	}
+	renderContext.frameBuffer.unbind();
 }
 
 void SceneManager::construct() {
