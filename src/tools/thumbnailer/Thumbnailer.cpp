@@ -67,22 +67,14 @@ app::AppState Thumbnailer::onConstruct() {
 app::AppState Thumbnailer::onInit() {
 	const app::AppState state = Super::onInit();
 
-	const core::String infile = getArgVal("--input");
-	if (infile.empty()) {
-		Log::error("No input file given");
-		return app::AppState::InitFailure;
-	}
-
-	_outfile = getArgVal("--output");
-	if (_outfile.empty()) {
-		Log::error("No output file given");
-		return app::AppState::InitFailure;
-	}
-
 	if (state != app::AppState::Running) {
-		Log::error("Failed to initialize the renderers");
 		const bool fallback = hasArg("--fallback");
 		if (fallback) {
+			_outfile = getArgVal("--output");
+			if (_outfile.empty()) {
+				Log::error("No output file given");
+				return app::AppState::InitFailure;
+			}
 			Log::warn("Use fallback (black) image");
 			image::ImagePtr image = image::createEmptyImage(_outfile);
 			core::RGBA black(0, 0, 0, 255);
@@ -91,15 +83,6 @@ app::AppState Thumbnailer::onInit() {
 			return app::AppState::Cleanup;
 		}
 		return state;
-	}
-
-	Log::debug("infile: %s", infile.c_str());
-	Log::debug("outfile: %s", _outfile.c_str());
-
-	_infile = filesystem()->open(infile, io::FileMode::SysRead);
-	if (!_infile->exists()) {
-		Log::error("Given input file '%s' does not exist", infile.c_str());
-		return app::AppState::InitFailure;
 	}
 
 	return state;
@@ -146,6 +129,27 @@ app::AppState Thumbnailer::onRunning() {
 	app::AppState state = Super::onRunning();
 	if (state != app::AppState::Running) {
 		return state;
+	}
+
+	const core::String infile = getArgVal("--input");
+	if (infile.empty()) {
+		Log::error("No input file given");
+		return app::AppState::InitFailure;
+	}
+
+	_outfile = getArgVal("--output");
+	if (_outfile.empty()) {
+		Log::error("No output file given");
+		return app::AppState::InitFailure;
+	}
+
+	Log::debug("infile: %s", infile.c_str());
+	Log::debug("outfile: %s", _outfile.c_str());
+
+	_infile = filesystem()->open(infile, io::FileMode::SysRead);
+	if (!_infile->exists()) {
+		Log::error("Given input file '%s' does not exist", infile.c_str());
+		return app::AppState::InitFailure;
 	}
 
 	const int outputSize = core::string::toInt(getArgVal("--size"));
