@@ -275,7 +275,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 			}
 
 			++instanceCount;
-			if (j == 0) {
+			if (modelNodeIds.empty()) {
 				modelNodeIds = scenegraph::copySceneGraph(sceneGraph, modelScene, instanceGroupNodeId);
 				if (modelNodeIds.empty()) {
 					Log::error("Failed to copy scene graph from %s", fullname3zh.c_str());
