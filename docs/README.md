@@ -4,7 +4,7 @@ This is a collection of voxel tools. It includes a [voxel editor](voxedit/Index.
 and loading/saving into a lot of [voxel volume formats](Formats.md). There are other tools like e.g. a [thumbnailer](thumbnailer/Index.md) for
 your filemanager and a command line tool to [convert or modify](voxconvert/Index.md) between several voxel formats.
 
-Find out more about features and status updates on my [twitter profile](https://twitter.com/MartinGerhardy).
+Find out more about features and status updates on my [mastodon profile](https://mastodon.social/@mgerhardy).
 
 The project source code is located at [github/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi). We also
 provide linux, osx and windows binaries here.
