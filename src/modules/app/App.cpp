@@ -567,7 +567,8 @@ void App::bashCompletion() const {
 	if (binary.empty()) {
 		binary = fullAppname();
 	}
-	Log::printf("complete -F _%s_completion %s\n", appname().c_str(), binary.c_str());
+	// https://www.gnu.org/software/bash/manual/html_node/Programmable-Completion-Builtins.html
+	Log::printf("complete -o default -o nospace -F _%s_completion %s\n", appname().c_str(), binary.c_str());
 }
 
 bool App::handleCompletion(const core::String &type) const {
