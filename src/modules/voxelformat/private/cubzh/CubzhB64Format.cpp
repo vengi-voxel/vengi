@@ -39,6 +39,7 @@ bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph
 								  const palette::Palette &palette, const LoadContext &ctx) {
 	double scale;
 	wrap(stream.readDouble(scale)) // default is 5
+	Log::debug("map scale: %f", scale);
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("map name: %s", name.c_str());
@@ -211,7 +212,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 			core::String name;
 			glm::vec3 pos{0.0f};
 			glm::vec3 rot{0.0f};
-			glm::vec3 scale{0.5f};
+			glm::vec3 scale{1.0f}; // TODO: check this - might also be 0.5
 			uint8_t physicMode = 0;
 			Log::trace("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
@@ -244,6 +245,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 					wrapBool(stream.readPascalStringUInt16LE(base64))
 					// TODO
 				} else if (CHECK_ID(fieldId, "pm")) {
+					// StaticPerBlock is the default
 					wrap(stream.readUInt8(physicMode))
 				} else {
 					Log::error("Unknown field id: %c%c", fieldId[0], fieldId[1]);
@@ -401,15 +403,23 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, io::SeekableRe
 	uint8_t version;
 	wrap(base64Stream.readUInt8(version))
 	if (version == 1) {
-		return loadVersion1(filename, base64Stream, sceneGraph, palette, ctx);
+		if (!loadVersion1(filename, base64Stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
 	} else if (version == 2) {
-		return loadVersion2(filename, base64Stream, sceneGraph, palette, ctx);
+		if (!loadVersion2(filename, base64Stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
 	} else if (version == 3) {
-		return loadVersion3(filename, base64Stream, sceneGraph, palette, ctx);
+		if (!loadVersion3(filename, base64Stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
+	} else {
+		Log::error("Unsupported version found: %i", (int)version);
+		return false;
 	}
-
-	Log::error("Unsupported version found: %i", (int)version);
-	return false;
+	Log::debug("%i bytes left in the stream", (int)stream.remaining());
+	return true;
 }
 
 #undef wrap
