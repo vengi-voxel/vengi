@@ -265,6 +265,10 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 void RawVolumeRenderer::update() {
 	if (_meshMode->isDirty()) {
 		clearPendingExtractions();
+
+		shutdown();
+		init();
+
 		for (int i = 0; i < MAX_VOLUMES; ++i) {
 			if (_state[i]._rawVolume) {
 				extractRegion(i, _state[i]._rawVolume->region());
@@ -272,12 +276,6 @@ void RawVolumeRenderer::update() {
 		}
 
 		_meshMode->markClean();
-		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-			State& state = _state[idx];
-			for (int i = 0; i < MeshType_Max; ++i) {
-				state._vertexBuffer[i].markAttributesDirty();
-			}
-		}
 	}
 	scheduleExtractions();
 	ExtractionCtx result;

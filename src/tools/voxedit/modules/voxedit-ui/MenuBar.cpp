@@ -129,8 +129,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 				metricOption();
 
-				// TODO: activate me - the RawVolumeRenderer doesn't yet update the shader attributes correctly when switching between shaders
-				// ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
+				ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt("Autosave delay in seconds", cfg::VoxEditAutoSaveSeconds);
 				ImGui::InputVarInt("Viewports", cfg::VoxEditViewports, 1, 1);
