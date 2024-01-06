@@ -95,11 +95,74 @@ void RawVolumeRenderer::construct() {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
+bool RawVolumeRenderer::initStateBuffers() {
+	const bool marchingCubes = _meshMode->intVal() == 1;
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		State& state = _state[idx];
+		state._model = glm::mat4(1.0f);
+		for (int i = 0; i < MeshType_Max; ++i) {
+			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
+			if (state._vertexBufferIndex[i] == -1) {
+				Log::error("Could not create the vertex buffer object");
+				return false;
+			}
+
+			if (marchingCubes) {
+				state._normalBufferIndex[i] = state._vertexBuffer[i].create();
+				if (state._normalBufferIndex[i] == -1) {
+					Log::error("Could not create the normal buffer object");
+					return false;
+				}
+			}
+
+			state._indexBufferIndex[i] = state._vertexBuffer[i].create(nullptr, 0, video::BufferType::IndexBuffer);
+			if (state._indexBufferIndex[i] == -1) {
+				Log::error("Could not create the vertex buffer object for the indices");
+				return false;
+			}
+		}
+	}
+
+	if (marchingCubes) {
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			State &state = _state[idx];
+			for (int i = 0; i < MeshType_Max; ++i) {
+				const video::Attribute &attributePos = getPositionVertexAttribute(
+					state._vertexBufferIndex[i], _voxelNormShader.getLocationPos(), _voxelNormShader.getComponentsPos());
+				state._vertexBuffer[i].addAttribute(attributePos);
+
+				const video::Attribute &attributeInfo = getInfoVertexAttribute(
+					state._vertexBufferIndex[i], _voxelNormShader.getLocationInfo(), _voxelNormShader.getComponentsInfo());
+				state._vertexBuffer[i].addAttribute(attributeInfo);
+
+				const video::Attribute &attributeNormal =
+					getNormalVertexAttribute(state._normalBufferIndex[i], _voxelNormShader.getLocationNormal(),
+											 _voxelNormShader.getComponentsNormal());
+				state._vertexBuffer[i].addAttribute(attributeNormal);
+			}
+		}
+	} else {
+		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+			State &state = _state[idx];
+			for (int i = 0; i < MeshType_Max; ++i) {
+				const video::Attribute &attributePos = getPositionVertexAttribute(
+					state._vertexBufferIndex[i], _voxelShader.getLocationPos(), _voxelShader.getComponentsPos());
+				state._vertexBuffer[i].addAttribute(attributePos);
+
+				const video::Attribute &attributeInfo = getInfoVertexAttribute(
+					state._vertexBufferIndex[i], _voxelShader.getLocationInfo(), _voxelShader.getComponentsInfo());
+				state._vertexBuffer[i].addAttribute(attributeInfo);
+			}
+		}
+	}
+
+	return true;
+}
+
 bool RawVolumeRenderer::init() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
-
 	_meshMode->markClean();
 
 	_threadPool.init();
@@ -120,27 +183,9 @@ bool RawVolumeRenderer::init() {
 	alignas(16) shader::ShadowmapData::BlockData var;
 	_shadowMapUniformBlock.create(var);
 
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		State& state = _state[idx];
-		state._model = glm::mat4(1.0f);
-		for (int i = 0; i < MeshType_Max; ++i) {
-			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
-			if (state._vertexBufferIndex[i] == -1) {
-				Log::error("Could not create the vertex buffer object");
-				return false;
-			}
-			state._normalBufferIndex[i] = state._vertexBuffer[i].create();
-			if (state._normalBufferIndex[i] == -1) {
-				Log::error("Could not create the normal buffer object");
-				return false;
-			}
-
-			state._indexBufferIndex[i] = state._vertexBuffer[i].create(nullptr, 0, video::BufferType::IndexBuffer);
-			if (state._indexBufferIndex[i] == -1) {
-				Log::error("Could not create the vertex buffer object for the indices");
-				return false;
-			}
-		}
+	if (!initStateBuffers()) {
+		Log::error("Failed to initialize the state buffers");
+		return false;
 	}
 
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::VertData::materialcolor);
@@ -158,26 +203,6 @@ bool RawVolumeRenderer::init() {
 	if (_voxelShader.getLocationInfo() != _voxelNormShader.getLocationInfo()) {
 		Log::error("Shader attribute order doesn't match for info (%i/%i)", _voxelShader.getLocationInfo(), _voxelNormShader.getLocationInfo());
 		return false;
-	}
-
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		State& state = _state[idx];
-		for (int i = 0; i < MeshType_Max; ++i) {
-			const video::Attribute& attributePos = getPositionVertexAttribute(
-					state._vertexBufferIndex[i], _voxelShader.getLocationPos(),
-					_voxelShader.getComponentsPos());
-			state._vertexBuffer[i].addAttribute(attributePos);
-
-			const video::Attribute& attributeInfo = getInfoVertexAttribute(
-					state._vertexBufferIndex[i], _voxelShader.getLocationInfo(),
-					_voxelShader.getComponentsInfo());
-			state._vertexBuffer[i].addAttribute(attributeInfo);
-
-			const video::Attribute& attributeNormal = getNormalVertexAttribute(
-					state._normalBufferIndex[i], _voxelNormShader.getLocationNormal(),
-					_voxelNormShader.getComponentsNormal());
-			state._vertexBuffer[i].addAttribute(attributeNormal);
-		}
 	}
 
 	voxelrender::ShadowParameters shadowParams;
@@ -266,8 +291,7 @@ void RawVolumeRenderer::update() {
 	if (_meshMode->isDirty()) {
 		clearPendingExtractions();
 
-		shutdown();
-		init();
+		resetStateBuffers();
 
 		for (int i = 0; i < MAX_VOLUMES; ++i) {
 			if (_state[i]._rawVolume) {
@@ -383,11 +407,13 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	}
 	core_free(verticesBuf);
 
-	Log::debug("update normalbuffer: %i (type: %i)", idx, type);
-	if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
-		Log::error("Failed to update the normal buffer");
-		core_free(normalsBuf);
-		return false;
+	if (state._normalBufferIndex[type] != -1) {
+		Log::debug("update normalbuffer: %i (type: %i)", idx, type);
+		if (!state._vertexBuffer[type].update(state._normalBufferIndex[type], normalsBuf, normalsBufSize)) {
+			Log::error("Failed to update the normal buffer");
+			core_free(normalsBuf);
+			return false;
+		}
 	}
 	core_free(normalsBuf);
 
@@ -889,8 +915,10 @@ void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, Meshes &array) {
 
 	vertexBuffer.update(state._vertexBufferIndex[meshType], nullptr, 0);
 	core_assert(vertexBuffer.size(state._vertexBufferIndex[meshType]) == 0);
-	vertexBuffer.update(state._normalBufferIndex[meshType], nullptr, 0);
-	core_assert(vertexBuffer.size(state._normalBufferIndex[meshType]) == 0);
+	if (state._normalBufferIndex[meshType] != -1) {
+		vertexBuffer.update(state._normalBufferIndex[meshType], nullptr, 0);
+		core_assert(vertexBuffer.size(state._normalBufferIndex[meshType]) == 0);
+	}
 	vertexBuffer.update(state._indexBufferIndex[meshType], nullptr, 0);
 	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
 }
@@ -941,15 +969,7 @@ void RawVolumeRenderer::clearMeshes() {
 	}
 }
 
-core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
-	_threadPool.shutdown();
-	_voxelShader.shutdown();
-	_voxelNormShader.shutdown();
-	_shadowMapShader.shutdown();
-	_voxelData.shutdown();
-	_shadowMapUniformBlock.shutdown();
-	clearMeshes();
-	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
+void RawVolumeRenderer::shutdownStateBuffers() {
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State& state = _state[idx];
 		for (int i = 0; i < MeshType_Max; ++i) {
@@ -958,11 +978,32 @@ core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
 			state._normalBufferIndex[i] = -1;
 			state._indexBufferIndex[i] = -1;
 		}
+	}
+}
+
+bool RawVolumeRenderer::resetStateBuffers() {
+	shutdownStateBuffers();
+	return initStateBuffers();
+}
+
+core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
+	_threadPool.shutdown();
+	_voxelShader.shutdown();
+	_voxelNormShader.shutdown();
+	_shadowMapShader.shutdown();
+	_voxelData.shutdown();
+	_shadowMapUniformBlock.shutdown();
+	_shadow.shutdown();
+	clearMeshes();
+	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
+	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+		State& state = _state[idx];
 		// hand over the ownership to the caller
 		old.push_back(state._rawVolume);
 		state._rawVolume = nullptr;
 	}
-	_shadow.shutdown();
+
+	shutdownStateBuffers();
 	return old;
 }
 

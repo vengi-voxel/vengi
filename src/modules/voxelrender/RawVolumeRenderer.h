@@ -165,6 +165,10 @@ protected:
 	void updateCulling(int idx, const video::Camera &camera);
 	bool isVisible(int idx) const;
 
+	bool initStateBuffers();
+	void shutdownStateBuffers();
+	bool resetStateBuffers();
+
 public:
 	RawVolumeRenderer();
 
