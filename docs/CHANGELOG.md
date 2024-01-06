@@ -57,7 +57,7 @@ VoxEdit:
    - Only show the brush panel if in edit mode
    - Converted the script brush back to a normal panel
    - Automatically reference all child nodes when creating a new reference
-   - Allow to switch between cubes and marching cubes rendering in the editor
+   - Allow one to switch between cubes and marching cubes rendering in the editor
 
 Thumbnailer:
 
