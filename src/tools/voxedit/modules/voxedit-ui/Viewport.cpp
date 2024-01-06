@@ -72,7 +72,7 @@ bool Viewport::init() {
 }
 
 void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
-	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setRotationType(video::CameraRotationType::Eye);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
 	_camera.setTarget(center);
@@ -92,6 +92,7 @@ void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::
 	} else if (_camMode == SceneCameraMode::Back) {
 		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
 	}
+	_camera.lookAt(center);
 }
 
 void Viewport::resize(const glm::ivec2 &frameBufferSize) {
