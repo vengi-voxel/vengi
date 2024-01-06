@@ -58,6 +58,7 @@ VoxEdit:
    - Converted the script brush back to a normal panel
    - Switch to camera eye mode by default to Let `wasd` camera movement work
    - Automatically reference all child nodes when creating a new reference
+   - Allow to switch between cubes and marching cubes rendering in the editor
 
 Thumbnailer:
 
