@@ -2,6 +2,7 @@ set(SRCS
 	Image.cpp Image.h
 	AVI.cpp AVI.h
 	AVIRecorder.cpp AVIRecorder.h
+	Tri.cpp Tri.h # TODO: doesn't belong into this module
 )
 set(LIB image)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io util stb_image)
@@ -12,6 +13,7 @@ endif()
 set(TEST_SRCS
 	tests/ImageTest.cpp
 	tests/AVITest.cpp
+	tests/TriTest.cpp
 )
 
 set(TEST_FILES

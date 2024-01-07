@@ -11,7 +11,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/type_aligned.hpp>
 
-namespace voxelformat {
+namespace math {
 
 bool Tri::flat() const {
 	const float eps = glm::epsilon<float>();

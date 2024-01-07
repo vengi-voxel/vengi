@@ -2,13 +2,12 @@
  * @file
  */
 
-#include "voxelformat/private/mesh/Tri.h"
+#include "image/Tri.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "image/Image.h"
-#include "palette/Palette.h"
 
-namespace voxelformat {
+namespace math {
 
 class TriTest : public app::AbstractTest {};
 
@@ -37,27 +36,6 @@ TEST_F(TriTest, testFlat) {
 	tri.vertices[1] = glm::vec3(1, 1, 0);
 	tri.vertices[2] = glm::vec3(0, 0, 1);
 	EXPECT_FALSE(tri.flat()) << tri.normal().x << ":" << tri.normal().y << ":" << tri.normal().z;
-}
-
-TEST_F(TriTest, testColorAt) {
-	const image::ImagePtr &texture = image::loadImage("palette-nippon.png");
-	ASSERT_TRUE(texture);
-	ASSERT_EQ(256, texture->width());
-	ASSERT_EQ(1, texture->height());
-
-	palette::Palette pal;
-	pal.nippon();
-
-	Tri tri;
-	tri.texture = texture.get();
-	for (int i = 0; i < 256; ++i) {
-		tri.uv[0] = glm::vec2((float)i / 256.0f, 0.0f);
-		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);
-		tri.uv[2] = glm::vec2((float)(i + 1) / 256.0f, 1.0f);
-		const core::RGBA color = tri.colorAt(tri.centerUV());
-		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
-										<< core::Color::print(color);
-	}
 }
 
 TEST_F(TriTest, testColorAt4x4) {

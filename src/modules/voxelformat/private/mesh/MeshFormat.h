@@ -7,7 +7,7 @@
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
-#include "Tri.h"
+#include "image/Tri.h"
 #include "voxel/ChunkMesh.h"
 
 namespace voxelformat {
@@ -22,12 +22,12 @@ namespace voxelformat {
 class MeshFormat : public Format {
 public:
 	static constexpr const uint8_t FillColorIndex = 2;
-	using TriCollection = core::DynamicArray<Tri, 512>;
+	using TriCollection = core::DynamicArray<math::Tri, 512>;
 
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static void subdivideTri(const Tri &tri, TriCollection &tinyTris);
+	static void subdivideTri(const math::Tri &tri, TriCollection &tinyTris);
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	/**
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
@@ -62,7 +62,7 @@ protected:
 	/**
 	 * @brief Voxelizes the input mesh
 	 *
-	 * Convert your input mesh into @c Tri instances and use the methods of this class to help voxelizing those.
+	 * Convert your input mesh into @c math::Tri instances and use the methods of this class to help voxelizing those.
 	 * @see voxelizeNode()
 	 */
 	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &file,

@@ -3,7 +3,7 @@
  */
 
 #include "MeshFormat.h"
-#include "Tri.h"
+#include "image/Tri.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
 #include "core/Color.h"
@@ -69,7 +69,7 @@ glm::vec3 MeshFormat::getScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
+void MeshFormat::subdivideTri(const math::Tri &tri, TriCollection &tinyTris) {
 	if (stopExecution()) {
 		return;
 	}
@@ -77,7 +77,7 @@ void MeshFormat::subdivideTri(const Tri &tri, TriCollection &tinyTris) {
 	const glm::vec3 &maxs = tri.maxs();
 	const glm::vec3 size = maxs - mins;
 	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
-		Tri out[4];
+		math::Tri out[4];
 		tri.subdivide(out);
 		for (int i = 0; i < lengthof(out); ++i) {
 			subdivideTri(out[i], tinyTris);
@@ -114,7 +114,7 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 
 void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	for (const Tri &tri : tris) {
+	for (const math::Tri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -133,7 +133,7 @@ void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
 
 void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	for (const Tri &tri : tris) {
+	for (const math::Tri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -166,7 +166,7 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 }
 
 bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
-	for (const Tri &tri : tris) {
+	for (const math::Tri &tri : tris) {
 		if (!glm::epsilonEqual(glm::mod(tri.area(), 0.5f), 0.0f, 0.0001f)) {
 			return false;
 		}
@@ -188,7 +188,7 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 }
 
 template<class FUNC>
-static void voxelizeTriangle(const glm::vec3 &trisMins, const Tri &tri, FUNC &&func) {
+static void voxelizeTriangle(const glm::vec3 &trisMins, const math::Tri &tri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
 	const glm::vec3 shiftedTrisMins = trisMins - voxelHalf;
 	const glm::vec3 &v0 = tri.vertices[0];
@@ -262,8 +262,8 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		if (createPalette) {
 			RGBAMap colors;
 			Log::debug("create palette");
-			for (const Tri &tri : tris) {
-				voxelizeTriangle(trisMins, tri, [this, &colors] (const Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
+			for (const math::Tri &tri : tris) {
+				voxelizeTriangle(trisMins, tri, [this, &colors] (const math::Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
 					colors.put(rgba, true);
 				});
@@ -282,8 +282,8 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 
 		Log::debug("create voxels");
 		palette::PaletteLookup palLookup(palette);
-		for (const Tri &tri : tris) {
-			voxelizeTriangle(trisMins, tri, [&] (const Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
+		for (const math::Tri &tri : tris) {
+			voxelizeTriangle(trisMins, tri, [&] (const math::Tri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = tri.colorAt(uv);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
 				wrapper.setVoxel(x, y, z, voxel);
@@ -305,7 +305,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		Log::debug("Subdivide triangles");
 		core::DynamicArray<std::future<TriCollection>> futures;
 		futures.reserve(tris.size());
-		for (const Tri &tri : tris) {
+		for (const math::Tri &tri : tris) {
 			futures.emplace_back(app::App::getInstance()->threadPool().enqueue([tri]() {
 				TriCollection subdivided;
 				subdivideTri(tri, subdivided);
@@ -349,7 +349,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 	maxs = tris[0].mins();
 	mins = tris[0].maxs();
 
-	for (const Tri &tri : tris) {
+	for (const math::Tri &tri : tris) {
 		maxs = glm::max(maxs, tri.maxs());
 		mins = glm::min(mins, tri.mins());
 	}

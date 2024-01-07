@@ -27,7 +27,6 @@ set(SRCS
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
-	private/mesh/Tri.h                       private/mesh/Tri.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
@@ -106,7 +105,6 @@ set(TEST_SRCS
 	tests/BinaryPListTest.cpp
 	tests/MinecraftPaletteMapTest.cpp
 	tests/NamedBinaryTagTest.cpp
-	tests/TriTest.cpp
 
 	tests/TestHelper.cpp tests/TestHelper.h
 	tests/8ontop.h

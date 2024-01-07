@@ -20,12 +20,33 @@ class MeshFormatTest : public AbstractVoxFormatTest {};
 
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshFormat::TriCollection tinyTris;
-	Tri tri;
+	math::Tri tri;
 	tri.vertices[0] = glm::vec3(-8.77272797, -11.43335, -0.154544264);
 	tri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
 	tri.vertices[2] = glm::vec3(8.77272701, 11.1000004, -0.154543981);
 	MeshFormat::subdivideTri(tri, tinyTris);
 	EXPECT_EQ(1024u, tinyTris.size());
+}
+
+TEST_F(MeshFormatTest, testColorAt) {
+	const image::ImagePtr &texture = image::loadImage("palette-nippon.png");
+	ASSERT_TRUE(texture);
+	ASSERT_EQ(256, texture->width());
+	ASSERT_EQ(1, texture->height());
+
+	palette::Palette pal;
+	pal.nippon();
+
+	math::Tri tri;
+	tri.texture = texture.get();
+	for (int i = 0; i < 256; ++i) {
+		tri.uv[0] = glm::vec2((float)i / 256.0f, 0.0f);
+		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);
+		tri.uv[2] = glm::vec2((float)(i + 1) / 256.0f, 1.0f);
+		const core::RGBA color = tri.colorAt(tri.centerUV());
+		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
+										<< core::Color::print(color);
+	}
 }
 
 TEST_F(MeshFormatTest, testLookupTexture) {
@@ -38,7 +59,7 @@ TEST_F(MeshFormatTest, testLookupTexture) {
 
 TEST_F(MeshFormatTest, testCalculateAABB) {
 	MeshFormat::TriCollection tris;
-	Tri tri;
+	math::Tri tri;
 
 	{
 		tri.vertices[0] = glm::vec3(0, 0, 0);
@@ -66,7 +87,7 @@ TEST_F(MeshFormatTest, testCalculateAABB) {
 
 TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 	MeshFormat::TriCollection tris;
-	Tri tri;
+	math::Tri tri;
 
 	{
 		tri.vertices[0] = glm::vec3(0, 0, 0);
@@ -131,7 +152,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	const int n = (int)indices.size();
 	for (int i = 0; i < n; i += 3) {
-		Tri tri;
+		math::Tri tri;
 		for (int j = 0; j < 3; ++j) {
 			tri.vertices[j] = vertices[indices[i + j]];
 			tri.color[j] = core::Color::getRGBA(colors[indices[i + j]]);

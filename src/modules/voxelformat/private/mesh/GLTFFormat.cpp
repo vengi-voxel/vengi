@@ -1216,7 +1216,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	tris.reserve(maxIndices / 3);
 	const glm::vec3 &scale = getScale();
 	for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-		Tri tri;
+		math::Tri tri;
 		for (size_t i = 0; i < 3; ++i) {
 			const size_t idx = indices[i + indexOffset];
 			tri.vertices[i] = vertices[idx].pos * scale;

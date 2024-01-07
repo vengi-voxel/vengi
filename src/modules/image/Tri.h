@@ -7,9 +7,8 @@
 #include "core/RGBA.h"
 #include "image/Image.h"
 #include "math/Math.h"
-#include "video/Types.h"
 
-namespace voxelformat {
+namespace math {
 
 struct Tri {
 	glm::vec3 vertices[3] {};

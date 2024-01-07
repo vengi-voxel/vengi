@@ -718,7 +718,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		if (stopExecution()) {
 			break;
 		}
-		Tri tri;
+		math::Tri tri;
 		for (int k = 0; k < 3; ++k) {
 			const int idx = indices[i + k];
 			tri.vertices[k] = verts[idx] * scale;
