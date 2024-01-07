@@ -2831,6 +2831,28 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, s
 	return false;
 }
 
+bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift) {
+	if (node.keyFrames() == nullptr) {
+		return false;
+	}
+	for (auto &kf : *node.keyFrames()) {
+		scenegraph::SceneGraphTransform &transform = kf.transform();
+		const glm::vec3 &newLocalTranslation = transform.localTranslation() + shift;
+		transform.setLocalTranslation(newLocalTranslation);
+		transform.update(_sceneGraph, node, kf.frameIdx, false);
+	}
+	_mementoHandler.markKeyFramesChange(node);
+	markDirty();
+	return true;
+}
+
+bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeShiftAllKeyframes(*node, shift);
+	}
+	return false;
+}
+
 bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
 									   const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);

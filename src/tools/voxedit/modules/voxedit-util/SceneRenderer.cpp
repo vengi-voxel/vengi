@@ -248,6 +248,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
 		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
+		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
 		_gridRenderer.render(camera, toAABB(region));

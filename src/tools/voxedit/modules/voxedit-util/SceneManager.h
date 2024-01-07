@@ -422,11 +422,13 @@ private:
 	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
 	int nodeReference(const scenegraph::SceneGraphNode &node);
 	bool nodeUnreference(scenegraph::SceneGraphNode &node);
+	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
+	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);

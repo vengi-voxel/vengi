@@ -18,6 +18,7 @@
 #include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -109,8 +110,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 					}
 				});
 			}
-		} else {
-			const voxel::RawVolume *v = sceneMgr().volume(nodeId);
+		} else if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+			const voxel::RawVolume *v = node->volume();
 			if (v != nullptr) {
 				const voxel::Region &region = v->region();
 				glm::ivec3 mins = region.getLowerCorner();
@@ -118,6 +119,14 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				if (xyzValues("pos", mins)) {
 					const glm::ivec3 &f = mins - region.getLowerCorner();
 					sceneMgr().shift(nodeId, f);
+				}
+				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
+					ImGui::SameLine();
+					if (ImGui::Button("To Transform")) {
+						const glm::ivec3 &f = region.getLowerCorner();
+						sceneMgr().nodeShiftAllKeyframes(nodeId, f);
+						sceneMgr().shift(nodeId, -f);
+					}
 				}
 				if (xyzValues("size", maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
