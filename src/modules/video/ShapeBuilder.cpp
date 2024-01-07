@@ -503,6 +503,8 @@ void ShapeBuilder::diamond(float length1, float length2) {
 	const float halfLength1 = length1 / 2.0f;
 
 	if (_primitive == Primitive::Lines) {
+		reserve(6, 24);
+
 		const uint32_t diamond = addVertex(glm::vec3(0.0f, 0.0f, 0.0f));
 
 		addVertex(glm::vec3(-halfLength1,  halfLength1, length1));
@@ -575,6 +577,7 @@ void ShapeBuilder::diamond(float length1, float length2) {
 		tris[7].vertices[1] = v1;
 		tris[7].vertices[2] = v4;
 
+		reserve(lengthof(tris) * 3, lengthof(tris) * 3);
 		for (int i = 0; i < lengthof(tris); ++i) {
 			addTri(tris[i], true);
 		}
@@ -593,9 +596,17 @@ void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 
 void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 	diamond(posSize, posSize);
-	_position.z += 2.0f * posSize;
+	if (_applyRotation) {
+		_position += _rotation * glm::vec3(0.0f, 0.0f, 2.0f * posSize);
+	} else {
+		_position.z += 2.0f * posSize;
+	}
 	diamond(boneSize, length);
-	_position.z += boneSize + length;
+	if (_applyRotation) {
+		_position += _rotation * glm::vec3(0.0f, 0.0f, boneSize + length);
+	} else {
+		_position.z += boneSize + length;
+	}
 	diamond(posSize, posSize);
 }
 
