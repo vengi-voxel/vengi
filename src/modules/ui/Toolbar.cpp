@@ -53,7 +53,7 @@ void Toolbar::last() {
 }
 
 core::String Toolbar::id(const char *icon) const {
-	return core::string::format("%s##%s-%i", icon, icon, _nextId);
+	return core::string::format("%s##%s-%i-%p", icon, icon, _nextId, this);
 }
 
 bool Toolbar::button(const char *icon, const char *command, bool darken) {
