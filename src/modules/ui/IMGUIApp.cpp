@@ -348,6 +348,8 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 			return core::Color::DarkGreen();
 		}
 		return core::Color::White();
+	case style::ColorBone:
+		return core::Color::LightGray();
 	}
 	return core::Color::White();
 }
