@@ -127,6 +127,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 						sceneMgr().nodeShiftAllKeyframes(nodeId, f);
 						sceneMgr().shift(nodeId, -f);
 					}
+					ImGui::TooltipText("Convert the region offset into the keyframe transforms");
 				}
 				if (xyzValues("size", maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
