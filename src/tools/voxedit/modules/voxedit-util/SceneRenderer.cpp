@@ -224,6 +224,10 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 		Log::error("No scenegraph given to render");
 		return;
 	}
+
+	renderContext.hideInactive = _hideInactive->boolVal();
+	renderContext.grayInactive = _grayInactive->boolVal();
+
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	updateAABBMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);
