@@ -11,6 +11,7 @@
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
+#include "video/Types.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 
@@ -494,6 +495,53 @@ void ShapeBuilder::cylinder(float radius, float length, int slices) {
 		addIndex(topIndexStart + i);
 		addIndex(capTopIndex);
 	}
+}
+
+void ShapeBuilder::diamond(float length1, float length2) {
+	// pos diamond - tip of bone
+	const uint32_t diamond = addVertex(glm::vec3(0.0f, 0.0f, 0.0f));
+	const float halfLength1 = length1 / 2.0f;
+	addVertex(glm::vec3(-halfLength1,  halfLength1, length1));
+	addVertex(glm::vec3( halfLength1,  halfLength1, length1));
+	addVertex(glm::vec3( halfLength1, -halfLength1, length1));
+	addVertex(glm::vec3(-halfLength1, -halfLength1, length1));
+
+	const uint32_t diamond2 = addVertex(glm::vec3(0.0f, 0.0f, length1 + length2));
+
+	if (_primitive == Primitive::Lines) {
+		addIndex(diamond, diamond + 1);
+		addIndex(diamond, diamond + 2);
+		addIndex(diamond, diamond + 3);
+		addIndex(diamond, diamond + 4);
+
+		addIndex(diamond + 1, diamond + 2);
+		addIndex(diamond + 2, diamond + 3);
+		addIndex(diamond + 3, diamond + 4);
+		addIndex(diamond + 4, diamond + 1);
+
+		addIndex(diamond2, diamond + 1);
+		addIndex(diamond2, diamond + 2);
+		addIndex(diamond2, diamond + 3);
+		addIndex(diamond2, diamond + 4);
+	} else if (_primitive == Primitive::Triangles) {
+		addIndex(diamond, diamond + 1, diamond + 2);
+		addIndex(diamond, diamond + 2, diamond + 3);
+		addIndex(diamond, diamond + 3, diamond + 4);
+		addIndex(diamond, diamond + 4, diamond + 1);
+
+		addIndex(diamond2, diamond + 2, diamond + 1);
+		addIndex(diamond2, diamond + 3, diamond + 2);
+		addIndex(diamond2, diamond + 4, diamond + 3);
+		addIndex(diamond2, diamond + 1, diamond + 4);
+	}
+}
+
+void ShapeBuilder::bone(float length, float posSize, float boneSize) {
+	diamond(posSize, posSize);
+	_position.z += 2.0f * posSize;
+	diamond(boneSize, length);
+	_position.z += boneSize + length;
+	diamond(posSize, posSize);
 }
 
 void ShapeBuilder::cone(float baseRadius, float length, int slices) {

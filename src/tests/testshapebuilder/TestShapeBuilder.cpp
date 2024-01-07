@@ -84,6 +84,16 @@ void TestShapeBuilder::onRenderUI() {
 		}
 	}
 
+	if (ImGui::CollapsingHeader("Bone", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
+		ImGui::InputFloat("Length", &_bone.length);
+		ImGui::InputFloat("Size", &_bone.posSize);
+		ImGui::InputFloat("BoneSize", &_bone.boneSize);
+		if (ImGui::Button("Add bone")) {
+			_shapeBuilder.bone(_bone.length, _bone.posSize, _bone.boneSize);
+			buildMesh = true;
+		}
+	}
+
 	if (ImGui::CollapsingHeader("Cube", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding)) {
 		ImGui::InputFloat3("Mins", glm::value_ptr(_mins));
 		ImGui::InputFloat3("Maxs", glm::value_ptr(_maxs));

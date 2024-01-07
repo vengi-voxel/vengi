@@ -75,6 +75,14 @@ public:
 		_indices.push_back(index);
 	}
 
+	inline void addIndex(uint32_t index1, uint32_t index2) {
+		core_assert(_indices.capacity() >= _indices.size() + 2);
+		core_assert(_primitive == Primitive::Lines || _primitive == Primitive::LineStrip ||
+					_primitive == Primitive::LinesAdjacency);
+		_indices.push_back(index1);
+		_indices.push_back(index2);
+	}
+
 	inline void addIndex(uint32_t index1, uint32_t index2, uint32_t index3) {
 		core_assert(_indices.capacity() >= _indices.size() + 3);
 		_indices.push_back(index1);
@@ -116,6 +124,8 @@ public:
 	void cone(float baseRadius, float length, int slices = 20);
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides = ShapeBuilderCube::All);
+	void bone(float length, float posSize = 1.0f, float boneSize = 4.0f);
+	void diamond(float length1, float length2);
 
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
 

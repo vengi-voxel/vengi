@@ -29,6 +29,11 @@ private:
 		float radius = 20.0f;
 	} _sphere;
 	struct {
+		float length = 20.0f;
+		float posSize = 1.0f;
+		float boneSize = 4.0f;
+	} _bone;
+	struct {
 		glm::vec3 start {0.0f};
 		glm::vec3 end {10.0f};
 	} _line;
