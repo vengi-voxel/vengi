@@ -66,12 +66,14 @@ bool Viewport::init() {
 		return false;
 	}
 
+	_camera.setRotationType(video::CameraRotationType::Target);
 	resetCamera();
 
 	return true;
 }
 
 void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
+	const video::CameraRotationType rotationType = _camera.rotationType();
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
@@ -92,6 +94,8 @@ void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::
 	} else if (_camMode == SceneCameraMode::Back) {
 		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
 	}
+	_camera.lookAt(center);
+	_camera.setRotationType(rotationType);
 }
 
 void Viewport::resize(const glm::ivec2 &frameBufferSize) {
