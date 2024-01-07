@@ -20,10 +20,9 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 	if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(activeNode)) {
 		const scenegraph::SceneGraphNodeType nodeType = node->type();
 		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
-			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::ScopedStyle style;
-			style.setFramePadding(ImVec2(4));
 			style.setFont(imguiApp()->bigIconFont());
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar(buttonSize, &listener);
 			toolbar.button(ICON_LC_COPY, "nodeduplicate");
 			toolbar.button(ICON_LC_TRASH, "nodedelete");
@@ -38,10 +37,9 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
-		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::ScopedStyle style;
-		style.setFramePadding(ImVec2(4));
 		style.setFont(imguiApp()->bigIconFont());
+		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
 		toolbar.button(ICON_LC_CROP, "resizetoselection", sceneMgr().modifier().selections().empty());
