@@ -235,7 +235,9 @@ bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, cons
 
 	const uint32_t indices =
 		_vbo[meshIndex].elements(_indexIndex[meshIndex], 1, sizeof(video::ShapeBuilder::Indices::value_type));
-
+	if (indices == 0) {
+		return false;
+	}
 	activateShader(_primitives[meshIndex], camera, model);
 	core_assert_always(_vbo[meshIndex].bind());
 	video::drawElements<video::ShapeBuilder::Indices::value_type>(_primitives[meshIndex], indices);
