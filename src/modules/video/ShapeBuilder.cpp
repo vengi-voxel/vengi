@@ -595,6 +595,12 @@ void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 }
 
 void ShapeBuilder::bone(float length, float posSize, float boneSize) {
+	if (_primitive == Primitive::Lines) {
+		reserve(6 * 3, 24 * 3);
+	} else if (_primitive == Primitive::Triangles) {
+		reserve(8 * 3 * 3, 8 * 3 * 3);
+	}
+
 	const glm::vec3 pos = _position;
 	diamond(posSize, posSize);
 	if (_applyRotation) {
