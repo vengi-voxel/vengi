@@ -16,6 +16,7 @@ private:
 	int _meshCount = 0;
 	glm::ivec3 _position[render::ShapeRenderer::MAX_MESHES] {};
 	glm::vec3 _scale[render::ShapeRenderer::MAX_MESHES] {};
+	glm::vec3 _rotation[render::ShapeRenderer::MAX_MESHES] {};
 	glm::vec4 _color;
 	bool _near = false;
 	float _stepWidth = 1.0f;

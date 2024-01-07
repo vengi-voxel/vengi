@@ -595,6 +595,7 @@ void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 }
 
 void ShapeBuilder::bone(float length, float posSize, float boneSize) {
+	const glm::vec3 pos = _position;
 	diamond(posSize, posSize);
 	if (_applyRotation) {
 		_position += _rotation * glm::vec3(0.0f, 0.0f, 2.0f * posSize);
@@ -608,6 +609,7 @@ void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 		_position.z += boneSize + length;
 	}
 	diamond(posSize, posSize);
+	_position = pos;
 }
 
 void ShapeBuilder::cone(float baseRadius, float length, int slices) {

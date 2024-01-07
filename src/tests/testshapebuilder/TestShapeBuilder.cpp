@@ -3,6 +3,8 @@
  */
 #include "TestShapeBuilder.h"
 #include "IMGUIEx.h"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include "math/AABB.h"
 #include "core/Color.h"
 #include "core/ArrayLength.h"
@@ -62,7 +64,10 @@ void TestShapeBuilder::onRenderUI() {
 	_shapeBuilder.setColor(_color);
 	glm::ivec3& pos = _position[_meshCount];
 	glm::vec3& scale = _scale[_meshCount];
+	glm::vec3& rotation = _rotation[_meshCount];
 	_shapeBuilder.setPosition(pos);
+	const glm::vec3 radians = glm::radians(rotation);
+	_shapeBuilder.setRotation(glm::eulerAngleXYZ(radians.x, radians.y, radians.z));
 
 	ImGui::Begin("Actions and Settings");
 
@@ -71,6 +76,9 @@ void TestShapeBuilder::onRenderUI() {
 	ImGui::ColorEdit4("color", glm::value_ptr(_color));
 	ImGui::InputInt3("pos", glm::value_ptr(pos));
 	ImGui::InputFloat3("scale", glm::value_ptr(scale));
+	if (ImGui::InputFloat3("rotation (degree)", glm::value_ptr(rotation))) {
+		rotation = glm::clamp(rotation, 0.0f, 360.0f);
+	}
 	ImGui::TooltipText("Applies rendering only scale");
 	ImGui::Unindent();
 
