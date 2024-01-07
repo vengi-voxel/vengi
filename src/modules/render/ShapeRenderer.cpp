@@ -114,6 +114,11 @@ int32_t ShapeRenderer::create(const video::ShapeBuilder &shapeBuilder) {
 	video::Attribute attributeColor = _colorShader.getColorAttribute(_vertexIndex[meshIndex], &Vertex::color);
 	core_assert_always(_vbo[meshIndex].addAttribute(attributeColor));
 
+	video::Attribute attributeNormal = _colorShader.getNormalAttribute(_vertexIndex[meshIndex], &Vertex::normal);
+	if (!_vbo[meshIndex].addAttribute(attributeNormal)) {
+		Log::debug("Failed to add normal attribute - not used in the shader?");
+	}
+
 	_primitives[meshIndex] = shapeBuilder.primitive();
 
 	++_currentMeshIndex;

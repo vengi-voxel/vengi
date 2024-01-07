@@ -3,6 +3,7 @@
  */
 
 #include "Tri.h"
+#include "core/Color.h"
 #include <glm/ext/scalar_common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
@@ -18,6 +19,16 @@ bool Tri::flat() const {
 	const glm::bvec3 &zerocheck = glm::epsilonEqual(normal(), glm::zero<glm::vec3>(), eps);
 	// if the normal of two components is zero
 	return (int)zerocheck[0] + (int)zerocheck[1] + (int)zerocheck[2] == 2;
+}
+
+void Tri::setColor(core::RGBA rgba) {
+	color[0] = rgba;
+	color[1] = rgba;
+	color[2] = rgba;
+}
+
+void Tri::setColor(const glm::vec4 &color) {
+	setColor(core::Color::getRGBA(color));
 }
 
 glm::vec3 Tri::normal() const {

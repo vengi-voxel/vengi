@@ -45,6 +45,10 @@ struct Tri {
 	core::RGBA colorAt(const glm::vec2 &uv) const;
 	core::RGBA centerColor() const;
 
+	// set the color for all three vertices
+	void setColor(core::RGBA color);
+	void setColor(const glm::vec4 &color);
+
 	// Sierpinski gasket with keeping the middle
 	void subdivide(Tri out[4]) const;
 };

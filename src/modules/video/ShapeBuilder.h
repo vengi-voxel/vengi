@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "image/Tri.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "math/Plane.h"
@@ -98,6 +99,7 @@ public:
 
 	uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::vec3(0.0f));
 	uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::vec3(0.0f));
+	void addTri(const math::Tri &tri, bool calcNormal = false);
 
 	inline void clear() {
 		_colors.clear();

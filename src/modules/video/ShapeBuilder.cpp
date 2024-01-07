@@ -13,6 +13,7 @@
 #include "core/ArrayLength.h"
 #include "video/Types.h"
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/geometric.hpp>
 #include <glm/gtx/transform.hpp>
 
 #undef near
@@ -499,16 +500,18 @@ void ShapeBuilder::cylinder(float radius, float length, int slices) {
 
 void ShapeBuilder::diamond(float length1, float length2) {
 	// pos diamond - tip of bone
-	const uint32_t diamond = addVertex(glm::vec3(0.0f, 0.0f, 0.0f));
 	const float halfLength1 = length1 / 2.0f;
-	addVertex(glm::vec3(-halfLength1,  halfLength1, length1));
-	addVertex(glm::vec3( halfLength1,  halfLength1, length1));
-	addVertex(glm::vec3( halfLength1, -halfLength1, length1));
-	addVertex(glm::vec3(-halfLength1, -halfLength1, length1));
-
-	const uint32_t diamond2 = addVertex(glm::vec3(0.0f, 0.0f, length1 + length2));
 
 	if (_primitive == Primitive::Lines) {
+		const uint32_t diamond = addVertex(glm::vec3(0.0f, 0.0f, 0.0f));
+
+		addVertex(glm::vec3(-halfLength1,  halfLength1, length1));
+		addVertex(glm::vec3( halfLength1,  halfLength1, length1));
+		addVertex(glm::vec3( halfLength1, -halfLength1, length1));
+		addVertex(glm::vec3(-halfLength1, -halfLength1, length1));
+
+		const uint32_t diamond2 = addVertex(glm::vec3(0.0f, 0.0f, length1 + length2));
+
 		addIndex(diamond, diamond + 1);
 		addIndex(diamond, diamond + 2);
 		addIndex(diamond, diamond + 3);
@@ -524,16 +527,68 @@ void ShapeBuilder::diamond(float length1, float length2) {
 		addIndex(diamond2, diamond + 3);
 		addIndex(diamond2, diamond + 4);
 	} else if (_primitive == Primitive::Triangles) {
-		addIndex(diamond, diamond + 1, diamond + 2);
-		addIndex(diamond, diamond + 2, diamond + 3);
-		addIndex(diamond, diamond + 3, diamond + 4);
-		addIndex(diamond, diamond + 4, diamond + 1);
+		const glm::vec3 v0(0.0f, 0.0f, 0.0f);
+		const glm::vec3 v1(-halfLength1,  halfLength1, length1);
+		const glm::vec3 v2( halfLength1,  halfLength1, length1);
+		const glm::vec3 v3( halfLength1, -halfLength1, length1);
+		const glm::vec3 v4(-halfLength1, -halfLength1, length1);
+		const glm::vec3 v5(0.0f, 0.0f, length1 + length2);
 
-		addIndex(diamond2, diamond + 2, diamond + 1);
-		addIndex(diamond2, diamond + 3, diamond + 2);
-		addIndex(diamond2, diamond + 4, diamond + 3);
-		addIndex(diamond2, diamond + 1, diamond + 4);
+		math::Tri tris[8];
+		tris[0].setColor(core::Color::darker(_color, 2.0f));
+		tris[0].vertices[0] = v0;
+		tris[0].vertices[1] = v1;
+		tris[0].vertices[2] = v2;
+
+		tris[1].setColor(core::Color::brighter(_color, 2.0f));
+		tris[1].vertices[0] = v0;
+		tris[1].vertices[1] = v2;
+		tris[1].vertices[2] = v3;
+
+		tris[2].setColor(_color);
+		tris[2].vertices[0] = v0;
+		tris[2].vertices[1] = v3;
+		tris[2].vertices[2] = v4;
+
+		tris[3].setColor(_color);
+		tris[3].vertices[0] = v0;
+		tris[3].vertices[1] = v4;
+		tris[3].vertices[2] = v1;
+
+		tris[4].setColor(core::Color::darker(_color));
+		tris[4].vertices[0] = v5;
+		tris[4].vertices[1] = v2;
+		tris[4].vertices[2] = v1;
+
+		tris[5].setColor(core::Color::brighter(_color));
+		tris[5].vertices[0] = v5;
+		tris[5].vertices[1] = v3;
+		tris[5].vertices[2] = v2;
+
+		tris[6].setColor(_color);
+		tris[6].vertices[0] = v5;
+		tris[6].vertices[1] = v4;
+		tris[6].vertices[2] = v3;
+
+		tris[7].setColor(_color);
+		tris[7].vertices[0] = v5;
+		tris[7].vertices[1] = v1;
+		tris[7].vertices[2] = v4;
+
+		for (int i = 0; i < lengthof(tris); ++i) {
+			addTri(tris[i], true);
+		}
 	}
+}
+
+void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
+	const glm::vec3 &n = calcNormal ? glm::normalize(tri.normal()) : glm::zero<glm::vec3>();
+	glm::vec4 copy = _color;
+	for (int j = 0; j < 3; ++j) {
+		setColor(core::Color::fromRGBA(tri.color[j]));
+		addIndex(addVertex(tri.vertices[j], n));
+	}
+	setColor(copy);
 }
 
 void ShapeBuilder::bone(float length, float posSize, float boneSize) {
