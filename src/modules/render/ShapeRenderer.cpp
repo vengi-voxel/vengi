@@ -186,6 +186,10 @@ void ShapeRenderer::activateShader(video::Primitive primitive, const video::Came
 		_colorShader.activate();
 		_uniformBlockData.model = model;
 		_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
+		// TODO: allow to configure lighting
+		// the fourth component is the light intensity - set it to something greater than 0 to active shading
+		_uniformBlockData.lightColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		_uniformBlockData.lightPos = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 		core_assert_always(_uniformBlock.update(_uniformBlockData));
 		core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 	}
