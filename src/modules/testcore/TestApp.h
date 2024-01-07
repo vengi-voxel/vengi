@@ -23,7 +23,7 @@ protected:
 	glm::vec4 _planeColor = core::Color::White();
 	util::Movement _movement;
 	core::VarPtr _rotationSpeed;
-	float _cameraSpeed = 10.0f;
+	float _cameraSpeed = 50.0f;
 
 	virtual void doRender() = 0;
 
