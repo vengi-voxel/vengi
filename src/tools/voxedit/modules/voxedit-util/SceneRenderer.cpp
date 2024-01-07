@@ -65,6 +65,7 @@ void SceneRenderer::shutdown() {
 	_gridRenderer.shutdown();
 
 	_aabbMeshIndex = -1;
+	_boneMeshIndex = -1;
 	_highlightMeshIndex = -1;
 }
 
@@ -202,6 +203,41 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
 }
 
+void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
+								   scenegraph::FrameIndex frameIdx) {
+#if 0
+	if (!sceneMode) {
+		return;
+	}
+	_shapeBuilder.clear();
+	for (auto entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		if (!node.visible()) {
+			continue;
+		}
+		if (node.parent() == InvalidNodeId) {
+			continue;
+		}
+
+		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
+		const scenegraph::SceneGraphNode &pnode = sceneGraph.node(node.parent());
+		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(pnode, frameIdx);
+		const glm::mat4 &rotation = calculateRotationMatrix(ptransform.translation, transform.translation);
+		const float length = glm::distance(ptransform.translation, transform.translation);
+
+		_shapeBuilder.setPosition(ptransform.translation);
+		_shapeBuilder.setRotation(rotation);
+		_shapeBuilder.setColor(style::color(style::ColorBone));
+		_shapeBuilder.bone(length, 1.0f, 2.0f);
+	}
+
+	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
+#endif
+}
+
 void SceneRenderer::nodeRemove(int nodeId) {
 	_volumeRenderer.nodeRemove(nodeId);
 }
@@ -230,6 +266,7 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	updateAABBMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
+	updateBoneMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);
 	extractVolume(*renderContext.sceneGraph);
 }
@@ -247,6 +284,8 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
+		video::ScopedState depthDepthTest(video::State::DepthTest, false);
+		_shapeRenderer.render(_boneMeshIndex, camera);
 		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 	} else if (n != nullptr) {
