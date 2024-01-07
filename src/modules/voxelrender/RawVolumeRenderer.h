@@ -94,6 +94,11 @@ protected:
 			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
 		}
 
+		/**
+		 * @brief Applies the pivot and the model matrix
+		 */
+		glm::vec3 centerPos() const;
+
 		bool hasData() const {
 			return indices(MeshType_Opaque) > 0 || indices(MeshType_Transparency) > 0;
 		}

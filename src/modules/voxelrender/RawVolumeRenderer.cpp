@@ -85,6 +85,12 @@ void RenderContext::shutdown() {
 	bloomRenderer.shutdown();
 }
 
+glm::vec3 RawVolumeRenderer::State::centerPos() const {
+	const glm::vec4 center(_mins + (_maxs - _mins) * _pivot, 1.0f);
+	const glm::vec3 pos = _model * center;
+	return pos;
+}
+
 RawVolumeRenderer::RawVolumeRenderer() :
 		_voxelShader(shader::VoxelShader::getInstance()),
 		_voxelNormShader(shader::VoxelnormShader::getInstance()),
@@ -780,23 +786,10 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		const glm::vec3 &eye = camera.eye();
 		core::sort(sorted.begin(), sorted.end(), [this, eye] (int a, int b) {
-#if 0
-			// reference models don't have a volume pointer
-			const voxel::RawVolume *volumeA = _state[a]._rawVolume;
-			const voxel::RawVolume *volumeB = _state[b]._rawVolume;
-			const voxel::Region &regionA = volumeA->region();
-			const voxel::Region &regionB = volumeB->region();
-			const glm::vec3 centerA(regionA.getCenter());
-			const glm::vec3 centerB(regionB.getCenter());
-#else
-			// TODO: check if these mins maxs values are correct (in relation to the region bounds)
-			const glm::vec3 centerA(_state[a]._mins + (_state[a]._maxs - _state[a]._mins) / 2.0f);
-			const glm::vec3 centerB(_state[b]._mins + (_state[b]._maxs - _state[b]._mins) / 2.0f);
-#endif
-			const glm::vec3 posA(_state[a]._model[3]);
-			const glm::vec3 posB(_state[b]._model[3]);
-			const float d1 = glm::distance2(eye, posA + centerA);
-			const float d2 = glm::distance2(eye, posB + centerB);
+			const glm::vec3 posA = _state[a].centerPos();
+			const glm::vec3 posB = _state[b].centerPos();
+			const float d1 = glm::distance2(eye, posA);
+			const float d2 = glm::distance2(eye, posB);
 			return d1 < d2;
 		});
 
