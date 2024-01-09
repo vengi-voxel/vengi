@@ -296,7 +296,7 @@ static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *scene,
 									  const ufbx_node *node, const glm::vec3 &scale) {
-	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(&scene->anim, node, 1.0);
+	const ufbx_transform ufbxTransform = ufbx_evaluate_transform(scene->anim, node, 1.0);
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
 	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
@@ -323,17 +323,17 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
 	Log::debug("Vertex colors: %s", mesh->vertex_color.exists ? "true" : "false");
 
-	for (const ufbx_mesh_material &meshMaterial : mesh->materials) {
+	for (const ufbx_mesh_part &meshMaterial : mesh->material_parts) {
 		if (meshMaterial.num_triangles == 0) {
 			continue;
 		}
-		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, meshMaterial.material ? "yes" : "no");
+		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, mesh->materials[meshMaterial.index] ? "yes" : "no");
 
 		const image::Image *texture = nullptr;
 		float baseColorFactor = 1.0f;
 		glm::vec4 baseColorRGBA(1.0f);
 
-		if (const ufbx_material *material = meshMaterial.material) {
+		if (const ufbx_material *material = mesh->materials[meshMaterial.index]) {
 			if (material->pbr.base_factor.has_value) {
 				baseColorFactor = (float)material->pbr.base_factor.value_real;
 			}
@@ -440,7 +440,7 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 		nodeId = addCameraNode(scene, node, sceneGraph, parent);
 	} else if (node->light != nullptr) {
 		Log::debug("Skip light node");
-	} else if (node->bone != nullptr) {
+	} else if (ufbx_as_bone(node->attrib) != nullptr) {
 		Log::debug("Skip bone node");
 	} else {
 		Log::debug("Skip unknown node");
@@ -484,7 +484,6 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	ufbxopts.raw_filename.data = filename.c_str();
 	ufbxopts.raw_filename.size = filename.size();
 
-	ufbxopts.allow_null_material = true;
 	ufbxopts.target_axes = ufbx_axes_right_handed_y_up; // TODO: see issue https://github.com/vengi-voxel/vengi/issues/227
 	ufbxopts.target_unit_meters = 1.0f;
 
@@ -504,12 +503,12 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	core::StringMap<image::ImagePtr> textures;
 	for (size_t i = 0; i < ufbxscene->meshes.count; ++i) {
 		const ufbx_mesh *mesh = ufbxscene->meshes[i];
-		for (size_t pi = 0; pi < mesh->materials.count; pi++) {
-			const ufbx_mesh_material *mesh_mat = &mesh->materials[pi];
+		for (size_t pi = 0; pi < mesh->material_parts.count; pi++) {
+			const ufbx_mesh_part *mesh_mat = &mesh->material_parts[pi];
 			if (mesh_mat->num_triangles == 0) {
 				continue;
 			}
-			const ufbx_material *material = mesh_mat->material;
+			const ufbx_material *material = mesh->materials[mesh_mat->index];
 			if (material == nullptr || material->textures.count == 0) {
 				continue;
 			}
