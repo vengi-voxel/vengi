@@ -115,6 +115,7 @@ protected:
 	core::VarPtr _syslogVar;
 
 	void bashCompletion() const;
+	void zshCompletion() const;
 	bool handleCompletion(const core::String &type) const;
 
 	virtual void usage() const;

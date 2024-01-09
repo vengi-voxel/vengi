@@ -510,6 +510,64 @@ bool App::hasEnoughMemory(size_t bytes) const {
 	return _availableMemoryMiB * (size_t)s >= bytes;
 }
 
+void App::zshCompletion() const {
+	Log::printf("#compdef %s\n", fullAppname().c_str());
+	Log::printf("_%s_completion() {\n", appname().c_str());
+	Log::printf("\tlocal -a options\n");
+	Log::printf("\toptions=(\n");
+	Log::printf("\t\t'-set[\"Set cvar value\"]:cvar name:->cvars'\n");
+	for (const Argument & arg : arguments()) {
+		Log::printf("\t\t'%s[\"%s\"]", arg.longArg().c_str(), arg.description().c_str());
+		if (arg.needsFile()) {
+			Log::printf(":filename:_files");
+		} else if (arg.needsDirectory()) {
+			Log::printf(":filename:_files -/");
+		}
+		Log::printf("'\n");
+		if (!arg.shortArg().empty()) {
+			Log::printf("'%s[\"%s\"]", arg.shortArg().c_str(), arg.description().c_str());
+			if (arg.needsFile()) {
+				Log::printf(":filename:_files");
+			} else if (arg.needsDirectory()) {
+				Log::printf(":filename:_files -/");
+			}
+			Log::printf("'\n");
+		}
+	}
+	command::Command::visitSorted([=](const command::Command &c) {
+		Log::printf("\t\t'-%s[\"%s\"]'", c.name(), c.help());
+	});
+
+	Log::printf("\t)\n");
+	Log::printf("\t_arguments $options\n");
+	Log::printf("\tcase \"$state\" in\n");
+	Log::printf("\t\tcvars)\n");
+	Log::printf("\t\t\tlocal -a variable_names=(");
+	int n = 0;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (n > 0) {
+			Log::printf(" ");
+		}
+		Log::printf("\"%s\"", var->name().c_str());
+		++n;
+	});
+	Log::printf(")\n");
+	Log::printf("\t\t\t_describe 'cvars' variable_names\n");
+	Log::printf("\t\t;;\n");
+	Log::printf("\tesac\n");
+	Log::printf("}\n");
+
+	// Log::printf("\tlocal options=\"");
+
+	// command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name()); });
+
+	core::String binary = core::string::extractFilenameWithExtension(_argv[0]);
+	if (binary.empty()) {
+		binary = fullAppname();
+	}
+	Log::printf("compdef _%s_completion %s\n", appname().c_str(), binary.c_str());
+}
+
 void App::bashCompletion() const {
 	Log::printf("_%s_completion() {\n", appname().c_str());
 	Log::printf("\tlocal cur prev prev_prev cword\n");
@@ -574,6 +632,9 @@ void App::bashCompletion() const {
 bool App::handleCompletion(const core::String &type) const {
 	if (type == "bash") {
 		bashCompletion();
+		return true;
+	} else if (type == "zsh") {
+		zshCompletion();
 		return true;
 	}
 	Log::warn("Unknown completion type '%s' (only 'bash' is supported)", type.c_str());
