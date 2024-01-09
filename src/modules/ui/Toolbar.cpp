@@ -5,12 +5,11 @@
 #include "Toolbar.h"
 #include "IMGUIEx.h"
 #include "ScopedStyle.h"
-#include "core/StringUtil.h"
 
 namespace ui {
 
 Toolbar::Toolbar(const ImVec2 &size, command::CommandExecutionListener *listener)
-	: _nextId((int)(intptr_t)this), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener) {
+	: _nextId(0), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener) {
 }
 
 Toolbar::~Toolbar() {
@@ -52,10 +51,6 @@ void Toolbar::last() {
 	ImGui::Dummy(ImVec2(0, 0));
 }
 
-core::String Toolbar::id(const char *icon) const {
-	return core::string::format("%s##%s-%i-%p", icon, icon, _nextId, this);
-}
-
 bool Toolbar::button(const char *icon, const char *command, bool darken) {
 	newline();
 	ui::ScopedStyle style;
@@ -63,9 +58,10 @@ bool Toolbar::button(const char *icon, const char *command, bool darken) {
 	if (darken) {
 		style.darker(ImGuiCol_Text);
 	}
-	const core::String &iconId = id(icon);
-	bool pressed = ImGui::CommandButton(iconId.c_str(), command, nullptr, _size, _listener);
+	ImGui::PushID(_nextId);
+	bool pressed = ImGui::CommandButton(icon, command, nullptr, _size, _listener);
 	next();
+	ImGui::PopID();
 	return pressed;
 }
 

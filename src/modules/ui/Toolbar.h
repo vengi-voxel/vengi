@@ -24,7 +24,6 @@ protected:
 	void next();
 	void newline();
 	void last();
-	core::String id(const char *icon) const;
 public:
 	Toolbar(const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
 	~Toolbar();
@@ -43,8 +42,9 @@ public:
 		if (highlight) {
 			style.highlight(ImGuiCol_Text);
 		}
-		const core::String &iconId = id(icon);
-		bool pressed = ImGui::Button(iconId.c_str(), _size);
+		ImGui::PushID(_nextId);
+		bool pressed = ImGui::Button(icon, _size);
+		ImGui::PopID();
 		if (pressed) {
 			func();
 		}
