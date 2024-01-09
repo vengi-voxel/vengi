@@ -210,6 +210,9 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 		return;
 	}
 	_shapeBuilder.clear();
+
+	const bool hideInactive = _hideInactive->boolVal();
+	const int activeNodeId = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
 		if (!node.isAnyModelNode()) {
@@ -219,6 +222,10 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 			continue;
 		}
 		if (node.parent() == InvalidNodeId) {
+			continue;
+		}
+		const bool isActiveNode = node.id() == activeNodeId;
+		if (hideInactive && !isActiveNode) {
 			continue;
 		}
 
