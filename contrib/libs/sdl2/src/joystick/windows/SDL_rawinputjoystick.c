@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -119,6 +119,7 @@ typedef struct _SDL_RAWINPUT_Device
     SDL_JoystickGUID guid;
     SDL_bool is_xinput;
     SDL_bool is_xboxone;
+    int steam_virtual_gamepad_slot;
     PHIDP_PREPARSED_DATA preparsed_data;
 
     HANDLE hDevice;
@@ -836,6 +837,19 @@ static SDL_RAWINPUT_Device *RAWINPUT_DeviceFromHandle(HANDLE hDevice)
     return NULL;
 }
 
+static int GetSteamVirtualGamepadSlot(Uint16 vendor_id, Uint16 product_id, const char *device_path)
+{
+    int slot = -1;
+
+    // The format for the raw input device path is documented here:
+    // https://partner.steamgames.com/doc/features/steam_controller/steam_input_gamepad_emulation_bestpractices
+    if (vendor_id == USB_VENDOR_VALVE &&
+        product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        (void)SDL_sscanf(device_path, "\\\\.\\pipe\\HID#VID_045E&PID_028E&IG_00#%*X&%*X&%*X#%d#%*u", &slot);
+    }
+    return slot;
+}
+
 static void RAWINPUT_AddDevice(HANDLE hDevice)
 {
 #define CHECK(expression)  \
@@ -877,6 +891,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     device->version = (Uint16)rdi.hid.dwVersionNumber;
     device->is_xinput = SDL_TRUE;
     device->is_xboxone = SDL_IsJoystickXboxOne(device->vendor_id, device->product_id);
+    device->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(device->vendor_id, device->product_id, dev_name);
 
     /* Get HID Top-Level Collection Preparsed Data */
     size = 0;
@@ -901,6 +916,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
         }
 
         device->name = SDL_CreateJoystickName(device->vendor_id, device->product_id, manufacturer_string, product_string);
+        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, device->vendor_id, device->product_id, device->version, manufacturer_string, product_string, 'r', 0);
 
         if (manufacturer_string) {
             SDL_free(manufacturer_string);
@@ -909,8 +925,6 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
             SDL_free(product_string);
         }
     }
-
-    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, device->vendor_id, device->product_id, device->version, device->name, 'r', 0);
 
     device->path = SDL_strdup(dev_name);
 
@@ -1181,6 +1195,11 @@ static const char *RAWINPUT_JoystickGetDeviceName(int device_index)
 static const char *RAWINPUT_JoystickGetDevicePath(int device_index)
 {
     return RAWINPUT_GetDeviceByIndex(device_index)->path;
+}
+
+static int RAWINPUT_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return RAWINPUT_GetDeviceByIndex(device_index)->steam_virtual_gamepad_slot;
 }
 
 static int RAWINPUT_JoystickGetDevicePlayerIndex(int device_index)
@@ -2175,6 +2194,7 @@ SDL_JoystickDriver SDL_RAWINPUT_JoystickDriver = {
     RAWINPUT_JoystickDetect,
     RAWINPUT_JoystickGetDeviceName,
     RAWINPUT_JoystickGetDevicePath,
+    RAWINPUT_JoystickGetDeviceSteamVirtualGamepadSlot,
     RAWINPUT_JoystickGetDevicePlayerIndex,
     RAWINPUT_JoystickSetDevicePlayerIndex,
     RAWINPUT_JoystickGetDeviceGUID,

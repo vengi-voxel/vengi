@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,6 +59,8 @@ typedef struct _SDL_HIDAPI_Device
 {
     const void *magic;
     char *name;
+    char *manufacturer_string;
+    char *product_string;
     char *path;
     Uint16 vendor_id;
     Uint16 product_id;

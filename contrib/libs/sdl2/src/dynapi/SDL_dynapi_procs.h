@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -984,3 +984,4 @@ SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)
 #if defined(__GDK__)
 SDL_DYNAPI_PROC(int,SDL_GDKGetDefaultUser,(XUserHandle *a),(a),return)
 #endif
+SDL_DYNAPI_PROC(Uint64,SDL_GameControllerGetSteamHandle,(SDL_GameController *a),(a),return)

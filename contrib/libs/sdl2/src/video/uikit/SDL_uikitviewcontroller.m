@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -502,9 +502,11 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (void)updateKeyboard
 {
+    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
-    CGRect frame = UIKit_ComputeViewFrame(window, self.view.window.screen);
+    CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
 
     if (self.keyboardHeight) {
         int rectbottom = self.textInputRect.y + self.textInputRect.h;

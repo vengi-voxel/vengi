@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -666,7 +666,11 @@ static BOOL IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     } else {
         signature = device->button_mask;
     }
-    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, name, 'm', subtype);
+    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, signature, NULL, name, 'm', subtype);
+
+    if (SDL_ShouldIgnoreJoystick(name, device->guid)) {
+        return SDL_FALSE;
+    }
 
     /* This will be set when the first button press of the controller is
      * detected. */
@@ -712,6 +716,7 @@ static void IOS_AddJoystickDevice(GCController *controller, SDL_bool acceleromet
     } else if (controller) {
 #ifdef SDL_JOYSTICK_MFI
         if (!IOS_AddMFIJoystickDevice(device, controller)) {
+            SDL_free(device->name);
             SDL_free(device);
             return;
         }
@@ -903,6 +908,11 @@ static const char *IOS_JoystickGetDeviceName(int device_index)
 static const char *IOS_JoystickGetDevicePath(int device_index)
 {
     return NULL;
+}
+
+static int IOS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
 }
 
 static int IOS_JoystickGetDevicePlayerIndex(int device_index)
@@ -1824,6 +1834,9 @@ static SDL_bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
     if (device == NULL) {
         return SDL_FALSE;
     }
+    if (device->accelerometer) {
+        return SDL_FALSE;
+    }
 
     if (@available(macOS 10.16, iOS 14.0, tvOS 14.0, *)) {
         int axis = 0;
@@ -2163,6 +2176,7 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver = {
     IOS_JoystickDetect,
     IOS_JoystickGetDeviceName,
     IOS_JoystickGetDevicePath,
+    IOS_JoystickGetDeviceSteamVirtualGamepadSlot,
     IOS_JoystickGetDevicePlayerIndex,
     IOS_JoystickSetDevicePlayerIndex,
     IOS_JoystickGetDeviceGUID,

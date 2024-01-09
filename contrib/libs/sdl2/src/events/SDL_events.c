@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -423,6 +423,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_CONTROLLERDEVICEREMAPPED)
+        PRINT_CONTROLLERDEV_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_CONTROLLERSTEAMHANDLEUPDATED)
         PRINT_CONTROLLERDEV_EVENT(event);
         break;
 #undef PRINT_CONTROLLERDEV_EVENT

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -129,15 +129,34 @@ static SDL_bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Ui
         capabilities.ProductId = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
     }
 
-    *pVID = capabilities.VendorId;
-    *pPID = capabilities.ProductId;
-    *pVersion = capabilities.ProductVersion;
-
+    if (pVID) {
+        *pVID = capabilities.VendorId;
+    }
+    if (pPID) {
+        *pPID = capabilities.ProductId;
+    }
+    if (pVersion) {
+        *pVersion = capabilities.ProductVersion;
+    }
     return SDL_TRUE;
+}
+
+int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
+{
+    XINPUT_CAPABILITIES_EX capabilities;
+
+    if (XINPUTGETCAPABILITIESEX &&
+        XINPUTGETCAPABILITIESEX(1, userid, 0, &capabilities) == ERROR_SUCCESS &&
+        capabilities.VendorId == USB_VENDOR_VALVE &&
+        capabilities.ProductId == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        return (int)capabilities.unk2;
+    }
+    return -1;
 }
 
 static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 {
+    const char *name = NULL;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
@@ -189,16 +208,17 @@ static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pC
         return; /* better luck next time? */
     }
 
+    name = GetXInputName(userid, SubType);
     GetXInputDeviceInfo(userid, &vendor, &product, &version);
     pNewJoystick->bXInputDevice = SDL_TRUE;
-    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, GetXInputName(userid, SubType));
+    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
         return; /* better luck next time? */
     }
     (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%d", userid);
     if (!SDL_XInputUseOldJoystickMapping()) {
-        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, pNewJoystick->joystickname, 'x', SubType);
+        pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;

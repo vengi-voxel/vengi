@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -191,7 +191,7 @@ int SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
         }
     }
 
-    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, name, 'v', (Uint8)hwdata->desc.type);
+    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
     /* Allocate fields for different control-types */
     if (hwdata->desc.naxes > 0) {
@@ -360,6 +360,11 @@ static const char *VIRTUAL_JoystickGetDeviceName(int device_index)
 static const char *VIRTUAL_JoystickGetDevicePath(int device_index)
 {
     return NULL;
+}
+
+static int VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
 }
 
 static int VIRTUAL_JoystickGetDevicePlayerIndex(int device_index)
@@ -722,6 +727,7 @@ SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
     VIRTUAL_JoystickDetect,
     VIRTUAL_JoystickGetDeviceName,
     VIRTUAL_JoystickGetDevicePath,
+    VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,
     VIRTUAL_JoystickGetDevicePlayerIndex,
     VIRTUAL_JoystickSetDevicePlayerIndex,
     VIRTUAL_JoystickGetDeviceGUID,
