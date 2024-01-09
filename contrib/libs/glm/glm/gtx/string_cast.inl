@@ -31,7 +31,7 @@ namespace detail
 #		if (GLM_COMPILER & GLM_COMPILER_VC)
 			vsprintf_s(text, STRING_BUFFER, msg, list);
 #		else//
-			std::vsprintf(text, msg, list);
+			std::vsnprintf(text, STRING_BUFFER, msg, list);
 #		endif//
 		va_end(list);
 

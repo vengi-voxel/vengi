@@ -42,19 +42,19 @@ namespace glm
 #		if GLM_LANG & GLM_LANG_CXXMS_FLAG
 			union
 			{
-#				ifdef GLM_FORCE_QUAT_DATA_XYZW
-					struct { T x, y, z, w; };
-#				else
+#				ifdef GLM_FORCE_QUAT_DATA_WXYZ
 					struct { T w, x, y, z; };
+#				else
+					struct { T x, y, z, w; };
 #				endif
 
 				typename detail::storage<4, T, detail::is_aligned<Q>::value>::type data;
 			};
 #		else
-#			ifdef GLM_FORCE_QUAT_DATA_XYZW
-				T x, y, z, w;
-#			else
+#			ifdef GLM_FORCE_QUAT_DATA_WXYZ
 				T w, x, y, z;
+#			else
+				T x, y, z, w;
 #			endif
 #		endif
 
@@ -89,7 +89,7 @@ namespace glm
 
 		GLM_FUNC_DECL GLM_CONSTEXPR qua(T s, vec<3, T, Q> const& v);
 
-#		ifdef GLM_FORCE_QUAT_DATA_XYZW
+#		ifdef GLM_FORCE_QUAT_CTOR_XYZW
 		GLM_FUNC_DECL GLM_CONSTEXPR qua(T x, T y, T z, T w);
 #		else
 		GLM_FUNC_DECL GLM_CONSTEXPR qua(T w, T x, T y, T z);

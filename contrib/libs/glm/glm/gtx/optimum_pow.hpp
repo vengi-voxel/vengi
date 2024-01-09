@@ -23,8 +23,7 @@
 #	endif
 #endif
 
-namespace glm{
-namespace gtx
+namespace glm
 {
 	/// @addtogroup gtx_optimum_pow
 	/// @{
@@ -48,7 +47,6 @@ namespace gtx
 	GLM_FUNC_DECL genType pow4(genType const& x);
 
 	/// @}
-}//namespace gtx
 }//namespace glm
 
 #include "optimum_pow.inl"

@@ -173,10 +173,10 @@ namespace detail
 			j = Next[i];
 			k = Next[j];
 
-#           ifdef GLM_FORCE_QUAT_DATA_XYZW
-                int off = 0;
-#           else
+#           ifdef GLM_FORCE_QUAT_DATA_WXYZ
                 int off = 1;
+#           else
+                int off = 0;
 #           endif
 
 			root = sqrt(Row[i][i] - Row[j][j] - Row[k][k] + static_cast<T>(1.0));
@@ -209,20 +209,20 @@ namespace detail
 		m *= glm::translate(translation);
 		m *= glm::mat4_cast(orientation);
 
-		if (skew.x) {
-			glm::mat4 tmp { 1.f };
+		if (abs(skew.x) > static_cast<T>(0)) {
+			glm::mat4 tmp(1.f);
 			tmp[2][1] = skew.x;
 			m *= tmp;
 		}
 
-		if (skew.y) {
-			glm::mat4 tmp { 1.f };
+		if (abs(skew.y) > static_cast<T>(0)) {
+			glm::mat4 tmp(1.f);
 			tmp[2][0] = skew.y;
 			m *= tmp;
 		}
 
-		if (skew.z) {
-			glm::mat4 tmp { 1.f };
+		if (abs(skew.z) > static_cast<T>(0)) {
+			glm::mat4 tmp(1.f);
 			tmp[1][0] = skew.z;
 			m *= tmp;
 		}

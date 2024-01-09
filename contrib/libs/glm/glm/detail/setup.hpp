@@ -58,7 +58,7 @@
 #define GLM_LANG_CXX11_FLAG			(1 << 4)
 #define GLM_LANG_CXX14_FLAG			(1 << 5)
 #define GLM_LANG_CXX17_FLAG			(1 << 6)
-#define GLM_LANG_CXX2A_FLAG			(1 << 7)
+#define GLM_LANG_CXX20_FLAG			(1 << 7)
 #define GLM_LANG_CXXMS_FLAG			(1 << 8)
 #define GLM_LANG_CXXGNU_FLAG		(1 << 9)
 
@@ -68,11 +68,11 @@
 #define GLM_LANG_CXX11			(GLM_LANG_CXX0X | GLM_LANG_CXX11_FLAG)
 #define GLM_LANG_CXX14			(GLM_LANG_CXX11 | GLM_LANG_CXX14_FLAG)
 #define GLM_LANG_CXX17			(GLM_LANG_CXX14 | GLM_LANG_CXX17_FLAG)
-#define GLM_LANG_CXX2A			(GLM_LANG_CXX17 | GLM_LANG_CXX2A_FLAG)
+#define GLM_LANG_CXX20			(GLM_LANG_CXX17 | GLM_LANG_CXX20_FLAG)
 #define GLM_LANG_CXXMS			GLM_LANG_CXXMS_FLAG
 #define GLM_LANG_CXXGNU			GLM_LANG_CXXGNU_FLAG
 
-#if defined(_MSC_EXTENSIONS)
+#if (defined(_MSC_EXTENSIONS))
 #	define GLM_LANG_EXT GLM_LANG_CXXMS_FLAG
 #elif ((GLM_COMPILER & (GLM_COMPILER_CLANG | GLM_COMPILER_GCC)) && (GLM_ARCH & GLM_ARCH_SIMD_BIT))
 #	define GLM_LANG_EXT GLM_LANG_CXXMS_FLAG
@@ -82,8 +82,8 @@
 
 #if (defined(GLM_FORCE_CXX_UNKNOWN))
 #	define GLM_LANG 0
-#elif defined(GLM_FORCE_CXX2A)
-#	define GLM_LANG (GLM_LANG_CXX2A | GLM_LANG_EXT)
+#elif defined(GLM_FORCE_CXX20)
+#	define GLM_LANG (GLM_LANG_CXX20 | GLM_LANG_EXT)
 #	define GLM_LANG_STL11_FORCED
 #elif defined(GLM_FORCE_CXX17)
 #	define GLM_LANG (GLM_LANG_CXX17 | GLM_LANG_EXT)
@@ -116,7 +116,7 @@
 #	endif
 
 #	if __cplusplus > 201703L || GLM_LANG_PLATFORM > 201703L
-#		define GLM_LANG (GLM_LANG_CXX2A | GLM_LANG_EXT)
+#		define GLM_LANG (GLM_LANG_CXX20 | GLM_LANG_EXT)
 #	elif __cplusplus == 201703L || GLM_LANG_PLATFORM == 201703L
 #		define GLM_LANG (GLM_LANG_CXX17 | GLM_LANG_EXT)
 #	elif __cplusplus == 201402L || __cplusplus == 201406L || __cplusplus == 201500L || GLM_LANG_PLATFORM == 201402L
@@ -526,6 +526,17 @@
 #	define GLM_CONFIG_UNRESTRICTED_GENTYPE GLM_ENABLE
 #else
 #	define GLM_CONFIG_UNRESTRICTED_GENTYPE GLM_DISABLE
+#endif
+
+///////////////////////////////////////////////////////////////////////////////////
+// Allows using any scaler as float
+
+// #define GLM_FORCE_UNRESTRICTED_FLOAT
+
+#ifdef GLM_FORCE_UNRESTRICTED_FLOAT
+#	define GLM_CONFIG_UNRESTRICTED_FLOAT GLM_ENABLE
+#else
+#	define GLM_CONFIG_UNRESTRICTED_FLOAT GLM_DISABLE
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -948,9 +959,9 @@ namespace detail
 #		pragma message (GLM_STR(GLM_VERSION_MESSAGE))
 
 	// Report C++ language
-#	if (GLM_LANG & GLM_LANG_CXX2A_FLAG) && (GLM_LANG & GLM_LANG_EXT)
-#		pragma message("GLM: C++ 2A with extensions")
-#	elif (GLM_LANG & GLM_LANG_CXX2A_FLAG)
+#	if (GLM_LANG & GLM_LANG_CXX20_FLAG) && (GLM_LANG & GLM_LANG_EXT)
+#		pragma message("GLM: C++ 20 with extensions")
+#	elif (GLM_LANG & GLM_LANG_CXX20_FLAG)
 #		pragma message("GLM: C++ 2A")
 #	elif (GLM_LANG & GLM_LANG_CXX17_FLAG) && (GLM_LANG & GLM_LANG_EXT)
 #		pragma message("GLM: C++ 17 with extensions")
