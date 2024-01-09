@@ -31,6 +31,7 @@ set(SRCS
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
+	private/mesh/TexturedTri.cpp             private/mesh/TexturedTri.h
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
 	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
@@ -92,6 +93,7 @@ set(TEST_SRCS
 	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/TexturedTriTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
 	tests/VolumeFormatTest.cpp

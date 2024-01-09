@@ -12,6 +12,7 @@ set(SRCS
 	Random.cpp Random.h
 	Ray.h
 	Rect.h
+	Tri.h Tri.cpp
 	Math.h Math.cpp
 )
 set(LIB math)
@@ -25,6 +26,7 @@ set(TEST_SRCS
 	tests/PlaneTest.cpp
 	tests/QuadTreeTest.cpp
 	tests/RectTest.cpp
+	tests/TriTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

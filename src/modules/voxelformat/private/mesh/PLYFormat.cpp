@@ -21,7 +21,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/external/earcut.hpp"
-#include "image/Tri.h"
 #include <array>
 
 namespace voxelformat {
@@ -482,7 +481,7 @@ void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &v
 	tris.reserve(tris.size() + faces.size());
 	for (int i = 0; i < (int)faces.size(); ++i) {
 		const Face &face = faces[i];
-		math::Tri tri;
+		voxelformat::TexturedTri tri;
 		for (int j = 0; j < 3; ++j) {
 			const Vertex &vertex = vertices[face.indices[j]];
 			tri.vertices[j] = vertex.position;
@@ -755,7 +754,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 	}
 
 	const glm::vec3 scale = getScale();
-	for (math::Tri &tri : tris) {
+	for (voxelformat::TexturedTri &tri : tris) {
 		tri.vertices[0] *= scale;
 		tri.vertices[1] *= scale;
 		tri.vertices[2] *= scale;

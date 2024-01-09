@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
-#include "image/Tri.h"
+#include "math/Tri.h"
 #include "math/AABB.h"
 #include "math/OBB.h"
 #include "math/Plane.h"

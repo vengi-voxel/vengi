@@ -32,7 +32,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 					break;
 				}
 				if (!strncmp(ptr, "facet normal ", 13)) {
-					math::Tri tri;
+					voxelformat::TexturedTri tri;
 					glm::vec3 norm;
 					ptr += 13;
 					core::string::parseReal3(&norm.x, &norm.y, &norm.z, &ptr);
@@ -95,7 +95,7 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	}
 	tris.resize(numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
-		math::Tri &tri = tris[fn];
+		voxelformat::TexturedTri &tri = tris[fn];
 		glm::vec3 normal;
 		wrap(stream.readFloat(normal.x))
 		wrap(stream.readFloat(normal.y))
