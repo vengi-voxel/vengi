@@ -126,6 +126,9 @@ public:
 	void cone(float baseRadius, float length, int slices = 20);
 
 	void cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides = ShapeBuilderCube::All);
+	/**
+	 * @brief The bone is rendered into the positive z direction
+	 */
 	void bone(float length, float posSize = 1.0f, float boneSize = 4.0f);
 	void diamond(float length1, float length2);
 
