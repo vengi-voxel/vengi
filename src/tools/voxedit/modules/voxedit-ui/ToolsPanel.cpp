@@ -50,6 +50,8 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_LC_EXPAND, "scaleup");
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow");
 		toolbar.button(ICON_LC_ERASER, "hollow");
+		toolbar.button(ICON_LC_X, "clear");
+		toolbar.button(ICON_LC_PAINT_BUCKET, "fill");
 	}
 
 	const float buttonWidth = (float)imguiApp()->fontSize() * 4;

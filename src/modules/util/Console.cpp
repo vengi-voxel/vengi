@@ -30,8 +30,8 @@ void Console::construct() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
 
-	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
-	command::Command::registerCommand("history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
+	command::Command::registerCommand("con_clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
+	command::Command::registerCommand("con_history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
 }
 
 bool Console::init() {
@@ -59,8 +59,8 @@ void Console::shutdown() {
 	}
 	clear();
 
-	command::Command::unregisterCommand("clear");
-	command::Command::unregisterCommand("history");
+	command::Command::unregisterCommand("con_clear");
+	command::Command::unregisterCommand("con_history");
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)_logFunction, _logUserData);
 }
 

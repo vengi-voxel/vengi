@@ -150,6 +150,8 @@ protected:
 	void moveCursor(int x, int y, int z);
 	void fillHollow();
 	void hollow();
+	void fill();
+	void clear();
 
 	void colorToNewNode(const voxel::Voxel voxelColor);
 	void crop();

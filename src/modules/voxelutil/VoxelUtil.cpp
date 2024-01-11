@@ -10,9 +10,9 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
-#include "voxel/Face.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -255,6 +255,26 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 	fillRegion(in, voxel);
 }
 
+void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite) {
+	if (overwrite) {
+		visitVolume(
+			in, [&](int x, int y, int z, const voxel::Voxel &) { in.setVoxel(x, y, z, voxel); }, VisitAll());
+		return;
+	}
+	visitVolume(
+		in,
+		[&](int x, int y, int z, const voxel::Voxel &v) {
+			if (voxel::isAir(v.getMaterial())) {
+				in.setVoxel(x, y, z, voxel);
+			}
+		},
+		VisitAll());
+}
+
+void clear(voxel::RawVolumeWrapper &in) {
+	fill(in, voxel::createVoxel(voxel::VoxelType::Air, 0));
+}
+
 using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
 
 static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const voxel::Region &region,
@@ -384,7 +404,7 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 }
 
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
-			   const voxel::Voxel &replaceVoxel) {
+				  const voxel::Voxel &replaceVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
 		const voxel::Voxel &v = volume.voxel(p);
 		return voxel::isBlocked(v.getMaterial());
@@ -451,7 +471,8 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 	return walkPlane(in, position, face, -1, check, exec);
 }
 
-voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette, const palette::Palette &newPalette, int skipColorIndex) {
+voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette,
+							 const palette::Palette &newPalette, int skipColorIndex) {
 	if (v == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
@@ -469,8 +490,8 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
 }
 
 voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2) {
-	const voxel::Region& r1 = v1->region();
-	const voxel::Region& r2 = v2->region();
+	const voxel::Region &r1 = v1->region();
+	const voxel::Region &r2 = v2->region();
 
 	const glm::ivec3 &r1mins = r1.getLowerCorner();
 	const glm::ivec3 &r1maxs = r1.getUpperCorner();

@@ -310,6 +310,39 @@ void SceneManager::fillHollow() {
 	});
 }
 
+void SceneManager::fill() {
+	_sceneGraph.foreachGroup([&](int nodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		const bool overwrite = _modifier.isMode(ModifierType::Erase);
+		voxelutil::fill(wrapper, _modifier.cursorVoxel(), overwrite);
+		modified(nodeId, wrapper.dirtyRegion());
+	});
+}
+
+void SceneManager::clear() {
+	_sceneGraph.foreachGroup([&](int nodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+			return;
+		}
+		voxel::RawVolume *v = node->volume();
+		if (v == nullptr) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		voxelutil::clear(wrapper);
+		modified(nodeId, wrapper.dirtyRegion());
+	});
+}
+
 void SceneManager::hollow() {
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
@@ -1741,6 +1774,14 @@ void SceneManager::construct() {
 	command::Command::registerCommand("hollow", [&] (const command::CmdArgs& args) {
 		hollow();
 	}).setHelp("Remove non visible voxels");
+
+	command::Command::registerCommand("fill", [&] (const command::CmdArgs& args) {
+		fill();
+	}).setHelp("Fill voxels in the current selection");
+
+	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) {
+		clear();
+	}).setHelp("Remove all voxels in the current selection");
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {

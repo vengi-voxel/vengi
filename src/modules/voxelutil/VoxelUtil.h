@@ -6,6 +6,7 @@
 
 #include "image/Image.h"
 #include "voxel/Face.h"
+#include "voxel/Voxel.h"
 #include <functional>
 #include <glm/fwd.hpp>
 
@@ -60,6 +61,9 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel);
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
+void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
+void clear(voxel::RawVolumeWrapper &in);
+
 /**
  * @brief Remaps or converts the voxel colors to the new given palette by searching for the closest color
  * @param skipColorIndex One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
