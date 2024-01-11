@@ -296,8 +296,8 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 
 void SceneManager::fillHollow() {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
@@ -312,8 +312,8 @@ void SceneManager::fillHollow() {
 
 void SceneManager::fill() {
 	_sceneGraph.foreachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
@@ -329,8 +329,8 @@ void SceneManager::fill() {
 
 void SceneManager::clear() {
 	_sceneGraph.foreachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
@@ -345,8 +345,8 @@ void SceneManager::clear() {
 
 void SceneManager::hollow() {
 	_sceneGraph.foreachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
 			return;
 		}
 		voxel::RawVolume *v = node->volume();
@@ -1163,8 +1163,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
 		scenegraph::SceneGraphNode copiedNode;
-		const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
-		if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		const scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+		if (node == nullptr) {
 			continue;
 		}
 		scenegraph::copyNode(*node, copiedNode, true);
@@ -1352,6 +1352,14 @@ bool SceneManager::splitVolumes() {
 
 void SceneManager::updateGridRenderer(const voxel::Region& region) {
 	_sceneRenderer->updateGridRegion(region);
+}
+
+scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNode(int nodeId) {
+	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
+		return nullptr;
+	}
+	return node;
 }
 
 scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {

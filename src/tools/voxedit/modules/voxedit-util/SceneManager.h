@@ -397,6 +397,7 @@ public:
 
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
+	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 
 	bool hasClipboardCopy() const;
 

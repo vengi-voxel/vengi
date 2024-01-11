@@ -336,9 +336,9 @@ public:
 	void foreachGroup(FUNC&& f) {
 		int nodeId = activeNode();
 		if (node(nodeId).locked()) {
-			for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-				if ((*iter).locked()) {
-					f((*iter).id());
+			for (auto entry : _nodes) {
+				if (entry->value.locked()) {
+					f(entry->value.id());
 				}
 			}
 		} else {
