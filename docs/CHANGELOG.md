@@ -32,6 +32,8 @@ General:
    - Added automatic bash and zsh completion generation for all apps. Just use e.g. `vengi-voxconvert --completion bash` (or `zsh`)
    - Calculate normals for the cubic mesh extractor, too
    - Added support for cubzh `b64` maps
+   - Fixed endian issue on big endian machines in `gltf` loading
+   - Fixed non-flipped uv coordinates for some `gltf` files
 
 VoxConvert:
 
