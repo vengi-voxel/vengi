@@ -977,7 +977,7 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 			foundPosition = true;
 			core_assert(gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < gltfAttributeAccessor->count; i++) {
-				io::MemoryReadStream posStream(buf, 12);
+				io::MemoryReadStream posStream(buf, stride);
 				glm::vec3 pos;
 				posStream.readFloat(pos.x);
 				posStream.readFloat(pos.y);
@@ -994,11 +994,15 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 			}
 			core_assert(gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC2);
 			for (size_t i = 0; i < gltfAttributeAccessor->count; i++) {
-				io::MemoryReadStream uvStream(buf, 8);
+				io::MemoryReadStream uvStream(buf, stride);
 				glm::vec2 uv;
 				uvStream.readFloat(uv.x);
 				uvStream.readFloat(uv.y);
+				if (!gltfAttributeAccessor->normalized) {
+					uv.y = 1.0f - uv.y;
+				}
 				vertices[verticesOffset + i].uv = uv;
+				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
 				vertices[verticesOffset + i].wrapS = textureData.wrapS;
 				vertices[verticesOffset + i].wrapT = textureData.wrapT;
 				buf += stride;
