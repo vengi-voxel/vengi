@@ -16,6 +16,7 @@
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/MemoryReadStream.h"
 #include "io/StdStreamBuf.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -61,18 +62,44 @@ static image::TextureWrap convertTextureWrap(int wrap) {
 }
 
 static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const uint8_t *buf) {
+	const bool hasAlpha = gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC4;
 	if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_FLOAT) {
-		const float *colorData = (const float *)(buf);
-		const float alpha = gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 1.0f;
-		return core::Color::getRGBA(glm::vec4(colorData[0], colorData[1], colorData[2], alpha));
+		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
+		glm::vec4 color;
+		colorStream.readFloat(color.r);
+		colorStream.readFloat(color.g);
+		colorStream.readFloat(color.b);
+		if (hasAlpha) {
+			colorStream.readFloat(color.a);
+		} else {
+			color.a = 1.0f;
+		}
+		return core::Color::getRGBA(color);
 	} else if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-		const uint8_t *colorData = buf;
-		const uint8_t alpha = gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] : 255u;
-		return core::RGBA(colorData[0], colorData[1], colorData[2], alpha);
+		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
+		core::RGBA color;
+		colorStream.readUInt8(color.r);
+		colorStream.readUInt8(color.g);
+		colorStream.readUInt8(color.b);
+		if (hasAlpha) {
+			colorStream.readUInt8(color.a);
+		} else {
+			color.a = 255u;
+		}
+		return color;
 	} else if (gltfAttributeAccessor->componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-		const uint16_t *colorData = (const uint16_t *)buf;
-		const uint8_t alpha = gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC4 ? colorData[3] / 256u : 255u;
-		return core::RGBA(colorData[0] / 256, colorData[1] / 256, colorData[2] / 256, alpha);
+		io::MemoryReadStream colorStream(buf, hasAlpha ? 4 * sizeof(float) : 3 * sizeof(float));
+		glm::u16vec4 color;
+		colorStream.readUInt16(color.r);
+		colorStream.readUInt16(color.g);
+		colorStream.readUInt16(color.b);
+		if (hasAlpha) {
+			colorStream.readUInt16(color.a);
+			color.a /= 256u;
+		} else {
+			color.a = 255u;
+		}
+		return core::RGBA(color.r / 256u, color.g / 256u, color.b / 256u, color.a);
 	} else {
 		Log::warn("Skip unknown type for vertex colors (%i)", gltfAttributeAccessor->componentType);
 	}
@@ -821,14 +848,14 @@ void GLTFFormat::loadTexture(const core::String &filename, core::StringMap<image
 	if (gltfTexture.source >= 0 && gltfTexture.source < (int)gltfModel.images.size()) {
 		if (gltfTexture.sampler >= 0 && gltfTexture.sampler < (int)gltfModel.samplers.size()) {
 			const tinygltf::Sampler &gltfTextureSampler = gltfModel.samplers[gltfTexture.sampler];
-			Log::debug("Sampler: %s, wrapS: %i, wrapT: %i", gltfTextureSampler.name.c_str(), gltfTextureSampler.wrapS,
+			Log::debug("Sampler: '%s', wrapS: %i, wrapT: %i", gltfTextureSampler.name.c_str(), gltfTextureSampler.wrapS,
 					   gltfTextureSampler.wrapT);
 			materialData.wrapS = _priv::convertTextureWrap(gltfTextureSampler.wrapS);
 			materialData.wrapT = _priv::convertTextureWrap(gltfTextureSampler.wrapT);
 		}
 		const tinygltf::Image &gltfImage = gltfModel.images[gltfTexture.source];
-		Log::debug("Image components: %i, width: %i, height: %i, bits: %i", gltfImage.component, gltfImage.width,
-				   gltfImage.height, gltfImage.bits);
+		Log::debug("Image '%s': components: %i, width: %i, height: %i, bits: %i", gltfImage.uri.c_str(),
+				   gltfImage.component, gltfImage.width, gltfImage.height, gltfImage.bits);
 		if (gltfImage.uri.empty()) {
 			if (gltfImage.bufferView >= 0 && gltfImage.bufferView < (int)gltfModel.bufferViews.size()) {
 				const tinygltf::BufferView &gltfImgBufferView = gltfModel.bufferViews[gltfImage.bufferView];
@@ -840,6 +867,8 @@ void GLTFFormat::loadTexture(const core::String &filename, core::StringMap<image
 					if (!tex->load(buf, (int)gltfImgBufferView.byteLength)) {
 						Log::warn("Failed to load embedded image %s", gltfImage.name.c_str());
 					} else {
+						Log::debug("Loaded embedded image %s", gltfImage.name.c_str());
+						// image::writeImage(tex, "test.png");
 						materialData.diffuseTexture = gltfImage.name.c_str();
 						textures.emplace(materialData.diffuseTexture, core::move(tex));
 					}
@@ -948,8 +977,12 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 			foundPosition = true;
 			core_assert(gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < gltfAttributeAccessor->count; i++) {
-				const float *posData = (const float *)buf;
-				vertices[verticesOffset + i].pos = glm::vec3(posData[0], posData[1], posData[2]);
+				io::MemoryReadStream posStream(buf, 12);
+				glm::vec3 pos;
+				posStream.readFloat(pos.x);
+				posStream.readFloat(pos.y);
+				posStream.readFloat(pos.z);
+				vertices[verticesOffset + i].pos = pos;
 				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
 				vertices[verticesOffset + i].color = textureData.baseColor;
 				buf += stride;
@@ -961,8 +994,11 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 			}
 			core_assert(gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC2);
 			for (size_t i = 0; i < gltfAttributeAccessor->count; i++) {
-				const float *uvData = (const float *)buf;
-				vertices[verticesOffset + i].uv = glm::vec2(uvData[0], uvData[1]);
+				io::MemoryReadStream uvStream(buf, 8);
+				glm::vec2 uv;
+				uvStream.readFloat(uv.x);
+				uvStream.readFloat(uv.y);
+				vertices[verticesOffset + i].uv = uv;
 				vertices[verticesOffset + i].wrapS = textureData.wrapS;
 				vertices[verticesOffset + i].wrapT = textureData.wrapT;
 				buf += stride;
