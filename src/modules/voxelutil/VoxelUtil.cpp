@@ -44,70 +44,49 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3 &pos) {
 	return false;
 }
 
-void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palette) {
-	const voxel::Region &region = v.region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-	voxel::RawVolumeWrapper::Sampler sampler(v);
-	sampler.setPosition(region.getLowerCorner());
-	for (int x = mins.x; x <= maxs.x; ++x) {
-		voxel::RawVolumeWrapper::Sampler sampler2 = sampler;
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			voxel::RawVolumeWrapper::Sampler sampler3 = sampler2;
-			for (int z = mins.z; z <= maxs.z; ++z) {
-				if (voxel::isBlocked(sampler3.voxel().getMaterial())) {
-					sampler3.movePositiveZ();
-					continue;
-				}
+voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette) {
+	voxel::RawVolumeWrapper::Sampler sampler3(v);
+	sampler3.setPosition(pos);
+	const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();
+	const voxel::Voxel voxel001 = sampler3.peekVoxel0px0py1pz();
+	const voxel::Voxel voxel010 = sampler3.peekVoxel0px1py0pz();
+	const voxel::Voxel voxel011 = sampler3.peekVoxel0px1py1pz();
+	const voxel::Voxel voxel100 = sampler3.peekVoxel1px0py0pz();
+	const voxel::Voxel voxel101 = sampler3.peekVoxel1px0py1pz();
+	const voxel::Voxel voxel110 = sampler3.peekVoxel1px1py0pz();
+	const voxel::Voxel voxel111 = sampler3.peekVoxel1px1py1pz();
 
-				const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();
-				const voxel::Voxel voxel001 = sampler3.peekVoxel0px0py1pz();
-				const voxel::Voxel voxel010 = sampler3.peekVoxel0px1py0pz();
-				const voxel::Voxel voxel011 = sampler3.peekVoxel0px1py1pz();
-				const voxel::Voxel voxel100 = sampler3.peekVoxel1px0py0pz();
-				const voxel::Voxel voxel101 = sampler3.peekVoxel1px0py1pz();
-				const voxel::Voxel voxel110 = sampler3.peekVoxel1px1py0pz();
-				const voxel::Voxel voxel111 = sampler3.peekVoxel1px1py1pz();
+	const bool blocked000 = voxel::isBlocked(voxel000.getMaterial());
+	const bool blocked001 = voxel::isBlocked(voxel001.getMaterial());
+	const bool blocked010 = voxel::isBlocked(voxel010.getMaterial());
+	const bool blocked011 = voxel::isBlocked(voxel011.getMaterial());
+	const bool blocked100 = voxel::isBlocked(voxel100.getMaterial());
+	const bool blocked101 = voxel::isBlocked(voxel101.getMaterial());
+	const bool blocked110 = voxel::isBlocked(voxel110.getMaterial());
+	const bool blocked111 = voxel::isBlocked(voxel111.getMaterial());
 
-				const bool blocked000 = voxel::isBlocked(voxel000.getMaterial());
-				const bool blocked001 = voxel::isBlocked(voxel001.getMaterial());
-				const bool blocked010 = voxel::isBlocked(voxel010.getMaterial());
-				const bool blocked011 = voxel::isBlocked(voxel011.getMaterial());
-				const bool blocked100 = voxel::isBlocked(voxel100.getMaterial());
-				const bool blocked101 = voxel::isBlocked(voxel101.getMaterial());
-				const bool blocked110 = voxel::isBlocked(voxel110.getMaterial());
-				const bool blocked111 = voxel::isBlocked(voxel111.getMaterial());
-
-				const int blocked = (int)blocked000 + (int)blocked001 + (int)blocked010 + (int)blocked011 +
-									(int)blocked100 + (int)blocked101 + (int)blocked110 + (int)blocked111;
-				if (blocked < 4) {
-					sampler3.movePositiveZ();
-					continue;
-				}
-
-				const glm::vec4 color000(blocked000 ? palette.color4(voxel000.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color001(blocked001 ? palette.color4(voxel001.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color010(blocked010 ? palette.color4(voxel010.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color011(blocked011 ? palette.color4(voxel011.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color100(blocked100 ? palette.color4(voxel100.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color101(blocked101 ? palette.color4(voxel101.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color110(blocked110 ? palette.color4(voxel110.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 color111(blocked111 ? palette.color4(voxel111.getColor()) : glm::vec4(0.0f));
-				const glm::vec4 colorSum =
-					color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
-				const glm::vec4 colorAvg = colorSum / (float)blocked;
-				const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
-				if (idx == palette::PaletteColorNotFound) {
-					sampler3.movePositiveZ();
-					continue;
-				}
-				sampler3.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));
-				sampler3.movePositiveZ();
-			}
-			sampler2.movePositiveY();
-		}
-		sampler.movePositiveX();
+	const int blocked = (int)blocked000 + (int)blocked001 + (int)blocked010 + (int)blocked011 +
+						(int)blocked100 + (int)blocked101 + (int)blocked110 + (int)blocked111;
+	if (blocked == 0) {
+		return voxel::Voxel();
 	}
+
+	const glm::vec4 color000(blocked000 ? palette.color4(voxel000.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color001(blocked001 ? palette.color4(voxel001.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color010(blocked010 ? palette.color4(voxel010.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color011(blocked011 ? palette.color4(voxel011.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color100(blocked100 ? palette.color4(voxel100.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color101(blocked101 ? palette.color4(voxel101.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color110(blocked110 ? palette.color4(voxel110.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 color111(blocked111 ? palette.color4(voxel111.getColor()) : glm::vec4(0.0f));
+	const glm::vec4 colorSum =
+		color000 + color001 + color010 + color011 + color100 + color101 + color110 + color111;
+	const glm::vec4 colorAvg = colorSum / (float)blocked;
+	const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
+	if (idx == palette::PaletteColorNotFound) {
+		return voxel::Voxel();
+	}
+	return voxel::createVoxel(palette, idx);
 }
 
 bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {

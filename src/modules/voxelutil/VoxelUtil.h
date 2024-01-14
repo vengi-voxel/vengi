@@ -34,12 +34,13 @@ namespace voxelutil {
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
 
 /**
- * @brief Fills surrounding empty voxels with with interpolated values.
+ * @brief The interpolated voxel for the given position
  *
  * @param v The voxel volume to fill.
+ * @param pos The position in the voxel volume to get the interpolated voxel for.
  * @param palette The palette used for interpolation.
  */
-void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palette);
+voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette);
 
 /**
  * @brief Copies a region from one voxel volume to another.
