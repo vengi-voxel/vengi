@@ -7,7 +7,6 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
 
 namespace voxelutil {
 

@@ -39,7 +39,7 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
  * @param v The voxel volume to fill.
  * @param palette The palette used for interpolation.
  */
-void fillInterpolated(voxel::RawVolume *v, const palette::Palette &palette);
+void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palette);
 
 /**
  * @brief Copies a region from one voxel volume to another.

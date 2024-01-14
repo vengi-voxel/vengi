@@ -44,11 +44,11 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3 &pos) {
 	return false;
 }
 
-void fillInterpolated(voxel::RawVolume *v, const palette::Palette &palette) {
-	const voxel::Region &region = v->region();
+void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palette) {
+	const voxel::Region &region = v.region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
-	voxel::RawVolume::Sampler sampler(v);
+	voxel::RawVolumeWrapper::Sampler sampler(v);
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int z = mins.z; z <= maxs.z; ++z) {
