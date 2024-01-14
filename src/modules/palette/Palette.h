@@ -166,7 +166,7 @@ public:
 	 * @param rgba Normalized color value [0.0-1.0]
 	 * @param distance Optional parameter to get the calculated distance for the selected color entry
 	 * @param skip One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
-	 * @return int The index to the palette color
+	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
 	int getClosestMatch(const core::RGBA rgba, float *distance = nullptr, int skip = -1) const;
 	uint8_t findReplacement(uint8_t index) const;
