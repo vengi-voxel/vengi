@@ -310,7 +310,7 @@ void ShapeBrush::stop(const BrushContext &context) {
 
 voxel::Region ShapeBrush::calcRegion(const BrushContext &context) const {
 	const glm::ivec3 &pos = currentCursorPosition(context.cursorPosition);
-		if (!_single && _center) {
+	if (!_single && _center) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, context.gridResolution);
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);

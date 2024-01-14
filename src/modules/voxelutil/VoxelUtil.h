@@ -7,7 +7,6 @@
 #include "image/Image.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
-#include <functional>
 #include <glm/fwd.hpp>
 
 namespace voxel {
@@ -22,12 +21,41 @@ class Palette;
 
 namespace voxelutil {
 
+/**
+ * @brief Copies the entire input voxel volume into a specified region in the output voxel volume.
+ *
+ * This function is a convenience wrapper around the 'copy' function. It copies the entire input volume into a specified region in the output volume.
+ *
+ * @param in The input voxel volume.
+ * @param out The output voxel volume.
+ * @param targetRegion The region to copy to in the output volume.
+ * @return true if the copied region in the output volume is valid, false otherwise.
+ */
 bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const voxel::Region &targetRegion);
 
+/**
+ * @brief Fills surrounding empty voxels with with interpolated values.
+ *
+ * @param v The voxel volume to fill.
+ * @param palette The palette used for interpolation.
+ */
 void fillInterpolated(voxel::RawVolume *v, const palette::Palette &palette);
 
+/**
+ * @brief Copies a region from one voxel volume to another.
+ *
+ * This function copies a specified region from the input voxel volume to a specified region in the output voxel volume.
+ * The regions are defined by their lower and upper corners. The function also marks the region in the output volume as dirty.
+ *
+ * @param in The input voxel volume.
+ * @param inRegion The region to copy from the input volume.
+ * @param out The output voxel volume.
+ * @param outRegion The region to copy to in the output volume.
+ * @return true if the copied region in the output volume is valid, false otherwise.
+ */
 bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
 		  const voxel::Region &outRegion);
+
 /**
  * @brief Checks if there is a solid voxel around the given position
  */
@@ -40,14 +68,16 @@ bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos);
  */
 bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
 
-using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
-using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
-
+/**
+ * @brief Fill the plane at the position with the pixels of the image if the underlying voxel is of the given type
+ */
 int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face);
 
 /**
- * @param pos The position where the first voxel should be placed
+ * @brief Extrudes a plane in a voxel volume.
+ *
+ * @param pos The position in the volume where the first voxel should be placed and where to start the extrusion from.
  * @param face The face where the trace enters the ground voxel. This is about the direction of the plane that is
  * extruded. If e.g. face x was detected, the plane is created on face y and z.
  * @param groundVoxel The voxel we want to extrude on
@@ -55,11 +85,58 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
  */
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel,
 			const voxel::Voxel &newPlaneVoxel);
+
+/**
+ * @brief Erases a plane in a voxel volume.
+ *
+ * This function identifies a plane in the voxel volume based on the given position and face direction.
+ * It then erases the voxels in this plane that match a specified voxel, replacing them with empty voxels.
+ *
+ * @param in The voxel volume to erase from.
+ * @param pos The position in the voxel volume to start the erasing from.
+ * @param face The direction of the face to erase.
+ * @param groundVoxel The voxel to match for erasing.
+ * @return The number of voxels that were erased.
+ */
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
+
+/**
+ * @brief Paints a plane of existing voxels in a voxel volume with a specified voxel.
+ *
+ * This function identifies a plane in the voxel volume based on the given position and face direction.
+ * It then paints the voxels in this plane with a specified voxel.
+ *
+ * @param in The voxel volume to paint.
+ * @param pos The position in the voxel volume to start the painting from.
+ * @param face The direction of the face to paint.
+ * @param voxel The voxel to paint the plane with.
+ */
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
+
+/**
+ * @brief Overrides existing voxels on a plane in a voxel volume with a specified voxel.
+ *
+ * This function identifies a plane in the voxel volume based on the given position and face direction.
+ * It then overrides the voxels in this plane with a specified voxel.
+ *
+ * @param in The voxel volume to override.
+ * @param pos The position in the voxel volume to start the override from.
+ * @param face The direction of the face to override.
+ * @param replaceVoxel The voxel to override the plane with.
+ */
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel);
+
+/**
+ * @brief Fills the hollow spaces in a voxel volume.
+ *
+ * This function iterates over the voxel volume and identifies hollows that are totally enclosed by existing voxels.
+ * It then fills these hollow spaces with a specified voxel.
+ *
+ * @param[in,out] in The voxel volume to fill.
+ * @param[in] voxel The voxel to fill the hollow spaces with.
+ */
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
 void clear(voxel::RawVolumeWrapper &in);

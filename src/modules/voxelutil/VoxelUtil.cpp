@@ -18,6 +18,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <functional>
 
 namespace voxelutil {
 
@@ -141,7 +142,7 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	return copy(in, in.region(), out, targetRegion);
 }
 
-static void fillRegion(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
+void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 	const voxel::Region &region = in.region();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
@@ -251,10 +252,6 @@ static void fillRegion(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 		VisitAll());
 }
 
-void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
-	fillRegion(in, voxel);
-}
-
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite) {
 	if (overwrite) {
 		visitVolume(
@@ -276,6 +273,8 @@ void clear(voxel::RawVolumeWrapper &in) {
 }
 
 using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
+using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
+using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
 static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const voxel::Region &region,
 					   const WalkCheckCallback &check, const WalkExecCallback &exec, const glm::ivec3 &position,
@@ -322,6 +321,18 @@ static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const vox
 	return n;
 }
 
+/**
+ * @brief Walks a plane in a voxel volume based on the given position and face direction.
+ *
+ * @param in The voxel volume to walk the plane in.
+ * @param position The position in the voxel volume to start the walk from.
+ * @param face The direction of the face to walk the plane in.
+ * @param checkOffset The offset for checking voxel positions.
+ * @param check The callback function to use for checking voxel conditions - if @c true is returned, it's a valid
+ * position to check the neighbor for the next steps.
+ * @param exec The callback function to use for executing operations on the voxels. Only executed if @c check returned
+ * @c true
+ */
 static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, voxel::FaceNames face, int checkOffset,
 					 const WalkCheckCallback &check, const WalkExecCallback &exec) {
 	const voxel::Region &region = in.region();
