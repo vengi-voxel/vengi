@@ -49,22 +49,25 @@ void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palett
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	voxel::RawVolumeWrapper::Sampler sampler(v);
+	sampler.setPosition(region.getLowerCorner());
 	for (int x = mins.x; x <= maxs.x; ++x) {
+		voxel::RawVolumeWrapper::Sampler sampler2 = sampler;
 		for (int y = mins.y; y <= maxs.y; ++y) {
+			voxel::RawVolumeWrapper::Sampler sampler3 = sampler2;
 			for (int z = mins.z; z <= maxs.z; ++z) {
-				sampler.setPosition(x, y, z);
-				if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				if (voxel::isBlocked(sampler3.voxel().getMaterial())) {
+					sampler3.movePositiveZ();
 					continue;
 				}
 
-				const voxel::Voxel voxel000 = sampler.peekVoxel0px0py0pz();
-				const voxel::Voxel voxel001 = sampler.peekVoxel0px0py1pz();
-				const voxel::Voxel voxel010 = sampler.peekVoxel0px1py0pz();
-				const voxel::Voxel voxel011 = sampler.peekVoxel0px1py1pz();
-				const voxel::Voxel voxel100 = sampler.peekVoxel1px0py0pz();
-				const voxel::Voxel voxel101 = sampler.peekVoxel1px0py1pz();
-				const voxel::Voxel voxel110 = sampler.peekVoxel1px1py0pz();
-				const voxel::Voxel voxel111 = sampler.peekVoxel1px1py1pz();
+				const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();
+				const voxel::Voxel voxel001 = sampler3.peekVoxel0px0py1pz();
+				const voxel::Voxel voxel010 = sampler3.peekVoxel0px1py0pz();
+				const voxel::Voxel voxel011 = sampler3.peekVoxel0px1py1pz();
+				const voxel::Voxel voxel100 = sampler3.peekVoxel1px0py0pz();
+				const voxel::Voxel voxel101 = sampler3.peekVoxel1px0py1pz();
+				const voxel::Voxel voxel110 = sampler3.peekVoxel1px1py0pz();
+				const voxel::Voxel voxel111 = sampler3.peekVoxel1px1py1pz();
 
 				const bool blocked000 = voxel::isBlocked(voxel000.getMaterial());
 				const bool blocked001 = voxel::isBlocked(voxel001.getMaterial());
@@ -78,6 +81,7 @@ void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palett
 				const int blocked = (int)blocked000 + (int)blocked001 + (int)blocked010 + (int)blocked011 +
 									(int)blocked100 + (int)blocked101 + (int)blocked110 + (int)blocked111;
 				if (blocked < 4) {
+					sampler3.movePositiveZ();
 					continue;
 				}
 
@@ -94,11 +98,15 @@ void fillInterpolated(voxel::RawVolumeWrapper &v, const palette::Palette &palett
 				const glm::vec4 colorAvg = colorSum / (float)blocked;
 				const int idx = palette.getClosestMatch(core::Color::getRGBA(colorAvg));
 				if (idx == palette::PaletteColorNotFound) {
+					sampler3.movePositiveZ();
 					continue;
 				}
-				sampler.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));
+				sampler3.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, idx));
+				sampler3.movePositiveZ();
 			}
+			sampler2.movePositiveY();
 		}
+		sampler.movePositiveX();
 	}
 }
 
