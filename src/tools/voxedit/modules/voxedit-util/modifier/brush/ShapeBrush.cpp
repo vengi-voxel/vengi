@@ -142,10 +142,11 @@ void ShapeBrush::reset() {
 	_shapeType = ShapeType::AABB;
 	_secondPosValid = false;
 	_aabbMode = false;
+	_fixedRegion = false;
+	_center = false;
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);
-	_center = false;
 	_mirrorAxis = math::Axis::None;
 	_mirrorPos = glm::ivec3(0);
 }
