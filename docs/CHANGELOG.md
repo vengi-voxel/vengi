@@ -60,6 +60,7 @@ VoxEdit:
    - Converted the script brush back to a normal panel
    - Automatically reference all child nodes when creating a new reference
    - Allow one to switch between cubes and marching cubes rendering in the editor
+   - Added `clear` and `fill` commands
 
 Thumbnailer:
 
