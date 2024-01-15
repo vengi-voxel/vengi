@@ -110,7 +110,7 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
  * @param in The voxel volume to paint.
  * @param pos The position in the voxel volume to start the painting from.
  * @param face The direction of the face to paint.
- * @param voxel The voxel to paint the plane with.
+ * @param replaceVoxel The voxel to paint the plane with.
  */
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
