@@ -7,16 +7,15 @@
 #include "ScopedStyle.h"
 #include "Toolbar.h"
 #include "core/ScopedPtr.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/Util.h"
+#include "voxedit-util/Clipboard.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
-#include "voxedit-util/Clipboard.h"
-#include "voxel/Face.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -25,7 +24,8 @@
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_LC_BOXES, ICON_LC_GROUP, ICON_LC_STAMP};
+static constexpr const char *BrushTypeIcons[] = {ICON_LC_MOUSE_POINTER_SQUARE_DASHED, ICON_LC_BOXES, ICON_LC_GROUP,
+												 ICON_LC_STAMP};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -94,7 +94,8 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 	ImGui::TooltipText("Use the current selection as new stamp");
 }
 
-void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette, command::CommandExecutionListener &listener) {
+void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
+								   command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	StampBrush &brush = modifier.stampBrush();
 	ImGui::InputTextWithHint("Model", "Select a model from the asset panel", &_stamp, ImGuiInputTextFlags_ReadOnly);
@@ -135,7 +136,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("replace")) {
+	if (ImGui::Button("replace##stampbrush")) {
 		brush.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, _stampPaletteIndex), palette);
 	}
 	ImGui::TooltipText("Replace all voxels in the stamp with the selected color");
@@ -188,64 +189,24 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 
 void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
+	ShapeBrush &brush = modifier.shapeBrush();
+	int radius = brush.radius();
+	if (ImGui::InputInt("Radius##shapebrush", &radius)) {
+		brush.setRadius(radius);
+	}
+	ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
 	addShapes(listener);
 	addMirrorPlanes(listener);
-	bool center = modifier.shapeBrush().centerMode();
+	bool center = brush.centerMode();
 	if (ImGui::Checkbox("Center##modifiertype", &center)) {
 		command::executeCommands("toggleshapebrushcenter", &listener);
 	}
 	ImGui::TooltipCommand("toggleshapebrushcenter");
-	bool single = modifier.shapeBrush().singleMode();
+	bool single = brush.singleMode();
 	if (ImGui::Checkbox("Single##modifiertype", &single)) {
 		command::executeCommands("toggleshapebrushsingle", &listener);
 	}
 	ImGui::TooltipCommand("toggleshapebrushsingle");
-}
-
-void BrushPanel::brushRegion() {
-	Modifier &modifier = sceneMgr().modifier();
-	ShapeBrush *brush = modifier.activeShapeBrush();
-	if (brush == nullptr) {
-		return;
-	}
-	if (ImGui::CollapsingHeader("Brush region")) {
-		ui::ScopedStyle style;
-		if (brush->singleMode()) {
-			style.disableItem();
-		}
-		voxel::Region region = modifier.calcBrushRegion();
-		glm::ivec3 mins = region.getLowerCorner();
-		glm::ivec3 maxs = region.getUpperCorner();
-		if (ImGui::InputInt3("mins##regionbrush", glm::value_ptr(mins))) {
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		if (ImGui::InputInt3("maxs##regionbrush", glm::value_ptr(maxs))) {
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		if (ImGui::Button(ICON_LC_ARROW_RIGHT)) {
-			_face = voxel::FaceNames::PositiveX;
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		ImGui::TooltipText("Generate in positive x direction");
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_ARROW_LEFT)) {
-			_face = voxel::FaceNames::NegativeX;
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		ImGui::TooltipText("Generate in negative x direction");
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_ARROW_UP)) {
-			_face = voxel::FaceNames::PositiveY;
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		ImGui::TooltipText("Generate in positive y direction");
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_ARROW_DOWN)) {
-			_face = voxel::FaceNames::NegativeY;
-			brush->setRegion(voxel::Region(mins, maxs), _face);
-		}
-		ImGui::TooltipText("Generate in negative y direction");
-	}
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
@@ -264,48 +225,55 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
 	style.setFont(imguiApp()->bigIconFont());
+
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-	ui::Toolbar toolbar(buttonSize, &listener);
-	const voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+
+	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	const BrushType currentBrush = modifier.brushType();
+
+	ui::Toolbar toolbarBrush(buttonSize, &listener);
+	for (int i = 0; i < (int)BrushType::Max; ++i) {
+		auto func = [&modifier, i]() { modifier.setBrushType((BrushType)i); };
+		toolbarBrush.button(BrushTypeIcons[i], BrushTypeStr[i], func, (int)currentBrush != i);
+	}
+	toolbarBrush.end();
+
+	ui::Toolbar toolbarModifiers(buttonSize, &listener);
 	const bool moverride = modifier.isMode(ModifierType::Place | ModifierType::Erase);
 	const bool mplace = !moverride && modifier.isMode(ModifierType::Place);
 	const bool merase = !moverride && modifier.isMode(ModifierType::Erase);
 
-	toolbar.button(ICON_LC_BOX, "actionplace", !mplace);
-	toolbar.button(ICON_LC_ERASER, "actionerase", !merase);
-	toolbar.button(ICON_LC_PEN_SQUARE, "actionoverride", !moverride);
-	toolbar.button(ICON_LC_PAINTBRUSH, "actionpaint", !modifier.isMode(ModifierType::Paint));
-	toolbar.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
-	toolbar.button(ICON_LC_PEN_LINE, "actionpath", !modifier.isMode(ModifierType::Path));
-	toolbar.button(ICON_LC_PEN_LINE, "actionline", !modifier.isMode(ModifierType::Line));
-	toolbar.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
+	if (currentBrush == BrushType::None) {
+		toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
+		toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
+
+		// TODO: convert to brush
+		toolbarModifiers.button(ICON_LC_PEN_LINE, "actionpath", !modifier.isMode(ModifierType::Path));
+		toolbarModifiers.button(ICON_LC_PEN_LINE, "actionline", !modifier.isMode(ModifierType::Line));
+	} else {
+		toolbarModifiers.button(ICON_LC_BOX, "actionplace", !mplace);
+		toolbarModifiers.button(ICON_LC_ERASER, "actionerase", !merase);
+		toolbarModifiers.button(ICON_LC_PEN_SQUARE, "actionoverride", !moverride);
+		toolbarModifiers.button(ICON_LC_PAINTBRUSH, "actionpaint", !modifier.isMode(ModifierType::Paint));
+	}
 }
 
 void BrushPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+		const BrushType currentBrush = modifier.brushType();
 		addModifiers(listener);
-
-		if (modifier.isMode(ModifierType::ColorPicker)) {
-			ImGui::TextWrapped("Click on a voxel to pick the color");
-		} else if (modifier.isMode(ModifierType::Line)) {
-			ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
-		} else if (modifier.isMode(ModifierType::Path)) {
-			ImGui::TextWrapped("Draws a path over existing voxels");
-		} else if (modifier.isMode(ModifierType::Select)) {
-			ImGui::TextWrapped("Select areas of voxels");
-		} else {
-			const int currentBrush = (int)modifier.brushType();
-			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-			ui::Toolbar toolbar(buttonSize, &listener);
-			for (int i = 0; i < (int)BrushType::Max; ++i) {
-				auto func = [&modifier, i]() { modifier.setBrushType((BrushType)i); };
-				toolbar.button(BrushTypeIcons[i], BrushTypeStr[i], func, currentBrush != i);
+		brushSettings(listener);
+		if (currentBrush == BrushType::None) {
+			if (modifier.isMode(ModifierType::ColorPicker)) {
+				ImGui::TextWrapped("Click on a voxel to pick the color");
+			} else if (modifier.isMode(ModifierType::Line)) {
+				ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
+			} else if (modifier.isMode(ModifierType::Path)) {
+				ImGui::TextWrapped("Draws a path over existing voxels");
+			} else if (modifier.isMode(ModifierType::Select)) {
+				ImGui::TextWrapped("Select areas of voxels");
 			}
-			toolbar.end();
-
-			brushRegion();
-			brushSettings(listener);
 		}
 	}
 	ImGui::End();

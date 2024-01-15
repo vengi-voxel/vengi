@@ -21,7 +21,6 @@ private:
 	voxel::FaceNames _face = voxel::FaceNames::PositiveX;
 
 	void addModifiers(command::CommandExecutionListener &listener);
-	void brushRegion();
 	void brushSettings(command::CommandExecutionListener &listener);
 
 	void addShapes(command::CommandExecutionListener &listener);

@@ -142,7 +142,6 @@ void ShapeBrush::reset() {
 	_shapeType = ShapeType::AABB;
 	_secondPosValid = false;
 	_aabbMode = false;
-	_fixedRegion = false;
 	_center = false;
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
@@ -202,7 +201,7 @@ bool ShapeBrush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 }
 
 bool ShapeBrush::needsFurtherAction(const BrushContext &context) const {
-	if (_fixedRegion || context.lockedAxis != math::Axis::None) {
+	if (_radius > 0 || context.lockedAxis != math::Axis::None) {
 		return false;
 	}
 	const voxel::Region &region = calcRegion(context);
@@ -243,7 +242,7 @@ bool ShapeBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 glm::ivec3 ShapeBrush::currentCursorPosition(const glm::ivec3 &cursorPosition) const {
 	glm::ivec3 pos = cursorPosition;
 	if (_secondPosValid) {
-		if (_fixedRegion) {
+		if (_radius > 0) {
 			return _aabbSecondPos;
 		}
 		switch (_aabbFace) {
@@ -276,7 +275,6 @@ bool ShapeBrush::start(const BrushContext &context) {
 
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = applyGridResolution(context.cursorPosition, context.gridResolution);
-	_fixedRegion = false;
 	_secondPosValid = false;
 	_aabbMode = !_single;
 	_aabbFace = context.cursorFace;
@@ -293,7 +291,7 @@ bool ShapeBrush::aborted(const BrushContext &context) const {
 }
 
 void ShapeBrush::step(const BrushContext &context) {
-	if (!_aabbMode || _fixedRegion || context.lockedAxis != math::Axis::None) {
+	if (!_aabbMode || _radius > 0 || context.lockedAxis != math::Axis::None) {
 		return;
 	}
 	_aabbSecondPos = currentCursorPosition(context.cursorPosition);
@@ -316,22 +314,17 @@ voxel::Region ShapeBrush::calcRegion(const BrushContext &context) const {
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);
 	}
+	if (_radius > 0) {
+		const glm::ivec3 &first = _single ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
+		const glm::ivec3 delta(_radius);
+		return voxel::Region(first - delta, first + delta);
+	}
 
 	const int size = context.gridResolution;
 	const glm::ivec3 &first = _single ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
 	return voxel::Region(mins, maxs);
-}
-
-void ShapeBrush::setRegion(const voxel::Region &region, voxel::FaceNames face) {
-	_aabbFirstPos = region.getLowerCorner();
-	_aabbSecondPos = region.getUpperCorner();
-	_secondPosValid = true;
-	_aabbMode = true;
-	_fixedRegion = true;
-	_aabbFace = face;
-	markDirty();
 }
 
 } // namespace voxedit

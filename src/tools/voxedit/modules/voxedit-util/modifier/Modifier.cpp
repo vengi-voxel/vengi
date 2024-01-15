@@ -153,7 +153,9 @@ void Modifier::update(double nowSeconds) {
 	default:
 		break;
 	}
-	activeBrush()->update(_brushContext, nowSeconds);
+	if (Brush *brush = activeBrush()) {
+		brush->update(_brushContext, nowSeconds);
+	}
 }
 
 void Modifier::reset() {
@@ -399,7 +401,9 @@ bool Modifier::runModifier(scenegraph::SceneGraph &sceneGraph, scenegraph::Scene
 	ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	_brushContext.cursorVoxel = voxel;
-	activeBrush()->execute(sceneGraph, wrapper, _brushContext);
+	if (Brush *brush = activeBrush()) {
+		brush->execute(sceneGraph, wrapper, _brushContext);
+	}
 	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 	if (modifiedRegion.isValid()) {
 		voxel::logRegion("Dirty region", modifiedRegion);
@@ -417,6 +421,7 @@ Brush *Modifier::activeBrush() {
 		return &_shapeBrush;
 	case BrushType::Stamp:
 		return &_stampBrush;
+	case BrushType::None:
 	case BrushType::Max:
 		break;
 	}
@@ -460,7 +465,13 @@ void Modifier::setGridResolution(int gridSize) {
 }
 
 void Modifier::setModifierType(ModifierType type) {
-	_modifierType = type;
+	const bool isBrush = _brushType != BrushType::None;
+	const bool modifierIsBrush = (type & ModifierType::Brush) != ModifierType::None;
+	if (isBrush && modifierIsBrush) {
+		_modifierType = type;
+	} else {
+		_modifierType = ModifierType::Place;
+	}
 }
 
 } // namespace voxedit

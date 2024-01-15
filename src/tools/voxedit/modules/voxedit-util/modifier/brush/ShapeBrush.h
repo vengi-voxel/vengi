@@ -26,11 +26,7 @@ protected:
 	 */
 	bool _center = false;
 	bool _single = false;
-	/**
-	 * The aabb is not created by @c start() and @c step(), but set from the outside
-	 * @sa setRegion()
-	 */
-	bool _fixedRegion = false;
+	int _radius = 0;
 	/**
 	 * If this is true, the aabb has a valid mins and maxs already, but the maxs
 	 * can still be changed as long as @c step() is called.
@@ -126,12 +122,18 @@ public:
 	math::Axis mirrorAxis() const;
 	const glm::ivec3 &mirrorPos() const;
 
-	/**
-	 * @brief Can be used to set a fixed sized region. In this case the @c step() method won't modify the first and
-	 * second position of the aabb anymore. Can be used to set the region via script or ui.
-	 */
-	void setRegion(const voxel::Region &region, voxel::FaceNames face);
+	int radius() const;
+	void setRadius(int radius);
 };
+
+inline int ShapeBrush::radius() const {
+	return _radius;
+}
+
+inline void ShapeBrush::setRadius(int radius) {
+	_radius = radius;
+	markDirty();
+}
 
 inline const glm::ivec3 &ShapeBrush::mirrorPos() const {
 	return _mirrorPos;

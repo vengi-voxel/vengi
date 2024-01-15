@@ -14,7 +14,9 @@ enum class ModifierType {
 	Paint = (1 << 2),
 	Select = (1 << 3),
 	ColorPicker = (1 << 4),
-	Path = (1 << 5),
-	Line = (1 << 6),
+	Path = (1 << 5), // TODO: convert to brush
+	Line = (1 << 6), // TODO: convert to brush
+
+	Brush = Place | Erase | Paint
 };
 CORE_ENUM_BIT_OPERATIONS(ModifierType)
