@@ -44,14 +44,6 @@ void Modifier::construct() {
 		setModifierType(ModifierType::ColorPicker);
 	}).setHelp("Change the modifier type to 'color picker'");
 
-	command::Command::registerCommand("actionpath", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Path);
-	}).setHelp("Change the modifier type to 'path'");
-
-	command::Command::registerCommand("actionline", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Line);
-	}).setHelp("Change the modifier type to 'line'");
-
 	command::Command::registerCommand("actionerase", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'erase'");
@@ -67,6 +59,26 @@ void Modifier::construct() {
 	command::Command::registerCommand("actionoverride", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
+
+	command::Command::registerCommand("brushpath", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::Path);
+	}).setHelp("Change the brush type to 'path'");
+
+	command::Command::registerCommand("brushplane", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::Plane);
+	}).setHelp("Change the brush type to 'plane'");
+
+	command::Command::registerCommand("brushshape", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::Shape);
+	}).setHelp("Change the brush type to 'shape'");
+
+	command::Command::registerCommand("brushstamp", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::Stamp);
+	}).setHelp("Change the brush type to 'stamp'");
+
+	command::Command::registerCommand("brushline", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::Line);
+	}).setHelp("Change the brush type to 'line'");
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
