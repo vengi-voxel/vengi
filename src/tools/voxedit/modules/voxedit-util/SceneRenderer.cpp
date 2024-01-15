@@ -205,11 +205,11 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 
 void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph &sceneGraph,
 								   scenegraph::FrameIndex frameIdx) {
-#if 0
 	if (!sceneMode) {
 		return;
 	}
 	_shapeBuilder.clear();
+	_shapeBuilder.setColor(style::color(style::ColorBone));
 
 	const bool hideInactive = _hideInactive->boolVal();
 	const int activeNodeId = sceneGraph.activeNode();
@@ -229,20 +229,28 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 			continue;
 		}
 
-		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const scenegraph::SceneGraphNode &pnode = sceneGraph.node(node.parent());
+		if (!pnode.isAnyModelNode()) {
+			continue;
+		}
+		if (!pnode.visible()) {
+			continue;
+		}
+
+		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(pnode, frameIdx);
+#if 0
 		const glm::mat4 &rotation = calculateRotationMatrix(ptransform.translation, transform.translation);
 		const float length = glm::distance(ptransform.translation, transform.translation);
-
 		_shapeBuilder.setPosition(ptransform.translation);
 		_shapeBuilder.setRotation(rotation);
-		_shapeBuilder.setColor(style::color(style::ColorBone));
 		_shapeBuilder.bone(length, 1.0f, 2.0f);
+#else
+		_shapeBuilder.line(ptransform.translation, transform.translation);
+#endif
 	}
 
 	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
-#endif
 }
 
 void SceneRenderer::nodeRemove(int nodeId) {
