@@ -200,7 +200,12 @@ public:
 	void setColor(const glm::vec4& color);
 	void setPosition(const glm::vec3& position);
 	void setRotation(const glm::mat3& rotation);
+	void resetRotation();
 };
+
+inline void ShapeBuilder::resetRotation() {
+	_applyRotation = false;
+}
 
 inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth, float thickness) {
 	const math::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
