@@ -13,11 +13,9 @@
 
 namespace voxedit {
 
-class LineBrushTest : public app::AbstractTest {
-protected:
-};
+class LineBrushTest : public app::AbstractTest {};
 
-TEST_F(LineBrushTest, DISABLED_testExecute) {
+TEST_F(LineBrushTest, testExecute) {
 	LineBrush brush;
 
 	ASSERT_TRUE(brush.init());
@@ -30,6 +28,7 @@ TEST_F(LineBrushTest, DISABLED_testExecute) {
 	brushContext.referencePos = volume.region().getLowerCorner();
 	brushContext.cursorPosition = volume.region().getUpperCorner();
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
+	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
 	palette::Palette palette;
 	palette.nippon();
 
