@@ -429,6 +429,11 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 
 void Modifier::setBrushType(BrushType type) {
 	_brushType = type;
+	const bool isBrush = _brushType != BrushType::None;
+	const bool modifierIsBrush = (_modifierType & ModifierType::Brush) != ModifierType::None;
+	if (isBrush && !modifierIsBrush) {
+		setModifierType(ModifierType::Place);
+	}
 }
 
 void Modifier::setGridResolution(int gridSize) {
@@ -438,10 +443,10 @@ void Modifier::setGridResolution(int gridSize) {
 void Modifier::setModifierType(ModifierType type) {
 	const bool isBrush = _brushType != BrushType::None;
 	const bool modifierIsBrush = (type & ModifierType::Brush) != ModifierType::None;
+	_modifierType = type;
 	if (!isBrush && modifierIsBrush) {
 		setBrushType(BrushType::Shape);
 	}
-	_modifierType = type;
 }
 
 } // namespace voxedit
