@@ -59,7 +59,7 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
-	bool runModifier(
+	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
 

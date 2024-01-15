@@ -10,8 +10,7 @@
 
 namespace voxedit {
 
-bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						const BrushContext &context) {
+bool PathBrush::execute(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &context) {
 	core::List<glm::ivec3> listResult(4096);
 	const glm::ivec3 &start = context.referencePos;
 	const glm::ivec3 &end = context.cursorPosition;

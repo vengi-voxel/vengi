@@ -358,12 +358,12 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		return true;
 	}
 
-	runModifier(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
+	executeBrush(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
 
 	return true;
 }
 
-bool Modifier::runModifier(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 						   ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
 	ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
