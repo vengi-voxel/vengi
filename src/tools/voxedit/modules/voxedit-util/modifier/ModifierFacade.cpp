@@ -108,8 +108,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &palet
 		_modifierRenderer->renderSelection(camera);
 	}
 
-	if (isMode(ModifierType::ColorPicker) || isMode(ModifierType::Line) ||
-		isMode(ModifierType::Path)) {
+	if (isMode(ModifierType::ColorPicker)) {
 		return;
 	}
 

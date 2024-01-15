@@ -5,6 +5,8 @@ set(SRCS
 	Config.h
 
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
+	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
+	modifier/brush/PathBrush.cpp modifier/brush/PathBrush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
 	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
@@ -33,8 +35,10 @@ set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator voxelfont)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
+	tests/LineBrushTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
+	tests/PathBrushTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
 	tests/ShapeBrushTest.cpp

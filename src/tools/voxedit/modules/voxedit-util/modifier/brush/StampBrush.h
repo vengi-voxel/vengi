@@ -25,6 +25,7 @@ protected:
 public:
 	static constexpr int MaxSize = 32;
 
+	virtual ~StampBrush() = default;
 	void construct() override;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 				 const BrushContext &context) override;

@@ -45,11 +45,11 @@ void Modifier::construct() {
 	}).setHelp("Change the modifier type to 'color picker'");
 
 	command::Command::registerCommand("actionpath", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Path);
+		setBrushType(BrushType::Path);
 	}).setHelp("Change the modifier type to 'path'");
 
 	command::Command::registerCommand("actionline", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Line);
+		setBrushType(BrushType::Line);
 	}).setHelp("Change the modifier type to 'line'");
 
 	command::Command::registerCommand("actionerase", [&](const command::CmdArgs &args) {
@@ -99,6 +99,8 @@ void Modifier::construct() {
 	_planeBrush.construct();
 	_shapeBrush.construct();
 	_stampBrush.construct();
+	_lineBrush.construct();
+	_pathBrush.construct();
 }
 
 void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
@@ -122,6 +124,14 @@ bool Modifier::init() {
 		Log::error("Failed to initialize the stamp brush");
 		return false;
 	}
+	if (!_lineBrush.init()) {
+		Log::error("Failed to initialize the line brush");
+		return false;
+	}
+	if (!_pathBrush.init()) {
+		Log::error("Failed to initialize the path brush");
+		return false;
+	}
 	return true;
 }
 
@@ -130,6 +140,8 @@ void Modifier::shutdown() {
 	_planeBrush.shutdown();
 	_shapeBrush.shutdown();
 	_stampBrush.shutdown();
+	_lineBrush.shutdown();
+	_pathBrush.shutdown();
 }
 
 void Modifier::update(double nowSeconds) {
@@ -168,6 +180,8 @@ void Modifier::reset() {
 	_planeBrush.reset();
 	_shapeBrush.reset();
 	_stampBrush.reset();
+	_lineBrush.reset();
+	_pathBrush.reset();
 	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
 }
 
@@ -296,59 +310,6 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
-bool Modifier::lineModifier(voxel::RawVolume *volume, const Callback &callback) {
-	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-	const glm::ivec3 &start = referencePosition();
-	const glm::ivec3 &end = cursorPosition();
-	voxel::Voxel voxel = cursorVoxel();
-	if (isMode(ModifierType::Erase)) {
-		voxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
-	}
-	voxelutil::RaycastResult result = voxelutil::raycastWithEndpoints(&wrapper, start, end, [=](auto &sampler) {
-		const bool air = voxel::isAir(sampler.voxel().getMaterial());
-		if ((!isMode(ModifierType::Erase) && !isMode(ModifierType::Paint)) && !air) {
-			return true;
-		}
-		sampler.setVoxel(voxel);
-		return true;
-	});
-	Log::debug("result: %i", (int)result);
-	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-	if (modifiedRegion.isValid()) {
-		callback(modifiedRegion, _modifierType, true);
-	}
-	return true;
-}
-
-bool Modifier::pathModifier(voxel::RawVolume *volume, const Callback &callback) {
-	core::List<glm::ivec3> listResult(4096);
-	const glm::ivec3 &start = referencePosition();
-	const glm::ivec3 &end = cursorPosition();
-	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
-		volume, start, end, &listResult,
-		[=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
-			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
-				return false;
-			}
-			return voxelutil::isTouching(vol, pos);
-		},
-		4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
-	voxelutil::AStarPathfinder pathfinder(params);
-	if (!pathfinder.execute()) {
-		Log::warn("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
-		return false;
-	}
-	voxel::RawVolumeWrapper wrapper = createRawVolumeWrapper(volume);
-	for (const glm::ivec3 &p : listResult) {
-		wrapper.setVoxel(p, cursorVoxel());
-	}
-	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-	if (modifiedRegion.isValid()) {
-		callback(modifiedRegion, _modifierType, true);
-	}
-	return true;
-}
-
 voxel::Region Modifier::calcSelectionRegion() const {
 	const glm::ivec3 &mins = glm::min(_selectStartPosition, _brushContext.cursorPosition);
 	const glm::ivec3 &maxs = glm::max(_selectStartPosition, _brushContext.cursorPosition);
@@ -384,12 +345,6 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		setCursorVoxel(hitCursorVoxel());
 		return true;
 	}
-	if (isMode(ModifierType::Line)) {
-		return lineModifier(volume, callback);
-	}
-	if (isMode(ModifierType::Path)) {
-		return pathModifier(volume, callback);
-	}
 
 	runModifier(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
 
@@ -421,6 +376,10 @@ Brush *Modifier::activeBrush() {
 		return &_shapeBrush;
 	case BrushType::Stamp:
 		return &_stampBrush;
+	case BrushType::Line:
+		return &_lineBrush;
+	case BrushType::Path:
+		return &_pathBrush;
 	case BrushType::None:
 	case BrushType::Max:
 		break;
@@ -468,10 +427,9 @@ void Modifier::setModifierType(ModifierType type) {
 	const bool isBrush = _brushType != BrushType::None;
 	const bool modifierIsBrush = (type & ModifierType::Brush) != ModifierType::None;
 	if (isBrush && modifierIsBrush) {
-		_modifierType = type;
-	} else {
-		_modifierType = ModifierType::Place;
+		setBrushType(BrushType::Shape);
 	}
+	_modifierType = type;
 }
 
 } // namespace voxedit

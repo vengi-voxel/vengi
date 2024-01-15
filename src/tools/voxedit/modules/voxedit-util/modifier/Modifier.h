@@ -12,6 +12,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/brush/LineBrush.h"
+#include "voxedit-util/modifier/brush/PathBrush.h"
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
@@ -51,12 +53,11 @@ protected:
 	PlaneBrush _planeBrush;
 	ShapeBrush _shapeBrush;
 	StampBrush _stampBrush;
+	LineBrush _lineBrush;
+	PathBrush _pathBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
-
-	bool lineModifier(voxel::RawVolume *volume, const Callback &callback);
-	bool pathModifier(voxel::RawVolume *volume, const Callback &callback);
 
 	bool runModifier(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,

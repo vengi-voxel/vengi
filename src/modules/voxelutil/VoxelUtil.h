@@ -60,7 +60,7 @@ bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawV
 /**
  * @brief Checks if there is a solid voxel around the given position
  */
-bool isTouching(const voxel::RawVolume *volume, const glm::ivec3& pos);
+bool isTouching(const voxel::RawVolumeWrapper &volume, const glm::ivec3& pos);
 
 /**
  * @brief Checks whether the given region of the volume is only filled with air

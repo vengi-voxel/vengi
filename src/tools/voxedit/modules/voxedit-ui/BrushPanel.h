@@ -32,6 +32,8 @@ private:
 	void stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette, command::CommandExecutionListener &listener);
 	void updateStampBrushPanel(command::CommandExecutionListener &listener);
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
+	void updateLineBrushPanel(command::CommandExecutionListener &listener);
+	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 public:
 	void update(const char *title, command::CommandExecutionListener &listener);
 };

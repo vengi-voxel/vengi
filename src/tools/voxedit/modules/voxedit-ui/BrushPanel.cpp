@@ -25,7 +25,7 @@
 namespace voxedit {
 
 static constexpr const char *BrushTypeIcons[] = {ICON_LC_MOUSE_POINTER_SQUARE_DASHED, ICON_LC_BOXES, ICON_LC_GROUP,
-												 ICON_LC_STAMP};
+												 ICON_LC_STAMP, ICON_LC_PEN_LINE, ICON_LC_FOOTPRINTS};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -166,6 +166,14 @@ void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listen
 	}
 }
 
+void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {
+	ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
+}
+
+void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
+	ImGui::TextWrapped("Draws a path over existing voxels");
+}
+
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
@@ -218,6 +226,10 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateStampBrushPanel(listener);
 		} else if (modifier.brushType() == BrushType::Plane) {
 			updatePlaneBrushPanel(listener);
+		} else if (modifier.brushType() == BrushType::Line) {
+			updateLineBrushPanel(listener);
+		} else if (modifier.brushType() == BrushType::Path) {
+			updatePathBrushPanel(listener);
 		}
 	}
 }
@@ -246,10 +258,6 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	if (currentBrush == BrushType::None) {
 		toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
 		toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
-
-		// TODO: convert to brush
-		toolbarModifiers.button(ICON_LC_PEN_LINE, "actionpath", !modifier.isMode(ModifierType::Path));
-		toolbarModifiers.button(ICON_LC_PEN_LINE, "actionline", !modifier.isMode(ModifierType::Line));
 	} else {
 		toolbarModifiers.button(ICON_LC_BOX, "actionplace", !mplace);
 		toolbarModifiers.button(ICON_LC_ERASER, "actionerase", !merase);
@@ -267,10 +275,6 @@ void BrushPanel::update(const char *title, command::CommandExecutionListener &li
 		if (currentBrush == BrushType::None) {
 			if (modifier.isMode(ModifierType::ColorPicker)) {
 				ImGui::TextWrapped("Click on a voxel to pick the color");
-			} else if (modifier.isMode(ModifierType::Line)) {
-				ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
-			} else if (modifier.isMode(ModifierType::Path)) {
-				ImGui::TextWrapped("Draws a path over existing voxels");
 			} else if (modifier.isMode(ModifierType::Select)) {
 				ImGui::TextWrapped("Select areas of voxels");
 			}

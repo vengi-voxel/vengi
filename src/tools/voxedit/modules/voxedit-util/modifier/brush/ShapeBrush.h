@@ -64,6 +64,7 @@ protected:
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 
 public:
+	virtual ~ShapeBrush() = default;
 	void construct() override;
 	void reset() override;
 
