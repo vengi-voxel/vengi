@@ -55,25 +55,25 @@ jobs:
         - name: Upload the dmg
           uses: actions/upload-artifact@v4
           with:
-            name: dmg
+            name: mac-dmg
             path: build/*.dmg
 
         - name: Upload the voxedit app
           uses: actions/upload-artifact@v4
           with:
-            name: vengi-voxedit-app
+            name: mac-vengi-voxedit-app
             path: build/voxedit/vengi-voxedit.app
 
         - name: Upload the voxconvert app
           uses: actions/upload-artifact@v4
           with:
-            name: vengi-voxconvert-app
+            name: mac-vengi-voxconvert-app
             path: build/voxconvert/vengi-voxconvert.app
 
         - name: Upload the thumbnailer app
           uses: actions/upload-artifact@v4
           with:
-            name: vengi-thumbnailer-app
+            name: mac-vengi-thumbnailer-app
             path: build/thumbnailer/vengi-thumbnailer.app
 
     packages:
@@ -104,7 +104,7 @@ jobs:
         - name: Upload the ubuntu artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: debian
+            name: linux-debian
             path: vengi*.deb
 
         - name: Upload the ubuntu release artifacts
@@ -160,8 +160,8 @@ jobs:
         - name: Upload the AppImage artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: appimage
-            path: voxedit*.AppImage
+            name: linux-appimages
+            path: "*.AppImage"
 
     emscripten:
         timeout-minutes: 60
@@ -231,7 +231,7 @@ jobs:
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxedit
+            name: win-voxedit
             path: build/voxedit-install/
 
         - name: Upload the tests artifacts
@@ -244,13 +244,13 @@ jobs:
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxconvert
+            name: win-voxconvert
             path: build/voxconvert-install/
 
         - name: Upload the nsis installer artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: windows-installer
+            name: win-installer
             path: build/vengi-*-Windows.exe
 
     windows-debug:
@@ -276,13 +276,13 @@ jobs:
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxedit-debug
+            name: win-voxedit-debug
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxconvert-debug
+            name: win-voxconvert-debug
             path: build/voxconvert-install/
 
     windows-msys:
@@ -324,11 +324,11 @@ jobs:
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxedit-msys-release
+            name: win-voxedit-msys-release
             path: build/voxedit-install/
 
         - name: Upload the voxconvert artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: voxconvert-msys-release
+            name: win-voxconvert-msys-release
             path: build/voxconvert-install/
