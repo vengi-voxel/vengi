@@ -17,11 +17,11 @@ bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	const glm::ivec3 &end = context.cursorPosition;
 	voxelutil::AStarPathfinderParams<ModifierVolumeWrapper> params(
 		&wrapper, start, end, &listResult,
-		[&](const ModifierVolumeWrapper *vol, const glm::ivec3 &pos) {
-			if (voxel::isBlocked(wrapper.voxel(pos).getMaterial())) {
+		[](const ModifierVolumeWrapper *vol, const glm::ivec3 &pos) {
+			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
 				return false;
 			}
-			return voxelutil::isTouching(wrapper, pos);
+			return voxelutil::isTouching(*vol, pos);
 		},
 		4.0f, 10000, voxelutil::Connectivity::EighteenConnected);
 	voxelutil::AStarPathfinder pathfinder(params);
