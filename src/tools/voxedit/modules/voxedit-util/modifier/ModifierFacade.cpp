@@ -73,6 +73,17 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 		}
 		break;
 	}
+	case BrushType::Line: {
+		const voxel::Region region = _lineBrush.calcRegion(_brushContext);
+		if (region.isValid()) {
+			_volume = new voxel::RawVolume(region);
+			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+			dummyNode.setVolume(_volume, false);
+			executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+			_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+		}
+		break;
+	}
 	default:
 		break;
 	}

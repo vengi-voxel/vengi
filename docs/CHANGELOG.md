@@ -61,6 +61,7 @@ VoxEdit:
    - Automatically reference all child nodes when creating a new reference
    - Allow one to switch between cubes and marching cubes rendering in the editor
    - Added `clear` and `fill` commands
+   - Preview for the line brush
 
 Thumbnailer:
 

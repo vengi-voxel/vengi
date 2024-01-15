@@ -17,7 +17,21 @@ bool LineBrush::execute(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper
 		wrapper.setVoxel(pos.x, pos.y, pos.z, voxel);
 		return true;
 	});
+	wrapper.setVoxel(end.x, end.y, end.z, voxel);
 	return true;
+}
+
+void LineBrush::update(const BrushContext &ctx, double nowSeconds) {
+	if (_state != ctx) {
+		_state = ctx;
+		markDirty();
+	}
+}
+
+voxel::Region LineBrush::calcRegion(const BrushContext &context) const {
+	const glm::ivec3 mins = glm::min(context.referencePos, context.cursorPosition);
+	const glm::ivec3 maxs = glm::max(context.referencePos, context.cursorPosition);
+	return voxel::Region(mins, maxs);
 }
 
 } // namespace voxedit
