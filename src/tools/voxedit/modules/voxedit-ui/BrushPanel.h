@@ -18,7 +18,6 @@ class BrushPanel {
 private:
 	core::String _stamp;
 	int _stampPaletteIndex = 0;
-	voxel::FaceNames _face = voxel::FaceNames::PositiveX;
 
 	void addModifiers(command::CommandExecutionListener &listener);
 	void brushSettings(command::CommandExecutionListener &listener);
