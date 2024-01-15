@@ -67,6 +67,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 			dummyNode.setVolume(_volume, false);
 			executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+			// TODO: support mirror axis
 			// TODO: use _stampBrush palette?
 			_modifierRenderer->updateBrushVolume(0, _volume, &palette);
 		}
