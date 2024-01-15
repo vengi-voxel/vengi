@@ -426,7 +426,7 @@ void Modifier::setGridResolution(int gridSize) {
 void Modifier::setModifierType(ModifierType type) {
 	const bool isBrush = _brushType != BrushType::None;
 	const bool modifierIsBrush = (type & ModifierType::Brush) != ModifierType::None;
-	if (isBrush && modifierIsBrush) {
+	if (!isBrush && modifierIsBrush) {
 		setBrushType(BrushType::Shape);
 	}
 	_modifierType = type;
