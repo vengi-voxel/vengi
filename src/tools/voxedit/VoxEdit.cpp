@@ -302,6 +302,9 @@ app::AppState VoxEdit::onConstruct() {
 	return state;
 }
 
+// TODO: there is no alt on mac
+// could not get a valid key code for left alt (skip binding for +camera_pan)
+// could not get a valid key code for right alt (skip binding for +camera_pan)
 void VoxEdit::loadKeymap(int keymap) {
 	Super::loadKeymap(keymap);
 	_keybindingHandler.registerBinding("ctrl+z",               "undo",                         "all");
