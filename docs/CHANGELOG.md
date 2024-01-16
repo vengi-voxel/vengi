@@ -62,6 +62,7 @@ VoxEdit:
    - Allow one to switch between cubes and marching cubes rendering in the editor
    - Added `clear` and `fill` commands
    - Preview for the line brush
+   - Allow to render the bones
 
 Thumbnailer:
 
