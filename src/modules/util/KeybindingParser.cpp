@@ -44,6 +44,12 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 					modifier |= KMOD_LCONTROL;
 				} else if (lower == "right_ctrl") {
 					modifier |= KMOD_RCONTROL;
+				} else if (lower == "gui") {
+					modifier |= KMOD_GUI;
+				} else if (lower == "left_gui") {
+					modifier |= KMOD_LGUI;
+				} else if (lower == "right_gui") {
+					modifier |= KMOD_RGUI;
 				} else {
 					key = token;
 					if (key.empty()) {
