@@ -26,6 +26,7 @@ private:
 	core::VarPtr _showGrid;
 	core::VarPtr _showLockedAxis;
 	core::VarPtr _showAABB;
+	core::VarPtr _showBones;
 	core::VarPtr _renderShadow;
 	core::VarPtr _gridSize;
 	core::VarPtr _grayInactive;

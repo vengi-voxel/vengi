@@ -28,6 +28,7 @@ bool SceneRenderer::init() {
 	_showGrid = core::Var::getSafe(cfg::VoxEditShowgrid);
 	_showLockedAxis = core::Var::getSafe(cfg::VoxEditShowlockedaxis);
 	_showAABB = core::Var::getSafe(cfg::VoxEditShowaabb);
+	_showBones = core::Var::getSafe(cfg::VoxEditShowBones);
 	_renderShadow = core::Var::getSafe(cfg::VoxEditRendershadow);
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_grayInactive = core::Var::getSafe(cfg::VoxEditGrayInactive);
@@ -208,6 +209,9 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	if (!sceneMode) {
 		return;
 	}
+	if (!_showBones->boolVal()) {
+		return;
+	}
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(style::color(style::ColorBone));
 
@@ -239,12 +243,8 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(pnode, frameIdx);
-#if 0
-		const glm::mat4 &rotation = calculateRotationMatrix(ptransform.translation, transform.translation);
-		const float length = glm::distance(ptransform.translation, transform.translation);
-		_shapeBuilder.setPosition(ptransform.translation);
-		_shapeBuilder.setRotation(rotation);
-		_shapeBuilder.bone(length, 1.0f, 2.0f);
+#if 1
+		_shapeBuilder.bone(ptransform.translation, transform.translation);
 #else
 		_shapeBuilder.line(ptransform.translation, transform.translation);
 #endif
@@ -299,8 +299,10 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}
-		video::ScopedState depthDepthTest(video::State::DepthTest, false);
-		_shapeRenderer.render(_boneMeshIndex, camera);
+		if (_showBones->boolVal()) {
+			video::ScopedState depthDepthTest(video::State::DepthTest, false);
+			_shapeRenderer.render(_boneMeshIndex, camera);
+		}
 		// TODO: allow to render a grid in scene mode - makes shifting a lot easier
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 	} else if (n != nullptr) {

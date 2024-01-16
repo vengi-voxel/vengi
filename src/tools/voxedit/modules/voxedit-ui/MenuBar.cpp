@@ -116,6 +116,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_LC_BOX " Bounding box", cfg::VoxEditShowaabb);
+				ImGui::CheckboxVar(ICON_LC_BONE " Bones", cfg::VoxEditShowBones);
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == 1);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();

@@ -48,6 +48,7 @@ protected:
 		core::Var::get(cfg::VoxelMeshMode, "0");
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		core::Var::get(cfg::VoxEditShowaabb, "");
+		core::Var::get(cfg::VoxEditShowBones, "");
 		core::Var::get(cfg::VoxEditGrayInactive, "");
 		core::Var::get(cfg::VoxEditHideInactive, "");
 		core::Var::get(cfg::VoxEditLastPalette, "");

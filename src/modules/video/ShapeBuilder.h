@@ -129,7 +129,11 @@ public:
 	/**
 	 * @brief The bone is rendered into the positive z direction
 	 */
-	void bone(float length, float posSize = 1.0f, float boneSize = 4.0f);
+	void bone(float length, float posSize = 1.0f, float boneSize = 2.0f);
+	/**
+	 * @brief The bone is rendered into the positive z direction
+	 */
+	void bone(const glm::vec3 &from, const glm::vec3 &to, float posSize = 1.0f, float boneSize = 2.0f);
 	void diamond(float length1, float length2);
 
 	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);

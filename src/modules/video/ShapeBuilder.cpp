@@ -594,6 +594,28 @@ void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 	setColor(copy);
 }
 
+void ShapeBuilder::bone(const glm::vec3 &from, const glm::vec3 &to, float posSize, float boneSize) {
+	// backup state
+	const glm::vec3 prevPos = _position;
+	const glm::mat4 prevRotation = _rotation;
+	const bool prevApplyRotation = _applyRotation;
+
+	glm::vec3 dir = to - from;
+	dir.z = -dir.z;
+	const glm::vec3 norm = glm::normalize(dir);
+	const float length = glm::distance(from, to);
+
+	// change state
+	setRotation(glm::mat4_cast(glm::rotation(norm, glm::forward())));
+	setPosition(from);
+	bone(length, posSize, boneSize);
+
+	// restore state with old values
+	_position = prevPos;
+	_rotation = prevRotation;
+	_applyRotation = prevApplyRotation;
+}
+
 void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 	if (_primitive == Primitive::Lines) {
 		reserve(6 * 3, 24 * 3);
@@ -608,11 +630,14 @@ void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 	} else {
 		_position.z += 2.0f * posSize;
 	}
-	diamond(boneSize, length);
-	if (_applyRotation) {
-		_position += _rotation * glm::vec3(0.0f, 0.0f, boneSize + length);
-	} else {
-		_position.z += boneSize + length;
+	length -= (4.0f * posSize + boneSize);
+	if (length > 0.0f) {
+		diamond(boneSize, length);
+		if (_applyRotation) {
+			_position += _rotation * glm::vec3(0.0f, 0.0f, boneSize + length);
+		} else {
+			_position.z += boneSize + length;
+		}
 	}
 	diamond(posSize, posSize);
 	_position = pos;
