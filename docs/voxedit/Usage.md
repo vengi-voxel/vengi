@@ -63,3 +63,11 @@ This allows you to extrude a whole plane.
 ## Stamp brush
 
 Load stamps in form of other voxel assets via drag and drop or right click in the asset panel
+
+## Line brush
+
+Generate a line from the reference position to the current cursor position
+
+## Path brush
+
+Generate a path from the reference position to the current cursor position by walking over existing voxels

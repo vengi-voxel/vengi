@@ -17,8 +17,7 @@ We are using column major matrices.
 If you are going to contribute, make sure that you are adding unittests, too. I won't make promises about not breaking anything
 if there aren't unittests that are telling me that I've broken something.
 
-To add a unittest, each module (`src/modules/XXX`) has a `tests/` subdirectory. The `CMakeLists.txt` in the module directory adds
-the source files from that folder.
+To add a unittest, each module (`src/modules/XXX`) has a `tests/` subdirectory. The `CMakeLists.txt` in the module directory adds the source files from that folder.
 
 ```cmake
 set(TEST_SRCS
@@ -67,6 +66,7 @@ detail message line 2
 | math             | Based on glm                                                               |
 | metric           | telegraf, influx and other metrics                                         |
 | noise            | Different noise implementations                                            |
+| palette          | Palette formats and helper                                                 |
 | render           | General renderer implementations and helpers                               |
 | testcore         | Visual test helpers                                                        |
 | ui               | DearImgui based ui code                                                    |

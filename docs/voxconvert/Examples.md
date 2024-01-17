@@ -2,6 +2,8 @@
 
 [![asciicast](https://asciinema.org/a/fbcP4hsWvLXYnLyDbkwhEGQaH.svg)](https://asciinema.org/a/fbcP4hsWvLXYnLyDbkwhEGQaH)
 
+Make sure to check out the [configuration](Configuration.md) section to see cvars that can influence the result.
+
 ## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
@@ -170,6 +172,20 @@ You can export your volume model into a gltf, obj, stl or ply (see [Formats](../
 `./vengi-voxconvert --input infile.vox --output outfile.obj`
 
 `./vengi-voxconvert --input infile.vox --output outfile.gltf -set voxformat_transform_mesh true -set voxformat_scale 2.0`
+
+## Convert to different formats
+
+### Convert qubicle to cubzh
+
+`./vengi-voxconvert --input infile.qb --output output.3zh`
+
+### Convert minecraft to magicavoxel
+
+`./vengi-voxconvert --input infile.mca --output output.vox`
+
+### Convert sandbox voxedit to qubicle
+
+`./vengi-voxconvert --input infile.vxm --output output.qb`
 
 ## Batch convert
 

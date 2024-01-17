@@ -1,8 +1,16 @@
 # Usage
 
+Print a detailed description of the program parameters for your particular version.
+
 ```sh
-./vengi-voxconvert --merge --scale --input infile --output outfile
+vengi-voxconvert --help
 ```
+
+> You can use the bash completion or zsh completion
+>
+> Put this in your `.bashrc` or `.zshrc`
+>
+> `source <(vengi-voxconvert --completion bash)` (or replace `bash` by `zsh`)
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
