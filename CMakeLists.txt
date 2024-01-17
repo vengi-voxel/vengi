@@ -9,9 +9,9 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release MinSizeRel Re
 option(UNITTESTS "Builds with unittests" ON)
 option(VISUALTESTS "Builds with visual tests (src/tests)" ON)
 
-option(VOXEDIT "Builds voxedit (needs TOOLS to be active)" ON)
-option(THUMBNAILER "Builds thumbnailer (needs TOOLS to be active)" ON)
-option(VOXCONVERT "Builds voxconvert (needs TOOLS to be active)" ON)
+option(VOXEDIT "Builds voxedit" ON)
+option(THUMBNAILER "Builds thumbnailer" ON)
+option(VOXCONVERT "Builds voxconvert" ON)
 
 option(USE_OPENGLES "Enable OpenGLES" OFF)
 option(USE_CCACHE "Use ccache" ON)
