@@ -8,6 +8,8 @@ See [the documentation](https://vengi-voxel.github.io/vengi/) for further detail
 
 Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
+## 0.0.29 (2024-XX-XX)
+
 ## 0.0.28 (2024-01-17)
 
 > moved the github project into an organization named **vengi-voxel** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).
