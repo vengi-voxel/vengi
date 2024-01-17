@@ -407,7 +407,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     return 0;
 }
 
-static int SDL_UninitializedVideo()
+static int SDL_UninitializedVideo(void)
 {
     return SDL_SetError("Video subsystem has not been initialized");
 }
@@ -595,7 +595,7 @@ pre_driver_error:
     return -1;
 }
 
-const char *SDL_GetCurrentVideoDriver()
+const char *SDL_GetCurrentVideoDriver(void)
 {
     if (!_this) {
         SDL_UninitializedVideo();
@@ -609,7 +609,7 @@ SDL_VideoDevice *SDL_GetVideoDevice(void)
     return _this;
 }
 
-SDL_bool SDL_OnVideoThread()
+SDL_bool SDL_OnVideoThread(void)
 {
     return (_this && SDL_ThreadID() == _this->thread) ? SDL_TRUE : SDL_FALSE;
 }
@@ -2019,6 +2019,14 @@ int SDL_RecreateWindow(SDL_Window *window, Uint32 flags)
         _this->SetWindowIcon(_this, window, window->icon);
     }
 
+    if (_this->SetWindowMinimumSize && (window->min_w || window->min_h)) {
+        _this->SetWindowMinimumSize(_this, window);
+    }
+
+    if (_this->SetWindowMaximumSize && (window->max_w || window->max_h)) {
+        _this->SetWindowMaximumSize(_this, window);
+    }
+
     if (window->hit_test) {
         _this->SetWindowHitTest(window, SDL_TRUE);
     }
@@ -3336,7 +3344,7 @@ void SDL_DestroyWindow(SDL_Window *window)
     SDL_free(window);
 }
 
-SDL_bool SDL_IsScreenSaverEnabled()
+SDL_bool SDL_IsScreenSaverEnabled(void)
 {
     if (!_this) {
         return SDL_TRUE;
@@ -3344,7 +3352,7 @@ SDL_bool SDL_IsScreenSaverEnabled()
     return _this->suspend_screensaver ? SDL_FALSE : SDL_TRUE;
 }
 
-void SDL_EnableScreenSaver()
+void SDL_EnableScreenSaver(void)
 {
     if (!_this) {
         return;
@@ -3358,7 +3366,7 @@ void SDL_EnableScreenSaver()
     }
 }
 
-void SDL_DisableScreenSaver()
+void SDL_DisableScreenSaver(void)
 {
     if (!_this) {
         return;
@@ -3600,7 +3608,7 @@ void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor)
 #endif
 }
 
-void SDL_GL_ResetAttributes()
+void SDL_GL_ResetAttributes(void)
 {
     if (!_this) {
         return;
