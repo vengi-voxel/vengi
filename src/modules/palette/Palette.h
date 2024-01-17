@@ -44,6 +44,7 @@ public:
 	}
 
 	void setColor(uint8_t i, const core::RGBA &rgba);
+	void setGlowColor(uint8_t i, const core::RGBA &rgba);
 
 	/**
 	 * In case the palette indices are changed, this gives you access to the real texture index

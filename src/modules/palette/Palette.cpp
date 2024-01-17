@@ -94,6 +94,12 @@ void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
 	markDirty();
 }
 
+void Palette::setGlowColor(uint8_t i, const core::RGBA &rgba) {
+	glowColor(i) = rgba;
+	setSize(core_max(size(), i));
+	markDirty();
+}
+
 bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {

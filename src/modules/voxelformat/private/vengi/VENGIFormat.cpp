@@ -221,15 +221,21 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	wrap(stream.readUInt32(colorCount))
 	Log::debug("Load node palette with %u color", colorCount);
 	palette.setSize((int)colorCount);
+	palette::PaletteColorArray colors;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		wrap(stream.readUInt32(palette.color(i).rgba))
+		wrap(stream.readUInt32(colors[i].rgba))
 	}
+	palette::PaletteColorArray glowColors;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		wrap(stream.readUInt32(palette.glowColor(i).rgba))
+		wrap(stream.readUInt32(glowColors[i].rgba))
 	}
 	palette::PaletteIndicesArray &indices = palette.indices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt8(indices[i]))
+	}
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		palette.setColor(i, colors[i]);
+		palette.setGlowColor(i, glowColors[i]);
 	}
 	uint32_t palettePropertyCnt;
 	wrap(stream.readUInt32(palettePropertyCnt)) // TODO: slot for further extensions
