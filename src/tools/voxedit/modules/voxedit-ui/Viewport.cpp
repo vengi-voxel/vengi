@@ -700,6 +700,17 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				const glm::vec3 pivot = (glm::vec3(matrix[3]) - transform.worldTranslation()) / size;
 				sceneMgr().nodeUpdatePivot(activeNode, pivot);
 			} else {
+				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
+				// check if a new keyframe should get generated automatically
+				const scenegraph::FrameIndex frameIdx = sceneMgr().currentFrame();
+				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
+					if (sceneMgr().nodeAddKeyFrame(node.id(), frameIdx)) {
+						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
+						core_assert(newKeyFrameIdx != keyFrameIdx);
+						core_assert(newKeyFrameIdx != InvalidKeyFrame);
+						keyFrameIdx = newKeyFrameIdx;
+					}
+				}
 				sceneMgr().nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
 			}
 		} else {
