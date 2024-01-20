@@ -826,7 +826,7 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 			return i;
 		} else if (kf.frameIdx > frameIdx) {
 			if (i == 0) {
-				break;
+				return 0;
 			}
 			return i - 1;
 		}
