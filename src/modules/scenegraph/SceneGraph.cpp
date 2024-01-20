@@ -285,10 +285,10 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 	core_assert(frameIdx >= 0);
 	core_assert(node.keyFramesValidate());
 	for (const SceneGraphKeyFrame &kf : keyFrames) {
-		if (kf.frameIdx > frameIdx) {
+		if (kf.frameIdx == frameIdx) {
+			match = &kf;
 			break;
 		}
-		match = &kf;
 	}
 	if (match != nullptr) {
 		const SceneGraphTransform &transform = match->transform();
@@ -300,7 +300,8 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 		state.longRotation = match->longRotation;
 		return state;
 	}
-	const SceneGraphKeyFrame &kf = keyFrames.front();
+	const KeyFrameIndex bestFit = node.keyFrameForFrame(frameIdx);
+	const SceneGraphKeyFrame &kf = keyFrames[bestFit];
 	const SceneGraphTransform &transform = kf.transform();
 	if (node.parent() == InvalidNodeId) {
 		state.transform.orientation = transform.worldOrientation();
@@ -340,7 +341,8 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 		return state;
 	}
 	if (node.parent() == InvalidNodeId) {
-		const SceneGraphKeyFrame &kf = keyFrames.back();
+		const KeyFrameIndex bestFit = node.nextKeyFrameForFrame(frameIdx);
+		const SceneGraphKeyFrame &kf = keyFrames[bestFit];
 		const SceneGraphTransform &transform = kf.transform();
 		state.transform.orientation = transform.worldOrientation();
 		state.transform.translation = transform.worldTranslation();
