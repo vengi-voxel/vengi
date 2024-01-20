@@ -248,7 +248,7 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sc
 	wrapSave(stream.writeBool(node.visible()))
 	wrapSave(stream.writeBool(true)) // unknown
 	wrapSave(stream.writeBool(node.locked()))
-	const glm::mat3x3 &mat = sceneGraph.transformForFrame(node, 0).worldMatrix;
+	const glm::mat3x3 &mat = sceneGraph.transformForFrame(node, 0).worldMatrix();
 	for (int col = 0; col < 3; ++col) {
 		for (int row = 0; row < 3; ++row) {
 			wrapSave(stream.writeFloat(mat[col][row]))

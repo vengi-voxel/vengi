@@ -172,10 +172,11 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 		if (sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-			const glm::vec3 maxs = transform.worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
-			const glm::vec3 mins = transform.worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
+			const glm::mat4 worldMatrix = transform.worldMatrix();
+			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
+			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			_renderer.setModelMatrix(id, transform.worldMatrix, pivot, mins, maxs);
+			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
 			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(), region.getUpperCorner());
 		}
@@ -206,10 +207,11 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			_renderer.setVolumeReference(id, referencedId);
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const voxel::Region region = sceneGraph.resolveRegion(node);
-			const glm::vec3 maxs = transform.worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
-			const glm::vec3 mins = transform.worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
+			const glm::mat4 worldMatrix = transform.worldMatrix();
+			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
+			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
-			_renderer.setModelMatrix(id, transform.worldMatrix, pivot, mins, maxs);
+			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
 				_renderer.hide(id, id != activeNode);
 			} else {

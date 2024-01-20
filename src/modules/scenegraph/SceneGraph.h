@@ -31,7 +31,7 @@ struct AnimState {
 };
 
 struct FrameTransform {
-	glm::mat4 worldMatrix;
+	glm::mat4 worldMatrix() const;
 	glm::quat orientation;
 	glm::vec3 translation;
 	glm::vec3 scale;

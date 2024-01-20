@@ -8,7 +8,6 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
-#include <glm/gtx/matrix_decompose.hpp>
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -17,11 +16,16 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/gtx/matrix_decompose.hpp>
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_ASSERT core_assert
 #include "external/stb_rect_pack.h"
 
 namespace scenegraph {
+
+glm::mat4 FrameTransform::worldMatrix() const {
+	return glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
+}
 
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
 	clear();
@@ -35,12 +39,10 @@ SceneGraph::~SceneGraph() {
 	_nodes.clear();
 }
 
-SceneGraph::SceneGraph(SceneGraph &&other) noexcept : _nodes(core::move(other._nodes)),
-													  _nextNodeId(other._nextNodeId),
-													  _activeNodeId(other._activeNodeId),
-													  _animations(core::move(other._animations)),
-													  _activeAnimation(core::move(other._activeAnimation)),
-													  _cachedMaxFrame(other._cachedMaxFrame) {
+SceneGraph::SceneGraph(SceneGraph &&other) noexcept
+	: _nodes(core::move(other._nodes)), _nextNodeId(other._nextNodeId), _activeNodeId(other._activeNodeId),
+	  _animations(core::move(other._animations)), _activeAnimation(core::move(other._activeAnimation)),
+	  _cachedMaxFrame(other._cachedMaxFrame) {
 	other._nextNodeId = 0;
 	other._activeNodeId = InvalidNodeId;
 	_dirty = other.dirty();
@@ -350,7 +352,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 }
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const core::String &animation,
-												  FrameIndex frameIdx) const {
+											 FrameIndex frameIdx) const {
 	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
 	const AnimState source = transformFrameSource_r(node, animation, frameIdx);
 	const AnimState target = transformFrameTarget_r(node, animation, frameIdx);
@@ -379,8 +381,6 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	transform.translation = glm::mix(s_translation, t_translation, factor);
 	transform.orientation = glm::slerp(s_orientation, t_orientation, factor);
 	transform.scale = glm::mix(s_scale, t_scale, factor);
-	transform.worldMatrix =
-		glm::translate(transform.translation) * glm::mat4_cast(transform.orientation) * glm::scale(transform.scale);
 	return transform;
 }
 
