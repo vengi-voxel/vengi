@@ -808,6 +808,7 @@ void MainWindow::popupAbout() {
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
 					ImGui::URLItem("lucide", "https://lucide.dev/", w);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
+					ImGui::URLItem("ozz-animation", "https://github.com/guillaumeblanc/ozz-animation", w);
 					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
 					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
 					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", w);
