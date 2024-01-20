@@ -291,28 +291,30 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 		match = &kf;
 	}
 	if (match != nullptr) {
-		state.transform.orientation = match->transform().worldOrientation();
-		state.transform.translation = match->transform().worldTranslation();
-		state.transform.scale = match->transform().worldScale();
+		const SceneGraphTransform &transform = match->transform();
+		state.transform.orientation = transform.worldOrientation();
+		state.transform.translation = transform.worldTranslation();
+		state.transform.scale = transform.worldScale();
 		state.frameIdx = match->frameIdx;
 		state.interpolation = match->interpolation;
 		state.longRotation = match->longRotation;
 		return state;
 	}
 	const SceneGraphKeyFrame &kf = keyFrames.front();
+	const SceneGraphTransform &transform = kf.transform();
 	if (node.parent() == InvalidNodeId) {
-		state.transform.orientation = kf.transform().worldOrientation();
-		state.transform.translation = kf.transform().worldTranslation();
-		state.transform.scale = kf.transform().worldScale();
+		state.transform.orientation = transform.worldOrientation();
+		state.transform.translation = transform.worldTranslation();
+		state.transform.scale = transform.worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
 		return state;
 	}
 	state = transformFrameSource_r(this->node(node.parent()), animation, frameIdx);
-	state.transform.orientation *= kf.transform().localOrientation();
-	state.transform.translation += kf.transform().localTranslation();
-	state.transform.scale *= kf.transform().localScale();
+	state.transform.orientation *= transform.localOrientation();
+	state.transform.translation += transform.localTranslation();
+	state.transform.scale *= transform.localScale();
 	return state;
 }
 
@@ -328,9 +330,10 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 			last = &kf;
 			continue;
 		}
-		state.transform.orientation = kf.transform().worldOrientation();
-		state.transform.translation = kf.transform().worldTranslation();
-		state.transform.scale = kf.transform().worldScale();
+		const SceneGraphTransform &transform = kf.transform();
+		state.transform.orientation = transform.worldOrientation();
+		state.transform.translation = transform.worldTranslation();
+		state.transform.scale = transform.worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
@@ -338,9 +341,10 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 	}
 	if (node.parent() == InvalidNodeId) {
 		const SceneGraphKeyFrame &kf = keyFrames.back();
-		state.transform.orientation = kf.transform().worldOrientation();
-		state.transform.translation = kf.transform().worldTranslation();
-		state.transform.scale = kf.transform().worldScale();
+		const SceneGraphTransform &transform = kf.transform();
+		state.transform.orientation = transform.worldOrientation();
+		state.transform.translation = transform.worldTranslation();
+		state.transform.scale = transform.worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
@@ -348,10 +352,11 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 	}
 	core_assert(last != nullptr);
 	const SceneGraphNode &parentNode = this->node(node.parent());
+	const SceneGraphTransform &transform = last->transform();
 	state = transformFrameTarget_r(parentNode, animation, frameIdx);
-	state.transform.orientation *= last->transform().localOrientation();
-	state.transform.translation += last->transform().localTranslation();
-	state.transform.scale *= last->transform().localScale();
+	state.transform.orientation *= transform.localOrientation();
+	state.transform.translation += transform.localTranslation();
+	state.transform.scale *= transform.localScale();
 	return state;
 }
 
