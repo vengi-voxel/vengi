@@ -385,6 +385,7 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 	Log::debug("Switched animation for node %s (%i) to %s", _name.c_str(), _id, anim.c_str());
 	_keyFrames = &iter->value;
 	core_assert_msg(!_keyFrames->empty(), "Empty keyframes for anim %s", anim.c_str());
+	core_assert(keyFramesValidate());
 	return true;
 }
 
@@ -624,6 +625,27 @@ SceneGraphKeyFrame &SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	return (*kfs)[keyFrameIdx];
 }
 
+bool SceneGraphNode::keyFramesValidate() const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	if (kfs.empty()) {
+		Log::error("Invalid key frames: We need at least one key frame for each animation");
+		return false;
+	}
+	int lastKeyFrameIdx = -1;
+	for (const SceneGraphKeyFrame &kf : kfs) {
+		if (kf.frameIdx < 0) {
+			Log::error("Invalid key frames: index is invalid: %i", kf.frameIdx);
+			return false;
+		}
+		if (kf.frameIdx <= lastKeyFrameIdx) {
+			Log::error("Invalid key frames: index is not sorted: %i <= %i", kf.frameIdx, lastKeyFrameIdx);
+			return false;
+		}
+		lastKeyFrameIdx = kf.frameIdx;
+	}
+	return true;
+}
+
 SceneGraphTransform &SceneGraphNode::transform(KeyFrameIndex keyFrameIdx) {
 	return keyFrame(keyFrameIdx).transform();
 }
@@ -779,6 +801,18 @@ KeyFrameIndex SceneGraphNode::previousKeyFrameForFrame(FrameIndex frameIdx) cons
 		}
 	}
 	return closest;
+}
+
+bool SceneGraphNode::hasKeyFrameForFrame(FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	const int n = (int)kfs.size();
+	for (int i = 0; i < n; ++i) {
+		const SceneGraphKeyFrame &kf = kfs[i];
+		if (kf.frameIdx == frameIdx) {
+			return true;
+		}
+	}
+	return false;
 }
 
 KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {

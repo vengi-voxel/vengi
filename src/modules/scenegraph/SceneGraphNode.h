@@ -364,6 +364,10 @@ public:
 	void setAllKeyFrames(const SceneGraphKeyFramesMap &map, const core::String &animation);
 	const SceneGraphKeyFramesMap &allKeyFrames() const;
 	SceneGraphKeyFramesMap &allKeyFrames();
+	/**
+	 * @brief Check that all key frames are valid. This basically means that they are sorted in the right order
+	 */
+	bool keyFramesValidate() const;
 	bool hasActiveAnimation() const;
 	bool addAnimation(const core::String &anim);
 	bool removeAnimation(const core::String &anim);
@@ -373,6 +377,7 @@ public:
 	 * Or if no direct key frame exists, the key frame that is interpolated towards
 	 */
 	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
+	bool hasKeyFrameForFrame(FrameIndex frameIdx) const;
 	KeyFrameIndex previousKeyFrameForFrame(FrameIndex frameIdx) const;
 	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
 	SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0);

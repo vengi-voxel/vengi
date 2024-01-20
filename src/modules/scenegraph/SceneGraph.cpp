@@ -280,6 +280,8 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 	const SceneGraphKeyFrames &keyFrames = node.keyFrames(animation);
 	const SceneGraphKeyFrame *match = nullptr;
 	AnimState state;
+	core_assert(frameIdx >= 0);
+	core_assert(node.keyFramesValidate());
 	for (const SceneGraphKeyFrame &kf : keyFrames) {
 		if (kf.frameIdx > frameIdx) {
 			break;
@@ -313,6 +315,8 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 	const SceneGraphKeyFrames &keyFrames = node.keyFrames(animation);
 	const SceneGraphKeyFrame *last = nullptr;
 	AnimState state;
+	core_assert(frameIdx >= 0);
+	core_assert(node.keyFramesValidate());
 	for (const SceneGraphKeyFrame &kf : keyFrames) {
 		if (kf.frameIdx <= frameIdx) {
 			last = &kf;
