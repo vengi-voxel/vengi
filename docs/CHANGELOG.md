@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 Voxedit:
 
    - Auto create key frames when transform is modified via gizmo, too
+   - Fixed an error in interpolating between the key frames
 
 ## 0.0.28 (2024-01-17)
 
