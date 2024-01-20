@@ -146,7 +146,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		return 0;
 	}
 
-	core::DynamicSet<core::RGBA, 11, core::RGBAHasher> colors;
+	RGBAMap colors;
 	Log::debug("create palette");
 
 	auto data = ini.find("data");
@@ -154,7 +154,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 		for (auto iter : data->second) {
 			if (iter->first == "voxels") {
 				if (!loadVoxels(iter->second,
-								[&colors](const glm::ivec3 &pos, const core::RGBA &color) { colors.insert(color); })) {
+								[&colors](const glm::ivec3 &pos, const core::RGBA &color) { colors.put(color, true); })) {
 					Log::error("Failed to load voxel volume dimensions from: %s", iter->second.c_str());
 					return 0;
 				}
