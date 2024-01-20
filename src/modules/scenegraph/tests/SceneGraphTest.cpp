@@ -366,11 +366,13 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&v, false);
+		node.setName("Parent");
 		firstNodeId = sceneGraph.emplace(core::move(node));
 	}
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setVolume(&v, false);
+		node.setName("Child");
 		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
 	}
 	ASSERT_FALSE(sceneGraph.animations().empty());
