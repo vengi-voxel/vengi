@@ -362,7 +362,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	return true;
 }
 
-bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, RGBAMap &colors) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -392,7 +392,6 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 	wrap(stream.readInt32(tmp));
 
 	if (state._compressed == Compression::None) {
-		RGBAMap colors;
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
@@ -406,43 +405,33 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 				}
 			}
 		}
-		const size_t colorCount = colors.size();
-		core::Buffer<core::RGBA> colorBuffer;
-		colorBuffer.reserve(colorCount);
-		for (const auto &e : colors) {
-			colorBuffer.push_back(e->first);
-		}
-		palette.quantize(colorBuffer.data(), colorBuffer.size());
-		Log::debug("%i colors loaded", palette.colorCount());
-		return true;
-	}
+	} else {
+		Log::debug("Matrix rle compressed");
 
-	Log::debug("Matrix rle compressed");
-
-	uint32_t z = 0u;
-	while (z < size.z) {
-		for (;;) {
-			uint32_t data;
-			wrap(stream.peekUInt32(data))
-			if (data == qb::NEXT_SLICE_FLAG) {
-				stream.skip(sizeof(data));
-				break;
+		uint32_t z = 0u;
+		while (z < size.z) {
+			for (;;) {
+				uint32_t data;
+				wrap(stream.peekUInt32(data))
+				if (data == qb::NEXT_SLICE_FLAG) {
+					stream.skip(sizeof(data));
+					break;
+				}
+				if (data == qb::RLE_FLAG) {
+					stream.skip(sizeof(data));
+					uint32_t count;
+					wrap(stream.readUInt32(count))
+				}
+				core::RGBA color(0);
+				wrapBool(readColor(state, stream, color))
+				if (color.a == 0) {
+					continue;
+				}
+				colors.put(flattenRGB(color.r, color.g, color.b), true);
 			}
-			if (data == qb::RLE_FLAG) {
-				stream.skip(sizeof(data));
-				uint32_t count;
-				wrap(stream.readUInt32(count))
-			}
-			core::RGBA color(0);
-			wrapBool(readColor(state, stream, color))
-			if (color.a == 0) {
-				continue;
-			}
-			palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
+			++z;
 		}
-		++z;
 	}
-	Log::debug("%i colors loaded", palette.colorCount());
 	return true;
 }
 
@@ -469,14 +458,23 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return 0;
 	}
+
+	RGBAMap colors;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
-		if (!readPalette(state, stream, palette)) {
+		if (!readPalette(state, stream, colors)) {
 			Log::error("Failed to load the matrix colors %u", i);
 			break;
 		}
 	}
-	Log::debug("%i qb colors loaded", palette.colorCount());
+	const size_t colorCount = colors.size();
+	core::Buffer<core::RGBA> colorBuffer;
+	colorBuffer.reserve(colorCount);
+	for (const auto &e : colors) {
+		colorBuffer.push_back(e->first);
+	}
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	Log::debug("%i qb colors loaded from %i", palette.colorCount(), (int)colors.size());
 	return palette.colorCount();
 }
 

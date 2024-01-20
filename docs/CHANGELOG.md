@@ -10,6 +10,10 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.0.29 (2024-XX-XX)
 
+General:
+
+   - Optimized qubicle QB color quantization
+
 Voxedit:
 
    - Auto create key frames when transform is modified via gizmo, too
