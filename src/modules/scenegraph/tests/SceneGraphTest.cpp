@@ -409,32 +409,4 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	}
 }
 
-TEST_F(SceneGraphTest, DISABLED_testTransformInterpolation) {
-	SceneGraph sceneGraph;
-
-	SceneGraphNode parentNode(SceneGraphNodeType::Group);
-	parentNode.setName("parent");
-	KeyFrameIndex parentKeyFrameIdx = parentNode.addKeyFrame(10);
-	ASSERT_EQ(1, parentKeyFrameIdx);
-	const int parent = sceneGraph.emplace(core::move(parentNode), 0);
-	sceneGraph.node(parent).keyFrame(parentKeyFrameIdx).transform().setWorldTranslation(glm::vec3(1.0f));
-
-	SceneGraphNode child1Node(SceneGraphNodeType::Group);
-	child1Node.setName("child1");
-	KeyFrameIndex child1KeyFrameIdx = child1Node.addKeyFrame(5);
-	ASSERT_EQ(1, child1KeyFrameIdx);
-	const int child1Id = sceneGraph.emplace(core::move(child1Node), parent);
-	ASSERT_NE(InvalidNodeId, child1Id);
-	sceneGraph.node(child1Id).keyFrame(child1KeyFrameIdx).transform().setWorldTranslation(glm::vec3(1.0f));
-
-	SceneGraphNode child2Node(SceneGraphNodeType::Group);
-	child2Node.setName("child2");
-	ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(child2Node), parent));
-
-	sceneGraph.updateTransforms();
-
-	EXPECT_EQ(glm::vec3(1.0f), sceneGraph.transformForFrame(child1Node, 5).translation);
-	EXPECT_EQ(glm::vec3(0.5f), sceneGraph.transformForFrame(child2Node, 5).translation);
-}
-
 } // namespace scenegraph
