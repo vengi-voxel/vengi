@@ -441,7 +441,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				++y;
 			} else {
 				// Uncompressed
-				const core::RGBA color(red, green, blue);
+				const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: alpha support? */);
 				if (header.loadPalette) {
 					palette.addColorToPalette(color, false);
 				} else {
