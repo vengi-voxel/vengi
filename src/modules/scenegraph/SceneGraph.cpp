@@ -291,8 +291,9 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 		match = &kf;
 	}
 	if (match != nullptr) {
-		state.worldMatrix = match->transform().worldMatrix();
-		state.scale = match->transform().worldScale();
+		state.transform.orientation = match->transform().worldOrientation();
+		state.transform.translation = match->transform().worldTranslation();
+		state.transform.scale = match->transform().worldScale();
 		state.frameIdx = match->frameIdx;
 		state.interpolation = match->interpolation;
 		state.longRotation = match->longRotation;
@@ -300,15 +301,18 @@ AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const c
 	}
 	const SceneGraphKeyFrame &kf = keyFrames.front();
 	if (node.parent() == InvalidNodeId) {
-		state.worldMatrix = kf.transform().worldMatrix();
-		state.scale = kf.transform().worldScale();
+		state.transform.orientation = kf.transform().worldOrientation();
+		state.transform.translation = kf.transform().worldTranslation();
+		state.transform.scale = kf.transform().worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
 		return state;
 	}
 	state = transformFrameSource_r(this->node(node.parent()), animation, frameIdx);
-	state.worldMatrix = kf.transform().localMatrix() * state.worldMatrix;
+	state.transform.orientation *= kf.transform().localOrientation();
+	state.transform.translation += kf.transform().localTranslation();
+	state.transform.scale *= kf.transform().localScale();
 	return state;
 }
 
@@ -324,8 +328,9 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 			last = &kf;
 			continue;
 		}
-		state.worldMatrix = kf.transform().worldMatrix();
-		state.scale = kf.transform().worldScale();
+		state.transform.orientation = kf.transform().worldOrientation();
+		state.transform.translation = kf.transform().worldTranslation();
+		state.transform.scale = kf.transform().worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
@@ -333,8 +338,9 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 	}
 	if (node.parent() == InvalidNodeId) {
 		const SceneGraphKeyFrame &kf = keyFrames.back();
-		state.worldMatrix = kf.transform().worldMatrix();
-		state.scale = kf.transform().worldScale();
+		state.transform.orientation = kf.transform().worldOrientation();
+		state.transform.translation = kf.transform().worldTranslation();
+		state.transform.scale = kf.transform().worldScale();
 		state.frameIdx = kf.frameIdx;
 		state.interpolation = kf.interpolation;
 		state.longRotation = kf.longRotation;
@@ -343,7 +349,9 @@ AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const c
 	core_assert(last != nullptr);
 	const SceneGraphNode &parentNode = this->node(node.parent());
 	state = transformFrameTarget_r(parentNode, animation, frameIdx);
-	state.worldMatrix = last->transform().localMatrix() * state.worldMatrix;
+	state.transform.orientation *= last->transform().localOrientation();
+	state.transform.translation += last->transform().localTranslation();
+	state.transform.scale *= last->transform().localScale();
 	return state;
 }
 
@@ -363,24 +371,10 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 		scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
 	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
 
-	glm::vec3 s_scale;
-	glm::quat s_orientation;
-	glm::vec3 s_translation;
-	glm::vec3 s_skew;
-	glm::vec4 s_perspective;
-	glm::decompose(source.worldMatrix, s_scale, s_orientation, s_translation, s_skew, s_perspective);
-
-	glm::vec3 t_scale;
-	glm::quat t_orientation;
-	glm::vec3 t_translation;
-	glm::vec3 t_skew;
-	glm::vec4 t_perspective;
-	glm::decompose(target.worldMatrix, t_scale, t_orientation, t_translation, t_skew, t_perspective);
-
 	FrameTransform transform;
-	transform.translation = glm::mix(s_translation, t_translation, factor);
-	transform.orientation = glm::slerp(s_orientation, t_orientation, factor);
-	transform.scale = glm::mix(s_scale, t_scale, factor);
+	transform.translation = glm::mix(source.transform.translation, target.transform.translation, factor);
+	transform.orientation = glm::slerp(source.transform.orientation, target.transform.orientation, factor);
+	transform.scale = glm::mix(source.transform.scale, target.transform.scale, factor);
 	return transform;
 }
 

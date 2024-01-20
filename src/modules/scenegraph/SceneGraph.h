@@ -22,19 +22,18 @@ namespace scenegraph {
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
 
-struct AnimState {
-	glm::mat4 worldMatrix{1.0f};
-	glm::vec3 scale{1.0f};
-	FrameIndex frameIdx = 0;
-	InterpolationType interpolation = InterpolationType::Linear;
-	bool longRotation = false;
-};
-
 struct FrameTransform {
 	glm::mat4 worldMatrix() const;
 	glm::quat orientation;
 	glm::vec3 translation;
 	glm::vec3 scale;
+};
+
+struct AnimState {
+	FrameTransform transform;
+	FrameIndex frameIdx = 0;
+	InterpolationType interpolation = InterpolationType::Linear;
+	bool longRotation = false;
 };
 
 /**
