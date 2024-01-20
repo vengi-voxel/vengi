@@ -788,6 +788,35 @@ SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() {
 	return _keyFramesMap;
 }
 
+bool SceneGraphNode::hasKeyFrameForFrame(FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	const int n = (int)kfs.size();
+	for (int i = 0; i < n; ++i) {
+		const SceneGraphKeyFrame &kf = kfs[i];
+		if (kf.frameIdx == frameIdx) {
+			return true;
+		}
+	}
+	return false;
+}
+
+KeyFrameIndex SceneGraphNode::nextKeyFrameForFrame(FrameIndex frameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	// this assumes that the key frames are sorted by their frame
+	const int n = (int)kfs.size();
+	core_assert(n > 0);
+	int closest = 0;
+	for (int i = 0; i < n; ++i) {
+		const SceneGraphKeyFrame &kf = kfs[i];
+		if (kf.frameIdx <= frameIdx) {
+			closest = i;
+		} else {
+			return i;
+		}
+	}
+	return closest;
+}
+
 KeyFrameIndex SceneGraphNode::previousKeyFrameForFrame(FrameIndex frameIdx) const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
 	// this assumes that the key frames are sorted by their frame
@@ -801,18 +830,6 @@ KeyFrameIndex SceneGraphNode::previousKeyFrameForFrame(FrameIndex frameIdx) cons
 		}
 	}
 	return closest;
-}
-
-bool SceneGraphNode::hasKeyFrameForFrame(FrameIndex frameIdx) const {
-	const SceneGraphKeyFrames &kfs = keyFrames();
-	const int n = (int)kfs.size();
-	for (int i = 0; i < n; ++i) {
-		const SceneGraphKeyFrame &kf = kfs[i];
-		if (kf.frameIdx == frameIdx) {
-			return true;
-		}
-	}
-	return false;
 }
 
 KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {

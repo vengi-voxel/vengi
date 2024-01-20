@@ -379,6 +379,7 @@ public:
 	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
 	bool hasKeyFrameForFrame(FrameIndex frameIdx) const;
 	KeyFrameIndex previousKeyFrameForFrame(FrameIndex frameIdx) const;
+	KeyFrameIndex nextKeyFrameForFrame(FrameIndex frameIdx) const;
 	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);
 	SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0);
 	const SceneGraphTransform &transform(KeyFrameIndex keyFrameIdx = 0) const;
