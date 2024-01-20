@@ -431,11 +431,13 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 	{
 	core_trace_scoped(QuadGeneration);
+	volumeSampler.setPosition(offset);
 	for (int32_t z = offset.z; z <= upper.z; ++z) {
 		const uint32_t regZ = z - offset.z;
+		voxel::RawVolume::Sampler volumeSampler2 = volumeSampler;
 		for (int32_t x = offset.x; x <= upper.x; ++x) {
 			const uint32_t regX = x - offset.x;
-			volumeSampler.setPosition(x, offset.y, z);
+			voxel::RawVolume::Sampler volumeSampler3 = volumeSampler2;
 			for (int32_t y = offset.y; y <= upper.y; ++y) {
 				const uint32_t regY = y - offset.y;
 
@@ -457,25 +459,25 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 				 *               [C]
 				 */
 
-				const Voxel& voxelCurrent          = volumeSampler.voxel();
-				const Voxel& voxelLeft             = volumeSampler.peekVoxel1nx0py0pz();
-				const Voxel& voxelBefore           = volumeSampler.peekVoxel0px0py1nz();
-				const Voxel& voxelLeftBefore       = volumeSampler.peekVoxel1nx0py1nz();
-				const Voxel& voxelRightBefore      = volumeSampler.peekVoxel1px0py1nz();
-				const Voxel& voxelLeftBehind       = volumeSampler.peekVoxel1nx0py1pz();
+				const Voxel& voxelCurrent          = volumeSampler3.voxel();
+				const Voxel& voxelLeft             = volumeSampler3.peekVoxel1nx0py0pz();
+				const Voxel& voxelBefore           = volumeSampler3.peekVoxel0px0py1nz();
+				const Voxel& voxelLeftBefore       = volumeSampler3.peekVoxel1nx0py1nz();
+				const Voxel& voxelRightBefore      = volumeSampler3.peekVoxel1px0py1nz();
+				const Voxel& voxelLeftBehind       = volumeSampler3.peekVoxel1nx0py1pz();
 
-				const Voxel& voxelAboveLeft        = volumeSampler.peekVoxel1nx1py0pz();
-				const Voxel& voxelAboveBefore      = volumeSampler.peekVoxel0px1py1nz();
-				const Voxel& voxelAboveLeftBefore  = volumeSampler.peekVoxel1nx1py1nz();
-				const Voxel& voxelAboveRightBefore = volumeSampler.peekVoxel1px1py1nz();
-				const Voxel& voxelAboveLeftBehind  = volumeSampler.peekVoxel1nx1py1pz();
+				const Voxel& voxelAboveLeft        = volumeSampler3.peekVoxel1nx1py0pz();
+				const Voxel& voxelAboveBefore      = volumeSampler3.peekVoxel0px1py1nz();
+				const Voxel& voxelAboveLeftBefore  = volumeSampler3.peekVoxel1nx1py1nz();
+				const Voxel& voxelAboveRightBefore = volumeSampler3.peekVoxel1px1py1nz();
+				const Voxel& voxelAboveLeftBehind  = volumeSampler3.peekVoxel1nx1py1pz();
 
-				const Voxel& voxelBelow            = volumeSampler.peekVoxel0px1ny0pz();
-				const Voxel& voxelBelowLeft        = volumeSampler.peekVoxel1nx1ny0pz();
-				const Voxel& voxelBelowBefore      = volumeSampler.peekVoxel0px1ny1nz();
-				const Voxel& voxelBelowLeftBefore  = volumeSampler.peekVoxel1nx1ny1nz();
-				const Voxel& voxelBelowRightBefore = volumeSampler.peekVoxel1px1ny1nz();
-				const Voxel& voxelBelowLeftBehind  = volumeSampler.peekVoxel1nx1ny1pz();
+				const Voxel& voxelBelow            = volumeSampler3.peekVoxel0px1ny0pz();
+				const Voxel& voxelBelowLeft        = volumeSampler3.peekVoxel1nx1ny0pz();
+				const Voxel& voxelBelowBefore      = volumeSampler3.peekVoxel0px1ny1nz();
+				const Voxel& voxelBelowLeftBefore  = volumeSampler3.peekVoxel1nx1ny1nz();
+				const Voxel& voxelBelowRightBefore = volumeSampler3.peekVoxel1px1ny1nz();
+				const Voxel& voxelBelowLeftBehind  = volumeSampler3.peekVoxel1nx1ny1pz();
 
 				const VoxelType voxelCurrentMaterial          = voxelCurrent.getMaterial();
 				const VoxelType voxelLeftMaterial             = voxelLeft.getMaterial();
@@ -515,10 +517,10 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 				// X [B] RIGHT
 				if (isQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, FaceNames::PositiveX)) {
-					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
-					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel0px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler3.peekVoxel0px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler3.peekVoxel0px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel0px1ny1pz().getMaterial();
 
 					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
@@ -533,10 +535,10 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 							_voxelAboveRight, voxelBeforeMaterial, _voxelAboveRightBefore, translate);
 					vecQuads[core::enumVal(FaceNames::PositiveX)][regX].emplace_back(v_0_2, v_3_6, v_2_7, v_1_3);
 				} else if (isTransparentQuadNeeded(voxelLeftMaterial, voxelCurrentMaterial, FaceNames::PositiveX)) {
-					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
-					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel0px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel0px1py1pz().getMaterial();
-					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel0px1ny1pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler3.peekVoxel0px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler3.peekVoxel0px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel0px1py1pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel0px1ny1pz().getMaterial();
 
 					const VoxelType _voxelAboveRightBefore = voxelAboveBefore.getMaterial();
 					const VoxelType _voxelBelowRightBefore = voxelBelowBefore.getMaterial();
@@ -554,9 +556,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 				// Y [C] BELOW
 				if (isQuadNeeded(voxelCurrentMaterial, voxelBelowMaterial, FaceNames::NegativeY)) {
-					const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
-					const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-					const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+					const Voxel& voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny1pz();
+					const Voxel& voxelBelowRight       = volumeSampler3.peekVoxel1px1ny0pz();
+					const Voxel& voxelBelowBehind      = volumeSampler3.peekVoxel0px1ny1pz();
 
 					const VoxelType voxelBelowRightMaterial       = voxelBelowRight.getMaterial();
 					const VoxelType voxelBelowBeforeMaterial      = voxelBelowBefore.getMaterial();
@@ -574,9 +576,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 							voxelBelowLeftMaterial, voxelBelowBehindMaterial, voxelBelowLeftBehindMaterial, translate);
 					vecQuads[core::enumVal(FaceNames::NegativeY)][regY].emplace_back(v_0_1, v_1_2, v_2_3, v_3_4);
 				} else if (isTransparentQuadNeeded(voxelCurrentMaterial, voxelBelowMaterial, FaceNames::NegativeY)) {
-					const Voxel& voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny1pz();
-					const Voxel& voxelBelowRight       = volumeSampler.peekVoxel1px1ny0pz();
-					const Voxel& voxelBelowBehind      = volumeSampler.peekVoxel0px1ny1pz();
+					const Voxel& voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny1pz();
+					const Voxel& voxelBelowRight       = volumeSampler3.peekVoxel1px1ny0pz();
+					const Voxel& voxelBelowBehind      = volumeSampler3.peekVoxel0px1ny1pz();
 
 					const VoxelType voxelBelowRightMaterial       = voxelBelowRight.getMaterial();
 					const VoxelType voxelBelowBeforeMaterial      = voxelBelowBefore.getMaterial();
@@ -598,9 +600,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 				// Y [D] ABOVE
 				if (isQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, FaceNames::PositiveY)) {
-					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px0py0pz().getMaterial();
-					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler3.peekVoxel1px0py0pz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler3.peekVoxel0px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px0py1pz().getMaterial();
 
 					const VoxelType _voxelAboveRightBefore = voxelRightBefore.getMaterial();
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
@@ -615,9 +617,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 							voxelLeftMaterial, _voxelAboveBehind, _voxelAboveLeftBehind, translate);
 					vecQuads[core::enumVal(FaceNames::PositiveY)][regY].emplace_back(v_0_5, v_3_8, v_2_7, v_1_6);
 				} else if (isTransparentQuadNeeded(voxelBelowMaterial, voxelCurrentMaterial, FaceNames::PositiveY)) {
-					const VoxelType _voxelAboveRight       = volumeSampler.peekVoxel1px0py0pz().getMaterial();
-					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px0py1pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRight       = volumeSampler3.peekVoxel1px0py0pz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler3.peekVoxel0px0py1pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px0py1pz().getMaterial();
 
 					const VoxelType _voxelAboveRightBefore = voxelRightBefore.getMaterial();
 					const VoxelType _voxelAboveLeftBehind  = voxelLeftBehind.getMaterial();
@@ -670,10 +672,10 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 
 				// Z [F] BEHIND
 				if (isQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, FaceNames::PositiveZ)) {
-					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
-					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py0pz().getMaterial();
-					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler3.peekVoxel1px0py1pz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler3.peekVoxel0px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny0pz().getMaterial();
 
 					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVertices, &result->mesh[0],
 							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, translate); //4
@@ -685,10 +687,10 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuads[core::enumVal(FaceNames::PositiveZ)][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				} else if (isTransparentQuadNeeded(voxelBeforeMaterial, voxelCurrentMaterial, FaceNames::PositiveZ)) {
-					const VoxelType _voxelRightBehind      = volumeSampler.peekVoxel1px0py1pz().getMaterial();
-					const VoxelType _voxelAboveBehind      = volumeSampler.peekVoxel0px1py0pz().getMaterial();
-					const VoxelType _voxelAboveRightBehind = volumeSampler.peekVoxel1px1py0pz().getMaterial();
-					const VoxelType _voxelBelowRightBehind = volumeSampler.peekVoxel1px1ny0pz().getMaterial();
+					const VoxelType _voxelRightBehind      = volumeSampler3.peekVoxel1px0py1pz().getMaterial();
+					const VoxelType _voxelAboveBehind      = volumeSampler3.peekVoxel0px1py0pz().getMaterial();
+					const VoxelType _voxelAboveRightBehind = volumeSampler3.peekVoxel1px1py0pz().getMaterial();
+					const VoxelType _voxelBelowRightBehind = volumeSampler3.peekVoxel1px1ny0pz().getMaterial();
 
 					const IndexType v_0_4 = addVertex(reuseVertices, regX,     regY,     regZ, voxelBefore, previousSliceVerticesT, &result->mesh[1],
 							voxelBelowMaterial, voxelLeftMaterial, voxelBelowLeftMaterial, translate); //4
@@ -700,12 +702,11 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 							voxelBelowMaterial, _voxelRightBehind, _voxelBelowRightBehind, translate); //3
 					vecQuadsT[core::enumVal(FaceNames::PositiveZ)][regZ].emplace_back(v_0_4, v_3_3, v_2_7, v_1_8);
 				}
-
-				if (core_likely(y != upper.y)) {
-					volumeSampler.movePositiveY();
-				}
+				volumeSampler3.movePositiveY();
 			}
+			volumeSampler2.movePositiveX();
 		}
+		volumeSampler.movePositiveZ();
 
 		previousSliceVertices.swap(currentSliceVertices);
 		previousSliceVerticesT.swap(currentSliceVerticesT);
