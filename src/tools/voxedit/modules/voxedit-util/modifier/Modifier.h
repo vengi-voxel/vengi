@@ -8,6 +8,7 @@
 #include "ModifierType.h"
 #include "Selection.h"
 #include "core/IComponent.h"
+#include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/brush/Brush.h"
@@ -48,6 +49,7 @@ protected:
 	ModifierType _modifierType = ModifierType::Place;
 	glm::ivec3 _selectStartPosition{0};
 
+	core::Buffer<Brush *> _brushes;
 	BrushContext _brushContext;
 	BrushType _brushType = BrushType::Shape;
 	PlaneBrush _planeBrush;
@@ -58,6 +60,7 @@ protected:
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
+
 
 	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
@@ -126,8 +129,8 @@ public:
 	void setBrushType(BrushType type);
 	BrushType brushType() const;
 
-	const ShapeBrush *activeShapeBrush() const;
-	ShapeBrush *activeShapeBrush();
+	const AABBBrush *activeAABBBrush() const;
+	AABBBrush *activeAABBBrush();
 	voxel::Region calcBrushRegion();
 
 	ShapeBrush &shapeBrush();
@@ -215,7 +218,7 @@ inline bool Modifier::aborted() const {
 	if (isMode(ModifierType::Select)) {
 		return false;
 	}
-	if (const ShapeBrush *brush = activeShapeBrush()) {
+	if (const AABBBrush *brush = activeAABBBrush()) {
 		return brush->aborted(_brushContext);
 	}
 	return false;

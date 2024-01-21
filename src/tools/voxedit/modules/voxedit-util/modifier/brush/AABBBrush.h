@@ -19,7 +19,6 @@ private:
 	using Super = Brush;
 
 protected:
-	core::String _name;
 	/**
 	 * @c true if the current action spans an aabb. This first position of the aabb is set now.
 	 */
@@ -67,7 +66,7 @@ protected:
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 
 public:
-	AABBBrush(const core::String &name);
+	AABBBrush(BrushType type);
 	virtual ~AABBBrush() = default;
 	void construct() override;
 	void reset() override;

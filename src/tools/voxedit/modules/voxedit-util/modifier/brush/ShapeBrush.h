@@ -20,7 +20,7 @@ protected:
 	void setShapeType(ShapeType type);
 
 public:
-	ShapeBrush() : Super("shapebrush") {
+	ShapeBrush() : Super(BrushType::Shape) {
 	}
 	virtual ~ShapeBrush() = default;
 	void construct() override;

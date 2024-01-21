@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "BrushType.h"
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
 #include "math/Axis.h"
@@ -36,11 +37,18 @@ struct BrushContext {
 };
 
 class Brush : public core::IComponent, public core::DirtyState {
+protected:
+	const BrushType _brushType;
+	Brush(BrushType brushType) : _brushType(brushType) {
+	}
+
 public:
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &ctx) = 0;
 	virtual void reset();
 	virtual void update(const BrushContext &ctx, double nowSeconds);
+	core::String name() const;
+	BrushType type() const;
 
 	/**
 	 * @brief Determine whether the brush should get rendered
@@ -49,5 +57,13 @@ public:
 	bool init() override;
 	void shutdown() override;
 };
+
+inline BrushType Brush::type() const {
+	return _brushType;
+}
+
+inline core::String Brush::name() const {
+	return BrushTypeStr[(int)_brushType];
+}
 
 } // namespace voxedit

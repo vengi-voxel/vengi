@@ -8,36 +8,37 @@
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
-#include "voxelgenerator/ShapeGenerator.h"
 
 namespace voxedit {
 
-AABBBrush::AABBBrush(const core::String &name) : _name(name) {
+AABBBrush::AABBBrush(BrushType type) : Super(type) {
 }
 
 void AABBBrush::construct() {
-	command::Command::registerCommand("mirroraxis" + _name + "x", [&](const command::CmdArgs &args) {
+	const core::String &cmdName = name().toLower() + "brush";
+	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the x axis");
 
-	command::Command::registerCommand("mirroraxis" + _name + "y", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the y axis");
 
-	command::Command::registerCommand("mirroraxis" + _name + "z", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
 	}).setHelp("Mirror around the z axis");
 
-	command::Command::registerCommand("mirroraxis" + _name + "none", [&](const command::CmdArgs &args) {
+	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
 
-	command::Command::registerCommand("toggle" + _name + "center", [this](const command::CmdArgs &args) {
+	command::Command::registerCommand("toggle" + cmdName + "center", [this](const command::CmdArgs &args) {
 		_center ^= true;
 	}).setHelp("Toggle center plane building");
 
-	command::Command::registerCommand("toggles" + _name + "single", [this](const command::CmdArgs &args) {
+	command::Command::registerCommand("toggles" + cmdName + "single", [this](const command::CmdArgs &args) {
 		_single ^= true;
 	}).setHelp("Toggle single voxel building mode");
 }

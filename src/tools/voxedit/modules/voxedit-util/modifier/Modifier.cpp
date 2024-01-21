@@ -5,6 +5,7 @@
 #include "Modifier.h"
 #include "../SceneManager.h"
 #include "command/Command.h"
+#include "core/Log.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -17,13 +18,16 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/AStarPathfinder.h"
-#include "voxelutil/Raycast.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 
 Modifier::Modifier() : _deleteExecuteButton(ModifierType::Erase) {
+	_brushes.push_back(&_planeBrush);
+	_brushes.push_back(&_shapeBrush);
+	_brushes.push_back(&_stampBrush);
+	_brushes.push_back(&_lineBrush);
+	_brushes.push_back(&_pathBrush);
 }
 
 void Modifier::construct() {
@@ -96,23 +100,21 @@ void Modifier::construct() {
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the x axis at the current cursor position");
 
-	command::Command::registerCommand("locky", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("locky", [&](const command::CmdArgs &args) {
 		const math::Axis axis = math::Axis::Y;
 		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the y axis at the current cursor position");
 
-	command::Command::registerCommand("lockz", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("lockz", [&](const command::CmdArgs &args) {
 		const math::Axis axis = math::Axis::Z;
 		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
 	}).setHelp("Toggle locked mode for the z axis at the current cursor position");
 
-	_planeBrush.construct();
-	_shapeBrush.construct();
-	_stampBrush.construct();
-	_lineBrush.construct();
-	_pathBrush.construct();
+	for (Brush *b : _brushes) {
+		b->construct();
+	}
 }
 
 void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
@@ -124,36 +126,19 @@ void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
 }
 
 bool Modifier::init() {
-	if (!_planeBrush.init()) {
-		Log::error("Failed to initialize the plane brush");
-		return false;
-	}
-	if (!_shapeBrush.init()) {
-		Log::error("Failed to initialize the shape brush");
-		return false;
-	}
-	if (!_stampBrush.init()) {
-		Log::error("Failed to initialize the stamp brush");
-		return false;
-	}
-	if (!_lineBrush.init()) {
-		Log::error("Failed to initialize the line brush");
-		return false;
-	}
-	if (!_pathBrush.init()) {
-		Log::error("Failed to initialize the path brush");
-		return false;
+	for (Brush *b : _brushes) {
+		if (!b->init()) {
+			Log::error("Failed to initialize the %s brush", b->name().c_str());
+		}
 	}
 	return true;
 }
 
 void Modifier::shutdown() {
 	reset();
-	_planeBrush.shutdown();
-	_shapeBrush.shutdown();
-	_stampBrush.shutdown();
-	_lineBrush.shutdown();
-	_pathBrush.shutdown();
+	for (Brush *b : _brushes) {
+		b->shutdown();
+	}
 }
 
 void Modifier::update(double nowSeconds) {
@@ -189,11 +174,9 @@ void Modifier::reset() {
 	_brushContext.cursorFace = voxel::FaceNames::Max;
 
 	_modifierType = ModifierType::Place;
-	_planeBrush.reset();
-	_shapeBrush.reset();
-	_stampBrush.reset();
-	_lineBrush.reset();
-	_pathBrush.reset();
+	for (Brush *b : _brushes) {
+		b->reset();
+	}
 	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
 }
 
@@ -204,7 +187,7 @@ bool Modifier::start() {
 		return true;
 	}
 
-	if (ShapeBrush *brush = activeShapeBrush()) {
+	if (AABBBrush *brush = activeAABBBrush()) {
 		return brush->start(_brushContext);
 	}
 	return false;
@@ -214,7 +197,7 @@ void Modifier::executeAdditionalAction() {
 	if (isMode(ModifierType::Select) || isMode(ModifierType::ColorPicker)) {
 		return;
 	}
-	if (ShapeBrush *brush = activeShapeBrush()) {
+	if (AABBBrush *brush = activeAABBBrush()) {
 		brush->step(_brushContext);
 	}
 }
@@ -274,14 +257,14 @@ bool Modifier::needsFurtherAction() {
 	if (isMode(ModifierType::Select)) {
 		return false;
 	}
-	if (const ShapeBrush *brush = activeShapeBrush()) {
+	if (const AABBBrush *brush = activeAABBBrush()) {
 		return brush->needsFurtherAction(_brushContext);
 	}
 	return false;
 }
 
 glm::ivec3 Modifier::currentCursorPosition() {
-	if (ShapeBrush *brush = activeShapeBrush()) {
+	if (AABBBrush *brush = activeAABBBrush()) {
 		return brush->currentCursorPosition(_brushContext.cursorPosition);
 	}
 	return _brushContext.cursorPosition;
@@ -364,7 +347,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 }
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-						   ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
+							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
 	ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 	_brushContext.cursorVoxel = voxel;
@@ -381,32 +364,22 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 }
 
 Brush *Modifier::activeBrush() {
-	switch (_brushType) {
-	case BrushType::Plane:
-		return &_planeBrush;
-	case BrushType::Shape:
-		return &_shapeBrush;
-	case BrushType::Stamp:
-		return &_stampBrush;
-	case BrushType::Line:
-		return &_lineBrush;
-	case BrushType::Path:
-		return &_pathBrush;
-	case BrushType::None:
-	case BrushType::Max:
-		break;
+	for (Brush *b : _brushes) {
+		if (b->type() == _brushType) {
+			return b;
+		}
 	}
 	return nullptr;
 }
 
-ShapeBrush *Modifier::activeShapeBrush() {
+AABBBrush *Modifier::activeAABBBrush() {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
 	}
 	return nullptr;
 }
 
-const ShapeBrush *Modifier::activeShapeBrush() const {
+const AABBBrush *Modifier::activeAABBBrush() const {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
 	}
@@ -418,7 +391,7 @@ void Modifier::stop() {
 		_selectStartPositionValid = false;
 		return;
 	}
-	if (ShapeBrush *brush = activeShapeBrush()) {
+	if (AABBBrush *brush = activeAABBBrush()) {
 		brush->stop(_brushContext);
 	}
 }

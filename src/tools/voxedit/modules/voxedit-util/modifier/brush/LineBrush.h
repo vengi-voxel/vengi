@@ -33,6 +33,8 @@ private:
 	State _state;
 
 public:
+	LineBrush() : Super(BrushType::Line) {
+	}
 	virtual ~LineBrush() = default;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
