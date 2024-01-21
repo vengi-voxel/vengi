@@ -6,6 +6,7 @@
 
 #include "core/GLM.h"
 #include "core/collection/DynamicMap.h"
+#include "math/Axis.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxel {

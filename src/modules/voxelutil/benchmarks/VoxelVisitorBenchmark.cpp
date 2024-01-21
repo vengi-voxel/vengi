@@ -3,6 +3,7 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 
 class VoxelVisitorBenchmark : public app::AbstractBenchmark {

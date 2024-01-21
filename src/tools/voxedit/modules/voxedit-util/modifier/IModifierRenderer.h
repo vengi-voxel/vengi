@@ -16,6 +16,10 @@ namespace palette {
 class Palette;
 }
 
+namespace voxel {
+class RawVolume;
+}
+
 namespace voxedit {
 
 class IModifierRenderer : public core::IComponent {

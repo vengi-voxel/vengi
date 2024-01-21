@@ -6,6 +6,7 @@
 
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
+#include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 

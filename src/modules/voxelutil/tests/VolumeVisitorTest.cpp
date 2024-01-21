@@ -5,6 +5,7 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelutil {
 

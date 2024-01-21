@@ -5,6 +5,7 @@
 #include "CubicSurfaceExtractor.h"
 #include "core/Common.h"
 #include "voxel/ChunkMesh.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
 #include "core/Common.h"

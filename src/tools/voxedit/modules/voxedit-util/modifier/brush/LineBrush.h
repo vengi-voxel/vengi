@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Brush.h"
+#include "voxel/Region.h"
 
 namespace voxedit {
 
