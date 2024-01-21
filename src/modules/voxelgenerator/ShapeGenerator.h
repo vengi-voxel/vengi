@@ -4,15 +4,12 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
 #include "voxel/Voxel.h"
-#include "core/Assert.h"
 #include "core/Common.h"
 #include "math/Bezier.h"
 #include "math/Axis.h"
 #include "voxelutil/Raycast.h"
-#include "core/GLM.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 
