@@ -236,7 +236,9 @@ bool Shader::loadProgram(const core::String& filename) {
 }
 
 bool Shader::reload() {
-	shutdown();
+	while (_initialized) {
+		shutdown();
+	}
 	return setup();
 }
 
