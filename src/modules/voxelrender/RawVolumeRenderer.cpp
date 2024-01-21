@@ -86,7 +86,7 @@ void RenderContext::shutdown() {
 }
 
 glm::vec3 RawVolumeRenderer::State::centerPos() const {
-	const glm::vec4 center(_mins + (_maxs - _mins) * _pivot, 1.0f);
+	const glm::vec4 center(_mins + (_maxs - _mins) * 0.5f, 1.0f);
 	const glm::vec3 pos = _model * center;
 	return pos;
 }
@@ -783,13 +783,13 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			sorted.push_back(idx);
 		}
 
-		const glm::vec3 &eye = camera.eye();
-		core::sort(sorted.begin(), sorted.end(), [this, eye] (int a, int b) {
-			const glm::vec3 posA = _state[a].centerPos();
-			const glm::vec3 posB = _state[b].centerPos();
-			const float d1 = glm::distance2(eye, posA);
-			const float d2 = glm::distance2(eye, posB);
-			return d1 < d2;
+		const glm::vec3 &camPos = camera.worldPosition();
+		core::sort(sorted.begin(), sorted.end(), [this, &camPos] (int a, int b) {
+			const glm::vec3 &posA = _state[a].centerPos();
+			const glm::vec3 &posB = _state[b].centerPos();
+			const float d1 = glm::distance2(camPos, posA);
+			const float d2 = glm::distance2(camPos, posB);
+			return d1 > d2;
 		});
 
 		video::ScopedState scopedBlendTrans(video::State::Blend, true);
