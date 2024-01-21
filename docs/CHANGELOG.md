@@ -14,6 +14,8 @@ Voxedit:
 
    - Auto create key frames when transform is modified via gizmo, too
    - Fixed an error in interpolating between the key frames
+   - Fixed an error while trying to remove unused colors from a re-sorted palette
+   - Fixed missing outline for dark voxels
 
 ## 0.0.28 (2024-01-17)
 
