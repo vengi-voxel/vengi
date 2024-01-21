@@ -23,18 +23,16 @@ ActionButtonCommands& ActionButtonCommands::setHelp(const char* help) {
 	return *this;
 }
 
-Command& Command::registerCommand(const char* name, FunctionType&& func) {
-	const core::String cname(name);
-	const Command c(cname, std::forward<FunctionType>(func));
+Command& Command::registerCommand(const core::String &name, FunctionType&& func) {
+	const Command c(name, std::forward<FunctionType>(func));
 	core::ScopedLock lock(_lock);
-	_cmds.put(cname, c);
-	return (Command&)_cmds.find(cname)->value;
+	_cmds.put(name, c);
+	return (Command&)_cmds.find(name)->value;
 }
 
-bool Command::unregisterCommand(const char* name) {
-	const core::String cname(name);
+bool Command::unregisterCommand(const core::String &name) {
 	core::ScopedLock lock(_lock);
-	return _cmds.remove(cname);
+	return _cmds.remove(name);
 }
 
 ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const char *help) {

@@ -64,11 +64,11 @@ private:
 	static void updateSortedList();
 
 public:
-	static Command& registerCommand(const char* name, std::function<void(void)>& func) {
+	static Command& registerCommand(const core::String &name, std::function<void(void)>& func) {
 		return registerCommand(name, FunctionType([&] (const CmdArgs&) {func();}));
 	}
-	static Command& registerCommand(const char* name, FunctionType&& func);
-	static bool unregisterCommand(const char* name);
+	static Command& registerCommand(const core::String &name, FunctionType&& func);
+	static bool unregisterCommand(const core::String &name);
 
 	/**
 	 * @brief Registers two commands prefixed with @c + and @c - (for pressed and released)
