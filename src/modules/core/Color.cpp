@@ -932,9 +932,17 @@ glm::vec3 Color::gray(const glm::vec3 &color) {
 	return glm::vec3(gray, gray, gray);
 }
 
+core::RGBA Color::darker(const core::RGBA &color, float f) {
+	return getRGBA(darker(fromRGBA(color), f));
+}
+
 glm::vec4 Color::darker(const glm::vec4 &color, float f) {
 	f = (float)SDL_pow(scaleFactor, f);
 	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
+}
+
+core::RGBA Color::brighter(const core::RGBA color, float f) {
+	return getRGBA(brighter(fromRGBA(color), f));
 }
 
 glm::vec4 Color::brighter(const glm::vec4 &color, float f) {

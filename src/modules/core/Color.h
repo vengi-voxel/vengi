@@ -131,6 +131,8 @@ public:
 
 	static glm::vec4 darker(const glm::vec4& color, float f = 1.0f);
 	static glm::vec4 brighter(const glm::vec4& color, float f = 1.0f);
+	static core::RGBA brighter(const core::RGBA color, float f = 1.0f);
+	static core::RGBA darker(const core::RGBA& color, float f = 1.0f);
 };
 
 }
