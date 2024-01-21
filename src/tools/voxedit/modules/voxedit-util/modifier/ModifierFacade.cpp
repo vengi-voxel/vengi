@@ -6,6 +6,7 @@
 #include "core/ScopedPtr.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/RawVolume.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -40,12 +41,12 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	// this call is needed to prevent double frees
 	_modifierRenderer->clearBrushMeshes();
 
-	switch (_brushType) {
-	case BrushType::Shape: {
-		const voxel::Region &region = _shapeBrush.calcRegion(_brushContext);
+	const AABBBrush *aabbBrush = activeAABBBrush();
+	if (aabbBrush) {
+		const voxel::Region &region = aabbBrush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (_shapeBrush.getMirrorAABB(minsMirror, maxsMirror)) {
+		if (aabbBrush->getMirrorAABB(minsMirror, maxsMirror)) {
 			_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_mirrorVolume, false);
@@ -57,35 +58,36 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 		dummyNode.setVolume(_volume, false);
 		executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
 		_modifierRenderer->updateBrushVolume(0, _volume, &palette);
-		break;
-	}
-	case BrushType::Stamp: {
-		voxel::RawVolume *v = _stampBrush.volume();
-		if (v != nullptr) {
-			const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
-			_volume = new voxel::RawVolume(region);
-			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-			dummyNode.setVolume(_volume, false);
-			executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
-			// TODO: support mirror axis
-			// TODO: use _stampBrush palette?
-			_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+	} else {
+		switch (_brushType) {
+		case BrushType::Stamp: {
+			voxel::RawVolume *v = _stampBrush.volume();
+			if (v != nullptr) {
+				const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
+				_volume = new voxel::RawVolume(region);
+				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+				dummyNode.setVolume(_volume, false);
+				executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+				// TODO: support mirror axis
+				// TODO: use _stampBrush palette?
+				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+			}
+			break;
 		}
-		break;
-	}
-	case BrushType::Line: {
-		const voxel::Region region = _lineBrush.calcRegion(_brushContext);
-		if (region.isValid()) {
-			_volume = new voxel::RawVolume(region);
-			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-			dummyNode.setVolume(_volume, false);
-			executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
-			_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+		case BrushType::Line: {
+			const voxel::Region region = _lineBrush.calcRegion(_brushContext);
+			if (region.isValid()) {
+				_volume = new voxel::RawVolume(region);
+				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+				dummyNode.setVolume(_volume, false);
+				executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+			}
+			break;
 		}
-		break;
-	}
-	default:
-		break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -97,7 +99,12 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &palet
 	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
 	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
-	_modifierRenderer->updateMirrorPlane(shapeBrush().mirrorAxis(), shapeBrush().mirrorPos());
+	AABBBrush *aabbBrush = activeAABBBrush();
+	if (aabbBrush) {
+		_modifierRenderer->updateMirrorPlane(aabbBrush->mirrorAxis(), aabbBrush->mirrorPos());
+	} else {
+		_modifierRenderer->updateMirrorPlane(math::Axis::None, glm::ivec3(0));
+	}
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);
 

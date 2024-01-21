@@ -6,7 +6,6 @@
 
 #include "Brush.h"
 #include "voxel/Face.h"
-#include "core/String.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
@@ -61,7 +60,7 @@ protected:
 	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
 										int &depth) const;
 	virtual bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const voxel::Region &region, const voxel::Voxel &voxel) = 0;
+						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 

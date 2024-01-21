@@ -20,6 +20,7 @@ Voxedit:
    - Fixed an error in interpolating between the key frames
    - Fixed an error while trying to remove unused colors from a re-sorted palette
    - Fixed missing outline for dark voxels
+   - Update paint features
 
 ## 0.0.28 (2024-01-17)
 

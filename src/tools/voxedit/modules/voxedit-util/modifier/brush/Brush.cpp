@@ -13,6 +13,10 @@ void Brush::reset() {
 void Brush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
+ModifierType Brush::modifierType(ModifierType type) const {
+	return type;
+}
+
 /**
  * @brief Determine whether the brush should get rendered
  */

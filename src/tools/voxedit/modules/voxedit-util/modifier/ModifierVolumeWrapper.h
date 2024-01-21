@@ -25,9 +25,9 @@ private:
 	const ModifierType _modifierType;
 	scenegraph::SceneGraphNode &_node;
 
-	bool _eraseVoxels;
-	bool _overwrite;
-	bool _update;
+	bool _erase;
+	bool _override;
+	bool _paint;
 	bool _force;
 
 	bool skip(int x, int y, int z) const {
@@ -43,10 +43,10 @@ private:
 public:
 	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const Selections &selections)
 		: Super(node.volume()), _selections(selections), _modifierType(modifierType), _node(node) {
-		_eraseVoxels = (_modifierType & ModifierType::Erase) == ModifierType::Erase;
-		_overwrite = (_modifierType & ModifierType::Place) == ModifierType::Place && _eraseVoxels;
-		_update = (_modifierType & ModifierType::Paint) == ModifierType::Paint;
-		_force = _overwrite || _eraseVoxels;
+		_erase = _modifierType == ModifierType::Erase;
+		_override = _modifierType == ModifierType::Override;
+		_paint = _modifierType == ModifierType::Paint;
+		_force = _override || _erase;
 	}
 
 	inline scenegraph::SceneGraphNode &node() const {
@@ -72,7 +72,7 @@ public:
 		if (!_force) {
 			const voxel::Voxel existingVoxel = this->voxel(x, y, z);
 			const bool empty = voxel::isAir(existingVoxel.getMaterial());
-			if (_update) {
+			if (_paint) {
 				if (empty) {
 					return false;
 				}
@@ -81,7 +81,7 @@ public:
 			}
 		}
 		voxel::Voxel placeVoxel = voxel;
-		if (!_overwrite && _eraseVoxels) {
+		if (!_override && _erase) {
 			placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 		}
 		if (skip(x, y, z)) {

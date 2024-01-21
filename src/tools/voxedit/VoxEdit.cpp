@@ -341,7 +341,6 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("keypad_enter",         "setreferencepositiontocursor", "model");
 	_keybindingHandler.registerBinding("shift+r",              "setreferenceposition 0 0 0",   "model");
 	_keybindingHandler.registerBinding("shift+d",              "actionerase",                  "model");
-	_keybindingHandler.registerBinding("shift+c",              "actionpaint",                  "model");
 	_keybindingHandler.registerBinding("shift+p",              "actionplace",                  "model");
 	_keybindingHandler.registerBinding("shift+o",              "actionoverride",               "model");
 	_keybindingHandler.registerBinding("shift+x",              "lockx",                        "model");
@@ -364,6 +363,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("a",                    "+move_left",                   "editing");
 	_keybindingHandler.registerBinding("s",                    "+move_backward",               "editing");
 	_keybindingHandler.registerBinding("d",                    "+move_right",                  "editing");
+	_keybindingHandler.registerBinding("shift+c",              "brushpaint",                   "model");
 	_keybindingHandler.registerBinding("l",                    "brushline",                  "model");
 	_keybindingHandler.registerBinding("v",                    "brushshape",                 "model");
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                 "model");

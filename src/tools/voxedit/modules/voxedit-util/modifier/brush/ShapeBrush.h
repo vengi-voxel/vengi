@@ -15,8 +15,8 @@ private:
 
 protected:
 	ShapeType _shapeType = ShapeType::AABB;
-	bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const voxel::Region &region,
-				  const voxel::Voxel &voxel) override;
+	bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+				  const voxel::Region &region) override;
 	void setShapeType(ShapeType type);
 
 public:
@@ -26,6 +26,7 @@ public:
 	void construct() override;
 	void reset() override;
 
+	ModifierType modifierType(ModifierType type) const override;
 	ShapeType shapeType() const;
 };
 

@@ -14,6 +14,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
+#include "voxedit-util/modifier/brush/PaintBrush.h"
 #include "voxedit-util/modifier/brush/PathBrush.h"
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
@@ -57,10 +58,10 @@ protected:
 	StampBrush _stampBrush;
 	LineBrush _lineBrush;
 	PathBrush _pathBrush;
+	PaintBrush _paintBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
-
 
 	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
@@ -102,7 +103,7 @@ public:
 	const Selections &selections() const;
 
 	ModifierType modifierType() const;
-	void setModifierType(ModifierType type);
+	ModifierType setModifierType(ModifierType type);
 
 	bool isMode(ModifierType modifierType) const;
 
@@ -126,7 +127,7 @@ public:
 	 */
 	bool aborted() const;
 
-	void setBrushType(BrushType type);
+	BrushType setBrushType(BrushType type);
 	BrushType brushType() const;
 
 	const AABBBrush *activeAABBBrush() const;
@@ -135,6 +136,7 @@ public:
 
 	ShapeBrush &shapeBrush();
 	StampBrush &stampBrush();
+	PaintBrush &paintBrush();
 	BrushContext &brushContext();
 
 	/**
@@ -192,6 +194,10 @@ inline ShapeBrush &Modifier::shapeBrush() {
 
 inline StampBrush &Modifier::stampBrush() {
 	return _stampBrush;
+}
+
+inline PaintBrush &Modifier::paintBrush() {
+	return _paintBrush;
 }
 
 inline int Modifier::gridResolution() const {

@@ -76,7 +76,7 @@ protected:
 		const int nodeId = _sceneMgr.sceneGraph().activeNode();
 		voxel::RawVolume *v = _sceneMgr.volume(nodeId);
 		if (!voxel::isAir(v->voxel(pos).getMaterial())) {
-			modifier.setModifierType(ModifierType::Paint);
+			modifier.setBrushType(BrushType::Paint);
 		}
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

@@ -321,8 +321,7 @@ void SceneManager::fill() {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-		const bool overwrite = _modifier.isMode(ModifierType::Erase);
-		voxelutil::fill(wrapper, _modifier.cursorVoxel(), overwrite);
+		voxelutil::fill(wrapper, _modifier.cursorVoxel(), _modifier.isMode(ModifierType::Override));
 		modified(nodeId, wrapper.dirtyRegion());
 	});
 }

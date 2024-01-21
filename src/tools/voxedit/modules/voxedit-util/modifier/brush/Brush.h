@@ -8,6 +8,7 @@
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
 #include "math/Axis.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 
@@ -49,6 +50,9 @@ public:
 	virtual void update(const BrushContext &ctx, double nowSeconds);
 	core::String name() const;
 	BrushType type() const;
+
+	// allow to change the modifier type if the brush doesn't support the given mode
+	virtual ModifierType modifierType(ModifierType type) const;
 
 	/**
 	 * @brief Determine whether the brush should get rendered

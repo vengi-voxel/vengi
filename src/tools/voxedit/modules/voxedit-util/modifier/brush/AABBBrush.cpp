@@ -17,6 +17,9 @@ AABBBrush::AABBBrush(BrushType type) : Super(type) {
 }
 
 void AABBBrush::construct() {
+	// mirroraxisshapebrush, toggleshapebrushcenter, toggleshapebrushsingle
+	// mirroraxispaintbrush, togglepaintbrushcenter, togglepaintbrushsingle
+
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
@@ -38,7 +41,7 @@ void AABBBrush::construct() {
 		_center ^= true;
 	}).setHelp("Toggle center plane building");
 
-	command::Command::registerCommand("toggles" + cmdName + "single", [this](const command::CmdArgs &args) {
+	command::Command::registerCommand("toggle" + cmdName + "single", [this](const command::CmdArgs &args) {
 		_single ^= true;
 	}).setHelp("Toggle single voxel building mode");
 }
@@ -160,15 +163,15 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		generate(sceneGraph, wrapper, region, context.cursorVoxel);
+		generate(sceneGraph, wrapper, context, region);
 	} else {
 		Log::debug("Execute mirror action");
 		const voxel::Region second(minsMirror, maxsMirror);
 		if (voxel::intersects(region, second)) {
-			generate(sceneGraph, wrapper, voxel::Region(region.getLowerCorner(), maxsMirror), context.cursorVoxel);
+			generate(sceneGraph, wrapper, context, voxel::Region(region.getLowerCorner(), maxsMirror));
 		} else {
-			generate(sceneGraph, wrapper, region, context.cursorVoxel);
-			generate(sceneGraph, wrapper, second, context.cursorVoxel);
+			generate(sceneGraph, wrapper, context, region);
+			generate(sceneGraph, wrapper, context, second);
 		}
 	}
 	markDirty();

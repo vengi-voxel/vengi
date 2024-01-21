@@ -32,7 +32,7 @@ void ShapeBrush::setShapeType(ShapeType type) {
 }
 
 bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const voxel::Region &region, const voxel::Voxel &voxel) {
+						  const BrushContext &context, const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;
@@ -50,6 +50,7 @@ bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	glm::ivec3 centerBottom = center;
 	centerBottom[axisIdx] = region.getLowerCorner()[axisIdx];
 
+	const voxel::Voxel& voxel = context.cursorVoxel;
 	switch (_shapeType) {
 	case ShapeType::AABB:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);
@@ -79,6 +80,10 @@ bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		return false;
 	}
 	return true;
+}
+
+ModifierType ShapeBrush::modifierType(ModifierType type) const {
+	return type & (ModifierType::Place | ModifierType::Erase | ModifierType::Override);
 }
 
 void ShapeBrush::reset() {

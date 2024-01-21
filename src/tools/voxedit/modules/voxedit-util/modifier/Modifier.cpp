@@ -12,7 +12,8 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/Selection.h"
-#include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/AABBBrush.h"
+#include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -28,6 +29,7 @@ Modifier::Modifier() : _deleteExecuteButton(ModifierType::Erase) {
 	_brushes.push_back(&_stampBrush);
 	_brushes.push_back(&_lineBrush);
 	_brushes.push_back(&_pathBrush);
+	_brushes.push_back(&_paintBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -57,31 +59,31 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Place);
 	}).setHelp("Change the modifier type to 'place'");
 
-	command::Command::registerCommand("actionpaint", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Paint);
-	}).setHelp("Change the modifier type to 'paint'");
-
 	command::Command::registerCommand("actionoverride", [&](const command::CmdArgs &args) {
-		setModifierType(ModifierType::Place | ModifierType::Erase);
+		setModifierType(ModifierType::Override);
 	}).setHelp("Change the modifier type to 'override'");
 
 	for (const Brush *b : _brushes) {
-		command::Command::registerCommand("action" + b->name().toLower(), [&](const command::CmdArgs &args) {
-			setBrushType(b->type());
+		const BrushType type = b->type();
+		command::Command::registerCommand("brush" + b->name().toLower(), [&, type](const command::CmdArgs &args) {
+			setBrushType(type);
 		}).setHelp("Change the brush type to '" + b->name() + "'");
 	}
 
-	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
-		if (args.size() != 1) {
-			Log::info("Usage: lock <x|y|z>");
-			return;
-		}
-		const math::Axis axis = math::toAxis(args[0]);
-		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-		setLockedAxis(axis, unlock);
-	}).setHelp("Toggle locked mode for the given axis at the current cursor position").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
+	command::Command::registerCommand("lock",
+		[&](const command::CmdArgs &args) {
+			if (args.size() != 1) {
+				Log::info("Usage: lock <x|y|z>");
+				return;
+			}
+			const math::Axis axis = math::toAxis(args[0]);
+			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+			setLockedAxis(axis, unlock);
+		})
+		.setHelp("Toggle locked mode for the given axis at the current cursor position")
+		.setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
-	command::Command::registerCommand("lockx", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("lockx", [&](const command::CmdArgs &args) {
 		const math::Axis axis = math::Axis::X;
 		const bool unlock = (_brushContext.lockedAxis & axis) == axis;
 		setLockedAxis(axis, unlock);
@@ -129,25 +131,21 @@ void Modifier::shutdown() {
 }
 
 void Modifier::update(double nowSeconds) {
-	switch (_brushType) {
-	case BrushType::Shape:
-		if (_shapeBrush.singleMode()) {
+	AABBBrush *brush = activeAABBBrush();
+	if (brush) {
+		if (brush->singleMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
 				_actionExecuteButton.execute(true);
 				_nextSingleExecution = nowSeconds + 0.1;
 			}
 		}
-		break;
-	case BrushType::Stamp:
+	} else if (_brushType == BrushType::Stamp) {
 		if (_stampBrush.continuousMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
 				_actionExecuteButton.execute(true);
 				_nextSingleExecution = nowSeconds + 0.1;
 			}
 		}
-		break;
-	default:
-		break;
 	}
 	if (Brush *brush = activeBrush()) {
 		brush->update(_brushContext, nowSeconds);
@@ -258,9 +256,11 @@ glm::ivec3 Modifier::currentCursorPosition() {
 }
 
 voxel::Region Modifier::calcBrushRegion() {
-	if (_brushType == BrushType::Shape) {
-		return _shapeBrush.calcRegion(_brushContext);
-	} else if (_brushType == BrushType::Stamp) {
+	AABBBrush *brush = activeAABBBrush();
+	if (brush) {
+		return brush->calcRegion(_brushContext);
+	}
+	if (_brushType == BrushType::Stamp) {
 		return _stampBrush.calcRegion(_brushContext);
 	}
 	return voxel::Region::InvalidRegion;
@@ -335,19 +335,20 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
-	ModifierVolumeWrapper wrapper(node, modifierType, _selections);
-	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
-	_brushContext.cursorVoxel = voxel;
 	if (Brush *brush = activeBrush()) {
+		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
+		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
+		_brushContext.cursorVoxel = voxel;
 		brush->execute(sceneGraph, wrapper, _brushContext);
+		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
+		if (modifiedRegion.isValid()) {
+			voxel::logRegion("Dirty region", modifiedRegion);
+			callback(modifiedRegion, _modifierType, true);
+		}
+		_brushContext.cursorVoxel = prevVoxel;
+		return true;
 	}
-	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-	if (modifiedRegion.isValid()) {
-		voxel::logRegion("Dirty region", modifiedRegion);
-		callback(modifiedRegion, _modifierType, true);
-	}
-	_brushContext.cursorVoxel = prevVoxel;
-	return true;
+	return false;
 }
 
 Brush *Modifier::activeBrush() {
@@ -363,12 +364,18 @@ AABBBrush *Modifier::activeAABBBrush() {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
 	}
+	if (_brushType == BrushType::Paint) {
+		return &_paintBrush;
+	}
 	return nullptr;
 }
 
 const AABBBrush *Modifier::activeAABBBrush() const {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
+	}
+	if (_brushType == BrushType::Paint) {
+		return &_paintBrush;
 	}
 	return nullptr;
 }
@@ -384,29 +391,31 @@ void Modifier::stop() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return isMode(ModifierType::Erase) || isMode(ModifierType::Paint) || isMode(ModifierType::Select);
+	return isMode(ModifierType::Paint) || isMode(ModifierType::Erase);
 }
 
-void Modifier::setBrushType(BrushType type) {
+BrushType Modifier::setBrushType(BrushType type) {
 	_brushType = type;
-	const bool isBrush = _brushType != BrushType::None;
-	const bool modifierIsBrush = (_modifierType & ModifierType::Brush) != ModifierType::None;
-	if (isBrush && !modifierIsBrush) {
-		setModifierType(ModifierType::Place);
+	if (_brushType != BrushType::None) {
+		_modifierType = activeBrush()->modifierType(_modifierType);
 	}
+	return _brushType;
 }
 
 void Modifier::setGridResolution(int gridSize) {
 	_brushContext.gridResolution = core_max(1, gridSize);
 }
 
-void Modifier::setModifierType(ModifierType type) {
-	const bool isBrush = _brushType != BrushType::None;
-	const bool modifierIsBrush = (type & ModifierType::Brush) != ModifierType::None;
-	_modifierType = type;
-	if (!isBrush && modifierIsBrush) {
-		setBrushType(BrushType::Shape);
+ModifierType Modifier::setModifierType(ModifierType type) {
+	if (_brushType != BrushType::None) {
+		_modifierType = activeBrush()->modifierType(type);
+		if (type != _modifierType) {
+			Log::error("change modifier type to %i", (int)type);
+		}
+	} else {
+		_modifierType = type;
 	}
+	return _modifierType;
 }
 
 } // namespace voxedit
