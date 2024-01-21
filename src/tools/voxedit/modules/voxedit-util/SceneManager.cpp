@@ -2223,7 +2223,7 @@ void SceneManager::removeUnusedColors(int nodeId) {
 		return true;
 	});
 	int unused = 0;
-	for (size_t i = 0; i < usedColors.size(); ++i) {
+	for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
 		if (!usedColors[i]) {
 			++unused;
 		}
@@ -2232,9 +2232,9 @@ void SceneManager::removeUnusedColors(int nodeId) {
 		Log::warn("Removing all colors from the palette is not allowed");
 		return;
 	}
-	for (size_t i = 0; i < usedColors.size(); ++i) {
-		if (!usedColors[i]) {
-			pal.color(i) = core::RGBA(0);
+	for (size_t i = 0; i < pal.size(); ++i) {
+		if (!usedColors[pal.index(i)]) {
+			pal.setColor(i, core::RGBA(0));
 		}
 	}
 	pal.markDirty();
