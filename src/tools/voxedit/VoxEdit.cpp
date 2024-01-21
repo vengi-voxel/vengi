@@ -350,10 +350,10 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("shift+1",              "lockx",                        "model");
 	_keybindingHandler.registerBinding("shift+2",              "locky",                        "model");
 	_keybindingHandler.registerBinding("shift+3",              "lockz",                        "model");
-	_keybindingHandler.registerBinding("ctrl+1",               "mirroraxisx",                  "model");
-	_keybindingHandler.registerBinding("ctrl+2",               "mirroraxisy",                  "model");
-	_keybindingHandler.registerBinding("ctrl+3",               "mirroraxisz",                  "model");
-	_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisnone",               "model");
+	_keybindingHandler.registerBinding("ctrl+1",               "mirroraxisshapebrushx",        "model");
+	_keybindingHandler.registerBinding("ctrl+2",               "mirroraxisshapebrushy",        "model");
+	_keybindingHandler.registerBinding("ctrl+3",               "mirroraxisshapebrushz",        "model");
+	_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisshapebrushnone",     "model");
 	_keybindingHandler.registerBinding("wheelup",              "+zoom_in",                     "editing");
 	_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                    "editing");
 	_keybindingHandler.registerBinding("ctrl+e",               "toggle r_renderoutline",       "all");
@@ -381,9 +381,9 @@ void VoxEdit::loadKeymap(int keymap) {
 	} else if (keymap == KeyBindings::Magicavoxel) {
 		_keybindingHandler.registerBinding("shift+left_mouse",       "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("ctrl+shift+p",           "nodeduplicate",              "editing");
-		_keybindingHandler.registerBinding("1",                      "mirroraxisx",                "model");
-		_keybindingHandler.registerBinding("2",                      "mirroraxisz",                "model");
-		_keybindingHandler.registerBinding("3",                      "mirroraxisy",                "model");
+		_keybindingHandler.registerBinding("1",                      "mirroraxisshapebrushx",      "model");
+		_keybindingHandler.registerBinding("2",                      "mirroraxisshapebrushz",      "model");
+		_keybindingHandler.registerBinding("3",                      "mirroraxisshapebrushy",      "model");
 		_keybindingHandler.registerBinding("4",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("6",                      "screenshot",                 "editing");
 		_keybindingHandler.registerBinding("f6",                     "screenshot",                 "all");

@@ -55,7 +55,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type,
 	ui::ScopedStyle style;
 	veui::AxisStyleText(style, type, false);
 	if (ImGui::RadioButton(title, modifier.shapeBrush().mirrorAxis() == type)) {
-		core::String cmd = "mirroraxis"; // mirroraxisx, mirroraxisy, mirroraxisz
+		core::String cmd = "mirroraxisshapebrush"; // mirroraxisshapebrushx, mirroraxisshapebrushy, mirroraxisshapebrushz
 		cmd += math::getCharForAxis(type);
 		command::executeCommands(cmd, &listener);
 		return true;
