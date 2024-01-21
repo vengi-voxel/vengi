@@ -650,7 +650,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 }
 
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph,
-				const SaveContext &ctx) {
+				const SaveContext &ctx, bool useVengiAsFallback) {
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to save model - no valid file given");
 		return false;
@@ -658,6 +658,10 @@ bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, s
 
 	io::FileStream stream(filePtr);
 	if (!saveFormat(sceneGraph, filePtr->name(), desc, stream, ctx)) {
+		if (!useVengiAsFallback) {
+			Log::error("Failed to save file %s", filePtr->name().c_str());
+			return false;
+		}
 		Log::warn("Failed to save file %s - saving as vengi instead", filePtr->name().c_str());
 		VENGIFormat vengiFormat;
 		const core::String &newName = core::string::replaceExtension(filePtr->name(), "vengi");

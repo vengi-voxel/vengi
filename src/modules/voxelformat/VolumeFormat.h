@@ -6,7 +6,6 @@
 #pragma once
 
 #include "Format.h"
-#include "core/collection/Array.h"
 #include "io/File.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
@@ -47,7 +46,7 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph,
-				const SaveContext &ctx);
+				const SaveContext &ctx, bool useVengiAsFallback = true);
 bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc,
 				io::SeekableWriteStream &stream, const SaveContext &ctx);
 

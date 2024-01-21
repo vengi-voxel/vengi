@@ -421,7 +421,7 @@ app::AppState VoxConvert::onInit() {
 	if (outputFile) {
 		Log::debug("Save %i models", (int)sceneGraph.size());
 		voxelformat::SaveContext saveCtx;
-		if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx)) {
+		if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx, false)) {
 			Log::error("Failed to write to output file '%s'", outfile.c_str());
 			return app::AppState::InitFailure;
 		}
