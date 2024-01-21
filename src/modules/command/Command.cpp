@@ -35,7 +35,7 @@ bool Command::unregisterCommand(const core::String &name) {
 	return _cmds.remove(name);
 }
 
-ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const char *help) {
+ActionButtonCommands Command::registerActionButton(const core::String& name, ActionButton& button, const core::String &help) {
 	core::ScopedLock lock(_lock);
 	Command cPressed(COMMAND_PRESSED + name, [&] (const command::CmdArgs& args) {
 		const int32_t key = args.size() >= 1 ? args[0].toInt() : 0;
@@ -103,7 +103,7 @@ void Command::updateSortedList() {
 		_sortedCommandList[_sortedCommandListSize++] = &i->value;
 	}
 	SDL_qsort(_sortedCommandList, _sortedCommandListSize, sizeof(Command*), [] (const void *v1, const void *v2) {
-		return SDL_strcmp((*(const Command*const *)v1)->name(), (*(const Command*const *)v2)->name());
+		return SDL_strcmp((*(const Command*const *)v1)->name().c_str(), (*(const Command*const *)v2)->name().c_str());
 	});
 }
 
@@ -201,12 +201,8 @@ void Command::shutdown() {
 	_cmds.clear();
 }
 
-Command& Command::setHelp(const char* help) {
-	if (help == nullptr) {
-		_help = "";
-	} else {
-		_help = help;
-	}
+Command& Command::setHelp(const core::String &help) {
+	_help = help;
 	return *this;
 }
 

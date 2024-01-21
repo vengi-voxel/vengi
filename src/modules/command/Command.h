@@ -48,17 +48,17 @@ private:
 	static core::DynamicArray<core::String> _delayedTokens;
 
 	core::String _name;
-	const char* _help;
+	core::String _help;
 	FunctionType _func;
 	typedef std::function<int(const core::String&, core::DynamicArray<core::String>& matches)> CompleteFunctionType;
 	mutable CompleteFunctionType _completer;
 
 	Command() :
-		_name(""), _help(nullptr), _func() {
+		_func() {
 	}
 
 	Command(const core::String& name, FunctionType&& func) :
-		_name(name), _help(""), _func(core::move(func)) {
+		_name(name), _func(core::move(func)) {
 	}
 
 	static void updateSortedList();
@@ -79,7 +79,7 @@ public:
 	 * @note This class is not taking ownership of the button instance. You have to ensure
 	 * that the instance given here is alive as long as the commands are bound.
 	 */
-	static ActionButtonCommands registerActionButton(const core::String& name, ActionButton& button, const char *help = nullptr);
+	static ActionButtonCommands registerActionButton(const core::String& name, ActionButton& button, const core::String &help = "");
 	static bool unregisterActionButton(const core::String& name);
 
 	static void shutdown();
@@ -134,10 +134,10 @@ public:
 
 	Command& setBoolCompleter();
 
-	const char* name() const;
+	const core::String &name() const;
 
-	Command& setHelp(const char* help);
-	const char* help() const;
+	Command& setHelp(const core::String &help);
+	const core::String &help() const;
 
 	bool operator==(const Command& rhs) const;
 };
@@ -146,17 +146,17 @@ inline bool Command::operator==(const Command& rhs) const {
 	return rhs._name == _name;
 }
 
-inline const char* Command::name() const {
-	return _name.c_str();
+inline const core::String &Command::name() const {
+	return _name;
 }
 
-inline const char* Command::help() const {
+inline const core::String &Command::help() const {
 	return _help;
 }
 
-inline const char *help(const core::String &cmd) {
+inline core::String help(const core::String &cmd) {
 	Command* command = Command::getCommand(cmd);
-	if (!command || !command->help()) {
+	if (!command) {
 		return "";
 	}
 	return command->help();

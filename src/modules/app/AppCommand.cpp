@@ -265,7 +265,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			if (!args.empty() && !core::string::matches(cmd.name(), args[0])) {
 				return;
 			}
-			Log::info("* %s - %s", cmd.name(), cmd.help());
+			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
 		});
 	}).setHelp("Show the list of known commands (wildcards supported)");
 }

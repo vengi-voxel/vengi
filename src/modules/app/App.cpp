@@ -535,7 +535,7 @@ void App::zshCompletion() const {
 		}
 	}
 	command::Command::visitSorted([=](const command::Command &c) {
-		Log::printf("\t\t'-%s[\"%s\"]'", c.name(), c.help());
+		Log::printf("\t\t'-%s[\"%s\"]'", c.name().c_str(), c.help().c_str());
 	});
 
 	Log::printf("\t)\n");
@@ -584,7 +584,7 @@ void App::bashCompletion() const {
 			Log::printf("%s ", arg.shortArg().c_str());
 		}
 	}
-	command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name()); });
+	command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name().c_str()); });
 	Log::printf("\"\n");
 
 	// cvars
@@ -678,7 +678,7 @@ void App::usage() const {
 	int maxWidth = 0;
 	core::Var::visit([&](const core::VarPtr &v) { maxWidth = core_max(maxWidth, (int)v->name().size()); });
 	command::Command::visit(
-		[&](const command::Command &c) { maxWidth = core_max(maxWidth, (int)SDL_strlen(c.name())); });
+		[&](const command::Command &c) { maxWidth = core_max(maxWidth, (int)c.name().size()); });
 
 	Log::info("------------");
 	Log::info("Config variables:");
@@ -720,7 +720,7 @@ void App::usage() const {
 	Log::info("------------");
 	Log::info("Commands:");
 	command::Command::visitSorted(
-		[=](const command::Command &c) { Log::info("   %-*s %s", maxWidth, c.name(), c.help()); });
+		[=](const command::Command &c) { Log::info("   %-*s %s", maxWidth, c.name().c_str(), c.help().c_str()); });
 	Log::info("------------");
 	Log::info("Search paths:");
 	const io::Paths &paths = _filesystem->paths();

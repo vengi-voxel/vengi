@@ -481,7 +481,7 @@ app::AppState IMGUIApp::onRunning() {
 					if (!cmd) {
 						ImGui::TextColored(core::Color::Red(), "Failed to get command for %s", command.c_str());
 					} else {
-						ImGui::TextUnformatted(cmd->help() ? cmd->help() : "");
+						ImGui::TextUnformatted(cmd->help().c_str());
 					}
 				}
 				ImGui::EndTable();

@@ -382,9 +382,9 @@ void TooltipCommand(const char *command) {
 		if (firstwhitespace) {
 			*firstwhitespace = '\0';
 		}
-		const char *help = command::help(buf);
-		if (help && *help) {
-			ImGui::TooltipText("%s", help);
+		const core::String &help = command::help(buf);
+		if (!help.empty()) {
+			ImGui::TooltipText("%s", help.c_str());
 		}
 	}
 }
