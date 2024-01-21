@@ -28,6 +28,7 @@ Modifier::Modifier() : _deleteExecuteButton(ModifierType::Erase) {
 	_brushes.push_back(&_stampBrush);
 	_brushes.push_back(&_lineBrush);
 	_brushes.push_back(&_pathBrush);
+	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
 void Modifier::construct() {
@@ -64,25 +65,11 @@ void Modifier::construct() {
 		setModifierType(ModifierType::Place | ModifierType::Erase);
 	}).setHelp("Change the modifier type to 'override'");
 
-	command::Command::registerCommand("brushpath", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Path);
-	}).setHelp("Change the brush type to 'path'");
-
-	command::Command::registerCommand("brushplane", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Plane);
-	}).setHelp("Change the brush type to 'plane'");
-
-	command::Command::registerCommand("brushshape", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Shape);
-	}).setHelp("Change the brush type to 'shape'");
-
-	command::Command::registerCommand("brushstamp", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Stamp);
-	}).setHelp("Change the brush type to 'stamp'");
-
-	command::Command::registerCommand("brushline", [&](const command::CmdArgs &args) {
-		setBrushType(BrushType::Line);
-	}).setHelp("Change the brush type to 'line'");
+	for (const Brush *b : _brushes) {
+		command::Command::registerCommand("action" + b->name().toLower(), [&](const command::CmdArgs &args) {
+			setBrushType(b->type());
+		}).setHelp("Change the brush type to '" + b->name() + "'");
+	}
 
 	command::Command::registerCommand("lock", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
