@@ -21,6 +21,7 @@ vec4 calcColor(void) {
 }
 
 void main(void) {
+	o_color = calcColor();
 	if ((v_flags & FLAGOUTLINE) != 0u) {
 		// TODO: these must be zoom, scale and view related
 		const float epsilona = 0.025;
@@ -35,12 +36,11 @@ void main(void) {
 		bool overY = (yy <= epsilonb || 1.0 - yy <= epsilonb);
 		bool overZ = (zz <= epsilonb || 1.0 - zz <= epsilonb);
 		if ((nearX && !overX) || (nearY && !overY) || (nearZ && !overZ)) {
-			o_color = vec4(v_color.rgb * vec3(0.3, 0.3, 0.3), v_color.a);
-		} else {
-			o_color = calcColor();
+			o_color = vec4(o_color.rgb * vec3(0.3, 0.3, 0.3), o_color.a);
+			if (o_color.r < 0.1 && o_color.g < 0.1 && o_color.b < 0.1) {
+				o_color.rgb = vec3(1.0, 1.0, 1.0);
+			}
 		}
-	} else {
-		o_color = calcColor();
 	}
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
 	if ((v_flags & FLAGBLOOM) != 0u) {
