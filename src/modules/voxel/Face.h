@@ -6,7 +6,6 @@
 
 #include "core/Enum.h"
 #include "voxel/Voxel.h"
-#include "voxel/RawVolume.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
