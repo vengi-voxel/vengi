@@ -770,7 +770,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	{
 		core::DynamicArray<int> sorted;
 		sorted.reserve(MAX_VOLUMES);
-		video::ScopedState scopedBlendTrans(video::State::Blend, true);
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
@@ -793,6 +792,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			return d1 < d2;
 		});
 
+		video::ScopedState scopedBlendTrans(video::State::Blend, true);
 		for (int idx : sorted) {
 			const int bufferIndex = resolveIdx(idx);
 			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
