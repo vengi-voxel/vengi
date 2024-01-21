@@ -354,13 +354,7 @@ void SceneManager::hollow() {
 			return;
 		}
 		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-		core::DynamicArray<glm::ivec3> filled;
-		voxelutil::visitUndergroundVolume(wrapper, [&filled](int x, int y, int z, const voxel::Voxel &voxel) {
-			filled.emplace_back(x, y, z);
-		});
-		for (const glm::ivec3 &pos : filled) {
-			wrapper.setVoxel(pos, voxel::Voxel());
-		}
+		voxelutil::hollow(wrapper);
 		modified(nodeId, wrapper.dirtyRegion());
 	});
 }

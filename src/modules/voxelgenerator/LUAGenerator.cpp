@@ -287,6 +287,12 @@ static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_volumewrapper_hollow(lua_State *s) {
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
+	voxelutil::hollow(*volume);
+	return 0;
+}
+
 static int luaVoxel_volumewrapper_importheightmap(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const core::String imageName = lua_tostring(s, 2);
@@ -979,6 +985,7 @@ static void prepareState(lua_State* s) {
 		{"crop", luaVoxel_volumewrapper_crop},
 		{"text", luaVoxel_volumewrapper_text},
 		{"fillHollow", luaVoxel_volumewrapper_fillhollow},
+		{"hollow", luaVoxel_volumewrapper_hollow},
 		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
 		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},

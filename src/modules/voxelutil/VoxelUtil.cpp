@@ -255,6 +255,15 @@ void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite
 		VisitAll());
 }
 
+void hollow(voxel::RawVolumeWrapper &in) {
+	core::DynamicArray<glm::ivec3> filled;
+	voxelutil::visitUndergroundVolume(
+		in, [&filled](int x, int y, int z, const voxel::Voxel &voxel) { filled.emplace_back(x, y, z); });
+	for (const glm::ivec3 &pos : filled) {
+		in.setVoxel(pos, voxel::Voxel());
+	}
+}
+
 void clear(voxel::RawVolumeWrapper &in) {
 	fill(in, voxel::createVoxel(voxel::VoxelType::Air, 0));
 }

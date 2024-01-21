@@ -139,6 +139,7 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
  * @param[in] voxel The voxel to fill the hollow spaces with.
  */
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
+void hollow(voxel::RawVolumeWrapper &in);
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
 void clear(voxel::RawVolumeWrapper &in);
 
