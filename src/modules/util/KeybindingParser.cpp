@@ -70,16 +70,21 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 		}
 	}
 	if (keyCode == SDLK_UNKNOWN) {
-		key = core::string::replaceAll(key, "_", " ");
+		core::string::replaceAllChars(key, '_', ' ');
+#ifdef __MACOSX__
+		// see Cocoa_InitKeyboard
+		key = core::string::replaceAll(key, "alt", "option");
+		key = core::string::replaceAll(key, "gui", "command");
+#endif
 		keyCode = SDL_GetKeyFromName(key.c_str());
 		if (keyCode == SDLK_UNKNOWN) {
-			Log::warn("%s", SDL_GetError());
+			Log::warn("could not get a valid key code for %s (skip binding for %s): %s",
+					key.c_str(), command.c_str(), SDL_GetError());
+			++_invalidBindings;
+			return;
 		}
 	}
 	if (keyCode == SDLK_UNKNOWN) {
-		Log::warn("could not get a valid key code for %s (skip binding for %s)", key.c_str(), command.c_str());
-		++_invalidBindings;
-		return;
 	}
 	_bindings.insert(std::make_pair(keyCode, CommandModifierPair(command, modifier, count, bindingContext)));
 }
