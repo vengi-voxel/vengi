@@ -40,6 +40,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	// this call is needed to prevent double frees
 	_modifierRenderer->clearBrushMeshes();
 
+	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	const AABBBrush *aabbBrush = activeAABBBrush();
 	if (aabbBrush) {
 		const voxel::Region &region = aabbBrush->calcRegion(_brushContext);
@@ -49,13 +50,13 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 			_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_mirrorVolume, false);
-			executeBrush(sceneMgr().sceneGraph(), mirrorDummyNode, modifierType, voxel);
+			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
 			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &palette);
 		}
 		_volume = new voxel::RawVolume(region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_volume, false);
-		executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 		_modifierRenderer->updateBrushVolume(0, _volume, &palette);
 	} else {
 		switch (_brushType) {
@@ -66,7 +67,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 				_volume = new voxel::RawVolume(region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 				// TODO: support mirror axis
 				// TODO: use _stampBrush palette?
 				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
@@ -79,7 +80,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 				_volume = new voxel::RawVolume(region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneMgr().sceneGraph(), dummyNode, modifierType, voxel);
+				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
 			}
 			break;
