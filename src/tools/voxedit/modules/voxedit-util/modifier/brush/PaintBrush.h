@@ -69,16 +69,8 @@ public:
 	float factor() const;
 };
 
-inline void PaintBrush::setVariationThreshold(int variationThreshold) {
-	_variationThreshold = variationThreshold;
-}
-
 inline int PaintBrush::variationThreshold() const {
 	return _variationThreshold;
-}
-
-inline void PaintBrush::setFactor(float factor) {
-	_factor = factor;
 }
 
 inline float PaintBrush::factor() const {

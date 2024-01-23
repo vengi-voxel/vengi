@@ -9,6 +9,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "core/GLM.h"
 
 namespace voxedit {
 
@@ -58,6 +59,14 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	}
 
 	return true;
+}
+
+void PaintBrush::setFactor(float factor) {
+	_factor = glm::clamp(factor, 0.1f, 10.0f);
+}
+
+void PaintBrush::setVariationThreshold(int variationThreshold) {
+	_variationThreshold = glm::clamp(variationThreshold, 2, 20);
 }
 
 } // namespace voxedit
