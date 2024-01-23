@@ -43,6 +43,9 @@ void AABBBrush::construct() {
 
 	command::Command::registerCommand("toggle" + cmdName + "single", [this](const command::CmdArgs &args) {
 		_single ^= true;
+		if (!_single) {
+			_radius = 0;
+		}
 	}).setHelp("Toggle single voxel building mode");
 }
 

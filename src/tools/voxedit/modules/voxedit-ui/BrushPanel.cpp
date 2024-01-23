@@ -206,11 +206,6 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 }
 
 void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
-	int radius = brush.radius();
-	if (ImGui::InputInt("Radius", &radius)) {
-		brush.setRadius(radius);
-	}
-	ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
 	addMirrorPlanes(listener, brush);
 
 	bool center = brush.centerMode();
@@ -225,6 +220,15 @@ void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, A
 	if (ImGui::Checkbox("Single", &single)) {
 		command::executeCommands(toggleSingleCmd, &listener);
 	}
+
+	if (single) {
+		int radius = brush.radius();
+		if (ImGui::InputInt("Radius", &radius)) {
+			brush.setRadius(radius);
+		}
+		ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
+	}
+
 	ImGui::TooltipCommand(toggleSingleCmd.c_str());
 }
 
