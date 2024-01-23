@@ -60,14 +60,20 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 
 bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener,
 									   AABBBrush &brush) {
-	ui::ScopedStyle style;
-	veui::AxisStyleText(style, type, false);
-	if (ImGui::RadioButton(title, brush.mirrorAxis() == type)) {
-		core::String cmd = "mirroraxis" + brush.name().toLower() +
-						   "brush"; // mirroraxisshapebrushx, mirroraxisshapebrushy, mirroraxisshapebrushz
-		cmd += math::getCharForAxis(type);
-		command::executeCommands(cmd, &listener);
-		return true;
+	core::String cmd = "mirroraxis" + brush.name().toLower() +
+					   "brush"; // mirroraxisshapebrushx, mirroraxisshapebrushy, mirroraxisshapebrushz
+	cmd += math::getCharForAxis(type);
+	{
+		ui::ScopedStyle style;
+		veui::AxisStyleText(style, type, false);
+		if (ImGui::RadioButton(title, brush.mirrorAxis() == type)) {
+			command::executeCommands(cmd, &listener);
+			return true;
+		}
+	}
+	const core::String &help = command::help(cmd);
+	if (!help.empty()) {
+		ImGui::TooltipText("%s", help.c_str());
 	}
 	return false;
 }
@@ -76,13 +82,10 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AA
 	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None, listener, brush);
 	ImGui::SameLine();
 	mirrorAxisRadioButton("X##mirror", math::Axis::X, listener, brush);
-	ImGui::TooltipText("Mirror along the x axis at the reference position");
 	ImGui::SameLine();
 	mirrorAxisRadioButton("Y##mirror", math::Axis::Y, listener, brush);
-	ImGui::TooltipText("Mirror along the y axis at the reference position");
 	ImGui::SameLine();
 	mirrorAxisRadioButton("Z##mirror", math::Axis::Z, listener, brush);
-	ImGui::TooltipText("Mirror along the z axis at the reference position");
 }
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
