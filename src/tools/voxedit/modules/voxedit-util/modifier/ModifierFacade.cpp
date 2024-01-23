@@ -28,6 +28,13 @@ void ModifierFacade::shutdown() {
 	_modifierRenderer->shutdown();
 }
 
+static voxel::RawVolume *createPreviewVolume(const voxel::RawVolume *existingVolume, const voxel::Region &region) {
+	if (existingVolume == nullptr) {
+		return new voxel::RawVolume(region);
+	}
+	return new voxel::RawVolume(*existingVolume, region);
+}
+
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _modifierType;
@@ -41,19 +48,23 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	_modifierRenderer->clearBrushMeshes();
 
 	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	voxel::RawVolume *existingVolume = nullptr;
+	if (_modifierType == ModifierType::Paint) {
+		existingVolume = sceneMgr().volume(sceneGraph.activeNode());
+	}
 	const AABBBrush *aabbBrush = activeAABBBrush();
 	if (aabbBrush && !aabbBrush->singleMode()) {
 		const voxel::Region &region = aabbBrush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (aabbBrush->getMirrorAABB(minsMirror, maxsMirror)) {
-			_mirrorVolume = new voxel::RawVolume(voxel::Region(minsMirror, maxsMirror));
+			_mirrorVolume = createPreviewVolume(existingVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_mirrorVolume, false);
 			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
 			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &palette);
 		}
-		_volume = new voxel::RawVolume(region);
+		_volume = createPreviewVolume(existingVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_volume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
