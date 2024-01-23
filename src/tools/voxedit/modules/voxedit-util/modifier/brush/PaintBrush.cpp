@@ -16,12 +16,17 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) const {
 	if (_paintMode == PaintMode::Replace) {
 		return _voxel;
 	}
+	if (_paintMode == PaintMode::Random) {
+		int n = _palette.colorCount();
+		int idx = rand() % n;
+		return voxel::Voxel(old.getMaterial(), idx, old.getFlags());
+	}
 	const core::RGBA voxelColor = _palette.color(old.getColor());
 	core::RGBA newColor;
 	if (_paintMode == PaintMode::Brighten) {
-		newColor = core::Color::brighter(voxelColor);
+		newColor = core::Color::brighter(voxelColor, _factor);
 	} else {
-		newColor = core::Color::darker(voxelColor);
+		newColor = core::Color::darker(voxelColor, _factor);
 	}
 	int index = _palette.getClosestMatch(newColor);
 	if (index == palette::PaletteColorNotFound) {
@@ -36,7 +41,7 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelutil::paintPlane(wrapper, context.cursorPosition, context.cursorFace, context.hitCursorVoxel,
 							  context.cursorVoxel);
 	} else {
-		const VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode);
+		const VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor);
 		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};

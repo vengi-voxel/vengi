@@ -17,14 +17,15 @@ namespace voxedit {
  */
 class PaintBrush : public AABBBrush {
 public:
-	enum class PaintMode { Replace, Brighten, Darken, Max };
+	enum class PaintMode { Replace, Brighten, Darken, Random, Max };
 
-	static constexpr const char *PaintModeStr[] = {"Replace", "Brighten", "Darken"};
+	static constexpr const char *PaintModeStr[] = {"Replace", "Brighten", "Darken", "Random"};
 	static_assert(lengthof(PaintModeStr) == (int)PaintBrush::PaintMode::Max, "PaintModeStr size mismatch");
 
 private:
 	using Super = AABBBrush;
 
+	float _factor = 1.0f;
 	bool _plane = false;
 	PaintMode _paintMode = PaintMode::Replace;
 
@@ -34,10 +35,11 @@ protected:
 		const voxel::Voxel _voxel;
 		const palette::Palette &_palette;
 		const PaintMode _paintMode;
+		float _factor = 1.0f;
 
 	public:
-		VoxelColor(const palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode)
-			: _voxel(voxel), _palette(palette), _paintMode(paintMode) {
+		VoxelColor(const palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor)
+			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _factor(factor) {
 		}
 		voxel::Voxel evaluate(const voxel::Voxel &old) const;
 	};
@@ -57,7 +59,18 @@ public:
 
 	void setPlane(bool plane);
 	bool plane() const;
+
+	void setFactor(float factor);
+	float factor() const;
 };
+
+inline void PaintBrush::setFactor(float factor) {
+	_factor = factor;
+}
+
+inline float PaintBrush::factor() const {
+	return _factor;
+}
 
 inline PaintBrush::PaintMode PaintBrush::paintMode() const {
 	return _paintMode;

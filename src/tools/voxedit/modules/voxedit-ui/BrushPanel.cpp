@@ -256,6 +256,13 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 		}
 		ImGui::EndCombo();
 	}
+
+	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken) {
+		float factor = brush.factor();
+		if (ImGui::InputFloat("Factor", &factor)) {
+			brush.setFactor(factor);
+		}
+	}
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
