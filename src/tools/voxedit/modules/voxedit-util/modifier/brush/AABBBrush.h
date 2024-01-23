@@ -151,6 +151,7 @@ inline bool AABBBrush::centerMode() const {
 
 inline void AABBBrush::setCenterMode(bool center) {
 	_center = center;
+	markDirty();
 }
 
 inline bool AABBBrush::singleMode() const {
@@ -159,6 +160,7 @@ inline bool AABBBrush::singleMode() const {
 
 inline void AABBBrush::setSingleMode(bool single) {
 	_single = single;
+	markDirty();
 }
 
 } // namespace voxedit
