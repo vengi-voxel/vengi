@@ -125,11 +125,11 @@ private:
 	uint8_t _colorIndex;
 };
 
-constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex) {
-	return Voxel(type, colorIndex);
+constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t flags = 0u) {
+	return Voxel(type, colorIndex, flags);
 }
 
-voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index);
+voxel::Voxel createVoxel(const palette::Palette &pal, uint8_t index, uint8_t flags = 0u);
 
 inline bool isBlocked(VoxelType material) {
 	return material != VoxelType::Air;

@@ -20,7 +20,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	if (_paintMode == PaintMode::Random) {
 		int n = _palette.colorCount();
 		int idx = rand() % n;
-		return voxel::Voxel(old.getMaterial(), idx, old.getFlags());
+		return voxel::createVoxel(_palette, idx, old.getFlags());
 	}
 
 	bool brighten = _paintMode == PaintMode::Brighten;
@@ -42,7 +42,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	if (index == palette::PaletteColorNotFound) {
 		return old;
 	}
-	return voxel::Voxel(old.getMaterial(), index, old.getFlags());
+	return voxel::createVoxel(_palette, index, old.getFlags());
 }
 
 bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
