@@ -86,7 +86,7 @@ void RenderContext::shutdown() {
 }
 
 glm::vec3 RawVolumeRenderer::State::centerPos() const {
-	const glm::vec4 center(_mins + (_maxs - _mins) * 0.5f, 1.0f);
+	const glm::vec4 center((_mins + _maxs) * 0.5f, 1.0f);
 	const glm::vec3 pos = _model * center;
 	return pos;
 }
