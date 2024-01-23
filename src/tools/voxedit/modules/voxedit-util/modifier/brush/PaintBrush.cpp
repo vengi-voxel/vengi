@@ -12,7 +12,7 @@
 
 namespace voxedit {
 
-voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) const {
+voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	if (_paintMode == PaintMode::Replace) {
 		return _voxel;
 	}
@@ -21,14 +21,23 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) const {
 		int idx = rand() % n;
 		return voxel::Voxel(old.getMaterial(), idx, old.getFlags());
 	}
+
+	bool brighten = _paintMode == PaintMode::Brighten;
+	if (_paintMode == PaintMode::Variation) {
+		if (rand() % _variationThreshold != 0) {
+			return old;
+		}
+		brighten = rand() % 2 == 0;
+	}
+
 	const core::RGBA voxelColor = _palette.color(old.getColor());
 	core::RGBA newColor;
-	if (_paintMode == PaintMode::Brighten) {
+	if (brighten) {
 		newColor = core::Color::brighter(voxelColor, _factor);
 	} else {
 		newColor = core::Color::darker(voxelColor, _factor);
 	}
-	int index = _palette.getClosestMatch(newColor);
+	const int index = _palette.getClosestMatch(newColor);
 	if (index == palette::PaletteColorNotFound) {
 		return old;
 	}
@@ -41,7 +50,7 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelutil::paintPlane(wrapper, context.cursorPosition, context.cursorFace, context.hitCursorVoxel,
 							  context.cursorVoxel);
 	} else {
-		const VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor);
+		VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor, _variationThreshold);
 		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};

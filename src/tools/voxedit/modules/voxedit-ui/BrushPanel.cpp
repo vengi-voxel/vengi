@@ -257,10 +257,17 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 		ImGui::EndCombo();
 	}
 
-	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken) {
+	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
+		paintMode == PaintBrush::PaintMode::Variation) {
 		float factor = brush.factor();
 		if (ImGui::InputFloat("Factor", &factor)) {
 			brush.setFactor(factor);
+		}
+	}
+	if (paintMode == PaintBrush::PaintMode::Variation) {
+		int variationThreshold = brush.variationThreshold();
+		if (ImGui::InputInt("Variation threshold", &variationThreshold)) {
+			brush.setVariationThreshold(variationThreshold);
 		}
 	}
 }
@@ -304,9 +311,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::Toolbar toolbarBrush(buttonSize, &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
 		core::String cmd = core::string::format("brush%s", BrushTypeStr[i]).toLower();
-		auto func = [&listener, cmd]() {
-			command::executeCommands(cmd, &listener);
-		};
+		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
 		core::String tooltip = command::help(cmd);
 		if (tooltip.empty()) {
 			tooltip = BrushTypeStr[i];
