@@ -61,6 +61,7 @@ protected:
 
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(ModifierType::Place);
 		modifier.shapeBrush().setSingleMode(true);
 		MementoHandler &mementoHandler = _sceneMgr.mementoHandler();
@@ -68,28 +69,34 @@ protected:
 		EXPECT_FALSE(mementoHandler.canRedo());
 	}
 
-	void testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
+	bool testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr.modifier();
+		modifier.setBrushType(BrushType::Shape);
+		modifier.shapeBrush().setSingleMode(true);
+		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
 		modifier.start();
 		const int nodeId = _sceneMgr.sceneGraph().activeNode();
 		voxel::RawVolume *v = _sceneMgr.volume(nodeId);
-		if (!voxel::isAir(v->voxel(pos).getMaterial())) {
-			modifier.setBrushType(BrushType::Paint);
-		}
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, false);
-		modifier.execute(sceneGraph, node,
-						 [&](const voxel::Region &region, ModifierType, bool) { _sceneMgr.modified(nodeId, region); });
-		modifier.setModifierType(ModifierType::Place);
+		int executed = 0;
+		if (!modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType, bool) {
+				executed++;
+				_sceneMgr.modified(nodeId, region);
+			})) {
+			return false;
+		}
+		return executed == 1;
 	}
 
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.stop();
 		modifier.shapeBrush().setSingleMode(false);
+		modifier.setBrushType(BrushType::None);
 		modifier.setModifierType(ModifierType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);
 		EXPECT_TRUE(modifier.start());
@@ -98,6 +105,7 @@ protected:
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, bool) {}));
+		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(ModifierType::Place);
 	}
 
@@ -122,7 +130,7 @@ TEST_F(SceneManagerTest, testNewScene) {
 
 TEST_F(SceneManagerTest, testUndoRedoModification) {
 	EXPECT_FALSE(_sceneMgr.dirty());
-	testSetVoxel(testMins());
+	ASSERT_TRUE(testSetVoxel(testMins()));
 	EXPECT_TRUE(_sceneMgr.dirty());
 
 	MementoHandler &mementoHandler = _sceneMgr.mementoHandler();
@@ -183,7 +191,7 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 	MementoHandler &mementoHandler = _sceneMgr.mementoHandler();
 	EXPECT_EQ(1u, mementoHandler.stateSize());
 	// modification
-	testSetVoxel(testMins(), 1);
+	ASSERT_TRUE(testSetVoxel(testMins(), 1));
 	EXPECT_EQ(2u, mementoHandler.stateSize());
 
 	// new node
@@ -191,11 +199,11 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 	EXPECT_EQ(3u, mementoHandler.stateSize());
 
 	// modification of the new node
-	testSetVoxel(testMins(), 2);
+	ASSERT_TRUE(testSetVoxel(testMins(), 2));
 	EXPECT_EQ(4u, mementoHandler.stateSize());
 
 	// modification of the new node
-	testSetVoxel(testMins(), 3);
+	ASSERT_TRUE(testSetVoxel(testMins(), 3));
 	EXPECT_EQ(5u, mementoHandler.stateSize());
 
 	// last state is the active state

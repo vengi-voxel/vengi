@@ -7,6 +7,7 @@
 #include "core/ArrayLength.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
@@ -22,8 +23,8 @@ namespace voxedit {
 
 class ModifierTest : public app::AbstractTest {
 protected:
-	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType) {
-		modifier.setBrushType(BrushType::Shape);
+	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType, BrushType brushType) {
+		modifier.setBrushType(brushType);
 		modifier.setModifierType(modifierType);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setGridResolution(1);
@@ -43,14 +44,14 @@ protected:
 	}
 
 	void select(voxel::RawVolume &volume, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
-		prepare(modifier, mins, maxs, ModifierType::Select);
+		prepare(modifier, mins, maxs, ModifierType::Select, BrushType::None);
 		int executed = 0;
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
 		EXPECT_TRUE(
 			modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType type, bool markUndo) {
-				EXPECT_EQ(ModifierType::Select, type);
+				EXPECT_EQ(ModifierType::Select, type) << (int)type;
 				EXPECT_EQ(voxel::Region(mins, maxs), region);
 				++executed;
 			}));
@@ -62,7 +63,7 @@ protected:
 TEST_F(ModifierTest, testModifierAction) {
 	Modifier modifier;
 	ASSERT_TRUE(modifier.init());
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place);
+	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	const voxel::Region region(-10, 10);
 	voxel::RawVolume volume(region);
 	bool modifierExecuted = false;
@@ -86,7 +87,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
 
-	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place);
+	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place, BrushType::Shape);
 	int modifierExecuted = 0;
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

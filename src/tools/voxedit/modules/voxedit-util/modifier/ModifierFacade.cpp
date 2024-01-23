@@ -31,8 +31,8 @@ void ModifierFacade::shutdown() {
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _modifierType;
-	if ((modifierType & ModifierType::Erase) == ModifierType::Erase) {
-		modifierType &= ~ModifierType::Erase;
+	if (modifierType == ModifierType::Erase) {
+		modifierType = ModifierType::Place;
 	}
 	voxel::Voxel voxel = _brushContext.cursorVoxel;
 	voxel.setOutline();
@@ -84,6 +84,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 			}
 			break;
 		}
+		// TODO: path preview
 		default:
 			break;
 		}
