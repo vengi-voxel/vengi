@@ -63,10 +63,12 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 
 void PaintBrush::setFactor(float factor) {
 	_factor = glm::clamp(factor, 0.1f, 10.0f);
+	markDirty();
 }
 
 void PaintBrush::setVariationThreshold(int variationThreshold) {
 	_variationThreshold = glm::clamp(variationThreshold, 2, 20);
+	markDirty();
 }
 
 } // namespace voxedit

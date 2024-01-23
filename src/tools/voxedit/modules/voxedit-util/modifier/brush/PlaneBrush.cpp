@@ -17,7 +17,7 @@ bool PlaneBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 		voxelutil::extrudePlane(wrapper, context.cursorPosition, context.cursorFace, hitVoxel, context.cursorVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Erase) {
 		voxelutil::erasePlane(wrapper, context.cursorPosition, context.cursorFace, hitVoxel);
-	} else if (wrapper.modifierType() == (ModifierType::Place | ModifierType::Erase)) {
+	} else if (wrapper.modifierType() == ModifierType::Override) {
 		voxelutil::overridePlane(wrapper, context.cursorPosition, context.cursorFace, context.cursorVoxel);
 	}
 	return true;

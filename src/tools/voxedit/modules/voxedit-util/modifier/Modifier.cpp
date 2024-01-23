@@ -409,9 +409,6 @@ void Modifier::setGridResolution(int gridSize) {
 ModifierType Modifier::setModifierType(ModifierType type) {
 	if (_brushType != BrushType::None) {
 		_modifierType = activeBrush()->modifierType(type);
-		if (type != _modifierType) {
-			Log::error("change modifier type to %i", (int)type);
-		}
 	} else {
 		_modifierType = type;
 	}

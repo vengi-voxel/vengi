@@ -7,7 +7,6 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
-#include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxel/RawVolume.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>

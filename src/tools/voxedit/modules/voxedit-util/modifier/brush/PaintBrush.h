@@ -27,7 +27,7 @@ private:
 
 	float _factor = 1.0f;
 	int _variationThreshold = 3;
-	bool _plane = false;
+	bool _plane = false; // TODO: plane mode should ignore aabb
 	PaintMode _paintMode = PaintMode::Replace;
 
 protected:
@@ -83,6 +83,7 @@ inline PaintBrush::PaintMode PaintBrush::paintMode() const {
 
 inline void PaintBrush::setPaintMode(PaintMode mode) {
 	_paintMode = mode;
+	markDirty();
 }
 
 inline void PaintBrush::setPlane(bool plane) {
