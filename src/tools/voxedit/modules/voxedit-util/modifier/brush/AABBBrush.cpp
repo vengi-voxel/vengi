@@ -23,15 +23,15 @@ void AABBBrush::construct() {
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the x axis");
+	}).setHelp("Mirror along the x axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the y axis");
+	}).setHelp("Mirror along the y axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
-	}).setHelp("Mirror around the z axis");
+	}).setHelp("Mirror along the z axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
