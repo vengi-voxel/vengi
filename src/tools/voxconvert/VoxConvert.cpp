@@ -80,6 +80,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
 	registerArg("--surface-only").setDescription("Remove any non surface voxel");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
+	registerArg("--formats-print").setDescription("Print supported formats as json for easier parsing in other tools");
 
 	voxelformat::FormatConfig::init();
 
@@ -148,6 +149,37 @@ void VoxConvert::usage() const {
 	}
 }
 
+static void printFormatDetails(const io::FormatDescription *desc) {
+	const io::FormatDescription *first = desc;
+	for (; desc->valid(); ++desc) {
+		if (desc != first) {
+			Log::printf(",");
+		}
+		Log::printf("{");
+		Log::printf("\"name\":\"%s\",", desc->name.c_str());
+		Log::printf("\"extensions\":[");
+		for (size_t i = 0; i < desc->exts.size(); ++i) {
+			if (i > 0) {
+				Log::printf(",");
+			}
+			Log::printf("\"%s\"", desc->exts[i].c_str());
+		}
+		Log::printf("]}");
+	}
+}
+
+void VoxConvert::printFormatsAsJson() const {
+	Log::printf("{\"load\":[");
+	printFormatDetails(voxelformat::voxelLoad());
+	Log::printf("],\"save\":[");
+	printFormatDetails(voxelformat::voxelSave());
+	Log::printf("],\"images\":[");
+	printFormatDetails(io::format::images());
+	Log::printf("],\"palettes\":[");
+	printFormatDetails(io::format::palettes());
+	Log::printf("]}\n");
+}
+
 app::AppState VoxConvert::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -159,6 +191,11 @@ app::AppState VoxConvert::onInit() {
 		Log::init();
 		usage();
 		return app::AppState::InitFailure;
+	}
+
+	if (hasArg("--formats-print")) {
+		printFormatsAsJson();
+		return state;
 	}
 
 	const bool hasScript = hasArg("--script");

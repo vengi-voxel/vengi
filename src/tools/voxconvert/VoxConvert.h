@@ -82,6 +82,7 @@ protected:
 	void filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value);
 	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext);
 	void split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph);
+	void printFormatsAsJson() const;
 public:
 	VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
