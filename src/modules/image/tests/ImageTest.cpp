@@ -6,7 +6,6 @@
 #include "image/Image.h"
 #include "core/tests/TestColorHelper.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include <glm/vec2.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
