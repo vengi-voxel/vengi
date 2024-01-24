@@ -62,7 +62,7 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 }
 
 bool PaintBrush::plane() const {
-	if (_single) {
+	if (_single || _center) {
 		return false;
 	}
 	return _plane;

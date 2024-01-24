@@ -93,6 +93,7 @@ inline void PaintBrush::setPaintMode(PaintMode mode) {
 
 inline void PaintBrush::setPlane(bool plane) {
 	_plane = plane;
+	markDirty();
 }
 
 } // namespace voxedit

@@ -256,7 +256,7 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	bool plane = brush.plane();
 	{
 		ui::ScopedStyle style;
-		if (brush.singleMode()) {
+		if (brush.singleMode() || brush.centerMode()) {
 			style.disableItem();
 		}
 		if (ImGui::Checkbox("Plane", &plane)) {
