@@ -28,6 +28,7 @@ class KeybindingParser {
 private:
 	BindMap _bindings;
 	int _invalidBindings;
+	core::String _lastError;
 
 	void parseKeyAndCommand(core::String key, const core::String& command, const core::String &context);
 public:
@@ -47,6 +48,10 @@ public:
 	 */
 	inline int invalidBindings() const {
 		return _invalidBindings;
+	}
+
+	const core::String &lastError() const {
+		return _lastError;
 	}
 
 	/**

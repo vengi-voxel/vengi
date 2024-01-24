@@ -37,7 +37,7 @@ TEST_F(KeybindingParserTest, testParsing) {
 	KeybindingParser p(keybindingparser::CFG);
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
-	ASSERT_EQ(0, p.invalidBindings());
+	ASSERT_EQ(0, p.invalidBindings()) << p.lastError();
 	const size_t expected = 16;
 	EXPECT_EQ(expected, m.size());
 
