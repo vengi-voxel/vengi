@@ -104,7 +104,7 @@ public:
 	 * @brief List all entities in a directory that match the given optional filter
 	 * @param directory The directory to list
 	 * @param entities The list of directory entities that were found
-	 * @param filter Wildcard for filtering the returned entities
+	 * @param[in] filter Wildcard for filtering the returned entities. Separated by a comma. Example *.vox,*.qb,*.mcr
 	 * @return @c true if the directory could get opened
 	 */
 	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
