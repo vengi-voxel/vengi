@@ -32,7 +32,7 @@ pacman -Sy git make cmake ninja sdl2 clang
 ## Brew
 
 ```bash
-brew install sdl2 freetype
+brew install sdl2 freetype cmake ninja
 ```
 
 ## Windows
