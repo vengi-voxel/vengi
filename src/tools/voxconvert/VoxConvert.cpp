@@ -12,17 +12,18 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "core/concurrent/Concurrency.h"
+#include "engine-git.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
-#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -38,7 +39,6 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
-#include "engine-git.h"
 
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
@@ -111,25 +111,25 @@ void VoxConvert::usage() const {
 	Super::usage();
 	Log::info("Load support:");
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-		for (const core::String& ext : desc->exts) {
+		for (const core::String &ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
 	Log::info("Save support:");
 	for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-		for (const core::String& ext : desc->exts) {
+		for (const core::String &ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
 	Log::info("Supported image formats:");
 	for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
-		for (const core::String& ext : desc->exts) {
+		for (const core::String &ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
 	Log::info("Supported palette formats:");
 	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
-		for (const core::String& ext : desc->exts) {
+		for (const core::String &ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
 	}
@@ -149,7 +149,7 @@ void VoxConvert::usage() const {
 	}
 }
 
-static void printFormatDetails(const io::FormatDescription *desc) {
+static void printFormatDetails(const io::FormatDescription *desc, const core::StringMap<uint32_t> &flags = {}) {
 	const io::FormatDescription *first = desc;
 	for (; desc->valid(); ++desc) {
 		if (desc != first) {
@@ -164,7 +164,13 @@ static void printFormatDetails(const io::FormatDescription *desc) {
 			}
 			Log::printf("\"%s\"", desc->exts[i].c_str());
 		}
-		Log::printf("]}");
+		Log::printf("]");
+		for (const auto &entry : flags) {
+			if (desc->flags & entry->second) {
+				Log::printf(",\"%s\":true", entry->first.c_str());
+			}
+		}
+		Log::printf("}");
 	}
 }
 
@@ -182,14 +188,17 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (hasArg("--print-formats")) {
-		Log::printf("{\"load\":[");
-		printFormatDetails(voxelformat::voxelLoad());
-		Log::printf("],\"save\":[");
-		printFormatDetails(voxelformat::voxelSave());
+		Log::printf("{\"voxels\":[");
+		printFormatDetails(voxelformat::voxelLoad(), {{"thumbnail_embedded", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+													  {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
+													  {"screenshot", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
+													  {"mesh", VOX_FORMAT_FLAG_MESH},
+													  {"animation", VOX_FORMAT_FLAG_ANIMATION},
+													  {"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"images\":[");
-		printFormatDetails(io::format::images());
+		printFormatDetails(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"palettes\":[");
-		printFormatDetails(io::format::palettes());
+		printFormatDetails(io::format::palettes(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("]}\n");
 		return state;
 	}
