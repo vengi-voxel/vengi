@@ -209,6 +209,8 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
 	addMirrorPlanes(listener, brush);
 
+	ImGui::Separator();
+
 	const bool aabb = brush.aabbMode();
 	core::String toggleAABBCmd = "set" + brush.name().toLower() + "brushaabb";
 	ImGui::CommandRadioButton("Default", toggleAABBCmd, aabb, &listener);
@@ -244,12 +246,6 @@ void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listen
 void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	PaintBrush &brush = modifier.paintBrush();
-	aabbBrushOptions(listener, brush);
-	if (ImGui::RadioButton("Plane", brush.plane())) {
-		brush.setPlane();
-	}
-	ImGui::TooltipText("Paint the selected plane");
-	aabbBrushModeOptions(brush);
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
 	if (ImGui::BeginCombo("Mode", PaintBrush::PaintModeStr[(int)paintMode], ImGuiComboFlags_None)) {
@@ -272,13 +268,19 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 		if (ImGui::InputFloat("Factor", &factor)) {
 			brush.setFactor(factor);
 		}
-	}
-	if (paintMode == PaintBrush::PaintMode::Variation) {
+	} else if (paintMode == PaintBrush::PaintMode::Variation) {
 		int variationThreshold = brush.variationThreshold();
 		if (ImGui::InputInt("Variation threshold", &variationThreshold)) {
 			brush.setVariationThreshold(variationThreshold);
 		}
 	}
+
+	aabbBrushOptions(listener, brush);
+	if (ImGui::RadioButton("Plane", brush.plane())) {
+		brush.setPlane();
+	}
+	ImGui::TooltipText("Paint the selected plane");
+	aabbBrushModeOptions(brush);
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
