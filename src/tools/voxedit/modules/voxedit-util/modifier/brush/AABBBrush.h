@@ -81,6 +81,12 @@ public:
 	glm::ivec3 currentCursorPosition(const glm::ivec3 &cursorPosition) const;
 
 	voxel::Region calcRegion(const BrushContext &context) const;
+
+	/**
+	 * @brief Allows to override the default behaviour to span an AABB while holding the mouse button.
+	 * @note This allows us to disable the AABB behaviour in some cases, e.g. when single mode is activated
+	 */
+	virtual bool wantAABB() const;
 	/**
 	 * @brief Will set the first position of the aabb
 	 * @note This is used in input methods or @c ActionButton implementations

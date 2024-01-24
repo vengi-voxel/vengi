@@ -163,6 +163,8 @@ void Modifier::reset() {
 		b->reset();
 	}
 	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
+	setBrushType(BrushType::Shape);
+	setModifierType(ModifierType::Place);
 }
 
 bool Modifier::start() {

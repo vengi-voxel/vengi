@@ -210,6 +210,10 @@ glm::ivec3 AABBBrush::currentCursorPosition(const glm::ivec3 &cursorPosition) co
 	return pos;
 }
 
+bool AABBBrush::wantAABB() const {
+	return !_single;
+}
+
 bool AABBBrush::start(const BrushContext &context) {
 	if (_aabbMode) {
 		return false;
@@ -218,7 +222,7 @@ bool AABBBrush::start(const BrushContext &context) {
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = applyGridResolution(context.cursorPosition, context.gridResolution);
 	_secondPosValid = false;
-	_aabbMode = !_single;
+	_aabbMode = wantAABB();
 	_aabbFace = context.cursorFace;
 	markDirty();
 	return true;

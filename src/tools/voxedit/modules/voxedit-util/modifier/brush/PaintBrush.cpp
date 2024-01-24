@@ -4,12 +4,12 @@
 
 #include "PaintBrush.h"
 #include "core/Color.h"
+#include "core/GLM.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include "core/GLM.h"
 
 namespace voxedit {
 
@@ -59,6 +59,13 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	}
 
 	return true;
+}
+
+bool PaintBrush::wantAABB() const {
+	if (_plane) {
+		return false;
+	}
+	return Super::wantAABB();
 }
 
 void PaintBrush::setFactor(float factor) {
