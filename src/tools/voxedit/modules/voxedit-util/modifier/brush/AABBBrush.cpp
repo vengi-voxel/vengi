@@ -13,7 +13,8 @@
 
 namespace voxedit {
 
-AABBBrush::AABBBrush(BrushType type) : Super(type) {
+AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
+	: Super(type, defaultModifier, supportedModifiers) {
 }
 
 void AABBBrush::construct() {
@@ -46,7 +47,7 @@ void AABBBrush::construct() {
 		if (!_single) {
 			_radius = 0;
 		}
-	}).setHelp("Toggle single voxel building mode");
+	}).setHelp("Toggle single voxel building mode - continue setting voxels until you release the action button");
 }
 
 math::Axis AABBBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,

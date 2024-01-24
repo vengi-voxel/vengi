@@ -208,18 +208,12 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
 	addMirrorPlanes(listener, brush);
 
-	bool center = brush.centerMode();
-	core::String toggleCenterCmd = "toggle" + brush.name().toLower() + "brushcenter";
-	if (ImGui::Checkbox("Center", &center)) {
-		command::executeCommands(toggleCenterCmd, &listener);
-	}
-	ImGui::TooltipCommand(toggleCenterCmd.c_str());
-
 	bool single = brush.singleMode();
 	core::String toggleSingleCmd = "toggle" + brush.name().toLower() + "brushsingle";
 	if (ImGui::Checkbox("Single", &single)) {
 		command::executeCommands(toggleSingleCmd, &listener);
 	}
+	ImGui::TooltipCommand(toggleSingleCmd.c_str());
 
 	if (single) {
 		int radius = brush.radius();
@@ -229,7 +223,22 @@ void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, A
 		ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
 	}
 
-	ImGui::TooltipCommand(toggleSingleCmd.c_str());
+	{
+		bool center = brush.centerMode();
+		ui::ScopedStyle style;
+		if (single) {
+			style.disableItem();
+		}
+		core::String toggleCenterCmd = "toggle" + brush.name().toLower() + "brushcenter";
+		if (ImGui::Checkbox("Center", &center)) {
+			command::executeCommands(toggleCenterCmd, &listener);
+		}
+		if (single) {
+			ImGui::TooltipText("Center mode is disabled in single mode");
+		} else {
+			ImGui::TooltipCommand(toggleCenterCmd.c_str());
+		}
+	}
 }
 
 void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listener) {
@@ -245,8 +254,19 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	aabbBrushOptions(listener, brush);
 
 	bool plane = brush.plane();
-	if (ImGui::Checkbox("Plane", &plane)) {
-		brush.setPlane(plane);
+	{
+		ui::ScopedStyle style;
+		if (brush.singleMode()) {
+			style.disableItem();
+		}
+		if (ImGui::Checkbox("Plane", &plane)) {
+			brush.setPlane(plane);
+		}
+		if (brush.singleMode()) {
+			ImGui::TooltipText("Plane mode is disabled in single mode");
+		} else {
+			ImGui::TooltipText("Paint the selected plane");
+		}
 	}
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();

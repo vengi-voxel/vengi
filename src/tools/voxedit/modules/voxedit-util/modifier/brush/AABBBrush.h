@@ -65,7 +65,8 @@ protected:
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 
 public:
-	AABBBrush(BrushType type);
+	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
+			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
 	virtual ~AABBBrush() = default;
 	void construct() override;
 	void reset() override;

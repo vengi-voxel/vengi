@@ -40,7 +40,12 @@ struct BrushContext {
 class Brush : public core::IComponent, public core::DirtyState {
 protected:
 	const BrushType _brushType;
-	Brush(BrushType brushType) : _brushType(brushType) {
+	const ModifierType _defaultModifier;
+	const ModifierType _supportedModifiers;
+
+	Brush(BrushType brushType, ModifierType defaultModifier = ModifierType::Place,
+		  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override))
+		: _brushType(brushType), _defaultModifier(defaultModifier), _supportedModifiers(supportedModifiers) {
 	}
 
 public:
@@ -52,7 +57,7 @@ public:
 	BrushType type() const;
 
 	// allow to change the modifier type if the brush doesn't support the given mode
-	virtual ModifierType modifierType(ModifierType type) const;
+	ModifierType modifierType(ModifierType type) const;
 
 	/**
 	 * @brief Determine whether the brush should get rendered

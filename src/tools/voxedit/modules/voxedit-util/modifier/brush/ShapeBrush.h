@@ -26,7 +26,6 @@ public:
 	void construct() override;
 	void reset() override;
 
-	ModifierType modifierType(ModifierType type) const override;
 	ShapeType shapeType() const;
 };
 

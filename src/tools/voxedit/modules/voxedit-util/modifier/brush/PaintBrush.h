@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "voxedit-util/modifier/ModifierType.h"
 
 namespace palette {
 class Palette;
@@ -25,10 +26,10 @@ public:
 private:
 	using Super = AABBBrush;
 
-	// TODO: _center should work with _radius in combination with _single
 	// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
 	float _factor = 1.0f;
 	int _variationThreshold = 3;
+	// paint connected voxels with the same color as the cursor voxel
 	bool _plane = false;
 	PaintMode _paintMode = PaintMode::Replace;
 
@@ -42,8 +43,10 @@ protected:
 		int _variationThreshold = 3;
 
 	public:
-		VoxelColor(const palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor, int variationThreshold)
-			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _factor(factor), _variationThreshold(variationThreshold) {
+		VoxelColor(const palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor,
+				   int variationThreshold)
+			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _factor(factor),
+			  _variationThreshold(variationThreshold) {
 		}
 		voxel::Voxel evaluate(const voxel::Voxel &old);
 	};
@@ -52,11 +55,10 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	PaintBrush() : Super(BrushType::Paint) {
+	PaintBrush() : Super(BrushType::Paint, ModifierType::Paint, ModifierType::Paint) {
 	}
 	virtual ~PaintBrush() = default;
 
-	ModifierType modifierType(ModifierType type) const override;
 	bool wantAABB() const override;
 
 	PaintMode paintMode() const;
@@ -91,14 +93,6 @@ inline void PaintBrush::setPaintMode(PaintMode mode) {
 
 inline void PaintBrush::setPlane(bool plane) {
 	_plane = plane;
-}
-
-inline bool PaintBrush::plane() const {
-	return _plane;
-}
-
-inline ModifierType PaintBrush::modifierType(ModifierType type) const {
-	return ModifierType::Paint;
 }
 
 } // namespace voxedit

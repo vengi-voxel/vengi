@@ -47,7 +47,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 
 bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
-	if (_plane) {
+	if (plane()) {
 		voxelutil::paintPlane(wrapper, context.cursorPosition, context.cursorFace, context.hitCursorVoxel,
 							  context.cursorVoxel);
 	} else {
@@ -61,8 +61,15 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	return true;
 }
 
+bool PaintBrush::plane() const {
+	if (_single) {
+		return false;
+	}
+	return _plane;
+}
+
 bool PaintBrush::wantAABB() const {
-	if (_plane) {
+	if (plane()) {
 		return false;
 	}
 	return Super::wantAABB();

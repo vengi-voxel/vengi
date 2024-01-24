@@ -14,7 +14,11 @@ void Brush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 ModifierType Brush::modifierType(ModifierType type) const {
-	return type;
+	ModifierType newType = type & _supportedModifiers;
+	if (newType == ModifierType::None) {
+		newType = _defaultModifier;
+	}
+	return newType;
 }
 
 /**
