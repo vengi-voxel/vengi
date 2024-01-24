@@ -5,7 +5,9 @@
 #include "Movement.h"
 #include "command/Command.h"
 #include "core/GLM.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/functions.hpp>
 

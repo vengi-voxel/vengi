@@ -9,7 +9,9 @@
 #include "core/collection/Buffer.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/trigonometric.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 #include <glm/gtc/noise.hpp>
 #include <limits>

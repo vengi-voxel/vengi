@@ -26,11 +26,13 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
 #include <glm/matrix.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 

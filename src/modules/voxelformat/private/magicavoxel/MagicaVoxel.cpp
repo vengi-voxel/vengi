@@ -12,6 +12,9 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include <SDL_endian.h>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
 #define OGT_VOX_BIGENDIAN_SWAP32 SDL_SwapLE32
 #define OGT_VOX_IMPLEMENTATION

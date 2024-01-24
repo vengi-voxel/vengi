@@ -3,20 +3,23 @@
  */
 #include "TestShapeBuilder.h"
 #include "IMGUIEx.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include "math/AABB.h"
-#include "core/Color.h"
 #include "core/ArrayLength.h"
+#include "core/Color.h"
 #include "core/GLM.h"
-#include "video/ScopedState.h"
-#include "testcore/TestAppMain.h"
 #include "core/Log.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/AABB.h"
+#include "testcore/TestAppMain.h"
+#include "video/ScopedState.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/euler_angles.hpp>
 
-TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, timeProvider), _color(core::Color::DarkGreen()) {
+TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
+	: Super(filesystem, timeProvider), _color(core::Color::DarkGreen()) {
 	init(ORGANISATION, "testshapebuilder");
 	setCameraMotion(false);
 	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));
@@ -52,7 +55,7 @@ app::AppState TestShapeBuilder::onInit() {
 void TestShapeBuilder::doRender() {
 	video::ScopedState scoped(video::State::CullFace, true);
 	for (int i = 0; i < _meshCount; ++i) {
-		const glm::mat4& model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(_position[i])), _scale[i]);
+		const glm::mat4 &model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(_position[i])), _scale[i]);
 		_shapeRenderer.render(_meshes[i], camera(), model);
 	}
 }
@@ -62,9 +65,9 @@ void TestShapeBuilder::onRenderUI() {
 	bool buildMesh = false;
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(_color);
-	glm::ivec3& pos = _position[_meshCount];
-	glm::vec3& scale = _scale[_meshCount];
-	glm::vec3& rotation = _rotation[_meshCount];
+	glm::ivec3 &pos = _position[_meshCount];
+	glm::vec3 &scale = _scale[_meshCount];
+	glm::vec3 &rotation = _rotation[_meshCount];
 	_shapeBuilder.setPosition(pos);
 	const glm::vec3 radians = glm::radians(rotation);
 	_shapeBuilder.setRotation(glm::eulerAngleXYZ(radians.x, radians.y, radians.z));
@@ -115,7 +118,8 @@ void TestShapeBuilder::onRenderUI() {
 				_meshes[_meshCount++] = _meshUnitCube;
 			}
 		}
-		ImGui::TooltipText("Creates a cube of size 1 with the given scale values\napplied on rendering only.\nIgnores mins/maxs");
+		ImGui::TooltipText(
+			"Creates a cube of size 1 with the given scale values\napplied on rendering only.\nIgnores mins/maxs");
 		ImGui::SameLine();
 		if (ImGui::Button("Add AABB")) {
 			_shapeBuilder.aabb(math::AABB<float>(_mins, _maxs));

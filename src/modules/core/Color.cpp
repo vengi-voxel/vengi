@@ -19,7 +19,9 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/color_space.hpp>
 #include <glm/gtx/type_aligned.hpp>
 

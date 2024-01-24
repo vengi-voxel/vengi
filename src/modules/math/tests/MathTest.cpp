@@ -4,7 +4,10 @@
 
 #include "math/Math.h"
 #include "app/tests/AbstractTest.h"
-#include "glm/gtx/euler_angles.hpp"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/euler_angles.hpp>
 
 namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {

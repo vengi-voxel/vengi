@@ -30,7 +30,9 @@
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include <unordered_map>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/hash.hpp>
 
 namespace video {

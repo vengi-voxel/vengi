@@ -16,6 +16,9 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/matrix_decompose.hpp>
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_ASSERT core_assert

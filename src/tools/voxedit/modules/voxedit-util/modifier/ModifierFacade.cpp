@@ -8,7 +8,9 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxel/RawVolume.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
 
 namespace voxedit {

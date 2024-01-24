@@ -23,12 +23,17 @@
 #include "../glm.hpp"
 #include "../gtx/quaternion.hpp"
 
-#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
-#	ifndef GLM_ENABLE_EXPERIMENTAL
-#		pragma message("GLM: GLM_GTX_io is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it.")
-#	else
-#		pragma message("GLM: GLM_GTX_io extension included")
-#	endif
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_io is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#elif GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
+#	pragma message("GLM: GLM_GTX_io extension included")
+#endif
+
+#if GLM_COMPILER & GLM_COMPILER_CLANG
+#	pragma clang diagnostic push
+#	pragma clang diagnostic ignored "-Wpadded"
+#	pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#	pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 
 #include <iosfwd>  // std::basic_ostream<> (fwd)
@@ -197,5 +202,9 @@ namespace glm
 
 	/// @}
 }//namespace glm
+
+#if GLM_COMPILER & GLM_COMPILER_CLANG
+#	pragma clang diagnostic pop
+#endif
 
 #include "io.inl"

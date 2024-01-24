@@ -13,6 +13,9 @@
 #include "voxel/VoxelVertex.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 #include <glm/vec3.hpp>
 #include <stdint.h>

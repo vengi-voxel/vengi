@@ -8,7 +8,9 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include <glm/vec2.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 
 namespace glm {

@@ -12,7 +12,9 @@
 #include "core/Log.h"
 #include <SDL.h>
 #include <glm/gtc/type_ptr.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :

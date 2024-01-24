@@ -8,7 +8,9 @@
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include <SDL.h>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 

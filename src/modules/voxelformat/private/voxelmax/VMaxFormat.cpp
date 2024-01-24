@@ -25,9 +25,13 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include <glm/common.hpp>
-#include <glm/gtx/transform.hpp>
 #include <json.hpp>
+#include <glm/common.hpp>
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 

@@ -7,7 +7,9 @@
 #include "voxelformat/private/sandbox/VXRFormat.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 
 namespace voxelformat {

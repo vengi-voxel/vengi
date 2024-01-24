@@ -62,7 +62,9 @@
 #include "SceneUtil.h"
 #include "Clipboard.h"
 
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>

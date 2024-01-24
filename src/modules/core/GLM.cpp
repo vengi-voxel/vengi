@@ -5,7 +5,9 @@
 #include "GLM.h"
 #include <glm/geometric.hpp>
 #include <glm/gtc/matrix_access.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/type_aligned.hpp>
 

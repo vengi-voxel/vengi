@@ -18,6 +18,9 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <stdint.h>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/euler_angles.hpp>
 
 namespace voxelformat {

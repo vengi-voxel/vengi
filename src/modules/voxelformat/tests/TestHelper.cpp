@@ -16,7 +16,9 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelutil/VolumeVisitor.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 
 namespace glm {

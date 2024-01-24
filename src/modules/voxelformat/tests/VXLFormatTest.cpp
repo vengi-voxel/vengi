@@ -4,6 +4,10 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
 
 namespace voxelformat {

@@ -8,7 +8,9 @@
 #include "video/ScopedState.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
 
 namespace render {

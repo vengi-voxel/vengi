@@ -4,6 +4,9 @@
 
 #include "voxel/Region.h"
 #include "app/tests/AbstractTest.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/euler_angles.hpp>
 
 namespace glm {

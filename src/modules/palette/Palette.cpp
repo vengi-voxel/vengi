@@ -27,6 +27,9 @@
 
 #include <SDL_endian.h>
 #include <float.h>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 
 namespace palette {

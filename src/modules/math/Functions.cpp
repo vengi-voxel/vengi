@@ -4,7 +4,6 @@
 
 #include "Functions.h"
 #include "core/Assert.h"
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/round.hpp>
 
 namespace math {

@@ -11,7 +11,9 @@
 #include "math/Math.h"
 #include "math/Rect.h"
 #include "math/Random.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/string_cast.hpp>
 #include <stdint.h>
 #include <limits>

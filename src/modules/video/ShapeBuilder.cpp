@@ -12,9 +12,12 @@
 #include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "video/Types.h"
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/geometric.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #undef near
 #undef far

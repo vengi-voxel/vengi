@@ -11,7 +11,9 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
 #include "voxel/Voxel.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/random.hpp>

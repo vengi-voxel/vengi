@@ -8,14 +8,16 @@
 #include "core/GLMConst.h"
 #include <glm/gtc/epsilon.hpp>
 #include "core/Var.h"
-#include <glm/gtx/quaternion.hpp>
 #include "math/AABB.h"
 #include "core/GLM.h"
 #include "math/Ray.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/compatibility.hpp>
 #include <glm/gtx/norm.hpp>
 
