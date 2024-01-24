@@ -25,9 +25,12 @@ public:
 private:
 	using Super = AABBBrush;
 
+	// TODO: _plane mode should ignore aabb
+	// TODO: _center should work with _radius in combination with _single
+	// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
 	float _factor = 1.0f;
 	int _variationThreshold = 3;
-	bool _plane = false; // TODO: plane mode should ignore aabb
+	bool _plane = false;
 	PaintMode _paintMode = PaintMode::Replace;
 
 protected:
