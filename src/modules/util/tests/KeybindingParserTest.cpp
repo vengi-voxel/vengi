@@ -30,7 +30,10 @@ wheeldown void all
 )";
 }
 
-TEST(KeybindingParserTest, testParsing) {
+class KeybindingParserTest : public app::AbstractTest {
+};
+
+TEST_F(KeybindingParserTest, testParsing) {
 	KeybindingParser p(keybindingparser::CFG);
 	const BindMap& m = p.getBindings();
 	ASSERT_FALSE(m.empty());
