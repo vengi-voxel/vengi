@@ -22,6 +22,10 @@ Voxedit:
    - Fixed missing outline for dark voxels
    - Update paint features
 
+VoxConvert:
+
+   - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
+
 ## 0.0.28 (2024-01-17)
 
 > moved the github project into an organization named **vengi-voxel** - the url changed to [https://github.com/vengi-voxel/vengi](https://github.com/vengi-voxel/vengi).

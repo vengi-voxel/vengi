@@ -80,7 +80,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
 	registerArg("--surface-only").setDescription("Remove any non surface voxel");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
-	registerArg("--formats-print").setDescription("Print supported formats as json for easier parsing in other tools");
+	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
 
 	voxelformat::FormatConfig::init();
 
@@ -168,18 +168,6 @@ static void printFormatDetails(const io::FormatDescription *desc) {
 	}
 }
 
-void VoxConvert::printFormatsAsJson() const {
-	Log::printf("{\"load\":[");
-	printFormatDetails(voxelformat::voxelLoad());
-	Log::printf("],\"save\":[");
-	printFormatDetails(voxelformat::voxelSave());
-	Log::printf("],\"images\":[");
-	printFormatDetails(io::format::images());
-	Log::printf("],\"palettes\":[");
-	printFormatDetails(io::format::palettes());
-	Log::printf("]}\n");
-}
-
 app::AppState VoxConvert::onInit() {
 	const app::AppState state = Super::onInit();
 	if (state != app::AppState::Running) {
@@ -193,8 +181,16 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (hasArg("--formats-print")) {
-		printFormatsAsJson();
+	if (hasArg("--print-formats")) {
+		Log::printf("{\"load\":[");
+		printFormatDetails(voxelformat::voxelLoad());
+		Log::printf("],\"save\":[");
+		printFormatDetails(voxelformat::voxelSave());
+		Log::printf("],\"images\":[");
+		printFormatDetails(io::format::images());
+		Log::printf("],\"palettes\":[");
+		printFormatDetails(io::format::palettes());
+		Log::printf("]}\n");
 		return state;
 	}
 
