@@ -9,6 +9,7 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/ScopedPtr.h"
+#include "imgui.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
@@ -208,36 +209,27 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
 	addMirrorPlanes(listener, brush);
 
-	bool single = brush.singleMode();
-	core::String toggleSingleCmd = "toggle" + brush.name().toLower() + "brushsingle";
-	if (ImGui::Checkbox("Single", &single)) {
-		command::executeCommands(toggleSingleCmd, &listener);
-	}
-	ImGui::TooltipCommand(toggleSingleCmd.c_str());
+	const bool aabb = brush.aabbMode();
+	core::String toggleAABBCmd = "set" + brush.name().toLower() + "brushaabb";
+	ImGui::CommandRadioButton("Default", toggleAABBCmd, aabb, &listener);
 
-	if (single) {
+	const bool single = brush.singleMode();
+	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
+	ImGui::CommandRadioButton("Single", toggleSingleCmd, single, &listener);
+
+	const bool center = brush.centerMode();
+	core::String toggleCenterCmd = "set" + brush.name().toLower() + "brushcenter";
+	ImGui::CommandRadioButton("Center", toggleCenterCmd, center, &listener);
+}
+
+// doing this after aabbBrushOptions() allows us to extend the radio buttons
+void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
+	if (brush.singleMode()) {
 		int radius = brush.radius();
 		if (ImGui::InputInt("Radius", &radius)) {
 			brush.setRadius(radius);
 		}
 		ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
-	}
-
-	{
-		bool center = brush.centerMode();
-		ui::ScopedStyle style;
-		if (single) {
-			style.disableItem();
-		}
-		core::String toggleCenterCmd = "toggle" + brush.name().toLower() + "brushcenter";
-		if (ImGui::Checkbox("Center", &center)) {
-			command::executeCommands(toggleCenterCmd, &listener);
-		}
-		if (single) {
-			ImGui::TooltipText("Center mode is disabled in single mode");
-		} else {
-			ImGui::TooltipCommand(toggleCenterCmd.c_str());
-		}
 	}
 }
 
@@ -246,28 +238,18 @@ void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listen
 	ShapeBrush &brush = modifier.shapeBrush();
 	addShapes(listener);
 	aabbBrushOptions(listener, brush);
+	aabbBrushModeOptions(brush);
 }
 
 void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	PaintBrush &brush = modifier.paintBrush();
 	aabbBrushOptions(listener, brush);
-
-	bool plane = brush.plane();
-	{
-		ui::ScopedStyle style;
-		if (brush.singleMode() || brush.centerMode()) {
-			style.disableItem();
-		}
-		if (ImGui::Checkbox("Plane", &plane)) {
-			brush.setPlane(plane);
-		}
-		if (brush.singleMode()) {
-			ImGui::TooltipText("Plane mode is disabled in single mode");
-		} else {
-			ImGui::TooltipText("Paint the selected plane");
-		}
+	if (ImGui::RadioButton("Plane", brush.plane())) {
+		brush.setPlane();
 	}
+	ImGui::TooltipText("Paint the selected plane");
+	aabbBrushModeOptions(brush);
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
 	if (ImGui::BeginCombo("Mode", PaintBrush::PaintModeStr[(int)paintMode], ImGuiComboFlags_None)) {

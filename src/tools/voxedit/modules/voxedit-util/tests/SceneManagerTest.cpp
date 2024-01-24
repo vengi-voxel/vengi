@@ -63,7 +63,6 @@ protected:
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(ModifierType::Place);
-		modifier.shapeBrush().setSingleMode(true);
 		MementoHandler &mementoHandler = _sceneMgr.mementoHandler();
 		EXPECT_FALSE(mementoHandler.canUndo());
 		EXPECT_FALSE(mementoHandler.canRedo());
@@ -72,7 +71,7 @@ protected:
 	bool testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.setBrushType(BrushType::Shape);
-		modifier.shapeBrush().setSingleMode(true);
+		modifier.shapeBrush().setSingleMode();
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
@@ -95,7 +94,6 @@ protected:
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr.modifier();
 		modifier.stop();
-		modifier.shapeBrush().setSingleMode(false);
 		modifier.setBrushType(BrushType::None);
 		modifier.setModifierType(ModifierType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);

@@ -18,8 +18,8 @@ AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType 
 }
 
 void AABBBrush::construct() {
-	// mirroraxisshapebrush, toggleshapebrushcenter, toggleshapebrushsingle
-	// mirroraxispaintbrush, togglepaintbrushcenter, togglepaintbrushsingle
+	// mirroraxisshapebrush, setshapebrushcenter, setshapebrushsingle, setshapebrushaabb
+	// mirroraxispaintbrush, setpaintbrushcenter, setpaintbrushsingle, setpaintbrushaabb
 
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
@@ -38,16 +38,17 @@ void AABBBrush::construct() {
 		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
 	}).setHelp("Disable mirror axis");
 
-	command::Command::registerCommand("toggle" + cmdName + "center", [this](const command::CmdArgs &args) {
-		_center ^= true;
-	}).setHelp("Toggle center plane building");
+	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
+		setMode(BRUSH_MODE_CENTER);
+	}).setHelp("Set center plane building");
 
-	command::Command::registerCommand("toggle" + cmdName + "single", [this](const command::CmdArgs &args) {
-		_single ^= true;
-		if (!_single) {
-			_radius = 0;
-		}
-	}).setHelp("Toggle single voxel building mode - continue setting voxels until you release the action button");
+	command::Command::registerCommand("set" + cmdName + "aabb", [this](const command::CmdArgs &args) {
+		setMode(BRUSH_MODE_AABB);
+	}).setHelp("Set default aabb voxel building mode");
+
+	command::Command::registerCommand("set" + cmdName + "single", [this](const command::CmdArgs &args) {
+		setMode(BRUSH_MODE_SINGLE);
+	}).setHelp("Set single voxel building mode - continue setting voxels until you release the action button");
 }
 
 math::Axis AABBBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,
@@ -85,7 +86,7 @@ void AABBBrush::reset() {
 	Super::reset();
 	_secondPosValid = false;
 	_aabbMode = false;
-	_center = false;
+	_mode = 0u;
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);
@@ -212,7 +213,7 @@ glm::ivec3 AABBBrush::currentCursorPosition(const glm::ivec3 &cursorPosition) co
 }
 
 bool AABBBrush::wantAABB() const {
-	return !_single;
+	return !singleMode();
 }
 
 bool AABBBrush::start(const BrushContext &context) {
@@ -254,21 +255,30 @@ void AABBBrush::stop(const BrushContext &context) {
 	markDirty();
 }
 
+bool AABBBrush::isMode(uint32_t mode) const {
+	return _mode == mode;
+}
+
+void AABBBrush::setMode(uint32_t mode) {
+	_mode = mode;
+}
+
 voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
 	const glm::ivec3 &pos = currentCursorPosition(context.cursorPosition);
-	if (!_single && _center) {
+	if (!singleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, context.gridResolution);
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);
 	}
 	if (_radius > 0) {
-		const glm::ivec3 &first = _single ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
+		// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
+		const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
 		const glm::ivec3 delta(_radius);
 		return voxel::Region(first - delta, first + delta);
 	}
 
 	const int size = context.gridResolution;
-	const glm::ivec3 &first = _single ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
+	const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
 	return voxel::Region(mins, maxs);

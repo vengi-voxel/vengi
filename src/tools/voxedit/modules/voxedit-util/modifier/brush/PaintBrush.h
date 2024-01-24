@@ -18,7 +18,7 @@ namespace voxedit {
  */
 class PaintBrush : public AABBBrush {
 public:
-	enum class PaintMode { Replace, Brighten, Darken, Random, Variation, Max };
+	enum class PaintMode : uint8_t { Replace, Brighten, Darken, Random, Variation, Max };
 
 	static constexpr const char *PaintModeStr[] = {"Replace", "Brighten", "Darken", "Random", "Variation"};
 	static_assert(lengthof(PaintModeStr) == (int)PaintBrush::PaintMode::Max, "PaintModeStr size mismatch");
@@ -26,13 +26,14 @@ public:
 private:
 	using Super = AABBBrush;
 
-	// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
 	float _factor = 1.0f;
 	int _variationThreshold = 3;
-	// paint connected voxels with the same color as the cursor voxel
-	bool _plane = false;
 	PaintMode _paintMode = PaintMode::Replace;
 
+	enum PaintFlags : uint32_t {
+		// paint connected voxels with the same color as the cursor voxel
+		BRUSH_MODE_PLANE = BRUSH_MODE_CUSTOM
+	};
 protected:
 	class VoxelColor {
 	private:
@@ -64,7 +65,7 @@ public:
 	PaintMode paintMode() const;
 	void setPaintMode(PaintMode mode);
 
-	void setPlane(bool plane);
+	void setPlane();
 	bool plane() const;
 
 	void setVariationThreshold(int variationThreshold);
@@ -91,9 +92,12 @@ inline void PaintBrush::setPaintMode(PaintMode mode) {
 	markDirty();
 }
 
-inline void PaintBrush::setPlane(bool plane) {
-	_plane = plane;
-	markDirty();
+inline bool PaintBrush::plane() const {
+	return isMode(BRUSH_MODE_PLANE);
+}
+
+inline void PaintBrush::setPlane() {
+	setMode(BRUSH_MODE_PLANE);
 }
 
 } // namespace voxedit

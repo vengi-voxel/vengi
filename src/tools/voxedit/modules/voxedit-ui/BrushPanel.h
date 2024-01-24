@@ -35,6 +35,7 @@ private:
 	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
+	void aabbBrushModeOptions(AABBBrush &brush);
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 public:

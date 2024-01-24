@@ -418,6 +418,15 @@ bool URLButton(const char *title, const char *url) {
 	return false;
 }
 
+bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener) {
+	const bool activated = ImGui::RadioButton(title, enabled);
+	if (activated) {
+		command::executeCommands(command, listener);
+	}
+	ImGui::TooltipCommand(command.c_str());
+	return activated;
+}
+
 const char *CommandMenuItem(const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
 	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {

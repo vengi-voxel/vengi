@@ -56,7 +56,7 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
-	brush.setCenterMode(true);
+	brush.setCenterMode();
 
 	const glm::ivec3 mins(0);
 	const glm::ivec3 maxs(1);
@@ -71,7 +71,7 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
-	brush.setCenterMode(true);
+	brush.setCenterMode();
 	prepare(brush, brushContext, glm::ivec3(0), glm::ivec3(-1));
 	const voxel::Region region = brush.calcRegion(brushContext);
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();

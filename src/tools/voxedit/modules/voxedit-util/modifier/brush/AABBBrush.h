@@ -10,6 +10,18 @@
 
 namespace voxedit {
 
+enum BrushFlags : uint32_t {
+	BRUSH_MODE_AABB = 0,
+	/**
+	 * span the aabb around the first position - so not only maxs depend on the second position, but
+	 * also the mins.
+	 */
+	BRUSH_MODE_CENTER = 1,
+	BRUSH_MODE_SINGLE = 2
+};
+// extend your own flags by using this macro for the first shift value
+#define BRUSH_MODE_CUSTOM 3
+
 /**
  * @brief A brush that operates on an axis aligned bounding box
  */
@@ -23,17 +35,20 @@ protected:
 	 */
 	bool _aabbMode = false;
 	/**
-	 * @c true means to span the aabb around the first position - so not only maxs depend on the second position, but
-	 * also the mins.
-	 */
-	bool _center = false;
-	bool _single = false;
-	int _radius = 0;
-	/**
 	 * If this is true, the aabb has a valid mins and maxs already, but the maxs
 	 * can still be changed as long as @c step() is called.
 	 */
 	bool _secondPosValid = false;
+	math::Axis _mirrorAxis = math::Axis::None;
+	/**
+	 * if the current modifier type allows or needs a second action to span the
+	 * volume to operate in, this is the direction into which the second action
+	 * points
+	 */
+	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
+
+	uint32_t _mode = BRUSH_MODE_AABB;
+	int _radius = 0;
 
 	/**
 	 * The first position of the aabb
@@ -44,18 +59,10 @@ protected:
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
-	math::Axis _mirrorAxis = math::Axis::None;
 	/**
 	 * The mirror position is based on the reference position whenever the mirror axis is set
 	 */
 	glm::ivec3 _mirrorPos{0};
-
-	/**
-	 * if the current modifier type allows or needs a second action to span the
-	 * volume to operate in, this is the direction into which the second action
-	 * points
-	 */
-	voxel::FaceNames _aabbFace = voxel::FaceNames::Max;
 
 	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
 										int &depth) const;
@@ -63,6 +70,9 @@ protected:
 						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
+
+	bool isMode(uint32_t flag) const;
+	void setMode(uint32_t flag);
 
 public:
 	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
@@ -121,11 +131,14 @@ public:
 	 * Set this to @c true to activate this. The default is to build the aabb
 	 * from the corner(s)
 	 */
-	void setCenterMode(bool center);
+	void setCenterMode();
 	bool centerMode() const;
 
-	void setSingleMode(bool single);
+	void setSingleMode();
 	bool singleMode() const;
+
+	void setAABBMode();
+	bool aabbMode() const;
 
 	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 	math::Axis mirrorAxis() const;
@@ -153,21 +166,27 @@ inline math::Axis AABBBrush::mirrorAxis() const {
 }
 
 inline bool AABBBrush::centerMode() const {
-	return _center;
+	return isMode(BRUSH_MODE_CENTER);
 }
 
-inline void AABBBrush::setCenterMode(bool center) {
-	_center = center;
-	markDirty();
+inline void AABBBrush::setCenterMode() {
+	setMode(BRUSH_MODE_CENTER);
 }
 
 inline bool AABBBrush::singleMode() const {
-	return _single;
+	return isMode(BRUSH_MODE_SINGLE);
 }
 
-inline void AABBBrush::setSingleMode(bool single) {
-	_single = single;
-	markDirty();
+inline void AABBBrush::setSingleMode() {
+	setMode(BRUSH_MODE_SINGLE);
+}
+
+inline bool AABBBrush::aabbMode() const {
+	return isMode(BRUSH_MODE_AABB);
+}
+
+inline void AABBBrush::setAABBMode() {
+	setMode(BRUSH_MODE_AABB);
 }
 
 } // namespace voxedit

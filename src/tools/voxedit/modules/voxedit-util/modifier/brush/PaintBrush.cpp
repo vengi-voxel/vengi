@@ -61,13 +61,6 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	return true;
 }
 
-bool PaintBrush::plane() const {
-	if (_single || _center) {
-		return false;
-	}
-	return _plane;
-}
-
 bool PaintBrush::wantAABB() const {
 	if (plane()) {
 		return false;
