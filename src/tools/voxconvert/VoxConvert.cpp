@@ -191,7 +191,6 @@ app::AppState VoxConvert::onInit() {
 		Log::printf("{\"voxels\":[");
 		printFormatDetails(voxelformat::voxelLoad(), {{"thumbnail_embedded", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 													  {"palette_embedded", VOX_FORMAT_FLAG_PALETTE_EMBEDDED},
-													  {"screenshot", VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED},
 													  {"mesh", VOX_FORMAT_FLAG_MESH},
 													  {"animation", VOX_FORMAT_FLAG_ANIMATION},
 													  {"save", FORMAT_FLAG_SAVE}});
