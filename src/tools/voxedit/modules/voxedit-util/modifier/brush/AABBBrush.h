@@ -80,6 +80,7 @@ public:
 	virtual ~AABBBrush() = default;
 	void construct() override;
 	void reset() override;
+	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,

@@ -3,6 +3,7 @@
  */
 
 #include "ModifierFacade.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -48,6 +49,8 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 
 	// this call is needed to prevent double frees
 	_modifierRenderer->clearBrushMeshes();
+
+	Log::debug("regenerate preview volume");
 
 	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 	voxel::RawVolume *existingVolume = nullptr;
@@ -147,8 +150,8 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &palet
 	Brush *brush = activeBrush();
 	if (brush && brush->active()) {
 		if (brush->dirty()) {
-			brush->markClean();
 			updateBrushVolumePreview(palette);
+			brush->markClean();
 		}
 		video::polygonOffset(glm::vec3(-0.1f));
 		_modifierRenderer->renderBrushVolume(camera);

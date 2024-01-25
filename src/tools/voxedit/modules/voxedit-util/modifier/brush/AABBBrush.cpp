@@ -230,8 +230,22 @@ bool AABBBrush::start(const BrushContext &context) {
 	return true;
 }
 
+void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
+	Super::update(ctx, nowSeconds);
+
+	// in single mode we want to update the preview each time we move the cursor
+	if (radius() > 0 && ctx.cursorPosition != _aabbFirstPos) {
+		_aabbFirstPos = ctx.cursorPosition;
+		markDirty();
+	}
+	if (_aabbMode && ctx.cursorPosition != _aabbSecondPos) {
+		_aabbSecondPos = ctx.cursorPosition;
+		markDirty();
+	}
+}
+
 bool AABBBrush::active() const {
-	return _aabbMode;
+	return _aabbMode || singleMode();
 }
 
 bool AABBBrush::aborted(const BrushContext &context) const {
