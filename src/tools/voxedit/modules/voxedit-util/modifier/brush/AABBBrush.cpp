@@ -263,6 +263,11 @@ void AABBBrush::setMode(uint32_t mode) {
 	_mode = mode;
 }
 
+void AABBBrush::setRadius(int radius) {
+	_radius = glm::abs(radius);
+	markDirty();
+}
+
 voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
 	const glm::ivec3 &pos = currentCursorPosition(context.cursorPosition);
 	if (!singleMode() && centerMode()) {

@@ -155,11 +155,6 @@ inline int AABBBrush::radius() const {
 	return _radius;
 }
 
-inline void AABBBrush::setRadius(int radius) {
-	_radius = radius;
-	markDirty();
-}
-
 inline const glm::ivec3 &AABBBrush::mirrorPos() const {
 	return _mirrorPos;
 }
