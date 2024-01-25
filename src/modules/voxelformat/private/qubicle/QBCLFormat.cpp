@@ -3,10 +3,8 @@
  */
 
 #include "QBCLFormat.h"
-#include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include "core/Color.h"
-#include "core/Enum.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"

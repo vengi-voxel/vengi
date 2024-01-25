@@ -3,9 +3,6 @@
  */
 
 #include "VXAFormat.h"
-#include "VXMFormat.h"
-#include "app/App.h"
-#include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
@@ -18,7 +15,6 @@
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 #include <glm/gtc/quaternion.hpp>
 

@@ -4,7 +4,6 @@
 
 #include "SMFormat.h"
 #include "core/Bits.h"
-#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"

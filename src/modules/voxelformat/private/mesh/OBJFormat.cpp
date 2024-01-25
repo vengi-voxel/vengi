@@ -10,7 +10,6 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
-#include "core/concurrent/ThreadPool.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/File.h"
@@ -22,7 +21,6 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
-#include <array>
 
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT

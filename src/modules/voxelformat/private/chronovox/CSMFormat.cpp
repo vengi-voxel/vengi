@@ -3,7 +3,6 @@
  */
 
 #include "CSMFormat.h"
-#include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"

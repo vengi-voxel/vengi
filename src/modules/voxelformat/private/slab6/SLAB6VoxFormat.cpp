@@ -3,7 +3,6 @@
  */
 
 #include "SLAB6VoxFormat.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
 #include "SLABShared.h"

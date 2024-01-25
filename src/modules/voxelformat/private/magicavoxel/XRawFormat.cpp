@@ -3,14 +3,12 @@
  */
 
 #include "XRawFormat.h"
-#include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
-#include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 

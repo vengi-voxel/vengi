@@ -18,10 +18,10 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/StdStreamBuf.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Mesh.h"
-#include "palette/Palette.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelutil/VoxelUtil.h"
 

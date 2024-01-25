@@ -5,7 +5,6 @@
 #include "VXLFormat.h"
 #include "app/App.h"
 #include "core/Assert.h"
-#include "core/Color.h"
 #include "core/Common.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"

@@ -3,7 +3,6 @@
  */
 
 #include "QBTFormat.h"
-#include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
@@ -13,14 +12,12 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
-#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {

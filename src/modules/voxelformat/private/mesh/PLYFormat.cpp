@@ -11,7 +11,6 @@
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
 #include "io/EndianStreamReadWrapper.h"
-#include "io/File.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Types.h"

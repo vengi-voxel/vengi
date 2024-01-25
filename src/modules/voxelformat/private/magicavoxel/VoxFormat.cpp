@@ -3,7 +3,6 @@
  */
 
 #include "VoxFormat.h"
-#include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"

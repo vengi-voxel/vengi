@@ -5,7 +5,6 @@
 
 #include "BinaryPList.h"
 #include "core/Log.h"
-#include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 #include <stdint.h>

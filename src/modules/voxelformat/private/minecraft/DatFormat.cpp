@@ -16,13 +16,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "palette/Palette.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeCropper.h"
-#include "voxelutil/VolumeMerger.h"
 #include "MCRFormat.h"
-#include "MinecraftPaletteMap.h"
 #include "NamedBinaryTag.h"
 
 #include <glm/common.hpp>

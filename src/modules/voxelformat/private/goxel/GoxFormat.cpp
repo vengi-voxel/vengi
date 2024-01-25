@@ -3,7 +3,6 @@
  */
 
 #include "GoxFormat.h"
-#include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -11,11 +10,10 @@
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "math/Axis.h"
-#include "math/Math.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"

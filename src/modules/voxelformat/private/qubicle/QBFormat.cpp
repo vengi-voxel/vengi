@@ -3,7 +3,6 @@
  */
 
 #include "QBFormat.h"
-#include "core/Assert.h"
 #include "core/Color.h"
 #include "core/Enum.h"
 #include "core/Log.h"

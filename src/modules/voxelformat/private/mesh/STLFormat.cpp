@@ -9,7 +9,6 @@
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Mesh.h"
-#include <SDL_stdinc.h>
 
 namespace voxelformat {
 

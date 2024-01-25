@@ -3,7 +3,6 @@
  */
 
 #include "VXCFormat.h"
-#include "VXMFormat.h"
 #include "VXRFormat.h"
 #include "app/App.h"
 #include "core/Log.h"

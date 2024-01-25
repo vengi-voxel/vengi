@@ -3,14 +3,10 @@
  */
 
 #include "AoSVXLFormat.h"
-#include "core/Assert.h"
-#include "core/Color.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "scenegraph/SceneGraphUtil.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"

@@ -3,7 +3,6 @@
  */
 
 #include "VXMFormat.h"
-#include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"

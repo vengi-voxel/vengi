@@ -4,7 +4,6 @@
 
 #include "VENGIFormat.h"
 #include "core/ArrayLength.h"
-#include "core/Enum.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "io/ZipReadStream.h"

@@ -6,18 +6,18 @@
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
-#include <glm/gtc/quaternion.hpp>
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 

@@ -6,11 +6,9 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "io/FileStream.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
-#include "voxel/RawVolumeWrapper.h"
 
 namespace voxelformat {
 

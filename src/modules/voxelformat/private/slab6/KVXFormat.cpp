@@ -4,17 +4,13 @@
 
 #include "KVXFormat.h"
 #include "SLABShared.h"
-#include "core/Color.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "core/collection/Vector.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
-#include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {

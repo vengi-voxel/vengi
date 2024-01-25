@@ -3,7 +3,6 @@
  */
 
 #include "V3AFormat.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
