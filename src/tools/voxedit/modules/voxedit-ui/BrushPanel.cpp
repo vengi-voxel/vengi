@@ -268,7 +268,8 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 		if (ImGui::InputFloat("Factor", &factor)) {
 			brush.setFactor(factor);
 		}
-	} else if (paintMode == PaintBrush::PaintMode::Variation) {
+	}
+	if (paintMode == PaintBrush::PaintMode::Variation) {
 		int variationThreshold = brush.variationThreshold();
 		if (ImGui::InputInt("Variation threshold", &variationThreshold)) {
 			brush.setVariationThreshold(variationThreshold);
