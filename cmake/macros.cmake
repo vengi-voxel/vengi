@@ -220,6 +220,8 @@ function(engine_add_executable)
 		endif()
 		if (INSTALL_DATA)
 			add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -DTARGET_BUNDLE_DIR=$<TARGET_BUNDLE_DIR:${_EXE_TARGET}> -P "${ROOT_DIR}/cmake/applebundle.cmake" VERBATIM)
+			# codesign --verify --deep --verbose <bundle-path>
+			add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD COMMAND "codesign" ARGS "--force" "--deep" "--sign" "-" "$<TARGET_BUNDLE_DIR:${_EXE_TARGET}>")
 		endif()
 	elseif(WIN32)
 		set(TILE_BIG_FULL_PATH ${DATA_DIR}/${_EXE_TARGET}/${_EXE_TARGET}-tile.png)
