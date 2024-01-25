@@ -149,6 +149,9 @@ public:
 };
 
 inline int AABBBrush::radius() const {
+	if (!isMode(BRUSH_MODE_SINGLE)) {
+		return 0;
+	}
 	return _radius;
 }
 

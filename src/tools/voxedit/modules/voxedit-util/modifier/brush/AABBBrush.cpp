@@ -145,7 +145,7 @@ bool AABBBrush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 }
 
 bool AABBBrush::needsFurtherAction(const BrushContext &context) const {
-	if (_radius > 0 || context.lockedAxis != math::Axis::None) {
+	if (radius() > 0 || context.lockedAxis != math::Axis::None) {
 		return false;
 	}
 	const voxel::Region &region = calcRegion(context);
@@ -186,7 +186,7 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 glm::ivec3 AABBBrush::currentCursorPosition(const glm::ivec3 &cursorPosition) const {
 	glm::ivec3 pos = cursorPosition;
 	if (_secondPosValid) {
-		if (_radius > 0) {
+		if (radius() > 0) {
 			return _aabbSecondPos;
 		}
 		switch (_aabbFace) {
@@ -239,7 +239,7 @@ bool AABBBrush::aborted(const BrushContext &context) const {
 }
 
 void AABBBrush::step(const BrushContext &context) {
-	if (!_aabbMode || _radius > 0 || context.lockedAxis != math::Axis::None) {
+	if (!_aabbMode || radius() > 0 || context.lockedAxis != math::Axis::None) {
 		return;
 	}
 	_aabbSecondPos = currentCursorPosition(context.cursorPosition);
@@ -270,10 +270,10 @@ voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);
 	}
-	if (_radius > 0) {
+	if (radius() > 0) {
 		// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
 		const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
-		const glm::ivec3 delta(_radius);
+		const glm::ivec3 delta(radius());
 		return voxel::Region(first - delta, first + delta);
 	}
 
