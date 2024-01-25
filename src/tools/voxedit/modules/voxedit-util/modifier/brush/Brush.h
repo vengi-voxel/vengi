@@ -57,7 +57,7 @@ public:
 	BrushType type() const;
 
 	// allow to change the modifier type if the brush doesn't support the given mode
-	ModifierType modifierType(ModifierType type) const;
+	ModifierType modifierType(ModifierType type = ModifierType::None) const;
 
 	/**
 	 * @brief Determine whether the brush should get rendered

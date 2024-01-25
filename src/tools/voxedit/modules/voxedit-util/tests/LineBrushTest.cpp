@@ -4,10 +4,8 @@
 
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "app/tests/AbstractTest.h"
-#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"
 
@@ -23,14 +21,12 @@ TEST_F(LineBrushTest, testExecute) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
+	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
 	brushContext.referencePos = volume.region().getLowerCorner();
 	brushContext.cursorPosition = volume.region().getUpperCorner();
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 0);
-	palette::Palette palette;
-	palette.nippon();
 
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.referencePos).getMaterial()));

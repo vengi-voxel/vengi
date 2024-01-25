@@ -41,7 +41,7 @@ private:
 	}
 
 public:
-	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const Selections &selections)
+	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType, const Selections &selections = {})
 		: Super(node.volume()), _selections(selections), _modifierType(modifierType), _node(node) {
 		_erase = _modifierType == ModifierType::Erase;
 		_override = _modifierType == ModifierType::Override;
