@@ -28,7 +28,7 @@ static const char *TIPOFTHEDAY[]{
 	"You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu.",
 	"You can save your viewport as AVI video or as screenshot.",
 	"Press <cmd:pickcolor> to pick a color from the scene.",
-	"Press <cmd:mirroraxisx>, <cmd:mirroraxisy> or <cmd:mirroraxisz> to mirror the current selection."
+	"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."
 };
 
 // clang-format on
