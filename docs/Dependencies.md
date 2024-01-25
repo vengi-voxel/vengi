@@ -38,5 +38,5 @@ brew install sdl2 freetype cmake ninja
 ## Windows
 
 ```bash
-vcpkg install sdl2 lua glm glslang gtest freetype
+vcpkg install pkg-config sdl2 lua glm glslang gtest freetype
 ```
