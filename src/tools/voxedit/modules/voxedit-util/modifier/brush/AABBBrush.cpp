@@ -275,15 +275,14 @@ voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
 		const glm::ivec3 &delta = glm::abs(pos - first);
 		return voxel::Region(first - delta, first + delta);
 	}
-	if (radius() > 0) {
+	const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
+	const int rad = radius();
+	if (rad > 0) {
 		// TODO: _radius should only go into one direction (see BrushContext::_cursorFace) (only paint the surface)
-		const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
-		const glm::ivec3 delta(radius());
-		return voxel::Region(first - delta, first + delta);
+		return voxel::Region(first - rad, first + rad);
 	}
 
 	const int size = context.gridResolution;
-	const glm::ivec3 &first = singleMode() ? pos : applyGridResolution(_aabbFirstPos, context.gridResolution);
 	const glm::ivec3 &mins = (glm::min)(first, pos);
 	const glm::ivec3 &maxs = (glm::max)(first, pos) + (size - 1);
 	return voxel::Region(mins, maxs);

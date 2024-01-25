@@ -55,7 +55,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 		existingVolume = sceneMgr().volume(sceneGraph.activeNode());
 	}
 	const AABBBrush *aabbBrush = activeAABBBrush();
-	if (aabbBrush && !aabbBrush->singleMode()) {
+	if (aabbBrush) {
 		const voxel::Region &region = aabbBrush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
