@@ -28,7 +28,7 @@ public:
 	bool has(const core::String& name) const;
 	image::ImagePtr loadImage(const core::String& name);
 	image::ImagePtr loadImage(const core::String& name, const uint8_t *rgba, size_t size);
-	void addImage(const image::ImagePtr &image);
+	video::TexturePtr addImage(const image::ImagePtr &image);
 
 	const core::StringMap<TexturePtr> &cache() {
 		return _cache;

@@ -51,9 +51,9 @@ video::TexturePtr TexturePool::load(const core::String &name, bool emptyAsFallba
 	return texture;
 }
 
-void TexturePool::addImage(const image::ImagePtr &image) {
+video::TexturePtr TexturePool::addImage(const image::ImagePtr &image) {
 	_images.put(image->name(), image);
-	load(image->name());
+	return load(image->name());
 }
 
 image::ImagePtr TexturePool::loadImage(const core::String& name, const uint8_t *rgba, size_t size) {
