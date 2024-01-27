@@ -68,6 +68,18 @@ Slice the model into smaller pieces (`width:height:depth`).
 
 `./vengi-voxconvert --split 10:10:10 --input infile.vox --output outfile.vox`
 
+## Handle a ply point cloud import
+
+A `ply` file without face definitions is handled as point cloud. You can use the `voxformat_pointcloudsize` cvar (see [configuration](../Configuration.md)) to specify the size of the voxels and to connect them.
+
+`./vengi-voxconvert --input infile_pointcloud.ply --output outfile.vox`
+
+Of course it's also possible to convert the point cloud directly into a mesh
+
+`./vengi-voxconvert --input infile_pointcloud.ply --output outfile.obj`
+
+And you can also combine this with marching cubes meshing.
+
 ## Voxelize a obj, gltf, ply, fbx, stl or any supported mesh file
 
 Voxelize an obj and save as magicavoxel (including colors):
