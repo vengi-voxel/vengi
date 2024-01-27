@@ -10,7 +10,7 @@ theme:
   custom_dir: docs/theme
   name: material
   highlightjs: true
-  hljs_languages: [cpp]
+  hljs_languages: [cpp, lua]
 
 markdown_extensions:
   - toc:
@@ -20,6 +20,12 @@ extra:
   social:
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/MartinGerhardy
+    - icon: fontawesome/brands/github
+      link: https://github.com/mgerhardy
+    - icon: fontawesome/brands/mastodon
+      link: https://mastodon.social/@mgerhardy
+    - icon: fontawesome/brands/discord
+      link: https://vengi-voxel.de/discord
 
 nav:
   - README.md
@@ -51,4 +57,3 @@ nav:
       - Basic: Basics.md
       - Visual Tests: VisualTests.md
       - Shader integration: ShaderTool.md
-      - Compute Shader integration: ComputeShaderTool.md
