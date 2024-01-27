@@ -37,7 +37,7 @@ protected:
 		}
 		stream.seek(0);
 		core::String base64;
-		EXPECT_EQ(expectedBase64Output.size(), stream.size());
+		EXPECT_EQ(expectedBase64Output.size(), (size_t)stream.size());
 		stream.readString(stream.size(), base64, false);
 		EXPECT_EQ(expectedBase64Output, base64);
 	}

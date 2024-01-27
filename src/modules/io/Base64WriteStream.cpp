@@ -46,11 +46,11 @@ bool Base64WriteStream::flush() {
 			_buf[i] = '\0';
 		}
 		if (!encode(_buf, _stream, _bytes + 1)) {
-			return -1;
+			return false;
 		}
 		while (_bytes++ < 3) {
 			if (!_stream.writeUInt8('=')) {
-				return -1;
+				return false;
 			}
 		}
 		_bytes = 0;

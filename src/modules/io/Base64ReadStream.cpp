@@ -29,7 +29,7 @@ int Base64ReadStream::read(void *buf, size_t size) {
 		_readBufSize = 0;
 
 		int decodedSize = 3;
-		uint8_t buf[4]{'\0', '\0', '\0', '\0'};
+		uint8_t tmpbuf[4]{'\0', '\0', '\0', '\0'};
 		for (int i = 0; i < 4; ++i) {
 			uint8_t val = 0;
 			if (_stream.readUInt8(val) != 0) {
@@ -44,9 +44,9 @@ int Base64ReadStream::read(void *buf, size_t size) {
 			if (!validbyte(val)) {
 				return -1;
 			}
-			buf[i] = _reverseLookupTable[val];
+			tmpbuf[i] = _reverseLookupTable[val];
 		}
-		if (!decode(buf, _readBuf)) {
+		if (!decode(tmpbuf, _readBuf)) {
 			return -1;
 		}
 

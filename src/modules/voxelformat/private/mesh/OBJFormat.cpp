@@ -7,7 +7,6 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "engine-config.h"
@@ -25,6 +24,7 @@
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT
 #define TINYOBJLOADER_IMPLEMENTATION
+#include <array> // needed by tiny_obj_loader.h
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/external/tiny_obj_loader.h"
 

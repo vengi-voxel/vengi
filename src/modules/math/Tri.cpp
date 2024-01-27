@@ -27,8 +27,8 @@ void Tri::setColor(core::RGBA rgba) {
 	color[2] = rgba;
 }
 
-void Tri::setColor(const glm::vec4 &color) {
-	setColor(core::Color::getRGBA(color));
+void Tri::setColor(const glm::vec4 &c) {
+	setColor(core::Color::getRGBA(c));
 }
 
 glm::vec3 Tri::normal() const {
