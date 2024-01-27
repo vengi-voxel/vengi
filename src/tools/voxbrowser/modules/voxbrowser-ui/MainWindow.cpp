@@ -6,14 +6,15 @@
 #include "IMGUIEx.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
+#include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "http/Http.h"
-#include "image/Image.h"
-#include "imgui.h"
+#include "http/HttpCacheStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "video/Texture.h"
 #include "voxbrowser-util/Downloader.h"
+#include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
 
@@ -24,7 +25,7 @@
 
 namespace voxbrowser {
 
-MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app) {
+MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool) : _app(app), _texturePool(texturePool) {
 }
 
 MainWindow::~MainWindow() {
@@ -56,6 +57,7 @@ void MainWindow::updateFilters() {
 		_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
 	}
 
+	// TODO: filter by name
 	const char *label = "Filter";
 	ImGui::PushItemWidth(_filterTextWidth);
 	int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
@@ -78,141 +80,207 @@ void MainWindow::updateFilters() {
 	ImGui::PopItemWidth();
 }
 
-bool MainWindow::downloadIfNeeded(const VoxelFile &voxelFile) {
-	const core::String &relTargetFile = voxelFile.targetFile();
-	if (!io::filesystem()->exists(relTargetFile)) {
-		const core::String &relTargetPath = voxelFile.targetDir();
-		if (!io::filesystem()->createDir(core::string::path(io::filesystem()->homePath(), relTargetPath))) {
-			Log::error("Failed to create directory %s", relTargetPath.c_str());
-			return false;
-		}
-		const io::FilePtr &filePtr = io::filesystem()->open(relTargetFile, io::FileMode::Write);
-		io::FileStream stream(filePtr);
-		if (!http::download(voxelFile.url, stream)) {
-			Log::error("Failed to download %s", voxelFile.url.c_str());
-			return false;
-		}
-	}
-	return true;
-}
+// https://github.com/ocornut/imgui/issues/6174
+void MainWindow::image(const video::TexturePtr &texture) {
+	const ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+	ImVec2 size = ImGui::GetContentRegionAvail();
+	size.x = core_max(size.x, 256.0f);
+	size.y = core_max(size.y, 250.0f);
 
-bool MainWindow::downloadThumbnailIfNeeded(VoxelFile &voxelFile) {
-	const core::String &relTargetFile = voxelFile.targetFile();
-	const core::String &relImageFile = relTargetFile + ".png";
-	if (io::filesystem()->exists(relImageFile)) {
-		voxelFile.thumbnailImage = image::loadImage(relImageFile);
-		return true;
+	ImGui::InvisibleButton("##canvas", size,
+						   ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
+							   ImGuiButtonFlags_MouseButtonMiddle);
+
+	const bool active = ImGui::IsItemActive(); // Held
+	const ImGuiIO &io = ImGui::GetIO();
+
+	const float zoomRate = 0.1f;
+	const float zoomMouse = io.MouseWheel * zoomRate;
+	const float zoomDelta = zoomMouse * _thumbnailProperties.scale.x;
+
+	const ImVec2 oldScreenTopLeft = {cursorPos.x + _thumbnailProperties.translate.x,
+									 cursorPos.y + _thumbnailProperties.translate.y};
+	// on screen (center of what we get to see), when adjusting scale this doesn't change!
+	const ImVec2 screenCenter = {cursorPos.x + size.x * 0.5f, cursorPos.y + size.y * 0.5f};
+	// in image coordinate offset of the center
+	const ImVec2 imageCenter = {screenCenter.x - oldScreenTopLeft.x, screenCenter.y - oldScreenTopLeft.y};
+
+	const ImVec2 oldUVImageCenter = {imageCenter.x / (texture->width() * _thumbnailProperties.scale.x),
+									 imageCenter.y / (texture->height() * _thumbnailProperties.scale.y)};
+
+	_thumbnailProperties.scale.x += zoomDelta;
+	_thumbnailProperties.scale.y += zoomDelta;
+
+	_thumbnailProperties.scale.x = glm::clamp(_thumbnailProperties.scale.x, 0.01f, 100.0f);
+	_thumbnailProperties.scale.y = glm::clamp(_thumbnailProperties.scale.y, 0.01f, 100.0f);
+
+	// on screen new target center
+	const ImVec2 newImageCenter = {(texture->width() * _thumbnailProperties.scale.x * oldUVImageCenter.x),
+								   (texture->height() * _thumbnailProperties.scale.y * oldUVImageCenter.y)};
+
+	// readjust to center
+	_thumbnailProperties.translate.x -= newImageCenter.x - imageCenter.x;
+	_thumbnailProperties.translate.y -= newImageCenter.y - imageCenter.y;
+
+	// 0 out second parameter if a context menu is open
+	if (active && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 1.0f)) {
+		_thumbnailProperties.translate.x += ImGui::GetIO().MouseDelta.x;
+		_thumbnailProperties.translate.y += ImGui::GetIO().MouseDelta.y;
 	}
 
-	if (!voxelFile.thumbnailUrl.empty()) {
-		const core::String &relTargetPath = voxelFile.targetDir();
-		if (!io::filesystem()->createDir(core::string::path(io::filesystem()->homePath(), voxelFile.targetDir()))) {
-			Log::error("Failed to create directory %s", relTargetPath.c_str());
-			return false;
-		}
-		const io::FilePtr &filePtr = io::filesystem()->open(relImageFile, io::FileMode::Write);
-		io::FileStream stream(filePtr);
-		if (!http::download(voxelFile.thumbnailUrl, stream)) {
-			Log::warn("Failed to download thumbnail %s", voxelFile.thumbnailUrl.c_str());
-			return false;
-		}
-		voxelFile.thumbnailImage = image::loadImage(relImageFile);
-		return true;
-	}
-	return false;
-}
+	const ImVec2 imageTopLeftPos(cursorPos.x + _thumbnailProperties.translate.x,
+								 cursorPos.y + _thumbnailProperties.translate.y); // Lock scrolled origin
 
-bool MainWindow::createThumbnailIfNeeded(VoxelFile &voxelFile) {
-	if (voxelFile.thumbnailImage) {
-		return true;
-	}
-	voxelformat::LoadContext loadCtx;
-	const core::String &relTargetFile = voxelFile.targetFile();
-	const core::String &relImageFile = relTargetFile + ".png";
-	const io::FilePtr &file = io::filesystem()->open(relTargetFile, io::FileMode::Read);
-	io::FileStream stream(file);
-	voxelFile.thumbnailImage = voxelformat::loadScreenshot(relTargetFile, stream, loadCtx);
-	if (!voxelFile.thumbnailImage) {
-		Log::warn("Use the thumbnail renderer");
-		scenegraph::SceneGraph sceneGraph;
-		stream.seek(0);
-		io::FileDescription fileDesc;
-		fileDesc.set(relTargetFile);
-		if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadCtx)) {
-			Log::error("Failed to load given input file: %s", relTargetFile.c_str());
-			voxelFile.thumbnailImage = image::createEmptyImage(voxelFile.name);
-			return false;
-		}
+	// we need to control the rectangle we're going to draw and the uv coordinates
+	const ImVec2 imageLowerRightPos = {imageTopLeftPos.x + (_thumbnailProperties.scale.x * texture->width()),
+									   imageTopLeftPos.y + (_thumbnailProperties.scale.x * texture->height())};
 
-		voxelFile.thumbnailImage = voxelrender::volumeThumbnail(sceneGraph, _thumbnailCtx);
-	}
-	voxelFile.thumbnailImage->setName(voxelFile.name);
-	const core::String targetImagePath = io::filesystem()->writePath(relImageFile.c_str());
-	if (!image::writeImage(voxelFile.thumbnailImage, targetImagePath)) {
-		Log::warn("Failed to save thumbnail to %s", targetImagePath.c_str());
-	} else {
-		_texturePool.addImage(voxelFile.thumbnailImage);
-		_texturePool.load(voxelFile.thumbnailImage->name());
-	}
-	return true;
+	const ImVec2 lowerRightPos = ImVec2{cursorPos.x + size.x, cursorPos.y + size.y};
+	ImDrawList *drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(ImVec2{cursorPos.x + 2.0f, cursorPos.y + 2.0f},
+						   ImVec2{lowerRightPos.x - 2.0f, lowerRightPos.y - 2.0f}, true);
+	drawList->AddImage((ImTextureID)(intptr_t)texture->handle(), imageTopLeftPos, imageLowerRightPos);
+	drawList->PopClipRect();
 }
 
 void MainWindow::updateAsset() {
 	VoxelFile &voxelFile = _selected;
-	if (!voxelFile.thumbnailImage) {
-		const core::String &relTargetFile = voxelFile.targetFile();
-		const core::String &relImageFile = relTargetFile + ".png";
-		downloadThumbnailIfNeeded(voxelFile);
-		downloadIfNeeded(voxelFile);
-		createThumbnailIfNeeded(voxelFile);
-	}
 
-	if (ImGui::Begin(TITLE_ASSET)) {
-		if (voxelFile.thumbnailImage) {
-			if (const video::TexturePtr &texture = _texturePool.get(voxelFile.thumbnailImage->name())) {
-				ImGui::Image(texture->handle(), _thumbnailCtx.outputSize);
-			}
+	if (ImGui::Begin(TITLE_ASSET, nullptr,
+					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
+						 ImGuiWindowFlags_HorizontalScrollbar)) {
+		if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
+			image(texture);
 		} else {
-			ImGui::Text("No thumbnail available");
+			ui::ScopedStyle style;
+			style.setFont(_app->bigFont());
+			ImGui::TextCentered("No thumbnail available");
 		}
 	}
 	ImGui::End();
 }
 
+void MainWindow::createThumbnail(const VoxelFile &voxelFile) {
+	scenegraph::SceneGraph sceneGraph;
+	const core::String &targetFile = voxelFile.targetFile();
+	io::FileDescription fileDesc;
+	fileDesc.set(targetFile);
+	voxelformat::LoadContext loadctx;
+	const io::FilePtr &file = io::filesystem()->open(targetFile, io::FileMode::Read);
+	io::FileStream stream(file);
+	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
+		Log::error("Failed to load given input file: %s", file->name().c_str());
+		return;
+	}
+
+	const core::String &targetImageFile = io::filesystem()->writePath(targetFile + ".png");
+	const image::ImagePtr &image = voxelrender::volumeThumbnail(sceneGraph, _thumbnailCtx);
+	if (!image || image->isFailed()) {
+		Log::error("Failed to create thumbnail for %s", voxelFile.name.c_str());
+		return;
+	}
+	if (!image::writeImage(image, targetImageFile)) {
+		Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImageFile.c_str());
+	} else {
+		Log::info("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
+	}
+	image->setName(voxelFile.name);
+	_texturePool.addImage(image);
+}
+
 void MainWindow::updateAssetDetails() {
-	const VoxelFile &voxelFile = _selected;
+	VoxelFile &voxelFile = _selected;
 	if (ImGui::Begin(TITLE_ASSET_DETAILS)) {
 		ImGui::Text("Name: %s", voxelFile.name.c_str());
 		ImGui::Text("Source: %s", voxelFile.source.c_str());
 		ImGui::Text("License: %s", voxelFile.license.c_str());
-		ImGui::URLItem(voxelFile.url.c_str(), voxelFile.url.c_str());
+		if (!voxelFile.thumbnailUrl.empty()) {
+			ImGui::URLItem("Thumbnail", voxelFile.thumbnailUrl.c_str());
+		}
+		ImGui::URLItem("URL", voxelFile.url.c_str());
+		if (voxelFile.downloaded) {
+			if (ImGui::Button("Open")) {
+				command::executeCommands("url \"file://" + io::filesystem()->writePath(voxelFile.targetFile()) + "\"");
+			}
+			if (!_texturePool.has(voxelFile.name)) {
+				if (ImGui::Button("Create thumbnail")) {
+					createThumbnail(voxelFile);
+				}
+			}
+		} else {
+			if (ImGui::Button("Download")) {
+				http::HttpCacheStream stream(voxelFile.targetFile(), voxelFile.url);
+				if (stream.valid()) {
+					voxelFile.downloaded = true;
+				} else {
+					Log::warn("Failed to download %s", voxelFile.url.c_str());
+				}
+			}
+		}
 	}
 	ImGui::End();
+}
+
+video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
+	static video::TexturePtr empty;
+	if (_texturePool.has(voxelFile.name)) {
+		return _texturePool.get(voxelFile.name);
+	}
+	return empty;
 }
 
 void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	if (ImGui::Begin(TITLE_ASSET_LIST)) {
 		updateFilters();
 
-		if (ImGui::TreeNode("Voxel Files", "Voxel Files (%d)", (int)voxelFilesMap.size())) {
+		if (ImGui::BeginTable("Voxel Files", 3,
+							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
+								  ImGuiTableFlags_RowBg)) {
+			ImGui::TableSetupColumn("Thumbnail##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
+			ImGui::TableSetupColumn("Name##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
+			ImGui::TableSetupColumn("License##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
+			ImGui::TableHeadersRow();
 			for (const auto &entry : voxelFilesMap) {
-				if (ImGui::TreeNode(entry->first.c_str())) {
+				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
+											   ImGuiTreeNodeFlags_SpanAvailWidth;
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				if (ImGui::TreeNodeEx(entry->first.c_str(), treeFlags)) {
 					const VoxelFiles &voxelFiles = entry->second;
 					for (const VoxelFile &voxelFile : voxelFiles) {
 						if (filtered(voxelFile)) {
 							continue;
 						}
 
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
 						const bool selected = _selected == voxelFile;
-						if (ImGui::Selectable(voxelFile.name.c_str(), selected,
-											  ImGuiSelectableFlags_AllowDoubleClick)) {
-							_selected = voxelFile;
+
+						ImGui::PushID(voxelFile.targetFile().c_str());
+						if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
+							if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
+								_selected = voxelFile;
+							}
+							ImGui::Image(texture->handle(), ImVec2(64, 64));
+						} else {
+							if (ImGui::Selectable("No thumbnail available", selected,
+												  ImGuiSelectableFlags_SpanAllColumns)) {
+								_selected = voxelFile;
+							}
 						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+						ImGui::PopID();
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted(voxelFile.name.c_str());
+						ImGui::TableNextColumn();
+						ImGui::TextUnformatted(voxelFile.license.c_str());
 					}
 					ImGui::TreePop();
 				}
 			}
-			ImGui::TreePop();
+			ImGui::EndTable();
 		}
 	}
 	ImGui::End();
@@ -227,16 +295,11 @@ void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_ASSET_DETAILS, dockId);
 	ImGui::DockBuilderDockWindow(UI_CONSOLE_WINDOW_TITLE, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_ASSET_DETAILS, dockId);
 }
 
 void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
-	// TODO: download images and create image::ImagePtr instance (and cache them on disc)
-	// TODO: allow to download voxel files
-	// TODO: allow to specify target directory and create directory structure or flat structure
-	// TODO: download license, too
-
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
@@ -267,14 +330,33 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	}
 
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
+
+	if (_menuBar.update(_app)) {
+		ImGui::DockBuilderRemoveNode(dockIdMain);
+	}
+
 	const bool existingLayout = ImGui::DockBuilderGetNode(dockIdMain);
 	ImGui::DockSpace(dockIdMain);
+
+	ImGui::Begin(UI_CONSOLE_WINDOW_TITLE);
+	ImGui::End();
 
 	updateAssetList(voxelFilesMap);
 	updateAsset();
 	updateAssetDetails();
 
 	ImGui::End();
+
+#if 0
+	if (ImGui::Begin("Texture Pool")) {
+		const core::StringMap<video::TexturePtr> &cache = _texturePool.cache();
+		for (const auto &entry : cache) {
+			ImGui::Text("%s: width: %i height: %i", entry->first.c_str(), entry->second->width(),
+						entry->second->height());
+		}
+	}
+	ImGui::End();
+#endif
 
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight);
 
@@ -293,15 +375,14 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 }
 
 bool MainWindow::init() {
-	_texturePool.init();
 	_thumbnailCtx.outputSize = glm::ivec2(1280);
 	_thumbnailCtx.clearColor = glm::vec4(0.0f);
+
 	return true;
 }
 
 void MainWindow::shutdown() {
 	_filterEntries.clear();
-	_texturePool.shutdown();
 }
 
 } // namespace voxbrowser

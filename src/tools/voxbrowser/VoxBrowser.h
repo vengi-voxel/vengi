@@ -6,7 +6,9 @@
 
 #include "core/collection/ConcurrentQueue.h"
 #include "ui/IMGUIApp.h"
+#include "video/TexturePool.h"
 #include "voxbrowser-util/Downloader.h"
+#include "voxelformat/FormatThumbnail.h"
 
 namespace voxbrowser {
 class MainWindow;
@@ -22,7 +24,11 @@ private:
 	using Super = ui::IMGUIApp;
 	voxbrowser::MainWindow *_mainWindow = nullptr;
 	core::ConcurrentQueue<voxbrowser::VoxelFile> _newVoxelFiles;
+	core::ConcurrentQueue<image::ImagePtr> _imageQueue;
 	voxbrowser::VoxelFileMap _voxelFilesMap;
+	video::TexturePool _texturePool;
+
+	void loadThumbnail(const voxbrowser::VoxelFile &voxelFile);
 
 public:
 	VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);

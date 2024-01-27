@@ -36,16 +36,17 @@ struct VoxelFile {
 	core::String source;
 	core::String name;
 	core::String license;
+	core::String licenseUrl;
 	core::String thumbnailUrl;
 	core::String url;
-	image::ImagePtr thumbnailImage;
+	bool downloaded = false;
 
 	core::String targetFile() const {
-		return core::string::path(source, name);
+		return core::string::path(core::string::cleanPath(source), name);
 	}
 
 	core::String targetDir() const {
-		return core::string::path(source, core::string::extractPath(name));
+		return core::string::path(core::string::cleanPath(source), core::string::extractPath(name));
 	}
 
 	bool operator==(const VoxelFile &other) const {

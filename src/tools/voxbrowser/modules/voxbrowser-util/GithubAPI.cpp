@@ -5,28 +5,29 @@
 #include "GithubAPI.h"
 #include "JsonUtil.h"
 #include "core/Log.h"
-#include "http/Request.h"
-#include "io/BufferedReadWriteStream.h"
+#include "core/StringUtil.h"
+#include "http/HttpCacheStream.h"
 
 namespace github {
 
+core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
+	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
+}
+
 core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch) {
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
-	http::Request request(url, http::RequestType::GET);
-	io::BufferedReadWriteStream outStream;
+	const core::String file = "github-" + repository + "-" + branch + ".json";
+	http::HttpCacheStream stream(file, url);
 	core::DynamicArray<TreeEntry> entries;
-	int statusCode = 0;
-	if (!request.execute(outStream, &statusCode)) {
-		Log::error("Failed to query github api with %i", statusCode);
+	if (!stream.valid()) {
 		return entries;
 	}
 	core::String json;
-	outStream.seek(0);
-	outStream.readString(outStream.size(), json);
+	stream.readString(stream.size(), json);
 	nlohmann::json jsonResponse = nlohmann::json::parse(json);
 	if (!jsonResponse.contains("tree")) {
 		const core::String str = jsonResponse.dump().c_str();
-		Log::error("Unexpected json data for url: '%s': %s (status: %i)", url.c_str(), str.c_str(), statusCode);
+		Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 		return entries;
 	}
 	jsonResponse = jsonResponse["tree"];
@@ -36,7 +37,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, cons
 		treeEntry.mode = get(entry, "mode");
 		treeEntry.type = get(entry, "type");
 		treeEntry.sha = get(entry, "sha");
-		treeEntry.url = "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + treeEntry.path;
+		treeEntry.url = downloadUrl(repository, branch, treeEntry.path);
 		treeEntry.size = getInt(entry, "size");
 		entries.push_back(treeEntry);
 	}

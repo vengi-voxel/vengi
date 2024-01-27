@@ -9,6 +9,9 @@
 namespace voxbrowser {
 
 class MenuBar {
+private:
+	void metricOption();
+
 public:
 	bool update(ui::IMGUIApp *app);
 };

@@ -3,7 +3,7 @@
 		{
 			"name": "Duke3D Voxel Pack for EDuke32",
 			"license": "custom",
-			"thumbnail": "https://raw.githubusercontent.com/NightFright2k19/duke3d_voxelpack/master/duke3d_voxelpack.png",
+			"thumbnail": "https://i.imgur.com/WSQIXnS.png",
 			"github": {
 				"repo": "NightFright2k19/duke3d_voxelpack",
 				"commit": "master",
@@ -21,7 +21,7 @@
 			}
 		},
 		{
-			"name": "Akamai’s Inspiring Game Scenes",
+			"name": "Akamai's Inspiring Game Scenes",
 			"license": "Attribution-NonCommercial-NoDerivatives 4.0 International",
 			"thumbnail": "https://raw.githubusercontent.com/Akamai-Community/inspiring-game-scenes/main/models/city-build-scene/city-build-scene.png",
 			"github": {
@@ -33,7 +33,7 @@
 		{
 			"name": "Oasis",
 			"license": "CC0 1.0 Universal",
-			"thumbnail": "https://github.com/Phyronnaz/VoxelAssets/blob/master/Oasis/Screenshot.jpg",
+			"thumbnail": "https://raw.githubusercontent.com/Phyronnaz/VoxelAssets/master/Oasis/Screenshot.jpg",
 			"single": {
 				"url": "https://github.com/Phyronnaz/VoxelAssets/blob/master/Oasis/Oasis_Hard_Cover.vox.7z"
 			}
@@ -44,8 +44,16 @@
 			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
 			"github": {
 				"repo": "vengi-voxel/voxelized",
-				"commit": "master",
+				"commit": "main",
 				"license": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md"
+			}
+		},
+		{
+			"name": "vox-models",
+			"license": "Creative Commons Attribution 4.0 International",
+			"github": {
+				"repo": "kluchek/vox-models",
+				"commit": "master"
 			}
 		}
 	]

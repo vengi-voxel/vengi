@@ -9,6 +9,7 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "engine-config.h"
+#include "http/HttpCacheStream.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FormatDescription.h"
@@ -50,6 +51,8 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 			source.provider = "github";
 			source.github.repo = get(entry["github"], "repo");
 			source.github.commit = get(entry["github"], "commit");
+			// the github license is a file in the repo, so we need to query the tree for it
+			// and download it
 			source.github.license = get(entry["github"], "license");
 		} else if (entry.contains("single")) {
 			source.provider = "single";
@@ -67,10 +70,24 @@ static bool supportedFileExtension(const core::String &path) {
 	return desc != nullptr && desc->valid();
 }
 
+static core::String findThumbnailUrl(const core::DynamicArray<github::TreeEntry> &entries,
+									 const github::TreeEntry &current, const VoxelSource &source) {
+	const core::String &pathNoExt = core::string::stripExtension(current.path);
+	for (auto &entry : entries) {
+		if (entry.path == current.path + ".png" || entry.path == pathNoExt + ".png") {
+			return github::downloadUrl(source.github.repo, source.github.commit, entry.path);
+		}
+	}
+	return "";
+}
+
 core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
 	if (source.provider == "github") {
-		core::DynamicArray<github::TreeEntry> entries = github::reposGitTrees(source.github.repo, source.github.commit);
+		const core::DynamicArray<github::TreeEntry> &entries =
+			github::reposGitTrees(source.github.repo, source.github.commit);
+		const core::String &licenseDownloadUrl =
+			github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
 		for (auto &entry : entries) {
 			if (entry.type != "blob") {
 				continue;
@@ -78,11 +95,19 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 			if (!supportedFileExtension(entry.path)) {
 				continue;
 			}
+
+			// TODO: allow to enable mesh formats?
+			if (voxelformat::isMeshFormat(entry.path, false)) {
+				continue;
+			}
 			VoxelFile file;
 			file.source = source.name;
 			file.name = entry.path;
-			file.license = source.github.license;
-			file.thumbnailUrl = source.thumbnail;
+			file.license = source.license;
+			if (!source.github.license.empty()) {
+				file.licenseUrl = licenseDownloadUrl;
+			}
+			file.thumbnailUrl = findThumbnailUrl(entries, entry, source);
 			file.url = entry.url;
 			files.push_back(file);
 		}
