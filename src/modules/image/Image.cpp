@@ -105,7 +105,7 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 }
 
 bool writeImage(const image::ImagePtr &image, const core::String &filename) {
-	if (!image) {
+	if (!image || !image->isLoaded()) {
 		return false;
 	}
 	const io::FilePtr &png = io::filesystem()->open(filename, io::FileMode::SysWrite);
