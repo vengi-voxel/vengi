@@ -4,6 +4,7 @@
 
 #include "HttpCacheStream.h"
 #include "app/App.h"
+#include "core/Log.h"
 #include "http/Http.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -24,6 +25,7 @@ HttpCacheStream::HttpCacheStream(const core::String &file, const core::String &u
 			}
 		}
 	} else {
+		Log::debug("Use cached file at %s", file.c_str());
 		_fileStream = new io::FileStream(io::filesystem()->open(file, io::FileMode::Read));
 	}
 }
