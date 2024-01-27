@@ -25,6 +25,7 @@ public:
 	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true);
 	video::TexturePtr load(const core::String& name, const uint8_t *rgba, size_t size);
 	video::TexturePtr get(const core::String& name);
+	bool has(const core::String& name) const;
 	image::ImagePtr loadImage(const core::String& name);
 	image::ImagePtr loadImage(const core::String& name, const uint8_t *rgba, size_t size);
 	void addImage(const image::ImagePtr &image);
