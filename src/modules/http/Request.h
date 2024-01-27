@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/collection/StringMap.h"
 #include "io/Stream.h"
 
