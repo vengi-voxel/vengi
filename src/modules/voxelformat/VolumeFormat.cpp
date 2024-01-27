@@ -474,7 +474,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 		return image::ImagePtr();
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
-		Log::warn("Format %s doesn't have a screenshot embedded", desc->name.c_str());
+		Log::debug("Format %s doesn't have a screenshot embedded", desc->name.c_str());
 		return image::ImagePtr();
 	}
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
