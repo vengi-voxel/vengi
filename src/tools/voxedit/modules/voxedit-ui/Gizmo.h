@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 namespace voxedit {
 
 enum GizmoOperation {

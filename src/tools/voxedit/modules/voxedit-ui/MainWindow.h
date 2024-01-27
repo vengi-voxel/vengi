@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
