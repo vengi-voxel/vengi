@@ -12,7 +12,7 @@ namespace http {
 
 HttpCacheStream::HttpCacheStream(const core::String &file, const core::String &url) : _file(file), _url(url) {
 	if (!io::filesystem()->exists(file)) {
-		io::BufferedReadWriteStream bufStream;
+		io::BufferedReadWriteStream bufStream(1024 * 1024);
 		int statusCode = 0;
 		if (http::download(url, bufStream, &statusCode)) {
 			if (http::isValidStatusCode(statusCode)) {
