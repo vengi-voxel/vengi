@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request, redirect, Response
+from flask import Flask, request, redirect, send_file, Response
 from influxdb import InfluxDBClient
 import atexit
 import threading
@@ -56,6 +56,10 @@ def insertMetric(metric_name, value, uuid, tags):
 @app.route('/')
 def home():
     return redirect("http://vengi-voxel.github.io/vengi/", code=302)
+
+@app.route('/browser-data')
+def browserData():
+    return send_file("voxbrowser-sources.json", as_attachment=True, download_name="voxbrowser-sources.json")
 
 @app.route('/metric', methods = ['POST'])
 def metric():

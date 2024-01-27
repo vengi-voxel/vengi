@@ -1,0 +1,52 @@
+{
+	"sources": [
+		{
+			"name": "Duke3D Voxel Pack for EDuke32",
+			"license": "custom",
+			"thumbnail": "https://raw.githubusercontent.com/NightFright2k19/duke3d_voxelpack/master/duke3d_voxelpack.png",
+			"github": {
+				"repo": "NightFright2k19/duke3d_voxelpack",
+				"commit": "master",
+				"license": "voxelpack_art_license.txt"
+			}
+		},
+		{
+			"name": "Mini Mike's Metro Minis",
+			"license": "Creative Commons Attribution 4.0 International",
+			"thumbnail": "https://raw.githubusercontent.com/mikelovesrobots/mmmm/master/screenshots/day1.png",
+			"github": {
+				"repo": "mikelovesrobots/mmmm",
+				"commit": "master",
+				"license": "LICENSE"
+			}
+		},
+		{
+			"name": "Akamai’s Inspiring Game Scenes",
+			"license": "Attribution-NonCommercial-NoDerivatives 4.0 International",
+			"thumbnail": "https://raw.githubusercontent.com/Akamai-Community/inspiring-game-scenes/main/models/city-build-scene/city-build-scene.png",
+			"github": {
+				"repo": "Akamai-Community/inspiring-game-scenes",
+				"commit": "main",
+				"license": "license.md"
+			}
+		},
+		{
+			"name": "Oasis",
+			"license": "CC0 1.0 Universal",
+			"thumbnail": "https://github.com/Phyronnaz/VoxelAssets/blob/master/Oasis/Screenshot.jpg",
+			"single": {
+				"url": "https://github.com/Phyronnaz/VoxelAssets/blob/master/Oasis/Oasis_Hard_Cover.vox.7z"
+			}
+		},
+		{
+			"name": "Vengi voxelized",
+			"license": "custom",
+			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			"github": {
+				"repo": "vengi-voxel/voxelized",
+				"commit": "master",
+				"license": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md"
+			}
+		}
+	]
+}
