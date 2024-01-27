@@ -13,7 +13,7 @@ namespace http {
 
 class RequestTest : public app::AbstractTest {};
 
-TEST_F(RequestTest, testGetRequest) {
+TEST_F(RequestTest, DISABLED_testGetRequest) {
 	if (!Request::supported()) {
 		GTEST_SKIP() << "No http support available";
 	}

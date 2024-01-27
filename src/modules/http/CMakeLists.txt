@@ -1,6 +1,7 @@
 set(SRCS
-	Request.cpp Request.h
+	HttpCacheStream.cpp HttpCacheStream.h
 	Http.cpp Http.h
+	Request.cpp Request.h
 )
 
 set(LIB http)
@@ -22,6 +23,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 
 set(TEST_SRCS
 	tests/RequestTest.cpp
+	tests/HttpCacheStreamTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
