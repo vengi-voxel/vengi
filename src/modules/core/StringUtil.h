@@ -60,6 +60,10 @@ double toDouble(const char* str);
  */
 char* getBeforeToken(char **buffer, const char *token, size_t bufferSize);
 
+/**
+ * @note doesn't create empty tokens for leading or trailing delimiters. E.g. ///foo/bar/ having / as delimiter would
+ * only return foo and bar - no empty strings - but having /foo//bar/ would return three strings, foo, "" and bar
+ */
 void splitString(const core::String& string, core::DynamicArray<core::String>& tokens, const char* delimiters = " \t\r\n\f\v");
 
 char toUpper(char in);
@@ -309,11 +313,13 @@ char* append(char* buf, size_t bufsize, const char* string);
 int count(const char *buf, char chr);
 
 core::String eraseAllChars(const core::String& str, char chr);
-
+core::String urlEncode(const core::String &inBuf);
 /**
- * @note Call @c core_free() on the returned string
+ * @sa urlEncode()
+ * @brief Replace parts of an url path like /path/to#&/foo - but keeps the slashes
+ * in place. Meaning the given example would return /path/to%23%26/foo
  */
-char *urlEncode(const char *str);
+core::String urlPathEncode(const core::String &urlPath);
 
 int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a);
 

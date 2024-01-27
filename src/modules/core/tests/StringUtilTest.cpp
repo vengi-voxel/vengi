@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "core/StringUtil.h"
+#include "core/tests/TestHelper.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include <SDL_stdinc.h>
@@ -80,9 +81,13 @@ TEST_F(StringUtilTest, testFormat) {
 }
 
 TEST_F(StringUtilTest, testUrlEncode) {
-	char *urlEncoded = core::string::urlEncode("foobar=1236/&");
-	EXPECT_STREQ("foobar%3D1236%2F%26", urlEncoded);
-	core_free(urlEncoded);
+	const core::String urlEncoded = core::string::urlEncode("foobar=1236/&");
+	EXPECT_EQ("foobar%3D1236%2F%26", urlEncoded);
+}
+
+TEST_F(StringUtilTest, testUrlPathEncode) {
+	const core::String urlEncoded = core::string::urlPathEncode("/path/to#&/foo");
+	EXPECT_EQ("/path/to%23%26/foo", urlEncoded) << urlEncoded;
 }
 
 TEST_F(StringUtilTest, testStripExtension) {

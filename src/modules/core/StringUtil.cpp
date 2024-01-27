@@ -203,25 +203,45 @@ core::String humanSize(uint64_t bytes) {
 	return core::string::format("%.02lf%s", dblBytes, units[unitIdx]);
 }
 
-char *urlEncode(const char *inBuf) {
-	const char *inBufPos = inBuf;
-	const size_t maxSize = SDL_strlen(inBuf) * 3;
-	char *outBuf = (char *)core_malloc(maxSize + 1);
-	char *outBufPos = outBuf;
+core::String urlEncode(const core::String &inBuf) {
+	const char *inBufPos = inBuf.c_str();
+	const size_t maxSize = inBuf.size() * 3;
+	core::String outBuf;
+	outBuf.reserve(maxSize);
 	while (inBufPos[0] != '\0') {
 		const uint8_t inChr = inBufPos[0];
 		if (inChr == ' ') {
-			*outBufPos++ = '+';
+			outBuf += '+';
 		} else if (inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
-			*outBufPos++ = inChr;
+			outBuf += inChr;
 		} else {
-			*outBufPos++ = '%';
-			*outBufPos++ = toHex((char)(inChr >> 4));
-			*outBufPos++ = toHex((char)(inChr & 15));
+			outBuf += '%';
+			outBuf += toHex((char)(inChr >> 4));
+			outBuf += toHex((char)(inChr & 15));
 		}
 		++inBufPos;
 	}
-	*outBufPos = '\0';
+	return outBuf;
+}
+
+core::String urlPathEncode(const core::String &inBuf) {
+	const char *inBufPos = inBuf.c_str();
+	const size_t maxSize = inBuf.size() * 3;
+	core::String outBuf;
+	outBuf.reserve(maxSize);
+	while (inBufPos[0] != '\0') {
+		const uint8_t inChr = inBufPos[0];
+		if (inChr == ' ') {
+			outBuf += '+';
+		} else if (inChr == '/' || inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
+			outBuf += inChr;
+		} else {
+			outBuf += '%';
+			outBuf += toHex((char)(inChr >> 4));
+			outBuf += toHex((char)(inChr & 15));
+		}
+		++inBufPos;
+	}
 	return outBuf;
 }
 
