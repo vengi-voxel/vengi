@@ -18,12 +18,7 @@ FileStream::FileStream(const FilePtr &file) : _file(file) {
 		_rwops = _file->_file;
 		if (_rwops) {
 			_size = SDL_RWsize(_rwops);
-		} else {
-			_size = 0;
 		}
-	} else {
-		_rwops = nullptr;
-		_size = 0;
 	}
 }
 

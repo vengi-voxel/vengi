@@ -240,7 +240,7 @@ void KeyBindingHandler::shutdown(int version) {
 
 void KeyBindingHandler::removeApplicationKeyBindings(int version) {
 	const core::String &f = filename(version);
-	const core::String &path = io::filesystem()->writePath(f.c_str());
+	const core::String &path = io::filesystem()->writePath(f);
 	io::filesystem()->removeFile(path);
 }
 

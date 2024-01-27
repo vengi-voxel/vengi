@@ -168,7 +168,7 @@ public:
 	 */
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) = 0;
 	/**
-	 * @return The amount of bytes that are available in this stream
+	 * @return The amount of bytes that are available in this stream or -1 on error
 	 */
 	virtual int64_t size() const = 0;
 	/**

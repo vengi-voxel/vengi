@@ -276,13 +276,13 @@ app::AppState IMGUIApp::onInit() {
 
 	if (_persistUISettings) {
 		const core::String iniFile = core::string::format("%s-%i-imgui.ini", _appname.c_str(), _iniVersion);
-		_writePathIni = _filesystem->writePath(iniFile.c_str());
+		_writePathIni = _filesystem->writePath(iniFile);
 		io.IniFilename = _writePathIni.c_str();
 	} else {
 		io.IniFilename = nullptr;
 	}
 	const core::String logFile = _appname + "-imgui.log";
-	_writePathLog = _filesystem->writePath(logFile.c_str());
+	_writePathLog = _filesystem->writePath(logFile);
 	io.LogFilename = _writePathLog.c_str();
 	io.DisplaySize = _windowDimension;
 

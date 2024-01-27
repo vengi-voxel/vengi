@@ -28,9 +28,9 @@ typedef core::SharedPtr<File> FilePtr;
  */
 class FileStream : public SeekableReadStream, public SeekableWriteStream {
 private:
-	mutable SDL_RWops *_rwops;
+	mutable SDL_RWops *_rwops = nullptr;
 	FilePtr _file;
-	int64_t _size = 0;
+	int64_t _size = -1;
 	int64_t _pos = 0;
 public:
 	FileStream(const FilePtr &file);

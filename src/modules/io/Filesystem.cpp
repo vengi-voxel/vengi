@@ -367,7 +367,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
-		return core::make_shared<io::File>(_homePath + filename, mode);
+		return core::make_shared<io::File>(core::string::path(_homePath, filename), mode);
 	}
 	FileMode openmode = mode;
 	if (openmode == FileMode::ReadNoHome) {
@@ -432,12 +432,12 @@ core::String Filesystem::load(const core::String &filename) const {
 	return f->load();
 }
 
-core::String Filesystem::writePath(const char *name) const {
-	return _homePath + name;
+core::String Filesystem::writePath(const core::String &name) const {
+	return core::string::path(_homePath, name);
 }
 
 long Filesystem::write(const core::String& filename, io::ReadStream &stream) {
-	const core::String &fullPath = _homePath + filename;
+	const core::String &fullPath = core::string::path(_homePath, filename);
 	const core::String path(core::string::extractPath(fullPath.c_str()));
 	createDir(path, true);
 	io::File f(fullPath, FileMode::Write);
@@ -447,7 +447,7 @@ long Filesystem::write(const core::String& filename, io::ReadStream &stream) {
 }
 
 bool Filesystem::write(const core::String &filename, const uint8_t *content, size_t length) {
-	const core::String &fullPath = _homePath + filename;
+	const core::String &fullPath = core::string::path(_homePath, filename);
 	const core::String path(core::string::extractPath(fullPath.c_str()));
 	createDir(path, true);
 	io::File f(fullPath, FileMode::Write);
