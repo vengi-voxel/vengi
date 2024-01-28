@@ -72,6 +72,10 @@ public:
 
 	const uint8_t* at(int x, int y) const;
 
+	void setName(const core::String &name) {
+		_name = name;
+	}
+
 	inline const core::String& name() const {
 		return _name;
 	}
