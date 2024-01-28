@@ -1,5 +1,6 @@
 set(SRCS
 	Request.cpp Request.h
+	Http.cpp Http.h
 )
 
 set(LIB http)
