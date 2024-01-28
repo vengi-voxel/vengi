@@ -267,9 +267,9 @@ const io::FormatDescription *getDescription(const core::String &filename, uint32
 		}
 	}
 	if (extFull.empty()) {
-		Log::warn("Could not identify the format");
+		Log::debug("Could not identify the format");
 	} else {
-		Log::warn("Could not find a supported format description for %s", extFull.c_str());
+		Log::debug("Could not find a supported format description for %s", extFull.c_str());
 	}
 	return nullptr;
 }
