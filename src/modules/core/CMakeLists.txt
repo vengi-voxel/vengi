@@ -10,6 +10,8 @@ set(SRCS
 	collection/ConcurrentPriorityQueue.h
 	collection/ConcurrentSet.h
 	collection/DynamicArray.h
+	collection/DynamicMap.h
+	collection/DynamicStringMap.h
 	collection/Functions.h
 	collection/List.h
 	collection/Map.h collection/Map.cpp

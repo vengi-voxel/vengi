@@ -124,6 +124,18 @@ public:
 		return true;
 	}
 
+	template<class COLLECTION>
+	bool popAll(COLLECTION& out) {
+		core::ScopedLock lock(_mutex);
+		if (_data.empty()) {
+			return false;
+		}
+
+		out.append(_data);
+		_data.clear();
+		return true;
+	}
+
 	bool waitAndPop(Data& poppedValue) {
 		core::ScopedLock lock(_mutex);
 		while (_data.empty() && !_abort) {
