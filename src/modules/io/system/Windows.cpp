@@ -71,7 +71,7 @@ bool initState(io::FilesystemState &state) {
 		if ((drives & (1 << i)) == 0) {
 			continue;
 		}
-		const char driveStr[4] = {'A' + i, ':', '/', '\0'};
+		const char driveStr[4] = {(char)('A' + i), ':', '/', '\0'};
 		state._other.push_back(driveStr);
 	}
 
