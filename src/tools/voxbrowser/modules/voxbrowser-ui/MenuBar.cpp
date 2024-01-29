@@ -41,6 +41,7 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
+				metricOption();
 				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
 				ImGui::ComboVar("Color theme", cfg::UIStyle, {"CorporateGrey", "Dark", "Light", "Classic"});
