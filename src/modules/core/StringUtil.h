@@ -149,6 +149,8 @@ inline core::String path() {
  * @note Assumed to be normalized (no \ , only /)
  */
 core::String extractPath(const core::String& str);
+// remove all characters that are not alphanumeric and convert everything to lower case
+core::String cleanPath(const core::String &str);
 core::String stripExtension(const core::String& str);
 core::String replaceExtension(const core::String &filename, const core::String& newExtension);
 core::String extractExtension(const core::String& str);

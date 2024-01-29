@@ -87,7 +87,7 @@ const char *after(const char *input, int character) {
 	return s;
 }
 
-bool endsWith(const core::String& string, const core::String& end) {
+bool endsWith(const core::String &string, const core::String &end) {
 	const size_t strLength = string.size();
 	const size_t endLength = end.size();
 	if (strLength >= endLength) {
@@ -279,7 +279,7 @@ core::String replaceAll(const core::String &str, const core::String &searchStr, 
 	return s;
 }
 
-core::String replaceAll(const core::String& str, const core::String& searchStr, const core::String& replaceStr) {
+core::String replaceAll(const core::String &str, const core::String &searchStr, const core::String &replaceStr) {
 	if (searchStr.size() == 1 && replaceStr.size() == 1) {
 		core::String copy = str;
 		replaceAllChars(copy, searchStr[0], replaceStr[0]);
@@ -847,7 +847,7 @@ void parseReal3(float *x, float *y, float *z, const char **token, float default_
 	*z = parseReal(token, default_z);
 }
 
-void parseIVec3(const core::String &in, int32_t *out, const char* delimiters) {
+void parseIVec3(const core::String &in, int32_t *out, const char *delimiters) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
 	splitString(in, tokens, delimiters);
@@ -859,7 +859,7 @@ void parseIVec3(const core::String &in, int32_t *out, const char* delimiters) {
 	}
 }
 
-void parseVec3(const core::String &in, float *out, const char* delimiters) {
+void parseVec3(const core::String &in, float *out, const char *delimiters) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
 	splitString(in, tokens, delimiters);
@@ -889,23 +889,37 @@ core::String sanitizeDirPath(core::String str) {
 	return str.append("/");
 }
 
-core::String extractPath(const core::String& str) {
+core::String extractPath(const core::String &str) {
 	const size_t pos = str.rfind("/");
 	if (pos == core::String::npos) {
 		return "";
 	}
-	return str.substr(0, pos + 1) ;
+	return str.substr(0, pos + 1);
 }
 
-core::String stripExtension(const core::String& str) {
+core::String cleanPath(const core::String &str) {
+	core::String tmp;
+	tmp.reserve(str.size() + 1);
+	for (auto c : str) {
+		if (c == ' ') {
+			tmp += '_';
+		}
+		if (isalnum(c) || c == '.' || c == '_' || c == '-') {
+			tmp += toLower(c);
+		}
+	}
+	return tmp;
+}
+
+core::String stripExtension(const core::String &str) {
 	const size_t pos = str.rfind(".");
 	if (pos == core::String::npos) {
 		return str;
 	}
-	return str.substr(0, pos) ;
+	return str.substr(0, pos);
 }
 
-core::String replaceExtension(const core::String &filename, const core::String& newExtension) {
+core::String replaceExtension(const core::String &filename, const core::String &newExtension) {
 	const size_t pos = filename.rfind(".");
 	if (pos == core::String::npos) {
 		return filename + "." + newExtension;
@@ -913,7 +927,7 @@ core::String replaceExtension(const core::String &filename, const core::String& 
 	return filename.substr(0, pos + 1) + newExtension;
 }
 
-core::String extractExtension(const core::String& str) {
+core::String extractExtension(const core::String &str) {
 	const size_t pos = str.rfind(".");
 	if (pos == core::String::npos) {
 		return "";
@@ -921,7 +935,7 @@ core::String extractExtension(const core::String& str) {
 	return str.substr(pos + 1);
 }
 
-core::String extractAllExtensions(const core::String& str) {
+core::String extractAllExtensions(const core::String &str) {
 	const size_t pos = str.find(".");
 	if (pos == core::String::npos) {
 		return "";
@@ -929,7 +943,7 @@ core::String extractAllExtensions(const core::String& str) {
 	return str.substr(pos + 1);
 }
 
-core::String extractFilenameWithExtension(const core::String& str) {
+core::String extractFilenameWithExtension(const core::String &str) {
 	const size_t pathPos = str.rfind('/');
 	if (pathPos == core::String::npos) {
 		return str;
@@ -937,7 +951,7 @@ core::String extractFilenameWithExtension(const core::String& str) {
 	return str.substr(pathPos + 1);
 }
 
-core::String addFilenamePrefix(const core::String& filename, const core::String &prefix) {
+core::String addFilenamePrefix(const core::String &filename, const core::String &prefix) {
 	const core::String &path = extractPath(filename);
 	const core::String &file = extractFilenameWithExtension(filename);
 	return core::string::path(path, prefix + file);
