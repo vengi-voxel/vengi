@@ -126,7 +126,7 @@ void ModifierRenderer::clearBrushMeshes() {
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
-	delete _volumeRenderer.setVolume(idx, volume, palette);
+	delete _volumeRenderer.setVolume(idx, volume, palette, true);
 	if (volume != nullptr) {
 		_volumeRenderer.extractRegion(idx, volume->region());
 	}
@@ -137,9 +137,9 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera) {
 		_volumeRendererCtx.shutdown();
 		_volumeRendererCtx.init(camera.size());
 	}
-	while (_volumeRenderer.scheduleExtractions(100)) {
+	while (_volumeRenderer.meshState()->scheduleExtractions(100)) {
 	}
-	_volumeRenderer.waitForPendingExtractions();
+	_volumeRenderer.meshState()->waitForPendingExtractions();
 	_volumeRenderer.update();
 	_volumeRenderer.render(_volumeRendererCtx, camera, false);
 }

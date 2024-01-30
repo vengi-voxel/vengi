@@ -120,9 +120,7 @@ bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region &region = _extractRegions[i].region;
 		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(sceneGraph, _extractRegions[i].nodeId)) {
-			if (!_volumeRenderer.extractRegion(*node, region)) {
-				Log::error("Failed to extract the model mesh");
-			}
+			_volumeRenderer.extractRegion(*node, region);
 			Log::debug("Extract node %i", _extractRegions[i].nodeId);
 			voxel::logRegion("Extraction", region);
 		}

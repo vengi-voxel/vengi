@@ -99,11 +99,11 @@ RawVolumeRenderer::RawVolumeRenderer() : RawVolumeRenderer(core::make_shared<Mes
 }
 
 void RawVolumeRenderer::construct() {
-	_meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
+	_meshState->construct();
 }
 
 bool RawVolumeRenderer::initStateBuffers() {
-	const bool marchingCubes = _meshMode->intVal() == 1;
+	const bool marchingCubes = _meshState->marchingCubes();
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State &state = _state[idx];
 		state._model = glm::mat4(1.0f);
@@ -171,11 +171,8 @@ bool RawVolumeRenderer::initStateBuffers() {
 bool RawVolumeRenderer::init() {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
-	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
-	_meshMode->markClean();
 
-	_threadPool.init();
-	Log::debug("Threadpool size: %i", (int)_threadPool.size());
+	_meshState->init();
 
 	if (!_voxelShader.setup()) {
 		Log::error("Failed to initialize the voxel shader");
@@ -232,64 +229,15 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
-bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
-	const size_t n = _extractRegions.size();
-	if (n == 0) {
-		return false;
+void RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
+	if (_meshState->extractRegion(idx, region)) {
+		deleteMeshes(idx);
 	}
-	if (maxExtraction == 0) {
-		return true;
-	}
-	const bool marchingCubes = _meshMode->intVal() == 1;
-	size_t i;
-	for (i = 0; i < n; ++i) {
-		ExtractRegion extractRegion;
-		if (!_extractRegions.pop(extractRegion)) {
-			break;
-		}
-		const int idx = extractRegion.idx;
-		const voxel::RawVolume *v = volume(idx);
-		if (v == nullptr) {
-			continue;
-		}
-		const voxel::Region& finalRegion = extractRegion.region;
-		bool onlyAir = true;
-		const voxel::Region copyRegion(finalRegion.getLowerCorner() - 2, finalRegion.getUpperCorner() + 2);
-		if (!copyRegion.isValid()) {
-			continue;
-		}
-		voxel::RawVolume copy(v, copyRegion, &onlyAir);
-		const glm::ivec3& mins = finalRegion.getLowerCorner();
-		if (!onlyAir) {
-			const palette::Palette &pal = _meshState->palette(resolveIdx(idx));
-			++_pendingExtractorTasks;
-			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
-				++_runningExtractorTasks;
-				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::SurfaceExtractionContext ctx =
-					marchingCubes ? voxel::buildMarchingCubesContext(&movedCopy, finalRegion, mesh, movedPal)
-								: voxel::buildCubicContext(&movedCopy, finalRegion, mesh, mins);
-				voxel::extractSurface(ctx);
-				_pendingQueue.emplace(mins, idx, core::move(mesh));
-				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
-				--_runningExtractorTasks;
-				--_pendingExtractorTasks;
-			});
-		} else {
-			_pendingQueue.emplace(mins, idx, core::move(voxel::ChunkMesh(0, 0)));
-		}
-		--maxExtraction;
-		if (maxExtraction == 0) {
-			break;
-		}
-	}
-
-	return true;
 }
 
 void RawVolumeRenderer::update() {
-	if (_meshMode->isDirty()) {
-		clearPendingExtractions();
+	if (_meshState->_meshMode->isDirty()) {
+		_meshState->clearPendingExtractions();
 
 		resetStateBuffers();
 
@@ -300,12 +248,12 @@ void RawVolumeRenderer::update() {
 			}
 		}
 
-		_meshMode->markClean();
+		_meshState->_meshMode->markClean();
 	}
-	scheduleExtractions();
+	_meshState->scheduleExtractions();
 	MeshState::ExtractionCtx result;
 	int cnt = 0;
-	while (_pendingQueue.pop(result)) {
+	while (_meshState->_pendingQueue.pop(result)) {
 		if (_meshState->volume(result.idx) == nullptr) {
 			continue;
 		}
@@ -329,7 +277,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	}
 	core_trace_scoped(RawVolumeRendererUpdate);
 
-	const int bufferIndex = resolveIdx(idx);
+	const int bufferIndex = _meshState->resolveIdx(idx);
 	size_t vertCount = 0u;
 	size_t normalsCount = 0u;
 	size_t indCount = 0u;
@@ -419,81 +367,12 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_voxelShaderFragData.diffuseColor = color;
 }
 
-int RawVolumeRenderer::resolveIdx(int idx) const {
-	const int reference = _meshState->reference(idx);
-	if (reference != -1) {
-		return resolveIdx(reference);
-	}
-	return idx;
-}
-
-bool RawVolumeRenderer::empty(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return true;
-	}
-	const int bufferIndex = resolveIdx(idx);
-	return _meshState->empty(bufferIndex);
-}
-
-voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
-	const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
-	const glm::ivec3 maxs = mins + meshSize - 1;
-	return voxel::Region{mins, maxs};
-}
-
-bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
-	core_trace_scoped(RawVolumeRendererExtract);
-	const int bufferIndex = resolveIdx(idx);
-	voxel::RawVolume* v = volume(bufferIndex);
-	if (v == nullptr) {
-		return false;
-	}
-
-	const int s = _meshSize->intVal();
-	const glm::ivec3 meshSize(s);
-	const glm::ivec3 meshSizeMinusOne(s - 1);
-	const voxel::Region& completeRegion = v->region();
-
-	// convert to step coordinates that are needed to extract
-	// the given region mesh size ranges
-	// the boundaries are special - that's why we take care of this with
-	// the offset of 1 - see the cubic surface extractor docs
-	const glm::ivec3& l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
-	const glm::ivec3& u = (region.getUpperCorner() + 1) / meshSize;
-
-	Log::debug("modified region: %s", region.toString().c_str());
-	for (int x = l.x; x <= u.x; ++x) {
-		for (int y = l.y; y <= u.y; ++y) {
-			for (int z = l.z; z <= u.z; ++z) {
-				const voxel::Region& finalRegion = calculateExtractRegion(x, y, z, meshSize);
-				const glm::ivec3& mins = finalRegion.getLowerCorner();
-
-				if (!voxel::intersects(completeRegion, finalRegion)) {
-					_meshState->deleteMeshes(mins, bufferIndex);
-					deleteMeshes(bufferIndex);
-					continue;
-				}
-
-				Log::debug("extract region: %s", finalRegion.toString().c_str());
-				_extractRegions.emplace(finalRegion, bufferIndex, hidden(bufferIndex));
-			}
-		}
-	}
-	return true;
-}
-
-void RawVolumeRenderer::waitForPendingExtractions() {
-	while (_pendingExtractorTasks > 0) {
-		SDL_Delay(1);
-	}
-}
-
-bool RawVolumeRenderer::resetVolume(int idx) {
-	return setVolume(idx, nullptr, nullptr, true) != nullptr;
+void RawVolumeRenderer::resetVolume(int idx) {
+	setVolume(idx, nullptr, nullptr, true);
 }
 
 void RawVolumeRenderer::clear() {
-	clearPendingExtractions();
+	_meshState->clearPendingExtractions();
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a node
 		voxel::RawVolume *old = setVolume(i, nullptr, nullptr, true);
@@ -502,16 +381,6 @@ void RawVolumeRenderer::clear() {
 		}
 	}
 	resetReferences();
-}
-
-void RawVolumeRenderer::clearPendingExtractions() {
-	Log::debug("Clear pending extractions");
-	_threadPool.abort();
-	while (_runningExtractorTasks > 0) {
-		SDL_Delay(1);
-	}
-	_pendingQueue.clear();
-	_pendingExtractorTasks = 0;
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {
@@ -531,7 +400,7 @@ void RawVolumeRenderer::gray(int idx, bool gray) {
 }
 
 void RawVolumeRenderer::updatePalette(int idx) {
-	const int bufferIndex = resolveIdx(idx);
+	const int bufferIndex = _meshState->resolveIdx(idx);
 	const palette::Palette &palette = _meshState->palette(bufferIndex);
 
 	if (palette.hash() != _paletteHash) {
@@ -553,7 +422,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		return;
 	}
 	_state[idx]._culled = false;
-	const int bufferIndex = resolveIdx(idx);
+	const int bufferIndex = _meshState->resolveIdx(idx);
 	if (!_state[bufferIndex].hasData()) {
 #if 0
 		if (_state[bufferIndex]._rawVolume) {
@@ -599,7 +468,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			if (!isVisible(idx)) {
 				continue;
 			}
-			const int bufferIndex = resolveIdx(idx);
+			const int bufferIndex = _meshState->resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
 			voxel::Mesh *mesh = i.second[bufferIndex];
@@ -627,7 +496,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 					if (!isVisible(idx)) {
 						continue;
 					}
-					const int bufferIndex = resolveIdx(idx);
+					const int bufferIndex = _meshState->resolveIdx(idx);
 					const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
 					if (indices == 0u) {
 						continue;
@@ -658,7 +527,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
-	const bool marchingCubes = _meshMode->intVal() == 1;
+	const bool marchingCubes = _meshState->marchingCubes();
 	video::Id oldShader = video::getProgram();
 	if (marchingCubes) {
 		_voxelNormShader.activate();
@@ -684,7 +553,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (!isVisible(idx)) {
 			continue;
 		}
-		const int bufferIndex = resolveIdx(idx);
+		const int bufferIndex = _meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
 		if (indices == 0u) {
 			if (_meshState->volume(bufferIndex)) {
@@ -726,7 +595,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			if (!isVisible(idx)) {
 				continue;
 			}
-			const int bufferIndex = resolveIdx(idx);
+			const int bufferIndex = _meshState->resolveIdx(idx);
 			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
 			if (indices == 0u) {
 				continue;
@@ -746,7 +615,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		video::ScopedState scopedBlendTrans(video::State::Blend, true);
 		for (int idx : sorted) {
-			const int bufferIndex = resolveIdx(idx);
+			const int bufferIndex = _meshState->resolveIdx(idx);
 			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
 			updatePalette(idx);
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
@@ -832,8 +701,17 @@ voxel::Region RawVolumeRenderer::region() const {
 	return region;
 }
 
-voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh) {
-	return setVolume(idx, node.volume(), &node.palette(), deleteMesh);
+void RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh) {
+	setVolume(idx, node.volume(), &node.palette(), deleteMesh);
+}
+
+voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete) {
+	bool meshDeleted = false;
+	voxel::RawVolume *v = _meshState->setVolume(idx, volume, palette, meshDelete, meshDeleted);
+	if (meshDeleted) {
+		deleteMeshes(idx);
+	}
+	return v;
 }
 
 void RawVolumeRenderer::resetReferences() {
@@ -865,33 +743,6 @@ void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType) {
 	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
 }
 
-voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
-											   bool meshDelete) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return nullptr;
-	}
-	_meshState->setPalette(idx, palette);
-
-	voxel::RawVolume* old = _meshState->volume(idx);
-	if (old == volume) {
-		return nullptr;
-	}
-	core_trace_scoped(RawVolumeRendererSetVolume);
-	_meshState->setVolume(idx, volume);
-	if (meshDelete) {
-		_meshState->deleteMeshes(idx);
-		deleteMeshes(idx);
-	}
-	const size_t n = _extractRegions.size();
-	for (size_t i = 0; i < n; ++i) {
-		if (_extractRegions[i].idx == idx) {
-			_extractRegions[i].idx = -1;
-		}
-	}
-
-	return old;
-}
-
 void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) {
 	_shadow.setPosition(eye, center, up);
 }
@@ -918,7 +769,7 @@ bool RawVolumeRenderer::resetStateBuffers() {
 }
 
 core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
-	_threadPool.shutdown();
+	_meshState->_threadPool.shutdown();
 	_voxelShader.shutdown();
 	_voxelNormShader.shutdown();
 	_shadowMapShader.shutdown();

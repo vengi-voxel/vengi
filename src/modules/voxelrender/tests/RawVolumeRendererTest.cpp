@@ -34,10 +34,10 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 	renderer.setVolume(0, node);
 
 	RenderContext rendererContext;
-	EXPECT_EQ(0, renderer.pendingExtractions());
+	EXPECT_EQ(0, renderer.meshState()->pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
 	renderer.extractRegion(0, region);
-	EXPECT_EQ(1, renderer.pendingExtractions());
+	EXPECT_EQ(1, renderer.meshState()->pendingExtractions());
 
 	renderer.shutdown();
 }
@@ -54,15 +54,15 @@ TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
 	renderer.setVolume(0, node);
 
 	RenderContext rendererContext;
-	EXPECT_EQ(0, renderer.pendingExtractions());
+	EXPECT_EQ(0, renderer.meshState()->pendingExtractions());
 	// worst case scenario - touching all adjacent regions
 	const voxel::Region region(15, 15);
 	renderer.extractRegion(0, region);
-	EXPECT_EQ(8, renderer.pendingExtractions());
+	EXPECT_EQ(8, renderer.meshState()->pendingExtractions());
 
 	const voxel::Region region2(14, 14);
 	renderer.extractRegion(0, region2);
-	EXPECT_EQ(9, renderer.pendingExtractions());
+	EXPECT_EQ(9, renderer.meshState()->pendingExtractions());
 	renderer.shutdown();
 }
 

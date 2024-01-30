@@ -49,8 +49,8 @@ static inline int getNodeId(int volumeIdx) {
 	return volumeIdx;
 }
 
-bool SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	return _renderer.extractRegion(getVolumeId(node), region);
+void SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
+	_renderer.extractRegion(getVolumeId(node), region);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
@@ -138,9 +138,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
-			if (_renderer.resetVolume(nodeId)) {
-				Log::debug("%i is no longer part of the scene graph - remove from renderer", nodeId);
-			}
+			_renderer.resetVolume(nodeId);
 		}
 	}
 	_cameras.clear();
@@ -234,9 +232,9 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
-		while (_renderer.scheduleExtractions(100)) {
+		while (_renderer.meshState()->scheduleExtractions(100)) {
 		}
-		_renderer.waitForPendingExtractions();
+		_renderer.meshState()->waitForPendingExtractions();
 		_renderer.update();
 	}
 

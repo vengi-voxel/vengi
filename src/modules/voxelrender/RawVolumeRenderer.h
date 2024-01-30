@@ -89,8 +89,6 @@ protected:
 	core::Array<State, MAX_VOLUMES> _state{};
 	core::SharedPtr<MeshState> _meshState;
 
-	int resolveIdx(int idx) const;
-
 	uint64_t _paletteHash = 0;
 
 	shader::VoxelData _voxelData;
@@ -106,31 +104,7 @@ protected:
 
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
-	core::VarPtr _meshSize;
-	core::VarPtr _meshMode;
 
-	struct ExtractRegion {
-		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible)
-			: region(_region), idx(_idx), visible(_visible) {
-		}
-		ExtractRegion() {
-		}
-		voxel::Region region{};
-		int idx = 0;
-		bool visible = false;
-
-		inline bool operator<(const ExtractRegion &rhs) const {
-			return idx < rhs.idx && visible < rhs.visible;
-		}
-	};
-	using RegionQueue = core::PriorityQueue<ExtractRegion>;
-	RegionQueue _extractRegions;
-
-	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
-	core::AtomicInt _runningExtractorTasks { 0 };
-	core::AtomicInt _pendingExtractorTasks { 0 };
-	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
-	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
 	bool updateBufferForVolume(int idx, MeshType type);
 	void clearMeshes();
@@ -154,9 +128,6 @@ public:
 	bool grayed(int idx) const;
 
 	void clear();
-	int pendingExtractions() const;
-	void clearPendingExtractions();
-	void waitForPendingExtractions();
 
 	/**
 	 * @brief Updates the vertex buffers manually
@@ -172,8 +143,7 @@ public:
 		}
 		return success;
 	}
-
-	bool extractRegion(int idx, const voxel::Region& region);
+	void extractRegion(int idx, const voxel::Region& region);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
@@ -181,18 +151,17 @@ public:
 	 *
 	 * @sa volume()
 	 */
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete = true);
-	voxel::RawVolume* setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete);
+	void setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
 	/**
 	 * @brief Allows to render the same model with different transforms
 	 */
 	void setVolumeReference(int idx, int referencedIdx);
 	void resetReferences();
-	bool resetVolume(int idx);
+	void resetVolume(int idx);
 	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
 						const glm::vec3 &maxs);
 
-	bool empty(int idx = 0) const;
 	/**
 	 * @sa setVolume()
 	 */
@@ -215,7 +184,6 @@ public:
 	 */
 	bool init();
 
-	bool scheduleExtractions(size_t maxExtraction = 1);
 	void update();
 
 	/**
@@ -231,10 +199,6 @@ public:
 
 inline MeshStatePtr RawVolumeRenderer::meshState() const {
 	return _meshState;
-}
-
-inline int RawVolumeRenderer::pendingExtractions() const {
-	return (int)_extractRegions.size();
 }
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {

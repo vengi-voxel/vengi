@@ -9,7 +9,6 @@
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
 #include "video/gl/GLTypes.h"
-#include "voxel/Region.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace io {

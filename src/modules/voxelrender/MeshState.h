@@ -2,9 +2,13 @@
  * @file
  */
 
+#include "core/Var.h"
 #include "core/Optional.h"
 #include "core/SharedPtr.h"
 #include "core/collection/Array.h"
+#include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/PriorityQueue.h"
+#include "core/concurrent/ThreadPool.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "palette/Palette.h"
@@ -59,18 +63,57 @@ public:
 private:
 	MeshesMap _meshes[MeshType_Max];
 	Volumes _volumeData;
+	core::VarPtr _meshSize;
 
+	struct ExtractRegion {
+		ExtractRegion(const voxel::Region &_region, int _idx, bool _visible)
+			: region(_region), idx(_idx), visible(_visible) {
+		}
+		ExtractRegion() {
+		}
+		voxel::Region region{};
+		int idx = 0;
+		bool visible = false;
+
+		inline bool operator<(const ExtractRegion &rhs) const {
+			return idx < rhs.idx && visible < rhs.visible;
+		}
+	};
+	using RegionQueue = core::PriorityQueue<ExtractRegion>;
+	RegionQueue _extractRegions;
+
+	core::AtomicInt _runningExtractorTasks { 0 };
+	core::AtomicInt _pendingExtractorTasks { 0 };
+	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 public:
+	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
+	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
+	core::VarPtr _meshMode;
+
 	const MeshesMap &meshes(MeshType type) const;
 	void setOpaque(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void setTransparent(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void set(ExtractionCtx &ctx);
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool deleteMeshes(int idx);
-	bool empty(int idx) const;
 	void clear();
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
+
+	bool scheduleExtractions(size_t maxExtraction = 1);
+	int pendingExtractions() const;
+	void clearPendingExtractions();
+	void waitForPendingExtractions();
+	bool init();
+	void construct();
+	bool marchingCubes() const;
+
+	/**
+	 * @return @c true if the mesh should get deleted in the renderer
+	 */
+	bool extractRegion(int idx, const voxel::Region& region);
+
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete, bool &meshDeleted);
 
 	core::DynamicArray<voxel::RawVolume *> shutdown();
 
@@ -100,6 +143,10 @@ public:
 };
 
 using MeshStatePtr = core::SharedPtr<MeshState>;
+
+inline int MeshState::pendingExtractions() const {
+	return (int)_extractRegions.size();
+}
 
 inline voxel::RawVolume *MeshState::volume(int idx) {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
