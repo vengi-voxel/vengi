@@ -86,6 +86,8 @@ private:
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	void clear();
+	bool scheduleExtractions(size_t maxExtraction = 1);
+	void waitForPendingExtractions();
 
 public:
 	const MeshesMap &meshes(MeshType type) const;
@@ -94,16 +96,24 @@ public:
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
 
-	bool scheduleExtractions(size_t maxExtraction = 1);
+	void extractAll();
 	int pendingExtractions() const;
 	void clearPendingExtractions();
-	void waitForPendingExtractions();
+
 	/**
 	 * @sa shutdown()
 	 */
 	bool init();
 	void construct();
+
+	/**
+	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned up
+	 * @sa marchingCubes()
+	 */
 	bool update();
+	/**
+	 * @sa update()
+	 */
 	bool marchingCubes() const;
 
 	/**

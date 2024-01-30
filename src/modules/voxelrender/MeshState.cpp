@@ -5,6 +5,7 @@
 #include "MeshState.h"
 #include "core/Log.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
 
 namespace voxelrender {
@@ -190,7 +191,7 @@ bool MeshState::update() {
 bool MeshState::extractRegion(int idx, const voxel::Region &region) {
 	core_trace_scoped(RawVolumeRendererExtract);
 	const int bufferIndex = resolveIdx(idx);
-	voxel::RawVolume* v = volume(bufferIndex);
+	voxel::RawVolume *v = volume(bufferIndex);
 	if (v == nullptr) {
 		return false;
 	}
@@ -198,22 +199,22 @@ bool MeshState::extractRegion(int idx, const voxel::Region &region) {
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
 	const glm::ivec3 meshSizeMinusOne(s - 1);
-	const voxel::Region& completeRegion = v->region();
+	const voxel::Region &completeRegion = v->region();
 
 	// convert to step coordinates that are needed to extract
 	// the given region mesh size ranges
 	// the boundaries are special - that's why we take care of this with
 	// the offset of 1 - see the cubic surface extractor docs
-	const glm::ivec3& l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
-	const glm::ivec3& u = (region.getUpperCorner() + 1) / meshSize;
+	const glm::ivec3 &l = (region.getLowerCorner() - meshSizeMinusOne) / meshSize;
+	const glm::ivec3 &u = (region.getUpperCorner() + 1) / meshSize;
 
 	bool deletedMesh = false;
 	Log::debug("modified region: %s", region.toString().c_str());
 	for (int x = l.x; x <= u.x; ++x) {
 		for (int y = l.y; y <= u.y; ++y) {
 			for (int z = l.z; z <= u.z; ++z) {
-				const voxel::Region& finalRegion = calculateExtractRegion(x, y, z, meshSize);
-				const glm::ivec3& mins = finalRegion.getLowerCorner();
+				const voxel::Region &finalRegion = calculateExtractRegion(x, y, z, meshSize);
+				const glm::ivec3 &mins = finalRegion.getLowerCorner();
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
 					deleteMeshes(mins, bufferIndex);
@@ -227,6 +228,12 @@ bool MeshState::extractRegion(int idx, const voxel::Region &region) {
 		}
 	}
 	return deletedMesh;
+}
+
+void MeshState::extractAll() {
+	while (scheduleExtractions(100)) {
+	}
+	waitForPendingExtractions();
 }
 
 void MeshState::waitForPendingExtractions() {
@@ -246,7 +253,7 @@ void MeshState::clearPendingExtractions() {
 }
 
 bool MeshState::marchingCubes() const {
-       return _meshMode->intVal() == 1;
+	return _meshMode->intVal() == 1;
 }
 
 int MeshState::resolveIdx(int idx) const {
@@ -257,14 +264,14 @@ int MeshState::resolveIdx(int idx) const {
 	return idx;
 }
 
-voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette,
-											   bool meshDelete, bool &meshDeleted) {
+voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette, bool meshDelete,
+									   bool &meshDeleted) {
 	meshDeleted = false;
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
 	_volumeData[idx]._palette.setValue(palette);
-	voxel::RawVolume* old = volume(idx);
+	voxel::RawVolume *old = volume(idx);
 	if (old == v) {
 		return nullptr;
 	}

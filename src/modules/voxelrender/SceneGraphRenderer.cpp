@@ -232,9 +232,7 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
-		while (_renderer.meshState()->scheduleExtractions(100)) {
-		}
-		_renderer.meshState()->waitForPendingExtractions();
+		_renderer.meshState()->extractAll();
 		_renderer.update();
 	}
 
