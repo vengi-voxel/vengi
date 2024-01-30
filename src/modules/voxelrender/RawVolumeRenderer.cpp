@@ -89,10 +89,13 @@ glm::vec3 RawVolumeRenderer::State::centerPos() const {
 	return pos;
 }
 
-RawVolumeRenderer::RawVolumeRenderer() :
-		_voxelShader(shader::VoxelShader::getInstance()),
-		_voxelNormShader(shader::VoxelnormShader::getInstance()),
-		_shadowMapShader(shader::ShadowmapShader::getInstance()) {
+RawVolumeRenderer::RawVolumeRenderer(const MeshStatePtr &meshState)
+	: _voxelShader(shader::VoxelShader::getInstance()), _voxelNormShader(shader::VoxelnormShader::getInstance()),
+	  _shadowMapShader(shader::ShadowmapShader::getInstance()) {
+	_meshState = meshState;
+}
+
+RawVolumeRenderer::RawVolumeRenderer() : RawVolumeRenderer(core::make_shared<MeshState>()) {
 }
 
 void RawVolumeRenderer::construct() {
@@ -102,7 +105,7 @@ void RawVolumeRenderer::construct() {
 bool RawVolumeRenderer::initStateBuffers() {
 	const bool marchingCubes = _meshMode->intVal() == 1;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		State& state = _state[idx];
+		State &state = _state[idx];
 		state._model = glm::mat4(1.0f);
 		for (int i = 0; i < MeshType_Max; ++i) {
 			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
@@ -316,7 +319,7 @@ void RawVolumeRenderer::update() {
 		if (_state[result.idx]._rawVolume == nullptr) {
 			continue;
 		}
-		_meshState.set(result);
+		_meshState->set(result);
 		if (!updateBufferForVolume(result.idx, MeshType_Opaque)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
@@ -340,7 +343,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	size_t vertCount = 0u;
 	size_t normalsCount = 0u;
 	size_t indCount = 0u;
-	_meshState.count(type, bufferIndex, vertCount, normalsCount, indCount);
+	_meshState->count(type, bufferIndex, vertCount, normalsCount, indCount);
 
 	State& state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
@@ -439,7 +442,7 @@ bool RawVolumeRenderer::empty(int idx) const {
 		return true;
 	}
 	const int bufferIndex = resolveIdx(idx);
-	return _meshState.empty(bufferIndex);
+	return _meshState->empty(bufferIndex);
 }
 
 voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
@@ -476,7 +479,7 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				const glm::ivec3& mins = finalRegion.getLowerCorner();
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
-					_meshState.deleteMeshes(mins, bufferIndex);
+					_meshState->deleteMeshes(mins, bufferIndex);
 					deleteMeshes(bufferIndex);
 					continue;
 				}
@@ -498,7 +501,9 @@ void RawVolumeRenderer::waitForPendingExtractions() {
 void RawVolumeRenderer::clear() {
 	clearPendingExtractions();
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		if (setVolume(i, nullptr, nullptr, true) != nullptr) {
+		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a node
+		voxel::RawVolume *old = setVolume(i, nullptr, nullptr, true);
+		if (old != nullptr) {
 			updateBufferForVolume(i);
 		}
 	}
@@ -613,7 +618,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
-	for (auto &i : _meshState.meshes(MeshType_Transparency)) {
+	for (auto &i : _meshState->meshes(MeshType_Transparency)) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
@@ -638,7 +643,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			_shadow.render([this] (int i, const glm::mat4& lightViewProjection) {
+			_shadow.render([this] (int i, const glm::mat4 &lightViewProjection) {
 				alignas(16) shader::ShadowmapData::BlockData var;
 				var.lightviewprojection = lightViewProjection;
 
@@ -905,7 +910,7 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
 	if (meshDelete) {
-		_meshState.deleteMeshes(idx);
+		_meshState->deleteMeshes(idx);
 		deleteMeshes(idx);
 	}
 	const size_t n = _extractRegions.size();
@@ -923,7 +928,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &ce
 }
 
 void RawVolumeRenderer::clearMeshes() {
-	_meshState.clear();
+	_meshState->clear();
 }
 
 void RawVolumeRenderer::shutdownStateBuffers() {

@@ -24,6 +24,8 @@ private:
 	glm::mat4 _referencePointModelMatrix{1.0f};
 
 public:
+	ModifierRenderer();
+	ModifierRenderer(const voxelrender::MeshStatePtr &meshState);
 	bool init() override;
 	void shutdown() override;
 

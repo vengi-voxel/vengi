@@ -17,6 +17,12 @@
 
 namespace voxedit {
 
+ModifierRenderer::ModifierRenderer() : ModifierRenderer(core::make_shared<voxelrender::MeshState>()) {
+}
+
+ModifierRenderer::ModifierRenderer(const voxelrender::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
+}
+
 bool ModifierRenderer::init() {
 	if (!_shapeRenderer.init()) {
 		Log::error("Failed to initialize the shape renderer");

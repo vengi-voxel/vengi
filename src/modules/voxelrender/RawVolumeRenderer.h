@@ -66,9 +66,9 @@ protected:
 		bool _hidden = false;
 		bool _culled = false;
 		bool _gray = false;
-		int32_t _vertexBufferIndex[MeshType_Max] {-1, -1};
-		int32_t _normalBufferIndex[MeshType_Max] {-1, -1};
-		int32_t _indexBufferIndex[MeshType_Max] {-1, -1};
+		int32_t _vertexBufferIndex[MeshType_Max]{-1, -1};
+		int32_t _normalBufferIndex[MeshType_Max]{-1, -1};
+		int32_t _indexBufferIndex[MeshType_Max]{-1, -1};
 		glm::mat4 _model{1.0f};
 		glm::vec3 _pivot{0.0f};
 		glm::vec3 _mins{0.0f};
@@ -91,8 +91,8 @@ protected:
 			return indices(MeshType_Opaque) > 0 || indices(MeshType_Transparency) > 0;
 		}
 	};
-	core::Array<State, MAX_VOLUMES> _state {};
-	MeshState _meshState;
+	core::Array<State, MAX_VOLUMES> _state{};
+	core::SharedPtr<MeshState> _meshState;
 
 	int resolveIdx(int idx) const;
 
@@ -103,10 +103,10 @@ protected:
 	alignas(16) shader::VoxelData::FragData _voxelShaderFragData;
 	alignas(16) shader::VoxelData::VertData _voxelShaderVertData;
 
-	shader::VoxelShader& _voxelShader;
-	shader::VoxelnormShader& _voxelNormShader;
+	shader::VoxelShader &_voxelShader;
+	shader::VoxelnormShader &_voxelNormShader;
 	shader::ShadowmapData _shadowMapUniformBlock;
-	shader::ShadowmapShader& _shadowMapShader;
+	shader::ShadowmapShader &_shadowMapShader;
 	voxelrender::Shadow _shadow;
 
 	core::VarPtr _meshSize;
@@ -150,6 +150,7 @@ protected:
 
 public:
 	RawVolumeRenderer();
+	RawVolumeRenderer(const MeshStatePtr &meshState);
 
 	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true);
 	void hide(int idx, bool hide);
@@ -208,9 +209,9 @@ public:
 	 */
 	voxel::Region region() const;
 
-	void setAmbientColor(const glm::vec3& color);
-	void setDiffuseColor(const glm::vec3& color);
-	void setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
+	void setAmbientColor(const glm::vec3 &color);
+	void setDiffuseColor(const glm::vec3 &color);
+	void setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up);
 
 	void construct();
 
@@ -229,7 +230,13 @@ public:
 	 * @sa init()
 	 */
 	core::DynamicArray<voxel::RawVolume *> shutdown();
+
+	MeshStatePtr meshState() const;
 };
+
+inline MeshStatePtr RawVolumeRenderer::meshState() const {
+	return _meshState;
+}
 
 inline int RawVolumeRenderer::pendingExtractions() const {
 	return (int)_extractRegions.size();
@@ -249,4 +256,4 @@ inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
 	return _state[idx]._rawVolume;
 }
 
-}
+} // namespace voxelrender

@@ -32,6 +32,8 @@ protected:
 	void prepare(const RenderContext &renderContext);
 
 public:
+	SceneGraphRenderer(const MeshStatePtr &meshState);
+	SceneGraphRenderer();
 	void construct();
 	bool init();
 	void update();

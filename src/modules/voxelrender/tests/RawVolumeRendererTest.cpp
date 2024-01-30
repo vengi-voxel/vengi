@@ -27,7 +27,8 @@ TEST_F(RawVolumeRendererTest, testExtractRegion) {
 	scenegraph::SceneGraphNode node;
 	node.setVolume(&v, false);
 
-	RawVolumeRenderer renderer;
+	MeshStatePtr meshState = core::make_shared<MeshState>();
+	RawVolumeRenderer renderer(meshState);
 	renderer.construct();
 	renderer.init();
 	renderer.setVolume(0, node);
@@ -46,7 +47,8 @@ TEST_F(RawVolumeRendererTest, testExtractRegionBoundary) {
 	scenegraph::SceneGraphNode node;
 	node.setVolume(&v, false);
 
-	RawVolumeRenderer renderer;
+	MeshStatePtr meshState = core::make_shared<MeshState>();
+	RawVolumeRenderer renderer(meshState);
 	renderer.construct();
 	renderer.init();
 	renderer.setVolume(0, node);

@@ -14,6 +14,12 @@
 
 namespace voxelrender {
 
+SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _renderer(meshState) {
+}
+
+SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<MeshState>()) {
+}
+
 void SceneGraphRenderer::construct() {
 	_renderer.construct();
 }

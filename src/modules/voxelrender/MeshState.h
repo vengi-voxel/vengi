@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "core/SharedPtr.h"
 #include "core/collection/Array.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
@@ -56,5 +57,7 @@ public:
 	void clear();
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 };
+
+using MeshStatePtr = core::SharedPtr<MeshState>;
 
 } // namespace voxelrender
