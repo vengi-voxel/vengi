@@ -49,10 +49,6 @@ static inline int getNodeId(int volumeIdx) {
 	return volumeIdx;
 }
 
-bool SceneGraphRenderer::empty(scenegraph::SceneGraphNode &node) {
-	return _renderer.empty(getVolumeId(node));
-}
-
 bool SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
 	return _renderer.extractRegion(getVolumeId(node), region);
 }
