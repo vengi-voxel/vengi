@@ -170,6 +170,23 @@ bool MeshState::scheduleExtractions(size_t maxExtraction) {
 	return true;
 }
 
+bool MeshState::update() {
+	bool triggerClear = false;
+	if (_meshMode->isDirty()) {
+		_meshMode->markClean();
+		clearPendingExtractions();
+
+		for (int i = 0; i < MAX_VOLUMES; ++i) {
+			if (voxel::RawVolume *v = volume(i)) {
+				extractRegion(i, v->region());
+			}
+		}
+		triggerClear = true;
+	}
+	scheduleExtractions();
+	return triggerClear;
+}
+
 bool MeshState::extractRegion(int idx, const voxel::Region &region) {
 	core_trace_scoped(RawVolumeRendererExtract);
 	const int bufferIndex = resolveIdx(idx);

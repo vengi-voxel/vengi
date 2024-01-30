@@ -87,9 +87,9 @@ private:
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
-public:
 	core::VarPtr _meshMode;
 
+public:
 	const MeshesMap &meshes(MeshType type) const;
 	int pop();
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
@@ -104,6 +104,7 @@ public:
 	void waitForPendingExtractions();
 	bool init();
 	void construct();
+	bool update();
 	bool marchingCubes() const;
 
 	/**

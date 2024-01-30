@@ -51,10 +51,8 @@ void ModifierRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_volumeRendererCtx.shutdown();
-	core::DynamicArray<voxel::RawVolume *> old = _volumeRenderer.shutdown();
-	for (voxel::RawVolume *volume : old) {
-		delete volume;
-	}
+	// this is automatically deleted in the ModifierFacade
+	_volumeRenderer.shutdown();
 }
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face, bool flip) {

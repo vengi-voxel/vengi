@@ -236,19 +236,9 @@ void RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 }
 
 void RawVolumeRenderer::update() {
-	if (_meshState->_meshMode->isDirty()) {
-		_meshState->_meshMode->markClean();
-		_meshState->clearPendingExtractions();
-
-		for (int i = 0; i < MAX_VOLUMES; ++i) {
-			if (voxel::RawVolume *v = _meshState->volume(i)) {
-				_meshState->extractRegion(i, v->region());
-			}
-		}
-
+	if (_meshState->update()) {
 		resetStateBuffers();
 	}
-	_meshState->scheduleExtractions();
 
 	int cnt = 0;
 	for (;;) {

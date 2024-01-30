@@ -28,6 +28,8 @@ bool ModifierFacade::init() {
 
 void ModifierFacade::shutdown() {
 	Super::shutdown();
+	// the volumes of the renderer are not deleted by this shutdown
+	// call, but with our scoped pointers
 	_modifierRenderer->shutdown();
 }
 
