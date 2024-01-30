@@ -229,7 +229,7 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
-void RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
+void RawVolumeRenderer::extractRegion(int idx, const voxel::Region &region) {
 	if (_meshState->extractRegion(idx, region)) {
 		deleteMeshes(idx);
 	}
@@ -271,7 +271,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	size_t indCount = 0u;
 	_meshState->count(type, bufferIndex, vertCount, normalsCount, indCount);
 
-	State& state = _state[bufferIndex];
+	State &state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
 		Log::debug("clear vertexbuffer: %i", idx);
 		video::Buffer &buffer = state._vertexBuffer[type];
@@ -359,16 +359,28 @@ void RawVolumeRenderer::resetVolume(int idx) {
 	setVolume(idx, nullptr, nullptr, true);
 }
 
+bool RawVolumeRenderer::updateBufferForVolume(int idx) {
+	bool success = true;
+	if (!updateBufferForVolume(idx, MeshType_Opaque)) {
+		success = false;
+	}
+	if (!updateBufferForVolume(idx, MeshType_Transparency)) {
+		success = false;
+	}
+	return success;
+}
+
 void RawVolumeRenderer::clear() {
 	_meshState->clearPendingExtractions();
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
-		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a node
+		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a
+		// node
 		voxel::RawVolume *old = setVolume(i, nullptr, nullptr, true);
 		if (old != nullptr) {
 			updateBufferForVolume(i);
 		}
 	}
-	resetReferences();
+	_meshState->resetReferences();
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {
@@ -476,29 +488,31 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_shadow.update(camera, true);
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			_shadow.render([this] (int i, const glm::mat4 &lightViewProjection) {
-				alignas(16) shader::ShadowmapData::BlockData var;
-				var.lightviewprojection = lightViewProjection;
+			_shadow.render(
+				[this](int i, const glm::mat4 &lightViewProjection) {
+					alignas(16) shader::ShadowmapData::BlockData var;
+					var.lightviewprojection = lightViewProjection;
 
-				for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-					if (!isVisible(idx)) {
-						continue;
+					for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+						if (!isVisible(idx)) {
+							continue;
+						}
+						const int bufferIndex = _meshState->resolveIdx(idx);
+						const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
+						if (indices == 0u) {
+							continue;
+						}
+						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
+						var.model = _state[idx]._model;
+						var.pivot = _state[idx]._pivot;
+						_shadowMapUniformBlock.update(var);
+						_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+						static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+						video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 					}
-					const int bufferIndex = _meshState->resolveIdx(idx);
-					const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
-					if (indices == 0u) {
-						continue;
-					}
-					video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
-					var.model = _state[idx]._model;
-					var.pivot = _state[idx]._pivot;
-					_shadowMapUniformBlock.update(var);
-					_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
-					static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-					video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-				}
-				return true;
-			}, true);
+					return true;
+				},
+				true);
 		} else {
 			_shadow.render([](int i, const glm::mat4 &lightViewProjection) {
 				video::clear(video::ClearFlag::Depth);
@@ -663,7 +677,7 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4 &model, const gl
 		Log::error("No volume found at: %i", idx);
 		return false;
 	}
-	State& state = _state[idx];
+	State &state = _state[idx];
 	state._model = model;
 	state._pivot = pivot;
 	state._mins = mins;
@@ -671,43 +685,18 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4 &model, const gl
 	return true;
 }
 
-voxel::Region RawVolumeRenderer::region() const {
-	voxel::Region region;
-	bool validVolume = false;
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const voxel::RawVolume *v = volume(idx);
-		if (v == nullptr) {
-			continue;
-		}
-		if (validVolume) {
-			region.accumulate(v->region());
-			continue;
-		}
-		region = v->region();
-		validVolume = true;
-	}
-	return region;
-}
-
-void RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh) {
+void RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode &node, bool deleteMesh) {
 	setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 
-voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete) {
+voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
+											   bool meshDelete) {
 	bool meshDeleted = false;
 	voxel::RawVolume *v = _meshState->setVolume(idx, volume, palette, meshDelete, meshDeleted);
 	if (meshDeleted) {
 		deleteMeshes(idx);
 	}
 	return v;
-}
-
-void RawVolumeRenderer::resetReferences() {
-	_meshState->resetReferences();
-}
-
-void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
-	_meshState->setReference(idx, referencedIdx);
 }
 
 void RawVolumeRenderer::deleteMeshes(int idx) {

@@ -263,14 +263,13 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	setPalette(idx, palette);
-
+	_volumeData[idx]._palette.setValue(palette);
 	voxel::RawVolume* old = volume(idx);
 	if (old == v) {
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
-	setVolume(idx, v);
+	_volumeData[idx]._rawVolume = v;
 	if (meshDelete) {
 		deleteMeshes(idx);
 		meshDeleted = true;
@@ -283,20 +282,6 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 	}
 
 	return old;
-}
-
-void MeshState::setVolume(int idx, voxel::RawVolume *volume) {
-	if (idx < 0 || idx > MAX_VOLUMES) {
-		return;
-	}
-	_volumeData[idx]._rawVolume = volume;
-}
-
-void MeshState::setPalette(int idx, palette::Palette *palette) {
-	if (idx < 0 || idx > MAX_VOLUMES) {
-		return;
-	}
-	_volumeData[idx]._palette.setValue(palette);
 }
 
 core::DynamicArray<voxel::RawVolume *> MeshState::shutdown() {

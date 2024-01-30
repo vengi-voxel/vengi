@@ -26,7 +26,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render
 generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
-	tests/RawVolumeRendererTest.cpp
+	tests/MeshStateTest.cpp
 	tests/VoxelRenderShaderTest.cpp
 )
 

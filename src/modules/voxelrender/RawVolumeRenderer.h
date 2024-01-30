@@ -132,16 +132,7 @@ public:
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool updateBufferForVolume(int idx) {
-		bool success = true;
-		if (!updateBufferForVolume(idx, MeshType_Opaque)) {
-			success = false;
-		}
-		if (!updateBufferForVolume(idx, MeshType_Transparency)) {
-			success = false;
-		}
-		return success;
-	}
+	bool updateBufferForVolume(int idx);
 	void extractRegion(int idx, const voxel::Region& region);
 
 	/**
@@ -152,25 +143,10 @@ public:
 	 */
 	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete);
 	void setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
-	/**
-	 * @brief Allows to render the same model with different transforms
-	 */
-	void setVolumeReference(int idx, int referencedIdx);
-	void resetReferences();
+
 	void resetVolume(int idx);
 	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
 						const glm::vec3 &maxs);
-
-	/**
-	 * @sa setVolume()
-	 */
-	voxel::RawVolume* volume(int idx = 0);
-	const voxel::RawVolume* volume(int idx = 0) const;
-	/**
-	 * @note If you need the region of a particular volume, ask the volume
-	 * @return The complete region of all managed volumes
-	 */
-	voxel::Region region() const;
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
@@ -198,14 +174,6 @@ public:
 
 inline MeshStatePtr RawVolumeRenderer::meshState() const {
 	return _meshState;
-}
-
-inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
-	return _meshState->volume(idx);
-}
-
-inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
-	return _meshState->volume(idx);
 }
 
 } // namespace voxelrender

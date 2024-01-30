@@ -27,10 +27,6 @@ static constexpr int MAX_VOLUMES = 2048;
 
 enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 
-// TODO: extract the mesh creation from RawVolumeRenderer and use it here
-// this would allow us to perform the loading of the scene graph in a separate
-// thread and the mesh extraction too, before we have to hand over to the
-// renderer thread
 class MeshState {
 public:
 	struct VolumeData {
@@ -88,13 +84,13 @@ private:
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	core::VarPtr _meshMode;
+	bool deleteMeshes(const glm::ivec3 &pos, int idx);
+	void clear();
 
 public:
 	const MeshesMap &meshes(MeshType type) const;
 	int pop();
-	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool deleteMeshes(int idx);
-	void clear();
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
 
@@ -115,9 +111,6 @@ public:
 	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete, bool &meshDeleted);
 
 	core::DynamicArray<voxel::RawVolume *> shutdown();
-
-	void setVolume(int idx, voxel::RawVolume *volume);
-	void setPalette(int idx, palette::Palette *palette);
 
 	voxel::RawVolume *volume(int idx);
 	const voxel::RawVolume *volume(int idx) const;

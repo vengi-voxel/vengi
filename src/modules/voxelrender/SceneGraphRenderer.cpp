@@ -164,7 +164,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		if (id >= MAX_VOLUMES) {
 			continue;
 		}
-		voxel::RawVolume *v = _renderer.volume(id);
+		voxel::RawVolume *v = _renderer.meshState()->volume(id);
 		_renderer.setVolume(id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
@@ -194,7 +194,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 
 	if (sceneMode) {
-		_renderer.resetReferences();
+		_renderer.meshState()->resetReferences();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReference()) {
@@ -205,7 +205,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				continue;
 			}
 			const int referencedId = getVolumeId(node.reference());
-			_renderer.setVolumeReference(id, referencedId);
+			_renderer.meshState()->setReference(id, referencedId);
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const voxel::Region region = sceneGraph.resolveRegion(node);
 			const glm::mat4 worldMatrix = transform.worldMatrix();
