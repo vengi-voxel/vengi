@@ -251,18 +251,18 @@ void RawVolumeRenderer::update() {
 		_meshState->_meshMode->markClean();
 	}
 	_meshState->scheduleExtractions();
-	MeshState::ExtractionCtx result;
+
 	int cnt = 0;
-	while (_meshState->_pendingQueue.pop(result)) {
-		if (_meshState->volume(result.idx) == nullptr) {
-			continue;
+	for (;;) {
+		const int idx = _meshState->pop();
+		if (idx == -1) {
+			break;
 		}
-		_meshState->set(result);
-		if (!updateBufferForVolume(result.idx, MeshType_Opaque)) {
-			Log::error("Failed to update the mesh at index %i", result.idx);
+		if (!updateBufferForVolume(idx, MeshType_Opaque)) {
+			Log::error("Failed to update the mesh at index %i", idx);
 		}
-		if (!updateBufferForVolume(result.idx, MeshType_Transparency)) {
-			Log::error("Failed to update the mesh at index %i", result.idx);
+		if (!updateBufferForVolume(idx, MeshType_Transparency)) {
+			Log::error("Failed to update the mesh at index %i", idx);
 		}
 		++cnt;
 	}
@@ -747,10 +747,6 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &ce
 	_shadow.setPosition(eye, center, up);
 }
 
-void RawVolumeRenderer::clearMeshes() {
-	_meshState->clear();
-}
-
 void RawVolumeRenderer::shutdownStateBuffers() {
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State &state = _state[idx];
@@ -769,14 +765,12 @@ bool RawVolumeRenderer::resetStateBuffers() {
 }
 
 core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
-	_meshState->_threadPool.shutdown();
 	_voxelShader.shutdown();
 	_voxelNormShader.shutdown();
 	_shadowMapShader.shutdown();
 	_voxelData.shutdown();
 	_shadowMapUniformBlock.shutdown();
 	_shadow.shutdown();
-	clearMeshes();
 	const core::DynamicArray<voxel::RawVolume *> &old = _meshState->shutdown();
 	shutdownStateBuffers();
 	return old;

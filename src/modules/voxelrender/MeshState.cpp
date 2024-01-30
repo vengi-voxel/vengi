@@ -33,21 +33,21 @@ void MeshState::clear() {
 	}
 }
 
-void MeshState::setOpaque(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh) {
-	MeshState::Meshes &meshes = _meshes[MeshType_Opaque][pos];
-	delete meshes[idx];
-	meshes[idx] = new voxel::Mesh(mesh);
-}
-
-void MeshState::setTransparent(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh) {
-	MeshState::Meshes &meshesT = _meshes[MeshType_Transparency][pos];
-	delete meshesT[idx];
-	meshesT[idx] = new voxel::Mesh(mesh);
-}
-
-void MeshState::set(ExtractionCtx &ctx) {
-	setOpaque(ctx.mins, ctx.idx, core::move(ctx.mesh.mesh[MeshType_Opaque]));
-	setTransparent(ctx.mins, ctx.idx, core::move(ctx.mesh.mesh[MeshType_Transparency]));
+int MeshState::pop() {
+	MeshState::ExtractionCtx result;
+	while (_pendingQueue.pop(result)) {
+		if (_volumeData[result.idx]._rawVolume == nullptr) {
+			continue;
+		}
+		MeshState::Meshes &meshes = _meshes[MeshType_Opaque][result.mins];
+		delete meshes[result.idx];
+		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Opaque]));
+		MeshState::Meshes &meshesT = _meshes[MeshType_Transparency][result.mins];
+		delete meshesT[result.idx];
+		meshesT[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Transparency]));
+		return result.idx;
+	}
+	return -1;
 }
 
 bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
@@ -283,6 +283,8 @@ void MeshState::setPalette(int idx, palette::Palette *palette) {
 }
 
 core::DynamicArray<voxel::RawVolume *> MeshState::shutdown() {
+	_threadPool.shutdown();
+	clear();
 	core::DynamicArray<voxel::RawVolume *> old(MAX_VOLUMES);
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		VolumeData &state = _volumeData[idx];

@@ -85,15 +85,13 @@ private:
 	core::AtomicInt _runningExtractorTasks { 0 };
 	core::AtomicInt _pendingExtractorTasks { 0 };
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
-public:
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
+public:
 	core::VarPtr _meshMode;
 
 	const MeshesMap &meshes(MeshType type) const;
-	void setOpaque(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
-	void setTransparent(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
-	void set(ExtractionCtx &ctx);
+	int pop();
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool deleteMeshes(int idx);
 	void clear();
