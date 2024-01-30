@@ -142,6 +142,9 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 	}
 	_cameras.clear();
+
+	const MeshStatePtr &meshState = _renderer.meshState();
+
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
@@ -164,7 +167,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		if (id >= MAX_VOLUMES) {
 			continue;
 		}
-		voxel::RawVolume *v = _renderer.meshState()->volume(id);
+		voxel::RawVolume *v = meshState->volume(id);
 		_renderer.setVolume(id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
@@ -182,19 +185,19 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 									 region.getUpperCorner());
 		}
 		if (hideInactive) {
-			_renderer.meshState()->hide(id, id != activeNode);
+			meshState->hide(id, id != activeNode);
 		} else {
-			_renderer.meshState()->hide(id, !node.visible());
+			meshState->hide(id, !node.visible());
 		}
 		if (grayInactive) {
-			_renderer.meshState()->gray(id, id != activeNode);
+			meshState->gray(id, id != activeNode);
 		} else {
-			_renderer.meshState()->gray(id, false);
+			meshState->gray(id, false);
 		}
 	}
 
 	if (sceneMode) {
-		_renderer.meshState()->resetReferences();
+		meshState->resetReferences();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReference()) {
@@ -205,7 +208,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				continue;
 			}
 			const int referencedId = getVolumeId(node.reference());
-			_renderer.meshState()->setReference(id, referencedId);
+			meshState->setReference(id, referencedId);
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const voxel::Region region = sceneGraph.resolveRegion(node);
 			const glm::mat4 worldMatrix = transform.worldMatrix();
@@ -215,14 +218,14 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
-				_renderer.meshState()->hide(id, id != activeNode);
+				meshState->hide(id, id != activeNode);
 			} else {
-				_renderer.meshState()->hide(id, !node.visible());
+				meshState->hide(id, !node.visible());
 			}
 			if (grayInactive) {
-				_renderer.meshState()->gray(id, id != activeNode);
+				meshState->gray(id, id != activeNode);
 			} else {
-				_renderer.meshState()->gray(id, false);
+				meshState->gray(id, false);
 			}
 		}
 	}
