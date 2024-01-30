@@ -63,9 +63,7 @@ struct RenderContext : public core::NonCopyable {
 class RawVolumeRenderer : public core::NonCopyable {
 protected:
 	struct State {
-		bool _hidden = false;
 		bool _culled = false;
-		bool _gray = false;
 		int32_t _vertexBufferIndex[MeshType_Max]{-1, -1};
 		int32_t _normalBufferIndex[MeshType_Max]{-1, -1};
 		int32_t _indexBufferIndex[MeshType_Max]{-1, -1};
@@ -74,9 +72,6 @@ protected:
 		glm::vec3 _mins{0.0f};
 		glm::vec3 _maxs{0.0f};
 		video::Buffer _vertexBuffer[MeshType_Max];
-		int _reference = -1;
-		voxel::RawVolume* _rawVolume = nullptr;
-		core::Optional<palette::Palette> _palette;
 
 		uint32_t indices(MeshType type) const {
 			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
@@ -244,17 +239,11 @@ inline int RawVolumeRenderer::pendingExtractions() const {
 }
 
 inline voxel::RawVolume* RawVolumeRenderer::volume(int idx) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return nullptr;
-	}
-	return _state[idx]._rawVolume;
+	return _meshState->volume(idx);
 }
 
 inline const voxel::RawVolume* RawVolumeRenderer::volume(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return nullptr;
-	}
-	return _state[idx]._rawVolume;
+	return _meshState->volume(idx);
 }
 
 } // namespace voxelrender

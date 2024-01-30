@@ -233,14 +233,8 @@ bool RawVolumeRenderer::init() {
 }
 
 const palette::Palette &RawVolumeRenderer::palette(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return voxel::getPalette();
-	}
 	const int bufferIndex = resolveIdx(idx);
-	if (!_state[bufferIndex]._palette.hasValue()) {
-		return voxel::getPalette();
-	}
-	return *_state[bufferIndex]._palette.value();
+	return _meshState->palette(bufferIndex);
 }
 
 bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
@@ -305,8 +299,9 @@ void RawVolumeRenderer::update() {
 		resetStateBuffers();
 
 		for (int i = 0; i < MAX_VOLUMES; ++i) {
-			if (_state[i]._rawVolume) {
-				extractRegion(i, _state[i]._rawVolume->region());
+			voxel::RawVolume *v = _meshState->volume(i);
+			if (v) {
+				extractRegion(i, v->region());
 			}
 		}
 
@@ -316,7 +311,7 @@ void RawVolumeRenderer::update() {
 	MeshState::ExtractionCtx result;
 	int cnt = 0;
 	while (_pendingQueue.pop(result)) {
-		if (_state[result.idx]._rawVolume == nullptr) {
+		if (_meshState->volume(result.idx) == nullptr) {
 			continue;
 		}
 		_meshState->set(result);
@@ -430,7 +425,7 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 }
 
 int RawVolumeRenderer::resolveIdx(int idx) const {
-	const int reference = _state[idx]._reference;
+	const int reference = _meshState->reference(idx);
 	if (reference != -1) {
 		return resolveIdx(reference);
 	}
@@ -525,49 +520,31 @@ void RawVolumeRenderer::clearPendingExtractions() {
 }
 
 bool RawVolumeRenderer::hidden(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return true;
-	}
-	return _state[idx]._hidden;
+	return _meshState->hidden(idx);
 }
 
 void RawVolumeRenderer::hide(int idx, bool hide) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return;
-	}
-	_state[idx]._hidden = hide;
+	_meshState->hide(idx, hide);
 }
 
 bool RawVolumeRenderer::grayed(int idx) const {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return true;
-	}
-	return _state[idx]._gray;
+	return _meshState->grayed(idx);
 }
 
 void RawVolumeRenderer::gray(int idx, bool gray) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return;
-	}
-	_state[idx]._gray = gray;
+	_meshState->gray(idx, gray);
 }
 
 void RawVolumeRenderer::updatePalette(int idx) {
-	const palette::Palette *palette;
 	const int bufferIndex = resolveIdx(idx);
-	const State& state = _state[bufferIndex];
-	if (state._palette.hasValue()) {
-		palette = state._palette.value();
-	} else {
-		palette = &voxel::getPalette();
-	}
+	const palette::Palette &palette = _meshState->palette(bufferIndex);
 
-	if (palette->hash() != _paletteHash) {
-		_paletteHash = palette->hash();
+	if (palette.hash() != _paletteHash) {
+		_paletteHash = palette.hash();
 		core::DynamicArray<glm::vec4> materialColors;
-		palette->toVec4f(materialColors);
+		palette.toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
-		palette->glowToVec4f(glowColors);
+		palette.glowToVec4f(glowColors);
 		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			_voxelShaderVertData.materialcolor[i] = materialColors[i];
 			_voxelShaderVertData.glowcolor[i] = glowColors[i];
@@ -576,7 +553,7 @@ void RawVolumeRenderer::updatePalette(int idx) {
 }
 
 void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
-	if (_state[idx]._hidden) {
+	if (_meshState->hidden(idx)) {
 		_state[idx]._culled = true;
 		return;
 	}
@@ -599,7 +576,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 }
 
 bool RawVolumeRenderer::isVisible(int idx) const {
-	if (_state[idx]._hidden) {
+	if (_meshState->hidden(idx)) {
 		return false;
 	}
 	if (_state[idx]._culled) {
@@ -715,8 +692,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		const int bufferIndex = resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
 		if (indices == 0u) {
-			if (_state[bufferIndex]._rawVolume) {
-				Log::debug("No indices but volume for idx %d: %d (ref: %i)", idx, bufferIndex, _state[bufferIndex]._reference);
+			if (_meshState->volume(bufferIndex)) {
+				Log::debug("No indices but volume for idx %d: %d", idx, bufferIndex);
 			}
 			continue;
 		}
@@ -725,7 +702,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 		_voxelShaderVertData.model = _state[idx]._model;
 		_voxelShaderVertData.pivot = _state[idx]._pivot;
-		_voxelShaderVertData.gray = _state[idx]._gray;
+		_voxelShaderVertData.gray = _meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedPolygonMode polygonMode(mode);
@@ -780,7 +757,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
 			_voxelShaderVertData.model = _state[idx]._model;
 			_voxelShaderVertData.pivot = _state[idx]._pivot;
-			_voxelShaderVertData.gray = _state[idx]._gray;
+			_voxelShaderVertData.gray = _meshState->grayed(idx);
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 			// TODO: alpha support - sort according to eye pos
@@ -830,11 +807,11 @@ bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4 &model, const gl
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
 	}
-	State& state = _state[idx];
-	if (state._reference == -1 && state._rawVolume == nullptr) {
+	if (_meshState->reference(idx) == -1 && _meshState->volume(idx) == nullptr) {
 		Log::error("No volume found at: %i", idx);
 		return false;
 	}
+	State& state = _state[idx];
 	state._model = model;
 	state._pivot = pivot;
 	state._mins = mins;
@@ -865,17 +842,11 @@ voxel::RawVolume* RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneG
 }
 
 void RawVolumeRenderer::resetReferences() {
-	for (auto &s : _state) {
-		s._reference = -1;
-	}
+	_meshState->resetReferences();
 }
 
 void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		return;
-	}
-	State& state = _state[idx];
-	state._reference = referencedIdx;
+	_meshState->setReference(idx, referencedIdx);
 }
 
 void RawVolumeRenderer::deleteMeshes(int idx) {
@@ -904,15 +875,14 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
-	State& state = _state[idx];
-	state._palette.setValue(palette);
+	_meshState->setPalette(idx, palette);
 
-	voxel::RawVolume* old = state._rawVolume;
+	voxel::RawVolume* old = _meshState->volume(idx);
 	if (old == volume) {
 		return nullptr;
 	}
 	core_trace_scoped(RawVolumeRendererSetVolume);
-	state._rawVolume = volume;
+	_meshState->setVolume(idx, volume);
 	if (meshDelete) {
 		_meshState->deleteMeshes(idx);
 		deleteMeshes(idx);
@@ -961,14 +931,7 @@ core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
 	_shadowMapUniformBlock.shutdown();
 	_shadow.shutdown();
 	clearMeshes();
-	core::DynamicArray<voxel::RawVolume*> old(MAX_VOLUMES);
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		State& state = _state[idx];
-		// hand over the ownership to the caller
-		old.push_back(state._rawVolume);
-		state._rawVolume = nullptr;
-	}
-
+	const core::DynamicArray<voxel::RawVolume *> &old = _meshState->shutdown();
 	shutdownStateBuffers();
 	return old;
 }
