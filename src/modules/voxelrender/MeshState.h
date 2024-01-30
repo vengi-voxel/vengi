@@ -2,16 +2,16 @@
  * @file
  */
 
-#include "core/Var.h"
 #include "core/Optional.h"
 #include "core/SharedPtr.h"
+#include "core/Var.h"
 #include "core/collection/Array.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
 #include "core/collection/PriorityQueue.h"
 #include "core/concurrent/ThreadPool.h"
+#include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
-#include "palette/Palette.h"
 #include <unordered_map>
 
 #include "core/GLM.h"
@@ -78,10 +78,10 @@ private:
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
-	core::AtomicInt _runningExtractorTasks { 0 };
-	core::AtomicInt _pendingExtractorTasks { 0 };
-	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
-	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
+	core::AtomicInt _runningExtractorTasks{0};
+	core::AtomicInt _pendingExtractorTasks{0};
+	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
+	core::ThreadPool _threadPool{core::halfcpus(), "VolumeRndr"};
 	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
@@ -98,6 +98,9 @@ public:
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 	void waitForPendingExtractions();
+	/**
+	 * @sa shutdown()
+	 */
 	bool init();
 	void construct();
 	bool update();
@@ -106,10 +109,17 @@ public:
 	/**
 	 * @return @c true if the mesh should get deleted in the renderer
 	 */
-	bool extractRegion(int idx, const voxel::Region& region);
+	bool extractRegion(int idx, const voxel::Region &region);
 
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete, bool &meshDeleted);
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete,
+								bool &meshDeleted);
 
+	/**
+	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
+	 * @note You take the ownership of the returned volume pointers. Don't forget to delete them.
+	 *
+	 * @sa init()
+	 */
 	core::DynamicArray<voxel::RawVolume *> shutdown();
 
 	voxel::RawVolume *volume(int idx);
