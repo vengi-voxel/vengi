@@ -5,7 +5,7 @@
 #include "ZipReadStream.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "engine-config.h"
+#include "engine-config.h" // USE_ZLIB
 #if USE_ZLIB
 #include <zlib.h>
 #ifndef Z_DEFAULT_WINDOW_BITS

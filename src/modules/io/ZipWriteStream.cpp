@@ -4,7 +4,7 @@
 
 #include "ZipWriteStream.h"
 #include "core/StandardLib.h"
-#include "engine-config.h"
+#include "engine-config.h" // USE_ZLIB
 #if USE_ZLIB
 #include <zlib.h>
 #else

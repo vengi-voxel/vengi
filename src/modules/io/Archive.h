@@ -11,8 +11,11 @@
 
 namespace io {
 
+class Filesystem;
+
 using ArchiveFiles = core::DynamicArray<io::FilesystemEntry>;
 using SeekableReadStreamPtr = core::SharedPtr<SeekableReadStream>;
+using FilesystemPtr = core::SharedPtr<Filesystem>;
 
 /**
  * @ingroup IO
@@ -51,6 +54,6 @@ inline const ArchiveFiles &Archive::files() const {
 }
 
 using ArchivePtr = core::SharedPtr<Archive>;
-ArchivePtr openArchive(const core::String &path, io::SeekableReadStream *stream);
+ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream);
 
 } // namespace io

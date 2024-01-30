@@ -3,6 +3,7 @@
  */
 
 #include "BufferedReadWriteStream.h"
+#include "core/StandardLib.h"
 
 namespace io {
 

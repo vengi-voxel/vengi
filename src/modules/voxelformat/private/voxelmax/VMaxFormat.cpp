@@ -4,6 +4,7 @@
 
 #include "VMaxFormat.h"
 #include "BinaryPList.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
@@ -160,7 +161,7 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								   const LoadContext &ctx) {
 	VMaxScene scene;
-	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return false;
@@ -422,7 +423,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 										   const LoadContext &ctx) {
-	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return image::ImagePtr{};
@@ -468,7 +469,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx) {
-	const io::ArchivePtr &archive = io::openArchive(filename, &stream);
+	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
 	if (!archive) {
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return 0u;

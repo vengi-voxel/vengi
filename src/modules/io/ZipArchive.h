@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 

@@ -3,10 +3,10 @@
  */
 
 #include "Archive.h"
-#include "app/App.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/ZipArchive.h"
 
@@ -29,8 +29,8 @@ SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
 	return stream;
 }
 
-ArchivePtr openArchive(const core::String &path, io::SeekableReadStream *stream) {
-	if (io::filesystem()->isReadableDir(path)) {
+ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream) {
+	if (fs->isReadableDir(path)) {
 		auto archive = core::make_shared<FilesystemArchive>();
 		if (!archive->init(path, stream)) {
 			return ArchivePtr{};

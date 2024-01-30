@@ -4,6 +4,7 @@
 
 #include "io/BufferedWriteStream.h"
 #include "io/BufferedReadWriteStream.h"
+#include <limits.h>
 #include <gtest/gtest.h>
 
 namespace io {

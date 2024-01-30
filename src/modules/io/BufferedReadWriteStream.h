@@ -6,13 +6,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "core/String.h"
 #include <SDL_endian.h>
-#include <limits.h>
-#include "core/Common.h"
-#include "core/StandardLib.h"
-#include "core/Assert.h"
-#include "core/collection/Buffer.h"
 #include "io/Stream.h"
 
 namespace io {

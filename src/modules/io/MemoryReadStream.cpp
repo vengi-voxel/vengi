@@ -3,8 +3,6 @@
  */
 
 #include "MemoryReadStream.h"
-#include "core/Assert.h"
-#include "core/Log.h"
 #include "core/StandardLib.h"
 
 namespace io {

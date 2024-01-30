@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/SharedPtr.h"
 #include "io/Stream.h"
 #include <SDL_rwops.h>

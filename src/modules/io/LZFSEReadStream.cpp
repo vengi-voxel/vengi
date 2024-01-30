@@ -3,10 +3,7 @@
  */
 
 #include "LZFSEReadStream.h"
-#include "core/Assert.h"
-#include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/collection/Buffer.h"
 #include "io/BufferedReadWriteStream.h"
 #include "lzfse.h"
 
