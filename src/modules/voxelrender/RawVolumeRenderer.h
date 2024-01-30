@@ -139,7 +139,8 @@ protected:
 	void updatePalette(int idx);
 	bool updateBufferForVolume(int idx, MeshType type);
 	void clearMeshes();
-	void deleteMesh(int idx, MeshType meshType, MeshState::Meshes &array);
+	void deleteMesh(int idx, MeshType meshType);
+	void deleteMeshes(int idx);
 	void updateCulling(int idx, const video::Camera &camera);
 	bool isVisible(int idx) const;
 

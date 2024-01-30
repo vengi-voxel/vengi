@@ -493,12 +493,8 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 				const glm::ivec3& mins = finalRegion.getLowerCorner();
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
-					for (int i = 0; i < MeshType_Max; ++i) {
-						auto iter = _meshState._meshes[i].find(mins);
-						if (iter != _meshState._meshes[i].end()) {
-							deleteMesh(bufferIndex, (MeshType)i, iter->second);
-						}
-					}
+					_meshState.deleteMeshes(mins, bufferIndex);
+					deleteMeshes(bufferIndex);
 					continue;
 				}
 
@@ -892,10 +888,13 @@ void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
 	state._reference = referencedIdx;
 }
 
-void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, MeshState::Meshes &array) {
-	voxel::Mesh *mesh = array[idx];
-	delete mesh;
-	array[idx] = nullptr;
+void RawVolumeRenderer::deleteMeshes(int idx) {
+	for (int i = 0; i < MeshType_Max; ++i) {
+		deleteMesh(idx, (MeshType)i);
+	}
+}
+
+void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType) {
 	State &state = _state[idx];
 	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
 	Log::debug("clear vertexbuffer: %i", idx);
@@ -925,11 +924,8 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume
 	core_trace_scoped(RawVolumeRendererSetVolume);
 	state._rawVolume = volume;
 	if (meshDelete) {
-		for (int i = 0; i < MeshType_Max; ++i) {
-			for (auto& iter : _meshState._meshes[i]) {
-				deleteMesh(idx, (MeshType)i, iter.second);
-			}
-		}
+		_meshState.deleteMeshes(idx);
+		deleteMeshes(idx);
 	}
 	const size_t n = _extractRegions.size();
 	for (size_t i = 0; i < n; ++i) {

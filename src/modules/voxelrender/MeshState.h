@@ -46,6 +46,8 @@ public:
 	void setOpaque(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void setTransparent(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void set(ExtractionCtx &ctx);
+	bool deleteMeshes(const glm::ivec3 &pos, int idx);
+	bool deleteMeshes(int idx);
 
 	void clear();
 };

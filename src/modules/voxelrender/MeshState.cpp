@@ -34,4 +34,35 @@ void MeshState::set(ExtractionCtx &ctx) {
 	setTransparent(ctx.mins, ctx.idx, core::move(ctx.mesh.mesh[MeshType_Transparency]));
 }
 
+bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
+	bool d = false;
+	for (int i = 0; i < MeshType_Max; ++i) {
+		auto &meshes = _meshes[i];
+		auto iter = meshes.find(pos);
+		if (iter != meshes.end()) {
+			MeshState::Meshes &array = iter->second;
+			voxel::Mesh *mesh = array[idx];
+			delete mesh;
+			array[idx] = nullptr;
+			d = true;
+		}
+	}
+	return d;
+}
+
+bool MeshState::deleteMeshes(int idx) {
+	bool d = false;
+	for (int i = 0; i < MeshType_Max; ++i) {
+		auto &meshes = _meshes[i];
+		for (auto &iter : meshes) {
+			MeshState::Meshes &array = iter.second;
+			voxel::Mesh *mesh = array[idx];
+			delete mesh;
+			array[idx] = nullptr;
+			d = true;
+		}
+	}
+	return d;
+}
+
 } // namespace voxelrender
