@@ -152,7 +152,7 @@ public:
 	RawVolumeRenderer();
 	RawVolumeRenderer(const MeshStatePtr &meshState);
 
-	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true);
+	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true);
 	void hide(int idx, bool hide);
 	bool hidden(int idx) const;
 	void gray(int idx, bool gray);
@@ -194,6 +194,7 @@ public:
 	 */
 	void setVolumeReference(int idx, int referencedIdx);
 	void resetReferences();
+	bool resetVolume(int idx);
 	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
 						const glm::vec3 &maxs);
 

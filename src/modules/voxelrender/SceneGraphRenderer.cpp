@@ -128,7 +128,7 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 	if (id < 0 || id >= MAX_VOLUMES) {
 		return;
 	}
-	_renderer.setVolume(id, nullptr, nullptr, true);
+	_renderer.resetVolume(id);
 }
 
 void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
@@ -142,7 +142,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
-			if (_renderer.setVolume(nodeId, nullptr, nullptr, true) != nullptr) {
+			if (_renderer.resetVolume(nodeId)) {
 				Log::debug("%i is no longer part of the scene graph - remove from renderer", nodeId);
 			}
 		}

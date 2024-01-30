@@ -498,6 +498,10 @@ void RawVolumeRenderer::waitForPendingExtractions() {
 	}
 }
 
+bool RawVolumeRenderer::resetVolume(int idx) {
+	return setVolume(idx, nullptr, nullptr, true) != nullptr;
+}
+
 void RawVolumeRenderer::clear() {
 	clearPendingExtractions();
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
