@@ -338,26 +338,15 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	size_t vertCount = 0u;
 	size_t normalsCount = 0u;
 	size_t indCount = 0u;
-	for (auto& i : _meshState._meshes[type]) {
-		const MeshState::Meshes& meshes = i.second;
-		const voxel::Mesh* mesh = meshes[bufferIndex];
-		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
-			continue;
-		}
-		const voxel::VertexArray& vertexVector = mesh->getVertexVector();
-		const voxel::NormalArray& normalVector = mesh->getNormalVector();
-		const voxel::IndexArray& indexVector = mesh->getIndexVector();
-		vertCount += vertexVector.size();
-		normalsCount += normalVector.size();
-		indCount += indexVector.size();
-	}
+	_meshState.count(type, bufferIndex, vertCount, normalsCount, indCount);
 
 	State& state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
 		Log::debug("clear vertexbuffer: %i", idx);
-		state._vertexBuffer[type].update(state._vertexBufferIndex[type], nullptr, 0);
-		state._vertexBuffer[type].update(state._normalBufferIndex[type], nullptr, 0);
-		state._vertexBuffer[type].update(state._indexBufferIndex[type], nullptr, 0);
+		video::Buffer &buffer = state._vertexBuffer[type];
+		buffer.update(state._vertexBufferIndex[type], nullptr, 0);
+		buffer.update(state._normalBufferIndex[type], nullptr, 0);
+		buffer.update(state._indexBufferIndex[type], nullptr, 0);
 		return true;
 	}
 
@@ -373,7 +362,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	voxel::IndexType* indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
-	for (auto& i : _meshState._meshes[type]) {
+	for (auto& i : _meshState.meshes(type)) {
 		const MeshState::Meshes& meshes = i.second;
 		const voxel::Mesh* mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
@@ -448,15 +437,7 @@ bool RawVolumeRenderer::empty(int idx) const {
 		return true;
 	}
 	const int bufferIndex = resolveIdx(idx);
-	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto& m : _meshState._meshes[i]) {
-			const MeshState::Meshes& meshes = m.second;
-			if (meshes[bufferIndex] != nullptr && meshes[bufferIndex]->getNoOfIndices() > 0) {
-				return false;
-			}
-		}
-	}
-	return true;
+	return _meshState.empty(bufferIndex);
 }
 
 voxel::Region RawVolumeRenderer::calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const {
@@ -630,7 +611,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
-	for (auto& i : _meshState._meshes[MeshType_Transparency]) {
+	for (auto& i : _meshState.meshes(MeshType_Transparency)) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
@@ -638,10 +619,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			const int bufferIndex = resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
-			if (!i.second[bufferIndex]) {
-				continue;
-			}
-			if (i.second[bufferIndex]->sort(camera.eye())) {
+			voxel::Mesh *mesh = i.second[bufferIndex];
+			if (mesh && mesh->sort(camera.eye())) {
 				updateBufferForVolume(bufferIndex, MeshType_Transparency);
 			}
 		}

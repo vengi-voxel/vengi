@@ -24,6 +24,13 @@ enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 // before we have to hand over to the renderer thread
 class MeshState {
 public:
+	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
+	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
+
+private:
+	MeshesMap _meshes[MeshType_Max];
+
+public:
 	struct ExtractionCtx {
 		ExtractionCtx() {
 		}
@@ -39,17 +46,15 @@ public:
 		}
 	};
 
-	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
-	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
-	MeshesMap _meshes[MeshType_Max];
-
+	const MeshesMap &meshes(MeshType type) const;
 	void setOpaque(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void setTransparent(const glm::ivec3 &pos, int idx, voxel::Mesh &&mesh);
 	void set(ExtractionCtx &ctx);
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	bool deleteMeshes(int idx);
-
+	bool empty(int idx) const;
 	void clear();
+	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 };
 
 } // namespace voxelrender
