@@ -83,12 +83,6 @@ void RenderContext::shutdown() {
 	bloomRenderer.shutdown();
 }
 
-glm::vec3 RawVolumeRenderer::State::centerPos() const {
-	const glm::vec4 center((_mins + _maxs) * 0.5f, 1.0f);
-	const glm::vec3 pos = _model * center;
-	return pos;
-}
-
 RawVolumeRenderer::RawVolumeRenderer(const MeshStatePtr &meshState)
 	: _voxelShader(shader::VoxelShader::getInstance()), _voxelNormShader(shader::VoxelnormShader::getInstance()),
 	  _shadowMapShader(shader::ShadowmapShader::getInstance()) {
@@ -106,7 +100,7 @@ bool RawVolumeRenderer::initStateBuffers() {
 	const bool marchingCubes = _meshState->marchingCubes();
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State &state = _state[idx];
-		state._model = glm::mat4(1.0f);
+		_meshState->setModel(idx, glm::mat4(1.0f));
 		for (int i = 0; i < MeshType_Max; ++i) {
 			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
 			if (state._vertexBufferIndex[i] == -1) {
@@ -406,6 +400,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		return;
 	}
 	_state[idx]._culled = false;
+	// check a potentially referenced mesh here
 	const int bufferIndex = _meshState->resolveIdx(idx);
 	if (!_state[bufferIndex].hasData()) {
 #if 0
@@ -416,10 +411,12 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		_state[idx]._culled = true;
 		return;
 	}
-	const glm::vec3 size = _state[idx]._maxs - _state[idx]._mins;
+	const glm::ivec3 &mins = _meshState->mins(idx);
+	const glm::ivec3 &maxs = _meshState->maxs(idx);
+	const glm::vec3 size = maxs - mins;
 	// if no mins/maxs were given, we can't cull
 	if (size.x >= 1.0f && size.y >= 1.0f && size.z >= 1.0f) {
-		_state[idx]._culled = !camera.isVisible(_state[idx]._mins, _state[idx]._maxs);
+		_state[idx]._culled = !camera.isVisible(mins, maxs);
 	}
 }
 
@@ -487,8 +484,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 							continue;
 						}
 						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
-						var.model = _state[idx]._model;
-						var.pivot = _state[idx]._pivot;
+						var.model = _meshState->model(idx);
+						var.pivot = _meshState->pivot(idx);
 						_shadowMapUniformBlock.update(var);
 						_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
 						static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
@@ -550,8 +547,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		updatePalette(bufferIndex);
 		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-		_voxelShaderVertData.model = _state[idx]._model;
-		_voxelShaderVertData.pivot = _state[idx]._pivot;
+		_voxelShaderVertData.model = _meshState->model(idx);
+		_voxelShaderVertData.pivot = _meshState->pivot(idx);
 		_voxelShaderVertData.gray = _meshState->grayed(idx);
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -592,8 +589,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		const glm::vec3 &camPos = camera.worldPosition();
 		core::sort(sorted.begin(), sorted.end(), [this, &camPos](int a, int b) {
-			const glm::vec3 &posA = _state[a].centerPos();
-			const glm::vec3 &posB = _state[b].centerPos();
+			const glm::vec3 &posA = _meshState->centerPos(a);
+			const glm::vec3 &posB = _meshState->centerPos(b);
 			const float d1 = glm::distance2(camPos, posA);
 			const float d2 = glm::distance2(camPos, posB);
 			return d1 > d2;
@@ -605,8 +602,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			const uint32_t indices = _state[bufferIndex].indices(MeshType_Transparency);
 			updatePalette(idx);
 			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-			_voxelShaderVertData.model = _state[idx]._model;
-			_voxelShaderVertData.pivot = _state[idx]._pivot;
+			_voxelShaderVertData.model = _meshState->model(idx);
+			_voxelShaderVertData.pivot = _meshState->pivot(idx);
 			_voxelShaderVertData.gray = _meshState->grayed(idx);
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
 
@@ -649,24 +646,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		_voxelShader.deactivate();
 	}
 	video::useProgram(oldShader);
-}
-
-bool RawVolumeRenderer::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
-									   const glm::vec3 &maxs) {
-	if (idx < 0 || idx >= MAX_VOLUMES) {
-		Log::error("Given id %i is out of bounds", idx);
-		return false;
-	}
-	if (_meshState->reference(idx) == -1 && _meshState->volume(idx) == nullptr) {
-		Log::error("No volume found at: %i", idx);
-		return false;
-	}
-	State &state = _state[idx];
-	state._model = model;
-	state._pivot = pivot;
-	state._mins = mins;
-	state._maxs = maxs;
-	return true;
 }
 
 void RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode &node, bool deleteMesh) {

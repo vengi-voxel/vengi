@@ -67,20 +67,11 @@ protected:
 		int32_t _vertexBufferIndex[MeshType_Max]{-1, -1};
 		int32_t _normalBufferIndex[MeshType_Max]{-1, -1};
 		int32_t _indexBufferIndex[MeshType_Max]{-1, -1};
-		glm::mat4 _model{1.0f};
-		glm::vec3 _pivot{0.0f};
-		glm::vec3 _mins{0.0f};
-		glm::vec3 _maxs{0.0f};
 		video::Buffer _vertexBuffer[MeshType_Max];
 
 		uint32_t indices(MeshType type) const {
 			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
 		}
-
-		/**
-		 * @brief Applies the pivot and the model matrix
-		 */
-		glm::vec3 centerPos() const;
 
 		bool hasData() const {
 			return indices(MeshType_Opaque) > 0 || indices(MeshType_Transparency) > 0;
@@ -124,7 +115,7 @@ public:
 	RawVolumeRenderer();
 	RawVolumeRenderer(const MeshStatePtr &meshState);
 
-	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true);
+	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
 	void clear();
 
 	void extractRegion(int idx, const voxel::Region& region);
@@ -136,11 +127,9 @@ public:
 	 * @sa volume()
 	 */
 	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete);
-	void setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh = true);
+	void setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh);
 
 	void resetVolume(int idx);
-	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
-						const glm::vec3 &maxs);
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);

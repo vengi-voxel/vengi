@@ -35,6 +35,14 @@ public:
 		bool _hidden = false;
 		bool _gray = false;
 		int _reference = -1;
+		glm::mat4 _model{1.0f};
+		glm::vec3 _pivot{0.0f};
+		glm::vec3 _mins{0.0f};
+		glm::vec3 _maxs{0.0f};
+		/**
+		 * @brief Applies the pivot and the model matrix
+		 */
+		glm::vec3 centerPos() const;
 	};
 
 	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
@@ -105,6 +113,15 @@ public:
 	 */
 	bool init();
 	void construct();
+
+	const glm::vec3 &mins(int idx) const;
+	const glm::vec3 &maxs(int idx) const;
+	glm::vec3 centerPos(int idx) const;
+	const glm::vec3 &pivot(int idx) const;
+	const glm::mat4 &model(int idx) const;
+	void setModel(int idx, const glm::mat4 &model);
+	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
+						const glm::vec3 &maxs);
 
 	/**
 	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned up

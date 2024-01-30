@@ -23,6 +23,54 @@ void MeshState::construct() {
 	_meshSize = core::Var::get(cfg::VoxelMeshSize, "64", core::CV_READONLY);
 }
 
+glm::vec3 MeshState::VolumeData::centerPos() const {
+	const glm::vec4 center((_mins + _maxs) * 0.5f, 1.0f);
+	const glm::vec3 pos = _model * center;
+	return pos;
+}
+
+const glm::vec3 &MeshState::mins(int idx) const {
+	return _volumeData[idx]._mins;
+}
+
+const glm::vec3 &MeshState::maxs(int idx) const {
+	return _volumeData[idx]._maxs;
+}
+
+glm::vec3 MeshState::centerPos(int idx) const {
+	return _volumeData[idx].centerPos();
+}
+
+const glm::mat4 &MeshState::model(int idx) const {
+	return _volumeData[idx]._model;
+}
+
+const glm::vec3 &MeshState::pivot(int idx) const {
+	return _volumeData[idx]._pivot;
+}
+
+void MeshState::setModel(int idx, const glm::mat4 &model) {
+	_volumeData[idx]._model = model;
+}
+
+bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &pivot, const glm::vec3 &mins,
+									   const glm::vec3 &maxs) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		Log::error("Given id %i is out of bounds", idx);
+		return false;
+	}
+	if (reference(idx) == -1 && volume(idx) == nullptr) {
+		Log::error("No volume found at: %i", idx);
+		return false;
+	}
+	VolumeData &state = _volumeData[idx];
+	state._model = model;
+	state._pivot = pivot;
+	state._mins = mins;
+	state._maxs = maxs;
+	return true;
+}
+
 void MeshState::clear() {
 	for (int i = 0; i < MeshType_Max; ++i) {
 		for (auto &iter : _meshes[i]) {
