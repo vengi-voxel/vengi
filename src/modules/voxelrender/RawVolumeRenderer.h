@@ -115,24 +115,18 @@ protected:
 	bool initStateBuffers();
 	void shutdownStateBuffers();
 	bool resetStateBuffers();
-
-public:
-	RawVolumeRenderer();
-	RawVolumeRenderer(const MeshStatePtr &meshState);
-
-	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true);
-	void hide(int idx, bool hide);
-	bool hidden(int idx) const;
-	void gray(int idx, bool gray);
-	bool grayed(int idx) const;
-
-	void clear();
-
 	/**
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
 	bool updateBufferForVolume(int idx);
+public:
+	RawVolumeRenderer();
+	RawVolumeRenderer(const MeshStatePtr &meshState);
+
+	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true);
+	void clear();
+
 	void extractRegion(int idx, const voxel::Region& region);
 
 	/**

@@ -182,14 +182,14 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 									 region.getUpperCorner());
 		}
 		if (hideInactive) {
-			_renderer.hide(id, id != activeNode);
+			_renderer.meshState()->hide(id, id != activeNode);
 		} else {
-			_renderer.hide(id, !node.visible());
+			_renderer.meshState()->hide(id, !node.visible());
 		}
 		if (grayInactive) {
-			_renderer.gray(id, id != activeNode);
+			_renderer.meshState()->gray(id, id != activeNode);
 		} else {
-			_renderer.gray(id, false);
+			_renderer.meshState()->gray(id, false);
 		}
 	}
 
@@ -215,14 +215,14 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
-				_renderer.hide(id, id != activeNode);
+				_renderer.meshState()->hide(id, id != activeNode);
 			} else {
-				_renderer.hide(id, !node.visible());
+				_renderer.meshState()->hide(id, !node.visible());
 			}
 			if (grayInactive) {
-				_renderer.gray(id, id != activeNode);
+				_renderer.meshState()->gray(id, id != activeNode);
 			} else {
-				_renderer.gray(id, false);
+				_renderer.meshState()->gray(id, false);
 			}
 		}
 	}

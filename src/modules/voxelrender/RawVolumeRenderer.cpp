@@ -383,22 +383,6 @@ void RawVolumeRenderer::clear() {
 	_meshState->resetReferences();
 }
 
-bool RawVolumeRenderer::hidden(int idx) const {
-	return _meshState->hidden(idx);
-}
-
-void RawVolumeRenderer::hide(int idx, bool hide) {
-	_meshState->hide(idx, hide);
-}
-
-bool RawVolumeRenderer::grayed(int idx) const {
-	return _meshState->grayed(idx);
-}
-
-void RawVolumeRenderer::gray(int idx, bool gray) {
-	_meshState->gray(idx, gray);
-}
-
 void RawVolumeRenderer::updatePalette(int idx) {
 	const int bufferIndex = _meshState->resolveIdx(idx);
 	const palette::Palette &palette = _meshState->palette(bufferIndex);
