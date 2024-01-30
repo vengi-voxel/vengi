@@ -42,7 +42,7 @@ public:
 
 	void nodeRemove(int nodeId);
 
-	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region& region);
+	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region);
 	bool empty(scenegraph::SceneGraphNode &node);
 	void extractAll();
 	/**

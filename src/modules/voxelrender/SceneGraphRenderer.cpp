@@ -178,7 +178,8 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
-			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(), region.getUpperCorner());
+			_renderer.setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
+									 region.getUpperCorner());
 		}
 		if (hideInactive) {
 			_renderer.hide(id, id != activeNode);
@@ -210,7 +211,8 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::mat4 worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
-			const glm::vec3 pivot = transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
+			const glm::vec3 pivot =
+				transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
 			_renderer.setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
 				_renderer.hide(id, id != activeNode);
@@ -231,7 +233,8 @@ void SceneGraphRenderer::extractAll() {
 	}
 }
 
-void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow, bool waitPending) {
+void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow,
+								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
 		extractAll();

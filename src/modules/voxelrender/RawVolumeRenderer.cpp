@@ -131,12 +131,14 @@ bool RawVolumeRenderer::initStateBuffers() {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			State &state = _state[idx];
 			for (int i = 0; i < MeshType_Max; ++i) {
-				const video::Attribute &attributePos = getPositionVertexAttribute(
-					state._vertexBufferIndex[i], _voxelNormShader.getLocationPos(), _voxelNormShader.getComponentsPos());
+				const video::Attribute &attributePos =
+					getPositionVertexAttribute(state._vertexBufferIndex[i], _voxelNormShader.getLocationPos(),
+											   _voxelNormShader.getComponentsPos());
 				state._vertexBuffer[i].addAttribute(attributePos);
 
-				const video::Attribute &attributeInfo = getInfoVertexAttribute(
-					state._vertexBufferIndex[i], _voxelNormShader.getLocationInfo(), _voxelNormShader.getComponentsInfo());
+				const video::Attribute &attributeInfo =
+					getInfoVertexAttribute(state._vertexBufferIndex[i], _voxelNormShader.getLocationInfo(),
+										   _voxelNormShader.getComponentsInfo());
 				state._vertexBuffer[i].addAttribute(attributeInfo);
 
 				const video::Attribute &attributeNormal =
@@ -195,17 +197,19 @@ bool RawVolumeRenderer::init() {
 	const int shaderMaterialColorsArraySize = lengthof(shader::VoxelData::VertData::materialcolor);
 	if constexpr (shaderMaterialColorsArraySize != palette::PaletteMaxColors) {
 		Log::error("Shader parameters and material colors don't match in their size: %i - %i",
-				shaderMaterialColorsArraySize, palette::PaletteMaxColors);
+				   shaderMaterialColorsArraySize, palette::PaletteMaxColors);
 		return false;
 	}
 
 	if (_voxelShader.getLocationPos() != _voxelNormShader.getLocationPos()) {
-		Log::error("Shader attribute order doesn't match for pos (%i/%i)", _voxelShader.getLocationPos(), _voxelNormShader.getLocationPos());
+		Log::error("Shader attribute order doesn't match for pos (%i/%i)", _voxelShader.getLocationPos(),
+				   _voxelNormShader.getLocationPos());
 		return false;
 	}
 
 	if (_voxelShader.getLocationInfo() != _voxelNormShader.getLocationInfo()) {
-		Log::error("Shader attribute order doesn't match for info (%i/%i)", _voxelShader.getLocationInfo(), _voxelNormShader.getLocationInfo());
+		Log::error("Shader attribute order doesn't match for info (%i/%i)", _voxelShader.getLocationInfo(),
+				   _voxelNormShader.getLocationInfo());
 		return false;
 	}
 
@@ -349,26 +353,26 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	}
 
 	const size_t verticesBufSize = vertCount * sizeof(voxel::VoxelVertex);
-	voxel::VoxelVertex* verticesBuf = (voxel::VoxelVertex*)core_malloc(verticesBufSize);
+	voxel::VoxelVertex *verticesBuf = (voxel::VoxelVertex *)core_malloc(verticesBufSize);
 	const size_t normalsBufSize = normalsCount * sizeof(glm::vec3);
-	glm::vec3* normalsBuf = (glm::vec3*)core_malloc(normalsBufSize);
+	glm::vec3 *normalsBuf = (glm::vec3 *)core_malloc(normalsBufSize);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
-	voxel::IndexType* indicesBuf = (voxel::IndexType*)core_malloc(indicesBufSize);
+	voxel::IndexType *indicesBuf = (voxel::IndexType *)core_malloc(indicesBufSize);
 
-	voxel::VoxelVertex* verticesPos = verticesBuf;
-	glm::vec3* normalsPos = normalsBuf;
-	voxel::IndexType* indicesPos = indicesBuf;
+	voxel::VoxelVertex *verticesPos = verticesBuf;
+	glm::vec3 *normalsPos = normalsBuf;
+	voxel::IndexType *indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
-	for (auto& i : _meshState.meshes(type)) {
-		const MeshState::Meshes& meshes = i.second;
-		const voxel::Mesh* mesh = meshes[bufferIndex];
+	for (auto &i : _meshState->meshes(type)) {
+		const MeshState::Meshes &meshes = i.second;
+		const voxel::Mesh *mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
 		}
-		const voxel::VertexArray& vertexVector = mesh->getVertexVector();
-		const voxel::NormalArray& normalVector = mesh->getNormalVector();
-		const voxel::IndexArray& indexVector = mesh->getIndexVector();
+		const voxel::VertexArray &vertexVector = mesh->getVertexVector();
+		const voxel::NormalArray &normalVector = mesh->getNormalVector();
+		const voxel::IndexArray &indexVector = mesh->getIndexVector();
 		core_memcpy(verticesPos, &vertexVector[0], vertexVector.size() * sizeof(voxel::VoxelVertex));
 		if (!normalVector.empty()) {
 			core_assert(vertexVector.size() == normalVector.size());
@@ -414,11 +418,11 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	return true;
 }
 
-void RawVolumeRenderer::setAmbientColor(const glm::vec3& color) {
+void RawVolumeRenderer::setAmbientColor(const glm::vec3 &color) {
 	_voxelShaderFragData.ambientColor = color;
 }
 
-void RawVolumeRenderer::setDiffuseColor(const glm::vec3& color) {
+void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_voxelShaderFragData.diffuseColor = color;
 }
 
@@ -658,7 +662,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 				return true;
 			}, true);
 		} else {
-			_shadow.render([] (int i, const glm::mat4& lightViewProjection) {
+			_shadow.render([](int i, const glm::mat4 &lightViewProjection) {
 				video::clear(video::ClearFlag::Depth);
 				return true;
 			});
@@ -751,7 +755,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		}
 
 		const glm::vec3 &camPos = camera.worldPosition();
-		core::sort(sorted.begin(), sorted.end(), [this, &camPos] (int a, int b) {
+		core::sort(sorted.begin(), sorted.end(), [this, &camPos](int a, int b) {
 			const glm::vec3 &posA = _state[a].centerPos();
 			const glm::vec3 &posB = _state[b].centerPos();
 			const float d1 = glm::distance2(camPos, posA);
@@ -914,7 +918,7 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume
 	return old;
 }
 
-void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
+void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) {
 	_shadow.setPosition(eye, center, up);
 }
 
