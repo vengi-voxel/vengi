@@ -26,7 +26,7 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
  */
 class SceneGraphRenderer : public core::NonCopyable {
 protected:
-	RawVolumeRenderer _renderer;
+	RawVolumeRenderer _volumeRenderer;
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
 	void prepare(const RenderContext &renderContext);

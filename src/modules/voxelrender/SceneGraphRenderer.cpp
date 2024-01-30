@@ -14,25 +14,25 @@
 
 namespace voxelrender {
 
-SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _renderer(meshState) {
+SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _volumeRenderer(meshState) {
 }
 
 SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<MeshState>()) {
 }
 
 void SceneGraphRenderer::construct() {
-	_renderer.construct();
+	_volumeRenderer.construct();
 }
 
 bool SceneGraphRenderer::init() {
 	if (!_cameraRenderer.init(core::Color::White(), 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
-	return _renderer.init();
+	return _volumeRenderer.init();
 }
 
 void SceneGraphRenderer::update() {
-	_renderer.update();
+	_volumeRenderer.update();
 }
 
 static inline int getVolumeId(int nodeId) {
@@ -50,24 +50,24 @@ static inline int getNodeId(int volumeIdx) {
 }
 
 void SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	_renderer.extractRegion(getVolumeId(node), region);
+	_volumeRenderer.extractRegion(getVolumeId(node), region);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
-	_renderer.setAmbientColor(color);
+	_volumeRenderer.setAmbientColor(color);
 }
 
 void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
-	_renderer.setDiffuseColor(color);
+	_volumeRenderer.setDiffuseColor(color);
 }
 
 void SceneGraphRenderer::shutdown() {
-	_renderer.shutdown();
+	_volumeRenderer.shutdown();
 	_cameraRenderer.shutdown();
 }
 
 void SceneGraphRenderer::clear() {
-	_renderer.clear();
+	_volumeRenderer.clear();
 }
 
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
@@ -124,7 +124,7 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 	if (id < 0 || id >= MAX_VOLUMES) {
 		return;
 	}
-	_renderer.resetVolume(id);
+	_volumeRenderer.resetVolume(id);
 }
 
 void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
@@ -138,12 +138,12 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
-			_renderer.resetVolume(nodeId);
+			_volumeRenderer.resetVolume(nodeId);
 		}
 	}
 	_cameras.clear();
 
-	const MeshStatePtr &meshState = _renderer.meshState();
+	const MeshStatePtr &meshState = _volumeRenderer.meshState();
 
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
@@ -168,10 +168,10 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			continue;
 		}
 		voxel::RawVolume *v = meshState->volume(id);
-		_renderer.setVolume(id, node, true);
+		_volumeRenderer.setVolume(id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
-			_renderer.extractRegion(id, region);
+			_volumeRenderer.extractRegion(id, region);
 		}
 		if (sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
@@ -179,9 +179,9 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			_renderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			_volumeRenderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
-			_renderer.meshState()->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
+			_volumeRenderer.meshState()->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
 												  region.getUpperCorner());
 		}
 		if (hideInactive) {
@@ -216,7 +216,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot =
 				transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
-			_renderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			_volumeRenderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
 				meshState->hide(id, id != activeNode);
 			} else {
@@ -235,11 +235,11 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
-		_renderer.meshState()->extractAll();
-		_renderer.update();
+		_volumeRenderer.meshState()->extractAll();
+		_volumeRenderer.update();
 	}
 
-	_renderer.render(renderContext, camera, shadow);
+	_volumeRenderer.render(renderContext, camera, shadow);
 	if (renderContext.sceneMode) {
 		for (video::Camera &sceneCamera : _cameras) {
 			sceneCamera.setSize(camera.size());
