@@ -230,16 +230,12 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 }
 
-void SceneGraphRenderer::extractAll() {
-	while (_renderer.scheduleExtractions(100)) {
-	}
-}
-
 void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow,
 								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
-		extractAll();
+		while (_renderer.scheduleExtractions(100)) {
+		}
 		_renderer.waitForPendingExtractions();
 		_renderer.update();
 	}

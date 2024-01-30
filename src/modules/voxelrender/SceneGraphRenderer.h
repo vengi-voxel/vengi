@@ -45,7 +45,6 @@ public:
 	void nodeRemove(int nodeId);
 
 	bool extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region);
-	void extractAll();
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
 	 * false, you have to call @c update() manually!
