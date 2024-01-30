@@ -301,6 +301,9 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectTimeoutSecond);
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, _timeoutSecond);
+	// curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3);
 	if (!_userAgent.empty()) {
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, _userAgent.c_str());
 	}
