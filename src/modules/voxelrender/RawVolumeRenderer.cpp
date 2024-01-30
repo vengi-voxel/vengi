@@ -232,11 +232,6 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
-const palette::Palette &RawVolumeRenderer::palette(int idx) const {
-	const int bufferIndex = resolveIdx(idx);
-	return _meshState->palette(bufferIndex);
-}
-
 bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 	const size_t n = _extractRegions.size();
 	if (n == 0) {
@@ -266,7 +261,7 @@ bool RawVolumeRenderer::scheduleExtractions(size_t maxExtraction) {
 		voxel::RawVolume copy(v, copyRegion, &onlyAir);
 		const glm::ivec3& mins = finalRegion.getLowerCorner();
 		if (!onlyAir) {
-			const palette::Palette &pal = palette(idx);
+			const palette::Palette &pal = _meshState->palette(resolveIdx(idx));
 			++_pendingExtractorTasks;
 			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx, finalRegion, this] () {
 				++_runningExtractorTasks;

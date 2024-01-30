@@ -104,9 +104,9 @@ protected:
 	shader::ShadowmapShader &_shadowMapShader;
 	voxelrender::Shadow _shadow;
 
-	core::VarPtr _meshSize;
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
+	core::VarPtr _meshSize;
 	core::VarPtr _meshMode;
 
 	struct ExtractRegion {
@@ -174,7 +174,6 @@ public:
 	}
 
 	bool extractRegion(int idx, const voxel::Region& region);
-	const palette::Palette &palette(int idx = 0) const;
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
