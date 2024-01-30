@@ -3,7 +3,6 @@
  */
 
 #include "FilesystemArchive.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/File.h"
@@ -14,9 +13,6 @@ namespace io {
 
 FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath)
 	: _filesytem(filesytem), _fullPath(fullPath) {
-}
-
-FilesystemArchive::FilesystemArchive(bool fullPath) : FilesystemArchive(io::filesystem(), fullPath) {
 }
 
 FilesystemArchive::~FilesystemArchive() {

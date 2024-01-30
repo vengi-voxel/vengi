@@ -31,7 +31,7 @@ SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
 
 ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream) {
 	if (fs->isReadableDir(path)) {
-		auto archive = core::make_shared<FilesystemArchive>();
+		auto archive = core::make_shared<FilesystemArchive>(fs);
 		if (!archive->init(path, stream)) {
 			return ArchivePtr{};
 		}
@@ -45,7 +45,7 @@ ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io
 		return archive;
 	}
 	const core::String &directory = core::string::extractPath(path);
-	auto archive = core::make_shared<FilesystemArchive>();
+	auto archive = core::make_shared<FilesystemArchive>(fs);
 	if (!archive->init(directory, stream)) {
 		return ArchivePtr{};
 	}

@@ -21,7 +21,6 @@ protected:
 	io::FilePtr open(const core::String &path) const;
 public:
 	FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath = true);
-	FilesystemArchive(bool fullPath = true);
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);
