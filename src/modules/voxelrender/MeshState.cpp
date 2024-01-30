@@ -9,7 +9,7 @@ namespace voxelrender {
 void MeshState::clear() {
 	for (int i = 0; i < MeshType_Max; ++i) {
 		for (auto &iter : _meshes[i]) {
-			for (auto &mesh : iter.second) {
+			for (voxel::Mesh *mesh : iter.second) {
 				delete mesh;
 			}
 		}

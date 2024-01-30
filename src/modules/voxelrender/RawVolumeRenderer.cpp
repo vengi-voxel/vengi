@@ -613,7 +613,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
-	for (auto& i : _meshState.meshes(MeshType_Transparency)) {
+	for (auto &i : _meshState.meshes(MeshType_Transparency)) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
