@@ -137,9 +137,10 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera) {
 		_volumeRendererCtx.shutdown();
 		_volumeRendererCtx.init(camera.size());
 	}
-	while (_volumeRenderer.meshState()->scheduleExtractions(100)) {
+	const voxelrender::MeshStatePtr &meshState = _volumeRenderer.meshState();
+	while (meshState->scheduleExtractions(100)) {
 	}
-	_volumeRenderer.meshState()->waitForPendingExtractions();
+	meshState->waitForPendingExtractions();
 	_volumeRenderer.update();
 	_volumeRenderer.render(_volumeRendererCtx, camera, false);
 }
