@@ -23,17 +23,10 @@
 #include "video/FrameBuffer.h"
 #include "VoxelShader.h"
 #include "ShadowmapShader.h"
-#include "VoxelShaderConstants.h"
-#include "voxel/Mesh.h"
 #include "voxelrender/Shadow.h"
-#include "core/GLM.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include <unordered_map>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/hash.hpp>
+#include "MeshState.h"
 
 namespace video {
 class Camera;
@@ -68,14 +61,7 @@ struct RenderContext : public core::NonCopyable {
  * @sa voxel::RawVolume
  */
 class RawVolumeRenderer : public core::NonCopyable {
-public:
-	static constexpr int MAX_VOLUMES = 2048;
 protected:
-	enum MeshType {
-		MeshType_Opaque,
-		MeshType_Transparency,
-		MeshType_Max
-	};
 	struct State {
 		bool _hidden = false;
 		bool _culled = false;
@@ -106,9 +92,7 @@ protected:
 		}
 	};
 	core::Array<State, MAX_VOLUMES> _state {};
-	typedef core::Array<voxel::Mesh*, MAX_VOLUMES> Meshes;
-	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
-	MeshesMap _meshes[MeshType_Max];
+	MeshState _meshState;
 
 	int resolveIdx(int idx) const;
 
@@ -147,28 +131,15 @@ protected:
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
-	struct ExtractionCtx {
-		ExtractionCtx() {}
-		ExtractionCtx(const glm::ivec3& _mins, int _idx, voxel::ChunkMesh&& _mesh) :
-				mins(_mins), idx(_idx), mesh(_mesh) {
-		}
-		glm::ivec3 mins {};
-		int idx = -1;
-		voxel::ChunkMesh mesh;
-
-		inline bool operator<(const ExtractionCtx &rhs) const {
-			return idx < rhs.idx;
-		}
-	};
 	core::ThreadPool _threadPool { core::halfcpus(), "VolumeRndr" };
 	core::AtomicInt _runningExtractorTasks { 0 };
 	core::AtomicInt _pendingExtractorTasks { 0 };
-	core::ConcurrentPriorityQueue<ExtractionCtx> _pendingQueue;
+	core::ConcurrentPriorityQueue<MeshState::ExtractionCtx> _pendingQueue;
 	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3& meshSize) const;
 	void updatePalette(int idx);
 	bool updateBufferForVolume(int idx, MeshType type);
 	void clearMeshes();
-	void deleteMesh(int idx, MeshType meshType, Meshes &array);
+	void deleteMesh(int idx, MeshType meshType, MeshState::Meshes &array);
 	void updateCulling(int idx, const video::Camera &camera);
 	bool isVisible(int idx) const;
 

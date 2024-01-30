@@ -308,22 +308,16 @@ void RawVolumeRenderer::update() {
 		_meshMode->markClean();
 	}
 	scheduleExtractions();
-	ExtractionCtx result;
+	MeshState::ExtractionCtx result;
 	int cnt = 0;
 	while (_pendingQueue.pop(result)) {
 		if (_state[result.idx]._rawVolume == nullptr) {
 			continue;
 		}
-		Meshes& meshes = _meshes[MeshType_Opaque][result.mins];
-		delete meshes[result.idx];
-		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Opaque]));
+		_meshState.set(result);
 		if (!updateBufferForVolume(result.idx, MeshType_Opaque)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
-
-		Meshes& meshesT = _meshes[MeshType_Transparency][result.mins];
-		delete meshesT[result.idx];
-		meshesT[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Transparency]));
 		if (!updateBufferForVolume(result.idx, MeshType_Transparency)) {
 			Log::error("Failed to update the mesh at index %i", result.idx);
 		}
@@ -344,8 +338,8 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	size_t vertCount = 0u;
 	size_t normalsCount = 0u;
 	size_t indCount = 0u;
-	for (auto& i : _meshes[type]) {
-		const Meshes& meshes = i.second;
+	for (auto& i : _meshState._meshes[type]) {
+		const MeshState::Meshes& meshes = i.second;
 		const voxel::Mesh* mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
@@ -379,8 +373,8 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	voxel::IndexType* indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
-	for (auto& i : _meshes[type]) {
-		const Meshes& meshes = i.second;
+	for (auto& i : _meshState._meshes[type]) {
+		const MeshState::Meshes& meshes = i.second;
 		const voxel::Mesh* mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
@@ -455,8 +449,8 @@ bool RawVolumeRenderer::empty(int idx) const {
 	}
 	const int bufferIndex = resolveIdx(idx);
 	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto& m : _meshes[i]) {
-			const Meshes& meshes = m.second;
+		for (auto& m : _meshState._meshes[i]) {
+			const MeshState::Meshes& meshes = m.second;
 			if (meshes[bufferIndex] != nullptr && meshes[bufferIndex]->getNoOfIndices() > 0) {
 				return false;
 			}
@@ -500,8 +494,8 @@ bool RawVolumeRenderer::extractRegion(int idx, const voxel::Region& region) {
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
 					for (int i = 0; i < MeshType_Max; ++i) {
-						auto iter = _meshes[i].find(mins);
-						if (iter != _meshes[i].end()) {
+						auto iter = _meshState._meshes[i].find(mins);
+						if (iter != _meshState._meshes[i].end()) {
 							deleteMesh(bufferIndex, (MeshType)i, iter->second);
 						}
 					}
@@ -524,7 +518,7 @@ void RawVolumeRenderer::waitForPendingExtractions() {
 
 void RawVolumeRenderer::clear() {
 	clearPendingExtractions();
-	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
+	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		if (setVolume(i, nullptr, nullptr, true) != nullptr) {
 			updateBufferForVolume(i);
 		}
@@ -640,7 +634,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
-	for (auto& i : _meshes[MeshType_Transparency]) {
+	for (auto& i : _meshState._meshes[MeshType_Transparency]) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
@@ -898,7 +892,7 @@ void RawVolumeRenderer::setVolumeReference(int idx, int referencedIdx) {
 	state._reference = referencedIdx;
 }
 
-void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, Meshes &array) {
+void RawVolumeRenderer::deleteMesh(int idx, MeshType meshType, MeshState::Meshes &array) {
 	voxel::Mesh *mesh = array[idx];
 	delete mesh;
 	array[idx] = nullptr;
@@ -932,7 +926,7 @@ voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume
 	state._rawVolume = volume;
 	if (meshDelete) {
 		for (int i = 0; i < MeshType_Max; ++i) {
-			for (auto& iter : _meshes[i]) {
+			for (auto& iter : _meshState._meshes[i]) {
 				deleteMesh(idx, (MeshType)i, iter.second);
 			}
 		}
@@ -952,14 +946,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3& eye, const glm::vec3& ce
 }
 
 void RawVolumeRenderer::clearMeshes() {
-	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto &iter : _meshes[i]) {
-			for (auto &mesh : iter.second) {
-				delete mesh;
-			}
-		}
-		_meshes[i].clear();
-	}
+	_meshState.clear();
 }
 
 void RawVolumeRenderer::shutdownStateBuffers() {

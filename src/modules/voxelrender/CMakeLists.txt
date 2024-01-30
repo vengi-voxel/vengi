@@ -5,6 +5,7 @@ set(SRCS
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
+	MeshState.h MeshState.cpp
 )
 set(SHADERS
 	voxel

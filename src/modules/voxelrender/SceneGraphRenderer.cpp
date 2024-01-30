@@ -119,7 +119,7 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 
 void SceneGraphRenderer::nodeRemove(int nodeId) {
 	const int id = getVolumeId(nodeId);
-	if (id < 0 || id >= RawVolumeRenderer::MAX_VOLUMES) {
+	if (id < 0 || id >= MAX_VOLUMES) {
 		return;
 	}
 	_renderer.setVolume(id, nullptr, nullptr, true);
@@ -133,7 +133,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const bool grayInactive = renderContext.grayInactive;
 	const bool sceneMode = renderContext.sceneMode;
 	// remove those volumes that are no longer part of the scene graph
-	for (int i = 0; i < RawVolumeRenderer::MAX_VOLUMES; ++i) {
+	for (int i = 0; i < MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
 			if (_renderer.setVolume(nodeId, nullptr, nullptr, true) != nullptr) {
@@ -161,7 +161,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 
 		const int id = getVolumeId(node);
-		if (id >= RawVolumeRenderer::MAX_VOLUMES) {
+		if (id >= MAX_VOLUMES) {
 			continue;
 		}
 		voxel::RawVolume *v = _renderer.volume(id);
@@ -200,7 +200,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				continue;
 			}
 			const int id = getVolumeId(node);
-			if (id >= RawVolumeRenderer::MAX_VOLUMES) {
+			if (id >= MAX_VOLUMES) {
 				continue;
 			}
 			const int referencedId = getVolumeId(node.reference());
