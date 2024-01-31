@@ -19,8 +19,7 @@ namespace voxelrender {
  * @see voxelformat::toCameraNode()
  */
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
-scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera);
-
+scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 
 /**
  * @brief Rendering of a voxel::SceneGraph
@@ -38,8 +37,8 @@ public:
 	void update();
 	void shutdown();
 
-	void setAmbientColor(const glm::vec3& color);
-	void setDiffuseColor(const glm::vec3& color);
+	void setAmbientColor(const glm::vec3 &color);
+	void setDiffuseColor(const glm::vec3 &color);
 
 	void nodeRemove(int nodeId);
 
@@ -47,9 +46,11 @@ public:
 	bool empty(scenegraph::SceneGraphNode &node);
 	void extractAll();
 	/**
-	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is false, you have to call @c update() manually!
+	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
+	 * false, you have to call @c update() manually!
 	 */
-	void render(RenderContext &renderContext, const video::Camera& camera, bool shadow = true, bool waitPending = false);
+	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
+				bool waitPending = false);
 	void clear();
 };
 

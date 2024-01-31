@@ -6,10 +6,10 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
-#include "video/Camera.h"
-#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "video/Camera.h"
+#include "voxel/RawVolume.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace voxelrender {
@@ -68,7 +68,7 @@ void SceneGraphRenderer::clear() {
 	_renderer.clear();
 }
 
-scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera& camera) {
+scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	scenegraph::SceneGraphNodeCamera node;
 	scenegraph::SceneGraphTransform transform;
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;

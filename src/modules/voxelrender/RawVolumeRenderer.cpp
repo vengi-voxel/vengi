@@ -3,37 +3,35 @@
  */
 
 #include "RawVolumeRenderer.h"
-#include "core/Common.h"
-#include "core/Trace.h"
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include "core/collection/DynamicArray.h"
-#include <glm/gtx/norm.hpp>
-#include "video/FrameBufferConfig.h"
-#include "video/ScopedFrameBuffer.h"
-#include "video/Texture.h"
-#include "video/TextureConfig.h"
-#include "voxel/ChunkMesh.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "voxel/RawVolume.h"
-#include "voxel/SurfaceExtractor.h"
-#include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
-#include "video/ScopedPolygonMode.h"
 #include "ShaderAttribute.h"
-#include "video/Camera.h"
-#include "video/Types.h"
-#include "video/Renderer.h"
-#include "video/ScopedState.h"
-#include "video/Shader.h"
+#include "VoxelShaderConstants.h"
+#include "core/Algorithm.h"
 #include "core/ArrayLength.h"
-#include "core/Var.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
-#include "core/Algorithm.h"
 #include "core/StandardLib.h"
-#include "VoxelShaderConstants.h"
+#include "core/Trace.h"
+#include "core/Var.h"
+#include "core/collection/DynamicArray.h"
+#include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "video/Camera.h"
+#include "video/FrameBufferConfig.h"
+#include "video/Renderer.h"
+#include "video/ScopedFrameBuffer.h"
+#include "video/ScopedPolygonMode.h"
+#include "video/ScopedState.h"
+#include "video/Shader.h"
+#include "video/Texture.h"
+#include "video/TextureConfig.h"
+#include "video/Types.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #include <SDL_timer.h>
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/gtx/norm.hpp>
 
 namespace voxelrender {
 
@@ -597,7 +595,7 @@ bool RawVolumeRenderer::isVisible(int idx) const {
 	return true;
 }
 
-void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera& camera, bool shadow) {
+void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
 	bool visible = false;
@@ -801,8 +799,8 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 	if (_bloom->boolVal()) {
 		video::FrameBuffer &frameBuffer = renderContext.frameBuffer;
-		const video::TexturePtr& color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
-		const video::TexturePtr& color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
+		const video::TexturePtr &color0 = frameBuffer.texture(video::FrameBufferAttachment::Color0);
+		const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		renderContext.bloomRenderer.render(color0, color1);
 	}
 	if (marchingCubes) {
@@ -835,7 +833,7 @@ voxel::Region RawVolumeRenderer::region() const {
 	voxel::Region region;
 	bool validVolume = false;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		const voxel::RawVolume* v = volume(idx);
+		const voxel::RawVolume *v = volume(idx);
 		if (v == nullptr) {
 			continue;
 		}
@@ -926,7 +924,7 @@ void RawVolumeRenderer::clearMeshes() {
 
 void RawVolumeRenderer::shutdownStateBuffers() {
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
-		State& state = _state[idx];
+		State &state = _state[idx];
 		for (int i = 0; i < MeshType_Max; ++i) {
 			state._vertexBuffer[i].shutdown();
 			state._vertexBufferIndex[i] = -1;
@@ -962,4 +960,4 @@ core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
 	return old;
 }
 
-}
+} // namespace voxelrender
