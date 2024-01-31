@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/Optional.h"
 #include "core/SharedPtr.h"
 #include "core/Var.h"
