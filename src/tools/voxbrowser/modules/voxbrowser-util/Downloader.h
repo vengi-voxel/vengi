@@ -8,8 +8,6 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
-#include "image/Image.h"
-#include "video/gl/GLTypes.h"
 
 namespace voxbrowser {
 
