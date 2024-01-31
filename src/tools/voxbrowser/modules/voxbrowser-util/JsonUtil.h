@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/String.h"
 #include <json.hpp>
 
