@@ -167,7 +167,7 @@ bool CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String 
 bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &stream,
 								 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								 const LoadContext &ctx, int version) {
-	if (version == 3) {
+	if (version == 3 || version == 2) {
 		uint32_t chunkLen;
 		wrap(stream.readUInt32(chunkLen))
 	} else {
@@ -403,6 +403,7 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, io::SeekableRe
 	io::Base64ReadStream base64Stream(stream);
 	uint8_t version;
 	wrap(base64Stream.readUInt8(version))
+	Log::debug("Found version %i", (int)version);
 	if (version == 1) {
 		if (!loadVersion1(filename, base64Stream, sceneGraph, palette, ctx)) {
 			return false;
