@@ -226,7 +226,8 @@ inline int64_t SeekableReadStream::remaining() const {
 }
 
 inline bool SeekableReadStream::empty() const {
-	return size() == 0;
+	// even invalid streams (a size of -1) are empty
+	return size() <= 0;
 }
 
 /**

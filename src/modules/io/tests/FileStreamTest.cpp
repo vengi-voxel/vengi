@@ -28,11 +28,11 @@ TEST_F(FileStreamTest, testInvalidFile) {
 	FileStream stream(file);
 	EXPECT_TRUE(stream.empty());
 	EXPECT_TRUE(stream.eos());
-	EXPECT_EQ(0, stream.size());
+	EXPECT_EQ(-1, stream.size());
 	int8_t val = 0;
 	EXPECT_EQ(-1, stream.readInt8(val));
 	EXPECT_FALSE(stream.writeInt8(val));
-	EXPECT_EQ(0, stream.size());
+	EXPECT_EQ(-1, stream.size());
 }
 
 TEST_F(FileStreamTest, testFileStreamReadPastEndOfFile) {
