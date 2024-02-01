@@ -3,30 +3,30 @@
  */
 
 #include "HttpCacheStream.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "http/Http.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
+#include "io/Filesystem.h"
 
 namespace http {
 
-HttpCacheStream::HttpCacheStream(const core::String &file, const core::String &url) : _file(file), _url(url) {
-	if (!io::filesystem()->exists(file)) {
+HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url) : _file(file), _url(url) {
+	if (!fs->exists(file)) {
 		io::BufferedReadWriteStream bufStream(1024 * 1024);
 		int statusCode = 0;
 		if (http::download(url, bufStream, &statusCode)) {
 			if (http::isValidStatusCode(statusCode)) {
 				bufStream.seek(0);
-				if (io::filesystem()->write(file, bufStream)) {
-					_fileStream = new io::FileStream(io::filesystem()->open(file, io::FileMode::Read));
+				if (fs->write(file, bufStream)) {
+					_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
 					_newInCache = true;
 				}
 			}
 		}
 	} else {
 		Log::debug("Use cached file at %s", file.c_str());
-		_fileStream = new io::FileStream(io::filesystem()->open(file, io::FileMode::Read));
+		_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
 	}
 }
 

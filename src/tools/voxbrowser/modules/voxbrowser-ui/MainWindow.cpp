@@ -166,14 +166,14 @@ void MainWindow::createThumbnail(const VoxelFile &voxelFile) {
 	io::FileDescription fileDesc;
 	fileDesc.set(targetFile);
 	voxelformat::LoadContext loadctx;
-	const io::FilePtr &file = io::filesystem()->open(targetFile, io::FileMode::Read);
+	const io::FilePtr &file = _app->filesystem()->open(targetFile, io::FileMode::Read);
 	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", file->name().c_str());
 		return;
 	}
 
-	const core::String &targetImageFile = io::filesystem()->writePath(targetFile + ".png");
+	const core::String &targetImageFile = _app->filesystem()->writePath(targetFile + ".png");
 	const image::ImagePtr &image = voxelrender::volumeThumbnail(sceneGraph, _thumbnailCtx);
 	if (!image || image->isFailed()) {
 		Log::error("Failed to create thumbnail for %s", voxelFile.name.c_str());
@@ -200,7 +200,7 @@ void MainWindow::updateAssetDetails() {
 		ImGui::URLItem("URL", voxelFile.url.c_str());
 		if (voxelFile.downloaded) {
 			if (ImGui::Button("Open")) {
-				command::executeCommands("url \"file://" + io::filesystem()->writePath(voxelFile.targetFile()) + "\"");
+				command::executeCommands("url \"file://" + _app->filesystem()->writePath(voxelFile.targetFile()) + "\"");
 			}
 			if (!_texturePool.has(voxelFile.name)) {
 				if (ImGui::Button("Create thumbnail")) {
@@ -209,7 +209,7 @@ void MainWindow::updateAssetDetails() {
 			}
 		} else {
 			if (ImGui::Button("Download")) {
-				http::HttpCacheStream stream(voxelFile.targetFile(), voxelFile.url);
+				http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
 				if (stream.valid()) {
 					voxelFile.downloaded = true;
 				} else {

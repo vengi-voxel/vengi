@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "io/Stream.h"
 
 namespace io {
 class FileStream;
 class BufferedReadWriteStream;
+class Filesystem;
+typedef core::SharedPtr<Filesystem> FilesystemPtr;
 } // namespace io
 
 namespace http {
@@ -31,7 +34,7 @@ public:
 	 * @param[in] file The path to the file stored in the virtual filesystem
 	 * @sa io::Filesystem::homePath()
 	 */
-	HttpCacheStream(const core::String &file, const core::String &url);
+	HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url);
 	virtual ~HttpCacheStream();
 
 	bool valid() const;

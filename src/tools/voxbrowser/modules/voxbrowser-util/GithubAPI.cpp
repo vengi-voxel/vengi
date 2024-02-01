@@ -4,6 +4,7 @@
 
 #include "GithubAPI.h"
 #include "JsonUtil.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/HttpCacheStream.h"
@@ -17,7 +18,7 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch) {
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	const core::String file = "github-" + repository + "-" + branch + ".json";
-	http::HttpCacheStream stream(file, url);
+	http::HttpCacheStream stream(io::filesystem(), file, url);
 	core::DynamicArray<TreeEntry> entries;
 	if (!stream.valid()) {
 		return entries;

@@ -97,12 +97,12 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
 		_threadPool->enqueue([this, voxelFile = voxelFile]() {
-			http::HttpCacheStream stream(voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
+			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
 			_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
 		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImagePath]() {
-			http::HttpCacheStream stream(voxelFile.targetFile(), voxelFile.url);
+			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile(), voxelFile.url);
 			voxelformat::LoadContext loadCtx;
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.targetFile(), stream, loadCtx);
 			if (!thumbnailImage) {
