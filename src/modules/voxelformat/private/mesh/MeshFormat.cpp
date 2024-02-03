@@ -501,7 +501,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 	const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
-	const bool marchingCubes = meshMode == 1;
+	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)meshMode;
 
 	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
@@ -515,9 +515,10 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		auto lambda = [&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			voxel::SurfaceExtractionContext ctx =
-				marchingCubes ? voxel::buildMarchingCubesContext(volume, region, *mesh, node.palette())
-							  : voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads,
-														 reuseVertices, ambientOcclusion);
+				type == voxel::SurfaceExtractionType::MarchingCubes
+					? voxel::buildMarchingCubesContext(volume, region, *mesh, node.palette())
+					: voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads, reuseVertices,
+											   ambientOcclusion);
 			voxel::extractSurface(ctx);
 			mesh->calculateNormals();
 			core::ScopedLock scoped(lock);
@@ -553,7 +554,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	} else {
 		Log::debug("Save meshes");
 		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, stream, scale,
-						   marchingCubes ? false : quads, withColor, withTexCoords);
+						   type == voxel::SurfaceExtractionType::Cubic ? quads : false, withColor, withTexCoords);
 	}
 	for (MeshExt &meshext : meshes) {
 		delete meshext.mesh;
