@@ -13,17 +13,18 @@ namespace voxel {
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 										   const glm::ivec3 &translate, bool mergeQuads, bool reuseVertices,
 										   bool ambientOcclusion) {
-	return SurfaceExtractionContext(volume, getPalette(), region, mesh, translate, false, mergeQuads, reuseVertices,
-									ambientOcclusion);
+	return SurfaceExtractionContext(volume, getPalette(), region, mesh, translate, SurfaceExtractionType::Cubic,
+									mergeQuads, reuseVertices, ambientOcclusion);
 }
 
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette) {
-	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), true, false, false, false);
+	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::MarchingCubes,
+									false, false, false);
 }
 
 void extractSurface(SurfaceExtractionContext &ctx) {
-	if (ctx.marchingCubes) {
+	if (ctx.type == SurfaceExtractionType::MarchingCubes) {
 		voxel::Region extractRegion = ctx.region;
 		extractRegion.shrink(-1);
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh);
