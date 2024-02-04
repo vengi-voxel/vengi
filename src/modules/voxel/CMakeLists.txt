@@ -34,7 +34,7 @@ endif()
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
-	tests/AmbientOcclusion.cpp
+	tests/AmbientOcclusionTest.cpp
 	tests/FaceTest.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp

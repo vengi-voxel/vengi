@@ -51,4 +51,15 @@ struct ambientocclusion {
 		v->setVoxel(15, 16, 6, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 		return v;
 	}
+
+	// https://github.com/vengi-voxel/vengi/issues/388
+	static core::SharedPtr<voxel::RawVolume> createIssue338() {
+		glm::ivec3 mins(0, 0, 0);
+		glm::ivec3 maxs(1, 0, 1);
+		voxel::Region region(mins, maxs);
+		core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 244));
+		v->setVoxel(1, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 244));
+		return v;
+	}
 };
