@@ -428,21 +428,43 @@ bool blendEquation(BlendEquation func) {
 void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func) {
 	const int stateIndex = core::enumVal(State::Blend);
 	enabled = glstate().states[stateIndex];
-	src = glstate().blendSrc;
-	dest = glstate().blendDest;
+	src = glstate().blendSrcRGB;
+	dest = glstate().blendDestRGB;
 	func = glstate().blendEquation;
 }
 
 bool blendFunc(BlendMode src, BlendMode dest) {
-	if (glstate().blendSrc == src && glstate().blendDest == dest) {
+	if (glstate().blendSrcRGB == src && glstate().blendDestRGB == dest && glstate().blendSrcAlpha == src &&
+		glstate().blendDestAlpha == dest) {
 		return false;
 	}
-	glstate().blendSrc = src;
-	glstate().blendDest = dest;
+	glstate().blendSrcRGB = src;
+	glstate().blendDestRGB = dest;
+	glstate().blendSrcAlpha = src;
+	glstate().blendDestAlpha = dest;
 	const GLenum glSrc = _priv::BlendModes[core::enumVal(src)];
 	const GLenum glDest = _priv::BlendModes[core::enumVal(dest)];
 	core_assert(glBlendFunc != nullptr);
 	glBlendFunc(glSrc, glDest);
+	checkError();
+	return true;
+}
+
+bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
+	if (glstate().blendSrcRGB == srcRGB && glstate().blendDestRGB == destRGB && glstate().blendSrcAlpha == srcAlpha &&
+		glstate().blendDestAlpha == destAlpha) {
+		return false;
+	}
+	glstate().blendSrcRGB = srcRGB;
+	glstate().blendDestRGB = destRGB;
+	glstate().blendSrcAlpha = srcAlpha;
+	glstate().blendDestAlpha = destAlpha;
+	const GLenum glSrcRGB = _priv::BlendModes[core::enumVal(srcRGB)];
+	const GLenum glDestRGB = _priv::BlendModes[core::enumVal(destRGB)];
+	const GLenum glSrcAlpha = _priv::BlendModes[core::enumVal(srcAlpha)];
+	const GLenum glDestAlpha = _priv::BlendModes[core::enumVal(destAlpha)];
+	core_assert(glBlendFuncSeparate != nullptr);
+	glBlendFuncSeparate(glSrcRGB, glDestRGB, glSrcAlpha, glDestAlpha);
 	checkError();
 	return true;
 }
@@ -1790,6 +1812,11 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}
+
+	// set some default values
+	blendEquation(BlendEquation::Add);
+	blendFuncSeparate(BlendMode::SourceAlpha, BlendMode::OneMinusSourceAlpha, BlendMode::One,
+					  BlendMode::OneMinusSourceAlpha);
 
 	return true;
 }

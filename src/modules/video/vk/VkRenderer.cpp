@@ -156,6 +156,14 @@ bool checkError(bool triggerAssert) {
 void readBuffer(GBufferTextureType textureType) {
 }
 
+bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha) {
+	return false;
+}
+
+bool pointSize(float size) {
+	return false;
+}
+
 float lineWidth(float width) {
 	return 1.0f;
 }

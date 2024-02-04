@@ -42,8 +42,10 @@ struct GLState {
 	float pointSize = 1.0f;
 	Face polygonModeFace = Face::Max;
 	PolygonMode polygonMode = PolygonMode::Solid;
-	BlendMode blendSrc = BlendMode::One;
-	BlendMode blendDest = BlendMode::Zero;
+	BlendMode blendSrcRGB = BlendMode::Max;
+	BlendMode blendDestRGB = BlendMode::Max;
+	BlendMode blendSrcAlpha = BlendMode::Max;
+	BlendMode blendDestAlpha = BlendMode::Max;
 	BlendEquation blendEquation = BlendEquation::Max;
 	TextureUnit textureUnit = TextureUnit::Zero;
 	Id textureHandle[core::enumVal(TextureUnit::Max)] { InvalidId };

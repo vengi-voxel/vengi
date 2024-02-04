@@ -88,6 +88,7 @@ bool depthFunc(CompareFunc func);
 CompareFunc getDepthFunc();
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func);
 bool blendFunc(BlendMode src, BlendMode dest);
+bool blendFuncSeparate(BlendMode srcRGB, BlendMode destRGB, BlendMode srcAlpha, BlendMode destAlpha);
 bool blendEquation(BlendEquation func);
 PolygonMode polygonMode(Face face, PolygonMode mode);
 bool polygonOffset(const glm::vec2 &offset);
