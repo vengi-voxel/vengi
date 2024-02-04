@@ -18,6 +18,7 @@
 
 #include "core/GLM.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -133,7 +134,7 @@ public:
 	/**
 	 * @sa update()
 	 */
-	bool marchingCubes() const;
+	voxel::SurfaceExtractionType meshMode() const;
 
 	/**
 	 * @return @c true if the mesh should get deleted in the renderer

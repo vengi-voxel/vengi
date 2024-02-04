@@ -97,7 +97,8 @@ void RawVolumeRenderer::construct() {
 }
 
 bool RawVolumeRenderer::initStateBuffers() {
-	const bool marchingCubes = _meshState->marchingCubes();
+	const voxel::SurfaceExtractionType meshMode = _meshState->meshMode();
+	const bool normals = meshMode != voxel::SurfaceExtractionType::Cubic;
 	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 		State &state = _state[idx];
 		_meshState->setModel(idx, glm::mat4(1.0f));
@@ -108,7 +109,7 @@ bool RawVolumeRenderer::initStateBuffers() {
 				return false;
 			}
 
-			if (marchingCubes) {
+			if (normals) {
 				state._normalBufferIndex[i] = state._vertexBuffer[i].create();
 				if (state._normalBufferIndex[i] == -1) {
 					Log::error("Could not create the normal buffer object");
@@ -124,7 +125,7 @@ bool RawVolumeRenderer::initStateBuffers() {
 		}
 	}
 
-	if (marchingCubes) {
+	if (normals) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			State &state = _state[idx];
 			for (int i = 0; i < MeshType_Max; ++i) {
@@ -510,9 +511,10 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	_voxelShaderFragData.lightdir = _shadow.sunDirection();
 	core_assert_always(_voxelData.update(_voxelShaderFragData));
 
-	const bool marchingCubes = _meshState->marchingCubes();
+	const voxel::SurfaceExtractionType meshMode = _meshState->meshMode();
+	const bool normals = meshMode != voxel::SurfaceExtractionType::Cubic;
 	video::Id oldShader = video::getProgram();
-	if (marchingCubes) {
+	if (normals) {
 		_voxelNormShader.activate();
 	} else {
 		_voxelShader.activate();
@@ -554,7 +556,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
-		if (marchingCubes) {
+		if (normals) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
 			if (_shadowMap->boolVal()) {
@@ -610,7 +612,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			// TODO: alpha support - sort according to eye pos
 			video::ScopedPolygonMode polygonMode(mode);
 			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Transparency]);
-			if (marchingCubes) {
+			if (normals) {
 				core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 				core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
 				if (_shadowMap->boolVal()) {
@@ -640,7 +642,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		const video::TexturePtr &color1 = frameBuffer.texture(video::FrameBufferAttachment::Color1);
 		renderContext.bloomRenderer.render(color0, color1);
 	}
-	if (marchingCubes) {
+	if (normals) {
 		_voxelNormShader.deactivate();
 	} else {
 		_voxelShader.deactivate();

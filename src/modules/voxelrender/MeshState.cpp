@@ -171,7 +171,7 @@ bool MeshState::scheduleExtractions(size_t maxExtraction) {
 	if (maxExtraction == 0) {
 		return true;
 	}
-	const bool marchingCubes = _meshMode->intVal() == 1;
+	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)_meshMode->intVal();
 	size_t i;
 	for (i = 0; i < n; ++i) {
 		ExtractRegion extractRegion;
@@ -194,13 +194,14 @@ bool MeshState::scheduleExtractions(size_t maxExtraction) {
 		if (!onlyAir) {
 			const palette::Palette &pal = palette(resolveIdx(idx));
 			++_pendingExtractorTasks;
-			_threadPool.enqueue([marchingCubes, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx,
+			_threadPool.enqueue([type, movedPal = core::move(pal), movedCopy = core::move(copy), mins, idx,
 								 finalRegion, this]() {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
 				voxel::SurfaceExtractionContext ctx =
-					marchingCubes ? voxel::buildMarchingCubesContext(&movedCopy, finalRegion, mesh, movedPal)
-								  : voxel::buildCubicContext(&movedCopy, finalRegion, mesh, mins);
+					type == voxel::SurfaceExtractionType::MarchingCubes
+						? voxel::buildMarchingCubesContext(&movedCopy, finalRegion, mesh, movedPal)
+						: voxel::buildCubicContext(&movedCopy, finalRegion, mesh, mins);
 				voxel::extractSurface(ctx);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);
@@ -300,8 +301,8 @@ void MeshState::clearPendingExtractions() {
 	_pendingExtractorTasks = 0;
 }
 
-bool MeshState::marchingCubes() const {
-	return _meshMode->intVal() == 1;
+voxel::SurfaceExtractionType MeshState::meshMode() const {
+	return (voxel::SurfaceExtractionType)_meshMode->intVal();
 }
 
 int MeshState::resolveIdx(int idx) const {
