@@ -3,6 +3,7 @@
  */
 
 #include "TextureConfig.h"
+#include "core/Log.h"
 #include "video/Renderer.h"
 #include <glm/common.hpp>
 
@@ -81,6 +82,9 @@ TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
 
 TextureConfig& TextureConfig::samples(int samples) {
 	_samples = glm::clamp(samples, 0, video::limit(Limit::MaxSamples));
+	if (samples != _samples) {
+		Log::warn("Could get get the requested number of samples - using %i instead of %i", _samples, samples);
+	}
 	return *this;
 }
 
