@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "math/Axis.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/TextEditor.h"
 #include "voxelgenerator/LUAGenerator.h"
