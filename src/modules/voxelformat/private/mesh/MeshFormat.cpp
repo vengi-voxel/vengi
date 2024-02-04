@@ -500,8 +500,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
-	const int meshMode = core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
-	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)meshMode;
+	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
 	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);

@@ -5,8 +5,10 @@
 #include "FormatConfig.h"
 #include "core/Color.h"
 #include "core/GameConfig.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "palette/Palette.h"
+#include "voxel/SurfaceExtractor.h"
 
 namespace voxelformat {
 
@@ -20,7 +22,10 @@ bool FormatConfig::init() {
 				   "Controls the algorithm that is used to perform the color reduction", colorReductionValidator);
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh",
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxelMeshMode, "0", core::CV_SHADER, "0 = cubes, 1 = marching cubes", core::Var::minMaxValidator<0, 1>);
+	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic),
+				   core::CV_SHADER, "0 = cubes, 1 = marching cubes",
+				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
+											  (int)voxel::SurfaceExtractionType::Max - 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion",

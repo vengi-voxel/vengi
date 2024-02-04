@@ -247,7 +247,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 	_state.scene = {};
 	_state.lights = {};
 
-	const bool marchingCubes = core::Var::getSafe(cfg::VoxelMeshMode)->intVal() == 1;
+	voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 	// TODO: support references
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -263,8 +263,9 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		voxel::Region region = v->region();
 
 		voxel::SurfaceExtractionContext ctx =
-			marchingCubes ? voxel::buildMarchingCubesContext(v, region, mesh, node.palette())
-						  : voxel::buildCubicContext(v, region, mesh, v->region().getLowerCorner());
+			type == voxel::SurfaceExtractionType::MarchingCubes
+				? voxel::buildMarchingCubesContext(v, region, mesh, node.palette())
+				: voxel::buildCubicContext(v, region, mesh, v->region().getLowerCorner());
 		voxel::extractSurface(ctx);
 
 		setupGlowMaterial(node);

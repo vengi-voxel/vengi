@@ -9,6 +9,7 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
+#include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -45,7 +46,7 @@ protected:
 		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
 		core::Var::get(cfg::VoxEditRendershadow, "true");
 		core::Var::get(cfg::VoxEditGridsize, "1");
-		core::Var::get(cfg::VoxelMeshMode, "0");
+		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic));
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		core::Var::get(cfg::VoxEditShowaabb, "");
 		core::Var::get(cfg::VoxEditShowBones, "");

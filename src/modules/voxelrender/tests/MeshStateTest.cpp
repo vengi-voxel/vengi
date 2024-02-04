@@ -4,7 +4,9 @@
 
 #include "voxelrender/MeshState.h"
 #include "app/tests/AbstractTest.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/SurfaceExtractor.h"
 
 namespace voxelrender {
 
@@ -16,7 +18,7 @@ protected:
 	void SetUp() override {
 		Super::SetUp();
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
-		core::Var::get(cfg::VoxelMeshMode, "0");
+		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic));
 	}
 };
 

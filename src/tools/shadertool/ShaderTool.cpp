@@ -3,25 +3,25 @@
  */
 
 #include "ShaderTool.h"
-#include "io/Filesystem.h"
-#include "core/Process.h"
-#include "core/StringUtil.h"
-#include "core/Log.h"
-#include "core/Var.h"
-#include "core/Assert.h"
-#include "core/GameConfig.h"
-#include "util/IncludeUtil.h"
-#include "video/Shader.h"
 #include "Generator.h"
 #include "Parser.h"
+#include "core/GameConfig.h"
+#include "core/Log.h"
+#include "core/Process.h"
+#include "core/StringUtil.h"
+#include "core/Var.h"
+#include "io/Filesystem.h"
+#include "util/IncludeUtil.h"
+#include "video/Shader.h"
+#include "voxel/SurfaceExtractor.h"
 
-ShaderTool::ShaderTool(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, timeProvider) {
+ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
+	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "shadertool");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
 }
 
-bool ShaderTool::parse(const core::String& filename, const core::String& buffer, bool vertex) {
+bool ShaderTool::parse(const core::String &filename, const core::String &buffer, bool vertex) {
 	return shadertool::parse(io::filesystem()->absolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
 }
 
@@ -41,15 +41,16 @@ app::AppState ShaderTool::onConstruct() {
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-	core::Var::get(cfg::VoxelMeshMode, "1", core::CV_SHADER);
+	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::MarchingCubes),
+				   core::CV_SHADER);
 	return Super::onConstruct();
 }
 
-void ShaderTool::validate(const core::String& name) {
+void ShaderTool::validate(const core::String &name) {
 	if (_glslangValidatorBin.empty()) {
 		return;
 	}
-	const core::String& writePath = filesystem()->homePath();
+	const core::String &writePath = filesystem()->homePath();
 	core::DynamicArray<core::String> args;
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
@@ -67,25 +68,25 @@ void ShaderTool::validate(const core::String& name) {
 }
 
 bool ShaderTool::printInfo() {
-	for (const auto& block : _shaderStruct.uniformBlocks) {
+	for (const auto &block : _shaderStruct.uniformBlocks) {
 		Log::debug("Found uniform block %s with %i members", block.name.c_str(), int(block.members.size()));
 	}
-	for (const auto& v : _shaderStruct.uniforms) {
+	for (const auto &v : _shaderStruct.uniforms) {
 		Log::debug("Found uniform of type %i with name %s", int(v.type), v.name.c_str());
 	}
-	for (const auto& v : _shaderStruct.attributes) {
+	for (const auto &v : _shaderStruct.attributes) {
 		Log::debug("Found attribute of type %i with name %s", int(v.type), v.name.c_str());
 	}
-	for (const auto& v : _shaderStruct.varyings) {
+	for (const auto &v : _shaderStruct.varyings) {
 		Log::debug("Found varying of type %i with name %s", int(v.type), v.name.c_str());
 	}
-	for (const auto& v : _shaderStruct.outs) {
+	for (const auto &v : _shaderStruct.outs) {
 		Log::debug("Found out var of type %i with name %s", int(v.type), v.name.c_str());
 	}
 
 	const bool printIncludes = hasArg("--printincludes");
 	if (printIncludes) {
-		for (const core::String& i : _includes) {
+		for (const core::String &i : _includes) {
 			Log::info("%s%s", _shaderpath.c_str(), i.c_str());
 		}
 		return false;
@@ -93,15 +94,15 @@ bool ShaderTool::printInfo() {
 	return true;
 }
 
-core::Pair<core::String, bool> ShaderTool::getSource(const core::String& file) const {
-	const io::FilesystemPtr& fs = filesystem();
+core::Pair<core::String, bool> ShaderTool::getSource(const core::String &file) const {
+	const io::FilesystemPtr &fs = filesystem();
 
-	const core::Pair<core::String, bool>& retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
+	const core::Pair<core::String, bool> &retIncludes = util::handleIncludes(file, fs->load(file), _includeDirs);
 	core::String src = retIncludes.first;
 	int level = 0;
 	bool success = retIncludes.second;
 	while (core::string::contains(src, "#include")) {
-		const core::Pair<core::String, bool>& ret = util::handleIncludes(file, src, _includeDirs);
+		const core::Pair<core::String, bool> &ret = util::handleIncludes(file, src, _includeDirs);
 		src = ret.first;
 		success &= ret.second;
 		++level;

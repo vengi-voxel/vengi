@@ -6,10 +6,12 @@
 
 #include "app/tests/AbstractTest.h"
 #include "core/GameConfig.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/Singleton.h"
 #include "video/Renderer.h"
 #include "video/ShaderManager.h"
+#include "voxel/SurfaceExtractor.h"
 #include <SDL.h>
 
 namespace video {
@@ -44,7 +46,7 @@ protected:
 		core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
-		core::Var::get(cfg::VoxelMeshMode, "0", core::CV_SHADER);
+		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic), core::CV_SHADER);
 		core::Singleton<ShaderManager>::getInstance().update();
 	}
 

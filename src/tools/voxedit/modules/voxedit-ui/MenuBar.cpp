@@ -14,6 +14,7 @@
 #include "ui/IconsLucide.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/SurfaceExtractor.h"
 
 namespace voxedit {
 
@@ -117,7 +118,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
 				ImGui::CheckboxVar(ICON_LC_BOX " Bounding box", cfg::VoxEditShowaabb);
 				ImGui::CheckboxVar(ICON_LC_BONE " Bones", cfg::VoxEditShowBones);
-				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == 1);
+				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
 				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);

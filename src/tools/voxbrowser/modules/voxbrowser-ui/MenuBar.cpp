@@ -6,6 +6,7 @@
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "voxel/SurfaceExtractor.h"
 
 namespace voxbrowser {
 
@@ -37,7 +38,7 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 
 		if (ImGui::BeginMenu(ICON_LC_MENU " Edit")) {
 			if (ImGui::BeginMenu(ICON_LC_MENU " Options")) {
-				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() == 1);
+				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
