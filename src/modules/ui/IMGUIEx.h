@@ -47,7 +47,6 @@ IMGUI_API bool InputVarInt(const char *label, const char *varName, int step = 1,
 						   ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char *label, const core::VarPtr &var);
 IMGUI_API bool CheckboxVar(const char *label, const char *varName);
-IMGUI_API bool ComboVar(const char* label, const char* varName, const core::Buffer<const char *> &items);
 IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
@@ -63,21 +62,22 @@ IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_r
 									  const int circle_count = 13, const float speed = 1.0f);
 IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u);
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
-IMGUI_API float CalcComboBoxWidth(const char *previewLabel, bool withPadding = true);
+IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
 
 template <class Collection>
-static bool ComboStl(const char *label, int *current_item, const Collection &items) {
-	const char *preview_value = NULL;
-	const int items_count = (int)items.size();
-	if (*current_item >= 0 && *current_item < items_count)
-		preview_value = items[*current_item].c_str();
+bool ComboItems(const char *label, int *currentItem, const Collection &items) {
+	const char *previewValue = nullptr;
+	const int itemCount = (int)items.size();
+	if (*currentItem >= 0 && *currentItem < itemCount) {
+		previewValue = items[*currentItem].c_str();
+	}
 
-	if (ImGui::BeginCombo(label, preview_value, ImGuiComboFlags_None)) {
-		for (int i = 0; i < items_count; ++i) {
-			const bool selected = i == *current_item;
+	if (ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None)) {
+		for (int i = 0; i < itemCount; ++i) {
+			const bool selected = i == *currentItem;
 			const char *text = items[i].c_str();
 			if (ImGui::Selectable(text, selected)) {
-				*current_item = i;
+				*currentItem = i;
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
@@ -88,6 +88,19 @@ static bool ComboStl(const char *label, int *current_item, const Collection &ite
 	}
 	return false;
 }
+
+template <class Collection>
+bool ComboVar(const char* label, const char* varName, const Collection &items) {
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	int currentItem = var->intVal();
+	const bool retVal = ComboItems(label, &currentItem, items);
+	if (retVal) {
+		var->setVal(currentItem);
+		return true;
+	}
+	return false;
+}
+
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API void TextCentered(const char *text);
 IMGUI_API void Headline(const char *text);

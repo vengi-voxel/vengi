@@ -34,8 +34,8 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		int changed = 0;
 		changed += ImGui::InputInt("Dimensions", &params.resolution, 180, 4096);
 		changed += ImGui::InputInt("Samples", &params.samples, 16, 4096);
-		changed += ImGui::ComboStl("Tracer", (int *)&params.sampler, yocto::trace_sampler_names);
-		changed += ImGui::ComboStl("False color", (int *)&params.falsecolor, yocto::trace_falsecolor_names);
+		changed += ImGui::ComboItems("Tracer", (int *)&params.sampler, yocto::trace_sampler_names);
+		changed += ImGui::ComboItems("False color", (int *)&params.falsecolor, yocto::trace_falsecolor_names);
 		changed += ImGui::SliderInt("Bounces", &params.bounces, 1, 128);
 		changed += ImGui::SliderInt("Batch", &params.batch, 1, 16);
 		changed += ImGui::SliderFloat("Clamp", &params.clamp, 10, 1000);
@@ -48,7 +48,7 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val(&state.ambientColor[0]);
 
 		if (!state.scene.camera_names.empty()) {
-			changed += ImGui::ComboStl("Camera", &params.camera, state.scene.camera_names);
+			changed += ImGui::ComboItems("Camera", &params.camera, state.scene.camera_names);
 		}
 		if (changed > 0) {
 			_pathTracer.restart(sceneGraph, camera);

@@ -5,6 +5,7 @@
 #include "MenuBar.h"
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
+#include "IMGUIStyle.h"
 #include "ui/IconsLucide.h"
 #include "voxel/SurfaceExtractor.h"
 
@@ -45,7 +46,9 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 				metricOption();
 				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
-				ImGui::ComboVar("Color theme", cfg::UIStyle, {"CorporateGrey", "Dark", "Light", "Classic"});
+				static const core::Array<core::String, ImGui::MaxStyles> uiStyles = {"CorporateGrey", "Dark", "Light",
+																					 "Classic"};
+				ImGui::ComboVar("Color theme", cfg::UIStyle, uiStyles);
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
 				if (ImGui::ButtonFullWidth("Reset layout")) {
 					resetDockLayout = true;

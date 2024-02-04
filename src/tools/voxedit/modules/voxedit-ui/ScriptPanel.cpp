@@ -43,7 +43,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 	}
 
 	voxelgenerator::LUAGenerator &luaGenerator = sceneMgr().luaGenerator();
-	if (ImGui::ComboStl("##script", &_currentScript, _scripts)) {
+	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
 			const core::String &scriptName = _scripts[_currentScript].filename;
 			_activeScript = luaGenerator.load(scriptName);
@@ -145,7 +145,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 				core::string::splitString(_enumValues[i], tokens, ",");
 				const auto i = core::find(tokens.begin(), tokens.end(), str);
 				int selected = i == tokens.end() ? 0 : i - tokens.begin();
-				if (ImGui::ComboStl(p.name.c_str(), &selected, tokens)) {
+				if (ImGui::ComboItems(p.name.c_str(), &selected, tokens)) {
 					str = tokens[selected];
 				}
 				break;

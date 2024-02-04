@@ -184,32 +184,6 @@ bool CheckboxVar(const char* label, const char* varName) {
 	return false;
 }
 
-bool ComboVar(const char* label, const char* varName, const core::Buffer<const char *> &items) {
-	core::VarPtr var = core::Var::getSafe(varName);
-	int currentItem = var->intVal();
-	const char *previewValue = nullptr;
-	const int itemCount = (int)items.size();
-	if (currentItem >= 0 && currentItem < itemCount) {
-		previewValue = items[currentItem];
-	}
-
-	if (ImGui::BeginCombo(label, previewValue, ImGuiComboFlags_None)) {
-		for (int i = 0; i < itemCount; ++i) {
-			const bool selected = i == currentItem;
-			if (ImGui::Selectable(items[i], selected)) {
-				currentItem = i;
-				var->setVal(currentItem);
-			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
-		}
-		ImGui::EndCombo();
-		return true;
-	}
-	return false;
-}
-
 bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
 	int val = var->intVal();
 	if (SliderInt(label, &val, v_min, v_max, format, flags)) {
@@ -257,7 +231,7 @@ float CalcTextWidth(const char *text, bool withPadding) {
 	return w + ImGui::GetStyle().FramePadding.x * 2.0f;
 }
 
-float CalcComboBoxWidth(const char *previewLabel, bool withPadding) {
+float CalcComboWidth(const char *previewLabel, bool withPadding) {
 	return CalcTextWidth(previewLabel, withPadding) + ImGui::GetFrameHeightWithSpacing();
 }
 

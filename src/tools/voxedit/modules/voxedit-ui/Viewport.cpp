@@ -251,7 +251,7 @@ void Viewport::menuBarCameraProjection() {
 	static const char *modes[] = {"Perspective", "Orthogonal"};
 	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
 	const int currentMode = (int)camera().mode();
-	const float modeMaxWidth = ImGui::CalcComboBoxWidth(modes[currentMode]);
+	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
 	if (ImGui::BeginCombo("##cameraproj", modes[currentMode])) {
 		for (int n = 0; n < lengthof(modes); n++) {
@@ -269,7 +269,7 @@ void Viewport::menuBarCameraProjection() {
 
 void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
-	const float modeMaxWidth = ImGui::CalcComboBoxWidth(SceneCameraModeStr[currentMode]);
+	const float modeMaxWidth = ImGui::CalcComboWidth(SceneCameraModeStr[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
 	if (ImGui::BeginCombo("##cameramode", SceneCameraModeStr[currentMode])) {
 		for (int n = 0; n < lengthof(SceneCameraModeStr); n++) {

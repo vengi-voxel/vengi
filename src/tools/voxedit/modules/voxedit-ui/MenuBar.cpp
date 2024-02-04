@@ -4,6 +4,7 @@
 
 #include "MenuBar.h"
 #include "IMGUIApp.h"
+#include "IMGUIStyle.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
@@ -131,7 +132,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 				metricOption();
 
-				ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, {"Cubes", "Marching cubes"});
+				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
+					"Cubes", "Marching cubes"};
+				ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, meshModes);
 				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt("Autosave delay in seconds", cfg::VoxEditAutoSaveSeconds);
 				ImGui::InputVarInt("Viewports", cfg::VoxEditViewports, 1, 1);
@@ -139,7 +142,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
 
-				ImGui::ComboVar("Color theme", cfg::UIStyle, {"CorporateGrey", "Dark", "Light", "Classic"});
+				static const core::Array<core::String, ImGui::MaxStyles> uiStyles = {"CorporateGrey", "Dark", "Light",
+																					 "Classic"};
+				ImGui::ComboVar("Color theme", cfg::UIStyle, uiStyles);
 				colorReductionOptions();
 
 				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);

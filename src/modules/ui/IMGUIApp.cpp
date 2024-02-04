@@ -154,7 +154,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_uistyle =
 		core::Var::get(cfg::UIStyle, uiStyleDefaultValue.c_str(), "Change the ui colors - [0-3]", [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
-			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx <= ImGui::StyleClassic;
+			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
 		});
 	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
 	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart",
