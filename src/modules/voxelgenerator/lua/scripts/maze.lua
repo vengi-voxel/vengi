@@ -6,7 +6,7 @@ end
 
 local function randomUnvisitedNeighbour(volume, x, y, z, visited)
 	-- visit 4 directions
-	local offset <const> = {
+	local offset = {
 		{ 0, -1, 1, 0},
 		{ 0,  1, 1, 0},
 		{-1,  0, 0, 1},
@@ -58,7 +58,7 @@ local function randomizeDFS(volume, x, y, z, visited)
 	while x2 ~= nil do
 		volume:setVoxel(x2, y, z2, -1)
 		randomizeDFS(volume, x2, y, z2, visited)
-		x2, z2, dx, dz = randomUnvisitedNeighbour(volume, x2, y, z2, visited)
+		x2, z2 = randomUnvisitedNeighbour(volume, x2, y, z2, visited)
 	end
 end
 

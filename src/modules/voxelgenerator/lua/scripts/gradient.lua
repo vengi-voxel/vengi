@@ -2,8 +2,6 @@
 -- applies a gradient to the volume
 --
 
-local vol = require "modules.volume"
-
 function arguments()
 	return {
 		{ name = 'minheight', desc = 'the minimum height to keep at the edges', type = 'int', default = '0', min = '0', max = '255' },
