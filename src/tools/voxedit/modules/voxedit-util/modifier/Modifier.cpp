@@ -69,6 +69,9 @@ void Modifier::construct() {
 			setBrushType(type);
 		}).setHelp("Change the brush type to '" + b->name() + "'");
 	}
+	command::Command::registerCommand("brushnone", [&](const command::CmdArgs &args) {
+		setBrushType(BrushType::None);
+	}).setHelp("Change the brush type to 'none'");
 
 	command::Command::registerCommand("lock",
 		[&](const command::CmdArgs &args) {
