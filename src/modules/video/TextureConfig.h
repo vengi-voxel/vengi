@@ -127,5 +127,6 @@ inline const glm::vec4& TextureConfig::borderColor() const {
 }
 
 video::TextureConfig createDefaultTextureConfig();
+video::TextureConfig createDefaultMultiSampleTextureConfig();
 
 }

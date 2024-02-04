@@ -93,4 +93,14 @@ video::TextureConfig createDefaultTextureConfig() {
 	return cfg;
 }
 
+video::TextureConfig createDefaultMultiSampleTextureConfig() {
+	video::TextureConfig cfg;
+	cfg.wrap(video::TextureWrap::ClampToEdge);
+	cfg.filter(video::TextureFilter::Linear);
+	cfg.samples(4);
+	cfg.type(video::TextureType::Texture2DMultisample);
+	cfg.format(video::TextureFormat::RGBA);
+	return cfg;
+}
+
 }
