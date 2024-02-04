@@ -9,8 +9,6 @@
 #include "Spiral.h"
 #include "ShapeGenerator.h"
 #include "SpaceColonization.h"
-#include "math/AABB.h"
-#include "core/Log.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/Voxel.h"
