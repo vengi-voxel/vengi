@@ -91,6 +91,7 @@ bool blendFunc(BlendMode src, BlendMode dest);
 bool blendEquation(BlendEquation func);
 PolygonMode polygonMode(Face face, PolygonMode mode);
 bool polygonOffset(const glm::vec2 &offset);
+bool pointSize(float size);
 bool activateTextureUnit(TextureUnit unit);
 Id currentTexture(TextureUnit unit);
 bool bindTexture(TextureUnit unit, TextureType type, Id handle);

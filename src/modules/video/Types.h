@@ -201,6 +201,8 @@ enum class State {
 	DebugOutput,
 	ClipDistance,
 	PrimitiveRestart,
+	// https://registry.khronos.org/OpenGL-Refpages/gl4/html/glPointSize.xhtml
+	ProgramPointSize,
 
 	Max
 };

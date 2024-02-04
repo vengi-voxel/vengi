@@ -474,6 +474,17 @@ bool polygonOffset(const glm::vec2& offset) {
 	return true;
 }
 
+bool pointSize(float size) {
+	if (glstate().pointSize == size) {
+		return false;
+	}
+	core_assert(glPointSize != nullptr);
+	glPointSize(size);
+	checkError();
+	glstate().pointSize = size;
+	return true;
+}
+
 bool activateTextureUnit(TextureUnit unit) {
 	if (glstate().textureUnit == unit) {
 		return false;
@@ -1771,6 +1782,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	// default state
 	// https://www.glprogramming.com/red/appendixb.html
 	glstate().states.set(core::enumVal(video::State::DepthMask), true);
+	glGetFloatv(GL_POINT_SIZE, &glstate().pointSize);
 
 	if (multisampling) {
 		video::enable(video::State::MultiSample);

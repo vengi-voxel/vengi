@@ -39,6 +39,7 @@ struct GLState {
 	bool needValidation = false;
 	Id vertexArrayHandle = InvalidId;
 	glm::vec2 polygonOffset {0.0f};
+	float pointSize = 1.0f;
 	Face polygonModeFace = Face::Max;
 	PolygonMode polygonMode = PolygonMode::Solid;
 	BlendMode blendSrc = BlendMode::One;
