@@ -26,6 +26,20 @@ TEST_F(VoxFormatTest, testLoad) {
 	canLoad("magicavoxel.vox");
 }
 
+#if 0
+TEST_F(VoxFormatTest, testDumpcubictest) {
+	VoxFormat f;
+	const io::FilePtr &file = open("cubictest.vox");
+	ASSERT_TRUE(file->validHandle());
+	io::FileStream stream(file);
+	scenegraph::SceneGraph sceneGraph;
+	io::FileDescription fileDesc;
+	fileDesc.set(file->name());
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
+	dump("cubictest.vox", sceneGraph);
+}
+#endif
+
 TEST_F(VoxFormatTest, testLoadCharacter) {
 	VoxFormat f;
 	const io::FilePtr &file = open("vox_character.vox");

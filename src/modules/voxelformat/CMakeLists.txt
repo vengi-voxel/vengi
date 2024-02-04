@@ -141,6 +141,7 @@ set(TEST_FILES
 	tests/cube.stl
 	tests/ascii.stl
 	tests/ascii.ply
+	tests/cubictest.vox
 	tests/test.gox
 	tests/test.plist
 	tests/palette.settings.vmaxpsb

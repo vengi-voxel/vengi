@@ -40,6 +40,7 @@ set(TEST_SRCS
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp
 	tests/SparseVolumeTest.cpp
+	tests/SurfaceExtractorTest.cpp
 	tests/RawVolumeWrapperTest.cpp
 )
 
