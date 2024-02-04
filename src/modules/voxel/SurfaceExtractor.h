@@ -25,14 +25,14 @@ struct SurfaceExtractionContext {
 		  mergeQuads(_mergeQuads), reuseVertices(_reuseVertices), ambientOcclusion(_ambientOcclusion) {
 	}
 	const RawVolume *volume;
-	const palette::Palette &palette;
+	const palette::Palette &palette; // used only for MarchingCubes
 	const Region &region;
 	ChunkMesh &mesh;
 	const glm::ivec3 translate;
 	const SurfaceExtractionType type;
-	const bool mergeQuads;
-	const bool reuseVertices;
-	const bool ambientOcclusion;
+	const bool mergeQuads;		 // used only for Cubic
+	const bool reuseVertices;	 // used only for Cubic
+	const bool ambientOcclusion; // used only for Cubic
 };
 
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
