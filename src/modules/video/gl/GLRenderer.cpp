@@ -1122,6 +1122,10 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			core_assert(glFramebufferTexture2D != nullptr);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_2D, textureId, 0);
 			checkError();
+		} else if (textureTarget == TextureType::Texture2DMultisample) {
+			core_assert(glFramebufferTexture2D != nullptr);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachmentType, GL_TEXTURE_2D_MULTISAMPLE, textureId, 0);
+			checkError();
 		} else {
 			core_assert(textureTarget == TextureType::Texture3D || textureTarget == TextureType::Texture2DArray || textureTarget == TextureType::Texture2DMultisampleArray);
 			core_assert(glFramebufferTextureLayer != nullptr);
