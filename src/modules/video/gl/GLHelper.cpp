@@ -107,7 +107,7 @@ debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsi
 	log("GL msg type: %s, src: %s, id: %d, severity: %s\nmsg: %s", typeStr, sourceStr, id, sevStr, message);
 }
 
-bool checkFramebufferStatus(video::Id fbo) {
+GLenum checkFramebufferStatus(video::Id fbo) {
 	GLenum status;
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCheckNamedFramebufferStatus != nullptr);
@@ -117,7 +117,7 @@ bool checkFramebufferStatus(video::Id fbo) {
 		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	}
 	if (status == GL_FRAMEBUFFER_COMPLETE) {
-		return true;
+		return status;
 	}
 	switch (status) {
 	case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
@@ -135,11 +135,14 @@ bool checkFramebufferStatus(video::Id fbo) {
 	case GL_FRAMEBUFFER_UNSUPPORTED:
 		Log::error("FB error, framebuffer unsupported");
 		break;
+	case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+		Log::error("FB error, incomplete multisample");
+		break;
 	default:
 		Log::error("FB error, status: %i", (int)status);
 		break;
 	}
-	return false;
+	return status;
 }
 
 void setupLimitsAndSpecs() {

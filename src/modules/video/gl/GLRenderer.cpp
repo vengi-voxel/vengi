@@ -1160,7 +1160,8 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 		}
 		checkError();
 	}
-	return _priv::checkFramebufferStatus(glstate().framebufferHandle);
+	const GLenum status = _priv::checkFramebufferStatus(glstate().framebufferHandle);
+	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
 bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
@@ -1195,10 +1196,8 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 			clear(ClearFlag::Color);
 		}
 	}
-	if (!_priv::checkFramebufferStatus(glstate().framebufferHandle)) {
-		return false;
-	}
-	return true;
+	const GLenum status = _priv::checkFramebufferStatus(glstate().framebufferHandle);
+	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
 void setupTexture(const TextureConfig& config) {
