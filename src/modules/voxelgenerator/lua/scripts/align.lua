@@ -8,6 +8,6 @@ function arguments()
 	}
 end
 
-function main(node, region, color, n, padding)
+function main(node, region, color, padding)
 	g_scenegraph.align(padding)
 end

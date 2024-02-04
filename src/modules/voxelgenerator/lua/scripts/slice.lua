@@ -12,9 +12,7 @@ end
 
 function main(node, region, color, width, height, depth)
 	local volume = node:volume()
-	local region = volume:region()
 	local mins = region:mins()
-	local maxs = region:maxs()
 	local size = region:size()
 
 	local volumeWidth = size.x

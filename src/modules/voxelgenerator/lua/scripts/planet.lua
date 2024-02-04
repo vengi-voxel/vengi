@@ -13,7 +13,7 @@ end
 function main(node, region, color, size)
 	local volume = node:volume()
 	perlin:load()
-	local colorwater = 1
+	local colorwater = color
 	local land = {2, 3, 4, 5, 6}
 	local freq = 1 / (size * 0.66)
 	local center = region:center()

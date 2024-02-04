@@ -2,8 +2,6 @@
 -- fill hollows in a model
 --
 
-local vol = require "modules.volume"
-
 function arguments()
 	return {
 		{ name = 'fillvoxel', desc = 'the palette index of the color to use', type = 'colorindex' },
