@@ -480,17 +480,18 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 							continue;
 						}
 						const int bufferIndex = _meshState->resolveIdx(idx);
-						const uint32_t indices = _state[bufferIndex].indices(MeshType_Opaque);
-						if (indices == 0u) {
-							continue;
+						for (int i = 0; i < MeshType_Transparency; ++i) { // TODO: do we want this for the transparent voxels, too?
+							const uint32_t indices = _state[bufferIndex].indices((MeshType)i);
+							if (indices > 0u) {
+								video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[i]);
+								var.model = _meshState->model(idx);
+								var.pivot = _meshState->pivot(idx);
+								_shadowMapUniformBlock.update(var);
+								_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+								static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
+								video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+							}
 						}
-						video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
-						var.model = _meshState->model(idx);
-						var.pivot = _meshState->pivot(idx);
-						_shadowMapUniformBlock.update(var);
-						_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
-						static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-						video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 					}
 					return true;
 				},
