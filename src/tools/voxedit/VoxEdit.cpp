@@ -355,6 +355,8 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+4",               "mirroraxisshapebrushnone",     "model");
 	_keybindingHandler.registerBinding("wheelup",              "+zoom_in",                     "editing");
 	_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                    "editing");
+	_keybindingHandler.registerBinding("wheelleft",            "+zoom_in",                     "editing");
+	_keybindingHandler.registerBinding("wheelright",           "+zoom_out",                    "editing");
 	_keybindingHandler.registerBinding("ctrl+e",               "toggle r_renderoutline",       "all");
 	_keybindingHandler.registerBinding("ctrl+g",               "toggle ve_showgrid",           "all");
 	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");

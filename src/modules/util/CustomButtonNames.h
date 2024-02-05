@@ -31,6 +31,8 @@ static const int32_t CUSTOM_SDLK_MOUSE_X1           = CUSTOM_SDL_KEYCODE(SDL_BUT
 static const int32_t CUSTOM_SDLK_MOUSE_X2           = CUSTOM_SDL_KEYCODE(SDL_BUTTON_X2);
 static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_UP     = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 0);
 static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_DOWN   = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 1);
+static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_LEFT   = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 2);
+static const int32_t CUSTOM_SDLK_MOUSE_WHEEL_RIGHT  = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 3);
 #undef CUSTOM_SDL_BUTTON_OFFSET
 
 static const struct CustomButtonMapping {
@@ -48,6 +50,8 @@ static const struct CustomButtonMapping {
 	{CUSTOM_SDLK_MOUSE_X2, "x2_mouse", 1u},
 	{CUSTOM_SDLK_MOUSE_WHEEL_UP, "wheelup", 1u},
 	{CUSTOM_SDLK_MOUSE_WHEEL_DOWN, "wheeldown", 1u},
+	{CUSTOM_SDLK_MOUSE_WHEEL_LEFT, "wheelleft", 1u},
+	{CUSTOM_SDLK_MOUSE_WHEEL_RIGHT, "wheelright", 1u},
 };
 
 // note: doesn't contain all combinations

@@ -109,6 +109,12 @@ app::AppState WindowedApp::onRunning() {
 	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN)) {
 		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN, 0);
 	}
+	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_LEFT)) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_LEFT, 0);
+	}
+	if (_keybindingHandler.isPressed(util::button::CUSTOM_SDLK_MOUSE_WHEEL_RIGHT)) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_MOUSE_WHEEL_RIGHT, 0);
+	}
 
 	// ignore the state here
 	Super::onRunning();
@@ -205,7 +211,17 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier, uint16_t count) 
 }
 
 bool WindowedApp::onMouseWheel(int32_t x, int32_t y) {
-	const int32_t key = y < 0 ? util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
+	int32_t key;
+	if (y < 0)
+		key = util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP;
+	else if (y > 0)
+		key = util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
+	else if (x < 0)
+		key = util::button::CUSTOM_SDLK_MOUSE_WHEEL_LEFT;
+	else if (x > 0)
+		key = util::button::CUSTOM_SDLK_MOUSE_WHEEL_RIGHT;
+	else
+		return false;
 	const int16_t mod = SDL_GetModState();
 	if (handleKeyPress(key, mod)) {
 		return true;
