@@ -73,9 +73,11 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 	if (existingColor) {
 		const core::RGBA color = palette.color(palIdx);
 		if (palette.color(palIdx).a != 255) {
+			core::RGBA own = palette.color(palIdx);
+			own.a = 127;
 			core::RGBA other = palette.color(palIdx);
 			other.a = 255;
-			drawList->AddRectFilledMultiColor(v1, v2, color, color, color, other);
+			drawList->AddRectFilledMultiColor(v1, v2, own, own, own, other);
 		} else {
 			drawList->AddRectFilled(v1, v2, color);
 		}
