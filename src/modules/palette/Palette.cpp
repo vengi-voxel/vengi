@@ -91,6 +91,20 @@ bool Palette::hasColor(core::RGBA rgba) {
 	return false;
 }
 
+void Palette::duplicateColor(uint8_t idx) {
+	if (_colorCount < PaletteMaxColors) {
+		setColor(_colorCount + 1, color(idx));
+	} else {
+		// search a free slot
+		for (int i = 0; i < PaletteMaxColors; ++i) {
+			if (color(i).a == 0) {
+				setColor(i, color(idx));
+				return;
+			}
+		}
+	}
+}
+
 void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
 	color(i) = rgba;
 	setSize(core_max(size(), i));

@@ -43,6 +43,8 @@ public:
 		return _colors[_indices[i]];
 	}
 
+	void duplicateColor(uint8_t idx);
+
 	void setColor(uint8_t i, const core::RGBA &rgba);
 	void setGlowColor(uint8_t i, const core::RGBA &rgba);
 

@@ -166,6 +166,19 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 					sceneMgr().mementoHandler().markPaletteChange(node);
 				}
 			}
+			if (palette.color(palIdx).a != 255) {
+				if (ImGui::MenuItem(ICON_LC_ERASER " Remove Alpha")) {
+					palette.color(palIdx).a = 255;
+					palette.markSave();
+					sceneMgr().mementoHandler().markPaletteChange(node);
+					sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Generic);
+				}
+			}
+			if (ImGui::MenuItem(ICON_LC_COPY_PLUS " Duplicate")) {
+				palette.duplicateColor(palIdx);
+				palette.markSave();
+				sceneMgr().mementoHandler().markPaletteChange(node);
+			}
 		}
 
 		ImGui::EndPopup();
