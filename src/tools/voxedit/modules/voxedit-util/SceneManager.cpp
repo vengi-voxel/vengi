@@ -1615,8 +1615,9 @@ void SceneManager::construct() {
 	}).setHelp("Change intensity by scaling the rgb values of the palette");
 
 	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
+		const bool updateVoxels = args.empty() ? false : core::string::toBool(args[0]);
 		const int nodeId = activeNode();
-		removeUnusedColors(nodeId);
+		removeUnusedColors(nodeId, updateVoxels);
 	}).setHelp("Remove unused colors from palette");
 
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
@@ -2202,9 +2203,9 @@ void SceneManager::construct() {
 	}).setHelp("Create a node reference for the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
 }
 
-void SceneManager::removeUnusedColors(int nodeId) {
+void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	const voxel::RawVolume *v = node.volume();
+	voxel::RawVolume *v = node.volume();
 	if (v == nullptr) {
 		return;
 	}
@@ -2226,9 +2227,31 @@ void SceneManager::removeUnusedColors(int nodeId) {
 		Log::warn("Removing all colors from the palette is not allowed");
 		return;
 	}
-	for (size_t i = 0; i < pal.size(); ++i) {
-		if (!usedColors[pal.index(i)]) {
-			pal.setColor(i, core::RGBA(0));
+	if (updateVoxels) {
+		int newMappingPos = 0;
+		core::Array<uint8_t, palette::PaletteMaxColors> newMapping;
+		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
+			if (usedColors[i]) {
+				newMapping[i] = newMappingPos++;
+			}
+		}
+		palette::Palette newPalette;
+		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
+			if (usedColors[i]) {
+				newPalette.setColor(newMapping[i], pal.color(i));
+			}
+		}
+		pal = newPalette;
+		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
+			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
+			return true;
+		});
+		modified(nodeId, v->region());
+	} else {
+		for (size_t i = 0; i < pal.size(); ++i) {
+			if (!usedColors[pal.index(i)]) {
+				pal.setColor(i, core::RGBA(127, 127, 127, 255));
+			}
 		}
 	}
 	pal.markDirty();

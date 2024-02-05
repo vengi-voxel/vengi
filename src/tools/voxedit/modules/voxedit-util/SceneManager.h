@@ -312,7 +312,7 @@ public:
 	void fillPlane(const image::ImagePtr &image);
 	void renderText(const char *text, int size = 16, int thickness = 1, int spacing = 0, const char *font = "font.ttf");
 
-	void removeUnusedColors(int nodeId);
+	void removeUnusedColors(int nodeId, bool updateVoxels = false);
 
 	/**
 	 * @brief Save the volume data to the given file
