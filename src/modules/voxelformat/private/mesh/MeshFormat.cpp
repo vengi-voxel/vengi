@@ -16,7 +16,6 @@
 #include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
-#include "core/concurrent/ThreadPool.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
