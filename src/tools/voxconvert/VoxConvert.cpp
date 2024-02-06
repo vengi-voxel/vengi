@@ -228,10 +228,27 @@ app::AppState VoxConvert::onInit() {
 		Log::error("No input file was specified");
 		return app::AppState::InitFailure;
 	}
-	core::String outfile;
+
+	core::String outfilesstr;
+	core::DynamicArray<core::String> outfiles;
+	bool outputIsMesh = false;
 	if (hasArg("--output")) {
-		outfile = getArgVal("--output");
-		io::normalizePath(outfile);
+		int argn = 0;
+		for (;;) {
+			core::String val = getArgVal("--output", "", &argn);
+			if (val.empty()) {
+				break;
+			}
+			io::normalizePath(val);
+			outfiles.push_back(val);
+			if (voxelformat::isMeshFormat(val, false)) {
+				outputIsMesh = true;
+			}
+			if (!outfilesstr.empty()) {
+				outfilesstr += ", ";
+			}
+			outfilesstr += val;
+		}
 	}
 
 	_mergeModels      = hasArg("--merge");
@@ -249,7 +266,7 @@ app::AppState VoxConvert::onInit() {
 	_resizeModels     = hasArg("--resize");
 
 	Log::info("Options");
-	if (inputIsMesh || voxelformat::isMeshFormat(outfile, true)) {
+	if (inputIsMesh || outputIsMesh) {
 		Log::info("* mergeQuads:        - %s", _mergeQuads->strVal().c_str());
 		Log::info("* reuseVertices:     - %s", _reuseVertices->strVal().c_str());
 		Log::info("* ambientOcclusion:  - %s", _ambientOcclusion->strVal().c_str());
@@ -266,21 +283,21 @@ app::AppState VoxConvert::onInit() {
 		Log::info("* palette:           - %s", paletteVar->strVal().c_str());
 	}
 	Log::info("* input files:       - %s", infilesstr.c_str());
-	if (!outfile.empty()) {
-		Log::info("* output files:      - %s", outfile.c_str());
+	if (!outfilesstr.empty()) {
+		Log::info("* output files:      - %s", outfilesstr.c_str());
 	}
 
-	if (io::isA(outfile, io::format::palettes()) && infiles.size() == 1) {
+	if (outfiles.size() == 1 && io::isA(outfiles.front(), io::format::palettes()) && infiles.size() == 1) {
 		palette::Palette palette;
 		if (!voxelformat::importPalette(infiles[0], palette)) {
 			Log::error("Failed to import the palette from %s", infiles[0].c_str());
 			return app::AppState::InitFailure;
 		}
-		if (palette.save(outfile.c_str())) {
-			Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfile.c_str());
+		if (palette.save(outfiles.front().c_str())) {
+			Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfiles.front().c_str());
 			return state;
 		}
-		Log::error("Failed to write %s", outfile.c_str());
+		Log::error("Failed to write %s", outfiles.front().c_str());
 		return app::AppState::InitFailure;
 	}
 
@@ -311,20 +328,15 @@ app::AppState VoxConvert::onInit() {
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
 	}
 
-	io::FilePtr outputFile;
-	if (!outfile.empty()) {
-		const bool outfileExists = filesystem()->open(outfile)->exists();
-		if (outfileExists) {
-			if (!hasArg("--force")) {
-				Log::error("Given output file '%s' already exists", outfile.c_str());
-				return app::AppState::InitFailure;
+	if (!outfiles.empty()) {
+		if (!hasArg("--force")) {
+			for (const core::String &outfile : outfiles) {
+				const bool outfileExists = filesystem()->open(outfile)->exists();
+				if (outfileExists) {
+					Log::error("Given output file '%s' already exists", outfile.c_str());
+					return app::AppState::InitFailure;
+				}
 			}
-		}
-
-		outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
-		if (!outputFile->validHandle()) {
-			Log::error("Could not open target file: %s", outfile.c_str());
-			return app::AppState::InitFailure;
 		}
 	} else if (!_exportModels && !_exportPalette && !_dumpSceneGraph && !_dumpMeshDetails) {
 		Log::error("No output specified");
@@ -403,7 +415,14 @@ app::AppState VoxConvert::onInit() {
 		if (infiles.size() > 1) {
 			Log::warn("The format and path of the first input file is used for exporting all models");
 		}
-		exportModelsIntoSingleObjects(sceneGraph, infiles[0], outputFile ? outputFile->extension() : "");
+		for (const core::String &outfile : outfiles) {
+			io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
+			if (!outputFile->validHandle()) {
+				Log::error("Could not open target file: %s", outfile.c_str());
+				return app::AppState::InitFailure;
+			}
+			exportModelsIntoSingleObjects(sceneGraph, infiles[0], outputFile ? outputFile->extension() : "");
+		}
 		return state;
 	}
 
@@ -459,7 +478,12 @@ app::AppState VoxConvert::onInit() {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
 
-	if (outputFile) {
+	for (const core::String &outfile : outfiles) {
+		io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
+		if (!outputFile->validHandle()) {
+			Log::error("Could not open target file: %s", outfile.c_str());
+			return app::AppState::InitFailure;
+		}
 		Log::debug("Save %i models", (int)sceneGraph.size());
 		voxelformat::SaveContext saveCtx;
 		if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx, false)) {
