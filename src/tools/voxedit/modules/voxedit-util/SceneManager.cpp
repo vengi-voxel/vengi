@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 
 #include "app/App.h"
+#include "app/Async.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
@@ -530,8 +531,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 		Log::error("Failed to load '%s' - still loading another model", file.c_str());
 		return false;
 	}
-	core::ThreadPool& threadPool = app::App::getInstance()->threadPool();
-	_loadingFuture = threadPool.enqueue([filePtr, file] () {
+	_loadingFuture = app::async([filePtr, file] () {
 		scenegraph::SceneGraph newSceneGraph;
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;

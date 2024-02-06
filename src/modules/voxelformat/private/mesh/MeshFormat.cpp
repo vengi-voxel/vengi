@@ -4,6 +4,7 @@
 
 #include "MeshFormat.h"
 #include "app/App.h"
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/GameConfig.h"
@@ -303,7 +304,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		core::DynamicArray<std::future<TriCollection>> futures;
 		futures.reserve(tris.size());
 		for (const voxelformat::TexturedTri &tri : tris) {
-			futures.emplace_back(app::App::getInstance()->threadPool().enqueue([tri]() {
+			futures.emplace_back(app::async([tri]() {
 				TriCollection subdivided;
 				subdivideTri(tri, subdivided);
 				return subdivided;
@@ -504,14 +505,13 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
 	// TODO: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		auto lambda = [&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
+		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			voxel::SurfaceExtractionContext ctx =
 				type == voxel::SurfaceExtractionType::MarchingCubes
@@ -522,8 +522,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			mesh->calculateNormals();
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
-		};
-		threadPool.enqueue(lambda);
+		});
 	}
 	for (;;) {
 		lock.lock();

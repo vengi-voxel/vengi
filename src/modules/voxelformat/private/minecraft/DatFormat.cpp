@@ -3,7 +3,7 @@
  */
 
 #include "DatFormat.h"
-#include "app/App.h"
+#include "app/Async.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -82,7 +82,6 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	int nodesAdded = 0;
-	core::ThreadPool &threadPool = app::App::getInstance()->threadPool();
 
 	core::DynamicArray<std::future<scenegraph::SceneGraph>> futures;
 	Log::info("Found %i region files", (int)entities.size());
@@ -96,7 +95,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			Log::warn("Could not open %s", regionFilename.c_str());
 			continue;
 		}
-		futures.emplace_back(threadPool.enqueue([file, &loadctx]() {
+		futures.emplace_back(app::async([file, &loadctx]() {
 			io::FileStream fileStream(file);
 			scenegraph::SceneGraph newSceneGraph;
 			if (fileStream.size() <= 2l * MCRFormat::SECTOR_BYTES) {

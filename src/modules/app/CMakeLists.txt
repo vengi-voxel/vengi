@@ -1,6 +1,7 @@
 set(SRCS
 	App.cpp App.h
 	AppCommand.cpp AppCommand.h
+	Async.h
 	CommandlineApp.h CommandlineApp.cpp
 )
 if (APPLE)
