@@ -193,8 +193,11 @@ void Viewport::renderCursor() {
 
 	const SceneManager &mgr = sceneMgr();
 	const ModifierFacade &modifier = mgr.modifier();
-	if (modifier.isMode(ModifierType::ColorPicker)) {
+	if (modifier.isMode(ModifierType::ColorPicker) || modifier.isMode(ModifierType::Select) ||
+		modifier.brushType() == BrushType::Paint) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+	} else if (modifier.brushType() == BrushType::Plane) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
 	}
 
 	const int cursorDetailsLevel = _cursorDetails->intVal();
