@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Expose `hollow()` to lua bindings
+   - Add lua sanity checker to the build pipelines
 
 Voxedit:
 
@@ -21,10 +22,13 @@ Voxedit:
    - Fixed an error while trying to remove unused colors from a re-sorted palette
    - Fixed missing outline for dark voxels
    - Update paint features
+   - Added more features to the palette panel (e.g. duplicating and removing colors)
+   - Allow to bind the left- and right-scrolling mouse wheel
 
 VoxConvert:
 
    - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
+   - Support multiple `--output` parameters to write one (or more) input files into different formats in one step
 
 ## 0.0.28 (2024-01-17)
 
