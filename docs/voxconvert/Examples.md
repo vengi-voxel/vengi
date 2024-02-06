@@ -10,6 +10,12 @@ Generate a lod scaled by 50% from the input model.
 
 `./vengi-voxconvert -s --input infile.vox --output output.vox`
 
+## Convert to multiple different formats
+
+Convert the model into multiple different formats in the same run
+
+`./vengi-voxconvert -s --input infile.vox --output output.gox --output output.cub`
+
 ## Import 2d image as volume
 
 Imports a 2d image and applies depth to it.
