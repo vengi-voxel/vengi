@@ -3110,6 +3110,115 @@ bool SceneManager::nodeUnreference(int nodeId) {
 	return false;
 }
 
+bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
+	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
+	if (v == nullptr) {
+		return false;
+	}
+	palette::Palette &palette = node.palette();
+	const uint8_t replacement = palette.findReplacement(palIdx);
+	if (replacement != palIdx && palette.removeColor(palIdx)) {
+		palette.markSave();
+		const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, replacement);
+		_mementoHandler.markPaletteChange(node);
+		voxelutil::visitVolume(
+			*v,
+			[v, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
+				v->setVoxel(x, y, z, replacementVoxel);
+				return true;
+			},
+			voxelutil::VisitColor(palIdx));
+		return true;
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveColor(int nodeId, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeRemoveColor(*node, palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
+	palette::Palette &palette = node.palette();
+	palette.duplicateColor(palIdx);
+	palette.markSave();
+	_mementoHandler.markPaletteChange(node);
+	return true;
+}
+
+bool SceneManager::nodeDuplicateColor(int nodeId, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeDuplicateColor(*node, palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
+	palette::Palette &palette = node.palette();
+	core::RGBA &c = palette.color(palIdx);
+	if (c.a == 255) {
+		return false;
+	}
+	c.a = 255;
+	palette.markSave();
+	_mementoHandler.markPaletteChange(node);
+	updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Generic);
+	return true;
+}
+
+bool SceneManager::nodeRemoveAlpha(int nodeId, uint8_t palIdx) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeRemoveAlpha(*node, palIdx);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetGlow(scenegraph::SceneGraphNode &node, uint8_t palIdx, bool state) {
+	palette::Palette &palette = node.palette();
+	if (state) {
+		palette.setGlow(palIdx);
+	} else {
+		palette.removeGlow(palIdx);
+	}
+	palette.markSave();
+	_mementoHandler.markPaletteChange(node);
+	return true;
+}
+
+bool SceneManager::nodeSetGlow(int nodeId, uint8_t palIdx, bool state) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeSetGlow(*node, palIdx, state);
+	}
+	return false;
+}
+
+bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color) {
+	palette::Palette &palette = node.palette();
+	const bool existingColor = palIdx < palette.colorCount();
+	const bool oldHasAlpha = palette.color(palIdx).a != 255;
+	palette.setColor(palIdx, color);
+	const bool newHasAlpha = color.a != 255;
+	if (existingColor) {
+		if (oldHasAlpha && !newHasAlpha) {
+			updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Generic);
+		} else if (!oldHasAlpha && newHasAlpha) {
+			updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Transparent);
+		}
+	}
+	palette.markSave();
+	_mementoHandler.markPaletteChange(node);
+	return true;
+}
+
+bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeSetColor(*node, palIdx, color);
+	}
+	return false;
+}
+
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
 	_sceneGraph.foreachGroup(f);
 }

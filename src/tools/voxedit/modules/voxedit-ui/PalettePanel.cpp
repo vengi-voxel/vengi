@@ -16,6 +16,7 @@
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <glm/gtc/type_ptr.hpp>
 
 #define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
@@ -121,18 +122,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			const bool hasAlpha = palette.color(palIdx).a != 255;
-			palette.color(palIdx) = core::Color::getRGBA(color);
-			if (!existingColor) {
-				palette.setSize(palIdx + 1);
-			} else if (hasAlpha && palette.color(palIdx).a == 255) {
-				sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Generic);
-			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-				sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Transparent);
-			}
-			palette.markDirty();
-			palette.markSave();
-			sceneMgr().mementoHandler().markPaletteChange(node);
+			sceneMgr().nodeSetColor(node.id(), palIdx, core::Color::getRGBA(color));
 		}
 
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
@@ -155,29 +145,25 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, scenegraph::Scen
 			ImGui::CommandMenuItem(ICON_LC_UNGROUP " Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(palIdx)) {
 				if (ImGui::MenuItem(ICON_LC_SUNSET " Remove Glow")) {
-					palette.removeGlow(palIdx);
-					palette.markSave();
-					sceneMgr().mementoHandler().markPaletteChange(node);
+					sceneMgr().nodeSetGlow(node.id(), palIdx, false);
 				}
 			} else {
 				if (ImGui::MenuItem(ICON_LC_SUNRISE " Glow")) {
-					palette.setGlow(palIdx);
-					palette.markSave();
-					sceneMgr().mementoHandler().markPaletteChange(node);
+					sceneMgr().nodeSetGlow(node.id(), palIdx, true);
 				}
 			}
 			if (palette.color(palIdx).a != 255) {
 				if (ImGui::MenuItem(ICON_LC_ERASER " Remove Alpha")) {
-					palette.color(palIdx).a = 255;
-					palette.markSave();
-					sceneMgr().mementoHandler().markPaletteChange(node);
-					sceneMgr().updateVoxelType(node.id(), rawPaletteIndex, voxel::VoxelType::Generic);
+					sceneMgr().nodeRemoveAlpha(node.id(), palIdx);
 				}
 			}
-			if (ImGui::MenuItem(ICON_LC_COPY_PLUS " Duplicate")) {
-				palette.duplicateColor(palIdx);
-				palette.markSave();
-				sceneMgr().mementoHandler().markPaletteChange(node);
+			if (palette.hasFreeSlot()) {
+				if (ImGui::MenuItem(ICON_LC_COPY_PLUS " Duplicate")) {
+					sceneMgr().nodeDuplicateColor(node.id(), palIdx);
+				}
+			}
+			if (ImGui::MenuItem(ICON_LC_COPY_MINUS " Remove")) {
+				sceneMgr().nodeRemoveColor(node.id(), palIdx);
 			}
 		}
 

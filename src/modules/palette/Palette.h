@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/DirtyState.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
@@ -19,7 +20,7 @@ static const int PaletteColorNotFound = -1;
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
 using PaletteIndicesArray = uint8_t[PaletteMaxColors];
 
-class Palette {
+class Palette : public core::DirtyState {
 private:
 	bool _dirty = false;
 	bool _needsSave = false;
@@ -39,86 +40,68 @@ private:
 public:
 	Palette();
 
-	inline core::RGBA &color(uint8_t i) {
-		return _colors[_indices[i]];
-	}
-
-	void duplicateColor(uint8_t idx);
-
-	void setColor(uint8_t i, const core::RGBA &rgba);
-	void setGlowColor(uint8_t i, const core::RGBA &rgba);
-
 	/**
 	 * In case the palette indices are changed, this gives you access to the real texture index
 	 */
-	inline uint8_t index(uint8_t i) const {
-		return _indices[i];
-	}
+	uint8_t index(uint8_t idx) const;
+	const PaletteIndicesArray &indices() const;
+	PaletteIndicesArray &indices();
 
-	inline core::RGBA color(uint8_t i) const {
-		return _colors[_indices[i]];
-	}
+	/**
+	 * @brief Access to the rgba color entry at the given entry for the ui
+	 * @note This can get re-ordered for displaying the colors in a palette
+	 */
+	core::RGBA &color(uint8_t idx);
+	core::RGBA color(uint8_t idx) const;
+	glm::vec4 color4(uint8_t idx) const;
+	void setColor(uint8_t idx, const core::RGBA &rgba);
+	const PaletteColorArray &colors() const;
+	/**
+	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
+	 * @note The collection will have 256 entries - even if the palette has less entries
+	 */
+	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
 
-	glm::vec4 color4(uint8_t i) const;
+	core::RGBA &glowColor(uint8_t idx);
+	core::RGBA glowColor(uint8_t idx) const;
+	void setGlowColor(uint8_t idx, const core::RGBA &rgba);
+	const PaletteColorArray &glowColors() const;
+	/**
+	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
+	 * @note The collection will have 256 entries - even if the palette has less entries
+	 */
+	void glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
-	inline core::RGBA &glowColor(uint8_t i) {
-		return _glowColors[_indices[i]];
-	}
-
-	inline core::RGBA glowColor(uint8_t i) const {
-		return _glowColors[_indices[i]];
-	}
+	bool hasGlow(uint8_t idx) const;
+	void removeGlow(uint8_t idx);
+	void setGlow(uint8_t idx, float factor = 1.0f);
 
 	void exchange(uint8_t idx1, uint8_t idx2);
+	bool hasFreeSlot() const;
+	void duplicateColor(uint8_t idx);
+	/**
+	 * @brief Tries to remove the given color from the palette
+	 * @note Always keeps at least one color in the palette
+	 */
+	bool removeColor(uint8_t idx);
+	void changeIntensity(float scale);
+	void reduce(uint8_t targetColors);
 
-	const PaletteIndicesArray &indices() const {
-		return _indices;
-	}
-
-	PaletteIndicesArray &indices(){
-		return _indices;
-	}
-
-	const PaletteColorArray &colors() const {
-		return _colors;
-	}
-
-	const PaletteColorArray &glowColors() const {
-		return _glowColors;
-	}
-
-	const core::String &name() const {
-		return _name;
-	}
-
-	void setName(const core::String &name) {
-		_name = name;
-	}
-
-	inline uint64_t hash() const {
-		return _hash._hash;
-	}
-	int colorCount() const {
-		return _colorCount;
-	}
-	inline size_t size() const {
-		return _colorCount;
-	}
-	inline void setSize(int cnt) {
-		_colorCount = cnt;
-	}
-	inline void changeSize(int delta) {
-		_colorCount += delta;
-	}
+	const core::String &name() const;
+	void setName(const core::String &name);
+	uint64_t hash() const;
+	int colorCount() const;
+	size_t size() const;
+	void setSize(int cnt);
+	/**
+	 * @brief Just increase the size of the palette colors by the given delta
+	 */
+	int changeSize(int delta);
 
 	bool load(const char *name);
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
-
 	bool saveGlow(const char *name = nullptr) const;
-
-	void changeIntensity(float scale);
-	void reduce(uint8_t targetColors);
 
 	void sortHue();
 	void sortSaturation();
@@ -143,27 +126,10 @@ public:
 
 	bool isBuiltIn() const;
 
-	void markDirty();
-	inline bool isDirty() const {
-		return _dirty;
-	}
-	inline void markClean() {
-		_dirty = false;
-	}
-
-	inline void markSave() {
-		_needsSave = true;
-	}
-	inline bool needsSave() const {
-		return _needsSave;
-	}
-	inline void markSaved() {
-		_needsSave = false;
-	}
-
-	bool hasGlow(uint8_t idx) const;
-	void removeGlow(uint8_t idx);
-	void setGlow(uint8_t idx, float factor = 1.0f);
+	void markDirty() override;
+	void markSave();
+	bool needsSave() const;
+	void markSaved();
 
 	/**
 	 * @param rgba Normalized color value [0.0-1.0]
@@ -182,24 +148,79 @@ public:
 	bool addColorToPalette(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true, int skipSlotIndex = -1);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
-	/**
-	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The collection will have 256 entries - even if the palette has less entries
-	 */
-	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
-	/**
-	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
-	 * @note The collection will have 256 entries - even if the palette has less entries
-	 */
-	void glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
-	static const char* getDefaultPaletteName() {
-		return builtIn[0];
-	}
-
+	static const char* getDefaultPaletteName();
 	static core::String extractPaletteName(const core::String& file);
 	static bool createPalette(const image::ImagePtr& image, palette::Palette &palette);
 	static bool convertImageToPalettePng(const image::ImagePtr& image, const char *paletteFile);
 };
+
+inline const core::String &Palette::name() const {
+	return _name;
+}
+
+inline void Palette::setName(const core::String &name) {
+	_name = name;
+}
+
+inline uint64_t Palette::hash() const {
+	return _hash._hash;
+}
+
+inline int Palette::colorCount() const {
+	return _colorCount;
+}
+
+inline size_t Palette::size() const {
+	return _colorCount;
+}
+
+inline void Palette::markSave() {
+	_needsSave = true;
+}
+
+inline bool Palette::needsSave() const {
+	return _needsSave;
+}
+
+inline void Palette::markSaved() {
+	_needsSave = false;
+}
+
+inline const PaletteIndicesArray &Palette::indices() const {
+	return _indices;
+}
+
+inline PaletteIndicesArray &Palette::indices(){
+	return _indices;
+}
+
+inline const PaletteColorArray &Palette::colors() const {
+	return _colors;
+}
+
+inline const PaletteColorArray &Palette::glowColors() const {
+	return _glowColors;
+}
+
+inline uint8_t Palette::index(uint8_t idx) const {
+	return _indices[idx];
+}
+
+inline core::RGBA Palette::color(uint8_t idx) const {
+	return _colors[index(idx)];
+}
+
+inline core::RGBA &Palette::glowColor(uint8_t idx) {
+	return _glowColors[index(idx)];
+}
+
+inline core::RGBA Palette::glowColor(uint8_t idx) const {
+	return _glowColors[index(idx)];
+}
+
+inline core::RGBA &Palette::color(uint8_t idx) {
+	return _colors[index(idx)];
+}
 
 } // namespace voxel

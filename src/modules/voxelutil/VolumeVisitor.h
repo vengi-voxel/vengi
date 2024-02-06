@@ -45,6 +45,15 @@ struct VisitAll {
 	}
 };
 
+struct VisitColor {
+	const uint8_t _color;
+	VisitColor(uint8_t color) : _color(color) {
+	}
+	inline bool operator()(const voxel::Voxel &voxel) const {
+		return voxel.getColor() == _color;
+	}
+};
+
 template <class Volume, class Visitor, typename Condition = SkipEmpty>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {

@@ -391,6 +391,11 @@ public:
 	bool trace(bool sceneMode, bool force = false);
 	void resetLastTrace();
 
+	/**
+	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels
+	 * in the volume that are using this color. This is because we separate the color and the alpha voxels
+	 * during mesh generation.
+	 */
 	void updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 
 	bool setGridResolution(int resolution);
@@ -425,6 +430,27 @@ private:
 	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
 	int nodeReference(const scenegraph::SceneGraphNode &node);
 	bool nodeUnreference(scenegraph::SceneGraphNode &node);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeSetGlow(scenegraph::SceneGraphNode &node, uint8_t palIdx, bool state);
+	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
 public:
@@ -446,6 +472,27 @@ public:
 	bool nodeSetLocked(int nodeId, bool locked);
 	bool nodeActivate(int nodeId);
 	bool nodeUnreference(int nodeId);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeDuplicateColor(int nodeId, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveColor(int nodeId, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeRemoveAlpha(int nodeId, uint8_t palIdx);
+	/**
+	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
+	 * representation of the palette)
+	 */
+	bool nodeSetGlow(int nodeId, uint8_t palIdx, bool state);
+	bool nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color);
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
 

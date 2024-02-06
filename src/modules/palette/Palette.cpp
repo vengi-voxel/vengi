@@ -21,7 +21,6 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
-#include "io/MemoryReadStream.h"
 #include "math/Math.h"
 #include "private/PaletteFormat.h"
 
@@ -40,6 +39,10 @@ Palette::Palette() {
 	}
 }
 
+const char* Palette::getDefaultPaletteName() {
+	return builtIn[0];
+}
+
 void Palette::fill() {
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		_colors[i] = core::RGBA(64, 64, 64, 255);
@@ -47,8 +50,17 @@ void Palette::fill() {
 	_colorCount = PaletteMaxColors;
 }
 
+int Palette::changeSize(int delta) {
+	_colorCount = glm::clamp(_colorCount + delta, 0, PaletteMaxColors);
+	return _colorCount;
+}
+
+void Palette::setSize(int cnt) {
+	_colorCount = glm::clamp(cnt, 0, PaletteMaxColors);
+}
+
 void Palette::markDirty() {
-	_dirty = true;
+	core::DirtyState::markDirty();
 	_hash._hashColors[0] = core::hash(_colors, sizeof(_colors));
 	_hash._hashColors[1] = core::hash(_glowColors, sizeof(_glowColors));
 }
@@ -103,6 +115,32 @@ void Palette::duplicateColor(uint8_t idx) {
 			}
 		}
 	}
+}
+
+bool Palette::removeColor(uint8_t idx) {
+	if (idx < _colorCount && _colorCount > 1) {
+		for (int i = idx; i < _colorCount - 1; ++i) {
+			_indices[i] = _indices[i + 1];
+		}
+		_colors[idx] = core::RGBA(0, 0, 0, 0);
+		--_colorCount;
+		markDirty();
+		return true;
+	}
+	return false;
+}
+
+bool Palette::hasFreeSlot() const {
+	if (_colorCount < PaletteMaxColors) {
+		return true;
+	}
+	// search a free slot
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		if (color(i).a == 0) {
+			return true;
+		}
+	}
+	return false;
 }
 
 void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
@@ -773,6 +811,9 @@ bool Palette::hasGlow(uint8_t idx) const {
 }
 
 void Palette::removeGlow(uint8_t idx) {
+	if (_glowColors[idx] == core::RGBA(0)) {
+		return;
+	}
 	_glowColors[idx] = 0;
 	markDirty();
 }
