@@ -319,6 +319,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("shift+h",              "nodetogglevisible",            "editing");
 	_keybindingHandler.registerBinding("shift+l",              "nodetogglelock",               "editing");
 	_keybindingHandler.registerBinding("ctrl+c",               "copy",                         "editing");
+	_keybindingHandler.registerBinding("h",                    "toggle ve_hideinactive",       "editing");
 	_keybindingHandler.registerBinding("ctrl+v",               "paste",                        "editing");
 	_keybindingHandler.registerBinding("ctrl+x",               "cut",                          "editing");
 	_keybindingHandler.registerBinding("ctrl+shift+v",         "pastecursor",                  "editing");
