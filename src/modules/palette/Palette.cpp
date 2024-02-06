@@ -21,6 +21,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FormatDescription.h"
 #include "math/Math.h"
 #include "private/PaletteFormat.h"
 
@@ -240,7 +241,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 
 core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	if (palette._colorCount == 0) {
-		return "no _colors";
+		return "no colors";
 	}
 	core::String palStr;
 	core::String line;
@@ -423,7 +424,7 @@ bool Palette::saveGlow(const char *name) const {
 		return false;
 	}
 	image::Image img(name);
-	Log::info("Save glow palette _colors to %s", name);
+	Log::info("Save glow palette colors to %s", name);
 	// must be palette::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
 	img.loadRGBA((const uint8_t *)_glowColors, lengthof(_glowColors), 1);
 	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
@@ -432,7 +433,7 @@ bool Palette::saveGlow(const char *name) const {
 		return false;
 	}
 	if (!img.writePng(stream)) {
-		Log::warn("Failed to write the glow palette _colors file '%s'", name);
+		Log::warn("Failed to write the glow palette colors file '%s'", name);
 		return false;
 	}
 	return true;
@@ -448,7 +449,7 @@ bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 		return false;
 	}
 	if (ncolors > PaletteMaxColors) {
-		Log::warn("Too many _colors given for palette.");
+		Log::warn("Too many colors given for palette.");
 	}
 	ncolors = core_min(ncolors, PaletteMaxColors);
 	image::ImagePtr img = image::createEmptyImage(name);
@@ -499,11 +500,11 @@ bool Palette::load(const char *paletteName) {
 
 	if (SDL_strncmp(paletteName, "lospec:", 7) == 0) {
 		const core::String lospecId = paletteName + 7;
-		const core::String gimpPalette = lospecId + ".gpl";
+		const core::String gimpPalette = lospecId + io::format::gimpPalette().mainExtension(true);
 		return loadLospec(lospecId, gimpPalette);
 	}
 
-	// this is handled in the scene manager is is just ignored here
+	// this is handled in the scene manager it is just ignored here
 	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
 		if (_colorCount == 0) {
 			nippon();
