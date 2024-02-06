@@ -120,6 +120,7 @@ const FormatDescription *lua();
 const FormatDescription* palettes();
 
 FormatDescription jascPalette();
+FormatDescription gimpPalette();
 
 } // namespace format
 

@@ -48,10 +48,14 @@ FormatDescription jascPalette() {
 	return {"JASC Palette", {"pal"}, {"JASC"}, FORMAT_FLAG_SAVE};
 }
 
+FormatDescription gimpPalette() {
+	return {"Gimp Palette", {"gpl"}, {}, FORMAT_FLAG_SAVE};
+}
+
 const FormatDescription *palettes() {
 	// clang-format: off
 	static FormatDescription desc[] = {
-		{"Gimp Palette", {"gpl"}, {}, FORMAT_FLAG_SAVE},
+		gimpPalette(),
 		{"Qubicle Palette", {"qsm"}, {}, 0u},
 		jascPalette(),
 		{"Photoshop Palette", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE},
