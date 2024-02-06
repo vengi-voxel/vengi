@@ -39,4 +39,4 @@ TEST_F(OBJFormatTest, testExportMesh) {
 	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testSaveCtx));
 }
 
-} // namespace voxel
+} // namespace voxelformat

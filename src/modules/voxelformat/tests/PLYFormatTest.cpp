@@ -31,4 +31,4 @@ TEST_F(PLYFormatTest, testVoxelizeCube) {
 	EXPECT_TRUE(sceneGraph.size() > 0);
 }
 
-} // namespace voxel
+} // namespace voxelformat

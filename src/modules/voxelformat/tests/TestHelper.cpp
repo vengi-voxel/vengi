@@ -6,11 +6,11 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "math/Random.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
@@ -144,6 +144,10 @@ int countVoxels(const voxel::RawVolume &volume, const voxel::Voxel &voxel) {
 		},
 		voxelutil::VisitAll());
 	return cnt;
+}
+
+int countVoxels(const voxel::RawVolume &volume) {
+	return voxelutil::visitVolume(volume, voxelutil::EmptyVisitor(), voxelutil::SkipEmpty());
 }
 
 void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {

@@ -5,7 +5,6 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/Color.h"
 #include "core/tests/TestColorHelper.h"
-#include "io/File.h"
 #include "video/ShapeBuilder.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"

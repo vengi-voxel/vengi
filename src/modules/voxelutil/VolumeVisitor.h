@@ -32,6 +32,7 @@ enum class VisitorOrder {
 
 /**
  * @brief Will skip air voxels on volume
+ * @note Visitor condition
  */
 struct SkipEmpty {
 	inline bool operator()(const voxel::Voxel &voxel) const {
@@ -39,18 +40,32 @@ struct SkipEmpty {
 	}
 };
 
+/**
+ * @note Visitor condition
+ */
 struct VisitAll {
 	inline bool operator()(const voxel::Voxel &voxel) const {
 		return true;
 	}
 };
 
+/**
+ * @note Visitor condition
+ */
 struct VisitColor {
 	const uint8_t _color;
 	VisitColor(uint8_t color) : _color(color) {
 	}
 	inline bool operator()(const voxel::Voxel &voxel) const {
 		return voxel.getColor() == _color;
+	}
+};
+
+/**
+ * @note Visitor
+ */
+struct EmptyVisitor {
+	inline void operator()(int x, int y, int z, const voxel::Voxel &voxel) const {
 	}
 };
 

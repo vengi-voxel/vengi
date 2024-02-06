@@ -67,6 +67,7 @@ enum class ValidateFlags {
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags);
 
 int countVoxels(const voxel::RawVolume& volume, const voxel::Voxel &voxel);
+int countVoxels(const voxel::RawVolume &volume);
 void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
 void paletteComparatorScaled(const palette::Palette &pal1, const palette::Palette &pal2, int maxDelta = 4);
 void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta = 0.001f);
