@@ -313,7 +313,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		TriCollection subdivided;
 		for (std::future<TriCollection> &future : futures) {
 			const TriCollection &sub = future.get();
-			subdivided.insert(subdivided.end(), sub.begin(), sub.end());
+			subdivided.append(sub);
 		}
 
 		if (subdivided.empty()) {
