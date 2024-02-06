@@ -73,7 +73,7 @@ function module.visitXZ(volume, region, visitor)
 end
 
 -- visit 6 directions
-local offset <const> = {
+local offset = {
 	{ 0,  0, -1},
 	{ 0,  0,  1},
 	{ 0, -1,  0},
