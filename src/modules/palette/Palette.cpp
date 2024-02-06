@@ -16,7 +16,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/Set.h"
 #include "engine-config.h"
-#include "http/Request.h"
+#include "http/HttpCacheStream.h"
 #include "image/Image.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -488,20 +488,8 @@ bool Palette::load(const image::ImagePtr &img) {
 
 bool Palette::loadLospec(const core::String &lospecId, const core::String &gimpPalette) {
 	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
-	http::Request request(url, http::RequestType::GET);
-	{
-		// scoped because we want to flush the stream and close the file before we read from it
-		io::FilePtr fileWrite = io::filesystem()->open(gimpPalette, io::FileMode::Write);
-		io::FileStream streamWrite(fileWrite);
-		if (!request.execute(streamWrite)) {
-			Log::warn("Failed to download the lospec palette for id: %s from %s", lospecId.c_str(), url.c_str());
-			return false;
-		}
-		streamWrite.flush();
-	}
-	io::FilePtr fileRead = io::filesystem()->open(gimpPalette, io::FileMode::Read);
-	io::FileStream streamRead(fileRead);
-	return palette::loadPalette(gimpPalette, streamRead, *this);
+	http::HttpCacheStream cacheStream(io::filesystem(), gimpPalette, url);
+	return palette::loadPalette(gimpPalette, cacheStream, *this);
 }
 
 bool Palette::load(const char *paletteName) {
