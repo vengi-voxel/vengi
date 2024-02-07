@@ -103,13 +103,26 @@ core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
 	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
 
+static void convertToVoxelGrid(glm::vec3 &v) {
+	// convert into voxel grid coordinates
+	if (v.x < 0.0f) {
+		v.x -= 1.0f;
+	}
+	if (v.y < 0.0f) {
+		v.y -= 1.0f;
+	}
+	if (v.z < 0.0f) {
+		v.z -= 1.0f;
+	}
+}
+
 glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	// 1 x 256 is the texture format that we are using for our palette
 	const glm::vec2 &uv = image::Image::uv(colorIndex, 0, palette::PaletteMaxColors, 1);
 	return uv;
 }
 
-void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
+void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
 	for (const voxelformat::TexturedTri &tri : tris) {
 		if (stopExecution()) {
@@ -117,7 +130,12 @@ void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
 		}
 		const float area = tri.area();
 		const core::RGBA rgba = tri.centerColor();
-		const glm::ivec3 p(glm::round(tri.center()));
+		glm::vec3 c = tri.center();
+		convertToVoxelGrid(c);
+
+		const glm::ivec3 p(c);
+		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
+						region.toString().c_str());
 		auto iter = posMap.find(p);
 		if (iter == posMap.end()) {
 			posMap.emplace(p, {area, rgba});
@@ -128,7 +146,7 @@ void MeshFormat::transformTris(const TriCollection &tris, PosMap &posMap) {
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap) {
+void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
 	for (const voxelformat::TexturedTri &tri : tris) {
 		if (stopExecution()) {
@@ -149,6 +167,11 @@ void MeshFormat::transformTrisAxisAligned(const TriCollection &tris, PosMap &pos
 			for (int y = mins.y; y < maxs.y; y++) {
 				for (int z = mins.z; z < maxs.z; z++) {
 					const glm::ivec3 p(x + sideDelta.x, y + sideDelta.y, z + sideDelta.z);
+					if (!region.containsPoint(p)) {
+						Log::debug("Failed to transform tri %i:%i:%i (region: %s), (sideDelta: %i:%i:%i)", p.x, p.y,
+								   p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
+						continue;
+					}
 					auto iter = posMap.find(p);
 					if (iter == posMap.end()) {
 						posMap.emplace(p, {area, rgba});
@@ -228,7 +251,15 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 	Log::debug("mins: %f:%f:%f, maxs: %f:%f:%f", trisMins.x, trisMins.y, trisMins.z, trisMaxs.x, trisMaxs.y,
 			   trisMaxs.z);
 
-	const voxel::Region region(glm::floor(trisMins), glm::ceil(trisMaxs));
+	trisMins = glm::floor(trisMins);
+	trisMaxs = glm::ceil(trisMaxs);
+
+	if (!axisAligned) {
+		convertToVoxelGrid(trisMins);
+		convertToVoxelGrid(trisMaxs);
+	}
+
+	const voxel::Region region(trisMins, trisMaxs);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %s", region.toString().c_str());
 		return InvalidNodeId;
@@ -249,7 +280,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
-		transformTrisAxisAligned(tris, posMap);
+		transformTrisAxisAligned(region, tris, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	} else if (voxelizeMode == 1) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
@@ -321,7 +352,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		}
 
 		PosMap posMap((int)subdivided.size() * 3);
-		transformTris(subdivided, posMap);
+		transformTris(region, subdivided, posMap);
 		voxelizeTris(node, posMap, fillHollow);
 	}
 

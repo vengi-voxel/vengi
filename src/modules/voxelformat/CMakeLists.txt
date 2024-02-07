@@ -157,6 +157,7 @@ set(TEST_FILES
 	tests/crabby.qbcl
 	tests/crabby.vox
 	tests/chr_knight.gox
+	tests/bug393.obj
 	tests/kvx_save.qb
 	tests/particubes.pcubes
 	tests/r.0.-2.mca

@@ -2,11 +2,17 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "io/File.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
-#include "voxelformat/private/qubicle/QBFormat.h"
+#include "AbstractVoxFormatTest.h"
+#include "core/GameConfig.h"
+#include "io/File.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "util/VarUtil.h"
+#include "voxel/Voxel.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
+#include "voxelformat/tests/TestHelper.h"
+#include "voxelutil/VoxelUtil.h"
 
 namespace voxelformat {
 
@@ -20,6 +26,26 @@ TEST_F(OBJFormatTest, testVoxelize) {
 	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
+}
+
+// https://github.com/vengi-voxel/vengi/issues/393
+TEST_F(OBJFormatTest, testVoxelizeUVSphereObj) {
+	util::ScopedVarChange scoped1(cfg::VoxformatScale, "4");
+	util::ScopedVarChange scoped2(cfg::VoxformatFillHollow, "false");
+	OBJFormat f;
+	const core::String filename = "bug393.obj";
+	const io::FilePtr &file = open(filename);
+	io::FileStream stream(file);
+	scenegraph::SceneGraph sceneGraph;
+	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(node, nullptr);
+	// tris at index: 2, 3, 4, 5, 15, 16, 17, 18 are problematic, because
+	// they are all using the 7th vertex of the mesh and this vertex is
+	// showing the bug.
+	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(1, 1, 2).getMaterial()));
+	const int cntVoxels = voxel::countVoxels(node->volume());
+	ASSERT_EQ(cntVoxels, 24);
 }
 
 TEST_F(OBJFormatTest, testExportMesh) {

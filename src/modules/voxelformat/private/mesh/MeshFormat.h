@@ -115,7 +115,7 @@ protected:
 	 * @sa transformTrisAxisAligned()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTris(const TriCollection &tris, PosMap &posMap);
+	static void transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap);
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
 	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
@@ -125,7 +125,7 @@ protected:
 	 * @sa transformTris()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTrisAxisAligned(const TriCollection &tris, PosMap &posMap);
+	static void transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap);
 	/**
 	 * @brief Convert the given @c PosMap into a volume
 	 *
