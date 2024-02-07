@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/String.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
 #include "scenegraph/SceneGraph.h"
@@ -74,6 +75,11 @@ protected:
 	bool loadGroups(const core::String& filename, Format& format, scenegraph::SceneGraph &sceneGraph);
 
 	int loadPalette(const core::String& filename, Format& format, palette::Palette &palette);
+
+	/**
+	 * @brief Not a test, but a helper method to store a scenegraph for manual inspection
+	 */
+	bool saveSceneGraph(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
 
 	bool onInitApp() override;
 };

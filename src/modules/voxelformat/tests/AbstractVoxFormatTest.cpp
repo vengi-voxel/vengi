@@ -222,6 +222,13 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, c
 	testRGBSmall(saveFilename, saveStream, loadSceneGraph);
 }
 
+bool AbstractVoxFormatTest::saveSceneGraph(scenegraph::SceneGraph &sceneGraph, const core::String &filename) {
+	const io::FilePtr &file = open(filename, io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	voxelformat::SaveContext saveCtx;
+	return voxelformat::saveFormat(sceneGraph, filename, nullptr, stream, saveCtx);
+}
+
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {
 	scenegraph::SceneGraph sceneGraph;
 	const io::FilePtr &file = open(filename);
