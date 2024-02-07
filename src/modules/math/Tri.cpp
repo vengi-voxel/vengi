@@ -15,7 +15,7 @@
 namespace math {
 
 bool Tri::flat() const {
-	const float eps = glm::epsilon<float>();
+	const float eps = 0.00001f;
 	const glm::bvec3 &zerocheck = glm::epsilonEqual(normal(), glm::zero<glm::vec3>(), eps);
 	// if the normal of two components is zero
 	return (int)zerocheck[0] + (int)zerocheck[1] + (int)zerocheck[2] == 2;
