@@ -187,9 +187,6 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 
 bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 	for (const voxelformat::TexturedTri &tri : tris) {
-		if (!glm::epsilonEqual(glm::mod(tri.area(), 0.5f), 0.0f, 0.0001f)) {
-			return false;
-		}
 		if (!tri.flat()) {
 			Log::debug("No axis aligned mesh found");
 #ifdef DEBUG

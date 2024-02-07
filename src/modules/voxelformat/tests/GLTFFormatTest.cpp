@@ -62,9 +62,9 @@ TEST_F(GLTFFormatTest, testVoxelizeCube) {
 	const voxel::RawVolume *v = node->volume();
 	ASSERT_NE(nullptr, v);
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1, -1, -1).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1,  1, -1).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel( 1,  1,  1).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel( 1, -1, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1,  0, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel( 0,  0,  0).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel( 0, -1, -1).getMaterial()));
 }
 
 TEST_F(GLTFFormatTest, testRGB) {
