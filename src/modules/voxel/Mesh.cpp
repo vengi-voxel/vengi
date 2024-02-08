@@ -8,6 +8,7 @@
 #include "core/Assert.h"
 #include "core/collection/DynamicArray.h"
 #include "util/BufferUtil.h"
+#include <glm/geometric.hpp>
 #include <glm/vector_relational.hpp>
 #include <glm/common.hpp>
 
