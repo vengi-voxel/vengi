@@ -205,9 +205,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		}
 		uint8_t color;
 		stream.readUInt8(color);
-		const voxel::VoxelType type =
-			palette.color(color).a != 255 ? voxel::VoxelType::Transparent : voxel::VoxelType::Generic;
-		v->setVoxel(x, y, z, voxel::createVoxel(type, color));
+		v->setVoxel(x, y, z, voxel::createVoxel(palette, color));
 	};
 	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
 	return true;

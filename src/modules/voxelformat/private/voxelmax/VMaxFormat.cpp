@@ -384,7 +384,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 			}
 			++mortonIdx;
 			if (!wrapper.setVoxel(chunkOffsetX + x, chunkOffsetY + y, chunkOffsetZ + z,
-								  voxel::createVoxel(voxel::VoxelType::Generic, palIdx))) {
+								  voxel::createVoxel(palette, palIdx))) {
 				Log::warn("Failed to set voxel at %i, %i, %i (morton index: %u)", chunkOffsetX + x, chunkOffsetY + y,
 						  chunkOffsetZ + z, mortonIdx);
 			}
