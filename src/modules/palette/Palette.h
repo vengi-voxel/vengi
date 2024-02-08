@@ -22,7 +22,6 @@ using PaletteIndicesArray = uint8_t[PaletteMaxColors];
 
 class Palette : public core::DirtyState {
 private:
-	bool _dirty = false;
 	bool _needsSave = false;
 	core::String _name;
 	union hash {
