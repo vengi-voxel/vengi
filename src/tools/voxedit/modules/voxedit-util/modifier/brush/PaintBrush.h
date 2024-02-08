@@ -38,13 +38,13 @@ protected:
 	class VoxelColor {
 	private:
 		const voxel::Voxel _voxel;
-		const palette::Palette &_palette;
+		palette::Palette &_palette;
 		const PaintMode _paintMode;
 		float _factor = 1.0f;
 		int _variationThreshold = 3;
 
 	public:
-		VoxelColor(const palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor,
+		VoxelColor(palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float factor,
 				   int variationThreshold)
 			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _factor(factor),
 			  _variationThreshold(variationThreshold) {
