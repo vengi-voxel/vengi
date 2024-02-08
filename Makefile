@@ -54,6 +54,9 @@ distclean:
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
 
+doc-images:
+	$(Q)pngquant -f --ext .png docs/img/*.png
+
 deb-changelog:
 	$(Q)contrib/installer/linux/changelog.py docs/CHANGELOG.md > debian/changelog
 
