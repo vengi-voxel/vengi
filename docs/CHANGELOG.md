@@ -14,6 +14,8 @@ General:
 
    - Expose `hollow()` to lua bindings
    - Add lua sanity checker to the build pipelines
+   - Fixed randomness in lua script `similarcolor.lua`
+   - Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates
 
 Voxedit:
 
@@ -24,6 +26,7 @@ Voxedit:
    - Update paint features
    - Added more features to the palette panel (e.g. duplicating and removing colors)
    - Allow to bind the left- and right-scrolling mouse wheel
+   - Improved draw color brush darken/brighten to create new colors if needed (and possible)
 
 VoxConvert:
 
