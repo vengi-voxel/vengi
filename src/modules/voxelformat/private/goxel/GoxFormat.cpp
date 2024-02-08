@@ -252,23 +252,13 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			for (int y1 = 0; y1 < BlockSize; ++y1) {
 				for (int x1 = 0; x1 < BlockSize; ++x1) {
 					// x running fastest
-					voxel::VoxelType voxelType = voxel::VoxelType::Generic;
-					uint8_t index;
-					if (v[3] == 0u) {
-						voxelType = voxel::VoxelType::Air;
-						index = 0;
-					} else {
+					voxel::Voxel voxel;
+					if (v[3] != 0u) {
 						const core::RGBA color(v[0], v[1], v[2], v[3]);
-						index = palLookup.findClosestIndex(color);
-						if (v[3] != 255) {
-							voxelType = voxel::VoxelType::Transparent;
-						}
-					}
-					const voxel::Voxel voxel = voxel::createVoxel(voxelType, index);
-					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);
-					if (!voxel::isAir(voxel.getMaterial())) {
 						empty = false;
+						voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
 					}
+					blockVolume->setVoxel(x + x1, z + z1, y + y1, voxel);
 					v += 4;
 				}
 			}
