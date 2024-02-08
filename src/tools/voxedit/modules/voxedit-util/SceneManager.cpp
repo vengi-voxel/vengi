@@ -1622,7 +1622,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: palette_sort [hue|saturation|brightness|cielab]");
+			Log::info("Usage: palette_sort [hue|saturation|brightness|cielab|original]");
 			return;
 		}
 		const core::String &type = args[0];
@@ -1637,10 +1637,12 @@ void SceneManager::construct() {
 			pal.sortCIELab();
 		} else if (type == "saturation") {
 			pal.sortSaturation();
+		} else if (type == "original") {
+			pal.sortOriginal();
 		}
 		_mementoHandler.markPaletteChange(node);
 	}).setHelp("Change intensity by scaling the rgb values of the palette").
-		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab"}));
+		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
 	command::Command::registerActionButton("zoom_out", _zoomOut, "Zoom out");
@@ -2249,7 +2251,7 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 		modified(nodeId, v->region());
 	} else {
 		for (size_t i = 0; i < pal.size(); ++i) {
-			if (!usedColors[pal.index(i)]) {
+			if (!usedColors[i]) {
 				pal.setColor(i, core::RGBA(127, 127, 127, 255));
 			}
 		}
@@ -3164,7 +3166,7 @@ bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t pal
 	c.a = 255;
 	palette.markSave();
 	_mementoHandler.markPaletteChange(node);
-	updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Generic);
+	updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 	return true;
 }
 
@@ -3202,9 +3204,9 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 	const bool newHasAlpha = color.a != 255;
 	if (existingColor) {
 		if (oldHasAlpha && !newHasAlpha) {
-			updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Generic);
+			updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 		} else if (!oldHasAlpha && newHasAlpha) {
-			updateVoxelType(node.id(), palette.index(palIdx), voxel::VoxelType::Transparent);
+			updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 	}
 	palette.markSave();

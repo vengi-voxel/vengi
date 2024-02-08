@@ -45,11 +45,11 @@ public:
 	uint8_t index(uint8_t idx) const;
 	const PaletteIndicesArray &indices() const;
 	PaletteIndicesArray &indices();
-
 	/**
-	 * @brief Access to the rgba color entry at the given entry for the ui
-	 * @note This can get re-ordered for displaying the colors in a palette
+	 * @note Only for ui purposes - changes the color slots
 	 */
+	void exchange(uint8_t idx1, uint8_t idx2);
+
 	core::RGBA &color(uint8_t idx);
 	core::RGBA color(uint8_t idx) const;
 	glm::vec4 color4(uint8_t idx) const;
@@ -75,7 +75,6 @@ public:
 	void removeGlow(uint8_t idx);
 	void setGlow(uint8_t idx, float factor = 1.0f);
 
-	void exchange(uint8_t idx1, uint8_t idx2);
 	bool hasFreeSlot() const;
 	void duplicateColor(uint8_t idx);
 	/**
@@ -102,6 +101,7 @@ public:
 	bool save(const char *name = nullptr) const;
 	bool saveGlow(const char *name = nullptr) const;
 
+	void sortOriginal();
 	void sortHue();
 	void sortSaturation();
 	void sortBrightness();
@@ -194,6 +194,10 @@ inline PaletteIndicesArray &Palette::indices(){
 	return _indices;
 }
 
+inline uint8_t Palette::index(uint8_t idx) const {
+	return _indices[idx];
+}
+
 inline const PaletteColorArray &Palette::colors() const {
 	return _colors;
 }
@@ -202,24 +206,20 @@ inline const PaletteColorArray &Palette::glowColors() const {
 	return _glowColors;
 }
 
-inline uint8_t Palette::index(uint8_t idx) const {
-	return _indices[idx];
-}
-
 inline core::RGBA Palette::color(uint8_t idx) const {
-	return _colors[index(idx)];
+	return _colors[idx];
 }
 
 inline core::RGBA &Palette::glowColor(uint8_t idx) {
-	return _glowColors[index(idx)];
+	return _glowColors[idx];
 }
 
 inline core::RGBA Palette::glowColor(uint8_t idx) const {
-	return _glowColors[index(idx)];
+	return _glowColors[idx];
 }
 
 inline core::RGBA &Palette::color(uint8_t idx) {
-	return _colors[index(idx)];
+	return _colors[idx];
 }
 
 } // namespace voxel

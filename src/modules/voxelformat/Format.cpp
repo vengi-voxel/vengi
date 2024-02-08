@@ -226,9 +226,9 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 					}
 					voxel::RawVolume *v = node.volume();
 					voxelutil::visitVolume(
-						*v, [v, skip = emptyPaletteIndex()](int x, int y, int z, const voxel::Voxel &voxel) {
+						*v, [v, skip = emptyPaletteIndex(), pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 							if (voxel.getColor() >= skip) {
-								v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), voxel.getColor() + 1));
+								v->setVoxel(x, y, z, voxel::createVoxel(pal, voxel.getColor() + 1));
 							}
 						});
 				} else {
@@ -238,9 +238,9 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 						Log::debug("Replace %i with %i", emptyPaletteIndex(), replacement);
 						voxel::RawVolume *v = node.volume();
 						voxelutil::visitVolume(
-							*v, [v, replaceFrom = emptyPaletteIndex(), replaceTo = replacement](int x, int y, int z, const voxel::Voxel &voxel) {
+							*v, [v, replaceFrom = emptyPaletteIndex(), replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 								if (voxel.getColor() == replaceFrom) {
-									v->setVoxel(x, y, z, voxel::createVoxel(voxel.getMaterial(), replaceTo));
+									v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
 								}
 							});
 					}

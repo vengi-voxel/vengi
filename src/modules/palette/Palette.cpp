@@ -35,9 +35,7 @@
 namespace palette {
 
 Palette::Palette() {
-	for (int i = 0; i < PaletteMaxColors; ++i) {
-		_indices[i] = i;
-	}
+	sortOriginal();
 }
 
 const char* Palette::getDefaultPaletteName() {
@@ -68,14 +66,6 @@ void Palette::markDirty() {
 
 glm::vec4 Palette::color4(uint8_t i) const {
 	return core::Color::fromRGBA(color(i));
-}
-
-void Palette::exchange(uint8_t idx1, uint8_t idx2) {
-	if (idx1 == idx2) {
-		return;
-	}
-	core::exchange(_indices[idx1], _indices[idx2]);
-	markDirty();
 }
 
 void Palette::reduce(uint8_t targetColors) {
@@ -116,6 +106,14 @@ void Palette::duplicateColor(uint8_t idx) {
 			}
 		}
 	}
+}
+
+void Palette::exchange(uint8_t idx1, uint8_t idx2) {
+	if (idx1 == idx2) {
+		return;
+	}
+	core::exchange(_indices[idx1], _indices[idx2]);
+	markDirty();
 }
 
 bool Palette::removeColor(uint8_t idx) {
@@ -326,6 +324,13 @@ void Palette::changeIntensity(float scale) {
 	}
 	markDirty();
 	markSave();
+}
+
+void Palette::sortOriginal() {
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		_indices[i] = i;
+	}
+	markDirty();
 }
 
 void Palette::sortHue() {
