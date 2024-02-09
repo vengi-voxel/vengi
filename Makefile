@@ -156,6 +156,15 @@ update-stb:
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
 	cp $(UPDATEDIR)/stb.sync/stb_rect_pack.h src/modules/scenegraph/external/stb_rect_pack.h
 
+update-ozz-animation:
+	$(call UPDATE_GIT,ozz-animation,https://github.com/guillaumeblanc/ozz-animation.git)
+	mkdir -p contrib/libs/ozz_animation
+	cp -r $(UPDATEDIR)/ozz-animation.sync/src/ contrib/libs/ozz_animation
+	cp -r $(UPDATEDIR)/ozz-animation.sync/include/ contrib/libs/ozz_animation
+	cp -r $(UPDATEDIR)/ozz-animation.sync/build-utils/ contrib/libs/ozz_animation
+	cp $(UPDATEDIR)/ozz-animation.sync/CMakeLists.txt contrib/libs/ozz_animation
+	cp $(UPDATEDIR)/ozz-animation.sync/LICENSE.md contrib/libs/ozz_animation
+
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
 	rm -rf contrib/libs/gtest/src
