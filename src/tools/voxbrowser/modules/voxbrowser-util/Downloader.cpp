@@ -4,6 +4,7 @@
 
 #include "Downloader.h"
 #include "JsonUtil.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -11,7 +12,9 @@
 #include "engine-config.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"
+#include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/FileStream.h"
 #include "io/FormatDescription.h"
 #include "voxbrowser-util/GithubAPI.h"
 #include "voxelformat/VolumeFormat.h"
@@ -81,6 +84,40 @@ static core::String findThumbnailUrl(const core::DynamicArray<github::TreeEntry>
 	return "";
 }
 
+void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<VoxelFile> &files) const {
+	http::HttpCacheStream stream(io::filesystem(), voxelFile.targetFile(), voxelFile.url);
+	io::FilePtr file = io::filesystem()->open(voxelFile.targetFile());
+	io::FileStream fileStream(file);
+	io::ArchivePtr archive = io::openArchive(io::filesystem(), voxelFile.targetFile(), &fileStream);
+	Log::debug("Found %i archive files", (int)archive->files().size());
+	for (const io::FilesystemEntry &file : archive->files()) {
+		if (!supportedFileExtension(file.name)) {
+			continue;
+		}
+		Log::info("Found %s in archive %s", file.name.c_str(), voxelFile.targetFile().c_str());
+		const core::String &archiveFileName = core::string::path(voxelFile.targetDir(), file.name);
+		if (io::filesystem()->exists(archiveFileName)) {
+			continue;
+		}
+		io::SeekableReadStreamPtr rs = archive->readStream(file.fullPath);
+		if (!rs) {
+			Log::error("Failed to read file %s", file.fullPath.c_str());
+			continue;
+		}
+		if (io::filesystem()->write(archiveFileName, *rs.get())) {
+			VoxelFile subFile;
+			subFile.source = voxelFile.source;
+			subFile.name = file.fullPath;
+			subFile.license = voxelFile.license;
+			subFile.licenseUrl = voxelFile.licenseUrl;
+			subFile.thumbnailUrl = voxelFile.thumbnailUrl;
+			files.push_back(subFile);
+		} else {
+			Log::error("Failed to write file %s", file.name.c_str());
+		}
+	}
+}
+
 core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
 	if (source.provider == "github") {
@@ -92,14 +129,6 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 			if (entry.type != "blob") {
 				continue;
 			}
-			if (!supportedFileExtension(entry.path)) {
-				continue;
-			}
-
-			// TODO: allow to enable mesh formats?
-			if (voxelformat::isMeshFormat(entry.path, false)) {
-				continue;
-			}
 			VoxelFile file;
 			file.source = source.name;
 			file.name = entry.path;
@@ -109,6 +138,20 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 			}
 			file.thumbnailUrl = findThumbnailUrl(entries, entry, source);
 			file.url = entry.url;
+
+			if (io::isSupportedArchive(file.name)) {
+				handleArchive(file, files);
+				continue;
+			}
+
+			if (!supportedFileExtension(entry.path)) {
+				continue;
+			}
+
+			// TODO: allow to enable mesh formats?
+			if (voxelformat::isMeshFormat(entry.path, false)) {
+				continue;
+			}
 			files.push_back(file);
 		}
 	} else if (source.provider == "single") {
@@ -118,7 +161,11 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 		file.license = source.license;
 		file.thumbnailUrl = source.thumbnail;
 		file.url = source.single.url;
-		files.push_back(file);
+		if (io::isSupportedArchive(file.name)) {
+			handleArchive(file, files);
+		} else {
+			files.push_back(file);
+		}
 	}
 
 	return files;

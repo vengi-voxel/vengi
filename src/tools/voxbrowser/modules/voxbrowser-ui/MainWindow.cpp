@@ -214,7 +214,8 @@ void MainWindow::updateAssetDetails() {
 			ImGui::URLItem("Thumbnail", voxelFile.thumbnailUrl.c_str());
 		}
 		ImGui::URLItem("URL", voxelFile.url.c_str());
-		if (voxelFile.downloaded) {
+		if (voxelFile.downloaded || io::filesystem()->exists(voxelFile.targetFile())) {
+			voxelFile.downloaded = true;
 			if (ImGui::Button("Open")) {
 				command::executeCommands("url \"file://" + _app->filesystem()->writePath(voxelFile.targetFile()) +
 										 "\"");

@@ -56,6 +56,9 @@ using VoxelFiles = core::DynamicArray<voxbrowser::VoxelFile>;
 using VoxelFileMap = core::DynamicStringMap<VoxelFiles>;
 
 class Downloader {
+private:
+	void handleArchive(const VoxelFile &file, core::DynamicArray<VoxelFile> &files) const;
+
 public:
 	core::DynamicArray<VoxelSource> sources();
 

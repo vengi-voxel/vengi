@@ -12,6 +12,8 @@
 #include "core/concurrent/ThreadPool.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
+#include "io/Archive.h"
+#include "io/File.h"
 #include "io/Filesystem.h"
 
 #include "voxbrowser-ui/MainWindow.h"
@@ -139,7 +141,6 @@ app::AppState VoxBrowser::onRunning() {
 	for (voxbrowser::VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
 		const core::String &relTargetFile = voxelFile.targetFile();
-		voxelFile.downloaded = io::filesystem()->exists(relTargetFile);
 
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {

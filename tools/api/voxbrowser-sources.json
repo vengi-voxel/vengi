@@ -55,6 +55,13 @@
 				"repo": "kluchek/vox-models",
 				"commit": "master"
 			}
+		},
+		{
+			"name": "voxeldoom",
+			"license": "unknown",
+			"single": {
+				"url": "http://www.teamhellspawn.com/kvx_voxels.zip"
+			}
 		}
 	]
 }
