@@ -17,7 +17,16 @@ General:
    - Fixed randomness in lua script `similarcolor.lua`
    - Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates
 
-Voxedit:
+VoxBrowser:
+
+   - New tool to browse voxel collections
+
+VoxConvert:
+
+   - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
+   - Support multiple `--output` parameters to write one (or more) input files into different formats in one step
+
+VoxEdit:
 
    - Auto create key frames when transform is modified via gizmo, too
    - Fixed an error in interpolating between the key frames
@@ -27,11 +36,6 @@ Voxedit:
    - Added more features to the palette panel (e.g. duplicating and removing colors)
    - Allow to bind the left- and right-scrolling mouse wheel
    - Improved draw color brush darken/brighten to create new colors if needed (and possible)
-
-VoxConvert:
-
-   - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
-   - Support multiple `--output` parameters to write one (or more) input files into different formats in one step
 
 ## 0.0.28 (2024-01-17)
 
