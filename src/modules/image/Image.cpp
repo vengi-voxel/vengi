@@ -108,6 +108,9 @@ bool writeImage(const image::ImagePtr &image, const core::String &filename) {
 	if (!image || !image->isLoaded()) {
 		return false;
 	}
+	if (filename.empty()) {
+		return false;
+	}
 	const io::FilePtr &png = io::filesystem()->open(filename, io::FileMode::SysWrite);
 	if (!png->validHandle())
 		return false;
