@@ -37,6 +37,8 @@ nav:
       - Formats.md
       - LUAScript.md
       - Palette.md
+  - VoxBrowser:
+      - voxbrowser/Index.md
   - VoxConvert:
       - voxconvert/Index.md
       - voxconvert/Usage.md
