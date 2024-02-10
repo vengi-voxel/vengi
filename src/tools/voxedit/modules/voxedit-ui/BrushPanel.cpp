@@ -343,7 +343,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	} else {
 		toolbarModifiers.button(ICON_LC_BOX, "actionplace", !modifier.isMode(ModifierType::Place));
 		toolbarModifiers.button(ICON_LC_ERASER, "actionerase", !modifier.isMode(ModifierType::Erase));
-		toolbarModifiers.button(ICON_LC_PEN_SQUARE, "actionoverride", !modifier.isMode(ModifierType::Override));
+		toolbarModifiers.button(ICON_LC_SQUARE_PEN, "actionoverride", !modifier.isMode(ModifierType::Override));
 	}
 }
 
