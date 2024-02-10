@@ -74,6 +74,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::TableSetupColumn("##nodepropertydelete", colFlags);
 		ImGui::TableHeadersRow();
 
+		// TODO: use ImGuiListClipper
 		for (const auto &entry : node.properties()) {
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
