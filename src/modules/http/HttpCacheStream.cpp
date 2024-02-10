@@ -4,6 +4,7 @@
 
 #include "HttpCacheStream.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "http/Http.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -12,6 +13,10 @@
 namespace http {
 
 HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url) : _file(file), _url(url) {
+	if (core::string::startsWith(url, "file://")) {
+		_fileStream = new io::FileStream(fs->open(url.substr(7), io::FileMode::Read));
+		return;
+	}
 	if (!fs->exists(file)) {
 		io::BufferedReadWriteStream bufStream(1024 * 1024);
 		int statusCode = 0;
