@@ -8,6 +8,7 @@ set(SRCS
 	IMGUIApp.cpp IMGUIApp.h
 	IMGUIStyle.cpp IMGUIStyle.h
 	Notify.cpp Notify.h
+	PopupAbout.h PopupAbout.cpp
 	ScopedStyle.h
 	Style.cpp Style.h
 	TextEditor.h TextEditor.cpp

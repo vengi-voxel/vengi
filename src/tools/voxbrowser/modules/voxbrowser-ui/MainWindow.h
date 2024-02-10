@@ -49,6 +49,9 @@ private:
 	void updateFilters();
 	bool isFilterActive() const;
 
+	void popupAbout();
+	void registerPopups();
+
 public:
 	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
 	virtual ~MainWindow();

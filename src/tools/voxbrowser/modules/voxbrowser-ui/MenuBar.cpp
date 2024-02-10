@@ -6,23 +6,11 @@
 #include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "IMGUIStyle.h"
+#include "PopupAbout.h"
 #include "ui/IconsLucide.h"
 #include "voxel/SurfaceExtractor.h"
 
 namespace voxbrowser {
-
-void MenuBar::metricOption() {
-	const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
-	bool metrics = !metricFlavor->strVal().empty();
-	if (ImGui::Checkbox("Enable sending anonymous metrics", &metrics)) {
-		if (metrics) {
-			metricFlavor->setVal("json");
-		} else {
-			metricFlavor->setVal("");
-		}
-	}
-	ImGui::TooltipText("Send anonymous usage statistics");
-}
 
 bool MenuBar::update(ui::IMGUIApp *app) {
 	bool resetDockLayout = false;
@@ -43,7 +31,7 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
 				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
-				metricOption();
+				ui::metricOption();
 				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
 				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
 				static const core::Array<core::String, ImGui::MaxStyles> uiStyles = {"CorporateGrey", "Dark", "Light",
@@ -54,6 +42,20 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 					resetDockLayout = true;
 				}
 				ImGui::EndMenu();
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu(ICON_LC_HELP_CIRCLE " Help")) {
+#ifdef DEBUG
+			if (ImGui::BeginMenu(ICON_LC_BUG " Debug")) {
+				if (ImGui::Button("Textures")) {
+					app->showTexturesDialog();
+				}
+				ImGui::EndMenu();
+			}
+#endif
+			if (ImGui::MenuItem(ICON_LC_INFO " About")) {
+				_popupAbout = true;
 			}
 			ImGui::EndMenu();
 		}

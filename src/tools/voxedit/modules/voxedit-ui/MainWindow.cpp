@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "PopupAbout.h"
 #include "ScopedStyle.h"
 #include "Util.h"
 #include "Viewport.h"
@@ -82,7 +83,6 @@
 #define POPUP_TITLE_TIPOFTHEDAY "Tip of the day##popuptitle"
 #define POPUP_TITLE_WELCOME "Welcome##popuptitle"
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
-#define POPUP_TITLE_ABOUT "About##popuptitle"
 
 namespace voxedit {
 
@@ -197,7 +197,7 @@ bool MainWindow::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
 	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
-	_isNewVersionAvailable = util::isNewVersionAvailable(1);
+	_isNewVersionAvailable = util::isNewVersionAvailable();
 
 	if (!initScenes()) {
 		return false;
@@ -531,7 +531,7 @@ void MainWindow::popupWelcome() {
 		ImGui::Separator();
 		ImGui::TextWrapped("We would like to enable anonymous usage metrics to improve the editor. "
 						   "Please consider enabling it.");
-		MenuBar::metricOption();
+		ui::metricOption();
 		ImGui::Separator();
 		if (ImGui::Button(ICON_LC_X " Close##welcome")) {
 			ImGui::CloseCurrentPopup();
@@ -765,135 +765,59 @@ void MainWindow::registerPopups() {
 }
 
 void MainWindow::popupAbout() {
-	const int w = 600;
-	const int h = 400;
-	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Appearing);
-	if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT)) {
-		if (ImGui::BeginChild("##scrollwindow", ImVec2(w, h - 80))) {
-			if (ImGui::BeginTabBar("##abouttabbar")) {
-				const float w = ImGui::GetContentRegionAvail().x;
-
-				if (ImGui::BeginTabItem(_app->fullAppname().c_str())) {
-					ImGui::Text("%s " PROJECT_VERSION, _app->appname().c_str());
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("This is a beta release!");
-					if (_isNewVersionAvailable) {
-						ImGui::Text("A new version is available!");
-					} else {
-						ImGui::Text("You are using the latest version.");
-					}
-					MenuBar::metricOption();
-
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLItem(ICON_LC_GITHUB " Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
-					ImGui::URLItem(ICON_LC_HELP_CIRCLE " Help", "https://vengi-voxel.github.io/vengi/", w);
-					ImGui::URLItem(ICON_LC_TWITTER " Twitter", "https://twitter.com/MartinGerhardy", w);
-					ImGui::URLItem(ICON_LC_SQUARE " Mastodon", "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLItem(ICON_LC_SQUARE " Discord", "https://vengi-voxel.de/discord", w);
-					ImGui::EndTabItem();
+	ui::popupAbout([]() {
+		if (ImGui::BeginTabItem("Formats")) {
+			const ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable;
+			ImGui::Text("Voxel load");
+			if (ImGui::BeginTable("##voxelload", 2, tableFlags)) {
+				ImGui::TableSetupColumn("Name##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn("Extension##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+				for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->wildCard().c_str());
 				}
-
-				if (ImGui::BeginTabItem("Credits")) {
-					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
-#ifdef USE_CURL
-					ImGui::Text("libCURL");
-#endif
-					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
-					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
-					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", w);
-					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
-					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
-					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
-					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
-					ImGui::URLItem("lua", "https://www.lua.org/", w);
-					ImGui::URLItem("lucide", "https://lucide.dev/", w);
-					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
-					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
-					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
-					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", w);
-					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", w);
-					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", w);
-					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", w);
-					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", w);
-#ifdef USE_ZLIB
-					ImGui::Text("zlib");
-#endif
-					ImGui::EndTabItem();
-				}
-				if (ImGui::BeginTabItem("Formats")) {
-					const ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable;
-					ImGui::Text("Voxel load");
-					if (ImGui::BeginTable("##voxelload", 2, tableFlags)) {
-						ImGui::TableSetupColumn("Name##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
-						ImGui::TableSetupColumn("Extension##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
-						ImGui::TableSetupScrollFreeze(0, 1);
-						ImGui::TableHeadersRow();
-						for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Voxel save");
-					if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
-						for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Palettes");
-					if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
-						for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("Images");
-					if (ImGui::BeginTable("##images", 2, tableFlags)) {
-						for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->name.c_str());
-							ImGui::TableNextColumn();
-							ImGui::Text("%s", desc->wildCard().c_str());
-						}
-						ImGui::EndTable();
-					}
-					ImGui::EndTabItem();
-				}
-
-				if (ImGui::BeginTabItem("Paths")) {
-					for (const core::String &path : io::filesystem()->paths()) {
-						const core::String &abspath = io::filesystem()->absolutePath(path);
-						if (abspath.empty()) {
-							continue;
-						}
-						core::String fileurl = "file://" + abspath;
-						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
-					}
-					ImGui::EndTabItem();
-				}
-				ImGui::EndTabBar();
+				ImGui::EndTable();
 			}
+			ImGui::Dummy(ImVec2(1, 10));
+			ImGui::Text("Voxel save");
+			if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
+				for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->wildCard().c_str());
+				}
+				ImGui::EndTable();
+			}
+			ImGui::Dummy(ImVec2(1, 10));
+			ImGui::Text("Palettes");
+			if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
+				for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->wildCard().c_str());
+				}
+				ImGui::EndTable();
+			}
+			ImGui::Dummy(ImVec2(1, 10));
+			ImGui::Text("Images");
+			if (ImGui::BeginTable("##images", 2, tableFlags)) {
+				for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", desc->wildCard().c_str());
+				}
+				ImGui::EndTable();
+			}
+			ImGui::EndTabItem();
 		}
-		ImGui::EndChild();
-		ImGui::Separator();
-		if (ImGui::Button(ICON_LC_CHECK " Close##about")) {
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SetItemDefaultFocus();
-		ImGui::EndPopup();
-	}
+	}, _isNewVersionAvailable);
 }
 
 QuitDisallowReason MainWindow::allowToQuit() {

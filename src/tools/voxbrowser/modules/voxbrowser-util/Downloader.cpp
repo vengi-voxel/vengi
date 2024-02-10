@@ -67,10 +67,7 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 }
 
 static bool supportedFileExtension(const core::String &path) {
-	io::FileDescription fileDescription;
-	fileDescription.set(path);
-	const io::FormatDescription *desc = io::getDescription(fileDescription, 0, voxelformat::voxelLoad());
-	return desc != nullptr && desc->valid();
+	return io::isA(path, voxelformat::voxelLoad());
 }
 
 static core::String findThumbnailUrl(const core::DynamicArray<github::TreeEntry> &entries,
@@ -94,9 +91,17 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 		if (!supportedFileExtension(file.name)) {
 			continue;
 		}
-		Log::info("Found %s in archive %s", file.name.c_str(), voxelFile.targetFile().c_str());
+		VoxelFile subFile;
+		subFile.source = voxelFile.source;
+		subFile.name = file.fullPath;
+		subFile.license = voxelFile.license;
+		subFile.licenseUrl = voxelFile.licenseUrl;
+		subFile.thumbnailUrl = voxelFile.thumbnailUrl;
+
+		Log::debug("Found %s in archive %s", file.name.c_str(), voxelFile.targetFile().c_str());
 		const core::String &archiveFileName = core::string::path(voxelFile.targetDir(), file.name);
 		if (io::filesystem()->exists(archiveFileName)) {
+			files.push_back(subFile);
 			continue;
 		}
 		io::SeekableReadStreamPtr rs = archive->readStream(file.fullPath);
@@ -105,12 +110,6 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 			continue;
 		}
 		if (io::filesystem()->write(archiveFileName, *rs.get())) {
-			VoxelFile subFile;
-			subFile.source = voxelFile.source;
-			subFile.name = file.fullPath;
-			subFile.license = voxelFile.license;
-			subFile.licenseUrl = voxelFile.licenseUrl;
-			subFile.thumbnailUrl = voxelFile.thumbnailUrl;
 			files.push_back(subFile);
 		} else {
 			Log::error("Failed to write file %s", file.name.c_str());

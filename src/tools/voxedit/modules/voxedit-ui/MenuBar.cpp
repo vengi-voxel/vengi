@@ -5,6 +5,7 @@
 #include "MenuBar.h"
 #include "IMGUIApp.h"
 #include "IMGUIStyle.h"
+#include "PopupAbout.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
@@ -41,19 +42,6 @@ void MenuBar::colorReductionOptions() {
 	}
 	ImGui::TooltipText(
 		"The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
-}
-
-void MenuBar::metricOption() {
-	const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
-	bool metrics = !metricFlavor->strVal().empty();
-	if (ImGui::Checkbox("Enable sending anonymous metrics", &metrics)) {
-		if (metrics) {
-			metricFlavor->setVal("json");
-		} else {
-			metricFlavor->setVal("");
-		}
-	}
-	ImGui::TooltipText("Send anonymous usage statistics");
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
@@ -130,7 +118,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
 				ImGui::CheckboxVar("Tip of the day", cfg::VoxEditTipOftheDay);
 
-				metricOption();
+				ui::metricOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
 					"Cubes", "Marching cubes"};

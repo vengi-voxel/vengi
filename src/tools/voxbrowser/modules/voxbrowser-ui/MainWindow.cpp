@@ -4,6 +4,7 @@
 
 #include "MainWindow.h"
 #include "IMGUIEx.h"
+#include "PopupAbout.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
@@ -320,6 +321,15 @@ void MainWindow::configureMainBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ASSET_DETAILS, dockId);
 }
 
+void MainWindow::registerPopups() {
+	if (_menuBar._popupAbout) {
+		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
+		_menuBar._popupAbout = false;
+	}
+
+	ui::popupAbout();
+}
+
 void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
@@ -365,6 +375,8 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	updateAssetList(voxelFilesMap);
 	updateAsset();
 	updateAssetDetails();
+
+	registerPopups();
 
 	ImGui::End();
 
