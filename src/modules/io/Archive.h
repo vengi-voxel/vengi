@@ -55,5 +55,6 @@ inline const ArchiveFiles &Archive::files() const {
 
 using ArchivePtr = core::SharedPtr<Archive>;
 ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream);
+bool isSupportedArchive(const core::String &filename);
 
 } // namespace io

@@ -5,6 +5,7 @@
 #include "ZipArchive.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/StringUtil.h"
 #define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
 #include "io/Stream.h"
@@ -138,7 +139,8 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 			continue;
 		}
 		FilesystemEntry entry;
-		entry.name = zipStat.m_filename;
+		entry.fullPath = zipStat.m_filename;
+		entry.name = core::string::extractFilenameWithExtension(entry.fullPath);
 		entry.type = FilesystemEntry::Type::file;
 		entry.size = zipStat.m_uncomp_size;
 		entry.mtime = zipStat.m_time;
@@ -154,7 +156,13 @@ bool ZipArchive::load(const core::String &filePath, io::SeekableWriteStream &out
 		Log::error("No zip archive loaded");
 		return false;
 	}
-	return mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, (void *)&out, 0);
+	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, (void *)&out, 0)) {
+		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive*)_zip);
+		const char *err = mz_zip_get_error_string(error);
+		Log::error("Failed to extract file '%s' from zip: %s", filePath.c_str(), err);
+		return false;
+	}
+	return true;
 }
 
 } // namespace io
