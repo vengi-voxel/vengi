@@ -88,18 +88,33 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 	io::ArchivePtr archive = io::openArchive(io::filesystem(), voxelFile.targetFile(), &fileStream);
 	Log::debug("Found %i archive files", (int)archive->files().size());
 	for (const io::FilesystemEntry &file : archive->files()) {
-		if (!supportedFileExtension(file.name)) {
-			continue;
-		}
 		VoxelFile subFile;
 		subFile.source = voxelFile.source;
 		subFile.name = file.fullPath;
 		subFile.license = voxelFile.license;
 		subFile.licenseUrl = voxelFile.licenseUrl;
 		subFile.thumbnailUrl = voxelFile.thumbnailUrl;
+		const core::String &archiveFileName = core::string::path(voxelFile.targetDir(), file.fullPath);
+
+		if (io::isSupportedArchive(file.name)) {
+			// save file and call handleArchive again
+			io::SeekableReadStreamPtr rs = archive->readStream(file.fullPath);
+			if (!rs) {
+				Log::error("Failed to read file %s", file.fullPath.c_str());
+				continue;
+			}
+			if (io::filesystem()->write(archiveFileName, *rs.get())) {
+				handleArchive(subFile, files);
+			} else {
+				Log::error("Failed to write file %s", file.fullPath.c_str());
+			}
+			continue;
+		}
+		if (!supportedFileExtension(file.name)) {
+			continue;
+		}
 
 		Log::debug("Found %s in archive %s", file.name.c_str(), voxelFile.targetFile().c_str());
-		const core::String &archiveFileName = core::string::path(voxelFile.targetDir(), file.name);
 		if (io::filesystem()->exists(archiveFileName)) {
 			files.push_back(subFile);
 			continue;

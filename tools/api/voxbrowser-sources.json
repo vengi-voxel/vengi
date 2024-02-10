@@ -62,6 +62,13 @@
 			"single": {
 				"url": "http://www.teamhellspawn.com/kvx_voxels.zip"
 			}
+		},
+		{
+			"name": "voxeldoom2",
+			"license": "unknown",
+			"single": {
+				"url": "https://www.moddb.com/downloads/mirror/261802/129/6be6bbb41917b9d318136d749f54b5d5?file=voxeldoom2.zip"
+			}
 		}
 	]
 }
