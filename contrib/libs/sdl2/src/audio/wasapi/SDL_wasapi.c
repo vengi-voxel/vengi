@@ -172,13 +172,18 @@ static SDL_bool RecoverWasapiIfLost(_THIS)
     return lost ? RecoverWasapiDevice(this) : SDL_TRUE;
 }
 
+static void WASAPI_WaitDevice(_THIS);
+
 static Uint8 *WASAPI_GetDeviceBuf(_THIS)
 {
     /* get an endpoint buffer from WASAPI. */
     BYTE *buffer = NULL;
 
     while (RecoverWasapiIfLost(this) && this->hidden->render) {
-        if (!WasapiFailed(this, IAudioRenderClient_GetBuffer(this->hidden->render, this->spec.samples, &buffer))) {
+        const HRESULT ret = IAudioRenderClient_GetBuffer(this->hidden->render, this->spec.samples, &buffer);
+        if (ret == AUDCLNT_E_BUFFER_TOO_LARGE) {
+            WASAPI_WaitDevice(this);  /* see if we can wait on the buffer to drain some more first... */
+        } else if (!WasapiFailed(this, ret)) {
             return (Uint8 *)buffer;
         }
         SDL_assert(buffer == NULL);
@@ -484,6 +489,11 @@ int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
         const float period_millis = default_period / 10000.0f;
         const float period_frames = period_millis * this->spec.freq / 1000.0f;
         this->spec.samples = (Uint16)SDL_ceilf(period_frames);
+    }
+
+    /* regardless of what we calculated for the period size, clamp it to the expected hardware buffer size. */
+    if (this->spec.samples > bufsize) {
+        this->spec.samples = bufsize;
     }
 
     /* Update the fragment size as size in bytes */

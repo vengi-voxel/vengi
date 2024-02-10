@@ -36,6 +36,7 @@
 
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
+#include <sys/stat.h>
 #endif
 
 #ifdef HAVE_LIMITS_H
@@ -523,6 +524,24 @@ static int SDLCALL mem_close(SDL_RWops *context)
 
 /* Functions to create SDL_RWops structures from various data sources */
 
+#if defined(HAVE_STDIO_H) && !(defined(__WIN32__) || defined(__GDK__))
+static SDL_bool SDL_IsRegularFile(FILE *f)
+{
+    #ifdef __WINRT__
+    struct __stat64 st;
+    if (_fstat64(_fileno(f), &st) < 0 || (st.st_mode & _S_IFMT) != _S_IFREG) {
+        return SDL_FALSE;
+    }
+    #else
+    struct stat st;
+    if (fstat(fileno(f), &st) < 0 || !S_ISREG(st.st_mode)) {
+        return SDL_FALSE;
+    }
+    #endif
+    return SDL_TRUE;
+}
+#endif
+
 SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 {
     SDL_RWops *rwops = NULL;
@@ -536,6 +555,11 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
     if (*file == '/') {
         FILE *fp = fopen(file, mode);
         if (fp) {
+            if (!SDL_IsRegularFile(fp)) {
+                fclose(fp);
+                SDL_SetError("%s is not a regular file", file);
+                return NULL;
+            }
             return SDL_RWFromFP(fp, 1);
         }
     } else {
@@ -551,6 +575,11 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
             fp = fopen(path, mode);
             SDL_stack_free(path);
             if (fp) {
+                if (!SDL_IsRegularFile(fp)) {
+                    fclose(fp);
+                    SDL_SetError("%s is not a regular file", path);
+                    return NULL;
+                }
                 return SDL_RWFromFP(fp, 1);
             }
         }
@@ -604,6 +633,10 @@ SDL_RWops *SDL_RWFromFile(const char *file, const char *mode)
 #endif
         if (!fp) {
             SDL_SetError("Couldn't open %s", file);
+        } else if (!SDL_IsRegularFile(fp)) {
+            fclose(fp);
+            fp = NULL;
+            SDL_SetError("%s is not a regular file", file);
         } else {
             rwops = SDL_RWFromFP(fp, SDL_TRUE);
         }
@@ -718,12 +751,12 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
 {
     static const Sint64 FILE_CHUNK_SIZE = 1024;
     Sint64 size;
-    size_t size_read, size_total;
+    size_t size_read, size_total = 0;
     void *data = NULL, *newdata;
 
     if (!src) {
         SDL_InvalidParamError("src");
-        return NULL;
+        goto done;
     }
 
     size = SDL_RWsize(src);
@@ -731,8 +764,11 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
         size = FILE_CHUNK_SIZE;
     }
     data = SDL_malloc((size_t)(size + 1));
+    if (!data) {
+        SDL_OutOfMemory();
+        goto done;
+    }
 
-    size_total = 0;
     for (;;) {
         if ((((Sint64)size_total) + FILE_CHUNK_SIZE) > size) {
             size = (size_total + FILE_CHUNK_SIZE);
@@ -753,12 +789,12 @@ void *SDL_LoadFile_RW(SDL_RWops *src, size_t *datasize, int freesrc)
         size_total += size_read;
     }
 
-    if (datasize) {
-        *datasize = size_total;
-    }
     ((char *)data)[size_total] = '\0';
 
 done:
+    if (datasize) {
+        *datasize = size_total;
+    }
     if (freesrc && src) {
         SDL_RWclose(src);
     }
