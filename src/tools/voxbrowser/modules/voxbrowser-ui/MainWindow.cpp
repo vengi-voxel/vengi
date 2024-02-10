@@ -32,10 +32,13 @@ MainWindow::~MainWindow() {
 }
 
 bool MainWindow::filtered(const VoxelFile &voxelFile) const {
-	if (_currentFilterEntry <= 0) {
+	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
+		return true;
+	}
+	if (_currentFilterFormatEntry <= 0) {
 		return false;
 	}
-	const core::String &filter = _filterEntries[_currentFilterEntry].wildCard();
+	const core::String &filter = _filterEntries[_currentFilterFormatEntry].wildCard();
 	const core::String &ext = core::string::extractExtension(voxelFile.name);
 	if (core::string::fileMatchesMultiple(voxelFile.name.c_str(), filter.c_str())) {
 		return false;
@@ -43,41 +46,54 @@ bool MainWindow::filtered(const VoxelFile &voxelFile) const {
 	return true;
 }
 
+bool MainWindow::isFilterActive() const {
+	return !_currentFilterName.empty() || _currentFilterFormatEntry > 0;
+}
+
 void MainWindow::updateFilters() {
-	if (_filterTextWidth < 0.0f) {
-		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-			_filterEntries.push_back(*desc);
-			const core::String &str = io::convertToFilePattern(*desc);
-			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
-			_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
-		}
-		_filterEntries.sort(core::Greater<io::FormatDescription>());
-		io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
-		// must be the first entry - see applyFilter()
-		_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
+	{
+		const ImVec2 itemWidth = ImGui::CalcTextSize("##############");
+		ImGui::PushItemWidth(itemWidth.x);
+		ImGui::InputText("Name", &_currentFilterName);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
 	}
-
-	// TODO: filter by name
-	const char *label = "Filter";
-	ImGui::PushItemWidth(_filterTextWidth);
-	int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
-	const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
-
-	if (ImGui::BeginCombo(label, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
-		for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-			const bool selected = i == currentlySelected;
-			const io::FormatDescription &format = _filterEntries[i];
-			const core::String &text = io::convertToFilePattern(format);
-			if (ImGui::Selectable(text.c_str(), selected)) {
-				_currentFilterEntry = i;
+	{
+		if (_filterTextWidth < 0.0f) {
+			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+				_filterEntries.push_back(*desc);
+				const core::String &str = io::convertToFilePattern(*desc);
+				const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
+				_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
 			}
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
+			_filterEntries.sort(core::Greater<io::FormatDescription>());
+			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
+			// must be the first entry - see applyFilter()
+			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
 		}
-		ImGui::EndCombo();
+
+		const char *formatFilterLabel = "Format";
+		ImGui::PushItemWidth(_filterTextWidth);
+		int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
+		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
+
+		if (ImGui::BeginCombo(formatFilterLabel, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
+			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+				const bool selected = i == currentlySelected;
+				const io::FormatDescription &format = _filterEntries[i];
+				const core::String &text = io::convertToFilePattern(format);
+				if (ImGui::Selectable(text.c_str(), selected)) {
+					_currentFilterFormatEntry = i;
+				}
+				if (selected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopItemWidth();
 	}
-	ImGui::PopItemWidth();
+	// TODO: filter by license
 }
 
 // https://github.com/ocornut/imgui/issues/6174
@@ -200,7 +216,8 @@ void MainWindow::updateAssetDetails() {
 		ImGui::URLItem("URL", voxelFile.url.c_str());
 		if (voxelFile.downloaded) {
 			if (ImGui::Button("Open")) {
-				command::executeCommands("url \"file://" + _app->filesystem()->writePath(voxelFile.targetFile()) + "\"");
+				command::executeCommands("url \"file://" + _app->filesystem()->writePath(voxelFile.targetFile()) +
+										 "\"");
 			}
 			if (!_texturePool.has(voxelFile.name)) {
 				if (ImGui::Button("Create thumbnail")) {
@@ -243,6 +260,9 @@ void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) 
 			for (const auto &entry : voxelFilesMap) {
 				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
 											   ImGuiTreeNodeFlags_SpanAvailWidth;
+				if (isFilterActive()) {
+					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+				}
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
 				if (ImGui::TreeNodeEx(entry->first.c_str(), treeFlags)) {

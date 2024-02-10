@@ -18,7 +18,8 @@ private:
 	ui::IMGUIApp *_app;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	float _filterTextWidth = -1.0f;
-	int _currentFilterEntry = -1;
+	int _currentFilterFormatEntry = -1;
+	core::String _currentFilterName;
 	StatusBar _statusBar;
 	MenuBar _menuBar;
 	VoxelFile _selected;
@@ -46,6 +47,7 @@ private:
 
 	bool filtered(const VoxelFile &voxelFile) const;
 	void updateFilters();
+	bool isFilterActive() const;
 
 public:
 	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
