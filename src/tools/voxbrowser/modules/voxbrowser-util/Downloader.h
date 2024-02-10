@@ -48,7 +48,7 @@ struct VoxelFile {
 	}
 };
 
-using VoxelFiles = core::DynamicArray<voxbrowser::VoxelFile>;
+using VoxelFiles = core::DynamicArray<VoxelFile>;
 using VoxelFileMap = core::DynamicStringMap<VoxelFiles>;
 
 class Downloader {

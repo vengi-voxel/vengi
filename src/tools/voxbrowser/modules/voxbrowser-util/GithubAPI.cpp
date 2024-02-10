@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "http/HttpCacheStream.h"
 
 namespace github {
@@ -16,6 +17,7 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 }
 
 core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch) {
+	core_trace_scoped(ReposGitTrees);
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	const core::String file = "github-" + repository + "-" + branch + ".json";
 	http::HttpCacheStream stream(io::filesystem(), file, url);
@@ -32,14 +34,14 @@ core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, cons
 		return entries;
 	}
 	jsonResponse = jsonResponse["tree"];
+	Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)jsonResponse.size());
 	for (auto &entry : jsonResponse) {
+		if (get(entry, "type") != "blob") {
+			continue;
+		}
 		TreeEntry treeEntry;
 		treeEntry.path = get(entry, "path");
-		treeEntry.mode = get(entry, "mode");
-		treeEntry.type = get(entry, "type");
-		treeEntry.sha = get(entry, "sha");
 		treeEntry.url = downloadUrl(repository, branch, treeEntry.path);
-		treeEntry.size = getInt(entry, "size");
 		entries.push_back(treeEntry);
 	}
 

@@ -89,21 +89,23 @@ static core::String findThumbnailUrl(const core::DynamicArray<github::TreeEntry>
 	return "";
 }
 
-void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<VoxelFile> &files) const {
-	http::HttpCacheStream stream(io::filesystem(), voxelFile.targetFile(), voxelFile.url);
-	io::FilePtr file = io::filesystem()->open(voxelFile.targetFile());
-	io::FileStream fileStream(file);
-	io::ArchivePtr archive = io::openArchive(io::filesystem(), voxelFile.targetFile(), &fileStream);
-	Log::debug("Found %i archive files", (int)archive->files().size());
+void Downloader::handleArchive(const VoxelFile &archiveFile, core::DynamicArray<VoxelFile> &files) const {
+	http::HttpCacheStream stream(io::filesystem(), archiveFile.targetFile(), archiveFile.url);
+	io::ArchivePtr archive = io::openArchive(io::filesystem(), archiveFile.fullPath, &stream);
+	if (!archive) {
+		Log::error("Failed to open archive %s", archiveFile.targetFile().c_str());
+		return;
+	}
+	Log::info("Found %i files in archive %s", (int)archive->files().size(), archiveFile.name.c_str());
 	for (const io::FilesystemEntry &file : archive->files()) {
 		VoxelFile subFile;
-		subFile.source = voxelFile.source;
+		subFile.source = archiveFile.source;
 		subFile.name = file.fullPath;
-		subFile.fullPath = core::string::path(voxelFile.fullPath, file.fullPath);
-		subFile.license = voxelFile.license;
-		subFile.licenseUrl = voxelFile.licenseUrl;
-		subFile.thumbnailUrl = voxelFile.thumbnailUrl;
-		const core::String &archiveFileName = core::string::path(voxelFile.targetDir(), file.fullPath);
+		subFile.license = archiveFile.license;
+		subFile.licenseUrl = archiveFile.licenseUrl;
+		subFile.thumbnailUrl = archiveFile.thumbnailUrl;
+		subFile.fullPath = io::filesystem()->writePath(subFile.targetFile());
+		const core::String &archiveFileName = core::string::path(archiveFile.targetDir(), file.fullPath);
 
 		if (io::isSupportedArchive(file.name)) {
 			// save file and call handleArchive again
@@ -123,7 +125,7 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 			continue;
 		}
 
-		Log::debug("Found %s in archive %s", file.name.c_str(), voxelFile.targetFile().c_str());
+		Log::debug("Found %s in archive %s", file.name.c_str(), archiveFile.targetFile().c_str());
 		if (io::filesystem()->exists(archiveFileName)) {
 			files.push_back(subFile);
 			continue;
@@ -143,25 +145,23 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 
 core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
+	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(source.github.repo, source.github.commit);
 		const core::String &licenseDownloadUrl =
 			github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
 		for (auto &entry : entries) {
-			if (entry.type != "blob") {
-				continue;
-			}
 			VoxelFile file;
 			file.source = source.name;
 			file.name = entry.path;
-			file.fullPath = io::filesystem()->writePath(entry.path);
 			file.license = source.license;
 			if (!source.github.license.empty()) {
 				file.licenseUrl = licenseDownloadUrl;
 			}
 			file.thumbnailUrl = findThumbnailUrl(entries, entry, source);
 			file.url = entry.url;
+			file.fullPath = io::filesystem()->writePath(file.targetFile());
 
 			if (io::isSupportedArchive(file.name)) {
 				handleArchive(file, files);
@@ -182,10 +182,11 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 		VoxelFile file;
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(source.single.url);
-		file.fullPath = io::filesystem()->writePath(file.name);
 		file.license = source.license;
 		file.thumbnailUrl = source.thumbnail;
 		file.url = source.single.url;
+		file.fullPath = io::filesystem()->writePath(file.targetFile());
+		Log::info("Found single source with name %s and url %s", file.name.c_str(), file.url.c_str());
 		if (io::isSupportedArchive(file.name)) {
 			handleArchive(file, files);
 		} else {

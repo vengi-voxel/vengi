@@ -11,16 +11,6 @@
 			}
 		},
 		{
-			"name": "Mini Mike's Metro Minis",
-			"license": "Creative Commons Attribution 4.0 International",
-			"thumbnail": "https://raw.githubusercontent.com/mikelovesrobots/mmmm/master/screenshots/day1.png",
-			"github": {
-				"repo": "mikelovesrobots/mmmm",
-				"commit": "master",
-				"license": "LICENSE"
-			}
-		},
-		{
 			"name": "Akamai's Inspiring Game Scenes",
 			"license": "Attribution-NonCommercial-NoDerivatives 4.0 International",
 			"thumbnail": "https://raw.githubusercontent.com/Akamai-Community/inspiring-game-scenes/main/models/city-build-scene/city-build-scene.png",
@@ -57,17 +47,27 @@
 			}
 		},
 		{
-			"name": "voxeldoom",
+			"name": "Voxel Doom (KVX)",
 			"license": "unknown",
 			"single": {
 				"url": "http://www.teamhellspawn.com/kvx_voxels.zip"
 			}
 		},
 		{
-			"name": "voxeldoom2",
+			"name": "Voxel Doom (VOX)",
 			"license": "unknown",
 			"single": {
-				"url": "https://www.moddb.com/downloads/mirror/261802/129/6be6bbb41917b9d318136d749f54b5d5?file=voxeldoom2.zip"
+				"url": "http://www.teamhellspawn.com/vox_voxels.zip"
+			}
+		},
+		{
+			"name": "Mini Mike's Metro Minis",
+			"license": "Creative Commons Attribution 4.0 International",
+			"thumbnail": "https://raw.githubusercontent.com/mikelovesrobots/mmmm/master/screenshots/day1.png",
+			"github": {
+				"repo": "mikelovesrobots/mmmm",
+				"commit": "master",
+				"license": "LICENSE"
 			}
 		}
 	]

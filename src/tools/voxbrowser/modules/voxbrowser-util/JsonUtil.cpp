@@ -6,17 +6,19 @@
 #include "core/Log.h"
 
 core::String get(nlohmann::json &json, const std::string &key, const core::String &defaultVal) {
-	if (!json.contains(key)) {
-		Log::debug("Missing key %s", key.c_str());
-		return defaultVal;
+	auto iter = json.find(key);
+	if (iter != json.end()) {
+		return iter->get<std::string>().c_str();
 	}
-	return json[key].get<std::string>().c_str();
+	Log::debug("Missing key %s", key.c_str());
+	return defaultVal;
 }
 
 int getInt(nlohmann::json &json, const std::string &key, int defaultVal) {
-	if (!json.contains(key)) {
-		Log::debug("Missing key %s", key.c_str());
-		return defaultVal;
+	auto iter = json.find(key);
+	if (iter != json.end()) {
+		return iter->get<int>();
 	}
-	return json[key].get<int>();
+	Log::debug("Missing key %s", key.c_str());
+	return defaultVal;
 }

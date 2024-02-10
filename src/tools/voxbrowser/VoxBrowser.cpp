@@ -79,6 +79,8 @@ app::AppState VoxBrowser::onInit() {
 			voxelFile.url = "file://" + entry.fullPath;
 			voxelFile.source = "local";
 			voxelFile.license = "unknown";
+			// voxelFile.licenseUrl = "";
+			// voxelFile.thumbnailUrl = "";
 			voxelFile.downloaded = true;
 			_newVoxelFiles.push(voxelFile);
 		}
@@ -110,8 +112,8 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 	}
 	const core::String &targetImageFile = io::filesystem()->writePath(voxelFile.targetFile() + ".png");
 	if (io::filesystem()->exists(targetImageFile)) {
-		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImageFile]() {
-			image::ImagePtr image = image::loadImage(targetImagePath);
+		_threadPool->enqueue([this, voxelFile, targetImageFile]() {
+			image::ImagePtr image = image::loadImage(targetImageFile);
 			if (image) {
 				image->setName(voxelFile.name);
 				_imageQueue.push(image);
@@ -124,26 +126,26 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 		return;
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
-		_threadPool->enqueue([this, voxelFile = voxelFile]() {
+		_threadPool->enqueue([=]() {
 			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
-			_imageQueue.push(image::loadImage(voxelFile.name, stream));
+			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
-		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImageFile]() {
+		_threadPool->enqueue([=]() {
 			http::HttpCacheStream stream(filesystem(), voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, stream, loadCtx);
-			if (!thumbnailImage) {
+			if (!thumbnailImage || !thumbnailImage->isLoaded()) {
 				Log::debug("Failed to load given input file: %s", voxelFile.fullPath.c_str());
 				return;
 			}
 			thumbnailImage->setName(voxelFile.name);
-			if (!image::writeImage(thumbnailImage, targetImagePath)) {
-				Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImagePath.c_str());
+			if (!image::writeImage(thumbnailImage, targetImageFile)) {
+				Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			} else {
-				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImagePath.c_str());
+				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			}
-			_imageQueue.push(thumbnailImage);
+			this->_imageQueue.push(thumbnailImage);
 		});
 	}
 }
@@ -155,7 +157,7 @@ app::AppState VoxBrowser::onRunning() {
 	}
 
 	voxbrowser::VoxelFiles voxelFiles;
-	_newVoxelFiles.popAll(voxelFiles);
+	_newVoxelFiles.pop(voxelFiles, 100);
 
 	image::ImagePtr image;
 	if (_imageQueue.pop(image)) {

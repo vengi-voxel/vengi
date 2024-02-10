@@ -13,10 +13,6 @@ namespace github {
 
 struct TreeEntry {
 	core::String path;
-	core::String mode;
-	core::String type;
-	core::String sha;
-	int size = 0;
 	core::String url;
 };
 

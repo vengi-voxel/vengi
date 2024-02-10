@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "IMGUIApp.h"
 #include "IMGUIEx.h"
 #include "PopupAbout.h"
 #include "ScopedStyle.h"
@@ -14,11 +15,11 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "video/Texture.h"
+#include "video/gl/GLTypes.h"
 #include "voxbrowser-util/Downloader.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
-#include <cstddef>
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_ASSET "Asset##asset"
@@ -102,13 +103,11 @@ void MainWindow::updateFilters() {
 void MainWindow::image(const video::TexturePtr &texture) {
 	const ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 	ImVec2 size = ImGui::GetContentRegionAvail();
-	size.x = core_max(size.x, 256.0f);
-	size.y = core_max(size.y, 250.0f);
 
 	ImGui::InvisibleButton("##canvas", size,
 						   ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
 							   ImGuiButtonFlags_MouseButtonMiddle);
-
+	const bool hovered = ImGui::IsItemHovered();
 	const bool active = ImGui::IsItemActive(); // Held
 	const ImGuiIO &io = ImGui::GetIO();
 
@@ -126,8 +125,10 @@ void MainWindow::image(const video::TexturePtr &texture) {
 	const ImVec2 oldUVImageCenter = {imageCenter.x / (texture->width() * _thumbnailProperties.scale.x),
 									 imageCenter.y / (texture->height() * _thumbnailProperties.scale.y)};
 
-	_thumbnailProperties.scale.x += zoomDelta;
-	_thumbnailProperties.scale.y += zoomDelta;
+	if (hovered) {
+		_thumbnailProperties.scale.x += zoomDelta;
+		_thumbnailProperties.scale.y += zoomDelta;
+	}
 
 	_thumbnailProperties.scale.x = glm::clamp(_thumbnailProperties.scale.x, 0.01f, 100.0f);
 	_thumbnailProperties.scale.y = glm::clamp(_thumbnailProperties.scale.y, 0.01f, 100.0f);
@@ -253,7 +254,7 @@ video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
 }
 
 void MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
-	core::DynamicArray<const voxbrowser::VoxelFile*> f;
+	core::DynamicArray<const voxbrowser::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
 	for (const VoxelFile &voxelFile : voxelFiles) {
@@ -275,16 +276,16 @@ void MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 			const bool selected = _selected == *voxelFile;
 
 			ImGui::PushID(voxelFile->targetFile().c_str());
-			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
-				if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
-					_selected = *voxelFile;
-				}
-				ImGui::Image(texture->handle(), ImVec2(64, 64));
-			} else {
-				if (ImGui::Selectable("No thumbnail available", selected, ImGuiSelectableFlags_SpanAllColumns)) {
-					_selected = *voxelFile;
-				}
+			if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
+				_selected = *voxelFile;
 			}
+			video::Id handle;
+			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+				handle = texture->handle();
+			} else {
+				handle = video::InvalidId;
+			}
+			ImGui::Image(handle, ImVec2(64, 64));
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
 			}
