@@ -18,6 +18,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
+#include <cstddef>
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_ASSET "Asset##asset"
@@ -179,18 +180,22 @@ void MainWindow::updateAsset() {
 
 void MainWindow::createThumbnail(const VoxelFile &voxelFile) {
 	scenegraph::SceneGraph sceneGraph;
-	const core::String &targetFile = voxelFile.targetFile();
+	const core::String &fullPath = voxelFile.fullPath;
 	io::FileDescription fileDesc;
-	fileDesc.set(targetFile);
+	fileDesc.set(fullPath);
 	voxelformat::LoadContext loadctx;
-	const io::FilePtr &file = _app->filesystem()->open(targetFile, io::FileMode::Read);
+	const io::FilePtr &file = _app->filesystem()->open(fullPath, io::FileMode::SysRead);
 	io::FileStream stream(file);
 	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", file->name().c_str());
 		return;
 	}
 
-	const core::String &targetImageFile = _app->filesystem()->writePath(targetFile + ".png");
+	const core::String &targetImageFile = _app->filesystem()->writePath(voxelFile.targetFile() + ".png");
+	if (!io::filesystem()->createDir(core::string::extractPath(targetImageFile))) {
+		Log::warn("Failed to create directory for thumbnails at: %s", voxelFile.targetDir().c_str());
+		return;
+	}
 	const image::ImagePtr &image = voxelrender::volumeThumbnail(sceneGraph, _thumbnailCtx);
 	if (!image || image->isFailed()) {
 		Log::error("Failed to create thumbnail for %s", voxelFile.name.c_str());
@@ -215,11 +220,10 @@ void MainWindow::updateAssetDetails() {
 			ImGui::URLItem("Thumbnail", voxelFile.thumbnailUrl.c_str());
 		}
 		ImGui::URLItem("URL", voxelFile.url.c_str());
-		if (voxelFile.downloaded || io::filesystem()->exists(voxelFile.targetFile())) {
+		if (voxelFile.downloaded || io::filesystem()->open(voxelFile.fullPath, io::FileMode::SysRead)->exists()) {
 			voxelFile.downloaded = true;
 			if (ImGui::Button("Open")) {
-				command::executeCommands("url \"file://" + _app->filesystem()->writePath(voxelFile.targetFile()) +
-										 "\"");
+				command::executeCommands("url \"file://" + voxelFile.fullPath + "\"");
 			}
 			if (!_texturePool.has(voxelFile.name)) {
 				if (ImGui::Button("Create thumbnail")) {
@@ -248,6 +252,51 @@ video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
 	return empty;
 }
 
+void MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
+	core::DynamicArray<const voxbrowser::VoxelFile*> f;
+	f.reserve(voxelFiles.size());
+
+	for (const VoxelFile &voxelFile : voxelFiles) {
+		if (filtered(voxelFile)) {
+			continue;
+		}
+		f.push_back(&voxelFile);
+	}
+
+	ImGuiListClipper clipper;
+	clipper.Begin(f.size());
+
+	while (clipper.Step()) {
+		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
+			const VoxelFile *voxelFile = f[row];
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			const bool selected = _selected == *voxelFile;
+
+			ImGui::PushID(voxelFile->targetFile().c_str());
+			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+				if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
+					_selected = *voxelFile;
+				}
+				ImGui::Image(texture->handle(), ImVec2(64, 64));
+			} else {
+				if (ImGui::Selectable("No thumbnail available", selected, ImGuiSelectableFlags_SpanAllColumns)) {
+					_selected = *voxelFile;
+				}
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+			ImGui::PopID();
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(voxelFile->name.c_str());
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted(voxelFile->license.c_str());
+		}
+	}
+}
+
 void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	if (ImGui::Begin(TITLE_ASSET_LIST)) {
 		updateFilters();
@@ -269,36 +318,7 @@ void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) 
 				ImGui::TableNextColumn();
 				if (ImGui::TreeNodeEx(entry->first.c_str(), treeFlags)) {
 					const VoxelFiles &voxelFiles = entry->second;
-					for (const VoxelFile &voxelFile : voxelFiles) {
-						if (filtered(voxelFile)) {
-							continue;
-						}
-
-						ImGui::TableNextRow();
-						ImGui::TableNextColumn();
-						const bool selected = _selected == voxelFile;
-
-						ImGui::PushID(voxelFile.targetFile().c_str());
-						if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
-							if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
-								_selected = voxelFile;
-							}
-							ImGui::Image(texture->handle(), ImVec2(64, 64));
-						} else {
-							if (ImGui::Selectable("No thumbnail available", selected,
-												  ImGuiSelectableFlags_SpanAllColumns)) {
-								_selected = voxelFile;
-							}
-						}
-						if (selected) {
-							ImGui::SetItemDefaultFocus();
-						}
-						ImGui::PopID();
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(voxelFile.name.c_str());
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(voxelFile.license.c_str());
-					}
+					buildVoxelTree(voxelFiles);
 					ImGui::TreePop();
 				}
 			}

@@ -21,6 +21,14 @@
 
 namespace voxbrowser {
 
+core::String VoxelFile::targetFile() const {
+	return core::string::path(core::string::cleanPath(source), name);
+}
+
+core::String VoxelFile::targetDir() const {
+	return core::string::path(core::string::cleanPath(source), core::string::extractPath(name));
+}
+
 core::DynamicArray<VoxelSource> Downloader::sources() {
 	core::DynamicArray<VoxelSource> sources;
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
@@ -91,6 +99,7 @@ void Downloader::handleArchive(const VoxelFile &voxelFile, core::DynamicArray<Vo
 		VoxelFile subFile;
 		subFile.source = voxelFile.source;
 		subFile.name = file.fullPath;
+		subFile.fullPath = core::string::path(voxelFile.fullPath, file.fullPath);
 		subFile.license = voxelFile.license;
 		subFile.licenseUrl = voxelFile.licenseUrl;
 		subFile.thumbnailUrl = voxelFile.thumbnailUrl;
@@ -146,6 +155,7 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 			VoxelFile file;
 			file.source = source.name;
 			file.name = entry.path;
+			file.fullPath = io::filesystem()->writePath(entry.path);
 			file.license = source.license;
 			if (!source.github.license.empty()) {
 				file.licenseUrl = licenseDownloadUrl;
@@ -172,6 +182,7 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 		VoxelFile file;
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(source.single.url);
+		file.fullPath = io::filesystem()->writePath(file.name);
 		file.license = source.license;
 		file.thumbnailUrl = source.thumbnail;
 		file.url = source.single.url;

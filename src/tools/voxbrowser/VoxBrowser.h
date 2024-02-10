@@ -8,7 +8,6 @@
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
 #include "voxbrowser-util/Downloader.h"
-#include "voxelformat/FormatThumbnail.h"
 
 namespace voxbrowser {
 class MainWindow;

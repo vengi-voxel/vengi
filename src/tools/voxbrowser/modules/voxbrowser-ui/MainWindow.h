@@ -41,6 +41,7 @@ private:
 	void configureMainTopWidgetDock(ImGuiID dockId);
 	void configureMainBottomWidgetDock(ImGuiID dockId);
 
+	void buildVoxelTree(const VoxelFiles &voxelFiles);
 	void updateAssetList(const VoxelFileMap &voxelFilesMap);
 	void updateAsset();
 	void updateAssetDetails();

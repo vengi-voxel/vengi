@@ -16,6 +16,7 @@
 #include "io/File.h"
 #include "io/Filesystem.h"
 
+#include "io/FilesystemEntry.h"
 #include "voxbrowser-ui/MainWindow.h"
 #include "voxbrowser-util/Downloader.h"
 #include "voxelformat/Format.h"
@@ -63,12 +64,33 @@ app::AppState VoxBrowser::onInit() {
 	}
 
 	_threadPool->enqueue([&]() {
+		core::DynamicArray<io::FilesystemEntry> entities;
+		const core::String docs = io::filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+		Log::info("Local document scanning (%s)...", docs.c_str());
+		io::filesystem()->list(docs, entities, "", 2);
+
+		for (const io::FilesystemEntry &entry : entities) {
+			if (!io::isA(entry.name, voxelformat::voxelLoad())) {
+				continue;
+			}
+			voxbrowser::VoxelFile voxelFile;
+			voxelFile.name = entry.fullPath.substr(docs.size());
+			voxelFile.fullPath = entry.fullPath;
+			voxelFile.url = "file://" + entry.fullPath;
+			voxelFile.source = "local";
+			voxelFile.license = "unknown";
+			voxelFile.downloaded = true;
+			_newVoxelFiles.push(voxelFile);
+		}
+	});
+
+	_threadPool->enqueue([&]() {
 		voxbrowser::Downloader downloader;
 		core::DynamicArray<voxbrowser::VoxelFile> files;
 		auto sources = downloader.sources();
-		Log::info("Found %d sources", (int)sources.size());
+		Log::info("Found %d online sources", (int)sources.size());
 		for (const voxbrowser::VoxelSource &source : sources) {
-			const auto &files = downloader.resolve(source);
+			const core::DynamicArray<voxbrowser::VoxelFile> &files = downloader.resolve(source);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
 		return files;
@@ -86,9 +108,9 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 	if (_texturePool.has(voxelFile.name)) {
 		return;
 	}
-	const core::String &targetImagePath = io::filesystem()->writePath(voxelFile.targetFile() + ".png");
-	if (io::filesystem()->exists(targetImagePath)) {
-		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImagePath]() {
+	const core::String &targetImageFile = io::filesystem()->writePath(voxelFile.targetFile() + ".png");
+	if (io::filesystem()->exists(targetImageFile)) {
+		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImageFile]() {
 			image::ImagePtr image = image::loadImage(targetImagePath);
 			if (image) {
 				image->setName(voxelFile.name);
@@ -97,25 +119,29 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 		});
 		return;
 	}
+	if (!io::filesystem()->createDir(core::string::extractPath(targetImageFile))) {
+		Log::warn("Failed to create directory for thumbnails at: %s", voxelFile.targetDir().c_str());
+		return;
+	}
 	if (!voxelFile.thumbnailUrl.empty()) {
 		_threadPool->enqueue([this, voxelFile = voxelFile]() {
 			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
 			_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
-		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImagePath]() {
-			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile(), voxelFile.url);
+		_threadPool->enqueue([this, voxelFile = voxelFile, targetImagePath = targetImageFile]() {
+			http::HttpCacheStream stream(filesystem(), voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
-			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.targetFile(), stream, loadCtx);
+			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, stream, loadCtx);
 			if (!thumbnailImage) {
-				Log::debug("Failed to load given input file: %s", voxelFile.targetFile().c_str());
+				Log::debug("Failed to load given input file: %s", voxelFile.fullPath.c_str());
 				return;
 			}
 			thumbnailImage->setName(voxelFile.name);
 			if (!image::writeImage(thumbnailImage, targetImagePath)) {
 				Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImagePath.c_str());
 			} else {
-				Log::info("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImagePath.c_str());
+				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImagePath.c_str());
 			}
 			_imageQueue.push(thumbnailImage);
 		});
@@ -147,6 +173,13 @@ app::AppState VoxBrowser::onRunning() {
 			iter->value.push_back(voxelFile);
 		} else {
 			_voxelFilesMap.put(voxelFile.source, {voxelFile});
+		}
+	}
+	if (!voxelFiles.empty()) {
+		for (auto e : _voxelFilesMap) {
+			e->value.sort([] (const voxbrowser::VoxelFile &a, const voxbrowser::VoxelFile &b) {
+				return a.name < b.name;
+			});
 		}
 	}
 	return state;
