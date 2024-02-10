@@ -470,7 +470,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 
 	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
-		Log::warn("Format %s isn't supported", filename.c_str());
+		Log::warn("Format %s isn't supported for loading screenshots", filename.c_str());
 		return image::ImagePtr();
 	}
 	if (!(desc->flags & VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED)) {
