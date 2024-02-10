@@ -4,6 +4,9 @@ BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build
 INSTALL_DIR    ?= $(BUILDDIR)
 GENERATOR      ?= -GNinja
+ALLTARGET      ?= all
+# GENERATOR      ?= -GXcode
+# ALLTARGET      ?= ALL_BUILD
 CMAKE          ?= cmake
 EMSDK_DIR      ?= $(HOME)/dev/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
@@ -30,7 +33,7 @@ endef
 endif
 
 
-all: $(BUILDDIR)/CMakeCache.txt
+$(ALLTARGET): $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 ifneq ($(OS),Windows_NT)
 	$(Q)$(CMAKE) -E create_symlink $(BUILDDIR)/compile_commands.json compile_commands.json
