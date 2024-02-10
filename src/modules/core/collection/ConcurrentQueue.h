@@ -136,6 +136,24 @@ public:
 		return true;
 	}
 
+	template<class COLLECTION>
+	bool pop(COLLECTION& out, size_t n) {
+		core::ScopedLock lock(_mutex);
+		if (_data.empty()) {
+			return false;
+		}
+
+		out.reserve(out.size() + n);
+		for (size_t i = 0; i < n; ++i) {
+			if (_data.size() <= i) {
+				break;
+			}
+			out.push_back(core::move(_data[i]));
+		}
+		_data.erase(_data.begin(), n);
+		return true;
+	}
+
 	bool waitAndPop(Data& poppedValue) {
 		core::ScopedLock lock(_mutex);
 		while (_data.empty() && !_abort) {
