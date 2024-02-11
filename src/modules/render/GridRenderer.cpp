@@ -103,6 +103,7 @@ void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& 
 		const math::Plane planeFar   (glm::backward(), center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
 		const glm::vec3 &eye = camera.eye();
+		// TODO: doesn't work in orthographic mode
 		_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(eye));
 		_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(eye));
 		_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(eye));
