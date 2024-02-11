@@ -25,4 +25,15 @@ CMYK CMYK::fromRGB(const core::RGBA &rgb) {
 	return CMYK(c, m, y, k);
 }
 
+CMYK &CMYK::operator=(const CMYK &other) {
+	if (this == &other) {
+		return *this;
+	}
+	cmyk[0] = other.cmyk[0];
+	cmyk[1] = other.cmyk[1];
+	cmyk[2] = other.cmyk[2];
+	cmyk[3] = other.cmyk[3];
+	return *this;
+}
+
 } // namespace core
