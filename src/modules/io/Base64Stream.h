@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include <SDL_stdinc.h>
 #include <stdint.h>
 
 namespace io {
@@ -20,7 +21,7 @@ protected:
 								   'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
 	static CORE_FORCE_INLINE bool validbyte(const uint8_t c) {
-		return c == '+' || c == '/' || isalnum(c);
+		return c == '+' || c == '/' || SDL_isalnum(c);
 	}
 };
 
