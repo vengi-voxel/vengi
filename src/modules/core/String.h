@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Assert.h"
 #include <stddef.h>
 #include "core/Common.h"
 
@@ -168,16 +167,6 @@ inline size_t String::size() const {
 
 inline bool String::empty() const {
 	return _data._size == 0;
-}
-
-inline const char& String::operator[](size_t idx) const {
-	core_assert(_data._str && idx <= _data._size);
-	return _data._str[idx];
-}
-
-inline char& String::operator[](size_t idx) {
-	core_assert(_data._str && idx <= _data._size);
-	return _data._str[idx];
 }
 
 inline const char *String::begin() const {

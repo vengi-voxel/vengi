@@ -6,9 +6,9 @@
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include "engine-config.h"
-#include "core/ArrayLength.h"
 #include <string.h>
 #include <inttypes.h>
+#include "core/Assert.h"
 #include <SDL_stdinc.h>
 
 namespace core {
@@ -128,6 +128,16 @@ String::~String() {
 	_data._str = nullptr;
 	_data._capacity = 0u;
 #endif
+}
+
+const char& String::operator[](size_t idx) const {
+	core_assert(_data._str && idx <= _data._size);
+	return _data._str[idx];
+}
+
+char& String::operator[](size_t idx) {
+	core_assert(_data._str && idx <= _data._size);
+	return _data._str[idx];
 }
 
 int String::compare(const char *str, size_t len) const {
