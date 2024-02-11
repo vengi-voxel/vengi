@@ -1464,7 +1464,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 		return false;
 	}
 	glm::ivec3 center = v->region().getCenter();
-	center.y = region.getLowerY();
+	center.y = v->region().getLowerY();
 	setReferencePosition(center);
 	resetSceneState();
 	_lastFilename.clear();

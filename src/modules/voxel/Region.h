@@ -51,12 +51,6 @@ public:
 	/** Moves the Region by the amount specified. */
 	Region& operator+=(const glm::ivec3& amount);
 
-	/** Gets the 'x' position of the centre. */
-	int32_t getCenterX() const;
-	/** Gets the 'y' position of the centre. */
-	int32_t getCenterY() const;
-	/** Gets the 'z' position of the centre. */
-	int32_t getCenterZ() const;
 	/** Gets the 'x' position of the lower corner. */
 	int32_t getLowerX() const;
 	/** Gets the 'y' position of the lower corner. */
@@ -104,19 +98,6 @@ public:
 	int32_t getDepthInCells() const;
 	/** Gets the dimensions of the region measured in cells. */
 	const glm::ivec3& getDimensionsInCells() const;
-
-	/** Sets the 'x' position of the lower corner. */
-	void setLowerX(int32_t x);
-	/** Sets the 'y' position of the lower corner. */
-	void setLowerY(int32_t y0f128);
-	/** Sets the 'z' position of the lower corner. */
-	void setLowerZ(int32_t z);
-	/** Sets the 'x' position of the upper corner. */
-	void setUpperX(int32_t x);
-	/** Sets the 'y' position of the upper corner. */
-	void setUpperY(int32_t y);
-	/** Sets the 'z' position of the upper corner. */
-	void setUpperZ(int32_t z);
 
 	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
 
@@ -221,27 +202,6 @@ private:
 };
 
 /**
- * @return The 'x' position of the centre.
- */
-inline int32_t Region::getCenterX() const {
-	return _center.x;
-}
-
-/**
- * @return The 'y' position of the centre.
- */
-inline int32_t Region::getCenterY() const {
-	return _center.y;
-}
-
-/**
- * @return The 'z' position of the centre.
- */
-inline int32_t Region::getCenterZ() const {
-	return _center.z;
-}
-
-/**
  * @return The 'x' position of the lower corner.
  */
 inline int32_t Region::getLowerX() const {
@@ -333,54 +293,6 @@ inline int32_t Region::getDepthInCells() const {
 
 inline int Region::stride() const {
 	return _stride;
-}
-
-/**
- * @param x The new 'x' position of the lower corner.
- */
-inline void Region::setLowerX(int32_t x) {
-	_mins.x = x;
-	update();
-}
-
-/**
- * @param y The new 'y' position of the lower corner.
- */
-inline void Region::setLowerY(int32_t y) {
-	_mins.y = y;
-	update();
-}
-
-/**
- * @param z The new 'z' position of the lower corner.
- */
-inline void Region::setLowerZ(int32_t z) {
-	_mins.z = z;
-	update();
-}
-
-/**
- * @param x The new 'x' position of the upper corner.
- */
-inline void Region::setUpperX(int32_t x) {
-	_maxs.x = x;
-	update();
-}
-
-/**
- * @param y The new 'y' position of the upper corner.
- */
-inline void Region::setUpperY(int32_t y) {
-	_maxs.y = y;
-	update();
-}
-
-/**
- * @param z The new 'z' position of the upper corner.
- */
-inline void Region::setUpperZ(int32_t z) {
-	_maxs.z = z;
-	update();
 }
 
 inline Region::Region(int mins, int maxs) :
