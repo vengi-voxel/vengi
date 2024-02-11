@@ -95,6 +95,10 @@ glm::vec3 Camera::up() const {
 	return glm::conjugate(_quat) * glm::up();
 }
 
+bool Camera::isOrthoAligned() const {
+	return _orthoAligned;
+}
+
 void Camera::setWorldPosition(const glm::vec3& worldPos) {
 	if (glm::all(glm::epsilonEqual(_worldPos, worldPos, 0.0001f))) {
 		return;
@@ -349,6 +353,17 @@ void Camera::updateOrientation() {
 
 	_quat = glm::normalize(_quat);
 	_orientation = glm::mat4_cast(_quat);
+	if (_mode == CameraMode::Orthogonal) {
+		const glm::ivec3 &angles = glm::abs(glm::degrees(glm::eulerAngles(_quat)));
+		const glm::ivec3 r(angles.x % 90, angles.y % 90, angles.z % 90);
+		if ((r.x < 1 || r.x >= 89) && (r.y < 1 || r.y >= 89) && (r.z < 1 || r.z >= 89)) {
+			_orthoAligned = true;
+		} else {
+			_orthoAligned = false;
+		}
+	} else {
+		_orthoAligned = false;
+	}
 }
 
 void Camera::updateProjectionMatrix() {

@@ -93,6 +93,7 @@ protected:
 
 	glm::vec3 _target{0.0f};
 	float _distance = 100.0f;
+	bool _orthoAligned = false;
 
 	void updateFrustumPlanes();
 	void updateFrustumVertices();
@@ -145,6 +146,8 @@ public:
 	const glm::mat4& orientation() const;
 	const glm::quat& quaternion() const;
 	void setOrientation(const glm::quat& quat);
+
+	bool isOrthoAligned() const;
 
 	void lerp(const Camera& target);
 
