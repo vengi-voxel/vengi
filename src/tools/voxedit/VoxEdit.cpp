@@ -376,11 +376,11 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("v",                    "brushshape",                   "model");
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
+	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "scene");
 
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("middle_mouse",           "+camera_rotate",             "editing");
@@ -407,7 +407,6 @@ void VoxEdit::loadKeymap(int keymap) {
 	} else if (keymap == KeyBindings::Qubicle) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
 		_keybindingHandler.registerBinding("left_alt+left_mouse",    "+camera_rotate",             "editing");
@@ -424,7 +423,6 @@ void VoxEdit::loadKeymap(int keymap) {
 	} else /*if (keymap == KeyBindings::Vengi) */ {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
 		_keybindingHandler.registerBinding("1",                      "toggle ve_hideinactive",     "editing");
-		_keybindingHandler.registerBinding("space",                  "nodeduplicate",              "editing");
 		_keybindingHandler.registerBinding("f5",                     "screenshot",                 "all");
 		_keybindingHandler.registerBinding("e",                      "+actionexecute",             "model");
 		_keybindingHandler.registerBinding(",",                      "resetcamera",                "editing");
