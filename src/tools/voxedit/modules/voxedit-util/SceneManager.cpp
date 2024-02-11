@@ -2451,6 +2451,7 @@ bool SceneManager::update(double nowSeconds) {
 		}
 	}
 
+	_modifier.brushContext().fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
 	_modifier.update(nowSeconds);
 	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());

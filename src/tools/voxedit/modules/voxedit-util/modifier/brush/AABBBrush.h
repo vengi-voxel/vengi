@@ -70,6 +70,7 @@ protected:
 						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
 	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
+	voxel::Region extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion, const BrushContext &context) const;
 
 	bool isMode(uint32_t flag) const;
 	void setMode(uint32_t flag);

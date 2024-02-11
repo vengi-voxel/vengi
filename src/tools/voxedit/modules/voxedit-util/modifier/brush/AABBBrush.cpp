@@ -10,6 +10,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
+#include "voxel/Region.h"
 
 namespace voxedit {
 
@@ -162,9 +163,45 @@ bool AABBBrush::needsFurtherAction(const BrushContext &context) const {
 	return greater == 2 && equal == 1;
 }
 
+voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion, const BrushContext &context) const {
+	if (context.fixedOrthoSideView) {
+		if (radius() > 0) {
+			// TODO:
+			return brushRegion;
+		}
+		glm::ivec3 mins = brushRegion.getLowerCorner();
+		glm::ivec3 maxs = brushRegion.getUpperCorner();
+		switch (context.cursorFace) {
+		case voxel::FaceNames::PositiveX:
+		case voxel::FaceNames::NegativeX:
+			mins.x = volumeRegion.getLowerX();
+			maxs.x = volumeRegion.getUpperX();
+			break;
+		case voxel::FaceNames::PositiveY:
+		case voxel::FaceNames::NegativeY:
+			mins.y = volumeRegion.getLowerY();
+			maxs.y = volumeRegion.getUpperY();
+			break;
+		case voxel::FaceNames::PositiveZ:
+		case voxel::FaceNames::NegativeZ:
+			mins.z = volumeRegion.getLowerZ();
+			maxs.z = volumeRegion.getUpperZ();
+			break;
+		default:
+			break;
+		}
+		Log::debug("extend region in fixed ortho side view: %s to mins: %i:%i:%i, maxs: %i:%i:%i, face: %i",
+				   brushRegion.toString().c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z,
+				   (int)context.cursorFace);
+		return voxel::Region{mins, maxs};
+	}
+	return brushRegion;
+}
+
 bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						const BrushContext &context) {
-	const voxel::Region region = calcRegion(context);
+	voxel::Region region = calcRegion(context);
+	region = extendRegionInOrthoMode(region, wrapper.region(), context);
 	glm::ivec3 minsMirror = region.getLowerCorner();
 	glm::ivec3 maxsMirror = region.getUpperCorner();
 	if (!getMirrorAABB(minsMirror, maxsMirror)) {
