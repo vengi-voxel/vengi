@@ -68,12 +68,12 @@ void ModifierButton::execute(bool single) {
 			if (v == nullptr) {
 				return;
 			}
-			modifier.execute(sceneMgr().sceneGraph(), *node,
-							 [&](const voxel::Region &region, ModifierType type, bool markUndo) {
-								 if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-									 sceneMgr().modified(nodeId, region, markUndo);
-								 }
-							 });
+			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, bool markUndo) {
+				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
+					sceneMgr().modified(nodeId, region, markUndo);
+				}
+			};
+			modifier.execute(sceneMgr().sceneGraph(), *node, modifierFunc);
 			++nodes;
 		}
 	};
