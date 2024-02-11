@@ -95,7 +95,12 @@ static bool executeCommandsForBinding(const BindMap& bindings, int32_t key, int1
 			Log::trace("Failed to execute the tracking command %s", command.c_str());
 			continue;
 		}
-		handled |= command::Command::execute(command) > 0;
+		if (command::Command::execute(command)) {
+			Log::trace("The command was executed");
+			handled = true;
+		} else {
+			Log::trace("Command wasn't executed");
+		}
 	}
 	return handled;
 }
