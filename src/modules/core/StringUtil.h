@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include <inttypes.h>
@@ -101,6 +100,7 @@ void replaceAllChars(char* str, char in, char out);
 bool isNumber(const core::String &in);
 bool isInteger(const core::String& in);
 bool isIntegerWithPostfix(const core::String& in);
+bool isAlphaNum(int c);
 bool isAlpha(int c);
 bool isAbsolutePath(const core::String &in);
 bool isRootPath(const core::String &in);

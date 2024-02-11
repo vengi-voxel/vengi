@@ -310,6 +310,10 @@ bool isNumber(const core::String &in) {
 	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
+bool isAlphaNum(int c) {
+	return ::SDL_isalnum(c);
+}
+
 bool isAlpha(int c) {
 	return ::SDL_isalpha(c);
 }
