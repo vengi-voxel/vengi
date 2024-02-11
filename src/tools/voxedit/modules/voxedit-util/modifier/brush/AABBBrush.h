@@ -74,6 +74,11 @@ protected:
 	bool isMode(uint32_t flag) const;
 	void setMode(uint32_t flag);
 
+	/**
+	 * @brief Allows to override the default behaviour to span an AABB while holding the mouse button.
+	 * @note This allows us to disable the AABB behaviour in some cases, e.g. when single mode is activated
+	 */
+	virtual bool wantAABB() const;
 public:
 	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
 			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
@@ -93,12 +98,6 @@ public:
 	glm::ivec3 currentCursorPosition(const BrushContext &brushContext) const;
 
 	voxel::Region calcRegion(const BrushContext &context) const;
-
-	/**
-	 * @brief Allows to override the default behaviour to span an AABB while holding the mouse button.
-	 * @note This allows us to disable the AABB behaviour in some cases, e.g. when single mode is activated
-	 */
-	virtual bool wantAABB() const;
 	/**
 	 * @brief Will set the first position of the aabb
 	 * @note This is used in input methods or @c ActionButton implementations
