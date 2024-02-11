@@ -11,6 +11,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "imgui.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -83,6 +84,7 @@
 #define POPUP_TITLE_TIPOFTHEDAY "Tip of the day##popuptitle"
 #define POPUP_TITLE_WELCOME "Welcome##popuptitle"
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
+#define POPUP_TITLE_RENAME_NODE "Rename node##scenegraphrenamenode"
 
 namespace voxedit {
 
@@ -751,6 +753,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
 		_menuBar._popupAbout = false;
 	}
+	if (_popupRenameNode) { // TODO: allow to change this bool by command and thus key binding
+		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
+		_popupRenameNode = false;
+	}
 
 	popupModelNodeSettings();
 	popupSceneSettings();
@@ -762,6 +768,23 @@ void MainWindow::registerPopups() {
 	popupTipOfTheDay();
 	popupAbout();
 	popupWelcome();
+	popupNodeRename();
+}
+
+void MainWindow::popupNodeRename() {
+	voxedit::SceneManager &sceneMgr = voxedit::sceneMgr();
+	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, &_popupRenameNode,
+							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr.sceneGraph();
+		const int nodeId = sceneGraph.activeNode();
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		if (ImGui::InputText("Name", &node.name(),
+							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+			sceneMgr.nodeRename(nodeId, node.name());
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
 }
 
 void MainWindow::popupAbout() {

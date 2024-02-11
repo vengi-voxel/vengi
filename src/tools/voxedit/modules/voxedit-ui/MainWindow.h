@@ -50,6 +50,7 @@ private:
 	bool _popupTipOfTheDay = false;
 	bool _popupWelcome = false;
 	bool _popupUnsavedChangesQuit = false;
+	bool _popupRenameNode = false;
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
 	bool _isNewVersionAvailable = false;
@@ -113,6 +114,7 @@ private:
 	void newSceneTemplates();
 	void popupNewScene();
 	void popupWelcome();
+	void popupNodeRename();
 	void popupTipOfTheDay();
 	void popupFailedSave();
 	void popupUnsavedChanges();
