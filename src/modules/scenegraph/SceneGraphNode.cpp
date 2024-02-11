@@ -615,6 +615,12 @@ bool SceneGraphNode::setProperty(const core::String &key, const core::String &va
 	if (_properties.size() >= _properties.capacity()) {
 		return false;
 	}
+	auto iter = _properties.find(key);
+	if (iter != _properties.end()) {
+		if (iter->value == value) {
+			return false;
+		}
+	}
 	_properties.put(key, value);
 	return true;
 }

@@ -339,6 +339,10 @@ public:
 	float propertyf(const core::String& key) const;
 	void addProperties(const core::StringMap<core::String>& map);
 
+	/**
+	 * @return @c false if no change was made to the properties. This can have the reason of exceeding the max allowed
+	 * properties or that the key already has the given value. If the properties were changed, this returns @c true
+	 */
 	bool setProperty(const core::String& key, const char *value);
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, float value);
