@@ -300,23 +300,6 @@ bool MenuItemCmd(const char *label, const char *command) {
 	return false;
 }
 
-void TableKeyValue(const char *key, const char *msg, ...) {
-	ImGui::TableNextRow();
-	ImGui::TextUnformatted(key);
-	ImGui::TableNextColumn();
-	va_list ap;
-	va_start(ap, msg);
-	ImGui::TextV(msg, ap);
-	va_end(ap);
-}
-
-void TableKeyValue(const char *key, const core::String &value) {
-	ImGui::TableNextColumn();
-	ImGui::TextUnformatted(key);
-	ImGui::TableNextColumn();
-	ImGui::TextUnformatted(value.c_str());
-}
-
 bool ToggleButton(const char *text, bool state) {
 	if (state) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
