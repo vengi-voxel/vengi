@@ -284,8 +284,19 @@ public:
 
 	SceneGraphNodeType type() const;
 
+	/**
+	 * @brief A node is a leaf if it doesn't have any children
+	 */
 	bool isLeaf() const;
+	/**
+	 * @param[in] id The node id to add to the child relation
+	 * @note This doesn't add the node itself to the graph
+	 */
 	bool addChild(int id);
+	/**
+	 * @param[in] id The node id to remove from the child relation
+	 * @note This doesn't remove the node itself from the graph
+	 */
 	bool removeChild(int id);
 
 	/**
