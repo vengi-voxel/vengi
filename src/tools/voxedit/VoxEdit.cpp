@@ -128,6 +128,11 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<2, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui - restart on change", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", "Show the tip of the day on startup", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", "Trigger opening of popup");
+	core::Var::get(cfg::VoxEditPopupWelcome, "false", "Trigger opening of popup");
+	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", "Trigger opening of popup");
+	core::Var::get(cfg::VoxEditPopupAbout, "false", "Trigger opening of popup");
+	core::Var::get(cfg::VoxEditPopupRenameNode, "false", "Trigger opening of popup");
 
 	voxelformat::FormatConfig::init();
 
@@ -367,9 +372,10 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("s",                    "+move_backward",               "editing");
 	_keybindingHandler.registerBinding("d",                    "+move_right",                  "editing");
 	_keybindingHandler.registerBinding("shift+c",              "brushpaint",                   "model");
-	_keybindingHandler.registerBinding("l",                    "brushline",                  "model");
-	_keybindingHandler.registerBinding("v",                    "brushshape",                 "model");
-	_keybindingHandler.registerBinding("p",                    "brushstamp",                 "model");
+	_keybindingHandler.registerBinding("l",                    "brushline",                    "model");
+	_keybindingHandler.registerBinding("v",                    "brushshape",                   "model");
+	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
+	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "editing");
 
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");

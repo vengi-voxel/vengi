@@ -39,6 +39,11 @@ private:
 	core::VarPtr _simplifiedView;
 	core::VarPtr _numViewports;
 	core::VarPtr _tipOfTheDay;
+	core::VarPtr _popupTipOfTheDay;
+	core::VarPtr _popupWelcome;
+	core::VarPtr _popupSceneSettings;
+	core::VarPtr _popupAbout;
+	core::VarPtr _popupRenameNode;
 
 	core::DynamicArray<Viewport*> _scenes;
 	Viewport* _lastHoveredScene = nullptr;
@@ -47,10 +52,7 @@ private:
 	bool _popupNewScene = false;
 	bool _popupFailedToSave = false;
 	bool _popupVolumeSplit = false;
-	bool _popupTipOfTheDay = false;
-	bool _popupWelcome = false;
 	bool _popupUnsavedChangesQuit = false;
-	bool _popupRenameNode = false;
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
 	bool _isNewVersionAvailable = false;

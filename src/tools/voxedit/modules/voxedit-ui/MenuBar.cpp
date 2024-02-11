@@ -143,7 +143,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::Separator();
 			if (ImGui::ButtonFullWidth("Scene settings")) {
-				_popupSceneSettings = true;
+				core::Var::getSafe(cfg::VoxEditPopupSceneSettings)->setVal(true);
 			}
 			if (ImGui::ButtonFullWidth("Bindings")) {
 				app->showBindingsDialog();
@@ -166,14 +166,14 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 #endif
 			if (ImGui::MenuItem("Tip of the day")) {
-				_popupTipOfTheDay = true;
+				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}
 			if (ImGui::MenuItem("Welcome screen")) {
-				_popupWelcome = true;
+				core::Var::getSafe(cfg::VoxEditPopupWelcome)->setVal(true);
 			}
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_LC_INFO " About")) {
-				_popupAbout = true;
+				core::Var::getSafe(cfg::VoxEditPopupAbout)->setVal(true);
 			}
 			ImGui::EndMenu();
 		}

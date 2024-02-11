@@ -199,18 +199,23 @@ bool MainWindow::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
 	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
-	_isNewVersionAvailable = util::isNewVersionAvailable();
+	_popupTipOfTheDay = core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay);
+	_popupWelcome = core::Var::getSafe(cfg::VoxEditPopupWelcome);
+	_popupSceneSettings = core::Var::getSafe(cfg::VoxEditPopupSceneSettings);
+	_popupAbout = core::Var::getSafe(cfg::VoxEditPopupAbout);
+	_popupRenameNode = core::Var::getSafe(cfg::VoxEditPopupRenameNode);
 
+	_isNewVersionAvailable = util::isNewVersionAvailable();
 	if (!initScenes()) {
 		return false;
 	}
 
-	_popupTipOfTheDay = _tipOfTheDay->boolVal();
+	_popupTipOfTheDay->setVal(_tipOfTheDay->boolVal());
 
 	const core::VarPtr& appVersion = core::Var::getSafe(cfg::AppVersion);
 	if (appVersion->strVal().empty() || util::isNewerVersion(PROJECT_VERSION, appVersion->strVal())) {
 		appVersion->setVal(PROJECT_VERSION);
-		_popupWelcome = true;
+		_popupWelcome->setVal("true");
 	}
 
 #if ENABLE_RENDER_PANEL
@@ -727,10 +732,6 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_VOLUME_SPLIT);
 		_popupVolumeSplit = false;
 	}
-	if (_menuBar._popupSceneSettings) {
-		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
-		_menuBar._popupSceneSettings = false;
-	}
 	if (_popupUnsavedChangesQuit) {
 		ImGui::OpenPopup(POPUP_TITLE_UNSAVED_SCENE);
 		_popupUnsavedChangesQuit = false;
@@ -739,23 +740,27 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_MODEL_NODE_SETTINGS);
 		_sceneGraphPanel._popupNewModelNode = false;
 	}
-	if (_popupTipOfTheDay || _menuBar._popupTipOfTheDay) {
+
+	// popups that can get triggers externally
+	if (_popupSceneSettings->boolVal()) {
+		ImGui::OpenPopup(POPUP_TITLE_SCENE_SETTINGS);
+		_popupSceneSettings->setVal("false");
+	}
+	if (_popupTipOfTheDay->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_TIPOFTHEDAY);
-		_popupTipOfTheDay = false;
-		_menuBar._popupTipOfTheDay = false;
+		_popupTipOfTheDay->setVal("false");
 	}
-	if (_popupWelcome || _menuBar._popupWelcome) {
+	if (_popupWelcome->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_WELCOME);
-		_popupWelcome = false;
-		_menuBar._popupWelcome = false;
+		_popupWelcome->setVal("false");
 	}
-	if (_menuBar._popupAbout) {
+	if (_popupAbout->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_ABOUT);
-		_menuBar._popupAbout = false;
+		_popupAbout->setVal("false");
 	}
-	if (_popupRenameNode) { // TODO: allow to change this bool by command and thus key binding
+	if (_popupRenameNode->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
-		_popupRenameNode = false;
+		_popupRenameNode->setVal("false");
 	}
 
 	popupModelNodeSettings();
@@ -773,7 +778,7 @@ void MainWindow::registerPopups() {
 
 void MainWindow::popupNodeRename() {
 	voxedit::SceneManager &sceneMgr = voxedit::sceneMgr();
-	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, &_popupRenameNode,
+	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		const scenegraph::SceneGraph &sceneGraph = sceneMgr.sceneGraph();
 		const int nodeId = sceneGraph.activeNode();
