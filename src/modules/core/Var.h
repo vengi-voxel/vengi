@@ -7,8 +7,8 @@
 #include "core/GameConfig.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
-#include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringMap.h"
 #include "core/concurrent/Lock.h"
 #include <string.h>
 
@@ -58,7 +58,7 @@ public:
 	typedef bool (*ValidatorFunc)(const core::String& value);
 protected:
 	friend class SharedPtr<Var>;
-	typedef Map<core::String, VarPtr, 64, core::StringHash> VarMap;
+	typedef StringMap<VarPtr, 64> VarMap;
 	static VarMap _vars;
 	static Lock _lock;
 
