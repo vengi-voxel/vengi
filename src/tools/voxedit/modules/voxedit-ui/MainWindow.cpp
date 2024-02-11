@@ -760,6 +760,8 @@ void MainWindow::registerPopups() {
 	}
 	if (_popupRenameNode->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
+		const scenegraph::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
+		_currentNodeName = sceneGraph.node(sceneGraph.activeNode()).name();
 		_popupRenameNode->setVal("false");
 	}
 
@@ -780,12 +782,16 @@ void MainWindow::popupNodeRename() {
 	voxedit::SceneManager &sceneMgr = voxedit::sceneMgr();
 	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr.sceneGraph();
-		const int nodeId = sceneGraph.activeNode();
-		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-		if (ImGui::InputText("Name", &node.name(),
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-			sceneMgr.nodeRename(nodeId, node.name());
+		ImGui::InputText("Name", &_currentNodeName, ImGuiInputTextFlags_AutoSelectAll);
+		if (ImGui::Button("Apply")) {
+			const int nodeId = sceneMgr.sceneGraph().activeNode();
+			sceneMgr.nodeRename(nodeId, _currentNodeName);
+			_currentNodeName = "";
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Close")) {
+			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::EndPopup();

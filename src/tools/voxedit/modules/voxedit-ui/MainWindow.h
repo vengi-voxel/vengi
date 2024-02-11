@@ -58,6 +58,8 @@ private:
 	bool _isNewVersionAvailable = false;
 	uint32_t _currentTip = 0;
 
+	core::String _currentNodeName;
+
 	ui::IMGUIApp* _app;
 
 	LastOpenedFiles _lastOpenedFilesRingBuffer;

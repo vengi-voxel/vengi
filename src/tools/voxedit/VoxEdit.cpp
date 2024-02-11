@@ -375,7 +375,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("l",                    "brushline",                    "model");
 	_keybindingHandler.registerBinding("v",                    "brushshape",                   "model");
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
-	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "editing");
+	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");

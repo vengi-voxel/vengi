@@ -336,7 +336,6 @@ public:
 	// meta data
 
 	const core::String &name() const;
-	core::String &name();
 	void setName(const core::String &name);
 	bool visible() const;
 	void setVisible(bool visible);
@@ -520,10 +519,6 @@ inline voxel::RawVolume *SceneGraphNode::volume() {
 }
 
 inline const core::String &SceneGraphNode::name() const {
-	return _name;
-}
-
-inline core::String &SceneGraphNode::name() {
 	return _name;
 }
 
