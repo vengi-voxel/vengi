@@ -102,14 +102,23 @@ void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& 
 		const math::Plane planeNear  (glm::forward(),  center + glm::vec3(0.0f, 0.0f, -halfWidth.z));
 		const math::Plane planeFar   (glm::backward(), center + glm::vec3(0.0f, 0.0f,  halfWidth.z));
 
-		const glm::vec3 &eye = camera.eye();
-		// TODO: doesn't work in orthographic mode
-		_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(eye));
-		_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(eye));
-		_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(eye));
-		_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(eye));
-		_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(eye));
-		_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(eye));
+		if (camera.mode() == video::CameraMode::Perspective) {
+			const glm::vec3 &eye = camera.eye();
+			_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(eye));
+		} else {
+			const glm::vec3 &viewDirection = -camera.forward();
+			_shapeRenderer.hide(_gridMeshIndexXYFar, glm::dot(viewDirection, planeFar.norm()) > 0);
+			_shapeRenderer.hide(_gridMeshIndexXYNear, glm::dot(viewDirection, planeNear.norm()) > 0);
+			_shapeRenderer.hide(_gridMeshIndexXZFar, glm::dot(viewDirection, planeTop.norm()) > 0);
+			_shapeRenderer.hide(_gridMeshIndexXZNear, glm::dot(viewDirection, planeBottom.norm()) > 0);
+			_shapeRenderer.hide(_gridMeshIndexYZFar, glm::dot(viewDirection, planeRight.norm()) > 0);
+			_shapeRenderer.hide(_gridMeshIndexYZNear, glm::dot(viewDirection, planeLeft.norm()) > 0);
+		}
 	} else {
 		_shapeRenderer.hide(_gridMeshIndexXYFar,  true);
 		_shapeRenderer.hide(_gridMeshIndexXYNear, true);
