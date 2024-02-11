@@ -1828,6 +1828,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		setCursorPosition(glm::ivec3(x, y, z), true);
+		_traceViaMouse = false;
 	}).setHelp("Set the cursor to the specified position");
 
 	command::Command::registerCommand("setreferencepositiontocursor", [&] (const command::CmdArgs& args) {
@@ -2590,7 +2591,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
-	// TODO: multiple different viewport....
+	// TODO: multiple different viewports....
 	_modifier.setCursorPosition(pos, _result.hitFace);
 	if (oldCursorPos == pos) {
 		return;

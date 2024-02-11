@@ -171,7 +171,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
 		if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
-			sceneMgr().setCursorPosition(cursorPosition, true);
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
 		}
 
 		if (veui::CheckboxAxisFlags(math::Axis::Y, "Y##cursorlock", &lockedAxis)) {
@@ -180,7 +181,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("locky");
 		ImGui::SameLine();
 		if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
-			sceneMgr().setCursorPosition(cursorPosition, true);
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
 		}
 
 		if (veui::CheckboxAxisFlags(math::Axis::Z, "Z##cursorlock", &lockedAxis)) {
@@ -189,7 +191,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		ImGui::TooltipCommand("lockz");
 		ImGui::SameLine();
 		if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
-			sceneMgr().setCursorPosition(cursorPosition, true);
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
 		}
 	}
 }

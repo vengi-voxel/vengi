@@ -189,6 +189,14 @@ protected:
 	bool mementoPaletteChange(const MementoState &s);
 	bool mementoModification(const MementoState &s);
 
+	/**
+	 * @brief Sets the cursor to the given position in the volume
+	 * @note The locked axes are taken into account here and the given position might not be
+	 * the final position of the cursor
+	 * @param[in] force If @c true it will ignore the locked axes and still set the position
+	 */
+	void setCursorPosition(glm::ivec3 pos, bool force = false);
+
 public:
 	SceneManager();
 	SceneManager(const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
@@ -238,13 +246,6 @@ public:
 	const voxel::Voxel &hitCursorVoxel() const;
 
 	const glm::ivec3 &cursorPosition() const;
-	/**
-	 * @brief Sets the cursor to the given position in the volume
-	 * @note The locked axes are taken into account here and the given position might not be
-	 * the final position of the cursor
-	 * @param[in] force If @c true it will ignore the locked axes and still set the position
-	 */
-	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 	const glm::ivec3 &referencePosition() const;
 
