@@ -17,6 +17,6 @@ struct TreeEntry {
 };
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path);
-core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch);
+core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch, const core::String &path = "");
 
 } // namespace github

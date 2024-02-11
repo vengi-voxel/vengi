@@ -60,11 +60,13 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 		source.thumbnail = get(entry, "thumbnail");
 		if (entry.contains("github")) {
 			source.provider = "github";
-			source.github.repo = get(entry["github"], "repo");
-			source.github.commit = get(entry["github"], "commit");
+			const auto &githubNode = entry["github"];
+			source.github.repo = get(githubNode, "repo");
+			source.github.commit = get(githubNode, "commit");
+			source.github.path = get(githubNode, "path");
 			// the github license is a file in the repo, so we need to query the tree for it
 			// and download it
-			source.github.license = get(entry["github"], "license");
+			source.github.license = get(githubNode, "license");
 		} else if (entry.contains("single")) {
 			source.provider = "single";
 			source.single.url = get(entry["single"], "url");
@@ -148,10 +150,10 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
-			github::reposGitTrees(source.github.repo, source.github.commit);
+			github::reposGitTrees(source.github.repo, source.github.commit, source.github.path);
 		const core::String &licenseDownloadUrl =
 			github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
-		for (auto &entry : entries) {
+		for (const auto &entry : entries) {
 			VoxelFile file;
 			file.source = source.name;
 			file.name = entry.path;

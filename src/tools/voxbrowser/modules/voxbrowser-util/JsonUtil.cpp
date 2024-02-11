@@ -5,7 +5,7 @@
 #include "JsonUtil.h"
 #include "core/Log.h"
 
-core::String get(nlohmann::json &json, const std::string &key, const core::String &defaultVal) {
+core::String get(const nlohmann::json &json, const std::string &key, const core::String &defaultVal) {
 	auto iter = json.find(key);
 	if (iter != json.end()) {
 		return iter->get<std::string>().c_str();
@@ -14,7 +14,7 @@ core::String get(nlohmann::json &json, const std::string &key, const core::Strin
 	return defaultVal;
 }
 
-int getInt(nlohmann::json &json, const std::string &key, int defaultVal) {
+int getInt(const nlohmann::json &json, const std::string &key, int defaultVal) {
 	auto iter = json.find(key);
 	if (iter != json.end()) {
 		return iter->get<int>();

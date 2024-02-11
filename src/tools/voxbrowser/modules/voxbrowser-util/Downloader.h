@@ -14,6 +14,8 @@ namespace voxbrowser {
 struct VoxelSourceGithub {
 	core::String repo;
 	core::String commit;
+	// limit the repository to a specific path - or if empty, search the whole repository for supported files
+	core::String path;
 	core::String license;
 };
 

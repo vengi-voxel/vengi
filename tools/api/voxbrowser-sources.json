@@ -66,6 +66,7 @@
 			"thumbnail": "https://raw.githubusercontent.com/mikelovesrobots/mmmm/master/screenshots/day1.png",
 			"github": {
 				"repo": "mikelovesrobots/mmmm",
+				"path": "vox",
 				"commit": "master",
 				"license": "LICENSE"
 			}

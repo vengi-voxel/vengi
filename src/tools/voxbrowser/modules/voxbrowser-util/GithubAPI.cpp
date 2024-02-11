@@ -16,7 +16,7 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
-core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch) {
+core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch, const core::String &path) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	const core::String file = "github-" + repository + "-" + branch + ".json";
@@ -35,12 +35,15 @@ core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, cons
 	}
 	jsonResponse = jsonResponse["tree"];
 	Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)jsonResponse.size());
-	for (auto &entry : jsonResponse) {
+	for (const auto &entry : jsonResponse) {
 		if (get(entry, "type") != "blob") {
 			continue;
 		}
 		TreeEntry treeEntry;
 		treeEntry.path = get(entry, "path");
+		if (!path.empty() && !core::string::startsWith(treeEntry.path, path)) {
+			continue;
+		}
 		treeEntry.url = downloadUrl(repository, branch, treeEntry.path);
 		entries.push_back(treeEntry);
 	}
