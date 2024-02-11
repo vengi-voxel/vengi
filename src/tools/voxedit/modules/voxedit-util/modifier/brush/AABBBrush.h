@@ -90,7 +90,7 @@ public:
 	 * @sa needsFurtherAction()
 	 * @sa executeAdditionalAction()
 	 */
-	glm::ivec3 currentCursorPosition(const glm::ivec3 &cursorPosition) const;
+	glm::ivec3 currentCursorPosition(const BrushContext &brushContext) const;
 
 	voxel::Region calcRegion(const BrushContext &context) const;
 

@@ -183,8 +183,8 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	return true;
 }
 
-glm::ivec3 AABBBrush::currentCursorPosition(const glm::ivec3 &cursorPosition) const {
-	glm::ivec3 pos = cursorPosition;
+glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &brushContext) const {
+	glm::ivec3 pos = brushContext.cursorPosition;
 	if (_secondPosValid) {
 		if (radius() > 0) {
 			return _aabbSecondPos;
@@ -256,7 +256,7 @@ void AABBBrush::step(const BrushContext &context) {
 	if (!_aabbMode || radius() > 0 || context.lockedAxis != math::Axis::None) {
 		return;
 	}
-	_aabbSecondPos = currentCursorPosition(context.cursorPosition);
+	_aabbSecondPos = currentCursorPosition(context);
 	_aabbFirstPos = applyGridResolution(_aabbFirstPos, context.gridResolution);
 	_secondPosValid = true;
 	markDirty();
@@ -283,7 +283,7 @@ void AABBBrush::setRadius(int radius) {
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
-	const glm::ivec3 &pos = currentCursorPosition(context.cursorPosition);
+	const glm::ivec3 &pos = currentCursorPosition(context);
 	if (!singleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, context.gridResolution);
 		const glm::ivec3 &delta = glm::abs(pos - first);

@@ -255,7 +255,7 @@ bool Modifier::needsFurtherAction() {
 
 glm::ivec3 Modifier::currentCursorPosition() {
 	if (AABBBrush *brush = activeAABBBrush()) {
-		return brush->currentCursorPosition(_brushContext.cursorPosition);
+		return brush->currentCursorPosition(_brushContext);
 	}
 	return _brushContext.cursorPosition;
 }

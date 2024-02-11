@@ -138,6 +138,7 @@ public:
 	StampBrush &stampBrush();
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
+	const BrushContext &brushContext() const;
 
 	/**
 	 * @sa needsFurtherAction()
@@ -181,6 +182,10 @@ inline math::Axis Modifier::lockedAxis() const {
 }
 
 inline BrushContext &Modifier::brushContext() {
+	return _brushContext;
+}
+
+inline const BrushContext &Modifier::brushContext() const {
 	return _brushContext;
 }
 
