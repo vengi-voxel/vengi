@@ -443,12 +443,19 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		ImGui::OpenPopup(SCENEGRAPHDRAGANDDROPPOPUP);
 		_popupDragAndDrop = false;
 	}
+
+	registerPopups();
+}
+
+void SceneGraphPanel::registerPopups() {
+	voxedit::SceneManager& sceneMgr = voxedit::sceneMgr();
 	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
 	if (ImGui::BeginPopup(SCENEGRAPHDRAGANDDROPPOPUP, popupFlags)) {
 		const scenegraph::SceneGraph& sceneGraph = sceneMgr.sceneGraph();
 		const scenegraph::SceneGraphNode *sourceNode = sceneMgr.sceneGraphNode(_dragDropSourceNodeId);
 		const scenegraph::SceneGraphNode *targetNode = sceneMgr.sceneGraphNode(_dragDropTargetNodeId);
 
+		const bool canChangeParent = sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId);
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
 				if (ImGui::Button(ICON_LC_LINK " Merge onto##mergeonto")) {
@@ -458,7 +465,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				ImGui::TooltipText("Merge %s onto %s", sourceNode->name().c_str(), targetNode->name().c_str());
 			}
 		}
-		if (sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId)) {
+		if (canChangeParent) {
 			if (ImGui::Button(ICON_LC_INDENT " Move below")) {
 				if (!sceneMgr.nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
 					Log::error("Failed to move node");

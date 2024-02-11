@@ -33,6 +33,7 @@ private:
 	int _dragDropSourceNodeId = InvalidNodeId;
 	int _dragDropTargetNodeId = InvalidNodeId;
 
+	void registerPopups();
 	void detailView(scenegraph::SceneGraphNode &node);
 	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
