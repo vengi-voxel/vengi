@@ -240,7 +240,7 @@ public:
 	bool removeAnimation(const core::String &animation);
 
 	void setActiveCamera(video::Camera *camera);
-	video::Camera *activeCamera();
+	video::Camera *activeCamera() const;
 
 	const core::String &filename() const;
 	const voxel::Voxel &hitCursorVoxel() const;
@@ -513,14 +513,7 @@ inline const core::String &SceneManager::filename() const {
 	return _lastFilename.name;
 }
 
-inline void SceneManager::setActiveCamera(video::Camera *camera) {
-	if (_camera != camera) {
-		resetLastTrace();
-		_camera = camera;
-	}
-}
-
-inline video::Camera *SceneManager::activeCamera() {
+inline video::Camera *SceneManager::activeCamera() const {
 	return _camera;
 }
 

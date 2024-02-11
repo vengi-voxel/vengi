@@ -3284,4 +3284,12 @@ bool SceneManager::cameraPan() const {
 	return _pan.pressed();
 }
 
+void SceneManager::setActiveCamera(video::Camera *camera) {
+	if (_camera == camera) {
+		return;
+	}
+	_camera = camera;
+	resetLastTrace();
+}
+
 }
