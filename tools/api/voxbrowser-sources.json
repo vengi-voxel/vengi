@@ -61,6 +61,16 @@
 			}
 		},
 		{
+			"name": "BetterSpades kv6 models",
+			"license": "GNU General Public License 3.0",
+			"github": {
+				"repo": "xtreme8000/BetterSpades",
+				"path": "resources/kv6",
+				"commit": "standalone",
+				"license": "LICENSE"
+			}
+		},
+		{
 			"name": "Mini Mike's Metro Minis",
 			"license": "Creative Commons Attribution 4.0 International",
 			"thumbnail": "https://raw.githubusercontent.com/mikelovesrobots/mmmm/master/screenshots/day1.png",
