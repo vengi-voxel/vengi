@@ -30,6 +30,12 @@ void Var::shutdown() {
 	_vars.clear();
 }
 
+void Var::toggleBool() {
+	if (typeIsBool()) {
+		setVal(boolVal() ? false : true);
+	}
+}
+
 bool Var::setVal(bool value) {
 	if (boolVal() == value) {
 		return true;

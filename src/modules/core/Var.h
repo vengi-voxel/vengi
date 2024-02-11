@@ -270,6 +270,7 @@ public:
 	 * @return the value of the variable as @c bool. @c true if the string value is either @c 1 or @c true, @c false otherwise
 	 */
 	bool boolVal() const;
+	void toggleBool();
 	void vec3Val(float out[3]) const;
 	bool setVal(const core::String& value);
 	inline bool setVal(const char* value) {

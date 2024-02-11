@@ -128,25 +128,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::error("given var doesn't exist: %s", args[0].c_str());
 			return;
 		}
-		const uint32_t index = var->getHistoryIndex();
-		const uint32_t size = var->getHistorySize();
-		if (size <= 1) {
-			if (var->typeIsBool()) {
-				var->setVal(var->boolVal() ? false : true);
-			} else {
-				Log::error("Could not toggle %s", args[0].c_str());
-			}
-			return;
-		}
-		bool changed;
-		if (index == size - 1) {
-			changed = var->useHistory(size - 2);
-		} else {
-			changed = var->useHistory(size - 1);
-		}
-		if (!changed) {
-			Log::error("Could not toggle %s", args[0].c_str());
-		}
+		var->toggleBool();
 	}).setHelp("Toggle between true/false for a variable");
 
 	command::Command::registerCommand("inc", [] (const command::CmdArgs& args) {
