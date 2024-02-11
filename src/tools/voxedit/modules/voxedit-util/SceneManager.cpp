@@ -2986,6 +2986,9 @@ bool SceneManager::nodeRename(int nodeId, const core::String &name) {
 }
 
 bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::String &name) {
+	if (node.name() == name) {
+		return true;
+	}
 	node.setName(name);
 	_mementoHandler.markNodeRenamed(node);
 	markDirty();
