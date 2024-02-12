@@ -25,6 +25,12 @@ VoxConvert:
 
    - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
    - Support multiple `--output` parameters to write one (or more) input files into different formats in one step
+   - Fixed voxel placing on using the camera view manipulator
+   - Fixed grid culling for orthographic projections
+   - Selection in ortho fixed side view spans the whole size of the volume
+   - Updated key bindings
+   - Added popup for renaming a node
+   - Fixed a few palette panel issues for sorting and re-ordering
 
 VoxEdit:
 
