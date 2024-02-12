@@ -25,12 +25,6 @@ VoxConvert:
 
    - Added `--print-formats` parameter to print all formats as json the ease the parsing for third party tools
    - Support multiple `--output` parameters to write one (or more) input files into different formats in one step
-   - Fixed voxel placing on using the camera view manipulator
-   - Fixed grid culling for orthographic projections
-   - Selection in ortho fixed side view spans the whole size of the volume
-   - Updated key bindings
-   - Added popup for renaming a node
-   - Fixed a few palette panel issues for sorting and re-ordering
 
 VoxEdit:
 
@@ -42,6 +36,12 @@ VoxEdit:
    - Added more features to the palette panel (e.g. duplicating and removing colors)
    - Allow to bind the left- and right-scrolling mouse wheel
    - Improved draw color brush darken/brighten to create new colors if needed (and possible)
+   - Fixed voxel placing on using the camera view manipulator
+   - Fixed grid culling for orthographic projections
+   - Selection in ortho fixed side view spans the whole size of the volume
+   - Updated key bindings
+   - Added popup for renaming a node
+   - Fixed a few palette panel issues for sorting and re-ordering
 
 ## 0.0.28 (2024-01-17)
 
