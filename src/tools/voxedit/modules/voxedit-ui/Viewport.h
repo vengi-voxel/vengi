@@ -25,6 +25,7 @@ private:
 	const int _id;
 	const core::String _uiId;
 	const bool _detailedTitle;
+	bool _cameraManipulated = false;
 	bool _hovered = false;
 	bool _visible = false;
 	/**
@@ -163,7 +164,7 @@ inline int Viewport::id() const {
 }
 
 inline bool Viewport::isHovered() const {
-	return _hovered;
+	return _hovered && !_cameraManipulated;
 }
 
 inline bool Viewport::isVisible() const {

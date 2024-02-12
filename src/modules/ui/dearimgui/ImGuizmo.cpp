@@ -708,6 +708,11 @@ namespace IMGUIZMO_NAMESPACE
       bool mbMouseOver;
       bool mReversed; // reversed projection matrix
 
+      // view manipulator
+      bool mbIsDragging = false;
+      bool mbIsClicking = false;
+      bool mbIsInside = false;
+
       // translation
       vec_t mTranslationPlan;
       vec_t mTranslationPlanOrigin;
@@ -1015,6 +1020,11 @@ namespace IMGUIZMO_NAMESPACE
       return (Intersects(gContext.mOperation, TRANSLATE) && GetMoveType(gContext.mOperation, NULL) != MT_NONE) ||
          (Intersects(gContext.mOperation, ROTATE) && GetRotateType(gContext.mOperation) != MT_NONE) ||
          (Intersects(gContext.mOperation, SCALE) && GetScaleType(gContext.mOperation) != MT_NONE) || IsUsing();
+   }
+
+   bool IsManipulatorHovered()
+   {
+      return gContext.mbIsInside;
    }
 
    bool IsOver(OPERATION op)
@@ -2787,9 +2797,6 @@ namespace IMGUIZMO_NAMESPACE
 
    void ViewManipulate(float* view, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor)
    {
-      static bool isDraging = false;
-      static bool isClicking = false;
-      static bool isInside = false;
       static vec_t interpolationUp;
       static vec_t interpolationDir;
       static int interpolationFrames = 0;
@@ -2896,21 +2903,21 @@ namespace IMGUIZMO_NAMESPACE
                bool insidePanel = localx > panelCorners[0].x && localx < panelCorners[1].x && localy > panelCorners[0].y && localy < panelCorners[1].y;
                int boxCoordInt = int(boxCoord.x * 9.f + boxCoord.y * 3.f + boxCoord.z);
                IM_ASSERT(boxCoordInt < 27);
-               boxes[boxCoordInt] |= insidePanel && (!isDraging) && gContext.mbMouseOver;
+               boxes[boxCoordInt] |= insidePanel && (!gContext.mbIsDragging) && gContext.mbMouseOver;
 
                // draw face with lighter color
                if (iPass)
                {
                   ImU32 directionColor = GetColorU32(DIRECTION_X + normalIndex);
-                  gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, (directionColor | IM_COL32(0x80, 0x80, 0x80, 0x80)) | (isInside ? IM_COL32(0x08, 0x08, 0x08, 0) : 0));
+                  gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, (directionColor | IM_COL32(0x80, 0x80, 0x80, 0x80)) | (gContext.mbIsInside ? IM_COL32(0x08, 0x08, 0x08, 0) : 0));
                   if (boxes[boxCoordInt])
                   {
                      gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, IM_COL32(0xF0, 0xA0, 0x60, 0x80));
 
-                     if (io.MouseDown[0] && !isClicking && !isDraging && GImGui->ActiveId == 0) {
+                     if (io.MouseDown[0] && !gContext.mbIsClicking && !gContext.mbIsDragging && GImGui->ActiveId == 0) {
                         overBox = boxCoordInt;
-                        isClicking = true;
-                        isDraging = true;
+                        gContext.mbIsClicking = true;
+                        gContext.mbIsDragging = true;
                      }
                   }
                }
@@ -2931,16 +2938,16 @@ namespace IMGUIZMO_NAMESPACE
          vec_t newEye = camTarget + newDir * length;
          LookAt(&newEye.x, &camTarget.x, &newUp.x, view);
       }
-      isInside = gContext.mbMouseOver && ImRect(position, position + size).Contains(io.MousePos);
+      gContext.mbIsInside = gContext.mbMouseOver && ImRect(position, position + size).Contains(io.MousePos);
 
-      if (io.MouseDown[0] && (fabsf(io.MouseDelta[0]) || fabsf(io.MouseDelta[1])) && isClicking)
+      if (io.MouseDown[0] && (fabsf(io.MouseDelta[0]) || fabsf(io.MouseDelta[1])) && gContext.mbIsClicking)
       {
-         isClicking = false;
+         gContext.mbIsClicking = false;
       }
 
       if (!io.MouseDown[0])
       {
-         if (isClicking)
+         if (gContext.mbIsClicking)
          {
             // apply new view direction
             int cx = overBox / 9;
@@ -2971,12 +2978,12 @@ namespace IMGUIZMO_NAMESPACE
             interpolationFrames = 40;
 
          }
-         isClicking = false;
-         isDraging = false;
+         gContext.mbIsClicking = false;
+         gContext.mbIsDragging = false;
       }
 
 
-      if (isDraging)
+      if (gContext.mbIsDragging)
       {
          matrix_t rx, ry, roll;
 

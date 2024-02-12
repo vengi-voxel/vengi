@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
+#include "imgui.h"
 #include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
@@ -401,6 +402,8 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	_hovered = false;
 	_visible = false;
+	_cameraManipulated = false;
+
 	ui::ScopedStyle style;
 	style.setWindowRounding(0.0f);
 	style.setWindowBorderSize(0.0f);
@@ -750,6 +753,9 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 		float *matrixPtr = glm::value_ptr(transformMatrix);
 		const ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
 		ImGuizmo::ViewManipulate(viewPtr, projPtr, operation, mode, matrixPtr, length, position, size, backgroundColor);
+	}
+	if (ImGuizmo::IsManipulatorHovered()) {
+		_cameraManipulated = true;
 	}
 	if (viewMatrix != camera.viewMatrix()) {
 		glm::vec3 scale;
