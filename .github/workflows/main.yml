@@ -39,7 +39,7 @@ jobs:
           run: |
             mkdir build
             cd build
-            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON -GXcode
+            cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=On -DUSE_SANITIZERS=ON
             cmake --build .
 
         - name: Test
