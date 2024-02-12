@@ -22,7 +22,6 @@ namespace detail
 		std::size_t const STRING_BUFFER(4096);
 
 		assert(message != NULL);
-		assert(strlen(message) < STRING_BUFFER);
 
 		char buffer[STRING_BUFFER];
 		va_list list;

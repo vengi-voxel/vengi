@@ -13,7 +13,6 @@
 #if GLM_COMPILER & GLM_COMPILER_VC
 #	pragma warning(push)
 #	pragma warning(disable : 4127)
-#	pragma warning(disable : 4365) // '=': signed/unsigned mismatch
 #elif GLM_COMPILER & GLM_COMPILER_CLANG
 #	pragma clang diagnostic push
 #	pragma clang diagnostic ignored "-Wsign-conversion"
