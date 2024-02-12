@@ -33,7 +33,8 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	buf[lengthof(buf) - 1] = '\0';
 	EXPECT_STREQ("yet another file in root\n", buf);
 	EXPECT_EQ("file.txt", files[1].name);
-	EXPECT_EQ("dir/file.txt", files[2].name);
+	EXPECT_EQ("file.txt", files[2].name);
+	EXPECT_EQ("dir/file.txt", files[2].fullPath);
 }
 
 } // namespace io
