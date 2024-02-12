@@ -5,7 +5,6 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
-#include "imgui.h"
 #include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
