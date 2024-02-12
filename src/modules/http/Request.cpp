@@ -15,6 +15,7 @@
 #define WIN32_LEAN_AND_MEAN (1)
 #include <windows.h>
 #include <winhttp.h>
+#include <string>
 #elif EMSCRIPTEN
 #include <emscripten/fetch.h>
 #elif USE_CURL
