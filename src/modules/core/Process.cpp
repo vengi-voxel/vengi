@@ -125,9 +125,9 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 		cmd.append(" ");
 	}
 
-	STARTUPINFO startupInfo = {0};
-	SECURITY_ATTRIBUTES secattr = {0};
-	PROCESS_INFORMATION processInfo = {0};
+	STARTUPINFO startupInfo{};
+	SECURITY_ATTRIBUTES secattr{};
+	PROCESS_INFORMATION processInfo{};
 
 	startupInfo.cb = sizeof(startupInfo);
 	startupInfo.hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);

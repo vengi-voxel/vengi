@@ -357,10 +357,10 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 			const glm::vec4 point = core::Color::fromRGBA(inputBuf[i]);
 			int closest = 0;
 			float closestDistance = getDistance(point, centers[0]);
-			for (int i = 1; i < (int)maxTargetBufColors; i++) {
-				float d = getDistance(point, centers[i]);
+			for (int n = 1; n < (int)maxTargetBufColors; n++) {
+				float d = getDistance(point, centers[n]);
 				if (d < closestDistance) {
-					closest = i;
+					closest = n;
 					closestDistance = d;
 				}
 			}

@@ -11,12 +11,12 @@ namespace math {
 
 struct Tri {
 	Tri() = default;
-	inline constexpr Tri(const glm::vec3 (&vertices)[3], const core::RGBA (&color)[3]) {
+	inline constexpr Tri(const glm::vec3 (&_vertices)[3], const core::RGBA (&_color)[3]) {
 		for (int i = 0; i < 3; ++i) {
-			this->vertices[i] = vertices[i];
+			this->vertices[i] = _vertices[i];
 		}
 		for (int i = 0; i < 3; ++i) {
-			this->color[i] = color[i];
+			this->color[i] = _color[i];
 		}
 	}
 	virtual ~Tri() = default;
