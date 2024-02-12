@@ -123,17 +123,17 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 		const bool isSmd2 = extension == "smd2";
 		if (isSmd2 || isSmd3) {
 			io::BufferedReadWriteStream modelStream((int64_t)e.size);
-			if (!archive.load(e.name, modelStream)) {
-				Log::warn("Failed to load zip archive entry %s", e.name.c_str());
+			if (!archive.load(e.fullPath, modelStream)) {
+				Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 				continue;
 			}
 			if (modelStream.seek(0) == -1) {
-				Log::error("Failed to seek back to the start of the stream for %s", e.name.c_str());
+				Log::error("Failed to seek back to the start of the stream for %s", e.fullPath.c_str());
 				continue;
 			}
 			if (isSmd3) {
 				if (!readSmd3(modelStream, sceneGraph, blockPal)) {
-					Log::warn("Failed to load %s from %s", e.name.c_str(), filename.c_str());
+					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 				}
 			}
 			// TODO: read *.smd2
