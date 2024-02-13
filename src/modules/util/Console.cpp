@@ -8,9 +8,9 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringSet.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
-#include "core/collection/Set.h"
 #include "core/Common.h"
 #include "core/Tokenizer.h"
 #include "command/CommandHandler.h"
@@ -149,7 +149,7 @@ void Console::autoComplete() {
 		return;
 	}
 
-	core::Set<core::String, 11, core::StringHash> uniqueMatches;
+	core::StringSet uniqueMatches;
 	uniqueMatches.insert(matches.begin(), matches.end());
 	matches.clear();
 	for (auto i = uniqueMatches.begin(); i != uniqueMatches.end(); ++i) {
