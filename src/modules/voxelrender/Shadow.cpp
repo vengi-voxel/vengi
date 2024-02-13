@@ -115,16 +115,16 @@ void Shadow::update(const video::Camera& camera, bool active) {
 		return;
 	}
 
-	const glm::vec2 dim = dimension();
+	const glm::vec2 &dim = dimension();
 	float planes[shader::VoxelShaderConstants::getMaxDepthBuffers() * 2];
 	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
-	const glm::mat4& inverseView = camera.inverseViewMatrix();
-	const glm::mat4& inverseLightView = _lightView * inverseView;
+	const glm::mat4 &inverseView = camera.inverseViewMatrix();
+	const glm::mat4 &inverseLightView = _lightView * inverseView;
 
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const float near = planes[i * 2 + 0];
 		const float far = planes[i * 2 + 1];
-		const glm::vec4& sphere = splitFrustumSphereBoundingBox(camera, near, far);
+		const glm::vec4 &sphere = splitFrustumSphereBoundingBox(camera, near, far);
 		const glm::vec3 lightCenter(inverseLightView * glm::vec4(sphere.x, sphere.y, sphere.z, 1.0f));
 		const float lightRadius = sphere.w;
 

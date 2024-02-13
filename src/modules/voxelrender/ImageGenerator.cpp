@@ -16,6 +16,7 @@
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include "scenegraph/SceneGraph.h"
 
 namespace voxelrender {
 
