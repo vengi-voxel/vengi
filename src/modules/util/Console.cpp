@@ -204,8 +204,8 @@ void Console::replaceLastParameter(const core::String& param) {
 }
 
 core::String Console::removeAnsiColors(const char* message) {
-	core::String out;
-	out.reserve(SDL_strlen(message) + 1);
+	core::String out(SDL_strlen(message) + 1, '\0');
+	int i = 0;
 	for (const char *c = message; *c != '\0'; ++c) {
 		// https://en.wikipedia.org/wiki/ANSI_escape_code
 		if (*c >= 030 && *c < 037 && *(c + 1) == '[') {
@@ -215,7 +215,7 @@ core::String Console::removeAnsiColors(const char* message) {
 			}
 			continue;
 		}
-		out += *c;
+		out[i++] = *c;
 	}
 	return out;
 }
@@ -237,8 +237,7 @@ void Console::logConsole(void *userdata, int category, Log::Level priority, cons
 }
 
 void Console::addLogLine(int category, Log::Level priority, const char *message) {
-	const core::String& cleaned = removeAnsiColors(message);
-	_messages.emplace_back(priority, cleaned);
+	_messages.emplace_back(priority, removeAnsiColors(message));
 	if (_useOriginalLogFunction) {
 		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, (SDL_LogPriority)priority, message);
 	}

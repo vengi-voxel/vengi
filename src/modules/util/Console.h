@@ -21,10 +21,10 @@ protected:
 	struct Message {
 		Log::Level priority;
 		core::String message;
-		Message(Log::Level _priority, const core::String &_message) : priority(_priority), message(_message) {
+		Message(Log::Level _priority, core::String &&_message) : priority(_priority), message(_message) {
 		}
 	};
-	using Messages = core::DynamicArray<Message>;
+	using Messages = core::DynamicArray<Message, 1024u>;
 	Messages _messages;
 
 	const char *_historyFilename = "history";
