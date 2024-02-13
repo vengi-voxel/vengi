@@ -145,6 +145,15 @@ void Downloader::handleArchive(const VoxelFile &archiveFile, core::DynamicArray<
 	}
 }
 
+bool Downloader::download(const VoxelFile &file) const {
+	http::HttpCacheStream stream(io::filesystem(), file.targetFile(), file.url);
+	if (stream.isNewInCache()) {
+		Log::info("Downloaded %s", file.targetFile().c_str());
+		return true;
+	}
+	return stream.valid();
+}
+
 core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
 	Log::info("... check source %s", source.name.c_str());

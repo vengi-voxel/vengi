@@ -61,6 +61,8 @@ public:
 	core::DynamicArray<VoxelSource> sources();
 
 	core::DynamicArray<VoxelFile> resolve(const VoxelSource &source) const;
+
+	bool download(const VoxelFile &file) const;
 };
 
 } // namespace voxbrowser

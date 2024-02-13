@@ -17,7 +17,8 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
 		if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
-			// actionMenuItem(ICON_LC_SAVE " Save");
+			ImGui::CommandMenuItem(ICON_LC_DOWNLOAD " Download missing files", "downloadall");
+			ImGui::CommandMenuItem(ICON_LC_IMAGE " Thumbnail missing files", "thumbnailall");
 			ImGui::Separator();
 			if (ImGui::MenuItem(ICON_LC_DOOR_CLOSED " Quit")) {
 				app->requestQuit();

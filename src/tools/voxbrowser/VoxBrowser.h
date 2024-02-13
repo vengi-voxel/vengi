@@ -28,6 +28,8 @@ private:
 	video::TexturePool _texturePool;
 
 	void loadThumbnail(const voxbrowser::VoxelFile &voxelFile);
+	void downloadAll();
+	void thumbnailAll();
 
 public:
 	VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);

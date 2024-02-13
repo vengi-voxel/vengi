@@ -4,12 +4,13 @@
 
 #include "VoxBrowser.h"
 #include "app/App.h"
+#include "app/Async.h"
+#include "command/Command.h"
 #include "core/BindingContext.h"
 #include "core/Log.h"
 #include "core/TimeProvider.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Concurrency.h"
-#include "core/concurrent/ThreadPool.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -43,6 +44,14 @@ app::AppState VoxBrowser::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
+	command::Command::registerCommand("downloadall", [this](const command::CmdArgs &args) {
+		downloadAll();
+	}).setHelp("Download all missing files");
+
+	command::Command::registerCommand("thumbnailall", [this](const command::CmdArgs &args) {
+		thumbnailAll();
+	}).setHelp("Create missing thumbnails");
+
 	return state;
 }
 
@@ -63,7 +72,7 @@ app::AppState VoxBrowser::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_threadPool->enqueue([&]() {
+	app::async([&]() {
 		core::DynamicArray<io::FilesystemEntry> entities;
 		const core::String docs = io::filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 		Log::info("Local document scanning (%s)...", docs.c_str());
@@ -86,7 +95,7 @@ app::AppState VoxBrowser::onInit() {
 		}
 	});
 
-	_threadPool->enqueue([&]() {
+	app::async([&]() {
 		voxbrowser::Downloader downloader;
 		core::DynamicArray<voxbrowser::VoxelFile> files;
 		auto sources = downloader.sources();
@@ -106,13 +115,35 @@ void VoxBrowser::onRenderUI() {
 	_mainWindow->update(_voxelFilesMap);
 }
 
+void VoxBrowser::downloadAll() {
+	app::async([voxelFilesMap = _voxelFilesMap]() {
+		for (const auto &e : voxelFilesMap) {
+			for (const voxbrowser::VoxelFile &voxelFile : e->value) {
+				if (voxelFile.downloaded) {
+					continue;
+				}
+				voxbrowser::Downloader downloader;
+				downloader.download(voxelFile);
+			}
+		}
+	});
+}
+
+void VoxBrowser::thumbnailAll() {
+	for (const auto &e : _voxelFilesMap) {
+		for (const voxbrowser::VoxelFile &voxelFile : e->value) {
+			loadThumbnail(voxelFile);
+		}
+	}
+}
+
 void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 	if (_texturePool.has(voxelFile.name)) {
 		return;
 	}
 	const core::String &targetImageFile = io::filesystem()->writePath(voxelFile.targetFile() + ".png");
 	if (io::filesystem()->exists(targetImageFile)) {
-		_threadPool->enqueue([this, voxelFile, targetImageFile]() {
+		app::async([this, voxelFile, targetImageFile]() {
 			image::ImagePtr image = image::loadImage(targetImageFile);
 			if (image) {
 				image->setName(voxelFile.name);
@@ -126,12 +157,12 @@ void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
 		return;
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
-		_threadPool->enqueue([=]() {
+		app::async([=]() {
 			http::HttpCacheStream stream(filesystem(), voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
-		_threadPool->enqueue([=]() {
+		app::async([=]() {
 			http::HttpCacheStream stream(filesystem(), voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, stream, loadCtx);
