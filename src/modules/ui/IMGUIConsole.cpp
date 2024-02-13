@@ -14,7 +14,6 @@
 
 namespace ui {
 
-
 namespace _priv {
 
 static int ConsoleInputTextCallback(ImGuiInputTextCallbackData *data) {
@@ -39,8 +38,7 @@ static int ConsoleInputTextCallback(ImGuiInputTextCallbackData *data) {
 	return 0;
 }
 
-}
-
+} // namespace _priv
 
 void IMGUIConsole::addLogLine(int category, Log::Level priority, const char *message) {
 	Super::addLogLine(category, priority, message);
@@ -66,11 +64,11 @@ void IMGUIConsole::addLogLine(int category, Log::Level priority, const char *mes
 	default:
 		return;
 	}
-	const core::String& rawMsg = removeAnsiColors(message);
+	const core::String &rawMsg = removeAnsiColors(message);
 	_notifications.emplace_back(toastType, rawMsg);
 }
 
-void IMGUIConsole::drawString(const Message& msg) {
+void IMGUIConsole::drawString(const Message &msg) {
 	ScopedStyle style;
 	switch (msg.priority) {
 	case Log::Level::Warn:
@@ -114,16 +112,20 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 		}
 		const float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
-		for (int n = 0; n < (int)_messages.size(); ++n) {
-			const Message &msg = _messages[n];
-			drawString(msg);
-		}
 
+		ImGuiListClipper clipper;
+		clipper.Begin(_messages.size(), ImGui::GetTextLineHeightWithSpacing());
+		while (clipper.Step()) {
+			for (int line_no = clipper.DisplayStart; line_no < clipper.DisplayEnd; line_no++) {
+				const Message &msg = _messages[line_no];
+				drawString(msg);
+			}
+		}
 		if (_autoScrollEnabled && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
 			ImGui::SetScrollHereY(1.0f);
 		}
 
- 		ImGui::EndChild();
+		ImGui::EndChild();
 		ImGui::TextUnformatted(_consolePrompt.c_str());
 		ImGui::SameLine();
 		if (ImGui::InputText("##console-input-text", &_commandLine,
@@ -142,4 +144,4 @@ void IMGUIConsole::renderNotifications() {
 	ImGui::RenderNotifications(_notifications);
 }
 
-}
+} // namespace ui
