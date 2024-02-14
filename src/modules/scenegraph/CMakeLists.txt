@@ -4,6 +4,7 @@ set(SRCS
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphAnimation.h
+	SceneGraphKeyFrame.h
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphTransform.h
 	SceneGraphUtil.h SceneGraphUtil.cpp

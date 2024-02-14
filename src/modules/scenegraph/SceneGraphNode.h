@@ -9,10 +9,8 @@
 #include "core/String.h"
 #include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
-#include "palette/Palette.h"
-#include "SceneGraphTransform.h"
+#include "SceneGraphKeyFrame.h"
 
 namespace voxel {
 class RawVolume;
@@ -54,60 +52,7 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 };
 static_assert((int)(scenegraph::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");
 
-/**
- * @ingroup SceneGraph
- */
-enum class InterpolationType : uint8_t {
-	Instant = 0,
-	Linear = 1,
-	QuadEaseIn = 2,
-	QuadEaseOut = 3,
-	QuadEaseInOut = 4,
-	CubicEaseIn = 5,
-	CubicEaseOut = 6,
-	CubicEaseInOut = 7,
-	Max
-};
-
-static constexpr const char *InterpolationTypeStr[] {
-	"Instant",
-	"Linear",
-	"QuadEaseIn",
-	"QuadEaseOut",
-	"QuadEaseInOut",
-	"CubicEaseIn",
-	"CubicEaseOut",
-	"CubicEaseInOut"
-};
-static_assert(int(scenegraph::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
-
-/**
- * @ingroup SceneGraph
- */
-class SceneGraphKeyFrame {
-private:
-	SceneGraphTransform _transform;
-public:
-	FrameIndex frameIdx = 0;
-	InterpolationType interpolation = InterpolationType::Linear;
-	bool longRotation = false;
-
-	inline void setTransform(const SceneGraphTransform &transform) {
-		_transform = transform;
-	}
-
-	inline SceneGraphTransform &transform() {
-		return _transform;
-	}
-
-	inline const SceneGraphTransform &transform() const {
-		return _transform;
-	}
-};
-
 using SceneGraphNodeChildren = const core::Buffer<int, 32>;
-using SceneGraphKeyFrames = core::DynamicArray<SceneGraphKeyFrame>;
-using SceneGraphKeyFramesMap = core::StringMap<SceneGraphKeyFrames>;
 using SceneGraphNodeProperties = core::StringMap<core::String>;
 
 #define InvalidNodeId (-1)
