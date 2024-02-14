@@ -51,6 +51,16 @@ clean:
 distclean:
 	$(Q)git clean -fdx
 
+analysebuild:
+	$(Q)ccache -cC
+	$(Q)rm -rf $(BUILDDIR)/analyse
+	$(Q)mkdir $(BUILDDIR)/analyse
+	$(Q)CC=clang CXX=clang++ $(CMAKE) -H$(CURDIR) -B$(BUILDDIR)/analyse $(CMAKE_OPTIONS) -DUSE_SANITIZERS=OFF
+	$(Q)ClangBuildAnalyzer --start $(BUILDDIR)/analyse
+	$(Q)$(CMAKE) --build $(BUILDDIR)/analyse --target $(ALLTARGET)
+	$(Q)ClangBuildAnalyzer --stop $(BUILDDIR)/analyse $(BUILDDIR)/analyse/capture_file
+	$(Q)ClangBuildAnalyzer --analyze $(BUILDDIR)/analyse/capture_file
+
 %.png: data/voxedit/%.vengi
 	$(Q)$(call EXEC_PATH,thumbnailer) --use-scene-camera -a 0:-45:0 -p 100:0:200 $< data/voxedit/$@
 	$(Q)pngquant -f --ext .png data/voxedit/$@
