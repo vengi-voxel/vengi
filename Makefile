@@ -159,6 +159,12 @@ tracy:
 	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
 	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
 
+update-tinygettext:
+	$(call UPDATE_GIT,tinygettext,https://github.com/tinygettext/tinygettext.git)
+	mkdir -p contrib/libs/tinygettext
+	cp $(UPDATEDIR)/tinygettext.sync/include/tinygettext/*.h* contrib/libs/tinygettext
+	cp $(UPDATEDIR)/tinygettext.sync/src/*.cpp contrib/libs/tinygettext
+
 update-stb:
 	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)
 	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* contrib/libs/stb_image
