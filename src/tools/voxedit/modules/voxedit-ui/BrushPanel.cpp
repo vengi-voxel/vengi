@@ -11,7 +11,6 @@
 #include "core/ScopedPtr.h"
 #include "imgui.h"
 #include "palette/Palette.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/Util.h"

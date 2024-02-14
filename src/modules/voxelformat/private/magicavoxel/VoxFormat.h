@@ -6,7 +6,6 @@
 
 #include "voxelformat/Format.h"
 #include "core/collection/Set.h"
-#include "scenegraph/SceneGraphNode.h"
 
 struct ogt_vox_scene;
 

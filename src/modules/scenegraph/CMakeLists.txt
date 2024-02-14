@@ -3,7 +3,9 @@ set(SRCS
 	CoordinateSystem.h
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	SceneGraph.h SceneGraph.cpp
+	SceneGraphAnimation.h
 	SceneGraphNode.h SceneGraphNode.cpp
+	SceneGraphTransform.h
 	SceneGraphUtil.h SceneGraphUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)

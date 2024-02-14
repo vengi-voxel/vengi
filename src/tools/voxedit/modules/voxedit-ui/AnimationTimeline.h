@@ -4,8 +4,12 @@
 
 #pragma once
 
-#include "core/String.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "core/collection/Buffer.h"
+#include "scenegraph/SceneGraphAnimation.h"
+
+namespace scenegraph {
+class SceneGraphNode;
+}
 
 namespace voxedit {
 
