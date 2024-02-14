@@ -5,6 +5,7 @@
 #include "SLAB6VoxFormat.h"
 #include "core/Log.h"
 #include "scenegraph/SceneGraph.h"
+#include "palette/Palette.h"
 #include "SLABShared.h"
 
 #define wrap(read)                                                                                                     \

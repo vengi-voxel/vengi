@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "palette/Palette.h"
 
 #define ufbx_assert core_assert
 #include "voxelformat/external/ufbx.h"

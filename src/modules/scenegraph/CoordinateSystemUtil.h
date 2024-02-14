@@ -5,9 +5,11 @@
 #pragma once
 
 #include "scenegraph/CoordinateSystem.h"
-#include "scenegraph/SceneGraph.h"
+#include <glm/mat4x4.hpp>
 
 namespace scenegraph {
+
+class SceneGraph;
 
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix);
 

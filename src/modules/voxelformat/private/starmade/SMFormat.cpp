@@ -12,6 +12,7 @@
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Voxel.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

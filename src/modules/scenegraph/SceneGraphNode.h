@@ -101,7 +101,7 @@ protected:
 	void sortKeyFrames();
 
 public:
-	~SceneGraphNode() { release(); }
+	~SceneGraphNode();
 	/**
 	 * @brief Releases the memory of the volume instance (only if owned).
 	 */

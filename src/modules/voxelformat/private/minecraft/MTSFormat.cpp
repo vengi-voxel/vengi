@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Voxel.h"
 #include "MinecraftPaletteMap.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

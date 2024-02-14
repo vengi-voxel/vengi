@@ -12,6 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "MagicaVoxel.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

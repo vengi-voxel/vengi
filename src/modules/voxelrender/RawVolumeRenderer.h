@@ -4,29 +4,21 @@
 
 #pragma once
 
+#include "MeshState.h"
 #include "ShadowmapData.h"
+#include "ShadowmapShader.h"
+#include "VoxelShader.h"
 #include "VoxelnormShader.h"
 #include "core/NonCopyable.h"
-#include "core/Optional.h"
-#include "core/collection/ConcurrentPriorityQueue.h"
-#include "core/collection/PriorityQueue.h"
-#include "core/concurrent/Atomic.h"
-#include "core/concurrent/Concurrency.h"
-#include "core/concurrent/ThreadPool.h"
-#include "render/BloomRenderer.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "voxel/ChunkMesh.h"
-#include "palette/Palette.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Region.h"
-#include "video/Buffer.h"
-#include "video/FrameBuffer.h"
-#include "VoxelShader.h"
-#include "ShadowmapShader.h"
-#include "voxelrender/Shadow.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include "MeshState.h"
+#include "render/BloomRenderer.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "video/Buffer.h"
+#include "video/FrameBuffer.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
+#include "voxelrender/Shadow.h"
 
 namespace video {
 class Camera;
@@ -34,6 +26,11 @@ class Camera;
 
 namespace scenegraph {
 class SceneGraphNode;
+class SceneGraph;
+}
+
+namespace palette {
+class Palette;
 }
 
 /**

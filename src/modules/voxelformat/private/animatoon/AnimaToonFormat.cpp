@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "io/Base64.h"
+#include "palette/Palette.h"
 
 namespace voxelformat {
 

@@ -20,6 +20,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "palette/Palette.h"
 
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT

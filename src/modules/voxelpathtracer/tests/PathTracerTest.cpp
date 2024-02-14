@@ -5,7 +5,6 @@
 #include "voxelpathtracer/PathTracer.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Log.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
@@ -14,6 +13,7 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "core/GLM.h"
+#include "palette/Palette.h"
 #include <SDL_timer.h>
 
 class PathTracerTest : public app::AbstractTest {

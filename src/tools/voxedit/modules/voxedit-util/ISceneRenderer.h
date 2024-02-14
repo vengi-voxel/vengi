@@ -6,9 +6,12 @@
 
 #include "core/IComponent.h"
 #include "math/Axis.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxel/Region.h"
 #include "voxelrender/RawVolumeRenderer.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxedit {
 

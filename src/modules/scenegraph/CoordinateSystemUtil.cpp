@@ -5,6 +5,7 @@
 #include "CoordinateSystemUtil.h"
 #include "core/GLMConst.h"
 #include "scenegraph/CoordinateSystem.h"
+#include "SceneGraph.h"
 
 namespace scenegraph {
 
