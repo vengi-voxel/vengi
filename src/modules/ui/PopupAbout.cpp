@@ -101,7 +101,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 		}
 		ImGui::EndChild();
 		ImGui::Separator();
-		if (ImGui::Button(ICON_LC_CHECK " Close##about")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "Close##about")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();

@@ -533,4 +533,28 @@ void IconDialog(const char *icon, const char *text) {
 	ImGui::Separator();
 }
 
+bool IconCheckbox(const char *icon, const char *text, bool *v) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return ImGui::Checkbox(label.c_str(), v);
+}
+
+bool BeginIconMenu(const char *icon, const char *text, bool enabled) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return BeginMenu(label.c_str(), enabled);
+}
+
+bool IconMenuItem(const char *icon, const char* text, const char* shortcut, bool selected, bool enabled) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return MenuItem(label.c_str(), shortcut, selected, enabled);
+}
+
+bool IconButton(const char *icon, const char *text, const ImVec2 &size) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return Button(label.c_str(), size);
+}
+
+bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2 &size) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return DisabledButton(label.c_str(), disabled, size);
+}
 }

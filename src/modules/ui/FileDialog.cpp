@@ -315,7 +315,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			}
 			if (quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
 				if (ImGui::BeginPopupContextItem()) {
-					if (ImGui::Button(ICON_LC_TRASH " Remove bookmark")) {
+					if (ImGui::IconButton(ICON_LC_TRASH, "Remove bookmark")) {
 						removeBookmark(path);
 						ImGui::CloseCurrentPopup();
 					}

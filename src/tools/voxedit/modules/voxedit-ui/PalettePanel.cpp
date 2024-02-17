@@ -151,25 +151,25 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
 			ImGui::CommandMenuItem(ICON_LC_UNGROUP " Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(uiIdx)) {
-				if (ImGui::MenuItem(ICON_LC_SUNSET " Remove Glow")) {
+				if (ImGui::IconMenuItem(ICON_LC_SUNSET, "Remove Glow")) {
 					sceneMgr().nodeSetGlow(node.id(), uiIdx, false);
 				}
 			} else {
-				if (ImGui::MenuItem(ICON_LC_SUNRISE " Glow")) {
+				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, "Glow")) {
 					sceneMgr().nodeSetGlow(node.id(), uiIdx, true);
 				}
 			}
 			if (palette.color(uiIdx).a != 255) {
-				if (ImGui::MenuItem(ICON_LC_ERASER " Remove Alpha")) {
+				if (ImGui::IconMenuItem(ICON_LC_ERASER, "Remove Alpha")) {
 					sceneMgr().nodeRemoveAlpha(node.id(), uiIdx);
 				}
 			}
 			if (palette.hasFreeSlot()) {
-				if (ImGui::MenuItem(ICON_LC_COPY_PLUS " Duplicate")) {
+				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, "Duplicate")) {
 					sceneMgr().nodeDuplicateColor(node.id(), uiIdx);
 				}
 			}
-			if (ImGui::MenuItem(ICON_LC_COPY_MINUS " Remove")) {
+			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, "Remove")) {
 				sceneMgr().nodeRemoveColor(node.id(), uiIdx);
 			}
 		}
@@ -232,13 +232,13 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::Checkbox("Color match", &_searchFittingColors);
 		ImGui::TooltipText("Adopt the current voxels to the best fitting colors of\nthe new palette.");
 
-		if (ImGui::Button(ICON_LC_CHECK " OK##loadpalette")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##loadpalette")) {
 			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors, false);
 			sceneMgr().mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " Cancel##loadpalette")) {
+		if (ImGui::IconButton(ICON_LC_X, "Cancel##loadpalette")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -249,16 +249,16 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu(ICON_LC_PALETTE" File")) {
+		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, "File")) {
 			ImGui::CommandMenuItem(ICON_LC_PALETTE " Load##loadpalette", "importpalette", true, &listener);
-			if (ImGui::MenuItem(ICON_LC_PAINTBRUSH " Switch##switchpalette")) {
+			if (ImGui::IconMenuItem(ICON_LC_PAINTBRUSH, "Switch##switchpalette")) {
 				reloadAvailablePalettes();
 				_popupSwitchPalette = true;
 			}
-			if (ImGui::MenuItem(ICON_LC_SAVE " Export##savepalette")) {
+			if (ImGui::IconMenuItem(ICON_LC_SAVE, "Export##savepalette")) {
 				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 			}
-			if (ImGui::BeginMenu(ICON_LC_DOWNLOAD " Lospec##lospecpalette")) {
+			if (ImGui::BeginIconMenu(ICON_LC_DOWNLOAD, "Lospec##lospecpalette")) {
 				const char *command = "loadpalette";
 				const core::String &keybinding = imguiApp()->getKeyBindingsString(command);
 				ImGui::InputText("ID##lospecpalette", &_lospecID);
@@ -274,7 +274,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::TooltipText("Export the palette");
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE " Sort##sortpalette")) {
+		if (ImGui::BeginIconMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE, "Sort##sortpalette")) {
 			ImGui::CommandMenuItem("Original", "palette_sort original", true, &listener);
 			ImGui::CommandMenuItem("Hue", "palette_sort hue", true, &listener);
 			ImGui::CommandMenuItem("Saturation", "palette_sort saturation", true, &listener);

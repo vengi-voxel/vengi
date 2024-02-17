@@ -48,10 +48,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
-		if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
+		if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
 			actionMenuItem(ICON_LC_SQUARE " New", "new", listener);
 			actionMenuItem(ICON_LC_FILE_INPUT " Load", "load", listener);
-			if (ImGui::BeginMenu(ICON_LC_FILE_STACK " Recently opened")) {
+			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, "Recently opened")) {
 				int recentlyOpened = 0;
 				for (const core::String &f : _lastOpenedFiles) {
 					if (f.empty()) {
@@ -79,12 +79,12 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			actionMenuItem(ICON_LC_IMAGE " Image as plane", "importplane", listener);
 			actionMenuItem(ICON_LC_IMAGE " Image as volume", "importvolume", listener);
 			ImGui::Separator();
-			if (ImGui::MenuItem(ICON_LC_DOOR_CLOSED " Quit")) {
+			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, "Quit")) {
 				app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_LC_MENU " Edit")) {
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, "Edit")) {
 			const SceneManager &sceneManager = sceneMgr();
 			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
 			ImGui::CommandMenuItem(ICON_LC_ROTATE_CCW " Undo", "undo", mementoHandler.canUndo(), &listener);
@@ -101,7 +101,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandMenuItem(ICON_LC_CLIPBOARD_PASTE " Paste as new node##pastenewnode", "pastenewnode",
 								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
-			if (ImGui::BeginMenu(ICON_LC_MENU " Options")) {
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
 				ImGui::CheckboxVar(ICON_LC_GRID_3X3 " Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
@@ -150,15 +150,15 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_LC_SQUARE " Select")) {
+		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, "Select")) {
 			actionMenuItem("None", "select none", listener);
 			actionMenuItem("Invert", "select invert", listener);
 			actionMenuItem("All", "select all", listener);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_LC_HELP_CIRCLE " Help")) {
+		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, "Help")) {
 #ifdef DEBUG
-			if (ImGui::BeginMenu(ICON_LC_BUG " Debug")) {
+			if (ImGui::BeginIconMenu(ICON_LC_BUG, "Debug")) {
 				if (ImGui::Button("Textures")) {
 					app->showTexturesDialog();
 				}
@@ -172,7 +172,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				core::Var::getSafe(cfg::VoxEditPopupWelcome)->setVal(true);
 			}
 			ImGui::Separator();
-			if (ImGui::MenuItem(ICON_LC_INFO " About")) {
+			if (ImGui::IconMenuItem(ICON_LC_INFO, "About")) {
 				core::Var::getSafe(cfg::VoxEditPopupAbout)->setVal(true);
 			}
 			ImGui::EndMenu();

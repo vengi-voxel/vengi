@@ -16,18 +16,18 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
-		if (ImGui::BeginMenu(ICON_LC_FILE " File")) {
+		if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
 			ImGui::CommandMenuItem(ICON_LC_DOWNLOAD " Download missing files", "downloadall");
 			ImGui::CommandMenuItem(ICON_LC_IMAGE " Thumbnail missing files", "thumbnailall");
 			ImGui::Separator();
-			if (ImGui::MenuItem(ICON_LC_DOOR_CLOSED " Quit")) {
+			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, "Quit")) {
 				app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu(ICON_LC_MENU " Edit")) {
-			if (ImGui::BeginMenu(ICON_LC_MENU " Options")) {
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, "Edit")) {
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
@@ -46,16 +46,16 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(ICON_LC_HELP_CIRCLE " Help")) {
+		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, "Help")) {
 #ifdef DEBUG
-			if (ImGui::BeginMenu(ICON_LC_BUG " Debug")) {
+			if (ImGui::BeginIconMenu(ICON_LC_BUG, "Debug")) {
 				if (ImGui::Button("Textures")) {
 					app->showTexturesDialog();
 				}
 				ImGui::EndMenu();
 			}
 #endif
-			if (ImGui::MenuItem(ICON_LC_INFO " About")) {
+			if (ImGui::IconMenuItem(ICON_LC_INFO, "About")) {
 				_popupAbout = true;
 			}
 			ImGui::EndMenu();

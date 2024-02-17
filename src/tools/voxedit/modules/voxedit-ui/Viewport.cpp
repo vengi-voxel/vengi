@@ -319,7 +319,7 @@ void Viewport::toggleVideoRecording() {
 }
 
 void Viewport::menuBarView(command::CommandExecutionListener *listener) {
-	if (ImGui::BeginMenu(ICON_LC_EYE " View")) {
+	if (ImGui::BeginIconMenu(ICON_LC_EYE, "View")) {
 		ImGui::CommandMenuItem(ICON_LC_VIDEO " Reset camera", "resetcamera", true, listener);
 
 		glm::vec3 omega = _camera.omega();
@@ -330,7 +330,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		const core::String command = core::string::format("screenshot %i", _id);
 		ImGui::CommandMenuItem(ICON_LC_CAMERA " Screenshot", command.c_str(), listener);
 
-		if (ImGui::MenuItem(_avi.isRecording() ? ICON_LC_STOP_CIRCLE " Video" : ICON_LC_CLAPPERBOARD " Video")) {
+		if (ImGui::IconMenuItem(_avi.isRecording() ? ICON_LC_STOP_CIRCLE : ICON_LC_CLAPPERBOARD, "Video")) {
 			toggleVideoRecording();
 		}
 		const uint32_t pendingFrames = _avi.pendingFrames();

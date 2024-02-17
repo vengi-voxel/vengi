@@ -14,17 +14,17 @@
 namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
-	if (ImGui::DisabledButton(ICON_LC_PLUS " Add", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_PLUS, "Add", _play)) {
 		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to the current active node");
 	ImGui::SameLine();
-	if (ImGui::DisabledButton(ICON_LC_PLUS_SQUARE " Add all", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, "Add all", _play)) {
 		sceneMgr().nodeAllAddKeyFrames(currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to all model nodes");
 	ImGui::SameLine();
-	if (ImGui::DisabledButton(ICON_LC_MINUS_SQUARE " Remove", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, "Remove", _play)) {
 		sceneMgr().nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Delete the current keyframe of the active nodes");

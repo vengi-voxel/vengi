@@ -503,13 +503,13 @@ void MainWindow::popupTipOfTheDay() {
 			ImGui::Dummy(ImVec2(0, height));
 		}
 		ImGui::CheckboxVar("Show again", _tipOfTheDay);
-		if (ImGui::Button(ICON_LC_CHECK " Next##tipoftheday")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "Next##tipoftheday")) {
 			++_currentTip;
 			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " Close##tipoftheday")) {
+		if (ImGui::IconButton(ICON_LC_X, "Close##tipoftheday")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -527,7 +527,7 @@ void MainWindow::popupWelcome() {
 						   "Please consider enabling it.");
 		ui::metricOption();
 		ImGui::Separator();
-		if (ImGui::Button(ICON_LC_X " Close##welcome")) {
+		if (ImGui::IconButton(ICON_LC_X, "Close##welcome")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -561,7 +561,7 @@ void MainWindow::popupNewScene() {
 			ImGui::NewLine();
 		}
 
-		if (ImGui::Button(ICON_LC_CHECK " OK##newscene")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##newscene")) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (voxedit::sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
@@ -570,7 +570,7 @@ void MainWindow::popupNewScene() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " Close##newscene")) {
+		if (ImGui::IconButton(ICON_LC_X, "Close##newscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -580,7 +580,7 @@ void MainWindow::popupNewScene() {
 void MainWindow::popupFailedSave() {
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, "Failed to save the model!");
-		if (ImGui::Button(ICON_LC_CHECK " OK##failedsave")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -591,14 +591,14 @@ void MainWindow::popupFailedSave() {
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Unsaved changes - are you sure to quit?");
-		if (ImGui::Button(ICON_LC_CHECK " OK##unsavedscene")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##unsavedscene")) {
 			_forceQuit = true;
 			_app->requestQuit();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " Cancel##unsavedscene")) {
+		if (ImGui::IconButton(ICON_LC_X, "Cancel##unsavedscene")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -608,7 +608,7 @@ void MainWindow::popupUnsavedChanges() {
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "There are unsaved modifications.\nDo you wish to discard them?");
-		if (ImGui::Button(ICON_LC_CHECK " Yes##unsaved")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "Yes##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				sceneMgr().load(_loadFile);
@@ -618,7 +618,7 @@ void MainWindow::popupUnsavedDiscard() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " No##unsaved")) {
+		if (ImGui::IconButton(ICON_LC_X, "No##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -635,7 +635,7 @@ void MainWindow::popupSceneSettings() {
 		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
 		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
 
-		if (ImGui::Button(ICON_LC_CHECK " Done##scenesettings")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "Done##scenesettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -647,13 +647,13 @@ void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?");
-		if (ImGui::Button(ICON_LC_CHECK " Yes##volumesplit")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "Yes##volumesplit")) {
 			ImGui::CloseCurrentPopup();
 			sceneMgr().splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " No##volumesplit")) {
+		if (ImGui::IconButton(ICON_LC_X, "No##volumesplit")) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -681,7 +681,7 @@ void MainWindow::popupModelNodeSettings() {
 		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::Button(ICON_LC_CHECK " OK##modelsettings")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode;
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -694,7 +694,7 @@ void MainWindow::popupModelNodeSettings() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_LC_X " Cancel##modelsettings")) {
+		if (ImGui::IconButton(ICON_LC_X, "Cancel##modelsettings")) {
 			ImGui::CloseCurrentPopup();
 		}
 

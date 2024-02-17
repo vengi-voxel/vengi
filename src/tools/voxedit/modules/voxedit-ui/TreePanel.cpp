@@ -132,7 +132,7 @@ void TreePanel::update(const char *title) {
 		default:
 			break;
 		}
-		if (ImGui::Button(ICON_LC_CHECK " OK##treegenerate")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, "OK##treegenerate")) {
 			_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
 			sceneMgr().createTree(_treeGeneratorContext);
 		}

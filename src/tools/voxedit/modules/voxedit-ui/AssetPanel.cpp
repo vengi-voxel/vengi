@@ -53,7 +53,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		core_trace_scoped(AssetPanel);
 
 		if (ImGui::CollapsingHeader("Models", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button(ICON_LC_FOLDER_TREE " Open model directory")) {
+			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, "Open model directory")) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadModels(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}
@@ -95,7 +95,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 			}
 		}
 		if (ImGui::CollapsingHeader("Images", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::Button(ICON_LC_FOLDER_TREE " Open image directory")) {
+			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, "Open image directory")) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadTextures(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}

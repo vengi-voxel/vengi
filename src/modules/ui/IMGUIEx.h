@@ -106,6 +106,7 @@ IMGUI_API void TextCentered(const char *text);
 IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
+IMGUI_API bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
 
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
@@ -117,7 +118,10 @@ IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::Stri
 IMGUI_API const char *CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
 									const ImVec2 &size = ImVec2(0.0f, 0.0f), command::CommandExecutionListener *listener = nullptr);
 IMGUI_API const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener &listener);
-
+IMGUI_API bool IconCheckbox(const char *icon, const char *text, bool *v);
+IMGUI_API bool BeginIconMenu(const char *icon, const char *text, bool enabled = true);
+IMGUI_API bool IconMenuItem(const char *icon, const char* text, const char* shortcut = NULL, bool selected = false, bool enabled = true);
+IMGUI_API bool IconButton(const char *icon, const char *text, const ImVec2& size = ImVec2(0, 0));
 IMGUI_API bool URLButton(const char *title, const char *url);
 IMGUI_API bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener = nullptr);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true,

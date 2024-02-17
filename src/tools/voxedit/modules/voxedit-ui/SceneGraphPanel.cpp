@@ -162,19 +162,19 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			ImGui::CommandMenuItem(ICON_LC_SHRINK " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
 			commandNodeMenu(ICON_LC_SAVE " Save" SCENEGRAPHPOPUP, "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
-			if (ImGui::MenuItem(ICON_LC_CODESANDBOX " Convert to model" SCENEGRAPHPOPUP)) {
+			if (ImGui::IconMenuItem(ICON_LC_CODESANDBOX, "Convert to model" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeUnreference(nodeId);
 			}
 			ImGui::TooltipText("Unreference from model and allow to edit the voxels for this node");
 		}
 		ImGui::CommandMenuItem(ICON_LC_SAVE " Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
 
-		if (ImGui::MenuItem(ICON_LC_PLUS_SQUARE " Add new group" SCENEGRAPHPOPUP)) {
+		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, "Add new group" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
 			sceneMgr().addNodeToSceneGraph(groupNode, nodeId);
 		}
-		if (ImGui::MenuItem(ICON_LC_PLUS_SQUARE " Add new camera" SCENEGRAPHPOPUP)) {
+		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, "Add new camera" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			sceneMgr().addNodeToSceneGraph(cameraNode);
 		}
@@ -455,7 +455,7 @@ void SceneGraphPanel::registerPopups() {
 		const bool canChangeParent = sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId);
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
-				if (ImGui::Button(ICON_LC_LINK " Merge onto##mergeonto")) {
+				if (ImGui::IconButton(ICON_LC_LINK, "Merge onto##mergeonto")) {
 					sceneMgr.mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
 					ImGui::CloseCurrentPopup();
 				}
@@ -463,7 +463,7 @@ void SceneGraphPanel::registerPopups() {
 			}
 		}
 		if (canChangeParent) {
-			if (ImGui::Button(ICON_LC_INDENT " Move below")) {
+			if (ImGui::IconButton(ICON_LC_INDENT, "Move below")) {
 				if (!sceneMgr.nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
 					Log::error("Failed to move node");
 				}
