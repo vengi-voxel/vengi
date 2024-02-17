@@ -105,8 +105,6 @@ private:
 	void configureLeftTopWidgetDock(ImGuiID dockId);
 	void configureLeftBottomWidgetDock(ImGuiID dockId);
 
-	void dialog(const char *icon, const char *text);
-
 	const char *getTip() const;
 
 	/**

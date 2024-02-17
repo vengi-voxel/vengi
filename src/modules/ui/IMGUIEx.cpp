@@ -520,4 +520,17 @@ void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4
 	}
 }
 
+void IconDialog(const char *icon, const char *text) {
+	ImGui::AlignTextToFramePadding();
+	ImGui::PushFont(imguiApp()->bigFont());
+	ImGui::TextUnformatted(icon);
+	ImGui::PopFont();
+	ImGui::SameLine();
+	ImGui::Spacing();
+	ImGui::SameLine();
+	ImGui::TextWrapped("%s", text);
+	ImGui::Spacing();
+	ImGui::Separator();
+}
+
 }

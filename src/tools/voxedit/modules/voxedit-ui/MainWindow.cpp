@@ -462,19 +462,6 @@ void MainWindow::rightWidget() {
 
 // end of right side
 
-void MainWindow::dialog(const char *icon, const char *text) {
-	ImGui::AlignTextToFramePadding();
-	ImGui::PushFont(_app->bigFont());
-	ImGui::TextUnformatted(icon);
-	ImGui::PopFont();
-	ImGui::SameLine();
-	ImGui::Spacing();
-	ImGui::SameLine();
-	ImGui::TextWrapped("%s", text);
-	ImGui::Spacing();
-	ImGui::Separator();
-}
-
 void MainWindow::addTemplate(const TemplateModel &model) {
 	io::FileDescription fileDesc;
 	const core::String name = model.name;
@@ -510,7 +497,7 @@ void MainWindow::popupTipOfTheDay() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_TIPOFTHEDAY)) {
 		const char *tip = getTip();
-		dialog(ICON_LC_LIGHTBULB, tip);
+		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip);
 		float height = (ImGui::GetFontSize() * 8.0f) - ImGui::GetCursorPosY();
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
@@ -532,7 +519,7 @@ void MainWindow::popupTipOfTheDay() {
 void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_WELCOME)) {
-		dialog(ICON_LC_LIGHTBULB, "Welcome to VoxEdit!");
+		ImGui::IconDialog(ICON_LC_LIGHTBULB, "Welcome to VoxEdit!");
 		ImGui::TextWrapped("The mission: Create a free, open-source and multi-platform voxel "
 						   "editor with animation support for artists and developers.");
 		ImGui::Separator();
@@ -592,7 +579,7 @@ void MainWindow::popupNewScene() {
 
 void MainWindow::popupFailedSave() {
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_LC_ALERT_TRIANGLE, "Failed to save the model!");
+		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, "Failed to save the model!");
 		if (ImGui::Button(ICON_LC_CHECK " OK##failedsave")) {
 			ImGui::CloseCurrentPopup();
 		}
@@ -603,7 +590,7 @@ void MainWindow::popupFailedSave() {
 
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_LC_HELP_CIRCLE, "Unsaved changes - are you sure to quit?");
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Unsaved changes - are you sure to quit?");
 		if (ImGui::Button(ICON_LC_CHECK " OK##unsavedscene")) {
 			_forceQuit = true;
 			_app->requestQuit();
@@ -620,7 +607,7 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_LC_HELP_CIRCLE, "There are unsaved modifications.\nDo you wish to discard them?");
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "There are unsaved modifications.\nDo you wish to discard them?");
 		if (ImGui::Button(ICON_LC_CHECK " Yes##unsaved")) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
@@ -658,7 +645,7 @@ void MainWindow::popupSceneSettings() {
 
 void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		dialog(ICON_LC_HELP_CIRCLE, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?");
 		if (ImGui::Button(ICON_LC_CHECK " Yes##volumesplit")) {
 			ImGui::CloseCurrentPopup();
