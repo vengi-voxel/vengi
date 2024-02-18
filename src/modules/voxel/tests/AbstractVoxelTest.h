@@ -14,7 +14,7 @@ namespace voxel {
 class AbstractVoxelTest: public app::AbstractTest {
 protected:
 	math::Random _random;
-	long _seed = 0;
+	unsigned int _seed = 0;
 	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
 
 public:

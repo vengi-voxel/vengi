@@ -410,8 +410,8 @@ static bool patternMatchMulti(const char *text, const char *pattern) {
 		return true;
 	}
 
-	const int l = SDL_strlen(t);
-	for (int i = 0; i < l; ++i) {
+	const size_t l = SDL_strlen(t);
+	for (size_t i = 0; i < l; ++i) {
 		if (*t == c && patternMatch(p - 1, t)) {
 			return true;
 		}

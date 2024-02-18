@@ -13,7 +13,7 @@ class Set : public Map<T, bool, BUCKETSIZE, HASHER, COMPARE> {
 private:
 	using Super = Map<T, bool, BUCKETSIZE, HASHER, COMPARE>;
 public:
-	Set(size_t maxSize = 4096) : Super(maxSize) {
+	Set(int maxSize = 4096) : Super(maxSize) {
 	}
 
 	bool insert(const T& key) {

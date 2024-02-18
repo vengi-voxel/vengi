@@ -115,7 +115,7 @@ void generate(Volume& volume, const glm::ivec3& position, const core::String &ax
 		case '(': {
 			// Set voxel type
 			++i;
-			int begin = i;
+			size_t begin = i;
 			size_t slength = 0u;
 			while (sentence[i] >= '0' && sentence[i] <= '9') {
 				++slength;

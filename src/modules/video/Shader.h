@@ -46,7 +46,7 @@ protected:
 	typedef core::Array<Id, (int)ShaderType::Max> ShaderArray;
 	ShaderArray _shader;
 
-	typedef core::Map<int, uint32_t, 8> UniformStateMap;
+	typedef core::Map<int, uint64_t, 8> UniformStateMap;
 	mutable UniformStateMap _uniformStateMap{128};
 
 	Id _program = InvalidId;
@@ -90,7 +90,7 @@ protected:
 	 * @param[in] length The length in bytes of the given value buffer
 	 * @return @c false if no change is needed, @c true if we have to update the value
 	 */
-	bool checkUniformCache(int location, const void* value, size_t length) const;
+	bool checkUniformCache(int location, const void* value, int length) const;
 public:
 	Shader();
 	virtual ~Shader();
