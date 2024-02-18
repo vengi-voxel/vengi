@@ -110,7 +110,7 @@ struct MementoState {
 	 * call, we have to make sure that the region of the previous state is re-extracted.
 	 */
 	voxel::Region region;
-	glm::vec3 pivot{0.0f};
+	core::Optional<glm::vec3> pivot;
 	core::Optional<palette::Palette> palette;
 
 	MementoState() :
@@ -136,7 +136,7 @@ struct MementoState {
 		name = core::move(other.name);
 		worldMatrix = other.worldMatrix;
 		region = other.region;
-		pivot = other.pivot;
+		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
 	}
 
@@ -156,7 +156,7 @@ struct MementoState {
 		name = core::move(other.name);
 		worldMatrix = other.worldMatrix;
 		region = other.region;
-		pivot = other.pivot;
+		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
 		return *this;
 	}
@@ -184,7 +184,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const glm::vec3 &_pivot, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
+				 const core::Optional<glm::vec3> &_pivot, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
 				 const core::Optional<palette::Palette> &_palette = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
@@ -193,7 +193,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
-				 glm::vec3 &&_pivot, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
+				 core::Optional<glm::vec3> &&_pivot, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
 				 core::Optional<palette::Palette> &&_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
@@ -202,7 +202,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const glm::vec3 &_pivot, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
+				 const core::Optional<glm::vec3> &_pivot, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
 				 const core::Optional<palette::Palette> &_palette = {},
 				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
@@ -212,7 +212,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
-				 glm::vec3 &&_pivot, core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
+				 core::Optional<glm::vec3> &&_pivot, core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
 				 core::Optional<palette::Palette> &&_palette,
 				 core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),

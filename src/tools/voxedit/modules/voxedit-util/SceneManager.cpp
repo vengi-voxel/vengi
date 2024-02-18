@@ -901,9 +901,9 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		MementoData::toVolume(newNode.volume(), s.data);
-		if (s.palette.hasValue()) {
-			newNode.setPalette(*s.palette.value());
-		}
+	}
+	if (s.palette.hasValue()) {
+		newNode.setPalette(*s.palette.value());
 	}
 	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
 		newNode.setReference(s.referenceId);
@@ -915,8 +915,8 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 		newNode.properties().clear();
 		newNode.addProperties(*s.properties.value());
 	}
-	if (s.data.region().isValid()) {
-		newNode.setPivot(s.region.pivot());
+	if (s.pivot.hasValue()) {
+		newNode.setPivot(*s.pivot.value());
 	}
 	newNode.setName(s.name);
 	const int newNodeId = addNodeToSceneGraph(newNode, s.parentId);
@@ -946,7 +946,9 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 	if (s.type == MementoType::SceneNodeTransform) {
 		Log::debug("Memento: transform of node %i", s.nodeId);
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			node->setPivot(s.pivot);
+			if (s.pivot.hasValue()) {
+				node->setPivot(*s.pivot.value());
+			}
 			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 			transform.setWorldMatrix(s.worldMatrix);
 			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
@@ -1236,8 +1238,12 @@ void SceneManager::resetSceneState() {
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
-	// TODO: what about the memento states of the other nodes
-	_mementoHandler.markInitialNodeState(node);
+	for (const auto &n : _sceneGraph.nodes()) {
+		if (!n->second.isModelNode()) {
+			continue;
+		}
+		_mementoHandler.markInitialNodeState(n->second);
+	}
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	_modifier.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
