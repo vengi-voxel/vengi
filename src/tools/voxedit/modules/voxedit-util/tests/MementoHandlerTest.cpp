@@ -569,6 +569,25 @@ TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 	EXPECT_EQ(state.name, "Name after");
 }
 
+TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	mementoHandler.markInitialNodeState(*node);
+	{
+		ScopedMementoGroup group(mementoHandler);
+		node->volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		mementoHandler.markModification(*node, voxel::Region(0, 0, 0, 0, 0, 0));
+		node->setName("Name after");
+		mementoHandler.markNodeRenamed(*node);
+	}
+	EXPECT_EQ(2, (int)mementoHandler.stateSize());
+	MementoState state = mementoHandler.undo();
+	EXPECT_EQ(state.name, "Node name");
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	ASSERT_TRUE(state.data.toVolume(&volume, state.data));
+	EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(0, 0, 0).getMaterial());
+}
+
 #if 0
 // TODO
 
