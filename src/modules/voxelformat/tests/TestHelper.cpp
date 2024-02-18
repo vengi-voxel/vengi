@@ -60,11 +60,16 @@ namespace glm {
 }
 } // namespace glm
 
-namespace voxel {
 
-::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette) {
-	return os << palette::Palette::print(palette).c_str();
+namespace palette {
+
+::std::ostream &operator<<(::std::ostream &os, const Palette &palette) {
+	return os << Palette::print(palette).c_str();
 }
+
+}
+
+namespace voxel {
 
 static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph, int nodeId, int indent) {
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);

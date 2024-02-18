@@ -28,9 +28,11 @@ namespace glm {
 ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v);
 }
 
-namespace voxel {
-
+namespace palette {
 ::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette);
+}
+
+namespace voxel {
 
 enum class ValidateFlags {
 	None = 0,
