@@ -39,6 +39,10 @@ public:
 	Optional() {
 	}
 
+	Optional(const T &value) {
+		setValue(value);
+	}
+
 	~Optional() {
 		release();
 	}
@@ -101,6 +105,14 @@ public:
 			return nullptr;
 		}
 		return _value;
+	}
+
+	T* operator->() {
+		return value();
+	}
+
+	const T* operator->() const {
+		return value();
 	}
 
 	inline bool hasValue() const {
