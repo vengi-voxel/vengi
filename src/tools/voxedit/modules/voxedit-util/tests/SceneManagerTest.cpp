@@ -380,7 +380,6 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	EXPECT_EQ(palette::PaletteMaxColors, palette.size());
 	_sceneMgr.removeUnusedColors(nodeId, true);
 	EXPECT_EQ(1, palette.size()) << palette;
-	// palette.color(0)
 }
 
 } // namespace voxedit

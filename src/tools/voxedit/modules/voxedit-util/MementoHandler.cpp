@@ -249,6 +249,7 @@ void MementoHandler::clearStates() {
 
 MementoState MementoHandler::undoModification(const MementoState &s) {
 	core_assert(s.hasVolumeData());
+	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
 		if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) &&
@@ -572,6 +573,7 @@ bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const
 			Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
 			return false;
 		}
+		core_assert(state.hasVolumeData());
 	} else if (state.type != MementoType::Modification) {
 		Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
 		return false;
