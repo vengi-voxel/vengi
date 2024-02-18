@@ -34,7 +34,7 @@ static const MementoState InvalidMementoState{MementoType::Max,
 											  scenegraph::SceneGraphNodeType::Max,
 											  voxel::Region::InvalidRegion,
 											  {},
-											  glm::mat4(1.0f),
+											  {},
 											  0};
 
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
@@ -227,15 +227,19 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - key frame index: %i", state.keyFrameIdx);
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - worldMatrix");
-	const glm::mat4 &m = state.worldMatrix;
-	Log::info("   - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
-	Log::info("   - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
-	Log::info("   - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);
-	Log::info("   - %f:%f:%f:%f", m[3][0], m[3][1], m[3][2], m[3][3]);
-	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
-	Log::info(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-	Log::info(" - size: %ib", (int)state.data.size());
-	Log::info(" - palette: %s [hash: %s]", state.palette.hasValue() ? "true" : "false", palHash.c_str());
+	if (state.worldMatrix.hasValue()) {
+		const glm::mat4 &m = *state.worldMatrix.value();
+		Log::info("   - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
+		Log::info("   - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
+		Log::info("   - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);
+		Log::info("   - %f:%f:%f:%f", m[3][0], m[3][1], m[3][2], m[3][3]);
+		Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
+		Log::info(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		Log::info(" - size: %ib", (int)state.data.size());
+		Log::info(" - palette: %s [hash: %s]", state.palette.hasValue() ? "true" : "false", palHash.c_str());
+	} else {
+		Log::info(" - none");
+	}
 	if (state.pivot.hasValue()) {
 		Log::info(" - pivot: %f:%f:%f", state.pivot->x, state.pivot->y, state.pivot->z);
 	} else {
@@ -261,7 +265,6 @@ void MementoHandler::printState(const MementoState &state) const {
 		}
 	} else {
 		Log::info(" - key frames: none");
-
 	}
 	if (state.properties.hasValue()) {
 		const scenegraph::SceneGraphNodeProperties &props = *state.properties.value();
@@ -663,6 +666,14 @@ bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const
 	if (!merge.name.empty() && state.name.empty()) {
 		state.name = merge.name;
 		Log::debug("Merged name");
+	}
+	if (!merge.pivot.hasValue() && state.pivot.hasValue()) {
+		state.pivot = merge.pivot;
+		Log::debug("Merged pivot");
+	}
+	if (!merge.worldMatrix.hasValue() && state.worldMatrix.hasValue()) {
+		state.worldMatrix = merge.worldMatrix;
+		Log::debug("Merged world matrix");
 	}
 	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	return true;

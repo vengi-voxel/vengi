@@ -104,7 +104,7 @@ struct MementoState {
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
 	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
 	core::String name;
-	glm::mat4x4 worldMatrix{1.0f};
+	core::Optional<glm::mat4x4> worldMatrix;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
 	 * call, we have to make sure that the region of the previous state is re-extracted.
@@ -134,7 +134,7 @@ struct MementoState {
 		properties = core::move(other.properties);
 		keyFrameIdx = other.keyFrameIdx;
 		name = core::move(other.name);
-		worldMatrix = other.worldMatrix;
+		worldMatrix = core::move(other.worldMatrix);
 		region = other.region;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
@@ -154,7 +154,7 @@ struct MementoState {
 		properties = core::move(other.properties);
 		keyFrameIdx = other.keyFrameIdx;
 		name = core::move(other.name);
-		worldMatrix = other.worldMatrix;
+		worldMatrix = core::move(other.worldMatrix);
 		region = other.region;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
@@ -184,7 +184,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const core::Optional<glm::vec3> &_pivot, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
+				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
 				 const core::Optional<palette::Palette> &_palette = {})
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
@@ -193,7 +193,7 @@ struct MementoState {
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
-				 core::Optional<glm::vec3> &&_pivot, glm::mat4x4 &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
+				 core::Optional<glm::vec3> &&_pivot, core::Optional<glm::mat4x4> &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
 				 core::Optional<palette::Palette> &&_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),

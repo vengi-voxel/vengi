@@ -951,9 +951,11 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 				node->setPivot(*s.pivot.value());
 			}
 			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
-			transform.setWorldMatrix(s.worldMatrix);
-			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
-			return true;
+			if (s.worldMatrix.hasValue()) {
+				transform.setWorldMatrix(*s.worldMatrix.value());
+				transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
+				return true;
+			}
 		}
 		return false;
 	}
