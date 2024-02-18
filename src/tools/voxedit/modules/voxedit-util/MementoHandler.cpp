@@ -324,6 +324,17 @@ MementoState MementoHandler::undoRename(const MementoState &s) {
 	return _states[0];
 }
 
+MementoState MementoHandler::undoMove(const MementoState &s) {
+	for (int i = _statePosition; i >= 0; --i) {
+		MementoState &prevS = _states[i];
+		if (prevS.parentId != InvalidNodeId) {
+			return MementoState{s.type,		s.data,	  prevS.parentId, s.nodeId,		 s.referenceId, prevS.name,
+								s.nodeType, s.region, s.pivot,		  s.worldMatrix, s.keyFrameIdx, s.palette};
+		}
+	}
+	return _states[0];
+}
+
 MementoState MementoHandler::undo() {
 	if (!canUndo()) {
 		return InvalidMementoState;
@@ -343,6 +354,8 @@ MementoState MementoHandler::undo() {
 		return undoKeyFrames(s);
 	} else if (s.type == MementoType::SceneNodeRenamed) {
 		return undoRename(s);
+	} else if (s.type == MementoType::SceneNodeMove) {
+		return undoMove(s);
 	}
 	return s;
 }

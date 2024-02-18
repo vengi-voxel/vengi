@@ -562,11 +562,11 @@ TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 	mementoHandler.markNodeRenamed(*node);
 	EXPECT_EQ(2, (int)mementoHandler.stateSize());
 	EXPECT_TRUE(mementoHandler.canUndo());
-	MementoState state = mementoHandler.undo();
-	EXPECT_EQ(state.name, "Node name");
+	const MementoState &stateUndo = mementoHandler.undo();
+	EXPECT_EQ(stateUndo.name, "Node name");
 	EXPECT_FALSE(mementoHandler.canUndo());
-	state = mementoHandler.redo();
-	EXPECT_EQ(state.name, "Name after");
+	const MementoState &stateRedo = mementoHandler.redo();
+	EXPECT_EQ(stateRedo.name, "Name after");
 }
 
 TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
@@ -581,7 +581,7 @@ TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 		mementoHandler.markNodeRenamed(*node);
 	}
 	EXPECT_EQ(2, (int)mementoHandler.stateSize());
-	MementoState state = mementoHandler.undo();
+	const MementoState &state = mementoHandler.undo();
 	EXPECT_EQ(state.name, "Node name");
 	voxel::RawVolume volume(voxel::Region(0, 0));
 	ASSERT_TRUE(state.data.toVolume(&volume, state.data));
@@ -598,15 +598,29 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 	node->setPalette(palette);
 	mementoHandler.markPaletteChange(*node);
 	EXPECT_EQ(2, (int)mementoHandler.stateSize());
-	MementoState state = mementoHandler.undo();
+	const MementoState &state = mementoHandler.undo();
 	ASSERT_TRUE(state.palette.hasValue());
 	EXPECT_EQ(state.palette.value()->name(), "nippon");
 }
 
-#if 0
-// TODO
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const int oldParent = node->parent();
+	mementoHandler.markInitialNodeState(*node);
+	EXPECT_EQ(mementoHandler.state().parentId, 0);
+
+	const int groupId = 2;
+	mementoHandler.markNodeMoved(groupId, node->id());
+	EXPECT_EQ(2, (int)mementoHandler.stateSize());
+	EXPECT_EQ(mementoHandler.state().parentId, groupId);
+
+	const MementoState &stateUndo = mementoHandler.undo();
+	EXPECT_EQ(oldParent, stateUndo.parentId);
+
+	EXPECT_TRUE(mementoHandler.canRedo());
+	const MementoState &stateRedo = mementoHandler.redo();
+	EXPECT_EQ(groupId, stateRedo.parentId);
 }
-#endif
 
 } // namespace voxedit

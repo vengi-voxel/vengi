@@ -256,6 +256,7 @@ private:
 	bool mergeStates(MementoState &state, MementoState &merge) const;
 
 	MementoState undoRename(const MementoState &s);
+	MementoState undoMove(const MementoState &s);
 	MementoState undoPaletteChange(const MementoState &s);
 	MementoState undoNodeProperties(const MementoState &s);
 	MementoState undoKeyFrames(const MementoState &s);
