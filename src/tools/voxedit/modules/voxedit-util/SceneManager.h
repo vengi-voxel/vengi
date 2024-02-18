@@ -298,7 +298,7 @@ public:
 	int mergeNodes(NodeMergeFlags flags);
 
 	/**
-	 * @brief Split volumes into smaller volumes to get optimized performance
+	 * @brief Split volumes into smaller volumes to improve performance
 	 */
 	bool splitVolumes();
 
