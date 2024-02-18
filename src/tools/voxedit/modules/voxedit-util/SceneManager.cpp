@@ -2230,6 +2230,7 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 		Log::warn("Removing all colors from the palette is not allowed");
 		return;
 	}
+	Log::debug("Unused colors: %i", unused);
 	if (updateVoxels) {
 		int newMappingPos = 0;
 		core::Array<uint8_t, palette::PaletteMaxColors> newMapping;
@@ -2242,13 +2243,19 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
 			if (usedColors[i]) {
 				newPalette.setColor(newMapping[i], pal.color(i));
+				newPalette.setGlowColor(newMapping[i], pal.glowColor(i));
 			}
 		}
+		core_assert(newPalette.colorCount() > 0);
 		pal = newPalette;
 		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
 			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
 			return true;
 		});
+		pal.markDirty();
+		pal.markSave();
+		// TODO: memento group - see https://github.com/vengi-voxel/vengi/issues/376
+		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
 	} else {
 		for (size_t i = 0; i < pal.size(); ++i) {
@@ -2256,10 +2263,10 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 				pal.setColor(i, core::RGBA(127, 127, 127, 255));
 			}
 		}
+		pal.markDirty();
+		pal.markSave();
+		_mementoHandler.markPaletteChange(node);
 	}
-	pal.markDirty();
-	pal.markSave();
-	_mementoHandler.markPaletteChange(node);
 }
 
 void SceneManager::renderText(const char *str, int size, int thickness, int spacing, const char *font) {

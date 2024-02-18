@@ -144,13 +144,13 @@ bool Palette::hasFreeSlot() const {
 
 void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
 	color(i) = rgba;
-	setSize(core_max(size(), i));
+	setSize(core_max(size(), (size_t)(i + 1)));
 	markDirty();
 }
 
 void Palette::setGlowColor(uint8_t i, const core::RGBA &rgba) {
 	glowColor(i) = rgba;
-	setSize(core_max(size(), i));
+	setSize(core_max(size(), (size_t)(i + 1)));
 	markDirty();
 }
 

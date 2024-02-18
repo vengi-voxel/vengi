@@ -5,12 +5,21 @@
 #include "../SceneManager.h"
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
+
+namespace palette {
+
+::std::ostream &operator<<(::std::ostream &os, const Palette &palette) {
+	return os << Palette::print(palette).c_str();
+}
+
+}
 
 namespace voxedit {
 
@@ -76,17 +85,23 @@ protected:
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
-		modifier.start();
+		if (!modifier.start()) {
+			return false;
+		}
 		const int nodeId = _sceneMgr.sceneGraph().activeNode();
 		voxel::RawVolume *v = _sceneMgr.volume(nodeId);
+		if (v == nullptr) {
+			return false;
+		}
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v, false);
 		int executed = 0;
-		if (!modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType, bool) {
-				executed++;
-				_sceneMgr.modified(nodeId, region);
-			})) {
+		auto callback = [&](const voxel::Region &region, ModifierType, bool) {
+			executed++;
+			_sceneMgr.modified(nodeId, region);
+		};
+		if (!modifier.execute(sceneGraph, node, callback)) {
 			return false;
 		}
 		return executed == 1;
@@ -354,6 +369,18 @@ TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
 
 	EXPECT_TRUE(_sceneMgr.nodeAddKeyFrame(1, 30));
 	EXPECT_FLOAT_EQ(0.0f, node.keyFrame(5).transform().worldTranslation().x);
+}
+
+TEST_F(SceneManagerTest, testRemoveUnusedColors) {
+	const int nodeId = _sceneMgr.sceneGraph().activeNode();
+	scenegraph::SceneGraphNode *node = _sceneMgr.sceneGraphNode(nodeId);
+	ASSERT_NE(nullptr, node) << "Failed to get node for id " << nodeId;
+	EXPECT_TRUE(testSetVoxel(testMins(), 1));
+	const palette::Palette &palette = node->palette();
+	EXPECT_EQ(palette::PaletteMaxColors, palette.size());
+	_sceneMgr.removeUnusedColors(nodeId, true);
+	EXPECT_EQ(1, palette.size()) << palette;
+	// palette.color(0)
 }
 
 } // namespace voxedit
