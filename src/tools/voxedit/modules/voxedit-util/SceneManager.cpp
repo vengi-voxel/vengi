@@ -2254,7 +2254,7 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 		});
 		pal.markDirty();
 		pal.markSave();
-		// TODO: memento group - see https://github.com/vengi-voxel/vengi/issues/376
+		ScopedMementoGroup scopedMementoGroup(_mementoHandler);
 		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
 	} else {

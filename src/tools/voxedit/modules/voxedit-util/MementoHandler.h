@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/Optional.h"
 #include "palette/Palette.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -116,6 +117,71 @@ struct MementoState {
 			type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max), keyFrameIdx(0) {
 	}
 
+	MementoState(const MementoState &other) :
+			type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId), referenceId(other.referenceId),
+			nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), keyFrameIdx(other.keyFrameIdx),
+			name(other.name), worldMatrix(other.worldMatrix), region(other.region), pivot(other.pivot), palette(other.palette) {
+	}
+
+	MementoState(MementoState &&other) noexcept {
+		type = other.type;
+		data = core::move(other.data);
+		parentId = other.parentId;
+		nodeId = other.nodeId;
+		referenceId = other.referenceId;
+		nodeType = other.nodeType;
+		keyFrames = core::move(other.keyFrames);
+		properties = core::move(other.properties);
+		keyFrameIdx = other.keyFrameIdx;
+		name = core::move(other.name);
+		worldMatrix = other.worldMatrix;
+		region = other.region;
+		pivot = other.pivot;
+		palette = core::move(other.palette);
+	}
+
+	MementoState& operator=(MementoState &&other) noexcept {
+		if (&other == this) {
+			return *this;
+		}
+		type = other.type;
+		data = core::move(other.data);
+		parentId = other.parentId;
+		nodeId = other.nodeId;
+		referenceId = other.referenceId;
+		nodeType = other.nodeType;
+		keyFrames = core::move(other.keyFrames);
+		properties = core::move(other.properties);
+		keyFrameIdx = other.keyFrameIdx;
+		name = core::move(other.name);
+		worldMatrix = other.worldMatrix;
+		region = other.region;
+		pivot = other.pivot;
+		palette = core::move(other.palette);
+		return *this;
+	}
+
+	MementoState& operator=(const MementoState& other) {
+		if (&other == this) {
+			return *this;
+		}
+		type = other.type;
+		data = other.data;
+		parentId = other.parentId;
+		nodeId = other.nodeId;
+		referenceId = other.referenceId;
+		nodeType = other.nodeType;
+		keyFrames = other.keyFrames;
+		properties = other.properties;
+		keyFrameIdx = other.keyFrameIdx;
+		name = other.name;
+		worldMatrix = other.worldMatrix;
+		region = other.region;
+		pivot = other.pivot;
+		palette = other.palette;
+		return *this;
+	}
+
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
 				 const glm::vec3 &_pivot, const glm::mat4x4 &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
@@ -177,11 +243,17 @@ using MementoStates = core::RingBuffer<MementoState, 64u>;
 class MementoHandler : public core::IComponent {
 private:
 	MementoStates _states;
+	core::Optional<MementoState> _groupState;
 	uint8_t _statePosition = 0u;
 	int _locked = 0;
 
 	void addState(MementoState &&state);
 	bool markUndoPreamble(int nodeId);
+
+	/**
+	 * In group mode, we have to merge the states together
+	 */
+	bool mergeStates(MementoState &state, MementoState &merge) const;
 
 	MementoState undoRename(const MementoState &s);
 	MementoState undoPaletteChange(const MementoState &s);
@@ -207,6 +279,9 @@ public:
 	 * @sa @c lock()
 	 */
 	void unlock();
+
+	void beginGroup();
+	void endGroup();
 
 	void print() const;
 	void printState(const MementoState &state) const;
@@ -270,6 +345,19 @@ public:
 
 	size_t stateSize() const;
 	uint8_t statePosition() const;
+};
+
+class ScopedMementoGroup {
+private:
+	MementoHandler &_handler;
+
+public:
+	ScopedMementoGroup(MementoHandler &handler) : _handler(handler) {
+		_handler.beginGroup();
+	}
+	~ScopedMementoGroup() {
+		_handler.endGroup();
+	}
 };
 
 /**

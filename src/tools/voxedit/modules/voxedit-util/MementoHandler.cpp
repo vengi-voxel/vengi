@@ -186,6 +186,18 @@ void MementoHandler::unlock() {
 	--_locked;
 }
 
+void MementoHandler::beginGroup() {
+	Log::debug("Begin memento group");
+	_groupState.setValue(MementoState{});
+}
+
+void MementoHandler::endGroup() {
+	Log::debug("End memento group");
+	core_assert(_groupState.hasValue());
+	addState(core::move(*_groupState.value()));
+	_groupState.setValue(nullptr);
+}
+
 const char *MementoHandler::typeToString(MementoType type) {
 	const char *states[] = {
 		"Modification",
@@ -531,7 +543,76 @@ void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId
 	addState(core::move(state));
 }
 
+bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const {
+	if (state.type == MementoType::Max) {
+		state = core::move(merge);
+		Log::debug("Initial memento group state is %i", (int)state.type);
+		return true;
+	}
+
+	if (merge.type == MementoType::Modification) {
+		if (state.type == MementoType::PaletteChanged || state.type == MementoType::SceneNodePaletteChanged) {
+			Log::debug("Merge memento state of type %i into %i", (int)merge.type, (int)state.type);
+			state.type = merge.type;
+			state.data = core::move(merge.data);
+		} else {
+			Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
+			return false;
+		}
+	} else if (state.type != MementoType::Modification) {
+		Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
+		return false;
+	}
+
+	if (state.parentId == InvalidNodeId) {
+		state.parentId = merge.parentId;
+		Log::debug("Merged parent id");
+	}
+	if (state.nodeId == InvalidNodeId) {
+		state.nodeId = merge.nodeId;
+		Log::debug("Merged node id");
+	}
+	if (state.referenceId == InvalidNodeId) {
+		state.referenceId = merge.referenceId;
+		Log::debug("Merged reference id");
+	}
+	if (state.nodeType == scenegraph::SceneGraphNodeType::Max) {
+		state.nodeType = merge.nodeType;
+		Log::debug("Merged node type");
+	}
+	if (state.keyFrameIdx == InvalidKeyFrame) {
+		state.keyFrameIdx = merge.keyFrameIdx;
+		Log::debug("Merged key frame index");
+	}
+	if (!state.region.isValid()) {
+		state.region = merge.region;
+		Log::debug("Merged region");
+	}
+	if (merge.palette.hasValue() && !state.palette.hasValue()) {
+		state.palette = merge.palette;
+		Log::debug("Merged palette");
+	}
+	if (merge.properties.hasValue() && !state.properties.hasValue()) {
+		state.properties = merge.properties;
+		Log::debug("Merged properties");
+	}
+	if (merge.keyFrames.hasValue() && !state.keyFrames.hasValue()) {
+		state.keyFrames = merge.keyFrames;
+		Log::debug("Merged key frames");
+	}
+	if (!merge.name.empty() && state.name.empty()) {
+		state.name = merge.name;
+		Log::debug("Merged name");
+	}
+	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
+	return true;
+}
+
 void MementoHandler::addState(MementoState &&state) {
+	if (_groupState.hasValue() && mergeStates(*_groupState.value(), state)) {
+		Log::debug("Merged memento state into group");
+		return;
+	}
 	_states.emplace_back(state);
 	_statePosition = stateSize() - 1;
 }
