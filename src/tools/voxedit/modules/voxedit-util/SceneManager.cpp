@@ -873,11 +873,12 @@ bool SceneManager::mementoModification(const MementoState& s) {
 			if (!setSceneGraphNodeVolume(*node, v)) {
 				delete v;
 			}
-		} else {
-			node->setPivot(s.dataRegion().pivot());
 		}
 		MementoData::toVolume(node->volume(), s.data);
 		node->setName(s.name);
+		if (s.pivot.hasValue()) {
+			node->setPivot(*s.pivot.value());
+		}
 		if (s.palette.hasValue()) {
 			node->setPalette(*s.palette.value());
 		}

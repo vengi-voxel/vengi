@@ -33,7 +33,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	}
 	target.setVisible(node.visible());
 	target.setLocked(node.locked());
-	// target.setPivot(node.pivot());
+	target.setPivot(node.pivot());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
 	// TODO: the reference node id might have changed - fix this
@@ -157,7 +157,6 @@ static int copySceneGraphNode_r(SceneGraph &target, const SceneGraph &source, co
 	copy(sourceNode, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
 		newNode.setVolume(new voxel::RawVolume(sourceNode.volume()), true);
-		newNode.setPivot(sourceNode.pivot());
 	}
 	const int newNodeId = addToGraph(target, core::move(newNode), parent);
 	if (newNodeId == InvalidNodeId) {

@@ -27,6 +27,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
+	_pivot = move._pivot;
 	_keyFrames = move._keyFrames;
 	move._keyFrames = nullptr;
 	_keyFramesMap = core::move(move._keyFramesMap);
@@ -56,6 +57,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_palette = core::move(move._palette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
+	_pivot = move._pivot;
 	_keyFrames = move._keyFrames;
 	move._keyFrames = nullptr;
 	_keyFramesMap = core::move(move._keyFramesMap);
@@ -142,19 +144,17 @@ palette::Palette &SceneGraphNode::palette() const {
 }
 
 bool SceneGraphNode::setPivot(const glm::vec3 &pivot) {
-	if (voxel::RawVolume *v = volume()) {
-		v->region().setPivot(pivot);
-		return true;
-	}
-	return false;
+	_pivot = pivot;
+	return true;
 }
 
 const glm::vec3 &SceneGraphNode::pivot() const {
-	return region().pivot();
+	return _pivot;
 }
 
 glm::vec3 SceneGraphNode::worldPivot() const {
-	return region().worldPivot();
+	const voxel::Region &r = region();
+	return r.getLowerCornerf() + _pivot * glm::vec3(r.getDimensionsInVoxels());
 }
 
 /**
@@ -184,8 +184,6 @@ void SceneGraphNode::releaseOwnership() {
 void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership) {
 	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
 					(int)_type);
-	// keep the pivot - this is because it's stored in the region of the volume...
-	const glm::vec3 p = pivot();
 	release();
 	if (transferOwnership) {
 		_flags |= VolumeOwned;
@@ -193,7 +191,6 @@ void SceneGraphNode::setVolume(voxel::RawVolume *volume, bool transferOwnership)
 		_flags &= ~VolumeOwned;
 	}
 	_volume = volume;
-	setPivot(p);
 }
 
 void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {

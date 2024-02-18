@@ -67,10 +67,7 @@ public:
 	/** Gets the centre of the region */
 	const glm::ivec3& getCenter() const;
 	glm::vec3 calcCenterf() const;
-	/** normalized pivot */
-	const glm::vec3& pivot() const;
-	glm::vec3 worldPivot() const;
-	void setPivot(const glm::vec3 &normalizedPivot);
+
 	/** Gets the position of the lower corner. */
 	const glm::ivec3& getLowerCorner() const;
 	/** Gets the position of the upper corner. */
@@ -197,7 +194,6 @@ private:
 	alignas(16) glm::ivec3 _width;
 	alignas(16) glm::ivec3 _voxels;
 	alignas(16) glm::ivec3 _center;
-	alignas(16) glm::vec3 _pivot {0.0f};
 	int _stride;
 };
 

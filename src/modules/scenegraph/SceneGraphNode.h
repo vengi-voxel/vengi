@@ -84,6 +84,7 @@ protected:
 	SceneGraphNodeType _type;
 	uint8_t _flags = 0u;
 	core::RGBA _color;
+	glm::vec3 _pivot {0.0f};
 
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
@@ -129,6 +130,7 @@ public:
 	palette::Palette &palette() const;
 	void setPalette(const palette::Palette &palette);
 
+	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);
 	const glm::vec3 &pivot() const;
 	glm::vec3 worldPivot() const;
