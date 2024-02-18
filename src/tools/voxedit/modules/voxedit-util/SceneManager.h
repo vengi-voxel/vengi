@@ -187,6 +187,7 @@ protected:
 	bool mementoProperties(const MementoState &s);
 	bool mementoPaletteChange(const MementoState &s);
 	bool mementoModification(const MementoState &s);
+	bool mementoTransform(const MementoState &s);
 
 	/**
 	 * @brief Sets the cursor to the given position in the volume

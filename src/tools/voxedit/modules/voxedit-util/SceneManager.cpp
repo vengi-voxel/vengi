@@ -865,6 +865,22 @@ bool SceneManager::mementoPaletteChange(const MementoState& s) {
 	return false;
 }
 
+bool SceneManager::mementoTransform(const MementoState& s) {
+	Log::debug("Memento: transform of node %i", s.nodeId);
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+		if (s.pivot.hasValue()) {
+			node->setPivot(*s.pivot.value());
+		}
+		scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
+		if (s.worldMatrix.hasValue()) {
+			transform.setWorldMatrix(*s.worldMatrix.value());
+			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
+			return true;
+		}
+	}
+	return false;
+}
+
 bool SceneManager::mementoModification(const MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
@@ -945,19 +961,7 @@ bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
 		return nodeMove(s.nodeId, s.parentId);
 	}
 	if (s.type == MementoType::SceneNodeTransform) {
-		Log::debug("Memento: transform of node %i", s.nodeId);
-		if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-			if (s.pivot.hasValue()) {
-				node->setPivot(*s.pivot.value());
-			}
-			scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
-			if (s.worldMatrix.hasValue()) {
-				transform.setWorldMatrix(*s.worldMatrix.value());
-				transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
-				return true;
-			}
-		}
-		return false;
+		return mementoTransform(s);
 	}
 	if (s.type == MementoType::Modification) {
 		return mementoModification(s);
