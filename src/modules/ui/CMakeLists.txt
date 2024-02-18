@@ -45,18 +45,14 @@ endif()
 set(GEN_DIR ${GENERATE_DIR}/${LIB})
 file(MAKE_DIRECTORY ${GEN_DIR})
 
-# directly modifies SRCS var
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)
+
 macro(imgui_build_font NAME TTF_FILE)
-	set(OUTPUT_FILE ${GEN_DIR}/${NAME}.h)
-	set(INPUT_FILE ${ROOT_DIR}/data/${LIB}/${TTF_FILE})
-	engine_compressed_file_to_header(${NAME} ${INPUT_FILE} ${OUTPUT_FILE})
-	list(APPEND SRCS ${OUTPUT_FILE})
+	engine_compressed_file_to_header(${LIB} ${NAME} ${ROOT_DIR}/data/${LIB}/${TTF_FILE} ${GEN_DIR}/${NAME}.h)
 endmacro()
 
 imgui_build_font(FontLucide lucide.ttf)
 imgui_build_font(ArimoRegular Arimo-Regular.ttf)
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)
 
 if (FREETYPE_FOUND)
 	target_link_libraries(${LIB} PUBLIC Freetype::Freetype)

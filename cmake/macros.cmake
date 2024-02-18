@@ -15,7 +15,7 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	configure_file(${DATA_DIR}/${FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${DESTINATION}/${filename} COPYONLY)
 endfunction()
 
-function(engine_compressed_file_to_header NAME INPUT_FILE OUTPUT_FILE)
+function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	if (NOT CMAKE_CROSSCOMPILING)
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
@@ -31,13 +31,14 @@ function(engine_compressed_file_to_header NAME INPUT_FILE OUTPUT_FILE)
 			add_custom_target(engine_compressed_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
 			add_dependencies(codegen engine_compressed_file_to_header_${NAME})
 		endif()
+		target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(STATUS "Source code generation must be done by native toolchain")
 	endif()
 	engine_mark_as_generated(${OUTPUT_FILE})
 endfunction()
 
-function(engine_file_to_header NAME INPUT_FILE OUTPUT_FILE)
+function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	if (NOT CMAKE_CROSSCOMPILING)
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
@@ -54,6 +55,7 @@ function(engine_file_to_header NAME INPUT_FILE OUTPUT_FILE)
 			add_custom_target(engine_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
 			add_dependencies(codegen engine_file_to_header_${NAME})
 		endif()
+		target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(STATUS "Source code generation must be done by native toolchain")
 	endif()

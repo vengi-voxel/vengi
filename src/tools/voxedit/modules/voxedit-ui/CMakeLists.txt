@@ -26,6 +26,9 @@ set(SRCS
 	QuitDisallowReason.h
 )
 
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer)
+target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
+
 # vengi model files in data/voxedit
 set(VENGI_MODELS
 	robo
@@ -46,10 +49,6 @@ set(VENGI_MODELS
 foreach (vengi_model ${VENGI_MODELS})
 	set(header ${GENERATE_DIR}/${vengi_model}.h)
 	set(pngheader ${GENERATE_DIR}/${vengi_model}_png.h)
-	engine_file_to_header(${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${header})
-	engine_file_to_header(${vengi_model}_png ${DATA_DIR}/voxedit/${vengi_model}.png ${pngheader})
-	list(APPEND SRCS ${header} ${pngheader})
+	engine_file_to_header(${LIB} ${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${header})
+	engine_file_to_header(${LIB} ${vengi_model}_png ${DATA_DIR}/voxedit/${vengi_model}.png ${pngheader})
 endforeach()
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer)
-target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
