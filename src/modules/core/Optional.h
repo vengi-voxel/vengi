@@ -82,7 +82,6 @@ public:
 
 	Optional(const Optional& other) noexcept {
 		if (!other.hasValue()) {
-			_hasValue = false;
 			return;
 		}
 		prepare();
