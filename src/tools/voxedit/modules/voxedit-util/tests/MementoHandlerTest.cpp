@@ -588,12 +588,23 @@ TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 	EXPECT_EQ(voxel::VoxelType::Air, volume.voxel(0, 0, 0).getMaterial());
 }
 
-#if 0
-// TODO
-
 TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	mementoHandler.markInitialNodeState(*node);
+	EXPECT_EQ("nippon", node->palette().name());
+	palette::Palette palette;
+	palette.commandAndConquer();
+	node->setPalette(palette);
+	mementoHandler.markPaletteChange(*node);
+	EXPECT_EQ(2, (int)mementoHandler.stateSize());
+	MementoState state = mementoHandler.undo();
+	ASSERT_TRUE(state.palette.hasValue());
+	EXPECT_EQ(state.palette.value()->name(), "nippon");
 }
 
+#if 0
+// TODO
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
 }
 #endif
