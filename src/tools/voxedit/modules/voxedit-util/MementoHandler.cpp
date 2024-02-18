@@ -316,7 +316,7 @@ MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 MementoState MementoHandler::undoRename(const MementoState &s) {
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
-		if (prevS.palette.hasValue()) {
+		if (!prevS.name.empty()) {
 			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		 s.referenceId, prevS.name,
 								s.nodeType, s.region, s.pivot,	  s.worldMatrix, s.keyFrameIdx, s.palette};
 		}

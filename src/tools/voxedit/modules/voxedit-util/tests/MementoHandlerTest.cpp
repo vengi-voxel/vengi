@@ -4,6 +4,7 @@
 
 #include "../MementoHandler.h"
 #include "app/tests/AbstractTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 
@@ -12,6 +13,7 @@ namespace voxedit {
 class MementoHandlerTest : public app::AbstractTest {
 protected:
 	voxedit::MementoHandler mementoHandler;
+	scenegraph::SceneGraph sceneGraph;
 	core::SharedPtr<voxel::RawVolume> create(int size) const {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(size - 1));
 		EXPECT_EQ(size, region.getWidthInVoxels());
@@ -19,10 +21,17 @@ protected:
 	}
 	void SetUp() override {
 		ASSERT_TRUE(mementoHandler.init());
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		int size = 2;
+		const voxel::Region region(glm::ivec3(0), glm::ivec3(size - 1));
+		node.setVolume(new voxel::RawVolume(region), true);
+		node.setName("Node name");
+		sceneGraph.emplace(core::move(node));
 	}
 
 	void TearDown() override {
 		mementoHandler.shutdown();
+		sceneGraph.clear();
 	}
 };
 
@@ -545,10 +554,23 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	}
 }
 
+TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	mementoHandler.markInitialNodeState(*node);
+	node->setName("Name after");
+	mementoHandler.markNodeRenamed(*node);
+	EXPECT_EQ(2, (int)mementoHandler.stateSize());
+	EXPECT_TRUE(mementoHandler.canUndo());
+	MementoState state = mementoHandler.undo();
+	EXPECT_EQ(state.name, "Node name");
+	EXPECT_FALSE(mementoHandler.canUndo());
+	state = mementoHandler.redo();
+	EXPECT_EQ(state.name, "Name after");
+}
+
 #if 0
 // TODO
-TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
-}
 
 TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 }
