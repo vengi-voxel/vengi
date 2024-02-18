@@ -2308,7 +2308,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
 		return InvalidNodeId;
 	}
-	scenegraph::SceneGraphNode newNode;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(new voxel::RawVolume(region), true);
 	newNode.setName(name);
 	const int parentId = activeNode();

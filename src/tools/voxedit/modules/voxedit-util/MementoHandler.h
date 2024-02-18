@@ -184,8 +184,8 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx = 0,
-				 const core::Optional<palette::Palette> &_palette = {})
+				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
+				 const core::Optional<palette::Palette> &_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
 		  palette(_palette) {
@@ -203,8 +203,8 @@ struct MementoState {
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
 				 const core::Optional<glm::vec3> &_pivot, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
-				 const core::Optional<palette::Palette> &_palette = {},
-				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties = {})
+				 const core::Optional<palette::Palette> &_palette,
+				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), pivot(_pivot),
 		  palette(_palette) {

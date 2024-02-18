@@ -30,12 +30,13 @@ static const MementoState InvalidMementoState{MementoType::Max,
 											  InvalidNodeId,
 											  InvalidNodeId,
 											  InvalidNodeId,
-											  "",
+											  {},
 											  scenegraph::SceneGraphNodeType::Max,
 											  voxel::Region::InvalidRegion,
 											  {},
 											  {},
-											  0};
+											  0,
+											  {}};
 
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
 	: _compressedSize(bufSize), _region(region) {
@@ -308,9 +309,9 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			voxel::logRegion("Undo previous", prevS.region);
 			voxel::logRegion("Undo current data", s.data.region());
 			voxel::logRegion("Undo previous data", prevS.data.region());
-			// use the region from the current state - but the volume from the previous state of this node
+			// use the region from the current state - but the volume and palette from the previous state of this node
 			return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   s.referenceId, s.name,
-								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx};
+								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, prevS.palette};
 		}
 	}
 	core_assert(_states[0].type == MementoType::Modification);
@@ -357,7 +358,7 @@ MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 		MementoState &prevS = _states[i];
 		if (prevS.keyFrames.hasValue() && prevS.nodeId == s.nodeId) {
 			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		   s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  prevS.keyFrames, s.palette};
+								s.nodeType, s.region, s.pivot,	  prevS.keyFrames, s.palette, s.properties};
 		}
 	}
 	return _states[0];
