@@ -10,6 +10,7 @@
 #include "core/Var.h"
 #include "dearimgui/imgui.h"
 #include "video/Types.h"
+#include "I18N.h"
 #include <glm/fwd.hpp>
 
 namespace io {

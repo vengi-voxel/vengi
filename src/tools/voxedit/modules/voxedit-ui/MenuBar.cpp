@@ -22,7 +22,7 @@ namespace voxedit {
 
 void MenuBar::colorReductionOptions() {
 	const core::VarPtr &colorReduction = core::Var::getSafe(cfg::CoreColorReduction);
-	if (ImGui::BeginCombo("Color reduction", colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
+	if (ImGui::BeginCombo(_("Color reduction"), colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
 		core::Color::ColorReductionType type = core::Color::toColorReductionType(colorReduction->strVal().c_str());
 		for (int i = 0; i < (int)core::Color::ColorReductionType::Max; ++i) {
 			const bool selected = i == (int)type;
@@ -37,17 +37,17 @@ void MenuBar::colorReductionOptions() {
 		ImGui::EndCombo();
 	}
 	ImGui::TooltipText(
-		"The color reduction algorithm that is used when importing RGBA colors from images or rgba formats");
+		_("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats"));
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
-		if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
-			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, "New", "new", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, "Load", "load", true, &listener);
-			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, "Recently opened")) {
+		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, _("Load"), "load", true, &listener);
+			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, _("Recently opened"))) {
 				int recentlyOpened = 0;
 				for (const core::String &f : _lastOpenedFiles) {
 					if (f.empty()) {
@@ -62,113 +62,113 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 
-			ImGui::CommandIconMenuItem(ICON_LC_SAVE, "Save", "save", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SAVE, "Save as", "saveas", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_FILE, "Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save"), "save", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save as"), "saveas", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
 			ImGui::Separator();
 
-			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, "Add file to scene", "import", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, "Add directory to scene", "importdirectory", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, _("Add file to scene"), "import", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, _("Add directory to scene"), "importdirectory", true, &listener);
 			ImGui::Separator();
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Heightmap", "importheightmap", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Colored heightmap", "importcoloredheightmap", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Image as plane", "importplane", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Image as volume", "importvolume", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Heightmap"), "importheightmap", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Colored heightmap"), "importcoloredheightmap", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Image as plane"), "importplane", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Image as volume"), "importvolume", true, &listener);
 			ImGui::Separator();
-			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, "Quit")) {
+			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
 				app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_MENU, "Edit")) {
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
 			const SceneManager &sceneManager = sceneMgr();
 			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
-			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, "Undo", "undo", mementoHandler.canUndo(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, "Redo", "redo", mementoHandler.canRedo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
 			const Modifier &modifier = sceneManager.modifier();
 			const Selections &selections = modifier.selections();
-			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, "Cut", "cut", !selections.empty(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_COPY, "Copy", "copy", !selections.empty(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste at reference##pastereferencepos", "paste",
+			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", !selections.empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", !selections.empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference##pastereferencepos"), "paste",
 								   sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste at cursor##pastecursor", "pastecursor",
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor##pastecursor"), "pastecursor",
 								   sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste as new node##pastenewnode", "pastenewnode",
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as new node##pastenewnode"), "pastenewnode",
 								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
-			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
-				ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, "Grid", cfg::VoxEditShowgrid);
-				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
-				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
-				ImGui::IconCheckboxVar(ICON_LC_BOX, "Bounding box", cfg::VoxEditShowaabb);
-				ImGui::IconCheckboxVar(ICON_LC_BONE, "Bones", cfg::VoxEditShowBones);
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
+				ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, _("Grid"), cfg::VoxEditShowgrid);
+				ImGui::IconCheckboxVar(ICON_LC_ROTATE_3D, _("Show gizmo"), cfg::VoxEditShowaxis);
+				ImGui::IconCheckboxVar(ICON_LC_LOCK, _("Show locked axis"), cfg::VoxEditShowlockedaxis);
+				ImGui::IconCheckboxVar(ICON_LC_BOX, _("Bounding box"), cfg::VoxEditShowaabb);
+				ImGui::IconCheckboxVar(ICON_LC_BONE, _("Bones"), cfg::VoxEditShowBones);
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
-				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
+				ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
 				ImGui::EndDisabled();
-				ImGui::CheckboxVar("Shadow", cfg::VoxEditRendershadow);
-				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
-				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
-				ImGui::CheckboxVar("Color picker", cfg::VoxEditShowColorPicker);
-				ImGui::CheckboxVar("Color wheel", cfg::VoxEditColorWheel);
-				ImGui::CheckboxVar("Simplified UI", cfg::VoxEditSimplifiedView);
-				ImGui::CheckboxVar("Tip of the day", cfg::VoxEditTipOftheDay);
+				ImGui::IconCheckboxVar(ICON_LC_SUNSET, _("Shadow"), cfg::VoxEditRendershadow);
+				ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
+				ImGui::IconCheckboxVar(ICON_LC_TV_2, _("Allow multi monitor"), cfg::UIMultiMonitor);
+				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
+				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
+				ImGui::CheckboxVar(_("Simplified UI"), cfg::VoxEditSimplifiedView);
+				ImGui::CheckboxVar(_("Tip of the day"), cfg::VoxEditTipOftheDay);
 
 				ui::metricOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
-					"Cubes", "Marching cubes"};
-				ImGui::ComboVar("Mesh mode", cfg::VoxelMeshMode, meshModes);
-				ImGui::InputVarInt("Model animation speed", cfg::VoxEditAnimationSpeed);
-				ImGui::InputVarInt("Autosave delay in seconds", cfg::VoxEditAutoSaveSeconds);
-				ImGui::InputVarInt("Viewports", cfg::VoxEditViewports, 1, 1);
-				ImGui::SliderVarFloat("Zoom speed", cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);
-				ImGui::SliderVarInt("View distance", cfg::VoxEditViewdistance, 10, 5000);
-				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
+					_("Cubes"), _("Marching cubes")};
+				ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
+				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
+				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);
+				ImGui::InputVarInt(_("Viewports"), cfg::VoxEditViewports, 1, 1);
+				ImGui::SliderVarFloat(_("Zoom speed"), cfg::ClientCameraZoomSpeed, 0.1f, 200.0f);
+				ImGui::SliderVarInt(_("View distance"), cfg::VoxEditViewdistance, 10, 5000);
+				ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
 
 				static const core::Array<core::String, ImGui::MaxStyles> uiStyles = {"CorporateGrey", "Dark", "Light",
 																					 "Classic"};
-				ImGui::ComboVar("Color theme", cfg::UIStyle, uiStyles);
+				ImGui::ComboVar(_("Color theme"), cfg::UIStyle, uiStyles);
 				colorReductionOptions();
 
-				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
-				if (ImGui::ButtonFullWidth("Reset layout")) {
+				ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
+				if (ImGui::ButtonFullWidth(_("Reset layout"))) {
 					resetDockLayout = true;
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::Separator();
-			if (ImGui::ButtonFullWidth("Scene settings")) {
+			if (ImGui::ButtonFullWidth(_("Scene settings"))) {
 				core::Var::getSafe(cfg::VoxEditPopupSceneSettings)->setVal(true);
 			}
-			if (ImGui::ButtonFullWidth("Bindings")) {
+			if (ImGui::ButtonFullWidth(_("Bindings"))) {
 				app->showBindingsDialog();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, "Select")) {
-			ImGui::CommandMenuItem("None", "select none", true, &listener);
-			ImGui::CommandMenuItem("Invert", "select invert", true, &listener);
-			ImGui::CommandMenuItem("All", "select all", true, &listener);
+		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, _("Select"))) {
+			ImGui::CommandMenuItem(_("None"), "select none", true, &listener);
+			ImGui::CommandMenuItem(_("Invert"), "select invert", true, &listener);
+			ImGui::CommandMenuItem(_("All"), "select all", true, &listener);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, "Help")) {
+		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, _("Help"))) {
 #ifdef DEBUG
-			if (ImGui::BeginIconMenu(ICON_LC_BUG, "Debug")) {
-				if (ImGui::Button("Textures")) {
+			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
+				if (ImGui::Button(_("Textures"))) {
 					app->showTexturesDialog();
 				}
 				ImGui::EndMenu();
 			}
 #endif
-			if (ImGui::MenuItem("Tip of the day")) {
+			if (ImGui::MenuItem(_("Tip of the day"))) {
 				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}
-			if (ImGui::MenuItem("Welcome screen")) {
+			if (ImGui::MenuItem(_("Welcome screen"))) {
 				core::Var::getSafe(cfg::VoxEditPopupWelcome)->setVal(true);
 			}
 			ImGui::Separator();
-			if (ImGui::IconMenuItem(ICON_LC_INFO, "About")) {
+			if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
 				core::Var::getSafe(cfg::VoxEditPopupAbout)->setVal(true);
 			}
 			ImGui::EndMenu();

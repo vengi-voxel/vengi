@@ -511,14 +511,14 @@ void MainWindow::popupTipOfTheDay() {
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
 		}
-		ImGui::CheckboxVar("Show again", _tipOfTheDay);
-		if (ImGui::IconButton(ICON_LC_CHECK, "Next##tipoftheday")) {
+		ImGui::CheckboxVar(_("Show again"), _tipOfTheDay);
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Next##tipoftheday"))) {
 			++_currentTip;
 			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "Close##tipoftheday")) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close##tipoftheday"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -528,15 +528,15 @@ void MainWindow::popupTipOfTheDay() {
 void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_WELCOME)) {
-		ImGui::IconDialog(ICON_LC_LIGHTBULB, "Welcome to VoxEdit!");
-		ImGui::TextWrapped("The mission: Create a free, open-source and multi-platform voxel "
-						   "editor with animation support for artists and developers.");
+		ImGui::IconDialog(ICON_LC_LIGHTBULB, _("Welcome to VoxEdit!"));
+		ImGui::TextWrapped(_("The mission: Create a free, open-source and multi-platform voxel "
+						   "editor with animation support for artists and developers."));
 		ImGui::Separator();
-		ImGui::TextWrapped("We would like to enable anonymous usage metrics to improve the editor. "
-						   "Please consider enabling it.");
+		ImGui::TextWrapped(_("We would like to enable anonymous usage metrics to improve the editor. "
+						   "Please consider enabling it."));
 		ui::metricOption();
 		ImGui::Separator();
-		if (ImGui::IconButton(ICON_LC_X, "Close##welcome")) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close##welcome"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -545,32 +545,32 @@ void MainWindow::popupWelcome() {
 
 void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		if (ImGui::CollapsingHeader("Templates", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_("Templates"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			newSceneTemplates();
 		}
 
-		if (ImGui::CollapsingHeader("Empty scene", ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Text("Name");
+		if (ImGui::CollapsingHeader(_("Empty scene"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::Text(_("Name"));
 			ImGui::Separator();
 			ImGui::InputText("##newscenename", &_modelNodeSettings.name);
 			ImGui::NewLine();
 
-			ImGui::Text("Position");
+			ImGui::Text(_("Position"));
 			ImGui::Separator();
 			veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
 			veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
 			veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 			ImGui::NewLine();
 
-			ImGui::Text("Size");
+			ImGui::Text(_("Size"));
 			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
-			veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
-			veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
+			veui::InputAxisInt(math::Axis::X, _("Width##sizex"), &_modelNodeSettings.size.x);
+			veui::InputAxisInt(math::Axis::Y, _("Height##sizey"), &_modelNodeSettings.size.y);
+			veui::InputAxisInt(math::Axis::Z, _("Depth##sizez"), &_modelNodeSettings.size.z);
 			ImGui::NewLine();
 		}
 
-		if (ImGui::IconButton(ICON_LC_CHECK, "OK##newscene")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##newscene"))) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (voxedit::sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
@@ -579,7 +579,7 @@ void MainWindow::popupNewScene() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "Close##newscene")) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close##newscene"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -588,8 +588,8 @@ void MainWindow::popupNewScene() {
 
 void MainWindow::popupFailedSave() {
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, "Failed to save the model!");
-		if (ImGui::IconButton(ICON_LC_CHECK, "OK##failedsave")) {
+		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, _("Failed to save the model!"));
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##failedsave"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -599,15 +599,15 @@ void MainWindow::popupFailedSave() {
 
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Unsaved changes - are you sure to quit?");
-		if (ImGui::IconButton(ICON_LC_CHECK, "OK##unsavedscene")) {
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Unsaved changes - are you sure to quit?"));
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##unsavedscene"))) {
 			_forceQuit = true;
 			_app->requestQuit();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "Cancel##unsavedscene")) {
+		if (ImGui::IconButton(ICON_LC_X, _("Cancel##unsavedscene"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -616,8 +616,8 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "There are unsaved modifications.\nDo you wish to discard them?");
-		if (ImGui::IconButton(ICON_LC_CHECK, "Yes##unsaved")) {
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("There are unsaved modifications.\nDo you wish to discard them?"));
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##unsaved"))) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				sceneMgr().load(_loadFile);
@@ -627,7 +627,7 @@ void MainWindow::popupUnsavedDiscard() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "No##unsaved")) {
+		if (ImGui::IconButton(ICON_LC_X, _("No##unsaved"))) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -638,13 +638,13 @@ void MainWindow::popupUnsavedDiscard() {
 
 void MainWindow::popupSceneSettings() {
 	if (ImGui::BeginPopup(POPUP_TITLE_SCENE_SETTINGS, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::TextUnformatted("Scene settings");
+		ImGui::TextUnformatted(_("Scene settings"));
 		ImGui::Separator();
 
-		ImGui::ColorEdit3Var("Diffuse color", cfg::VoxEditDiffuseColor);
-		ImGui::ColorEdit3Var("Ambient color", cfg::VoxEditAmbientColor);
+		ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
+		ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
 
-		if (ImGui::IconButton(ICON_LC_CHECK, "Done##scenesettings")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Done##scenesettings"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -654,15 +654,15 @@ void MainWindow::popupSceneSettings() {
 
 void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, "Some model volumes are too big for optimal performance.\nIt's encouraged to split "
-								 "them into smaller volumes.\nDo you wish to split them now?");
-		if (ImGui::IconButton(ICON_LC_CHECK, "Yes##volumesplit")) {
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+								 "them into smaller volumes.\nDo you wish to split them now?"));
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##volumesplit"))) {
 			ImGui::CloseCurrentPopup();
 			sceneMgr().splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "No##volumesplit")) {
+		if (ImGui::IconButton(ICON_LC_X, _("No##volumesplit"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -671,26 +671,26 @@ void MainWindow::popupVolumeSplit() {
 
 void MainWindow::popupModelNodeSettings() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text("Name");
+		ImGui::Text(_("Name"));
 		ImGui::Separator();
 		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
 		ImGui::NewLine();
 
-		ImGui::Text("Position");
+		ImGui::Text(_("Position"));
 		ImGui::Separator();
 		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
 		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
 		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 		ImGui::NewLine();
 
-		ImGui::Text("Size");
+		ImGui::Text(_("Size"));
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, "Width##sizex", &_modelNodeSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, "Height##sizey", &_modelNodeSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, "Depth##sizez", &_modelNodeSettings.size.z);
+		veui::InputAxisInt(math::Axis::X, _("Width##sizex"), &_modelNodeSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, _("Height##sizey"), &_modelNodeSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, _("Depth##sizez"), &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::IconButton(ICON_LC_CHECK, "OK##modelsettings")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##modelsettings"))) {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode;
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -703,7 +703,7 @@ void MainWindow::popupModelNodeSettings() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, "Cancel##modelsettings")) {
+		if (ImGui::IconButton(ICON_LC_X, _("Cancel##modelsettings"))) {
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -782,16 +782,16 @@ void MainWindow::popupNodeRename() {
 			ImGui::SetKeyboardFocusHere();
 		}
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
-		bool renamed = ImGui::InputText("Name", &_currentNodeName, flags);
+		bool renamed = ImGui::InputText(_("Name"), &_currentNodeName, flags);
 
-		if (ImGui::Button("Apply") || renamed) {
+		if (ImGui::Button(_("Apply")) || renamed) {
 			const int nodeId = sceneMgr.sceneGraph().activeNode();
 			sceneMgr.nodeRename(nodeId, _currentNodeName);
 			_currentNodeName = "";
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Close")) {
+		if (ImGui::Button(_("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -800,12 +800,12 @@ void MainWindow::popupNodeRename() {
 
 void MainWindow::popupAbout() {
 	ui::popupAbout([]() {
-		if (ImGui::BeginTabItem("Formats")) {
+		if (ImGui::BeginTabItem(_("Formats"))) {
 			const ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable;
-			ImGui::Text("Voxel load");
+			ImGui::Text(_("Voxel load"));
 			if (ImGui::BeginTable("##voxelload", 2, tableFlags)) {
-				ImGui::TableSetupColumn("Name##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
-				ImGui::TableSetupColumn("Extension##voxelload", ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupColumn(_("Name##voxelload"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn(_("Extension##voxelload"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
 				ImGui::TableSetupScrollFreeze(0, 1);
 				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
@@ -817,7 +817,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text("Voxel save");
+			ImGui::Text(_("Voxel save"));
 			if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
@@ -828,7 +828,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text("Palettes");
+			ImGui::Text(_("Palettes"));
 			if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
@@ -839,7 +839,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text("Images");
+			ImGui::Text(_("Images"));
 			if (ImGui::BeginTable("##images", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();

@@ -319,22 +319,22 @@ void Viewport::toggleVideoRecording() {
 }
 
 void Viewport::menuBarView(command::CommandExecutionListener *listener) {
-	if (ImGui::BeginIconMenu(ICON_LC_EYE, "View")) {
-		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, "Reset camera", "resetcamera", true, listener);
+	if (ImGui::BeginIconMenu(ICON_LC_EYE, _("View"))) {
+		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
 
 		glm::vec3 omega = _camera.omega();
-		if (ImGui::InputFloat("Camera rotation", &omega.y)) {
+		if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
 			_camera.setOmega(omega);
 		}
 
 		const core::String command = core::string::format("screenshot %i", _id);
-		ImGui::CommandIconMenuItem(ICON_LC_CAMERA, "Screenshot", command.c_str(), listener);
+		ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
 
 		const char *icon = ICON_LC_CLAPPERBOARD;
-		const char *text = "Video";
+		const char *text = _("Video");
 		if (_avi.isRecording()) {
 			icon = ICON_LC_STOP_CIRCLE;
-			text = "Stop recording";
+			text = _("Stop recording");
 		}
 		if (ImGui::IconMenuItem(icon, text)) {
 			toggleVideoRecording();
@@ -342,18 +342,18 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		const uint32_t pendingFrames = _avi.pendingFrames();
 		if (pendingFrames > 0u) {
 			ImGui::SameLine();
-			ImGui::Text("Pending frames: %u", pendingFrames);
+			ImGui::Text(_("Pending frames: %u"), pendingFrames);
 		} else {
-			ImGui::TooltipText("You can control the fps of the video with the cvar %s\nPending frames: %u",
+			ImGui::TooltipText(_("You can control the fps of the video with the cvar %s\nPending frames: %u"),
 							   cfg::CoreMaxFPS, pendingFrames);
 		}
 
 		if (!isFixedCamera()) {
-			static const char *camRotTypes[] = {"Reference Point", "Eye"};
+			static const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
 			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max,
-						  "Array size doesn't match enum values");
+						 _("Array size doesn't match enum values"));
 			const int currentCamRotType = (int)camera().rotationType();
-			if (ImGui::BeginCombo("Camera movement##referencepoint", camRotTypes[currentCamRotType])) {
+			if (ImGui::BeginCombo(_("Camera movement##referencepoint"), camRotTypes[currentCamRotType])) {
 				for (int n = 0; n < lengthof(camRotTypes); n++) {
 					const bool isSelected = (currentCamRotType == n);
 					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
@@ -367,10 +367,10 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 			}
 		}
 
-		static const char *polygonModes[] = {"Points", "Lines", "Solid"};
+		static const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
 		static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 		const int currentPolygonMode = (int)camera().polygonMode();
-		if (ImGui::BeginCombo("Render mode##polygonmode", polygonModes[currentPolygonMode])) {
+		if (ImGui::BeginCombo(_("Render mode##polygonmode"), polygonModes[currentPolygonMode])) {
 			for (int n = 0; n < lengthof(polygonModes); n++) {
 				const bool isSelected = (currentPolygonMode == n);
 				if (ImGui::Selectable(polygonModes[n], isSelected)) {
@@ -389,13 +389,13 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
-		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, "Undo", "undo", mementoHandler.canUndo(), listener);
-		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, "Redo", "redo", mementoHandler.canRedo(), listener);
+		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
+		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraProjection();
 		menuBarCameraMode();
 		if (!_simplifiedView->boolVal()) {
-			ImGui::Checkbox("Scene Mode", &_renderContext.sceneMode);
+			ImGui::Checkbox(_("Scene Mode"), &_renderContext.sceneMode);
 		}
 		menuBarView(listener);
 
@@ -416,7 +416,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	style.setWindowPadding(ImVec2(0.0f, 0.0f));
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
 								 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
-	const char *modeStr = isSceneMode() ? "SceneMode" : "EditMode";
+	const char *modeStr = isSceneMode() ? _("SceneMode") : _("EditMode");
 
 	core::String name;
 	if (_detailedTitle) {

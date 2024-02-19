@@ -32,46 +32,46 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 		int changed = 0;
-		changed += ImGui::InputInt("Dimensions", &params.resolution, 180, 4096);
-		changed += ImGui::InputInt("Samples", &params.samples, 16, 4096);
-		changed += ImGui::ComboItems("Tracer", (int *)&params.sampler, yocto::trace_sampler_names);
-		changed += ImGui::ComboItems("False color", (int *)&params.falsecolor, yocto::trace_falsecolor_names);
-		changed += ImGui::SliderInt("Bounces", &params.bounces, 1, 128);
-		changed += ImGui::SliderInt("Batch", &params.batch, 1, 16);
-		changed += ImGui::SliderFloat("Clamp", &params.clamp, 10, 1000);
-		changed += ImGui::SliderInt("Preview ratio", &params.pratio, 1, 64);
-		changed += ImGui::Checkbox("Hide environment", &params.envhidden);
-		changed += ImGui::Checkbox("Filter", &params.tentfilter);
-		changed += ImGui::Checkbox("Denoise", &params.denoise);
+		changed += ImGui::InputInt(_("Dimensions"), &params.resolution, 180, 4096);
+		changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
+		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
+		changed += ImGui::ComboItems(_("False color"), (int *)&params.falsecolor, yocto::trace_falsecolor_names);
+		changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
+		changed += ImGui::SliderInt(_("Batch"), &params.batch, 1, 16);
+		changed += ImGui::SliderFloat(_("Clamp"), &params.clamp, 10, 1000);
+		changed += ImGui::SliderInt(_("Preview ratio"), &params.pratio, 1, 64);
+		changed += ImGui::Checkbox(_("Hide environment"), &params.envhidden);
+		changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
+		changed += ImGui::Checkbox(_("Denoise"), &params.denoise);
 
 		core::Var::getSafe(cfg::VoxEditDiffuseColor)->vec3Val(&state.diffuseColor[0]);
 		core::Var::getSafe(cfg::VoxEditAmbientColor)->vec3Val(&state.ambientColor[0]);
 
 		if (!state.scene.camera_names.empty()) {
-			changed += ImGui::ComboItems("Camera", &params.camera, state.scene.camera_names);
+			changed += ImGui::ComboItems(_("Camera"), &params.camera, state.scene.camera_names);
 		}
 		if (changed > 0) {
 			_pathTracer.restart(sceneGraph, camera);
 		}
 		if (_pathTracer.started()) {
-			if (ImGui::Button("Stop path tracer")) {
+			if (ImGui::Button(_("Stop path tracer"))) {
 				_pathTracer.stop();
 			}
-			ImGui::TooltipText("Sample %i/%i", _currentSample, params.samples);
+			ImGui::TooltipText(_("Sample %i/%i"), _currentSample, params.samples);
 			_pathTracer.update(&_currentSample);
 			_image = _pathTracer.image();
 			if (_image->isLoaded()) {
 				_texture->upload(_image);
 			}
 		} else {
-			if (ImGui::Button("Start path tracer")) {
+			if (ImGui::Button(_("Start path tracer"))) {
 				_pathTracer.start(sceneGraph, camera);
 			}
 		}
 		if (_texture->isLoaded()) {
 			ImGui::Image(_texture->handle(), ImVec2((float)_texture->width(), (float)_texture->height()));
 			if (_image && _image->isLoaded()) {
-				if (ImGui::Button("Save image")) {
+				if (ImGui::Button(_("Save image"))) {
 					imguiApp()->saveDialog([=](const core::String &file,
 											   const io::FormatDescription *desc) { image::writeImage(_image, file); },
 										   {}, io::format::images(), "render.png");

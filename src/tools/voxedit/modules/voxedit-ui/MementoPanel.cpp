@@ -18,7 +18,7 @@ void MementoPanel::update(const char *title, command::CommandExecutionListener &
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
 		const int currentStatePos = mementoHandler.statePosition();
-		ImGui::Text("pos: %i/%i", currentStatePos, (int)mementoHandler.stateSize());
+		ImGui::Text(_("pos: %i/%i"), currentStatePos, (int)mementoHandler.stateSize());
 		if (ImGui::BeginListBox("##history-actions", ImVec2(-FLT_MIN, -FLT_MIN))) {
 			int n = 0;
 			int newStatePos = -1;

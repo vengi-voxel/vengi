@@ -22,23 +22,23 @@ void StatusBar::update(const char *title, float height, const core::String &last
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
-		ImGui::CheckboxVar("Grayscale", cfg::VoxEditGrayInactive);
+		ImGui::CheckboxVar(_("Grayscale"), cfg::VoxEditGrayInactive);
 		ImGui::SameLine();
-		ImGui::CheckboxVar("Only active", cfg::VoxEditHideInactive);
+		ImGui::CheckboxVar(_("Only active"), cfg::VoxEditHideInactive);
 		ImGui::SameLine();
 
 		ImGui::SetNextItemWidth(120.0f);
-		ImGui::InputVarInt("Grid size", cfg::VoxEditGridsize);
+		ImGui::InputVarInt(_("Grid size"), cfg::VoxEditGridsize);
 		ImGui::SameLine();
 		if (lastExecutedCommand.empty()) {
-			ImGui::TextUnformatted("Command: -");
+			ImGui::TextUnformatted(_("Command: -"));
 		} else {
 			const video::WindowedApp* app = video::WindowedApp::getInstance();
 			const core::String& keybindingStr = app->getKeyBindingsString(lastExecutedCommand.c_str());
 			if (keybindingStr.empty()) {
-				ImGui::Text("Command: %s", lastExecutedCommand.c_str());
+				ImGui::Text(_("Command: %s"), lastExecutedCommand.c_str());
 			} else {
-				ImGui::Text("Command: %s (%s)", lastExecutedCommand.c_str(), keybindingStr.c_str());
+				ImGui::Text(_("Command: %s (%s)"), lastExecutedCommand.c_str(), keybindingStr.c_str());
 			}
 		}
 	}

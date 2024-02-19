@@ -19,7 +19,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 
 	if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(activeNode)) {
 		const scenegraph::SceneGraphNodeType nodeType = node->type();
-		if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
+		if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ui::ScopedStyle style;
 			style.setFont(imguiApp()->bigIconFont());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
@@ -36,7 +36,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 }
 
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
-	if (ImGui::CollapsingHeader("Action", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedStyle style;
 		style.setFont(imguiApp()->bigIconFont());
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
@@ -57,47 +57,47 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	const float buttonWidth = (float)imguiApp()->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText("Rotate by 90 degree on the x axis");
+		ImGui::TooltipText(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
 		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText("Rotate by 90 degree on the y axis");
+		ImGui::TooltipText(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
 		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText("Rotate by 90 degree on the z axis");
+		ImGui::TooltipText(_("Rotate by 90 degree on the z axis"));
 	}
 
-	if (ImGui::CollapsingHeader("Text##text", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::InputText("Text##textinput", &_text.input);
+	if (ImGui::CollapsingHeader(_("Text##text"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::InputText(_("Text##textinput"), &_text.input);
 
 		ImGui::SetNextItemWidth(100.0f);
 		if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL "##textinput", &_text.size)) {
 			_text.size = glm::clamp(_text.size, 6, 255);
 		}
-		ImGui::TooltipText("Font size");
+		ImGui::TooltipText(_("Font size"));
 		ImGui::SameLine();
 
 		ImGui::SetNextItemWidth(100.0f);
 		ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &_text.spacing);
-		ImGui::TooltipText("Horizontal spacing");
+		ImGui::TooltipText(_("Horizontal spacing"));
 
 		ImGui::SetNextItemWidth(100.0f);
 		if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &_text.thickness)) {
 			_text.thickness = glm::clamp(_text.thickness, 1, 255);
 		}
-		ImGui::TooltipText("Thickness");
+		ImGui::TooltipText(_("Thickness"));
 
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputFile("Font##textinput", &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFile(_("Font##textinput"), &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
 
-		if (ImGui::Button("Execute##textinput")) {
+		if (ImGui::Button(_("Execute##textinput"))) {
 			sceneMgr().renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
 		}
 	}
 
 	ImGui::NewLine();
 
-	if (ImGui::CollapsingHeader("Flip on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X##flip", "flip x", nullptr, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();

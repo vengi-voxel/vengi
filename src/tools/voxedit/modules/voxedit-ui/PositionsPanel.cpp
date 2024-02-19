@@ -353,8 +353,8 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 
 	ImGui::NewLine();
 
-	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, "Show gizmo", _showGizmo);
+	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), _showGizmo);
 
 		ImGui::Indent();
 		if (!_showGizmo->boolVal())
@@ -363,24 +363,24 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		int operations = _gizmoOperations->intVal();
 		bool dirty = false;
 
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, "Rotate", &operations, GizmoOperation_Rotate);
-		ImGui::TooltipText("Activate the rotate operation");
+		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
+		ImGui::TooltipText(_("Activate the rotate operation"));
 
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, "Translate", &operations, GizmoOperation_Translate);
-		ImGui::TooltipText("Activate the translate operation");
+		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
+		ImGui::TooltipText(_("Activate the translate operation"));
 
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, "Bounds", &operations, GizmoOperation_Bounds);
-		// ImGui::TooltipText("Activate the bounds operation");
+		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
+		// ImGui::TooltipText(_("Activate the bounds operation"));
 
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, "Scale", &operations, GizmoOperation_Scale);
-		// ImGui::TooltipText("Activate the uniform scale operation");
+		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
+		// ImGui::TooltipText(_("Activate the uniform scale operation"));
 
 		if (dirty) {
 			_gizmoOperations->setVal(operations);
 		}
-		ImGui::IconCheckboxVar(ICON_LC_MAGNET, "Snap to grid", cfg::VoxEditGizmoSnap);
-		ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, "Pivot", cfg::VoxEditGizmoPivot);
-		ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, "Flip axis", cfg::VoxEditGizmoAllowAxisFlip);
+		ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
+		ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
+		ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
 
 		if (!_showGizmo->boolVal())
 			ImGui::EndDisabled();

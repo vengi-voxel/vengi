@@ -7,28 +7,30 @@
 
 #pragma once
 
+#include "ui/I18N.h"
+
 namespace voxedit {
 
 // clang-format off
 static const char *TIPOFTHEDAY[]{
-	"Switch between scene and edit mode by pressing the <cmd:togglescene> key.",
-	"Use the file dialog options for format specific options.",
-	"You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1.",
-	"When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility.",
-	"Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats.",
-	"Drag a model from the assets panel to the stamp brush to use it.",
-	"You can reset the camera simply by pressing <cmd:resetcamera>.",
-	"The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys.",
-	"You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport.",
-	"In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel.",
-	"When importing meshes, you can switch between different voxelization methods in the options menu.",
-	"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier.",
-	"Switch between different color themes in the options menu.",
-	"Please activate anonymous usage metrics in the options or the about dialog.",
-	"You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu.",
-	"You can save your viewport as AVI video or as screenshot.",
-	"Press <cmd:pickcolor> to pick a color from the scene.",
-	"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."
+	_("Switch between scene and edit mode by pressing the <cmd:togglescene> key."),
+	_("Use the file dialog options for format specific options."),
+	_("You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1."),
+	_("When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."),
+	_("Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."),
+	_("Drag a model from the assets panel to the stamp brush to use it."),
+	_("You can reset the camera simply by pressing <cmd:resetcamera>."),
+	_("The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."),
+	_("You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport."),
+	_("In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."),
+	_("When importing meshes, you can switch between different voxelization methods in the options menu."),
+	_("Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."),
+	_("Switch between different color themes in the options menu."),
+	_("Please activate anonymous usage metrics in the options or the about dialog."),
+	_("You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."),
+	_("You can save your viewport as AVI video or as screenshot."),
+	_("Press <cmd:pickcolor> to pick a color from the scene."),
+	_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection.")
 };
 
 // clang-format on

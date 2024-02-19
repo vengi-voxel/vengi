@@ -207,22 +207,22 @@ bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 	}
 	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginIconMenu(ICON_LC_FILE, "File##scripteditor")) {
-				if (ImGui::IconMenuItem(ICON_LC_CHECK, "Apply and execute##scripteditor")) {
+			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File##scripteditor"))) {
+				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute##scripteditor"))) {
 					_activeScript = _textEditor.GetText();
 					reloadScriptParameters(_activeScript);
 				}
 				if (!_activeScriptFilename.empty()) {
-					if (ImGui::IconMenuItem(ICON_LC_SAVE, "Save##scripteditor")) {
+					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save##scripteditor"))) {
 						if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
 													 _textEditor.GetText())) {
 							_activeScript = _textEditor.GetText();
 							reloadScriptParameters(_activeScript);
 						}
 					}
-					ImGui::TooltipText("Overwrite scripts/%s", _activeScriptFilename.c_str());
+					ImGui::TooltipText(_("Overwrite scripts/%s"), _activeScriptFilename.c_str());
 				}
-				if (ImGui::IconMenuItem(ICON_LC_SAVE, "Save As##scripteditor")) {
+				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save As##scripteditor"))) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 					app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
@@ -236,40 +236,40 @@ bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 						},
 						{}, io::format::lua());
 				}
-				if (ImGui::MenuItem("Close##scripteditor")) {
+				if (ImGui::MenuItem(_("Close##scripteditor"))) {
 					_scriptEditor = false;
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_PENCIL, "Edit##scripteditor")) {
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, "Undo##scripteditor", nullptr, false,
+			if (ImGui::BeginIconMenu(ICON_LC_PENCIL, _("Edit##scripteditor"))) {
+				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Undo##scripteditor"), nullptr, false,
 									_textEditor.CanUndo())) {
 					_textEditor.Undo();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CW, "Redo##scripteditor", nullptr, false, _textEditor.CanRedo())) {
+				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CW, _("Redo##scripteditor"), nullptr, false, _textEditor.CanRedo())) {
 					_textEditor.Redo();
 				}
 
 				ImGui::Separator();
 
-				if (ImGui::IconMenuItem(ICON_LC_COPY, "Copy##scripteditor", nullptr, false, _textEditor.HasSelection())) {
+				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy##scripteditor"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Copy();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, "Cut##scripteditor", nullptr, false,
+				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut##scripteditor"), nullptr, false,
 									_textEditor.HasSelection())) {
 					_textEditor.Cut();
 				}
-				if (ImGui::MenuItem("Delete##scripteditor", nullptr, nullptr, _textEditor.HasSelection())) {
+				if (ImGui::MenuItem(_("Delete##scripteditor"), nullptr, nullptr, _textEditor.HasSelection())) {
 					_textEditor.Delete();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste##scripteditor", nullptr, false,
+				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste##scripteditor"), nullptr, false,
 									ImGui::GetClipboardText() != nullptr)) {
 					_textEditor.Paste();
 				}
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem("Select all##scripteditor", nullptr, nullptr)) {
+				if (ImGui::MenuItem(_("Select all##scripteditor"), nullptr, nullptr)) {
 					_textEditor.SetSelection(TextEditor::Coordinates(),
 											 TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
 				}

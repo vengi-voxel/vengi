@@ -79,13 +79,13 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 }
 
 void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AABBBrush &brush) {
-	mirrorAxisRadioButton("Disable mirror##mirror", math::Axis::None, listener, brush);
+	mirrorAxisRadioButton(_("Disable mirror##mirror"), math::Axis::None, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton("X##mirror", math::Axis::X, listener, brush);
+	mirrorAxisRadioButton(_("X##mirror"), math::Axis::X, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton("Y##mirror", math::Axis::Y, listener, brush);
+	mirrorAxisRadioButton(_("Y##mirror"), math::Axis::Y, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton("Z##mirror", math::Axis::Z, listener, brush);
+	mirrorAxisRadioButton(_("Z##mirror"), math::Axis::Z, listener, brush);
 }
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
@@ -94,7 +94,7 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 	if (modifier.selections().empty()) {
 		selectionStyle.disableItem();
 	}
-	if (ImGui::Button("Use selection")) {
+	if (ImGui::Button(_("Use selection"))) {
 		const Selections &selections = modifier.selections();
 		if (!selections.empty()) {
 			core::ScopedPtr<voxel::RawVolume> copy(voxedit::tool::copy(node.volume(), selections));
@@ -103,14 +103,14 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 			}
 		}
 	}
-	ImGui::TooltipText("Use the current selection as new stamp");
+	ImGui::TooltipText(_("Use the current selection as new stamp"));
 }
 
 void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
 								   command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	StampBrush &brush = modifier.stampBrush();
-	ImGui::InputTextWithHint("Model", "Select a model from the asset panel", &_stamp, ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
@@ -122,12 +122,12 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	}
 
 	bool center = brush.centerMode();
-	if (ImGui::Checkbox("Center##modifiertype", &center)) {
+	if (ImGui::Checkbox(_("Center##modifiertype"), &center)) {
 		command::executeCommands("togglestampbrushcenter", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcenter");
 	bool continuous = brush.continuousMode();
-	if (ImGui::Checkbox("Continuous##modifiertype", &continuous)) {
+	if (ImGui::Checkbox(_("Continuous##modifiertype"), &continuous)) {
 		command::executeCommands("togglestampbrushcontinuous", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcontinuous");
@@ -148,15 +148,15 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("replace##stampbrush")) {
+	if (ImGui::Button(_("Replace##stampbrush"))) {
 		brush.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, _stampPaletteIndex), palette);
 	}
-	ImGui::TooltipText("Replace all voxels in the stamp with the selected color");
+	ImGui::TooltipText(_("Replace all voxels in the stamp with the selected color"));
 
-	if (ImGui::CollapsingHeader("Reduce size")) {
+	if (ImGui::CollapsingHeader(_("Reduce size"))) {
 		voxel::Region region = brush.volume()->region();
 		glm::ivec3 size = region.getDimensionsInVoxels();
-		if (ImGui::InputInt3("size##stampbrush", glm::value_ptr(size), ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputInt3(_("Size##stampbrush"), glm::value_ptr(size), ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (glm::any(glm::greaterThan(size, region.getDimensionsInVoxels()))) {
 				size = glm::min(size, region.getDimensionsInVoxels());
 			}
@@ -168,20 +168,20 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = sceneMgr().modifier();
 	if (modifier.isMode(ModifierType::Place)) {
-		ImGui::TextWrapped("Extrude voxels");
+		ImGui::TextWrapped(_("Extrude voxels"));
 	} else if (modifier.isMode(ModifierType::Erase)) {
-		ImGui::TextWrapped("Erase voxels");
+		ImGui::TextWrapped(_("Erase voxels"));
 	} else if (modifier.isMode(ModifierType::Override)) {
-		ImGui::TextWrapped("Override voxels");
+		ImGui::TextWrapped(_("Override voxels"));
 	}
 }
 
 void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrapped("Draws a line from the reference position to the current cursor position");
+	ImGui::TextWrapped(_("Draws a line from the reference position to the current cursor position"));
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrapped("Draws a path over existing voxels");
+	ImGui::TextWrapped(_("Draws a path over existing voxels"));
 }
 
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
@@ -192,7 +192,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 
 	Modifier &modifier = sceneMgr().modifier();
 	if (!modifier.stampBrush().active()) {
-		ImGui::TextWrapped("Select a model from the asset panel");
+		ImGui::TextWrapped(_("Select a model from the asset panel"));
 		ui::ScopedStyle style;
 		style.disableItem();
 		stampBrushOptions(node, palette, listener);
@@ -200,7 +200,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 		stampBrushOptions(node, palette, listener);
 	}
 	stampBrushUseSelection(node, palette);
-	if (ImGui::Button("Convert palette")) {
+	if (ImGui::Button(_("Convert palette"))) {
 		modifier.stampBrush().convertToPalette(palette);
 	}
 }
@@ -212,25 +212,25 @@ void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, A
 
 	const bool aabb = brush.aabbMode();
 	core::String toggleAABBCmd = "set" + brush.name().toLower() + "brushaabb";
-	ImGui::CommandRadioButton("Default", toggleAABBCmd, aabb, &listener);
+	ImGui::CommandRadioButton(_("Default"), toggleAABBCmd, aabb, &listener);
 
 	const bool single = brush.singleMode();
 	core::String toggleSingleCmd = "set" + brush.name().toLower() + "brushsingle";
-	ImGui::CommandRadioButton("Single", toggleSingleCmd, single, &listener);
+	ImGui::CommandRadioButton(_("Single"), toggleSingleCmd, single, &listener);
 
 	const bool center = brush.centerMode();
 	core::String toggleCenterCmd = "set" + brush.name().toLower() + "brushcenter";
-	ImGui::CommandRadioButton("Center", toggleCenterCmd, center, &listener);
+	ImGui::CommandRadioButton(_("Center"), toggleCenterCmd, center, &listener);
 }
 
 // doing this after aabbBrushOptions() allows us to extend the radio buttons
 void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
 	if (brush.singleMode()) {
 		int radius = brush.radius();
-		if (ImGui::InputInt("Radius", &radius)) {
+		if (ImGui::InputInt(_("Radius"), &radius)) {
 			brush.setRadius(radius);
 		}
-		ImGui::TooltipText("Use a radius around the current voxel - 0 for spanning a region");
+		ImGui::TooltipText(_("Use a radius around the current voxel - 0 for spanning a region"));
 	}
 }
 
@@ -247,7 +247,7 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	PaintBrush &brush = modifier.paintBrush();
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
-	if (ImGui::BeginCombo("Mode", PaintBrush::PaintModeStr[(int)paintMode], ImGuiComboFlags_None)) {
+	if (ImGui::BeginCombo(_("Mode"), PaintBrush::PaintModeStr[(int)paintMode], ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)PaintBrush::PaintMode::Max; ++i) {
 			const PaintBrush::PaintMode mode = (PaintBrush::PaintMode)i;
 			const bool selected = mode == paintMode;
@@ -264,29 +264,29 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	if (paintMode == PaintBrush::PaintMode::Brighten || paintMode == PaintBrush::PaintMode::Darken ||
 		paintMode == PaintBrush::PaintMode::Variation) {
 		float factor = brush.factor();
-		if (ImGui::InputFloat("Factor", &factor)) {
+		if (ImGui::InputFloat(_("Factor"), &factor)) {
 			brush.setFactor(factor);
 		}
 	}
 	if (paintMode == PaintBrush::PaintMode::Variation) {
 		int variationThreshold = brush.variationThreshold();
-		if (ImGui::InputInt("Variation threshold", &variationThreshold)) {
+		if (ImGui::InputInt(_("Variation threshold"), &variationThreshold)) {
 			brush.setVariationThreshold(variationThreshold);
 		}
 	}
 
 	aabbBrushOptions(listener, brush);
-	if (ImGui::RadioButton("Plane", brush.plane())) {
+	if (ImGui::RadioButton(_("Plane"), brush.plane())) {
 		brush.setPlane();
 	}
-	ImGui::TooltipText("Paint the selected plane");
+	ImGui::TooltipText(_("Paint the selected plane"));
 	aabbBrushModeOptions(brush);
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	const Modifier &modifier = sceneMgr().modifier();
 	const BrushType brushType = modifier.brushType();
-	if (ImGui::CollapsingHeader("Brush settings", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Brush settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (brushType == BrushType::Shape) {
 			updateShapeBrushPanel(listener);
 		} else if (brushType == BrushType::Stamp) {
@@ -303,9 +303,9 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	}
 	if (brushType == BrushType::None) {
 		if (modifier.isMode(ModifierType::ColorPicker)) {
-			ImGui::TextWrapped("Click on a voxel to pick the color");
+			ImGui::TextWrapped(_("Click on a voxel to pick the color"));
 		} else if (modifier.isMode(ModifierType::Select)) {
-			ImGui::TextWrapped("Select areas of voxels");
+			ImGui::TextWrapped(_("Select areas of voxels"));
 		}
 	}
 }

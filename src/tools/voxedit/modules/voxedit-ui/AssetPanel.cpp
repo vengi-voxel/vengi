@@ -52,8 +52,8 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AssetPanel);
 
-		if (ImGui::CollapsingHeader("Models", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, "Open model directory")) {
+		if (ImGui::CollapsingHeader(_("Models"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, _("Open model directory"))) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadModels(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}
@@ -69,15 +69,15 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						ImGui::SetItemDefaultFocus();
 					}
 					if (ImGui::BeginPopupContextItem()) {
-						if (ImGui::MenuItem("Use stamp")) {
+						if (ImGui::MenuItem(_("Use stamp"))) {
 							Modifier &modifier = sceneMgr().modifier();
 							StampBrush &brush = modifier.stampBrush();
 							if (brush.load(model)) {
 								modifier.setBrushType(BrushType::Stamp);
 							}
 						}
-						ImGui::TooltipText("This is only possible if the model doesn't exceed the max allowed stamp size");
-						if (ImGui::MenuItem("Add to scene")) {
+						ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+						if (ImGui::MenuItem(_("Add to scene"))) {
 							sceneMgr().import(model);
 						}
 						ImGui::EndPopup();
@@ -94,8 +94,8 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 				ImGui::EndListBox();
 			}
 		}
-		if (ImGui::CollapsingHeader("Images", ImGuiTreeNodeFlags_DefaultOpen)) {
-			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, "Open image directory")) {
+		if (ImGui::CollapsingHeader(_("Images"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, _("Open image directory"))) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadTextures(dir); };
 				imguiApp()->directoryDialog(callback, {});
 			}

@@ -126,35 +126,35 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoTitleBar;
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
-			if (ImGui::IconSelectable(ICON_LC_PLUS_SQUARE, "Add")) {
+			if (ImGui::IconSelectable(ICON_LC_PLUS_SQUARE, _("Add"))) {
 				sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
 			}
 			if (!_selectionBuffer.empty()) {
 #if 0
-				if (ImGui::IconSelectable(ICON_LC_COPY, "Copy")) {
+				if (ImGui::IconSelectable(ICON_LC_COPY, _("Copy"))) {
 					// TODO: implement copy
 				}
-				if (ImGui::IconSelectable(ICON_LC_PASTE, "Paste")) {
+				if (ImGui::IconSelectable(ICON_LC_PASTE, _("Paste"))) {
 					// TODO: implement paste
 				}
 #endif
-				if (ImGui::IconSelectable(ICON_LC_COPY, "Duplicate keyframe")) {
+				if (ImGui::IconSelectable(ICON_LC_COPY, _("Duplicate keyframe"))) {
 					for (const Selection &sel : _selectionBuffer) {
 						sceneMgr().nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
 				}
-				if (ImGui::IconSelectable(ICON_LC_TRASH, "Delete keyframes")) {
+				if (ImGui::IconSelectable(ICON_LC_TRASH, _("Delete keyframes"))) {
 					for (const Selection &sel : _selectionBuffer) {
 						sceneMgr().nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
 				}
-				ImGui::TooltipText("Delete %i keyframes", (int)_selectionBuffer.size());
+				ImGui::TooltipText(_("Delete %i keyframes"), (int)_selectionBuffer.size());
 			}
 			ImGui::EndPopup();
 		}

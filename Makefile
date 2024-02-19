@@ -67,6 +67,10 @@ analysebuild:
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
 
+pot:
+	$(Q)git grep -l -w "_(" src/ > $(BUILDDIR)/POTFILES
+	$(Q)xgettext --directory=. --output=src/po/vengi.pot --sort-by-file --keyword=_ --files-from=$(BUILDDIR)/POTFILES
+
 doc-images:
 	$(Q)pngquant -f --ext .png docs/img/*.png
 

@@ -86,10 +86,10 @@ void IMGUIConsole::drawString(const Message &msg) {
 bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(UI_CONSOLE_WINDOW_TITLE, nullptr, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar)) {
 		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
-				ImGui::CommandIconMenuItem(ICON_LC_LIST_X, "Clear", "con_clear", true, &listener);
+			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+				ImGui::CommandIconMenuItem(ICON_LC_LIST_X, _("Clear"), "con_clear", true, &listener);
 				ImGui::Separator();
-				if (ImGui::IconButton(ICON_LC_COPY, "Copy to clipboard")) {
+				if (ImGui::IconButton(ICON_LC_COPY, _("Copy to clipboard"))) {
 					ImGui::LogToClipboard();
 					for (const Message &msg : _messages) {
 						ImGui::TextUnformatted(msg.message.c_str());
@@ -99,13 +99,13 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				bool debug = (Log::Level)core::Var::getSafe(cfg::CoreLogLevel)->intVal() <= Log::Level::Debug;
-				if (ImGui::Checkbox("Debug", &debug)) {
+				if (ImGui::Checkbox(_("Debug"), &debug)) {
 					core::Var::getSafe(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
 				}
-				ImGui::TooltipText("Enable debug logging for the console");
-				ImGui::IconCheckbox(ICON_LC_LOCK, "Auto scrolling", &_autoScrollEnabled);
+				ImGui::TooltipText(_("Enable debug logging for the console"));
+				ImGui::IconCheckbox(ICON_LC_LOCK, _("Auto scrolling"), &_autoScrollEnabled);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();

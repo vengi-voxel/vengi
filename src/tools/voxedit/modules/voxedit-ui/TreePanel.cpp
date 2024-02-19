@@ -83,56 +83,56 @@ void TreePanel::update(const char *title) {
 			ImGui::EndCombo();
 		}
 
-		ImGui::InputInt("Seed", (int*)&_treeGeneratorContext.cfg.seed);
-		ImGui::InputInt("Trunk strength", &_treeGeneratorContext.cfg.trunkStrength);
-		ImGui::InputInt("Trunk height", &_treeGeneratorContext.cfg.trunkHeight);
-		ImGui::InputInt("Leaves width", &_treeGeneratorContext.cfg.leavesWidth);
-		ImGui::InputInt("Leaves height", &_treeGeneratorContext.cfg.leavesHeight);
-		ImGui::InputInt("Leaves depth", &_treeGeneratorContext.cfg.leavesDepth);
+		ImGui::InputInt(_("Seed"), (int*)&_treeGeneratorContext.cfg.seed);
+		ImGui::InputInt(_("Trunk strength"), &_treeGeneratorContext.cfg.trunkStrength);
+		ImGui::InputInt(_("Trunk height"), &_treeGeneratorContext.cfg.trunkHeight);
+		ImGui::InputInt(_("Leaves width"), &_treeGeneratorContext.cfg.leavesWidth);
+		ImGui::InputInt(_("Leaves height"), &_treeGeneratorContext.cfg.leavesHeight);
+		ImGui::InputInt(_("Leaves depth"), &_treeGeneratorContext.cfg.leavesDepth);
 		switch (_treeGeneratorContext.cfg.type) {
 		case voxelgenerator::TreeType::BranchesEllipsis:
-			ImGui::InputInt("Branch length", &_treeGeneratorContext.branchellipsis.branchLength);
-			ImGui::InputInt("Branch height", &_treeGeneratorContext.branchellipsis.branchHeight);
+			ImGui::InputInt(_("Branch length"), &_treeGeneratorContext.branchellipsis.branchLength);
+			ImGui::InputInt(_("Branch height"), &_treeGeneratorContext.branchellipsis.branchHeight);
 			break;
 		case voxelgenerator::TreeType::Palm:
-			ImGui::InputInt("Branch size", &_treeGeneratorContext.palm.branchSize);
-			ImGui::InputInt("Trunk width", &_treeGeneratorContext.palm.trunkWidth);
-			ImGui::InputInt("Trunk depth", &_treeGeneratorContext.palm.trunkDepth);
-			ImGui::InputFloat("Branch reduction", &_treeGeneratorContext.palm.branchFactor);
-			ImGui::InputFloat("Trunk reduction", &_treeGeneratorContext.palm.trunkFactor);
-			ImGui::InputInt("Leaves", &_treeGeneratorContext.palm.branches);
-			ImGui::InputInt("Bezier leaf", &_treeGeneratorContext.palm.branchControlOffset);
-			ImGui::InputInt("Bezier trunk", &_treeGeneratorContext.palm.trunkControlOffset);
-			ImGui::InputInt("Leaves h-offset", &_treeGeneratorContext.palm.randomLeavesHeightOffset);
+			ImGui::InputInt(_("Branch size"), &_treeGeneratorContext.palm.branchSize);
+			ImGui::InputInt(_("Trunk width"), &_treeGeneratorContext.palm.trunkWidth);
+			ImGui::InputInt(_("Trunk depth"), &_treeGeneratorContext.palm.trunkDepth);
+			ImGui::InputFloat(_("Branch reduction"), &_treeGeneratorContext.palm.branchFactor);
+			ImGui::InputFloat(_("Trunk reduction"), &_treeGeneratorContext.palm.trunkFactor);
+			ImGui::InputInt(_("Leaves"), &_treeGeneratorContext.palm.branches);
+			ImGui::InputInt(_("Bezier leaf"), &_treeGeneratorContext.palm.branchControlOffset);
+			ImGui::InputInt(_("Bezier trunk"), &_treeGeneratorContext.palm.trunkControlOffset);
+			ImGui::InputInt(_("Leaves h-offset"), &_treeGeneratorContext.palm.randomLeavesHeightOffset);
 			break;
 		case voxelgenerator::TreeType::Fir:
-			ImGui::InputInt("Branches", &_treeGeneratorContext.fir.branches);
-			ImGui::InputFloat("W", &_treeGeneratorContext.fir.w);
-			ImGui::InputInt("Amount", &_treeGeneratorContext.fir.amount);
-			ImGui::InputFloat("Branch position factor", &_treeGeneratorContext.fir.branchPositionFactor);
-			ImGui::InputInt("Branch strength", &_treeGeneratorContext.fir.branchStrength);
-			ImGui::InputInt("Branch downward offset", &_treeGeneratorContext.fir.branchDownwardOffset);
+			ImGui::InputInt(_("Branches"), &_treeGeneratorContext.fir.branches);
+			ImGui::InputFloat(_("W"), &_treeGeneratorContext.fir.w);
+			ImGui::InputInt(_("Amount"), &_treeGeneratorContext.fir.amount);
+			ImGui::InputFloat(_("Branch position factor"), &_treeGeneratorContext.fir.branchPositionFactor);
+			ImGui::InputInt(_("Branch strength"), &_treeGeneratorContext.fir.branchStrength);
+			ImGui::InputInt(_("Branch downward offset"), &_treeGeneratorContext.fir.branchDownwardOffset);
 			break;
 		case voxelgenerator::TreeType::Pine:
-			ImGui::InputInt("Start width", &_treeGeneratorContext.pine.startWidth);
-			ImGui::InputInt("Start depth", &_treeGeneratorContext.pine.startDepth);
-			ImGui::InputInt("Leaf height", &_treeGeneratorContext.pine.singleLeafHeight);
-			ImGui::InputInt("Step delta", &_treeGeneratorContext.pine.singleStepDelta);
+			ImGui::InputInt(_("Start width"), &_treeGeneratorContext.pine.startWidth);
+			ImGui::InputInt(_("Start depth"), &_treeGeneratorContext.pine.startDepth);
+			ImGui::InputInt(_("Leaf height"), &_treeGeneratorContext.pine.singleLeafHeight);
+			ImGui::InputInt(_("Step delta"), &_treeGeneratorContext.pine.singleStepDelta);
 			break;
 		case voxelgenerator::TreeType::DomeHangingLeaves:
-			ImGui::InputInt("Branches", &_treeGeneratorContext.domehanging.branches);
-			ImGui::InputInt("Leaves min length", &_treeGeneratorContext.domehanging.hangingLeavesLengthMin);
-			ImGui::InputInt("Leaves max length", &_treeGeneratorContext.domehanging.hangingLeavesLengthMax);
-			ImGui::InputInt("Leaves thickness", &_treeGeneratorContext.domehanging.hangingLeavesThickness);
+			ImGui::InputInt(_("Branches"), &_treeGeneratorContext.domehanging.branches);
+			ImGui::InputInt(_("Leaves min length"), &_treeGeneratorContext.domehanging.hangingLeavesLengthMin);
+			ImGui::InputInt(_("Leaves max length"), &_treeGeneratorContext.domehanging.hangingLeavesLengthMax);
+			ImGui::InputInt(_("Leaves thickness"), &_treeGeneratorContext.domehanging.hangingLeavesThickness);
 			break;
 		case voxelgenerator::TreeType::SpaceColonization:
-			ImGui::InputInt("Branch size", &_treeGeneratorContext.spacecolonization.branchSize);
-			ImGui::InputFloat("Trunk reduction", &_treeGeneratorContext.spacecolonization.trunkFactor);
+			ImGui::InputInt(_("Branch size"), &_treeGeneratorContext.spacecolonization.branchSize);
+			ImGui::InputFloat(_("Trunk reduction"), &_treeGeneratorContext.spacecolonization.trunkFactor);
 			break;
 		default:
 			break;
 		}
-		if (ImGui::IconButton(ICON_LC_CHECK, "OK##treegenerate")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##treegenerate"))) {
 			_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
 			sceneMgr().createTree(_treeGeneratorContext);
 		}

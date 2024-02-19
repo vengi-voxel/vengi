@@ -16,46 +16,46 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
-		if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
-			ImGui::CommandIconMenuItem(ICON_LC_DOWNLOAD, "Download missing files", "downloadall");
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Thumbnail missing files", "thumbnailall");
+		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+			ImGui::CommandIconMenuItem(ICON_LC_DOWNLOAD, _("Download missing files"), "downloadall");
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Thumbnail missing files"), "thumbnailall");
 			ImGui::Separator();
-			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, "Quit")) {
+			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
 				app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginIconMenu(ICON_LC_MENU, "Edit")) {
-			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
-				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
+				ImGui::CheckboxVar(_("Outlines"), cfg::RenderOutline);
 				ImGui::EndDisabled();
-				ImGui::CheckboxVar("Bloom", cfg::ClientBloom);
+				ImGui::CheckboxVar(_("Bloom"), cfg::ClientBloom);
 				ui::metricOption();
-				ImGui::CheckboxVar("Allow multi monitor", cfg::UIMultiMonitor);
-				ImGui::InputVarInt("Font size", cfg::UIFontSize, 1, 5);
-				static const core::Array<core::String, ImGui::MaxStyles> uiStyles = {"CorporateGrey", "Dark", "Light",
-																					 "Classic"};
-				ImGui::ComboVar("Color theme", cfg::UIStyle, uiStyles);
-				ImGui::InputVarFloat("Notifications", cfg::UINotifyDismissMillis);
-				if (ImGui::ButtonFullWidth("Reset layout")) {
+				ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
+				ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
+				const core::Array<core::String, ImGui::MaxStyles> uiStyles = {_("CorporateGrey"), _("Dark"), _("Light"),
+																			  _("Classic")};
+				ImGui::ComboVar(_("Color theme"), cfg::UIStyle, uiStyles);
+				ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
+				if (ImGui::ButtonFullWidth(_("Reset layout"))) {
 					resetDockLayout = true;
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, "Help")) {
+		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, _("Help"))) {
 #ifdef DEBUG
-			if (ImGui::BeginIconMenu(ICON_LC_BUG, "Debug")) {
-				if (ImGui::Button("Textures")) {
+			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
+				if (ImGui::Button(_("Textures"))) {
 					app->showTexturesDialog();
 				}
 				ImGui::EndMenu();
 			}
 #endif
-			if (ImGui::IconMenuItem(ICON_LC_INFO, "About")) {
+			if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
 				_popupAbout = true;
 			}
 			ImGui::EndMenu();
