@@ -330,12 +330,19 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		const core::String command = core::string::format("screenshot %i", _id);
 		ImGui::CommandIconMenuItem(ICON_LC_CAMERA, "Screenshot", command.c_str(), listener);
 
-		if (ImGui::IconMenuItem(_avi.isRecording() ? ICON_LC_STOP_CIRCLE : ICON_LC_CLAPPERBOARD, "Video")) {
+		const char *icon = ICON_LC_CLAPPERBOARD;
+		const char *text = "Video";
+		if (_avi.isRecording()) {
+			icon = ICON_LC_STOP_CIRCLE;
+			text = "Stop recording";
+		}
+		if (ImGui::IconMenuItem(icon, text)) {
 			toggleVideoRecording();
 		}
 		const uint32_t pendingFrames = _avi.pendingFrames();
 		if (pendingFrames > 0u) {
-			ImGui::TooltipText("Pending frames: %u", pendingFrames);
+			ImGui::SameLine();
+			ImGui::Text("Pending frames: %u", pendingFrames);
 		} else {
 			ImGui::TooltipText("You can control the fps of the video with the cvar %s\nPending frames: %u",
 							   cfg::CoreMaxFPS, pendingFrames);
