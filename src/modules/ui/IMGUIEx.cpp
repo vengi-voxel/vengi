@@ -269,7 +269,7 @@ bool TooltipText(const char* msg, ...) {
 		text[sizeof(text) - 1] = '\0';
 		va_end(ap);
 
-		ImGui::Text("%s", text);
+		ImGui::TextUnformatted(text);
 		ImGui::EndTooltip();
 		return true;
 	}
@@ -289,7 +289,7 @@ void TextCentered(const char *text) {
 void Headline(const char *text) {
 	ui::ScopedStyle font;
 	font.setFont(imguiApp()->bigFont());
-	ImGui::Text("%s", text);
+	ImGui::TextUnformatted(text);
 }
 
 void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {

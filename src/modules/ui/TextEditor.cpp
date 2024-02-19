@@ -795,7 +795,7 @@ void TextEditor::Render() {
 					ImGui::PopStyleColor();
 					ImGui::Separator();
 					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.2f, 1.0f));
-					ImGui::Text("%s", errorIt->second.c_str());
+					ImGui::TextUnformatted(errorIt->second.c_str());
 					ImGui::PopStyleColor();
 					ImGui::EndTooltip();
 				}

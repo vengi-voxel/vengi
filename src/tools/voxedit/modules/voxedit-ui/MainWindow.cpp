@@ -810,9 +810,9 @@ void MainWindow::popupAbout() {
 				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TextUnformatted(desc->name.c_str());
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->wildCard().c_str());
+					ImGui::TextUnformatted(desc->wildCard().c_str());
 				}
 				ImGui::EndTable();
 			}
@@ -821,9 +821,9 @@ void MainWindow::popupAbout() {
 			if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TextUnformatted(desc->name.c_str());
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->wildCard().c_str());
+					ImGui::TextUnformatted(desc->wildCard().c_str());
 				}
 				ImGui::EndTable();
 			}
@@ -832,9 +832,9 @@ void MainWindow::popupAbout() {
 			if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TextUnformatted(desc->name.c_str());
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->wildCard().c_str());
+					ImGui::TextUnformatted(desc->wildCard().c_str());
 				}
 				ImGui::EndTable();
 			}
@@ -843,9 +843,9 @@ void MainWindow::popupAbout() {
 			if (ImGui::BeginTable("##images", 2, tableFlags)) {
 				for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->name.c_str());
+					ImGui::TextUnformatted(desc->name.c_str());
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", desc->wildCard().c_str());
+					ImGui::TextUnformatted(desc->wildCard().c_str());
 				}
 				ImGui::EndTable();
 			}

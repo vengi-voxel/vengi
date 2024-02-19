@@ -278,7 +278,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 		if (nodeId != sceneGraph.root().id()) {
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-				ImGui::Text("%s", name.c_str());
+				ImGui::TextUnformatted(name.c_str());
 				const int sourceNodeId = nodeId;
 				ImGui::SetDragDropPayload(dragdrop::SceneNodePayload, (const void *)&sourceNodeId, sizeof(int),
 										  ImGuiCond_Always);
