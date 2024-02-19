@@ -7,20 +7,17 @@
 #include "image/AVI.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
-
-namespace core {
-class Thread;
-}
+#include "core/concurrent/Thread.h"
 
 namespace image {
 
 class AVIRecorder {
 private:
 	image::AVI _avi{};
-	io::FileStream *_videoWriteStream = nullptr;
+	core::SharedPtr<io::FileStream> _videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;
-	core::Thread *_thread = nullptr;
+	core::SharedPtr<core::Thread> _thread;
 
 	static int encodeFrame(void *data);
 

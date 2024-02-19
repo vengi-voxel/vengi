@@ -7,7 +7,6 @@
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/concurrent/Thread.h"
 #include "io/Filesystem.h"
 
 namespace image {
@@ -38,34 +37,31 @@ uint32_t AVIRecorder::pendingFrames() const {
 
 int AVIRecorder::encodeFrame(void *data) {
 	AVIRecorder *inst = (AVIRecorder *)data;
+	core::SharedPtr<io::FileStream> s = inst->_videoWriteStream;
 	while (!inst->_stop) {
 		image::ImagePtr image;
 		while (inst->_frameQueue.pop(image)) {
-			inst->_avi.writeFrame(*inst->_videoWriteStream, image->data(), image->width(), image->height());
+			inst->_avi.writeFrame(*s.get(), image->data(), image->width(), image->height());
 		}
 	}
 	return 0;
 }
 
 bool AVIRecorder::startRecording(const char *filename, int width, int height) {
-	delete _videoWriteStream;
-	_videoWriteStream = new io::FileStream(io::filesystem()->open(filename, io::FileMode::SysWrite));
+	_videoWriteStream = core::make_shared<io::FileStream>(io::filesystem()->open(filename, io::FileMode::SysWrite));
 	if (!_videoWriteStream->valid()) {
 		Log::error("Failed to open filestream for %s", filename);
-		delete _videoWriteStream;
 		_videoWriteStream = nullptr;
 		return false;
 	}
 	const core::VarPtr &fps = core::Var::getSafe(cfg::CoreMaxFPS);
-	if (!_avi.open(*_videoWriteStream, width, height, fps->intVal())) {
+	if (!_avi.open(*_videoWriteStream.get(), width, height, fps->intVal())) {
 		Log::error("Failed to open avi in filestream for %s", filename);
-		delete _videoWriteStream;
 		_videoWriteStream = nullptr;
 		return false;
 	}
 	Log::debug("Starting avirecorder thread");
-	delete _thread;
-	_thread = new core::Thread("avirecorder", encodeFrame, this);
+	_thread = core::make_shared<core::Thread>("avirecorder", encodeFrame, this);
 	return true;
 }
 
@@ -91,13 +87,11 @@ bool AVIRecorder::flush() {
 	if (!isRecording()) {
 		return true;
 	}
-	if (_thread->join() != 0) {
+	if (_thread && _thread->join() != 0) {
 		Log::warn("Unexpected return value from frame writer thread");
 	}
-	bool closed = _avi.close(*_videoWriteStream);
-	delete _videoWriteStream;
+	bool closed = _avi.close(*_videoWriteStream.get());
 	_videoWriteStream = nullptr;
-	delete _thread;
 	_thread = nullptr;
 	return closed;
 }
