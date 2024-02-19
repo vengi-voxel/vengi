@@ -196,7 +196,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 			ImGui::TooltipText("Edit the selected lua script");
 		}
 
-		ImGui::URLButton(ICON_LC_BOOK " Scripting manual", "https://vengi-voxel.github.io/vengi/LUAScript/");
+		ImGui::URLIconButton(ICON_LC_BOOK, "Scripting manual", "https://vengi-voxel.github.io/vengi/LUAScript/");
 	}
 	ImGui::End();
 }

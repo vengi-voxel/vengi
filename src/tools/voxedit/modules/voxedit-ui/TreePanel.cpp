@@ -74,7 +74,7 @@ void TreePanel::update(const char *title) {
 
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);
-		if (ImGui::BeginCombo(ICON_LC_TREES " Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
+		if (ImGui::BeginIconCombo(ICON_LC_TREES, "Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
 			for (int i = 0; i < lengthof(treeTypes); ++i) {
 				if (ImGui::Selectable(treeTypes[i].name, i == core::enumVal(_treeGeneratorContext.cfg.type))) {
 					switchTreeType((voxelgenerator::TreeType)i);

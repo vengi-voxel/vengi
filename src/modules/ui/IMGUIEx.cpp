@@ -9,6 +9,7 @@
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "video/Camera.h"
 #include "video/FileDialogOptions.h"
@@ -163,6 +164,11 @@ bool InputVarInt(const char* label, const char* varName, int step, int step_fast
 	return InputVarInt(label, var, step, step_fast, extra_flags);
 }
 
+bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var) {
+	const core::String &labelStr = core::string::format("%s %s", icon, label);
+	return CheckboxVar(labelStr.c_str(), var);
+}
+
 bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	bool val = var->boolVal();
 	if (Checkbox(label, &val)) {
@@ -176,12 +182,27 @@ bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	return false;
 }
 
+bool IconCheckboxVar(const char *icon, const char* label, const char* varName) {
+	const core::String &labelStr = core::string::format("%s %s", icon, label);
+	return CheckboxVar(labelStr.c_str(), varName);
+}
+
 bool CheckboxVar(const char* label, const char* varName) {
 	core::VarPtr var = core::Var::getSafe(varName);
 	if (CheckboxVar(label, var)) {
 		return true;
 	}
 	return false;
+}
+
+bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value) {
+	const core::String &labelStr = core::string::format("%s %s", icon, label);
+	return CheckboxFlags(labelStr.c_str(), flags, flags_value);
+}
+
+bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags) {
+	const core::String &labelStr = core::string::format("%s %s", icon, label);
+	return CollapsingHeader(labelStr.c_str(), flags);
 }
 
 bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
@@ -362,17 +383,13 @@ const char *CommandButton(const char *title, const char *command, const char *to
 	return nullptr;
 }
 
-const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener& listener) {
-	return CommandButton(title, command, nullptr, {0.0f, 0.0f}, &listener);
+const char *CommandIconButton(const char *icon, const char *title, const char *command, command::CommandExecutionListener &listener) {
+	core::String label = core::string::format("%s %s", icon, title);
+	return CommandButton(label.c_str(), command, listener);
 }
 
-bool URLButton(const char *title, const char *url) {
-	const core::String& cmd = core::String::format("url \"%s\"", url);
-	if (CommandButton(title, cmd.c_str())) {
-		imguiApp()->minimize();
-		return true;
-	}
-	return false;
+const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener& listener) {
+	return CommandButton(title, command, nullptr, {0.0f, 0.0f}, &listener);
 }
 
 bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener) {
@@ -382,6 +399,11 @@ bool CommandRadioButton(const char *title, const core::String &command, bool ena
 	}
 	ImGui::TooltipCommand(command.c_str());
 	return activated;
+}
+
+const char *CommandIconMenuItem(const char *icon, const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+	core::String label = core::string::format("%s %s", icon, title);
+	return CommandMenuItem(label.c_str(), command, enabled, listener);
 }
 
 const char *CommandMenuItem(const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
@@ -402,19 +424,42 @@ static inline void AddUnderLine(ImColor color) {
 	ImGui::GetWindowDrawList()->AddLine(min, max, color, 1.0f);
 }
 
+bool IconSelectable(const char *icon, const char *title, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
+	core::String label = core::string::format("%s %s", icon, title);
+	return Selectable(label.c_str(), selected, flags, size);
+}
+
+bool URLIconButton(const char *icon, const char *title, const char *url) {
+	core::String label = core::string::format("%s %s", icon, title);
+	return URLButton(label.c_str(), url);
+}
+
+bool URLButton(const char *title, const char *url) {
+	const core::String& cmd = core::String::format("url \"%s\"", url);
+	if (CommandButton(title, cmd.c_str())) {
+		imguiApp()->minimize();
+		return true;
+	}
+	return false;
+}
+
+void URLIconItem(const char *icon, const char *title, const char *url, float width) {
+	core::String label = core::string::format("%s %s", icon, title);
+	URLItem(label.c_str(), url, width);
+}
+
 // https://gist.github.com/dougbinks/ef0962ef6ebe2cadae76c4e9f0586c69#file-imguiutils-h-L219
 void URLItem(const char *title, const char *url, float width) {
-	ImGui::Text("%s", title);
+	ImGui::TextUnformatted(title);
 	if (ImGui::IsItemHovered()) {
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 			const core::String &cmd = core::String::format("url \"%s\"", url);
 			command::executeCommands(cmd);
 		}
 		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-		ImGui::SetTooltip(ICON_LC_LINK " Open in browser\n%s", url);
+		ImGui::SetTooltip("Open in browser\n%s", url);
 	}
 }
-
 bool ButtonFullWidth(const char *title) {
 	return Button(title, ImVec2(ImGui::GetContentRegionAvail().x, 0));
 }
@@ -536,6 +581,11 @@ void IconDialog(const char *icon, const char *text) {
 bool IconCheckbox(const char *icon, const char *text, bool *v) {
 	const core::String &label = core::string::format("%s %s", icon, text);
 	return ImGui::Checkbox(label.c_str(), v);
+}
+
+bool BeginIconCombo(const char *icon, const char* text, const char* preview_value, ImGuiComboFlags flags) {
+	const core::String &label = core::string::format("%s %s", icon, text);
+	return ImGui::BeginCombo(label.c_str(), preview_value, flags);
 }
 
 bool BeginIconMenu(const char *icon, const char *text, bool enabled) {

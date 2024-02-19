@@ -149,7 +149,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 
 		if (usableColor) {
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
-			ImGui::CommandMenuItem(ICON_LC_UNGROUP " Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, "Model from color" PALETTEACTIONPOPUP, modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(uiIdx)) {
 				if (ImGui::IconMenuItem(ICON_LC_SUNSET, "Remove Glow")) {
 					sceneMgr().nodeSetGlow(node.id(), uiIdx, false);
@@ -250,7 +250,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, "File")) {
-			ImGui::CommandMenuItem(ICON_LC_PALETTE " Load##loadpalette", "importpalette", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PALETTE, "Load##loadpalette", "importpalette", true, &listener);
 			if (ImGui::IconMenuItem(ICON_LC_PAINTBRUSH, "Switch##switchpalette")) {
 				reloadAvailablePalettes();
 				_popupSwitchPalette = true;

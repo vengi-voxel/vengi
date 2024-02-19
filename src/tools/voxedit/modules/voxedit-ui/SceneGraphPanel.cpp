@@ -127,10 +127,10 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 	}
 }
 
-static void commandNodeMenu(const char *title, const char *command, int nodeId,
+static void commandNodeMenu(const char *icon, const char *title, const char *command, int nodeId,
 							bool enabled, command::CommandExecutionListener *listener) {
 	const core::String &cmd = core::string::format("%s %i", command, nodeId);
-	ImGui::CommandMenuItem(title, cmd.c_str(), enabled, listener);
+	ImGui::CommandIconMenuItem(icon, title, cmd.c_str(), enabled, listener);
 }
 
 static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
@@ -142,32 +142,32 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 
 		// don't access node data below this - the commands that are executed here can make the node reference invalid
 
-		ImGui::CommandMenuItem(ICON_LC_TERMINAL " Rename" SCENEGRAPHPOPUP, "toggle ve_popuprenamenode", true, &listener);
-		commandNodeMenu(ICON_LC_EYE " Show all" SCENEGRAPHPOPUP, "nodeshowallchildren", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_EYE_OFF " Hide all" SCENEGRAPHPOPUP, "nodehideallchildren", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_EYE_OFF " Hide others" SCENEGRAPHPOPUP, "nodehideothers", nodeId, validModels > 1, &listener);
-		ImGui::CommandMenuItem(ICON_LC_LOCK " Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
-		ImGui::CommandMenuItem(ICON_LC_UNLOCK " Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
-		commandNodeMenu(ICON_LC_COPY " Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_TRASH " Delete" SCENEGRAPHPOPUP, "nodedelete", nodeId, true, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_TERMINAL, "Rename" SCENEGRAPHPOPUP, "toggle ve_popuprenamenode", true, &listener);
+		commandNodeMenu(ICON_LC_EYE, "Show all" SCENEGRAPHPOPUP, "nodeshowallchildren", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF, "Hide all" SCENEGRAPHPOPUP, "nodehideallchildren", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF, "Hide others" SCENEGRAPHPOPUP, "nodehideothers", nodeId, validModels > 1, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_LOCK, "Lock all" SCENEGRAPHPOPUP, "modellockall", true, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_UNLOCK, "Unlock all" SCENEGRAPHPOPUP, "modelunlockall", true, &listener);
+		commandNodeMenu(ICON_LC_COPY, "Duplicate" SCENEGRAPHPOPUP, "nodeduplicate", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_TRASH, "Delete" SCENEGRAPHPOPUP, "nodedelete", nodeId, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
-			commandNodeMenu(ICON_LC_COPY " Create reference" SCENEGRAPHPOPUP, "modelref", nodeId, true, &listener);
+			commandNodeMenu(ICON_LC_COPY, "Create reference" SCENEGRAPHPOPUP, "modelref", nodeId, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(nodeId);
-			commandNodeMenu(ICON_LC_GROUP " Merge" SCENEGRAPHPOPUP, "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
-			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge all" SCENEGRAPHPOPUP, "modelsmergeall", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge visible" SCENEGRAPHPOPUP, "modelsmergevisible", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_LC_GROUP " Merge locked" SCENEGRAPHPOPUP, "modelsmergelocked", validModels > 1, &listener);
-			ImGui::CommandMenuItem(ICON_LC_SHRINK " Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
-			ImGui::CommandMenuItem(ICON_LC_SHRINK " Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
-			commandNodeMenu(ICON_LC_SAVE " Save" SCENEGRAPHPOPUP, "modelsave", nodeId, true, &listener);
+			commandNodeMenu(ICON_LC_GROUP, "Merge" SCENEGRAPHPOPUP, "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, "Merge all" SCENEGRAPHPOPUP, "modelsmergeall", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, "Merge visible" SCENEGRAPHPOPUP, "modelsmergevisible", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, "Merge locked" SCENEGRAPHPOPUP, "modelsmergelocked", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, "Center origin" SCENEGRAPHPOPUP, "center_origin", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, "Center reference" SCENEGRAPHPOPUP, "center_referenceposition", true, &listener);
+			commandNodeMenu(ICON_LC_SAVE, "Save" SCENEGRAPHPOPUP, "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (ImGui::IconMenuItem(ICON_LC_CODESANDBOX, "Convert to model" SCENEGRAPHPOPUP)) {
 				sceneMgr().nodeUnreference(nodeId);
 			}
 			ImGui::TooltipText("Unreference from model and allow to edit the voxels for this node");
 		}
-		ImGui::CommandMenuItem(ICON_LC_SAVE " Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_SAVE, "Save all" SCENEGRAPHPOPUP, "modelssave", validModels > 1, &listener);
 
 		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, "Add new group" SCENEGRAPHPOPUP)) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);

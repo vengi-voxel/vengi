@@ -20,10 +20,6 @@
 
 namespace voxedit {
 
-bool MenuBar::actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener) {
-	return ImGui::CommandMenuItem(title, command, true, &listener);
-}
-
 void MenuBar::colorReductionOptions() {
 	const core::VarPtr &colorReduction = core::Var::getSafe(cfg::CoreColorReduction);
 	if (ImGui::BeginCombo("Color reduction", colorReduction->strVal().c_str(), ImGuiComboFlags_None)) {
@@ -49,8 +45,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, "File")) {
-			actionMenuItem(ICON_LC_SQUARE " New", "new", listener);
-			actionMenuItem(ICON_LC_FILE_INPUT " Load", "load", listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, "New", "new", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, "Load", "load", true, &listener);
 			if (ImGui::BeginIconMenu(ICON_LC_FILE_STACK, "Recently opened")) {
 				int recentlyOpened = 0;
 				for (const core::String &f : _lastOpenedFiles) {
@@ -66,18 +62,18 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 
-			actionMenuItem(ICON_LC_SAVE " Save", "save", listener);
-			actionMenuItem(ICON_LC_SAVE " Save as", "saveas", listener);
-			ImGui::CommandMenuItem(ICON_LC_FILE " Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SAVE, "Save", "save", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SAVE, "Save as", "saveas", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE, "Save selection", "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
 			ImGui::Separator();
 
-			actionMenuItem(ICON_LC_PLUS_SQUARE " Add file to scene", "import", listener);
-			actionMenuItem(ICON_LC_PLUS_SQUARE " Add directory to scene", "importdirectory", listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, "Add file to scene", "import", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, "Add directory to scene", "importdirectory", true, &listener);
 			ImGui::Separator();
-			actionMenuItem(ICON_LC_IMAGE " Heightmap", "importheightmap", listener);
-			actionMenuItem(ICON_LC_IMAGE " Colored heightmap", "importcoloredheightmap", listener);
-			actionMenuItem(ICON_LC_IMAGE " Image as plane", "importplane", listener);
-			actionMenuItem(ICON_LC_IMAGE " Image as volume", "importvolume", listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Heightmap", "importheightmap", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Colored heightmap", "importcoloredheightmap", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Image as plane", "importplane", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, "Image as volume", "importvolume", true, &listener);
 			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, "Quit")) {
 				app->requestQuit();
@@ -87,26 +83,26 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, "Edit")) {
 			const SceneManager &sceneManager = sceneMgr();
 			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
-			ImGui::CommandMenuItem(ICON_LC_ROTATE_CCW " Undo", "undo", mementoHandler.canUndo(), &listener);
-			ImGui::CommandMenuItem(ICON_LC_ROTATE_CW " Redo", "redo", mementoHandler.canRedo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, "Undo", "undo", mementoHandler.canUndo(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, "Redo", "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
 			const Modifier &modifier = sceneManager.modifier();
 			const Selections &selections = modifier.selections();
-			ImGui::CommandMenuItem(ICON_LC_SCISSORS " Cut", "cut", !selections.empty(), &listener);
-			ImGui::CommandMenuItem(ICON_LC_COPY " Copy", "copy", !selections.empty(), &listener);
-			ImGui::CommandMenuItem(ICON_LC_CLIPBOARD_PASTE " Paste at reference##pastereferencepos", "paste",
+			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, "Cut", "cut", !selections.empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_COPY, "Copy", "copy", !selections.empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste at reference##pastereferencepos", "paste",
 								   sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandMenuItem(ICON_LC_CLIPBOARD_PASTE " Paste at cursor##pastecursor", "pastecursor",
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste at cursor##pastecursor", "pastecursor",
 								   sceneManager.hasClipboardCopy(), &listener);
-			ImGui::CommandMenuItem(ICON_LC_CLIPBOARD_PASTE " Paste as new node##pastenewnode", "pastenewnode",
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, "Paste as new node##pastenewnode", "pastenewnode",
 								   sceneManager.hasClipboardCopy(), &listener);
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, "Options")) {
-				ImGui::CheckboxVar(ICON_LC_GRID_3X3 " Grid", cfg::VoxEditShowgrid);
+				ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, "Grid", cfg::VoxEditShowgrid);
 				ImGui::CheckboxVar("Show gizmo", cfg::VoxEditShowaxis);
 				ImGui::CheckboxVar("Show locked axis", cfg::VoxEditShowlockedaxis);
-				ImGui::CheckboxVar(ICON_LC_BOX " Bounding box", cfg::VoxEditShowaabb);
-				ImGui::CheckboxVar(ICON_LC_BONE " Bones", cfg::VoxEditShowBones);
+				ImGui::IconCheckboxVar(ICON_LC_BOX, "Bounding box", cfg::VoxEditShowaabb);
+				ImGui::IconCheckboxVar(ICON_LC_BONE, "Bones", cfg::VoxEditShowBones);
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
 				ImGui::CheckboxVar("Outlines", cfg::RenderOutline);
 				ImGui::EndDisabled();
@@ -151,9 +147,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, "Select")) {
-			actionMenuItem("None", "select none", listener);
-			actionMenuItem("Invert", "select invert", listener);
-			actionMenuItem("All", "select all", listener);
+			ImGui::CommandMenuItem("None", "select none", true, &listener);
+			ImGui::CommandMenuItem("Invert", "select invert", true, &listener);
+			ImGui::CommandMenuItem("All", "select all", true, &listener);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, "Help")) {

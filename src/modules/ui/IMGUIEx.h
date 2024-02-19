@@ -45,7 +45,11 @@ IMGUI_API bool InputVarInt(const char *label, const core::VarPtr &var, int step 
 IMGUI_API bool InputVarInt(const char *label, const char *varName, int step = 1, int step_fast = 100,
 						   ImGuiInputTextFlags extra_flags = 0);
 IMGUI_API bool CheckboxVar(const char *label, const core::VarPtr &var);
+IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var);
 IMGUI_API bool CheckboxVar(const char *label, const char *varName);
+IMGUI_API bool IconCheckboxVar(const char *icon, const char* label, const char* varName);
+IMGUI_API bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value);
+IMGUI_API bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
@@ -118,14 +122,21 @@ IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::Stri
 IMGUI_API const char *CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
 									const ImVec2 &size = ImVec2(0.0f, 0.0f), command::CommandExecutionListener *listener = nullptr);
 IMGUI_API const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener &listener);
+IMGUI_API const char *CommandIconButton(const char *icon, const char *title, const char *command, command::CommandExecutionListener &listener);
 IMGUI_API bool IconCheckbox(const char *icon, const char *text, bool *v);
+IMGUI_API bool BeginIconCombo(const char *icon, const char* text, const char* preview_value, ImGuiComboFlags flags = 0);
 IMGUI_API bool BeginIconMenu(const char *icon, const char *text, bool enabled = true);
 IMGUI_API bool IconMenuItem(const char *icon, const char* text, const char* shortcut = NULL, bool selected = false, bool enabled = true);
 IMGUI_API bool IconButton(const char *icon, const char *text, const ImVec2& size = ImVec2(0, 0));
 IMGUI_API bool URLButton(const char *title, const char *url);
+IMGUI_API bool URLIconButton(const char *icon, const char *title, const char *url);
 IMGUI_API bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener = nullptr);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true,
 									  command::CommandExecutionListener *listener = nullptr);
+IMGUI_API const char *CommandIconMenuItem(const char *icon, const char *title, const char *command, bool enabled = true,
+										  command::CommandExecutionListener *listener = nullptr);
+IMGUI_API bool IconSelectable(const char *icon, const char *title, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0));
+IMGUI_API void URLIconItem(const char *icon, const char *title, const char *url, float width = 0.0f);
 IMGUI_API void URLItem(const char *title, const char *url, float width = 0.0f);
 IMGUI_API bool ButtonFullWidth(const char *title);
 

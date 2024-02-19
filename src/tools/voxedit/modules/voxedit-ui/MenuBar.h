@@ -16,7 +16,6 @@ using LastOpenedFiles = core::RingBuffer<core::String, 10>;
 class MenuBar {
 private:
 	LastOpenedFiles _lastOpenedFiles;
-	bool actionMenuItem(const char *title, const char *command, command::CommandExecutionListener &listener);
 public:
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 	/**
