@@ -367,16 +367,19 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("ctrl+g",               "toggle ve_showgrid",           "all");
 	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");
 	_keybindingHandler.registerBinding("ctrl+w",               "toggle ve_rendershadow",       "all");
-	_keybindingHandler.registerBinding("w",                    "+move_forward",                "editing");
-	_keybindingHandler.registerBinding("a",                    "+move_left",                   "editing");
-	_keybindingHandler.registerBinding("s",                    "+move_backward",               "editing");
-	_keybindingHandler.registerBinding("d",                    "+move_right",                  "editing");
 	_keybindingHandler.registerBinding("shift+c",              "brushpaint",                   "model");
 	_keybindingHandler.registerBinding("l",                    "brushline",                    "model");
 	_keybindingHandler.registerBinding("v",                    "brushshape",                   "model");
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "scene");
+
+	if (keymap != KeyBindings::Qubicle) {
+		_keybindingHandler.registerBinding("w",                      "+move_forward",              "editing");
+		_keybindingHandler.registerBinding("a",                      "+move_left",                 "editing");
+		_keybindingHandler.registerBinding("s",                      "+move_backward",             "editing");
+		_keybindingHandler.registerBinding("d",                      "+move_right",                "editing");
+	}
 
 	if (keymap == KeyBindings::Blender) {
 		_keybindingHandler.registerBinding("ctrl+left_mouse",        "+actionexecutedelete",       "model");
