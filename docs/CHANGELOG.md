@@ -43,6 +43,7 @@ VoxEdit:
    - Added popup for renaming a node
    - Fixed a few palette panel issues for sorting and re-ordering
    - Improved grid rendering
+   - Added new models to the new-scene-dialog
 
 ## 0.0.28 (2024-01-17)
 
