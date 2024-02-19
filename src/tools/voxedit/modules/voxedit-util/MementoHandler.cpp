@@ -302,8 +302,10 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
-		if ((prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) &&
-			prevS.nodeId == s.nodeId) {
+		if (prevS.nodeId != s.nodeId) {
+			continue;
+		}
+		if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 			core_assert(prevS.hasVolumeData());
 			voxel::logRegion("Undo current", s.region);
 			voxel::logRegion("Undo previous", prevS.region);
@@ -311,7 +313,7 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			voxel::logRegion("Undo previous data", prevS.data.region());
 			// use the region from the current state - but the volume and palette from the previous state of this node
 			return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   s.referenceId, s.name,
-								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, prevS.palette};
+								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
 		}
 	}
 	core_assert(_states[0].type == MementoType::Modification);
