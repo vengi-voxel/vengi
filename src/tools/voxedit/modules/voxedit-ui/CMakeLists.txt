@@ -31,6 +31,7 @@ target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
 
 # vengi model files in data/voxedit
 set(VENGI_MODELS
+	aquarium
 	robo
 	chr_blacksmith
 	chr_dwarf
@@ -41,6 +42,8 @@ set(VENGI_MODELS
 	chr_oldman
 	chess
 	head
+	hawk
+	locomotive
 	twinsen
 	undead
 	skeleton

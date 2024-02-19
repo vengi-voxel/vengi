@@ -30,6 +30,8 @@
 #include "TipOfTheDay.h"
 
 // generated models
+#include "aquarium.h"
+#include "aquarium_png.h"
 #include "chess.h"
 #include "chess_png.h"
 #include "chr_blacksmith.h"
@@ -46,8 +48,12 @@
 #include "chr_man_png.h"
 #include "chr_oldman.h"
 #include "chr_oldman_png.h"
+#include "hawk.h"
+#include "hawk_png.h"
 #include "head.h"
 #include "head_png.h"
+#include "locomotive.h"
+#include "locomotive_png.h"
 #include "river.h"
 #include "river_png.h"
 #include "robo.h"
@@ -97,6 +103,7 @@ static const struct TemplateModel {
 	const unsigned int size;
 	const unsigned int imageSize;
 } TEMPLATEMODELS[] = {
+	TM_ENTRY("Aquarium", aquarium),
 	TM_ENTRY("Chess", chess),
 	TM_ENTRY("Dwarf", chr_dwarf),
 	TM_ENTRY("Blacksmith", chr_blacksmith),
@@ -105,7 +112,9 @@ static const struct TemplateModel {
 	TM_ENTRY("Old man", chr_oldman),
 	TM_ENTRY("Knight 2", chr_knight2),
 	TM_ENTRY("Knight", chr_knight),
+	TM_ENTRY("Hawk", hawk),
 	TM_ENTRY("Head", head),
+	TM_ENTRY("Locomotive", locomotive),
 	TM_ENTRY("Robo", robo),
 	TM_ENTRY("River", river),
 	TM_ENTRY("undead", undead),
