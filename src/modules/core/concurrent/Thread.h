@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/String.h"
 
 struct SDL_Thread;
