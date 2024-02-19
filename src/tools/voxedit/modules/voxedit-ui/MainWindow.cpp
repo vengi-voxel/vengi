@@ -778,8 +778,13 @@ void MainWindow::popupNodeRename() {
 	voxedit::SceneManager &sceneMgr = voxedit::sceneMgr();
 	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		ImGui::InputText("Name", &_currentNodeName, ImGuiInputTextFlags_AutoSelectAll);
-		if (ImGui::Button("Apply")) {
+		if (ImGui::IsWindowAppearing()) {
+			ImGui::SetKeyboardFocusHere();
+		}
+		ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
+		bool renamed = ImGui::InputText("Name", &_currentNodeName, flags);
+
+		if (ImGui::Button("Apply") || renamed) {
 			const int nodeId = sceneMgr.sceneGraph().activeNode();
 			sceneMgr.nodeRename(nodeId, _currentNodeName);
 			_currentNodeName = "";
@@ -789,7 +794,6 @@ void MainWindow::popupNodeRename() {
 		if (ImGui::Button("Close")) {
 			ImGui::CloseCurrentPopup();
 		}
-		ImGui::SetItemDefaultFocus();
 		ImGui::EndPopup();
 	}
 }
