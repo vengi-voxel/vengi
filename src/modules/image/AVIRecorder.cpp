@@ -48,6 +48,7 @@ int AVIRecorder::encodeFrame(void *data) {
 }
 
 bool AVIRecorder::startRecording(const char *filename, int width, int height) {
+	delete _videoWriteStream;
 	_videoWriteStream = new io::FileStream(io::filesystem()->open(filename, io::FileMode::SysWrite));
 	if (!_videoWriteStream->valid()) {
 		Log::error("Failed to open filestream for %s", filename);
@@ -63,6 +64,7 @@ bool AVIRecorder::startRecording(const char *filename, int width, int height) {
 		return false;
 	}
 	Log::debug("Starting avirecorder thread");
+	delete _thread;
 	_thread = new core::Thread("avirecorder", encodeFrame, this);
 	return true;
 }
@@ -102,8 +104,8 @@ bool AVIRecorder::flush() {
 
 void AVIRecorder::abort() {
 	_frameQueue.clear();
-	_stop = true;
 	flush();
+	_stop = true;
 }
 
 } // namespace image
