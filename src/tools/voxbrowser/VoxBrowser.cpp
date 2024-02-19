@@ -112,7 +112,6 @@ app::AppState VoxBrowser::onInit() {
 }
 
 void VoxBrowser::onRenderUI() {
-	// TODO: support a local voxel file source, too
 	_mainWindow->update(_voxelFilesMap);
 }
 
