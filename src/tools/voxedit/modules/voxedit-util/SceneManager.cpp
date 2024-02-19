@@ -734,7 +734,7 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 	const glm::ivec3 mins = region.getLowerCorner();
 	const glm::ivec3 maxs = region.getUpperCorner();
 	if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
-		// we don't have to reextract a mesh if only new empty voxels were added.
+		// we don't have to re-extract a mesh if only new empty voxels were added.
 		modified(nodeId, voxel::Region::InvalidRegion);
 	} else {
 		// TODO: assemble the 6 surroundings to optimize this for big volumes
