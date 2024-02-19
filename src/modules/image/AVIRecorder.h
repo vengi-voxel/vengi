@@ -7,7 +7,6 @@
 #include "image/AVI.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
-#include "core/concurrent/Thread.h"
 
 namespace image {
 
@@ -17,9 +16,8 @@ private:
 	core::SharedPtr<io::FileStream> _videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;
-	core::SharedPtr<core::Thread> _thread;
 
-	static int encodeFrame(void *data);
+	static int encodeFrame(AVIRecorder *data);
 
 public:
 	~AVIRecorder() {

@@ -4,6 +4,7 @@
 
 #include "AVIRecorder.h"
 #include "app/App.h"
+#include "app/Async.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/Var.h"
@@ -35,8 +36,7 @@ uint32_t AVIRecorder::pendingFrames() const {
 	return _frameQueue.size();
 }
 
-int AVIRecorder::encodeFrame(void *data) {
-	AVIRecorder *inst = (AVIRecorder *)data;
+int AVIRecorder::encodeFrame(AVIRecorder *inst) {
 	core::SharedPtr<io::FileStream> s = inst->_videoWriteStream;
 	while (!inst->_stop) {
 		image::ImagePtr image;
@@ -61,7 +61,7 @@ bool AVIRecorder::startRecording(const char *filename, int width, int height) {
 		return false;
 	}
 	Log::debug("Starting avirecorder thread");
-	_thread = core::make_shared<core::Thread>("avirecorder", encodeFrame, this);
+	app::async(encodeFrame, this);
 	return true;
 }
 
@@ -87,12 +87,8 @@ bool AVIRecorder::flush() {
 	if (!isRecording()) {
 		return true;
 	}
-	if (_thread && _thread->join() != 0) {
-		Log::warn("Unexpected return value from frame writer thread");
-	}
 	bool closed = _avi.close(*_videoWriteStream.get());
 	_videoWriteStream = nullptr;
-	_thread = nullptr;
 	return closed;
 }
 
