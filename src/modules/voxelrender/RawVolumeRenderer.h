@@ -46,6 +46,7 @@ struct RenderContext : public core::NonCopyable {
 	bool hideInactive = false;
 	bool grayInactive = false;
 	bool sceneMode = false;
+	bool onlyModels = false;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();

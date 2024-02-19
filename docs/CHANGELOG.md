@@ -210,6 +210,7 @@ Thumbnailer:
 
    - Improved camera placement
    - Fixed threading issue with the mesh extraction for the renderer that could lead to black thumbnails
+   - Don't render cameras for the thumbnails
 
 ## 0.0.24 (2023-03-12)
 

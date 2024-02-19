@@ -148,6 +148,10 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
+		if (renderContext.onlyModels && node.type() != scenegraph::SceneGraphNodeType::Model) {
+			continue;
+		}
+
 		if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
 			const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
 			if (!cameraNode.visible()) {
@@ -157,9 +161,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			video::Camera camera = toCamera(size, cameraNode);
 			_cameras.push_back(camera);
 			continue;
-		}
-
-		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+		} else if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 			continue;
 		}
 

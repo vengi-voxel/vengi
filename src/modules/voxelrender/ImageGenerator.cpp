@@ -92,6 +92,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	renderContext.init(ctx.outputSize);
 	renderContext.sceneMode = true;
 	renderContext.sceneGraph = &sceneGraph;
+	renderContext.onlyModels = true;
 
 	if (!volumeRenderer.init()) {
 		Log::error("Failed to initialize the renderer");
@@ -110,6 +111,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 	renderContext.init(ctx.outputSize);
 	renderContext.sceneMode = true;
 	renderContext.sceneGraph = &sceneGraph;
+	renderContext.onlyModels = true;
 
 	volumeRenderer.construct();
 	if (!volumeRenderer.init()) {
