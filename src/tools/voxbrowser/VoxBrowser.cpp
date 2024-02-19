@@ -23,6 +23,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "engine-git.h"
 
 VoxBrowser::VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider, core::halfcpus()) {
@@ -113,6 +114,11 @@ app::AppState VoxBrowser::onInit() {
 void VoxBrowser::onRenderUI() {
 	// TODO: support a local voxel file source, too
 	_mainWindow->update(_voxelFilesMap);
+}
+
+void VoxBrowser::printUsageHeader() const {
+	Super::printUsageHeader();
+	Log::info("Git commit " GIT_COMMIT " - " GIT_COMMIT_DATE);
 }
 
 void VoxBrowser::downloadAll() {

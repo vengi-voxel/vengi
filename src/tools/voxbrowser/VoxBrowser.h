@@ -30,6 +30,8 @@ private:
 	void loadThumbnail(const voxbrowser::VoxelFile &voxelFile);
 	void downloadAll();
 	void thumbnailAll();
+protected:
+	void printUsageHeader() const override;
 
 public:
 	VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);
