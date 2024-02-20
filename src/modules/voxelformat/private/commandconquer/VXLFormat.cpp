@@ -63,7 +63,6 @@ glm::mat4 VXLFormat::VXLMatrix::toVengi() const {
 
 void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, bool hva) {
 	glm::vec4 &translation = vengiMatrix[3];
-	Log::debug("ConvertRead: Initial translation: %f %f %f", translation.x, translation.y, translation.z);
 	if (hva) {
 		// the hva matrices have to be scaled
 		const glm::vec3 sectionScale{(footer.maxs.x - footer.mins.x) / (float)footer.xsize,
@@ -73,16 +72,7 @@ void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, 
 		translation.x *= footer.scale * sectionScale.x;
 		translation.y *= footer.scale * sectionScale.z;
 		translation.z *= footer.scale * sectionScale.y;
-		Log::debug("ConvertRead: HVA footer scale: %f", footer.scale);
-		Log::debug("ConvertRead: HVA section scale: %f %f %f", sectionScale.x, sectionScale.y, sectionScale.z);
-		Log::debug("ConvertRead: HVA translation: %f %f %f", translation.x, translation.y, translation.z);
 	}
-
-	translation.x += footer.mins.x;
-	translation.y += footer.mins.z;
-	translation.z += footer.mins.y;
-	Log::debug("ConvertRead: footer mins: %f %f %f", footer.mins.x, footer.mins.y, footer.mins.z);
-	Log::debug("ConvertRead: final translation: %f %f %f", translation.x, translation.y, translation.z);
 }
 
 void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
@@ -90,7 +80,6 @@ void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix,
 	Log::debug("ConvertWrite: Initial translation: %f %f %f", vengiMatrix[3].x, vengiMatrix[3].y, vengiMatrix[3].z);
 	Log::debug("ConvertWrite: Local translate: %f %f %f", localTranslate.x, localTranslate.y, localTranslate.z);
 	glm::mat4 originalMatrix = vengiMatrix;
-	originalMatrix[3] -= glm::vec4(localTranslate, 0.0f);
 
 	if (hva) {
 		// the hva matrices have to be scaled
@@ -194,7 +183,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 		const int64_t spanStartPos = stream.pos();
 
 		const uint8_t x = (uint8_t)(i % size.x);
-		const uint8_t z = (uint8_t)(i / size.x);
+		const uint8_t z = size.z - 1 - (uint8_t)(i / size.x);
 
 		int32_t spanStartOffset = EmptyColumn;
 		int32_t spanEndOffset = EmptyColumn;
@@ -471,10 +460,10 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
+	node.setPivot({0.5f, 0.0f, 0.5f});
 	if (palette.colorCount() > 0) {
 		node.setPalette(palette);
 	}
-
 	glm::mat4 glmMatrix = footer.transform.toVengi();
 	convertRead(glmMatrix, footer, false);
 
@@ -513,7 +502,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
 				const voxel::Voxel v = voxel::createVoxel(palette, color);
-				volume->setVoxel(x, z, y, v);
+				volume->setVoxel(x, z, footer.ysize - y - 1, v);
 				++z;
 			}
 
