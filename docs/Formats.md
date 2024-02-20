@@ -23,7 +23,7 @@
 | Minecraft schematic        | schematic   | X       |        |            | X       |            |
 | Minetest                   | mts         | X       |        |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |
-| Particubes                 | pcubes      | X       |        | X          | X       |            |
+| Particubes                 | pcubes      | X       | X      | X          | X       |            |
 | Qubicle Binary             | qb          | X       | X      |            | X       |            |
 | Qubicle Binary Tree        | qbt         | X       | X      |            | X       |            |
 | Qubicle Exchange           | qef         | X       | X      |            |         |            |

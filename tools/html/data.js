@@ -618,7 +618,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-particubes",
       "animation": false,
-      "save": false
+      "save": true
     },
     {
       "name": "Cubzh",
