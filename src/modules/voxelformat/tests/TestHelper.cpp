@@ -230,10 +230,16 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
 			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-				ASSERT_EQ(t1.worldTranslation(), t2.worldTranslation()) << "Translation failed for frame " << i;
-				ASSERT_EQ(t1.localTranslation(), t2.localTranslation()) << "Translation failed for frame " << i;
-				ASSERT_EQ(t1.worldMatrix(), t2.worldMatrix()) << "Matrix failed for frame " << i;
-				ASSERT_EQ(t1.localMatrix(), t2.localMatrix()) << "Matrix failed for frame " << i;
+				for (int n = 0; n < 3; ++n) {
+					ASSERT_FLOAT_EQ(t1.worldTranslation()[n], t2.worldTranslation()[n]) << "Translation failed for frame " << i << " and component " << n;
+					ASSERT_FLOAT_EQ(t1.localTranslation()[n], t2.localTranslation()[n]) << "Translation failed for frame " << i << " and component " << n;
+				}
+				for (int n = 0; n < 4; ++n) {
+					for (int m = 0; m < 4; ++m) {
+						ASSERT_FLOAT_EQ(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m]) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+						ASSERT_FLOAT_EQ(t1.localMatrix()[n][m], t2.localMatrix()[n][m]) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+					}
+				}
 			} else {
 				const glm::mat3x3 wrot1 = t1.worldMatrix();
 				const glm::mat3x3 wrot2 = t2.worldMatrix();
