@@ -213,7 +213,8 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX,
 						&dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX);
 	if (dwStatusCode != HTTP_STATUS_OK) {
-		Log::warn("Failed to download url: %s with status code: %d", _url.c_str(), dwStatusCode);
+		const char *requestTypeStr = _type == RequestType::GET ? "GET" : "POST";
+		Log::warn("Failed to perform http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
 	}
 	if (statusCode) {
 		*statusCode = (int)dwStatusCode;
