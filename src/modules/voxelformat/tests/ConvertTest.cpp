@@ -60,6 +60,13 @@ TEST_F(ConvertTest, testQbToVox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.vox", target, flags, 0.004f);
 }
 
+TEST_F(ConvertTest, DISABLED_testVengiToVXL) {
+	VENGIFormat src;
+	VXLFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testLoadSaveAndLoadSceneGraph("bat_anim.vengi", src, "convert-bat_anim.vxl", target, flags);
+}
+
 TEST_F(ConvertTest, testVoxToQb) {
 	VoxFormat src;
 	QBFormat target;
