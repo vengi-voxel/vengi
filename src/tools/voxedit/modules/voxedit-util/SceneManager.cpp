@@ -2799,7 +2799,7 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 		node.translate(-deltaPivot * size);
 		for (int nodeId : node.children()) {
 			scenegraph::SceneGraphNode &cnode = sceneGraph().node(nodeId);
-			cnode.translate(deltaPivot * size);
+			cnode.translate(-deltaPivot * size);
 		}
 		sceneGraph().updateTransforms();
 		markDirty();
