@@ -153,6 +153,7 @@ set(TEST_FILES
 	tests/test.vxm
 	tests/test2.vxm
 	tests/8ontop.vox
+	tests/bat_anim.vengi
 	tests/cw.cub
 	tests/crabby.qbcl
 	tests/crabby.vox
