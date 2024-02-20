@@ -803,7 +803,13 @@ public:
 
 bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	stream.write("CUBZH!", 6);
+	const core::String ext = core::string::extractExtension(filename).toLower();
+	const bool pcubes = ext == "pcubes" || ext == "particubes";
+	if (pcubes) {
+		stream.write("PARTICUBES!", 11);
+	} else {
+		stream.write("CUBZH!", 6);
+	}
 	wrapBool(stream.writeUInt32(6)) // version
 	wrapBool(stream.writeUInt8(1))	// zip compression
 	const int64_t totalSizePos = stream.pos();

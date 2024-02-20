@@ -222,7 +222,7 @@ static const io::FormatDescription &particubes() {
 	static io::FormatDescription f{"Particubes",
 								   {"pcubes", "particubes"},
 								   {"PARTICUBES!"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 

@@ -15,6 +15,11 @@ TEST_F(CubzhFormatTest, testLoadPCUBES) {
 	canLoad("particubes.pcubes");
 }
 
+TEST_F(CubzhFormatTest, testSaveSmallVoxelPCubes) {
+	CubzhFormat f;
+	testSaveLoadVoxel("pcubes-smallvolumesavetest.pcubes", &f, 0, 1);
+}
+
 // not included - copy the file manually to execute the test
 TEST_F(CubzhFormatTest, testLoad3ZH) {
 	canLoad("cubzh.3zh");
@@ -26,7 +31,7 @@ TEST_F(CubzhFormatTest, testLoadPalette) {
 	EXPECT_EQ(96, loadPalette("particubes.pcubes", f, pal));
 }
 
-TEST_F(CubzhFormatTest, testSaveSmallVoxel) {
+TEST_F(CubzhFormatTest, testSaveSmallVoxel3ZH) {
 	CubzhFormat f;
 	testSaveLoadVoxel("cubzh-smallvolumesavetest.3zh", &f, 0, 1);
 }
