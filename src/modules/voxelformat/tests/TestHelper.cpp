@@ -249,8 +249,10 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 				ASSERT_EQ(lrot1, lrot2) << "Matrix failed for frame " << i;
 			}
 			if ((flags & ValidateFlags::Scale) == ValidateFlags::Scale) {
-				ASSERT_EQ(t1.worldScale(), t2.worldScale()) << "Scale failed for frame " << i;
-				ASSERT_EQ(t1.localScale(), t2.localScale()) << "Scale failed for frame " << i;
+				for (int n = 0; n < 3; ++n) {
+					ASSERT_FLOAT_EQ(t1.worldScale()[n], t2.worldScale()[n]) << "World scale failed for frame " << i << " and component " << n;
+					ASSERT_FLOAT_EQ(t1.localScale()[n], t2.localScale()[n]) << "Local scale failed for frame " << i << " and component " << n;
+				}
 			}
 		}
 	} else {
