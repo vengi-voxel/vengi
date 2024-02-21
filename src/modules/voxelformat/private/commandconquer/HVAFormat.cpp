@@ -170,12 +170,8 @@ bool HVAFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 
-			const voxel::Region &region = node.region();
-			const glm::vec3 &t = region.getLowerCornerf();
-			const glm::vec3 mins = (node.pivot() * glm::vec3(region.getDimensionsInVoxels())) + t;
-
 			vxl::VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), mins, true, sceneGraph.resolveRegion(node));
+			convertWrite(vxlMatrix, transform.localMatrix(), true);
 
 			for (int j = 0; j < 12; ++j) {
 				const int col = j % 4;

@@ -118,8 +118,7 @@ struct HVAModel {
 	HVAFrames frames[MaxLayers];
 };
 
-void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva,
-				  const voxel::Region &region);
+void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, bool hva);
 
 } // namespace vxl
 } // namespace voxelformat

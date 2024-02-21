@@ -206,10 +206,11 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
 	const voxel::Region &region = node.region();
-	const glm::vec3 &t = region.getLowerCornerf();
-	const glm::vec3 mins = (node.pivot() * glm::vec3(region.getDimensionsInVoxels())) + t;
+	const glm::ivec3 &size = region.getDimensionsInVoxels();
+	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
+	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
 	vxl::VXLMatrix vxlMatrix;
-	convertWrite(vxlMatrix, transform.localMatrix(), mins, false, {});
+	convertWrite(vxlMatrix, transform.localMatrix(), false);
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(vxl::Scale /*transform.localScale()*/))
@@ -220,9 +221,6 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 		float val = vxlMatrix.matrix[col][row];
 		wrapBool(stream.writeFloat(val))
 	}
-
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
 
 	// swap y and z here
 	wrapBool(stream.writeFloat(mins.x))
