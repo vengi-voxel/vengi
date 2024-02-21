@@ -460,7 +460,15 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, VXLModel &mdl, uint32_
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
-	node.setPivot({0.5f, 0.0f, 0.5f});
+	glm::vec3 pivot = (footer.mins + footer.maxs) / 2.0f;
+	pivot -= footer.mins;
+	pivot.x /= (float)footer.xsize;
+	pivot.y /= (float)footer.ysize;
+	pivot.z /= (float)footer.zsize;
+
+	Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
+
+	node.setPivot(pivot);
 	if (palette.colorCount() > 0) {
 		node.setPalette(palette);
 	}
