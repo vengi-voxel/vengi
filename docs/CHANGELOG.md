@@ -16,6 +16,8 @@ General:
    - Add lua sanity checker to the build pipelines
    - Fixed randomness in lua script `similarcolor.lua`
    - Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates
+   - Fixed `vxl/hva` loading and saving
+   - Fixed missing `pcubes` write support
 
 VoxBrowser:
 
@@ -44,6 +46,10 @@ VoxEdit:
    - Fixed a few palette panel issues for sorting and re-ordering
    - Improved grid rendering
    - Added new models to the new-scene-dialog
+
+Thumbnailer:
+
+   - Don't render camera frustums for the thumbnails
 
 ## 0.0.28 (2024-01-17)
 
