@@ -404,15 +404,14 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
-	glm::vec3 pivot = (footer.mins + footer.maxs) / 2.0f;
-	pivot -= footer.mins;
+	glm::vec3 pivot = glm::abs(footer.mins);
 	pivot.x /= (float)footer.xsize;
 	pivot.y /= (float)footer.ysize;
 	pivot.z /= (float)footer.zsize;
 
 	Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
 
-	node.setPivot(pivot);
+	node.setPivot({pivot.x, pivot.z, pivot.y});
 	if (palette.colorCount() > 0) {
 		node.setPalette(palette);
 	}
