@@ -15,7 +15,9 @@ set(SRCS
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
+	private/commandconquer/HVAFormat.h       private/commandconquer/HVAFormat.cpp
 	private/commandconquer/VXLFormat.h       private/commandconquer/VXLFormat.cpp
+	private/commandconquer/VXLShared.h       private/commandconquer/VXLShared.cpp
 	private/cubeworld/CubFormat.h            private/cubeworld/CubFormat.cpp
 	private/cubzh/CubzhFormat.h              private/cubzh/CubzhFormat.cpp
 	private/cubzh/CubzhB64Format.h           private/cubzh/CubzhB64Format.cpp
