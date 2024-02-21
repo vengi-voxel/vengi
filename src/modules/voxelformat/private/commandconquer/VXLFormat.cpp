@@ -12,6 +12,7 @@
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/StringSet.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -490,6 +491,13 @@ bool VXLFormat::readLayerHeader(io::SeekableReadStream &stream, vxl::VXLModel &m
 bool VXLFormat::readLayerHeaders(io::SeekableReadStream &stream, vxl::VXLModel &mdl) const {
 	for (uint32_t i = 0; i < mdl.header.layerCount; ++i) {
 		wrapBool(readLayerHeader(stream, mdl, i))
+	}
+	core::StringSet names;
+	for (uint32_t i = 0; i < mdl.header.layerCount; ++i) {
+		if (!names.insert(mdl.layerHeaders[i].name)) {
+			Log::warn("Duplicated layer name found: %s - this will lead to errors for hva loading",
+					  mdl.layerHeaders[i].name);
+		}
 	}
 	return true;
 }
