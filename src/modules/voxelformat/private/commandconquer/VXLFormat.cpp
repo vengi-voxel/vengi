@@ -189,7 +189,7 @@ bool VXLFormat::writeLayerHeader(io::SeekableWriteStream &stream, const scenegra
 	}
 	wrapBool(stream.writeUInt32(nodeIdx))
 	wrapBool(stream.writeUInt32(1))
-	wrapBool(stream.writeUInt32(0))
+	wrapBool(stream.writeUInt32(2))
 	return true;
 }
 
@@ -257,8 +257,8 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 	wrapBool(stream.writeUInt32(header.layerInfoCount))
 	wrapBool(stream.writeUInt32(header.dataSize))
 
-	wrapBool(stream.writeUInt8(0x10U)) // startPaletteRemap
-	wrapBool(stream.writeUInt8(0x1fU)) // endPaletteRemap
+	wrapBool(stream.writeUInt8(16)) // startPaletteRemap
+	wrapBool(stream.writeUInt8(31)) // endPaletteRemap
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA &rgba = palette.color(i);
 		wrapBool(stream.writeUInt8(rgba.r))
@@ -598,7 +598,7 @@ bool VXLFormat::readHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, p
 		}
 	} else {
 		palette.commandAndConquer();
-		Log::warn("No palette found in vxl");
+		Log::debug("No palette found in vxl");
 	}
 
 	return true;
