@@ -84,6 +84,8 @@ public:
 
 	void update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren);
 
+	bool validate() const;
+
 	/**
 	 * @brief Uses the matrix to perform the transformation
 	 * @note The matrix must be up-to-date

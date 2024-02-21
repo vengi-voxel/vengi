@@ -454,6 +454,23 @@ glm::vec3 SceneGraph::center() const {
 	return center;
 }
 
+void SceneGraph::fixErrors() {
+	Log::warn("Attempt to fix errors in the scene graph");
+	for (const auto &entry : _nodes) {
+		entry->value.fixErrors();
+	}
+	updateTransforms();
+}
+
+bool SceneGraph::validate() const {
+	for (const auto &entry : _nodes) {
+		if (!entry->value.validate()) {
+			return false;
+		}
+	}
+	return true;
+}
+
 SceneGraphNode *SceneGraph::findNodeByPropertyValue(const core::String &key, const core::String &value) const {
 	for (const auto &entry : _nodes) {
 		if (entry->value.property(key) == value) {

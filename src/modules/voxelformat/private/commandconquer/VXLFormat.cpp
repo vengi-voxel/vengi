@@ -75,17 +75,16 @@ void VXLFormat::convertRead(glm::mat4 &vengiMatrix, const VXLLayerInfo &footer, 
 	}
 }
 
-void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &localTranslate,
-							 bool hva, const voxel::Region &region) {
+void VXLFormat::convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, const glm::vec3 &mins, bool hva,
+							 const voxel::Region &region) {
 	Log::debug("ConvertWrite: Initial translation: %f %f %f", vengiMatrix[3].x, vengiMatrix[3].y, vengiMatrix[3].z);
-	Log::debug("ConvertWrite: Local translate: %f %f %f", localTranslate.x, localTranslate.y, localTranslate.z);
+	Log::debug("ConvertWrite: Local translate: %f %f %f", mins.x, mins.y, mins.z);
 	glm::mat4 originalMatrix = vengiMatrix;
 
 	if (hva) {
 		// the hva matrices have to be scaled
 		// Calculate the ratio between screen units and voxels in all dimensions
 		const glm::ivec3 &size = region.getDimensionsInVoxels();
-		const glm::vec3 &mins = region.getLowerCornerf() + localTranslate;
 		const glm::vec3 maxs = mins + glm::vec3(size);
 		const glm::vec3 sectionScale{(maxs.x - mins.x) / (float)size.x, (maxs.y - mins.y) / (float)size.y,
 									 (maxs.z - mins.z) / (float)size.z};
@@ -264,16 +263,17 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
 	const voxel::Region &region = node.region();
-	const glm::vec3 &mins = region.getLowerCornerf() + transform.localTranslation();
+	const glm::vec3 &t = region.getLowerCornerf();
+	const glm::vec3 mins = (node.pivot() * glm::vec3(region.getDimensionsInVoxels())) + t;
 	VXLMatrix vxlMatrix;
 	convertWrite(vxlMatrix, transform.localMatrix(), mins, false, {});
 
 	// TODO: always 0.0833333358f?
 	wrapBool(stream.writeFloat(priv::Scale /*transform.localScale()*/))
 
-	for (int i = 0; i < 12; ++i) {
-		const int col = i % 4;
-		const int row = i / 4;
+	for (int j = 0; j < 12; ++j) {
+		const int col = j % 4;
+		const int row = j / 4;
 		float val = vxlMatrix.matrix[col][row];
 		wrapBool(stream.writeFloat(val))
 	}
@@ -564,9 +564,9 @@ bool VXLFormat::readLayerInfo(io::SeekableReadStream &stream, VXLModel &mdl, uin
 	wrap(stream.readUInt32(footer.spanDataOffset))
 	wrap(stream.readFloat(footer.scale))
 
-	for (int i = 0; i < 12; ++i) {
-		const int col = i % 4;
-		const int row = i / 4;
+	for (int j = 0; j < 12; ++j) {
+		const int col = j % 4;
+		const int row = j / 4;
 		float &val = footer.transform.matrix[col][row];
 		wrap(stream.readFloat(val))
 	}
@@ -819,9 +819,13 @@ bool VXLFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
+
+			const voxel::Region &region = node.region();
+			const glm::vec3 &t = region.getLowerCornerf();
+			const glm::vec3 mins = (node.pivot() * glm::vec3(region.getDimensionsInVoxels())) + t;
+
 			VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), transform.localTranslation(), true,
-						 sceneGraph.resolveRegion(node));
+			convertWrite(vxlMatrix, transform.localMatrix(), mins, true, sceneGraph.resolveRegion(node));
 
 			for (int j = 0; j < 12; ++j) {
 				const int col = j % 4;

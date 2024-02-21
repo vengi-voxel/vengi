@@ -118,6 +118,9 @@ public:
 	bool isAnyModelNode() const;
 	bool isModelNode() const;
 
+	void fixErrors();
+	bool validate() const;
+
 	core::RGBA color() const;
 	void setColor(core::RGBA color);
 

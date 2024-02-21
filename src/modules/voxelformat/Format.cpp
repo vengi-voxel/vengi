@@ -176,7 +176,18 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 
 bool Format::load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				  const LoadContext &ctx) {
-	return loadGroups(filename, stream, sceneGraph, ctx);
+	if (!loadGroups(filename, stream, sceneGraph, ctx)) {
+		return false;
+	}
+	if (!sceneGraph.validate()) {
+		Log::warn("Failed to validate the scene graph - try to fix as much as we can");
+		sceneGraph.fixErrors();
+		if (!sceneGraph.validate()) {
+			Log::error("Failed to validate the scene graph");
+			return false;
+		}
+	}
+	return true;
 }
 
 bool Format::stopExecution() {

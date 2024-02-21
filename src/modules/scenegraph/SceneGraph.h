@@ -84,6 +84,9 @@ public:
 		return _nodes;
 	}
 
+	void fixErrors();
+	bool validate() const;
+
 	/**
 	 * @brief Merge the palettes of all scene graph model nodes
 	 * @param[in] removeUnused If the colors exceed the max palette colors, this will remove the unused colors

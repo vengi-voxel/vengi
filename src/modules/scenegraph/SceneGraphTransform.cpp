@@ -111,6 +111,40 @@ void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
 	_dirty |= DIRTY_LOCALVALUES;
 }
 
+bool SceneGraphTransform::validate() const {
+	if (!glm::all(glm::isfinite(_worldTranslation))) {
+		Log::error("World translation is not finite: %f, %f, %f", _worldTranslation.x, _worldTranslation.y,
+				   _worldTranslation.z);
+		return false;
+	}
+	if (!glm::all(glm::isfinite(_worldScale))) {
+		Log::error("World scale is not finite: %f, %f, %f", _worldScale.x, _worldScale.y, _worldScale.z);
+		return false;
+	}
+	if (!glm::all(glm::isfinite(_localTranslation))) {
+		Log::error("Local translation is not finite: %f, %f, %f", _localTranslation.x, _localTranslation.y,
+				   _localTranslation.z);
+		return false;
+	}
+	if (!glm::all(glm::isfinite(_localScale))) {
+		Log::error("Local scale is not finite: %f, %f, %f", _localScale.x, _localScale.y, _localScale.z);
+		return false;
+	}
+	if (!glm::all(glm::isfinite(
+			glm::vec4(_worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w)))) {
+		Log::error("World orientation is not finite: %f, %f, %f, %f", _worldOrientation.x, _worldOrientation.y,
+				   _worldOrientation.z, _worldOrientation.w);
+		return false;
+	}
+	if (!glm::all(glm::isfinite(
+			glm::vec4(_localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w)))) {
+		Log::error("Local orientation is not finite: %f, %f, %f, %f", _localOrientation.x, _localOrientation.y,
+				   _localOrientation.z, _localOrientation.w);
+		return false;
+	}
+	return true;
+}
+
 void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {
 	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
 

@@ -143,6 +143,51 @@ palette::Palette &SceneGraphNode::palette() const {
 	return *_palette.value();
 }
 
+void SceneGraphNode::fixErrors() {
+	if (_type == SceneGraphNodeType::Model) {
+		if (_volume == nullptr) {
+			setVolume(new voxel::RawVolume(voxel::Region(0, 0)), true);
+		}
+	}
+	for (const auto &e : _keyFramesMap) {
+		if (e->value.empty()) {
+			continue;
+		}
+		for (SceneGraphKeyFrame &kf : e->value) {
+			if (!kf.transform().validate()) {
+				kf.transform() = SceneGraphTransform();
+			}
+		}
+	}
+}
+
+bool SceneGraphNode::validate() const {
+	if (_type == SceneGraphNodeType::Model) {
+		if (_volume == nullptr) {
+			Log::error("Model node %s (%i) has no volume", _name.c_str(), _id);
+			return false;
+		}
+	}
+	if (_type == SceneGraphNodeType::ModelReference) {
+		if (_referenceId == InvalidNodeId) {
+			Log::error("Model reference node %s (%i) has no reference", _name.c_str(), _id);
+			return false;
+		}
+	}
+	for (const auto &e : _keyFramesMap) {
+		if (e->value.empty()) {
+			continue;
+		}
+		for (const SceneGraphKeyFrame &kf : e->value) {
+			if (!kf.transform().validate()) {
+				Log::error("Invalid keyframe %i for node %s (%i)", kf.frameIdx, _name.c_str(), _id);
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool SceneGraphNode::setPivot(const glm::vec3 &pivot) {
 	_pivot = pivot;
 	return true;
