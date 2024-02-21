@@ -286,6 +286,17 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 		wrapBool(writeLayerHeader(stream, *node, i))
 	}
 
+	{
+		core::StringSet names;
+		for (uint32_t i = 0; i < numLayers; ++i) {
+			const scenegraph::SceneGraphNode *node = nodes[(int)i];
+			if (!names.insert(node->name())) {
+				Log::warn("Duplicated layer name found: %s - this will lead to errors for hva loading",
+						node->name().c_str());
+			}
+		}
+	}
+
 	core::Buffer<vxl::VXLLayerOffset> layerOffsets(numLayers);
 	const uint64_t bodyStart = stream.pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
