@@ -15,6 +15,7 @@
 #include "io/FormatDescription.h"
 #include "modifier/ModifierFacade.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "util/Movement.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
