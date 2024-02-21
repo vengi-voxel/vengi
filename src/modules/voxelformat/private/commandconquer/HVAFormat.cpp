@@ -108,6 +108,7 @@ bool HVAFormat::loadHVA(const core::String &filename, const vxl::VXLModel &mdl, 
 				Log::warn("Can't find node with name '%s' for vxl node %u", name.c_str(), vxlNodeId);
 				continue;
 			}
+			Log::debug("add key frame for node '%s' at idx %u", name.c_str(), keyFrameIdx);
 			// hva transforms are overriding the vxl transform
 			scenegraph::SceneGraphKeyFrame &kf = node->keyFrame(keyFrameIdx);
 			kf.frameIdx = keyFrameIdx * 6; // running at 6 fps
@@ -120,6 +121,8 @@ bool HVAFormat::loadHVA(const core::String &filename, const vxl::VXLModel &mdl, 
 				scenegraph::SceneGraphTransform transform;
 				transform.setLocalMatrix(glmMatrix);
 				kf.setTransform(transform);
+			} else {
+				Log::error("Failed to assign key frame idx %u to node '%s'", keyFrameIdx, name.c_str());
 			}
 		}
 	}
