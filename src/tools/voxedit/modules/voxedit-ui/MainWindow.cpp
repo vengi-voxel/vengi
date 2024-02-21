@@ -784,6 +784,8 @@ void MainWindow::popupNodeRename() {
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
 		bool renamed = ImGui::InputText(_("Name"), &_currentNodeName, flags);
 
+		ImGui::IconDialog(ICON_LC_INFO, _("Node names should be unique"));
+
 		if (ImGui::Button(_("Apply")) || renamed) {
 			const int nodeId = sceneMgr.sceneGraph().activeNode();
 			sceneMgr.nodeRename(nodeId, _currentNodeName);
