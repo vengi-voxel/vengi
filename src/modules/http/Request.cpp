@@ -216,10 +216,8 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 						&dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX)) {
 		printLastError("Failed to query status code");
 	}
-	if (dwStatusCode != HTTP_STATUS_OK) {
-		const char *requestTypeStr = _type == RequestType::GET ? "GET" : "POST";
-		Log::warn("Failed to perform http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
-	}
+	const char *requestTypeStr = _type == RequestType::GET ? "GET" : "POST";
+	Log::debug("Http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
 	if (statusCode) {
 		*statusCode = (int)dwStatusCode;
 	}
