@@ -31,14 +31,14 @@ TEST_F(MeshStateTest, testExtractRegion) {
 	meshState.construct();
 	meshState.init();
 	bool deleted = false;
-	meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
+	(void)meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
 	meshState.extractRegion(0, region);
 	EXPECT_EQ(1, meshState.pendingExtractions());
 
-	meshState.shutdown();
+	(void)meshState.shutdown();
 }
 
 TEST_F(MeshStateTest, testExtractRegionBoundary) {
@@ -50,7 +50,7 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	meshState.construct();
 	meshState.init();
 	bool deleted = false;
-	meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
+	(void)meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	// worst case scenario - touching all adjacent regions
@@ -61,7 +61,7 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	const voxel::Region region2(14, 14);
 	meshState.extractRegion(0, region2);
 	EXPECT_EQ(9, meshState.pendingExtractions());
-	meshState.shutdown();
+	(void)meshState.shutdown();
 }
 
 } // namespace voxelrender

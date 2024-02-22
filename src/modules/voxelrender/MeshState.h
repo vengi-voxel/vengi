@@ -30,8 +30,18 @@ static constexpr int MAX_VOLUMES = 2048;
 
 enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 
+/**
+ * @brief Handles the mesh extraction of the volumes
+ *
+ * @note This class doesn't own the voxel::RawVolume instances. It's up to the caller to inform this class about deleted
+ * or added volumes.
+ */
 class MeshState {
 public:
+	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
+	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
+
+private:
 	struct VolumeData {
 		voxel::RawVolume *_rawVolume;
 		core::Optional<palette::Palette> _palette;
@@ -47,10 +57,7 @@ public:
 		 */
 		glm::vec3 centerPos() const;
 	};
-
-	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
 	typedef core::Array<VolumeData, MAX_VOLUMES> Volumes;
-	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
 
 	struct ExtractionCtx {
 		ExtractionCtx() {
@@ -67,7 +74,6 @@ public:
 		}
 	};
 
-private:
 	MeshesMap _meshes[MeshType_Max];
 	Volumes _volumeData;
 	core::VarPtr _meshSize;
@@ -99,11 +105,11 @@ private:
 	void clear();
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void waitForPendingExtractions();
+	bool deleteMeshes(int idx);
 
 public:
 	const MeshesMap &meshes(MeshType type) const;
 	int pop();
-	bool deleteMeshes(int idx);
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
 
@@ -141,8 +147,8 @@ public:
 	 */
 	bool extractRegion(int idx, const voxel::Region &region);
 
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete,
-								bool &meshDeleted);
+	[[nodiscard]] voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
+											  bool meshDelete, bool &meshDeleted);
 
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
@@ -150,10 +156,10 @@ public:
 	 *
 	 * @sa init()
 	 */
-	core::DynamicArray<voxel::RawVolume *> shutdown();
+	[[nodiscard]] core::DynamicArray<voxel::RawVolume *> shutdown();
 
-	voxel::RawVolume *volume(int idx);
-	const voxel::RawVolume *volume(int idx) const;
+	[[nodiscard]] voxel::RawVolume *volume(int idx);
+	[[nodiscard]] const voxel::RawVolume *volume(int idx) const;
 
 	void hide(int idx, bool hide);
 	bool hidden(int idx) const;
