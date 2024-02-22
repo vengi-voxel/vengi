@@ -165,7 +165,8 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	SIZE_T len = reqHeaders.size();
 	if (len > 0 && !WinHttpAddRequestHeaders(hRequest, reqHeaders.c_str(), DWORD(len),
 								  WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
-		Log::warn("Failed to add request headers to url: %s", _url.c_str());
+		Log::error("Failed to add request headers to url: %s", _url.c_str());
+		printLastError("Failed to add request headers");
 	}
 
 	// Send the request
@@ -206,12 +207,16 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 		}
 	}
 	WinHttpReceiveResponse(hRequest, nullptr);
-	WinHttpQueryDataAvailable(hRequest, nullptr);
+	if (!WinHttpQueryDataAvailable(hRequest, nullptr)) {
+		printLastError("Failed to query available data");
+	}
 
 	DWORD dwStatusCode = 0;
 	DWORD dwSize = sizeof(dwStatusCode);
-	WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX,
-						&dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX);
+	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX,
+						&dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX)) {
+		printLastError("Failed to query status code");
+	}
 	if (dwStatusCode != HTTP_STATUS_OK) {
 		const char *requestTypeStr = _type == RequestType::GET ? "GET" : "POST";
 		Log::warn("Failed to perform http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
