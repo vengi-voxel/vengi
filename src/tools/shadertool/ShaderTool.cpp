@@ -19,6 +19,7 @@ ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProv
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "shadertool");
 	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
+	_saveConfiguration = false;
 }
 
 bool ShaderTool::parse(const core::String &filename, const core::String &buffer, bool vertex) {

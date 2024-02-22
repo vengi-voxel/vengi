@@ -14,6 +14,7 @@
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "formatprinter");
+	_saveConfiguration = false;
 }
 
 app::AppState FormatPrinter::onConstruct() {

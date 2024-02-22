@@ -72,6 +72,7 @@ protected:
 	AppState _nextState = AppState::InvalidAppState;
 	bool _blockers[(int)AppState::Max] { false, false, false, false, false, false, false, false, false };
 	bool _suspendRequested = false;
+	bool _saveConfiguration = true;
 	bool _failedToSaveConfiguration = false;
 
 	/**

@@ -841,6 +841,10 @@ bool App::saveConfiguration() {
 		Log::debug("don't save the config variables because organisation or appname is missing");
 		return false;
 	}
+	if (!_saveConfiguration) {
+		Log::debug("Don't save the config variables for %s", _appname.c_str());
+		return true;
+	}
 	const core::String filename = _appname + ".vars";
 	Log::debug("save the config variables to '%s'", filename.c_str());
 	core::String ss;
