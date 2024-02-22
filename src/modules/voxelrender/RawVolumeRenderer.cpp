@@ -471,7 +471,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		if (shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
 			_shadow.render(
-				[this](int i, const glm::mat4 &lightViewProjection) {
+				[this](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
 					alignas(16) shader::ShadowmapData::BlockData var;
 					var.lightviewprojection = lightViewProjection;
 

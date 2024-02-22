@@ -42,7 +42,6 @@ bool MainWindow::filtered(const VoxelFile &voxelFile) const {
 		return false;
 	}
 	const core::String &filter = _filterEntries[_currentFilterFormatEntry].wildCard();
-	const core::String &ext = core::string::extractExtension(voxelFile.name);
 	if (core::string::fileMatchesMultiple(voxelFile.name.c_str(), filter.c_str())) {
 		return false;
 	}

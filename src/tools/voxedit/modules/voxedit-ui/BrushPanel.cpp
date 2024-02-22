@@ -347,7 +347,6 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 }
 
 void BrushPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addModifiers(listener);
 		brushSettings(listener);
