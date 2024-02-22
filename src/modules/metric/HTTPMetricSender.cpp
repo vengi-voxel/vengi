@@ -4,6 +4,7 @@
 
 #include "HTTPMetricSender.h"
 #include "core/Log.h"
+#include "http/Http.h"
 #include "io/Stream.h"
 
 namespace metric {
@@ -32,7 +33,7 @@ bool HTTPMetricSender::send(const char *buffer) const {
 		return false;
 	}
 	Log::debug("Sent metric %s - got status: %i", buffer, statusCode);
-	return true;
+	return http::isValidStatusCode(statusCode);
 }
 
 bool HTTPMetricSender::init() {
