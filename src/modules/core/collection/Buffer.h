@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Assert.h"
 #include "core/StandardLib.h"
+#include <stdint.h>
 #include <new>
 #include <initializer_list>
 

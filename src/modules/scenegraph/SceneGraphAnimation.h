@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace scenegraph {
 
 using FrameIndex = int32_t;
