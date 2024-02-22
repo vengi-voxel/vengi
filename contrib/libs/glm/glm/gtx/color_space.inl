@@ -1,6 +1,7 @@
 /// @ref gtx_color_space
 
 #include <glm/ext/scalar_relational.hpp>
+#include <glm/ext/scalar_constants.hpp>
 
 namespace glm
 {
