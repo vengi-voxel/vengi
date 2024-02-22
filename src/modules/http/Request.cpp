@@ -189,10 +189,9 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 			}
 		}
 	} else {
-		std::wstring body = s2ws(_body.c_str());
 		while (!requestState) {
-			requestState = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)body.c_str(), body.size(),
-											  body.size(), 0);
+			requestState = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)_body.c_str(), _body.size(),
+											  _body.size(), 0);
 			if (!requestState && GetLastError() == ERROR_WINHTTP_RESEND_REQUEST) {
 				if (maxRedirects <= 0) {
 					break;
