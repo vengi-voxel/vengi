@@ -73,13 +73,25 @@ bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 
 
 void MeshState::clear() {
 	for (int i = 0; i < MeshType_Max; ++i) {
-		for (auto &iter : _meshes[i]) {
-			for (voxel::Mesh *mesh : iter.second) {
+		for (const auto &iter : _meshes[i]) {
+			for (voxel::Mesh *mesh : iter->value) {
 				delete mesh;
 			}
 		}
 		_meshes[i].clear();
 	}
+}
+
+void MeshState::addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type) {
+	auto iter = _meshes[type].find(result.mins);
+	if (iter != _meshes[type].end()) {
+		delete iter->value[result.idx];
+		iter->value[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
+		return;
+	}
+	_meshes[type].emplace(result.mins, Meshes());
+	auto newIter = _meshes[type].find(result.mins);
+	newIter->value[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[type]));
 }
 
 int MeshState::pop() {
@@ -88,12 +100,8 @@ int MeshState::pop() {
 		if (_volumeData[result.idx]._rawVolume == nullptr) {
 			continue;
 		}
-		MeshState::Meshes &meshes = _meshes[MeshType_Opaque][result.mins];
-		delete meshes[result.idx];
-		meshes[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Opaque]));
-		MeshState::Meshes &meshesT = _meshes[MeshType_Transparency][result.mins];
-		delete meshesT[result.idx];
-		meshesT[result.idx] = new voxel::Mesh(core::move(result.mesh.mesh[MeshType_Transparency]));
+		addOrReplaceMeshes(result, MeshType_Opaque);
+		addOrReplaceMeshes(result, MeshType_Transparency);
 		return result.idx;
 	}
 	return -1;
@@ -105,7 +113,7 @@ bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
 		auto &meshes = _meshes[i];
 		auto iter = meshes.find(pos);
 		if (iter != meshes.end()) {
-			MeshState::Meshes &array = iter->second;
+			MeshState::Meshes &array = iter->value;
 			voxel::Mesh *mesh = array[idx];
 			delete mesh;
 			array[idx] = nullptr;
@@ -119,8 +127,8 @@ bool MeshState::deleteMeshes(int idx) {
 	bool d = false;
 	for (int i = 0; i < MeshType_Max; ++i) {
 		auto &meshes = _meshes[i];
-		for (auto &iter : meshes) {
-			MeshState::Meshes &array = iter.second;
+		for (const auto &iter : meshes) {
+			MeshState::Meshes &array = iter->value;
 			voxel::Mesh *mesh = array[idx];
 			delete mesh;
 			array[idx] = nullptr;
@@ -135,8 +143,8 @@ const MeshState::MeshesMap &MeshState::meshes(MeshType type) const {
 }
 
 void MeshState::count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const {
-	for (auto &i : _meshes[meshType]) {
-		const MeshState::Meshes &meshes = i.second;
+	for (const auto &i : _meshes[meshType]) {
+		const MeshState::Meshes &meshes = i->value;
 		const voxel::Mesh *mesh = meshes[idx];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;

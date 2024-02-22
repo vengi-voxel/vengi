@@ -9,12 +9,12 @@
 #include "core/Var.h"
 #include "core/collection/Array.h"
 #include "core/collection/ConcurrentPriorityQueue.h"
+#include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
 #include "core/concurrent/ThreadPool.h"
 #include "palette/Palette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
-#include <unordered_map>
 
 #include "core/GLM.h"
 #include "voxel/RawVolume.h"
@@ -33,13 +33,13 @@ enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 /**
  * @brief Handles the mesh extraction of the volumes
  *
- * @note This class doesn't own the voxel::RawVolume instances. It's up to the caller to inform this class about deleted
+ * @note This class doesn't own the @c voxel::RawVolume instances. It's up to the caller to inform this class about deleted
  * or added volumes.
  */
 class MeshState {
 public:
 	typedef core::Array<voxel::Mesh *, MAX_VOLUMES> Meshes;
-	typedef std::unordered_map<glm::ivec3, Meshes> MeshesMap;
+	typedef core::DynamicMap<glm::ivec3, Meshes, 531, glm::hash<glm::ivec3>> MeshesMap;
 
 private:
 	struct VolumeData {
@@ -106,6 +106,7 @@ private:
 	bool scheduleExtractions(size_t maxExtraction = 1);
 	void waitForPendingExtractions();
 	bool deleteMeshes(int idx);
+	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
 
 public:
 	const MeshesMap &meshes(MeshType type) const;

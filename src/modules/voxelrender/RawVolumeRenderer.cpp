@@ -288,8 +288,8 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, MeshType type) {
 	voxel::IndexType *indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
-	for (auto &i : _meshState->meshes(type)) {
-		const MeshState::Meshes &meshes = i.second;
+	for (const auto &i : _meshState->meshes(type)) {
+		const MeshState::Meshes &meshes = i->second;
 		const voxel::Mesh *mesh = meshes[bufferIndex];
 		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
 			continue;
@@ -445,7 +445,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	if (!visible) {
 		return;
 	}
-	for (auto &i : _meshState->meshes(MeshType_Transparency)) {
+	for (const auto &i : _meshState->meshes(MeshType_Transparency)) {
 		for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
 			if (!isVisible(idx)) {
 				continue;
@@ -453,7 +453,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			const int bufferIndex = _meshState->resolveIdx(idx);
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
-			voxel::Mesh *mesh = i.second[bufferIndex];
+			voxel::Mesh *mesh = i->second[bufferIndex];
 			if (mesh && mesh->sort(camera.eye())) {
 				updateBufferForVolume(bufferIndex, MeshType_Transparency);
 			}
