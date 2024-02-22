@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/TimeProvider.h"
 #include "core/collection/DynamicArray.h"
+#include "core/concurrent/Atomic.h"
 #include "core/concurrent/Concurrency.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
@@ -49,9 +50,9 @@ app::AppState VoxBrowser::onConstruct() {
 		downloadAll();
 	}).setHelp("Download all missing files");
 
-	command::Command::registerCommand("thumbnailall", [this](const command::CmdArgs &args) {
+	command::Command::registerCommand("thumbnaildownloadall", [this](const command::CmdArgs &args) {
 		thumbnailAll();
-	}).setHelp("Create missing thumbnails");
+	}).setHelp("Download missing thumbnails");
 
 	return state;
 }
@@ -112,7 +113,7 @@ app::AppState VoxBrowser::onInit() {
 }
 
 void VoxBrowser::onRenderUI() {
-	_mainWindow->update(_voxelFilesMap);
+	_mainWindow->update(_voxelFilesMap, _downloadProgress);
 }
 
 void VoxBrowser::printUsageHeader() const {
@@ -121,16 +122,26 @@ void VoxBrowser::printUsageHeader() const {
 }
 
 void VoxBrowser::downloadAll() {
-	app::async([voxelFilesMap = _voxelFilesMap]() {
+	app::async([this, voxelFilesMap = _voxelFilesMap]() {
+		int all = 0;
+		for (const auto &e : voxelFilesMap) {
+			all += (int)e->value.size();
+		}
+
+		int current = 0;
 		for (const auto &e : voxelFilesMap) {
 			for (const voxbrowser::VoxelFile &voxelFile : e->value) {
+				++current;
 				if (voxelFile.downloaded) {
 					continue;
 				}
 				voxbrowser::Downloader downloader;
 				downloader.download(voxelFile);
+				const float p = ((float)current / (float)all * 100.0f);
+				_downloadProgress = (int)p;
 			}
 		}
+		_downloadProgress = 0;
 	});
 }
 

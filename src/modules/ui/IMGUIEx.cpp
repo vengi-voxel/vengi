@@ -607,4 +607,5 @@ bool DisabledIconButton(const char *icon, const char *text, bool disabled, const
 	const core::String &label = core::string::format("%s %s", icon, text);
 	return DisabledButton(label.c_str(), disabled, size);
 }
+
 }

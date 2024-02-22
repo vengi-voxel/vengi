@@ -57,7 +57,7 @@ public:
 	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
 	virtual ~MainWindow();
 	bool init();
-	void update(const VoxelFileMap &voxelFiles);
+	void update(const VoxelFileMap &voxelFiles, int downloadProgress);
 	void shutdown();
 };
 

@@ -350,7 +350,7 @@ void MainWindow::registerPopups() {
 	ui::popupAbout();
 }
 
-void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
+void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downloadProgress) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
@@ -411,6 +411,7 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 	ImGui::End();
 #endif
 
+	_statusBar.downloadProgress((float)downloadProgress / 100.0f);
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight);
 
 	if (!existingLayout && viewport->WorkSize.x > 0.0f) {

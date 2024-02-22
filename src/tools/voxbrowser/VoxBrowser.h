@@ -26,6 +26,7 @@ private:
 	core::ConcurrentQueue<image::ImagePtr> _imageQueue;
 	voxbrowser::VoxelFileMap _voxelFilesMap;
 	video::TexturePool _texturePool;
+	core::AtomicInt _downloadProgress = 0; // 0-100
 
 	void loadThumbnail(const voxbrowser::VoxelFile &voxelFile);
 	void downloadAll();

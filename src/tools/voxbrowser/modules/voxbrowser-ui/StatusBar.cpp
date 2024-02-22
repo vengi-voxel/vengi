@@ -3,6 +3,7 @@
  */
 
 #include "StatusBar.h"
+#include <glm/common.hpp>
 #include "ui/ScopedStyle.h"
 
 namespace voxbrowser {
@@ -22,7 +23,16 @@ void StatusBar::update(const char *title, float height) {
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
 		ImGui::Text("x entries");
 	}
+	if (_downloadActive) {
+		ImGui::SameLine();
+		ImGui::ProgressBar(_downloadProgress, ImVec2(-1, 0), "Downloading...");
+	}
 	ImGui::End();
+}
+
+void StatusBar::downloadProgress(float value) {
+	_downloadProgress = glm::clamp(value, 0.0f, 1.0f);
+	_downloadActive = _downloadProgress > 0.0f && _downloadProgress < 1.0f;
 }
 
 } // namespace voxbrowser
