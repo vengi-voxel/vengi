@@ -129,6 +129,15 @@
 				"commit": "master",
 				"license": "voxelpack_art_license.txt"
 			}
+		},
+		{
+			"name": "Shadow Warrior voxel pack",
+			"license": "custom",
+			"github": {
+				"repo": "fgsfds/Shadow-Warrior-Voxel-Pack",
+				"commit": "master",
+				"license": "license.txt"
+			}
 		}
 	]
 }
