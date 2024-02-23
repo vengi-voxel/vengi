@@ -3,14 +3,14 @@
  */
 
 #include "Mesh.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "core/Assert.h"
 #include "core/collection/DynamicArray.h"
 #include "util/BufferUtil.h"
+#include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vector_relational.hpp>
-#include <glm/common.hpp>
 
 namespace voxel {
 
@@ -23,7 +23,7 @@ Mesh::Mesh(int vertices, int indices, bool mayGetResized) : _mayGetResized(mayGe
 	}
 }
 
-Mesh::Mesh(Mesh&& other) noexcept {
+Mesh::Mesh(Mesh &&other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
 	_normals = core::move(other._normals);
 	_vecVertices = core::move(other._vecVertices);
@@ -35,13 +35,13 @@ Mesh::Mesh(Mesh&& other) noexcept {
 	_mayGetResized = other._mayGetResized;
 }
 
-Mesh::Mesh(const Mesh& other) {
+Mesh::Mesh(const Mesh &other) {
 	_vecIndices = other._vecIndices;
 	_normals = other._normals;
 	_vecVertices = other._vecVertices;
 	_compressedIndexSize = other._compressedIndexSize;
 	if (other._compressedIndices != nullptr) {
-		_compressedIndices = (uint8_t*)core_malloc(_vecIndices.size() * _compressedIndexSize);
+		_compressedIndices = (uint8_t *)core_malloc(_vecIndices.size() * _compressedIndexSize);
 		core_memcpy(_compressedIndices, other._compressedIndices, _vecIndices.size() * _compressedIndexSize);
 	} else {
 		_compressedIndices = nullptr;
@@ -50,7 +50,7 @@ Mesh::Mesh(const Mesh& other) {
 	_mayGetResized = other._mayGetResized;
 }
 
-Mesh& Mesh::operator=(const Mesh& other) {
+Mesh &Mesh::operator=(const Mesh &other) {
 	if (&other == this) {
 		return *this;
 	}
@@ -60,7 +60,7 @@ Mesh& Mesh::operator=(const Mesh& other) {
 	_compressedIndexSize = other._compressedIndexSize;
 	core_free(_compressedIndices);
 	if (other._compressedIndices != nullptr) {
-		_compressedIndices = (uint8_t*)core_malloc(_vecIndices.size() * _compressedIndexSize);
+		_compressedIndices = (uint8_t *)core_malloc(_vecIndices.size() * _compressedIndexSize);
 		core_memcpy(_compressedIndices, other._compressedIndices, _vecIndices.size() * _compressedIndexSize);
 	} else {
 		_compressedIndices = nullptr;
@@ -70,7 +70,7 @@ Mesh& Mesh::operator=(const Mesh& other) {
 	return *this;
 }
 
-Mesh& Mesh::operator=(Mesh&& other) noexcept {
+Mesh &Mesh::operator=(Mesh &&other) noexcept {
 	_vecIndices = core::move(other._vecIndices);
 	_normals = core::move(other._normals);
 	_vecVertices = core::move(other._vecVertices);
@@ -88,27 +88,27 @@ Mesh::~Mesh() {
 	core_free(_compressedIndices);
 }
 
-const NormalArray& Mesh::getNormalVector() const {
+const NormalArray &Mesh::getNormalVector() const {
 	return _normals;
 }
 
-const IndexArray& Mesh::getIndexVector() const {
+const IndexArray &Mesh::getIndexVector() const {
 	return _vecIndices;
 }
 
-const VertexArray& Mesh::getVertexVector() const {
+const VertexArray &Mesh::getVertexVector() const {
 	return _vecVertices;
 }
 
-IndexArray& Mesh::getIndexVector() {
+IndexArray &Mesh::getIndexVector() {
 	return _vecIndices;
 }
 
-VertexArray& Mesh::getVertexVector() {
+VertexArray &Mesh::getVertexVector() {
 	return _vecVertices;
 }
 
-NormalArray& Mesh::getNormalVector() {
+NormalArray &Mesh::getNormalVector() {
 	return _normals;
 }
 
@@ -116,11 +116,11 @@ size_t Mesh::getNoOfVertices() const {
 	return _vecVertices.size();
 }
 
-const VoxelVertex& Mesh::getVertex(IndexType index) const {
+const VoxelVertex &Mesh::getVertex(IndexType index) const {
 	return _vecVertices[index];
 }
 
-const VoxelVertex* Mesh::getRawVertexData() const {
+const VoxelVertex *Mesh::getRawVertexData() const {
 	return _vecVertices.data();
 }
 
@@ -132,15 +132,15 @@ IndexType Mesh::getIndex(IndexType index) const {
 	return _vecIndices[index];
 }
 
-const IndexType* Mesh::getRawIndexData() const {
+const IndexType *Mesh::getRawIndexData() const {
 	return _vecIndices.data();
 }
 
-const glm::ivec3& Mesh::getOffset() const {
+const glm::ivec3 &Mesh::getOffset() const {
 	return _offset;
 }
 
-void Mesh::setOffset(const glm::ivec3& offset) {
+void Mesh::setOffset(const glm::ivec3 &offset) {
 	_offset = offset;
 }
 
@@ -155,12 +155,18 @@ bool Mesh::isEmpty() const {
 }
 
 void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
-	//Make sure the specified indices correspond to valid vertices.
-	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index0, (int)_vecVertices.size());
-	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index1, (int)_vecVertices.size());
-	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index2, (int)_vecVertices.size());
+	// Make sure the specified indices correspond to valid vertices.
+	core_assert_msg(index0 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index0,
+					(int)_vecVertices.size());
+	core_assert_msg(index1 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index1,
+					(int)_vecVertices.size());
+	core_assert_msg(index2 < _vecVertices.size(), "Index points at an invalid vertex (%i/%i).", (int)index2,
+					(int)_vecVertices.size());
 	if (!_mayGetResized) {
-		core_assert_msg(_vecIndices.size() + 3 < _vecIndices.capacity(), "addTriangle() call exceeds the capacity of the indices vector and will trigger a realloc (%i vs %i)", (int)_vecIndices.size(), (int)_vecIndices.capacity());
+		core_assert_msg(
+			_vecIndices.size() + 3 < _vecIndices.capacity(),
+			"addTriangle() call exceeds the capacity of the indices vector and will trigger a realloc (%i vs %i)",
+			(int)_vecIndices.size(), (int)_vecIndices.capacity());
 	}
 
 	_vecIndices.push_back(index0);
@@ -168,11 +174,15 @@ void Mesh::addTriangle(IndexType index0, IndexType index1, IndexType index2) {
 	_vecIndices.push_back(index2);
 }
 
-IndexType Mesh::addVertex(const VoxelVertex& vertex) {
+IndexType Mesh::addVertex(const VoxelVertex &vertex) {
 	// We should not add more vertices than our chosen index type will let us index.
-	core_assert_msg(_vecVertices.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more vertices that the chosen index type allows.");
+	core_assert_msg(_vecVertices.size() < (std::numeric_limits<IndexType>::max)(),
+					"Mesh has more vertices that the chosen index type allows.");
 	if (!_mayGetResized) {
-		core_assert_msg(_vecVertices.size() + 1 < _vecVertices.capacity(), "addVertex() call exceeds the capacity of the vertices vector and will trigger a realloc (%i vs %i)", (int)_vecVertices.size(), (int)_vecVertices.capacity());
+		core_assert_msg(
+			_vecVertices.size() + 1 < _vecVertices.capacity(),
+			"addVertex() call exceeds the capacity of the vertices vector and will trigger a realloc (%i vs %i)",
+			(int)_vecVertices.size(), (int)_vecVertices.capacity());
 	}
 
 	_vecVertices.push_back(vertex);
@@ -181,7 +191,8 @@ IndexType Mesh::addVertex(const VoxelVertex& vertex) {
 
 void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
 	// We should not add more vertices than our chosen index type will let us index.
-	core_assert_msg(_normals.size() < (std::numeric_limits<IndexType>::max)(), "Mesh has more normals that the chosen index type allows.");
+	core_assert_msg(_normals.size() < (std::numeric_limits<IndexType>::max)(),
+					"Mesh has more normals that the chosen index type allows.");
 	_normals.resize(_vecVertices.size());
 	_normals[index] = normal;
 }
@@ -230,7 +241,7 @@ void Mesh::compressIndices() {
 	}
 	const size_t maxSize = _vecIndices.size() * sizeof(voxel::IndexType);
 	core_free(_compressedIndices);
-	_compressedIndices = (uint8_t*)core_malloc(maxSize);
+	_compressedIndices = (uint8_t *)core_malloc(maxSize);
 	util::indexCompress(&_vecIndices.front(), maxSize, _compressedIndexSize, _compressedIndices, maxSize);
 }
 
@@ -271,7 +282,7 @@ void Mesh::calculateBounds() {
 	}
 }
 
-bool Mesh::operator<(const Mesh& rhs) const {
+bool Mesh::operator<(const Mesh &rhs) const {
 	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 }
 
@@ -291,3 +302,4 @@ bool Mesh::sort(const glm::vec3 &objectSpaceEye) {
 }
 
 }
+} // namespace voxel

@@ -454,7 +454,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			// TODO: transform - vertices are in object space - eye in world space
 			// inverse of state._model - but take pivot into account
 			voxel::Mesh *mesh = i->second[bufferIndex];
-			if (mesh && mesh->sort(camera.eye())) {
+			if (mesh && mesh->sort(camera.worldPosition())) {
 				updateBufferForVolume(bufferIndex, MeshType_Transparency);
 			}
 		}

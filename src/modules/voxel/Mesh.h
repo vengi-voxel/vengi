@@ -44,7 +44,7 @@ public:
 
 	// e.g. for transparency
 	// returns true if sorting was needed
-	bool sort(const glm::vec3 &objectSpaceEye);
+	bool sort(const glm::vec3 &cameraPos);
 
 	const glm::ivec3& getOffset() const;
 	void setOffset(const glm::ivec3& offset);
