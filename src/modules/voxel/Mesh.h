@@ -74,7 +74,8 @@ private:
 	glm::highp_vec3 _maxs {0};
 	uint8_t *_compressedIndices = nullptr;
 	size_t _compressedIndexSize = 0u;
-	glm::ivec3 _offset { 0 };
+	glm::ivec3 _offset{0};
+	glm::vec3 _lastCameraPos{0.0f};
 	bool _mayGetResized;
 };
 

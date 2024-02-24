@@ -5,11 +5,13 @@
 #include "Mesh.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/Log.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "util/BufferUtil.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include <glm/vector_relational.hpp>
 
 namespace voxel {
@@ -286,20 +288,213 @@ bool Mesh::operator<(const Mesh &rhs) const {
 	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
 }
 
-bool Mesh::sort(const glm::vec3 &objectSpaceEye) {
-#if 0
-	for (int idx = 0; idx < (int)_vecIndices.size(); idx += 3) {
-		const voxel::IndexType i0 = _vecIndices[idx + 0];
-		const voxel::IndexType i1 = _vecIndices[idx + 1];
-		const voxel::IndexType i2 = _vecIndices[idx + 2];
-		const voxel::VoxelVertex &v0 = _vecVertices[i0];
-		const voxel::VoxelVertex &v1 = _vecVertices[i1];
-		const voxel::VoxelVertex &v2 = _vecVertices[i2];
-		const glm::vec3 center = (v0.position + v1.position + v2.position) / 3.0f;
+struct Triangle {
+	const VoxelVertex *v0;
+	const VoxelVertex *v1;
+	const VoxelVertex *v2;
+	voxel::IndexType *i0;
+	voxel::IndexType *i1;
+	voxel::IndexType *i2;
+	voxel::IndexType vi0;
+	voxel::IndexType vi1;
+	voxel::IndexType vi2;
+
+	inline glm::vec3 center() const {
+		return (v0->position + v1->position + v2->position) / 3.0f;
 	}
-#endif
-	return false;
+
+	Triangle(const VoxelVertex *v0, const VoxelVertex *v1, const VoxelVertex *v2, voxel::IndexType *i0,
+			 voxel::IndexType *i1, voxel::IndexType *i2)
+		: v0(v0), v1(v1), v2(v2), i0(i0), i1(i1), i2(i2) {
+		if (i0 != nullptr) {
+			vi0 = *i0;
+			vi1 = *i1;
+			vi2 = *i2;
+		} else {
+			vi0 = -1;
+			vi1 = -1;
+			vi2 = -1;
+		}
+	}
+
+	Triangle(const Triangle &rhs)
+		: v0(rhs.v0), v1(rhs.v1), v2(rhs.v2), i0(rhs.i0), i1(rhs.i1), i2(rhs.i2), vi0(rhs.vi0), vi1(rhs.vi1),
+		  vi2(rhs.vi2) {
+	}
+
+	Triangle(Triangle &&rhs) noexcept
+		: v0(rhs.v0), v1(rhs.v1), v2(rhs.v2), i0(rhs.i0), i1(rhs.i1), i2(rhs.i2), vi0(rhs.vi0), vi1(rhs.vi1),
+		  vi2(rhs.vi2) {
+	}
+
+	Triangle &operator=(const Triangle &rhs) {
+		if (this == &rhs) {
+			return *this;
+		}
+		v0 = rhs.v0;
+		v1 = rhs.v1;
+		v2 = rhs.v2;
+		vi0 = rhs.vi0;
+		vi1 = rhs.vi1;
+		vi2 = rhs.vi2;
+		if (rhs.v0 != nullptr) {
+			*i0 = vi0;
+			*i1 = vi1;
+			*i2 = vi2;
+		} else {
+			i0 = nullptr;
+			i1 = nullptr;
+			i2 = nullptr;
+		}
+		return *this;
+	}
+
+	Triangle &operator=(Triangle &&rhs) noexcept {
+		if (this == &rhs) {
+			return *this;
+		}
+		v0 = rhs.v0;
+		v1 = rhs.v1;
+		v2 = rhs.v2;
+		vi0 = rhs.vi0;
+		vi1 = rhs.vi1;
+		vi2 = rhs.vi2;
+		if (rhs.i0 != nullptr) {
+			*i0 = vi0;
+			*i1 = vi1;
+			*i2 = vi2;
+		} else {
+			i0 = nullptr;
+			i1 = nullptr;
+			i2 = nullptr;
+		}
+		return *this;
+	}
+};
+
+struct TriangleView {
+	TriangleView(const VertexArray &vecVertices, IndexArray &vecIndices)
+		: _vecVertices(vecVertices), _vecIndices(vecIndices) {
+	}
+	const VertexArray &_vecVertices;
+	IndexArray &_vecIndices;
+
+	int size() const {
+		return (int)_vecIndices.size() / 3;
+	}
+
+	class iterator {
+	private:
+		Triangle _tri{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+		const VertexArray *_vecVertices;
+		IndexArray *_vecIndices;
+		int _idx;
+
+		void updateTri() {
+			if (_idx < 0 || _idx >= (int)_vecIndices->size() / 3) {
+				_tri = Triangle(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+				return;
+			}
+			_tri.i0 = &(*_vecIndices)[(_idx * 3) + 0];
+			_tri.i1 = &(*_vecIndices)[(_idx * 3) + 1];
+			_tri.i2 = &(*_vecIndices)[(_idx * 3) + 2];
+			_tri.v0 = &(*_vecVertices)[*_tri.i0];
+			_tri.v1 = &(*_vecVertices)[*_tri.i1];
+			_tri.v2 = &(*_vecVertices)[*_tri.i2];
+			_tri.vi0 = *_tri.i0;
+			_tri.vi1 = *_tri.i1;
+			_tri.vi2 = *_tri.i2;
+		}
+
+	public:
+		iterator(const VertexArray *vecVertices, IndexArray *vecIndices, int idx)
+			: _vecVertices(vecVertices), _vecIndices(vecIndices), _idx(idx) {
+			updateTri();
+		}
+
+		iterator(iterator &&i) noexcept : _vecVertices(i._vecVertices), _vecIndices(i._vecIndices), _idx(i._idx) {
+			i._vecVertices = nullptr;
+			i._vecIndices = nullptr;
+			i._idx = -1;
+			i.updateTri();
+			updateTri();
+		}
+
+		iterator(const iterator &i) : _vecVertices(i._vecVertices), _vecIndices(i._vecIndices), _idx(i._idx) {
+			updateTri();
+		}
+
+		iterator operator=(const iterator &i) {
+			if (this == &i) {
+				return *this;
+			}
+			_idx = i._idx;
+			updateTri();
+			return *this;
+		}
+
+		iterator operator=(iterator &&i) noexcept {
+			if (this == &i) {
+				return *this;
+			}
+			_idx = i._idx;
+			i._vecVertices = nullptr;
+			i._vecIndices = nullptr;
+			i._idx = -1;
+			i.updateTri();
+			updateTri();
+			return *this;
+		}
+
+		Triangle &operator*() {
+			return _tri;
+		}
+
+		const Triangle &operator*() const {
+			return _tri;
+		}
+
+		bool operator==(const iterator &rhs) const {
+			return _idx == rhs._idx;
+		}
+
+		bool operator!=(const iterator &rhs) const {
+			return _idx != rhs._idx;
+		}
+
+		iterator &operator--() {
+			--_idx;
+			updateTri();
+			return *this;
+		}
+
+		iterator &operator++() {
+			++_idx;
+			updateTri();
+			return *this;
+		}
+	};
+
+	iterator begin() {
+		return iterator(&_vecVertices, &_vecIndices, 0);
+	}
+
+	iterator end() {
+		return iterator(&_vecVertices, &_vecIndices, size());
+	}
+};
+
+bool Mesh::sort(const glm::vec3 &cameraPos) {
+	if (glm::all(glm::epsilonEqual(cameraPos, _lastCameraPos, glm::vec3(0.5f)))) {
+		return false;
+	}
+	_lastCameraPos = cameraPos;
+	core_trace_scoped(MeshSort);
+	TriangleView triView(_vecVertices, _vecIndices);
+	core::sort(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
+		return glm::distance(lhs.center(), cameraPos) < glm::distance(rhs.center(), cameraPos);
+	});
+	return true;
 }
 
-}
 } // namespace voxel
