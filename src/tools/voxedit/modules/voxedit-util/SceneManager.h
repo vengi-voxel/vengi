@@ -7,6 +7,7 @@
 #include "ISceneRenderer.h"
 #include "MementoHandler.h"
 #include "command/ActionButton.h"
+#include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
 #include "core/Singleton.h"
@@ -54,7 +55,7 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 /**
  * @note The data is shared across all viewports
  */
-class SceneManager : public core::IComponent {
+class SceneManager : public core::DeltaFrameSeconds {
 private:
 	scenegraph::SceneGraph _sceneGraph;
 	MementoHandler _mementoHandler;

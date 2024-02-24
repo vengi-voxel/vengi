@@ -7,7 +7,6 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
-#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -18,12 +17,10 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
-#include "voxel/Mesh.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <limits>
 
 namespace voxelformat {
 

@@ -2436,7 +2436,7 @@ void SceneManager::zoom(video::Camera& camera, float level) const {
 		// see Movement class
 		const glm::quat& rot = glm::angleAxis(0.0f, glm::up());
 		float speed = level * _movementSpeed->floatVal();
-		speed *= (float)app::App::getInstance()->deltaFrameSeconds();
+		speed *= (float)deltaSeconds();
 		camera.move(rot * glm::vec3(0.0f, 0.0f, speed));
 	}
 }
@@ -2446,6 +2446,7 @@ bool SceneManager::isLoading() const {
 }
 
 bool SceneManager::update(double nowSeconds) {
+	updateDelta(nowSeconds);
 	bool loadedNewScene = false;
 	if (_loadingFuture.valid()) {
 		using namespace std::chrono_literals;

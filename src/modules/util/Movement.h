@@ -5,7 +5,7 @@
 #pragma once
 
 #include "command/ActionButton.h"
-#include "core/IComponent.h"
+#include "core/DeltaFrameSeconds.h"
 #include <glm/fwd.hpp>
 #include <glm/vec3.hpp>
 
@@ -16,15 +16,12 @@ namespace util {
  *
  * @see command::ActionButton
  */
-class Movement : public core::IComponent {
+class Movement : public core::DeltaFrameSeconds {
 protected:
 	command::ActionButton _moveLeft;
 	command::ActionButton _moveRight;
 	command::ActionButton _moveBackward;
 	command::ActionButton _moveForward;
-
-	double _deltaSeconds = -1.0;
-	double _nowSeconds = 0.0;
 
 	glm::vec3 calculateDelta(const glm::quat& rot, double speed);
 
