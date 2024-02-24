@@ -107,7 +107,7 @@ bool ComboVar(const char* label, const char* varName, const Collection &items) {
 }
 
 IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
-IMGUI_API void TextCentered(const char *text);
+IMGUI_API void TextCentered(const char *text, bool reset = false);
 IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));

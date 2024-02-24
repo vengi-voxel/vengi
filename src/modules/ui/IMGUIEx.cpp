@@ -276,14 +276,16 @@ bool TooltipText(const char* msg, ...) {
 	return false;
 }
 
-void TextCentered(const char *text) {
+void TextCentered(const char *text, bool reset) {
 	const ImVec2& size = ImGui::CalcTextSize(text);
 	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
 	const ImVec2 restore = ImGui::GetCursorPos();
 	ImGui::SetCursorPosX((maxs.x - size.x) * 0.5f);
 	ImGui::SetCursorPosY((maxs.y - size.y) * 0.5f);
 	ImGui::TextUnformatted(text);
-	ImGui::SetCursorPos(restore);
+	if (reset) {
+		ImGui::SetCursorPos(restore);
+	}
 }
 
 void Headline(const char *text) {
