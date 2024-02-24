@@ -36,6 +36,7 @@ set(TEST_SRCS
 	tests/AbstractVoxelTest.h
 	tests/AmbientOcclusionTest.cpp
 	tests/FaceTest.cpp
+	tests/MeshTests.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp
