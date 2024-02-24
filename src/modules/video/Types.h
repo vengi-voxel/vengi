@@ -186,16 +186,23 @@ enum class Vendor {
 };
 
 enum class State {
-	DepthMask,
-	StencilTest,
-	DepthTest,
-	// Cull triangles whose normal is not towards the camera
-	CullFace,
+	DepthMask, // The depth buffer write can be masked, thus preventing the depth buffer from being updated. This useful
+			   // for implementing transparency.
+	StencilTest, // The Stencil Test is a per-sample operation performed after the Fragment Shader. The fragment's
+				 // stencil value is tested against the value in the current stencil buffer; if the test fails, the
+				 // fragment is culled.
+	DepthTest, // The Depth Test is a per-sample processing operation performed after the Fragment Shader (and sometimes
+			   // before). The Fragment's output depth value may be tested against the depth of the sample being written
+			   // to. If the test fails, the fragment is discarded. If the test passes, the depth buffer will be updated
+			   // with the fragment's output depth, unless a subsequent per-sample operation prevents it (such as
+			   // turning off depth writes).
+	CullFace,  // Cull triangles whose normal is not towards the camera
 	Blend,
 	PolygonOffsetFill,
 	PolygonOffsetPoint,
 	PolygonOffsetLine,
-	Scissor,
+	Scissor, // The Scissor Test is a Per-Sample Processing operation that discards Fragments that fall outside of a
+			 // certain rectangular portion of the screen.
 	MultiSample,
 	LineSmooth,
 	DebugOutput,
