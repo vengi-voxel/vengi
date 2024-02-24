@@ -167,12 +167,31 @@ void MainWindow::updateAsset() {
 	if (ImGui::Begin(TITLE_ASSET, nullptr,
 					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
 						 ImGuiWindowFlags_HorizontalScrollbar)) {
-		if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
-			image(texture);
-		} else {
+		if (voxelFile.name.empty()) {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigFont());
-			ImGui::TextCentered("No thumbnail available");
+			ImGui::TextCentered("Nothing selected");
+		} else if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
+			image(texture);
+		} else {
+			{
+				ui::ScopedStyle style;
+				style.setFont(_app->bigFont());
+				ImGui::TextCentered("No thumbnail available", false);
+			}
+
+			if (voxelFile.downloaded && !_texturePool.has(voxelFile.name)) {
+				createThumbnail(voxelFile);
+			} else {
+				if (ImGui::Button("Download")) {
+					http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
+					if (stream.valid()) {
+						voxelFile.downloaded = true;
+					} else {
+						Log::warn("Failed to download %s", voxelFile.url.c_str());
+					}
+				}
+			}
 		}
 	}
 	ImGui::End();
