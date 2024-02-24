@@ -23,8 +23,8 @@
 
 namespace voxedit {
 
-PalettePanel::PalettePanel()
-	: _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
+PalettePanel::PalettePanel(ui::IMGUIApp *app)
+	: Super(app), _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
 	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())) {
 	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }
@@ -256,11 +256,11 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 				_popupSwitchPalette = true;
 			}
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export##savepalette"))) {
-				imguiApp()->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
+				_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_DOWNLOAD, _("Lospec##lospecpalette"))) {
 				const char *command = "loadpalette";
-				const core::String &keybinding = imguiApp()->getKeyBindingsString(command);
+				const core::String &keybinding = _app->getKeyBindingsString(command);
 				ImGui::InputText(_("ID##lospecpalette"), &_lospecID);
 				if (ImGui::MenuItem(_("Ok"), keybinding.c_str(), false, true)) {
 					core::String cmd = command;
@@ -315,7 +315,8 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	SceneManager &mgr = sceneMgr();
+	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), ImGui::GetContentRegionMax().y);
@@ -349,14 +350,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
 			_colorPickerChange = false;
-			sceneMgr().mementoHandler().markPaletteChange(node);
+			mgr.mementoHandler().markPaletteChange(node);
 		}
 	}
 
 	ImGui::End();
 
 	if (!_importPalette.empty()) {
-		sceneMgr().importPalette(_importPalette);
+		mgr.importPalette(_importPalette);
 	}
 }
 
@@ -374,14 +375,15 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 	const bool existingColor = palIdx < maxPaletteEntries;
 
 	if (ImGui::ColorPicker4(_("Color"), glm::value_ptr(color), flags)) {
+		SceneManager &mgr = sceneMgr();
 		const bool hasAlpha = palette.color(palIdx).a != 255;
 		palette.color(palIdx) = core::Color::getRGBA(color);
 		if (!existingColor) {
 			palette.setSize(palIdx + 1);
 		} else if (hasAlpha && palette.color(palIdx).a == 255) {
-			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			mgr.updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 		} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-			sceneMgr().updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+			mgr.updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 		palette.markDirty();
 		palette.markSave();

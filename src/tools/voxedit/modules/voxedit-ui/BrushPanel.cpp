@@ -312,7 +312,7 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 
 void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	ui::ScopedStyle style;
-	style.setFont(imguiApp()->bigIconFont());
+	style.setFont(_app->bigIconFont());
 
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 

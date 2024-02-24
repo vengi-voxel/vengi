@@ -11,6 +11,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IMGUIApp.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"
@@ -201,7 +202,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 	ImGui::End();
 }
 
-bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
+bool ScriptPanel::updateEditor(const char *title) {
 	if (!_scriptEditor) {
 		return false;
 	}
@@ -214,7 +215,7 @@ bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 				}
 				if (!_activeScriptFilename.empty()) {
 					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save##scripteditor"))) {
-						if (app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
+						if (_app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
 													 _textEditor.GetText())) {
 							_activeScript = _textEditor.GetText();
 							reloadScriptParameters(_activeScript);
@@ -224,9 +225,9 @@ bool ScriptPanel::updateEditor(const char *title, ui::IMGUIApp *app) {
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save As##scripteditor"))) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
-					app->saveDialog(
+					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
-							if (app->filesystem()->write(file, _textEditor.GetText())) {
+							if (_app->filesystem()->write(file, _textEditor.GetText())) {
 								_scripts.clear();
 								_currentScript = -1;
 								Log::info("Saved script to %s", file.c_str());

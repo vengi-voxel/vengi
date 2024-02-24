@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
 
@@ -15,7 +16,7 @@ namespace voxedit {
 
 class AABBBrush;
 
-class BrushPanel {
+class BrushPanel : public ui::Panel {
 private:
 	core::String _stamp;
 	int _stampPaletteIndex = 0;
@@ -39,6 +40,7 @@ private:
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 public:
+	PANEL_CLASS(BrushPanel)
 	void update(const char *title, command::CommandExecutionListener &listener);
 };
 

@@ -4,14 +4,14 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "command/CommandHandler.h"
-#include "image/Image.h"
-#include "math/Axis.h"
 
 namespace voxedit {
 
-class MementoPanel {
+class MementoPanel : public ui::Panel {
 public:
+	PANEL_CLASS(MementoPanel)
 	void update(const char *title, command::CommandExecutionListener &listener);
 };
 

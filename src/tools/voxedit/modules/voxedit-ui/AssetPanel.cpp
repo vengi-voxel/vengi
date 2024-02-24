@@ -20,14 +20,14 @@
 
 namespace voxedit {
 
-AssetPanel::AssetPanel(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
-	loadTextures(filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
-	loadModels(filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
+AssetPanel::AssetPanel(ui::IMGUIApp *app) : Super(app) {
+	loadTextures(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
+	loadModels(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
 }
 
 void AssetPanel::loadModels(const core::String &dir) {
 	core::DynamicArray<io::FilesystemEntry> entities;
-	_filesystem->list(dir, entities);
+	_app->filesystem()->list(dir, entities);
 	_models.clear();
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);
@@ -39,7 +39,7 @@ void AssetPanel::loadModels(const core::String &dir) {
 
 void AssetPanel::loadTextures(const core::String &dir) {
 	core::DynamicArray<io::FilesystemEntry> entities;
-	_filesystem->list(dir, entities);
+	_app->filesystem()->list(dir, entities);
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);
 		if (io::isImage(fullName)) {
@@ -55,7 +55,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		if (ImGui::CollapsingHeader(_("Models"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, _("Open model directory"))) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadModels(dir); };
-				imguiApp()->directoryDialog(callback, {});
+				_app->directoryDialog(callback, {});
 			}
 
 			if (ImGui::BeginListBox("##assetmodels", ImVec2(-FLT_MIN, 5 * ImGui::GetTextLineHeightWithSpacing()))) {
@@ -69,8 +69,9 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						ImGui::SetItemDefaultFocus();
 					}
 					if (ImGui::BeginPopupContextItem()) {
+						SceneManager &mgr = sceneMgr();
 						if (ImGui::MenuItem(_("Use stamp"))) {
-							Modifier &modifier = sceneMgr().modifier();
+							Modifier &modifier = mgr.modifier();
 							StampBrush &brush = modifier.stampBrush();
 							if (brush.load(model)) {
 								modifier.setBrushType(BrushType::Stamp);
@@ -78,7 +79,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						}
 						ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
 						if (ImGui::MenuItem(_("Add to scene"))) {
-							sceneMgr().import(model);
+							mgr.import(model);
 						}
 						ImGui::EndPopup();
 					}
@@ -97,7 +98,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		if (ImGui::CollapsingHeader(_("Images"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			if (ImGui::IconButton(ICON_LC_FOLDER_TREE, _("Open image directory"))) {
 				auto callback = [this](const core::String &dir, const io::FormatDescription *desc) { loadTextures(dir); };
-				imguiApp()->directoryDialog(callback, {});
+				_app->directoryDialog(callback, {});
 			}
 			int n = 1;
 			ImGuiStyle &style = ImGui::GetStyle();

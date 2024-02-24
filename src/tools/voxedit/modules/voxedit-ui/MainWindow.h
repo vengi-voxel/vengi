@@ -6,8 +6,8 @@
 
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
-#include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/Panel.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
@@ -32,8 +32,10 @@ namespace voxedit {
 class Viewport;
 struct TemplateModel;
 
-class MainWindow {
+class MainWindow : public ui::Panel {
 private:
+	using Super = ui::Panel;
+
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
 	core::VarPtr _simplifiedView;
@@ -60,19 +62,19 @@ private:
 
 	core::String _currentNodeName;
 
-	ui::IMGUIApp* _app;
-
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
+	video::TexturePool _texturePool;
+
+#if ENABLE_RENDER_PANEL
+	RenderPanel _renderPanel;
+#endif
 	LSystemPanel _lsystemPanel;
 	BrushPanel _brushPanel;
 	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
 	AnimationPanel _animationPanel;
-#if ENABLE_RENDER_PANEL
-	RenderPanel _renderPanel;
-#endif
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;
@@ -82,7 +84,6 @@ private:
 	StatusBar _statusBar;
 	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;
-	video::TexturePool _texturePool;
 
 	/**
 	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array

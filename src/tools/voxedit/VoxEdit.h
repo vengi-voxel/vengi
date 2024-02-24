@@ -6,13 +6,13 @@
 
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
-#include "voxedit-util/SceneManager.h"
-#include "core/ArrayLength.h"
-
 #include "ui/IMGUIApp.h"
+#include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 class MainWindow;
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 }
 
 /**
@@ -25,6 +25,7 @@ private:
 	using Super = ui::IMGUIApp;
 	voxedit::MainWindow* _mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
+	voxedit::SceneManagerPtr _sceneMgr;
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 
@@ -42,13 +43,15 @@ protected:
 	void printUsageHeader() const override;
 
 public:
-	VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
+	VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, const voxedit::SceneManagerPtr& sceneMgr);
 
 	void onRenderUI() override;
 
 	void onDropFile(const core::String& file) override;
 
 	bool allowedToQuit() override;
+
+	const voxedit::SceneManagerPtr& sceneMgr() const;
 
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
@@ -57,3 +60,7 @@ public:
 
 	void toggleScene();
 };
+
+inline const voxedit::SceneManagerPtr& VoxEdit::sceneMgr() const {
+	return _sceneMgr;
+}

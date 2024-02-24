@@ -10,7 +10,6 @@
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
-#include "core/Singleton.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
@@ -559,8 +558,8 @@ inline voxelgenerator::LUAGenerator &SceneManager::luaGenerator() {
 	return _luaGenerator;
 }
 
-inline SceneManager &sceneMgr() {
-	return core::Singleton<SceneManager>::getInstance();
-}
+SceneManager &sceneMgr();
+
+using SceneManagerPtr = core::SharedPtr<SceneManager>;
 
 } // namespace voxedit

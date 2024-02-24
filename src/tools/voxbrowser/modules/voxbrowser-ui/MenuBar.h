@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include "ui/IMGUIApp.h"
+#include "ui/Panel.h"
 
 namespace voxbrowser {
 
-class MenuBar {
+class MenuBar : public ui::Panel {
 public:
-	bool update(ui::IMGUIApp *app);
+	PANEL_CLASS(MenuBar);
+	bool update();
 
 	bool _popupAbout = false;
 };

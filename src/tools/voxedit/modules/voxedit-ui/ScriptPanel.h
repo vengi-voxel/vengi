@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ui/IMGUIApp.h"
+#include "ui/Panel.h"
 #include "ui/TextEditor.h"
 #include "voxelgenerator/LUAGenerator.h"
 
@@ -17,7 +17,7 @@ namespace voxedit {
 /**
  * @brief LUA script integration panel
  */
-class ScriptPanel {
+class ScriptPanel : public ui::Panel {
 private:
 	TextEditor _textEditor;
 	core::String _activeScript;
@@ -34,9 +34,10 @@ private:
 	void reloadScriptParameters(const core::String &script);
 
 public:
+	PANEL_CLASS(ScriptPanel)
 	void update(const char *title, command::CommandExecutionListener &listener);
 
-	bool updateEditor(const char *title, ui::IMGUIApp *app);
+	bool updateEditor(const char *title);
 };
 
 } // namespace voxedit

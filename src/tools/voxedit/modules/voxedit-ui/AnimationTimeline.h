@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
 
@@ -13,7 +14,7 @@ class SceneGraphNode;
 
 namespace voxedit {
 
-class AnimationTimeline {
+class AnimationTimeline : public ui::Panel {
 private:
 	bool _play = false;
 	// modifications on the keyframes would result in incorrect selection in neo-sequencer - so let's ensure to reset
@@ -29,6 +30,7 @@ private:
 	core::Buffer<Selection> _selectionBuffer;
 
 public:
+	PANEL_CLASS(AnimationTimeline)
 	void header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame);
 	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);

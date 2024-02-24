@@ -4,11 +4,12 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "core/String.h"
 
 namespace voxedit {
 
-class LSystemPanel {
+class LSystemPanel : public ui::Panel {
 private:
 	struct LSystemData {
 		core::String axiom = "F";
@@ -26,6 +27,7 @@ private:
 	LSystemData _lsystemData;
 
 public:
+	PANEL_CLASS(LSystemPanel)
 	bool init();
 	void update(const char *title);
 	void shutdown();

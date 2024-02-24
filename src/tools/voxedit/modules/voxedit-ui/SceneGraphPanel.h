@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -21,7 +22,7 @@ namespace voxedit {
 
 struct ModelNodeSettings;
 
-class SceneGraphPanel {
+class SceneGraphPanel : public ui::Panel {
 private:
 	core::VarPtr _animationSpeedVar;
 	core::VarPtr _hideInactive;
@@ -44,6 +45,7 @@ private:
 	 */
 	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
 public:
+	PANEL_CLASS(SceneGraphPanel)
 	bool _popupNewModelNode = false;
 	bool init();
 	void update(video::Camera &camera, const char *title, ModelNodeSettings *modelNodeSettings,

@@ -28,7 +28,8 @@
 
 namespace voxbrowser {
 
-MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool) : _app(app), _texturePool(texturePool) {
+MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool)
+	: Super(app), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
 }
 
 MainWindow::~MainWindow() {
@@ -407,7 +408,7 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downl
 
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
-	if (_menuBar.update(_app)) {
+	if (_menuBar.update()) {
 		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
 

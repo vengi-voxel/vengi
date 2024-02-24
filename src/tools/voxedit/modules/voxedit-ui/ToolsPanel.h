@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "command/CommandHandler.h"
-#include "image/Image.h"
-#include "math/Axis.h"
 
 namespace voxedit {
 
-class ToolsPanel {
+class ToolsPanel : public ui::Panel {
+private:
 	struct Text {
 		core::String font = "font.ttf";
 		core::String input = "example";
@@ -21,6 +21,7 @@ class ToolsPanel {
 	void updateSceneMode(command::CommandExecutionListener &listener);
 	void updateEditMode(command::CommandExecutionListener &listener);
 public:
+	PANEL_CLASS(ToolsPanel)
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 };
 

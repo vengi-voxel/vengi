@@ -14,18 +14,19 @@
 namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
+	SceneManager &mgr = sceneMgr();
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS, "Add", _play)) {
-		sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
+		mgr.nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to the current active node");
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, "Add all", _play)) {
-		sceneMgr().nodeAllAddKeyFrames(currentFrame);
+		mgr.nodeAllAddKeyFrames(currentFrame);
 	}
 	ImGui::TooltipText("Add a new keyframe to all model nodes");
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, "Remove", _play)) {
-		sceneMgr().nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
+		mgr.nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText("Delete the current keyframe of the active nodes");
 	ImGui::SameLine();
@@ -52,7 +53,8 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 								  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
 								  const scenegraph::SceneGraphNode &modelNode) {
 	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
-	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	SceneManager &mgr = sceneMgr();
+	scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 			int32_t oldFrameIdx = kf.frameIdx;
@@ -72,10 +74,10 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			}
 		}
 
-		sceneMgr().setCurrentFrame(currentFrame);
+		mgr.setCurrentFrame(currentFrame);
 		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
-			sceneMgr().nodeActivate(modelNode.id());
-		} else if (sceneMgr().sceneGraph().activeNode() == modelNode.id()) {
+			mgr.nodeActivate(modelNode.id());
+		} else if (sceneGraph.activeNode() == modelNode.id()) {
 			ImGui::SetSelectedTimeline(label.c_str());
 		}
 		uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
@@ -104,8 +106,9 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 			ImGui::NeoClearSelection();
 			_clearSelection = false;
 		}
+		SceneManager &mgr = sceneMgr();
 		core::Buffer<scenegraph::FrameIndex> selectedFrames;
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isAnyModelNode()) {
@@ -127,7 +130,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
 			if (ImGui::IconSelectable(ICON_LC_PLUS_SQUARE, _("Add"))) {
-				sceneMgr().nodeAddKeyFrame(InvalidNodeId, currentFrame);
+				mgr.nodeAddKeyFrame(InvalidNodeId, currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();
 			}
@@ -142,14 +145,14 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 #endif
 				if (ImGui::IconSelectable(ICON_LC_COPY, _("Duplicate keyframe"))) {
 					for (const Selection &sel : _selectionBuffer) {
-						sceneMgr().nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
+						mgr.nodeAddKeyFrame(sel.nodeId, sel.frameIdx + 1);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
 				}
 				if (ImGui::IconSelectable(ICON_LC_TRASH, _("Delete keyframes"))) {
 					for (const Selection &sel : _selectionBuffer) {
-						sceneMgr().nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
+						mgr.nodeRemoveKeyFrame(sel.nodeId, sel.frameIdx);
 					}
 					_clearSelection = true;
 					ImGui::CloseCurrentPopup();
@@ -162,8 +165,9 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 }
 
 bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
-	scenegraph::FrameIndex currentFrame = sceneMgr().currentFrame();
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	SceneManager &mgr = sceneMgr();
+	scenegraph::FrameIndex currentFrame = mgr.currentFrame();
+	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
 	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames(sceneGraph.activeAnimation());
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
@@ -176,7 +180,7 @@ bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeco
 		} else {
 			// TODO: anim fps
 			currentFrame = (currentFrame + 1) % maxFrame;
-			sceneMgr().setCurrentFrame(currentFrame);
+			mgr.setCurrentFrame(currentFrame);
 		}
 	}
 	if (ImGui::Begin(sequencerTitle)) {

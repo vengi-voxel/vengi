@@ -4,13 +4,14 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 
-class PositionsPanel {
+class PositionsPanel : public ui::Panel {
 private:
 	bool _lastChanged = false;
 	bool _localSpace = false;
@@ -25,6 +26,7 @@ private:
 	void sceneView(command::CommandExecutionListener &listener);
 
 public:
+	PANEL_CLASS(PositionsPanel)
 	bool init();
 	void shutdown();
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);

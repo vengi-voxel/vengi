@@ -21,7 +21,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 		const scenegraph::SceneGraphNodeType nodeType = node->type();
 		if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ui::ScopedStyle style;
-			style.setFont(imguiApp()->bigIconFont());
+			style.setFont(_app->bigIconFont());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar(buttonSize, &listener);
 			toolbar.button(ICON_LC_COPY, "nodeduplicate");
@@ -38,7 +38,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedStyle style;
-		style.setFont(imguiApp()->bigIconFont());
+		style.setFont(_app->bigIconFont());
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
@@ -54,7 +54,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fill");
 	}
 
-	const float buttonWidth = (float)imguiApp()->fontSize() * 4;
+	const float buttonWidth = (float)_app->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipText(_("Rotate by 90 degree on the x axis"));

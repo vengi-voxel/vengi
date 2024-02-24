@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "ui/IMGUIApp.h"
+#include "ui/Panel.h"
+#include "ui/IMGUIEx.h"
 #include "video/TexturePool.h"
 #include "voxbrowser-ui/MenuBar.h"
 #include "voxbrowser-ui/StatusBar.h"
@@ -13,9 +14,10 @@
 
 namespace voxbrowser {
 
-class MainWindow {
+class MainWindow : public ui::Panel {
 private:
-	ui::IMGUIApp *_app;
+	using Super = ui::Panel;
+
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	float _filterTextWidth = -1.0f;
 	int _currentFilterFormatEntry = -1;

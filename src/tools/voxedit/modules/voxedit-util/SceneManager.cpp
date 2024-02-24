@@ -58,6 +58,7 @@
 #include "voxelutil/VoxelUtil.h"
 #include "voxelutil/ImageUtils.h"
 
+#include "../VoxEdit.h"
 #include "Config.h"
 #include "MementoHandler.h"
 #include "SceneUtil.h"
@@ -92,6 +93,10 @@ inline auto paletteCompleter() {
 		}
 		return i;
 	};
+}
+
+SceneManager &sceneMgr() {
+	return *((VoxEdit*)imguiApp())->sceneMgr().get();
 }
 
 SceneManager::SceneManager() : SceneManager(core::make_shared<SceneRenderer>(), core::make_shared<ModifierRenderer>()) {

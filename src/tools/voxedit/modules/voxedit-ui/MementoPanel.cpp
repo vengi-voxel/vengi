@@ -16,7 +16,8 @@ static inline core::String toString(const MementoState &state, int n) {
 
 void MementoPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
+		SceneManager &mgr = sceneMgr();
+		const MementoHandler &mementoHandler = mgr.mementoHandler();
 		const int currentStatePos = mementoHandler.statePosition();
 		ImGui::Text(_("pos: %i/%i"), currentStatePos, (int)mementoHandler.stateSize());
 		if (ImGui::BeginListBox("##history-actions", ImVec2(-FLT_MIN, -FLT_MIN))) {
@@ -36,9 +37,9 @@ void MementoPanel::update(const char *title, command::CommandExecutionListener &
 			ImGui::EndListBox();
 			if (newStatePos != -1) {
 				if (currentStatePos > newStatePos) {
-					sceneMgr().undo(currentStatePos - newStatePos);
+					mgr.undo(currentStatePos - newStatePos);
 				} else {
-					sceneMgr().redo(newStatePos - currentStatePos);
+					mgr.redo(newStatePos - currentStatePos);
 				}
 			}
 		}

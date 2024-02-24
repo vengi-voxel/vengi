@@ -4,19 +4,20 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
-#include "ui/IMGUIApp.h"
 #include "command/CommandHandler.h"
 
 namespace voxedit {
 
 using LastOpenedFiles = core::RingBuffer<core::String, 10>;
 
-class MenuBar {
+class MenuBar : public ui::Panel {
 private:
 	LastOpenedFiles _lastOpenedFiles;
 public:
+	PANEL_CLASS(MenuBar)
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 	/**
 	 * @return true if the dock layout should get reset

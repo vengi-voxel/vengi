@@ -12,7 +12,7 @@
 
 namespace voxbrowser {
 
-bool MenuBar::update(ui::IMGUIApp *app) {
+bool MenuBar::update() {
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
@@ -21,7 +21,7 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Download missing thumbnails"), "thumbnaildownloadall");
 			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
-				app->requestQuit();
+				_app->requestQuit();
 			}
 			ImGui::EndMenu();
 		}
@@ -50,7 +50,7 @@ bool MenuBar::update(ui::IMGUIApp *app) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
 				if (ImGui::Button(_("Textures"))) {
-					app->showTexturesDialog();
+					_app->showTexturesDialog();
 				}
 				ImGui::EndMenu();
 			}

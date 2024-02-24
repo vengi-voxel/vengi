@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -19,8 +20,10 @@ class Palette;
 
 namespace voxedit {
 
-class PalettePanel {
+class PalettePanel : public ui::Panel {
 private:
+	using Super = ui::Panel;
+
 	float _intensityChange = 0.0f;
 	int _closestMatch = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
@@ -48,7 +51,7 @@ private:
 	uint8_t currentSceneColor() const;
 	uint8_t currentPaletteIndex() const;
 public:
-	PalettePanel();
+	PalettePanel(ui::IMGUIApp *app);
 	void update(const char *title, command::CommandExecutionListener &listener);
 	bool hasFocus() const;
 };

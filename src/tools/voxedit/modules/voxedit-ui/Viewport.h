@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "ui/Panel.h"
 #include "image/AVIRecorder.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
-#include "video/gl/GLTypes.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace io {
@@ -17,8 +17,10 @@ class FileStream;
 
 namespace voxedit {
 
-class Viewport {
+class Viewport : public ui::Panel {
 private:
+	using Super = ui::Panel;
+
 	enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Bottom", "Left", "Right", "Front", "Back"};
 	static_assert(lengthof(SceneCameraModeStr) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
@@ -130,7 +132,7 @@ private:
 	image::ImagePtr renderToImage(const char *imageName);
 
 public:
-	Viewport(int id, bool sceneMode, bool detailedTitle = true);
+	Viewport(ui::IMGUIApp *app, int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
 
 	static core::String viewportId(int id);

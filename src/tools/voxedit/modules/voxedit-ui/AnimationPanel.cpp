@@ -14,12 +14,14 @@
 namespace voxedit {
 
 void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
-	const scenegraph::SceneGraphAnimationIds &animations = sceneMgr().sceneGraph().animations();
+	SceneManager &mgr = sceneMgr();
+	scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add##animationpanel"))) {
-			if (!sceneMgr().duplicateAnimation(sceneMgr().sceneGraph().activeAnimation(), _newAnimation)) {
+			if (!mgr.duplicateAnimation(sceneGraph.activeAnimation(), _newAnimation)) {
 				Log::error("Failed to add animation %s", _newAnimation.c_str());
 			} else {
 				_newAnimation = "";
@@ -27,12 +29,12 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			animationTimeline->resetFrames();
 		}
 
-		const core::String& currentAnimation = sceneMgr().sceneGraph().activeAnimation();
+		const core::String& currentAnimation = sceneGraph.activeAnimation();
 		if (ImGui::BeginCombo(_("Animation##animationpanel"), currentAnimation.c_str())) {
 			for (const core::String &animation : animations) {
 				const bool isSelected = currentAnimation == animation;
 				if (ImGui::Selectable(animation.c_str(), isSelected)) {
-					if (!sceneMgr().setAnimation(animation)) {
+					if (!mgr.setAnimation(animation)) {
 						Log::error("Failed to activate animation %s", animation.c_str());
 					}
 					animationTimeline->resetFrames();
@@ -45,7 +47,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 		}
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_MINUS, _("Delete##animationpanel"))) {
-			if (!sceneMgr().removeAnimation(currentAnimation)) {
+			if (!mgr.removeAnimation(currentAnimation)) {
 				Log::error("Failed to remove animation %s", currentAnimation.c_str());
 			}
 			animationTimeline->resetFrames();

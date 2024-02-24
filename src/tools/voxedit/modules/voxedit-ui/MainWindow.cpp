@@ -124,7 +124,25 @@ static const struct TemplateModel {
 #undef TM_ENTRY
 // clang-format on
 
-MainWindow::MainWindow(ui::IMGUIApp *app) : _app(app), _assetPanel(app->filesystem()) {
+MainWindow::MainWindow(ui::IMGUIApp *app) : Super(app),
+#if ENABLE_RENDER_PANEL
+	_renderPanel(app),
+#endif
+	 _lsystemPanel(app),
+	 _brushPanel(app),
+	 _treePanel(app),
+	 _sceneGraphPanel(app),
+	 _animationPanel(app),
+	 _toolsPanel(app),
+	 _assetPanel(app),
+	 _mementoPanel(app),
+	 _positionsPanel(app),
+	 _palettePanel(app),
+	 _menuBar(app),
+	 _statusBar(app),
+	 _scriptPanel(app),
+	 _animationTimeline(app)
+ {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
 
@@ -180,13 +198,13 @@ bool MainWindow::initScenes() {
 
 	if (_simplifiedView->boolVal()) {
 		_scenes.resize(2);
-		_scenes[0] = new Viewport(0, false, false);
-		_scenes[1] = new Viewport(1, true, false);
+		_scenes[0] = new Viewport(_app, 0, false, false);
+		_scenes[1] = new Viewport(_app, 1, true, false);
 	} else {
 		_scenes.resize(_numViewports->intVal());
 		bool sceneMode = true;
 		for (int i = 0; i < _numViewports->intVal(); ++i) {
-			_scenes[i] = new Viewport(i, sceneMode, true);
+			_scenes[i] = new Viewport(_app, i, sceneMode, true);
 			sceneMode = false;
 		}
 	}
@@ -300,10 +318,11 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *for
 		return true;
 	}
 
-	if (!sceneMgr().dirty()) {
+	SceneManager &mgr = sceneMgr();
+	if (!mgr.dirty()) {
 		io::FileDescription fd;
 		fd.set(file, formatDesc);
-		if (sceneMgr().load(fd)) {
+		if (mgr.load(fd)) {
 			afterLoad(file);
 			return true;
 		}
@@ -375,7 +394,7 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 
 void MainWindow::leftWidget() {
 	const bool editMode = isAnyEditMode();
-	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
 	if (editMode) {
 		_brushPanel.update(TITLE_BRUSHPANEL, listener);
@@ -404,13 +423,13 @@ void MainWindow::mainWidget() {
 	if (scene != nullptr) {
 		_lastHoveredScene = scene;
 	}
-	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	command::CommandExecutionListener &listener = _app->commandListener();
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->update(&listener);
 	}
 
 	// bottom
-	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR, _app);
+	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
 	if (isSceneMode()) {
 		_animationTimeline.update(TITLE_ANIMATION_TIMELINE, _app->deltaFrameSeconds());
 	}
@@ -449,7 +468,7 @@ void MainWindow::rightWidget() {
 	if (const Viewport *viewport = hoveredScene()) {
 		_lastSceneMode = viewport->isSceneMode();
 	}
-	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
 	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, listener);
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
@@ -573,7 +592,7 @@ void MainWindow::popupNewScene() {
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##newscene"))) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
-			if (voxedit::sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
+			if (sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
 				afterLoad("");
 			}
 		}
@@ -756,7 +775,7 @@ void MainWindow::registerPopups() {
 	}
 	if (_popupRenameNode->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
-		const scenegraph::SceneGraph &sceneGraph = voxedit::sceneMgr().sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
 		_currentNodeName = sceneGraph.node(sceneGraph.activeNode()).name();
 		_popupRenameNode->setVal("false");
 	}
@@ -775,7 +794,7 @@ void MainWindow::registerPopups() {
 }
 
 void MainWindow::popupNodeRename() {
-	voxedit::SceneManager &sceneMgr = voxedit::sceneMgr();
+	voxedit::SceneManager &mgr = sceneMgr();
 	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::IsWindowAppearing()) {
@@ -787,8 +806,8 @@ void MainWindow::popupNodeRename() {
 		ImGui::IconDialog(ICON_LC_INFO, _("Node names should be unique"));
 
 		if (ImGui::Button(_("Apply")) || renamed) {
-			const int nodeId = sceneMgr.sceneGraph().activeNode();
-			sceneMgr.nodeRename(nodeId, _currentNodeName);
+			const int nodeId = mgr.sceneGraph().activeNode();
+			mgr.nodeRename(nodeId, _currentNodeName);
 			_currentNodeName = "";
 			ImGui::CloseCurrentPopup();
 		}
@@ -860,7 +879,7 @@ QuitDisallowReason MainWindow::allowToQuit() {
 	if (_forceQuit) {
 		return QuitDisallowReason::None;
 	}
-	if (voxedit::sceneMgr().dirty()) {
+	if (sceneMgr().dirty()) {
 		_popupUnsavedChangesQuit = true;
 		return QuitDisallowReason::UnsavedChanges;
 	}
@@ -922,7 +941,7 @@ void MainWindow::update() {
 	ImGuiID dockIdMain = ImGui::GetID("DockSpace");
 
 	_menuBar.setLastOpenedFiles(_lastOpenedFilesRingBuffer);
-	command::CommandExecutionListener &listener = imguiApp()->commandListener();
+	command::CommandExecutionListener &listener = _app->commandListener();
 	if (_menuBar.update(_app, listener)) {
 		ImGui::DockBuilderRemoveNode(dockIdMain);
 	}
