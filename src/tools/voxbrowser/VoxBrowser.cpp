@@ -113,7 +113,7 @@ app::AppState VoxBrowser::onInit() {
 }
 
 void VoxBrowser::onRenderUI() {
-	_mainWindow->update(_voxelFilesMap, _downloadProgress);
+	_mainWindow->update(_voxelFilesMap, _downloadProgress, _count);
 }
 
 void VoxBrowser::printUsageHeader() const {
@@ -230,6 +230,7 @@ app::AppState VoxBrowser::onRunning() {
 				return a.name < b.name;
 			});
 		}
+		_count += voxelFiles.size();
 	}
 	return state;
 }

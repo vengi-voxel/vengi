@@ -41,8 +41,8 @@ private:
 	void configureMainTopWidgetDock(ImGuiID dockId);
 	void configureMainBottomWidgetDock(ImGuiID dockId);
 
-	void buildVoxelTree(const VoxelFiles &voxelFiles);
-	void updateAssetList(const VoxelFileMap &voxelFilesMap);
+	int buildVoxelTree(const VoxelFiles &voxelFiles);
+	int updateAssetList(const VoxelFileMap &voxelFilesMap);
 	void updateAsset();
 	void updateAssetDetails();
 
@@ -57,7 +57,7 @@ public:
 	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
 	virtual ~MainWindow();
 	bool init();
-	void update(const VoxelFileMap &voxelFiles, int downloadProgress);
+	void update(const VoxelFileMap &voxelFiles, int downloadProgress, int allEntries);
 	void shutdown();
 };
 

@@ -13,7 +13,7 @@ class StatusBar {
 	bool _downloadActive = false;
 	float _downloadProgress = 0.0f;
 public:
-	void update(const char *title, float height);
+	void update(const char *title, float height, int entries, int allEntries);
 	/**
 	 * @param value If @c >= 1.0, this indicates that the download is done
 	 */

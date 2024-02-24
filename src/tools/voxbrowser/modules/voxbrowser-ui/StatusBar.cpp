@@ -8,7 +8,7 @@
 
 namespace voxbrowser {
 
-void StatusBar::update(const char *title, float height) {
+void StatusBar::update(const char *title, float height, int entries, int allEntries) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowViewport(viewport->ID);
 	const ImVec2 &size = viewport->WorkSize;
@@ -21,7 +21,7 @@ void StatusBar::update(const char *title, float height) {
 	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
-		ImGui::Text("x entries");
+		ImGui::Text("%i/%i entries", entries, allEntries);
 	}
 	if (_downloadActive) {
 		ImGui::SameLine();

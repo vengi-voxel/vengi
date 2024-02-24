@@ -252,7 +252,7 @@ video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
 	return empty;
 }
 
-void MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
+int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 	core::DynamicArray<const voxbrowser::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
@@ -295,9 +295,12 @@ void MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 			ImGui::TextUnformatted(voxelFile->license.c_str());
 		}
 	}
+
+	return f.size();
 }
 
-void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
+int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
+	int cnt = 0;
 	if (ImGui::Begin(TITLE_ASSET_LIST)) {
 		updateFilters();
 
@@ -316,9 +319,11 @@ void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) 
 				}
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				if (ImGui::TreeNodeEx(entry->first.c_str(), treeFlags)) {
+				const int n = entry->second.size();
+				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
+				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					const VoxelFiles &voxelFiles = entry->second;
-					buildVoxelTree(voxelFiles);
+					cnt += buildVoxelTree(voxelFiles);
 					ImGui::TreePop();
 				}
 			}
@@ -326,6 +331,7 @@ void MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) 
 		}
 	}
 	ImGui::End();
+	return cnt;
 }
 
 void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
@@ -350,7 +356,7 @@ void MainWindow::registerPopups() {
 	ui::popupAbout();
 }
 
-void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downloadProgress) {
+void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downloadProgress, int allEntries) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
@@ -392,7 +398,7 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downl
 	ImGui::Begin(UI_CONSOLE_WINDOW_TITLE);
 	ImGui::End();
 
-	updateAssetList(voxelFilesMap);
+	const int n = updateAssetList(voxelFilesMap);
 	updateAsset();
 	updateAssetDetails();
 
@@ -412,7 +418,7 @@ void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downl
 #endif
 
 	_statusBar.downloadProgress((float)downloadProgress / 100.0f);
-	_statusBar.update(TITLE_STATUSBAR, statusBarHeight);
+	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, n, allEntries);
 
 	if (!existingLayout && viewport->WorkSize.x > 0.0f) {
 		ImGui::DockBuilderAddNode(dockIdMain, ImGuiDockNodeFlags_DockSpace);
