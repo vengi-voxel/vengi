@@ -123,7 +123,7 @@ struct remove_pointer : public remove_pointer_helper<T, typename remove_const<T>
 
 template<typename T>
 inline void exchange(T &a, T &b) {
-	const T tmp = core::move(a);
+	const T tmp(core::move(a));
 	a = core::move(b);
 	b = core::move(tmp);
 }
