@@ -373,6 +373,7 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("p",                    "brushstamp",                   "model");
 	_keybindingHandler.registerBinding("f2",                   "toggle ve_popuprenamenode",    "all");
 	_keybindingHandler.registerBinding("space",                "nodeduplicate",                "scene");
+	_keybindingHandler.registerBinding("left_gui",             "+camera_pan",                  "editing");
 
 	if (keymap != KeyBindings::Qubicle) {
 		_keybindingHandler.registerBinding("w",                      "+move_forward",              "editing");
