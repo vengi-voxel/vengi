@@ -42,12 +42,12 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
-		toolbar.button(ICON_LC_CROP, "resizetoselection", _sceneMgr->modifier().selections().empty());
+		toolbar.button(ICON_LC_SCALING, "resizetoselection", _sceneMgr->modifier().selections().empty());
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
 		toolbar.button(ICON_LC_EXPAND, "modelsize");
 		toolbar.button(ICON_LC_UNGROUP, "colortomodel");
-		toolbar.button(ICON_LC_SCALING, "scaledown");
-		toolbar.button(ICON_LC_EXPAND, "scaleup");
+		toolbar.button(ICON_LC_CHEVRON_DOWN_SQUARE, "scaledown");
+		toolbar.button(ICON_LC_CHEVRON_UP_SQUARE, "scaleup");
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow");
 		toolbar.button(ICON_LC_ERASER, "hollow");
 		toolbar.button(ICON_LC_X, "clear");
