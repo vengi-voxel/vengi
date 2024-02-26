@@ -18,7 +18,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_PLUS, _("Add##animationpanel"))) {
+		if (ImGui::IconButton(ICON_LC_PLUS, _("Add"))) {
 			if (!_sceneMgr->duplicateAnimation(sceneGraph.activeAnimation(), _newAnimation)) {
 				Log::error("Failed to add animation %s", _newAnimation.c_str());
 			} else {
@@ -28,7 +28,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 		}
 
 		const core::String& currentAnimation = sceneGraph.activeAnimation();
-		if (ImGui::BeginCombo(_("Animation##animationpanel"), currentAnimation.c_str())) {
+		if (ImGui::BeginCombo(_("Animation"), currentAnimation.c_str())) {
 			for (const core::String &animation : animations) {
 				const bool isSelected = currentAnimation == animation;
 				if (ImGui::Selectable(animation.c_str(), isSelected)) {
@@ -44,7 +44,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			ImGui::EndCombo();
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_MINUS, _("Delete##animationpanel"))) {
+		if (ImGui::IconButton(ICON_LC_MINUS, _("Delete"))) {
 			if (!_sceneMgr->removeAnimation(currentAnimation)) {
 				Log::error("Failed to remove animation %s", currentAnimation.c_str());
 			}

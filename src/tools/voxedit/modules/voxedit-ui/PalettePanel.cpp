@@ -148,7 +148,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 
 		if (usableColor) {
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
-			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color" PALETTEACTIONPOPUP), modelFromColorCmd.c_str(), true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(uiIdx)) {
 				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
 					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
