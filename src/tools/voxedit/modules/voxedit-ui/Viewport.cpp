@@ -29,6 +29,7 @@
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelrender/SceneGraphRenderer.h"
 
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -75,33 +76,6 @@ bool Viewport::init() {
 	return true;
 }
 
-void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
-	const video::CameraRotationType rotationType = _camera.rotationType();
-	_camera.resetZoom();
-	_camera.setRotationType(video::CameraRotationType::Target);
-	_camera.setAngles(0.0f, 0.0f, 0.0f);
-	_camera.setFarPlane(_viewDistance->floatVal());
-	_camera.setTarget(center);
-	_camera.setTargetDistance(distance);
-	if (_camMode == SceneCameraMode::Free) {
-		_camera.setWorldPosition(glm::vec3(-distance, (float)size.y + distance, -distance));
-	} else if (_camMode == SceneCameraMode::Top) {
-		_camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
-	} else if (_camMode == SceneCameraMode::Bottom) {
-		_camera.setWorldPosition(glm::vec3(center.x, center.y - size.y, center.z));
-	} else if (_camMode == SceneCameraMode::Left) {
-		_camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
-	} else if (_camMode == SceneCameraMode::Right) {
-		_camera.setWorldPosition(glm::vec3(center.x - size.x, center.y, center.z));
-	} else if (_camMode == SceneCameraMode::Front) {
-		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
-	} else if (_camMode == SceneCameraMode::Back) {
-		_camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
-	}
-	_camera.lookAt(center);
-	_camera.setRotationType(rotationType);
-}
-
 void Viewport::resize(const glm::ivec2 &frameBufferSize) {
 	const glm::vec2 &windowSize = _app->windowDimension();
 	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
@@ -112,7 +86,7 @@ void Viewport::resize(const glm::ivec2 &frameBufferSize) {
 }
 
 bool Viewport::isFixedCamera() const {
-	return _camMode != SceneCameraMode::Free;
+	return _camMode != voxelrender::SceneCameraMode::Free;
 }
 
 void Viewport::move(bool pan, bool rotate, int x, int y) {
@@ -280,7 +254,7 @@ void Viewport::menuBarCameraMode() {
 		for (int n = 0; n < lengthof(SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(SceneCameraModeStr[n], isSelected)) {
-				_camMode = (SceneCameraMode)n;
+				_camMode = (voxelrender::SceneCameraMode)n;
 				resetCamera();
 			}
 			if (isSelected) {
@@ -480,16 +454,16 @@ void Viewport::resetCamera() {
 		} else {
 			region = sceneGraph.sceneRegion();
 		}
+	} else if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
+		// active node has a volume - use that region
+		region = v->region();
 	} else {
-		const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
-		region = v != nullptr ? v->region() : sceneGraph.region();
+		// center an the accumulated region of the scene - without transforms - we are not in scene mode, but model mode
+		region = sceneGraph.region();
 	}
-	const glm::ivec3 &center = region.getCenter();
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
-
-	const float maxDim = (float)glm::max(size.x, glm::max(size.y, size.z));
-	const float distance = maxDim * 2.0f;
-	resetCamera(distance, center, size);
+	const video::CameraRotationType rotationType = _camera.rotationType();
+	voxelrender::configureCamera(_camera, region, _camMode, _viewDistance->floatVal());
+	_camera.setRotationType(rotationType);
 }
 
 bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {

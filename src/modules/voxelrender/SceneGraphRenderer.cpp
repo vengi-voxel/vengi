@@ -91,6 +91,37 @@ scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	return node;
 }
 
+void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
+					 const glm::vec3 &angles) {
+	const glm::vec3 size(sceneRegion.getDimensionsInVoxels());
+	const float maxDim = (float)glm::max(size.x, glm::max(size.y, size.z));
+	const float distance = maxDim * 2.0f;
+	const glm::vec3 &center = sceneRegion.calcCenterf();
+
+	camera.setRotationType(video::CameraRotationType::Target);
+	camera.setAngles(angles[0], angles[1], angles[2]);
+	camera.setTarget(center);
+	camera.setTargetDistance(distance);
+	camera.resetZoom();
+	camera.setFarPlane(farPlane);
+	if (mode == SceneCameraMode::Free) {
+		camera.setWorldPosition(glm::vec3(-distance, (float)sceneRegion.getUpperY(), -distance));
+	} else if (mode == SceneCameraMode::Top) {
+		camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
+	} else if (mode == SceneCameraMode::Bottom) {
+		camera.setWorldPosition(glm::vec3(center.x, center.y - size.y, center.z));
+	} else if (mode == SceneCameraMode::Left) {
+		camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
+	} else if (mode == SceneCameraMode::Right) {
+		camera.setWorldPosition(glm::vec3(center.x - size.x, center.y, center.z));
+	} else if (mode == SceneCameraMode::Front) {
+		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
+	} else if (mode == SceneCameraMode::Back) {
+		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
+	}
+	camera.lookAt(center);
+}
+
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode) {
 	video::Camera camera;
 	// width, height and aspect of the cameraNode are not taken into account here

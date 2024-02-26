@@ -56,27 +56,16 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		if (ctx.useSceneCamera) {
 			Log::warn("Could not find any camera in the scene");
 		}
-		const voxel::Region &regionSize = sceneGraph.region();
-		const glm::vec3 dim(regionSize.getDimensionsInVoxels());
-		const float distance = ctx.distance <= 0.01f ? glm::length(dim) : ctx.distance;
-		Log::debug("Use distance: %f", distance);
+
+		camera.setOmega(ctx.omega);
+		camera.setSize(ctx.outputSize);
+		camera.setMode(video::CameraMode::Perspective);
+		camera.setType(video::CameraType::Free);
+		configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, ctx.farPlane, {ctx.pitch, ctx.yaw, ctx.roll});
 		if (ctx.useWorldPosition) {
 			camera.setWorldPosition(ctx.worldPosition);
-		} else {
-			const int height = regionSize.getHeightInCells();
-			camera.setWorldPosition(glm::vec3(-distance, (float)height + distance, -distance));
 		}
-		camera.setTargetDistance(distance);
-		camera.setRotationType(video::CameraRotationType::Target);
-		camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
-		camera.setFarPlane(ctx.farPlane);
-		const voxel::Region &sceneRegion = sceneGraph.sceneRegion();
-		camera.setTarget(sceneRegion.calcCenterf());
 	}
-	camera.setOmega(ctx.omega);
-	camera.setSize(ctx.outputSize);
-	camera.setMode(video::CameraMode::Perspective);
-	camera.setType(video::CameraType::Free);
 	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.frameBuffer.bind(true);

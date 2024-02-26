@@ -20,6 +20,12 @@ namespace voxelrender {
  */
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
+enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
+/**
+ * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.
+ */
+void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
+					 const glm::vec3 &angles = {0.0f, 0.0f, 0.0f});
 
 /**
  * @brief Rendering of a voxel::SceneGraph

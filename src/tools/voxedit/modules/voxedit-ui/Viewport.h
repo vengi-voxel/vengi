@@ -10,6 +10,7 @@
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
 #include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/SceneGraphRenderer.h"
 
 namespace io {
 class FileStream;
@@ -24,9 +25,8 @@ class Viewport : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
 	static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Bottom", "Left", "Right", "Front", "Back"};
-	static_assert(lengthof(SceneCameraModeStr) == (int)SceneCameraMode::Max, "Array size doesn't match enum values");
+	static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max, "Array size doesn't match enum values");
 	const int _id;
 	const core::String _uiId;
 	const bool _detailedTitle;
@@ -42,7 +42,7 @@ private:
 	 */
 	bool _transformMementoLocked = false;
 
-	SceneCameraMode _camMode = SceneCameraMode::Free;
+	voxelrender::SceneCameraMode _camMode = voxelrender::SceneCameraMode::Free;
 	image::AVIRecorder _avi;
 	SceneManagerPtr _sceneMgr;
 
@@ -133,7 +133,6 @@ private:
 	void renderMenuBar(command::CommandExecutionListener *listener);
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
-	void resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size);
 	void resize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
