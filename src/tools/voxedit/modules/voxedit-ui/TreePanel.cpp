@@ -133,8 +133,8 @@ void TreePanel::update(const char *title) {
 			break;
 		}
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##treegenerate"))) {
-			_treeGeneratorContext.cfg.pos = sceneMgr().referencePosition();
-			sceneMgr().createTree(_treeGeneratorContext);
+			_treeGeneratorContext.cfg.pos = _sceneMgr->referencePosition();
+			_sceneMgr->createTree(_treeGeneratorContext);
 		}
 	}
 	ImGui::End();

@@ -10,6 +10,7 @@
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
 #include "core/ScopedPtr.h"
+#include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
@@ -62,8 +63,9 @@ private:
 	voxelfont::VoxelFont _voxelFont;
 	core::ScopedPtr<voxel::RawVolume> _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;
+	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
-	ModifierFacade _modifier;
+	ModifierFacade _modifierFacade;
 	voxelgenerator::LUAGenerator _luaGenerator;
 
 	/**
@@ -199,8 +201,7 @@ protected:
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 public:
-	SceneManager();
-	SceneManager(const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
+	SceneManager(const core::TimeProviderPtr& timeProvider, const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
 	~SceneManager();
 
 	void construct() override;
@@ -535,30 +536,28 @@ inline int SceneManager::size() const {
 }
 
 inline const voxel::Voxel &SceneManager::hitCursorVoxel() const {
-	return _modifier.hitCursorVoxel();
+	return _modifierFacade.hitCursorVoxel();
 }
 
 inline const glm::ivec3 &SceneManager::cursorPosition() const {
-	return _modifier.cursorPosition();
+	return _modifierFacade.cursorPosition();
 }
 
 inline const glm::ivec3 &SceneManager::referencePosition() const {
-	return _modifier.referencePosition();
+	return _modifierFacade.referencePosition();
 }
 
 inline const ModifierFacade &SceneManager::modifier() const {
-	return _modifier;
+	return _modifierFacade;
 }
 
 inline ModifierFacade &SceneManager::modifier() {
-	return _modifier;
+	return _modifierFacade;
 }
 
 inline voxelgenerator::LUAGenerator &SceneManager::luaGenerator() {
 	return _luaGenerator;
 }
-
-SceneManager &sceneMgr();
 
 using SceneManagerPtr = core::SharedPtr<SceneManager>;
 

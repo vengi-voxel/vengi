@@ -64,7 +64,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save"), "save", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save as"), "saveas", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", !sceneMgr().modifier().selections().empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", !_sceneMgr->modifier().selections().empty(), &listener);
 			ImGui::Separator();
 
 			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, _("Add file to scene"), "import", true, &listener);
@@ -81,21 +81,20 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
-			const SceneManager &sceneManager = sceneMgr();
-			const MementoHandler &mementoHandler = sceneManager.mementoHandler();
+			const MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
-			const Modifier &modifier = sceneManager.modifier();
+			const Modifier &modifier = _sceneMgr->modifier();
 			const Selections &selections = modifier.selections();
 			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", !selections.empty(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", !selections.empty(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference##pastereferencepos"), "paste",
-								   sceneManager.hasClipboardCopy(), &listener);
+								   _sceneMgr->hasClipboardCopy(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor##pastecursor"), "pastecursor",
-								   sceneManager.hasClipboardCopy(), &listener);
+								   _sceneMgr->hasClipboardCopy(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as new node##pastenewnode"), "pastenewnode",
-								   sceneManager.hasClipboardCopy(), &listener);
+								   _sceneMgr->hasClipboardCopy(), &listener);
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				ImGui::IconCheckboxVar(ICON_LC_GRID_3X3, _("Grid"), cfg::VoxEditShowgrid);

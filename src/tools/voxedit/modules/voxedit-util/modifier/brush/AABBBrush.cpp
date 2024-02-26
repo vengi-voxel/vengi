@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
+#include "voxedit-util/modifier/ModifierButton.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
@@ -14,8 +15,8 @@
 
 namespace voxedit {
 
-AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
-	: Super(type, defaultModifier, supportedModifiers) {
+AABBBrush::AABBBrush(SceneManager *sceneMgr, BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
+	: Super(type, defaultModifier, supportedModifiers), _sceneMgr(sceneMgr) {
 }
 
 void AABBBrush::construct() {
@@ -24,19 +25,19 @@ void AABBBrush::construct() {
 
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::X, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::X, _sceneMgr->referencePosition());
 	}).setHelp("Mirror along the x axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Y, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::Y, _sceneMgr->referencePosition());
 	}).setHelp("Mirror along the y axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Z, sceneMgr().referencePosition());
+		toggleMirrorAxis(math::Axis::Z, _sceneMgr->referencePosition());
 	}).setHelp("Mirror along the z axis at the reference position");
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
-		setMirrorAxis(math::Axis::None, sceneMgr().referencePosition());
+		setMirrorAxis(math::Axis::None, _sceneMgr->referencePosition());
 	}).setHelp("Disable mirror axis");
 
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {

@@ -4,7 +4,11 @@
 
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "app/tests/AbstractTest.h"
+#include "core/SharedPtr.h"
+#include "core/TimeProvider.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/ModifierButton.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"
@@ -28,7 +32,8 @@ protected:
 	}
 
 	void testMirror(math::Axis axis, const glm::ivec3 &expectedMins, const glm::ivec3 &expectedMaxs) {
-		ShapeBrush brush;
+		SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+		ShapeBrush brush(&mgr);
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
 		const glm::ivec3 regMins(-2);
@@ -53,7 +58,8 @@ protected:
 };
 
 TEST_F(ShapeBrushTest, testCenterPositive) {
-	ShapeBrush brush;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -68,7 +74,8 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 }
 
 TEST_F(ShapeBrushTest, testCenterNegative) {
-	ShapeBrush brush;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -80,7 +87,8 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 }
 
 TEST_F(ShapeBrushTest, testModifierStartStop) {
-	ShapeBrush brush;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	EXPECT_TRUE(brush.start(brushContext));
@@ -91,7 +99,8 @@ TEST_F(ShapeBrushTest, testModifierStartStop) {
 }
 
 TEST_F(ShapeBrushTest, testModifierDim) {
-	ShapeBrush brush;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	prepare(brush, brushContext, glm::ivec3(-1), glm::ivec3(1));

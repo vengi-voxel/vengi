@@ -16,10 +16,12 @@ private:
 	ModifierRendererPtr _modifierRenderer;
 	core::ScopedPtr<voxel::RawVolume> _mirrorVolume;
 	core::ScopedPtr<voxel::RawVolume> _volume;
+	SceneManager *_sceneMgr;
+
 	void updateBrushVolumePreview(palette::Palette &palette);
 
 public:
-	ModifierFacade(const ModifierRendererPtr &modifierRenderer);
+	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 	bool init() override;
 	void shutdown() override;
 	void render(const video::Camera &camera, palette::Palette &palette);

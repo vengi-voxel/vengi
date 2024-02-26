@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
@@ -11,13 +12,20 @@
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 using LastOpenedFiles = core::RingBuffer<core::String, 10>;
 
 class MenuBar : public ui::Panel {
 private:
+	using Super = ui ::Panel;
 	LastOpenedFiles _lastOpenedFiles;
+	SceneManagerPtr _sceneMgr;
+
 public:
-	PANEL_CLASS(MenuBar)
+	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 	/**
 	 * @return true if the dock layout should get reset

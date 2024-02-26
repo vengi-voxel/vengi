@@ -20,10 +20,14 @@ class SceneGraphNodeCamera;
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 struct ModelNodeSettings;
 
 class SceneGraphPanel : public ui::Panel {
 private:
+	using Super = ui::Panel;
 	core::VarPtr _animationSpeedVar;
 	core::VarPtr _hideInactive;
 	bool _showNodeDetails = true;
@@ -33,6 +37,7 @@ private:
 	core::String _propertyValue;
 	int _dragDropSourceNodeId = InvalidNodeId;
 	int _dragDropTargetNodeId = InvalidNodeId;
+	SceneManagerPtr _sceneMgr;
 
 	void registerPopups();
 	void detailView(scenegraph::SceneGraphNode &node);
@@ -44,8 +49,10 @@ private:
 	 * normal text input field
 	 */
 	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
+	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 public:
-	PANEL_CLASS(SceneGraphPanel)
+	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	bool _popupNewModelNode = false;
 	bool init();
 	void update(video::Camera &camera, const char *title, ModelNodeSettings *modelNodeSettings,

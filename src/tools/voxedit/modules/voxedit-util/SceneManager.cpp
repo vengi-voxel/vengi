@@ -4,7 +4,6 @@
 
 #include "SceneManager.h"
 
-#include "app/App.h"
 #include "app/Async.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
@@ -28,8 +27,6 @@
 #include "math/Ray.h"
 #include "metric/MetricFacade.h"
 #include "video/Camera.h"
-#include "voxedit-util/SceneRenderer.h"
-#include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
@@ -58,7 +55,6 @@
 #include "voxelutil/VoxelUtil.h"
 #include "voxelutil/ImageUtils.h"
 
-#include "../VoxEdit.h"
 #include "Config.h"
 #include "MementoHandler.h"
 #include "SceneUtil.h"
@@ -95,15 +91,8 @@ inline auto paletteCompleter() {
 	};
 }
 
-SceneManager &sceneMgr() {
-	return *((VoxEdit*)imguiApp())->sceneMgr().get();
-}
-
-SceneManager::SceneManager() : SceneManager(core::make_shared<SceneRenderer>(), core::make_shared<ModifierRenderer>()) {
-}
-
-SceneManager::SceneManager(const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
-	: _sceneRenderer(sceneRenderer), _modifier(modifierRenderer) {
+SceneManager::SceneManager(const core::TimeProviderPtr& timeProvider, const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
+	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer) {
 }
 
 SceneManager::~SceneManager() {
@@ -169,7 +158,7 @@ bool SceneManager::importPalette(const core::String& file) {
 
 bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
 	const image::ImagePtr& img = image::loadImage(file);
-	const palette::Palette &palette = voxedit::sceneMgr().activePalette();
+	const palette::Palette &palette = activePalette();
 	voxel::RawVolume *v = voxelutil::importAsVolume(img, palette, maxDepth, bothSides);
 	if (v == nullptr) {
 		return false;
@@ -241,9 +230,8 @@ void SceneManager::autosave() {
 	if (!_needAutoSave) {
 		return;
 	}
-	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
 	const int delay = _autoSaveSecondsDelay->intVal();
-	if (delay <= 0 || _lastAutoSave + (double)delay > timeProvider->tickSeconds()) {
+	if (delay <= 0 || _lastAutoSave + (double)delay > _timeProvider->tickSeconds()) {
 		return;
 	}
 	io::FileDescription autoSaveFilename;
@@ -266,7 +254,7 @@ void SceneManager::autosave() {
 	} else {
 		Log::warn("Failed to autosave");
 	}
-	_lastAutoSave = timeProvider->tickSeconds();
+	_lastAutoSave = _timeProvider->tickSeconds();
 }
 
 bool SceneManager::saveNode(int nodeId, const core::String& file) {
@@ -311,8 +299,8 @@ void SceneManager::fillHollow() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-		voxelutil::fillHollow(wrapper, _modifier.cursorVoxel());
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
 		modified(nodeId, wrapper.dirtyRegion());
 	});
 }
@@ -327,8 +315,8 @@ void SceneManager::fill() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-		voxelutil::fill(wrapper, _modifier.cursorVoxel(), _modifier.isMode(ModifierType::Override));
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+		voxelutil::fill(wrapper, _modifierFacade.cursorVoxel(), _modifierFacade.isMode(ModifierType::Override));
 		modified(nodeId, wrapper.dirtyRegion());
 	});
 }
@@ -343,7 +331,7 @@ void SceneManager::clear() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::clear(wrapper);
 		modified(nodeId, wrapper.dirtyRegion());
 	});
@@ -359,7 +347,7 @@ void SceneManager::hollow() {
 		if (v == nullptr) {
 			return;
 		}
-		voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::hollow(wrapper);
 		modified(nodeId, wrapper.dirtyRegion());
 	});
@@ -374,9 +362,9 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
-	const glm::ivec3 &pos = _modifier.cursorPosition();
-	const voxel::FaceNames face = _modifier.cursorFace();
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
+	const glm::ivec3 &pos = _modifierFacade.cursorPosition();
+	const voxel::FaceNames face = _modifierFacade.cursorFace();
 	const voxel::Voxel hitVoxel/* = hitCursorVoxel()*/; // TODO: should be an option
 	voxelutil::fillPlane(wrapper, image, hitVoxel, pos, face);
 	modified(nodeId, wrapper.dirtyRegion());
@@ -1034,7 +1022,7 @@ bool SceneManager::doRedo() {
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
-	const Selections& selections = _modifier.selections();
+	const Selections& selections = _modifierFacade.selections();
 	if (selections.empty()) {
 		return false;
 	}
@@ -1072,7 +1060,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 }
 
 bool SceneManager::copy() {
-	const Selections& selections = _modifier.selections();
+	const Selections& selections = _modifierFacade.selections();
 	if (selections.empty()) {
 		return false;
 	}
@@ -1119,7 +1107,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 }
 
 bool SceneManager::cut() {
-	const Selections& selections = _modifier.selections();
+	const Selections& selections = _modifierFacade.selections();
 	if (selections.empty()) {
 		Log::debug("Nothing selected - failed to cut");
 		return false;
@@ -1245,7 +1233,7 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 void SceneManager::resetSceneState() {
 	// this also resets the cursor voxel - but nodeActive() will set it to the first usable index
 	// that's why this call must happen before the nodeActive() call.
-	_modifier.reset();
+	_modifierFacade.reset();
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
@@ -1258,7 +1246,7 @@ void SceneManager::resetSceneState() {
 	}
 	_dirty = false;
 	_result = voxelutil::PickResult();
-	_modifier.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
+	_modifierFacade.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
 	setCursorPosition(cursorPosition(), true);
 	setReferencePosition(node.region().getCenter());
 	resetLastTrace();
@@ -1551,17 +1539,17 @@ void SceneManager::shift(int x, int y, int z) {
 }
 
 bool SceneManager::setGridResolution(int resolution) {
-	if (_modifier.gridResolution() == resolution) {
+	if (_modifierFacade.gridResolution() == resolution) {
 		return false;
 	}
-	_modifier.setGridResolution(resolution);
+	_modifierFacade.setGridResolution(resolution);
 	setCursorPosition(cursorPosition(), true);
 	return true;
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, const video::Camera& camera, uint8_t renderMask) {
 	renderContext.frameBuffer.bind(true);
-	_sceneRenderer->updateLockedPlanes(_modifier.lockedAxis(), _sceneGraph, cursorPosition());
+	_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), _sceneGraph, cursorPosition());
 
 	renderContext.frame = _currentFrameIdx;
 	renderContext.sceneGraph = &_sceneGraph;
@@ -1574,14 +1562,14 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, const video
 	if (renderUI) {
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (!renderContext.sceneMode) {
-			_modifier.render(camera, activePalette());
+			_modifierFacade.render(camera, activePalette());
 		}
 	}
 	renderContext.frameBuffer.unbind();
 }
 
 void SceneManager::construct() {
-	_modifier.construct();
+	_modifierFacade.construct();
 	_mementoHandler.construct();
 	_sceneRenderer->construct();
 	_movement.construct();
@@ -1589,6 +1577,11 @@ void SceneManager::construct() {
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, "Delay in second between autosaves - 0 disables autosaves");
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, "Update the children of a node when the transform of the node changes");
+
+	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
+		const voxel::Region &region = accumulate(modifier().selections());
+		resize(sceneGraph().activeNode(), region);
+	}).setHelp("Resize the volume to the current selection");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1679,17 +1672,17 @@ void SceneManager::construct() {
 			return;
 		}
 		if (args[0] == "none") {
-			_modifier.unselect();
+			_modifierFacade.unselect();
 		} else if (args[0] == "all") {
 			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
 				const voxel::Region &region = node->region();
 				if (region.isValid()) {
-					_modifier.select(region.getLowerCorner(), region.getUpperCorner());
+					_modifierFacade.select(region.getLowerCorner(), region.getUpperCorner());
 				}
 			}
 		} else if (args[0] == "invert") {
 			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
-				_modifier.invert(node->region());
+				_modifierFacade.invert(node->region());
 			}
 		}
 	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
@@ -1777,7 +1770,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("colortomodel", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
 		if (argc < 1) {
-			const voxel::Voxel voxel = _modifier.cursorVoxel();
+			const voxel::Voxel voxel = _modifierFacade.cursorVoxel();
 			colorToNewNode(voxel);
 		} else {
 			const uint8_t index = core::string::toInt(args[0]);
@@ -1787,7 +1780,7 @@ void SceneManager::construct() {
 	}).setHelp("Move the voxels of the current selected palette index or the given index into a new node");
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
-		_modifier.stop();
+		_modifierFacade.stop();
 	}).setHelp("Aborts the current modifier action");
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
@@ -1941,7 +1934,7 @@ void SceneManager::construct() {
 	}).setHelp("Copy selection");
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		const Selections& selections = _modifier.selections();
+		const Selections& selections = _modifierFacade.selections();
 		if (!selections.empty()) {
 			voxel::Region r = selections[0];
 			for (const Selection &region : selections) {
@@ -1954,7 +1947,7 @@ void SceneManager::construct() {
 	}).setHelp("Paste clipboard to current selection or reference position");
 
 	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
-		paste(_modifier.cursorPosition());
+		paste(_modifierFacade.cursorPosition());
 	}).setHelp("Paste clipboard to current cursor position");
 
 	command::Command::registerCommand("pastenewnode", [&] (const command::CmdArgs& args) {
@@ -2032,7 +2025,7 @@ void SceneManager::construct() {
 		}
 		const uint8_t index = core::string::toInt(args[0]);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-		_modifier.setCursorVoxel(voxel);
+		_modifierFacade.setCursorVoxel(voxel);
 	}).setHelp("Use the given index to select the color from the current palette");
 
 	command::Command::registerCommand("setcolorrgb", [&] (const command::CmdArgs& args) {
@@ -2049,7 +2042,7 @@ void SceneManager::construct() {
 		palette.toVec4f(materialColors);
 		const int index = core::Color::getClosestMatch(color, materialColors);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
-		_modifier.setCursorVoxel(voxel);
+		_modifierFacade.setCursorVoxel(voxel);
 	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
 
 	command::Command::registerCommand("pickcolor", [&] (const command::CmdArgs& args) {
@@ -2057,15 +2050,15 @@ void SceneManager::construct() {
 		// depends on the mode you are editing in), thus we should use the cursor voxel in
 		// that case
 		if (_traceViaMouse && !voxel::isAir(hitCursorVoxel().getMaterial())) {
-			_modifier.setCursorVoxel(hitCursorVoxel());
+			_modifierFacade.setCursorVoxel(hitCursorVoxel());
 			return;
 		}
 		// resolve the voxel via cursor position. This allows to use also get the proper
 		// result if we moved the cursor via keys (and thus might have skipped tracing)
-		const glm::ivec3& cursorPos = _modifier.cursorPosition();
+		const glm::ivec3& cursorPos = _modifierFacade.cursorPosition();
 		if (const voxel::RawVolume *v = activeVolume()) {
 			const voxel::Voxel& voxel = v->voxel(cursorPos);
-			_modifier.setCursorVoxel(voxel);
+			_modifierFacade.setCursorVoxel(voxel);
 		}
 	}).setHelp("Pick the current selected color from current cursor voxel");
 
@@ -2297,11 +2290,11 @@ void SceneManager::renderText(const char *str, int size, int thickness, int spac
 	if (v == nullptr) {
 		return;
 	}
-	voxel::RawVolumeWrapper wrapper = _modifier.createRawVolumeWrapper(v);
+	voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 	const char **s = &str;
 	glm::ivec3 pos = referencePosition();
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
-		pos.x += _voxelFont.renderCharacter(c, size, thickness, pos, wrapper, _modifier.cursorVoxel());
+		pos.x += _voxelFont.renderCharacter(c, size, thickness, pos, wrapper, _modifierFacade.cursorVoxel());
 		pos.x += spacing;
 	}
 
@@ -2358,7 +2351,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the scene renderer");
 		return false;
 	}
-	if (!_modifier.init()) {
+	if (!_modifierFacade.init()) {
 		Log::error("Failed to initialize the modifier");
 		return false;
 	}
@@ -2372,10 +2365,9 @@ bool SceneManager::init() {
 	}
 
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
-	const core::TimeProviderPtr& timeProvider = app::App::getInstance()->timeProvider();
-	_lastAutoSave = timeProvider->tickSeconds();
+	_lastAutoSave = _timeProvider->tickSeconds();
 
-	_modifier.setLockedAxis(math::Axis::None, true);
+	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
 }
 
@@ -2388,7 +2380,7 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
-	if (!_luaGenerator.exec(luaCode, _sceneGraph, nodeId, region, _modifier.cursorVoxel(), dirtyRegion, args)) {
+	if (!_luaGenerator.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), dirtyRegion, args)) {
 		return false;
 	}
 	if (dirtyRegion.isValid()) {
@@ -2478,8 +2470,8 @@ bool SceneManager::update(double nowSeconds) {
 		}
 	}
 
-	_modifier.brushContext().fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
-	_modifier.update(nowSeconds);
+	_modifierFacade.brushContext().fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
+	_modifierFacade.update(nowSeconds);
 	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
@@ -2525,7 +2517,7 @@ void SceneManager::shutdown() {
 	_mementoHandler.clearStates();
 
 	_movement.shutdown();
-	_modifier.shutdown();
+	_modifierFacade.shutdown();
 	_mementoHandler.shutdown();
 	_voxelFont.shutdown();
 	_luaGenerator.shutdown();
@@ -2562,12 +2554,12 @@ void SceneManager::createTree(const voxelgenerator::TreeContext& ctx) {
 }
 
 void SceneManager::setReferencePosition(const glm::ivec3& pos) {
-	_modifier.setReferencePosition(pos);
+	_modifierFacade.setReferencePosition(pos);
 }
 
 void SceneManager::moveCursor(int x, int y, int z) {
 	glm::ivec3 p = cursorPosition();
-	const int res = _modifier.gridResolution();
+	const int res = _modifierFacade.gridResolution();
 	p.x += x * res;
 	p.y += y * res;
 	p.z += z * res;
@@ -2575,7 +2567,7 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	_traceViaMouse = false;
 	if (const voxel::RawVolume *v = activeVolume()) {
 		const voxel::Voxel &voxel = v->voxel(cursorPosition());
-		_modifier.setHitCursorVoxel(voxel);
+		_modifierFacade.setHitCursorVoxel(voxel);
 	}
 }
 
@@ -2585,7 +2577,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		return;
 	}
 
-	const int res = _modifier.gridResolution();
+	const int res = _modifierFacade.gridResolution();
 	const voxel::Region& region = v->region();
 	const glm::ivec3& mins = region.getLowerCorner();
 	const glm::ivec3 delta = pos - mins;
@@ -2599,7 +2591,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		pos.z = mins.z + (delta.z / res) * res;
 	}
 
-	const math::Axis lockedAxis = _modifier.lockedAxis();
+	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
 
 	// make a copy here - no reference - otherwise the comparison below won't
 	// do anything else than comparing the same values.
@@ -2620,7 +2612,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
 	// TODO: multiple different viewports....
-	_modifier.setCursorPosition(pos, _result.hitFace);
+	_modifierFacade.setCursorPosition(pos, _result.hitFace);
 	if (oldCursorPos == pos) {
 		return;
 	}
@@ -2628,7 +2620,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 }
 
 bool SceneManager::trace(bool sceneMode, bool force) {
-	if (_modifier.isLocked()) {
+	if (_modifierFacade.isLocked()) {
 		return false;
 	}
 	if (sceneMode) {
@@ -2677,7 +2669,7 @@ void SceneManager::traceScene(bool force) {
 }
 
 void SceneManager::updateCursor() {
-	if (_modifier.modifierTypeRequiresExistingVoxel()) {
+	if (_modifierFacade.modifierTypeRequiresExistingVoxel()) {
 		if (_result.didHit) {
 			setCursorPosition(_result.hitVoxel);
 		} else if (_result.validPreviousPosition) {
@@ -2691,12 +2683,12 @@ void SceneManager::updateCursor() {
 
 	const voxel::RawVolume *v = activeVolume();
 	if (_result.didHit && v != nullptr) {
-		_modifier.setHitCursorVoxel(v->voxel(_result.hitVoxel));
+		_modifierFacade.setHitCursorVoxel(v->voxel(_result.hitVoxel));
 	} else {
-		_modifier.setHitCursorVoxel(voxel::Voxel());
+		_modifierFacade.setHitCursorVoxel(voxel::Voxel());
 	}
 	if (v) {
-		_modifier.setVoxelAtCursor(v->voxel(_modifier.cursorPosition()));
+		_modifierFacade.setVoxelAtCursor(v->voxel(_modifierFacade.cursorPosition()));
 	}
 }
 
@@ -2740,7 +2732,7 @@ bool SceneManager::mouseRayTrace(bool force) {
 	_result.direction = ray.direction;
 	_result.hitFace = voxel::FaceNames::Max;
 
-	const math::Axis lockedAxis = _modifier.lockedAxis();
+	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
 	// TODO: we could optionally limit the raycast to the selection
 
 	voxelutil::raycastWithDirection(v, ray.origin, dirWithLength, [&] (voxel::RawVolume::Sampler& sampler) {
@@ -3283,7 +3275,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 	const palette::Palette &palette = node.palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		if (palette.color(i).a > 0) {
-			_modifier.setCursorVoxel(voxel::createVoxel(palette, i));
+			_modifierFacade.setCursorVoxel(voxel::createVoxel(palette, i));
 			break;
 		}
 	}

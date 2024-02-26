@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "core/String.h"
 
@@ -13,6 +14,8 @@ struct CommandExecutionListener;
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class AnimationTimeline;
 
 /**
@@ -21,9 +24,13 @@ class AnimationTimeline;
  */
 class AnimationPanel : public ui::Panel {
 private:
+	using Super = ui ::Panel;
 	core::String _newAnimation;
+	SceneManagerPtr _sceneMgr;
+
 public:
-	PANEL_CLASS(AnimationPanel)
+	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	void update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
 };
 

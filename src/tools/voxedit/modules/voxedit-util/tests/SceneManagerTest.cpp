@@ -5,6 +5,7 @@
 #include "../SceneManager.h"
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
+#include "core/TimeProvider.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/ISceneRenderer.h"
@@ -28,7 +29,7 @@ private:
 	using Super = app::AbstractTest;
 
 protected:
-	SceneManager _sceneMgr{core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>()};
+	SceneManager _sceneMgr{core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>()};
 
 	template<typename Volume>
 	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {

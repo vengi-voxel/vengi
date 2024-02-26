@@ -23,9 +23,8 @@
 
 namespace voxedit {
 
-PalettePanel::PalettePanel(ui::IMGUIApp *app)
-	: Super(app), _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
-	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())) {
+PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
+	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())), _sceneMgr(sceneMgr) {
 	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }
 
@@ -40,7 +39,7 @@ void PalettePanel::reloadAvailablePalettes() {
 		const core::String& name = palette::Palette::extractPaletteName(file.name);
 		_availablePalettes.push_back(name);
 	}
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		core::String id;
@@ -93,7 +92,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 	const core::String &id = core::string::format("##palitem-%i", uiIdx);
 	if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
 		if (usableColor) {
-			sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, uiIdx));
+			_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, uiIdx));
 		}
 	}
 
@@ -125,11 +124,11 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 				palette.markDirty();
 				palette.markSave();
 			}
-			sceneMgr().mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(node);
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			sceneMgr().nodeSetColor(node.id(), uiIdx, core::Color::getRGBA(color));
+			_sceneMgr->nodeSetColor(node.id(), uiIdx, core::Color::getRGBA(color));
 		}
 
 		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
@@ -144,7 +143,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
 			_colorPickerChange = false;
-			sceneMgr().mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(node);
 		}
 
 		if (usableColor) {
@@ -152,25 +151,25 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color" PALETTEACTIONPOPUP), modelFromColorCmd.c_str(), true, &listener);
 			if (palette.hasGlow(uiIdx)) {
 				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
-					sceneMgr().nodeSetGlow(node.id(), uiIdx, false);
+					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
 				}
 			} else {
 				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, _("Glow"))) {
-					sceneMgr().nodeSetGlow(node.id(), uiIdx, true);
+					_sceneMgr->nodeSetGlow(node.id(), uiIdx, true);
 				}
 			}
 			if (palette.color(uiIdx).a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove Alpha"))) {
-					sceneMgr().nodeRemoveAlpha(node.id(), uiIdx);
+					_sceneMgr->nodeRemoveAlpha(node.id(), uiIdx);
 				}
 			}
 			if (palette.hasFreeSlot()) {
 				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate"))) {
-					sceneMgr().nodeDuplicateColor(node.id(), uiIdx);
+					_sceneMgr->nodeDuplicateColor(node.id(), uiIdx);
 				}
 			}
 			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove"))) {
-				sceneMgr().nodeRemoveColor(node.id(), uiIdx);
+				_sceneMgr->nodeRemoveColor(node.id(), uiIdx);
 			}
 		}
 
@@ -197,11 +196,11 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 }
 
 uint8_t PalettePanel::currentPaletteIndex() const {
-	return sceneMgr().modifier().cursorVoxel().getColor();
+	return _sceneMgr->modifier().cursorVoxel().getColor();
 }
 
 uint8_t PalettePanel::currentSceneColor() const {
-	return sceneMgr().hitCursorVoxel().getColor();
+	return _sceneMgr->hitCursorVoxel().getColor();
 }
 
 void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
@@ -233,8 +232,8 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::TooltipText(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##loadpalette"))) {
-			sceneMgr().loadPalette(_currentSelectedPalette, _searchFittingColors, false);
-			sceneMgr().mementoHandler().markPaletteChange(node);
+			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
+			_sceneMgr->mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
@@ -310,13 +309,12 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 	char buf[256];
 	core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", _closestMatch);
 	if (ImGui::Selectable(buf) && _closestMatch != -1) {
-		sceneMgr().modifier().setCursorVoxel(voxel::createVoxel(palette, _closestMatch));
+		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, _closestMatch));
 	}
 }
 
 void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
-	SceneManager &mgr = sceneMgr();
-	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), ImGui::GetContentRegionMax().y);
@@ -350,14 +348,14 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
 			_colorPickerChange = false;
-			mgr.mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(node);
 		}
 	}
 
 	ImGui::End();
 
 	if (!_importPalette.empty()) {
-		mgr.importPalette(_importPalette);
+		_sceneMgr->importPalette(_importPalette);
 	}
 }
 
@@ -375,15 +373,14 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 	const bool existingColor = palIdx < maxPaletteEntries;
 
 	if (ImGui::ColorPicker4(_("Color"), glm::value_ptr(color), flags)) {
-		SceneManager &mgr = sceneMgr();
 		const bool hasAlpha = palette.color(palIdx).a != 255;
 		palette.color(palIdx) = core::Color::getRGBA(color);
 		if (!existingColor) {
 			palette.setSize(palIdx + 1);
 		} else if (hasAlpha && palette.color(palIdx).a == 255) {
-			mgr.updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 		} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-			mgr.updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+			_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 		palette.markDirty();
 		palette.markSave();

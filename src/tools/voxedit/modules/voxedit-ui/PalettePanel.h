@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "command/CommandHandler.h"
 #include "core/String.h"
@@ -19,6 +20,9 @@ class Palette;
 }
 
 namespace voxedit {
+
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
 class PalettePanel : public ui::Panel {
 private:
@@ -39,6 +43,7 @@ private:
 	core::String _currentSelectedPalette;
 	core::String _lospecID;
 	core::DynamicArray<core::String> _availablePalettes;
+	SceneManagerPtr _sceneMgr;
 
 	void closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
@@ -51,7 +56,7 @@ private:
 	uint8_t currentSceneColor() const;
 	uint8_t currentPaletteIndex() const;
 public:
-	PalettePanel(ui::IMGUIApp *app);
+	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	void update(const char *title, command::CommandExecutionListener &listener);
 	bool hasFocus() const;
 };

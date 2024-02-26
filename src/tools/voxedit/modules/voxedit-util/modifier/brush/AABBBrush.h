@@ -10,6 +10,8 @@
 
 namespace voxedit {
 
+class SceneManager; // TODO: get rid of this
+
 enum BrushFlags : uint32_t {
 	BRUSH_MODE_AABB = 0,
 	/**
@@ -28,6 +30,7 @@ enum BrushFlags : uint32_t {
 class AABBBrush : public Brush {
 private:
 	using Super = Brush;
+	SceneManager *_sceneMgr; // TODO: get rid of this
 
 protected:
 	/**
@@ -81,7 +84,7 @@ protected:
 	 */
 	virtual bool wantAABB() const;
 public:
-	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
+	AABBBrush(SceneManager *sceneMgr, BrushType type, ModifierType defaultModifier = ModifierType::Place,
 			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
 	virtual ~AABBBrush() = default;
 	void construct() override;

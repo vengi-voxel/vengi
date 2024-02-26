@@ -85,7 +85,7 @@ void PositionsPanel::shutdown() {
 
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, "Region", ImGuiTreeNodeFlags_DefaultOpen)) {
-		const int nodeId = sceneMgr().sceneGraph().activeNode();
+		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const core::String &sizes = _regionSizes->strVal();
 		if (!sizes.empty()) {
 			static const char *max = "888x888x888";
@@ -106,11 +106,11 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				toolbar.customNoStyle([&]() {
 					if (ImGui::Button(title.c_str())) {
 						voxel::Region newRegion(glm::ivec3(0), maxs);
-						sceneMgr().resize(nodeId, newRegion);
+						_sceneMgr->resize(nodeId, newRegion);
 					}
 				});
 			}
-		} else if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+		} else if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 			const voxel::RawVolume *v = node->volume();
 			if (v != nullptr) {
 				const voxel::Region &region = v->region();
@@ -118,20 +118,20 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				glm::ivec3 maxs = region.getDimensionsInVoxels();
 				if (xyzValues("pos", mins)) {
 					const glm::ivec3 &f = mins - region.getLowerCorner();
-					sceneMgr().shift(nodeId, f);
+					_sceneMgr->shift(nodeId, f);
 				}
 				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
 					ImGui::SameLine();
 					if (ImGui::Button("To Transform")) {
 						const glm::ivec3 &f = region.getLowerCorner();
-						sceneMgr().nodeShiftAllKeyframes(nodeId, f);
-						sceneMgr().shift(nodeId, -f);
+						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
+						_sceneMgr->shift(nodeId, -f);
 					}
 					ImGui::TooltipText("Convert the region offset into the keyframe transforms");
 				}
 				if (xyzValues("size", maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
-					sceneMgr().resize(nodeId, newRegion);
+					_sceneMgr->resize(nodeId, newRegion);
 				}
 
 				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -162,8 +162,8 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	ImGui::NewLine();
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
-		glm::ivec3 cursorPosition = sceneMgr().modifier().cursorPosition();
-		math::Axis lockedAxis = sceneMgr().modifier().lockedAxis();
+		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
+		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
 		if (veui::CheckboxAxisFlags(math::Axis::X, "X##cursorlock", &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}
@@ -253,7 +253,7 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 		node.setPivot({0.0f, 0.0f, 0.0f});
 		const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
 		transform.update(sceneGraph, node, frameIdx, updateChildren);
-		sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+		_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
 	}
 	ImGui::SameLine();
 	ImGui::CheckboxVar("Auto Keyframe", cfg::VoxEditAutoKeyFrame);
@@ -262,12 +262,12 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, "Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 
-			const scenegraph::FrameIndex frameIdx = sceneMgr().currentFrame();
+			const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 			scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
 			const scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
@@ -319,7 +319,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
 				// check if a new keyframe should get generated automatically
 				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-					if (sceneMgr().nodeAddKeyFrame(node.id(), frameIdx)) {
+					if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
 						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 						core_assert(newKeyFrameIdx != keyFrameIdx);
 						core_assert(newKeyFrameIdx != InvalidKeyFrame);
@@ -330,7 +330,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				_lastChanged = true;
 
 				if (pivotChanged) {
-					sceneMgr().nodeUpdatePivot(node.id(), pivot);
+					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {
 					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
 															glm::value_ptr(matrix));
@@ -346,7 +346,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			if (!change && _lastChanged) {
 				_lastChanged = false;
-				sceneMgr().mementoHandler().markNodeTransform(node, keyFrameIdx);
+				_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
 			}
 		}
 	}

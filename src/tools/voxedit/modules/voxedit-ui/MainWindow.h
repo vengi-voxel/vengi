@@ -24,6 +24,7 @@
 #include "voxedit-ui/StatusBar.h"
 #include "voxedit-ui/TreePanel.h"
 #include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/SceneManager.h"
 
 #define ENABLE_RENDER_PANEL 0
 
@@ -66,6 +67,7 @@ private:
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
 	video::TexturePool _texturePool;
+	SceneManagerPtr _sceneMgr;
 
 #if ENABLE_RENDER_PANEL
 	RenderPanel _renderPanel;
@@ -129,7 +131,7 @@ private:
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
 public:
-	MainWindow(ui::IMGUIApp *app);
+	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();

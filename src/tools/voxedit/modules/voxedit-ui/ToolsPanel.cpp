@@ -14,10 +14,10 @@
 namespace voxedit {
 
 void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
 
-	if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(activeNode)) {
+	if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
 		const scenegraph::SceneGraphNodeType nodeType = node->type();
 		if (ImGui::CollapsingHeader(_("Action"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			ui::ScopedStyle style;
@@ -42,7 +42,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar(buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
-		toolbar.button(ICON_LC_CROP, "resizetoselection", sceneMgr().modifier().selections().empty());
+		toolbar.button(ICON_LC_CROP, "resizetoselection", _sceneMgr->modifier().selections().empty());
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
 		toolbar.button(ICON_LC_EXPAND, "modelsize");
 		toolbar.button(ICON_LC_UNGROUP, "colortomodel");
@@ -91,7 +91,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::InputFile(_("Font##textinput"), &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
 
 		if (ImGui::Button(_("Execute##textinput"))) {
-			sceneMgr().renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
+			_sceneMgr->renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
 		}
 	}
 

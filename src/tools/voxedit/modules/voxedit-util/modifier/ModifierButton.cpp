@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-ModifierButton::ModifierButton(ModifierType newType) : _newType(newType) {
+ModifierButton::ModifierButton(SceneManager *sceneMgr, ModifierType newType) : _sceneMgr(sceneMgr), _newType(newType) {
 }
 
 bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
@@ -19,7 +19,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 	if (core::bindingContext() == core::BindingContext::Context1) {
 		return initialDown;
 	}
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	if (_furtherAction && !modifier.aborted()) {
 		execute(false);
 		return initialDown;
@@ -28,7 +28,7 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 		if (_newType != ModifierType::None) {
 			_oldType = modifier.modifierType();
 			modifier.setModifierType(_newType);
-			sceneMgr().trace(false, true);
+			_sceneMgr->trace(false, true);
 		}
 		modifier.start();
 	}
@@ -42,7 +42,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 		return allUp;
 	}
 	if (allUp) {
-		Modifier &modifier = sceneMgr().modifier();
+		Modifier &modifier = _sceneMgr->modifier();
 		_furtherAction = modifier.needsFurtherAction();
 		if (_furtherAction) {
 			modifier.executeAdditionalAction();
@@ -56,31 +56,31 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 }
 
 void ModifierButton::execute(bool single) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	int nodes = 0;
 	auto func = [&](int nodeId) {
-		if (scenegraph::SceneGraphNode *node = sceneMgr().sceneGraphNode(nodeId)) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 			if (!node->visible()) {
 				return;
 			}
 			Log::debug("Execute modifier action for node %i", nodeId);
-			voxel::RawVolume *v = sceneMgr().volume(nodeId);
+			voxel::RawVolume *v = _sceneMgr->volume(nodeId);
 			if (v == nullptr) {
 				return;
 			}
 			auto modifierFunc = [&](const voxel::Region &region, ModifierType type, bool markUndo) {
 				if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-					sceneMgr().modified(nodeId, region, markUndo);
+					_sceneMgr->modified(nodeId, region, markUndo);
 				}
 			};
-			modifier.execute(sceneMgr().sceneGraph(), *node, modifierFunc);
+			modifier.execute(_sceneMgr->sceneGraph(), *node, modifierFunc);
 			++nodes;
 		}
 	};
-	sceneMgr().nodeForeachGroup(func);
+	_sceneMgr->nodeForeachGroup(func);
 	if (_oldType != ModifierType::None) {
 		modifier.setModifierType(_oldType);
-		sceneMgr().trace(false, true);
+		_sceneMgr->trace(false, true);
 		_oldType = ModifierType::None;
 	}
 	if (!single) {

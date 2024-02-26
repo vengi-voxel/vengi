@@ -16,7 +16,8 @@
 
 namespace voxedit {
 
-ModifierFacade::ModifierFacade(const ModifierRendererPtr &modifierRenderer) : _modifierRenderer(modifierRenderer) {
+ModifierFacade::ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
+	: Super(sceneMgr), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
 }
 
 bool ModifierFacade::init() {
@@ -54,10 +55,10 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 
 	Log::debug("regenerate preview volume");
 
-	scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	voxel::RawVolume *existingVolume = nullptr;
 	if (_modifierType == ModifierType::Paint) {
-		existingVolume = sceneMgr().volume(sceneGraph.activeNode());
+		existingVolume = _sceneMgr->volume(sceneGraph.activeNode());
 	}
 	const AABBBrush *aabbBrush = activeAABBBrush();
 	if (aabbBrush) {
@@ -120,9 +121,9 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &palet
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
 	AABBBrush *aabbBrush = activeAABBBrush();
 	if (aabbBrush) {
-		_modifierRenderer->updateMirrorPlane(aabbBrush->mirrorAxis(), aabbBrush->mirrorPos());
+		_modifierRenderer->updateMirrorPlane(aabbBrush->mirrorAxis(), aabbBrush->mirrorPos(), _sceneMgr->sceneGraph().region());
 	} else {
-		_modifierRenderer->updateMirrorPlane(math::Axis::None, glm::ivec3(0));
+		_modifierRenderer->updateMirrorPlane(math::Axis::None, glm::ivec3(0), _sceneMgr->sceneGraph().region());
 	}
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);

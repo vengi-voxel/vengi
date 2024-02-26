@@ -14,14 +14,13 @@
 namespace voxedit {
 
 void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
-	SceneManager &mgr = sceneMgr();
-	scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add##animationpanel"))) {
-			if (!mgr.duplicateAnimation(sceneGraph.activeAnimation(), _newAnimation)) {
+			if (!_sceneMgr->duplicateAnimation(sceneGraph.activeAnimation(), _newAnimation)) {
 				Log::error("Failed to add animation %s", _newAnimation.c_str());
 			} else {
 				_newAnimation = "";
@@ -34,7 +33,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 			for (const core::String &animation : animations) {
 				const bool isSelected = currentAnimation == animation;
 				if (ImGui::Selectable(animation.c_str(), isSelected)) {
-					if (!mgr.setAnimation(animation)) {
+					if (!_sceneMgr->setAnimation(animation)) {
 						Log::error("Failed to activate animation %s", animation.c_str());
 					}
 					animationTimeline->resetFrames();
@@ -47,7 +46,7 @@ void AnimationPanel::update(const char *title, command::CommandExecutionListener
 		}
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_MINUS, _("Delete##animationpanel"))) {
-			if (!mgr.removeAnimation(currentAnimation)) {
+			if (!_sceneMgr->removeAnimation(currentAnimation)) {
 				Log::error("Failed to remove animation %s", currentAnimation.c_str());
 			}
 			animationTimeline->resetFrames();

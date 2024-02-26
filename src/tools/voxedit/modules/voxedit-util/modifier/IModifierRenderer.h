@@ -44,7 +44,7 @@ public:
 
 	virtual void updateReferencePosition(const glm::ivec3 &pos) {
 	}
-	virtual void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos) {
+	virtual void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion) {
 	}
 	virtual void updateSelectionBuffers(const Selections &selections) {
 	}

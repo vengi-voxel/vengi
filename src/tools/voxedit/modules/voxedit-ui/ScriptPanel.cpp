@@ -23,7 +23,7 @@
 namespace voxedit {
 
 void ScriptPanel::reloadScriptParameters(const core::String &script) {
-	voxelgenerator::LUAGenerator &luaGenerator = sceneMgr().luaGenerator();
+	voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
 	_scriptParameterDescription.clear();
 	luaGenerator.argumentInfo(script, _scriptParameterDescription);
 	const int parameterCount = (int)_scriptParameterDescription.size();
@@ -43,7 +43,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 		return false;
 	}
 
-	voxelgenerator::LUAGenerator &luaGenerator = sceneMgr().luaGenerator();
+	voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
 			const core::String &scriptName = _scripts[_currentScript].filename;
@@ -58,7 +58,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 	const bool validScriptIndex = _currentScript >= 0 && _currentScript < (int)_scripts.size();
 	const bool validScript = validScriptIndex && _scripts[_currentScript].valid;
 	if (ImGui::DisabledButton("Run##scriptpanel", !validScript)) {
-		sceneMgr().runScript(_activeScript, _scriptParameters);
+		_sceneMgr->runScript(_activeScript, _scriptParameters);
 		core::DynamicArray<core::String> args;
 		args.reserve(_scriptParameters.size() + 1);
 		args.push_back(_scripts[_currentScript].filename);
@@ -73,7 +73,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
 			case voxelgenerator::LUAParameterType::ColorIndex: {
-				const palette::Palette &palette = sceneMgr().activePalette();
+				const palette::Palette &palette = _sceneMgr->activePalette();
 				core::String &str = _scriptParameters[i];
 				int val = core::string::toInt(str);
 				if (val >= 0 && val < palette.colorCount()) {
@@ -170,7 +170,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 
 void ScriptPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		voxelgenerator::LUAGenerator &luaGenerator = sceneMgr().luaGenerator();
+		voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
 		if (_scripts.empty()) {
 			_scripts = luaGenerator.listScripts();
 		}

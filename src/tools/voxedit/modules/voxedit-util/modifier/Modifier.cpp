@@ -3,8 +3,8 @@
  */
 
 #include "Modifier.h"
-#include "../SceneManager.h"
 #include "command/Command.h"
+#include "command/CommandCompleter.h"
 #include "core/Log.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
@@ -23,7 +23,9 @@
 
 namespace voxedit {
 
-Modifier::Modifier() : _deleteExecuteButton(ModifierType::Erase) {
+Modifier::Modifier(SceneManager *sceneMgr)
+	: _shapeBrush(sceneMgr), _paintBrush(sceneMgr), _actionExecuteButton(sceneMgr),
+	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
 	_brushes.push_back(&_stampBrush);
@@ -37,11 +39,6 @@ void Modifier::construct() {
 	command::Command::registerActionButton("actionexecute", _actionExecuteButton, "Execute the modifier action");
 	command::Command::registerActionButton("actionexecutedelete", _deleteExecuteButton,
 										   "Execute the modifier action in delete mode");
-
-	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
-		const voxel::Region &region = accumulate(_selections);
-		sceneMgr().resize(sceneMgr().sceneGraph().activeNode(), region);
-	}).setHelp("Resize the volume to the current selection");
 
 	command::Command::registerCommand("actionselect", [&](const command::CmdArgs &args) {
 		setModifierType(ModifierType::Select);

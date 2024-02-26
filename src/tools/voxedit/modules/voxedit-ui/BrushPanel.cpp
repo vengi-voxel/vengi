@@ -38,7 +38,7 @@ static constexpr const char *BrushTypeIcons[] = {ICON_LC_MOUSE_POINTER_SQUARE_DA
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 
 	const ShapeType currentSelectedShapeType = modifier.shapeBrush().shapeType();
 	if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
@@ -89,7 +89,7 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AA
 }
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
 	if (modifier.selections().empty()) {
 		selectionStyle.disableItem();
@@ -108,7 +108,7 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 
 void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
 								   command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	StampBrush &brush = modifier.stampBrush();
 	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
@@ -166,7 +166,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 }
 
 void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	if (modifier.isMode(ModifierType::Place)) {
 		ImGui::TextWrapped(_("Extrude voxels"));
 	} else if (modifier.isMode(ModifierType::Erase)) {
@@ -185,12 +185,12 @@ void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listene
 }
 
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	palette::Palette &palette = node.palette();
 
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	if (!modifier.stampBrush().active()) {
 		ImGui::TextWrapped(_("Select a model from the asset panel"));
 		ui::ScopedStyle style;
@@ -235,7 +235,7 @@ void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
 }
 
 void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	ShapeBrush &brush = modifier.shapeBrush();
 	addShapes(listener);
 	aabbBrushOptions(listener, brush);
@@ -243,7 +243,7 @@ void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listen
 }
 
 void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listener) {
-	Modifier &modifier = sceneMgr().modifier();
+	Modifier &modifier = _sceneMgr->modifier();
 	PaintBrush &brush = modifier.paintBrush();
 
 	PaintBrush::PaintMode paintMode = brush.paintMode();
@@ -284,7 +284,7 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
-	const Modifier &modifier = sceneMgr().modifier();
+	const Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 	if (ImGui::CollapsingHeader(_("Brush settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		if (brushType == BrushType::Shape) {
@@ -316,7 +316,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 
 	const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 
-	voxedit::ModifierFacade &modifier = sceneMgr().modifier();
+	voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 
 	ui::Toolbar toolbarBrush(buttonSize, &listener);

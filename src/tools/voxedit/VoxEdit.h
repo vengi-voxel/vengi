@@ -51,8 +51,6 @@ public:
 
 	bool allowedToQuit() override;
 
-	const voxedit::SceneManagerPtr& sceneMgr() const;
-
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;
@@ -60,7 +58,3 @@ public:
 
 	void toggleScene();
 };
-
-inline const voxedit::SceneManagerPtr& VoxEdit::sceneMgr() const {
-	return _sceneMgr;
-}

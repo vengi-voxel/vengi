@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -14,12 +15,16 @@ struct CommandExecutionListener;
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class AABBBrush;
 
 class BrushPanel : public ui::Panel {
 private:
+	using Super = ui ::Panel;
 	core::String _stamp;
 	int _stampPaletteIndex = 0;
+	SceneManagerPtr _sceneMgr;
 
 	void addModifiers(command::CommandExecutionListener &listener);
 	void brushSettings(command::CommandExecutionListener &listener);
@@ -40,7 +45,8 @@ private:
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 public:
-	PANEL_CLASS(BrushPanel)
+	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	void update(const char *title, command::CommandExecutionListener &listener);
 };
 

@@ -6,11 +6,13 @@
 
 #include "ui/Panel.h"
 #include "core/String.h"
+#include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 class LSystemPanel : public ui::Panel {
 private:
+	using Super = ui ::Panel;
 	struct LSystemData {
 		core::String axiom = "F";
 		core::String rulesStr = R"({
@@ -25,9 +27,11 @@ private:
 		float leavesRadius = 8.0f;
 	};
 	LSystemData _lsystemData;
+	SceneManagerPtr _sceneMgr;
 
 public:
-	PANEL_CLASS(LSystemPanel)
+	LSystemPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	bool init();
 	void update(const char *title);
 	void shutdown();

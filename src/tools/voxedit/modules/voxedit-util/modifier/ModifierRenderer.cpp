@@ -157,7 +157,7 @@ void ModifierRenderer::renderSelection(const video::Camera& camera) {
 	_shapeRenderer.render(_selectionIndex, camera);
 }
 
-void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirrorPos) {
+void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirrorPos, const voxel::Region &sceneRegion) {
 	if (axis == math::Axis::None) {
 		if (_mirrorMeshIndex != -1) {
 			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
@@ -166,9 +166,8 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3& mirr
 		return;
 	}
 
-	const voxel::Region region = sceneMgr().sceneGraph().region();
 	const glm::vec4 color = core::Color::alpha(core::Color::LightGray(), 0.3f);
-	updateShapeBuilderForPlane(_shapeBuilder, region, true, mirrorPos, axis, color);
+	updateShapeBuilderForPlane(_shapeBuilder, sceneRegion, true, mirrorPos, axis, color);
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 

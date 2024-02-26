@@ -124,24 +124,25 @@ static const struct TemplateModel {
 #undef TM_ENTRY
 // clang-format on
 
-MainWindow::MainWindow(ui::IMGUIApp *app) : Super(app),
+MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app),
+	_sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
 	_renderPanel(app),
 #endif
-	 _lsystemPanel(app),
-	 _brushPanel(app),
-	 _treePanel(app),
-	 _sceneGraphPanel(app),
-	 _animationPanel(app),
-	 _toolsPanel(app),
-	 _assetPanel(app),
-	 _mementoPanel(app),
-	 _positionsPanel(app),
-	 _palettePanel(app),
-	 _menuBar(app),
-	 _statusBar(app),
-	 _scriptPanel(app),
-	 _animationTimeline(app)
+	 _lsystemPanel(app, _sceneMgr),
+	 _brushPanel(app, _sceneMgr),
+	 _treePanel(app, _sceneMgr),
+	 _sceneGraphPanel(app, _sceneMgr),
+	 _animationPanel(app, _sceneMgr),
+	 _toolsPanel(app, _sceneMgr),
+	 _assetPanel(app, _sceneMgr),
+	 _mementoPanel(app, _sceneMgr),
+	 _positionsPanel(app, _sceneMgr),
+	 _palettePanel(app, _sceneMgr),
+	 _menuBar(app, _sceneMgr),
+	 _statusBar(app, _sceneMgr),
+	 _scriptPanel(app, _sceneMgr),
+	 _animationTimeline(app, _sceneMgr)
  {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
@@ -188,7 +189,7 @@ void MainWindow::shutdownScenes() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		delete _scenes[i];
 	}
-	sceneMgr().setActiveCamera(nullptr);
+	_sceneMgr->setActiveCamera(nullptr);
 	_scenes.clear();
 	_lastHoveredScene = nullptr;
 }
@@ -199,12 +200,12 @@ bool MainWindow::initScenes() {
 	if (_simplifiedView->boolVal()) {
 		_scenes.resize(2);
 		_scenes[0] = new Viewport(_app, 0, false, false);
-		_scenes[1] = new Viewport(_app, 1, true, false);
+		_scenes[1] = new Viewport(_app, _sceneMgr, 1, true, false);
 	} else {
 		_scenes.resize(_numViewports->intVal());
 		bool sceneMode = true;
 		for (int i = 0; i < _numViewports->intVal(); ++i) {
-			_scenes[i] = new Viewport(_app, i, sceneMode, true);
+			_scenes[i] = new Viewport(_app, _sceneMgr, i, sceneMode, true);
 			sceneMode = false;
 		}
 	}
@@ -263,13 +264,12 @@ bool MainWindow::init() {
 	_lastOpenedFiles = core::Var::getSafe(cfg::VoxEditLastFiles);
 	loadLastOpenedFiles(_lastOpenedFiles->strVal());
 
-	SceneManager &mgr = sceneMgr();
 	voxel::Region region = _modelNodeSettings.region();
 	if (!region.isValid()) {
 		_modelNodeSettings.reset();
 		region = _modelNodeSettings.region();
 	}
-	if (!mgr.newScene(true, _modelNodeSettings.name, region)) {
+	if (!_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
 		return false;
 	}
 	afterLoad("");
@@ -301,7 +301,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	} else {
 		fd.set(file, desc);
 	}
-	if (!sceneMgr().save(fd)) {
+	if (!_sceneMgr->save(fd)) {
 		Log::warn("Failed to save the model");
 		_popupFailedToSave = true;
 		return false;
@@ -318,11 +318,10 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *for
 		return true;
 	}
 
-	SceneManager &mgr = sceneMgr();
-	if (!mgr.dirty()) {
+	if (!_sceneMgr->dirty()) {
 		io::FileDescription fd;
 		fd.set(file, formatDesc);
-		if (mgr.load(fd)) {
+		if (_sceneMgr->load(fd)) {
 			afterLoad(file);
 			return true;
 		}
@@ -348,7 +347,7 @@ void MainWindow::afterLoad(const core::String &file) {
 void MainWindow::checkPossibleVolumeSplit() {
 	const int maxDim = 128;
 	const int maxVoxels = maxDim * maxDim * maxDim;
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	for (const auto &entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
 		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
@@ -365,7 +364,7 @@ void MainWindow::checkPossibleVolumeSplit() {
 }
 
 bool MainWindow::createNew(bool force) {
-	if (!force && sceneMgr().dirty()) {
+	if (!force && _sceneMgr->dirty()) {
 		_loadFile.clear();
 		_popupUnsaved = true;
 	} else {
@@ -479,7 +478,7 @@ void MainWindow::rightWidget() {
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 #if ENABLE_RENDER_PANEL
-	_renderPanel.update(TITLE_RENDER, sceneMgr().sceneGraph());
+	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
 #endif
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);
@@ -501,7 +500,7 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	const ImVec2 size((float)texture->width(), (float)texture->height());
 	if (ImGui::ImageButton(texture->handle(), size)) {
 		ImGui::CloseCurrentPopup();
-		sceneMgr().load(fileDesc, (const uint8_t *)model.data, (size_t)model.size);
+		_sceneMgr->load(fileDesc, (const uint8_t *)model.data, (size_t)model.size);
 	}
 	ImGui::TooltipText("%s", name.c_str());
 }
@@ -592,7 +591,7 @@ void MainWindow::popupNewScene() {
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##newscene"))) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
-			if (sceneMgr().newScene(true, _modelNodeSettings.name, region)) {
+			if (_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
 				afterLoad("");
 			}
 		}
@@ -639,7 +638,7 @@ void MainWindow::popupUnsavedDiscard() {
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##unsaved"))) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
-				sceneMgr().load(_loadFile);
+				_sceneMgr->load(_loadFile);
 				afterLoad(_loadFile.name);
 			} else {
 				createNew(true);
@@ -677,7 +676,7 @@ void MainWindow::popupVolumeSplit() {
 								 "them into smaller volumes.\nDo you wish to split them now?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##volumesplit"))) {
 			ImGui::CloseCurrentPopup();
-			sceneMgr().splitVolumes();
+			_sceneMgr->splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
@@ -718,7 +717,7 @@ void MainWindow::popupModelNodeSettings() {
 			if (_modelNodeSettings.palette.hasValue()) {
 				newNode.setPalette(*_modelNodeSettings.palette.value());
 			}
-			sceneMgr().addNodeToSceneGraph(newNode, _modelNodeSettings.parent);
+			_sceneMgr->addNodeToSceneGraph(newNode, _modelNodeSettings.parent);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
@@ -775,7 +774,7 @@ void MainWindow::registerPopups() {
 	}
 	if (_popupRenameNode->boolVal()) {
 		ImGui::OpenPopup(POPUP_TITLE_RENAME_NODE);
-		const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		_currentNodeName = sceneGraph.node(sceneGraph.activeNode()).name();
 		_popupRenameNode->setVal("false");
 	}
@@ -794,7 +793,6 @@ void MainWindow::registerPopups() {
 }
 
 void MainWindow::popupNodeRename() {
-	voxedit::SceneManager &mgr = sceneMgr();
 	if (ImGui::BeginPopupModal(POPUP_TITLE_RENAME_NODE, nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
 		if (ImGui::IsWindowAppearing()) {
@@ -806,8 +804,8 @@ void MainWindow::popupNodeRename() {
 		ImGui::IconDialog(ICON_LC_INFO, _("Node names should be unique"));
 
 		if (ImGui::Button(_("Apply")) || renamed) {
-			const int nodeId = mgr.sceneGraph().activeNode();
-			mgr.nodeRename(nodeId, _currentNodeName);
+			const int nodeId = _sceneMgr->sceneGraph().activeNode();
+			_sceneMgr->nodeRename(nodeId, _currentNodeName);
 			_currentNodeName = "";
 			ImGui::CloseCurrentPopup();
 		}
@@ -879,7 +877,7 @@ QuitDisallowReason MainWindow::allowToQuit() {
 	if (_forceQuit) {
 		return QuitDisallowReason::None;
 	}
-	if (sceneMgr().dirty()) {
+	if (_sceneMgr->dirty()) {
 		_popupUnsavedChangesQuit = true;
 		return QuitDisallowReason::UnsavedChanges;
 	}
@@ -914,7 +912,7 @@ void MainWindow::update() {
 		windowFlags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
 		windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoMove;
 		windowFlags |= ImGuiWindowFlags_NoTitleBar;
-		if (sceneMgr().dirty()) {
+		if (_sceneMgr->dirty()) {
 			windowFlags |= ImGuiWindowFlags_UnsavedDocument;
 		}
 

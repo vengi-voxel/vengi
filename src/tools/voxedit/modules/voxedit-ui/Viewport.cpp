@@ -41,8 +41,8 @@ core::String Viewport::viewportId(int id) {
 	return core::string::format("###viewport%i", id);
 }
 
-Viewport::Viewport(ui::IMGUIApp *app, int id, bool sceneMode, bool detailedTitle)
-	: Super(app), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle) {
+Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle)
+	: Super(app), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
 	_renderContext.sceneMode = sceneMode;
 }
 
@@ -131,47 +131,45 @@ void Viewport::updateViewportTrace(float headerSize) {
 	const ImVec2 windowPos = ImGui::GetWindowPos();
 	const int mouseX = (int)(ImGui::GetIO().MousePos.x - windowPos.x);
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
-	SceneManager &mgr = sceneMgr();
-	const bool rotate = mgr.cameraRotate();
-	const bool pan = mgr.cameraPan();
+	const bool rotate = _sceneMgr->cameraRotate();
+	const bool pan = _sceneMgr->cameraPan();
 	move(pan, rotate, mouseX, mouseY);
-	mgr.setMousePos(_mouseX, _mouseY);
-	mgr.setActiveCamera(&camera());
-	mgr.trace(_renderContext.sceneMode);
+	_sceneMgr->setMousePos(_mouseX, _mouseY);
+	_sceneMgr->setActiveCamera(&camera());
+	_sceneMgr->trace(_renderContext.sceneMode);
 }
 
 void Viewport::dragAndDrop(float headerSize) {
 	if (ImGui::BeginDragDropTarget()) {
-		SceneManager &mgr = sceneMgr();
 		if (!isSceneMode()) {
 			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
 				const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 				updateViewportTrace(headerSize);
-				mgr.fillPlane(image);
+				_sceneMgr->fillPlane(image);
 			}
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
-			const int nodeId = mgr.sceneGraph().activeNode();
-			if (scenegraph::SceneGraphNode *node = mgr.sceneGraphNode(nodeId)) {
+			const int nodeId = _sceneMgr->sceneGraph().activeNode();
+			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
 				if (node->visible() && node->isModelNode()) {
 					updateViewportTrace(headerSize);
-					ModifierFacade &modifier = mgr.modifier();
+					ModifierFacade &modifier = _sceneMgr->modifier();
 					modifier.setCursorVoxel(voxel::createVoxel(node->palette(), dragPalIdx));
 					modifier.start();
-					auto callback = [nodeId](const voxel::Region &region, ModifierType type, bool markUndo) {
+					auto callback = [nodeId, this](const voxel::Region &region, ModifierType type, bool markUndo) {
 						if (type != ModifierType::Select && type != ModifierType::ColorPicker) {
-							sceneMgr().modified(nodeId, region, markUndo);
+							_sceneMgr->modified(nodeId, region, markUndo);
 						}
 					};
-					modifier.execute(mgr.sceneGraph(), *node, callback);
+					modifier.execute(_sceneMgr->sceneGraph(), *node, callback);
 					modifier.stop();
 				}
 			}
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
-			mgr.import(filename);
+			_sceneMgr->import(filename);
 		}
 
 		ImGui::EndDragDropTarget();
@@ -192,8 +190,7 @@ void Viewport::renderCursor() {
 		return;
 	}
 
-	const SceneManager &mgr = sceneMgr();
-	const ModifierFacade &modifier = mgr.modifier();
+	const ModifierFacade &modifier = _sceneMgr->modifier();
 	if (modifier.isMode(ModifierType::ColorPicker) || modifier.isMode(ModifierType::Select) ||
 		modifier.brushType() == BrushType::Paint) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -212,8 +209,8 @@ void Viewport::renderCursor() {
 		return;
 	}
 
-	const int activeNode = mgr.sceneGraph().activeNode();
-	if (const voxel::RawVolume *v = mgr.volume(activeNode)) {
+	const int activeNode = _sceneMgr->sceneGraph().activeNode();
+	if (const voxel::RawVolume *v = _sceneMgr->volume(activeNode)) {
 		const glm::ivec3 &mins = v->region().getLowerCorner();
 		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
 		if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
@@ -238,7 +235,7 @@ void Viewport::renderViewport() {
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
-		if (sceneMgr().isLoading()) {
+		if (_sceneMgr->isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
 			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White(), core::Color::Gray());
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
@@ -389,7 +386,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
-		const MementoHandler &mementoHandler = sceneMgr().mementoHandler();
+		const MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
@@ -445,7 +442,7 @@ void Viewport::shutdown() {
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {
-	sceneMgr().render(_renderContext, camera(), SceneManager::RenderScene);
+	_sceneMgr->render(_renderContext, camera(), SceneManager::RenderScene);
 	return _renderContext.frameBuffer.image(imageName, video::FrameBufferAttachment::Color0);
 }
 
@@ -464,19 +461,18 @@ bool Viewport::saveImage(const char *filename) {
 }
 
 void Viewport::resetCamera() {
-	SceneManager &mgr = sceneMgr();
-	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const voxel::Region &sceneRegion = sceneGraph.region();
 	const int activeNode = sceneGraph.activeNode();
-	const voxel::RawVolume *v = mgr.volume(activeNode);
+	const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
 	const voxel::Region &region = v != nullptr ? v->region() : sceneRegion;
 	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 center = region.getCenter();
 
 	if (_renderContext.sceneMode) {
 		if (_hideInactive->boolVal()) {
-			if (scenegraph::SceneGraphNode *node = mgr.sceneGraphNode(activeNode)) {
-				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(mgr.currentFrame());
+			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
+				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
 				const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
 				center = transform.worldTranslation() + glm::vec3(region.getCenter());
 			} else {
@@ -508,9 +504,8 @@ bool Viewport::setupFrameBuffer(const glm::ivec2 &frameBufferSize) {
 void Viewport::reset() {
 	if (_transformMementoLocked) {
 		Log::debug("Unlock memento state in reset()");
-		SceneManager &mgr = sceneMgr();
-		mgr.mementoHandler().unlock();
-		mgr.modifier().unlock();
+		_sceneMgr->mementoHandler().unlock();
+		_sceneMgr->modifier().unlock();
 		_transformMementoLocked = false;
 	}
 }
@@ -520,10 +515,9 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 		return;
 	}
 	Log::debug("Unlock memento state");
-	SceneManager &mgr = sceneMgr();
-	MementoHandler &mementoHandler = mgr.mementoHandler();
+	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	mementoHandler.unlock();
-	mgr.modifier().unlock();
+	_sceneMgr->modifier().unlock();
 	if (keyFrameIdx == InvalidKeyFrame) {
 		// there is no valid key frame idx given in edit mode
 		mementoHandler.markModification(node, node.region());
@@ -539,13 +533,12 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 		return;
 	}
 	Log::debug("Lock memento state");
-	SceneManager &mgr = sceneMgr();
-	MementoHandler &mementoHandler = mgr.mementoHandler();
+	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	if (keyFrameIdx != InvalidKeyFrame) {
 		mementoHandler.markNodeTransform(node, keyFrameIdx);
 	}
 	mementoHandler.lock();
-	mgr.modifier().lock();
+	_sceneMgr->modifier().lock();
 	_transformMementoLocked = true;
 }
 
@@ -567,7 +560,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 		const voxel::Region newRegion(region.getLowerCorner(),
 									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
-			sceneMgr().resize(node.id(), newRegion);
+			_sceneMgr->resize(node.id(), newRegion);
 			updateBounds(node);
 		}
 	}
@@ -629,13 +622,12 @@ uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const 
 }
 
 glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
-	const SceneManager &mgr = sceneMgr();
-	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	if (!isSceneMode()) {
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		return glm::translate(region.getLowerCornerf());
 	}
-	keyFrameIdx = node.keyFrameForFrame(mgr.currentFrame());
+	keyFrameIdx = node.keyFrameForFrame(_sceneMgr->currentFrame());
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	return transform.worldMatrix();
 }
@@ -645,7 +637,7 @@ uint32_t Viewport::gizmoMode() const {
 }
 
 void Viewport::updateBounds(const scenegraph::SceneGraphNode &node) {
-	const scenegraph::SceneGraph &sceneGraph = sceneMgr().sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	_bounds.mins = region.getLowerCornerf();
 	_bounds.maxs = region.getUpperCornerf() + 1.0f;
@@ -678,8 +670,7 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 }
 
 bool Viewport::runGizmo(const video::Camera &camera) {
-	SceneManager &mgr = sceneMgr();
-	const scenegraph::SceneGraph &sceneGraph = mgr.sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	int activeNode = sceneGraph.activeNode();
 	if (activeNode == InvalidNodeId) {
 		reset();
@@ -706,10 +697,10 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	// check to create a reference before we update the node transform
 	// otherwise the new reference node will not get the correct transform
 	if (createReference(node)) {
-		const int newNode = mgr.nodeReference(node.id());
+		const int newNode = _sceneMgr->nodeReference(node.id());
 		// we need to activate the node - otherwise we end up in
 		// endlessly creating new reference nodes
-		if (mgr.nodeActivate(newNode)) {
+		if (_sceneMgr->nodeActivate(newNode)) {
 			activeNode = newNode;
 		}
 	}
@@ -719,24 +710,24 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 				const glm::vec3 size = node.region().getDimensionsInVoxels();
 				const glm::vec3 pivot = (glm::vec3(matrix[3]) - transform.worldTranslation()) / size;
-				mgr.nodeUpdatePivot(activeNode, pivot);
+				_sceneMgr->nodeUpdatePivot(activeNode, pivot);
 			} else {
 				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
 				// check if a new keyframe should get generated automatically
-				const scenegraph::FrameIndex frameIdx = mgr.currentFrame();
+				const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {
-					if (mgr.nodeAddKeyFrame(node.id(), frameIdx)) {
+					if (_sceneMgr->nodeAddKeyFrame(node.id(), frameIdx)) {
 						const scenegraph::KeyFrameIndex newKeyFrameIdx = node.keyFrameForFrame(frameIdx);
 						core_assert(newKeyFrameIdx != keyFrameIdx);
 						core_assert(newKeyFrameIdx != InvalidKeyFrame);
 						keyFrameIdx = newKeyFrameIdx;
 					}
 				}
-				mgr.nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
+				_sceneMgr->nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
 			}
 		} else {
 			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();
-			mgr.shift(activeNode, shift);
+			_sceneMgr->shift(activeNode, shift);
 			// only true in edit mode
 			return true;
 		}
@@ -806,7 +797,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 void Viewport::renderToFrameBuffer() {
 	core_trace_scoped(EditorSceneRenderFramebuffer);
 	video::clearColor(core::Color::Clear());
-	sceneMgr().render(_renderContext, camera());
+	_sceneMgr->render(_renderContext, camera());
 }
 
 } // namespace voxedit

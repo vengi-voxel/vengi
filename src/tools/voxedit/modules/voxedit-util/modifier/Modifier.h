@@ -26,6 +26,8 @@
 
 namespace voxedit {
 
+class SceneManager;
+
 /**
  * @brief This class is responsible for manipulating the volume with the configured @c Brush and for
  * doing the selection.
@@ -72,7 +74,7 @@ protected:
 	voxel::Region calcSelectionRegion() const;
 
 public:
-	Modifier();
+	Modifier(SceneManager *sceneMgr);
 
 	/**
 	 * @brief Create a Raw Volume Wrapper object while taking the selection into account

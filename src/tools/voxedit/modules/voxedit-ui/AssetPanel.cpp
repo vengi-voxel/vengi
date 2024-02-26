@@ -20,7 +20,7 @@
 
 namespace voxedit {
 
-AssetPanel::AssetPanel(ui::IMGUIApp *app) : Super(app) {
+AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
 	loadTextures(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
 	loadModels(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
 }
@@ -69,9 +69,8 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						ImGui::SetItemDefaultFocus();
 					}
 					if (ImGui::BeginPopupContextItem()) {
-						SceneManager &mgr = sceneMgr();
 						if (ImGui::MenuItem(_("Use stamp"))) {
-							Modifier &modifier = mgr.modifier();
+							Modifier &modifier = _sceneMgr->modifier();
 							StampBrush &brush = modifier.stampBrush();
 							if (brush.load(model)) {
 								modifier.setBrushType(BrushType::Stamp);
@@ -79,7 +78,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						}
 						ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
 						if (ImGui::MenuItem(_("Add to scene"))) {
-							mgr.import(model);
+							_sceneMgr->import(model);
 						}
 						ImGui::EndPopup();
 					}

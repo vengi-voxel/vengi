@@ -29,7 +29,7 @@ void LSystemPanel::update(const char *title) {
 		if (ImGui::IconButton(ICON_LC_PLAY, _("OK##lsystem"))) {
 			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr, rules)) {
-				sceneMgr().lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
+				_sceneMgr->lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
 					_lsystemData.length, _lsystemData.width, _lsystemData.widthIncrement, _lsystemData.iterations, _lsystemData.leavesRadius);
 			}
 		}

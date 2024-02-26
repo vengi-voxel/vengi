@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
@@ -61,7 +62,8 @@ protected:
 };
 
 TEST_F(ModifierTest, testModifierAction) {
-	Modifier modifier;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 	const voxel::Region region(-10, 10);
@@ -83,7 +85,8 @@ TEST_F(ModifierTest, testModifierSelection) {
 	const voxel::Region region(-10, 10);
 	voxel::RawVolume volume(region);
 
-	Modifier modifier;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
 

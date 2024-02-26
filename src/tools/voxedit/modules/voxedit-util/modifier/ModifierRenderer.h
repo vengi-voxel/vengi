@@ -35,7 +35,7 @@ public:
 	void clearBrushMeshes() override;
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
-	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos) override;
+	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion) override;
 	void updateSelectionBuffers(const Selections &selections) override;
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip) override;
 };

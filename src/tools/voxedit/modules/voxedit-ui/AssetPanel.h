@@ -11,6 +11,9 @@
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 class AssetPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
@@ -19,9 +22,10 @@ private:
 	void loadModels(const core::String &dir);
 	video::TexturePool _texturePool;
 	core::DynamicArray<core::String> _models;
+	SceneManagerPtr _sceneMgr;
 	int _currentSelectedModel = 0;
 public:
-	AssetPanel(ui::IMGUIApp *app);
+	AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 };
 

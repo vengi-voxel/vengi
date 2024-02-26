@@ -17,6 +17,9 @@ class FileStream;
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 class Viewport : public ui::Panel {
 private:
 	using Super = ui::Panel;
@@ -41,6 +44,8 @@ private:
 
 	SceneCameraMode _camMode = SceneCameraMode::Free;
 	image::AVIRecorder _avi;
+	SceneManagerPtr _sceneMgr;
+
 	/**
 	 * @sa lock()
 	 * @sa unlock()
@@ -132,7 +137,7 @@ private:
 	image::ImagePtr renderToImage(const char *imageName);
 
 public:
-	Viewport(ui::IMGUIApp *app, int id, bool sceneMode, bool detailedTitle = true);
+	Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
 
 	static core::String viewportId(int id);

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -13,6 +14,9 @@ class SceneGraphNode;
 }
 
 namespace voxedit {
+
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
 class AnimationTimeline : public ui::Panel {
 private:
@@ -28,9 +32,15 @@ private:
 		int nodeId;
 	};
 	core::Buffer<Selection> _selectionBuffer;
+	SceneManagerPtr _sceneMgr;
 
 public:
-	PANEL_CLASS(AnimationTimeline)
+private:
+	using Super = ui ::Panel;
+
+public:
+	AnimationTimeline(ui ::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	void header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame);
 	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);

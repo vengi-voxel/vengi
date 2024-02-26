@@ -26,7 +26,6 @@ namespace voxedit {
 
 bool SceneGraphPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
 	const core::String &id = core::string::format("##%i-%s", node.id(), key.c_str());
-	SceneManager &mgr = sceneMgr();
 	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
 		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
 
@@ -34,7 +33,7 @@ bool SceneGraphPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &nod
 			for (int n = 0; n < IM_ARRAYSIZE(scenegraph::SceneGraphNodeCamera::Modes); n++) {
 				const bool isSelected = (currentMode == n);
 				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
-					mgr.nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
+					_sceneMgr->nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
 				}
 				if (isSelected) {
 					ImGui::SetItemDefaultFocus();
@@ -45,12 +44,12 @@ bool SceneGraphPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &nod
 	} else if (scenegraph::SceneGraphNodeCamera::isFloatProperty(key)) {
 		float fvalue = core::string::toFloat(value);
 		if (ImGui::InputFloat(id.c_str(), &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			mgr.nodeSetProperty(node.id(), key, core::string::toString(fvalue));
+			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(fvalue));
 		}
 	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
 		int ivalue = core::string::toInt(value);
 		if (ImGui::InputInt(id.c_str(), &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			mgr.nodeSetProperty(node.id(), key, core::string::toString(ivalue));
+			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(ivalue));
 		}
 	} else {
 		return false;
@@ -59,7 +58,6 @@ bool SceneGraphPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &nod
 }
 
 void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
-	SceneManager &mgr = sceneMgr();
 	core::String deleteKey;
 	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
@@ -93,12 +91,12 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 				if (entry->value == "true" || entry->value == "false") {
 					bool value = core::string::toBool(entry->value);
 					if (ImGui::Checkbox(id.c_str(), &value)) {
-						mgr.nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
+						_sceneMgr->nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
 					}
 				} else {
 					core::String value = entry->value;
 					if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-						mgr.nodeSetProperty(node.id(), entry->key, value);
+						_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
 					}
 				}
 			}
@@ -117,7 +115,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::InputText("##newpropertyvalue", &_propertyValue);
 		ImGui::TableNextColumn();
 		if (ImGui::Button(ICON_LC_PLUS "##nodepropertyadd")) {
-			mgr.nodeSetProperty(node.id(), _propertyKey, _propertyValue);
+			_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
 
@@ -125,7 +123,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 	}
 
 	if (!deleteKey.empty()) {
-		mgr.nodeRemoveProperty(node.id(), deleteKey);
+		_sceneMgr->nodeRemoveProperty(node.id(), deleteKey);
 	}
 }
 
@@ -135,7 +133,7 @@ static void commandNodeMenu(const char *icon, const char *title, const char *com
 	ImGui::CommandIconMenuItem(icon, title, cmd.c_str(), enabled, listener);
 }
 
-static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	const int nodeId = node.id();
 	const core::String &contextMenuId = core::string::format("Edit##context-node-%i", nodeId);
 	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
@@ -153,7 +151,6 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		commandNodeMenu(ICON_LC_COPY, _("Duplicate" SCENEGRAPHPOPUP), "nodeduplicate", nodeId, true, &listener);
 		commandNodeMenu(ICON_LC_TRASH, _("Delete" SCENEGRAPHPOPUP), "nodedelete", nodeId, true, &listener);
 
-		SceneManager &mgr = sceneMgr();
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
 			commandNodeMenu(ICON_LC_COPY, _("Create reference" SCENEGRAPHPOPUP), "modelref", nodeId, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(nodeId);
@@ -166,7 +163,7 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 			commandNodeMenu(ICON_LC_SAVE, _("Save" SCENEGRAPHPOPUP), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 			if (ImGui::IconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model" SCENEGRAPHPOPUP))) {
-				mgr.nodeUnreference(nodeId);
+				_sceneMgr->nodeUnreference(nodeId);
 			}
 			ImGui::TooltipText(_("Unreference from model and allow to edit the voxels for this node"));
 		}
@@ -175,11 +172,11 @@ static void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sce
 		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, _("Add new group" SCENEGRAPHPOPUP))) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
-			mgr.addNodeToSceneGraph(groupNode, nodeId);
+			_sceneMgr->addNodeToSceneGraph(groupNode, nodeId);
 		}
 		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, _("Add new camera" SCENEGRAPHPOPUP))) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
-			mgr.addNodeToSceneGraph(cameraNode);
+			_sceneMgr->addNodeToSceneGraph(cameraNode);
 		}
 		ImGui::EndPopup();
 	}
@@ -194,8 +191,6 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
-	SceneManager &mgr = sceneMgr();
-
 	ImGui::TableNextRow();
 	{ // column 1
 		ImGui::TableNextColumn();
@@ -206,7 +201,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			style.disableItem();
 		}
 		if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-			mgr.nodeSetVisible(nodeId, visible);
+			_sceneMgr->nodeSetVisible(nodeId, visible);
 		}
 		if (_hideInactive->boolVal()) {
 			ImGui::TooltipText(_("Disabled because inactive nodes are hidden and the active node is always visible"));
@@ -217,7 +212,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		const core::String &lockedId = core::string::format("##locked-node-%i", nodeId);
 		bool locked = node.locked();
 		if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
-			mgr.nodeSetLocked(nodeId, locked);
+			_sceneMgr->nodeSetLocked(nodeId, locked);
 		}
 	}
 	{ // column 3
@@ -303,7 +298,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		contextMenu(camera, sceneGraph, node, listener);
 		if (ImGui::IsItemActivated()) {
-			mgr.nodeActivate(nodeId);
+			_sceneMgr->nodeActivate(nodeId);
 		}
 		if (referenceNode) {
 			ImGui::TooltipText(_("Reference Node"));
@@ -316,7 +311,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 		const core::String &deleteId = core::string::format(ICON_LC_TRASH"##delete-node-%i", nodeId);
 		if (ImGui::Button(deleteId.c_str())) {
-			mgr.nodeRemove(nodeId, false);
+			_sceneMgr->nodeRemove(nodeId, false);
 		}
 		ImGui::TooltipText(_("Delete this model"));
 	}
@@ -336,14 +331,13 @@ bool SceneGraphPanel::init() {
 }
 
 void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
-	voxedit::SceneManager& mgr = sceneMgr();
 	_hasFocus = false;
 
 	// TODO handle dragdrop::ModelPayload with the correct parent node
 
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
-		const scenegraph::SceneGraph& sceneGraph = mgr.sceneGraph();
+		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
 		core_trace_scoped(SceneGraphPanel);
 		ImVec2 size = ImGui::GetWindowSize();
 		const float textLineHeight = ImGui::GetTextLineHeight();
@@ -378,19 +372,19 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				_popupNewModelNode = true;
 			});
 
-			toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, &mgr] () {
+			toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this] () {
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 				node.setName("new group");
-				mgr.addNodeToSceneGraph(node, sceneGraph.activeNode());
+				_sceneMgr->addNodeToSceneGraph(node, sceneGraph.activeNode());
 			});
 
-			toolbar.button(ICON_LC_TRASH, _("Remove the active node with all its children"), [&sceneGraph, &mgr]() {
-				mgr.nodeRemove(sceneGraph.activeNode(), true);
+			toolbar.button(ICON_LC_TRASH, _("Remove the active node with all its children"), [&sceneGraph, this]() {
+				_sceneMgr->nodeRemove(sceneGraph.activeNode(), true);
 			});
 
-			toolbar.custom([&mgr, onlyOneModel, &listener, this, buttonSize] () {
+			toolbar.custom([onlyOneModel, &listener, this, buttonSize] () {
 				if (ImGui::DisabledButton(ICON_LC_PLAY, onlyOneModel, buttonSize)) {
-					if (mgr.animateActive()) {
+					if (_sceneMgr->animateActive()) {
 						command::executeCommands("animate 0", &listener);
 					} else {
 						const core::String& cmd = core::string::format("animate %f", _animationSpeedVar->floatVal());
@@ -450,18 +444,17 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 }
 
 void SceneGraphPanel::registerPopups() {
-	voxedit::SceneManager& mgr = sceneMgr();
 	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
 	if (ImGui::BeginPopup(SCENEGRAPHDRAGANDDROPPOPUP, popupFlags)) {
-		const scenegraph::SceneGraph& sceneGraph = mgr.sceneGraph();
-		const scenegraph::SceneGraphNode *sourceNode = mgr.sceneGraphNode(_dragDropSourceNodeId);
-		const scenegraph::SceneGraphNode *targetNode = mgr.sceneGraphNode(_dragDropTargetNodeId);
+		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+		const scenegraph::SceneGraphNode *sourceNode = _sceneMgr->sceneGraphNode(_dragDropSourceNodeId);
+		const scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphNode(_dragDropTargetNodeId);
 
 		const bool canChangeParent = sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId);
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
 				if (ImGui::IconButton(ICON_LC_LINK, _("Merge onto##mergeonto"))) {
-					mgr.mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
+					_sceneMgr->mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::TooltipText(_("Merge %s onto %s"), sourceNode->name().c_str(), targetNode->name().c_str());
@@ -469,7 +462,7 @@ void SceneGraphPanel::registerPopups() {
 		}
 		if (canChangeParent) {
 			if (ImGui::IconButton(ICON_LC_INDENT, _("Move below"))) {
-				if (!mgr.nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
+				if (!_sceneMgr->nodeMove(_dragDropSourceNodeId, _dragDropTargetNodeId)) {
 					Log::error("Failed to move node");
 				}
 				ImGui::CloseCurrentPopup();

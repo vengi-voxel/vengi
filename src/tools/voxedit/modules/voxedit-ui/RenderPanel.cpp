@@ -27,7 +27,7 @@ bool RenderPanel::init() {
 }
 
 void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneGraph) {
-	const video::Camera *camera = sceneMgr().activeCamera();
+	const video::Camera *camera = _sceneMgr->activeCamera();
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;

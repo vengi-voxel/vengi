@@ -20,7 +20,7 @@ protected:
 	void setShapeType(ShapeType type);
 
 public:
-	ShapeBrush() : Super(BrushType::Shape) {
+	ShapeBrush(SceneManager *sceneMgr) : Super(sceneMgr, BrushType::Shape) {
 	}
 	virtual ~ShapeBrush() = default;
 	void construct() override;

@@ -11,13 +11,18 @@
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 class PositionsPanel : public ui::Panel {
 private:
+	using Super = ui ::Panel;
 	bool _lastChanged = false;
 	bool _localSpace = false;
 	core::VarPtr _gizmoOperations;
 	core::VarPtr _regionSizes;
 	core::VarPtr _showGizmo;
+	SceneManagerPtr _sceneMgr;
 
 	void modelView(command::CommandExecutionListener &listener);
 	void keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
@@ -26,7 +31,8 @@ private:
 	void sceneView(command::CommandExecutionListener &listener);
 
 public:
-	PANEL_CLASS(PositionsPanel)
+	PositionsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	}
 	bool init();
 	void shutdown();
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);

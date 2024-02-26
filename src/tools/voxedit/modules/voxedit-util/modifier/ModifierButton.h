@@ -9,6 +9,8 @@
 
 namespace voxedit {
 
+class SceneManager;
+
 /**
  * @brief This action button executes the current selected Modifier action.
  *
@@ -18,6 +20,7 @@ namespace voxedit {
 class ModifierButton : public command::ActionButton {
 private:
 	using Super = command::ActionButton;
+	SceneManager *_sceneMgr;
 	ModifierType _newType;
 	ModifierType _oldType = ModifierType::None;
 	// some actions might need a second action to complete the command
@@ -27,7 +30,7 @@ public:
 	 * @param[in] newType This ModifierType is set if the action button is triggered. No matter which type is
 	 * set currently. The old value is restored if the action button is released.
 	 */
-	ModifierButton(ModifierType newType = ModifierType::None);
+	ModifierButton(SceneManager *sceneMgr, ModifierType newType = ModifierType::None);
 
 	/**
 	 * @brief Execute the @c ModifierType action
