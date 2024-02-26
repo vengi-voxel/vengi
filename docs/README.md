@@ -27,9 +27,3 @@ the [compilation](Compilation.md) guide.
 ## Online version
 
 [voxedit](https://vengi-voxel.github.io/vengi-voxedit-html5/)
-
-## OSX
-
-The osx builds are not signed and thus will produce a warning when you try to run the applications.
-
-![osx-warning](img/osx_popup.png)
