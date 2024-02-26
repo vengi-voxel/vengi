@@ -284,6 +284,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 		if (ImGui::BeginMenu(_("Tools##toolspalette"))) {
 			ImGui::CommandMenuItem(_("Remove unused color"), "palette_removeunused", true, &listener);
 			ImGui::CommandMenuItem(_("Remove and re-create palette"), "palette_removeunused true", true, &listener);
+			ImGui::CommandMenuItem(_("Model from color"), "colortomodel", true, &listener);
 			// TODO: add color quanitisation to parts of the palette
 			ImGui::EndMenu();
 		}
