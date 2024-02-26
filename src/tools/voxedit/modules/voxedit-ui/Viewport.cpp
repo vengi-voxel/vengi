@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
@@ -76,6 +77,7 @@ bool Viewport::init() {
 
 void Viewport::resetCamera(float distance, const glm::ivec3 &center, const glm::ivec3 &size) {
 	const video::CameraRotationType rotationType = _camera.rotationType();
+	_camera.resetZoom();
 	_camera.setRotationType(video::CameraRotationType::Target);
 	_camera.setAngles(0.0f, 0.0f, 0.0f);
 	_camera.setFarPlane(_viewDistance->floatVal());
@@ -464,28 +466,26 @@ bool Viewport::saveImage(const char *filename) {
 
 void Viewport::resetCamera() {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const voxel::Region &sceneRegion = sceneGraph.region();
-	const int activeNode = sceneGraph.activeNode();
-	const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
-	const voxel::Region &region = v != nullptr ? v->region() : sceneRegion;
-	glm::ivec3 size = region.getDimensionsInVoxels();
-	glm::ivec3 center = region.getCenter();
+	voxel::Region region;
 
+	const int activeNode = sceneGraph.activeNode();
 	if (_renderContext.sceneMode) {
 		if (_hideInactive->boolVal()) {
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
 				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
-				const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
-				center = transform.worldTranslation() + glm::vec3(region.getCenter());
+				region = sceneGraph.sceneRegion(*node, keyFrameIndex);
 			} else {
-				center = sceneGraph.center();
-				size = sceneRegion.getDimensionsInVoxels();
+				region = sceneGraph.sceneRegion();
 			}
 		} else {
-			center = sceneGraph.center();
-			size = sceneRegion.getDimensionsInVoxels();
+			region = sceneGraph.sceneRegion();
 		}
+	} else {
+		const voxel::RawVolume *v = _sceneMgr->volume(activeNode);
+		region = v != nullptr ? v->region() : sceneGraph.region();
 	}
+	const glm::ivec3 &center = region.getCenter();
+	const glm::ivec3 &size = region.getDimensionsInVoxels();
 
 	const float maxDim = (float)glm::max(size.x, glm::max(size.y, size.z));
 	const float distance = maxDim * 2.0f;

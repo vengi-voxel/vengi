@@ -119,6 +119,7 @@ public:
 	CameraType type() const;
 	void setType(CameraType type);
 
+	void resetZoom();
 	void zoom(float value);
 	float aspect() const;
 

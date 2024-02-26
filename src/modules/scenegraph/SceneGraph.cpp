@@ -10,10 +10,12 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -406,25 +408,6 @@ void SceneGraph::updateTransforms() {
 	core_assert_always(setAnimation(animId));
 }
 
-voxel::Region SceneGraph::groupRegion() const {
-	int nodeId = activeNode();
-	voxel::Region region = node(nodeId).region();
-	if (!region.isValid()) {
-		return region;
-	}
-	if (node(nodeId).locked()) {
-		for (iterator iter = begin(SceneGraphNodeType::Model); iter != end(); ++iter) {
-			if ((*iter).locked()) {
-				const voxel::Region &childRegion = (*iter).region();
-				if (childRegion.isValid()) {
-					region.accumulate(childRegion);
-				}
-			}
-		}
-	}
-	return region;
-}
-
 voxel::Region SceneGraph::region() const {
 	voxel::Region r;
 	bool validVolume = false;
@@ -440,18 +423,24 @@ voxel::Region SceneGraph::region() const {
 	return r;
 }
 
-glm::vec3 SceneGraph::center() const {
-	glm::vec3 center(0.0f);
-	float n = 0.0f;
+voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx) const {
+	voxel::Region r;
+	bool validVolume = false;
 	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
-		center += (*iter).transform(0).worldTranslation();
-		n += 1.0f;
+		const SceneGraphNode &node = *iter;
+		const voxel::Region &nodeRegion = sceneRegion(node, keyFrameIdx);
+		if (validVolume) {
+			r.accumulate(nodeRegion);
+			continue;
+		}
+		r = nodeRegion;
+		validVolume = true;
 	}
-	if (n > 0.0f) {
-		center /= n;
-	}
-	center += region().getCenter();
-	return center;
+	return r;
+}
+
+voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const {
+	return node.sceneRegion(resolveRegion(node), resolvePivot(node), keyFrameIdx);
 }
 
 void SceneGraph::fixErrors() {

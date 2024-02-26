@@ -409,4 +409,37 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	}
 }
 
+TEST_F(SceneGraphTest, testSceneRegion) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(-3, 3));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.translate(glm::vec3(10.0f, 11.0f, 12.0f));
+		node.setPivot(glm::vec3(0.0f));
+		sceneGraph.emplace(core::move(node));
+	}
+#if 0
+	voxel::RawVolume v2(voxel::Region(-13, 13));
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v2, false);
+		node.translate(glm::vec3(1.0f, 1.0f, 2.0f));
+		node.setPivot(glm::vec3(0.0f));
+		sceneGraph.emplace(core::move(node));
+	}
+#endif
+	sceneGraph.updateTransforms();
+	const voxel::Region sceneRegion = sceneGraph.sceneRegion();
+	const glm::ivec3 &mins = sceneRegion.getLowerCorner();
+	const glm::ivec3 &maxs = sceneRegion.getUpperCorner();
+
+	EXPECT_EQ(7, mins.x);
+	EXPECT_EQ(8, mins.y);
+	EXPECT_EQ(9, mins.z);
+	EXPECT_EQ(13, maxs.x);
+	EXPECT_EQ(14, maxs.y);
+	EXPECT_EQ(15, maxs.z);
+}
+
 } // namespace scenegraph

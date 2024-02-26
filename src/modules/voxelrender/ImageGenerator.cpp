@@ -70,7 +70,8 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setRotationType(video::CameraRotationType::Target);
 		camera.setAngles(ctx.pitch, ctx.yaw, ctx.roll);
 		camera.setFarPlane(ctx.farPlane);
-		camera.setTarget(sceneGraph.center());
+		const voxel::Region &sceneRegion = sceneGraph.sceneRegion();
+		camera.setTarget(sceneRegion.calcCenterf());
 	}
 	camera.setOmega(ctx.omega);
 	camera.setSize(ctx.outputSize);

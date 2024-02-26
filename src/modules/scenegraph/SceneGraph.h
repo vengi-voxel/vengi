@@ -109,13 +109,9 @@ public:
 
 	/**
 	 * @return The full region of the whole scene
+	 * @sa sceneRegion()
 	 */
 	voxel::Region region() const;
-	/**
-	 * @return The region of the locked/grouped (model) nodes
-	 * @note May return voxel::Region::InvalidRegion if the current active node is no model node
-	 */
-	voxel::Region groupRegion() const;
 
 	/**
 	 * @brief The list of known animation ids
@@ -153,7 +149,7 @@ public:
 	 *
 	 * @param node The node to move
 	 * @param parent The parent node id - by default this is 0 which is the root node
-	 * @sa core::move()
+	 * @sa @c core::move()
 	 * @return the node id that was assigned - or a negative number in case the node wasn't added and an error happened.
 	 * @note If an error happened, the node is released.
 	 */
@@ -178,7 +174,7 @@ public:
 	 * @param nodeId The node id that was assigned to the node after adding it to the scene graph
 	 * @sa hasNode()
 	 * @sa emplace_back()
-	 * @return @c SceneGraphNode refernence. Undefined if no node was found for the given id!
+	 * @return @c SceneGraphNode reference. Undefined if no node was found for the given id!
 	 */
 	SceneGraphNode& node(int nodeId) const;
 	bool hasNode(int nodeId) const;
@@ -196,14 +192,18 @@ public:
 	 */
 	bool empty(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
 	/**
-	 * @return Amount of nodes in the graph
+	 * @return Amount of nodes of the given type in the graph
 	 */
 	size_t size(SceneGraphNodeType type = SceneGraphNodeType::Model) const;
 	size_t nodeSize() const {
 		return _nodes.size();
 	}
 
-	glm::vec3 center() const;
+	/**
+	 * @sa region()
+	 */
+	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0) const;
+	voxel::Region sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const;
 
 	using MergedVolumePalette = core::Pair<voxel::RawVolume*, palette::Palette>;
 	/**

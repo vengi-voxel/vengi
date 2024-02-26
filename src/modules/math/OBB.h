@@ -26,7 +26,7 @@ public:
 	 * @brief Construct a new OBB object
 	 *
 	 * @param origin The position
-	 * @param extents The half size
+	 * @param extents The half size (unscaled - scale is given by the matrix)
 	 * @param rotation The rotation of the object (the translation is already part of the position)
 	 */
 	OBB(const Vec &origin, const Vec &extents, const glm::mat3x3 &rotation)
@@ -54,6 +54,7 @@ public:
 		_origin = origin;
 	}
 
+	// unscaled extents
 	void setExtents(const Vec &extents) {
 		_extents = extents;
 	}
@@ -62,24 +63,13 @@ public:
 		return _origin;
 	}
 
+	// unscaled extents
 	const Vec &extents() const {
 		return _extents;
 	}
 
 	const glm::mat4 &rotation() const {
 		return _rotation;
-	}
-
-	T width() const {
-		return _extents.x * (T)2;
-	}
-
-	T height() const {
-		return _extents.y * (T)2;
-	}
-
-	T depth() const {
-		return _extents.z * (T)2;
 	}
 
 	core::Pair<Vec, Vec> bounds() const {
