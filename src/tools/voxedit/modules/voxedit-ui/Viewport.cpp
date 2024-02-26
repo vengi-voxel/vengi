@@ -62,6 +62,8 @@ bool Viewport::init() {
 	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
 	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
+	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
+	_autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -663,7 +665,7 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 	const ImGuizmo::MODE mode = (ImGuizmo::MODE)gizmoMode();
 	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
 	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
-	const float step = core::Var::getSafe(cfg::VoxEditGridsize)->floatVal();
+	const float step = _gridSize->floatVal();
 	const float snap[]{step, step, step};
 	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
 	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
@@ -712,7 +714,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				const glm::vec3 pivot = (glm::vec3(matrix[3]) - transform.worldTranslation()) / size;
 				_sceneMgr->nodeUpdatePivot(activeNode, pivot);
 			} else {
-				const bool autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame)->boolVal();
+				const bool autoKeyFrame = _autoKeyFrame->boolVal();
 				// check if a new keyframe should get generated automatically
 				const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 				if (autoKeyFrame && node.keyFrame(keyFrameIdx).frameIdx != frameIdx) {

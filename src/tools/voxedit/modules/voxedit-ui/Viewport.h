@@ -90,6 +90,8 @@ private:
 	core::VarPtr _cursorDetails;
 	core::VarPtr _pivotMode;
 	core::VarPtr _hideInactive;
+	core::VarPtr _gridSize;
+	core::VarPtr _autoKeyFrame;
 
 	bool wantGizmo() const;
 	/**
