@@ -14,26 +14,26 @@
 namespace voxedit {
 
 void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame) {
-	if (ImGui::DisabledIconButton(ICON_LC_PLUS, "Add", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_PLUS, _("Add"), _play)) {
 		_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
-	ImGui::TooltipText("Add a new keyframe to the current active node");
+	ImGui::TooltipText(_("Add a new keyframe to the current active node"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, "Add all", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, _("Add all"), _play)) {
 		_sceneMgr->nodeAllAddKeyFrames(currentFrame);
 	}
-	ImGui::TooltipText("Add a new keyframe to all model nodes");
+	ImGui::TooltipText(("Add a new keyframe to all model nodes"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, "Remove", _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Remove"), _play)) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
-	ImGui::TooltipText("Delete the current keyframe of the active nodes");
+	ImGui::TooltipText(_("Delete the current keyframe of the active nodes"));
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_LC_ARROW_RIGHT_LEFT)) {
 		_startFrame = 0;
 		_endFrame = core_max(64, maxFrame + 1);
 	}
-	ImGui::TooltipText("Crop frames");
+	ImGui::TooltipText(_("Crop frames"));
 	ImGui::SameLine();
 
 	if (_play) {
@@ -44,7 +44,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 		if (ImGui::DisabledButton(ICON_LC_PLAY, maxFrame <= 0)) {
 			_play = true;
 		}
-		ImGui::TooltipText("Max frames for this animation: %i", maxFrame);
+		ImGui::TooltipText(_("Max frames for this animation: %i"), maxFrame);
 	}
 }
 
@@ -67,7 +67,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			if (ImGui::IsNeoKeyframeHovered()) {
 				ImGui::BeginTooltip();
 				const char *interpolation = scenegraph::InterpolationTypeStr[(int)kf.interpolation];
-				ImGui::Text("Keyframe %i, Interpolation: %s", kf.frameIdx, interpolation);
+				ImGui::Text(_("Keyframe %i, Interpolation: %s"), kf.frameIdx, interpolation);
 				ImGui::EndTooltip();
 			}
 		}
