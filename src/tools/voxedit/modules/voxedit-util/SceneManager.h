@@ -13,6 +13,7 @@
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "modifier/ModifierFacade.h"
 #include "scenegraph/SceneGraph.h"
@@ -67,6 +68,7 @@ private:
 	SceneRendererPtr _sceneRenderer;
 	ModifierFacade _modifierFacade;
 	voxelgenerator::LUAGenerator _luaGenerator;
+	io::FilesystemPtr _filesystem;
 
 	/**
 	 * The @c video::Camera instance of the currently active @c Viewport
@@ -201,7 +203,8 @@ protected:
 	void setCursorPosition(glm::ivec3 pos, bool force = false);
 
 public:
-	SceneManager(const core::TimeProviderPtr& timeProvider, const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
+	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
+				 const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer);
 	~SceneManager();
 
 	void construct() override;

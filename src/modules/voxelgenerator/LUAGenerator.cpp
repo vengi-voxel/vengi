@@ -1120,6 +1120,9 @@ static void prepareState(lua_State* s) {
 	clua_mathregister(s);
 }
 
+LUAGenerator::LUAGenerator(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
+}
+
 bool LUAGenerator::init() {
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise");
@@ -1294,29 +1297,29 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 core::String LUAGenerator::load(const core::String& scriptName) const {
 	core::String filename = scriptName;
 	io::normalizePath(filename);
-	if (!io::filesystem()->exists(filename)) {
+	if (!_filesystem->exists(filename)) {
 		if (core::string::extractExtension(filename) != "lua") {
 			filename.append(".lua");
 		}
 		filename = core::string::path("scripts", filename);
 	}
 #if LUA_VERSION_NUM < 504
-	core::String lua = io::filesystem()->load(filename);
+	core::String lua = _filesystem->load(filename);
 	return core::string::replaceAll(lua, "<const>", "");
 #else
-	return io::filesystem()->load(filename);
+	return _filesystem->load(filename);
 #endif
 }
 
 core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	core::DynamicArray<LUAScript> scripts;
 	core::DynamicArray<io::FilesystemEntry> entities;
-	io::filesystem()->list("scripts", entities, "*.lua");
+	_filesystem->list("scripts", entities, "*.lua");
 	scripts.reserve(entities.size());
 	for (const auto& e : entities) {
 		const core::String path = core::string::path("scripts", e.name);
 		lua::LUA lua;
-		if (!lua.load(io::filesystem()->load(path))) {
+		if (!lua.load(_filesystem->load(path))) {
 			Log::warn("Failed to load %s", path.c_str());
 			scripts.push_back({e.name, false});
 			continue;

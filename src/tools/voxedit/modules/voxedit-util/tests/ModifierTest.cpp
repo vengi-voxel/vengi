@@ -62,7 +62,7 @@ protected:
 };
 
 TEST_F(ModifierTest, testModifierAction) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
@@ -85,7 +85,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 	const voxel::Region region(-10, 10);
 	voxel::RawVolume volume(region);
 
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));

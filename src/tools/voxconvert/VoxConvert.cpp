@@ -781,7 +781,7 @@ void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph) {
 }
 
 void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color) {
-	voxelgenerator::LUAGenerator script;
+	voxelgenerator::LUAGenerator script(_filesystem);
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
 	} else {

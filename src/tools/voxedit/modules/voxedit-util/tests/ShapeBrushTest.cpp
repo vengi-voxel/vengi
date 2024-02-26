@@ -32,7 +32,7 @@ protected:
 	}
 
 	void testMirror(math::Axis axis, const glm::ivec3 &expectedMins, const glm::ivec3 &expectedMaxs) {
-		SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+		SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 		ShapeBrush brush(&mgr);
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
@@ -58,7 +58,7 @@ protected:
 };
 
 TEST_F(ShapeBrushTest, testCenterPositive) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
@@ -74,7 +74,7 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 }
 
 TEST_F(ShapeBrushTest, testCenterNegative) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
@@ -87,7 +87,7 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 }
 
 TEST_F(ShapeBrushTest, testModifierStartStop) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
@@ -99,7 +99,7 @@ TEST_F(ShapeBrushTest, testModifierStartStop) {
 }
 
 TEST_F(ShapeBrushTest, testModifierDim) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	ShapeBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());

@@ -91,8 +91,10 @@ inline auto paletteCompleter() {
 	};
 }
 
-SceneManager::SceneManager(const core::TimeProviderPtr& timeProvider, const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
-	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer) {
+SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
+						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
+	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer),
+	  _luaGenerator(filesystem), _filesystem(filesystem) {
 }
 
 SceneManager::~SceneManager() {
@@ -126,8 +128,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 	if (save && !isNodePalette && !palette.isBuiltIn()) {
 		const core::String filename = core::string::extractFilename(palette.name());
 		const core::String &paletteFilename = core::string::format("palette-%s.png", filename.c_str());
-		const io::FilesystemPtr &fs = io::filesystem();
-		const io::FilePtr &pngFile = fs->open(paletteFilename, io::FileMode::Write);
+		const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
 		if (!palette.save(pngFile->name().c_str())) {
 			Log::warn("Failed to write palette image: %s", paletteFilename.c_str());
 		}
@@ -145,8 +146,7 @@ bool SceneManager::importPalette(const core::String& file) {
 
 	core::String paletteName(core::string::extractFilename(file.c_str()));
 	const core::String &paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
-	const io::FilesystemPtr &fs = io::filesystem();
-	const io::FilePtr &pngFile = fs->open(paletteFilename, io::FileMode::Write);
+	const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
 	if (palette.save(pngFile->name().c_str())) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	} else {
@@ -241,7 +241,7 @@ void SceneManager::autosave() {
 		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
 			autoSaveFilename = _lastFilename;
 		} else {
-			const io::FilePtr file = io::filesystem()->open(_lastFilename.name);
+			const io::FilePtr file = _filesystem->open(_lastFilename.name);
 			const core::String& p = file->path();
 			const core::String& f = file->fileName();
 			const core::String& e = file->extension();
@@ -258,7 +258,7 @@ void SceneManager::autosave() {
 }
 
 bool SceneManager::saveNode(int nodeId, const core::String& file) {
-	const io::FilePtr& filePtr = io::filesystem()->open(file, io::FileMode::SysWrite);
+	const io::FilePtr& filePtr = _filesystem->open(file, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
@@ -405,7 +405,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		Log::warn("No filename given for saving");
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file.name, io::FileMode::SysWrite);
+	const io::FilePtr& filePtr = _filesystem->open(file.name, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
@@ -444,7 +444,7 @@ bool SceneManager::import(const core::String& file) {
 		Log::error("Can't import model: No file given");
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file);
+	const io::FilePtr& filePtr = _filesystem->open(file);
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to open model file %s", file.c_str());
 		return false;
@@ -477,7 +477,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 	core::DynamicArray<io::FilesystemEntry> entities;
-	io::filesystem()->list(directory, entities, format ? format->wildCard() : "", depth);
+	_filesystem->list(directory, entities, format ? format->wildCard() : "", depth);
 	if (entities.empty()) {
 		Log::info("Could not find any model in %s", directory.c_str());
 		return false;
@@ -492,7 +492,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			continue;
 		}
 		scenegraph::SceneGraph newSceneGraph;
-		io::FilePtr filePtr = io::filesystem()->open(e.fullPath, io::FileMode::SysRead);
+		io::FilePtr filePtr = _filesystem->open(e.fullPath, io::FileMode::SysRead);
 		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
 		io::FileDescription fileDesc;
@@ -514,7 +514,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 	if (file.empty()) {
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file.name);
+	const io::FilePtr& filePtr = _filesystem->open(file.name);
 	if (!filePtr->validHandle()) {
 		Log::error("Failed to open model file '%s'", file.c_str());
 		return false;
@@ -1036,7 +1036,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
-	const io::FilePtr& filePtr = io::filesystem()->open(file.name, io::FileMode::SysWrite);
+	const io::FilePtr& filePtr = _filesystem->open(file.name, io::FileMode::SysWrite);
 	if (!filePtr->validHandle()) {
 		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
 		return false;
@@ -1605,7 +1605,7 @@ void SceneManager::construct() {
 			Log::info("Executed script %s", args[0].c_str());
 		}
 	}).setHelp("Executes a lua script")
-		.setArgumentCompleter(voxelgenerator::scriptCompleter(io::filesystem()));
+		.setArgumentCompleter(voxelgenerator::scriptCompleter(_filesystem));
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(

@@ -536,7 +536,8 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	const core::SharedPtr<voxedit::SceneRenderer>& sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
 	const core::SharedPtr<voxedit::ModifierRenderer>& modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
-	const voxedit::SceneManagerPtr& sceneMgr = core::make_shared<voxedit::SceneManager>(timeProvider, sceneRenderer, modifierRenderer);
+	const voxedit::SceneManagerPtr &sceneMgr =
+		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
 	VoxEdit app(filesystem, timeProvider, sceneMgr);
 	return app.startMainLoop(argc, argv);
 }

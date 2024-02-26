@@ -40,7 +40,7 @@ protected:
 };
 
 TEST_F(PaintBrushTest, testExecuteSingle) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	PaintBrush brush(&mgr);
 	ASSERT_TRUE(brush.init());
 	brush.setSingleMode();
@@ -69,7 +69,7 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 }
 
 TEST_F(PaintBrushTest, testExecuteSingleRadius) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	PaintBrush brush(&mgr);
 	ASSERT_TRUE(brush.init());
 	brush.setSingleMode();

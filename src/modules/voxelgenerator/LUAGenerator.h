@@ -8,6 +8,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "command/CommandCompleter.h"
+#include "io/Filesystem.h"
 #include "noise/Noise.h"
 
 struct lua_State;
@@ -67,7 +68,9 @@ struct LUAScript {
 class LUAGenerator : public core::IComponent {
 private:
 	noise::Noise _noise;
+	io::FilesystemPtr _filesystem;
 public:
+	LUAGenerator(const io::FilesystemPtr &filesystem);
 	virtual ~LUAGenerator() {}
 	bool init() override;
 	void shutdown() override;

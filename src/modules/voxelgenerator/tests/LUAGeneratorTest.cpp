@@ -55,7 +55,7 @@ protected:
 		ASSERT_NE(nodeId, -1);
 		voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 
-		LUAGenerator g;
+		LUAGenerator g(_testApp->filesystem());
 		ASSERT_TRUE(g.init());
 		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, dirtyRegion, args));
 		if (validateDirtyRegion) {
@@ -66,7 +66,7 @@ protected:
 };
 
 TEST_F(LUAGeneratorTest, testInit) {
-	LUAGenerator g;
+	LUAGenerator g(_testApp->filesystem());
 	ASSERT_TRUE(g.init());
 	g.shutdown();
 }
@@ -113,7 +113,7 @@ TEST_F(LUAGeneratorTest, testArgumentInfo) {
 		end
 	)";
 
-	LUAGenerator g;
+	LUAGenerator g(_testApp->filesystem());
 	ASSERT_TRUE(g.init());
 
 	core::DynamicArray<LUAParameterDescription> params;
