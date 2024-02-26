@@ -1995,11 +1995,11 @@ void SceneManager::construct() {
 		mergeNodes(NodeMergeFlags::All);
 	}).setHelp("Merge all nodes");
 
-	command::Command::registerCommand("modelsmergevisible", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelmergevisible", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Visible);
 	}).setHelp("Merge all visible nodes");
 
-	command::Command::registerCommand("modelsmergelocked", [&] (const command::CmdArgs& args) {
+	command::Command::registerCommand("modelmergelocked", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Locked);
 	}).setHelp("Merge all locked nodes");
 

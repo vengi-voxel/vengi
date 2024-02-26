@@ -155,9 +155,9 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			commandNodeMenu(ICON_LC_COPY, _("Create reference" SCENEGRAPHPOPUP), "modelref", nodeId, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(nodeId);
 			commandNodeMenu(ICON_LC_GROUP, _("Merge" SCENEGRAPHPOPUP), "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge all" SCENEGRAPHPOPUP), "modelsmergeall", validModels > 1, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge visible" SCENEGRAPHPOPUP), "modelsmergevisible", validModels > 1, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked" SCENEGRAPHPOPUP), "modelsmergelocked", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge all" SCENEGRAPHPOPUP), "modelmergeall", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge visible" SCENEGRAPHPOPUP), "modelmergevisible", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked" SCENEGRAPHPOPUP), "modelmergelocked", validModels > 1, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center origin" SCENEGRAPHPOPUP), "center_origin", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center reference" SCENEGRAPHPOPUP), "center_referenceposition", true, &listener);
 			commandNodeMenu(ICON_LC_SAVE, _("Save" SCENEGRAPHPOPUP), "modelsave", nodeId, true, &listener);
