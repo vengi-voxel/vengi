@@ -493,7 +493,7 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 	{
 		ui::ScopedStyle style;
 		style.setFont(imguiApp()->bigFont());
-		ImGui::TextCentered(label);
+		ImGui::TextCentered(label, true);
 	}
 
 	const ImVec2 pos = window->DC.CursorPos;
