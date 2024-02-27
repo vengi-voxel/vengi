@@ -309,7 +309,7 @@ voxel::Region SceneGraphNode::sceneRegion(const voxel::Region &volumeRegion, con
 	// TODO: pivot
 	const glm::vec3 translation = transform.worldTranslation()/* + pivot * glm::vec3(volumeRegion.getDimensionsInVoxels())*/;
 	const glm::vec3 mins = (volumeRegion.getLowerCornerf() + translation) * scale;
-	const glm::vec3 maxs = (volumeRegion.getUpperCornerf() + translation) * scale;
+	const glm::vec3 maxs = mins + glm::vec3(volumeRegion.getDimensionsInCells());
 	return {glm::floor(mins), glm::ceil(maxs)};
 }
 
