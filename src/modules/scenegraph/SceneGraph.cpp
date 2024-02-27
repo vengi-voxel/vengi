@@ -423,11 +423,14 @@ voxel::Region SceneGraph::region() const {
 	return r;
 }
 
-voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx) const {
+voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisible) const {
 	voxel::Region r;
 	bool validVolume = false;
 	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
 		const SceneGraphNode &node = *iter;
+		if (onlyVisible && !node.visible()) {
+			continue;
+		}
 		const voxel::Region &nodeRegion = sceneRegion(node, keyFrameIdx);
 		if (validVolume) {
 			r.accumulate(nodeRegion);

@@ -202,7 +202,7 @@ public:
 	/**
 	 * @sa region()
 	 */
-	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0) const;
+	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0, bool onlyVisible = false) const;
 	voxel::Region sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const;
 
 	using MergedVolumePalette = core::Pair<voxel::RawVolume*, palette::Palette>;
