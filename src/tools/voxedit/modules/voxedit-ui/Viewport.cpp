@@ -248,12 +248,12 @@ void Viewport::menuBarCameraProjection() {
 
 void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
-	const float modeMaxWidth = ImGui::CalcComboWidth(SceneCameraModeStr[currentMode]);
+	const float modeMaxWidth = ImGui::CalcComboWidth(voxelrender::SceneCameraModeStr[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("##cameramode", SceneCameraModeStr[currentMode])) {
-		for (int n = 0; n < lengthof(SceneCameraModeStr); n++) {
+	if (ImGui::BeginCombo("##cameramode", voxelrender::SceneCameraModeStr[currentMode])) {
+		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
-			if (ImGui::Selectable(SceneCameraModeStr[n], isSelected)) {
+			if (ImGui::Selectable(voxelrender::SceneCameraModeStr[n], isSelected)) {
 				_camMode = (voxelrender::SceneCameraMode)n;
 				resetCamera();
 			}
@@ -396,7 +396,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	core::String name;
 	if (_detailedTitle) {
-		name = core::string::format("%s %s%s", SceneCameraModeStr[(int)_camMode], modeStr, _uiId.c_str());
+		name = core::string::format("%s %s%s", voxelrender::SceneCameraModeStr[(int)_camMode], modeStr, _uiId.c_str());
 	} else {
 		name = core::string::format("%s%s", modeStr, _uiId.c_str());
 	}

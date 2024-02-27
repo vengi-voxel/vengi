@@ -61,7 +61,14 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 		camera.setSize(ctx.outputSize);
 		camera.setMode(video::CameraMode::Perspective);
 		camera.setType(video::CameraType::Free);
-		configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, ctx.farPlane, {ctx.pitch, ctx.yaw, ctx.roll});
+		voxelrender::SceneCameraMode cameraMode = voxelrender::SceneCameraMode::Free;
+		for (int i = 0; i < lengthof(voxelrender::SceneCameraModeStr); ++i) {
+			if (core::string::iequals(ctx.cameraMode, voxelrender::SceneCameraModeStr[i])) {
+				cameraMode = (voxelrender::SceneCameraMode)i;
+				break;
+			}
+		}
+		configureCamera(camera, sceneGraph.sceneRegion(), cameraMode, ctx.farPlane, {ctx.pitch, ctx.yaw, ctx.roll});
 		if (ctx.useWorldPosition) {
 			camera.setWorldPosition(ctx.worldPosition);
 		}

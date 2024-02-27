@@ -21,6 +21,9 @@ namespace voxelrender {
 video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
+static constexpr const char *SceneCameraModeStr[] = {"Free", "Top", "Bottom", "Left", "Right", "Front", "Back"};
+static_assert(lengthof(SceneCameraModeStr) == (int)voxelrender::SceneCameraMode::Max, "Array size doesn't match enum values");
+
 /**
  * @brief Tries to place the camera in a way that most of the scene region is visible in the viewport of the camera.
  */

@@ -25,6 +25,7 @@ struct ThumbnailContext {
 	float distance = -1.0f;
 	float farPlane = 5000.0f;
 	glm::vec3 omega{0.0f, 0.0f, 0.0f};
+	core::String cameraMode = "free";
 	/** only used when @c useWorldPosition is set to @c true */
 	glm::vec3 worldPosition{0.0f, 0.0f, 0.0f};
 	double deltaFrameSeconds = 0.001;

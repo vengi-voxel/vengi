@@ -60,6 +60,7 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDefaultValue("0:0:0")
 		.setDescription("Set the camera angles (pitch:yaw:roll))");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
+	registerArg("--camera-mode").setDefaultValue("free").setDescription("Allow to change the camera positioning for rendering");
 
 	return state;
 }
@@ -158,6 +159,7 @@ app::AppState Thumbnailer::onRunning() {
 	ctx.outputSize = glm::ivec2(outputSize);
 	ctx.useSceneCamera = hasArg("--use-scene-camera");
 	ctx.distance = core::string::toFloat(getArgVal("--distance", "-1.0"));
+	ctx.cameraMode = getArgVal("--camera-mode", "free");
 	ctx.useWorldPosition = hasArg("--position");
 	if (ctx.useWorldPosition) {
 		const core::String &pos = getArgVal("--position");
