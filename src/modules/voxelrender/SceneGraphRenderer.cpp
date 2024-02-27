@@ -212,9 +212,9 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			_volumeRenderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
-			_volumeRenderer.meshState()->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
+			meshState->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
 												  region.getUpperCorner());
 		}
 		if (hideInactive) {
@@ -249,7 +249,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot =
 				transform.scale * sceneGraph.resolvePivot(node) * glm::vec3(region.getDimensionsInVoxels());
-			_volumeRenderer.meshState()->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
 				meshState->hide(id, id != activeNode);
 			} else {
