@@ -6,7 +6,7 @@
 #include "VoxelShader.h"
 #include "VoxelnormShader.h"
 
-namespace voxelworldrender {
+namespace voxelrender {
 
 class VoxelRenderShaderTest : public video::AbstractShaderTest {
 };
