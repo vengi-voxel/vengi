@@ -14,62 +14,6 @@
 
 namespace voxelrender {
 
-SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _volumeRenderer(meshState) {
-}
-
-SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<MeshState>()) {
-}
-
-void SceneGraphRenderer::construct() {
-	_volumeRenderer.construct();
-}
-
-bool SceneGraphRenderer::init() {
-	if (!_cameraRenderer.init(core::Color::White(), 0)) {
-		Log::warn("Failed to initialize camera renderer");
-	}
-	return _volumeRenderer.init();
-}
-
-void SceneGraphRenderer::update() {
-	_volumeRenderer.update();
-}
-
-static inline int getVolumeId(int nodeId) {
-	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-	return nodeId;
-}
-
-static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
-	return getVolumeId(node.id());
-}
-
-static inline int getNodeId(int volumeIdx) {
-	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-	return volumeIdx;
-}
-
-void SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	_volumeRenderer.extractRegion(getVolumeId(node), region);
-}
-
-void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
-	_volumeRenderer.setAmbientColor(color);
-}
-
-void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
-	_volumeRenderer.setDiffuseColor(color);
-}
-
-void SceneGraphRenderer::shutdown() {
-	_volumeRenderer.shutdown();
-	_cameraRenderer.shutdown();
-}
-
-void SceneGraphRenderer::clear() {
-	_volumeRenderer.clear();
-}
-
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera) {
 	scenegraph::SceneGraphNodeCamera node;
 	scenegraph::SceneGraphTransform transform;
@@ -148,6 +92,62 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 	}
 	camera.update(0.0);
 	return camera;
+}
+
+static inline int getVolumeId(int nodeId) {
+	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+	return nodeId;
+}
+
+static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
+	return getVolumeId(node.id());
+}
+
+static inline int getNodeId(int volumeIdx) {
+	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+	return volumeIdx;
+}
+
+SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _volumeRenderer(meshState) {
+}
+
+SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<MeshState>()) {
+}
+
+void SceneGraphRenderer::construct() {
+	_volumeRenderer.construct();
+}
+
+bool SceneGraphRenderer::init() {
+	if (!_cameraRenderer.init(core::Color::White(), 0)) {
+		Log::warn("Failed to initialize camera renderer");
+	}
+	return _volumeRenderer.init();
+}
+
+void SceneGraphRenderer::update() {
+	_volumeRenderer.update();
+}
+
+void SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
+	_volumeRenderer.extractRegion(getVolumeId(node), region);
+}
+
+void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
+	_volumeRenderer.setAmbientColor(color);
+}
+
+void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
+	_volumeRenderer.setDiffuseColor(color);
+}
+
+void SceneGraphRenderer::shutdown() {
+	_volumeRenderer.shutdown();
+	_cameraRenderer.shutdown();
+}
+
+void SceneGraphRenderer::clear() {
+	_volumeRenderer.clear();
 }
 
 void SceneGraphRenderer::nodeRemove(int nodeId) {
