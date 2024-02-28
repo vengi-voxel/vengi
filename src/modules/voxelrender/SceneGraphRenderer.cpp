@@ -42,11 +42,11 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	const float distance = maxDim * 2.0f;
 	const glm::vec3 &center = sceneRegion.calcCenterf();
 
+	camera.resetZoom();
 	camera.setRotationType(video::CameraRotationType::Target);
 	camera.setAngles(angles[0], angles[1], angles[2]);
 	camera.setTarget(center);
 	camera.setTargetDistance(distance);
-	camera.resetZoom();
 	camera.setFarPlane(farPlane);
 	if (mode == SceneCameraMode::Free) {
 		camera.setWorldPosition(glm::vec3(-distance, (float)sceneRegion.getUpperY(), -distance));
