@@ -49,7 +49,7 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	camera.setTargetDistance(distance);
 	camera.setFarPlane(farPlane);
 	if (mode == SceneCameraMode::Free) {
-		camera.setWorldPosition(glm::vec3(-distance, (float)sceneRegion.getUpperY(), -distance));
+		camera.setWorldPosition(glm::vec3(center.x - distance, (float)sceneRegion.getUpperY(), center.z - distance));
 	} else if (mode == SceneCameraMode::Top) {
 		camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
 	} else if (mode == SceneCameraMode::Bottom) {
