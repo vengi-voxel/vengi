@@ -64,9 +64,17 @@ public:
 	/** Gets the 'z' position of the upper corner. */
 	int32_t getUpperZ() const;
 
-	/** Gets the centre of the region */
+	/**
+	 * @return The position of the center cell
+	 * @sa calcCenterf()
+	 */
 	const glm::ivec3& getCenter() const;
+	/**
+	 * @brief Calculate the voxel center coordinate
+	 * @sa getCenter()
+	 */
 	glm::vec3 calcCenterf() const;
+	glm::vec3 calcCellCenterf() const;
 
 	/** Gets the position of the lower corner. */
 	const glm::ivec3& getLowerCorner() const;

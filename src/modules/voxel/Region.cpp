@@ -167,14 +167,15 @@ void Region::grow(const glm::ivec3& amount) {
 	update();
 }
 
-/**
- * @return The position of the lower corner.
- */
 const glm::ivec3& Region::getCenter() const {
 	return _center;
 }
 
 glm::vec3 Region::calcCenterf() const {
+	return glm::vec3(_mins) + glm::vec3(_voxels) / 2.0f;
+}
+
+glm::vec3 Region::calcCellCenterf() const {
 	return glm::vec3(_mins) + glm::vec3(_width) / 2.0f;
 }
 

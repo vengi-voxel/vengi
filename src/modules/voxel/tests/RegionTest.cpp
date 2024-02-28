@@ -4,16 +4,28 @@
 
 #include "voxel/Region.h"
 #include "app/tests/AbstractTest.h"
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/euler_angles.hpp>
 
+#define EXPECT_GLM_EQ(expected, v1) \
+	EXPECT_TRUE(glm::all(glm::epsilonEqual(expected, v1, glm::epsilon<float>()))) << "Got: " << v1 << ", expected " << expected
+
 namespace glm {
+
 ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
 	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 	return os;
 }
+
+::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
+	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+	return os;
+}
+
 } // namespace glm
 
 namespace voxel {
@@ -45,7 +57,7 @@ TEST_F(RegionTest, testContains) {
 TEST_F(RegionTest, testRotateAxisY45) {
 	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(45.0f));
 	const voxel::Region region(0, 3);
-	const voxel::Region &rotated = region.rotate(mat, region.calcCenterf());
+	const voxel::Region &rotated = region.rotate(mat, region.calcCellCenterf());
 	const glm::ivec3 mins = rotated.getLowerCorner();
 	const glm::ivec3 maxs = rotated.getUpperCorner();
 
@@ -203,11 +215,19 @@ TEST_F(RegionTest, testDimensions) {
 TEST_F(RegionTest, testCenter) {
 	voxel::Region region(0, 3);
 	EXPECT_EQ(glm::ivec3(1), region.getCenter());
-	EXPECT_EQ(glm::vec3(1.5f), region.calcCenterf());
+	EXPECT_EQ(glm::vec3(2.0f), region.calcCenterf());
 
 	voxel::Region region2(-1, 1);
 	EXPECT_EQ(glm::ivec3(0), region2.getCenter());
 	EXPECT_EQ(glm::vec3(0.5f), region2.calcCenterf());
+
+	voxel::Region region3(-2, 11);
+	EXPECT_EQ(glm::ivec3(4), region3.getCenter());
+	EXPECT_GLM_EQ(glm::vec3(5.0f), region3.calcCenterf());
+
+	voxel::Region region4(0, 0);
+	EXPECT_EQ(glm::ivec3(0), region4.getCenter());
+	EXPECT_GLM_EQ(glm::vec3(0.5f), region4.calcCenterf());
 }
 
 } // namespace voxel
