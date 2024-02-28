@@ -11,6 +11,7 @@
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
+#include "voxedit-ui/CameraPanel.h"
 #include "voxedit-ui/MementoPanel.h"
 #include "voxedit-ui/PositionsPanel.h"
 #include "voxedit-ui/LSystemPanel.h"
@@ -86,6 +87,7 @@ private:
 	StatusBar _statusBar;
 	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;
+	CameraPanel _cameraPanel;
 
 	/**
 	 * @brief Convert semicolon-separated string into the @c _lastOpenedFilesRingBuffer array

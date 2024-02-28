@@ -11,7 +11,6 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "imgui.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -71,6 +70,7 @@
 #define TITLE_ANIMATION_TIMELINE ICON_LC_TABLE " Animation##animationtimeline"
 #define TITLE_TOOLS ICON_LC_WRENCH " Tools##title"
 #define TITLE_MEMENTO ICON_LC_BOOK_OPEN " History##title"
+#define TITLE_CAMERA " Camera##title"
 #define TITLE_ASSET ICON_LC_LIST " Assets##title"
 #define TITLE_SCRIPT ICON_LC_CODE " Scripts##title"
 #define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene##title"
@@ -142,7 +142,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Sup
 	 _menuBar(app, _sceneMgr),
 	 _statusBar(app, _sceneMgr),
 	 _scriptPanel(app, _sceneMgr),
-	 _animationTimeline(app, _sceneMgr)
+	 _animationTimeline(app, _sceneMgr),
+	 _cameraPanel(app)
  {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
@@ -453,6 +454,8 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ASSET, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
+
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
@@ -474,6 +477,9 @@ void MainWindow::rightWidget() {
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	_mementoPanel.update(TITLE_MEMENTO, listener);
+	if (_lastHoveredScene != nullptr) {
+		_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera());
+	}
 
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);

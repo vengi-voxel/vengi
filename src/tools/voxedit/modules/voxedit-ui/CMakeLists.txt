@@ -4,6 +4,7 @@ set(SRCS
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
 	AssetPanel.h AssetPanel.cpp
+	CameraPanel.h CameraPanel.cpp
 	DragAndDropPayload.h
 	FileDialogOptions.h FileDialogOptions.cpp
 	Gizmo.h
