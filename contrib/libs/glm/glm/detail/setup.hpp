@@ -5,10 +5,10 @@
 
 #define GLM_VERSION_MAJOR 1
 #define GLM_VERSION_MINOR 0
-#define GLM_VERSION_PATCH 0
+#define GLM_VERSION_PATCH 1
 #define GLM_VERSION_REVISION 0 // Deprecated
 #define GLM_VERSION 1000 // Deprecated
-#define GLM_VERSION_MESSAGE "GLM: version 1.0.0"
+#define GLM_VERSION_MESSAGE "GLM: version 1.0.1"
 
 #define GLM_MAKE_API_VERSION(variant, major, minor, patch) \
     ((((uint32_t)(variant)) << 29U) | (((uint32_t)(major)) << 22U) | (((uint32_t)(minor)) << 12U) | ((uint32_t)(patch)))
