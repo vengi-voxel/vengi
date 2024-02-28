@@ -17,6 +17,9 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
+/**
+ * @brief Get the current camera values and allows one to modify them or create a camera node from them.
+ */
 class CameraPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
