@@ -143,7 +143,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Sup
 	 _statusBar(app, _sceneMgr),
 	 _scriptPanel(app, _sceneMgr),
 	 _animationTimeline(app, _sceneMgr),
-	 _cameraPanel(app)
+	 _cameraPanel(app, _sceneMgr)
  {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
@@ -478,7 +478,7 @@ void MainWindow::rightWidget() {
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	_mementoPanel.update(TITLE_MEMENTO, listener);
 	if (_lastHoveredScene != nullptr) {
-		_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera());
+		_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera(), listener);
 	}
 
 	// bottom
