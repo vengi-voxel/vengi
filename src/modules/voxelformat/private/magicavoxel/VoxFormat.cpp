@@ -125,6 +125,18 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		return false;
 	}
 
+	for (uint32_t groupIdx = 0; groupIdx < scene->num_groups; ++groupIdx) {
+		const ogt_vox_group &group = scene->groups[groupIdx];
+		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_groupIdx);
+		if (group.parent_group_index != ogt_groupIdx) {
+			continue;
+		}
+		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
+		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette)) {
+			return false;
+		}
+	}
+
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
 		const ogt_vox_instance &ogtInstance = scene->instances[n];
 		if (ogtInstance.group_index != ogt_groupIdx) {
@@ -134,18 +146,6 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			continue;
 		}
 		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette)) {
-			return false;
-		}
-	}
-
-	for (uint32_t groupIdx = 0; groupIdx < scene->num_groups; ++groupIdx) {
-		const ogt_vox_group &group = scene->groups[groupIdx];
-		Log::debug("group %u with parent: %u (searching for %u)", groupIdx, group.parent_group_index, ogt_groupIdx);
-		if (group.parent_group_index != ogt_groupIdx) {
-			continue;
-		}
-		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette)) {
 			return false;
 		}
 	}
