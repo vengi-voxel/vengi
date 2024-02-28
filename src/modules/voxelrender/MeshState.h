@@ -19,10 +19,7 @@
 #include "core/GLM.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/hash.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace voxelrender {
 

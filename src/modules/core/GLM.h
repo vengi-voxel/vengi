@@ -71,9 +71,9 @@ CORE_FORCE_INLINE constexpr void hash_combine(uint32_t &seed, uint32_t hash) {
 template<typename T>
 struct hash {};
 
-template<typename T, glm::qualifier Q>
-struct hash<glm::vec<3, T, Q>> {
-constexpr uint32_t operator()(const glm::vec<3, T, Q>& v) const {
+template<glm::qualifier Q>
+struct hash<glm::vec<3, int, Q>> {
+constexpr uint32_t operator()(const glm::vec<3, int, Q>& v) const {
 	uint32_t seed = 0u;
 	hash_combine(seed, core::hash((const void*)&v.x, (int)sizeof(v.x)));
 	hash_combine(seed, core::hash((const void*)&v.y, (int)sizeof(v.y)));
@@ -82,9 +82,9 @@ constexpr uint32_t operator()(const glm::vec<3, T, Q>& v) const {
 }
 };
 
-template<typename T, glm::qualifier Q>
-struct hash<glm::vec<4, T, Q>> {
-constexpr uint32_t operator()(const glm::vec<4, T, Q>& v) const {
+template<glm::qualifier Q>
+struct hash<glm::vec<4, int, Q>> {
+constexpr uint32_t operator()(const glm::vec<4, int, Q>& v) const {
 	uint32_t seed = 0u;
 	hash_combine(seed, core::hash((const void*)&v.x, (int)sizeof(v.x)));
 	hash_combine(seed, core::hash((const void*)&v.y, (int)sizeof(v.y)));

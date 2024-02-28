@@ -31,6 +31,9 @@
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/norm.hpp>
 
 namespace voxelrender {

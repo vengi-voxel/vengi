@@ -11,6 +11,10 @@
 #include "core/collection/Map.h"
 #include "core/collection/DynamicArray.h"
 #include <glm/gtc/epsilon.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/hash.hpp>
 
 namespace voxelgenerator {
 namespace tree {
@@ -68,7 +72,7 @@ protected:
 		}
 	};
 
-	using Branches = core::Map<glm::vec3, Branch*, 64, glm::hash<glm::vec3>, EqualCompare>;
+	using Branches = core::Map<glm::vec3, Branch*, 64, std::hash<glm::vec3>, EqualCompare>;
 	Branches _branches;
 	math::Random _random;
 
