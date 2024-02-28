@@ -361,7 +361,7 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
 						  ValidateFlags flags, float maxDelta) {
-	ASSERT_EQ(graph1.size(), graph2.size());
+	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));
 	auto iter1 = graph1.beginModel();
 	auto iter2 = graph2.beginModel();
 	for (; iter1 != graph1.end() && iter2 != graph2.end(); ++iter1, ++iter2) {
