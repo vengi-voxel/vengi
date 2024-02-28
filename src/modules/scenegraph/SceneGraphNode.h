@@ -218,6 +218,7 @@ public:
 	bool setProperty(const core::String& key, const char *value);
 	bool setProperty(const core::String& key, bool value);
 	bool setProperty(const core::String& key, float value);
+	bool setProperty(const core::String& key, uint32_t value);
 	bool setProperty(const core::String& key, core::RGBA value);
 	bool setProperty(const core::String& key, const core::String& value);
 
