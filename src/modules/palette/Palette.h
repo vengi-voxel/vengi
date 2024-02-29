@@ -64,7 +64,6 @@ public:
 	core::RGBA &glowColor(uint8_t idx);
 	core::RGBA glowColor(uint8_t idx) const;
 	void setGlowColor(uint8_t idx, const core::RGBA &rgba);
-	const PaletteColorArray &glowColors() const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
@@ -199,10 +198,6 @@ inline uint8_t Palette::index(uint8_t idx) const {
 
 inline const PaletteColorArray &Palette::colors() const {
 	return _colors;
-}
-
-inline const PaletteColorArray &Palette::glowColors() const {
-	return _glowColors;
 }
 
 inline core::RGBA Palette::color(uint8_t idx) const {
