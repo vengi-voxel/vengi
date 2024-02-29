@@ -424,26 +424,6 @@ bool Palette::save(const char *name) const {
 	return palette::savePalette(*this, name, stream);
 }
 
-bool Palette::saveGlow(const char *name) const {
-	if (name == nullptr || name[0] == '\0') {
-		return false;
-	}
-	image::Image img(name);
-	Log::info("Save glow palette colors to %s", name);
-	// must be palette::PaletteMaxColors - otherwise the exporter uv coordinates must get adopted
-	img.loadRGBA((const uint8_t *)_glowColors, lengthof(_glowColors), 1);
-	const io::FilePtr &file = io::filesystem()->open(img.name(), io::FileMode::SysWrite);
-	io::FileStream stream(file);
-	if (!stream.valid()) {
-		return false;
-	}
-	if (!img.writePng(stream)) {
-		Log::warn("Failed to write the glow palette colors file '%s'", name);
-		return false;
-	}
-	return true;
-}
-
 bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 	if (bufsize % 4 != 0) {
 		Log::warn("Buf size doesn't match expectation: %i", (int)bufsize);

@@ -99,7 +99,6 @@ public:
 	bool load(const char *name);
 	bool load(const image::ImagePtr &img);
 	bool save(const char *name = nullptr) const;
-	bool saveGlow(const char *name = nullptr) const;
 
 	void sortOriginal();
 	void sortHue();
