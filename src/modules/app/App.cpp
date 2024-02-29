@@ -522,10 +522,14 @@ void App::zshCompletion() const {
 			Log::printf(":filename:_files");
 		} else if (arg.needsDirectory()) {
 			Log::printf(":filename:_files -/");
+		} else if (!arg.validValues().empty()) {
+			// TODO: add validValue string to zsh completion for the current argument
+			// for (const core::String &validValue : arg.validValues()) {
+			// }
 		}
 		Log::printf("'\n");
 		if (!arg.shortArg().empty()) {
-			Log::printf("'%s[\"%s\"]", arg.shortArg().c_str(), arg.description().c_str());
+			Log::printf("\t\t'%s[\"%s\"]", arg.shortArg().c_str(), arg.description().c_str());
 			if (arg.needsFile()) {
 				Log::printf(":filename:_files");
 			} else if (arg.needsDirectory()) {
@@ -535,31 +539,22 @@ void App::zshCompletion() const {
 		}
 	}
 	command::Command::visitSorted([=](const command::Command &c) {
-		Log::printf("\t\t'-%s[\"%s\"]'", c.name().c_str(), c.help().c_str());
+		Log::printf("\t\t'-%s[\"%s\"]'\n", c.name().c_str(), c.help().c_str());
 	});
 
 	Log::printf("\t)\n");
 	Log::printf("\t_arguments $options\n");
 	Log::printf("\tcase \"$state\" in\n");
 	Log::printf("\t\tcvars)\n");
-	Log::printf("\t\t\tlocal -a variable_names=(");
-	int n = 0;
-	core::Var::visit([&](const core::VarPtr &var) {
-		if (n > 0) {
-			Log::printf(" ");
-		}
-		Log::printf("\"%s\"", var->name().c_str());
-		++n;
+	Log::printf("\t\t\tlocal -a variable_names=(\n");
+	core::Var::visit([](const core::VarPtr &var) {
+		Log::printf("\t\t\t\t\"%s\"\n", var->name().c_str());
 	});
-	Log::printf(")\n");
+	Log::printf("\t\t\t)\n");
 	Log::printf("\t\t\t_describe 'cvars' variable_names\n");
 	Log::printf("\t\t;;\n");
 	Log::printf("\tesac\n");
 	Log::printf("}\n");
-
-	// Log::printf("\tlocal options=\"");
-
-	// command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name()); });
 
 	core::String binary = core::string::extractFilenameWithExtension(_argv[0]);
 	if (binary.empty()) {
@@ -584,13 +579,25 @@ void App::bashCompletion() const {
 			Log::printf("%s ", arg.shortArg().c_str());
 		}
 	}
-	command::Command::visitSorted([=](const command::Command &c) { Log::printf("-%s ", c.name().c_str()); });
+	bool firstArg = true;
+	command::Command::visitSorted([&](const command::Command &c) {
+		if (!firstArg) {
+			Log::printf(" ");
+		}
+		Log::printf("-%s", c.name().c_str());
+		firstArg = false;
+	});
 	Log::printf("\"\n");
 
 	// cvars
 	Log::printf("\tlocal variable_names=\"");
-	core::Var::visit([](const core::VarPtr &var) {
-		Log::printf("%s ", var->name().c_str());
+	bool firstVar = true;
+	core::Var::visit([&](const core::VarPtr &var) {
+		if (!firstVar) {
+			Log::printf(" ");
+		}
+		Log::printf("%s", var->name().c_str());
+		firstVar = false;
 	});
 	Log::printf("\"\n");
 
@@ -610,6 +617,18 @@ void App::bashCompletion() const {
 		} else if (arg.needsDirectory()) {
 			Log::printf("\t%s)\n", arg.longArg().c_str());
 			Log::printf("\t\tCOMPREPLY=( $(compgen -d -- \"$cur\") )\n");
+			Log::printf("\t\t;;\n");
+		} else if (!arg.validValues().empty()) {
+			Log::printf("\t%s)\n", arg.longArg().c_str());
+			Log::printf("\t\tlocal valid_values=\"");
+			for (size_t n = 0; n < arg.validValues().size(); ++n) {
+				if (n > 0) {
+					Log::printf(" ");
+				}
+				Log::printf("%s", arg.validValues()[n].c_str());
+			}
+			Log::printf("\"\n");
+			Log::printf("\t\tCOMPREPLY=( $(compgen -W \"$valid_values\" -- \"$cur\") )\n");
 			Log::printf("\t\t;;\n");
 		}
 	}

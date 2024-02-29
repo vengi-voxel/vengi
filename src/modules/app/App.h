@@ -193,6 +193,7 @@ public:
 		core::String _shortArg;
 		core::String _description;
 		core::String _defaultValue;
+		core::DynamicArray<core::String> _validValues;
 		uint32_t _flag = 0;
 
 	public:
@@ -215,9 +216,18 @@ public:
 			return *this;
 		}
 
+		Argument& addValidValue(const core::String& validValue) {
+			_validValues.push_back(validValue);
+			return *this;
+		}
+
 		Argument& setDefaultValue(const core::String& defaultValue) {
 			_defaultValue = defaultValue;
 			return *this;
+		}
+
+		inline const core::DynamicArray<core::String>& validValues() const {
+			return _validValues;
 		}
 
 		inline const core::String& defaultValue() const {
