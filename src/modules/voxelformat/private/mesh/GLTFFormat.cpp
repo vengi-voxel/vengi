@@ -948,8 +948,8 @@ bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<imag
 bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 								const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 								core::DynamicArray<GltfVertex> &vertices) const {
-	GltfMaterialData textureData;
-	if (!loadMaterial(filename, textures, gltfModel, gltfPrimitive, textureData)) {
+	GltfMaterialData gltfMaterial;
+	if (!loadMaterial(filename, textures, gltfModel, gltfPrimitive, gltfMaterial)) {
 		return false;
 	}
 
@@ -987,11 +987,11 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 				posStream.readFloat(pos.y);
 				posStream.readFloat(pos.z);
 				vertices[verticesOffset + i].pos = pos;
-				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
-				vertices[verticesOffset + i].color = textureData.baseColor;
+				vertices[verticesOffset + i].texture = gltfMaterial.diffuseTexture;
+				vertices[verticesOffset + i].color = gltfMaterial.baseColor;
 				buf += stride;
 			}
-		} else if (attrType == textureData.texCoordAttribute.c_str()) {
+		} else if (attrType == gltfMaterial.texCoordAttribute.c_str()) {
 			if (gltfAttributeAccessor->componentType != TINYGLTF_COMPONENT_TYPE_FLOAT) {
 				Log::debug("Skip non float type (%i) for %s", gltfAttributeAccessor->componentType, attrType.c_str());
 				continue;
@@ -1006,9 +1006,9 @@ bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<im
 					uv.y = 1.0f - uv.y;
 				}
 				vertices[verticesOffset + i].uv = uv;
-				vertices[verticesOffset + i].texture = textureData.diffuseTexture;
-				vertices[verticesOffset + i].wrapS = textureData.wrapS;
-				vertices[verticesOffset + i].wrapT = textureData.wrapT;
+				vertices[verticesOffset + i].texture = gltfMaterial.diffuseTexture;
+				vertices[verticesOffset + i].wrapS = gltfMaterial.wrapS;
+				vertices[verticesOffset + i].wrapT = gltfMaterial.wrapT;
 				buf += stride;
 			}
 		} else if (core::string::startsWith(attrType.c_str(), "COLOR")) {
