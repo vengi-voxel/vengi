@@ -320,7 +320,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		}
 
 		int meshExtIdx = 0;
-		meshIdxNodeMap.get(nodeId, meshExtIdx);
+		core_assert_always(meshIdxNodeMap.get(nodeId, meshExtIdx));
 		const MeshExt &meshExt = meshes[meshExtIdx];
 
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
