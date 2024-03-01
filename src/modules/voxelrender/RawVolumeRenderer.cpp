@@ -390,7 +390,7 @@ void RawVolumeRenderer::updatePalette(int idx) {
 		core::DynamicArray<glm::vec4> materialColors;
 		palette.toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
-		palette.glowToVec4f(glowColors);
+		palette.emitToVec4f(glowColors);
 		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 			_voxelShaderVertData.materialcolor[i] = materialColors[i];
 			_voxelShaderVertData.glowcolor[i] = glowColors[i];

@@ -302,7 +302,7 @@
         float         ior;
         float         att;
         float         flux;
-        float         emit;
+        float         emit; // Emit * (10 ^ Power) - https://twitter.com/ephtracy/status/846084473347342336
         float         ldr;
         float         trans;
         float         alpha;

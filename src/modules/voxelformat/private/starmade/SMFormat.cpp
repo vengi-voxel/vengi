@@ -182,7 +182,7 @@ size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 							 const LoadContext &ctx) {
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
-		palette.color(i) = priv::paletteColors[i];
+		palette.setColor(i, priv::paletteColors[i]);
 	}
 	return palette.colorCount();
 }
@@ -194,7 +194,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	palette::Palette palette;
 	palette.setSize(lengthof(priv::paletteColors));
 	for (int i = 0; i < lengthof(priv::paletteColors); ++i) {
-		palette.color(i) = priv::paletteColors[i];
+		palette.setColor(i, priv::paletteColors[i]);
 	}
 
 	uint8_t version;

@@ -6,23 +6,9 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "palette/Palette.h"
-#include "voxelformat/private/binvox/BinVoxFormat.h"
-#include "voxelformat/private/commandconquer/VXLFormat.h"
-#include "voxelformat/private/cubeworld/CubFormat.h"
-#include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
-#include "voxelformat/private/magicavoxel/XRawFormat.h"
-#include "voxelformat/private/mesh/GLTFFormat.h"
-#include "voxelformat/private/mesh/OBJFormat.h"
-#include "voxelformat/private/mesh/STLFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
-#include "voxelformat/private/qubicle/QBTFormat.h"
-#include "voxelformat/private/sandbox/VXMFormat.h"
-#include "voxelformat/private/sandbox/VXRFormat.h"
-#include "voxelformat/private/slab6/KV6Format.h"
-#include "voxelformat/private/slab6/KVXFormat.h"
-#include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
@@ -40,6 +26,9 @@ protected:
 
 	// the palettes have to match, as all the colors from the rgb format are saved to the palette of the target format
 	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors, voxelformat::Format &paletteFormat, const core::String &palFile, size_t palExpectedColors) {
+		SCOPED_TRACE("rgb file: " + rgbFile);
+		SCOPED_TRACE("pal file: " + palFile);
+
 		io::FileStream rgbStream(open(rgbFile));
 		palette::Palette rgbPalette;
 		ASSERT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx));
@@ -69,6 +58,9 @@ protected:
 
 	// the colors have to match but can differ in their count - the rgb format only saves those colors that are used by at least one voxel
 	void testPaletteToRGBFormat(voxelformat::Format &palFormat, const core::String &palFile, size_t palExpectedColors, voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors) {
+		SCOPED_TRACE("pal file: " + palFile);
+		SCOPED_TRACE("rgb file: " + rgbFile);
+
 		io::FileStream palStream(open(palFile));
 		palette::Palette palPalette;
 		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, palStream, palPalette, testLoadCtx));
@@ -95,6 +87,9 @@ protected:
 	}
 
 	void testRGBToRGBFormat(voxelformat::Format &rgbFormat1, const core::String &rgbFile1, voxelformat::Format &rgbFormat2, const core::String &rgbFile2, size_t expectedColors) {
+		SCOPED_TRACE("1. rgb file: " + rgbFile1);
+		SCOPED_TRACE("2. rgb file: " + rgbFile2);
+
 		io::FileStream palStream(open(rgbFile1));
 		palette::Palette rgbPalette1;
 		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, palStream, rgbPalette1, testLoadCtx));
@@ -122,6 +117,9 @@ protected:
 	}
 
 	void testPaletteToPaletteFormat(voxelformat::Format &palFormat1, const core::String &palFile1, voxelformat::Format &palFormat2, const core::String &palFile2, size_t expectedColors) {
+		SCOPED_TRACE("1. pal file: " + palFile1);
+		SCOPED_TRACE("2. pal file: " + palFile2);
+
 		io::FileStream palStream(open(palFile1));
 		palette::Palette palPalette1;
 		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, palStream, palPalette1, testLoadCtx));

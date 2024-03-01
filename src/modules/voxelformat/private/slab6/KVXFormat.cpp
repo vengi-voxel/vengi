@@ -154,7 +154,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
 		wrapBool(priv::readRGBScaledColor(stream, color))
-		palette.color(i) = color;
+		palette.setColor(i, color);
 	}
 	stream.seek(currentPos);
 

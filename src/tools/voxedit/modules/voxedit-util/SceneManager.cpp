@@ -2254,7 +2254,7 @@ void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
 		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
 			if (usedColors[i]) {
 				newPalette.setColor(newMapping[i], pal.color(i));
-				newPalette.setGlowColor(newMapping[i], pal.glowColor(i));
+				newPalette.setMaterial(newMapping[i], pal.material(i));
 			}
 		}
 		core_assert(newPalette.colorCount() > 0);
@@ -3183,11 +3183,12 @@ bool SceneManager::nodeDuplicateColor(int nodeId, uint8_t palIdx) {
 
 bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t palIdx) {
 	palette::Palette &palette = node.palette();
-	core::RGBA &c = palette.color(palIdx);
+	core::RGBA c = palette.color(palIdx);
 	if (c.a == 255) {
 		return false;
 	}
 	c.a = 255;
+	palette.setColor(palIdx, c);
 	palette.markSave();
 	_mementoHandler.markPaletteChange(node);
 	updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
@@ -3204,9 +3205,9 @@ bool SceneManager::nodeRemoveAlpha(int nodeId, uint8_t palIdx) {
 bool SceneManager::nodeSetGlow(scenegraph::SceneGraphNode &node, uint8_t palIdx, bool state) {
 	palette::Palette &palette = node.palette();
 	if (state) {
-		palette.setGlow(palIdx);
+		palette.setEmit(palIdx, 1.0f);
 	} else {
-		palette.removeGlow(palIdx);
+		palette.setEmit(palIdx, 0.0f);
 	}
 	palette.markSave();
 	_mementoHandler.markPaletteChange(node);

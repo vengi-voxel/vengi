@@ -71,18 +71,60 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 	int palIdx = 0;
 	for (int i = 0; i < lengthof(scene->palette.color) - 1; ++i) {
 		const ogt_vox_rgba color = scene->palette.color[(i + 1) & 255];
-		palette.color(palIdx) = core::RGBA(color.r, color.g, color.b, color.a);
+		palette.setColor(palIdx, core::RGBA(color.r, color.g, color.b, color.a));
 		const ogt_vox_matl &matl = scene->materials.matl[(i + 1) & 255];
-		if (matl.content_flags & k_ogt_vox_matl_have_emit) {
-			palette.glowColor(palIdx) = palette.color(palIdx); // TODO: matl.emit
+		if (matl.content_flags & k_ogt_vox_matl_have_metal) {
+			palette.setMetal(palIdx, matl.metal);
 		}
-		if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
-			palette.color(palIdx).a = (uint8_t)(matl.alpha * 255.0f);
+		if (matl.content_flags & k_ogt_vox_matl_have_rough) {
+			palette.setRoughness(palIdx, matl.rough);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_spec) {
+			palette.setSpecular(palIdx, matl.spec);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_ior) {
+			palette.setIndexOfRefraction(palIdx, matl.ior);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_att) {
+			palette.setAttenuation(palIdx, matl.att);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_flux) {
+			palette.setFlux(palIdx, matl.flux);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_emit) {
+			palette.setEmit(palIdx, matl.emit);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_ldr) {
+			palette.setLowDynamicRange(palIdx, matl.ldr);
+		}
+		// TODO: not sure how to handle this yet
+		if (matl.content_flags & k_ogt_vox_matl_have_trans) {
+			palette.setAlpha(palIdx, matl.trans);
+		} else if (matl.content_flags & k_ogt_vox_matl_have_alpha) {
+			palette.setAlpha(palIdx, matl.alpha);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_d) {
+			palette.setGlossiness(palIdx, matl.d);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_sp) {
+			palette.setSp(palIdx, matl.sp);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_g) {
+			palette.setGlossiness(palIdx, matl.g);
+		}
+		if (matl.content_flags & k_ogt_vox_matl_have_media) {
+			palette.setMedia(palIdx, matl.media);
 		}
 		++palIdx;
-		if (color.a != 0) {
-			palette.setSize(palIdx);
+	}
+	int n = 0;
+	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		if (palette.color(i).a > 0) {
+			n = i + 1;
 		}
+	}
+	if (n > 0) {
+		palette.setSize(n);
 	}
 	Log::debug("vox load color count: %i", palette.colorCount());
 }

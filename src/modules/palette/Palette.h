@@ -4,11 +4,13 @@
 
 #pragma once
 
+#include "core/ArrayLength.h"
 #include "core/DirtyState.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "core/RGBA.h"
+#include <cstdint>
 #include <stdint.h>
 #include <glm/vec4.hpp>
 
@@ -16,9 +18,79 @@ namespace palette {
 
 static const int PaletteMaxColors = 256;
 static const int PaletteColorNotFound = -1;
+
+enum class MaterialType {
+	Diffuse = 0, // diffuse is default
+	Metal = 1,
+	Glass = 2,
+	Emit = 3,
+	Blend = 4,
+	Media = 5,
+};
+
+enum MaterialProperty : uint32_t {
+	MaterialNone = 0,
+
+	MaterialMetal = 1,
+	MaterialRoughness = 2,
+	MaterialSpecular = 3,
+	MaterialIndexOfRefraction = 4,
+	MaterialAttenuation = 5,
+	MaterialFlux = 6,
+	MaterialEmit = 7,
+	MaterialLowDynamicRange = 8,
+	MaterialDiffusion = 9,
+	MaterialSp = 10,
+	MaterialGlossiness = 11,
+	MaterialMedia = 12,
+
+	MaterialMax
+};
+
+struct Material {
+	uint32_t mask = MaterialNone;
+	MaterialType type = MaterialType::Diffuse;
+	// make sure to keep the order of the properties and keep metal
+	// as first - see the name string array
+	float metal = 0.0f;
+	float roughness = 0.0f;
+	float specular = 0.0f;
+	float indexOfRefraction = 0.0f;
+	float attenuation = 0.0f;
+	float flux = 0.0f;
+	float emit = 0.0f;
+	float lowDynamicRange = 0.0f;
+	float diffusion = 0.0f;
+	float sp = 0.0f;
+	float glossiness = 0.0f;
+	float media = 0.0f;
+
+	bool operator==(const Material &rhs) const;
+	bool has(MaterialProperty n) const;
+	float value(MaterialProperty n) const;
+	void setValue(MaterialProperty n, float value);
+};
+
+static constexpr const char *MaterialPropertyNames[] = {
+	"metal",
+	"roughness",
+	"specular",
+	"indexOfRefraction",
+	"attenuation",
+	"flux",
+	"emit",
+	"lowDynamicRange",
+	"diffusion",
+	"sp",
+	"glossiness",
+	"media"
+};
+static_assert(lengthof(MaterialPropertyNames) == MaterialMax - 1, "MaterialPropertyNames size mismatch");
+
 // RGBA color values in the range [0-255]
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
 using PaletteIndicesArray = uint8_t[PaletteMaxColors];
+using MaterialArray = Material[PaletteMaxColors];
 
 class Palette : public core::DirtyState {
 private:
@@ -31,7 +103,7 @@ private:
 
 	bool load(const uint8_t *rgbaBuf, size_t bufsize, const char *name);
 	PaletteColorArray _colors {};
-	PaletteColorArray _glowColors {};
+	MaterialArray _materials {};
 	int _colorCount = 0;
 	PaletteIndicesArray _indices;
 
@@ -50,29 +122,42 @@ public:
 	 */
 	void exchange(uint8_t idx1, uint8_t idx2);
 
-	core::RGBA &color(uint8_t idx);
+	const Material &material(uint8_t idx) const;
 	core::RGBA color(uint8_t idx) const;
 	glm::vec4 color4(uint8_t idx) const;
 	void setColor(uint8_t idx, const core::RGBA &rgba);
-	const PaletteColorArray &colors() const;
+	void setMaterial(uint8_t i, const Material &material);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
 	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
 
-	core::RGBA &glowColor(uint8_t idx);
-	core::RGBA glowColor(uint8_t idx) const;
-	void setGlowColor(uint8_t idx, const core::RGBA &rgba);
+	core::RGBA emitColor(uint8_t idx) const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
-	void glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
+	void emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
-	bool hasGlow(uint8_t idx) const;
-	void removeGlow(uint8_t idx);
-	void setGlow(uint8_t idx, float factor = 1.0f);
+	bool hasAlpha(uint8_t idx) const;
+	bool hasEmit(uint8_t idx) const;
+	void setMaterialType(uint8_t idx, MaterialType type);
+	bool setMaterialProperty(uint8_t idx, const core::String &name, float value);
+
+	void setEmit(uint8_t idx, float factor = 1.0f);
+	void setMetal(uint8_t idx, float factor = 1.0f);
+	void setRoughness(uint8_t idx, float factor = 1.0f);
+	void setSpecular(uint8_t idx, float factor = 1.0f);
+	void setIndexOfRefraction(uint8_t idx, float factor = 1.0f);
+	void setAttenuation(uint8_t idx, float factor = 1.0f);
+	void setFlux(uint8_t idx, float factor = 1.0f);
+	void setAlpha(uint8_t idx, float factor = 1.0f);
+	void setDiffusion(uint8_t idx, float factor = 1.0f);
+	void setSp(uint8_t idx, float factor = 1.0f);
+	void setGlossiness(uint8_t idx, float factor = 1.0f);
+	void setMedia(uint8_t idx, float factor = 1.0f);
+	void setLowDynamicRange(uint8_t idx, float factor = 1.0f);
 
 	bool hasFreeSlot() const;
 	void duplicateColor(uint8_t idx);
@@ -196,24 +281,19 @@ inline uint8_t Palette::index(uint8_t idx) const {
 	return _indices[idx];
 }
 
-inline const PaletteColorArray &Palette::colors() const {
-	return _colors;
-}
-
 inline core::RGBA Palette::color(uint8_t idx) const {
 	return _colors[idx];
 }
 
-inline core::RGBA &Palette::glowColor(uint8_t idx) {
-	return _glowColors[idx];
+inline core::RGBA Palette::emitColor(uint8_t idx) const {
+	if (hasEmit(idx)) {
+		return _colors[idx];
+	}
+	return core::RGBA{};
 }
 
-inline core::RGBA Palette::glowColor(uint8_t idx) const {
-	return _glowColors[idx];
-}
-
-inline core::RGBA &Palette::color(uint8_t idx) {
-	return _colors[idx];
+inline const Material &Palette::material(uint8_t idx) const {
+	return _materials[idx];
 }
 
 } // namespace voxel

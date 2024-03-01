@@ -229,12 +229,12 @@ bool CubzhFormat::loadPalette(const core::String &filename, const Header &header
 		wrap(stream.readUInt8(g))
 		wrap(stream.readUInt8(b))
 		wrap(stream.readUInt8(a))
-		palette.color(i) = core::RGBA(r, g, b, a);
+		palette.setColor(i, core::RGBA(r, g, b, a));
 	}
 	for (uint8_t i = 0; i < colorCount; ++i) {
 		const bool emissive = stream.readBool();
 		if (emissive) {
-			palette.glowColor(i) = palette.color(i);
+			palette.setEmit(i, 1.0f);
 		}
 	}
 	return true;
@@ -837,7 +837,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 			wrapBool(ws.writeUInt8(rgba.a))
 		}
 		for (uint8_t i = 0; i < colorCount; ++i) {
-			wrapBool(ws.writeBool(palette.hasGlow(i)))
+			wrapBool(ws.writeBool(palette.hasEmit(i)))
 		}
 	}
 	for (auto entry : sceneGraph.nodes()) {
@@ -891,7 +891,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 				wrapBool(sub.writeUInt8(rgba.a))
 			}
 			for (uint8_t i = 0; i < colorCount; ++i) {
-				wrapBool(sub.writeBool(palette.hasGlow(i)))
+				wrapBool(sub.writeBool(palette.hasEmit(i)))
 			}
 		}
 		{

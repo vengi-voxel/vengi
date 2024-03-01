@@ -316,8 +316,10 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		}
 
 		if (palette.colorCount() == 1) {
-			if (palette.colors()[0].a == 0) {
-				palette.color(0).a = 255;
+			core::RGBA c = palette.color(0);
+			if (c.a == 0) {
+				c.a = 255;
+				palette.setColor(0, c);
 			}
 		}
 		node.setPalette(palette);
@@ -418,8 +420,10 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {
-		if (palette.colors()[0].a == 0) {
-			palette.color(0).a = 255;
+		core::RGBA c = palette.color(0);
+		if (c.a == 0) {
+			c.a = 255;
+			palette.setColor(0, c);
 		}
 	}
 	node.setPalette(palette);

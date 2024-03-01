@@ -123,8 +123,8 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		yocto::shape_data *shape;
 		// color is the same for all three vertices
 		core::RGBA rgba;
-		if (palette.hasGlow(vertex0.colorIndex)) {
-			rgba = palette.glowColor(vertex0.colorIndex);
+		if (palette.hasEmit(vertex0.colorIndex)) {
+			rgba = palette.emitColor(vertex0.colorIndex);
 			shape = &glow;
 		} else {
 			rgba = palette.color(vertex0.colorIndex);
@@ -226,7 +226,7 @@ void PathTracer::setupGlowMaterial(const scenegraph::SceneGraphNode &node) {
 	texture.height = 1;
 	texture.width = palette::PaletteMaxColors;
 	for (int i = 0; i < node.palette().colorCount(); ++i) {
-		const core::RGBA color = node.palette().glowColor(i);
+		const core::RGBA color = node.palette().emitColor(i);
 		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
 	}
 	for (int i = node.palette().colorCount(); i < texture.width; ++i) {

@@ -248,7 +248,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	uint8_t replacement = palette.findReplacement(0);
 	const core::RGBA color = palette.color(0);
 	if (palette.colorCount() < palette::PaletteMaxColors) {
-		palette.color(0) = core::RGBA(0, 0, 0, 0);
+		palette.setColor(0, core::RGBA(0, 0, 0, 0));
 		palette.addColorToPalette(color, false, &replacement, false, 0);
 	}
 	voxelutil::visitVolume(

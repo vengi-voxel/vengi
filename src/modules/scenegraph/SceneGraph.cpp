@@ -729,8 +729,8 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 					break;
 				}
 			}
-			if (nodePalette.hasGlow(i)) {
-				palette.setGlow(index, 1.0f);
+			if (nodePalette.hasEmit(i)) {
+				palette.setEmit(index, 1.0f);
 			}
 		}
 		if (tooManyColors) {
@@ -741,7 +741,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 		Log::debug("too many colors - restart, but skip similar");
 		palette.setSize(0);
 		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
-			palette.removeGlow(i);
+			palette.setEmit(i, 0.0f);
 		}
 		for (auto iter = beginAllModels(); iter != end(); ++iter) {
 			const SceneGraphNode &node = *iter;
@@ -764,8 +764,8 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 				const core::RGBA rgba = nodePalette.color(i);
 				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 				if (palette.addColorToPalette(rgba, true, &index, true, skipIndex)) {
-					if (nodePalette.hasGlow(i)) {
-						palette.setGlow(index, 1.0f);
+					if (nodePalette.hasEmit(i)) {
+						palette.setEmit(index, 1.0f);
 					}
 				}
 			}

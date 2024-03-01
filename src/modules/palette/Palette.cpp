@@ -27,12 +27,52 @@
 
 #include <SDL_endian.h>
 #include <float.h>
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/norm.hpp>
 
 namespace palette {
+
+bool Material::operator==(const Material &rhs) const {
+	if (mask != rhs.mask) {
+		return false;
+	}
+	if (type != rhs.type) {
+		return false;
+	}
+	for (int i = 0; i < (int)MaterialMax - 1; ++i) {
+		if (!glm::epsilonEqual(value(MaterialProperty(i)), rhs.value(MaterialProperty(i)), glm::epsilon<float>())) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Material::has(MaterialProperty n) const {
+	return (mask & (1 << n)) != 0;
+}
+
+float Material::value(MaterialProperty n) const {
+	if (n == MaterialProperty::MaterialNone || n >= MaterialProperty::MaterialMax) {
+		return 0.0f;
+	}
+	return *(&metal + (n - 1));
+}
+
+void Material::setValue(MaterialProperty n, float value) {
+	if (n == MaterialProperty::MaterialNone || n >= MaterialProperty::MaterialMax) {
+		return;
+	}
+	*(&metal + (n - 1)) = value;
+	if (value > 0.0f) {
+		mask |= (1 << n);
+	} else {
+		mask &= ~(1 << n);
+	}
+}
 
 Palette::Palette() {
 	sortOriginal();
@@ -61,7 +101,7 @@ void Palette::setSize(int cnt) {
 void Palette::markDirty() {
 	core::DirtyState::markDirty();
 	_hash._hashColors[0] = core::hash(_colors, sizeof(_colors));
-	_hash._hashColors[1] = core::hash(_glowColors, sizeof(_glowColors));
+	_hash._hashColors[1] = core::hash(_materials, sizeof(_materials));
 }
 
 glm::vec4 Palette::color4(uint8_t i) const {
@@ -100,7 +140,7 @@ void Palette::duplicateColor(uint8_t idx) {
 	} else {
 		// search a free slot
 		for (int i = 0; i < PaletteMaxColors; ++i) {
-			if (color(i).a == 0) {
+			if (!hasAlpha(i)) {
 				setColor(i, color(idx));
 				return;
 			}
@@ -143,14 +183,15 @@ bool Palette::hasFreeSlot() const {
 }
 
 void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
-	color(i) = rgba;
-	setSize(core_max(size(), (size_t)(i + 1)));
+	_colors[i] = rgba;
+	if (rgba.a != 0) {
+		setSize(core_max(size(), (size_t)(i + 1)));
+	}
 	markDirty();
 }
 
-void Palette::setGlowColor(uint8_t i, const core::RGBA &rgba) {
-	glowColor(i) = rgba;
-	setSize(core_max(size(), (size_t)(i + 1)));
+void Palette::setMaterial(uint8_t i, const Material &material) {
+	_materials[i] = material;
 	markDirty();
 }
 
@@ -450,7 +491,9 @@ bool Palette::load(const image::ImagePtr &img) {
 		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
 		return false;
 	}
-	core_memset(_glowColors, 0, sizeof(_glowColors));
+	for (auto &m : _materials) {
+		m = Material();
+	}
 	if (img->width() * img->height() > PaletteMaxColors) {
 		return createPalette(img, *this);
 	}
@@ -780,21 +823,93 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 	return true;
 }
 
-bool Palette::hasGlow(uint8_t idx) const {
-	return _glowColors[idx] != 0u;
-}
-
-void Palette::removeGlow(uint8_t idx) {
-	if (_glowColors[idx] == core::RGBA(0)) {
-		return;
-	}
-	_glowColors[idx] = 0;
+void Palette::setMaterialType(uint8_t idx, MaterialType type) {
+	_materials[idx].type = type;
 	markDirty();
 }
 
-void Palette::setGlow(uint8_t idx, float factor) {
-	// TODO: handle factor
-	_glowColors[idx] = _colors[idx];
+bool Palette::setMaterialProperty(uint8_t idx, const core::String &name, float value) {
+	Material &mat = _materials[idx];
+	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
+		if (MaterialPropertyNames[i] == name) {
+			mat.setValue((MaterialProperty)i, value);
+			markDirty();
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Palette::hasAlpha(uint8_t idx) const {
+	return _colors[idx].a < 255;
+}
+
+bool Palette::hasEmit(uint8_t idx) const {
+	return _materials[idx].mask & MaterialEmit;
+}
+
+void Palette::setEmit(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialEmit, factor);
+	markDirty();
+}
+
+void Palette::setMetal(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialMetal, factor);
+	markDirty();
+}
+
+void Palette::setRoughness(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialRoughness, factor);
+	markDirty();
+}
+
+void Palette::setSpecular(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialSpecular, factor);
+	markDirty();
+}
+
+void Palette::setIndexOfRefraction(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialIndexOfRefraction, factor);
+	markDirty();
+}
+
+void Palette::setAttenuation(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialAttenuation, factor);
+	markDirty();
+}
+
+void Palette::setFlux(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialFlux, factor);
+	markDirty();
+}
+
+void Palette::setAlpha(uint8_t idx, float factor) {
+	_colors[idx].a = (float)_colors[idx].a * factor;
+	markDirty();
+}
+
+void Palette::setDiffusion(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialDiffusion, factor);
+	markDirty();
+}
+
+void Palette::setSp(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialSp, factor);
+	markDirty();
+}
+
+void Palette::setGlossiness(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialGlossiness, factor);
+	markDirty();
+}
+
+void Palette::setMedia(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialMedia, factor);
+	markDirty();
+}
+
+void Palette::setLowDynamicRange(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialLowDynamicRange, factor);
 	markDirty();
 }
 
@@ -808,10 +923,11 @@ void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	}
 }
 
-void Palette::glowToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
+void Palette::emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	vec4f.reserve(PaletteMaxColors);
 	for (int i = 0; i < _colorCount; ++i) {
-		vec4f.push_back(core::Color::fromRGBA(_glowColors[i]));
+		glm::vec4 color = core::Color::fromRGBA(_colors[i]);
+		vec4f.push_back(color * _materials[i].emit);
 	}
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		vec4f.emplace_back(0.0f);
@@ -834,7 +950,11 @@ bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char 
 		Log::error("Failed to open file %s for saving the palette as png", paletteFile);
 		return false;
 	}
-	return paletteImg->writePng(stream, (const uint8_t *)palette.colors(), (int)palette.size(), 1, 4);
+	core::RGBA colors[PaletteMaxColors];
+	for (int i = 0; i < PaletteMaxColors; i++) {
+		colors[i] = palette.color(i);
+	}
+	return paletteImg->writePng(stream, (const uint8_t *)colors, (int)palette.size(), 1, 4);
 }
 
 } // namespace voxel

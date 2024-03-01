@@ -561,7 +561,7 @@ bool QBTFormat::loadColorMap(io::SeekableReadStream &stream, palette::Palette &p
 		wrap(stream.readUInt8(colorByteG));
 		wrap(stream.readUInt8(colorByteB));
 		wrap(stream.readUInt8(colorByteVisMask));
-		palette.color(i) = core::RGBA(colorByteR, colorByteG, colorByteB);
+		palette.setColor(i, core::RGBA(colorByteR, colorByteG, colorByteB));
 	}
 	return true;
 }

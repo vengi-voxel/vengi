@@ -117,11 +117,10 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 			if (dragAndDropSortColors()) {
 				palette.exchange(palIdx, dragPalIdx);
 			} else {
-				core::exchange(palette.color(palIdx), palette.color(dragPalIdx));
-				if (!existingColor) {
-					palette.setSize(palIdx + 1);
-				}
-				palette.markDirty();
+				core::RGBA lhs = palette.color(palIdx);
+				core::RGBA rhs = palette.color(dragPalIdx);
+				palette.setColor(palIdx, rhs);
+				palette.setColor(dragPalIdx, lhs);
 				palette.markSave();
 			}
 			_sceneMgr->mementoHandler().markPaletteChange(node);
@@ -149,7 +148,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 		if (usableColor) {
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
 			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true, &listener);
-			if (palette.hasGlow(uiIdx)) {
+			if (palette.hasEmit(uiIdx)) {
 				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
 					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
 				}
@@ -375,15 +374,14 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 
 	if (ImGui::ColorPicker4(_("Color"), glm::value_ptr(color), flags)) {
 		const bool hasAlpha = palette.color(palIdx).a != 255;
-		palette.color(palIdx) = core::Color::getRGBA(color);
-		if (!existingColor) {
-			palette.setSize(palIdx + 1);
-		} else if (hasAlpha && palette.color(palIdx).a == 255) {
-			_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
-		} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-			_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+		palette.setColor(palIdx, core::Color::getRGBA(color));
+		if (existingColor) {
+			if (hasAlpha && palette.color(palIdx).a == 255) {
+				_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
+				_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+			}
 		}
-		palette.markDirty();
 		palette.markSave();
 		return true;
 	}

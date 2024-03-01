@@ -39,7 +39,7 @@ size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableRea
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
 		wrapBool(priv::readRGBScaledColor(stream, color))
-		palette.color(i) = color;
+		palette.setColor(i, color);
 	}
 	return palette.colorCount();
 }
@@ -69,7 +69,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
 		wrapBool(priv::readRGBScaledColor(stream, color))
-		palette.color(i) = color;
+		palette.setColor(i, color);
 	}
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

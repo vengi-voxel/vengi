@@ -155,9 +155,9 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	// emissive palette
 	for (int i = 0; i < numColors; ++i) {
-		const core::RGBA &glowcolor = palette.glowColor(i);
-		const bool emissive = glowcolor.a > 0;
+		const bool emissive = palette.hasEmit(i);
 		if (emissive) {
+			const core::RGBA &glowcolor = palette.emitColor(i);
 			wrapBool(stream.writeUInt8(glowcolor.r))
 			wrapBool(stream.writeUInt8(glowcolor.g))
 			wrapBool(stream.writeUInt8(glowcolor.b))
@@ -195,8 +195,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream.writeUInt8(matcolor.g))
 		wrapBool(stream.writeUInt8(matcolor.r))
 		wrapBool(stream.writeUInt8(matcolor.a))
-		const core::RGBA &glowcolor = palette.glowColor(i);
-		const bool emissive = glowcolor.a > 0;
+		const bool emissive = palette.hasEmit(i);
 		wrapBool(stream.writeBool(emissive))
 	}
 
@@ -472,9 +471,9 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		if (version > 3) {
 			uint8_t emissive;
 			wrap(stream.readUInt8(emissive));
-			palette.color(i) = core::RGBA(red, green, blue, alpha);
+			palette.setColor(i, core::RGBA(red, green, blue, alpha));
 			if (emissive) {
-				palette.glowColor(i) = palette.color(i);
+				palette.setEmit(i, 1.0f);
 			}
 		}
 	}

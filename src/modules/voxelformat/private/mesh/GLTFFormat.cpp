@@ -268,7 +268,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				{
 					tinygltf::Image gltfPaletteImage;
 					image::Image image("pal");
-					image.loadRGBA((const unsigned char *)palette.colors(), palette::PaletteMaxColors, 1);
+					core::RGBA colors[palette::PaletteMaxColors];
+					for (int i = 0; i < palette::PaletteMaxColors; i++) {
+						colors[i] = palette.color(i);
+					}
+					image.loadRGBA((const unsigned char *)colors, palette::PaletteMaxColors, 1);
 					const core::String &pal64 = image.pngBase64();
 					gltfPaletteImage.uri = "data:image/png;base64,";
 					gltfPaletteImage.width = palette::PaletteMaxColors;

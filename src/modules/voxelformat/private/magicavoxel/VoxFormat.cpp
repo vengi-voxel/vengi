@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "MagicaVoxel.h"
 #include "palette/Palette.h"
@@ -412,16 +413,77 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		pal.color[i].b = rgba.b;
 		pal.color[i].a = rgba.a;
 
-		const core::RGBA &glowColor = palette.glowColor(i);
-		if (glowColor.rgba != 0) {
-			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
-			mat.matl[i].type = ogt_matl_type::ogt_matl_type_emit;
-			mat.matl[i].emit = 1.0f;
+		const palette::Material &material = palette.material(i);
+		palette::MaterialType type = material.type;
+		if (type == palette::MaterialType::Diffuse) {
+			mat.matl[i].type = ogt_matl_type_diffuse;
+		} else if (type == palette::MaterialType::Metal) {
+			mat.matl[i].type = ogt_matl_type_metal;
+		} else if (type == palette::MaterialType::Glass) {
+			mat.matl[i].type = ogt_matl_type_glass;
+		} else if (type == palette::MaterialType::Emit) {
+			mat.matl[i].type = ogt_matl_type_emit;
+		} else if (type == palette::MaterialType::Blend) {
+			mat.matl[i].type = ogt_matl_type_blend;
+		} else if (type == palette::MaterialType::Media) {
+			mat.matl[i].type = ogt_matl_type_media;
+		} else {
+			Log::error("Unknown material type %i", (int)type);
+			mat.matl[i].type = ogt_matl_type_diffuse;
 		}
 
+		if (material.has(palette::MaterialProperty::MaterialMetal)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_metal;
+			mat.matl[i].metal = material.value(palette::MaterialMetal);
+		}
+		if (material.has(palette::MaterialProperty::MaterialRoughness)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_rough;
+			mat.matl[i].rough = material.value(palette::MaterialRoughness);
+		}
+		if (material.has(palette::MaterialProperty::MaterialSpecular)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_spec;
+			mat.matl[i].spec = material.value(palette::MaterialSpecular);
+		}
+		if (material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_ior;
+			mat.matl[i].ior = material.value(palette::MaterialIndexOfRefraction);
+		}
+		if (material.has(palette::MaterialProperty::MaterialAttenuation)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_att;
+			mat.matl[i].att = material.value(palette::MaterialAttenuation);
+		}
+		if (material.has(palette::MaterialProperty::MaterialFlux)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_flux;
+			mat.matl[i].flux = material.value(palette::MaterialFlux);
+		}
+		if (material.has(palette::MaterialProperty::MaterialEmit)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_emit;
+			mat.matl[i].emit = material.value(palette::MaterialEmit);
+		}
+		if (material.has(palette::MaterialProperty::MaterialLowDynamicRange)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_ldr;
+			mat.matl[i].ldr = material.value(palette::MaterialLowDynamicRange);
+		}
 		if (pal.color[i].a < 255) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_alpha;
 			mat.matl[i].alpha = (float)pal.color[i].a / 255.0f;
+			pal.color[i].a = 255;
+		}
+		if (material.has(palette::MaterialProperty::MaterialDiffusion)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_d;
+			mat.matl[i].d = material.value(palette::MaterialDiffusion);
+		}
+		if (material.has(palette::MaterialProperty::MaterialSp)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_sp;
+			mat.matl[i].sp = material.value(palette::MaterialSp);
+		}
+		if (material.has(palette::MaterialProperty::MaterialGlossiness)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_g;
+			mat.matl[i].g = material.value(palette::MaterialGlossiness);
+		}
+		if (material.has(palette::MaterialProperty::MaterialMedia)) {
+			mat.matl[i].content_flags |= k_ogt_vox_matl_have_media;
+			mat.matl[i].media = material.value(palette::MaterialMedia);
 		}
 	}
 

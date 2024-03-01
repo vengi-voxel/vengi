@@ -226,8 +226,8 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 				if (palette.colorCount() < palette::PaletteMaxColors) {
 					Log::debug("Shift colors in palettes to make slot %i empty", emptyPaletteIndex());
 					for (int i = palette.colorCount(); i >= emptyPaletteIndex(); --i) {
-						palette.color(i) = palette.color(i - 1);
-						palette.glowColor(i) = palette.glowColor(i - 1);
+						palette.setColor(i, palette.color(i - 1));
+						palette.setMaterial(i, palette.material(i - 1));
 					}
 					if (emptyPaletteIndex() <= palette.colorCount()) {
 						palette.changeSize(1);

@@ -18,6 +18,7 @@ General:
    - Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates
    - Fixed `vxl/hva` loading and saving
    - Fixed missing `pcubes` write support
+   - Support palette materials
 
 VoxBrowser:
 

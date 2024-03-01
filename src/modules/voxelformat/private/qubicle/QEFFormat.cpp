@@ -94,7 +94,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			return false;
 		}
 		const glm::vec4 color(r, g, b, 1.0f);
-		palette.color(i) = core::Color::getRGBA(color);
+		palette.setColor(i, core::Color::getRGBA(color));
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;

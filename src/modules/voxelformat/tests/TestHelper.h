@@ -30,6 +30,7 @@ namespace glm {
 
 namespace palette {
 ::std::ostream &operator<<(::std::ostream &os, const palette::Palette &palette);
+::std::ostream &operator<<(::std::ostream &os, const palette::Material &material);
 }
 
 namespace voxel {

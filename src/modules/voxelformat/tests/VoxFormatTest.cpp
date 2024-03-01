@@ -7,6 +7,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -15,6 +16,8 @@
 #include "vox_character.h"
 #include "vox_glasses.h"
 #include "8ontop.h"
+
+#define VOX_TEST_SAVE_TO_FILE 0
 
 namespace voxelformat {
 
@@ -39,6 +42,63 @@ TEST_F(VoxFormatTest, testDumpcubictest) {
 	dump("cubictest.vox", sceneGraph);
 }
 #endif
+
+TEST_F(VoxFormatTest, testLoadMaterials) {
+	VoxFormat f;
+	scenegraph::SceneGraph mvSceneGraph;
+	{
+		const io::FilePtr &file = open("test_material.vox");
+		ASSERT_TRUE(file->validHandle());
+		io::FileStream stream(file);
+		io::FileDescription fileDesc;
+		fileDesc.set(file->name());
+		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, mvSceneGraph, testLoadCtx));
+	}
+
+	palette::Palette mvPalette;
+	{
+		ASSERT_EQ(12u, mvSceneGraph.size());
+		scenegraph::SceneGraphNode *node = mvSceneGraph.firstModelNode();
+		ASSERT_TRUE(node != nullptr);
+		mvPalette = node->palette();
+	}
+
+	const core::String name = "test_material_vengi.vox";
+
+	scenegraph::SceneGraph sceneGraph;
+
+#if VOX_TEST_SAVE_TO_FILE
+	{
+		const io::FilePtr &filesave = open(name, io::FileMode::SysWrite);
+		io::FileStream stream(filesave);
+		ASSERT_TRUE(f.save(mvSceneGraph, name, stream, testSaveCtx));
+	}
+	{
+		const io::FilePtr &fileLoadAfterSave = open(name);
+		io::FileStream streamread(fileLoadAfterSave);
+		f.load(name, streamread, sceneGraph, testLoadCtx);
+	}
+#else
+	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
+
+	ASSERT_TRUE(f.save(mvSceneGraph, name, stream, testSaveCtx));
+	stream.seek(0);
+	f.load(name, stream, sceneGraph, testLoadCtx);
+#endif
+
+	ASSERT_EQ(12u, sceneGraph.size());
+	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
+	ASSERT_TRUE(node != nullptr);
+	const palette::Palette &palette = node->palette();
+	ASSERT_EQ(mvPalette.size(), palette.size());
+	for (size_t i = 0; i < palette.size(); ++i) {
+		EXPECT_EQ(mvPalette.color(i).r, palette.color(i).r) << "Invalid color at " << i;
+		EXPECT_EQ(mvPalette.color(i).g, palette.color(i).g) << "Invalid color at " << i;
+		EXPECT_EQ(mvPalette.color(i).b, palette.color(i).b) << "Invalid color at " << i;
+		EXPECT_NEAR(mvPalette.color(i).a, palette.color(i).a, 1) << "Invalid alpha at " << i;
+		EXPECT_EQ(mvPalette.material(i), palette.material(i)) << "Invalid material at " << i;
+	}
+}
 
 TEST_F(VoxFormatTest, testLoadCharacter) {
 	VoxFormat f;
@@ -167,13 +227,17 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 		sceneGraphsave.emplace(core::move(node));
 	}
 
-#define VOX_TEST_SAVE_TO_FILE 0
 #if VOX_TEST_SAVE_TO_FILE
-	const io::FilePtr &filesave = open(name, io::FileMode::SysWrite);
-	io::FileStream stream(filesave);
-	const io::FilePtr &fileLoadAfterSave = open(name);
-	io::FileStream streamread(fileLoadAfterSave.get());
-	f.load(name, streamread, sceneGraph, testLoadCtx);
+	{
+		const io::FilePtr &filesave = open(name, io::FileMode::SysWrite);
+		io::FileStream stream(filesave);
+		ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testSaveCtx));
+	}
+	{
+		const io::FilePtr &fileLoadAfterSave = open(name);
+		io::FileStream streamread(fileLoadAfterSave);
+		f.load(name, streamread, sceneGraph, testLoadCtx);
+	}
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
 

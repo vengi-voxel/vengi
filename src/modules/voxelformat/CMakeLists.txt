@@ -137,6 +137,7 @@ set(TEST_FILES
 	tests/minecraft_110.mca
 	tests/minecraft_113.mca
 	tests/magicavoxel.vox
+	tests/test_material.vox
 	tests/cube.mtl
 	tests/cube.obj
 	tests/cube.ply

@@ -207,7 +207,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
 					wrapBool(priv::readRGBScaledColor(stream, color))
-					palette.color(i) = color;
+					palette.setColor(i, color);
 				}
 			}
 			return palette.size();
@@ -418,7 +418,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
 					wrapBool(priv::readRGBScaledColor(stream, color));
-					palette.color(i) = color;
+					palette.setColor(i, color);
 				}
 			}
 		}

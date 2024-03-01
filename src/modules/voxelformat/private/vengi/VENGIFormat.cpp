@@ -122,13 +122,23 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 		wrapBool(stream.writeUInt32(palette.color(i).rgba))
 	}
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		wrapBool(stream.writeUInt32(palette.glowColor(i).rgba))
+		wrapBool(stream.writeUInt32(0)) // emit colors are not written anymore
 	}
 	const palette::PaletteIndicesArray &indices = palette.indices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrapBool(stream.writeUInt8(indices[i]))
 	}
-	wrapBool(stream.writeUInt32(0)) // TODO: slot for amount of material properties
+
+	wrapBool(stream.writeUInt32(palette.colorCount()))
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const palette::Material &material = palette.material(i);
+		wrapBool(stream.writeUInt32((uint32_t)material.type))
+		wrapBool(stream.writeUInt8(palette::MaterialProperty::MaterialMax - 1))
+		for (uint32_t n = 0u; n < palette::MaterialProperty::MaterialMax - 1; ++n) {
+			wrapBool(stream.writePascalStringUInt16LE(palette::MaterialPropertyNames[n]))
+			wrapBool(stream.writeFloat(material.value((palette::MaterialProperty)n)));
+		}
+	}
 	return true;
 }
 
@@ -222,9 +232,9 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		wrap(stream.readUInt32(colors[i].rgba))
 	}
-	palette::PaletteColorArray glowColors;
+	palette::PaletteColorArray emitColors;
 	for (int i = 0; i < palette.colorCount(); ++i) {
-		wrap(stream.readUInt32(glowColors[i].rgba))
+		wrap(stream.readUInt32(emitColors[i].rgba))
 	}
 	palette::PaletteIndicesArray &indices = palette.indices();
 	for (int i = 0; i < palette.colorCount(); ++i) {
@@ -232,10 +242,31 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 	}
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		palette.setColor(i, colors[i]);
-		palette.setGlowColor(i, glowColors[i]);
 	}
-	uint32_t palettePropertyCnt;
-	wrap(stream.readUInt32(palettePropertyCnt)) // TODO: slot for further extensions
+	uint32_t materialCount;
+	wrap(stream.readUInt32(materialCount))
+
+	// old non-material save
+	if (materialCount == 0u) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			palette.setEmit(i, emitColors[i].a > 0 ? 1.0f : 0.0f);
+		}
+	}
+
+	for (uint32_t i = 0; i < materialCount; ++i) {
+		uint32_t type;
+		wrap(stream.readUInt32(type))
+		palette.setMaterialType(i, (palette::MaterialType)type);
+		uint8_t propertyCount;
+		wrap(stream.readUInt8(propertyCount))
+		for (uint8_t i = 0; i < propertyCount; ++i) {
+			core::String name;
+			wrapBool(stream.readPascalStringUInt16LE(name))
+			float value;
+			wrap(stream.readFloat(value))
+			palette.setMaterialProperty(i, name, value);
+		}
+	}
 	node.setPalette(palette);
 	return true;
 }
