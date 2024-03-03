@@ -49,7 +49,7 @@ private:
 		glm::vec3 minVertex{0.0f};
 	};
 	using Stack = core::DynamicArray<core::Pair<int, int>>;
-	using MaterialMap = core::Map<uint64_t, int>;
+	using MaterialMap = core::Map<uint64_t, core::Array<int, palette::PaletteMaxColors>>;
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 					  const scenegraph::SceneGraphNode &graphNode, Stack &stack,
 					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
@@ -72,16 +72,16 @@ private:
 	 */
 	void save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
 									 tinygltf::Material &gltfMaterial) const;
-	uint32_t writeBuffer(const voxel::Mesh *mesh, io::SeekableWriteStream &os, bool withColor,
+	uint32_t writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::SeekableWriteStream &os, bool withColor,
 						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
 						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);
 	void generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
 						   MaterialMap &paletteMaterialIndices, const scenegraph::SceneGraphNode &node,
 						   const palette::Palette &palette, int &texcoordIndex);
-	bool savePrimitives(const glm::vec3 &pivotOffset, tinygltf::Model &gltfModel, tinygltf::Mesh &gltfMesh,
-						const voxel::Mesh *mesh, const palette::Palette &palette, bool withColor, bool withTexCoords,
-						bool colorAsFloat, bool exportNormals, bool applyTransform, int texcoordIndex,
-						const MaterialMap &materialMap);
+	bool savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOffset, tinygltf::Model &gltfModel,
+								   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh, const palette::Palette &palette,
+								   bool withColor, bool withTexCoords, bool colorAsFloat, bool exportNormals,
+								   bool applyTransform, int texcoordIndex, const MaterialMap &materialMap);
 
 	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
 					   tinygltf::Animation &gltfAnimation);
