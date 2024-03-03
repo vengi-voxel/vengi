@@ -185,7 +185,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 			tri.uv[j] = uvs[uvIndices[j]];
 		}
 		if (!textures.empty()) {
-			tri.texture = textures.begin()->second.get();
+			tri.texture = textures.begin()->second;
 		}
 		tris.push_back(tri);
 	}

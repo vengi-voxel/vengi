@@ -327,7 +327,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 		}
 		Log::debug("Faces: %i - material: %s", (int)meshMaterial.num_faces, mesh->materials[meshMaterial.index] ? "yes" : "no");
 
-		const image::Image *texture = nullptr;
+		image::ImagePtr texture;
 		float baseColorFactor = 1.0f;
 		glm::vec4 baseColorRGBA(1.0f);
 
@@ -345,7 +345,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
 			if (textureIter != textures.end()) {
-				texture = textureIter->second.get();
+				texture = textureIter->second;
 			}
 		} else {
 			Log::debug("No material assigned for mesh");

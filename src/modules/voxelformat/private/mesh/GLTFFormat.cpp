@@ -1515,13 +1515,16 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	}
 
 	Log::debug("Mesh node %i", gltfNodeIdx);
+
+	const glm::vec3 &scale = getScale();
+	TriCollection tris;
+
 	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
-	// TODO: directly fill the tris, don't create the vertices first - would save a lot of memory
-	core::DynamicArray<uint32_t> indices;
-	core::DynamicArray<GltfVertex> vertices;
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
+
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
-		const size_t indicesStart = vertices.size();
+		core::DynamicArray<uint32_t> indices;
+		core::DynamicArray<GltfVertex> vertices;
 		palette::Material material; // TODO: use the material from the gltf file
 		if (!loadAttributes(filename, textures, gltfModel, primitive, vertices, material)) {
 			Log::warn("Failed to load vertices");
@@ -1530,62 +1533,59 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		if (primitive.indices == -1) {
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
 				const size_t indicedEnd = vertices.size();
-				indices.clear();
-				for (size_t i = indicesStart; i < indicedEnd; ++i) {
+				for (size_t i = 0; i < indicedEnd; ++i) {
 					indices.push_back(i);
 				}
 			} else {
 				Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
 				return false;
 			}
-		} else if (!loadIndices(gltfModel, primitive, indices, indicesStart)) {
+		} else if (!loadIndices(gltfModel, primitive, indices, 0)) {
 			Log::warn("Failed to load indices");
 			return false;
 		}
-	}
-	if (indices.empty() || vertices.empty()) {
-		Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-				   gltfNode.mesh);
-		for (int childId : gltfNode.children) {
-			loadNode_r(filename, sceneGraph, textures, gltfModel, childId, parentNodeId);
-		}
-		return false;
-	}
-	Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
-			   gltfNode.mesh);
-
-	if (indices.size() % 3 != 0) {
-		Log::error("Unexpected amount of indices %i", (int)indices.size());
-		return false;
-	}
-
-	TriCollection tris;
-	const size_t maxIndices = indices.size();
-	tris.reserve(maxIndices / 3);
-	const glm::vec3 &scale = getScale();
-	for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-		voxelformat::TexturedTri tri;
-		for (size_t i = 0; i < 3; ++i) {
-			const size_t idx = indices[i + indexOffset];
-			tri.vertices[i] = vertices[idx].pos * scale;
-			tri.uv[i] = vertices[idx].uv;
-			tri.color[i] = vertices[idx].color;
-		}
-		const size_t textureIdx = indices[indexOffset];
-		const GltfVertex &v = vertices[textureIdx];
-		tri.wrapS = v.wrapS;
-		tri.wrapT = v.wrapT;
-		if (!v.texture.empty()) {
-			auto textureIter = textures.find(v.texture);
-			if (textureIter != textures.end()) {
-				tri.texture = textureIter->second.get();
-			} else {
-				Log::warn("Texture %s not found", v.texture.c_str());
+		if (indices.empty() || vertices.empty()) {
+			Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+					gltfNode.mesh);
+			for (int childId : gltfNode.children) {
+				loadNode_r(filename, sceneGraph, textures, gltfModel, childId, parentNodeId);
 			}
-		} else {
-			Log::trace("No texture for vertex found");
+			return false;
 		}
-		tris.push_back(tri);
+		Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+				gltfNode.mesh);
+
+		if (indices.size() % 3 != 0) {
+			Log::error("Unexpected amount of indices %i", (int)indices.size());
+			return false;
+		}
+
+		const size_t maxIndices = indices.size();
+		tris.reserve(tris.size() + maxIndices / 3);
+		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
+			voxelformat::TexturedTri tri;
+			for (size_t i = 0; i < 3; ++i) {
+				const size_t idx = indices[i + indexOffset];
+				tri.vertices[i] = vertices[idx].pos * scale;
+				tri.uv[i] = vertices[idx].uv;
+				tri.color[i] = vertices[idx].color;
+			}
+			const size_t textureIdx = indices[indexOffset];
+			const GltfVertex &v = vertices[textureIdx];
+			tri.wrapS = v.wrapS;
+			tri.wrapT = v.wrapT;
+			if (!v.texture.empty()) {
+				auto textureIter = textures.find(v.texture);
+				if (textureIter != textures.end()) {
+					tri.texture = textureIter->second;
+				} else {
+					Log::warn("Texture %s not found", v.texture.c_str());
+				}
+			} else {
+				Log::trace("No texture for vertex found");
+			}
+			tris.push_back(tri);
+		}
 	}
 
 	const int nodeId = voxelizeNode(gltfNode.name.c_str(), sceneGraph, tris, parentNodeId, false);

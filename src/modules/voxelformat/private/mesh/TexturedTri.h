@@ -11,7 +11,7 @@ namespace voxelformat {
 
 struct TexturedTri : public math::Tri {
 	TexturedTri() = default;
-	inline constexpr TexturedTri(const glm::vec3 (&vertices)[3], const glm::vec2 (&uv)[3], const image::Image *texture,
+	inline TexturedTri(const glm::vec3 (&vertices)[3], const glm::vec2 (&uv)[3], const image::ImagePtr &texture,
 								 const core::RGBA (&color)[3])
 		: math::Tri::Tri(vertices, color) {
 		for (int i = 0; i < 3; ++i) {
@@ -23,7 +23,7 @@ struct TexturedTri : public math::Tri {
 	virtual ~TexturedTri() = default;
 
 	glm::vec2 uv[3]{};
-	const image::Image *texture = nullptr;
+	image::ImagePtr texture;
 	image::TextureWrap wrapS = image::TextureWrap::Repeat;
 	image::TextureWrap wrapT = image::TextureWrap::Repeat;
 

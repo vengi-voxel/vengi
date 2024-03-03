@@ -37,7 +37,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 	pal.nippon();
 
 	voxelformat::TexturedTri tri;
-	tri.texture = texture.get();
+	tri.texture = texture;
 	for (int i = 0; i < 256; ++i) {
 		tri.uv[0] = glm::vec2((float)i / 256.0f, 0.0f);
 		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);

@@ -27,7 +27,7 @@ TEST_F(TexturedTriTest, testColorAt4x4) {
 	ASSERT_EQ(h, texture->height());
 
 	voxelformat::TexturedTri tri;
-	tri.texture = texture.get();
+	tri.texture = texture;
 	for (int i = 0; i < w; ++i) {
 		for (int j = 0; j < h; ++j) {
 			tri.uv[0] = image::Image::uv(i, j, w, h);
