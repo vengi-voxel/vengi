@@ -271,7 +271,9 @@ void Mesh::calculateNormals() {
 	}
 
 	for (size_t i = 0; i < _normals.size(); ++i) {
-		_normals[i] = glm::normalize(_normals[i]);
+		if (glm::length(_normals[i]) > 0.0f) {
+			_normals[i] = glm::normalize(_normals[i]);
+		}
 	}
 }
 
