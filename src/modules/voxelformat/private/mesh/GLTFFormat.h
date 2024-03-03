@@ -75,13 +75,15 @@ private:
 	uint32_t writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::SeekableWriteStream &os, bool withColor,
 						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
 						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);
-	void generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
-						   MaterialMap &paletteMaterialIndices, const scenegraph::SceneGraphNode &node,
-						   const palette::Palette &palette, int &texcoordIndex);
+	int saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const;
+	int saveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const;
+	void generateMaterials(bool withTexCoords, tinygltf::Model &gltfModel, MaterialMap &paletteMaterialIndices,
+						   const scenegraph::SceneGraphNode &node, const palette::Palette &palette,
+						   int &texcoordIndex) const;
 	bool savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOffset, tinygltf::Model &gltfModel,
 								   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh, const palette::Palette &palette,
 								   bool withColor, bool withTexCoords, bool colorAsFloat, bool exportNormals,
-								   bool applyTransform, int texcoordIndex, const MaterialMap &materialMap);
+								   bool applyTransform, int texcoordIndex, const MaterialMap &paletteMaterialIndices);
 
 	void saveAnimation(int targetNode, tinygltf::Model &m, const scenegraph::SceneGraphNode &node,
 					   tinygltf::Animation &gltfAnimation);

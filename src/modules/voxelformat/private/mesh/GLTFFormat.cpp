@@ -298,7 +298,7 @@ bool GLTFFormat::savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOf
 										   tinygltf::Mesh &gltfMesh, const voxel::Mesh *mesh,
 										   const palette::Palette &palette, bool withColor, bool withTexCoords,
 										   bool colorAsFloat, bool exportNormals, bool applyTransform,
-										   int texcoordIndex, const MaterialMap &materialMap) {
+										   int texcoordIndex, const MaterialMap &paletteMaterialIndices) {
 
 	const size_t expectedSize =
 		mesh->getNoOfIndices() * sizeof(voxel::IndexType) + mesh->getNoOfVertices() * 10 * sizeof(float);
@@ -403,9 +403,11 @@ bool GLTFFormat::savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOf
 		} else if (withColor) {
 			gltfMeshPrimitive.attributes["COLOR_0"] = (int)gltfModel.accessors.size() + (exportNormals ? 3 : 2);
 		}
-		auto paletteMaterialIter = materialMap.find(palette.hash());
-		core_assert(paletteMaterialIter != materialMap.end());
-		gltfMeshPrimitive.material = paletteMaterialIter->value[idx];
+		auto paletteMaterialIter = paletteMaterialIndices.find(palette.hash());
+		core_assert(paletteMaterialIter != paletteMaterialIndices.end());
+		const int material = paletteMaterialIter->value[idx];
+		core_assert(material >= 0);
+		gltfMeshPrimitive.material = material;
 		gltfMeshPrimitive.mode = TINYGLTF_MODE_TRIANGLES;
 		gltfMesh.primitives.emplace_back(core::move(gltfMeshPrimitive));
 	}
@@ -515,72 +517,79 @@ void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 	addExtension(gltfModel, "KHR_materials_pbrSpecularGlossiness");
 }
 
-void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
-								   MaterialMap &paletteMaterialIndices, const scenegraph::SceneGraphNode &node,
-								   const palette::Palette &palette, int &texcoordIndex) {
+int GLTFFormat::saveEmissiveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const {
+	int emissiveTextureIndex = (int)gltfModel.textures.size();
+
+	bool hasEmit = false;
+	core::RGBA colors[palette::PaletteMaxColors];
+	for (int i = 0; i < palette::PaletteMaxColors; i++) {
+		if (palette.hasEmit(i)) {
+			hasEmit = true;
+		}
+		colors[i] = palette.emitColor(i);
+	}
+	if (hasEmit) {
+		const int emissiveImageIndex = (int)gltfModel.images.size();
+
+		tinygltf::Image gltfEmitImage;
+		image::Image image("pal");
+		image.loadRGBA((const unsigned char *)colors, palette::PaletteMaxColors, 1);
+		const core::String &pal64 = image.pngBase64();
+		gltfEmitImage.uri = "data:image/png;base64,";
+		gltfEmitImage.width = palette::PaletteMaxColors;
+		gltfEmitImage.height = 1;
+		gltfEmitImage.component = 4;
+		gltfEmitImage.bits = 32;
+		gltfEmitImage.uri += pal64.c_str();
+		gltfModel.images.emplace_back(core::move(gltfEmitImage));
+
+		tinygltf::Texture gltfEmitTexture;
+		gltfEmitTexture.source = emissiveImageIndex;
+		gltfModel.textures.emplace_back(core::move(gltfEmitTexture));
+	} else {
+		emissiveTextureIndex = -1;
+	}
+	return emissiveTextureIndex;
+}
+
+int GLTFFormat::saveTexture(tinygltf::Model &gltfModel, const palette::Palette &palette) const {
+	const int textureIndex = (int)gltfModel.textures.size();
+	const int imageIndex = (int)gltfModel.images.size();
+
+	tinygltf::Image gltfPaletteImage;
+	image::Image image("pal");
+	core::RGBA colors[palette::PaletteMaxColors];
+	for (int i = 0; i < palette::PaletteMaxColors; i++) {
+		colors[i] = palette.color(i);
+	}
+	image.loadRGBA((const unsigned char *)colors, palette::PaletteMaxColors, 1);
+	const core::String &pal64 = image.pngBase64();
+	gltfPaletteImage.uri = "data:image/png;base64,";
+	gltfPaletteImage.width = palette::PaletteMaxColors;
+	gltfPaletteImage.height = 1;
+	gltfPaletteImage.component = 4;
+	gltfPaletteImage.bits = 32;
+	gltfPaletteImage.uri += pal64.c_str();
+	gltfModel.images.emplace_back(core::move(gltfPaletteImage));
+
+	tinygltf::Texture gltfPaletteTexture;
+	gltfPaletteTexture.source = imageIndex;
+	gltfModel.textures.emplace_back(core::move(gltfPaletteTexture));
+	return textureIndex;
+}
+
+void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfModel, MaterialMap &paletteMaterialIndices,
+								   const scenegraph::SceneGraphNode &node, const palette::Palette &palette,
+								   int &texcoordIndex) const {
 	const auto paletteMaterialIter = paletteMaterialIndices.find(palette.hash());
 	if (paletteMaterialIter == paletteMaterialIndices.end()) {
 		const core::String hashId = core::String::format("%" PRIu64, palette.hash());
 
-		const int imageIndex = (int)gltfModel.images.size();
-		{
-			tinygltf::Image gltfPaletteImage;
-			image::Image image("pal");
-			core::RGBA colors[palette::PaletteMaxColors];
-			for (int i = 0; i < palette::PaletteMaxColors; i++) {
-				colors[i] = palette.color(i);
-			}
-			image.loadRGBA((const unsigned char *)colors, palette::PaletteMaxColors, 1);
-			const core::String &pal64 = image.pngBase64();
-			gltfPaletteImage.uri = "data:image/png;base64,";
-			gltfPaletteImage.width = palette::PaletteMaxColors;
-			gltfPaletteImage.height = 1;
-			gltfPaletteImage.component = 4;
-			gltfPaletteImage.bits = 32;
-			gltfPaletteImage.uri += pal64.c_str();
-			gltfModel.images.emplace_back(core::move(gltfPaletteImage));
-		}
-
-		const int textureIndex = (int)gltfModel.textures.size();
-		{
-			tinygltf::Texture gltfPaletteTexture;
-			gltfPaletteTexture.source = imageIndex;
-			gltfModel.textures.emplace_back(core::move(gltfPaletteTexture));
-		}
-
-		int emissiveTextureIndex = (int)gltfModel.textures.size();
-		{
-			const int emissiveImageIndex = (int)gltfModel.images.size();
-			bool hasEmit = false;
-			core::RGBA colors[palette::PaletteMaxColors];
-			for (int i = 0; i < palette::PaletteMaxColors; i++) {
-				if (palette.hasEmit(i)) {
-					hasEmit = true;
-				}
-				colors[i] = palette.emitColor(i);
-			}
-			if (hasEmit) {
-				tinygltf::Image gltfEmitImage;
-				image::Image image("pal");
-				image.loadRGBA((const unsigned char *)colors, palette::PaletteMaxColors, 1);
-				const core::String &pal64 = image.pngBase64();
-				gltfEmitImage.uri = "data:image/png;base64,";
-				gltfEmitImage.width = palette::PaletteMaxColors;
-				gltfEmitImage.height = 1;
-				gltfEmitImage.component = 4;
-				gltfEmitImage.bits = 32;
-				gltfEmitImage.uri += pal64.c_str();
-				gltfModel.images.emplace_back(core::move(gltfEmitImage));
-
-				tinygltf::Texture gltfEmitTexture;
-				gltfEmitTexture.source = emissiveImageIndex;
-				gltfModel.textures.emplace_back(core::move(gltfEmitTexture));
-			} else {
-				emissiveTextureIndex = -1;
-			}
-		}
+		const int textureIndex = saveTexture(gltfModel, palette);
+		const int emissiveTextureIndex = saveEmissiveTexture(gltfModel, palette);
 
 		core::Array<int, palette::PaletteMaxColors> materialIds;
+		materialIds.fill(-1);
 		for (int i = 0; i < palette.colorCount(); i++) {
 			if (palette.color(i).a == 0) {
 				continue;
@@ -594,14 +603,17 @@ void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf:
 				if (emissiveTextureIndex != -1) {
 					gltfMaterial.emissiveTexture.index = emissiveTextureIndex;
 					gltfMaterial.emissiveTexture.texCoord = texcoordIndex;
-					gltfMaterial.emissiveFactor[0] = material.value(palette::MaterialProperty::MaterialEmit);
-					gltfMaterial.emissiveFactor[1] = gltfMaterial.emissiveFactor[2] = gltfMaterial.emissiveFactor[0];
 				}
-			} else if (withColor) {
-				gltfMaterial.pbrMetallicRoughness.baseColorFactor = {1.0f, 1.0f, 1.0f, 1.0f};
 			}
 
 			gltfMaterial.name = hashId.c_str();
+			gltfMaterial.alphaMode = color.a < 255 ? "BLEND" : "OPAQUE";
+			gltfMaterial.doubleSided = false;
+
+			if (material.has(palette::MaterialProperty::MaterialEmit)) {
+				gltfMaterial.emissiveFactor[0] = material.value(palette::MaterialProperty::MaterialEmit);
+				gltfMaterial.emissiveFactor[1] = gltfMaterial.emissiveFactor[2] = gltfMaterial.emissiveFactor[0];
+			}
 			if (material.has(palette::MaterialProperty::MaterialRoughness)) {
 				gltfMaterial.pbrMetallicRoughness.roughnessFactor =
 					material.value(palette::MaterialProperty::MaterialRoughness);
@@ -610,14 +622,14 @@ void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf:
 				gltfMaterial.pbrMetallicRoughness.metallicFactor =
 					material.value(palette::MaterialProperty::MaterialMetal);
 			}
-			gltfMaterial.alphaMode = color.a < 255 ? "BLEND" : "OPAQUE";
-			gltfMaterial.doubleSided = false;
 
 			if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal()) {
 				save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
 			} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
 				save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
 			}
+			save_KHR_materials_emissive_strength(material, gltfMaterial, gltfModel);
+			save_KHR_materials_ior(material, gltfMaterial, gltfModel);
 
 			int materialId = (int)gltfModel.materials.size();
 			gltfModel.materials.emplace_back(core::move(gltfMaterial));
@@ -668,7 +680,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 		int texcoordIndex = 0;
 		if (node.isModelNode()) {
-			generateMaterials(withColor, withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
+			generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
 		}
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
@@ -679,9 +691,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int meshExtIdx = 0;
 		core_assert_always(meshIdxNodeMap.get(nodeId, meshExtIdx));
 		const MeshExt &meshExt = meshes[meshExtIdx];
-
-		const auto paletteMaterialIter = paletteMaterialIndices.find(palette.hash());
-		core_assert(paletteMaterialIter != paletteMaterialIndices.end());
 
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
