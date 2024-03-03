@@ -53,6 +53,9 @@ public:
 	bool loadBGRA(io::ReadStream& stream, int w, int h);
 
 	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat) const;
+	/**
+	 * @sa MeshFormat::paletteUV()
+	 */
 	glm::vec2 uv(int x, int y) const;
 	static glm::vec2 uv(int x, int y, int w, int h);
 

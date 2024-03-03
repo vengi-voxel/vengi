@@ -70,6 +70,7 @@ protected:
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
+	 * @sa image::Image::uv()
 	 */
 	static glm::vec2 paletteUV(int colorIndex);
 

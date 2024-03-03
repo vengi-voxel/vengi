@@ -357,6 +357,7 @@ glm::vec2 Image::uv(int x, int y) const {
 }
 
 glm::vec2 Image::uv(int x, int y, int w, int h) {
+	// sample the upper left corner of the pixel
 	return glm::vec2((float)x / (float)w, ((float)h - (float)y) / (float)h);
 }
 
