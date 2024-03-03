@@ -33,6 +33,7 @@ namespace voxelformat {
  *
  * @li Viewer including animations: https://sandbox.babylonjs.com/
  * @li GLTF-Validator: https://github.khronos.org/glTF-Validator/
+ * @li GLTF Extensions: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos
  *
  * @ingroup Formats
  */
@@ -52,9 +53,28 @@ private:
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 					  const scenegraph::SceneGraphNode &graphNode, Stack &stack,
 					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
-	uint32_t writeBuffer(const voxel::Mesh *mesh, io::SeekableWriteStream &os, bool withColor, bool withTexCoords,
-						 bool colorAsFloat, bool exportNormals, bool applyTransform, const glm::vec3 &pivotOffset,
-						 const palette::Palette &palette, Bounds &bounds);
+	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
+	 */
+	void save_KHR_materials_emissive_strength(const palette::Material &material,
+											  tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior
+	 */
+	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
+	 */
+	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
+												  tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular
+	 */
+	void save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
+									 tinygltf::Material &gltfMaterial) const;
+	uint32_t writeBuffer(const voxel::Mesh *mesh, io::SeekableWriteStream &os, bool withColor,
+						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
+						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);
 	void generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
 						   MaterialMap &paletteMaterialIndices, const scenegraph::SceneGraphNode &node,
 						   const palette::Palette &palette, int &texcoordIndex);
@@ -81,17 +101,22 @@ private:
 		image::TextureWrap wrapS = image::TextureWrap::Repeat;
 		image::TextureWrap wrapT = image::TextureWrap::Repeat;
 		core::RGBA baseColor{255, 255, 255, 255};
-		palette::Material material; // TODO: use me
 	};
 	void loadTexture(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
 					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
+	void load_KHR_materials_emissive_strength(palette::Material &material,
+											  const tinygltf::Material &gltfMaterial) const;
+	void load_KHR_materials_pbrSpecularGlossiness(palette::Material &material,
+												  const tinygltf::Material &gltfMaterial) const;
+	void load_KHR_materials_specular(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
+	void load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
 	bool loadMaterial(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-					  GltfMaterialData &materialData) const;
+					  GltfMaterialData &materialData, palette::Material &material) const;
 	bool loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-						core::DynamicArray<GltfVertex> &vertices) const;
+						core::DynamicArray<GltfVertex> &vertices, palette::Material &material) const;
 
 	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
 							  const tinygltf::AnimationChannel &gltfAnimChannel,

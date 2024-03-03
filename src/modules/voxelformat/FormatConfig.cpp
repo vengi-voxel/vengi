@@ -79,7 +79,11 @@ bool FormatConfig::init() {
 				   "Create own palette from textures or colors - not used for palette formats",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatPointCloudSize, "1", core::CV_NOPERSIST, "Specify the side length for the voxels when loading a point cloud");
-
+	core::Var::get(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness, "true", core::CV_NOPERSIST,
+				   "Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format",
+				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxFormatGLTF_KHR_materials_specular, "false", core::CV_NOPERSIST,
+				   "Apply KHR_materials_specular when saving into the gltf format", core::Var::boolValidator);
 	return true;
 }
 

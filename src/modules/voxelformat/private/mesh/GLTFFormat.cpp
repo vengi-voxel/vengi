@@ -428,6 +428,76 @@ bool GLTFFormat::savePrimitives(const glm::vec3 &pivotOffset, tinygltf::Model &g
 	return true;
 }
 
+void GLTFFormat::save_KHR_materials_emissive_strength(const palette::Material &material,
+													  tinygltf::Material &gltfMaterial) const {
+	if (!material.has(palette::MaterialProperty::MaterialEmit)) {
+		return;
+	}
+	// TODO: needed?
+}
+
+void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial) const {
+	if (!material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+		return;
+	}
+	const float v = material.value(palette::MaterialProperty::MaterialIndexOfRefraction);
+	tinygltf::Value::Object sg;
+	sg["ior"] = tinygltf::Value(v);
+	gltfMaterial.extensions["KHR_materials_ior"] = tinygltf::Value(sg);
+}
+
+void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
+													 tinygltf::Material &gltfMaterial) const {
+	if (!material.has(palette::MaterialProperty::MaterialSpecular)) {
+		return;
+	}
+	const float specular = material.value(palette::MaterialProperty::MaterialSpecular);
+	tinygltf::Value::Object sg;
+	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	std::vector<tinygltf::Value> specularFactor(3);
+	specularFactor[0] = tinygltf::Value(fcolor[0] * specular);
+	specularFactor[1] = tinygltf::Value(fcolor[1] * specular);
+	specularFactor[2] = tinygltf::Value(fcolor[2] * specular);
+	sg["specularFactor"] = tinygltf::Value(specularFactor);
+	gltfMaterial.extensions["KHR_materials_specular"] = tinygltf::Value(sg);
+}
+
+void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
+													 tinygltf::Material &gltfMaterial) const {
+	if (!material.has(palette::MaterialProperty::MaterialDiffusion) &&
+		!material.has(palette::MaterialProperty::MaterialSpecular) &&
+		!material.has(palette::MaterialProperty::MaterialRoughness)) {
+		return;
+	}
+	tinygltf::Value::Object sg;
+	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	{
+		std::vector<tinygltf::Value> diffuseFactor(4);
+		const float diffusion = material.value(palette::MaterialProperty::MaterialDiffusion);
+		diffuseFactor[0] = tinygltf::Value(fcolor[0] * diffusion);
+		diffuseFactor[1] = tinygltf::Value(fcolor[1] * diffusion);
+		diffuseFactor[2] = tinygltf::Value(fcolor[2] * diffusion);
+		diffuseFactor[3] = tinygltf::Value(fcolor[3]); // TODO: maybe the magicavoxel transparent factor would fit here?
+		sg["diffuseFactor"] = tinygltf::Value(diffuseFactor);
+	}
+	{
+		std::vector<tinygltf::Value> specularFactor(3);
+		const float specular = material.value(palette::MaterialProperty::MaterialSpecular);
+		specularFactor[0] = tinygltf::Value(fcolor[0] * specular);
+		specularFactor[1] = tinygltf::Value(fcolor[1] * specular);
+		specularFactor[2] = tinygltf::Value(fcolor[2] * specular);
+		sg["specularFactor"] = tinygltf::Value(specularFactor);
+		if (material.has(palette::MaterialProperty::MaterialGlossiness)) {
+			const float glossiness = material.value(palette::MaterialProperty::MaterialGlossiness);
+			sg["glossinessFactor"] = tinygltf::Value(glossiness);
+		} else {
+			sg["glossinessFactor"] =
+				tinygltf::Value(1.0 - material.value(palette::MaterialProperty::MaterialRoughness));
+		}
+	}
+	gltfMaterial.extensions["KHR_materials_pbrSpecularGlossiness"] = tinygltf::Value(sg);
+}
+
 void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
 								   MaterialMap &paletteMaterialIndices, const scenegraph::SceneGraphNode &node,
 								   const palette::Palette &palette, int &texcoordIndex) {
@@ -973,9 +1043,122 @@ void GLTFFormat::loadTexture(const core::String &filename, core::StringMap<image
 	Log::debug("Texcoords: %s", materialData.texCoordAttribute.c_str());
 }
 
+void GLTFFormat::load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const {
+	auto extIter = gltfMaterial.extensions.find("KHR_materials_ior");
+	if (extIter == gltfMaterial.extensions.end()) {
+		return;
+	}
+	const tinygltf::Value::Object &sg = extIter->second.Get<tinygltf::Value::Object>();
+	auto iorIter = sg.find("ior");
+	if (iorIter != sg.end()) {
+		const float v = (float)iorIter->second.Get<double>();
+		material.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, v);
+	}
+}
+
+void GLTFFormat::load_KHR_materials_specular(palette::Material &material,
+											 const tinygltf::Material &gltfMaterial) const {
+	auto extIter = gltfMaterial.extensions.find("KHR_materials_specular");
+	if (extIter == gltfMaterial.extensions.end()) {
+		return;
+	}
+	const tinygltf::Value::Object &sg = extIter->second.Get<tinygltf::Value::Object>();
+	auto specularColorFactorIter = sg.find("specularColorFactor");
+	if (specularColorFactorIter != sg.end()) {
+		const tinygltf::Value &color = specularColorFactorIter->second;
+		const float r = (float)color.Get(0).Get<double>();
+		const float g = (float)color.Get(1).Get<double>();
+		const float b = (float)color.Get(2).Get<double>();
+		// TODO:
+		(void)r;
+		(void)g;
+		(void)b;
+	}
+	auto specularFactorIter = sg.find("specularFactor");
+	if (specularFactorIter != sg.end()) {
+		const float v = (float)specularFactorIter->second.Get<double>();
+		material.setValue(palette::MaterialProperty::MaterialSpecular, v);
+	}
+}
+
+void GLTFFormat::load_KHR_materials_pbrSpecularGlossiness(palette::Material &material,
+														  const tinygltf::Material &gltfMaterial) const {
+	auto extIter = gltfMaterial.extensions.find("KHR_materials_pbrSpecularGlossiness");
+	if (extIter == gltfMaterial.extensions.end()) {
+		return;
+	}
+	const tinygltf::Value::Object &sg = extIter->second.Get<tinygltf::Value::Object>();
+
+	auto diffuseFactorIter = sg.find("diffuseFactor");
+	if (diffuseFactorIter != sg.end()) {
+		const tinygltf::Value &color = diffuseFactorIter->second;
+		const float r = (float)color.Get(0).Get<double>();
+		const float g = (float)color.Get(1).Get<double>();
+		const float b = (float)color.Get(2).Get<double>();
+		const float a = (float)color.Get(3).Get<double>();
+		// TODO:
+		(void)r;
+		(void)g;
+		(void)b;
+		(void)a;
+	}
+
+	auto diffuseTextureIter = sg.find("diffuseTexture");
+	if (diffuseTextureIter != sg.end()) {
+		const tinygltf::Value::Object &tex = diffuseTextureIter->second.Get<tinygltf::Value::Object>();
+		const auto iter = tex.find("index");
+		if (iter != tex.end()) {
+			const int idx = iter->second.Get<int>();
+			(void)idx; // TODO:
+		}
+	}
+
+	auto glossinessFactorIter = sg.find("glossinessFactor");
+	if (glossinessFactorIter != sg.end()) {
+		const float v = (float)glossinessFactorIter->second.Get<double>();
+		material.setValue(palette::MaterialProperty::MaterialGlossiness, v);
+	}
+
+	auto specularFactorIter = sg.find("specularFactor");
+	if (specularFactorIter != sg.end()) {
+		const tinygltf::Value &color = specularFactorIter->second;
+		const float r = (float)color.Get(0).Get<double>();
+		const float g = (float)color.Get(1).Get<double>();
+		const float b = (float)color.Get(2).Get<double>();
+		// TODO:
+		material.setValue(palette::MaterialProperty::MaterialSpecular, r * g * b);
+	}
+
+	auto specularGlossinessTextureIter = sg.find("specularGlossinessTexture");
+	if (specularGlossinessTextureIter != sg.end()) {
+		const tinygltf::Value::Object &tex = specularGlossinessTextureIter->second.Get<tinygltf::Value::Object>();
+		const auto iter = tex.find("index");
+		if (iter != tex.end()) {
+			const int idx = iter->second.Get<int>();
+			(void)idx; // TODO:
+		}
+	}
+}
+
+void GLTFFormat::load_KHR_materials_emissive_strength(palette::Material &material,
+													  const tinygltf::Material &gltfMaterial) const {
+	auto extIter = gltfMaterial.extensions.find("KHR_materials_emissive_strength");
+	if (extIter == gltfMaterial.extensions.end()) {
+		return;
+	}
+	const tinygltf::Value::Object &emissiveStrength = extIter->second.Get<tinygltf::Value::Object>();
+	const auto strengthIter = emissiveStrength.find("emissiveStrength");
+	if (strengthIter == emissiveStrength.end()) {
+		return;
+	}
+	const float strength = (float)strengthIter->second.Get<double>();
+	material.setValue(palette::MaterialProperty::MaterialEmit,
+								   material.value(palette::MaterialProperty::MaterialEmit) * strength);
+}
+
 bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 							  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-							  GltfMaterialData &materialData) const {
+							  GltfMaterialData &materialData, palette::Material &material) const {
 	Log::debug("Primitive material: %i", gltfPrimitive.material);
 	Log::debug("Primitive mode: %i", gltfPrimitive.mode);
 	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)gltfModel.materials.size()) {
@@ -989,9 +1172,13 @@ bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<imag
 		}
 		const glm::vec4 color = glm::make_vec4(&gltfMaterial->pbrMetallicRoughness.baseColorFactor[0]);
 		materialData.baseColor = core::Color::getRGBA(color);
-		materialData.material.setValue(palette::MaterialProperty::MaterialRoughness, gltfMaterial->pbrMetallicRoughness.roughnessFactor);
-		materialData.material.setValue(palette::MaterialProperty::MaterialMetal, gltfMaterial->pbrMetallicRoughness.metallicFactor);
-		// materialData.material.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial->emissiveFactor);
+		material.setValue(palette::MaterialProperty::MaterialRoughness, gltfMaterial->pbrMetallicRoughness.roughnessFactor);
+		material.setValue(palette::MaterialProperty::MaterialMetal, gltfMaterial->pbrMetallicRoughness.metallicFactor);
+		// material.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial->emissiveFactor);
+		load_KHR_materials_emissive_strength(material, *gltfMaterial);
+		load_KHR_materials_pbrSpecularGlossiness(material, *gltfMaterial);
+		load_KHR_materials_specular(material, *gltfMaterial);
+		load_KHR_materials_ior(material, *gltfMaterial);
 	}
 
 	return true;
@@ -999,9 +1186,9 @@ bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<imag
 
 bool GLTFFormat::loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 								const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-								core::DynamicArray<GltfVertex> &vertices) const {
+								core::DynamicArray<GltfVertex> &vertices, palette::Material &material) const {
 	GltfMaterialData gltfMaterial;
-	if (!loadMaterial(filename, textures, gltfModel, gltfPrimitive, gltfMaterial)) {
+	if (!loadMaterial(filename, textures, gltfModel, gltfPrimitive, gltfMaterial, material)) {
 		return false;
 	}
 
@@ -1271,7 +1458,8 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
 		const size_t indicesStart = vertices.size();
-		if (!loadAttributes(filename, textures, gltfModel, primitive, vertices)) {
+		palette::Material material; // TODO: use the material from the gltf file
+		if (!loadAttributes(filename, textures, gltfModel, primitive, vertices, material)) {
 			Log::warn("Failed to load vertices");
 			continue;
 		}

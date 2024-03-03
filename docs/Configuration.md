@@ -112,6 +112,8 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            |
 | `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   |
 | `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   |
+| `voxformat_gltf_khr_materials_pbrspecularglossiness` | Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files |
+| `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files       |
 | `voxformat_merge`             | Merge all models into one object                                                         |
 | `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats |
 | `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       |

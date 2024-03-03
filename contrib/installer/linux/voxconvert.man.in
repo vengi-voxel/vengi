@@ -381,6 +381,10 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_colorasfloat\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)
 .PP
+\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files
+.PP
+\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular extension on saving gltf files
+.PP
 \fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
 .PP
 \fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
