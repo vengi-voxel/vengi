@@ -4,9 +4,11 @@
 
 #include "AbstractVoxFormatTest.h"
 #include "io/File.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "io/FileStream.h"
 
@@ -84,6 +86,48 @@ TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	scenegraph::SceneGraph sceneGraph;
 	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
 	EXPECT_TRUE(sceneGraph.size() > 0);
+}
+
+TEST_F(GLTFFormatTest, DISABLED_testMaterials) {
+	// load the mv scenegraph
+	VoxFormat mv;
+	scenegraph::SceneGraph mvSceneGraph;
+	ASSERT_TRUE(loadGroups("test_material.vox", mv, mvSceneGraph));
+	ASSERT_EQ(12u, mvSceneGraph.size());
+	// now save as gltf
+	ASSERT_TRUE(saveSceneGraph(mvSceneGraph, "test_material.gltf"));
+	// load the gltf scenegraph
+	GLTFFormat gltf;
+	scenegraph::SceneGraph gltfSceneGraph;
+	ASSERT_TRUE(loadGroups("test_material.gltf", gltf, gltfSceneGraph));
+	ASSERT_EQ(12u, gltfSceneGraph.size());
+	// compare the materials
+	for (auto iter = mvSceneGraph.beginModel(), iter2 = gltfSceneGraph.beginModel(); iter != mvSceneGraph.end(); ++iter, ++iter2) {
+		const scenegraph::SceneGraphNode &mvNode = *iter;
+		const scenegraph::SceneGraphNode &gltfNode = *iter2;
+		const palette::Palette &mvPalette = mvNode.palette();
+		const palette::Palette &gltfPalette = gltfNode.palette();
+		for (int i = 0; i < gltfPalette.colorCount(); ++i) {
+			int foundColorMatch = -1;
+			int foundMaterialMatch = -1;
+			const palette::Material &gltfMaterial = gltfPalette.material(i);
+			for (int j = 0; j < mvPalette.colorCount(); ++j) {
+				// check if the color matches the gltf palette color
+				if (gltfPalette.color(i) != mvPalette.color(j)) {
+					continue;
+				}
+				foundColorMatch = true;
+				const palette::Material &mvMaterial = mvPalette.material(j);
+				if (mvMaterial == gltfMaterial) {
+					foundMaterialMatch = j;
+					break;
+				}
+			}
+			ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the magicavoxel palette";
+			ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << gltfMaterial
+											  << " versus " << mvPalette.material(foundColorMatch);
+		}
+	}
 }
 
 } // namespace voxelformat

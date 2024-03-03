@@ -66,6 +66,7 @@ struct Material {
 	float media = 0.0f;
 
 	bool operator==(const Material &rhs) const;
+	bool operator!=(const Material &rhs) const;
 	bool has(MaterialProperty n) const;
 	float value(MaterialProperty n) const;
 	void setValue(MaterialProperty n, float value);

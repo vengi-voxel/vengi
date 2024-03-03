@@ -36,6 +36,10 @@
 
 namespace palette {
 
+bool Material::operator!=(const Material &rhs) const {
+	return !(*this == rhs);
+}
+
 bool Material::operator==(const Material &rhs) const {
 	if (mask != rhs.mask) {
 		return false;
