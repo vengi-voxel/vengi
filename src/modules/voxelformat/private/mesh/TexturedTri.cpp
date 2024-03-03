@@ -21,7 +21,8 @@ glm::vec2 TexturedTri::centerUV() const {
 
 core::RGBA TexturedTri::centerColor() const {
 	if (texture) {
-		return texture->colorAt(centerUV(), wrapS, wrapT);
+		const glm::vec2 &c = centerUV();
+		return texture->colorAt(c, wrapS, wrapT);
 	}
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }
