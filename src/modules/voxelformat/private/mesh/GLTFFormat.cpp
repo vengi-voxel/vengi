@@ -433,15 +433,24 @@ bool GLTFFormat::savePrimitivesPerMaterial(uint8_t idx, const glm::vec3 &pivotOf
 	return true;
 }
 
+static void addExtension(tinygltf::Model &gltfModel, const core::String &extension) {
+	std::string ext = extension.c_str();
+	if (core::find(gltfModel.extensionsUsed.begin(), gltfModel.extensionsUsed.end(), ext) ==
+		gltfModel.extensionsUsed.end()) {
+		gltfModel.extensionsUsed.push_back(ext);
+	}
+}
+
 void GLTFFormat::save_KHR_materials_emissive_strength(const palette::Material &material,
-													  tinygltf::Material &gltfMaterial) const {
+													  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialEmit)) {
 		return;
 	}
 	// TODO: needed?
+	// addExtension(gltfModel, "KHR_materials_emissive_strength");
 }
 
-void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial) const {
+void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
 		return;
 	}
@@ -449,10 +458,11 @@ void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinyg
 	tinygltf::Value::Object sg;
 	sg["ior"] = tinygltf::Value(v);
 	gltfMaterial.extensions["KHR_materials_ior"] = tinygltf::Value(sg);
+	addExtension(gltfModel, "KHR_materials_ior");
 }
 
 void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
-													 tinygltf::Material &gltfMaterial) const {
+													 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialSpecular)) {
 		return;
 	}
@@ -465,10 +475,11 @@ void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, 
 	specularFactor[2] = tinygltf::Value(fcolor[2] * specular);
 	sg["specularFactor"] = tinygltf::Value(specularFactor);
 	gltfMaterial.extensions["KHR_materials_specular"] = tinygltf::Value(sg);
+	addExtension(gltfModel, "KHR_materials_specular");
 }
 
 void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
-													 tinygltf::Material &gltfMaterial) const {
+													 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialDiffusion) &&
 		!material.has(palette::MaterialProperty::MaterialSpecular) &&
 		!material.has(palette::MaterialProperty::MaterialRoughness)) {
@@ -501,6 +512,7 @@ void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 		}
 	}
 	gltfMaterial.extensions["KHR_materials_pbrSpecularGlossiness"] = tinygltf::Value(sg);
+	addExtension(gltfModel, "KHR_materials_pbrSpecularGlossiness");
 }
 
 void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf::Model &gltfModel,
@@ -602,9 +614,9 @@ void GLTFFormat::generateMaterials(bool withColor, bool withTexCoords, tinygltf:
 			gltfMaterial.doubleSided = false;
 
 			if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal()) {
-				save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial);
+				save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
 			} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
-				save_KHR_materials_specular(material, color, gltfMaterial);
+				save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
 			}
 
 			int materialId = (int)gltfModel.materials.size();

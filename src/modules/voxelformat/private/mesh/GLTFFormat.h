@@ -57,21 +57,21 @@ private:
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
 	 */
 	void save_KHR_materials_emissive_strength(const palette::Material &material,
-											  tinygltf::Material &gltfMaterial) const;
+											  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior
 	 */
-	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial) const;
+	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	/**
 	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
 	 */
 	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
-												  tinygltf::Material &gltfMaterial) const;
+												  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular
 	 */
 	void save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
-									 tinygltf::Material &gltfMaterial) const;
+									 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	uint32_t writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::SeekableWriteStream &os, bool withColor,
 						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
 						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);
