@@ -20,6 +20,12 @@ typedef glm::vec<3, float, glm::highp> vec3h;
 typedef glm::vec<2, int, glm::highp> ivec2h;
 typedef glm::vec<3, uint8_t, glm::highp> u8vec3h;
 
+#define glm_assert_vec2(vec) \
+	core_assert_msg(!glm::isnan((vec).x), "x is nan"); \
+	core_assert_msg(!glm::isnan((vec).y), "y is nan"); \
+	core_assert_msg(!glm::isinf((vec).x), "x is inf"); \
+	core_assert_msg(!glm::isinf((vec).y), "y is inf"); \
+
 #define glm_assert_vec3(vec) \
 	core_assert_msg(!glm::isnan((vec).x), "x is nan"); \
 	core_assert_msg(!glm::isnan((vec).y), "y is nan"); \
