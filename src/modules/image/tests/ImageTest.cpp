@@ -111,10 +111,10 @@ TEST_F(ImageTest, testUVPixelConversion) {
 		for (int y = 0; y < img->height(); ++y) {
 			const glm::vec2 &uv = img->uv(x, y);
 			const glm::ivec2 &pixels = img->pixels(uv);
-			ASSERT_EQ(x, pixels.x) << "Failed to convert " << x << ":" << y << " to uv and back to pixels " << uv
-								   << " image: " << img->width() << "," << img->height();
-			ASSERT_EQ(y, pixels.y) << "Failed to convert " << x << ":" << y << " to uv and back to pixels " << uv
-								   << " image: " << img->width() << "," << img->height();
+			ASSERT_EQ(x, pixels.x) << "Failed to convert " << x << ":" << y << " to uv and back to pixels (uv: " << uv
+								   << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
+			ASSERT_EQ(y, pixels.y) << "Failed to convert " << x << ":" << y << " to uv and back to pixels (uv: " << uv
+								   << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
 		}
 	}
 }
