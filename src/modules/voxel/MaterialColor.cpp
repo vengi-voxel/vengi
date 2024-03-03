@@ -5,23 +5,22 @@
 #include "MaterialColor.h"
 #include "core/Optional.h"
 #include "core/Var.h"
+#include "core/concurrent/Lock.h"
 #include "palette/Palette.h"
 
 namespace voxel {
 
 namespace _priv {
-static core::Optional<palette::Palette> globalPalette;
-}
+core::Optional<palette::Palette> globalPalette;
+core::Lock _lock;
+} // namespace _priv
 
-void initPalette(const palette::Palette &palette) {
-	_priv::globalPalette.setValue(palette);
-}
-
-bool hasPalette() {
+static bool hasPalette() {
 	return _priv::globalPalette.hasValue();
 }
 
 palette::Palette &getPalette() {
+	core::ScopedLock lock(_priv::_lock);
 	if (!hasPalette()) {
 		palette::Palette palette;
 		const core::VarPtr &var = core::Var::get(cfg::VoxelPalette, palette::Palette::getDefaultPaletteName());
