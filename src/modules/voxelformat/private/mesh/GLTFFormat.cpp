@@ -623,13 +623,16 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 					material.value(palette::MaterialProperty::MaterialMetal);
 			}
 
-			if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal()) {
+			const bool KHR_materials_pbrSpecularGlossiness = core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
+			if (KHR_materials_pbrSpecularGlossiness) {
 				save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
 			} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
 				save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
 			}
+			if (!KHR_materials_pbrSpecularGlossiness) {
+				save_KHR_materials_ior(material, gltfMaterial, gltfModel);
+			}
 			save_KHR_materials_emissive_strength(material, gltfMaterial, gltfModel);
-			save_KHR_materials_ior(material, gltfMaterial, gltfModel);
 
 			int materialId = (int)gltfModel.materials.size();
 			gltfModel.materials.emplace_back(core::move(gltfMaterial));

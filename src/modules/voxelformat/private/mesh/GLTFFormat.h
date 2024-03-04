@@ -39,6 +39,33 @@ namespace voxelformat {
  */
 class GLTFFormat : public MeshFormat {
 private:
+	// extensions
+		/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
+	 */
+	void save_KHR_materials_emissive_strength(const palette::Material &material,
+											  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void load_KHR_materials_emissive_strength(palette::Material &material,
+											  const tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior
+	 */
+	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
+	 */
+	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
+												  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void load_KHR_materials_pbrSpecularGlossiness(palette::Material &material,
+												  const tinygltf::Material &gltfMaterial) const;
+	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular
+	 */
+	void save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
+									 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void load_KHR_materials_specular(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
+
 	// exporting
 	struct Bounds {
 		uint32_t maxIndex = 0u;
@@ -53,25 +80,6 @@ private:
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 					  const scenegraph::SceneGraphNode &graphNode, Stack &stack,
 					  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations);
-	/**
-	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
-	 */
-	void save_KHR_materials_emissive_strength(const palette::Material &material,
-											  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
-	/**
-	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior
-	 */
-	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
-	/**
-	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
-	 */
-	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
-												  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
-	/**
-	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_specular
-	 */
-	void save_KHR_materials_specular(const palette::Material &material, const core::RGBA &color,
-									 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	uint32_t writeBuffer(const voxel::Mesh *mesh, uint8_t idx, io::SeekableWriteStream &os, bool withColor,
 						 bool withTexCoords, bool colorAsFloat, bool exportNormals, bool applyTransform,
 						 const glm::vec3 &pivotOffset, const palette::Palette &palette, Bounds &bounds);
@@ -107,12 +115,6 @@ private:
 	void loadTexture(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
 					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
-	void load_KHR_materials_emissive_strength(palette::Material &material,
-											  const tinygltf::Material &gltfMaterial) const;
-	void load_KHR_materials_pbrSpecularGlossiness(palette::Material &material,
-												  const tinygltf::Material &gltfMaterial) const;
-	void load_KHR_materials_specular(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
-	void load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
 	bool loadMaterial(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
 					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
 					  GltfMaterialData &materialData, palette::Material &material) const;
