@@ -77,6 +77,7 @@ constexpr const char *VoxformatScaleY = "voxformat_scale_y";
 constexpr const char *VoxformatScaleZ = "voxformat_scale_z";
 constexpr const char *VoxformatQuads = "voxformat_quads";
 constexpr const char *VoxformatWithColor = "voxformat_withcolor";
+constexpr const char *VoxformatWithNormals = "voxformat_withnormals";
 constexpr const char *VoxformatColorAsFloat = "voxformat_colorasfloat";
 constexpr const char *VoxformatWithtexcoords = "voxformat_withtexcoords";
 constexpr const char *VoxformatPointCloudSize = "voxformat_pointcloudsize";

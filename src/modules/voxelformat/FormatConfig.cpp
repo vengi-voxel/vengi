@@ -46,6 +46,8 @@ bool FormatConfig::init() {
 				   "Export as quads. If this false, triangles will be used.", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatWithColor, "true", core::CV_NOPERSIST, "Export with vertex colors",
 				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatWithNormals, "false", core::CV_NOPERSIST, "Export smoothed normals for cubic meshes",
+				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatColorAsFloat, "true", core::CV_NOPERSIST, "Export with vertex colors as float values (if vertex colors are exported)",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatWithtexcoords, "true", core::CV_NOPERSIST,

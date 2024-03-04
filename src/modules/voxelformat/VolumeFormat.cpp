@@ -210,7 +210,7 @@ static const io::FormatDescription &magicaVoxelXRAW() {
 	return f;
 }
 
-static const io::FormatDescription &gltf() {
+const io::FormatDescription &gltf() {
 	static io::FormatDescription f{"GL Transmission Format",
 								   {"gltf", "glb", "vrm"},
 								   {},

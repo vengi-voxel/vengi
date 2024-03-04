@@ -26,6 +26,7 @@ const io::FormatDescription &qubicleBinary();
 const io::FormatDescription &qubicleBinaryTree();
 const io::FormatDescription &magicaVoxel();
 const io::FormatDescription &vengi();
+const io::FormatDescription &gltf();
 
 /**
  * @brief Tries to load a palette from the given file. This can either be an image which is reduced to 256 colors or a

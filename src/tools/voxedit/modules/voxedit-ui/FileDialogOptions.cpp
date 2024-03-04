@@ -31,10 +31,15 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatTransform);
 			ImGui::CheckboxVar(_("Exports quads"), cfg::VoxformatQuads);
 			ImGui::CheckboxVar(_("Vertex colors"), cfg::VoxformatWithColor);
+			ImGui::CheckboxVar(_("Normals"), cfg::VoxformatWithNormals);
 			ImGui::BeginDisabled(!core::Var::get(cfg::VoxformatWithColor)->boolVal());
 			ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
 			ImGui::EndDisabled();
 			ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
+			if (*desc == voxelformat::gltf()) {
+				ImGui::CheckboxVar(_("KHR_materials_pbrSpecularGlossiness"), cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
+				ImGui::CheckboxVar(_("KHR_materials_specular"), cfg::VoxFormatGLTF_KHR_materials_specular);
+			}
 		} else if (mode == video::OpenFileMode::Open) {
 			ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 			ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);

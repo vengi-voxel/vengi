@@ -533,6 +533,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
 	const bool quads = core::Var::getSafe(cfg::VoxformatQuads)->boolVal();
 	const bool withColor = core::Var::getSafe(cfg::VoxformatWithColor)->boolVal();
+	const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
@@ -553,7 +554,9 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 					: voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads, reuseVertices,
 											   ambientOcclusion);
 			voxel::extractSurface(ctx);
-			mesh->calculateNormals();
+			if (withNormals) {
+				mesh->calculateNormals();
+			}
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 		});
