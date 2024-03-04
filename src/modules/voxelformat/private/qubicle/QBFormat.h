@@ -29,7 +29,7 @@ private:
 	enum class ZAxisOrientation : uint32_t { LeftHanded = 0, RightHanded = 1 };
 	enum class Compression : uint32_t { None = 0, RLE = 1 };
 
-	// If set to 0 the A value of RGBA or BGRA is either 0 (invisble voxel) or 255 (visible voxel).
+	// If set to 0 the A value of RGBA or BGRA is either 0 (invisible voxel) or 255 (visible voxel).
 	// If set to 1 the visibility mask of each voxel is encoded into the A value telling your software
 	// which sides of the voxel are visible. You can save a lot of render time using this option.
 	enum class VisibilityMask : uint32_t { AlphaChannelVisibleByValue, AlphaChannelVisibleSidesEncoded };
