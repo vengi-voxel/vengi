@@ -118,8 +118,11 @@ static void convertToVoxelGrid(glm::vec3 &v) {
 
 glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	// 1 x 256 is the texture format that we are using for our palette
-	const glm::vec2 &uv = image::Image::uv(colorIndex, 0, palette::PaletteMaxColors, 1);
-	return uv;
+	// sample the center of the palette pixels
+	// see https://github.com/vengi-voxel/vengi/issues/403
+	const float u = ((float)colorIndex + 0.4f) / (float)palette::PaletteMaxColors;
+	const float v = 0.6f;
+	return {u, v};
 }
 
 void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap) {
