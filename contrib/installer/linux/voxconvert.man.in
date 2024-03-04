@@ -401,6 +401,8 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_withcolor\fP: Export vertex colors
 .PP
+\fBvoxformat_withnormals\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)
+.PP
 \fBvoxformat_withtexcoords\fP: Export texture coordinates
 .PP
 \fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
