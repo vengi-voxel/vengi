@@ -587,6 +587,8 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 
 		const int textureIndex = saveTexture(gltfModel, palette);
 		const int emissiveTextureIndex = saveEmissiveTexture(gltfModel, palette);
+		const bool KHR_materials_pbrSpecularGlossiness = core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
+		const bool withMaterials = core::Var::getSafe(cfg::VoxFormatWithMaterials)->boolVal();
 
 		core::Array<int, palette::PaletteMaxColors> materialIds;
 		materialIds.fill(-1);
@@ -610,30 +612,30 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 			gltfMaterial.alphaMode = color.a < 255 ? "BLEND" : "OPAQUE";
 			gltfMaterial.doubleSided = false;
 
-			if (material.has(palette::MaterialProperty::MaterialEmit)) {
-				gltfMaterial.emissiveFactor[0] = material.value(palette::MaterialProperty::MaterialEmit);
-				gltfMaterial.emissiveFactor[1] = gltfMaterial.emissiveFactor[2] = gltfMaterial.emissiveFactor[0];
-			}
-			if (material.has(palette::MaterialProperty::MaterialRoughness)) {
-				gltfMaterial.pbrMetallicRoughness.roughnessFactor =
-					material.value(palette::MaterialProperty::MaterialRoughness);
-			}
-			if (material.has(palette::MaterialProperty::MaterialMetal)) {
-				gltfMaterial.pbrMetallicRoughness.metallicFactor =
-					material.value(palette::MaterialProperty::MaterialMetal);
-			}
+			if (withMaterials) {
+				if (material.has(palette::MaterialProperty::MaterialEmit)) {
+					gltfMaterial.emissiveFactor[0] = material.value(palette::MaterialProperty::MaterialEmit);
+					gltfMaterial.emissiveFactor[1] = gltfMaterial.emissiveFactor[2] = gltfMaterial.emissiveFactor[0];
+				}
+				if (material.has(palette::MaterialProperty::MaterialRoughness)) {
+					gltfMaterial.pbrMetallicRoughness.roughnessFactor =
+						material.value(palette::MaterialProperty::MaterialRoughness);
+				}
+				if (material.has(palette::MaterialProperty::MaterialMetal)) {
+					gltfMaterial.pbrMetallicRoughness.metallicFactor =
+						material.value(palette::MaterialProperty::MaterialMetal);
+				}
 
-			const bool KHR_materials_pbrSpecularGlossiness = core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness)->boolVal();
-			if (KHR_materials_pbrSpecularGlossiness) {
-				save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
-			} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
-				save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
+				if (KHR_materials_pbrSpecularGlossiness) {
+					save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
+				} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
+					save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
+				}
+				if (!KHR_materials_pbrSpecularGlossiness) {
+					save_KHR_materials_ior(material, gltfMaterial, gltfModel);
+				}
+				save_KHR_materials_emissive_strength(material, gltfMaterial, gltfModel);
 			}
-			if (!KHR_materials_pbrSpecularGlossiness) {
-				save_KHR_materials_ior(material, gltfMaterial, gltfModel);
-			}
-			save_KHR_materials_emissive_strength(material, gltfMaterial, gltfModel);
-
 			int materialId = (int)gltfModel.materials.size();
 			gltfModel.materials.emplace_back(core::move(gltfMaterial));
 			materialIds[i] = materialId;

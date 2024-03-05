@@ -86,6 +86,8 @@ bool FormatConfig::init() {
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxFormatGLTF_KHR_materials_specular, "false", core::CV_NOPERSIST,
 				   "Apply KHR_materials_specular when saving into the gltf format", core::Var::boolValidator);
+	core::Var::get(cfg::VoxFormatWithMaterials, "true", core::CV_NOPERSIST,
+				   "Try to export material properties if the formats support it", core::Var::boolValidator);
 	return true;
 }
 

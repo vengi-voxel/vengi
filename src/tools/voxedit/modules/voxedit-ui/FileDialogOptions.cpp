@@ -40,6 +40,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 				ImGui::CheckboxVar(_("KHR_materials_pbrSpecularGlossiness"), cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
 				ImGui::CheckboxVar(_("KHR_materials_specular"), cfg::VoxFormatGLTF_KHR_materials_specular);
 			}
+			ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
 		} else if (mode == video::OpenFileMode::Open) {
 			ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 			ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
