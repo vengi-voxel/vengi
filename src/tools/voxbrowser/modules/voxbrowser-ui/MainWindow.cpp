@@ -326,7 +326,7 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 
 		if (ImGui::BeginTable("Voxel Files", 3,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-								  ImGuiTableFlags_RowBg)) {
+								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 			ImGui::TableSetupColumn("Thumbnail##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
 			ImGui::TableSetupColumn("Name##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
 			ImGui::TableSetupColumn("License##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
