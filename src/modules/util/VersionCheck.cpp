@@ -81,7 +81,7 @@ bool isNewVersionAvailable(int timeout) {
 		Log::error("Failed to read string");
 		return false;
 	}
-	nlohmann::json release = nlohmann::json::parse(response);
+	nlohmann::json release = nlohmann::json::parse(response, nullptr, false, true);
 	if (!release.contains("tag_name")) {
 		Log::warn("github response doesn't contain a tag_name node");
 		return false;

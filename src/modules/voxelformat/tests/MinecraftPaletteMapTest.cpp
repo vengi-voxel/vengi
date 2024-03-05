@@ -30,7 +30,7 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 	}
 	palette::Palette pal;
 	pal.minecraft();
-	nlohmann::json j = nlohmann::json::parse(str);
+	nlohmann::json j = nlohmann::json::parse(str, nullptr, false, true);
 	for (const auto &e : j) {
 		const auto &rgb = e["rgb"];
 		if (rgb.empty()) {

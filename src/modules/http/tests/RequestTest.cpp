@@ -26,7 +26,7 @@ TEST_F(RequestTest, DISABLED_testGetRequest) {
 	stream.seek(0);
 	core::String response;
 	stream.readString((int)stream.size(), response);
-	nlohmann::json jsonResponse = nlohmann::json::parse(response);
+	nlohmann::json jsonResponse = nlohmann::json::parse(response, nullptr, false, true);
 	ASSERT_TRUE(jsonResponse.contains("headers")) << response;
 	ASSERT_FALSE(jsonResponse["headers"].contains("Content-Length")) << response;
 	ASSERT_FALSE(jsonResponse["headers"].contains("Content-Type")) << response;
@@ -49,7 +49,7 @@ TEST_F(RequestTest, testPostRequest) {
 	stream.seek(0);
 	core::String response;
 	stream.readString((int)stream.size(), response);
-	nlohmann::json jsonResponse = nlohmann::json::parse(response);
+	nlohmann::json jsonResponse = nlohmann::json::parse(response, nullptr, false, true);
 	ASSERT_TRUE(jsonResponse.contains("headers")) << response;
 	ASSERT_TRUE(jsonResponse["headers"].contains("User-Agent")) << response;
 	EXPECT_STREQ(userAgent.c_str(), jsonResponse["headers"]["User-Agent"].get<std::string>().c_str()) << response;
