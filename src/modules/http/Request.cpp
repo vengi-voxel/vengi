@@ -44,6 +44,13 @@ static std::wstring s2ws(const std::string &str) {
 	return wstrTo;
 }
 
+static std::string ws2s(const std::wstring &wstr) {
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, NULL, 0, NULL, NULL);
+	std::string strTo(size_needed, 0);
+	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &strTo[0], size_needed, NULL, NULL);
+	return strTo;
+}
+
 #elif USE_CURL
 static size_t WriteHeaderData(char *b, size_t size, size_t nitems, void *userdata) {
 	core::StringMap<core::String> *headers = (core::StringMap<core::String> *)userdata;
@@ -243,6 +250,31 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 	Log::debug("Http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
 	if (statusCode) {
 		*statusCode = (int)dwStatusCode;
+	}
+
+	if (outheaders) {
+		DWORD headerLength = sizeof(DWORD);
+		if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, nullptr,
+								 &headerLength, WINHTTP_NO_HEADER_INDEX) &&
+			GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+			wchar_t *rawHeader = new wchar_t[headerLength / sizeof(wchar_t)];
+			ZeroMemory(rawHeader, headerLength);
+			if (WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS_CRLF, WINHTTP_HEADER_NAME_BY_INDEX, rawHeader,
+									&headerLength, WINHTTP_NO_HEADER_INDEX)) {
+				std::wstring headerStr(rawHeader);
+				std::wstringstream headerStream(headerStr);
+				std::wstring line;
+				while (std::getline(headerStream, line)) {
+					size_t delimiter = line.find(L": ");
+					if (delimiter != std::wstring::npos) {
+						const std::string &key = ws2s(line.substr(0, delimiter));
+						const std::string &value = ws2s(line.substr(delimiter + 2));
+						outheaders->put(key.c_str(), value.c_str());
+					}
+				}
+			}
+			delete[] rawHeader;
+		}
 	}
 
 	// Read and save the response data
