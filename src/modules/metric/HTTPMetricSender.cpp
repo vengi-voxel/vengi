@@ -9,13 +9,6 @@
 
 namespace metric {
 
-class NOPWriteStream : public io::WriteStream {
-public:
-	int write(const void *buf, size_t size) override {
-		return size;
-	}
-};
-
 HTTPMetricSender::HTTPMetricSender(const core::String &url, const core::String &userAgent) : _request(url, http::RequestType::POST) {
 	_request.addHeader("Content-Type", "application/json");
 	_request.setUserAgent(userAgent);
@@ -26,7 +19,7 @@ bool HTTPMetricSender::send(const char *buffer) const {
 		Log::debug("Failed to set body");
 		return false;
 	}
-	NOPWriteStream stream;
+	io::NOPWriteStream stream;
 	int statusCode = -1;
 	if (!_request.execute(stream, &statusCode)) {
 		Log::debug("Failed to send metric %s - got status %i", buffer, statusCode);

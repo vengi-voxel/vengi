@@ -14,7 +14,6 @@
 #include "http/Request.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include "io/FormatDescription.h"
 #include "voxbrowser-util/GithubAPI.h"
 #include "voxelformat/VolumeFormat.h"

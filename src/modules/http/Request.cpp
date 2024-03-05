@@ -45,6 +45,29 @@ static std::wstring s2ws(const std::string &str) {
 }
 
 #elif USE_CURL
+static size_t WriteHeaderData(char *b, size_t size, size_t nitems, void *userdata) {
+	core::StringMap<core::String> *headers = (core::StringMap<core::String> *)userdata;
+	core::String str;
+
+	size_t total = size * nitems;
+	if (total)
+		str.append(b, total);
+
+	if (str.last() == '\n')
+		str.erase(str.size() - 1);
+	if (str.last() == '\r')
+		str.erase(str.size() - 1);
+
+	size_t pos = str.find_first_of(':');
+	if (pos != core::String::npos) {
+		const core::String &key = str.substr(0, pos);
+		const core::String &value = str.substr(pos + 2);
+		Log::debug("Header: %s: %s", key.c_str(), value.c_str());
+		headers->put(key, value);
+	}
+	return total;
+}
+
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 	return ((io::WriteStream *)userp)->write(contents, size * nmemb);
 }
@@ -85,7 +108,7 @@ void Request::noCache() {
 	addHeader("Cache-Control", "no-cache");
 }
 
-bool Request::execute(io::WriteStream &stream, int *statusCode) {
+bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<core::String> *outheaders) {
 	Log::debug("Starting http request for %s", _url.c_str());
 #if __WINDOWS__
 	// Initialize WinHTTP and create a session
@@ -301,6 +324,10 @@ bool Request::execute(io::WriteStream &stream, int *statusCode) {
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 	curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
+	if (outheaders) {
+		curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteHeaderData);
+		curl_easy_setopt(curl, CURLOPT_HEADERDATA, outheaders);
+	}
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, _connectTimeoutSecond);

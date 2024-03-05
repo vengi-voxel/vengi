@@ -30,7 +30,7 @@ public:
 	void setTimeoutSecond(int timeoutSecond);
 	bool setBody(const core::String &body);
 	void addHeader(const core::String &key, const core::String &value);
-	bool execute(io::WriteStream &stream, int *statusCode = nullptr);
+	bool execute(io::WriteStream &stream, int *statusCode = nullptr, core::StringMap<core::String> *headers = nullptr);
 	void noCache();
 
 	static bool supported();

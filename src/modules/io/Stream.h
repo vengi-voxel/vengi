@@ -297,6 +297,13 @@ public:
 	bool writePascalStringUInt16BE(const core::String &str);
 };
 
+class NOPWriteStream : public io::WriteStream {
+public:
+	int write(const void *buf, size_t size) override {
+		return size;
+	}
+};
+
 /**
  * @brief WriteStream with the option to jump back and forth in while writing
  * @ingroup IO
