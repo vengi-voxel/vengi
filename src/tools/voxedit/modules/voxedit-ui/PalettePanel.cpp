@@ -70,30 +70,33 @@ void PalettePanel::handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &
 
 		const bool usableColor = palette.color(uiIdx).a > 0;
 		if (usableColor) {
+			for (int i = 0; i < palette::MaterialProperty::MaterialMax - 1; ++i) {
+				if (i == palette::MaterialProperty::MaterialNone) {
+					continue;
+				}
+				const palette::MaterialProperty prop = (palette::MaterialProperty)i;
+				float value = palette.material(uiIdx).value(prop);
+				if (ImGui::SliderFloat(palette::MaterialPropertyName(prop), &value,
+									   palette::MaterialPropertyMinMax(prop).minVal,
+									   palette::MaterialPropertyMinMax(prop).maxVal)) {
+					_sceneMgr->nodeSetMaterial(node.id(), uiIdx, prop, value);
+				}
+			}
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
 			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
 									   &listener);
 
-			if (palette.hasEmit(uiIdx)) {
-				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
-					_sceneMgr->nodeSetMaterial(node.id(), uiIdx, palette::MaterialEmit, 0.0f);
-				}
-			} else {
-				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, _("Glow"))) {
-					_sceneMgr->nodeSetMaterial(node.id(), uiIdx, palette::MaterialEmit, 1.0f);
-				}
-			}
 			if (palette.color(uiIdx).a != 255) {
 				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove Alpha"))) {
 					_sceneMgr->nodeRemoveAlpha(node.id(), uiIdx);
 				}
 			}
 			if (palette.hasFreeSlot()) {
-				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate"))) {
+				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate color"))) {
 					_sceneMgr->nodeDuplicateColor(node.id(), uiIdx);
 				}
 			}
-			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove"))) {
+			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove color"))) {
 				_sceneMgr->nodeRemoveColor(node.id(), uiIdx);
 			}
 		}

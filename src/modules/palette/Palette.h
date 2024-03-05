@@ -92,6 +92,36 @@ static constexpr const char *MaterialPropertyNames[] = {
 };
 static_assert(lengthof(MaterialPropertyNames) == MaterialMax - 1, "MaterialPropertyNames size mismatch");
 
+inline const char *MaterialPropertyName(MaterialProperty prop) {
+	core_assert(prop > MaterialNone && prop < MaterialMax);
+	return MaterialPropertyNames[(int)prop - 1];
+}
+
+// make sure to keep the order of the properties - see Material struct float values
+struct MaterialMinMax {
+	float minVal;
+	float maxVal;
+};
+static constexpr const MaterialMinMax MaterialPropertyMinsMaxs[] = {
+	{0.0f, 1.0f}, // metal
+	{0.0f, 1.0f}, // roughness
+	{0.0f, 1.0f}, // specular
+	{0.0f, 3.0f}, // indexOfRefraction
+	{0.0f, 1.0f}, // attenuation
+	{0.0f, 1.0f}, // flux
+	{0.0f, 1.0f}, // emit
+	{0.0f, 1.0f}, // lowDynamicRange
+	{0.0f, 1.0f}, // density
+	{0.0f, 1.0f}, // sp
+	{0.0f, 1.0f}, // glossiness
+	{0.0f, 1.0f}  // media
+};
+static_assert(lengthof(MaterialPropertyNames) == MaterialMax - 1, "MaterialPropertyNames size mismatch");
+inline MaterialMinMax MaterialPropertyMinMax(MaterialProperty prop) {
+	core_assert(prop > MaterialNone && prop < MaterialMax);
+	return MaterialPropertyMinsMaxs[(int)prop - 1];
+}
+
 // RGBA color values in the range [0-255]
 using PaletteColorArray = core::RGBA[PaletteMaxColors];
 using PaletteIndicesArray = uint8_t[PaletteMaxColors];
