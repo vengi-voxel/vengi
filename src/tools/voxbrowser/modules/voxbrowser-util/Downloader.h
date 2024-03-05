@@ -19,6 +19,14 @@ struct VoxelSourceGithub {
 	core::String license;
 };
 
+struct VoxelSourceGitlab {
+	core::String repo;
+	core::String commit;
+	// limit the repository to a specific path - or if empty, search the whole repository for supported files
+	core::String path;
+	core::String license;
+};
+
 struct VoxelSourceSingle {
 	core::String url;
 };
@@ -29,6 +37,7 @@ struct VoxelSource {
 	core::String thumbnail;
 	core::String provider;
 	VoxelSourceGithub github;
+	VoxelSourceGitlab gitlab;
 	VoxelSourceSingle single;
 };
 

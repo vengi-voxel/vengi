@@ -19,7 +19,8 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch, const core::String &path) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
-	const core::String file = "github-" + repository + "-" + branch + ".json";
+	core::String file = "github-" + repository + "-" + branch + ".json";
+	core::string::replaceAllChars(file, '/', '-');
 	http::HttpCacheStream stream(io::filesystem(), file, url);
 	core::DynamicArray<TreeEntry> entries;
 	if (!stream.valid()) {
@@ -27,7 +28,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, cons
 	}
 	core::String json;
 	stream.readString(stream.size(), json);
-	nlohmann::json jsonResponse = nlohmann::json::parse(json);
+	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 	if (!jsonResponse.contains("tree")) {
 		const core::String str = jsonResponse.dump().c_str();
 		Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());

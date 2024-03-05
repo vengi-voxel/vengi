@@ -16,6 +16,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FormatDescription.h"
 #include "voxbrowser-util/GithubAPI.h"
+#include "voxbrowser-util/GitlabAPI.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxbrowser {
@@ -45,7 +46,7 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 		outStream.readString(outStream.size(), json);
 	}
 
-	nlohmann::json jsonResponse = nlohmann::json::parse(json);
+	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 	if (!jsonResponse.contains("sources")) {
 		Log::error("Unexpected json data");
 		return sources;
@@ -66,6 +67,15 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 			// the github license is a file in the repo, so we need to query the tree for it
 			// and download it
 			source.github.license = get(githubNode, "license");
+		} else if (entry.contains("gitlab")) {
+			source.provider = "gitlab";
+			const auto &gitlabNode = entry["gitlab"];
+			source.gitlab.repo = get(gitlabNode, "repo");
+			source.gitlab.commit = get(gitlabNode, "commit");
+			source.gitlab.path = get(gitlabNode, "path");
+			// the gitlab license is a file in the repo, so we need to query the tree for it
+			// and download it
+			source.gitlab.license = get(gitlabNode, "license");
 		} else if (entry.contains("single")) {
 			source.provider = "single";
 			source.single.url = get(entry["single"], "url");
@@ -79,8 +89,9 @@ static bool supportedFileExtension(const core::String &path) {
 	return io::isA(path, voxelformat::voxelLoad());
 }
 
-static core::String findThumbnailUrl(const core::DynamicArray<github::TreeEntry> &entries,
-									 const github::TreeEntry &current, const VoxelSource &source) {
+template<class Entry>
+static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries,
+									 const Entry &current, const VoxelSource &source) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
 	for (auto &entry : entries) {
 		if (entry.path == current.path + ".png" || entry.path == pathNoExt + ".png") {
@@ -167,6 +178,38 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const VoxelSource &source) con
 			file.name = entry.path;
 			file.license = source.license;
 			if (!source.github.license.empty()) {
+				file.licenseUrl = licenseDownloadUrl;
+			}
+			file.thumbnailUrl = findThumbnailUrl(entries, entry, source);
+			file.url = entry.url;
+			file.fullPath = io::filesystem()->writePath(file.targetFile());
+
+			if (io::isSupportedArchive(file.name)) {
+				handleArchive(file, files);
+				continue;
+			}
+
+			if (!supportedFileExtension(entry.path)) {
+				continue;
+			}
+
+			// TODO: allow to enable mesh formats?
+			if (voxelformat::isMeshFormat(entry.path, false)) {
+				continue;
+			}
+			files.push_back(file);
+		}
+	} else if (source.provider == "gitlab") {
+		const core::DynamicArray<gitlab::TreeEntry> &entries =
+			gitlab::reposGitTrees(source.gitlab.repo, source.gitlab.commit, source.gitlab.path);
+		const core::String &licenseDownloadUrl =
+			gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, source.gitlab.license);
+		for (const auto &entry : entries) {
+			VoxelFile file;
+			file.source = source.name;
+			file.name = entry.path;
+			file.license = source.license;
+			if (!source.gitlab.license.empty()) {
 				file.licenseUrl = licenseDownloadUrl;
 			}
 			file.thumbnailUrl = findThumbnailUrl(entries, entry, source);

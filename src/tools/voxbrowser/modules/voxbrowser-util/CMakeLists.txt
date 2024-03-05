@@ -1,6 +1,7 @@
 set(SRCS
 	Downloader.h Downloader.cpp
 	GithubAPI.h GithubAPI.cpp
+	GitlabAPI.h GitlabAPI.cpp
 	JsonUtil.h JsonUtil.cpp
 )
 
@@ -11,6 +12,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 set(TEST_SRCS
 	tests/DownloaderTest.cpp
 	tests/GithubAPITest.cpp
+	tests/GitlabAPITest.cpp
 )
 
 gtest_suite_sources(tests

@@ -137,6 +137,16 @@
 				"commit": "master",
 				"license": "license.txt"
 			}
+		},
+		{
+			"name": "Veloren",
+			"license": "GNU General Public License 3.0 or later",
+			"gitlab": {
+				"repo": "veloren/veloren",
+				"path": "assets",
+				"commit": "master",
+				"license": "LICENSE"
+			}
 		}
 	]
 }
