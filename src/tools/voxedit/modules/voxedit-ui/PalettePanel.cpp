@@ -57,7 +57,81 @@ static bool dragAndDropSortColors() {
 	return ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
 }
 
-void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void PalettePanel::handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &node,
+							 command::CommandExecutionListener &listener, palette::Palette &palette) {
+	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", uiIdx);
+	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
+		if (showColorPicker(uiIdx, node, listener)) {
+			_colorPickerChange = true;
+		} else if (_colorPickerChange) {
+			_colorPickerChange = false;
+			_sceneMgr->mementoHandler().markPaletteChange(node);
+		}
+
+		const bool usableColor = palette.color(uiIdx).a > 0;
+		if (usableColor) {
+			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
+			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
+									   &listener);
+			if (palette.hasEmit(uiIdx)) {
+				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
+					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
+				}
+			} else {
+				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, _("Glow"))) {
+					_sceneMgr->nodeSetGlow(node.id(), uiIdx, true);
+				}
+			}
+			if (palette.color(uiIdx).a != 255) {
+				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove Alpha"))) {
+					_sceneMgr->nodeRemoveAlpha(node.id(), uiIdx);
+				}
+			}
+			if (palette.hasFreeSlot()) {
+				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate"))) {
+					_sceneMgr->nodeDuplicateColor(node.id(), uiIdx);
+				}
+			}
+			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove"))) {
+				_sceneMgr->nodeRemoveColor(node.id(), uiIdx);
+			}
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
+void PalettePanel::handleDragAndDrop(uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node,
+									 palette::Palette &palette) {
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
+			const uint8_t dragPalIdx = *(const uint8_t *)payload->Data;
+			if (dragAndDropSortColors()) {
+				palette.exchange(palIdx, dragPalIdx);
+			} else {
+				core::RGBA lhs = palette.color(palIdx);
+				core::RGBA rhs = palette.color(dragPalIdx);
+				palette.setColor(palIdx, rhs);
+				palette.setColor(dragPalIdx, lhs);
+				palette.markSave();
+			}
+			_sceneMgr->mementoHandler().markPaletteChange(node);
+		}
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
+			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
+			_sceneMgr->nodeSetColor(node.id(), uiIdx, core::Color::getRGBA(color));
+		}
+
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+			_importPalette = image->name();
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
+void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node,
+							command::CommandExecutionListener &listener) {
 	palette::Palette &palette = node.palette();
 	const int maxPaletteEntries = palette.colorCount();
 	const float borderWidth = 1.0f;
@@ -72,7 +146,6 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
 	const bool usableColor = palette.color(uiIdx).a > 0;
-	const core::String &contextMenuId = core::string::format("Actions##context-palitem-%i", uiIdx);
 	const bool existingColor = uiIdx < maxPaletteEntries;
 	if (existingColor) {
 		const core::RGBA color = palette.color(uiIdx);
@@ -111,69 +184,10 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 		ImGui::TooltipText("Empty color slot");
 	}
 
-	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
-			const uint8_t dragPalIdx = *(const uint8_t*)payload->Data;
-			if (dragAndDropSortColors()) {
-				palette.exchange(palIdx, dragPalIdx);
-			} else {
-				core::RGBA lhs = palette.color(palIdx);
-				core::RGBA rhs = palette.color(dragPalIdx);
-				palette.setColor(palIdx, rhs);
-				palette.setColor(dragPalIdx, lhs);
-				palette.markSave();
-			}
-			_sceneMgr->mementoHandler().markPaletteChange(node);
-		}
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
-			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
-			_sceneMgr->nodeSetColor(node.id(), uiIdx, core::Color::getRGBA(color));
-		}
+	handleDragAndDrop(palIdx, uiIdx, node, palette);
 
-		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
-			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
-			_importPalette = image->name();
-		}
-		ImGui::EndDragDropTarget();
-	}
+	handleContextMenu(uiIdx, node, listener, palette);
 
-	if (ImGui::BeginPopupContextItem(contextMenuId.c_str())) {
-		if (showColorPicker(uiIdx, node, listener)) {
-			_colorPickerChange = true;
-		} else if (_colorPickerChange) {
-			_colorPickerChange = false;
-			_sceneMgr->mementoHandler().markPaletteChange(node);
-		}
-
-		if (usableColor) {
-			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
-			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true, &listener);
-			if (palette.hasEmit(uiIdx)) {
-				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
-					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
-				}
-			} else {
-				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, _("Glow"))) {
-					_sceneMgr->nodeSetGlow(node.id(), uiIdx, true);
-				}
-			}
-			if (palette.color(uiIdx).a != 255) {
-				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove Alpha"))) {
-					_sceneMgr->nodeRemoveAlpha(node.id(), uiIdx);
-				}
-			}
-			if (palette.hasFreeSlot()) {
-				if (ImGui::IconMenuItem(ICON_LC_COPY_PLUS, _("Duplicate"))) {
-					_sceneMgr->nodeDuplicateColor(node.id(), uiIdx);
-				}
-			}
-			if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Remove"))) {
-				_sceneMgr->nodeRemoveColor(node.id(), uiIdx);
-			}
-		}
-
-		ImGui::EndPopup();
-	}
 	if (!_colorHovered && ImGui::IsItemHovered()) {
 		_colorHovered = true;
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);

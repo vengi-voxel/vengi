@@ -49,7 +49,11 @@ private:
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void createPopups(scenegraph::SceneGraphNode &node);
 
-	void addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
+				   palette::Palette &palette);
+	void handleDragAndDrop(uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);
+	void addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node,
+				  command::CommandExecutionListener &listener);
 	bool showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void reloadAvailablePalettes();
 
