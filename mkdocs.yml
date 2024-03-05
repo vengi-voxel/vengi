@@ -36,6 +36,7 @@ nav:
       - Configuration.md
       - Formats.md
       - LUAScript.md
+      - Material.md
       - Palette.md
   - VoxBrowser:
       - voxbrowser/Index.md

@@ -100,6 +100,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_withcolor`         | Export vertex colors                                                                     |
 | `voxformat_withnormals`       | Export smoothed normals for cubic surface meshes (marching cubes always uses normals)    |
 | `voxformat_withtexcoords`     | Export texture coordinates                                                               |
+| `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 |
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
 | `voxformat_fillhollow`        | Fill the inner parts of completely close objects                                         |
