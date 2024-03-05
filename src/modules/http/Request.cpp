@@ -327,16 +327,25 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 	if (statusCode) {
 		*statusCode = (int)fetch->status;
 	}
-	if (outheaders && fetch->numHeaders > 0) {
-		for (int i = 0; i < fetch->numHeaders; ++i) {
-			const char *header = fetch->headers[i];
-			const char *delimiter = strchr(header, ':');
-			if (delimiter != nullptr) {
-				core::String key(header, delimiter - header);
-				core::String value(delimiter + 2); // Skip ': ' characters
-				outheaders->put(key, value);
+	if (outheaders) {
+		size_t headersLengthBytes = emscripten_fetch_get_response_headers_length(fetch) + 1;
+		char *headerString = new char[headersLengthBytes];
+		emscripten_fetch_get_response_headers(fetch, headerString, headersLengthBytes);
+		char **responseHeaders = emscripten_fetch_unpack_response_headers(headerString);
+		delete[] headerString;
+
+		for (int numHeaders = 0; responseHeaders[numHeaders * 2]; ++numHeaders) {
+			if (responseHeaders[(numHeaders * 2) + 1] == nullptr) {
+				break;
 			}
+
+			core::String key = (responseHeaders[numHeaders * 2]) ? responseHeaders[numHeaders * 2] : "";
+			core::String value =
+				(responseHeaders[(numHeaders * 2) + 1]) ? responseHeaders[(numHeaders * 2) + 1] : "";
+			outheaders->put(key, value);
 		}
+
+		emscripten_fetch_free_unpacked_response_headers(responseHeaders);
 	}
 	Log::debug("Got status code %i for %s", (int)fetch->status, _url.c_str());
 	if (stream.write(fetch->data, fetch->numBytes) == -1) {
