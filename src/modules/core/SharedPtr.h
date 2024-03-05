@@ -22,68 +22,65 @@ private:
 		int b;
 	};
 
-	struct Data {
-		T *_ptr;
-		core::AtomicInt *_refCnt;
-	};
-	Data *_data;
+	T *_ptr;
+	core::AtomicInt *_refCnt;
 
 	int count() const {
-		if (_data == nullptr) {
+		if (_refCnt == nullptr) {
 			return 0;
 		}
-		return *_data->_refCnt;
+		return *_refCnt;
 	}
 
 	void increase() {
-		if (_data == nullptr) {
+		if (_refCnt == nullptr) {
 			return;
 		}
-		_data->_refCnt->increment(1);
+		_refCnt->increment(1);
 	}
 
 	int decrease() {
-		if (_data == nullptr) {
+		if (_refCnt == nullptr) {
 			return -1;
 		}
-		return _data->_refCnt->decrement(1) - 1;
+		return _refCnt->decrement(1) - 1;
 	}
 public:
-	constexpr SharedPtr() : _data(nullptr) {
+	constexpr SharedPtr() : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
-	constexpr SharedPtr(decltype(nullptr)) : _data(nullptr) {
+	constexpr SharedPtr(decltype(nullptr)) : _ptr(nullptr), _refCnt(nullptr) {
 	}
 
-	SharedPtr(const SharedPtr &obj) : _data(obj._data) {
+	SharedPtr(const SharedPtr &obj) : _ptr(obj.get()), _refCnt(obj.refCnt()) {
 		increase();
 	}
 
-	SharedPtr(SharedPtr &&obj) noexcept : _data(obj._data) {
-		obj._data = nullptr;
+	SharedPtr(SharedPtr &&obj) noexcept : _ptr(obj.get()), _refCnt(obj.refCnt()) {
+		obj._ptr = nullptr;
+		obj._refCnt = nullptr;
 	}
 
 	template <class U>
-	SharedPtr(const SharedPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) {
-		_data = (Data*)(void*)obj._data;
+	SharedPtr(const SharedPtr<U> &obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+			_ptr(obj.get()), _refCnt(obj.refCnt()) {
 		increase();
 	}
 
 	template <class U>
-	SharedPtr(SharedPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper())
-			 {
-		_data = (Data*)(void*)obj._data;
-		obj._data = nullptr;
+	SharedPtr(SharedPtr<U> &&obj, typename std::enable_if<std::is_convertible<U*, T*>::value, __enableIfHelper>::type = __enableIfHelper()) :
+			_ptr(obj.get()), _refCnt(obj.refCnt()) {
+		obj._ptr = nullptr;
+		obj._refCnt = nullptr;
 	}
 
 	template<typename ... Args>
 	static SharedPtr<T> create(Args&&... args) {
-		const size_t size = sizeof(Data) + sizeof(T) + sizeof(AtomicInt);
+		const size_t size = sizeof(T) + sizeof(AtomicInt);
 		void *ptr = core_malloc(size);
 		SharedPtr<T> d;
-		d._data = (Data*)ptr;
-		d._data->_ptr = new ((uint8_t*)ptr + sizeof(Data)) T(core::forward<Args>(args)...);
-		d._data->_refCnt = new ((uint8_t*)ptr + sizeof(Data) + sizeof(T)) AtomicInt(1);
+		d._ptr = new (ptr) T(core::forward<Args>(args)...);
+		d._refCnt = new ((void*)((uint8_t*)ptr + sizeof(*_ptr))) AtomicInt(1);
 		return d;
 	}
 
@@ -92,15 +89,18 @@ public:
 			return *this;
 		}
 		release();
-		_data = obj._data;
+		_ptr = obj._ptr;
+		_refCnt = obj._refCnt;
 		increase();
 		return *this;
 	}
 
 	SharedPtr &operator=(SharedPtr &&obj) noexcept {
 		release();
-		_data = obj._data;
-		obj._data = nullptr;
+		_ptr = obj._ptr;
+		_refCnt = obj._refCnt;
+		obj._ptr = nullptr;
+		obj._refCnt = nullptr;
 		return *this;
 	}
 
@@ -109,34 +109,29 @@ public:
 	}
 
 	core::AtomicInt* refCnt() const {
-		if (_data == nullptr) {
-			return nullptr;
-		}
-		return _data->_refCnt;
+		return _refCnt;
 	}
 
 	void release() {
 		if (decrease() == 0) {
-			if (_data != nullptr) {
-				_data->_ptr->~T();
+			if (_ptr != nullptr) {
+				_ptr->~T();
 			}
-			if (_data->_refCnt != nullptr) {
-				_data->_refCnt->~AtomicInt();
+			if (_refCnt != nullptr) {
+				_refCnt->~AtomicInt();
 			}
-			core_free((void*)_data);
+			core_free((void*)_ptr);
 		}
-		_data = nullptr;
+		_ptr = nullptr;
+		_refCnt = nullptr;
 	}
 
 	T *get() const {
-		if (_data == nullptr) {
-			return nullptr;
-		}
-		return _data->_ptr;
+		return _ptr;
 	}
 
 	T *operator->() const {
-		return _data->_ptr;
+		return _ptr;
 	}
 
 	void operator=(decltype(nullptr)) {
@@ -148,35 +143,35 @@ public:
 	}
 
 	bool operator==(const SharedPtr &rhs) const {
-		return _data == rhs._data;
+		return _ptr == rhs._ptr;
 	}
 
 	bool operator!=(const SharedPtr &rhs) const {
-		return _data != rhs._data;
+		return _ptr != rhs._ptr;
 	}
 
 	bool operator<(const SharedPtr &rhs) const {
-		return _data < rhs._data;
+		return _ptr < rhs._ptr;
 	}
 
 	bool operator>(const SharedPtr &rhs) const {
-		return _data > rhs._data;
+		return _ptr > rhs._ptr;
 	}
 
 	bool operator<=(const SharedPtr &rhs) const {
-		return _data <= rhs._data;
+		return _ptr <= rhs._ptr;
 	}
 
 	bool operator>=(const SharedPtr &rhs) const {
-		return _data >= rhs._data;
+		return _ptr >= rhs._ptr;
 	}
 
 	bool operator==(decltype(nullptr)) const {
-		return nullptr == _data;
+		return nullptr == _ptr;
 	}
 
 	bool operator!=(decltype(nullptr)) const {
-		return nullptr != _data;
+		return nullptr != _ptr;
 	}
 };
 
