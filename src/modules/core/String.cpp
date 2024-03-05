@@ -349,7 +349,8 @@ String& String::append(const char *str, size_t len) {
 		return *this;
 	}
 	checkBufferSize(_data._size + len + 1);
-	SDL_memcpy(_data._str + _data._size, str, len + 1);
+	SDL_memcpy(_data._str + _data._size, str, len);
+	_data._str[_data._size + len] = '\0';
 	_data._size += len;
 	return *this;
 }

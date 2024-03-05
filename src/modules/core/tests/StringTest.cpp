@@ -20,6 +20,13 @@ TEST_F(StringTest, testLongStringToForceAllocation) {
 	EXPECT_EQ("Foobar", str);
 }
 
+TEST_F(StringTest, testAppendWithLen) {
+	String str;
+	const char buf[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+	str.append(buf, 6);
+	EXPECT_STREQ("abcdef", str.c_str());
+}
+
 TEST_F(StringTest, testCopyCtor) {
 	const String str("/foo/bar");
 	const String str2(str);
