@@ -455,7 +455,7 @@ private:
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeSetGlow(scenegraph::SceneGraphNode &node, uint8_t palIdx, bool state);
+	bool nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material, float value);
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const core::RGBA &color);
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
@@ -497,7 +497,7 @@ public:
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)
 	 */
-	bool nodeSetGlow(int nodeId, uint8_t palIdx, bool state);
+	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
 	bool nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color);
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };

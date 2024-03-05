@@ -73,13 +73,14 @@ void PalettePanel::handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &
 			const core::String &modelFromColorCmd = core::string::format("colortomodel %i", uiIdx);
 			ImGui::CommandIconMenuItem(ICON_LC_UNGROUP, _("Model from color"), modelFromColorCmd.c_str(), true,
 									   &listener);
+
 			if (palette.hasEmit(uiIdx)) {
 				if (ImGui::IconMenuItem(ICON_LC_SUNSET, _("Remove Glow"))) {
-					_sceneMgr->nodeSetGlow(node.id(), uiIdx, false);
+					_sceneMgr->nodeSetMaterial(node.id(), uiIdx, palette::MaterialEmit, 0.0f);
 				}
 			} else {
 				if (ImGui::IconMenuItem(ICON_LC_SUNRISE, _("Glow"))) {
-					_sceneMgr->nodeSetGlow(node.id(), uiIdx, true);
+					_sceneMgr->nodeSetMaterial(node.id(), uiIdx, palette::MaterialEmit, 1.0f);
 				}
 			}
 			if (palette.color(uiIdx).a != 255) {

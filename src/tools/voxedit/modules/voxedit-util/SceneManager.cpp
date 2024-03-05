@@ -3202,21 +3202,17 @@ bool SceneManager::nodeRemoveAlpha(int nodeId, uint8_t palIdx) {
 	return false;
 }
 
-bool SceneManager::nodeSetGlow(scenegraph::SceneGraphNode &node, uint8_t palIdx, bool state) {
+bool SceneManager::nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialProperty material, float value) {
 	palette::Palette &palette = node.palette();
-	if (state) {
-		palette.setEmit(palIdx, 1.0f);
-	} else {
-		palette.setEmit(palIdx, 0.0f);
-	}
+	palette.setMaterialValue(palIdx, material, value);
 	palette.markSave();
 	_mementoHandler.markPaletteChange(node);
 	return true;
 }
 
-bool SceneManager::nodeSetGlow(int nodeId, uint8_t palIdx, bool state) {
+bool SceneManager::nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeSetGlow(*node, palIdx, state);
+		return nodeSetMaterial(*node, palIdx, material, value);
 	}
 	return false;
 }

@@ -151,6 +151,7 @@ public:
 	bool setMaterialProperty(uint8_t idx, const core::String &name, float value);
 	float materialProperty(uint8_t idx, const core::String &name) const;
 
+	void setMaterialValue(uint8_t idx, MaterialProperty property, float factor = 1.0f);
 	void setEmit(uint8_t idx, float factor = 1.0f);
 	void setMetal(uint8_t idx, float factor = 1.0f);
 	void setRoughness(uint8_t idx, float factor = 1.0f);

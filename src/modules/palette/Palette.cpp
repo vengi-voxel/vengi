@@ -862,39 +862,37 @@ bool Palette::hasEmit(uint8_t idx) const {
 	return _materials[idx].mask & MaterialEmit;
 }
 
-void Palette::setEmit(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialEmit, factor);
+void Palette::setMaterialValue(uint8_t idx, MaterialProperty property, float factor) {
+	_materials[idx].setValue(property, factor);
 	markDirty();
+}
+
+void Palette::setEmit(uint8_t idx, float factor) {
+	setMaterialValue(idx, MaterialEmit, factor);
 }
 
 void Palette::setMetal(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialMetal, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialMetal, factor);
 }
 
 void Palette::setRoughness(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialRoughness, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialRoughness, factor);
 }
 
 void Palette::setSpecular(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialSpecular, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialSpecular, factor);
 }
 
 void Palette::setIndexOfRefraction(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialIndexOfRefraction, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialIndexOfRefraction, factor);
 }
 
 void Palette::setAttenuation(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialAttenuation, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialAttenuation, factor);
 }
 
 void Palette::setFlux(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialFlux, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialFlux, factor);
 }
 
 void Palette::setAlpha(uint8_t idx, float factor) {
@@ -903,28 +901,23 @@ void Palette::setAlpha(uint8_t idx, float factor) {
 }
 
 void Palette::setDensity(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialDensity, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialDensity, factor);
 }
 
 void Palette::setSp(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialSp, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialSp, factor);
 }
 
 void Palette::setGlossiness(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialGlossiness, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialGlossiness, factor);
 }
 
 void Palette::setMedia(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialMedia, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialMedia, factor);
 }
 
 void Palette::setLowDynamicRange(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialLowDynamicRange, factor);
-	markDirty();
+	setMaterialValue(idx, MaterialLowDynamicRange, factor);
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
