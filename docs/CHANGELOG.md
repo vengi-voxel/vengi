@@ -18,8 +18,14 @@ General:
    - Fixed error in voxelizer handling off-by-one cases in negative vertex coordinates
    - Fixed `vxl/hva` loading and saving
    - Fixed missing `pcubes` write support
-   - Support palette materials
+   - Support palette [materials](Material.md)
    - Optimized qubicle QB color quantization
+   - Import magicavoxel materials
+   - Improved GLTF material support
+   - Made the smooth normals for the cubic mesh extractor optional (`voxformat_withnormals`)
+   - Improved texture coordinates for mesh exports
+   - Improved bash completion script creation
+   - Improved scene camera centering
 
 VoxBrowser:
 
@@ -52,6 +58,7 @@ VoxEdit:
 Thumbnailer:
 
    - Don't render camera frustums for the thumbnails
+   - Allow to change the camera mode (top, left, right, ...)
 
 ## 0.0.28 (2024-01-17)
 
