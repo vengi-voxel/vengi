@@ -53,9 +53,9 @@ struct Material {
 	// make sure to keep the order of the properties and keep metal
 	// as first - see the name string array
 	float metal = 0.0f;
-	float roughness = 0.0f;
+	float roughness = 0.1f;
 	float specular = 0.0f;
-	float indexOfRefraction = 0.0f;
+	float indexOfRefraction = 1.3f;
 	float attenuation = 0.0f;
 	float flux = 0.0f;
 	float emit = 0.0f;
