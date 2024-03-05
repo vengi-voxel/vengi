@@ -9,10 +9,12 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include <SDL_timer.h>
 
 namespace http {
 
-HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url) : _file(file), _url(url) {
+HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url)
+	: _file(file), _url(url) {
 	if (core::string::startsWith(url, "file://")) {
 		_fileStream = new io::FileStream(fs->open(url.substr(7), io::FileMode::Read));
 		return;
@@ -27,6 +29,20 @@ HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String
 					_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
 					_newInCache = true;
 				}
+			} else if (statusCode == 429) {
+				Log::warn("Too many requests, retrying in 5 seconds... %s (%s)", url.c_str(), file.c_str());
+				SDL_Delay(5000);
+				if (http::download(url, bufStream, &statusCode)) {
+					if (http::isValidStatusCode(statusCode)) {
+						bufStream.seek(0);
+						if (fs->write(file, bufStream)) {
+							_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
+							_newInCache = true;
+						}
+					}
+				}
+			} else {
+				Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 			}
 		}
 	} else {
