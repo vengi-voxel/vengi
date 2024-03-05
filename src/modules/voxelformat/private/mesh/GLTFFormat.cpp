@@ -467,7 +467,6 @@ void GLTFFormat::save_KHR_materials_volume(const palette::Material &material, co
 
 	gltfMaterial.extensions["KHR_materials_volume"] = tinygltf::Value(sg);
 	addExtension(gltfModel, "KHR_materials_volume");
-
 }
 
 void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {

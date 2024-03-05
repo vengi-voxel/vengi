@@ -40,7 +40,7 @@ namespace voxelformat {
 class GLTFFormat : public MeshFormat {
 private:
 	// extensions
-		/**
+	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
 	 */
 	void save_KHR_materials_emissive_strength(const palette::Material &material,
