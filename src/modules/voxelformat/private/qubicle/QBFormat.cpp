@@ -390,8 +390,8 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 	wrap(stream.readInt32(tmp));
 	wrap(stream.readInt32(tmp));
 
+	RGBAMap colors;
 	if (state._compressed == Compression::None) {
-		RGBAMap colors;
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
 			for (uint32_t y = 0; y < size.y; ++y) {
@@ -405,43 +405,40 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 				}
 			}
 		}
-		const size_t colorCount = colors.size();
-		core::Buffer<core::RGBA> colorBuffer;
-		colorBuffer.reserve(colorCount);
-		for (const auto &e : colors) {
-			colorBuffer.push_back(e->first);
+	} else {
+		Log::debug("qb matrix rle compressed");
+		uint32_t z = 0u;
+		while (z < size.z) {
+			for (;;) {
+				uint32_t data;
+				wrap(stream.peekUInt32(data))
+				if (data == qb::NEXT_SLICE_FLAG) {
+					stream.skip(sizeof(data));
+					break;
+				}
+				if (data == qb::RLE_FLAG) {
+					stream.skip(sizeof(data));
+					uint32_t count;
+					wrap(stream.readUInt32(count))
+				}
+				core::RGBA color(0);
+				wrapBool(readColor(state, stream, color))
+				if (color.a == 0) {
+					continue;
+				}
+				colors.put(flattenRGB(color.r, color.g, color.b), true);
+			}
+			++z;
 		}
-		palette.quantize(colorBuffer.data(), colorBuffer.size());
-		Log::debug("%i colors loaded", palette.colorCount());
-		return true;
 	}
-
-	Log::debug("Matrix rle compressed");
-
-	uint32_t z = 0u;
-	while (z < size.z) {
-		for (;;) {
-			uint32_t data;
-			wrap(stream.peekUInt32(data))
-			if (data == qb::NEXT_SLICE_FLAG) {
-				stream.skip(sizeof(data));
-				break;
-			}
-			if (data == qb::RLE_FLAG) {
-				stream.skip(sizeof(data));
-				uint32_t count;
-				wrap(stream.readUInt32(count))
-			}
-			core::RGBA color(0);
-			wrapBool(readColor(state, stream, color))
-			if (color.a == 0) {
-				continue;
-			}
-			palette.addColorToPalette(core::RGBA(color.r, color.g, color.b), false);
-		}
-		++z;
+	const size_t colorCount = colors.size();
+	core::Buffer<core::RGBA> colorBuffer;
+	colorBuffer.reserve(colorCount);
+	for (const auto &e : colors) {
+		colorBuffer.push_back(e->first);
 	}
-	Log::debug("%i colors loaded", palette.colorCount());
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	Log::debug("%i colors loaded from %i individual rgb colors", palette.colorCount(), (int)colorBuffer.size());
 	return true;
 }
 
