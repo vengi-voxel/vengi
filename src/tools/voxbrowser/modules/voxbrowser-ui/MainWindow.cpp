@@ -39,6 +39,9 @@ bool MainWindow::filtered(const VoxelFile &voxelFile) const {
 	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
 		return true;
 	}
+	if (!_currentFilterLicense.empty() && !core::string::icontains(voxelFile.license, _currentFilterLicense)) {
+		return true;
+	}
 	if (_currentFilterFormatEntry <= 0) {
 		return false;
 	}
@@ -50,24 +53,31 @@ bool MainWindow::filtered(const VoxelFile &voxelFile) const {
 }
 
 bool MainWindow::isFilterActive() const {
-	return !_currentFilterName.empty() || _currentFilterFormatEntry > 0;
+	return !_currentFilterName.empty() || !_currentFilterLicense.empty() || _currentFilterFormatEntry > 0;
 }
 
 void MainWindow::updateFilters() {
 	{
-		const ImVec2 itemWidth = ImGui::CalcTextSize("##############");
+		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 		ImGui::PushItemWidth(itemWidth.x);
 		ImGui::InputText("Name", &_currentFilterName);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
 	{
-		if (_filterTextWidth < 0.0f) {
+		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
+		ImGui::PushItemWidth(itemWidth.x);
+		ImGui::InputText("License", &_currentFilterLicense);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+	}
+	{
+		if (_filterFormatTextWidth < 0.0f) {
 			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 				_filterEntries.push_back(*desc);
 				const core::String &str = io::convertToFilePattern(*desc);
 				const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
-				_filterTextWidth = core_max(_filterTextWidth, filterTextSize.x);
+				_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
 			}
 			_filterEntries.sort(core::Greater<io::FormatDescription>());
 			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
@@ -76,7 +86,7 @@ void MainWindow::updateFilters() {
 		}
 
 		const char *formatFilterLabel = "Format";
-		ImGui::PushItemWidth(_filterTextWidth);
+		ImGui::PushItemWidth(_filterFormatTextWidth);
 		int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
 		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
 
@@ -96,7 +106,6 @@ void MainWindow::updateFilters() {
 		}
 		ImGui::PopItemWidth();
 	}
-	// TODO: filter by license
 }
 
 // https://github.com/ocornut/imgui/issues/6174
@@ -326,7 +335,7 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 
 		if (ImGui::BeginTable("Voxel Files", 3,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
+								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableSetupColumn("Thumbnail##nodeproperty");
 			ImGui::TableSetupColumn("Name##nodeproperty");

@@ -19,9 +19,12 @@ private:
 	using Super = ui::Panel;
 
 	core::DynamicArray<io::FormatDescription> _filterEntries;
-	float _filterTextWidth = -1.0f;
+
+	float _filterFormatTextWidth = -1.0f;
 	int _currentFilterFormatEntry = -1;
 	core::String _currentFilterName;
+	core::String _currentFilterLicense;
+
 	StatusBar _statusBar;
 	MenuBar _menuBar;
 	VoxelFile _selected;
