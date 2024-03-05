@@ -469,9 +469,9 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			mat.matl[i].alpha = (float)pal.color[i].a / 255.0f;
 			pal.color[i].a = 255;
 		}
-		if (material.has(palette::MaterialProperty::MaterialDiffusion)) {
+		if (material.has(palette::MaterialProperty::MaterialDensity)) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_d;
-			mat.matl[i].d = material.value(palette::MaterialDiffusion);
+			mat.matl[i].d = material.value(palette::MaterialDensity);
 		}
 		if (material.has(palette::MaterialProperty::MaterialSp)) {
 			mat.matl[i].content_flags |= k_ogt_vox_matl_have_sp;

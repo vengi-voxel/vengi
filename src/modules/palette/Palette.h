@@ -19,6 +19,7 @@ namespace palette {
 static const int PaletteMaxColors = 256;
 static const int PaletteColorNotFound = -1;
 
+// unused in vengi at the moment, but here to provide a better magicavoxel import/export experience
 enum class MaterialType {
 	Diffuse = 0, // diffuse is default
 	Metal = 1,
@@ -28,6 +29,8 @@ enum class MaterialType {
 	Media = 5,
 };
 
+// just a few of these values are used for rendering in vengi - but all are used for import/export if the format
+// supports it
 enum MaterialProperty : uint32_t {
 	MaterialNone = 0,
 
@@ -39,7 +42,7 @@ enum MaterialProperty : uint32_t {
 	MaterialFlux = 6,
 	MaterialEmit = 7,
 	MaterialLowDynamicRange = 8,
-	MaterialDiffusion = 9,
+	MaterialDensity = 9,
 	MaterialSp = 10,
 	MaterialGlossiness = 11,
 	MaterialMedia = 12,
@@ -60,7 +63,7 @@ struct Material {
 	float flux = 0.0f;
 	float emit = 0.0f;
 	float lowDynamicRange = 0.0f;
-	float diffusion = 0.0f;
+	float density = 0.0f;
 	float sp = 0.0f;
 	float glossiness = 0.0f;
 	float media = 0.0f;
@@ -72,6 +75,7 @@ struct Material {
 	void setValue(MaterialProperty n, float value);
 };
 
+// make sure to keep the order of the properties - see Material struct float values
 static constexpr const char *MaterialPropertyNames[] = {
 	"metal",
 	"roughness",
@@ -81,7 +85,7 @@ static constexpr const char *MaterialPropertyNames[] = {
 	"flux",
 	"emit",
 	"lowDynamicRange",
-	"diffusion",
+	"density",
 	"sp",
 	"glossiness",
 	"media"
@@ -155,7 +159,7 @@ public:
 	void setAttenuation(uint8_t idx, float factor = 1.0f);
 	void setFlux(uint8_t idx, float factor = 1.0f);
 	void setAlpha(uint8_t idx, float factor = 1.0f);
-	void setDiffusion(uint8_t idx, float factor = 1.0f);
+	void setDensity(uint8_t idx, float factor = 1.0f);
 	void setSp(uint8_t idx, float factor = 1.0f);
 	void setGlossiness(uint8_t idx, float factor = 1.0f);
 	void setMedia(uint8_t idx, float factor = 1.0f);

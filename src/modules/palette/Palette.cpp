@@ -902,8 +902,8 @@ void Palette::setAlpha(uint8_t idx, float factor) {
 	markDirty();
 }
 
-void Palette::setDiffusion(uint8_t idx, float factor) {
-	_materials[idx].setValue(MaterialDiffusion, factor);
+void Palette::setDensity(uint8_t idx, float factor) {
+	_materials[idx].setValue(MaterialDensity, factor);
 	markDirty();
 }
 

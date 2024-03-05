@@ -57,7 +57,7 @@ private:
 	 */
 	void save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	/**
-	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
+	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
 	 */
 	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
 												  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;

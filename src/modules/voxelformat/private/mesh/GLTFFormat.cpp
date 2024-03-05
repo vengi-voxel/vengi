@@ -499,7 +499,7 @@ void GLTFFormat::save_KHR_materials_specular(const palette::Material &material, 
 
 void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,
 													 tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
-	if (!material.has(palette::MaterialProperty::MaterialDiffusion) &&
+	if (!material.has(palette::MaterialProperty::MaterialDensity) &&
 		!material.has(palette::MaterialProperty::MaterialSpecular) &&
 		!material.has(palette::MaterialProperty::MaterialRoughness)) {
 		return;
@@ -508,7 +508,7 @@ void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
 	{
 		std::vector<tinygltf::Value> diffuseFactor(4);
-		const float diffusion = material.value(palette::MaterialProperty::MaterialDiffusion);
+		const float diffusion = material.value(palette::MaterialProperty::MaterialDensity);
 		diffuseFactor[0] = tinygltf::Value(fcolor[0] * diffusion);
 		diffuseFactor[1] = tinygltf::Value(fcolor[1] * diffusion);
 		diffuseFactor[2] = tinygltf::Value(fcolor[2] * diffusion);
