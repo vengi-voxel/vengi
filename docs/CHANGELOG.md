@@ -19,6 +19,7 @@ General:
    - Fixed `vxl/hva` loading and saving
    - Fixed missing `pcubes` write support
    - Support palette materials
+   - Optimized qubicle QB color quantization
 
 VoxBrowser:
 

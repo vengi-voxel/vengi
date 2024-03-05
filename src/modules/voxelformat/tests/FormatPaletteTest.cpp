@@ -31,8 +31,9 @@ protected:
 
 		io::FileStream rgbStream(open(rgbFile));
 		palette::Palette rgbPalette;
-		ASSERT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx));
-		ASSERT_TRUE(checkNoAlpha(rgbPalette));
+		EXPECT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx))
+			<< "Found expected amount of colors in the rgb format";
+		ASSERT_TRUE(checkNoAlpha(rgbPalette)) << "Found alpha in the rgb palette";
 
 		rgbStream.seek(0);
 
@@ -44,8 +45,9 @@ protected:
 		palWriteStream.seek(0);
 
 		palette::Palette palPalette;
-		ASSERT_EQ(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), palExpectedColors);
-		//ASSERT_TRUE(checkNoAlpha(palPalette));
+		EXPECT_EQ(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), palExpectedColors)
+			<< "Found expected amount of colors in the palette format";
+		// ASSERT_TRUE(checkNoAlpha(palPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
 			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))

@@ -178,18 +178,18 @@ TEST_F(ConvertTest, testGoxToQb) {
 TEST_F(ConvertTest, testQBCLToQb) {
 	QBCLFormat src;
 	QBFormat target;
-	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette)) | voxel::ValidateFlags::PaletteColorOrderDiffers;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbcl", src, "convert-qubicle.qb", target, flags);
 }
 
 TEST_F(ConvertTest, testQbtToQb) {
 	QBTFormat src;
 	QBFormat target;
-	// qubicle doesn't store all colors in the palette - but only the used colors - that's why the amount might differ
 	// qb doesn't store a pivot
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette);
+	// the palette order depends on the order that we visited the voxels - as we are writing rgba values here
+	const voxel::ValidateFlags flags = (voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Pivot | voxel::ValidateFlags::Palette)) | voxel::ValidateFlags::PaletteColorOrderDiffers;
 	testLoadSaveAndLoadSceneGraph("qubicle.qbt", src, "convert-qubicle.qb", target, flags);
 }
 
@@ -214,7 +214,8 @@ TEST_F(ConvertTest, testQbToVXR) {
 TEST_F(ConvertTest, testQbToQBCL) {
 	QBFormat src;
 	QBCLFormat target;
-	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.qbcl", target);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::PaletteColorOrderDiffers);
+	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "convert-rgb.qbcl", target, flags);
 }
 
 TEST_F(ConvertTest, testQbToVXM) {

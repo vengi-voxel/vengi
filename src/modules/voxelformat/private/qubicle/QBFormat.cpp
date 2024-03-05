@@ -15,6 +15,7 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxelformat/Format.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
@@ -361,7 +362,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	return true;
 }
 
-bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette::Palette &palette) {
+bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, RGBAMap &colors) {
 	uint8_t nameLength;
 	wrap(stream.readUInt8(nameLength));
 	if (stream.skip(nameLength) == -1) {
@@ -390,7 +391,6 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 	wrap(stream.readInt32(tmp));
 	wrap(stream.readInt32(tmp));
 
-	RGBAMap colors;
 	if (state._compressed == Compression::None) {
 		Log::debug("qb matrix uncompressed");
 		for (uint32_t z = 0; z < size.z; ++z) {
@@ -426,19 +426,12 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 				if (color.a == 0) {
 					continue;
 				}
-				colors.put(flattenRGB(color.r, color.g, color.b), true);
+				const core::RGBA flattened = flattenRGB(color.r, color.g, color.b);
+				colors.put(flattened, true);
 			}
 			++z;
 		}
 	}
-	const size_t colorCount = colors.size();
-	core::Buffer<core::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
-	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
-	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	Log::debug("%i colors loaded from %i individual rgb colors", palette.colorCount(), (int)colorBuffer.size());
 	return true;
 }
 
@@ -465,14 +458,22 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return 0;
 	}
+	RGBAMap colors;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
-		if (!readPalette(state, stream, palette)) {
+		if (!readPalette(state, stream, colors)) {
 			Log::error("Failed to load the matrix colors %u", i);
 			break;
 		}
 	}
-	Log::debug("%i qb colors loaded", palette.colorCount());
+	const size_t colorCount = colors.size();
+	core::Buffer<core::RGBA> colorBuffer;
+	colorBuffer.reserve(colorCount);
+	for (const auto &e : colors) {
+		colorBuffer.push_back(e->first);
+	}
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	Log::debug("%i colors loaded from %i individual rgb colors", palette.colorCount(), (int)colorBuffer.size());
 	return palette.colorCount();
 }
 

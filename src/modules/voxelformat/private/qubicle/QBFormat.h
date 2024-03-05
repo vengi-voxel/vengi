@@ -47,7 +47,7 @@ private:
 	voxel::Voxel getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup);
 	bool readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					palette::PaletteLookup &palLookup);
-	bool readPalette(State &state, io::SeekableReadStream &stream, palette::Palette &palette);
+	bool readPalette(State &state, io::SeekableReadStream &stream, RGBAMap &colors);
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
