@@ -844,6 +844,16 @@ bool Palette::setMaterialProperty(uint8_t idx, const core::String &name, float v
 	return false;
 }
 
+float Palette::materialProperty(uint8_t idx, const core::String &name) const {
+	const Material &mat = _materials[idx];
+	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
+		if (MaterialPropertyNames[i] == name) {
+			return mat.value((MaterialProperty)i);
+		}
+	}
+	return 0.0f;
+}
+
 bool Palette::hasAlpha(uint8_t idx) const {
 	return _colors[idx].a < 255;
 }

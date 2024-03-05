@@ -153,6 +153,9 @@ The functions are:
 
 * `load(palette)`: Allows to load a [built-in palette](Palette.md) or a filename to a supported [palette format](Formats.md).
 
+* `material(paletteIndex, material)`: Get the value of the material property for the given palette index.
+> Valid material names are: `metal`, `roughness`, `specular`, `indexOfRefraction`, `attenuation`, `flux`, `emit`, `lowDynamicRange`, `diffusion`, `sp`, `glossiness`, `media`
+
 * `match(r, g, b)`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
 
 * `setColor(paletteIndex, red, green, blue, [alpha])`: Change the color of a palette entry to the given rgba values in the range `[0-255]`.

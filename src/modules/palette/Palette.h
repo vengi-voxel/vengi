@@ -145,6 +145,7 @@ public:
 	bool hasEmit(uint8_t idx) const;
 	void setMaterialType(uint8_t idx, MaterialType type);
 	bool setMaterialProperty(uint8_t idx, const core::String &name, float value);
+	float materialProperty(uint8_t idx, const core::String &name) const;
 
 	void setEmit(uint8_t idx, float factor = 1.0f);
 	void setMetal(uint8_t idx, float factor = 1.0f);
