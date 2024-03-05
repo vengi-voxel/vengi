@@ -157,6 +157,9 @@ The functions are:
 
 * `setColor(paletteIndex, red, green, blue, [alpha])`: Change the color of a palette entry to the given rgba values in the range `[0-255]`.
 
+* `setMaterial(paletteIndex, material, value)`: Set the value of the material property for the given palette index.
+> Valid material names are: `metal`, `roughness`, `specular`, `indexOfRefraction`, `attenuation`, `flux`, `emit`, `lowDynamicRange`, `diffusion`, `sp`, `glossiness`, `media`
+
 * `similar(paletteindex, [coloramount])`: Return a table with similar colors given by their palette index.
 
 They are available as e.g. `palette:color([...])`, `palette:match([...])` and so on.

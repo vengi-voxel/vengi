@@ -536,6 +536,15 @@ static int luaVoxel_palette_setcolor(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_palette_setmaterialproperty(lua_State* s) {
+	palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t idx = luaL_checkinteger(s, 2);
+	const char *name = luaL_checkstring(s, 3);
+	const float value = (float)luaL_checknumber(s, 4);
+	palette->setMaterialProperty(idx, name, value);
+	return 0;
+}
+
 static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	core::DynamicArray<glm::vec4> materialColors;
@@ -1064,6 +1073,7 @@ static void prepareState(lua_State* s) {
 		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},
 		{"similar", luaVoxel_palette_similar},
+		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
@@ -1075,6 +1085,7 @@ static void prepareState(lua_State* s) {
 		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},
 		{"similar", luaVoxel_palette_similar},
+		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{"__gc", luaVoxel_palette_gc},
 		{nullptr, nullptr}
 	};
