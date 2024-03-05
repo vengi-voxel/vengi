@@ -103,7 +103,7 @@ app::AppState VoxBrowser::onInit() {
 		auto sources = downloader.sources();
 		Log::info("Found %d online sources", (int)sources.size());
 		for (const voxbrowser::VoxelSource &source : sources) {
-			const core::DynamicArray<voxbrowser::VoxelFile> &files = downloader.resolve(source);
+			const core::DynamicArray<voxbrowser::VoxelFile> &files = downloader.resolve(_filesystem, source);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
 		return files;
@@ -136,7 +136,7 @@ void VoxBrowser::downloadAll() {
 					continue;
 				}
 				voxbrowser::Downloader downloader;
-				downloader.download(voxelFile);
+				downloader.download(_filesystem, voxelFile);
 				const float p = ((float)current / (float)all * 100.0f);
 				_downloadProgress = (int)p;
 			}

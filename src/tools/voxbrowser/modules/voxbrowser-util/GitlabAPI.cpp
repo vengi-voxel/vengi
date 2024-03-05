@@ -18,8 +18,8 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 	return core::string::format("https://gitlab.com/veloren/veloren/-/raw/%s/%s", branch.c_str(), path.c_str());
 }
 
-core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, const core::String &branch,
-											const core::String &path) {
+core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem, const core::String &repository,
+											const core::String &branch, const core::String &path) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String encoded = core::string::urlEncode(repository);
 	const core::String urlPages = core::string::format(
@@ -45,7 +45,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const core::String &repository, cons
 			encoded.c_str(), branch.c_str(), page, path.c_str());
 		core::String file = core::string::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
 		core::string::replaceAllChars(file, '/', '-');
-		http::HttpCacheStream stream(io::filesystem(), file, url);
+		http::HttpCacheStream stream(filesystem, file, url);
 		if (!stream.valid()) {
 			return entries;
 		}

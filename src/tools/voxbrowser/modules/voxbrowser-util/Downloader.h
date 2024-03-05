@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/String.h"
-#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
+#include "io/Filesystem.h"
 
 namespace voxbrowser {
 
@@ -64,14 +64,14 @@ using VoxelFileMap = core::DynamicStringMap<VoxelFiles>;
 
 class Downloader {
 private:
-	void handleArchive(const VoxelFile &file, core::DynamicArray<VoxelFile> &files) const;
+	void handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &file, core::DynamicArray<VoxelFile> &files) const;
 
 public:
 	core::DynamicArray<VoxelSource> sources();
 
-	core::DynamicArray<VoxelFile> resolve(const VoxelSource &source) const;
+	core::DynamicArray<VoxelFile> resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source) const;
 
-	bool download(const VoxelFile &file) const;
+	bool download(const io::FilesystemPtr &filesystem, const VoxelFile &file) const;
 };
 
 } // namespace voxbrowser

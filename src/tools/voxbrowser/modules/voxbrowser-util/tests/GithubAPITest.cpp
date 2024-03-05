@@ -10,7 +10,7 @@ namespace voxbrowser {
 class GithubAPITest : public app::AbstractTest {};
 
 TEST_F(GithubAPITest, DISABLE_testReposGitTrees) {
-	const auto &sources = github::reposGitTrees("vengi-voxel/voxelized", "main");
+	const auto &sources = github::reposGitTrees(_testApp->filesystem(), "vengi-voxel/voxelized", "main");
 	ASSERT_FALSE(sources.empty());
 }
 

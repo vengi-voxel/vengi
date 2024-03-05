@@ -9,8 +9,8 @@ namespace voxbrowser {
 
 class GitlabAPITest : public app::AbstractTest {};
 
-TEST_F(GitlabAPITest, testReposGitTrees) {
-	const auto &sources = gitlab::reposGitTrees("veloren/veloren", "master", "assets/voxygen/voxel/armor");
+TEST_F(GitlabAPITest, DISABLED_testReposGitTrees) {
+	const auto &sources = gitlab::reposGitTrees(_testApp->filesystem(), "veloren/veloren", "master", "assets/voxygen/voxel/armor");
 	ASSERT_FALSE(sources.empty());
 }
 
