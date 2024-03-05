@@ -6,7 +6,7 @@
 
 .SH SYNOPSIS
 .PP
-\fB@NAME@\fR [\fIoption\fR] -s <size> infile outfile
+\fB@NAME@\fR [\fIoption\fR] -s <size> --input infile --output outfile
 .SH DESCRIPTION
 \fB@COMMANDLINE@\fP is a command line application that can create thumbnails from
 voxel models. .
@@ -14,6 +14,10 @@ voxel models. .
 .TP
 \fB\-s\fR
 Specify the size (same width and height) of the thumbnail.
+
+.TP
+\fB\--camera-mode\fR
+Allow to specify the camera mode to render the scene with. Valid values are top, left, right, back, bottom and free
 
 .TP
 \fB\--completion bash\fR
@@ -26,6 +30,10 @@ Print usage information with a a full list of cvars
 .TP
 \fB\--trace|--debug|--info\fR
 Enable trace, debug or info logging
+
+.TP
+\fB\--use-scene-camera\fR
+Use a camera that is available in the scene. Not all formats are supporting this feature.
 
 .TP
 \fB\--version|-v\fR
