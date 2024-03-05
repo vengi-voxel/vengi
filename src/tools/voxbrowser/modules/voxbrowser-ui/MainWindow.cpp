@@ -327,9 +327,10 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 		if (ImGui::BeginTable("Voxel Files", 3,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
 								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
-			ImGui::TableSetupColumn("Thumbnail##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
-			ImGui::TableSetupColumn("Name##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
-			ImGui::TableSetupColumn("License##nodeproperty", ImGuiTableColumnFlags_AngledHeader);
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableSetupColumn("Thumbnail##nodeproperty");
+			ImGui::TableSetupColumn("Name##nodeproperty");
+			ImGui::TableSetupColumn("License##nodeproperty");
 			ImGui::TableHeadersRow();
 			for (const auto &entry : voxelFilesMap) {
 				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
