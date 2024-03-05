@@ -379,9 +379,13 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		const scenegraph::SceneGraphNode &node1 = *iter1;
 		const scenegraph::SceneGraphNode &node2 = *iter2;
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
-			paletteComparator(node1.palette(), node2.palette(), maxDelta);
+			voxel::paletteComparator(node1.palette(), node2.palette(), maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			partialPaletteComparator(node1.palette(), node2.palette(), maxDelta);
+			voxel::partialPaletteComparator(node1.palette(), node2.palette(), maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
+			voxel::paletteComparatorScaled(node1.palette(), node2.palette(), (int)maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
+			voxel::orderPaletteComparator(node1.palette(), node2.palette(), maxDelta);
 		}
 		// it's intended that includingRegion is false here!
 		volumeComparator(*node1.volume(), node1.palette(), *node2.volume(), node2.palette(), flags, maxDelta);
