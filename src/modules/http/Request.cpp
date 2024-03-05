@@ -326,6 +326,17 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 	if (statusCode) {
 		*statusCode = (int)fetch->status;
 	}
+	if (outheaders && fetch->numHeaders > 0) {
+		for (int i = 0; i < fetch->numHeaders; ++i) {
+			const char *header = fetch->headers[i];
+			const char *delimiter = strchr(header, ':');
+			if (delimiter != nullptr) {
+				core::String key(header, delimiter - header);
+				core::String value(delimiter + 2); // Skip ': ' characters
+				outheaders->put(key, value);
+			}
+		}
+	}
 	Log::debug("Got status code %i for %s", (int)fetch->status, _url.c_str());
 	if (stream.write(fetch->data, fetch->numBytes) == -1) {
 		Log::error("Failed to write response with %i bytes for url %s", (int)fetch->numBytes, _url.c_str());
