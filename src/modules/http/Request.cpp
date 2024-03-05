@@ -16,6 +16,7 @@
 #include <windows.h>
 #include <winhttp.h>
 #include <string>
+#include <sstream>
 #elif EMSCRIPTEN
 #include <emscripten/fetch.h>
 #elif USE_CURL
