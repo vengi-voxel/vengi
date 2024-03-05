@@ -53,6 +53,10 @@ private:
 	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	void load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
 	/**
+	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_volume
+	 */
+	void save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	/**
 	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/
 	 */
 	void save_KHR_materials_pbrSpecularGlossiness(const palette::Material &material, const core::RGBA &color,

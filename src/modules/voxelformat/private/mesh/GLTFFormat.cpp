@@ -452,6 +452,24 @@ void GLTFFormat::save_KHR_materials_emissive_strength(const palette::Material &m
 	// addExtension(gltfModel, "KHR_materials_emissive_strength");
 }
 
+void GLTFFormat::save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
+	if (!material.has(palette::MaterialProperty::MaterialAttenuation)) {
+		return;
+	}
+	const float attenuation = material.value(palette::MaterialProperty::MaterialAttenuation);
+	tinygltf::Value::Object sg;
+	const glm::vec4 &fcolor = core::Color::fromRGBA(color);
+	std::vector<tinygltf::Value> attenuationColor(3);
+	attenuationColor[0] = tinygltf::Value(fcolor[0] * attenuation);
+	attenuationColor[1] = tinygltf::Value(fcolor[1] * attenuation);
+	attenuationColor[2] = tinygltf::Value(fcolor[2] * attenuation);
+	sg["attenuationColor"] = tinygltf::Value(attenuationColor);
+
+	gltfMaterial.extensions["KHR_materials_volume"] = tinygltf::Value(sg);
+	addExtension(gltfModel, "KHR_materials_volume");
+
+}
+
 void GLTFFormat::save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const {
 	if (!material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
 		return;
@@ -633,6 +651,7 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 				}
 				if (!KHR_materials_pbrSpecularGlossiness) {
 					save_KHR_materials_ior(material, gltfMaterial, gltfModel);
+					save_KHR_materials_volume(material, color, gltfMaterial, gltfModel);
 				}
 				save_KHR_materials_emissive_strength(material, gltfMaterial, gltfModel);
 			}
