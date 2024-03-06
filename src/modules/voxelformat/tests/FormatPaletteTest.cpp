@@ -10,6 +10,7 @@
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
@@ -25,7 +26,9 @@ protected:
 	}
 
 	// the palettes have to match, as all the colors from the rgb format are saved to the palette of the target format
-	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors, voxelformat::Format &paletteFormat, const core::String &palFile, size_t palExpectedColors) {
+	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors,
+								voxelformat::Format &paletteFormat, const core::String &palFile,
+								voxel::ValidateFlags flags = voxel::ValidateFlags::PaletteMinMatchingColors, float maxDelta = 0.00001f) {
 		SCOPED_TRACE("rgb file: " + rgbFile);
 		SCOPED_TRACE("pal file: " + palFile);
 
@@ -45,9 +48,19 @@ protected:
 		palWriteStream.seek(0);
 
 		palette::Palette palPalette;
-		EXPECT_EQ(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), palExpectedColors)
+		ASSERT_GT(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), 0u)
 			<< "Found expected amount of colors in the palette format";
 		// ASSERT_TRUE(checkNoAlpha(palPalette));
+
+		if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
+			voxel::paletteComparator(palPalette, rgbPalette, maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
+			voxel::partialPaletteComparator(palPalette, rgbPalette, maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
+			voxel::paletteComparatorScaled(palPalette, rgbPalette, (int)maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
+			voxel::orderPaletteComparator(palPalette, rgbPalette, maxDelta);
+		}
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
 			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))
@@ -153,7 +166,7 @@ protected:
 TEST_F(FormatPaletteTest, testQbToVox) {
 	QBFormat rgb;
 	VoxFormat pal;
-	testRGBToPaletteFormat(rgb, "chr_knight.qb", 17, pal, "chr_knight-qbtovox.vox", 17);
+	testRGBToPaletteFormat(rgb, "chr_knight.qb", 17, pal, "chr_knight-qbtovox.vox");
 }
 
 TEST_F(FormatPaletteTest, testQbToQb) {
