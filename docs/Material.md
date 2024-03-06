@@ -1,14 +1,14 @@
 # Material
 
-Each color entry in the [palette](Palette.md) can have several material properties. Most of them are not handled in the vengi renderers, but can be useful when exporting the voxel to other [formats](Formats.md).
+Each color entry in the [palette](Palette.md) can have several material properties. Most of them are not handled in the vengi renderers, but can be useful when exporting the voxels to other [formats](Formats.md).
 
 ## Materials
 
 > The material support in vengi is modelled after magicavoxel.
 
-The following material values are imported from magicavoxel and a few of them are exported to the GLTF-[format](Formats.md).
+The following material names are imported from magicavoxel and a few of them are exported to the GLTF-[format](Formats.md).
 
-| Description           | GLTF mapping                                               |
+| Material name         | GLTF mapping                                               |
 | --------------------- | ---------------------------------------------------------- |
 | `metal`               | pbrMetallicRoughness                                       |
 | `roughness`           | KHR_materials_pbrSpecularGlossiness, pbrMetallicRoughness  |

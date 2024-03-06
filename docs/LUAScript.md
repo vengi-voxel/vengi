@@ -141,7 +141,7 @@ local scenegraphnode = [...]
 local name = scenegraphnode:name()
 ```
 
-## Color
+## Palette and material
 
 The node palette (`node:palette()`) has several methods to work with colors. E.g. to find a closest possible match for the given palette index.
 
