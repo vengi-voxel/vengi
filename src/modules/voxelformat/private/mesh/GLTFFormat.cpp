@@ -645,10 +645,10 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 
 				if (KHR_materials_pbrSpecularGlossiness) {
 					save_KHR_materials_pbrSpecularGlossiness(material, color, gltfMaterial, gltfModel);
-				} else if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
-					save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
-				}
-				if (!KHR_materials_pbrSpecularGlossiness) {
+				} else {
+					if (core::Var::getSafe(cfg::VoxFormatGLTF_KHR_materials_specular)->boolVal()) {
+						save_KHR_materials_specular(material, color, gltfMaterial, gltfModel);
+					}
 					save_KHR_materials_ior(material, gltfMaterial, gltfModel);
 					save_KHR_materials_volume(material, color, gltfMaterial, gltfModel);
 				}
