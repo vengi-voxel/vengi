@@ -5,7 +5,6 @@
 #pragma once
 
 #include "voxelformat/Format.h"
-#include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
 
 namespace voxelformat {
@@ -39,29 +38,11 @@ protected:
 	};
 
 	struct AnimaToonVolume {
-		int xSize = 32;
-		int ySize = 32;
-		int zSize = 32;
+		int xSize = 40;
+		int ySize = 40;
+		int zSize = 40;
 		core::DynamicArray<AnimaToonVoxel> voxels;
 	};
-
-	template<class FUNC>
-	bool parseJsonArray(core::Tokenizer &tokenizer, FUNC func) {
-		if (!tokenizer.hasNext()) {
-			return false;
-		}
-		if (tokenizer.next() != "[") {
-			return false;
-		}
-		while (tokenizer.hasNext()) {
-			const core::String &token = tokenizer.next();
-			if (token == "]") {
-				return true;
-			}
-			func(token);
-		}
-		return false;
-	}
 
 	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,

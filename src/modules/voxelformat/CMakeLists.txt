@@ -236,6 +236,11 @@ set(TEST_FILES
 	"tests/giant_dinosaur/Tail4_Reptiles_Biped_Medium_Dinosaur.vxm"
 	"tests/giant_dinosaur/Torax1_Reptiles_Biped_Medium_Dinosaur.vxm"
 	"tests/giant_dinosaur/Torax2_Reptiles_Biped_Medium_Dinosaur.vxm"
+	"tests/Screenshot_2022_Mar_09_13_43_20.png"
+	"tests/save_2022_Mar_09_13_43_20_Anima Toon.pscn"
+	"tests/save_2022_Mar_09_13_43_20_Anima Toon.scn"
+	"tests/Anima Toon anim.scn"
+	"tests/Anima Toon.scn"
 	tests/voxelbuilder.vbx
 	tests/robo.vox
 	tests/robo.qb

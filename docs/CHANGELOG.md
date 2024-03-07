@@ -26,6 +26,7 @@ General:
    - Improved texture coordinates for mesh exports
    - Improved bash completion script creation
    - Improved scene camera centering
+   - Fixed Anima Toon (`scn`) volume loading support
 
 VoxBrowser:
 
