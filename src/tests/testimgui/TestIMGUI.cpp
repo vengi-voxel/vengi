@@ -5,6 +5,7 @@
 #include "implot.h"
 #include "testcore/TestAppMain.h"
 #include "core/Color.h"
+#include "core/StringUtil.h"
 #include "core/Log.h"
 #include "video/RendererInterface.h"
 

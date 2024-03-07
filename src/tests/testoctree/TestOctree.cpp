@@ -5,6 +5,7 @@
 #include "core/Color.h"
 #include "video/ScopedLineWidth.h"
 #include "core/collection/Array.h"
+#include "core/StringUtil.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include <SDL.h>

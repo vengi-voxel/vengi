@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/BindingContext.h"
-#include "core/Tokenizer.h"
+#include "core/String.h"
 #include <unordered_map>
 
 namespace util {
