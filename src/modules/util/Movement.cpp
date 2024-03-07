@@ -10,6 +10,7 @@
 #endif
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/functions.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace util {
 
