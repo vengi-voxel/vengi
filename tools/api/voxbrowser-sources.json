@@ -39,6 +39,16 @@
 			}
 		},
 		{
+			"name": "Vengi",
+			"license": "custom",
+			"thumbnail": "https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			"github": {
+				"repo": "vengi-voxel/vengi",
+				"path": "data",
+				"commit": "main",
+			}
+		},
+		{
 			"name": "vox-models",
 			"license": "Creative Commons Attribution 4.0 International",
 			"github": {
