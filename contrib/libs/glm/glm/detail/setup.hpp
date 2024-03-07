@@ -5,10 +5,9 @@
 
 #define GLM_VERSION_MAJOR 1
 #define GLM_VERSION_MINOR 0
-#define GLM_VERSION_PATCH 1
+#define GLM_VERSION_PATCH 2
 #define GLM_VERSION_REVISION 0 // Deprecated
 #define GLM_VERSION 1000 // Deprecated
-#define GLM_VERSION_MESSAGE "GLM: version 1.0.1"
 
 #define GLM_MAKE_API_VERSION(variant, major, minor, patch) \
     ((((uint32_t)(variant)) << 29U) | (((uint32_t)(major)) << 22U) | (((uint32_t)(minor)) << 12U) | ((uint32_t)(patch)))
@@ -977,7 +976,7 @@ namespace detail
 #		define GLM_STR(x) GLM_STR_HELPER(x)
 
 	// Report GLM version
-#		pragma message (GLM_STR(GLM_VERSION_MESSAGE))
+#		pragma message ("GLM: version " GLM_STR(GLM_VERSION_MAJOR) "." GLM_STR(GLM_VERSION_MINOR) "." GLM_STR(GLM_VERSION_PATCH))
 
 	// Report C++ language
 #	if (GLM_LANG & GLM_LANG_CXX20_FLAG) && (GLM_LANG & GLM_LANG_EXT)
