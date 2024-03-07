@@ -381,7 +381,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	const FrameIndex endFrameIdx = target.frameIdx;
 	const double deltaFrameSeconds =
 		scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
+	const float factor = glm::clamp((float)(deltaFrameSeconds - (double)startFrameIdx), 0.0f, 1.0f);
 
 	FrameTransform transform;
 	transform.translation = glm::mix(source.transform.translation, target.transform.translation, factor);
