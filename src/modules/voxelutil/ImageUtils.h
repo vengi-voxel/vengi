@@ -5,7 +5,6 @@
 #pragma once
 
 #include "image/Image.h"
-#include "voxel/RawVolume.h"
 
 namespace voxel {
 class RawVolumeWrapper;
