@@ -237,11 +237,11 @@ set(TEST_FILES
 	"tests/giant_dinosaur/Torax1_Reptiles_Biped_Medium_Dinosaur.vxm"
 	"tests/giant_dinosaur/Torax2_Reptiles_Biped_Medium_Dinosaur.vxm"
 	tests/voxelbuilder.vbx
-	voxedit/robo.vox
-	voxedit/robo.qb
-	voxedit/chr_knight.qb
-	voxedit/chr_knight.qbcl
-	voxedit/chr_knight.gox
+	tests/robo.vox
+	tests/robo.qb
+	tests/chr_knight.qb
+	tests/chr_knight.qbcl
+	tests/chr_knight.gox
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
