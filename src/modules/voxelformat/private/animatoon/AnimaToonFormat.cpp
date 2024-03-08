@@ -3,6 +3,7 @@
  */
 
 #include "AnimaToonFormat.h"
+#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Base64.h"
@@ -12,6 +13,10 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include <json.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/quaternion.hpp>
 
 namespace voxelformat {
 
@@ -73,6 +78,36 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 		modelNodeIds.push_back(sceneGraph.emplace(core::move(node)));
 	}
 
+	glm::vec3 cameraPos(0.0f);
+	glm::quat cameraRot = glm::quat_identity<float, glm::defaultp>();
+	glm::vec3 cameraTarget(0.0f);
+	auto mainCamPosIter = json.find("MainCamPosition");
+	if (mainCamPosIter != json.end()) {
+		cameraPos = glm::vec3((*mainCamPosIter).value("x", 0.0f), (*mainCamPosIter).value("y", 0.0f),
+							  (*mainCamPosIter).value("z", 0.0f));
+	}
+	auto mainCamRotIter = json.find("MainCamRotation");
+	if (mainCamRotIter != json.end()) {
+		cameraRot = glm::quat((*mainCamRotIter).value("x", 0.0f), (*mainCamRotIter).value("y", 0.0f),
+							  (*mainCamRotIter).value("z", 0.0f), (*mainCamRotIter)["w"]);
+	}
+	auto camTargetPosIter = json.find("CamTargetPostion");
+	if (camTargetPosIter != json.end()) {
+		cameraTarget = glm::vec3((*camTargetPosIter).value("x", 0.0f), (*camTargetPosIter).value("y", 0.0f),
+								 (*camTargetPosIter).value("z", 0.0f));
+	}
+
+	const glm::mat4 &orientation = glm::mat4_cast(cameraRot);
+	const glm::mat4 &viewMatrix = glm::translate(orientation, cameraPos);
+	scenegraph::SceneGraphNodeCamera camNode;
+	camNode.setName("Camera");
+	scenegraph::SceneGraphTransform transform;
+	transform.setWorldMatrix(viewMatrix);
+	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+	camNode.setTransform(keyFrameIdx, transform);
+	camNode.setPerspective();
+	sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
+
 	// TODO: use me
 #if 0
 	for (const auto &savedPos : json["savedPositionsList"]) {
@@ -116,21 +151,6 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 		const core::RGBA color(e["r"], e["g"], e["b"], e["a"]);
 	}
 	for (const auto &e : json["ImportModelSave"]) {
-	}
-	auto mainCamPosIter = json.find("MainCamPosition");
-	if (mainCamPosIter != json.end()) {
-		const glm::vec3 pos((*mainCamPosIter).value("x", 0.0f), (*mainCamPosIter).value("y", 0.0f),
-							(*mainCamPosIter).value("z", 0.0f));
-	}
-	auto mainCamRotIter = json.find("MainCamRotation");
-	if (mainCamRotIter != json.end()) {
-		const glm::quat rot((*mainCamRotIter).value("x", 0.0f), (*mainCamRotIter).value("y", 0.0f),
-							(*mainCamRotIter).value("z", 0.0f), (*mainCamRotIter)["w"]);
-	}
-	auto camTargetPosIter = json.find("CamTargetPostion");
-	if (camTargetPosIter != json.end()) {
-		const glm::vec3 pos((*camTargetPosIter).value("x", 0.0f), (*camTargetPosIter).value("y", 0.0f),
-							(*camTargetPosIter).value("z", 0.0f));
 	}
 #endif
 	return true;
