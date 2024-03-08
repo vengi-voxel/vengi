@@ -201,7 +201,7 @@ void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int
 	EXPECT_EQ(image->height(), height) << image::print(image);
 	const core::RGBA color = image->colorAt(expectedX, expectedY);
 	EXPECT_EQ(color, expectedColor) << "expected " << core::Color::print(expectedColor) << " but got "
-									<< core::Color::print(color) << "\n"
+									<< core::Color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
 									<< image::print(image);
 }
 

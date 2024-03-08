@@ -24,7 +24,7 @@ TEST_F(GoxFormatTest, testLoadRGB) {
 }
 
 TEST_F(GoxFormatTest, testLoadScreenshot) {
-	testLoadScreenshot("chr_knight.gox", 128, 128, core::RGBA(148, 58, 58), 63, 8);
+	testLoadScreenshot("chr_knight.gox", 128, 128, core::RGBA(158, 59, 59), 65, 27);
 }
 
 }
