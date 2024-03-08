@@ -14,7 +14,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  *
- * @todo Not yet working
+ * @todo Animations are not yet working
  */
 class AnimaToonFormat : public RGBAFormat {
 protected:
