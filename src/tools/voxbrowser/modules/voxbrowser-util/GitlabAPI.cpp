@@ -3,14 +3,13 @@
  */
 
 #include "GitlabAPI.h"
-#include "JsonUtil.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/collection/StringMap.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"
+#include <json.hpp>
 
 namespace gitlab {
 
@@ -59,11 +58,11 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 		}
 		Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)jsonResponse.size());
 		for (const auto &entry : jsonResponse) {
-			if (get(entry, "type") != "blob") {
+			if (entry.value("type", "") != "blob") {
 				continue;
 			}
 			TreeEntry treeEntry;
-			treeEntry.path = get(entry, "path");
+			treeEntry.path = entry.value("path", "").c_str();
 			if (!path.empty() && !core::string::startsWith(treeEntry.path, path)) {
 				continue;
 			}

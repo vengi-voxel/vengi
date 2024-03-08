@@ -2,7 +2,6 @@ set(SRCS
 	Downloader.h Downloader.cpp
 	GithubAPI.h GithubAPI.cpp
 	GitlabAPI.h GitlabAPI.cpp
-	JsonUtil.h JsonUtil.cpp
 )
 
 set(LIB voxbrowser-util)

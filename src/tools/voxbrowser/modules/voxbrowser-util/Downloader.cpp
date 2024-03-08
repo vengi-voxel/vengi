@@ -3,7 +3,6 @@
  */
 
 #include "Downloader.h"
-#include "JsonUtil.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -19,6 +18,7 @@
 #include "voxbrowser-util/GithubAPI.h"
 #include "voxbrowser-util/GitlabAPI.h"
 #include "voxelformat/VolumeFormat.h"
+#include <json.hpp>
 
 namespace voxbrowser {
 
@@ -56,30 +56,30 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 	jsonResponse = jsonResponse["sources"];
 	for (auto &entry : jsonResponse) {
 		VoxelSource source;
-		source.name = get(entry, "name");
-		source.license = get(entry, "license");
-		source.thumbnail = get(entry, "thumbnail");
+		source.name = entry.value("name", "").c_str();
+		source.license = entry.value("license", "").c_str();
+		source.thumbnail = entry.value("thumbnail", "").c_str();
 		if (entry.contains("github")) {
 			source.provider = "github";
 			const auto &githubNode = entry["github"];
-			source.github.repo = get(githubNode, "repo");
-			source.github.commit = get(githubNode, "commit");
-			source.github.path = get(githubNode, "path");
+			source.github.repo = githubNode.value("repo", "").c_str();
+			source.github.commit = githubNode.value("commit", "").c_str();
+			source.github.path = githubNode.value("path", "").c_str();
 			// the github license is a file in the repo, so we need to query the tree for it
 			// and download it
-			source.github.license = get(githubNode, "license");
+			source.github.license = githubNode.value("license", "").c_str();
 		} else if (entry.contains("gitlab")) {
 			source.provider = "gitlab";
 			const auto &gitlabNode = entry["gitlab"];
-			source.gitlab.repo = get(gitlabNode, "repo");
-			source.gitlab.commit = get(gitlabNode, "commit");
-			source.gitlab.path = get(gitlabNode, "path");
+			source.gitlab.repo = gitlabNode.value("repo", "").c_str();
+			source.gitlab.commit = gitlabNode.value("commit", "").c_str();
+			source.gitlab.path = gitlabNode.value("path", "").c_str();
 			// the gitlab license is a file in the repo, so we need to query the tree for it
 			// and download it
-			source.gitlab.license = get(gitlabNode, "license");
+			source.gitlab.license = gitlabNode.value("license", "").c_str();
 		} else if (entry.contains("single")) {
 			source.provider = "single";
-			source.single.url = get(entry["single"], "url");
+			source.single.url = entry["single"].value("url", "").c_str();
 		}
 		sources.push_back(source);
 	}
