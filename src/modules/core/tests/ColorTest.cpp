@@ -150,4 +150,18 @@ TEST(ColorTest, testClosestMatch) {
 	EXPECT_EQ(3, index);
 }
 
+TEST(ColorTest, testDistanceMin) {
+	const core::RGBA color1(255, 0, 0, 255);
+	const core::RGBA color2(255, 0, 0, 255);
+	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistance(color1, color2));
+	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistanceApprox(color1, color2));
+}
+
+TEST(ColorTest, testDistanceMax) {
+	const core::RGBA color1(0, 0, 0, 255);
+	const core::RGBA color2(255, 255, 255, 255);
+	EXPECT_FLOAT_EQ(0.1f, core::Color::getDistance(color1, color2));
+	EXPECT_FLOAT_EQ(584970.0f, core::Color::getDistanceApprox(color1, color2));
+}
+
 }

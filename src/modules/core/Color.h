@@ -46,6 +46,8 @@ public:
 	static const glm::vec4& LightBrown();
 	static const glm::vec4& DarkBrown();
 
+	// https://www.compuphase.com/cmetric.htm
+	static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2);
 	static float getDistance(RGBA rgba, RGBA rgba2);
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
 	static float getDistance(RGBA color, float hue, float saturation, float brightness);

@@ -800,7 +800,21 @@ core::String Color::print(RGBA rgba, bool colorAsHex) {
 	return buf;
 }
 
+float Color::getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
+	if (rgba == rgba2) {
+		return 0.0f;
+	}
+	const int rmean = (rgba2.r + rgba.r) / 2;
+	const int r = rgba2.r - rgba.r;
+	const int g = rgba2.g - rgba.g;
+	const int b = rgba2.b - rgba.b;
+	return (float)(((512 + rmean) * r * r) >> 8) + 4.0f * g * g + (float)(((767 - rmean) * b * b) >> 8);
+}
+
 float Color::getDistance(RGBA rgba, RGBA rgba2) {
+	if (rgba == rgba2) {
+		return 0.0f;
+	}
 	const glm::vec4 &color = core::Color::fromRGBA(rgba);
 	float hue;
 	float saturation;
