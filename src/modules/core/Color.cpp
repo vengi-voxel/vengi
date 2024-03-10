@@ -886,14 +886,15 @@ RGBA Color::getRGBA(const glm::vec4 &color) {
 void Color::getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbrightness) {
 	cbrightness = brightness(color);
 	const float minBrightness = core_min(color.r, core_min(color.g, color.b));
-	if (SDL_fabs(cbrightness - minBrightness) < 0.00001f) {
+	const float delta = cbrightness - minBrightness;
+	if (SDL_fabs(delta) < 0.00001f) {
 		chue = 0.f;
 		csaturation = 0.f;
 		return;
 	}
-	const float r = (cbrightness - color.r) / (cbrightness - minBrightness);
-	const float g = (cbrightness - color.g) / (cbrightness - minBrightness);
-	const float b = (cbrightness - color.b) / (cbrightness - minBrightness);
+	const float r = (cbrightness - color.r) / delta;
+	const float g = (cbrightness - color.g) / delta;
+	const float b = (cbrightness - color.b) / delta;
 	if (SDL_fabs(color.r - cbrightness) < 0.00001f) {
 		chue = b - g;
 	} else if (SDL_fabs(color.g - cbrightness) < 0.00001f) {
@@ -905,7 +906,7 @@ void Color::getHSB(const glm::vec4 &color, float &chue, float &csaturation, floa
 	if (chue < 0.f) {
 		chue += 1.f;
 	}
-	csaturation = (cbrightness - minBrightness) / cbrightness;
+	csaturation = delta / cbrightness;
 }
 
 glm::vec4 Color::alpha(const glm::vec4 &c, float alpha) {
@@ -917,6 +918,10 @@ RGBA Color::alpha(const RGBA rgba, uint8_t alpha) {
 }
 
 float Color::brightness(const glm::vec4 &color) {
+	return core_max(color.r, core_max(color.g, color.b));
+}
+
+uint8_t Color::brightness(const core::RGBA &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 

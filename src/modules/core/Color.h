@@ -130,6 +130,7 @@ public:
 	static glm::vec4 alpha(const glm::vec4&, float alpha);
 	static RGBA alpha(const RGBA rgba, uint8_t alpha);
 	static float brightness(const glm::vec4&);
+	static uint8_t brightness(const core::RGBA &color);
 	static float intensity(const glm::vec4&);
 
 	static glm::vec4 darker(const glm::vec4& color, float f = 1.0f);
