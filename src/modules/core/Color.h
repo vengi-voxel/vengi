@@ -112,6 +112,9 @@ public:
 	static core::String toHex(const RGBA rgba, bool hashPrefix = true);
 
 	static RGBA getRGBA(const glm::vec4&);
+	/**
+	 * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
+	 */
 	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
 	/**
 	 * https://en.wikipedia.org/wiki/CIELAB_color_space
