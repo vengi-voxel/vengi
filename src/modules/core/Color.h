@@ -58,7 +58,7 @@ public:
 	 * @return index in the colors vector or the first entry if non was found, or @c -1 on error
 	 */
 	template<class T>
-	static int getClosestMatch(const glm::vec4& color, const T& colors, float *distance = nullptr) {
+	static int getClosestMatch(const glm::vec4& color, const T& colors) {
 		if (colors.empty()) {
 			return -1;
 		}
@@ -77,9 +77,6 @@ public:
 				minDistance = val;
 				minIndex = (int)i;
 			}
-		}
-		if (distance) {
-			*distance = minDistance;
 		}
 		return minIndex;
 	}
