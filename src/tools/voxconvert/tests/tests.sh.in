@@ -3,7 +3,8 @@
 set -e
 
 BINARY=$1
-FILE=voxedit/chr_knight.qb
+FILE=tests/chr_knight.qb
+BASE_FILE=$(basename $FILE)
 
 if [ -z "$BINARY" ]; then
   BINARY="@CMAKE_BINARY_DIR@/@PROJECT_NAME@/@CMAKE_PROJECT_NAME@-@PROJECT_NAME@"
@@ -20,9 +21,9 @@ function convert() {
 
   echo "prepare a ${src_format} file that is written by the current version (@DATA_DIR@/$FILE)"
 
-  src_file=@CMAKE_BINARY_DIR@/${FILE%.*}.${src_format}
-  target_file=@CMAKE_BINARY_DIR@/${FILE%.*}.${target_format}
-  final_file=@CMAKE_BINARY_DIR@/${FILE%.*}-${target_format}.${src_format}
+  src_file=@CMAKE_BINARY_DIR@/${BASE_FILE%.*}.${src_format}
+  target_file=@CMAKE_BINARY_DIR@/${BASE_FILE%.*}.${target_format}
+  final_file=@CMAKE_BINARY_DIR@/${BASE_FILE%.*}-${target_format}.${src_format}
 
   $BINARY -f --input @DATA_DIR@/$FILE --output ${src_file}
   echo
@@ -54,15 +55,15 @@ convert cub qb
 convert vox qb
 
 echo "export models of @DATA_DIR@/$FILE"
-cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
-$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-models
+cp -f @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
+$BINARY -f --input @CMAKE_BINARY_DIR@/$BASE_FILE --export-models
 echo
 
 echo "export palette of @DATA_DIR@/$FILE"
-cp @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
-$BINARY -f --input @CMAKE_BINARY_DIR@/$FILE --export-palette
-echo "check if palette exists at @CMAKE_BINARY_DIR@/${FILE%.*}.png"
-test -f @CMAKE_BINARY_DIR@/${FILE%.*}.png
+cp -f @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
+$BINARY -f --input @CMAKE_BINARY_DIR@/$BASE_FILE --export-palette
+echo "check if palette exists at @CMAKE_BINARY_DIR@/${BASE_FILE%.*}.png"
+test -f @CMAKE_BINARY_DIR@/${BASE_FILE%.*}.png
 echo
 
 SPLITFILE=@DATA_DIR@/tests/splitobjects.vox
