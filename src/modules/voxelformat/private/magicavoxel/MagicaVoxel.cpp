@@ -184,11 +184,7 @@ void checkRotation(const ogt_vox_transform &transform) {
 }
 
 int findClosestPaletteIndex(const palette::Palette &palette) {
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-	const glm::vec4 first = materialColors[0];
-	materialColors.erase(materialColors.begin());
-	return core::Color::getClosestMatch(first, materialColors) + 1;
+	return palette.findReplacement(0);
 }
 
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
