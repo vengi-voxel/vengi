@@ -50,9 +50,6 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 	core_trace_scoped(ScaleVolumeDown);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
-	core::DynamicArray<glm::vec4> materialColors;
-	palette.toVec4f(materialColors);
-
 	const int32_t depth = destRegion.getDepthInVoxels();
 	const int32_t height = destRegion.getHeightInVoxels();
 	const int32_t width = destRegion.getWidthInVoxels();
@@ -107,7 +104,8 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 						++colorContributors;
 					}
 					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
-					const int index = core::Color::getClosestMatch(avgColor, materialColors);
+					core::RGBA avgRGBA = core::Color::getRGBA(avgColor);
+					const int index = palette.getClosestMatch(avgRGBA);
 					voxel::Voxel voxel = voxel::createVoxel(palette, index);
 					destVolume.setVoxel(dstPos, voxel);
 				} else {
@@ -199,7 +197,8 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 				}
 
 				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
-				const int index = core::Color::getClosestMatch(avgColor, materialColors);
+				core::RGBA avgRGBA = core::Color::getRGBA(avgColor);
+				const int index = palette.getClosestMatch(avgRGBA);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, index);
 				destVolume.setVoxel(dstPos, voxel);
 			}
