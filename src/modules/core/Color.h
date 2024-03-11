@@ -49,7 +49,6 @@ public:
 	// https://www.compuphase.com/cmetric.htm
 	static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2);
 	static float getDistance(RGBA rgba, RGBA rgba2);
-	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
 	static float getDistance(RGBA color, float hue, float saturation, float brightness);
 
 	static core::String print(RGBA rgba, bool colorAsHex = true);

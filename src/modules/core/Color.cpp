@@ -761,7 +761,7 @@ glm::vec4 Color::fromHex(const char *hex) {
 	return fromRGBA(r, g, b, a);
 }
 
-float Color::getDistance(const glm::vec4 &color, float hue, float saturation, float brightness) {
+static float getDistanceHSB(const glm::vec4 &color, float hue, float saturation, float brightness) {
 	float chue;
 	float csaturation;
 	float cbrightness;
@@ -815,17 +815,17 @@ float Color::getDistance(RGBA rgba, RGBA rgba2) {
 	if (rgba == rgba2) {
 		return 0.0f;
 	}
-	const glm::vec4 &color = core::Color::fromRGBA(rgba);
+	const glm::vec4 &color = fromRGBA(rgba);
 	float hue;
 	float saturation;
 	float brightness;
-	core::Color::getHSB(color, hue, saturation, brightness);
-	return core::Color::getDistance(rgba2, hue, saturation, brightness);
+	getHSB(color, hue, saturation, brightness);
+	return getDistance(rgba2, hue, saturation, brightness);
 }
 
 float Color::getDistance(RGBA rgba, float hue, float saturation, float brightness) {
-	const glm::vec4 &color = core::Color::fromRGBA(rgba);
-	return getDistance(color, hue, saturation, brightness);
+	const glm::vec4 &color = fromRGBA(rgba);
+	return getDistanceHSB(color, hue, saturation, brightness);
 }
 
 core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
