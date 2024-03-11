@@ -162,32 +162,6 @@ ImagePtr loadImage(const core::String &filename) {
 	return loadImage(file);
 }
 
-ImagePtr palettize(const image::Image *image, const core::RGBA *colors, int ncolors) {
-	if (!image || image->depth() != 4) {
-		return ImagePtr();
-	}
-
-	const int w = image->width();
-	const int h = image->height();
-	core::BufferView<core::RGBA> cs(colors, ncolors);
-	image::ImagePtr img = core::make_shared<Image>(image->name());
-	img->loadRGBA(image->data(), w, h);
-	for (int x = 0; x < w; ++x) {
-		for (int y = 0; y < h; ++y) {
-			const core::RGBA rgba = image->colorAt(x, y);
-			const glm::vec4 c = core::Color::fromRGBA(rgba);
-			const int index = core::Color::getClosestMatch(c, cs);
-			if (index == -1) {
-				Log::warn("Could not find color match for %d %d %d %d", rgba.r, rgba.g, rgba.b, rgba.a);
-				continue;
-			}
-			img->setColor(cs[index], x, y);
-		}
-	}
-
-	return img;
-}
-
 bool Image::load(const uint8_t *buffer, int length) {
 	io::MemoryReadStream stream(buffer, length);
 	return load(stream, length);
