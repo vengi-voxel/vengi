@@ -199,6 +199,46 @@ void Palette::setMaterial(uint8_t i, const Material &material) {
 	markDirty();
 }
 
+int Palette::findInsignificant(int skipSlotIndex) const {
+	int bestIndex = PaletteColorNotFound;
+	float bestColorDistance = FLT_MAX;
+	for (int i = 0; i < _colorCount; ++i) {
+		if (i == skipSlotIndex) {
+			continue;
+		}
+
+		float minDistance = FLT_MAX;
+		int closestColorIdx = PaletteColorNotFound;
+
+		for (int k = 0; k < _colorCount; ++k) {
+			if (k == i) {
+				continue;
+			}
+			if (_colors[k].a == 0) {
+				continue;
+			}
+			const float val = core::Color::getDistance(_colors[k], _colors[i], core::Color::Distance::Approximation);
+			if (val < minDistance) {
+				minDistance = val;
+				closestColorIdx = (int)i;
+				// if colors are more or less equal, just stop the search
+				if (minDistance <= 0.00001f) {
+					break;
+				}
+			}
+		}
+		if (minDistance < bestColorDistance) {
+			bestColorDistance = minDistance;
+			bestIndex = closestColorIdx;
+			// if colors are more or less equal, just stop the search
+			if (bestColorDistance <= 0.00001f) {
+				break;
+			}
+		}
+	}
+	return bestIndex;
+}
+
 bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {
@@ -252,19 +292,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 		// now we are looking for the color in the existing palette entries that is most similar
 		// to other entries in the palette. If this entry is than above a certain threshold, we
 		// will replace that color with the new rgba value
-		int bestIndex = PaletteColorNotFound;
-		float bestColorDistance = FLT_MAX;
-		for (int i = 0; i < _colorCount; ++i) {
-			if (i == skipSlotIndex) {
-				continue;
-			}
-			float colorDistance = 0.0f;
-			const int closestColorIdx = getClosestMatchWithDistance(_colors[i], i, &colorDistance);
-			if (colorDistance < bestColorDistance) {
-				bestColorDistance = colorDistance;
-				bestIndex = closestColorIdx;
-			}
-		}
+		int bestIndex = findInsignificant(skipSlotIndex);
 		if (bestIndex != PaletteColorNotFound) {
 			const float dist = core::Color::getDistance(_colors[bestIndex], rgba, core::Color::Distance::HSB);
 			if (dist > MaxHSBThreshold) {

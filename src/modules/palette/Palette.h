@@ -143,6 +143,7 @@ private:
 	PaletteIndicesArray _indices;
 
 	int getClosestMatchWithDistance(const core::RGBA rgba, int skip = -1, float *distance = nullptr) const;
+	int findInsignificant(int skipSlotIndex) const;
 
 	bool loadLospec(const core::String &lospecId, const core::String &gimpPalette);
 public:
@@ -268,7 +269,8 @@ public:
 	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
 	 * @param[in] skipSlotIndex This slot is not filled with any color value - if it's @c -1 every slot is filled
 	 */
-	bool tryAdd(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true, int skipSlotIndex = -1);
+	bool tryAdd(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true,
+				int skipSlotIndex = -1);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 
