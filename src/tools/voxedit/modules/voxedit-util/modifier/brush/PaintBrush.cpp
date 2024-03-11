@@ -38,9 +38,8 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	} else {
 		newColor = core::Color::darker(voxelColor, _factor);
 	}
-	float distance = 0.0f;
-	const int index = _palette.getClosestMatchWithDistance(newColor, old.getColor(), &distance);
-	if (index == palette::PaletteColorNotFound || distance > 0.0001f) {
+	const int index = _palette.getClosestMatch(newColor, old.getColor());
+	if (index == palette::PaletteColorNotFound) {
 		uint8_t newColorIndex = 0;
 		if (!_palette.addColorToPalette(newColor, false, &newColorIndex, false, old.getColor())) {
 			return old;
