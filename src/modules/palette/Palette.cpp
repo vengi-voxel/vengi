@@ -208,14 +208,14 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 			return false;
 		}
 	}
-	static constexpr float MaxThreshold = 0.00014f;
+	static constexpr float MaxHSBThreshold = 0.00014f;
 	if (skipSimilar) {
 		for (int i = 0; i < _colorCount; ++i) {
 			if (abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
 			const float dist = core::Color::getDistance(_colors[i], rgba, core::Color::Distance::HSB);
-			if (dist < MaxThreshold) {
+			if (dist < MaxHSBThreshold) {
 				if (index) {
 					*index = i;
 				}
@@ -267,7 +267,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 		}
 		if (bestIndex != PaletteColorNotFound) {
 			const float dist = core::Color::getDistance(_colors[bestIndex], rgba, core::Color::Distance::HSB);
-			if (dist > MaxThreshold) {
+			if (dist > MaxHSBThreshold) {
 				if (index) {
 					*index = bestIndex;
 				}
