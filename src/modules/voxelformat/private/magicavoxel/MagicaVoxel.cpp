@@ -183,10 +183,6 @@ void checkRotation(const ogt_vox_transform &transform) {
 #endif
 }
 
-int findClosestPaletteIndex(const palette::Palette &palette) {
-	return palette.findReplacement(0);
-}
-
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];

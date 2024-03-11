@@ -73,11 +73,6 @@ void loadPaletteFromScene(const ogt_vox_scene *scene, palette::Palette &palette)
 bool loadPaletteFromBuffer(const uint8_t *buffer, size_t size, palette::Palette &palette);
 void printDetails(const ogt_vox_scene *scene);
 void checkRotation(const ogt_vox_transform &transform);
-/**
- * we have to find a replacement for the first palette entry - as this is used
- * as the empty voxel in magicavoxel
- */
-int findClosestPaletteIndex(const palette::Palette &palette);
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph);
 bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
