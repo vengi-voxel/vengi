@@ -556,12 +556,11 @@ static int luaVoxel_palette_materialproperty(lua_State* s) {
 
 static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
-	core::DynamicArray<glm::vec4> materialColors;
-	palette->toVec4f(materialColors);
 	const float r = (float)luaL_checkinteger(s, 2) / 255.0f;
 	const float g = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const float b = (float)luaL_checkinteger(s, 4) / 255.0f;
-	const int match = core::Color::getClosestMatch(glm::vec4(r, b, g, 1.0f), materialColors);
+	core::RGBA rgba(r * 255.0f, g * 255.0f, b * 255.0f, 255);
+	const int match = palette->getClosestMatch(rgba);
 	if (match < 0 || match > palette->colorCount()) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
 	}
