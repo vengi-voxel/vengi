@@ -46,7 +46,13 @@ public:
 	static const glm::vec4& LightBrown();
 	static const glm::vec4& DarkBrown();
 
-	enum class Distance { Approximation, HSB, Max };
+	enum class Distance {
+		// computational less expensive distance function
+		Approximation,
+		// hue, saturation, brightness distance function
+		HSB,
+		Max
+	};
 	static float getDistance(RGBA rgba, RGBA rgba2, Distance d);
 	static float getDistance(RGBA color, float hue, float saturation, float brightness);
 

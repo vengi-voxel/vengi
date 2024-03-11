@@ -761,24 +761,6 @@ glm::vec4 Color::fromHex(const char *hex) {
 	return fromRGBA(r, g, b, a);
 }
 
-static float getDistanceHSB(const glm::vec4 &color, float hue, float saturation, float brightness) {
-	float chue;
-	float csaturation;
-	float cbrightness;
-	core::Color::getHSB(color, chue, csaturation, cbrightness);
-
-	const float weightHue = 0.8f;
-	const float weightSaturation = 0.1f;
-	const float weightValue = 0.1f;
-
-	const float dH = chue - hue;
-	const float dS = csaturation - saturation;
-	const float dV = cbrightness - brightness;
-	const float val = weightHue * (float)SDL_powf(dH, 2.0f) + weightValue * (float)SDL_powf(dV, 2.0f) +
-					  weightSaturation * (float)SDL_powf(dS, 2.0f);
-	return val;
-}
-
 core::String Color::print(RGBA rgba, bool colorAsHex) {
 	String buf = "\033[0m";
 	if (colorAsHex) {
@@ -800,12 +782,39 @@ core::String Color::print(RGBA rgba, bool colorAsHex) {
 	return buf;
 }
 
+// https://www.compuphase.com/cmetric.htm
 static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
 	const int rmean = (rgba2.r + rgba.r) / 2;
 	const int r = rgba2.r - rgba.r;
 	const int g = rgba2.g - rgba.g;
 	const int b = rgba2.b - rgba.b;
 	return (float)(((512 + rmean) * r * r) >> 8) + 4.0f * g * g + (float)(((767 - rmean) * b * b) >> 8);
+}
+
+static float getDistanceHSB(const core::RGBA &rgba, float hue, float saturation, float brightness) {
+	float chue;
+	float csaturation;
+	float cbrightness;
+	core::Color::getHSB(core::Color::fromRGBA(rgba), chue, csaturation, cbrightness);
+
+	const float weightHue = 0.8f;
+	const float weightSaturation = 0.1f;
+	const float weightValue = 0.1f;
+
+	const float dH = chue - hue;
+	const float dS = csaturation - saturation;
+	const float dV = cbrightness - brightness;
+	const float val = weightHue * (float)SDL_powf(dH, 2.0f) + weightValue * (float)SDL_powf(dV, 2.0f) +
+					  weightSaturation * (float)SDL_powf(dS, 2.0f);
+	return val;
+}
+
+static float getDistanceHSB(const core::RGBA &rgba, RGBA rgba2) {
+	float hue;
+	float saturation;
+	float brightness;
+	core::Color::getHSB(core::Color::fromRGBA(rgba), hue, saturation, brightness);
+	return getDistanceHSB(rgba2, hue, saturation, brightness);
 }
 
 float Color::getDistance(RGBA rgba, RGBA rgba2, Distance d) {
@@ -815,17 +824,11 @@ float Color::getDistance(RGBA rgba, RGBA rgba2, Distance d) {
 	if (d == Distance::Approximation) {
 		return getDistanceApprox(rgba, rgba2);
 	}
-	const glm::vec4 &color = fromRGBA(rgba);
-	float hue;
-	float saturation;
-	float brightness;
-	getHSB(color, hue, saturation, brightness);
-	return getDistanceHSB(color, hue, saturation, brightness);
+	return getDistanceHSB(rgba, rgba2);
 }
 
 float Color::getDistance(RGBA rgba, float hue, float saturation, float brightness) {
-	const glm::vec4 &color = fromRGBA(rgba);
-	return getDistanceHSB(color, hue, saturation, brightness);
+	return getDistanceHSB(rgba, hue, saturation, brightness);
 }
 
 core::RGBA Color::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f) {
