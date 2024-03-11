@@ -355,6 +355,49 @@ int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
 	float minDistance = FLT_MAX;
 	int minIndex = PaletteColorNotFound;
 
+	for (int i = 0; i < _colorCount; ++i) {
+		if (i == skip) {
+			continue;
+		}
+		if (_colors[i].a == 0) {
+			continue;
+		}
+		const float val = core::Color::getDistance(_colors[i], rgba, core::Color::Distance::Approximation);
+		if (val < minDistance) {
+			minDistance = val;
+			minIndex = (int)i;
+		}
+	}
+	return minIndex;
+}
+
+uint8_t Palette::findReplacement(uint8_t index) const {
+	if (size() == 0) {
+		return index;
+	}
+	const core::RGBA rgba = color(index);
+	const int skip = index;
+	for (int i = 0; i < _colorCount; ++i) {
+		if (i == skip) {
+			continue;
+		}
+		if (_colors[i] == rgba) {
+			return i;
+		}
+	}
+
+	if (rgba.a == 0) {
+		for (int i = 0; i < _colorCount; ++i) {
+			if (_colors[i].a == 0) {
+				return i;
+			}
+		}
+		return index;
+	}
+
+	float minDistance = FLT_MAX;
+	int minIndex = index;
+
 	float hue;
 	float saturation;
 	float brightness;
@@ -375,14 +418,6 @@ int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
 		}
 	}
 	return minIndex;
-}
-
-uint8_t Palette::findReplacement(uint8_t index) const {
-	const int replacement = getClosestMatch(_colors[index], index);
-	if (replacement == PaletteColorNotFound) {
-		return index;
-	}
-	return replacement;
 }
 
 void Palette::changeIntensity(float scale) {
