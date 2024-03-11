@@ -800,10 +800,7 @@ core::String Color::print(RGBA rgba, bool colorAsHex) {
 	return buf;
 }
 
-float Color::getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
-	if (rgba == rgba2) {
-		return 0.0f;
-	}
+static float getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
 	const int rmean = (rgba2.r + rgba.r) / 2;
 	const int r = rgba2.r - rgba.r;
 	const int g = rgba2.g - rgba.g;
@@ -811,16 +808,19 @@ float Color::getDistanceApprox(core::RGBA rgba, core::RGBA rgba2) {
 	return (float)(((512 + rmean) * r * r) >> 8) + 4.0f * g * g + (float)(((767 - rmean) * b * b) >> 8);
 }
 
-float Color::getDistance(RGBA rgba, RGBA rgba2) {
+float Color::getDistance(RGBA rgba, RGBA rgba2, Distance d) {
 	if (rgba == rgba2) {
 		return 0.0f;
+	}
+	if  (d == Distance::Approximation) {
+		return getDistanceApprox(rgba, rgba2);
 	}
 	const glm::vec4 &color = fromRGBA(rgba);
 	float hue;
 	float saturation;
 	float brightness;
 	getHSB(color, hue, saturation, brightness);
-	return getDistance(rgba2, hue, saturation, brightness);
+	return getDistanceHSB(color, hue, saturation, brightness);
 }
 
 float Color::getDistance(RGBA rgba, float hue, float saturation, float brightness) {

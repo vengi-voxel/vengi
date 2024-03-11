@@ -54,7 +54,7 @@ bool VXMFormat::writeRLE(io::WriteStream &stream, int length, const voxel::Voxel
 		wrapBool(stream.writeUInt8(EMPTY_PALETTE))
 	} else {
 		const core::RGBA color = nodePalette.color(voxel.getColor());
-		const int palIndex = palette.getClosestMatch(color, nullptr, EMPTY_PALETTE);
+		const int palIndex = palette.getClosestMatch(color, EMPTY_PALETTE);
 		if (palIndex < 0) {
 			Log::error("Got palette index %i for %s", palIndex, core::Color::print(color, true).c_str());
 		}

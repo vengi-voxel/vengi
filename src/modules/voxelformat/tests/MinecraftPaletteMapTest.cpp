@@ -59,13 +59,8 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 		for (const auto &block : blocks) {
 			const std::string blockId = block.get<std::string>();
 			if (findPaletteIndex(blockId.c_str()) == -1) {
-				float distance = 0.0f;
-				int palMatch = pal.getClosestMatch(rgba, &distance);
-				if (distance > 0.005) {
-					printf("%s\n", core::Color::toHex(rgba).c_str());
-				} else {
-					printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
-				}
+				int palMatch = pal.getClosestMatch(rgba);
+				printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
 			} else {
 				//Log::error("Found %s", blockId.c_str());
 			}

@@ -584,7 +584,7 @@ static int luaVoxel_palette_similar(lua_State* s) {
 	newColorIndices.resize(colorCount);
 	int maxColorIndices = 0;
 	for (; maxColorIndices < colorCount; ++maxColorIndices) {
-		const int materialIndex = palette.getClosestMatch(palette.color(paletteIndex), nullptr, paletteIndex);
+		const int materialIndex = palette.getClosestMatch(palette.color(paletteIndex), paletteIndex);
 		if (materialIndex <= palette::PaletteColorNotFound) {
 			break;
 		}

@@ -487,7 +487,7 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
 	voxelutil::visitVolume(
 		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());
-			const int newColor = newPalette.getClosestMatch(rgba, nullptr, skipColorIndex);
+			const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);
 			if (newColor != palette::PaletteColorNotFound) {
 				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
 				wrapper.setVoxel(x, y, z, newVoxel);

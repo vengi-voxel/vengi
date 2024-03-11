@@ -122,15 +122,14 @@ TEST(ColorTest, testQuantize) {
 TEST(ColorTest, testDistanceMin) {
 	const core::RGBA color1(255, 0, 0, 255);
 	const core::RGBA color2(255, 0, 0, 255);
-	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistance(color1, color2));
-	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistanceApprox(color1, color2));
+	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistance(color1, color2, core::Color::Distance::HSB));
+	EXPECT_FLOAT_EQ(0.0f, core::Color::getDistance(color1, color2, core::Color::Distance::Approximation));
 }
 
 TEST(ColorTest, testDistanceMax) {
 	const core::RGBA color1(0, 0, 0, 255);
 	const core::RGBA color2(255, 255, 255, 255);
-	EXPECT_FLOAT_EQ(0.1f, core::Color::getDistance(color1, color2));
-	EXPECT_FLOAT_EQ(584970.0f, core::Color::getDistanceApprox(color1, color2));
+	EXPECT_FLOAT_EQ(0.1f, core::Color::getDistance(color1, color2, core::Color::Distance::HSB));
+	EXPECT_FLOAT_EQ(584970.0f, core::Color::getDistance(color1, color2, core::Color::Distance::Approximation));
 }
-
 }

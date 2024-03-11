@@ -256,7 +256,10 @@ public:
 	 * @param skip One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
-	int getClosestMatch(const core::RGBA rgba, float *distance = nullptr, int skip = -1) const;
+	int getClosestMatchWithDistance(const core::RGBA rgba, int skip = -1, float *distance = nullptr) const;
+	int getClosestMatch(const core::RGBA rgba, int skip = -1) const {
+		return getClosestMatchWithDistance(rgba, skip);
+	}
 	uint8_t findReplacement(uint8_t index) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
