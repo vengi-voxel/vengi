@@ -148,7 +148,7 @@ void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const co
 
 void AbstractVoxFormatTest::checkColor(core::RGBA c1, const palette::Palette &palette, uint8_t index, float maxDelta) {
 	const core::RGBA c2 = palette.color(index);
-	const float delta = core::Color::getDistance(c1, c2);
+	const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
 	ASSERT_LE(delta, maxDelta) << "color1[" << core::Color::print(c1) << "], color2[" << core::Color::print(c2)
 							   << "], delta[" << delta << "]";
 }

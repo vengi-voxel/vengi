@@ -20,7 +20,7 @@ namespace priv {
 inline testing::AssertionResult CmpHelperRGBAEQ(const char *lhs_expression, const char *rhs_expression,
 										 const char *max_distance_expression, core::RGBA lhs_value, core::RGBA rhs_value,
 										 float max_distance) {
-	const float actual_distance = core::Color::getDistance(lhs_value, rhs_value);
+	const float actual_distance = core::Color::getDistance(lhs_value, rhs_value, core::Color::Distance::HSB);
 	if (actual_distance <= max_distance) {
 		return testing::AssertionSuccess();
 	}

@@ -159,9 +159,9 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 		const core::RGBA rgba = img->colorAt(x, 0);
 		const voxel::Voxel &voxel = wrapper.voxel(x, region.getHeightInCells(), 0);
 		const core::RGBA voxelColor = palLookup.palette().color(voxel.getColor());
-		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
+		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor, core::Color::Distance::HSB), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
-			<< ") at " << x << std::endl << v;
+			<< ") at " << x << "\n" << v;
 	}
 
 	const int plane2Voxels = voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 1), voxel::FaceNames::PositiveZ);
@@ -171,9 +171,9 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 		const core::RGBA rgba = img->colorAt(x, 0);
 		const voxel::Voxel &voxel = wrapper.voxel(x, region.getHeightInCells(), 1);
 		const core::RGBA voxelColor = palLookup.palette().color(voxel.getColor());
-		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor), 0.0f)
+		EXPECT_EQ(core::Color::getDistance(rgba, voxelColor, core::Color::Distance::HSB), 0.0f)
 			<< core::Color::print(rgba) << " vs " << core::Color::print(voxelColor) << " (" << (int)voxel.getColor()
-			<< ") at " << x << std::endl << v;
+			<< ") at " << x << "\n" << v;
 	}
 }
 

@@ -214,7 +214,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 			if (abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
-			const float dist = core::Color::getDistance(_colors[i], rgba);
+			const float dist = core::Color::getDistance(_colors[i], rgba, core::Color::Distance::HSB);
 			if (dist < MaxThreshold) {
 				if (index) {
 					*index = i;
@@ -266,7 +266,7 @@ bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *inde
 			}
 		}
 		if (bestIndex != PaletteColorNotFound) {
-			const float dist = core::Color::getDistance(_colors[bestIndex], rgba);
+			const float dist = core::Color::getDistance(_colors[bestIndex], rgba, core::Color::Distance::HSB);
 			if (dist > MaxThreshold) {
 				if (index) {
 					*index = bestIndex;

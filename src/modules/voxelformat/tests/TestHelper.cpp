@@ -172,7 +172,7 @@ void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
 		if (c1 != c2) {
-			const float delta = core::Color::getDistance(c1, c2);
+			const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
 			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
 									   << "\nPalette 1:\n"
@@ -218,7 +218,7 @@ void partialPaletteComparator(const palette::Palette &pal1, const palette::Palet
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
 		if (c1 != c2) {
-			const float delta = core::Color::getDistance(c1, c2);
+			const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
 			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
 									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
 									   << "\nPalette 1:\n"
@@ -346,7 +346,7 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 				const core::RGBA &c1 = pal1.color(voxel1.getColor());
 				const core::RGBA &c2 = pal2.color(voxel2.getColor());
 				if (c1 != c2) {
-					const float delta = core::Color::getDistance(c1, c2);
+					const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
 					if (pal1.hash() != pal2.hash()) {
 						ASSERT_LT(delta, maxDelta)
 							<< "Voxel differs at " << x1 << ":" << y1 << ":" << z1 << " and " << x2 << ":" << y2 << ":"

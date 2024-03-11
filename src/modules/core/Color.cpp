@@ -812,7 +812,7 @@ float Color::getDistance(RGBA rgba, RGBA rgba2, Distance d) {
 	if (rgba == rgba2) {
 		return 0.0f;
 	}
-	if  (d == Distance::Approximation) {
+	if (d == Distance::Approximation) {
 		return getDistanceApprox(rgba, rgba2);
 	}
 	const glm::vec4 &color = fromRGBA(rgba);
