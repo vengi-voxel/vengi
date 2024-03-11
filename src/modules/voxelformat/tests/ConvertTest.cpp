@@ -3,15 +3,12 @@
  */
 
 #include "AbstractVoxFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
-#include "voxelformat/private/magicavoxel/XRawFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"

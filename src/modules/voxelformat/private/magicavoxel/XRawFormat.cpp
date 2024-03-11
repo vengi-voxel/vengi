@@ -245,7 +245,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	wrapBool(stream.writeUInt32(palette::PaletteMaxColors))
 
 	palette::Palette palette = node->palette();
-	uint8_t replacement = palette.findReplacement(0);
+	uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
 	const core::RGBA color = palette.color(0);
 	if (palette.colorCount() < palette::PaletteMaxColors) {
 		palette.setColor(0, core::RGBA(0, 0, 0, 0));

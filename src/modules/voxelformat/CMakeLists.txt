@@ -105,6 +105,7 @@ set(TEST_SRCS
 	tests/VXMFormatTest.cpp
 	tests/VENGIFormatTest.cpp
 	tests/VMaxFormatTest.cpp
+	tests/XRawFormatTest.cpp
 
 	tests/BinaryPListTest.cpp
 	tests/MinecraftPaletteMapTest.cpp
