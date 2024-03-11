@@ -199,7 +199,7 @@ void Palette::setMaterial(uint8_t i, const Material &material) {
 	markDirty();
 }
 
-bool Palette::addColorToPalette(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
+bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {
 			if (index) {

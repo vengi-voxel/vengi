@@ -723,7 +723,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 			}
 			uint8_t index = 0;
 			int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
-			if (!palette.addColorToPalette(rgba, false, &index, false, skipIndex)) {
+			if (!palette.tryAdd(rgba, false, &index, false, skipIndex)) {
 				if (index < palette.colorCount() - 1) {
 					tooManyColors = true;
 					break;
@@ -763,7 +763,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 				uint8_t index = 0;
 				const core::RGBA rgba = nodePalette.color(i);
 				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
-				if (palette.addColorToPalette(rgba, true, &index, true, skipIndex)) {
+				if (palette.tryAdd(rgba, true, &index, true, skipIndex)) {
 					if (nodePalette.hasEmit(i)) {
 						palette.setEmit(index, 1.0f);
 					}

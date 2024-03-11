@@ -94,7 +94,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 				}
 				if (a != 0) {
 					const core::RGBA color(r, g, b, a);
-					palette.addColorToPalette(color, false);
+					palette.tryAdd(color, false);
 				}
 				if (x != size.x - 1) {
 					if (!skipComma(stream)) {

@@ -476,7 +476,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				if (rgba.a == 0) {
 					continue;
 				}
-				palette.addColorToPalette(flattenRGB(rgba), false);
+				palette.tryAdd(flattenRGB(rgba), false);
 			}
 		}
 	}

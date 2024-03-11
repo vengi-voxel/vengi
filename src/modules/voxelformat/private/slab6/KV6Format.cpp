@@ -220,7 +220,7 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(stream, color));
-		palette.addColorToPalette(color, false);
+		palette.tryAdd(color, false);
 		wrap2(stream.skip(5));
 	}
 
@@ -441,7 +441,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		wrap(stream.readUInt8(state->voxdata[c].dir))
 
 		if (slab5) {
-			palette.addColorToPalette(color, false, &state->voxdata[c].col, false);
+			palette.tryAdd(color, false, &state->voxdata[c].col, false);
 		} else {
 			state->voxdata[c].col = palette.getClosestMatch(color);
 		}

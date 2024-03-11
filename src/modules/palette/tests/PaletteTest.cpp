@@ -95,7 +95,7 @@ TEST_F(PaletteTest, testCopyPalette) {
 	Palette pal;
 	pal.nippon();
 	for (int i = 0; i < pal.colorCount(); ++i) {
-		ASSERT_TRUE(copy.addColorToPalette(pal.color(i), false));
+		ASSERT_TRUE(copy.tryAdd(pal.color(i), false));
 	}
 	ASSERT_EQ(pal.colorCount(), copy.colorCount());
 }
@@ -103,19 +103,19 @@ TEST_F(PaletteTest, testCopyPalette) {
 TEST_F(PaletteTest, testAddColor1) {
 	int emptySlot = 0;
 	Palette pal;
-	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(core::RGBA(0), true, nullptr, false, emptySlot));
 	ASSERT_EQ(1, pal.colorCount());
-	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
 	ASSERT_EQ(2, pal.colorCount());
 }
 
 TEST_F(PaletteTest, testAddColor2) {
 	int emptySlot = 0;
 	Palette pal;
-	EXPECT_TRUE(pal.addColorToPalette(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
+	EXPECT_TRUE(pal.tryAdd(core::RGBA(0, 0, 0, 255), true, nullptr, false, emptySlot));
 	ASSERT_EQ(2, pal.colorCount()) << "Empty slot was not taken into account";
 	uint8_t index = -1;
-	EXPECT_FALSE(pal.addColorToPalette(core::RGBA(0), true, &index, false, emptySlot));
+	EXPECT_FALSE(pal.tryAdd(core::RGBA(0), true, &index, false, emptySlot));
 	ASSERT_EQ(0, index);
 }
 
@@ -137,7 +137,7 @@ TEST_F(PaletteTest, testAddColorsNoDup) {
 		0xff31b245, 0xff54c3c2, 0xfff4f0da, 0xff867066, 0xff894326, 0xff838383, 0xff9fd3dc, 0xff324364, 0xff3634b4,
 		0xff23c7f6, 0xff7c7c7c, 0xff77bf8e, 0xffdcdcdc, 0xff296595, 0xff194f7b, 0xff538ba5, 0xff5e96bd, 0xffdddddd};
 	for (int i = 0; i < lengthof(colors); ++i) {
-		EXPECT_TRUE(pal.addColorToPalette(colors[i], false)) << "color entry " << i << " was not added (" << colors[i] << ")";
+		EXPECT_TRUE(pal.tryAdd(colors[i], false)) << "color entry " << i << " was not added (" << colors[i] << ")";
 	}
 	EXPECT_EQ(lengthof(colors), pal.colorCount());
 }
@@ -203,7 +203,7 @@ TEST_F(PaletteTest, testAddColorsQuantize) {
 		0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777,
 		0xff555555, 0xff444444, 0xff222222, 0xff111111, 0xff00ffff, 0xffffccff, 0xffccccff};
 	for (int i = 0; i < lengthof(colors); ++i) {
-		pal.addColorToPalette(colors[i], false);
+		pal.tryAdd(colors[i], false);
 	}
 	EXPECT_EQ(palette::PaletteMaxColors, pal.colorCount());
 }

@@ -46,7 +46,7 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 					continue;
 				}
 				const core::RGBA color = flattenRGB(r, g, b);
-				palette.addColorToPalette(color, false);
+				palette.tryAdd(color, false);
 			}
 		}
 	}

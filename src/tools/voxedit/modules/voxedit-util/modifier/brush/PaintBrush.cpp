@@ -41,7 +41,7 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	const int index = _palette.getClosestMatch(newColor, old.getColor());
 	if (index == palette::PaletteColorNotFound) {
 		uint8_t newColorIndex = 0;
-		if (!_palette.addColorToPalette(newColor, false, &newColorIndex, false, old.getColor())) {
+		if (!_palette.tryAdd(newColor, false, &newColorIndex, false, old.getColor())) {
 			return old;
 		}
 		_palette.markDirty();

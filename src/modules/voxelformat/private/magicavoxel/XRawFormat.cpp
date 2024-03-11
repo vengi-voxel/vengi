@@ -137,7 +137,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	for (uint32_t i = 0u; i < paletteSize; ++i) {
 		const core::RGBA rgba = readColor(stream);
 		const core::RGBA color = flattenRGB(rgba);
-		palette.addColorToPalette(color, false);
+		palette.tryAdd(color, false);
 	}
 	// end of file
 	return palette.size();
@@ -249,7 +249,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const core::RGBA color = palette.color(0);
 	if (palette.colorCount() < palette::PaletteMaxColors) {
 		palette.setColor(0, core::RGBA(0, 0, 0, 0));
-		palette.addColorToPalette(color, false, &replacement, false, 0);
+		palette.tryAdd(color, false, &replacement, false, 0);
 	}
 	voxelutil::visitVolume(
 		*node->volume(),
