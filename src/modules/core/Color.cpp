@@ -795,18 +795,15 @@ static float getDistanceHSB(const core::RGBA &rgba, float hue, float saturation,
 	float chue;
 	float csaturation;
 	float cbrightness;
-	core::Color::getHSB(core::Color::fromRGBA(rgba), chue, csaturation, cbrightness);
+	core::Color::getHSB(rgba, chue, csaturation, cbrightness);
 
 	const float weightHue = 0.8f;
 	const float weightSaturation = 0.1f;
 	const float weightValue = 0.1f;
-
 	const float dH = chue - hue;
 	const float dS = csaturation - saturation;
 	const float dV = cbrightness - brightness;
-	const float val = weightHue * (float)SDL_powf(dH, 2.0f) + weightValue * (float)SDL_powf(dV, 2.0f) +
-					  weightSaturation * (float)SDL_powf(dS, 2.0f);
-	return val;
+	return weightHue * dH * dH + weightValue * dV * dV + weightSaturation * dS * dS;
 }
 
 static float getDistanceHSB(const core::RGBA &rgba, RGBA rgba2) {
@@ -898,6 +895,10 @@ void Color::getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 RGBA Color::getRGBA(const glm::vec4 &color) {
 	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude),
 				(uint8_t)(color.a * magnitude)};
+}
+
+void Color::getHSB(core::RGBA color, float &chue, float &csaturation, float &cbrightness) {
+	getHSB(fromRGBA(color), chue, csaturation, cbrightness);
 }
 
 void Color::getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbrightness) {

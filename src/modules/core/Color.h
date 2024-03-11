@@ -89,7 +89,8 @@ public:
 	/**
 	 * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
 	 */
-	static void getHSB(const glm::vec4&, float& hue, float& saturation, float& brightness);
+	static void getHSB(const glm::vec4 &, float &hue, float &saturation, float &brightness);
+	static void getHSB(core::RGBA color, float &hue, float &saturation, float &brightness);
 	/**
 	 * https://en.wikipedia.org/wiki/CIELAB_color_space
 	 *
