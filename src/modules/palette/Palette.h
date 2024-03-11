@@ -142,6 +142,8 @@ private:
 	int _colorCount = 0;
 	PaletteIndicesArray _indices;
 
+	int getClosestMatchWithDistance(const core::RGBA rgba, int skip = -1, float *distance = nullptr) const;
+
 	bool loadLospec(const core::String &lospecId, const core::String &gimpPalette);
 public:
 	Palette();
@@ -256,7 +258,6 @@ public:
 	 * @param skip One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
-	int getClosestMatchWithDistance(const core::RGBA rgba, int skip = -1, float *distance = nullptr) const;
 	int getClosestMatch(const core::RGBA rgba, int skip = -1) const {
 		return getClosestMatchWithDistance(rgba, skip);
 	}
