@@ -52,35 +52,6 @@ public:
 	static float getDistance(const glm::vec4& color, float hue, float saturation, float brightness);
 	static float getDistance(RGBA color, float hue, float saturation, float brightness);
 
-	/**
-	 * @brief Get the nearest matching color index from the list
-	 * @param color The color to find the closest match to in the given @c colors array
-	 * @return index in the colors vector or the first entry if non was found, or @c -1 on error
-	 */
-	template<class T>
-	static int getClosestMatch(const glm::vec4& color, const T& colors) {
-		if (colors.empty()) {
-			return -1;
-		}
-
-		float minDistance = FLT_MAX;
-		int minIndex = -1;
-
-		float hue;
-		float saturation;
-		float brightness;
-		getHSB(color, hue, saturation, brightness);
-
-		for (size_t i = 0; i < colors.size(); ++i) {
-			const float val = getDistance(colors[i], hue, saturation, brightness);
-			if (val < minDistance) {
-				minDistance = val;
-				minIndex = (int)i;
-			}
-		}
-		return minIndex;
-	}
-
 	static core::String print(RGBA rgba, bool colorAsHex = true);
 
 	static core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);

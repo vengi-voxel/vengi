@@ -119,37 +119,6 @@ TEST(ColorTest, testQuantize) {
 	EXPECT_EQ(256, n) << "Failed with k-means.\n" << core::BufferView<RGBA>(targetBuf, n) << "\n" << core::BufferView<RGBA>(buf, lengthof(buf));
 }
 
-TEST(ColorTest, testClosestMatchExact) {
-	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
-	const std::vector<glm::vec4>& colors {
-		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-		glm::vec4(0.5f, 0.5f, 0.1f, 1.0f),
-		glm::vec4(0.5f, 0.5f, 0.4f, 1.0f),
-		color, // exact match
-		glm::vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),
-		glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)
-	};
-	const int index = core::Color::getClosestMatch(color, colors);
-	EXPECT_EQ(3, index);
-}
-
-TEST(ColorTest, testClosestMatch) {
-	const glm::vec4 color(0.5f, 0.5f, 0.5f, 1.0f);
-	const std::vector<glm::vec4>& colors {
-		glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
-		glm::vec4(0.5f, 0.5f, 0.3f, 1.0f),
-		glm::vec4(0.3f, 0.3f, 0.3f, 1.0f),
-		glm::vec4(0.46f, 0.46f, 0.46f, 1.0f), // closest match
-		glm::vec4(0.5f, 0.5f, 0.4f, 1.0f),
-		glm::vec4(0.5f, 0.5f, 0.1f, 1.0f),
-		glm::vec4(0.4f, 0.4f, 0.4f, 1.0f),
-		glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)
-	};
-	const int index = core::Color::getClosestMatch(color, colors);
-	EXPECT_EQ(3, index);
-}
-
 TEST(ColorTest, testDistanceMin) {
 	const core::RGBA color1(255, 0, 0, 255);
 	const core::RGBA color2(255, 0, 0, 255);
