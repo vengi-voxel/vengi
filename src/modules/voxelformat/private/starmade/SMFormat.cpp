@@ -34,24 +34,27 @@ constexpr int planeBlocks = blocks * blocks;
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
 		return false;                                                                                                  \
 	}
 
 #define wrapBool(read)                                                                                                 \
 	if (!(read)) {                                                                                                     \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		Log::error("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
 		return false;                                                                                                  \
 	}
 
 static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
 	if (stream.readInt32BE(v.x) == -1) {
+		Log::error("failed to read int vector x component");
 		return false;
 	}
 	if (stream.readInt32BE(v.y) == -1) {
+		Log::error("failed to read int vector y component");
 		return false;
 	}
 	if (stream.readInt32BE(v.z) == -1) {
+		Log::error("failed to read int vector z component");
 		return false;
 	}
 	return true;
@@ -59,12 +62,15 @@ static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
 
 static bool readI16vec3(io::SeekableReadStream &stream, glm::i16vec3 &v) {
 	if (stream.readInt16BE(v.x) == -1) {
+		Log::error("failed to read int16 vector x component");
 		return false;
 	}
 	if (stream.readInt16BE(v.y) == -1) {
+		Log::error("failed to read int16 vector y component");
 		return false;
 	}
 	if (stream.readInt16BE(v.z) == -1) {
+		Log::error("failed to read int16 vector z component");
 		return false;
 	}
 	return true;
@@ -72,12 +78,15 @@ static bool readI16vec3(io::SeekableReadStream &stream, glm::i16vec3 &v) {
 
 static bool readVec3(io::SeekableReadStream &stream, glm::vec3 &v) {
 	if (stream.readFloatBE(v.x) == -1) {
+		Log::error("failed to read float vector x component");
 		return false;
 	}
 	if (stream.readFloatBE(v.y) == -1) {
+		Log::error("failed to read float vector y component");
 		return false;
 	}
 	if (stream.readFloatBE(v.z) == -1) {
+		Log::error("failed to read float vector z component");
 		return false;
 	}
 	return true;
@@ -137,13 +146,19 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 				}
 			} else if (extension == "smbph") {
 				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				wrapBool(readHeader(*headerStream.get()))
+				if (!readHeader(*headerStream.get())) {
+					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
+				}
 			} else if (extension == "smbpl") {
 				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				wrapBool(readLogic(*headerStream.get()))
+				if (!readLogic(*headerStream.get())) {
+					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
+				}
 			} else if (extension == "smbpm") {
 				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				wrapBool(readMeta(*headerStream.get()))
+				if (!readMeta(*headerStream.get())) {
+					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
+				}
 			}
 		}
 	}

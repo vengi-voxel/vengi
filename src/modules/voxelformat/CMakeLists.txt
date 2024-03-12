@@ -158,6 +158,7 @@ set(TEST_FILES
 	tests/test.vxm
 	tests/test2.vxm
 	tests/8ontop.vox
+	tests/Isanth_Type-Zero_Bc.sment
 	tests/bat_anim.vengi
 	tests/cw.cub
 	tests/crabby.qbcl

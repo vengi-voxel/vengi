@@ -9,9 +9,9 @@ namespace voxelformat {
 class SMFormatTest: public AbstractVoxFormatTest {
 };
 
-TEST_F(SMFormatTest, DISABLED_testLoad) {
-	// https://starmadedock.net
-	canLoad("test.sment", 14);
+TEST_F(SMFormatTest, testLoad) {
+	// from fre starmade demo - allowed to use for testing purposes
+	canLoad("Isanth_Type-Zero_Bc.sment", 1);
 }
 
 }
