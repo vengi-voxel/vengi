@@ -13,6 +13,7 @@
 
 import xml.etree.ElementTree as ET
 from PIL import Image
+import sys
 
 def parse_properties_file(file_path):
     properties = {}
@@ -43,17 +44,53 @@ def texture_color_lookup(texture_id):
 
         left = j*hScale
         top = k*vScale
-        # right = left + hScale
-        # bottom = top + vScale
+        right = left + hScale
+        bottom = top + vScale
 
-        # Get the center pixel coordinates
-        center_x = left + hScale // 2
-        center_y = top + vScale // 2
+        sub_texture = image.crop((left, top, right, bottom))
+        sub_texture_colors = sub_texture.getdata()
+        alpha_total_r = alpha_total_g = alpha_total_b = alpha_total_a = 0
+        opaque_total_r = opaque_total_g = opaque_total_b = opaque_total_a = 0
+        total_alpha = 0
+        total_opaque = 0
+        for rgba in sub_texture_colors:
+            r, g, b, a = rgba
+            if a < 255:
+                alpha_total_r += r
+                alpha_total_g += g
+                alpha_total_b += b
+                alpha_total_a += a
+                total_alpha += 1
+            else:
+                opaque_total_r += r
+                opaque_total_g += g
+                opaque_total_b += b
+                opaque_total_a += a
+                total_opaque += 1
 
-        # Get the RGBA value of the center pixel
-        center_rgba = image.getpixel((center_x, center_y))
+        if total_alpha > total_opaque:
+            total_r = alpha_total_r
+            total_g = alpha_total_g
+            total_b = alpha_total_b
+            min_alpha = 50
+            total_a = min_alpha if alpha_total_a // total_alpha < min_alpha else alpha_total_a // total_alpha
+            total_colors = total_alpha
+        else:
+            total_r = opaque_total_r
+            total_g = opaque_total_g
+            total_b = opaque_total_b
+            total_a = 255
+            total_colors = total_opaque
 
-        return center_rgba
+        # TODO: don't use the average color but the most significant color - if there are alpha values included and fully opaque,
+        # the alpha values should be ignored
+        avg_r = total_r // total_colors
+        avg_g = total_g // total_colors
+        avg_b = total_b // total_colors
+        avg_a = total_a
+
+        # Return the average color as RGBA tuple
+        return (avg_r, avg_g, avg_b, avg_a)
     except FileNotFoundError:
         print(f"Error: Texture file '{texture_name}' not found.")
         return None
@@ -73,19 +110,21 @@ def print_colors(root, block_properties, emit):
 
     for block_type, block_id in block_properties.items():
         for block_node in root.iter('Block'):
-            if block_node.attrib.get('type') == block_type:
-                texture_id = block_node.attrib.get('textureId')
-                light_source = block_node.find('LightSource')
-                if emit:
-                    if light_source.text == "false":
-                        continue
-                    light_source_color = block_node.find('LightSourceColor')
-                    print(f"	{{ {block_id}, {float_color_out(light_source_color.text)} }}, // emit for {block_type}")
-                else:
-                    rgba = texture_color_lookup(texture_id)
-                    if rgba is None:
-                        raise SystemError(f"Error: Texture file for block type '{block_type}' not found.")
-                    print(f"	{{ {block_id}, {rgba_out(rgba)} }}, // {block_type}")
+            if block_node.attrib.get('type') != block_type:
+                continue
+            print(f"block_type {block_type}", file=sys.stderr)
+            texture_id = block_node.attrib.get('textureId')
+            light_source = block_node.find('LightSource')
+            if emit:
+                if light_source.text == "false":
+                    continue
+                light_source_color = block_node.find('LightSourceColor')
+                print(f"	{{ {block_id}, {float_color_out(light_source_color.text)} }}, // emit for {block_type}")
+            else:
+                rgba = texture_color_lookup(texture_id)
+                if rgba is None:
+                    raise SystemError(f"Error: Texture file for block type '{block_type}' not found.")
+                print(f"	{{ {block_id}, {rgba_out(rgba)} }}, // {block_type}")
     print("};")
 
 if __name__ == "__main__":

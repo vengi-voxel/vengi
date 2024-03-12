@@ -5,6 +5,7 @@
 #include "SMFormat.h"
 #include "core/ArrayLength.h"
 #include "core/Bits.h"
+#include "core/Color.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
@@ -294,11 +295,19 @@ static glm::ivec3 posByIndex(uint32_t blockIndex) {
 
 size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							 const LoadContext &ctx) {
-	core::Array<core::RGBA, lengthof(BLOCKCOLOR)> colors;
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
-		colors[i] = BLOCKCOLOR[i].color;
+		uint8_t index = 0;
+		const core::RGBA rgba = BLOCKCOLOR[i].color;
+		palette.tryAdd(rgba, true, &index);
+		for (int j = 0; j < lengthof(BLOCKEMITCOLOR); ++j) {
+			if (BLOCKEMITCOLOR[j].blockId != BLOCKCOLOR[i].blockId) {
+				continue;
+			}
+			const core::RGBA emit = BLOCKEMITCOLOR[j].color;
+			const float factor = core::Color::getDistance(emit, rgba, core::Color::Distance::HSB);
+			palette.setEmit(index, 1.0f - factor);
+		}
 	}
-	palette.quantize(colors.data(), colors.size());
 	return palette.size();
 }
 
