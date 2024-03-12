@@ -55,6 +55,8 @@ def texture_color_lookup(texture_id):
         total_opaque = 0
         for rgba in sub_texture_colors:
             r, g, b, a = rgba
+            if a == 0:
+                continue
             if a < 255:
                 alpha_total_r += r
                 alpha_total_g += g
@@ -68,7 +70,7 @@ def texture_color_lookup(texture_id):
                 opaque_total_a += a
                 total_opaque += 1
 
-        if total_alpha > total_opaque:
+        if total_alpha / 10 > total_opaque:
             total_r = alpha_total_r
             total_g = alpha_total_g
             total_b = alpha_total_b

@@ -60,38 +60,6 @@ static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
 	return true;
 }
 
-static bool readI16vec3(io::SeekableReadStream &stream, glm::i16vec3 &v) {
-	if (stream.readInt16BE(v.x) == -1) {
-		Log::error("failed to read int16 vector x component");
-		return false;
-	}
-	if (stream.readInt16BE(v.y) == -1) {
-		Log::error("failed to read int16 vector y component");
-		return false;
-	}
-	if (stream.readInt16BE(v.z) == -1) {
-		Log::error("failed to read int16 vector z component");
-		return false;
-	}
-	return true;
-}
-
-static bool readVec3(io::SeekableReadStream &stream, glm::vec3 &v) {
-	if (stream.readFloatBE(v.x) == -1) {
-		Log::error("failed to read float vector x component");
-		return false;
-	}
-	if (stream.readFloatBE(v.y) == -1) {
-		Log::error("failed to read float vector y component");
-		return false;
-	}
-	if (stream.readFloatBE(v.z) == -1) {
-		Log::error("failed to read float vector z component");
-		return false;
-	}
-	return true;
-}
-
 bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
@@ -123,7 +91,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 				for (int i = 0; i < 3; ++i) {
 					dot = e.name.find_first_of('.', dot);
 					if (dot != core::String::npos) {
-						position[i] = core::string::toInt(e.name.substr(dot + 1));
+						position[i] = core::string::toInt(e.name.substr(dot + 1)) * priv::segments;
 					}
 				}
 				io::BufferedReadWriteStream modelStream((int64_t)e.size);
@@ -144,100 +112,10 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 					}
 				}
-			} else if (extension == "smbph") {
-				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				if (!readHeader(*headerStream.get())) {
-					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
-				}
-			} else if (extension == "smbpl") {
-				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				if (!readLogic(*headerStream.get())) {
-					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
-				}
-			} else if (extension == "smbpm") {
-				const io::SeekableReadStreamPtr &headerStream = archive.readStream(e.fullPath);
-				if (!readMeta(*headerStream.get())) {
-					Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
-				}
 			}
 		}
 	}
 	return !sceneGraph.empty();
-}
-
-bool SMFormat::readHeader(io::SeekableReadStream &stream) const {
-	int32_t version;
-	wrap(stream.readInt32BE(version))
-	// Ship = 0
-	// Shop = 1
-	// SpaceStation = 2
-	// Asteroid = 3
-	// Planet = 4
-	int32_t entityType;
-	wrap(stream.readInt32BE(entityType))
-	glm::vec3 lowerBound;
-	wrapBool(readVec3(stream, lowerBound))
-	glm::vec3 upperBound;
-	wrapBool(readVec3(stream, upperBound))
-	int32_t blockEntries;
-	wrap(stream.readInt32BE(blockEntries))
-	for (int32_t i = 0; i < blockEntries; ++i) {
-		int16_t blockId;
-		wrap(stream.readInt16BE(blockId))
-		int32_t blockCount;
-		wrap(stream.readInt32BE(blockCount))
-	}
-	return true;
-}
-
-bool SMFormat::readMeta(io::SeekableReadStream &stream) const {
-#if 0
-	int32_t version;
-	wrap(stream.readInt32BE(version))
-	uint8_t unknown2;
-	wrap(stream.readUInt8(unknown2))
-	int32_t dockEntries;
-	wrap(stream.readInt32BE(dockEntries))
-	for (int32_t i = 0; i < dockEntries; ++i) {
-		core::String subfolder;
-		wrap(stream.readPascalStringUInt16BE(subfolder))
-		glm::ivec3 position;
-		wrapBool(readIvec3(stream, position))
-		glm::vec3 unknown3;
-		wrapBool(readVec3(stream, unknown3))
-		int16_t blockId;
-		wrap(stream.readInt16BE(blockId))
-		uint8_t unknown4;
-		wrap(stream.readUInt8(unknown4))
-	}
-	uint8_t unknown5;
-	wrap(stream.readUInt8(unknown5))
-#endif
-	return true;
-}
-
-bool SMFormat::readLogic(io::SeekableReadStream &stream) const {
-	int32_t unknown1;
-	wrap(stream.readInt32BE(unknown1))
-	int32_t controllers;
-	wrap(stream.readInt32BE(controllers))
-	for (int32_t i = 0; i < controllers; ++i) {
-		glm::i16vec3 position;
-		wrapBool(readI16vec3(stream, position))
-		int32_t numGroups;
-		wrap(stream.readInt32BE(numGroups))
-		for (int32_t j = 0; j < numGroups; ++j) {
-			int16_t blockId;
-			wrap(stream.readInt16BE(blockId))
-			int32_t numBlocks;
-			wrap(stream.readInt32BE(numBlocks))
-			for (int32_t k = 0; k < numBlocks; ++k) {
-				glm::i16vec3 blockPos;
-				wrapBool(readI16vec3(stream, blockPos))
-			}
-		}
-	}
-	return true;
 }
 
 bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
