@@ -184,6 +184,8 @@
 	<mime-type type="application/x-starmade">
 		<comment>StarMade</comment>
 		<glob pattern="*.sment"/>
+		<glob pattern="*.smd2"/>
+		<glob pattern="*.smd3"/>
 	</mime-type>
 	<mime-type type="application/x-animatoon">
 		<comment>AnimaToon</comment>

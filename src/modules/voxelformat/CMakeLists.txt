@@ -56,6 +56,7 @@ set(SRCS
 	private/slab6/SLABShared.h               private/slab6/SLABShared.cpp
 	private/sproxel/SproxelFormat.h          private/sproxel/SproxelFormat.cpp
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
+	private/starmade/SMPalette.h
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
 	private/voxelbuilder/VBXFormat.h         private/voxelbuilder/VBXFormat.cpp

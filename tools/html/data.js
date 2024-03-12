@@ -516,7 +516,9 @@ const jsonData = {
     {
       "name": "StarMade",
       "extensions": [
-        "sment"
+        "sment",
+        "smd2",
+        "smd3"
       ],
       "magics": [],
       "mimetype": "application/x-starmade",

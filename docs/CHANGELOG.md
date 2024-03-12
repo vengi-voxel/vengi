@@ -28,6 +28,7 @@ General:
    - Improved scene camera centering
    - Fixed Anima Toon (`scn`) volume loading support
    - Palette optimizations
+   - Improved StarMade `sment`, `smd2` and `smd3` support
 
 VoxBrowser:
 

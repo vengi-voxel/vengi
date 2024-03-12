@@ -439,6 +439,8 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>sment</string>
+          <string>smd2</string>
+          <string>smd3</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>

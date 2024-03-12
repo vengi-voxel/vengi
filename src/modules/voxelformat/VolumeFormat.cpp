@@ -256,7 +256,7 @@ static const io::FormatDescription &voxelMax() {
 }
 
 static const io::FormatDescription &starMade() {
-	static io::FormatDescription f{"StarMade", {"sment"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	static io::FormatDescription f{"StarMade", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 
