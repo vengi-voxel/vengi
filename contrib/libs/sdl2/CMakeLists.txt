@@ -6,7 +6,7 @@ endif()
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 
 cmake_minimum_required(VERSION 3.0.0...3.5)
-project(SDL2 C CXX)
+project(SDL2 C)
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL2_SUBPROJECT OFF)
@@ -15,6 +15,7 @@ else()
 endif()
 
 if (HAIKU)
+  enable_language(CXX)
   set(LINKER_LANGUAGE CXX)
 endif()
 
@@ -1107,6 +1108,8 @@ if(SDL_LIBC)
     check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
     check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
     check_symbol_exists(poll "poll.h" HAVE_POLL)
+    check_symbol_exists(memfd_create "sys/mman.h" HAVE_MEMFD_CREATE)
+    check_symbol_exists(posix_fallocate "fcntl.h" HAVE_POSIX_FALLOCATE)
 
     check_library_exists(m pow "" HAVE_LIBM)
     if(HAVE_LIBM)
@@ -1787,6 +1790,7 @@ elseif(WINDOWS)
   list(APPEND SOURCE_FILES ${CORE_SOURCES})
 
   if(WINDOWS_STORE)
+    enable_language(CXX)
     file(GLOB WINRT_SOURCE_FILES ${SDL2_SOURCE_DIR}/src/core/winrt/*.c ${SDL2_SOURCE_DIR}/src/core/winrt/*.cpp)
     list(APPEND SOURCE_FILES ${WINRT_SOURCE_FILES})
   endif()
