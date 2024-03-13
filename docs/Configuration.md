@@ -92,10 +92,10 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    |
 | `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 |
 | `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 |
-| `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |
-| `voxformat_scale_x`           | Scale the vertices on X axis by the given factor                                         |
-| `voxformat_scale_y`           | Scale the vertices on Y axis by the given factor                                         |
-| `voxformat_scale_z`           | Scale the vertices on Z axis by the given factor                                         |
+| `voxformat_scale`             | Scale the vertices for voxelization on all axis by the given factor                      |
+| `voxformat_scale_x`           | Scale the vertices for voxelization on X axis by the given factor                        |
+| `voxformat_scale_y`           | Scale the vertices for voxelization on Y axis by the given factor                        |
+| `voxformat_scale_z`           | Scale the vertices for voxelization on Z axis by the given factor                        |
 | `voxformat_quads`             | Export to quads                                                                          |
 | `voxformat_withcolor`         | Export vertex colors                                                                     |
 | `voxformat_withnormals`       | Export smoothed normals for cubic surface meshes (marching cubes always uses normals)    |
@@ -105,10 +105,6 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
 | `voxformat_fillhollow`        | Fill the inner parts of completely close objects                                         |
 | `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        |
-| `voxformat_scale`             | Scale the vertices on all axis by the given factor                                       |
-| `voxformat_scale_x`           | Scale the vertices on X axis by the given factor                                         |
-| `voxformat_scale_y`           | Scale the vertices on Y axis by the given factor                                         |
-| `voxformat_scale_z`           | Scale the vertices on Z axis by the given factor                                         |
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     |
 | `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   |
 | `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            |

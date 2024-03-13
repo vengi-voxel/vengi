@@ -189,7 +189,7 @@ You can export your volume model into a gltf, obj, stl or ply (see [Formats](../
 
 `./vengi-voxconvert --input infile.vox --output outfile.obj`
 
-`./vengi-voxconvert --input infile.vox --output outfile.gltf -set voxformat_transform_mesh true -set voxformat_scale 2.0`
+`./vengi-voxconvert --input infile.vox --output outfile.gltf -set voxformat_transform_mesh true`
 
 ## Convert to different formats
 

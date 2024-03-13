@@ -151,7 +151,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		uvs.push_back(glm::vec2((float)uv.x / (float)hdr.skinWidth, 1.0f - (float)uv.y / (float)hdr.skinHeight));
 	}
 
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 
 	TriCollection tris;
 	tris.reserve(hdr.numTris);

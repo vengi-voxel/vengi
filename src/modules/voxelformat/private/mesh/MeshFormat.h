@@ -57,7 +57,7 @@ protected:
 							bool withTexCoords = true) = 0;
 
 	static MeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, Meshes &meshes, int nodeId);
-	static glm::vec3 getScale();
+	static glm::vec3 getInputScale();
 
 	/**
 	 * @brief Voxelizes the input mesh

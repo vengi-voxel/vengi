@@ -308,7 +308,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		}
 	}
 
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &shape : shapes) {
 		int indexOffset = 0;
 		// TODO: shape.lines, shape.points

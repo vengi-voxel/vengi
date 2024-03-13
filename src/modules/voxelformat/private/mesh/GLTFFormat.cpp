@@ -999,7 +999,7 @@ scenegraph::SceneGraphTransform GLTFFormat::loadTransform(const tinygltf::Node &
 													(float)gltfNode.translation[2]));
 		}
 	}
-	transform.setLocalScale(transform.localScale() / getScale());
+	transform.setLocalScale(transform.localScale() / getInputScale());
 	return transform;
 }
 
@@ -1539,7 +1539,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 
 	Log::debug("Mesh node %i", gltfNodeIdx);
 
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 	TriCollection tris;
 
 	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];

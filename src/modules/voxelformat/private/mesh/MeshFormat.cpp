@@ -52,7 +52,7 @@ MeshFormat::MeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGr
 	return nullptr;
 }
 
-glm::vec3 MeshFormat::getScale() {
+glm::vec3 MeshFormat::getInputScale() {
 	const float scale = core::Var::getSafe(cfg::VoxformatScale)->floatVal();
 
 	float scaleX = core::Var::getSafe(cfg::VoxformatScaleX)->floatVal();
@@ -538,7 +538,6 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
 	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
-	const glm::vec3 &scale = getScale();
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
@@ -588,7 +587,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		state = false;
 	} else {
 		Log::debug("Save meshes");
-		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, stream, scale,
+		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, stream, {1.0f, 1.0f, 1.0f},
 						   type == voxel::SurfaceExtractionType::Cubic ? quads : false, withColor, withTexCoords);
 	}
 	for (MeshExt &meshext : meshes) {

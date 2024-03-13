@@ -306,7 +306,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 						   scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
 						   int parent) const {
 	Log::debug("Add model node");
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 	ufbx_vec2 defaultUV;
 	core_memset(&defaultUV, 0, sizeof(defaultUV));
 	const ufbx_mesh *mesh = node->mesh;

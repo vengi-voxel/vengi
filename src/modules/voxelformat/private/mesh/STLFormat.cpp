@@ -18,7 +18,7 @@ static constexpr const size_t BinaryHeaderSize = 80;
 
 bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) {
 	char line[512];
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 	stream.seek(0);
 	while (stream.readLine(sizeof(line), line)) {
 		if (!strncmp(line, "solid", 5)) {
@@ -80,7 +80,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 	}
 
 bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris) {
-	const glm::vec3 &scale = getScale();
+	const glm::vec3 &scale = getInputScale();
 	if (stream.seek(priv::BinaryHeaderSize) == -1) {
 		Log::error("Failed to seek after the binary stl header");
 		return false;

@@ -446,7 +446,7 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 
 	glm::vec3 mins{std::numeric_limits<float>::max()};
 	glm::vec3 maxs{std::numeric_limits<float>::min()};
-	const glm::vec3 scale = getScale();
+	const glm::vec3 scale = getInputScale();
 	for (Vertex &v : vertices) {
 		v.position *= scale;
 		mins = glm::min(mins, v.position);
@@ -752,7 +752,7 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 		}
 	}
 
-	const glm::vec3 scale = getScale();
+	const glm::vec3 scale = getInputScale();
 	for (voxelformat::TexturedTri &tri : tris) {
 		tri.vertices[0] *= scale;
 		tri.vertices[1] *= scale;
