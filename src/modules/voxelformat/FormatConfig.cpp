@@ -38,10 +38,10 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatSaveVisibleOnly, "false", core::CV_NOPERSIST, "Save only visible nodes",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatScale, "1.0", core::CV_NOPERSIST,
-				   "Scale the vertices on all axis by the given factor");
-	core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices on X axis by the given factor");
-	core::Var::get(cfg::VoxformatScaleY, "1.0", core::CV_NOPERSIST, "Scale the vertices on Y axis by the given factor");
-	core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices on Z axis by the given factor");
+				   "Scale the vertices for voxelization on all axis by the given factor");
+	core::Var::get(cfg::VoxformatScaleX, "1.0", core::CV_NOPERSIST, "Scale the vertices for voxelization X axis by the given factor");
+	core::Var::get(cfg::VoxformatScaleY, "1.0", core::CV_NOPERSIST, "Scale the vertices for voxelization Y axis by the given factor");
+	core::Var::get(cfg::VoxformatScaleZ, "1.0", core::CV_NOPERSIST, "Scale the vertices for voxelization Z axis by the given factor");
 	core::Var::get(cfg::VoxformatQuads, "true", core::CV_NOPERSIST,
 				   "Export as quads. If this false, triangles will be used.", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatWithColor, "true", core::CV_NOPERSIST, "Export with vertex colors",
