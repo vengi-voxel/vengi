@@ -24,12 +24,6 @@ namespace voxelformat {
 #error "GLM_FORCE_QUAT_DATA_WXYZ is not supported here"
 #endif
 
-#define wrap(read)                                                                                                     \
-	if ((read) != 0) {                                                                                                 \
-		Log::error("Could not load scn file: Not enough data in stream " CORE_STRINGIFY(read));                        \
-		return false;                                                                                                  \
-	}
-
 bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
 									 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 									 const LoadContext &ctx) {
@@ -42,10 +36,195 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 
 	nlohmann::json json = nlohmann::json::parse(str);
 	core::String name = json.value("SceneName", "unknown").c_str();
+	Log::debug("Name: %s", name.c_str());
+
+	// there are a few different scenes in animatoon 3.0 - each scene has one definition
+	// the definition contains the size of the volumes and the names of the nodes as
+	// well as the child/parent relationship. This definition is hard-coded in animatoon
+	struct SceneDefinition {
+		core::String name;
+		glm::ivec3 size;
+		core::DynamicArray<core::String> nodeNames;
+		core::DynamicArray<core::String> parentNames;
+	} sceneDefinitions[] = {
+		{"Bird", glm::ivec3(40, 30, 60),
+			{
+				"Body", "Wing1", "Wing2"
+			},
+			{
+				"", "Body", "Body"
+			}
+		},
+		{"Multiped", glm::ivec3(30, 30, 30),
+			{
+				"Body", "Head", "LegUpper1", "LegLower1", "Foot1", "LegUpper2", "LegLower2",
+				"Foot2", "LegUpper3", "LegLower3", "Foot3", "LegUpper4", "LegLower4", "Foot4",
+				"LegUpper5", "LegLower5", "Foot5", "LegUpper6", "LegLower6", "Foot6"
+			},
+			{
+				"", "Body", "Body", "LegUpper1", "LegUpper1", "Body", "LegUpper2",
+				"LegUpper2", "Body", "LegUpper3", "LegUpper3", "Body", "LegUpper4", "LegUpper4",
+				"Body", "LegUpper5", "LegUpper5", "Body", "LegUpper6", "LegUpper6"
+			}
+		},
+		{"Quad_Simple", glm::ivec3(16),
+			{
+				"Body", "Head", "Front Left Leg", "Front Right Leg", "Back Left Leg", "Back Right Leg"
+			},
+			{
+				"", "Body", "Body", "Body", "Body", "Body"
+			}
+		},
+		{"Quadruped", glm::ivec3(70, 70, 70),
+			{
+				"Right Back Leg 1", "Right Back Leg 2", "Right Back Leg 3", "Right Back Foot", "Right Back Toe",
+				"Left Back Leg 1", "Left Back Leg 2", "Left Back Leg 3", "Left Back Foot", "Left Back Toe",
+				"Body Back", "Body 2", "Body 3", "Body 4", "Shoulder", "Neck 1", "Neck 2", "Head",
+				"Left Front Leg 1", "Left Front Leg 2", "Left Front Leg 3", "Left Front Foot", "Left Front Toe",
+				"Right Front Leg 1", "Right Front Leg 2", "Right Front Leg 3", "Right Front Foot", "Right Front Toe"
+			},
+			{
+				"", "Right Back Leg 1", "Right Back Leg 2", "Right Back Leg 3", "Right Back Foot",
+				"", "Left Back Leg 1", "Left Back Leg 2", "Left Back Leg 3", "Left Back Foot",
+				"Body 2", "Body 3", "Body 4", "Shoulder", "", "Shoulder", "Neck 1", "Neck 2",
+				"Shoulder", "Left Front Leg 1", "Left Front Leg 2", "Left Front Leg 3", "Left Front Foot",
+				"Shoulder", "Right Front Leg 1", "Right Front Leg 2", "Right Front Leg 3", "Right Front Foot"
+			}
+		},
+		{"Biped_Full", glm::ivec3(70, 70, 70),
+			{
+				"Hip", "Body", "Shoulder",
+				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
+				"Left Arm 1", "Left Arm 2", "Left Hand", "Left Finger", "Left Thumb",
+				"Head",
+				"Left Leg 1", "Left Leg 2", "Left Foot", "Left Toe",
+				"Right Leg 1", "Right Leg 2", "Right Foot", "Right Toe"
+			},
+			{
+				"", "Hip", "Body",
+				"Body", "Right Arm 1", "Right Arm 2", "Right Hand", "Right Arm 2",
+				"Body", "Left Arm 1", "Left Arm 2", "Left Hand", "Left Arm 2",
+				"Body",
+				"Body", "Left Leg 1", "Left Leg 2", "Left Foot",
+				"Body", "Right Leg 1", "Right Leg 2", "Right Foot"
+			}
+		},
+		{"Biped_FatGuy", glm::ivec3(70, 70, 70),
+			{
+				"Hip", "Body",
+				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
+				"Left Arm 1", "Left Arm 2", "Left Hand", "Left Finger", "Left Thumb",
+				"Head",
+				"Left Leg 1", "Left Leg 2", "Left Foot", "Left Toe",
+				"Right Leg 1", "Right Leg 2", "Right Foot", "Right Toe"
+			},
+			{
+				"", "Hip",
+				"Hip", "Right Arm 1", "Right Arm 2", "Right Hand", "Right Arm 2",
+				"Hip", "Left Arm 1", "Left Arm 2", "Left Hand", "Left Arm 2",
+				"Body",
+				"Hip", "Left Leg 1", "Left Leg 2", "Left Foot",
+				"Hip", "Right Leg 1", "Right Leg 2", "Right Foot"
+			}
+		},
+		{"Tall_guy", glm::ivec3(70, 80, 70),
+			{
+				"Hip", "Body",
+				"Shoulder",
+				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
+				"Left Arm 1", "Left Arm 2", "Left Hand", "Left Finger", "Left Thumb",
+				"Head",
+				"Left Leg 1", "Left Leg 2", "Left Foot", "Left Toe",
+				"Right Leg 1", "Right Leg 2", "Right Foot", "Right Toe",
+			},
+			{
+				"", "Hip", "Body",
+				"Hip", "Right Arm 1", "Right Arm 2", "Right Hand", "Right Arm 2",
+				"Hip", "Left Arm 1", "Left Arm 2", "Left Hand", "Left Arm 2",
+				"Shoulder",
+				"Hip", "Left Leg 1", "Left Leg 2", "Left Foot",
+				"Hip", "Right Leg 1", "Right Leg 2", "Right Foot",
+				"Body"
+			}
+		},
+		{"Red_Guy", glm::ivec3(40, 40, 40),
+			{
+				"Hip", "Body",
+				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
+				"Left Arm 1", "Left Arm 2", "Left Hand", "Left Finger", "Left Thumb",
+				"Head",
+				"Body lower",
+				"Left Leg 1", "Left Leg 2", "Left Foot", "Left Toe",
+				"Right Leg 1", "Right Leg 2", "Right Foot", "Right Toe"
+			},
+			{
+				"", "Body lower",
+				"Hip", "Right Arm 1", "Right Arm 2", "Right Hand", "Right Arm 2",
+				"Hip", "Left Arm 1", "Left Arm 2", "Left Hand", "Left Arm 2",
+				"Body",
+				"Hip",
+				"Hip", "Left Leg 1", "Left Leg 2", "Left Foot",
+				"Hip", "Right Leg 1", "Right Leg 2", "Right Foot",
+			}
+		},
+		{"Biped_Boy", glm::ivec3(40, 40, 40),
+			{
+				"Torso", "Chest",
+				"Arm Right 1", "Arm Right 2", "Hand Right", "Finger Right", "empty",
+				"Arm Left 1", "Arm Left 2", "Hand Left", "Finger Left", "empty",
+				"Head",
+				"Foot Left 1", "Foot Left 2", "Feet Left", "empty",
+				"Foot Right 1", "Foot Right 2", "Feet Right", "empty"
+			},
+			{
+				"", "Torso",
+				"Torso", "Arm Right 1", "Arm Right 2", "Hand Right", "",
+				"Torso", "Arm Left 1", "Arm Left 2", "Hand Left", "",
+				"Chest",
+				"Torso", "Foot Left 1", "Foot Left 2", "",
+				"Torso", "Foot Right 1", "Foot Right 2", ""
+			}
+		}
+	};
+
+	const SceneDefinition *sceneDefinition = nullptr;
+	for (int i = 0; i < lengthof(sceneDefinitions); ++i) {
+		const SceneDefinition &def = sceneDefinitions[i];
+		if (name == def.name) {
+			sceneDefinition = &def;
+			break;
+		}
+	}
+	if (sceneDefinition == nullptr) {
+		Log::error("Unknown scene type: %s", name.c_str());
+		return false;
+	}
+	glm::ivec3 regionSize = sceneDefinition->size;
+	Log::debug("scene size: %d %d %d", regionSize.x, regionSize.y, regionSize.z);
+
 	core::DynamicArray<int> modelNodeIds;
 	for (const auto &e : json["ModelSave"]) {
+		const int modelIdx = (int)modelNodeIds.size();
+		regionSize = sceneDefinition->size;
+		if (name == "Quad_Simple") {
+			if (modelIdx == 5 || modelIdx == 7) {
+				regionSize = glm::ivec3(11);
+			}
+		}
 		scenegraph::SceneGraphNode node;
-		node.setName(name);
+		if (modelIdx >= (int)sceneDefinition->nodeNames.size()) {
+			Log::error("No node name for model %d of scene %s", modelIdx, name.c_str());
+			node.setName(name);
+		} else {
+			const core::String sceneNodeName = sceneDefinition->nodeNames[modelIdx];
+			if (sceneNodeName.empty()) {
+				Log::error("No node name for model %d of scene %s", modelIdx, name.c_str());
+				node.setName(name);
+			} else {
+				node.setName(sceneDefinition->nodeNames[modelIdx]);
+			}
+		}
+		int parent = 0;
 		node.setPalette(palette);
 		io::BufferedReadWriteStream base64Stream;
 		const core::String str = e.get<std::string>().c_str();
@@ -55,27 +234,51 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 		}
 		base64Stream.seek(0);
 		io::ZipReadStream readStream(base64Stream);
-		glm::uvec3 size(40);
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(size) - 1);
+		const voxel::Region region(glm::ivec3(0), glm::ivec3(regionSize) - 1);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		node.setVolume(volume, true);
-		for (uint32_t z = 0; z < size.z; ++z) {
-			for (uint32_t y = 0; y < size.y; ++y) {
-				for (uint32_t x = 0; x < size.x; ++x) {
+		for (int32_t z = 0; z < regionSize.z; ++z) {
+			for (int32_t y = 0; y < regionSize.y; ++y) {
+				for (int32_t x = 0; x < regionSize.x; ++x) {
 					AnimaToonVoxel v;
-					wrap(readStream.readUInt8((uint8_t &)v.state))
-					wrap(readStream.readUInt8(v.val))
-					wrap(readStream.readUInt32(v.rgba))
+					if (readStream.readUInt8((uint8_t &)v.state) != 0) {
+						Log::error("Failed to read voxel state for model %d", modelIdx);
+						return false;
+					}
+					if (readStream.readUInt8(v.val) != 0) {
+						Log::error("Failed to read voxel state for model %d", modelIdx);
+						return false;
+					}
+					if (readStream.readUInt32(v.rgba) != 0) {
+						Log::error("Failed to read voxel state for model %d", modelIdx);
+						return false;
+					}
 					if (v.rgba == 0) {
 						continue;
 					}
 					const uint8_t color = palette.getClosestMatch(v.rgba);
 					const voxel::Voxel voxel = voxel::createVoxel(palette, color);
-					volume->setVoxel((int)x, (int)y, (int)z, voxel);
+					volume->setVoxel(x, y, z, voxel);
 				}
 			}
 		}
-		modelNodeIds.push_back(sceneGraph.emplace(core::move(node)));
+		modelNodeIds.push_back(sceneGraph.emplace(core::move(node), parent));
+	}
+
+	for (int modelIdx = 0; modelIdx < (int)modelNodeIds.size(); ++modelIdx) {
+		if (modelIdx < (int)sceneDefinition->parentNames.size()) {
+			const core::String &parentName = sceneDefinition->parentNames[modelIdx];
+			if (!parentName.empty()) {
+				if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByName(parentName)) {
+					const int parent = parentNode->id();
+					sceneGraph.changeParent(modelNodeIds[modelIdx], parent);
+				} else {
+					Log::error("Could not find parent node: %s", parentName.c_str());
+				}
+			}
+		} else {
+			Log::error("No parent name for model %d of scene %s", modelIdx, name.c_str());
+		}
 	}
 
 	glm::vec3 cameraPos(0.0f);
@@ -155,7 +358,5 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableR
 #endif
 	return true;
 }
-
-#undef wrap
 
 } // namespace voxelformat
