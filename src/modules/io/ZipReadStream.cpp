@@ -69,13 +69,14 @@ int64_t ZipReadStream::skip(int64_t delta) {
 int ZipReadStream::read(void *buf, size_t size) {
 	uint8_t *targetPtr = (uint8_t *)buf;
 	const size_t originalSize = size;
+	z_stream* stream = (z_stream*)_stream;
 	while (size > 0) {
-		if (((z_stream*)_stream)->avail_in == 0) {
+		if (stream->avail_in == 0) {
 			int64_t remainingSize = remaining();
-			((z_stream*)_stream)->next_in = _buf;
-			((z_stream*)_stream)->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
+			stream->next_in = _buf;
+			stream->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
 			if (remainingSize > 0) {
-				const int bytes = _readStream.read(_buf, ((z_stream*)_stream)->avail_in);
+				const int bytes = _readStream.read(_buf, stream->avail_in);
 				if (bytes == -1) {
 					Log::debug("Failed to read from parent stream");
 					return -1;
@@ -86,10 +87,10 @@ int ZipReadStream::read(void *buf, size_t size) {
 			}
 		}
 
-		((z_stream*)_stream)->avail_out = (unsigned int)size;
-		((z_stream*)_stream)->next_out = targetPtr;
+		stream->avail_out = (unsigned int)size;
+		stream->next_out = targetPtr;
 
-		const int retval = inflate(((z_stream*)_stream), Z_NO_FLUSH);
+		const int retval = inflate(stream, Z_NO_FLUSH);
 		switch (retval) {
 		case Z_OK:
 		case Z_STREAM_END:
@@ -99,7 +100,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 			return -1;
 		}
 
-		const size_t outputSize = size - (size_t)((z_stream*)_stream)->avail_out;
+		const size_t outputSize = size - (size_t)stream->avail_out;
 		targetPtr += outputSize;
 		core_assert(size >= outputSize);
 		size -= outputSize;
