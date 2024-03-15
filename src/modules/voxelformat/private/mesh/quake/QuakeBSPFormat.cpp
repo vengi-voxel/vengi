@@ -197,7 +197,7 @@ bool QuakeBSPFormat::loadUFOAlienInvasionTextures(const core::String &filename, 
 		return false;
 	}
 
-	textures.resize(textureCount);
+	textures.resize((size_t)textureCount);
 	for (int32_t i = 0; i < textureCount; i++) {
 		Texture &texture = textures[i];
 		for (int j = 0; j < 3; ++j) {
