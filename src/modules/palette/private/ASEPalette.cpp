@@ -111,6 +111,8 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			stream.readFloatBE(color[0]);
 			color[1] = color[2] = color[0];
 			color[3] = 1.0f;
+		} else {
+			continue;
 		}
 		palette.setColor(colorCount, core::Color::getRGBA(color));
 		++colorCount;
