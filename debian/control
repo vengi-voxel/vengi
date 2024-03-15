@@ -33,19 +33,26 @@ Package: vengi-voxedit
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
-Recommends: vengi-thumbnailer, vengi-voxconvert
+Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-voxbrowser
 Description: Voxel editor
+
+Package: vengi-voxbrowser
+Architecture: any
+Multi-Arch: foreign
+Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
+Recommends: vengi-thumbnailer, vengi-voxconvert, vengi-voxedit
+Description: Voxel collection browser
 
 Package: vengi-thumbnailer
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-voxconvert
+Recommends: vengi-voxedit, vengi-voxconvert, vengi-voxbrowser
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Thumbnailer for voxel models
 
 Package: vengi-voxconvert
 Architecture: any
 Multi-Arch: foreign
-Recommends: vengi-voxedit, vengi-thumbnailer
+Recommends: vengi-voxedit, vengi-thumbnailer, vengi-voxbrowser
 Depends: ${misc:Depends}, ${shlibs:Depends}, vengi-shared
 Description: Convert, export or modify voxel volumes
