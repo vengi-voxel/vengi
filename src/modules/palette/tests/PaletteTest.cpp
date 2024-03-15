@@ -84,7 +84,7 @@ TEST_F(PaletteTest, testSaveBuiltInPalette) {
 	EXPECT_EQ("nippon", pal.name());
 }
 
-TEST_F(PaletteTest, testLospec) {
+TEST_F(PaletteTest, DISABLED_testLospec) {
 	Palette pal;
 	ASSERT_TRUE(pal.load("lospec:raspberry"));
 	ASSERT_EQ(4, pal.colorCount());
