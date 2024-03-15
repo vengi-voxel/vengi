@@ -90,7 +90,7 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		for (int i = 0; i < 4; ++i) {
 			colorModeStr[i] = core::string::toUpper(colorModeStr[i]);
 		}
-		glm::vec4 color;
+		glm::vec4 color(0.0f);
 		if (colorMode == FourCC('C', 'Y', 'M', 'K')) {
 			stream.readFloatBE(color[0]);
 			stream.readFloatBE(color[1]);
