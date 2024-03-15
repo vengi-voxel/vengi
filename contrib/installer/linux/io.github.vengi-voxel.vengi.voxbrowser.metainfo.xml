@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop">
+  <!--Created with jdAppdataEdit 5.0-->
+  <id>io.github.vengi-voxel.vengi.voxbrowser</id>
+  <name>vengi Voxbrowser</name>
+  <summary>voxel browser</summary>
+  <developer_name>Martin Gerhardy</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <description>
+    <p>A voxel collection browser.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/voxbrowser.png</image>
+    </screenshot>
+  </screenshots>
+  <keywords>
+    <keyword>3D</keyword>
+    <keyword>modeling</keyword>
+    <keyword>voxel</keyword>
+    <keyword>engine</keyword>
+    <keyword>pixel</keyword>
+    <keyword>art</keyword>
+  </keywords>
+  <categories>
+    <category>Graphics</category>
+    <category>Utility</category>
+  </categories>
+  <releases>
+    <release version="v0.0.29" date="2025-05-15" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.29</url>
+    </release>
+  </releases>
+  <url type="homepage">https://vengi-voxel.github.io/vengi/</url>
+  <url type="bugtracker">https://github.com/vengi-voxel/vengi/issues</url>
+  <url type="donation">https://www.paypal.me/MartinGerhardy</url>
+  <content_rating type="oars-1.1"/>
+</component>

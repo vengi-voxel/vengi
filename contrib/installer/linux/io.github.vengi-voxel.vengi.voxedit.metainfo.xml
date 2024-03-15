@@ -28,6 +28,12 @@
     <category>Utility</category>
   </categories>
   <releases>
+    <release version="v0.0.29" date="2025-05-15" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.29</url>
+    </release>
+    <release version="v0.0.28" date="2025-01-17" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.28</url>
+    </release>
     <release version="v0.0.27" date="2023-09-19" type="stable">
       <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.27</url>
     </release>
