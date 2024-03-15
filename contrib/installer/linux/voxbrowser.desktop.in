@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=@NAME@
+GenericName=Voxel Browser
+Comment=@DESCRIPTION@
+Exec=@COMMANDLINE@
+Icon=@APPICON@
+Terminal=false
+Type=Application
+Keywords=3D;modeling;voxel;engine;pixel;art
+Categories=Graphics;2DGraphics;3DGraphics;RasterGraphics;
+StartupNotify=true
