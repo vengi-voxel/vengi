@@ -215,8 +215,6 @@ app::AppState VoxBrowser::onRunning() {
 
 	for (voxbrowser::VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
-		const core::String &relTargetFile = voxelFile.targetFile();
-
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {
 			iter->value.push_back(voxelFile);
