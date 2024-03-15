@@ -147,7 +147,7 @@ struct LuaNumberFuncs<double> {
 		lua_pushnumber(s, n);
 	}
 
-	static int check(lua_State *s, int arg) {
+	static double check(lua_State *s, int arg) {
 		return luaL_checknumber(s, arg);
 	}
 };
@@ -159,7 +159,7 @@ struct LuaNumberFuncs<int> {
 	}
 
 	static int check(lua_State *s, int arg) {
-		return luaL_checkinteger(s, arg);
+		return (int)luaL_checkinteger(s, arg);
 	}
 };
 
@@ -170,7 +170,7 @@ struct LuaNumberFuncs<bool> {
 	}
 
 	static bool check(lua_State *s, int arg) {
-		return luaL_checkinteger(s, arg);
+		return (int)luaL_checkinteger(s, arg) != 0;
 	}
 };
 
