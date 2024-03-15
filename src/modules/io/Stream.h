@@ -300,7 +300,7 @@ public:
 class NOPWriteStream : public io::WriteStream {
 public:
 	int write(const void *buf, size_t size) override {
-		return size;
+		return (int)size;
 	}
 };
 
