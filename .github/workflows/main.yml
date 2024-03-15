@@ -167,13 +167,13 @@ jobs:
         - name: Upload voxedit AppImage artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: linux-appimages
+            name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
 
         - name: Upload voxbrowser AppImage artifacts
           uses: actions/upload-artifact@v4
           with:
-            name: linux-appimages
+            name: linux-appimage-voxbrowser
             path: "voxbrowser*.AppImage"
 
     emscripten:
