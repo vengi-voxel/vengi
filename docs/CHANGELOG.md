@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 Voxedit:
 
    - Fixed segfault when activating simplified mode
+   - Fixed spanning AABB
 
 ## 0.0.29 (2024-05-15)
 
