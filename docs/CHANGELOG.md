@@ -10,8 +10,9 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.0.30 (2024-XX-XX)
 
-General:
+Voxedit:
 
+   - Fixed segfault when activating simplified mode
 
 ## 0.0.29 (2024-05-15)
 
