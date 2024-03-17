@@ -243,7 +243,7 @@ void App::onFrame() {
 			_nextState = onConstruct();
 
 			if (createPid()) {
-				Log::error("Previous session crashes for %s", _appname.c_str());
+				Log::error("Previous session crashed for %s", _appname.c_str());
 				SDL_MessageBoxData messageboxdata;
 				memset(&messageboxdata, 0, sizeof(messageboxdata));
 				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
