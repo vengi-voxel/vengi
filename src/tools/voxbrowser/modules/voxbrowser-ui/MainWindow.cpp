@@ -293,7 +293,7 @@ int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 	}
 
 	ImGuiListClipper clipper;
-	clipper.Begin(f.size());
+	clipper.Begin((int)f.size());
 
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
@@ -325,7 +325,7 @@ int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 		}
 	}
 
-	return f.size();
+	return (int)f.size();
 }
 
 int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
@@ -349,7 +349,7 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 				}
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				const int n = entry->second.size();
+				const int n = (int)entry->second.size();
 				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					const VoxelFiles &voxelFiles = entry->second;
