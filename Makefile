@@ -149,7 +149,7 @@ mac-notarize: mac-sign-dmg
 mac-staple: mac-notarize
 	$(Q)xcrun stapler staple $(BUILDDIR)/*.dmg
 
-mac-notarize-verify:
+mac-verify-notarize:
 	$(Q)xcrun spctl --assess --type open --context context:primary-signature --ignore-cache --verbose=2 $(BUILDDIR)/*.dmg
 endif
 
