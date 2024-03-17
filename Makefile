@@ -113,6 +113,9 @@ ifeq ($(OS),Windows_NT)
 else
 	$(Q)cd $(BUILDDIR); cpack
 endif
+ifeq ($(OS),Darwin)
+	$(MAKE) mac-sign-dmg
+endif
 
 ifeq ($(OS),Darwin)
 # create an app password for notarization
@@ -122,10 +125,10 @@ mac-app-password:
 mac-verify-signatures-app:
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxbrowser)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxedit)
-	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxconvert)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,thumbnailer)
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxconvert) # doesn't work
 
-mac-sign-dmg: package mac-verify-signature-app
+mac-sign-dmg:
 	$(Q)codesign --force --verbose=2 --sign "Apple Distribution" $(BUILDDIR)/*.dmg
 
 mac-verify-signatures-dmg:
