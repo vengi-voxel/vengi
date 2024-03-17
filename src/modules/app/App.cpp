@@ -24,6 +24,11 @@
 #endif
 #include <cfenv>
 #include <signal.h>
+#ifdef _WIN32
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 // osx delayed loading of a NSDocument derived file type
 static core::String g_loadingDocument;
@@ -105,11 +110,13 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	::GetVersionExA(&osInfo);
 	_osVersion = core::string::format("%i.%i.%i", (int)osInfo.dwMajorVersion, (int)osInfo.dwMinorVersion,
 									  (int)osInfo.dwBuildNumber);
+	_pid = _getpid();
 #elif defined(__LINUX__) || defined(__MACOSX__) || defined(__EMSCRIPTEN__)
 	struct utsname details;
 	if (uname(&details) == 0) {
 		_osVersion = core::string::format("%s %s", details.sysname, details.machine);
 	}
+	_pid = getpid();
 #endif
 
 	if (_osName.empty()) {

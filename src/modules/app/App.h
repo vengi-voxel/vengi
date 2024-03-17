@@ -61,6 +61,7 @@ protected:
 	char **_argv = nullptr;
 
 	int _initialLogLevel = 0;
+	int _pid = -1;
 
 	core::String _organisation;
 	core::String _appname;
