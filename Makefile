@@ -23,8 +23,11 @@ ifeq ($(OS),)
 endif
 
 ifeq ($(OS),Darwin)
+define APP_PATH
+	$(BUILDDIR)/$1/vengi-$1.app
+endef
 define EXEC_PATH
-	$(BUILDDIR)/$1/vengi-$1.app/Contents/MacOS/vengi-$1
+	open $(call APP_PATH $1)
 endef
 else
 define EXEC_PATH
@@ -103,6 +106,30 @@ ifeq ($(OS),Windows_NT)
 	$(Q)cd $(BUILDDIR) & cpack
 else
 	$(Q)cd $(BUILDDIR); cpack
+endif
+
+ifeq ($(OS),Darwin)
+# create an app password for notarization
+mac-app-password:
+	$(Q)xcrun notarytool store-credentials "KC_PROFILE" --apple-id martin.gerhardy@gmail.com --team-id "Apple Distribution"
+
+mac-verify-signatures-app:
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxbrowser)
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxedit)
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxconvert)
+	$(Q)codesign --verify --verbose=2 $(call APP_PATH,thumbnailer)
+
+mac-sign-dmg: package mac-verify-signature-app
+	$(Q)codesign --force --verbose=2 --sign "Apple Distribution" $(BUILDDIR)/*.dmg
+
+mac-verify-signatures-dmg:
+	$(Q)codesign --verify --verbose=2 $(BUILDDIR)/*.dmg
+
+mac-notarize: mac-sign-dmg
+	$(Q)xcrun notarytool submit $(BUILDDIR)/*.dmg --keychain-profile "KC_PROFILE" --wait
+
+mac-notarize-verify:
+	$(Q)xcrun spctl --assess --type open --context context:primary-signature --ignore-cache --verbose=2 $(BUILDDIR)/*.dmg
 endif
 
 .PHONY: cmake
