@@ -80,6 +80,7 @@ protected:
 		core::String _value;
 	};
 
+	const core::String _defaultValue;
 	core::DynamicArray<Value> _history;
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty = false;
@@ -90,9 +91,13 @@ protected:
 	static bool _minMaxValidator(const core::String& value, int nmin, int nmax);
 
 	// invisible - use the static get method
-	Var(const core::String& name, const core::String& value = "", uint32_t flags = 0u, const char *help = nullptr, ValidatorFunc validatorFunc = nullptr);
+	Var(const core::String& name, const core::String& value, const core::String &defaultValue, uint32_t flags, const char *help, ValidatorFunc validatorFunc);
 public:
 	~Var();
+
+	void reset() {
+		setVal(_defaultValue);
+	}
 
 	static bool boolValidator(const core::String& value) {
 		return value == "1" || value == "true" || value == "false" || value == "0";

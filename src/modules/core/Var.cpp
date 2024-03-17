@@ -123,6 +123,7 @@ void Var::vec3Val(float out[3]) const {
 VarPtr Var::get(const core::String& name, const char* value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
 	core_assert(!name.empty());
 	VarMap::iterator i;
+	const char *defaultValue = value;
 	bool missing;
 	{
 		ScopedLock lock(_lock);
@@ -153,7 +154,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 			return VarPtr();
 		}
 
-		const VarPtr& p = core::make_shared<Var>(name, value, flagsMask, help, validatorFunc);
+		const VarPtr& p = core::make_shared<Var>(name, value, defaultValue == nullptr ? "" : defaultValue, flagsMask, help, validatorFunc);
 		ScopedLock lock(_lock);
 		_vars.put(name, p);
 		return p;
@@ -200,7 +201,7 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 	return v;
 }
 
-Var::Var(const core::String& name, const core::String& value, unsigned int flags, const char *help, ValidatorFunc validatorFunc) :
+Var::Var(const core::String& name, const core::String& value, const core::String &defaultValue, unsigned int flags, const char *help, ValidatorFunc validatorFunc) :
 		_name(name), _help(help), _flags(flags), _validator(validatorFunc) {
 	addValueToHistory(value);
 	core_assert(_currentHistoryPos == 0);
