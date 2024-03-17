@@ -373,7 +373,7 @@ appimage: voxedit
 	$(Q)chmod +x $(BUILDDIR)/linuxdeploy-x86_64.AppImage
 	$(Q)$(BUILDDIR)/linuxdeploy-x86_64.AppImage --output=appimage --appdir $(BUILDDIR)/install-voxedit
 
-emscripten-%:
+emscripten-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target codegen
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
