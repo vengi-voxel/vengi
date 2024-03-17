@@ -124,6 +124,9 @@ protected:
 	virtual void printUsageHeader() const;
 
 	void setArgs(int argc, char *argv[]);
+	bool isRunning(int pid) const;
+	bool createPid();
+	void deletePid();
 
 #ifdef __EMSCRIPTEN__
 	static void runFrameEmscripten();

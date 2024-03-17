@@ -18,6 +18,7 @@
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
+#include <SDL_messagebox.h>
 #include <SDL_cpuinfo.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -171,6 +172,49 @@ void App::remBlocker(AppState blockedState) {
 	_blockers[(int)blockedState] = false;
 }
 
+bool App::isRunning(int pid) const {
+#ifdef __WIN32__
+	HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
+	if (process == NULL) {
+		return false;
+	}
+	DWORD ret = WaitForSingleObject(process, 0);
+	CloseHandle(process);
+	return ret == WAIT_TIMEOUT;
+#else
+	return kill(pid, 0) == 0;
+#endif
+}
+
+bool App::createPid() {
+	core::String oldPid = _filesystem->load("app.pid");
+	if (oldPid.empty()) {
+		_filesystem->write("app.pid", core::string::toString(_pid));
+		return false;
+	}
+	// check if oldPid process is still running
+	int pid = oldPid.toInt();
+	if (isRunning(pid)) {
+		return false;
+	}
+	_filesystem->write("app.pid", core::string::toString(_pid));
+	// the pid doesn't exist anymore, so this was most likely a crash
+	return true;
+}
+
+void App::deletePid() {
+	core::String oldPid = _filesystem->load("app.pid");
+	if (oldPid.empty()) {
+		return;
+	}
+	// if the pid file exists and contains the current process pid, delete it - we
+	// use this to determine whether the application was crashing
+	if (oldPid.toInt() != _pid) {
+		return;
+	}
+	_filesystem->removeFile(_filesystem->writePath("app.pid"));
+}
+
 void App::onFrame() {
 	core_trace_begin_frame("Main");
 	if (_nextState != AppState::InvalidAppState && _nextState != _curState) {
@@ -197,6 +241,32 @@ void App::onFrame() {
 		case AppState::Construct: {
 			core_trace_scoped(AppOnConstruct);
 			_nextState = onConstruct();
+
+			if (createPid()) {
+				Log::error("Previous session crashes for %s", _appname.c_str());
+				SDL_MessageBoxData messageboxdata;
+				memset(&messageboxdata, 0, sizeof(messageboxdata));
+				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
+				messageboxdata.title = "Detected previous crash";
+				messageboxdata.message = "The previous session crashed - would you like to reset the configuration?";
+				messageboxdata.numbuttons = 2;
+				SDL_MessageBoxButtonData buttons[2];
+				memset(&buttons, 0, sizeof(buttons));
+				buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+				buttons[0].buttonid = 0;
+				buttons[0].text = "Yes";
+				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+				buttons[1].buttonid = 1;
+				buttons[1].text = "No";
+				messageboxdata.buttons = buttons;
+				int buttonId = -1;
+				if (SDL_ShowMessageBox(&messageboxdata, &buttonId)) {
+					if (buttonId == 0) {
+						Log::error("Reset cvars to their default values");
+						core::Var::visit([](const core::VarPtr &var) { var->reset(); });
+					}
+				}
+			}
 			Log::debug("AppState::Construct done");
 			break;
 		}
@@ -260,6 +330,7 @@ void App::onFrame() {
 			core_trace_scoped(AppOnDestroy);
 			_nextState = onDestroy();
 			_curState = AppState::InvalidAppState;
+			deletePid();
 			Log::debug("AppState::Destroy done");
 			break;
 		}
