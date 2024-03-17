@@ -14,7 +14,7 @@ else
 ALLTARGET      ?= all
 endif
 CMAKE          ?= cmake
-EMSDK_DIR      ?= $(HOME)/dev/emsdk
+EMSDK_DIR      ?= $(HOME)/dev/oss/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
