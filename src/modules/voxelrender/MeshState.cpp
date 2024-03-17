@@ -7,6 +7,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
+#include <SDL.h>
 
 namespace voxelrender {
 
