@@ -3,16 +3,22 @@ UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build
 INSTALL_DIR    ?= $(BUILDDIR)
-GENERATOR      ?= -GNinja
+ifneq (,$(wildcard $(BUILDDIR)/vengi.xcodeproj))
+GENERATOR      ?= Xcode
+else
+GENERATOR      ?= Ninja
+endif
+ifeq ($(GENERATOR),Xcode)
+ALLTARGET      ?= ALL_BUILD
+else
 ALLTARGET      ?= all
-# GENERATOR      ?= -GXcode
-# ALLTARGET      ?= ALL_BUILD
+endif
 CMAKE          ?= cmake
 EMSDK_DIR      ?= $(HOME)/dev/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
-CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) $(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
+CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
 else
@@ -125,8 +131,17 @@ mac-sign-dmg: package mac-verify-signature-app
 mac-verify-signatures-dmg:
 	$(Q)codesign --verify --verbose=2 $(BUILDDIR)/*.dmg
 
+# https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow
 mac-notarize: mac-sign-dmg
 	$(Q)xcrun notarytool submit $(BUILDDIR)/*.dmg --keychain-profile "KC_PROFILE" --wait
+
+# If you distribute your software via a custom third-party installer, you need two rounds of notarization.
+# First you notarize the installer’s payload (everything the installer will install). You then package the
+# notarized (and stapled, as described in Staple the ticket to your distribution) items into the installer
+# and notarize it as you would any other executable. If you use a network installer, separately notarize
+# both the installer and the items it downloads.
+mac-staple: mac-notarize
+	xcrun stapler staple $(BUILDDIR)/*.dmg
 
 mac-notarize-verify:
 	$(Q)xcrun spctl --assess --type open --context context:primary-signature --ignore-cache --verbose=2 $(BUILDDIR)/*.dmg
