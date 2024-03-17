@@ -131,6 +131,8 @@ mac-sign-dmg: package mac-verify-signature-app
 mac-verify-signatures-dmg:
 	$(Q)codesign --verify --verbose=2 $(BUILDDIR)/*.dmg
 
+mac-verify-signatures: mac-verify-signatures-app mac-verify-signatures-dmg
+
 # https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow
 mac-notarize: mac-sign-dmg
 	$(Q)xcrun notarytool submit $(BUILDDIR)/*.dmg --keychain-profile "KC_PROFILE" --wait
@@ -141,7 +143,7 @@ mac-notarize: mac-sign-dmg
 # and notarize it as you would any other executable. If you use a network installer, separately notarize
 # both the installer and the items it downloads.
 mac-staple: mac-notarize
-	xcrun stapler staple $(BUILDDIR)/*.dmg
+	$(Q)xcrun stapler staple $(BUILDDIR)/*.dmg
 
 mac-notarize-verify:
 	$(Q)xcrun spctl --assess --type open --context context:primary-signature --ignore-cache --verbose=2 $(BUILDDIR)/*.dmg
