@@ -98,7 +98,7 @@ deb: deb-changelog deb-bash-completion
 tests:
 	$(Q)ctest --test-dir $(BUILDDIR) $(CTEST_FLAGS)
 
-package: $(BUILDDIR)/CMakeCache.txt
+package: voxedit voxbrowser thumbnailer $(BUILDDIR)/CMakeCache.txt
 ifeq ($(OS),Windows_NT)
 	$(Q)cd $(BUILDDIR) & cpack
 else
