@@ -119,6 +119,7 @@ endif
 
 ifeq ($(OS),Darwin)
 # create an app password for notarization
+# https://appleid.apple.com/ - needed for the mac-notarize target
 mac-app-password:
 	$(Q)xcrun notarytool store-credentials "KC_PROFILE" --apple-id martin.gerhardy@gmail.com --team-id "Apple Distribution"
 
