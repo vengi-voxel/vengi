@@ -42,6 +42,7 @@ set(TEST_SRCS
 	tests/ModifierTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp
+	tests/PlaneBrushTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
 	tests/ShapeBrushTest.cpp

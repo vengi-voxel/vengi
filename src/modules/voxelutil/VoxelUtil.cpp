@@ -416,7 +416,9 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
 		const voxel::Voxel &v = volume.voxel(p);
 		return voxel::isBlocked(v.getMaterial());
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		return in.setVoxel(pos, replaceVoxel);
+	};
 	return voxelutil::walkPlane(in, pos, face, -1, check, exec);
 }
 
@@ -426,7 +428,9 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(searchVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		return in.setVoxel(pos, replaceVoxel);
+	};
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec);
 }
 
@@ -436,7 +440,9 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(groundVoxel);
 	};
-	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, voxel::Voxel()); };
+	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		return in.setVoxel(pos, voxel::Voxel());
+	};
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec);
 }
 
@@ -446,7 +452,9 @@ int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Face
 		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(groundVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, newPlaneVoxel); };
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
+		return in.setVoxel(pos, newPlaneVoxel);
+	};
 	return voxelutil::walkPlane(in, pos, face, -1, check, exec);
 }
 
