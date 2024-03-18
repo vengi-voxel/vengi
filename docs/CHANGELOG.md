@@ -19,6 +19,7 @@ Voxedit:
 
    - Fixed segfault when activating simplified mode
    - Fixed spanning AABB
+   - Fixed crash on deleting reference nodes after duplication
 
 ## 0.0.29 (2024-05-15)
 

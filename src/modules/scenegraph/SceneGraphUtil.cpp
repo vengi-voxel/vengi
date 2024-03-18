@@ -99,12 +99,15 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
 	if (recursive) {
 		for (int childId : node.children()) {
-			addNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
+			const SceneGraphNode &cnode = sceneGraph.node(childId);
+			addNodeToSceneGraph(sceneGraph, cnode, nodeId, recursive);
 		}
 	}
 	return nodeId;
 }
 
+// TODO: happens to easily to call the wrong function with the const node
+// see https://github.com/vengi-voxel/vengi/issues/418
 int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
 	SceneGraphNode newNode(node.type());
 	copy(node, newNode);
