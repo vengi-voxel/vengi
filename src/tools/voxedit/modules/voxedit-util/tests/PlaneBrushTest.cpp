@@ -32,18 +32,18 @@ TEST_F(PlaneBrushTest, testExtrude) {
 	scenegraph::SceneGraph sceneGraph;
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
-	const int maxZ = 2; // TODO: should be 3 - see https://github.com/vengi-voxel/vengi/issues/419
+	brushContext.cursorFace = voxel::FaceNames::PositiveZ;
+	brushContext.cursorVoxel = voxel;
+	brushContext.hitCursorVoxel = voxel;
+
+	const int maxZ = 3;
 	for (int z = 1; z <= maxZ; ++z) {
 		brushContext.cursorPosition = glm::ivec3(1, 1, z);
-		brushContext.cursorFace = voxel::FaceNames::PositiveZ;
-		brushContext.cursorVoxel = voxel;
-		brushContext.hitCursorVoxel = voxel;
-		glm::ivec3 v = brushContext.cursorPosition;
-
-		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(v).getMaterial())) << "for z: " << z;
+		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
 		EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for z: " << z;
-		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(v).getMaterial())) << "for z: " << z;
+		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
 	}
+
 	brush.shutdown();
 }
 

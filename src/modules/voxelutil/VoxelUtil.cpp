@@ -339,44 +339,32 @@ static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, vo
 	case voxel::FaceNames::PositiveX:
 		mins.x = position.x;
 		maxs.x = position.x;
-		if (!region.isOnBorderX(position.x)) {
-			checkOffsetV.x = checkOffset;
-		}
+		checkOffsetV.x = checkOffset;
 		break;
 	case voxel::FaceNames::NegativeX:
 		mins.x = position.x;
 		maxs.x = position.x;
-		if (!region.isOnBorderX(position.x)) {
-			checkOffsetV.x = -checkOffset;
-		}
+		checkOffsetV.x = -checkOffset;
 		break;
 	case voxel::FaceNames::PositiveY:
 		mins.y = position.y;
 		maxs.y = position.y;
-		if (!region.isOnBorderY(position.y)) {
-			checkOffsetV.y = checkOffset;
-		}
+		checkOffsetV.y = checkOffset;
 		break;
 	case voxel::FaceNames::NegativeY:
 		mins.y = position.y;
 		maxs.y = position.y;
-		if (!region.isOnBorderY(position.y)) {
-			checkOffsetV.y = -checkOffset;
-		}
+		checkOffsetV.y = -checkOffset;
 		break;
 	case voxel::FaceNames::PositiveZ:
 		mins.z = position.z;
 		maxs.z = position.z;
-		if (!region.isOnBorderZ(position.z)) {
-			checkOffsetV.z = checkOffset;
-		}
+		checkOffsetV.z = checkOffset;
 		break;
 	case voxel::FaceNames::NegativeZ:
 		mins.z = position.z;
 		maxs.z = position.z;
-		if (!region.isOnBorderZ(position.z)) {
-			checkOffsetV.z = -checkOffset;
-		}
+		checkOffsetV.z = -checkOffset;
 		break;
 	case voxel::FaceNames::Max:
 		return -1;
