@@ -14,6 +14,7 @@ General:
 
    - Fixed material saving and loading for vengi format
    - Fixed off-by-one in palette material property handling
+   - Fixed extrude on region boundaries
 
 Voxedit:
 
