@@ -76,6 +76,7 @@ struct Material {
 };
 
 // make sure to keep the order of the properties - see Material struct float values
+// none is not included in this array - beware of the -1 offset
 static constexpr const char *MaterialPropertyNames[] = {
 	"metal",
 	"roughness",

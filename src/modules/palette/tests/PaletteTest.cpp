@@ -219,4 +219,11 @@ TEST_F(PaletteTest, testCreateAndLoadPalette) {
 	EXPECT_TRUE(palette::Palette::createPalette(img, palette)) << "Failed to create palette image";
 }
 
+TEST_F(PaletteTest, testMaterialPropertyByName) {
+	palette::Palette palette;
+	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 0.0f);
+	palette.setMaterialProperty(0, "emit", 1.0f);
+	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 1.0f);
+}
+
 } // namespace voxel

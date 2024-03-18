@@ -896,7 +896,7 @@ bool Palette::setMaterialProperty(uint8_t idx, const core::String &name, float v
 	Material &mat = _materials[idx];
 	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
 		if (MaterialPropertyNames[i] == name) {
-			mat.setValue((MaterialProperty)i, value);
+			mat.setValue((MaterialProperty)(i + 1), value);
 			markDirty();
 			return true;
 		}
@@ -908,7 +908,7 @@ float Palette::materialProperty(uint8_t idx, const core::String &name) const {
 	const Material &mat = _materials[idx];
 	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
 		if (MaterialPropertyNames[i] == name) {
-			return mat.value((MaterialProperty)i);
+			return mat.value((MaterialProperty)(i + 1));
 		}
 	}
 	return 0.0f;
