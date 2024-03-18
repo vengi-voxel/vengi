@@ -135,8 +135,11 @@ bool VENGIFormat::saveNodePaletteColors(const scenegraph::SceneGraph &sceneGraph
 		wrapBool(stream.writeUInt32((uint32_t)material.type))
 		wrapBool(stream.writeUInt8(palette::MaterialProperty::MaterialMax - 1))
 		for (uint32_t n = 0u; n < palette::MaterialProperty::MaterialMax - 1; ++n) {
-			wrapBool(stream.writePascalStringUInt16LE(palette::MaterialPropertyNames[n]))
-			wrapBool(stream.writeFloat(material.value((palette::MaterialProperty)n)));
+			const char *materialName = palette::MaterialPropertyNames[n];
+			wrapBool(stream.writePascalStringUInt16LE(materialName))
+			const palette::MaterialProperty property = (palette::MaterialProperty)(n + 1);
+			const float value = material.value(property);
+			wrapBool(stream.writeFloat(value));
 		}
 	}
 	return true;
@@ -259,7 +262,7 @@ bool VENGIFormat::loadNodePaletteColors(scenegraph::SceneGraph &sceneGraph, scen
 		palette.setMaterialType(i, (palette::MaterialType)type);
 		uint8_t propertyCount;
 		wrap(stream.readUInt8(propertyCount))
-		for (uint8_t i = 0; i < propertyCount; ++i) {
+		for (uint8_t n = 0; n < propertyCount; ++n) {
 			core::String name;
 			wrapBool(stream.readPascalStringUInt16LE(name))
 			float value;
