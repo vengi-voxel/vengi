@@ -10,6 +10,11 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.0.30 (2024-XX-XX)
 
+General:
+
+   - Fixed material saving and loading for vengi format
+   - Fixed off-by-one in palette material property handling
+
 Voxedit:
 
    - Fixed segfault when activating simplified mode
