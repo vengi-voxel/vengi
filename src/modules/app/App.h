@@ -125,7 +125,7 @@ protected:
 
 	void setArgs(int argc, char *argv[]);
 	bool isRunning(int pid) const;
-	bool createPid();
+	virtual bool createPid();
 	void deletePid();
 
 #ifdef __EMSCRIPTEN__

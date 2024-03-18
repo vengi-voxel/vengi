@@ -17,6 +17,9 @@ public:
 			  core::make_shared<core::TimeProvider>()) {
 		setArgs(argc, (char **)args);
 	}
+	bool createPid() override {
+		return false;
+	}
 };
 
 TEST(AppTest, testLifecycleManual) {

@@ -22,7 +22,9 @@ private:
 		virtual ~TestApp();
 
 		void run();
-
+		bool createPid() override {
+			return false;
+		}
 		app::AppState onInit() override;
 		app::AppState onCleanup() override;
 		app::AppState onRunning() override;
