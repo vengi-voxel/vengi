@@ -90,7 +90,7 @@ void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume
 	copy(src, target, copyKeyFrames);
 }
 
-int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent, bool recursive) {
+int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent, bool recursive) {
 	SceneGraphNode newNode(node.type());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -100,7 +100,7 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	if (recursive) {
 		for (int childId : node.children()) {
 			const SceneGraphNode &cnode = sceneGraph.node(childId);
-			addNodeToSceneGraph(sceneGraph, cnode, nodeId, recursive);
+			copyNodeToSceneGraph(sceneGraph, cnode, nodeId, recursive);
 		}
 	}
 	return nodeId;

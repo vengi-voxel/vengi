@@ -3085,7 +3085,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 }
 
 void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
-	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
+	const int newNodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
 	onNewNodeAdded(newNodeId, false);
 }
 

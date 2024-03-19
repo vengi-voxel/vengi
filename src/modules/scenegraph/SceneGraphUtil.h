@@ -14,7 +14,7 @@ void copyNode(const SceneGraphNode &src, SceneGraphNode &target, bool copyVolume
 /**
  * @brief this makes a copy of the volumes affected
  */
-int addNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent, bool recursive = false);
+int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int parent, bool recursive = false);
 
 /**
  * @brief this doesn't copy but transfer the volume ownership
