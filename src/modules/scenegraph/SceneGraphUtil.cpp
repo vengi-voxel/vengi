@@ -106,9 +106,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 	return nodeId;
 }
 
-// TODO: happens to easily to call the wrong function with the const node
-// see https://github.com/vengi-voxel/vengi/issues/418
-int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
 	SceneGraphNode newNode(node.type());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -119,14 +117,14 @@ int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent
 	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
 	if (recursive) {
 		for (int childId : node.children()) {
-			addNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
+			moveNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
 		}
 	}
 	return nodeId;
 }
 
 static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
-	const int newNodeId = addNodeToSceneGraph(target, sourceNode, parent);
+	const int newNodeId = moveNodeToSceneGraph(target, sourceNode, parent);
 	if (newNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
 		return 0;

@@ -358,7 +358,7 @@ public:
 	bool runScript(const core::String &luaCode, const core::DynamicArray<core::String> &args);
 
 	bool newScene(bool force, const core::String &name, const voxel::Region &region);
-	int addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
+	int moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
 
 	/**
 	 * @return @c true if the scene was modified and not saved yet

@@ -172,11 +172,11 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, _("Add new group" SCENEGRAPHPOPUP))) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
-			_sceneMgr->addNodeToSceneGraph(groupNode, nodeId);
+			_sceneMgr->moveNodeToSceneGraph(groupNode, nodeId);
 		}
 		if (ImGui::IconMenuItem(ICON_LC_PLUS_SQUARE, _("Add new camera" SCENEGRAPHPOPUP))) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
-			_sceneMgr->addNodeToSceneGraph(cameraNode);
+			_sceneMgr->moveNodeToSceneGraph(cameraNode);
 		}
 		ImGui::EndPopup();
 	}
@@ -375,7 +375,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 			toolbar.button(ICON_LC_GROUP, _("Add a new group"), [&sceneGraph, this] () {
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 				node.setName("new group");
-				_sceneMgr->addNodeToSceneGraph(node, sceneGraph.activeNode());
+				_sceneMgr->moveNodeToSceneGraph(node, sceneGraph.activeNode());
 			});
 
 			toolbar.button(ICON_LC_TRASH, _("Remove the active node with all its children"), [&sceneGraph, this]() {

@@ -895,7 +895,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	node.setVisible(visible);
 	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
-	const int nodeId = scenegraph::addNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
+	const int nodeId = scenegraph::moveNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
 	if (nodeId == -1) {
 		return clua_error(s, "Failed to add new node");
 	}

@@ -19,7 +19,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 /**
  * @brief this doesn't copy but transfer the volume ownership
  */
-int addNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive = false);
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive = false);
 
 int addSceneGraphNodes(SceneGraph &target, SceneGraph &source, int parent);
 

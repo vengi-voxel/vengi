@@ -49,7 +49,7 @@ void CameraPanel::update(const char *title, video::Camera &camera, command::Comm
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_PLUS_SQUARE, _("Add new camera"))) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
-			_sceneMgr->addNodeToSceneGraph(cameraNode);
+			_sceneMgr->moveNodeToSceneGraph(cameraNode);
 		}
 	}
 	ImGui::End();

@@ -723,7 +723,7 @@ void MainWindow::popupModelNodeSettings() {
 			if (_modelNodeSettings.palette.hasValue()) {
 				newNode.setPalette(*_modelNodeSettings.palette.value());
 			}
-			_sceneMgr->addNodeToSceneGraph(newNode, _modelNodeSettings.parent);
+			_sceneMgr->moveNodeToSceneGraph(newNode, _modelNodeSettings.parent);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();

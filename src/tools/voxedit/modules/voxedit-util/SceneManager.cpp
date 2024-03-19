@@ -167,7 +167,7 @@ bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool b
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
 	newNode.setPalette(palette);
-	return addNodeToSceneGraph(newNode) != InvalidNodeId;
+	return moveNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
 bool SceneManager::importAsPlane(const core::String& file) {
@@ -181,7 +181,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
 	newNode.setPalette(palette);
-	return addNodeToSceneGraph(newNode) != InvalidNodeId;
+	return moveNodeToSceneGraph(newNode) != InvalidNodeId;
 }
 
 bool SceneManager::importHeightmap(const core::String& file) {
@@ -466,7 +466,7 @@ bool SceneManager::import(const core::String& file) {
 	bool state = false;
 	for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
-		state |= addNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
+		state |= moveNodeToSceneGraph(node, newNodeId) != InvalidNodeId;
 	}
 
 	return state;
@@ -503,7 +503,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 			mergeIfNeeded(newSceneGraph);
 			for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
 				scenegraph::SceneGraphNode &node = *iter;
-				state |= addNodeToSceneGraph(node, importGroupNodeId) != InvalidNodeId;
+				state |= moveNodeToSceneGraph(node, importGroupNodeId) != InvalidNodeId;
 			}
 		}
 	}
@@ -603,7 +603,7 @@ void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	copyNode(node, newNode, false, true);
 	newNode.setVolume(newVolume, true);
 	newNode.setName(core::string::format("color: %i", (int)voxelColor.getColor()));
-	addNodeToSceneGraph(newNode, node.parent());
+	moveNodeToSceneGraph(newNode, node.parent());
 }
 
 void SceneManager::scaleUp(int nodeId) {
@@ -664,7 +664,7 @@ void SceneManager::splitObjects() {
 		newNode.setVolume(newVolume, true);
 		newNode.setName(node->name());
 		newNode.setPalette(node->palette());
-		addNodeToSceneGraph(newNode, nodeId);
+		moveNodeToSceneGraph(newNode, nodeId);
 	}
 }
 
@@ -929,7 +929,7 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 		newNode.setPivot(*s.pivot.value());
 	}
 	newNode.setName(s.name);
-	const int newNodeId = addNodeToSceneGraph(newNode, s.parentId);
+	const int newNodeId = moveNodeToSceneGraph(newNode, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
 	return newNodeId != InvalidNodeId;
 }
@@ -1082,7 +1082,7 @@ bool SceneManager::pasteAsNewNode() {
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(node, newNode, false);
 	newNode.setVolume(new voxel::RawVolume(*_copy), true);
-	return addNodeToSceneGraph(newNode, node.parent()) != InvalidNodeId;
+	return moveNodeToSceneGraph(newNode, node.parent()) != InvalidNodeId;
 }
 
 bool SceneManager::paste(const glm::ivec3& pos) {
@@ -1184,7 +1184,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	newNode.setVolume(merged.first, true);
 	newNode.setPalette(merged.second);
 
-	int newNodeId = addNodeToSceneGraph(newNode, parent);
+	int newNodeId = moveNodeToSceneGraph(newNode, parent);
 	if (newNodeId == InvalidNodeId) {
 		return newNodeId;
 	}
@@ -1288,8 +1288,8 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 	}
 }
 
-int SceneManager::addNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
-	const int newNodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, node, parent, false);
+int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
+	const int newNodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, node, parent, false);
 	onNewNodeAdded(newNodeId, false);
 	return newNodeId;
 }
@@ -1464,7 +1464,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	} else {
 		newNode.setName(name);
 	}
-	const int nodeId = scenegraph::addNodeToSceneGraph(_sceneGraph, newNode, 0);
+	const int nodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, newNode, 0);
 	if (nodeId == InvalidNodeId) {
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
@@ -2308,7 +2308,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 	newNode.setVolume(new voxel::RawVolume(region), true);
 	newNode.setName(name);
 	const int parentId = activeNode();
-	const int nodeId = addNodeToSceneGraph(newNode, parentId);
+	const int nodeId = moveNodeToSceneGraph(newNode, parentId);
 	return nodeId;
 }
 
@@ -3077,7 +3077,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		} else {
 			newNode.setName(name);
 		}
-		addNodeToSceneGraph(newNode);
+		moveNodeToSceneGraph(newNode);
 	} else {
 		markDirty();
 	}
