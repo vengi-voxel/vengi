@@ -433,7 +433,7 @@ private:
 	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
-	void nodeDuplicate(const scenegraph::SceneGraphNode &node);
+	void nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId = nullptr);
 	int nodeReference(const scenegraph::SceneGraphNode &node);
 	bool nodeUnreference(scenegraph::SceneGraphNode &node);
 	/**
@@ -466,6 +466,7 @@ public:
 	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
+	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx);

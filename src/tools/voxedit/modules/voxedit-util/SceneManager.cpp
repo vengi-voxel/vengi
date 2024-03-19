@@ -2966,6 +2966,17 @@ int SceneManager::nodeReference(int nodeId) {
 	return InvalidNodeId;
 }
 
+bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeDuplicate(*node, newNodeId);
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
 		core_assert(sceneGraphNode(sourceNodeId) != nullptr);
@@ -3084,9 +3095,12 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	return true;
 }
 
-void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node) {
-	const int newNodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
-	onNewNodeAdded(newNodeId, false);
+void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId) {
+	const int nodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
+	onNewNodeAdded(nodeId, false);
+	if (newNodeId) {
+		*newNodeId = nodeId;
+	}
 }
 
 int SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {

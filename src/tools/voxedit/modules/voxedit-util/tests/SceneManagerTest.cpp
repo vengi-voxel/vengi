@@ -8,6 +8,7 @@
 #include "core/TimeProvider.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
@@ -387,6 +388,44 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	EXPECT_EQ(palette::PaletteMaxColors, palette.size());
 	_sceneMgr->removeUnusedColors(nodeId, true);
 	EXPECT_EQ(1, palette.size()) << palette;
+}
+
+// https://github.com/vengi-voxel/vengi/issues/418
+TEST_F(SceneManagerTest, testDuplicateAndRemove) {
+	// prepare scenegraph with mutliple nodes and a reference
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
+	ASSERT_NE(cnodeId, InvalidNodeId);
+	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
+	ASSERT_NE(crnodeId, InvalidNodeId);
+	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
+
+	int newNodeId = InvalidNodeId;
+	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
+	ASSERT_NE(newNodeId, InvalidNodeId);
+	ASSERT_EQ(7, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_TRUE(_sceneMgr->nodeRemove(newNodeId, true));
+	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
+}
+
+TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
+	// prepare scenegraph with mutliple nodes and a reference
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
+	ASSERT_NE(cnodeId, InvalidNodeId);
+	const int crnodeId = _sceneMgr->nodeReference(cnodeId);
+	ASSERT_NE(crnodeId, InvalidNodeId);
+	_sceneMgr->nodeReference(cnodeId);
+	ASSERT_EQ(5, _sceneMgr->sceneGraph().nodeSize());
+
+	int newNodeId = InvalidNodeId;
+	ASSERT_TRUE(_sceneMgr->nodeDuplicate(nodeId, &newNodeId));
+	ASSERT_NE(newNodeId, InvalidNodeId);
+	ASSERT_EQ(9, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_TRUE(_sceneMgr->nodeRemove(cnodeId, true));
+	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
 }
 
 } // namespace voxedit
