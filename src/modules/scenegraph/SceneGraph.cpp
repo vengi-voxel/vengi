@@ -374,6 +374,8 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const core::String &animation,
 											 FrameIndex frameIdx) const {
 	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
+	// and https://github.com/vengi-voxel/vengi/issues/265
+	// TODO: solve flipping of child transforms if parent has rotation applied - see https://github.com/vengi-voxel/vengi/issues/420
 	const AnimState source = transformFrameSource_r(node, animation, frameIdx);
 	const AnimState target = transformFrameTarget_r(node, animation, frameIdx);
 	const FrameIndex startFrameIdx = source.frameIdx;
