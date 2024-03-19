@@ -2212,6 +2212,13 @@ void SceneManager::construct() {
 			nodeReference(*node);
 		}
 	}).setHelp("Create a node reference for the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+
+	command::Command::registerCommand("modelunref", [&] (const command::CmdArgs& args) {
+		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+			nodeUnreference(*node);
+		}
+	}).setHelp("Unreference from model and allow to edit the voxels for this node");
 }
 
 void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {

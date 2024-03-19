@@ -162,10 +162,7 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center reference" SCENEGRAPHPOPUP), "center_referenceposition", true, &listener);
 			commandNodeMenu(ICON_LC_SAVE, _("Save" SCENEGRAPHPOPUP), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
-			if (ImGui::IconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model" SCENEGRAPHPOPUP))) {
-				_sceneMgr->nodeUnreference(nodeId);
-			}
-			ImGui::TooltipText(_("Unreference from model and allow to edit the voxels for this node"));
+			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model" SCENEGRAPHPOPUP), "modelunref", true, &listener);
 		}
 		ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save all" SCENEGRAPHPOPUP), "modelssave", validModels > 1, &listener);
 
