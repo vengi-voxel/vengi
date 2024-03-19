@@ -409,6 +409,74 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	}
 }
 
+TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(0, 0));
+	int firstNodeId;
+	int secondNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("Parent");
+		SceneGraphTransform transform;
+		transform.setWorldOrientation(glm::quat(glm::vec3(glm::radians(180.0f), 0.0f, 0.0f)));
+		node.setTransform(0, transform);
+		firstNodeId = sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("Child");
+		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
+	}
+	sceneGraph.updateTransforms();
+	{
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+	}
+	{
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 1);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+	}
+}
+
+TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
+	SceneGraph sceneGraph;
+	voxel::RawVolume v(voxel::Region(0, 0));
+	int firstNodeId;
+	int secondNodeId;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("Parent");
+		SceneGraphTransform transform0;
+		transform0.setWorldOrientation(glm::quat(glm::vec3(glm::radians(-180.0f), 0.0f, 0.0f)));
+		node.setTransform(0, transform0);
+		node.keyFrame(1).frameIdx = 40;
+		node.keyFrame(1).transform().setWorldOrientation(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+		firstNodeId = sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setVolume(&v, false);
+		node.setName("Child");
+		secondNodeId = sceneGraph.emplace(core::move(node), firstNodeId);
+	}
+	sceneGraph.updateTransforms();
+	{
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+	}
+	{
+		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
+		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(90.0f));
+	}
+}
+
 TEST_F(SceneGraphTest, testSceneRegion) {
 	SceneGraph sceneGraph;
 	voxel::RawVolume v(voxel::Region(-3, 3));
