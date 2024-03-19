@@ -30,6 +30,8 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 				toolbar.button(ICON_LC_COPY, "modelref");
 				toolbar.button(ICON_LC_SHRINK, "center_origin");
 				toolbar.button(ICON_LC_SHRINK, "center_referenceposition");
+			} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
+				toolbar.button(ICON_LC_CODESANDBOX, "modelunref");
 			}
 		}
 	}
