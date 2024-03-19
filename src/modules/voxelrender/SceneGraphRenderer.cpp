@@ -179,7 +179,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
-		if (renderContext.onlyModels && node.type() != scenegraph::SceneGraphNodeType::Model) {
+		if (renderContext.onlyModels && node.isModelNode()) {
 			continue;
 		}
 
@@ -229,8 +229,8 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 	}
 
+	meshState->resetReferences();
 	if (sceneMode) {
-		meshState->resetReferences();
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReference()) {
