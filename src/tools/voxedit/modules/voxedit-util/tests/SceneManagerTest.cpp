@@ -392,7 +392,7 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 
 // https://github.com/vengi-voxel/vengi/issues/418
 TEST_F(SceneManagerTest, testDuplicateAndRemove) {
-	// prepare scenegraph with mutliple nodes and a reference
+	// prepare scenegraph with multiple nodes and a reference
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
@@ -410,7 +410,7 @@ TEST_F(SceneManagerTest, testDuplicateAndRemove) {
 }
 
 TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
-	// prepare scenegraph with mutliple nodes and a reference
+	// prepare scenegraph with multiple nodes and a reference
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
