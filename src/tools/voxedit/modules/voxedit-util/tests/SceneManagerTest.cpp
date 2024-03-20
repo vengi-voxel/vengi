@@ -428,4 +428,22 @@ TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
 	ASSERT_EQ(4, _sceneMgr->sceneGraph().nodeSize());
 }
 
+// https://github.com/vengi-voxel/vengi/issues/425
+TEST_F(SceneManagerTest, DISABLED_testUnReferenceAndUndo) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	const voxel::RawVolume *v1 = _sceneMgr->volume(nodeId);
+	const int rnodeId = _sceneMgr->nodeReference(nodeId);
+	ASSERT_NE(rnodeId, InvalidNodeId);
+	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(1, _sceneMgr->sceneGraph().size());
+	EXPECT_TRUE(_sceneMgr->nodeUnreference(rnodeId));
+	ASSERT_EQ(2, _sceneMgr->sceneGraph().size());
+	ASSERT_NE(v1, _sceneMgr->volume(rnodeId));
+	EXPECT_TRUE(_sceneMgr->undo());
+	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	ASSERT_EQ(1, _sceneMgr->sceneGraph().size());
+	ASSERT_EQ(v1, _sceneMgr->volume(rnodeId));
+	EXPECT_TRUE(_sceneMgr->redo());
+}
+
 } // namespace voxedit

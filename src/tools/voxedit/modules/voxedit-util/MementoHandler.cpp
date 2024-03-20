@@ -306,7 +306,7 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			continue;
 		}
 		if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
-			core_assert(prevS.hasVolumeData());
+			core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
 			voxel::logRegion("Undo current", s.region);
 			voxel::logRegion("Undo previous", prevS.region);
 			voxel::logRegion("Undo current data", s.data.region());
