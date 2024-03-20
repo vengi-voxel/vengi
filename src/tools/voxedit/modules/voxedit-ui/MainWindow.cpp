@@ -200,8 +200,8 @@ bool MainWindow::initScenes() {
 
 	if (_simplifiedView->boolVal()) {
 		_scenes.resize(2);
-		_scenes[0] = new Viewport(_app, _sceneMgr, 0, false, false);
-		_scenes[1] = new Viewport(_app, _sceneMgr, 1, true, false);
+		_scenes[0] = new Viewport(_app, _sceneMgr, 0, true, false);
+		_scenes[1] = new Viewport(_app, _sceneMgr, 1, false, false);
 	} else {
 		_scenes.resize(_numViewports->intVal());
 		bool sceneMode = true;
