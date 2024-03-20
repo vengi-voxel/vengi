@@ -1246,7 +1246,7 @@ void SceneManager::resetSceneState() {
 	_mementoHandler.clearStates();
 	Log::debug("New volume for node %i", node.id());
 	for (const auto &n : _sceneGraph.nodes()) {
-		if (!n->second.isModelNode()) {
+		if (!n->second.isAnyModelNode()) {
 			continue;
 		}
 		_mementoHandler.markInitialNodeState(n->second);

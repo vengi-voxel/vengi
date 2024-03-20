@@ -316,7 +316,12 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 								prevS.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
 		}
 	}
-	core_assert_msg(_states[0].type == MementoType::Modification, "Expected to have a modification state at the beginning, but got %i", (int)_states[0].type);
+
+	core_assert_msg(
+		_states[0].type == MementoType::Modification ||
+			(_states[0].referenceId != InvalidNodeId && _states[0].type == MementoType::SceneNodeAdded),
+		"Expected to have a modification or scene node added with a reference state at the beginning, but got %i",
+		(int)_states[0].type);
 	return _states[0];
 }
 

@@ -462,7 +462,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 // the difference here to testUnReferenceAndUndo() is that the previous created different memento states
 // while doing all the actions to got to the state the bug was triggered - this one in turn is importing
 // a scene with a reference node and the first action is to unref it
-TEST_F(SceneManagerTest, DISABLED_testUnReferenceAndUndoForLoadedScene) {
+TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 	voxel::RawVolume v(voxel::Region(0, 0));
 	int modelNodeId = InvalidNodeId;
 	int referenceNodeId = InvalidNodeId;
