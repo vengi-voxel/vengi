@@ -12,6 +12,7 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -24,6 +25,17 @@ namespace palette {
 }
 
 namespace voxedit {
+
+class SceneManagerEx : public SceneManager {
+public:
+	SceneManagerEx(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
+				   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
+		: SceneManager(timeProvider, filesystem, sceneRenderer, modifierRenderer) {
+	}
+	bool loadForTest(scenegraph::SceneGraph &&sceneGraph) {
+		return loadSceneGraph(core::move(sceneGraph));
+	}
+};
 
 class SceneManagerTest : public app::AbstractTest {
 private:
@@ -58,7 +70,7 @@ protected:
 		const auto sceneRenderer = core::make_shared<ISceneRenderer>();
 		const auto modifierRenderer = core::make_shared<IModifierRenderer>();
 		_sceneMgr =
-			core::make_shared<SceneManager>(timeProvider, _testApp->filesystem(), sceneRenderer, modifierRenderer);
+			core::make_shared<SceneManagerEx>(timeProvider, _testApp->filesystem(), sceneRenderer, modifierRenderer);
 		core::Var::get(cfg::VoxEditShowgrid, "true");
 		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
 		core::Var::get(cfg::VoxEditRendershadow, "true");
@@ -443,6 +455,41 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size());
 	ASSERT_EQ(v1, _sceneMgr->volume(rnodeId));
+	EXPECT_TRUE(_sceneMgr->redo());
+}
+
+// https://github.com/vengi-voxel/vengi/issues/425
+// the difference here to testUnReferenceAndUndo() is that the previous created different memento states
+// while doing all the actions to got to the state the bug was triggered - this one in turn is importing
+// a scene with a reference node and the first action is to unref it
+TEST_F(SceneManagerTest, DISABLED_testUnReferenceAndUndoForLoadedScene) {
+	voxel::RawVolume v(voxel::Region(0, 0));
+	int modelNodeId = InvalidNodeId;
+	int referenceNodeId = InvalidNodeId;
+	{
+		scenegraph::SceneGraph sceneGraph;
+		{
+			scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+			model.setVolume(&v, false);
+			modelNodeId = sceneGraph.emplace(core::move(model));
+			ASSERT_NE(modelNodeId, InvalidNodeId);
+		}
+		{
+			scenegraph::SceneGraphNode reference(scenegraph::SceneGraphNodeType::ModelReference);
+			reference.setReference(modelNodeId);
+			referenceNodeId = sceneGraph.emplace(core::move(reference));
+			ASSERT_NE(referenceNodeId, InvalidNodeId);
+		}
+		sceneGraph.updateTransforms();
+		ASSERT_TRUE(((SceneManagerEx*)_sceneMgr.get())->loadForTest(core::move(sceneGraph)));
+	}
+
+	ASSERT_EQ(1, _sceneMgr->sceneGraph().size());
+	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	EXPECT_TRUE(_sceneMgr->nodeUnreference(referenceNodeId));
+	ASSERT_EQ(2, _sceneMgr->sceneGraph().size());
+	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
+	EXPECT_TRUE(_sceneMgr->undo());
 	EXPECT_TRUE(_sceneMgr->redo());
 }
 
