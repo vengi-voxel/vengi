@@ -476,9 +476,11 @@ void MainWindow::rightWidget() {
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
-	_mementoPanel.update(TITLE_MEMENTO, listener);
-	if (_lastHoveredScene != nullptr) {
-		_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera(), listener);
+	if (!_simplifiedView->boolVal()) {
+		_mementoPanel.update(TITLE_MEMENTO, listener);
+		if (_lastHoveredScene != nullptr) {
+			_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera(), listener);
+		}
 	}
 
 	// bottom
