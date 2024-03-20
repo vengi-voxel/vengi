@@ -15,12 +15,15 @@ General:
    - Fixed material saving and loading for vengi format
    - Fixed off-by-one in palette material property handling
    - Fixed extrude on region boundaries
+   - Added dialogs to recover from previous crash by resetting all config values
 
 Voxedit:
 
    - Fixed segfault when activating simplified mode
    - Fixed spanning AABB
    - Fixed crash on deleting reference nodes after duplication
+   - Fixed pivot handling issue for reference nodes
+   - Spurious reference nodes were visible in edit mode
 
 ## 0.0.29 (2024-05-15)
 
