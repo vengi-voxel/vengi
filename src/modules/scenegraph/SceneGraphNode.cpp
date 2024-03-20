@@ -266,9 +266,14 @@ int SceneGraphNode::reference() const {
 	return _referenceId;
 }
 
-bool SceneGraphNode::setReference(int nodeId) {
+bool SceneGraphNode::setReference(int nodeId, bool forceChangeNodeType) {
 	if (_type != SceneGraphNodeType::ModelReference) {
-		return false;
+		if (forceChangeNodeType) {
+			setVolume(nullptr, false);
+			_type = SceneGraphNodeType::ModelReference;
+		} else {
+			return false;
+		}
 	}
 	_referenceId = nodeId;
 	return true;

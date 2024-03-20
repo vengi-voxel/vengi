@@ -312,8 +312,8 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			voxel::logRegion("Undo current data", s.data.region());
 			voxel::logRegion("Undo previous data", prevS.data.region());
 			// use the region from the current state - but the volume and palette from the previous state of this node
-			return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   s.referenceId, s.name,
-								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
+			return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   prevS.referenceId, s.name,
+								prevS.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
 		}
 	}
 	core_assert_msg(_states[0].type == MementoType::Modification, "Expected to have a modification state at the beginning, but got %i", (int)_states[0].type);

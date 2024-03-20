@@ -877,13 +877,20 @@ bool SceneManager::mementoTransform(const MementoState& s) {
 bool SceneManager::mementoModification(const MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		if (node->region() != s.dataRegion()) {
-			voxel::RawVolume *v = new voxel::RawVolume(s.dataRegion());
-			if (!setSceneGraphNodeVolume(*node, v)) {
-				delete v;
+		if (node->type() == scenegraph::SceneGraphNodeType::Model && s.nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
+			node->setReference(s.referenceId, true);
+		} else {
+			if (node->type() == scenegraph::SceneGraphNodeType::ModelReference && s.nodeType == scenegraph::SceneGraphNodeType::Model) {
+				node->unreferenceModelNode(_sceneGraph.node(node->reference()));
 			}
+			if (node->region() != s.dataRegion()) {
+				voxel::RawVolume *v = new voxel::RawVolume(s.dataRegion());
+				if (!setSceneGraphNodeVolume(*node, v)) {
+					delete v;
+				}
+			}
+			MementoData::toVolume(node->volume(), s.data);
 		}
-		MementoData::toVolume(node->volume(), s.data);
 		node->setName(s.name);
 		if (s.pivot.hasValue()) {
 			node->setPivot(*s.pivot.value());

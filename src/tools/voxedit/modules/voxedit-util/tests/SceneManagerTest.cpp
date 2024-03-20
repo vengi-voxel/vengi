@@ -429,7 +429,7 @@ TEST_F(SceneManagerTest, testDuplicateAndRemoveChild) {
 }
 
 // https://github.com/vengi-voxel/vengi/issues/425
-TEST_F(SceneManagerTest, DISABLED_testUnReferenceAndUndo) {
+TEST_F(SceneManagerTest, testUnReferenceAndUndo) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	const voxel::RawVolume *v1 = _sceneMgr->volume(nodeId);
 	const int rnodeId = _sceneMgr->nodeReference(nodeId);

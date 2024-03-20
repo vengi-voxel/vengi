@@ -127,7 +127,7 @@ public:
 	int id() const;
 	int parent() const;
 	int reference() const;
-	bool setReference(int nodeId);
+	bool setReference(int nodeId, bool forceChangeNodeType = false);
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
 	palette::Palette &palette() const;
