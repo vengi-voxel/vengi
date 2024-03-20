@@ -562,6 +562,8 @@ void MainWindow::popupWelcome() {
 						   "Please consider enabling it."));
 		ui::metricOption();
 		ImGui::Separator();
+		ImGui::CheckboxVar(_("Simple mode"), _simplifiedView);
+		ImGui::Separator();
 		if (ImGui::IconButton(ICON_LC_X, _("Close##welcome"))) {
 			ImGui::CloseCurrentPopup();
 		}

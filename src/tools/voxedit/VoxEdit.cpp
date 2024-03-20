@@ -128,7 +128,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditModelGizmo, "false", "Show the gizmo to also translate the region", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", "The amount of viewports (not in simple ui mode)", core::Var::minMaxValidator<2, cfg::MaxViewports>);
-	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui - restart on change", core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditSimplifiedView, "false", "Hide some panels to simplify the ui", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", "Show the tip of the day on startup", core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", "Trigger opening of popup");
 	core::Var::get(cfg::VoxEditPopupWelcome, "false", "Trigger opening of popup");
