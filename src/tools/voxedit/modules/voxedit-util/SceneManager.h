@@ -175,11 +175,6 @@ protected:
 	 */
 	void rotate(math::Axis axis);
 
-	/**
-	 * @brief Move the voxels inside the volume regions
-	 */
-	void move(int nodeId, const glm::ivec3 &m);
-
 	bool saveModels(const core::String &dir);
 	bool saveNode(int nodeId, const core::String &file);
 
@@ -214,14 +209,6 @@ public:
 	 */
 	bool update(double nowSeconds);
 	void shutdown() override;
-
-	void resize(int nodeId, const voxel::Region &region);
-	void resize(int nodeId, const glm::ivec3 &size);
-
-	/**
-	 * @brief Shift the whole volume by the given voxel amount
-	 */
-	void shift(int nodeId, const glm::ivec3 &m);
 
 	/**
 	 * @brief Update the cursor position used for tracing
@@ -318,8 +305,6 @@ public:
 	void fillPlane(const image::ImagePtr &image);
 	void renderText(const char *text, int size = 16, int thickness = 1, int spacing = 0, const char *font = "font.ttf");
 
-	void removeUnusedColors(int nodeId, bool updateVoxels = false);
-
 	/**
 	 * @brief Save the volume data to the given file
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.
@@ -396,13 +381,6 @@ public:
 	 */
 	bool trace(bool sceneMode, bool force = false);
 	void resetLastTrace();
-
-	/**
-	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels
-	 * in the volume that are using this color. This is because we separate the color and the alpha voxels
-	 * during mesh generation.
-	 */
-	void updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 
 	bool setGridResolution(int resolution);
 
@@ -500,6 +478,23 @@ public:
 	 */
 	bool nodeSetMaterial(int nodeId, uint8_t palIdx, palette::MaterialProperty material, float value);
 	bool nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &color);
+	void nodeResize(int nodeId, const voxel::Region &region);
+	void nodeResize(int nodeId, const glm::ivec3 &size);
+	/**
+	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels
+	 * in the volume that are using this color. This is because we separate the color and the alpha voxels
+	 * during mesh generation.
+	 */
+	void nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
+	/**
+	 * @brief Shift the whole volume by the given voxel amount
+	 */
+	void nodeShift(int nodeId, const glm::ivec3 &m);
+	/**
+	 * @brief Move the voxels inside the volume regions
+	 */
+	void nodeMove(int nodeId, const glm::ivec3 &m);
+	void nodeRemoveUnusedColors(int nodeId, bool updateVoxels = false);
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
 

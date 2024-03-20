@@ -106,7 +106,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				toolbar.customNoStyle([&]() {
 					if (ImGui::Button(title.c_str())) {
 						voxel::Region newRegion(glm::ivec3(0), maxs);
-						_sceneMgr->resize(nodeId, newRegion);
+						_sceneMgr->nodeResize(nodeId, newRegion);
 					}
 				});
 			}
@@ -118,20 +118,20 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				glm::ivec3 maxs = region.getDimensionsInVoxels();
 				if (xyzValues("pos", mins)) {
 					const glm::ivec3 &f = mins - region.getLowerCorner();
-					_sceneMgr->shift(nodeId, f);
+					_sceneMgr->nodeShift(nodeId, f);
 				}
 				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
 					ImGui::SameLine();
 					if (ImGui::Button("To Transform")) {
 						const glm::ivec3 &f = region.getLowerCorner();
 						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
-						_sceneMgr->shift(nodeId, -f);
+						_sceneMgr->nodeShift(nodeId, -f);
 					}
 					ImGui::TooltipText("Convert the region offset into the keyframe transforms");
 				}
 				if (xyzValues("size", maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
-					_sceneMgr->resize(nodeId, newRegion);
+					_sceneMgr->nodeResize(nodeId, newRegion);
 				}
 
 				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {

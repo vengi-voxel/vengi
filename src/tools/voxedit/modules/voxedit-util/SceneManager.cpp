@@ -370,7 +370,7 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 	modified(nodeId, wrapper.dirtyRegion());
 }
 
-void SceneManager::updateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType) {
+void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType) {
 	voxel::RawVolume *v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -689,17 +689,17 @@ void SceneManager::crop() {
 	modified(nodeId, newVolume->region());
 }
 
-void SceneManager::resize(int nodeId, const glm::ivec3& size) {
+void SceneManager::nodeResize(int nodeId, const glm::ivec3& size) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
 	}
 	voxel::Region region = v->region();
 	region.shiftUpperCorner(size);
-	resize(nodeId, region);
+	nodeResize(nodeId, region);
 }
 
-void SceneManager::resize(int nodeId, const voxel::Region &region) {
+void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	if (!region.isValid()) {
 		return;
 	}
@@ -744,7 +744,7 @@ void SceneManager::resize(int nodeId, const voxel::Region &region) {
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		resize(nodeId, size);
+		nodeResize(nodeId, size);
 	});
 }
 
@@ -1505,7 +1505,7 @@ void SceneManager::rotate(math::Axis axis) {
 	});
 }
 
-void SceneManager::move(int nodeId, const glm::ivec3& m) {
+void SceneManager::nodeMove(int nodeId, const glm::ivec3& m) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -1519,11 +1519,11 @@ void SceneManager::move(int nodeId, const glm::ivec3& m) {
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		move(nodeId, v);
+		nodeMove(nodeId, v);
 	});
 }
 
-void SceneManager::shift(int nodeId, const glm::ivec3& m) {
+void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		return;
@@ -1541,7 +1541,7 @@ void SceneManager::shift(int nodeId, const glm::ivec3& m) {
 void SceneManager::shift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		shift(nodeId, v);
+		nodeShift(nodeId, v);
 	});
 }
 
@@ -1587,7 +1587,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
 		const voxel::Region &region = accumulate(modifier().selections());
-		resize(sceneGraph().activeNode(), region);
+		nodeResize(sceneGraph().activeNode(), region);
 	}).setHelp("Resize the volume to the current selection");
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
@@ -1635,7 +1635,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
 		const bool updateVoxels = args.empty() ? false : core::string::toBool(args[0]);
 		const int nodeId = activeNode();
-		removeUnusedColors(nodeId, updateVoxels);
+		nodeRemoveUnusedColors(nodeId, updateVoxels);
 	}).setHelp("Remove unused colors from palette");
 
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
@@ -1873,15 +1873,15 @@ void SceneManager::construct() {
 		const int argc = (int)args.size();
 		if (argc == 1) {
 			const int size = core::string::toInt(args[0]);
-			resize(activeNode(), glm::ivec3(size));
+			nodeResize(activeNode(), glm::ivec3(size));
 		} else if (argc == 3) {
 			glm::ivec3 size;
 			for (int i = 0; i < argc; ++i) {
 				size[i] = core::string::toInt(args[i]);
 			}
-			resize(activeNode(), size);
+			nodeResize(activeNode(), size);
 		} else {
-			resize(activeNode(), glm::ivec3(1));
+			nodeResize(activeNode(), glm::ivec3(1));
 		}
 	}).setHelp("Resize your current model node about given x, y and z size");
 
@@ -1907,7 +1907,7 @@ void SceneManager::construct() {
 			const voxel::Region& region = v->region();
 			const glm::ivec3& center = region.getCenter();
 			const glm::ivec3& delta = refPos - center;
-			shift(nodeId, delta);
+			nodeShift(nodeId, delta);
 		});
 	}).setHelp("Center the current active nodes at the reference position");
 
@@ -1919,7 +1919,7 @@ void SceneManager::construct() {
 			}
 			const voxel::Region& region = v->region();
 			const glm::ivec3& delta = -region.getCenter();
-			shift(nodeId, delta);
+			nodeShift(nodeId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
 	}).setHelp("Center the current active nodes at the origin");
@@ -2228,7 +2228,7 @@ void SceneManager::construct() {
 	}).setHelp("Unreference from model and allow to edit the voxels for this node");
 }
 
-void SceneManager::removeUnusedColors(int nodeId, bool updateVoxels) {
+void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	voxel::RawVolume *v = node.volume();
 	if (v == nullptr) {
@@ -3216,7 +3216,7 @@ bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t pal
 	palette.setColor(palIdx, c);
 	palette.markSave();
 	_mementoHandler.markPaletteChange(node);
-	updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+	nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 	return true;
 }
 
@@ -3250,9 +3250,9 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 	const bool newHasAlpha = color.a != 255;
 	if (existingColor) {
 		if (oldHasAlpha && !newHasAlpha) {
-			updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+			nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 		} else if (!oldHasAlpha && newHasAlpha) {
-			updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+			nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 		}
 	}
 	palette.markSave();

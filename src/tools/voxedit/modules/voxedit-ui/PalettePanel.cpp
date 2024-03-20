@@ -395,9 +395,9 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 		palette.setColor(palIdx, core::Color::getRGBA(color));
 		if (existingColor) {
 			if (hasAlpha && palette.color(palIdx).a == 255) {
-				_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
+				_sceneMgr->nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
-				_sceneMgr->updateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
+				_sceneMgr->nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 			}
 		}
 		palette.markSave();

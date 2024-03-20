@@ -398,7 +398,7 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	EXPECT_TRUE(testSetVoxel(testMins(), 1));
 	const palette::Palette &palette = node->palette();
 	EXPECT_EQ(palette::PaletteMaxColors, palette.size());
-	_sceneMgr->removeUnusedColors(nodeId, true);
+	_sceneMgr->nodeRemoveUnusedColors(nodeId, true);
 	EXPECT_EQ(1, palette.size()) << palette;
 }
 

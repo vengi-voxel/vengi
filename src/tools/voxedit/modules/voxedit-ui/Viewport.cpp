@@ -536,7 +536,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 		const voxel::Region newRegion(region.getLowerCorner(),
 									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
-			_sceneMgr->resize(node.id(), newRegion);
+			_sceneMgr->nodeResize(node.id(), newRegion);
 			updateBounds(node);
 		}
 	}
@@ -703,7 +703,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 			}
 		} else {
 			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();
-			_sceneMgr->shift(activeNode, shift);
+			_sceneMgr->nodeShift(activeNode, shift);
 			// only true in edit mode
 			return true;
 		}
