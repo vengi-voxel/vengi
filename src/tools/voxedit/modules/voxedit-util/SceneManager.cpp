@@ -1505,7 +1505,7 @@ void SceneManager::rotate(math::Axis axis) {
 	});
 }
 
-void SceneManager::nodeMove(int nodeId, const glm::ivec3& m) {
+void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		return;
@@ -1519,7 +1519,7 @@ void SceneManager::nodeMove(int nodeId, const glm::ivec3& m) {
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
 	_sceneGraph.foreachGroup([&] (int nodeId) {
-		nodeMove(nodeId, v);
+		nodeMoveVoxels(nodeId, v);
 	});
 }
 

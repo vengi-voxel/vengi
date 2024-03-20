@@ -487,13 +487,13 @@ public:
 	 */
 	void nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
 	/**
-	 * @brief Shift the whole volume by the given voxel amount
+	 * @brief Shift the whole volume by the given world coordinates
 	 */
 	void nodeShift(int nodeId, const glm::ivec3 &m);
 	/**
 	 * @brief Move the voxels inside the volume regions
 	 */
-	void nodeMove(int nodeId, const glm::ivec3 &m);
+	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
 	void nodeRemoveUnusedColors(int nodeId, bool updateVoxels = false);
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
