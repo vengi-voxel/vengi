@@ -316,7 +316,7 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 								s.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
 		}
 	}
-	core_assert(_states[0].type == MementoType::Modification);
+	core_assert_msg(_states[0].type == MementoType::Modification, "Expected to have a modification state at the beginning, but got %i", (int)_states[0].type);
 	return _states[0];
 }
 

@@ -291,6 +291,7 @@ bool SceneGraphNode::unreferenceModelNode(const SceneGraphNode &node) {
 	_type = SceneGraphNodeType::Model;
 	_referenceId = InvalidNodeId;
 	setVolume(new voxel::RawVolume(node.volume()), true);
+	// TODO: this change of the node type also breaks the memento state
 	setPalette(node.palette());
 	return true;
 }
