@@ -57,6 +57,7 @@ int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	newNode.setReference(node.id());
 	newNode.setName(node.name() + " reference");
 	newNode.setColor(node.color());
+	newNode.setPivot(node.pivot());
 	newNode.setKeyFrames(node.keyFrames());
 	const int mainNodeId = addToGraph(sceneGraph, core::move(newNode), parent < 0 ? node.parent() : parent);
 	if (mainNodeId == InvalidNodeId) {

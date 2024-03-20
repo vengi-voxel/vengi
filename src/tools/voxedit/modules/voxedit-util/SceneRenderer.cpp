@@ -183,7 +183,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 			_shapeBuilder.setColor(style::color(style::ColorInactiveNode));
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const glm::vec3 pivot = sceneGraph.resolvePivot(node);
+		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
 		_shapeBuilder.obb(obb);
@@ -196,7 +196,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(activeNode, frameIdx);
-		_shapeBuilder.obb(toOBB(sceneMode, region, sceneGraph.resolvePivot(activeNode), transform));
+		_shapeBuilder.obb(toOBB(sceneMode, region, activeNode.pivot(), transform));
 	}
 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);

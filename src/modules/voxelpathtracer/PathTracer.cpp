@@ -108,7 +108,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	}
 
 	const glm::vec3 size = glm::vec3(sceneGraph.resolveRegion(node).getDimensionsInVoxels());
-	const glm::vec3 pivot = sceneGraph.resolvePivot(node);
+	const glm::vec3 pivot = node.pivot();
 
 	for (int i = 0; i < tris; i++) {
 		const voxel::VoxelVertex &vertex0 = vertices[indices[i * 3 + 0]];

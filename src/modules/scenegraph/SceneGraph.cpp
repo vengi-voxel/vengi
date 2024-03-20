@@ -445,7 +445,7 @@ voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisibl
 }
 
 voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const {
-	return node.sceneRegion(resolveRegion(node), resolvePivot(node), keyFrameIdx);
+	return node.sceneRegion(resolveRegion(node), node.pivot(), keyFrameIdx);
 }
 
 void SceneGraph::fixErrors() {
@@ -782,13 +782,6 @@ voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 		return resolveRegion(node(n.reference()));
 	}
 	return n.region();
-}
-
-glm::vec3 SceneGraph::resolvePivot(const SceneGraphNode &n) const {
-	if (n.type() == SceneGraphNodeType::ModelReference) {
-		return resolvePivot(node(n.reference()));
-	}
-	return n.pivot();
 }
 
 voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
