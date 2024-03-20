@@ -27,10 +27,10 @@ namespace voxelformat {
 glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameIdx, const ogt_vox_scene *scene,
 							const ogt_vox_model *ogtModel) {
 	ogt_vox_transform t = ogt_vox_sample_instance_transform_global(&ogtInstance, frameIdx, scene);
-	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
-	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
-	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
-	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
+	const glm::vec4 col0(t.m00, t.m02, t.m01, t.m03);
+	const glm::vec4 col1(t.m20, t.m22, t.m21, t.m23);
+	const glm::vec4 col2(t.m10, t.m12, t.m11, t.m13);
+	const glm::vec4 col3(t.m30, t.m32, t.m31, t.m33);
 	return glm::mat4{col0, col1, col2, col3};
 }
 
@@ -45,22 +45,17 @@ void _ogt_free(void *mem) {
 bool loadKeyFrames(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 				   const ogt_vox_instance &ogtInstance, const ogt_vox_scene *scene) {
 	scenegraph::SceneGraphKeyFrames kf;
-
-	const ogt_vox_anim_transform &transformAnim = ogtInstance.transform_anim;
-	uint32_t numKeyframes = transformAnim.num_keyframes;
+	const uint32_t numKeyframes = ogtInstance.transform_anim.num_keyframes;
 	Log::debug("Load %d keyframes", numKeyframes);
 	kf.reserve(numKeyframes);
-	const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < numKeyframes; ++keyFrameIdx) {
-		const ogt_vox_keyframe_transform &keyFrameTransform = transformAnim.keyframes[keyFrameIdx];
-		const uint32_t frameIdx = keyFrameTransform.frame_index;
-		const glm::mat4 ogtMat = ogtTransformToMat(ogtInstance, frameIdx, scene, ogtModel);
+		const uint32_t frameIdx = ogtInstance.transform_anim.keyframes[keyFrameIdx].frame_index;
+		const glm::mat4 &worldMatrix = ogtTransformToMat(ogtInstance, frameIdx, scene, scene->models[ogtInstance.model_index]);
 		scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 		sceneGraphKeyFrame.frameIdx = (scenegraph::FrameIndex)frameIdx;
 		sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
 		sceneGraphKeyFrame.longRotation = false;
-		scenegraph::SceneGraphTransform &transform = sceneGraphKeyFrame.transform();
-		transform.setWorldMatrix(scenegraph::convertCoordinateSystem(scenegraph::CoordinateSystem::MagicaVoxel, ogtMat));
+		sceneGraphKeyFrame.transform().setWorldMatrix(worldMatrix);
 		kf.push_back(sceneGraphKeyFrame);
 	}
 	return node.setKeyFrames(kf);
