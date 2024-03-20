@@ -6,9 +6,12 @@
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
 #include "core/TimeProvider.h"
+#include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
@@ -491,6 +494,45 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 	ASSERT_EQ(3, _sceneMgr->sceneGraph().nodeSize());
 	EXPECT_TRUE(_sceneMgr->undo());
 	EXPECT_TRUE(_sceneMgr->redo());
+}
+
+TEST_F(SceneManagerTest, DISABLED_testChangePivotOfParentThenUndo) {
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
+	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
+	ASSERT_NE(cnodeId, InvalidNodeId);
+	const glm::vec3 clocalTranslationVec = glm::vec3(10.0f);
+	const glm::vec3 cworldTranslationFinal = glm::vec3(8.0f);
+	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
+	const glm::mat4 ctranslationMat = glm::translate(clocalTranslationVec);
+	scenegraph::SceneGraphNode *cnode = _sceneMgr->sceneGraphNode(cnodeId);
+	ASSERT_NE(cnode, nullptr);
+	EXPECT_EQ(cnode->region().getDimensionsInVoxels(), glm::ivec3(1));
+	glm::vec3 cworldTranslation;
+	{
+		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+		ASSERT_NE(node, nullptr);
+		EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
+
+		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, &ctranslationMat, keyFrameIndex, false));
+		cworldTranslation = ctransform.worldTranslation();
+		ASSERT_VEC3_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
+		ASSERT_VEC3_NEAR(cworldTranslation, clocalTranslationVec, 0.0001f);
+		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(1.0f, 1.0f, 1.0f)));
+		ASSERT_VEC3_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
+		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
+	}
+	ASSERT_TRUE(_sceneMgr->undo());
+	{
+		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
+		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslation, 0.0001f);
+	}
+	ASSERT_TRUE(_sceneMgr->redo());
+	{
+		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
+		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
+	}
 }
 
 } // namespace voxedit
