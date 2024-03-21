@@ -836,10 +836,15 @@ bool SceneManager::mementoProperties(const MementoState& s) {
 	}
 	return false;
 }
+
 bool SceneManager::mementoKeyFrames(const MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
+		if (s.pivot.hasValue()) {
+			node->setPivot(*s.pivot.value());
+		}
+		_sceneGraph.updateTransforms();
 		return true;
 	}
 	return false;
@@ -938,6 +943,7 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	newNode.setName(s.name);
 	const int newNodeId = moveNodeToSceneGraph(newNode, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
+	_sceneGraph.updateTransforms();
 	return newNodeId != InvalidNodeId;
 }
 
@@ -2803,13 +2809,15 @@ bool SceneManager::mouseRayTrace(bool force) {
 bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
 	const glm::vec3 oldPivot = node.pivot();
 	if (node.setPivot(pivot)) {
-		const glm::vec3 deltaPivot = oldPivot - pivot;
+		const glm::vec3 deltaPivot = pivot - oldPivot;
 		const glm::vec3 size = node.region().getDimensionsInVoxels();
-		node.translate(-deltaPivot * size);
-		for (int nodeId : node.children()) {
-			scenegraph::SceneGraphNode &cnode = sceneGraph().node(nodeId);
-			cnode.translate(-deltaPivot * size);
-		}
+		const glm::vec3 t = deltaPivot * size;
+		Log::debug("oldPivot: %f:%f:%f", oldPivot.x, oldPivot.y, oldPivot.z);
+		Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
+		Log::debug("deltaPivot: %f:%f:%f", deltaPivot.x, deltaPivot.y, deltaPivot.z);
+		Log::debug("size: %f:%f:%f", size.x, size.y, size.z);
+		Log::debug("t: %f:%f:%f", t.x, t.y, t.z);
+		node.translate(-t);
 		sceneGraph().updateTransforms();
 		markDirty();
 		_mementoHandler.markKeyFramesChange(node);

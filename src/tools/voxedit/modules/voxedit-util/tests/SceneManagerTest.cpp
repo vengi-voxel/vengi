@@ -496,7 +496,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 	EXPECT_TRUE(_sceneMgr->redo());
 }
 
-TEST_F(SceneManagerTest, DISABLED_testChangePivotOfParentThenUndo) {
+TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_EQ(2, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);

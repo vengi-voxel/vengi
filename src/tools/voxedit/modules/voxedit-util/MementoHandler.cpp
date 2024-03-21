@@ -364,8 +364,8 @@ MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
 		if (prevS.keyFrames.hasValue() && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		   s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  prevS.keyFrames, s.palette, s.properties};
+			return MementoState{s.type,		s.data,	  s.parentId,  s.nodeId,		s.referenceId, s.name,
+								s.nodeType, s.region, prevS.pivot, prevS.keyFrames, s.palette,	   s.properties};
 		}
 	}
 	return _states[0];
