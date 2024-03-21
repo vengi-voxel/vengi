@@ -210,9 +210,7 @@ core::String urlEncode(const core::String &inBuf) {
 	outBuf.reserve(maxSize);
 	while (inBufPos[0] != '\0') {
 		const uint8_t inChr = inBufPos[0];
-		if (inChr == ' ') {
-			outBuf += '+';
-		} else if (inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
+		if (inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
 			outBuf += inChr;
 		} else {
 			outBuf += '%';
@@ -231,9 +229,7 @@ core::String urlPathEncode(const core::String &inBuf) {
 	outBuf.reserve(maxSize);
 	while (inBufPos[0] != '\0') {
 		const uint8_t inChr = inBufPos[0];
-		if (inChr == ' ') {
-			outBuf += '+';
-		} else if (inChr == '/' || inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
+		if (inChr == '/' || inChr == '-' || inChr == '.' || inChr == '~' || inChr == '_' || isalnum(inChr)) {
 			outBuf += inChr;
 		} else {
 			outBuf += '%';

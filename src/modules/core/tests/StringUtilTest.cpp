@@ -83,6 +83,8 @@ TEST_F(StringUtilTest, testFormat) {
 TEST_F(StringUtilTest, testUrlEncode) {
 	const core::String urlEncoded = core::string::urlEncode("foobar=1236/&");
 	EXPECT_EQ("foobar%3D1236%2F%26", urlEncoded);
+	const core::String urlEncoded2 = core::string::urlEncode("foobar 1236/&");
+	EXPECT_EQ("foobar%201236%2F%26", urlEncoded2);
 }
 
 TEST_F(StringUtilTest, testUrlPathEncode) {
