@@ -576,6 +576,11 @@ bool SceneGraphNode::setKeyFrames(const SceneGraphKeyFrames &kf) {
 void SceneGraphNode::setAllKeyFrames(const SceneGraphKeyFramesMap &map, const core::String &animation) {
 	_keyFramesMap = map;
 	setAnimation(animation);
+	for (const auto &entry : _keyFramesMap) {
+		for (auto &keyFrame : entry->value) {
+			keyFrame.transform().markDirty();
+		}
+	}
 }
 
 const SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() const {

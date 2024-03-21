@@ -52,6 +52,10 @@ public:
 		return _dirty != 0u;
 	}
 
+	void markDirty() {
+		_dirty = DIRTY_WORLDVALUES;
+	}
+
 	/**
 	 * @brief This method will set all values into the transform without the need to perform any
 	 * @c update() call. It's assumed, that all values for world and local transformations are valid
