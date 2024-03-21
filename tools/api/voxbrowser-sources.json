@@ -45,7 +45,7 @@
 			"github": {
 				"repo": "vengi-voxel/vengi",
 				"path": "data",
-				"commit": "main",
+				"commit": "main"
 			}
 		},
 		{
@@ -107,7 +107,7 @@
 			"thumbnail": "https://imgur.com/z6NI021.png",
 			"github": {
 				"repo": "Dzierzan/IonFury-Voxel-Pack",
-				"commit": "master",
+				"commit": "main",
 				"license": "voxelpack_art_license.txt"
 			}
 		},
@@ -126,7 +126,7 @@
 			"license": "custom",
 			"github": {
 				"repo": "Dzierzan/Outlaws-Voxel-Pack",
-				"commit": "master",
+				"commit": "main",
 				"license": "license.txt"
 			}
 		},
