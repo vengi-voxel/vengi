@@ -508,11 +508,11 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	scenegraph::SceneGraphNode *cnode = _sceneMgr->sceneGraphNode(cnodeId);
 	ASSERT_NE(cnode, nullptr);
 	EXPECT_EQ(cnode->region().getDimensionsInVoxels(), glm::ivec3(1));
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
+	ASSERT_NE(node, nullptr);
 	glm::vec3 cworldTranslation;
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
-		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
-		ASSERT_NE(node, nullptr);
 		EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
 
 		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, &ctranslationMat, keyFrameIndex, false));
@@ -527,11 +527,13 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslation, 0.0001f);
+		ASSERT_VEC3_NEAR(node->pivot(), glm::vec3(0.0f), 0.0001f);
 	}
 	ASSERT_TRUE(_sceneMgr->redo());
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
+		ASSERT_VEC3_NEAR(node->pivot(), glm::vec3(1.0f), 0.0001f);
 	}
 }
 
