@@ -200,11 +200,6 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 		stampBrushOptions(node, palette, listener);
 	}
 	stampBrushUseSelection(node, palette);
-	// TODO: option to extend volume on the fly if the stamp exceeds the current volume region
-	// TODO: paste command to activate the stamp brush and use the copied volume directly
-	// TODO: allow to rotate the stamp brush - should be a command to be bindable
-	// TODO: allow to shift the center of the stamp brush volume - to be able to stamp into a
-	//       corner without leaving the existing volume
 	if (ImGui::Button(_("Convert palette"))) {
 		modifier.stampBrush().convertToPalette(palette);
 	}
