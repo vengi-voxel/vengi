@@ -7,6 +7,7 @@
 #include "app/Async.h"
 #include "command/Command.h"
 #include "core/BindingContext.h"
+#include "core/Common.h"
 #include "core/Log.h"
 #include "core/TimeProvider.h"
 #include "core/collection/DynamicArray.h"
@@ -125,12 +126,12 @@ void VoxBrowser::downloadAll() {
 	app::async([this, voxelFilesMap = _voxelFilesMap]() {
 		int all = 0;
 		for (const auto &e : voxelFilesMap) {
-			all += (int)e->value.size();
+			all += (int)e->value.files.size();
 		}
 
 		int current = 0;
 		for (const auto &e : voxelFilesMap) {
-			for (const voxbrowser::VoxelFile &voxelFile : e->value) {
+			for (const voxbrowser::VoxelFile &voxelFile : e->value.files) {
 				++current;
 				if (voxelFile.downloaded) {
 					continue;
@@ -147,7 +148,7 @@ void VoxBrowser::downloadAll() {
 
 void VoxBrowser::thumbnailAll() {
 	for (const auto &e : _voxelFilesMap) {
-		for (const voxbrowser::VoxelFile &voxelFile : e->value) {
+		for (const voxbrowser::VoxelFile &voxelFile : e->value.files) {
 			loadThumbnail(voxelFile);
 		}
 	}
@@ -217,19 +218,27 @@ app::AppState VoxBrowser::onRunning() {
 		loadThumbnail(voxelFile);
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {
-			iter->value.push_back(voxelFile);
+			voxbrowser::VoxelCollection &collection = iter->value;
+			collection.files.push_back(voxelFile);
+			collection.timestamp = _nowSeconds;
+			collection.sorted = false;
 		} else {
-			_voxelFilesMap.put(voxelFile.source, {voxelFile});
+			voxbrowser::VoxelCollection collection{{voxelFile}, _nowSeconds, false};
+			_voxelFilesMap.put(voxelFile.source, collection);
 		}
 	}
-	if (!voxelFiles.empty()) {
-		for (auto e : _voxelFilesMap) {
-			e->value.sort([] (const voxbrowser::VoxelFile &a, const voxbrowser::VoxelFile &b) {
-				return a.name < b.name;
-			});
+	for (auto e : _voxelFilesMap) {
+		voxbrowser::VoxelCollection &collection = e->value;
+		if (collection.sorted) {
+			continue;
 		}
-		_count += voxelFiles.size();
+		if (collection.timestamp + 5.0 > _nowSeconds) {
+			continue;
+		}
+		core::sort(collection.files.begin(), collection.files.end(), core::Less<voxbrowser::VoxelFile>());
+		collection.sorted = true;
 	}
+	_count += voxelFiles.size();
 	return state;
 }
 

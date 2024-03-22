@@ -54,13 +54,22 @@ struct VoxelFile {
 	core::String targetFile() const;
 	core::String targetDir() const;
 
-	bool operator==(const VoxelFile &other) const {
+	inline bool operator<(const VoxelFile &other) const {
+		return name < other.name;
+	}
+
+	inline bool operator==(const VoxelFile &other) const {
 		return source == other.source && name == other.name;
 	}
 };
 
 using VoxelFiles = core::DynamicArray<VoxelFile>;
-using VoxelFileMap = core::DynamicStringMap<VoxelFiles>;
+struct VoxelCollection {
+	VoxelFiles files;
+	double timestamp = 0.0;
+	bool sorted = false;
+};
+using VoxelFileMap = core::DynamicStringMap<VoxelCollection>;
 
 class Downloader {
 private:

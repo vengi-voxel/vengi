@@ -453,10 +453,10 @@ public:
 	 */
 	template<typename COMPARATOR>
 	void sort(COMPARATOR comp) {
-		int i, j;
+		int i;
 		for (i = 1; i < (int)_size; ++i) {
-			TYPE key = _buffer[i];
-			j = i - 1;
+			TYPE key = core::move(_buffer[i]);
+			int j = i - 1;
 
 			while (j >= 0 && comp(_buffer[j], key)) {
 				_buffer[j + 1] = core::move(_buffer[j]);

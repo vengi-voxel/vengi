@@ -11,6 +11,7 @@
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "http/HttpCacheStream.h"
+#include "imgui.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -349,13 +350,15 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 				}
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				const int n = (int)entry->second.size();
+				const int n = (int)entry->second.files.size();
 				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
+				ImGui::BeginDisabled(!entry->second.sorted);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const VoxelFiles &voxelFiles = entry->second;
+					const VoxelFiles &voxelFiles = entry->second.files;
 					cnt += buildVoxelTree(voxelFiles);
 					ImGui::TreePop();
 				}
+				ImGui::EndDisabled();
 			}
 			ImGui::EndTable();
 		}
