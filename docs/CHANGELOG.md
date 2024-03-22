@@ -17,7 +17,11 @@ General:
    - Fixed extrude on region boundaries
    - Added dialogs to recover from previous crash by resetting all config values
 
-Voxedit:
+VoxBrowser:
+
+   - Optimizations for huge voxel collections
+
+VoxEdit:
 
    - Fixed segfault when activating simplified mode
    - Fixed spanning AABB
