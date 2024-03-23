@@ -7,6 +7,7 @@
 #include "voxel/Region.h"
 #include "voxel/RawVolume.h"
 #include "voxel/private/CubicSurfaceExtractor.h"
+#include "voxel/private/DualContouringSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
 
 namespace voxel {
@@ -24,11 +25,21 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 									false, false, false);
 }
 
+SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+													const palette::Palette &palette) {
+	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::DualContouring,
+									false, false, false);
+}
+
 void extractSurface(SurfaceExtractionContext &ctx) {
 	if (ctx.type == SurfaceExtractionType::MarchingCubes) {
 		voxel::Region extractRegion = ctx.region;
 		extractRegion.shrink(-1);
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh);
+	} else if (ctx.type == SurfaceExtractionType::DualContouring) {
+		voxel::Region extractRegion = ctx.region;
+		extractRegion.shrink(-1);
+		voxel::extractDualContouringMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh);
 	} else {
 		voxel::Region extractRegion = ctx.region;
 		extractRegion.shiftUpperCorner(1, 1, 1);
@@ -43,8 +54,10 @@ voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type,
 											  bool reuseVertices, bool ambientOcclusion) {
 	if (type == voxel::SurfaceExtractionType::MarchingCubes) {
 		return voxel::buildMarchingCubesContext(volume, region, mesh, palette);
+	} else if (type == voxel::SurfaceExtractionType::Cubic) {
+		return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion);
 	}
-	return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion);
+	return voxel::buildDualContouringContext(volume, region, mesh, palette);
 }
 
 } // namespace voxel

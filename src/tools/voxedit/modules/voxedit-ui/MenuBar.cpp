@@ -116,7 +116,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ui::metricOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
-					_("Cubes"), _("Marching cubes")};
+					_("Cubes"), _("Marching cubes"), _("Dual contouring")};
 				ImGui::ComboVar(_("Mesh mode"), cfg::VoxelMeshMode, meshModes);
 				ImGui::InputVarInt(_("Model animation speed"), cfg::VoxEditAnimationSpeed);
 				ImGui::InputVarInt(_("Autosave delay in seconds"), cfg::VoxEditAutoSaveSeconds);

@@ -23,7 +23,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, "Merge similar quads to optimize the mesh",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic),
-				   core::CV_SHADER, "0 = cubes, 1 = marching cubes",
+				   core::CV_SHADER, "0 = cubes, 1 = marching cubes, 2 = dual contouring",
 				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
 											  (int)voxel::SurfaceExtractionType::Max - 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones",

@@ -15,7 +15,7 @@ class RawVolume;
 class Region;
 struct ChunkMesh;
 
-enum class SurfaceExtractionType { Cubic, MarchingCubes, Max };
+enum class SurfaceExtractionType { Cubic, MarchingCubes, DualContouring, Max };
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
@@ -40,7 +40,8 @@ SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region
 										   bool reuseVertices = true, bool ambientOcclusion = true);
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette);
-
+SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+													const palette::Palette &palette);
 void extractSurface(SurfaceExtractionContext &ctx);
 
 voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,

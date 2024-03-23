@@ -3,10 +3,12 @@ set(SRCS
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
+	private/DualContouringSurfaceExtractor.h private/DualContouringSurfaceExtractor.cpp
 
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
 	Face.h Face.cpp
+	QEF.h QEF.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
 	RawVolume.h RawVolume.cpp
