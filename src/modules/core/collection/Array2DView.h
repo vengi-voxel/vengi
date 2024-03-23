@@ -60,7 +60,7 @@ public:
 	}
 
 	constexpr bool empty() const {
-		return !size();
+		return size() == 0u;
 	}
 };
 
