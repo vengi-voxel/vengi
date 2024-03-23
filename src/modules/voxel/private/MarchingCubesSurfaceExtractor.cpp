@@ -4,8 +4,10 @@
 
 #include "MarchingCubesSurfaceExtractor.h"
 #include "core/Color.h"
+#include "core/Common.h"
 #include "core/collection/Array2DView.h"
 #include "MarchingCubesTables.h"
+#include "math/Axis.h"
 #include "voxel/ChunkMesh.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
@@ -23,6 +25,7 @@
 namespace voxel {
 
 static const float MarchingCubeMaxDensity = 255.0f;
+static const float DensityThreshold = MarchingCubeMaxDensity / 2.0f; // isolevel
 
 static inline float convertToDensity(const Voxel &voxel) {
 	return isAir(voxel.getMaterial()) ? 0.0f : MarchingCubeMaxDensity;
@@ -56,6 +59,42 @@ static glm::vec3 computeCentralDifferenceGradient(const RawVolume::Sampler &volI
 	return glm::vec3(voxel1nx - voxel1px, voxel1ny - voxel1py, voxel1nz - voxel1pz);
 }
 
+static void generateVertex(math::Axis axis, const palette::Palette &palette, RawVolume::Sampler &sampler,
+				   ChunkMesh *result, core::Array2DView<glm::ivec3> &indicesView,
+				   const Voxel &v111, const glm::vec3 &n111, float v111Density, int x, int y) {
+	sampler.moveNegative(axis);
+	const Voxel v110 = sampler.voxel();
+	const float v110Density = convertToDensity(v110);
+	const float interpolate = (DensityThreshold - v110Density) / (v111Density - v110Density);
+
+	// Compute the normal
+	const glm::vec3 n110 = computeCentralDifferenceGradient(sampler);
+	glm::vec3 normal = (n111 * interpolate) + (n110 * (1 - interpolate));
+
+	// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
+	// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
+	const float normLen = glm::length2(normal);
+	if (normLen > 0.000001f) {
+		normal *= glm::inversesqrt(normLen);
+	}
+
+	const Voxel blendedVoxel = blendMaterials(palette, v110, v111, interpolate);
+
+	const int idx = math::getIndexForAxis(axis);
+	VoxelVertex surfaceVertex;
+	surfaceVertex.position = sampler.position();
+	surfaceVertex.position[idx] += interpolate;
+	surfaceVertex.colorIndex = blendedVoxel.getColor();
+	surfaceVertex.info = 0;
+	surfaceVertex.flags = blendedVoxel.getFlags();
+
+	const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
+	result->mesh[0].setNormal(lastVertexIndex, normal);
+	indicesView.get(x, y)[idx] = (int)lastVertexIndex;
+
+	sampler.movePositive(axis);
+}
+
 void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &region, ChunkMesh *result) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
@@ -66,8 +105,6 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 	const int32_t w = region.getWidthInVoxels();
 	const int32_t h = region.getHeightInVoxels();
 	const int32_t d = region.getDepthInVoxels();
-
-	const float densityThreshold = MarchingCubeMaxDensity / 2.0f; // isolevel
 
 	// A naive implementation of Marching Cubes might sample the eight corner voxels of every cell to determine the cell
 	// index. However, when processing the cells sequentially we can observe that many of the voxels are shared with
@@ -139,7 +176,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 				// The last bit of our cube index is obtained by looking
 				// at the relevant voxel and comparing it to the threshold
 				const Voxel v111 = sampler.voxel();
-				if (convertToDensity(v111) < densityThreshold) {
+				if (convertToDensity(v111) < DensityThreshold) {
 					cellIndex |= 128;
 				}
 
@@ -157,7 +194,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 				// empty volume) it still incurs significant overhead, probably because the code is large and bloats the
 				// for loop which contains it. On my empty volume test case the code as given runs in 34ms, but if I
 				// replace the condition with 'false' it runs in 24ms and gives the same output (i.e. none).
-				if (edge != 0u) {
+				if (core_unlikely(edge != 0u)) {
 					const float v111Density = convertToDensity(v111);
 
 					// Performance note: Computing normals is one of the bottlenecks in the mesh generation process. The
@@ -170,109 +207,13 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 
 					/* Find the vertices where the surface intersects the cube */
 					if ((edge & 64) && x > 0) {
-						sampler.moveNegativeX();
-						const Voxel v011 = sampler.voxel();
-						const float v011Density = convertToDensity(v011);
-						const float interpolate = (densityThreshold - v011Density) / (v111Density - v011Density);
-
-						// Compute the position
-						const glm::vec3 v3dPosition(static_cast<float>(x - 1) + interpolate, static_cast<float>(y),
-													static_cast<float>(z));
-
-						// Compute the normal
-						const glm::vec3 n011 = computeCentralDifferenceGradient(sampler);
-						glm::vec3 normal((n111 * interpolate) + (n011 * (1.0f - interpolate)));
-
-						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
-						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						const float normLen = glm::length2(normal);
-						if (normLen > 0.000001f) {
-							normal *= glm::inversesqrt(normLen);
-						}
-
-						const Voxel blendedVoxel = blendMaterials(palette, v011, v111, interpolate);
-
-						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
-						surfaceVertex.colorIndex = blendedVoxel.getColor();
-						surfaceVertex.info = 0;
-						surfaceVertex.flags = blendedVoxel.getFlags();
-
-						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
-						result->mesh[0].setNormal(lastVertexIndex, normal);
-						indicesView.get(x, y).x = (int)lastVertexIndex;
-
-						sampler.movePositiveX();
+						generateVertex(math::Axis::X, palette, sampler, result, indicesView, v111, n111, v111Density, x, y);
 					}
 					if ((edge & 32) && y > 0) {
-						sampler.moveNegativeY();
-						const Voxel v101 = sampler.voxel();
-						const float v101Density = convertToDensity(v101);
-						const float interpolate = (densityThreshold - v101Density) / (v111Density - v101Density);
-
-						// Compute the position
-						const glm::vec3 v3dPosition(static_cast<float>(x), static_cast<float>(y - 1) + interpolate,
-													static_cast<float>(z));
-
-						// Compute the normal
-						const glm::vec3 n101 = computeCentralDifferenceGradient(sampler);
-						glm::vec3 normal = (n111 * interpolate) + (n101 * (1.0f - interpolate));
-
-						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
-						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						const float normLen = glm::length2(normal);
-						if (normLen > 0.000001f) {
-							normal *= glm::inversesqrt(normLen);
-						}
-
-						const Voxel blendedVoxel = blendMaterials(palette, v101, v111, interpolate);
-
-						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
-						surfaceVertex.colorIndex = blendedVoxel.getColor();
-						surfaceVertex.info = 0;
-						surfaceVertex.flags = blendedVoxel.getFlags();
-
-						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
-						result->mesh[0].setNormal(lastVertexIndex, normal);
-						indicesView.get(x, y).y = (int)lastVertexIndex;
-
-						sampler.movePositiveY();
+						generateVertex(math::Axis::Y, palette, sampler, result, indicesView, v111, n111, v111Density, x, y);
 					}
 					if ((edge & 1024) && z > 0) {
-						sampler.moveNegativeZ();
-						const Voxel v110 = sampler.voxel();
-						const float v110Density = convertToDensity(v110);
-						const float interpolate = (densityThreshold - v110Density) / (v111Density - v110Density);
-
-						// Compute the position
-						const glm::vec3 v3dPosition(static_cast<float>(x), static_cast<float>(y),
-													static_cast<float>(z - 1) + interpolate);
-
-						// Compute the normal
-						const glm::vec3 n110 = computeCentralDifferenceGradient(sampler);
-						glm::vec3 normal = (n111 * interpolate) + (n110 * (1 - interpolate));
-
-						// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
-						// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-						const float normLen = glm::length2(normal);
-						if (normLen > 0.000001f) {
-							normal *= glm::inversesqrt(normLen);
-						}
-
-						const Voxel blendedVoxel = blendMaterials(palette, v110, v111, interpolate);
-
-						VoxelVertex surfaceVertex;
-						surfaceVertex.position = v3dPosition + region.getLowerCornerf();
-						surfaceVertex.colorIndex = blendedVoxel.getColor();
-						surfaceVertex.info = 0;
-						surfaceVertex.flags = blendedVoxel.getFlags();
-
-						const IndexType lastVertexIndex = result->mesh[0].addVertex(surfaceVertex);
-						result->mesh[0].setNormal(lastVertexIndex, normal);
-						indicesView.get(x, y).z = (int)lastVertexIndex;
-
-						sampler.movePositiveZ();
+						generateVertex(math::Axis::Z, palette, sampler, result, indicesView, v111, n111, v111Density, x, y);
 					}
 
 					// Now output the indices. For the first row, column or slice there aren't
