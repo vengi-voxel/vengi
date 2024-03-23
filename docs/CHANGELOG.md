@@ -8,7 +8,7 @@ See [the documentation](https://vengi-voxel.github.io/vengi/) for further detail
 
 Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aopen+label%3Abug).
 
-## 0.0.30 (2024-XX-XX)
+## 0.0.30 (2024-03-23)
 
 General:
 
@@ -34,7 +34,7 @@ VoxEdit:
    - Disable a few of the new panels in simple mode again
    - Improved scene mode node selection
 
-## 0.0.29 (2024-05-15)
+## 0.0.29 (2024-03-15)
 
 General:
 
