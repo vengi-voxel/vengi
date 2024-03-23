@@ -20,6 +20,7 @@ General:
 VoxBrowser:
 
    - Optimizations for huge voxel collections
+   - Fixed some download url assembling errors for some online collections
 
 VoxEdit:
 
@@ -28,6 +29,10 @@ VoxEdit:
    - Fixed crash on deleting reference nodes after duplication
    - Fixed pivot handling issue for reference nodes
    - Spurious reference nodes were visible in edit mode
+   - Fixed a few memento state handling errors in terms of key frames and pivot points
+   - Fixed memento state handling errors for reference nodes
+   - Disable a few of the new panels in simple mode again
+   - Improved scene mode node selection
 
 ## 0.0.29 (2024-05-15)
 
