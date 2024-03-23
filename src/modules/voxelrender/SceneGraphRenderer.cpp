@@ -158,6 +158,14 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 	_volumeRenderer.resetVolume(id);
 }
 
+bool SceneGraphRenderer::isVisible(int nodeId) const {
+	const int id = getVolumeId(nodeId);
+	if (id < 0 || id >= MAX_VOLUMES) {
+		return false;
+	}
+	return _volumeRenderer.isVisible(id);
+}
+
 void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	core_assert_always(renderContext.sceneGraph != nullptr);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;

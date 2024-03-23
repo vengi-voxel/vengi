@@ -99,7 +99,6 @@ protected:
 	void deleteMesh(int idx, MeshType meshType);
 	void deleteMeshes(int idx);
 	void updateCulling(int idx, const video::Camera &camera);
-	bool isVisible(int idx) const;
 
 	bool initStateBuffers();
 	void shutdownStateBuffers();
@@ -115,6 +114,7 @@ public:
 
 	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
 	void clear();
+	bool isVisible(int idx) const;
 
 	void extractRegion(int idx, const voxel::Region& region);
 

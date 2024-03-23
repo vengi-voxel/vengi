@@ -73,6 +73,7 @@ public:
 	void updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis = 0) override;
 	void updateGridRegion(const voxel::Region &region) override;
 	void nodeRemove(int nodeId) override;
+	bool isVisible(int nodeId) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 };

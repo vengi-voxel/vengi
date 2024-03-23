@@ -2664,6 +2664,9 @@ int SceneManager::traceScene() {
 		if (!node.visible()) {
 			continue;
 		}
+		if (!_sceneRenderer->isVisible(node.id())) {
+			continue;
+		}
 		float distance = 0.0f;
 		const voxel::Region& region = _sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = node.pivot();

@@ -52,6 +52,7 @@ public:
 	void setDiffuseColor(const glm::vec3 &color);
 
 	void nodeRemove(int nodeId);
+	bool isVisible(int nodeId) const;
 
 	void extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region);
 	/**

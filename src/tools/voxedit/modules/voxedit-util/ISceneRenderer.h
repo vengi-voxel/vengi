@@ -35,6 +35,9 @@ public:
 	}
 	virtual void updateGridRegion(const voxel::Region &region) {
 	}
+	virtual bool isVisible(int nodeId) const {
+		return true;
+	}
 	virtual void nodeRemove(int nodeId) {
 	}
 	/**

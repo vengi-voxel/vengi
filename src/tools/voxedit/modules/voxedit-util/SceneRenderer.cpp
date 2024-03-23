@@ -247,6 +247,10 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
 }
 
+bool SceneRenderer::isVisible(int nodeId) const {
+	return _volumeRenderer.isVisible(nodeId);
+}
+
 void SceneRenderer::nodeRemove(int nodeId) {
 	_volumeRenderer.nodeRemove(nodeId);
 }
