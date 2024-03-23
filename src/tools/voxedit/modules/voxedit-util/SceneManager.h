@@ -86,7 +86,6 @@ private:
 	bool _needAutoSave = false;
 
 	bool _traceViaMouse = true;
-	int _sceneModeNodeIdTrace = InvalidNodeId;
 
 	io::FileDescription _lastFilename;
 	double _lastAutoSave = 0u;
@@ -140,7 +139,7 @@ private:
 	void zoom(video::Camera &camera, float level) const;
 	bool mouseRayTrace(bool force);
 	void updateCursor();
-	void traceScene(bool force);
+	int traceScene();
 
 protected:
 	bool setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, voxel::RawVolume *volume);

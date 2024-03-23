@@ -1147,7 +1147,6 @@ bool SceneManager::cut() {
 }
 
 void SceneManager::resetLastTrace() {
-	_sceneModeNodeIdTrace = InvalidNodeId;
 	if (!_traceViaMouse) {
 		return;
 	}
@@ -1673,9 +1672,10 @@ void SceneManager::construct() {
 	command::Command::registerActionButton("camera_rotate", _rotate, "Rotate the camera");
 	command::Command::registerActionButton("camera_pan", _pan, "Pan the camera");
 	command::Command::registerCommand("mouse_node_select", [&] (const command::CmdArgs&) {
-		if (_sceneModeNodeIdTrace != InvalidNodeId) {
-			Log::debug("switch active node to hovered from scene graph mode: %i", _sceneModeNodeIdTrace);
-			nodeActivate(_sceneModeNodeIdTrace);
+		const int nodeId = traceScene();
+		if (nodeId != InvalidNodeId) {
+			Log::debug("switch active node to hovered from scene graph mode: %i", nodeId);
+			nodeActivate(nodeId);
 		}
 	}).setHelp("Switch active node to hovered from scene graph mode");
 
@@ -2641,29 +2641,23 @@ bool SceneManager::trace(bool sceneMode, bool force) {
 		return false;
 	}
 	if (sceneMode) {
-		traceScene(force);
 		return true;
 	}
 
 	return mouseRayTrace(force);
 }
 
-void SceneManager::traceScene(bool force) {
-	if (_sceneModeNodeIdTrace != InvalidNodeId) {
-		// if the trace is not forced, and the mouse cursor position did not change, don't
-		// re-execute the trace.
-		if (_lastRaytraceX == _mouseCursor.x && _lastRaytraceY == _mouseCursor.y && !force) {
-			return;
-		}
-	}
-	_sceneModeNodeIdTrace = InvalidNodeId;
+int SceneManager::traceScene() {
+	const int previousNodeId = activeNode();
+	int nodeId = InvalidNodeId;
 	core_trace_scoped(EditorSceneOnProcessUpdateRay);
-	_lastRaytraceX = _mouseCursor.x;
-	_lastRaytraceY = _mouseCursor.y;
 	float intersectDist = _camera->farPlane();
 	const math::Ray& ray = _camera->mouseRay(_mouseCursor);
 	for (auto entry : _sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode& node = entry->second;
+		if (previousNodeId == node.id()) {
+			continue;
+		}
 		if (!node.isAnyModelNode()) {
 			continue;
 		}
@@ -2678,11 +2672,12 @@ void SceneManager::traceScene(bool force) {
 		if (obb.intersect(ray.origin, ray.direction, distance)) {
 			if (distance < intersectDist) {
 				intersectDist = distance;
-				_sceneModeNodeIdTrace = node.id();
+				nodeId = node.id();
 			}
 		}
 	}
-	Log::trace("Hovered node: %i", _sceneModeNodeIdTrace);
+	Log::trace("Hovered node: %i", nodeId);
+	return nodeId;
 }
 
 void SceneManager::updateCursor() {
