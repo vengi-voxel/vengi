@@ -263,9 +263,8 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		voxel::Region region = v->region();
 
 		voxel::SurfaceExtractionContext ctx =
-			type == voxel::SurfaceExtractionType::MarchingCubes
-				? voxel::buildMarchingCubesContext(v, region, mesh, node.palette())
-				: voxel::buildCubicContext(v, region, mesh, v->region().getLowerCorner());
+			voxel::createContext(type, v, region, node.palette(), mesh, v->region().getLowerCorner());
+
 		voxel::extractSurface(ctx);
 
 		setupGlowMaterial(node);

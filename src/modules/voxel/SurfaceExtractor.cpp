@@ -5,6 +5,7 @@
 #include "SurfaceExtractor.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
+#include "voxel/RawVolume.h"
 #include "voxel/private/CubicSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
 
@@ -34,6 +35,16 @@ void extractSurface(SurfaceExtractionContext &ctx) {
 		voxel::extractCubicMesh(ctx.volume, extractRegion, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
 								ctx.ambientOcclusion);
 	}
+}
+
+voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,
+											  const voxel::Region &region, const palette::Palette &palette,
+											  voxel::ChunkMesh &mesh, const glm::ivec3 &translate, bool mergeQuads,
+											  bool reuseVertices, bool ambientOcclusion) {
+	if (type == voxel::SurfaceExtractionType::MarchingCubes) {
+		return voxel::buildMarchingCubesContext(volume, region, mesh, palette);
+	}
+	return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion);
 }
 
 } // namespace voxel

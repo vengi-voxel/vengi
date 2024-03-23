@@ -207,10 +207,7 @@ bool MeshState::scheduleExtractions(size_t maxExtraction) {
 								 finalRegion, this]() {
 				++_runningExtractorTasks;
 				voxel::ChunkMesh mesh(65536, 65536, true);
-				voxel::SurfaceExtractionContext ctx =
-					type == voxel::SurfaceExtractionType::MarchingCubes
-						? voxel::buildMarchingCubesContext(&movedCopy, finalRegion, mesh, movedPal)
-						: voxel::buildCubicContext(&movedCopy, finalRegion, mesh, mins);
+				voxel::SurfaceExtractionContext ctx = voxel::createContext(type, &movedCopy, finalRegion, movedPal, mesh, mins);
 				voxel::extractSurface(ctx);
 				_pendingQueue.emplace(mins, idx, core::move(mesh));
 				Log::debug("Enqueue mesh for idx: %i (%i:%i:%i)", idx, mins.x, mins.y, mins.z);

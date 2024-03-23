@@ -726,10 +726,9 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 		const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx =
-			type == voxel::SurfaceExtractionType::MarchingCubes
-				? voxel::buildMarchingCubesContext(node.volume(), node.region(), mesh, node.palette())
-				: voxel::buildCubicContext(node.volume(), node.region(), mesh, glm::ivec3(0), mergeQuads, reuseVertices,
-										   ambientOcclusion);
+			voxel::createContext(type, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0}, mergeQuads,
+								 reuseVertices, ambientOcclusion);
+
 		voxel::extractSurface(ctx);
 		const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
 		const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();

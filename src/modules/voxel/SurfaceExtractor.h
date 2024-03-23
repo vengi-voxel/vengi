@@ -43,4 +43,10 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 
 void extractSurface(SurfaceExtractionContext &ctx);
 
+voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,
+											  const voxel::Region &region, const palette::Palette &palette,
+											  voxel::ChunkMesh &mesh, const glm::ivec3 &translate,
+											  bool mergeQuads = true, bool reuseVertices = true,
+											  bool ambientOcclusion = true);
+
 } // namespace voxel

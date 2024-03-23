@@ -548,10 +548,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
 			voxel::SurfaceExtractionContext ctx =
-				type == voxel::SurfaceExtractionType::MarchingCubes
-					? voxel::buildMarchingCubesContext(volume, region, *mesh, node.palette())
-					: voxel::buildCubicContext(volume, region, *mesh, glm::ivec3(0), mergeQuads, reuseVertices,
-											   ambientOcclusion);
+				voxel::createContext(type, volume, region, node.palette(), *mesh, {0, 0, 0}, mergeQuads,
+									 reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
 			if (withNormals) {
 				mesh->calculateNormals();
