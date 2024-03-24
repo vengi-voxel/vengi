@@ -14,6 +14,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "engine-git.h"
 #include "image/Image.h"
+#include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -368,6 +369,53 @@ app::AppState VoxConvert::onInit() {
 			if (success == 0) {
 				Log::error("Could not find a valid input file in directory %s", infile.c_str());
 				return app::AppState::InitFailure;
+			}
+		} else if (io::isSupportedArchive(infile)) {
+			io::FileStream archiveStream(filesystem()->open(infile, io::FileMode::SysRead));
+			io::ArchivePtr archive = io::openArchive(filesystem(), infile, &archiveStream);
+			if (!archive) {
+				Log::error("Failed to open archive %s", infile.c_str());
+				return app::AppState::InitFailure;
+			}
+
+			// save the files to our home, then process it
+			for (const auto &entry : archive->files()) {
+				if (shouldQuit()) {
+					break;
+				}
+				if (!entry.isFile()) {
+					continue;
+				}
+				const core::String &fullPath = entry.fullPath;
+				const io::FilePtr &targetFile = filesystem()->open(fullPath, io::FileMode::Write);
+				io::FileStream targetStream(targetFile);
+				if (!archive->load(fullPath, targetStream)) {
+					Log::error("Failed to extract %s", fullPath.c_str());
+					return app::AppState::InitFailure;
+				}
+			}
+
+			const core::String filter = getArgVal("--wildcard", "");
+			for (const auto &entry : archive->files()) {
+				if (shouldQuit()) {
+					break;
+				}
+				if (!entry.isFile()) {
+					continue;
+				}
+				if (!io::isA(entry.name, voxelformat::voxelLoad())) {
+					continue;
+				}
+				if (!filter.empty()) {
+					if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
+						Log::debug("Entity %s doesn't match filter %s", entry.name.c_str(), filter.c_str());
+						continue;
+					}
+				}
+				const core::String &fullPath = filesystem()->writePath(entry.fullPath);
+				if (!handleInputFile(fullPath, sceneGraph, archive->files().size() > 1)) {
+					Log::error("Failed to handle input file %s", fullPath.c_str());
+				}
 			}
 		} else {
 			if (!handleInputFile(infile, sceneGraph, infiles.size() > 1)) {
