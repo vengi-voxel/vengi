@@ -9,6 +9,7 @@
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/CollectionManager.h"
+#include "voxelcollection/ui/CollectionPanel.h"
 
 namespace voxedit {
 
@@ -20,12 +21,11 @@ private:
 	using Super = ui::Panel;
 
 	void loadTextures(const core::String &dir);
-	void loadModels(const core::String &dir);
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
-	core::DynamicArray<core::String> _models;
 	SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
+	voxelcollection::CollectionPanel _collectionPanel;
 	int _currentSelectedModel = 0;
 
 public:

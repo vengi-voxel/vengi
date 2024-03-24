@@ -205,7 +205,7 @@ void CollectionManager::downloadAll() {
 
 		int current = 0;
 		for (const auto &e : voxelFilesMap) {
-			for (const voxelcollection::VoxelFile &voxelFile : e->value.files) {
+			for (voxelcollection::VoxelFile &voxelFile : e->value.files) {
 				if (_shouldQuit) {
 					return;
 				}
@@ -213,8 +213,7 @@ void CollectionManager::downloadAll() {
 				if (voxelFile.downloaded) {
 					continue;
 				}
-				voxelcollection::Downloader downloader;
-				downloader.download(_filesystem, voxelFile);
+				download(voxelFile);
 				const float p = ((float)current / (float)all * 100.0f);
 				_downloadProgress = (int)p;
 			}

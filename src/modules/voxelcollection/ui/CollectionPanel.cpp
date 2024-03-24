@@ -5,6 +5,7 @@
 #include "CollectionPanel.h"
 #include "core/StringUtil.h"
 #include "ui/IMGUIEx.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelcollection {
@@ -89,7 +90,8 @@ void CollectionPanel::updateFilters() {
 	}
 }
 
-int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap) {
+int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap,
+							const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
 	int cnt = 0;
 	if (ImGui::BeginChild("##collectionpanel")) {
 		updateFilters();
@@ -115,7 +117,7 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap) 
 				ImGui::BeginDisabled(!entry->second.sorted);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					const voxelcollection::VoxelFiles &voxelFiles = entry->second.files;
-					cnt += buildVoxelTree(voxelFiles);
+					cnt += buildVoxelTree(voxelFiles, contextMenu);
 					ImGui::TreePop();
 				}
 				ImGui::EndDisabled();
@@ -127,11 +129,12 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap) 
 	return cnt;
 }
 
-int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
-	core::DynamicArray<const voxelcollection::VoxelFile *> f;
+int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
+									const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
+	core::DynamicArray<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
-	for (const voxelcollection::VoxelFile &voxelFile : voxelFiles) {
+	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		if (filtered(voxelFile)) {
 			continue;
 		}
@@ -141,9 +144,10 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 	ImGuiListClipper clipper;
 	clipper.Begin((int)f.size());
 
+	_newSelected = false;
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-			const voxelcollection::VoxelFile *voxelFile = f[row];
+			voxelcollection::VoxelFile *voxelFile = f[row];
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
@@ -152,7 +156,16 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 			ImGui::PushID(voxelFile->targetFile().c_str());
 			if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
 				_selected = *voxelFile;
+				_newSelected = true;
 			}
+
+			if (contextMenu) {
+				if (ImGui::BeginPopupContextItem()) {
+					contextMenu(*voxelFile);
+					ImGui::EndPopup();
+				}
+			}
+
 			video::Id handle;
 			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 				handle = texture->handle();
