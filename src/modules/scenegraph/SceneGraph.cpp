@@ -413,8 +413,11 @@ void SceneGraph::updateTransforms() {
 voxel::Region SceneGraph::region() const {
 	voxel::Region r;
 	bool validVolume = false;
-	for (auto iter = beginModel(); iter != end(); ++iter) {
-		const SceneGraphNode &node = *iter;
+	for (const auto &n : nodes()) {
+		const SceneGraphNode &node = n->second;
+		if (!node.isModelNode()) {
+			continue;
+		}
 		if (validVolume) {
 			r.accumulate(node.region());
 			continue;
@@ -428,8 +431,11 @@ voxel::Region SceneGraph::region() const {
 voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisible) const {
 	voxel::Region r;
 	bool validVolume = false;
-	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
-		const SceneGraphNode &node = *iter;
+	for (const auto &n : nodes()) {
+		const SceneGraphNode &node = n->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
 		if (onlyVisible && !node.visible()) {
 			continue;
 		}
