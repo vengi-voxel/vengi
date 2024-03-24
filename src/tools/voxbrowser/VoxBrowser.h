@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "core/collection/ConcurrentQueue.h"
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
-#include "voxelcollection/Downloader.h"
+#include "voxelcollection/CollectionManager.h"
 
 namespace voxbrowser {
 class MainWindow;
@@ -22,21 +21,14 @@ class VoxBrowser : public ui::IMGUIApp {
 private:
 	using Super = ui::IMGUIApp;
 	voxbrowser::MainWindow *_mainWindow = nullptr;
-	core::ConcurrentQueue<voxelcollection::VoxelFile> _newVoxelFiles;
-	core::ConcurrentQueue<image::ImagePtr> _imageQueue;
-	voxelcollection::VoxelFileMap _voxelFilesMap;
-	video::TexturePool _texturePool;
-	core::AtomicInt _downloadProgress = 0; // 0-100
-	int _count = 0;
+	voxelcollection::CollectionManager _collectionMgr;
+	video::TexturePoolPtr _texturePool;
 
-	void loadThumbnail(const voxelcollection::VoxelFile &voxelFile);
-	void downloadAll();
-	void thumbnailAll();
 protected:
 	void printUsageHeader() const override;
 
 public:
-	VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);
+	VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, const video::TexturePoolPtr &texturePool);
 
 	void onRenderUI() override;
 

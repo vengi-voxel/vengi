@@ -2,7 +2,7 @@ set(SRCS
 	Downloader.h Downloader.cpp
 	GithubAPI.h GithubAPI.cpp
 	GitlabAPI.h GitlabAPI.cpp
-
+	CollectionManager.h CollectionManager.cpp
 	ui/CollectionPanel.h ui/CollectionPanel.cpp
 )
 

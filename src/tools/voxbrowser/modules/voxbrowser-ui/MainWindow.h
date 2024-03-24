@@ -9,6 +9,7 @@
 #include "video/TexturePool.h"
 #include "voxbrowser-ui/MenuBar.h"
 #include "voxbrowser-ui/StatusBar.h"
+#include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/ui/CollectionPanel.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/FormatThumbnail.h"
@@ -22,7 +23,7 @@ private:
 	voxelcollection::CollectionPanel _voxelCollection;
 	StatusBar _statusBar;
 	MenuBar _menuBar;
-	video::TexturePool &_texturePool;
+	video::TexturePoolPtr _texturePool;
 
 	struct ThumbnailProperties {
 		ImVec2 translate{0.0f, 0.0f};
@@ -46,10 +47,10 @@ private:
 	void registerPopups();
 
 public:
-	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
+	MainWindow(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool);
 	virtual ~MainWindow();
 	bool init();
-	void update(const voxelcollection::VoxelFileMap &voxelFiles, int downloadProgress, int allEntries);
+	void update(voxelcollection::CollectionManager &collectionMgr);
 	void shutdown();
 };
 

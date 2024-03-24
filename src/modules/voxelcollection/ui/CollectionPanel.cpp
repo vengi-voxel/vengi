@@ -9,7 +9,7 @@
 
 namespace voxelcollection {
 
-CollectionPanel::CollectionPanel(ui::IMGUIApp *app, video::TexturePool &texturePool)
+CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
 	: Super(app), _texturePool(texturePool) {
 }
 
@@ -176,8 +176,8 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 
 video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
-	if (_texturePool.has(voxelFile.name)) {
-		return _texturePool.get(voxelFile.name);
+	if (_texturePool->has(voxelFile.name)) {
+		return _texturePool->get(voxelFile.name);
 	}
 	return empty;
 }

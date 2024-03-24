@@ -22,7 +22,7 @@ private:
 	core::String _currentFilterName;
 	core::String _currentFilterLicense;
 	voxelcollection::VoxelFile _selected;
-	video::TexturePool &_texturePool;
+	video::TexturePoolPtr _texturePool;
 
 	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
 
@@ -31,7 +31,7 @@ private:
 	bool isFilterActive() const;
 
 public:
-	CollectionPanel(ui::IMGUIApp *app, video::TexturePool &texturePool);
+	CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool);
 	virtual ~CollectionPanel();
 
 	bool init();

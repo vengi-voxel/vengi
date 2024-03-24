@@ -16,6 +16,7 @@
 #include "ui/ScopedStyle.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
+#include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
@@ -27,7 +28,7 @@
 
 namespace voxbrowser {
 
-MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool)
+MainWindow::MainWindow(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
 	: Super(app), _voxelCollection(app, texturePool), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
 }
 
@@ -116,7 +117,7 @@ void MainWindow::updateAsset() {
 				ImGui::TextCentered("No thumbnail available", false);
 			}
 
-			if (voxelFile.downloaded && !_texturePool.has(voxelFile.name)) {
+			if (voxelFile.downloaded && !_texturePool->has(voxelFile.name)) {
 				createThumbnail(voxelFile);
 			} else {
 				if (ImGui::Button("Download")) {
@@ -162,7 +163,7 @@ void MainWindow::createThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 		Log::info("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
 	}
 	image->setName(voxelFile.name);
-	_texturePool.addImage(image);
+	_texturePool->addImage(image);
 }
 
 void MainWindow::updateAssetDetails() {
@@ -180,7 +181,7 @@ void MainWindow::updateAssetDetails() {
 			if (ImGui::Button("Open")) {
 				command::executeCommands("url \"file://" + voxelFile.fullPath + "\"");
 			}
-			if (!_texturePool.has(voxelFile.name)) {
+			if (!_texturePool->has(voxelFile.name)) {
 				if (ImGui::Button("Create thumbnail")) {
 					createThumbnail(voxelFile);
 				}
@@ -221,7 +222,7 @@ void MainWindow::registerPopups() {
 	ui::popupAbout();
 }
 
-void MainWindow::update(const voxelcollection::VoxelFileMap &voxelFilesMap, int downloadProgress, int allEntries) {
+void MainWindow::update(voxelcollection::CollectionManager &collectionMgr) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 
@@ -263,7 +264,7 @@ void MainWindow::update(const voxelcollection::VoxelFileMap &voxelFilesMap, int 
 	ImGui::Begin(UI_CONSOLE_WINDOW_TITLE);
 	ImGui::End();
 
-	const int n = _voxelCollection.update(voxelFilesMap);
+	const int n = _voxelCollection.update(collectionMgr.voxelFilesMap());
 	updateAsset();
 	updateAssetDetails();
 
@@ -282,8 +283,8 @@ void MainWindow::update(const voxelcollection::VoxelFileMap &voxelFilesMap, int 
 	ImGui::End();
 #endif
 
-	_statusBar.downloadProgress((float)downloadProgress / 100.0f);
-	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, n, allEntries);
+	_statusBar.downloadProgress((float)collectionMgr.downloadProgress() / 100.0f);
+	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, n, collectionMgr.allEntries());
 
 	if (!existingLayout && viewport->WorkSize.x > 0.0f) {
 		ImGui::DockBuilderAddNode(dockIdMain, ImGuiDockNodeFlags_DockSpace);
