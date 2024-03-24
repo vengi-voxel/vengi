@@ -9,7 +9,7 @@
 #include "core/collection/DynamicStringMap.h"
 #include "io/Filesystem.h"
 
-namespace voxbrowser {
+namespace voxelcollection {
 
 struct VoxelSourceGithub {
 	core::String repo;
@@ -73,7 +73,8 @@ using VoxelFileMap = core::DynamicStringMap<VoxelCollection>;
 
 class Downloader {
 private:
-	void handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &file, core::DynamicArray<VoxelFile> &files) const;
+	void handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &file,
+					   core::DynamicArray<VoxelFile> &files) const;
 
 public:
 	core::DynamicArray<VoxelSource> sources();
@@ -83,4 +84,4 @@ public:
 	bool download(const io::FilesystemPtr &filesystem, const VoxelFile &file) const;
 };
 
-} // namespace voxbrowser
+} // namespace voxelcollection

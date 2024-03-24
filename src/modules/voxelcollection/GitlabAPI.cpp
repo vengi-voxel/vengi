@@ -11,6 +11,7 @@
 #include "http/Request.h"
 #include <json.hpp>
 
+namespace voxelcollection {
 namespace gitlab {
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
@@ -75,3 +76,4 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 }
 
 } // namespace gitlab
+} // namespace voxelcollection

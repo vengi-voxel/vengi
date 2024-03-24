@@ -21,7 +21,7 @@
 
 #include "io/FilesystemEntry.h"
 #include "voxbrowser-ui/MainWindow.h"
-#include "voxbrowser-util/Downloader.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
@@ -85,7 +85,7 @@ app::AppState VoxBrowser::onInit() {
 			if (!io::isA(entry.name, voxelformat::voxelLoad())) {
 				continue;
 			}
-			voxbrowser::VoxelFile voxelFile;
+			voxelcollection::VoxelFile voxelFile;
 			voxelFile.name = entry.fullPath.substr(docs.size());
 			voxelFile.fullPath = entry.fullPath;
 			voxelFile.url = "file://" + entry.fullPath;
@@ -99,12 +99,12 @@ app::AppState VoxBrowser::onInit() {
 	});
 
 	app::async([&]() {
-		voxbrowser::Downloader downloader;
-		core::DynamicArray<voxbrowser::VoxelFile> files;
+		voxelcollection::Downloader downloader;
+		core::DynamicArray<voxelcollection::VoxelFile> files;
 		auto sources = downloader.sources();
 		Log::info("Found %d online sources", (int)sources.size());
-		for (const voxbrowser::VoxelSource &source : sources) {
-			const core::DynamicArray<voxbrowser::VoxelFile> &files = downloader.resolve(_filesystem, source);
+		for (const voxelcollection::VoxelSource &source : sources) {
+			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
 		return files;
@@ -131,12 +131,12 @@ void VoxBrowser::downloadAll() {
 
 		int current = 0;
 		for (const auto &e : voxelFilesMap) {
-			for (const voxbrowser::VoxelFile &voxelFile : e->value.files) {
+			for (const voxelcollection::VoxelFile &voxelFile : e->value.files) {
 				++current;
 				if (voxelFile.downloaded) {
 					continue;
 				}
-				voxbrowser::Downloader downloader;
+				voxelcollection::Downloader downloader;
 				downloader.download(_filesystem, voxelFile);
 				const float p = ((float)current / (float)all * 100.0f);
 				_downloadProgress = (int)p;
@@ -148,13 +148,13 @@ void VoxBrowser::downloadAll() {
 
 void VoxBrowser::thumbnailAll() {
 	for (const auto &e : _voxelFilesMap) {
-		for (const voxbrowser::VoxelFile &voxelFile : e->value.files) {
+		for (const voxelcollection::VoxelFile &voxelFile : e->value.files) {
 			loadThumbnail(voxelFile);
 		}
 	}
 }
 
-void VoxBrowser::loadThumbnail(const voxbrowser::VoxelFile &voxelFile) {
+void VoxBrowser::loadThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 	if (_texturePool.has(voxelFile.name)) {
 		return;
 	}
@@ -204,7 +204,7 @@ app::AppState VoxBrowser::onRunning() {
 		return state;
 	}
 
-	voxbrowser::VoxelFiles voxelFiles;
+	voxelcollection::VoxelFiles voxelFiles;
 	_newVoxelFiles.pop(voxelFiles, 100);
 
 	image::ImagePtr image;
@@ -214,28 +214,28 @@ app::AppState VoxBrowser::onRunning() {
 		}
 	}
 
-	for (voxbrowser::VoxelFile &voxelFile : voxelFiles) {
+	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {
-			voxbrowser::VoxelCollection &collection = iter->value;
+			voxelcollection::VoxelCollection &collection = iter->value;
 			collection.files.push_back(voxelFile);
 			collection.timestamp = _nowSeconds;
 			collection.sorted = false;
 		} else {
-			voxbrowser::VoxelCollection collection{{voxelFile}, _nowSeconds, false};
+			voxelcollection::VoxelCollection collection{{voxelFile}, _nowSeconds, false};
 			_voxelFilesMap.put(voxelFile.source, collection);
 		}
 	}
 	for (auto e : _voxelFilesMap) {
-		voxbrowser::VoxelCollection &collection = e->value;
+		voxelcollection::VoxelCollection &collection = e->value;
 		if (collection.sorted) {
 			continue;
 		}
 		if (collection.timestamp + 5.0 > _nowSeconds) {
 			continue;
 		}
-		core::sort(collection.files.begin(), collection.files.end(), core::Less<voxbrowser::VoxelFile>());
+		core::sort(collection.files.begin(), collection.files.end(), core::Less<voxelcollection::VoxelFile>());
 		collection.sorted = true;
 	}
 	_count += voxelFiles.size();

@@ -10,6 +10,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Filesystem.h"
 
+namespace voxelcollection {
 namespace github {
 
 struct TreeEntry {
@@ -22,3 +23,4 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 											const core::String &branch, const core::String &path = "");
 
 } // namespace github
+} // namespace voxelcollection

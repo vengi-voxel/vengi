@@ -6,4 +6,4 @@ set(SRCS
 	MenuBar.h MenuBar.cpp
 )
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ui voxbrowser-util voxelrender)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ui voxelcollection voxelrender)

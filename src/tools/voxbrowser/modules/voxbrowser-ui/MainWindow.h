@@ -9,7 +9,7 @@
 #include "video/TexturePool.h"
 #include "voxbrowser-ui/MenuBar.h"
 #include "voxbrowser-ui/StatusBar.h"
-#include "voxbrowser-util/Downloader.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/FormatThumbnail.h"
 
 namespace voxbrowser {
@@ -27,7 +27,7 @@ private:
 
 	StatusBar _statusBar;
 	MenuBar _menuBar;
-	VoxelFile _selected;
+	voxelcollection::VoxelFile _selected;
 	video::TexturePool &_texturePool;
 
 	struct ThumbnailProperties {
@@ -39,19 +39,19 @@ private:
 
 	void image(const video::TexturePtr &texture);
 
-	void createThumbnail(const VoxelFile &voxelFile);
-	video::TexturePtr thumbnailLookup(const VoxelFile &voxelFile);
+	void createThumbnail(const voxelcollection::VoxelFile &voxelFile);
+	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 
 	void configureLeftTopWidgetDock(ImGuiID dockId);
 	void configureMainTopWidgetDock(ImGuiID dockId);
 	void configureMainBottomWidgetDock(ImGuiID dockId);
 
-	int buildVoxelTree(const VoxelFiles &voxelFiles);
-	int updateAssetList(const VoxelFileMap &voxelFilesMap);
+	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
+	int updateAssetList(const voxelcollection::VoxelFileMap &voxelFilesMap);
 	void updateAsset();
 	void updateAssetDetails();
 
-	bool filtered(const VoxelFile &voxelFile) const;
+	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
 	void updateFilters();
 	bool isFilterActive() const;
 
@@ -62,7 +62,7 @@ public:
 	MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool);
 	virtual ~MainWindow();
 	bool init();
-	void update(const VoxelFileMap &voxelFiles, int downloadProgress, int allEntries);
+	void update(const voxelcollection::VoxelFileMap &voxelFiles, int downloadProgress, int allEntries);
 	void shutdown();
 };
 

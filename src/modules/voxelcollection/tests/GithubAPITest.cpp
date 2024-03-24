@@ -2,10 +2,10 @@
  * @file
  */
 
-#include "voxbrowser-util/GithubAPI.h"
+#include "voxelcollection/GithubAPI.h"
 #include "app/tests/AbstractTest.h"
 
-namespace voxbrowser {
+namespace voxelcollection {
 
 class GithubAPITest : public app::AbstractTest {};
 
@@ -14,4 +14,4 @@ TEST_F(GithubAPITest, DISABLED_testReposGitTrees) {
 	ASSERT_FALSE(sources.empty());
 }
 
-} // namespace voxbrowser
+} // namespace voxelcollection

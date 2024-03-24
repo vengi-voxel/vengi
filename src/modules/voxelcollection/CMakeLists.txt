@@ -4,7 +4,7 @@ set(SRCS
 	GitlabAPI.h GitlabAPI.cpp
 )
 
-set(LIB voxbrowser-util)
+set(LIB voxelcollection)
 set(DEPENDENCIES http json voxelformat)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 

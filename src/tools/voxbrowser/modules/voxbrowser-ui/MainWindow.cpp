@@ -17,7 +17,7 @@
 #include "io/Filesystem.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
-#include "voxbrowser-util/Downloader.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
@@ -36,7 +36,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool)
 MainWindow::~MainWindow() {
 }
 
-bool MainWindow::filtered(const VoxelFile &voxelFile) const {
+bool MainWindow::filtered(const voxelcollection::VoxelFile &voxelFile) const {
 	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
 		return true;
 	}
@@ -173,7 +173,7 @@ void MainWindow::image(const video::TexturePtr &texture) {
 }
 
 void MainWindow::updateAsset() {
-	VoxelFile &voxelFile = _selected;
+	voxelcollection::VoxelFile &voxelFile = _selected;
 
 	if (ImGui::Begin(TITLE_ASSET, nullptr,
 					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
@@ -208,7 +208,7 @@ void MainWindow::updateAsset() {
 	ImGui::End();
 }
 
-void MainWindow::createThumbnail(const VoxelFile &voxelFile) {
+void MainWindow::createThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 	scenegraph::SceneGraph sceneGraph;
 	const core::String &fullPath = voxelFile.fullPath;
 	io::FileDescription fileDesc;
@@ -241,7 +241,7 @@ void MainWindow::createThumbnail(const VoxelFile &voxelFile) {
 }
 
 void MainWindow::updateAssetDetails() {
-	VoxelFile &voxelFile = _selected;
+	voxelcollection::VoxelFile &voxelFile = _selected;
 	if (ImGui::Begin(TITLE_ASSET_DETAILS)) {
 		ImGui::Text("Name: %s", voxelFile.name.c_str());
 		ImGui::Text("Source: %s", voxelFile.source.c_str());
@@ -274,7 +274,7 @@ void MainWindow::updateAssetDetails() {
 	ImGui::End();
 }
 
-video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
+video::TexturePtr MainWindow::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
 	if (_texturePool.has(voxelFile.name)) {
 		return _texturePool.get(voxelFile.name);
@@ -282,11 +282,11 @@ video::TexturePtr MainWindow::thumbnailLookup(const VoxelFile &voxelFile) {
 	return empty;
 }
 
-int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
-	core::DynamicArray<const voxbrowser::VoxelFile *> f;
+int MainWindow::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
+	core::DynamicArray<const voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
-	for (const VoxelFile &voxelFile : voxelFiles) {
+	for (const voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		if (filtered(voxelFile)) {
 			continue;
 		}
@@ -298,7 +298,7 @@ int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-			const VoxelFile *voxelFile = f[row];
+			const voxelcollection::VoxelFile *voxelFile = f[row];
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
@@ -329,7 +329,7 @@ int MainWindow::buildVoxelTree(const VoxelFiles &voxelFiles) {
 	return (int)f.size();
 }
 
-int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
+int MainWindow::updateAssetList(const voxelcollection::VoxelFileMap &voxelFilesMap) {
 	int cnt = 0;
 	if (ImGui::Begin(TITLE_ASSET_LIST)) {
 		updateFilters();
@@ -354,7 +354,7 @@ int MainWindow::updateAssetList(const voxbrowser::VoxelFileMap &voxelFilesMap) {
 				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
 				ImGui::BeginDisabled(!entry->second.sorted);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const VoxelFiles &voxelFiles = entry->second.files;
+					const voxelcollection::VoxelFiles &voxelFiles = entry->second.files;
 					cnt += buildVoxelTree(voxelFiles);
 					ImGui::TreePop();
 				}
@@ -389,7 +389,7 @@ void MainWindow::registerPopups() {
 	ui::popupAbout();
 }
 
-void MainWindow::update(const voxbrowser::VoxelFileMap &voxelFilesMap, int downloadProgress, int allEntries) {
+void MainWindow::update(const voxelcollection::VoxelFileMap &voxelFilesMap, int downloadProgress, int allEntries) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	const float statusBarHeight = ImGui::GetFrameHeight() + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
 

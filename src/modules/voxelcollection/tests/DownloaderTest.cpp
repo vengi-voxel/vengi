@@ -2,10 +2,10 @@
  * @file
  */
 
-#include "voxbrowser-util/Downloader.h"
+#include "voxelcollection/Downloader.h"
 #include "app/tests/AbstractTest.h"
 
-namespace voxbrowser {
+namespace voxelcollection {
 
 class DownloaderTest : public app::AbstractTest {};
 
@@ -15,4 +15,4 @@ TEST_F(DownloaderTest, DISABLED_testExecute) {
 	ASSERT_FALSE(sources.empty());
 }
 
-} // namespace voxbrowser
+} // namespace voxelcollection

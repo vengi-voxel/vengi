@@ -3,6 +3,8 @@
  */
 
 #include "Downloader.h"
+#include "GithubAPI.h"
+#include "GitlabAPI.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -15,12 +17,10 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
-#include "voxbrowser-util/GithubAPI.h"
-#include "voxbrowser-util/GitlabAPI.h"
 #include "voxelformat/VolumeFormat.h"
 #include <json.hpp>
 
-namespace voxbrowser {
+namespace voxelcollection {
 
 core::String VoxelFile::targetFile() const {
 	return core::string::path(core::string::cleanPath(source), name);
@@ -91,8 +91,8 @@ static bool supportedFileExtension(const core::String &path) {
 }
 
 template<class Entry>
-static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries,
-									 const Entry &current, const VoxelSource &source) {
+static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries, const Entry &current,
+									 const VoxelSource &source) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
 	for (auto &entry : entries) {
 		if (entry.path == current.path + ".png" || entry.path == pathNoExt + ".png") {
@@ -102,7 +102,8 @@ static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries,
 	return "";
 }
 
-void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &archiveFile, core::DynamicArray<VoxelFile> &files) const {
+void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &archiveFile,
+							   core::DynamicArray<VoxelFile> &files) const {
 	http::HttpCacheStream stream(filesystem, archiveFile.targetFile(), archiveFile.url);
 	io::ArchivePtr archive = io::openArchive(filesystem, archiveFile.fullPath, &stream);
 	if (!archive) {
@@ -165,7 +166,8 @@ bool Downloader::download(const io::FilesystemPtr &filesystem, const VoxelFile &
 	return stream.valid();
 }
 
-core::DynamicArray<VoxelFile> Downloader::resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source) const {
+core::DynamicArray<VoxelFile> Downloader::resolve(const io::FilesystemPtr &filesystem,
+												  const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
@@ -251,4 +253,4 @@ core::DynamicArray<VoxelFile> Downloader::resolve(const io::FilesystemPtr &files
 	return files;
 }
 
-}; // namespace voxbrowser
+}; // namespace voxelcollection
