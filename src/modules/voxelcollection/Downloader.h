@@ -78,6 +78,7 @@ private:
 
 public:
 	core::DynamicArray<VoxelSource> sources();
+	core::DynamicArray<VoxelSource> sources(const core::String &json);
 
 	core::DynamicArray<VoxelFile> resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source) const;
 

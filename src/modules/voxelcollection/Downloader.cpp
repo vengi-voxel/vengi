@@ -31,9 +31,9 @@ core::String VoxelFile::targetDir() const {
 }
 
 core::DynamicArray<VoxelSource> Downloader::sources() {
-	core::DynamicArray<VoxelSource> sources;
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
-	request.setUserAgent("voxbrowser/" PROJECT_VERSION);
+	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
+	request.setUserAgent(userAgent);
 	request.setConnectTimeoutSecond(core::Var::get("vb_connect_timeout", 10));
 	request.setTimeoutSecond(core::Var::get("vb_timeout", 10));
 	core::String json;
@@ -41,16 +41,20 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 		io::BufferedReadWriteStream outStream;
 		if (!request.execute(outStream)) {
 			Log::error("Failed to download browser data");
-			return sources;
+			return {};
 		}
 		outStream.seek(0);
 		outStream.readString(outStream.size(), json);
 	}
+	return sources(json);
+}
 
+core::DynamicArray<VoxelSource> Downloader::sources(const core::String &json) {
+	core::DynamicArray<VoxelSource> voxelSources;
 	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 	if (!jsonResponse.contains("sources")) {
 		Log::error("Unexpected json data");
-		return sources;
+		return voxelSources;
 	}
 
 	jsonResponse = jsonResponse["sources"];
@@ -81,9 +85,9 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 			source.provider = "single";
 			source.single.url = entry["single"].value("url", "").c_str();
 		}
-		sources.push_back(source);
+		voxelSources.push_back(source);
 	}
-	return sources;
+	return voxelSources;
 }
 
 static bool supportedFileExtension(const core::String &path) {
