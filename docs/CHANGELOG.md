@@ -12,6 +12,16 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Fixed memory leak in `fbx` loading
+
+VoxConvert:
+
+   - Added zip archive support for `--input`
+
+VoxEdit:
+
+   - Added support for browsing the remote voxel collections to the asset panel
+
 ## 0.0.30 (2024-03-23)
 
 General:
