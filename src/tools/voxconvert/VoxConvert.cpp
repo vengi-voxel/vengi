@@ -345,12 +345,18 @@ app::AppState VoxConvert::onInit() {
 
 	scenegraph::SceneGraph sceneGraph;
 	for (const core::String& infile : infiles) {
+		if (shouldQuit()) {
+			break;
+		}
 		if (filesystem()->isReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
 			filesystem()->list(infile, entities, getArgVal("--wildcard", ""));
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
 			int success = 0;
 			for (const io::FilesystemEntry &entry : entities) {
+				if (shouldQuit()) {
+					break;
+				}
 				if (entry.type != io::FilesystemEntry::Type::file) {
 					continue;
 				}
@@ -557,7 +563,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			}
 			node.setVolume(volume, true);
-			node.setName(core::string::extractFilename(infile));
+			node.setName(inputFile->fileName());
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
@@ -570,7 +576,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
-			node.setName(core::string::extractFilename(infile));
+			node.setName(inputFile->fileName());
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsPlane) {
@@ -581,7 +587,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
-			node.setName(core::string::extractFilename(infile));
+			node.setName(inputFile->fileName());
 			sceneGraph.emplace(core::move(node));
 		}
 		if (_exportPalette) {
