@@ -548,6 +548,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		if (addNode_r(ufbxscene, c, filename, sceneGraph, textures, sceneGraph.root().id()) < 0) {
 			const core::String name = priv::_ufbx_to_string(c->name);
 			Log::error("Failed to add root child node '%s'", name.c_str());
+			ufbx_free_scene(ufbxscene);
 			return false;
 		}
 	}
