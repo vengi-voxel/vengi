@@ -99,8 +99,12 @@ static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries, c
 									 const VoxelSource &source) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
 	for (auto &entry : entries) {
-		if (entry.path == current.path + ".png" || entry.path == pathNoExt + ".png") {
-			return github::downloadUrl(source.github.repo, source.github.commit, entry.path);
+		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+			for (const core::String &ext : desc->exts) {
+				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
+					return github::downloadUrl(source.github.repo, source.github.commit, entry.path);
+				}
+			}
 		}
 	}
 	return "";
