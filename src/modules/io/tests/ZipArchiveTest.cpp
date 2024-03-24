@@ -3,6 +3,7 @@
  */
 
 #include "io/ZipArchive.h"
+#include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -11,12 +12,10 @@
 
 namespace io {
 
-class ZipArchiveTest : public testing::Test {};
+class ZipArchiveTest : public app::AbstractTest {};
 
 TEST_F(ZipArchiveTest, testZipArchive) {
-	io::Filesystem fs;
-	fs.init("test", "test");
-	const io::FilePtr &file = fs.open("iotest.zip", io::FileMode::Read);
+	const io::FilePtr &file = _testApp->filesystem()->open("iotest.zip", io::FileMode::Read);
 	FileStream fileStream(file);
 	ZipArchive archive;
 	ASSERT_TRUE(archive.init(file->fileName(), &fileStream));
@@ -35,6 +34,20 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	EXPECT_EQ("file.txt", files[1].name);
 	EXPECT_EQ("file.txt", files[2].name);
 	EXPECT_EQ("dir/file.txt", files[2].fullPath);
+}
+
+TEST_F(ZipArchiveTest, testLoadToFile) {
+	const io::FilePtr &file = _testApp->filesystem()->open("iotest.zip", io::FileMode::Read);
+	FileStream fileStream(file);
+	ZipArchive archive;
+	ASSERT_TRUE(archive.init(file->fileName(), &fileStream));
+	const ArchiveFiles &files = archive.files();
+	ASSERT_EQ(3u, files.size());
+
+	int fileIdx = 2;
+	const io::FilePtr &targetFile = _testApp->filesystem()->open(files[fileIdx].fullPath, io::FileMode::Write);
+	io::FileStream targetStream(targetFile);
+	ASSERT_TRUE(archive.load(files[fileIdx].fullPath, targetStream));
 }
 
 } // namespace io
