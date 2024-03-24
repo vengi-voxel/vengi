@@ -45,4 +45,6 @@ public:
 	int allEntries() const;
 };
 
+typedef core::SharedPtr<CollectionManager> CollectionManagerPtr;
+
 }; // namespace voxelcollection
