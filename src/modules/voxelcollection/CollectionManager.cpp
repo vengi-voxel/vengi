@@ -24,10 +24,20 @@ bool CollectionManager::init() {
 }
 
 void CollectionManager::shutdown() {
+	_shouldQuit = true;
+	if (_local.valid()) {
+		_local.wait();
+	}
+	if (_online.valid()) {
+		_online.wait();
+	}
 }
 
 void CollectionManager::local() {
-	app::async([&]() {
+	if (_local.valid()) {
+		return;
+	}
+	_local = app::async([&]() {
 		if (_shouldQuit) {
 			return;
 		}
@@ -58,7 +68,10 @@ void CollectionManager::local() {
 }
 
 void CollectionManager::online() {
-	app::async([&]() {
+	if (_online.valid()) {
+		return;
+	}
+	_online = app::async([&]() {
 		if (_shouldQuit) {
 			return;
 		}

@@ -11,6 +11,7 @@
 #include "video/Texture.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/Downloader.h"
+#include <future>
 
 namespace voxelcollection {
 
@@ -26,6 +27,9 @@ private:
 	core::AtomicInt _downloadProgress = 0; // 0-100
 	core::AtomicBool _shouldQuit = false;
 	int _count = 0;
+	std::future<void> _online;
+	std::future<void> _local;
+
 public:
 	CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool);
 	virtual ~CollectionManager();
