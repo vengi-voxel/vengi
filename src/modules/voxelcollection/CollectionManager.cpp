@@ -115,7 +115,7 @@ void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFil
 	}
 }
 
-void CollectionManager::update(double nowSeconds) {
+void CollectionManager::update(double nowSeconds, int n) {
 	image::ImagePtr image;
 	if (_imageQueue.pop(image)) {
 		if (image && image->isLoaded()) {
@@ -124,7 +124,10 @@ void CollectionManager::update(double nowSeconds) {
 	}
 
 	voxelcollection::VoxelFiles voxelFiles;
-	_newVoxelFiles.pop(voxelFiles, 100);
+	_newVoxelFiles.pop(voxelFiles, n);
+	if (voxelFiles.empty()) {
+		return;
+	}
 
 	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);

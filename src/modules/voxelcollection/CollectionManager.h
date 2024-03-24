@@ -30,7 +30,10 @@ public:
 	virtual ~CollectionManager();
 
 	bool init() override;
-	void update(double nowSeconds);
+	/**
+	 * @param[in] n The amount of new voxel file instances to add in one update() call
+	 */
+	void update(double nowSeconds, int n = 100);
 	void shutdown() override;
 
 	void local();
