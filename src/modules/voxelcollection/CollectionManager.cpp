@@ -26,9 +26,11 @@ bool CollectionManager::init() {
 void CollectionManager::shutdown() {
 	_shouldQuit = true;
 	if (_local.valid()) {
+		Log::debug("Wait for local sources to finish");
 		_local.wait();
 	}
 	if (_online.valid()) {
+		Log::debug("Wait for online sources to finish");
 		_online.wait();
 	}
 }
