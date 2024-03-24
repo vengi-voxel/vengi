@@ -3,18 +3,17 @@
  */
 
 #include "MainWindow.h"
-#include "IMGUIApp.h"
-#include "IMGUIEx.h"
-#include "PopupAbout.h"
-#include "ScopedStyle.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "http/HttpCacheStream.h"
-#include "imgui.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
+#include "ui/PopupAbout.h"
+#include "ui/ScopedStyle.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
 #include "voxelcollection/Downloader.h"
@@ -25,88 +24,14 @@
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_ASSET "Asset##asset"
 #define TITLE_ASSET_DETAILS "Details##asset-details"
-#define TITLE_ASSET_LIST "Assets##list"
 
 namespace voxbrowser {
 
 MainWindow::MainWindow(ui::IMGUIApp *app, video::TexturePool &texturePool)
-	: Super(app), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
+	: Super(app), _voxelCollection(app, texturePool), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
 }
 
 MainWindow::~MainWindow() {
-}
-
-bool MainWindow::filtered(const voxelcollection::VoxelFile &voxelFile) const {
-	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
-		return true;
-	}
-	if (!_currentFilterLicense.empty() && !core::string::icontains(voxelFile.license, _currentFilterLicense)) {
-		return true;
-	}
-	if (_currentFilterFormatEntry <= 0) {
-		return false;
-	}
-	const core::String &filter = _filterEntries[_currentFilterFormatEntry].wildCard();
-	if (core::string::fileMatchesMultiple(voxelFile.name.c_str(), filter.c_str())) {
-		return false;
-	}
-	return true;
-}
-
-bool MainWindow::isFilterActive() const {
-	return !_currentFilterName.empty() || !_currentFilterLicense.empty() || _currentFilterFormatEntry > 0;
-}
-
-void MainWindow::updateFilters() {
-	{
-		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
-		ImGui::PushItemWidth(itemWidth.x);
-		ImGui::InputText("Name", &_currentFilterName);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-	}
-	{
-		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
-		ImGui::PushItemWidth(itemWidth.x);
-		ImGui::InputText("License", &_currentFilterLicense);
-		ImGui::PopItemWidth();
-		ImGui::SameLine();
-	}
-	{
-		if (_filterFormatTextWidth < 0.0f) {
-			for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-				_filterEntries.push_back(*desc);
-				const core::String &str = io::convertToFilePattern(*desc);
-				const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
-				_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
-			}
-			_filterEntries.sort(core::Greater<io::FormatDescription>());
-			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
-			// must be the first entry - see applyFilter()
-			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
-		}
-
-		const char *formatFilterLabel = "Format";
-		ImGui::PushItemWidth(_filterFormatTextWidth);
-		int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
-		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
-
-		if (ImGui::BeginCombo(formatFilterLabel, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
-			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-				const bool selected = i == currentlySelected;
-				const io::FormatDescription &format = _filterEntries[i];
-				const core::String &text = io::convertToFilePattern(format);
-				if (ImGui::Selectable(text.c_str(), selected)) {
-					_currentFilterFormatEntry = i;
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
-	}
 }
 
 // https://github.com/ocornut/imgui/issues/6174
@@ -173,7 +98,7 @@ void MainWindow::image(const video::TexturePtr &texture) {
 }
 
 void MainWindow::updateAsset() {
-	voxelcollection::VoxelFile &voxelFile = _selected;
+	voxelcollection::VoxelFile &voxelFile = _voxelCollection.selected();
 
 	if (ImGui::Begin(TITLE_ASSET, nullptr,
 					 ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize |
@@ -182,7 +107,7 @@ void MainWindow::updateAsset() {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigFont());
 			ImGui::TextCentered("Nothing selected");
-		} else if (const video::TexturePtr &texture = thumbnailLookup(voxelFile)) {
+		} else if (const video::TexturePtr &texture = _voxelCollection.thumbnailLookup(voxelFile)) {
 			image(texture);
 		} else {
 			{
@@ -241,7 +166,7 @@ void MainWindow::createThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 }
 
 void MainWindow::updateAssetDetails() {
-	voxelcollection::VoxelFile &voxelFile = _selected;
+	voxelcollection::VoxelFile &voxelFile = _voxelCollection.selected();
 	if (ImGui::Begin(TITLE_ASSET_DETAILS)) {
 		ImGui::Text("Name: %s", voxelFile.name.c_str());
 		ImGui::Text("Source: %s", voxelFile.source.c_str());
@@ -272,99 +197,6 @@ void MainWindow::updateAssetDetails() {
 		}
 	}
 	ImGui::End();
-}
-
-video::TexturePtr MainWindow::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
-	static video::TexturePtr empty;
-	if (_texturePool.has(voxelFile.name)) {
-		return _texturePool.get(voxelFile.name);
-	}
-	return empty;
-}
-
-int MainWindow::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
-	core::DynamicArray<const voxelcollection::VoxelFile *> f;
-	f.reserve(voxelFiles.size());
-
-	for (const voxelcollection::VoxelFile &voxelFile : voxelFiles) {
-		if (filtered(voxelFile)) {
-			continue;
-		}
-		f.push_back(&voxelFile);
-	}
-
-	ImGuiListClipper clipper;
-	clipper.Begin((int)f.size());
-
-	while (clipper.Step()) {
-		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-			const voxelcollection::VoxelFile *voxelFile = f[row];
-
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			const bool selected = _selected == *voxelFile;
-
-			ImGui::PushID(voxelFile->targetFile().c_str());
-			if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
-				_selected = *voxelFile;
-			}
-			video::Id handle;
-			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
-				handle = texture->handle();
-			} else {
-				handle = video::InvalidId;
-			}
-			ImGui::Image(handle, ImVec2(64, 64));
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
-			ImGui::PopID();
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(voxelFile->name.c_str());
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(voxelFile->license.c_str());
-		}
-	}
-
-	return (int)f.size();
-}
-
-int MainWindow::updateAssetList(const voxelcollection::VoxelFileMap &voxelFilesMap) {
-	int cnt = 0;
-	if (ImGui::Begin(TITLE_ASSET_LIST)) {
-		updateFilters();
-
-		if (ImGui::BeginTable("Voxel Files", 3,
-							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
-			ImGui::TableSetupScrollFreeze(0, 1);
-			ImGui::TableSetupColumn("Thumbnail##nodeproperty");
-			ImGui::TableSetupColumn("Name##nodeproperty");
-			ImGui::TableSetupColumn("License##nodeproperty");
-			ImGui::TableHeadersRow();
-			for (const auto &entry : voxelFilesMap) {
-				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-											   ImGuiTreeNodeFlags_SpanAvailWidth;
-				if (isFilterActive()) {
-					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-				}
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				const int n = (int)entry->second.files.size();
-				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
-				ImGui::BeginDisabled(!entry->second.sorted);
-				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const voxelcollection::VoxelFiles &voxelFiles = entry->second.files;
-					cnt += buildVoxelTree(voxelFiles);
-					ImGui::TreePop();
-				}
-				ImGui::EndDisabled();
-			}
-			ImGui::EndTable();
-		}
-	}
-	ImGui::End();
-	return cnt;
 }
 
 void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
@@ -431,7 +263,7 @@ void MainWindow::update(const voxelcollection::VoxelFileMap &voxelFilesMap, int 
 	ImGui::Begin(UI_CONSOLE_WINDOW_TITLE);
 	ImGui::End();
 
-	const int n = updateAssetList(voxelFilesMap);
+	const int n = _voxelCollection.update(voxelFilesMap);
 	updateAsset();
 	updateAssetDetails();
 
@@ -475,7 +307,7 @@ bool MainWindow::init() {
 }
 
 void MainWindow::shutdown() {
-	_filterEntries.clear();
+	_voxelCollection.shutdown();
 }
 
 } // namespace voxbrowser

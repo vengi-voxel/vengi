@@ -9,6 +9,7 @@
 #include "video/TexturePool.h"
 #include "voxbrowser-ui/MenuBar.h"
 #include "voxbrowser-ui/StatusBar.h"
+#include "voxelcollection/ui/CollectionPanel.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/FormatThumbnail.h"
 
@@ -18,16 +19,9 @@ class MainWindow : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	core::DynamicArray<io::FormatDescription> _filterEntries;
-
-	float _filterFormatTextWidth = -1.0f;
-	int _currentFilterFormatEntry = -1;
-	core::String _currentFilterName;
-	core::String _currentFilterLicense;
-
+	voxelcollection::CollectionPanel _voxelCollection;
 	StatusBar _statusBar;
 	MenuBar _menuBar;
-	voxelcollection::VoxelFile _selected;
 	video::TexturePool &_texturePool;
 
 	struct ThumbnailProperties {
@@ -40,20 +34,13 @@ private:
 	void image(const video::TexturePtr &texture);
 
 	void createThumbnail(const voxelcollection::VoxelFile &voxelFile);
-	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 
 	void configureLeftTopWidgetDock(ImGuiID dockId);
 	void configureMainTopWidgetDock(ImGuiID dockId);
 	void configureMainBottomWidgetDock(ImGuiID dockId);
 
-	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
-	int updateAssetList(const voxelcollection::VoxelFileMap &voxelFilesMap);
 	void updateAsset();
 	void updateAssetDetails();
-
-	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
-	void updateFilters();
-	bool isFilterActive() const;
 
 	void popupAbout();
 	void registerPopups();
