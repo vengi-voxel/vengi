@@ -24,6 +24,7 @@ private:
 	video::TexturePoolPtr _texturePool;
 
 	core::AtomicInt _downloadProgress = 0; // 0-100
+	core::AtomicBool _shouldQuit = false;
 	int _count = 0;
 public:
 	CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool);

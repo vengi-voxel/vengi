@@ -28,12 +28,18 @@ void CollectionManager::shutdown() {
 
 void CollectionManager::local() {
 	app::async([&]() {
+		if (_shouldQuit) {
+			return;
+		}
 		core::DynamicArray<io::FilesystemEntry> entities;
 		const core::String docs = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 		Log::info("Local document scanning (%s)...", docs.c_str());
 		_filesystem->list(docs, entities, "", 2);
 
 		for (const io::FilesystemEntry &entry : entities) {
+			if (_shouldQuit) {
+				return;
+			}
 			if (!io::isA(entry.name, voxelformat::voxelLoad())) {
 				continue;
 			}
@@ -53,10 +59,16 @@ void CollectionManager::local() {
 
 void CollectionManager::online() {
 	app::async([&]() {
+		if (_shouldQuit) {
+			return;
+		}
 		voxelcollection::Downloader downloader;
 		auto sources = downloader.sources();
 		Log::info("Found %d online sources", (int)sources.size());
 		for (const voxelcollection::VoxelSource &source : sources) {
+			if (_shouldQuit) {
+				return;
+			}
 			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
@@ -78,6 +90,9 @@ void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFil
 	const core::String &targetImageFile = _filesystem->writePath(voxelFile.targetFile() + ".png");
 	if (_filesystem->exists(targetImageFile)) {
 		app::async([this, voxelFile, targetImageFile]() {
+			if (_shouldQuit) {
+				return;
+			}
 			image::ImagePtr image = image::loadImage(targetImageFile);
 			if (image) {
 				image->setName(voxelFile.name);
@@ -92,11 +107,17 @@ void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFil
 	}
 	if (!voxelFile.thumbnailUrl.empty()) {
 		app::async([=]() {
+			if (_shouldQuit) {
+				return;
+			}
 			http::HttpCacheStream stream(_filesystem, voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
 		app::async([=]() {
+			if (_shouldQuit) {
+				return;
+			}
 			http::HttpCacheStream stream(_filesystem, voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, stream, loadCtx);
@@ -116,6 +137,10 @@ void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFil
 }
 
 void CollectionManager::update(double nowSeconds, int n) {
+	if (app::App::getInstance()->shouldQuit()) {
+		_shouldQuit = true;
+	}
+
 	image::ImagePtr image;
 	if (_imageQueue.pop(image)) {
 		if (image && image->isLoaded()) {
@@ -166,6 +191,9 @@ void CollectionManager::downloadAll() {
 		int current = 0;
 		for (const auto &e : voxelFilesMap) {
 			for (const voxelcollection::VoxelFile &voxelFile : e->value.files) {
+				if (_shouldQuit) {
+					return;
+				}
 				++current;
 				if (voxelFile.downloaded) {
 					continue;
