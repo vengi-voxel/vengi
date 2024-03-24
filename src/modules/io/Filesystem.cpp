@@ -366,6 +366,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
+		createDir(core::string::path(_homePath, core::string::extractPath(filename)), true);
 		return core::make_shared<io::File>(core::string::path(_homePath, filename), mode);
 	}
 	FileMode openmode = mode;
