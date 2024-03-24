@@ -168,6 +168,10 @@ public:
 		return _size;
 	}
 
+	inline bool empty() const {
+		return _size == 0u;
+	}
+
 	bool get(const KEYTYPE& key, VALUETYPE& value) const {
 		const size_t hashValue = (size_t)_hasher(key);
 		KeyValue *entry = _buckets[hashValue % BUCKETSIZE];
