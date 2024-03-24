@@ -33,6 +33,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 			} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
 				toolbar.button(ICON_LC_CODESANDBOX, "modelunref");
 			}
+			toolbar.button(ICON_LC_ALIGN_VERTICAL_DISTRIBUTE_CENTER, "align");
 		}
 	}
 }

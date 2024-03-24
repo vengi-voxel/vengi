@@ -1700,6 +1700,17 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
+	command::Command::registerCommand("align", [this] (const command::CmdArgs& args) {
+		_sceneGraph.align();
+		for (const auto &entry : _sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isModelNode()) {
+				continue;
+			}
+			modified(node.id(), _sceneGraph.resolveRegion(node), true);
+		}
+	}).setHelp("Allow to align all nodes on the floor next to each other without overlapping");
+
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
 			Log::info("Usage: text <string> <size>");
