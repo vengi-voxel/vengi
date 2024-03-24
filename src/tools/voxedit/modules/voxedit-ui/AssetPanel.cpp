@@ -16,18 +16,29 @@
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 
-AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
-	loadTextures(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
-	loadModels(_app->filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
+AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
+					   const voxelcollection::CollectionManagerPtr &collectionMgr,
+					   const video::TexturePoolPtr &texturePool, const io::FilesystemPtr &filesystem)
+	: Super(app), _texturePool(texturePool), _filesystem(filesystem), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr) {
+	loadTextures(_filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
+	loadModels(_filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents));
+}
+
+void AssetPanel::shutdown() {
+}
+
+bool AssetPanel::init() {
+	return true;
 }
 
 void AssetPanel::loadModels(const core::String &dir) {
 	core::DynamicArray<io::FilesystemEntry> entities;
-	_app->filesystem()->list(dir, entities);
+	_filesystem->list(dir, entities);
 	_models.clear();
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);
@@ -39,11 +50,11 @@ void AssetPanel::loadModels(const core::String &dir) {
 
 void AssetPanel::loadTextures(const core::String &dir) {
 	core::DynamicArray<io::FilesystemEntry> entities;
-	_app->filesystem()->list(dir, entities);
+	_filesystem->list(dir, entities);
 	for (const auto &e : entities) {
 		const core::String &fullName = core::string::path(dir, e.name);
 		if (io::isImage(fullName)) {
-			_texturePool.load(fullName, false);
+			_texturePool->load(fullName, false);
 		}
 	}
 }
@@ -102,12 +113,12 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 			int n = 1;
 			ImGuiStyle &style = ImGui::GetStyle();
 			const int maxImages = core_max(1, ImGui::GetWindowSize().x / (50 + style.ItemSpacing.x) - 1);
-			for (const auto &e : _texturePool.cache()) {
+			for (const auto &e : _texturePool->cache()) {
 				if (!e->second || !e->second->isLoaded()) {
 					continue;
 				}
 				const video::Id handle = e->second->handle();
-				const image::ImagePtr &image = _texturePool.loadImage(e->first);
+				const image::ImagePtr &image = _texturePool->loadImage(e->first);
 				ImGui::ImageButton(handle, ImVec2(50, 50));
 				ImGui::TooltipText("%s: %i:%i", image->name().c_str(), image->width(), image->height());
 				if (n % maxImages == 0) {

@@ -30,9 +30,9 @@
 #include "engine-git.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
-				 const voxedit::SceneManagerPtr &sceneMgr,
+				 const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
 				 const video::TexturePoolPtr &texturePool)
-	: Super(filesystem, timeProvider, core::halfcpus()), _sceneMgr(sceneMgr), _texturePool(texturePool) {
+	: Super(filesystem, timeProvider, core::halfcpus()), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr), _texturePool(texturePool) {
 	init(ORGANISATION, "voxedit");
 	core::registerBindingContext("scene", core::BindingContext::Context1);
 	core::registerBindingContext("model", core::BindingContext::Context2);
@@ -60,6 +60,7 @@ app::AppState VoxEdit::onCleanup() {
 		_mainWindow->shutdown();
 		delete _mainWindow;
 	}
+	_collectionMgr->shutdown();
 	_texturePool->shutdown();
 	return Super::onCleanup();
 }
@@ -152,6 +153,7 @@ app::AppState VoxEdit::onConstruct() {
 	_paletteFormats.push_back(io::FormatDescription{"", {}, {}, 0u});
 
 	_sceneMgr->construct();
+	_collectionMgr->construct();
 
 	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -459,7 +461,12 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_mainWindow = new voxedit::MainWindow(this, _sceneMgr, _texturePool);
+	if (!_collectionMgr->init()) {
+		Log::error("Failed to initialize the collection manager");
+		return app::AppState::InitFailure;
+	}
+
+	_mainWindow = new voxedit::MainWindow(this, _sceneMgr, _texturePool, _collectionMgr, _filesystem);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return app::AppState::InitFailure;
@@ -526,6 +533,7 @@ app::AppState VoxEdit::onRunning() {
 		return state;
 	}
 
+	_collectionMgr->update(_nowSeconds);
 	const voxedit::Viewport *scene = _mainWindow->hoveredScene();
 	if (scene) {
 		if (scene->isSceneMode()) {
@@ -547,6 +555,7 @@ int main(int argc, char *argv[]) {
 	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
 	const voxedit::SceneManagerPtr &sceneMgr =
 		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
-	VoxEdit app(filesystem, timeProvider, sceneMgr, texturePool);
+	const voxelcollection::CollectionManagerPtr &collectionMgr = core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
+	VoxEdit app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool);
 	return app.startMainLoop(argc, argv);
 }

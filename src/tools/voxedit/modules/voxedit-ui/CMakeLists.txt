@@ -27,7 +27,7 @@ set(SRCS
 	QuitDisallowReason.h
 )
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer voxelcollection)
 target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
 
 # vengi model files in data/voxedit

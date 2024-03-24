@@ -134,7 +134,8 @@ private:
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
 public:
-	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool);
+	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
+			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();

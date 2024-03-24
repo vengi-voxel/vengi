@@ -9,6 +9,7 @@
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxelcollection/CollectionManager.h"
 
 namespace voxedit {
 class MainWindow;
@@ -27,6 +28,7 @@ private:
 	voxedit::MainWindow* _mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
 	voxedit::SceneManagerPtr _sceneMgr;
+	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
@@ -46,7 +48,7 @@ protected:
 
 public:
 	VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
-			const voxedit::SceneManagerPtr &sceneMgr,
+			const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
 			const video::TexturePoolPtr &texturePool);
 
 	void onRenderUI() override;

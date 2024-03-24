@@ -11,6 +11,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -124,14 +125,15 @@ static const struct TemplateModel {
 #undef TM_ENTRY
 // clang-format on
 
-MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
+MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
+					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem)
 	: Super(app), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app),
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _animationPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
-	  _assetPanel(app, _sceneMgr), _mementoPanel(app, _sceneMgr), _positionsPanel(app, _sceneMgr),
+	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _positionsPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _cameraPanel(app, _sceneMgr) {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
@@ -243,6 +245,7 @@ bool MainWindow::init() {
 	_lsystemPanel.init();
 	_treePanel.init();
 	_positionsPanel.init();
+	_assetPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -275,6 +278,7 @@ void MainWindow::shutdown() {
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_positionsPanel.shutdown();
+	_assetPanel.shutdown();
 }
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
