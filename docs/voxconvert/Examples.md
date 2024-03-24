@@ -26,6 +26,10 @@ Import given input image as volume. Uses a depth map to make a volume out of the
 
 The `--input` with e.g. `infile.png` will pick the depth map next to the image path called `infile-dm.png` as depth map.
 
+## Convert all obj files in a zip
+
+`./vengi-voxconvert --input input.zip --wildcard "*.obj" --output output.vengi`
+
 ## Replace the colors with a different palette
 
 `replacepalette` is a [lua script](../LUAScript.md) that is able to replace or remap the colors of an existing palette to a new palette. You can specify the [built-in palettes](../Palette.md) or filenames to supported [palette formats](../Formats.md).
