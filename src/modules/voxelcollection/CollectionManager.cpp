@@ -82,7 +82,7 @@ void CollectionManager::online() {
 			if (_shouldQuit) {
 				return;
 			}
-			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source);
+			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source, _shouldQuit);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
 	});
