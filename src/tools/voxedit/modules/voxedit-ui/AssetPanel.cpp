@@ -39,8 +39,6 @@ bool AssetPanel::init() {
 		Log::error("Failed to initialize the collection panel");
 		return false;
 	}
-	_collectionMgr->online();
-	_collectionMgr->local();
 	return true;
 }
 
@@ -61,33 +59,43 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		if (ImGui::BeginTabBar("##assetpaneltabs", ImGuiTabBarFlags_FittingPolicyResizeDown | ImGuiTabBarFlags_FittingPolicyScroll)) {
 			if (ImGui::BeginTabItem(_("Models"))) {
 				const auto &map = _collectionMgr->voxelFilesMap();
-				auto contextMenu = [&] (voxelcollection::VoxelFile &file) {
-					if (ImGui::MenuItem(_("Use stamp"))) {
-						Modifier &modifier = _sceneMgr->modifier();
-						StampBrush &brush = modifier.stampBrush();
-						if (!file.downloaded) {
-							_collectionMgr->download(file);
-						}
-						if (brush.load(file.targetFile())) {
-							modifier.setBrushType(BrushType::Stamp);
-						}
+				if (map.empty()) {
+					ImGui::TextWrapped(_("No online and local models loaded yet. Click the load button to fetch the "
+										 "latest models from the servers and also load the local models from the "
+										 "documents folder of your system."));
+					if (ImGui::Button(_("Load"))) {
+						_collectionMgr->online();
+						_collectionMgr->local();
 					}
-					ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
-					if (ImGui::MenuItem(_("Add to scene"))) {
+				} else {
+					auto contextMenu = [&] (voxelcollection::VoxelFile &file) {
+						if (ImGui::MenuItem(_("Use stamp"))) {
+							Modifier &modifier = _sceneMgr->modifier();
+							StampBrush &brush = modifier.stampBrush();
+							if (!file.downloaded) {
+								_collectionMgr->download(file);
+							}
+							if (brush.load(file.targetFile())) {
+								modifier.setBrushType(BrushType::Stamp);
+							}
+						}
+						ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+						if (ImGui::MenuItem(_("Add to scene"))) {
+							if (!file.downloaded) {
+								_collectionMgr->download(file);
+							}
+							_sceneMgr->import(file.targetFile());
+						}
+					};
+
+					_collectionPanel.update(map, contextMenu);
+					if (_collectionPanel.newSelected()) {
+						voxelcollection::VoxelFile &file = _collectionPanel.selected();
 						if (!file.downloaded) {
 							_collectionMgr->download(file);
 						}
 						_sceneMgr->import(file.targetFile());
 					}
-				};
-
-				_collectionPanel.update(map, contextMenu);
-				if (_collectionPanel.newSelected()) {
-					voxelcollection::VoxelFile &file = _collectionPanel.selected();
-					if (!file.downloaded) {
-						_collectionMgr->download(file);
-					}
-					_sceneMgr->import(file.targetFile());
 				}
 				ImGui::EndTabItem();
 			}
