@@ -91,7 +91,7 @@ void CollectionPanel::updateFilters() {
 
 int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap) {
 	int cnt = 0;
-	if (ImGui::Begin(TITLE_ASSET_LIST)) {
+	if (ImGui::BeginChild("##collectionpanel")) {
 		updateFilters();
 
 		if (ImGui::BeginTable("Voxel Files", 3,
@@ -123,7 +123,7 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap) 
 			ImGui::EndTable();
 		}
 	}
-	ImGui::End();
+	ImGui::EndChild();
 	return cnt;
 }
 

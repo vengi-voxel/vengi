@@ -264,7 +264,11 @@ void MainWindow::update(voxelcollection::CollectionManager &collectionMgr) {
 	ImGui::Begin(UI_CONSOLE_WINDOW_TITLE);
 	ImGui::End();
 
-	const int n = _voxelCollection.update(collectionMgr.voxelFilesMap());
+	int n = 0;
+	if (ImGui::Begin(TITLE_ASSET_LIST)) {
+		n = _voxelCollection.update(collectionMgr.voxelFilesMap());
+	}
+	ImGui::End();
 	updateAsset();
 	updateAssetDetails();
 
