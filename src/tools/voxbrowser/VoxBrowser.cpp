@@ -77,9 +77,9 @@ app::AppState VoxBrowser::onInit() {
 
 	app::async([&]() {
 		core::DynamicArray<io::FilesystemEntry> entities;
-		const core::String docs = io::filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+		const core::String docs = filesystem()->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 		Log::info("Local document scanning (%s)...", docs.c_str());
-		io::filesystem()->list(docs, entities, "", 2);
+		filesystem()->list(docs, entities, "", 2);
 
 		for (const io::FilesystemEntry &entry : entities) {
 			if (!io::isA(entry.name, voxelformat::voxelLoad())) {
@@ -158,8 +158,8 @@ void VoxBrowser::loadThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 	if (_texturePool.has(voxelFile.name)) {
 		return;
 	}
-	const core::String &targetImageFile = io::filesystem()->writePath(voxelFile.targetFile() + ".png");
-	if (io::filesystem()->exists(targetImageFile)) {
+	const core::String &targetImageFile = filesystem()->writePath(voxelFile.targetFile() + ".png");
+	if (filesystem()->exists(targetImageFile)) {
 		app::async([this, voxelFile, targetImageFile]() {
 			image::ImagePtr image = image::loadImage(targetImageFile);
 			if (image) {
@@ -169,7 +169,7 @@ void VoxBrowser::loadThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 		});
 		return;
 	}
-	if (!io::filesystem()->createDir(core::string::extractPath(targetImageFile))) {
+	if (!filesystem()->createDir(core::string::extractPath(targetImageFile))) {
 		Log::warn("Failed to create directory for thumbnails at: %s", voxelFile.targetDir().c_str());
 		return;
 	}

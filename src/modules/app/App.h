@@ -311,6 +311,7 @@ private:
 inline const core::String &App::osName() {
 	return _osName;
 }
+
 inline const core::String &App::osVersion() {
 	return _osVersion;
 }
