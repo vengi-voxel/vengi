@@ -47,6 +47,7 @@ public:
 	void loadThumbnail(const voxelcollection::VoxelFile &voxelFile);
 	void thumbnailAll();
 	void downloadAll();
+	bool download(VoxelFile &voxelFile);
 
 	const voxelcollection::VoxelFileMap &voxelFilesMap() const;
 	int downloadProgress() const;

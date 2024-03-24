@@ -223,6 +223,15 @@ void CollectionManager::downloadAll() {
 	});
 }
 
+bool CollectionManager::download(VoxelFile &voxelFile) {
+	voxelcollection::Downloader downloader;
+	if (downloader.download(_filesystem, voxelFile)) {
+		voxelFile.downloaded = true;
+		return true;
+	}
+	return false;
+}
+
 const voxelcollection::VoxelFileMap &CollectionManager::voxelFilesMap() const {
 	return _voxelFilesMap;
 }
