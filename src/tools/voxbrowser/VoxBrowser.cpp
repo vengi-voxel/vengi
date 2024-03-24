@@ -100,14 +100,12 @@ app::AppState VoxBrowser::onInit() {
 
 	app::async([&]() {
 		voxelcollection::Downloader downloader;
-		core::DynamicArray<voxelcollection::VoxelFile> files;
 		auto sources = downloader.sources();
 		Log::info("Found %d online sources", (int)sources.size());
 		for (const voxelcollection::VoxelSource &source : sources) {
 			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source);
 			_newVoxelFiles.push(files.begin(), files.end());
 		}
-		return files;
 	});
 
 	return state;
