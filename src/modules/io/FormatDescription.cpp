@@ -15,7 +15,7 @@ namespace format {
 
 const FormatDescription *images() {
 	// clang-format: off
-	static FormatDescription desc[] = {
+	static thread_local FormatDescription desc[] = {
 		{"Portable Network Graphics", {"png"}, {}, FORMAT_FLAG_SAVE},
 		{"JPEG", {"jpeg", "jpg"}, {}, FORMAT_FLAG_SAVE},
 		{"Targa image file", {"tga"}, {}, 0u},
@@ -36,7 +36,7 @@ const FormatDescription *images() {
 
 const FormatDescription *fonts() {
 	// clang-format: off
-	static FormatDescription desc[] = {
+	static thread_local FormatDescription desc[] = {
 		{"TrueType Font", {"ttf"}, {}, 0u},
 		{"", {}, {}, 0u}
 	};
@@ -54,7 +54,7 @@ FormatDescription gimpPalette() {
 
 const FormatDescription *palettes() {
 	// clang-format: off
-	static FormatDescription desc[] = {
+	static thread_local FormatDescription desc[] = {
 		gimpPalette(),
 		{"Qubicle Palette", {"qsm"}, {}, 0u},
 		jascPalette(),
@@ -70,7 +70,7 @@ const FormatDescription *palettes() {
 
 const FormatDescription *lua() {
 	// clang-format: off
-	static FormatDescription desc[] = {
+	static thread_local FormatDescription desc[] = {
 		{"LUA script", {"lua"}, {}, 0u},
 		{"", {}, {}, 0u}
 	};
