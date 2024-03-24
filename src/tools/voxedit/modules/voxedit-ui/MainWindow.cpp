@@ -124,27 +124,16 @@ static const struct TemplateModel {
 #undef TM_ENTRY
 // clang-format on
 
-MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app),
-	_sceneMgr(sceneMgr),
+MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
+	: Super(app), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
-	_renderPanel(app),
+	  _renderPanel(app),
 #endif
-	 _lsystemPanel(app, _sceneMgr),
-	 _brushPanel(app, _sceneMgr),
-	 _treePanel(app, _sceneMgr),
-	 _sceneGraphPanel(app, _sceneMgr),
-	 _animationPanel(app, _sceneMgr),
-	 _toolsPanel(app, _sceneMgr),
-	 _assetPanel(app, _sceneMgr),
-	 _mementoPanel(app, _sceneMgr),
-	 _positionsPanel(app, _sceneMgr),
-	 _palettePanel(app, _sceneMgr),
-	 _menuBar(app, _sceneMgr),
-	 _statusBar(app, _sceneMgr),
-	 _scriptPanel(app, _sceneMgr),
-	 _animationTimeline(app, _sceneMgr),
-	 _cameraPanel(app, _sceneMgr)
- {
+	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr), _treePanel(app, _sceneMgr),
+	  _sceneGraphPanel(app, _sceneMgr), _animationPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
+	  _assetPanel(app, _sceneMgr), _mementoPanel(app, _sceneMgr), _positionsPanel(app, _sceneMgr),
+	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
+	  _animationTimeline(app, _sceneMgr), _cameraPanel(app, _sceneMgr) {
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
 }
 
@@ -253,11 +242,10 @@ bool MainWindow::init() {
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
-	_texturePool.init();
 	_positionsPanel.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
-		_texturePool.load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
+		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
 						  (size_t)TEMPLATEMODELS[i].imageSize);
 	}
 
@@ -287,7 +275,6 @@ void MainWindow::shutdown() {
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_positionsPanel.shutdown();
-	_texturePool.shutdown();
 }
 
 bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
@@ -503,7 +490,7 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	fileDesc.name = name + voxelformat::vengi().mainExtension(true);
 	fileDesc.desc = voxelformat::vengi();
 	ImGui::TableNextColumn();
-	const video::TexturePtr &texture = _texturePool.get(name);
+	const video::TexturePtr &texture = _texturePool->get(name);
 	const core::String id = "##" + name;
 	const ImVec2 size((float)texture->width(), (float)texture->height());
 	if (ImGui::ImageButton(texture->handle(), size)) {
@@ -514,10 +501,10 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 }
 
 void MainWindow::newSceneTemplates() {
-	if (_texturePool.cache().empty()) {
+	if (_texturePool->cache().empty()) {
 		return;
 	}
-	const float height = _texturePool.cache().begin()->second->height();
+	const float height = _texturePool->cache().begin()->second->height();
 
 	if (ImGui::BeginTable("##templates", 4, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY,
 						  ImVec2(0.0f, height * 3))) {

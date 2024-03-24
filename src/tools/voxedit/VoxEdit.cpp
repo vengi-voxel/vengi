@@ -29,8 +29,10 @@
 #include "voxelformat/VolumeFormat.h"
 #include "engine-git.h"
 
-VoxEdit::VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, const voxedit::SceneManagerPtr& sceneMgr) :
-		Super(filesystem, timeProvider, core::halfcpus()), _sceneMgr(sceneMgr) {
+VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
+				 const voxedit::SceneManagerPtr &sceneMgr,
+				 const video::TexturePoolPtr &texturePool)
+	: Super(filesystem, timeProvider, core::halfcpus()), _sceneMgr(sceneMgr), _texturePool(texturePool) {
 	init(ORGANISATION, "voxedit");
 	core::registerBindingContext("scene", core::BindingContext::Context1);
 	core::registerBindingContext("model", core::BindingContext::Context2);
@@ -58,6 +60,7 @@ app::AppState VoxEdit::onCleanup() {
 		_mainWindow->shutdown();
 		delete _mainWindow;
 	}
+	_texturePool->shutdown();
 	return Super::onCleanup();
 }
 
@@ -451,7 +454,12 @@ app::AppState VoxEdit::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	_mainWindow = new voxedit::MainWindow(this, _sceneMgr);
+	if (!_texturePool->init()) {
+		Log::error("Failed to initialize the texture pool");
+		return app::AppState::InitFailure;
+	}
+
+	_mainWindow = new voxedit::MainWindow(this, _sceneMgr, _texturePool);
 	if (!_mainWindow->init()) {
 		Log::error("Failed to initialize the main window");
 		return app::AppState::InitFailure;
@@ -536,8 +544,9 @@ int main(int argc, char *argv[]) {
 	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
 	const core::SharedPtr<voxedit::SceneRenderer>& sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
 	const core::SharedPtr<voxedit::ModifierRenderer>& modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
+	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
 	const voxedit::SceneManagerPtr &sceneMgr =
 		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
-	VoxEdit app(filesystem, timeProvider, sceneMgr);
+	VoxEdit app(filesystem, timeProvider, sceneMgr, texturePool);
 	return app.startMainLoop(argc, argv);
 }

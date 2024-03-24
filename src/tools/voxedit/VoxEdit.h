@@ -7,6 +7,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
+#include "video/TexturePool.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -26,6 +27,7 @@ private:
 	voxedit::MainWindow* _mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
 	voxedit::SceneManagerPtr _sceneMgr;
+	video::TexturePoolPtr _texturePool;
 
 	core::String getSuggestedFilename(const char *extension = nullptr) const;
 
@@ -43,7 +45,9 @@ protected:
 	void printUsageHeader() const override;
 
 public:
-	VoxEdit(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, const voxedit::SceneManagerPtr& sceneMgr);
+	VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
+			const voxedit::SceneManagerPtr &sceneMgr,
+			const video::TexturePoolPtr &texturePool);
 
 	void onRenderUI() override;
 

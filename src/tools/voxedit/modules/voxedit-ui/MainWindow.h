@@ -8,6 +8,7 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
 #include "ui/Panel.h"
+#include "video/TexturePool.h"
 #include "voxedit-ui/AnimationPanel.h"
 #include "voxedit-ui/AnimationTimeline.h"
 #include "voxedit-ui/AssetPanel.h"
@@ -67,7 +68,7 @@ private:
 	LastOpenedFiles _lastOpenedFilesRingBuffer;
 	ModelNodeSettings _modelNodeSettings;
 	io::FileDescription _loadFile;
-	video::TexturePool _texturePool;
+	video::TexturePoolPtr _texturePool;
 	SceneManagerPtr _sceneMgr;
 
 #if ENABLE_RENDER_PANEL
@@ -133,7 +134,7 @@ private:
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
 public:
-	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
+	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();
