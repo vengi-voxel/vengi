@@ -165,9 +165,6 @@ void CollectionManager::update(double nowSeconds, int n) {
 
 	voxelcollection::VoxelFiles voxelFiles;
 	_newVoxelFiles.pop(voxelFiles, n);
-	if (voxelFiles.empty()) {
-		return;
-	}
 
 	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
@@ -178,7 +175,7 @@ void CollectionManager::update(double nowSeconds, int n) {
 			collection.timestamp = nowSeconds;
 			collection.sorted = false;
 		} else {
-			voxelcollection::VoxelCollection collection{{voxelFile}, nowSeconds, false};
+			voxelcollection::VoxelCollection collection{{voxelFile}, nowSeconds, true};
 			_voxelFilesMap.put(voxelFile.source, collection);
 		}
 	}
