@@ -1700,6 +1700,10 @@ void SceneManager::construct() {
 		}
 	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
+	command::Command::registerCommand("presentation", [] (const command::CmdArgs& args) {
+		command::Command::execute("hideall; animate 2000 true true");
+	}).setHelp("Cycle through all scene objects");
+
 	command::Command::registerCommand("align", [this] (const command::CmdArgs& args) {
 		_sceneGraph.align();
 		for (const auto &entry : _sceneGraph.nodes()) {
@@ -2029,15 +2033,18 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
-			Log::info("Usage: animate <nodedelaymillis> <0|1>");
+			Log::info("Usage: animate <nodedelaymillis> <0|1> <resetcamera>");
 			Log::info("nodedelay of 0 will stop the animation, too");
 			return;
 		}
 		if (args.size() == 2) {
+			_animationResetCamera = false;
 			if (!core::string::toBool(args[1])) {
 				_animationSpeed = 0.0;
 				return;
 			}
+		} else if (args.size() == 3) {
+			_animationResetCamera = core::string::toBool(args[2]);
 		}
 		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
 	}).setHelp("Animate all nodes with the given delay in millis between the frames");
@@ -2451,6 +2458,9 @@ void SceneManager::animate(double nowSeconds) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(_currentAnimationNodeId);
 	if (node.isAnyModelNode()) {
 		node.setVisible(true);
+	}
+	if (_animationResetCamera) {
+		command::Command::execute("resetcamera");
 	}
 }
 

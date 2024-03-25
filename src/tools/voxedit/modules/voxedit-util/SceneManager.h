@@ -95,6 +95,7 @@ private:
 
 	// model animation speed
 	double _animationSpeed = 0.0;
+	bool _animationResetCamera = false;
 	double _nextFrameSwitch = 0.0;
 	int _currentAnimationNodeId = InvalidNodeId;
 
