@@ -17,6 +17,7 @@ There are several built-in palettes available that can also be used as an identi
 * `built-in:minecraft`
 * `built-in:nippon`
 * `built-in:quake1`
+* `built-in:starmade`
 
 You can also download and import palettes from Lospec by specifying a palette like this:
 

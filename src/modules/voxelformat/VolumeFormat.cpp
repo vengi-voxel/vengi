@@ -53,6 +53,7 @@
 #include "voxelformat/private/slab6/SLAB6VoxFormat.h"
 #include "voxelformat/private/sproxel/SproxelFormat.h"
 #include "voxelformat/private/starmade/SMFormat.h"
+#include "voxelformat/private/starmade/SMTPLFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelformat/private/voxel3d/V3AFormat.h"
 #include "voxelformat/private/voxelbuilder/VBXFormat.h"
@@ -256,7 +257,13 @@ static const io::FormatDescription &voxelMax() {
 }
 
 static const io::FormatDescription &starMade() {
-	static io::FormatDescription f{"StarMade", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	static io::FormatDescription f{"StarMade Blueprint", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &starMadeTemplate() {
+	static io::FormatDescription f{
+		"StarMade Template", {"smtpl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -339,6 +346,7 @@ const io::FormatDescription *voxelLoad() {
 												 sproxelCSV(),
 												 magicaVoxelXRAW(),
 												 starMade(),
+												 starMadeTemplate(),
 												 animaToon(),
 												 voxelBuilder(),
 												 wavefrontObj(),
@@ -409,6 +417,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<DatFormat>();
 		} else if (ext == starMade().mainExtension()) {
 			return core::make_shared<SMFormat>();
+		} else if (ext == starMadeTemplate().mainExtension()) {
+			return core::make_shared<SMTPLFormat>();
 		} else if (ext == sandboxVXM().mainExtension()) {
 			return core::make_shared<VXMFormat>();
 		} else if (ext == sandboxVXR().mainExtension()) {

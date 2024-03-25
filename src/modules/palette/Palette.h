@@ -238,12 +238,13 @@ public:
 	void fill();
 
 	static constexpr const char *builtIn[] = {"built-in:nippon", "built-in:minecraft", "built-in:magicavoxel",
-											  "built-in:quake1", "built-in:commandandconquer"};
+											  "built-in:quake1", "built-in:commandandconquer", "built-in:starmade"};
 
 	bool minecraft();
 	bool magicaVoxel();
 	bool nippon();
 	bool quake1();
+	bool starMade();
 	bool commandAndConquer();
 
 	bool isBuiltIn() const;

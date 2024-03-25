@@ -181,11 +181,15 @@
 			<match type="string" offset="0" value="XRAW"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-starmade">
-		<comment>StarMade</comment>
+	<mime-type type="application/x-starmade-blueprint">
+		<comment>StarMade Blueprint</comment>
 		<glob pattern="*.sment"/>
 		<glob pattern="*.smd2"/>
 		<glob pattern="*.smd3"/>
+	</mime-type>
+	<mime-type type="application/x-starmade-template">
+		<comment>StarMade Template</comment>
+		<glob pattern="*.smtpl"/>
 	</mime-type>
 	<mime-type type="application/x-animatoon">
 		<comment>AnimaToon</comment>

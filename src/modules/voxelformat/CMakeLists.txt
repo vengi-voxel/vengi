@@ -56,6 +56,7 @@ set(SRCS
 	private/slab6/SLABShared.h               private/slab6/SLABShared.cpp
 	private/sproxel/SproxelFormat.h          private/sproxel/SproxelFormat.cpp
 	private/starmade/SMFormat.h              private/starmade/SMFormat.cpp
+	private/starmade/SMTPLFormat.h           private/starmade/SMTPLFormat.cpp
 	private/starmade/SMPalette.h
 	private/vengi/VENGIFormat.h              private/vengi/VENGIFormat.cpp
 	private/voxel3d/V3AFormat.h              private/voxel3d/V3AFormat.cpp
@@ -95,6 +96,7 @@ set(TEST_SRCS
 	tests/SLABSharedTest.cpp
 	tests/SLAB6VoxFormatTest.cpp
 	tests/SMFormatTest.cpp
+	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/TexturedTriTest.cpp
 	tests/V3AFormatTest.cpp

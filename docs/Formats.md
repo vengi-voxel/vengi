@@ -34,7 +34,8 @@
 | Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |
 | Sproxel csv                | csv         | X       | X      |            | X       |            |
-| StarMade                   | sment       | X       |        |            | X       |            |
+| StarMade Blueprint         | sment       | X       |        |            | X       |            |
+| StarMade Template          | smtpl       | X       | X      |            | X       |            |
 | Tiberian Sun               | vxl         | X       | X      |            | X       | X          |
 | Vengi                      | vengi       | X       | X      |            | X       | X          |
 | Voxel3D                    | v3a         | X       | X      |            |         |            |

@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed memory leak in `fbx` loading
+   - Added support for starmade templates `smtpl` format
 
 VoxConvert:
 

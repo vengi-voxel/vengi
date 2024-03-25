@@ -514,16 +514,26 @@ const jsonData = {
       "save": true
     },
     {
-      "name": "StarMade",
+      "name": "StarMade Blueprint",
       "extensions": [
         "sment",
         "smd2",
         "smd3"
       ],
       "magics": [],
-      "mimetype": "application/x-starmade",
+      "mimetype": "application/x-starmade-blueprint",
       "animation": false,
       "save": false
+    },
+    {
+      "name": "StarMade Template",
+      "extensions": [
+        "smtpl"
+      ],
+      "magics": [],
+      "mimetype": "application/x-starmade-template",
+      "animation": false,
+      "save": true
     },
     {
       "name": "AnimaToon",
