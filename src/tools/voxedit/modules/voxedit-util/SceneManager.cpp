@@ -430,7 +430,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxelrender::MAX_VOLUMES) {
-		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge(true);
+		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
 		scenegraph::SceneGraphNode newNode;
 		newNode.setVolume(merged.first, true);
@@ -1178,8 +1178,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		scenegraph::copyNode(*node, copiedNode, true);
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
-	bool applyTransformPosition = true;
-	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge(applyTransformPosition);
+	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
 	if (merged.first == nullptr) {
 		return InvalidNodeId;
 	}
@@ -1189,10 +1188,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	if (scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
 		scenegraph::copyNode(*firstNode, newNode, false);
 	}
-	if (applyTransformPosition) {
-		scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
-		transform.setWorldTranslation(glm::vec3(0.0f));
-	}
+	scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
+	transform.setWorldTranslation(glm::vec3(0.0f));
 	newNode.setVolume(merged.first, true);
 	newNode.setPalette(merged.second);
 

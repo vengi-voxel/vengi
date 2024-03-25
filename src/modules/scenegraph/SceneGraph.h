@@ -212,7 +212,7 @@ public:
 	 * @note The caller is responsible for deleting the returned volume
 	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
-	MergedVolumePalette merge(bool applyTransform = true, bool skipHidden = true) const;
+	MergedVolumePalette merge(bool skipHidden = true) const;
 
 	/**
 	 * Performs the recursive lookup in case of model references

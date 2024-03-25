@@ -375,7 +375,8 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 											 FrameIndex frameIdx) const {
 	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265
-	// TODO: solve flipping of child transforms if parent has rotation applied - see https://github.com/vengi-voxel/vengi/issues/420
+	// TODO: solve flipping of child transforms if parent has rotation applied - see
+	// https://github.com/vengi-voxel/vengi/issues/420
 	const AnimState source = transformFrameSource_r(node, animation, frameIdx);
 	const AnimState target = transformFrameTarget_r(node, animation, frameIdx);
 	const FrameIndex startFrameIdx = source.frameIdx;
@@ -797,72 +798,48 @@ voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
 	return n.volume();
 }
 
-SceneGraph::MergedVolumePalette SceneGraph::merge(bool applyTransform, bool skipHidden) const {
+SceneGraph::MergedVolumePalette SceneGraph::merge(bool skipHidden) const {
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
 		return MergedVolumePalette{};
 	} else if (n == 1) {
-		auto iter = beginModel();
-		if (iter != end()) {
-			const SceneGraphNode &node = *iter;
-			if (skipHidden && !node.visible()) {
+		if (const SceneGraphNode *node = firstModelNode()) {
+			if (skipHidden && !node->visible()) {
 				return MergedVolumePalette{};
 			}
-			return MergedVolumePalette{new voxel::RawVolume(node.volume()), node.palette()};
+			return MergedVolumePalette{new voxel::RawVolume(node->volume()), node->palette()};
 		}
 	}
 
-	core::DynamicArray<const SceneGraphNode *> nodes;
-	nodes.reserve(n);
-
-	voxel::Region mergedRegion = voxel::Region::InvalidRegion;
-	const palette::Palette &palette = mergePalettes(true);
 	const KeyFrameIndex keyFrameIdx = 0;
+	const voxel::Region &mergedRegion = sceneRegion(keyFrameIdx, skipHidden);
+	const palette::Palette &mergedPalette = mergePalettes(true);
 
-	for (auto iter = begin(SceneGraphNodeType::AllModels); iter != end(); ++iter) {
-		const SceneGraphNode &node = *iter;
+	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
+	for (const auto &e : nodes()) {
+		const SceneGraphNode &node = e->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
 		if (skipHidden && !node.visible()) {
 			continue;
 		}
-		nodes.push_back(&node);
+		const voxel::Region &sourceRegion = resolveRegion(node);
+		const voxel::Region &destRegion = sceneRegion(node, keyFrameIdx);
 
-		voxel::Region region = resolveRegion(node);
-		if (applyTransform) {
-			const SceneGraphTransform &transform = node.transform(keyFrameIdx);
-			const glm::vec3 &translation = transform.worldTranslation();
-			region.shift(translation);
-		}
-		if (mergedRegion.isValid()) {
-			mergedRegion.accumulate(region);
-		} else {
-			mergedRegion = region;
-		}
+		auto func = [&node, &mergedPalette](voxel::Voxel &voxel) {
+			if (isAir(voxel.getMaterial())) {
+				return false;
+			}
+			const core::RGBA color = node.palette().color(voxel.getColor());
+			const uint8_t index = mergedPalette.getClosestMatch(color);
+			voxel.setColor(index);
+			return true;
+		};
+		const voxel::RawVolume *v = resolveVolume(node);
+		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, func);
 	}
-
-	voxel::RawVolume *merged = new voxel::RawVolume(mergedRegion);
-	for (size_t i = 0; i < nodes.size(); ++i) {
-		const SceneGraphNode *node = nodes[i];
-		const voxel::Region &sourceRegion = resolveRegion(*node);
-		voxel::Region destRegion = sourceRegion;
-		if (applyTransform) {
-			const SceneGraphTransform &transform = node->transform(keyFrameIdx);
-			const glm::vec3 &translation = transform.worldTranslation();
-			destRegion.shift(translation);
-			// TODO: rotation
-		}
-
-		voxelutil::mergeVolumes(merged, resolveVolume(*node), destRegion, sourceRegion,
-								[node, &palette](voxel::Voxel &voxel) {
-									if (isAir(voxel.getMaterial())) {
-										return false;
-									}
-									const core::RGBA color = node->palette().color(voxel.getColor());
-									const uint8_t index = palette.getClosestMatch(color);
-									voxel.setColor(index);
-									return true;
-								});
-	}
-	return MergedVolumePalette{merged, palette};
+	return MergedVolumePalette{merged, mergedPalette};
 }
 
 void SceneGraph::align(int padding) {
