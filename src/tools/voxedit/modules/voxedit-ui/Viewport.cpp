@@ -24,6 +24,7 @@
 #include "video/Camera.h"
 #include "video/Renderer.h"
 #include "video/WindowedApp.h"
+#include "voxedit-ui/MenuBar.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -358,6 +359,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 			}
 			ImGui::EndCombo();
 		}
+		MenuBar::viewportOptions();
 		ImGui::EndMenu();
 	}
 }

@@ -31,6 +31,7 @@ public:
 	 * @return true if the dock layout should get reset
 	 */
 	void colorReductionOptions();
+	static void viewportOptions();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 };
 
