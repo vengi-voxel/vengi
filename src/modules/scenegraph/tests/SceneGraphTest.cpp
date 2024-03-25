@@ -254,6 +254,75 @@ TEST_F(SceneGraphTest, testMerge) {
 	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 	ASSERT_NE(nullptr, merged.first);
 	EXPECT_EQ(3, merged.first->region().getWidthInVoxels());
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(1, 1, 1).getMaterial()));
+	delete merged.first;
+}
+
+TEST_F(SceneGraphTest, testMergeWithTranslation) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node1");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		node.setVolume(v, true);
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(-10));
+		node.setTransform(0, transform);
+		sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node2");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
+		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		node.setVolume(v, true);
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(10));
+		node.setTransform(0, transform);
+		sceneGraph.emplace(core::move(node));
+	}
+	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	ASSERT_NE(nullptr, merged.first);
+	EXPECT_EQ(26, merged.first->region().getWidthInVoxels());
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(-9, -9, -9).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(12, 12, 12).getMaterial()));
+	delete merged.first;
+}
+
+TEST_F(SceneGraphTest, testMergeWithKeyframe) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node1");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		node.setVolume(v, true);
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(-10));
+		node.setTransform(0, transform);
+		node.setPivot(glm::vec3(1.0f) / glm::vec3(v->region().getDimensionsInVoxels()));
+		sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node2");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
+		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		node.setVolume(v, true);
+		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(10));
+		node.setTransform(0, transform);
+		node.setPivot(glm::vec3(0.0f));
+		sceneGraph.emplace(core::move(node));
+	}
+	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	ASSERT_NE(nullptr, merged.first);
+	EXPECT_EQ(27, merged.first->region().getWidthInVoxels());
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(-10, -10, -10).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(12, 12, 12).getMaterial()));
 	delete merged.first;
 }
 
