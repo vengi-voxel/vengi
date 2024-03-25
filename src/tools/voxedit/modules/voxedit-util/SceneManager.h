@@ -342,6 +342,10 @@ public:
 
 	bool runScript(const core::String &luaCode, const core::DynamicArray<core::String> &args);
 
+	/**
+	 * @brief Take ownership of the volume if this returns @c true, otherwise the caller must free the memory
+	 */
+	bool newScene(bool force, const core::String &name, voxel::RawVolume *v);
 	bool newScene(bool force, const core::String &name, const voxel::Region &region);
 	int moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent = 0);
 

@@ -1458,14 +1458,10 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 	return true;
 }
 
-bool SceneManager::newScene(bool force, const core::String& name, const voxel::Region& region) {
-	if (dirty() && !force) {
-		return false;
-	}
+bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolume *v) {
 	_sceneGraph.clear();
 	_sceneRenderer->clear();
 
-	voxel::RawVolume* v = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode newNode;
 	newNode.setVolume(v, true);
 	if (name.empty()) {
@@ -1484,6 +1480,14 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 	resetSceneState();
 	_lastFilename.clear();
 	return true;
+}
+
+bool SceneManager::newScene(bool force, const core::String& name, const voxel::Region& region) {
+	if (dirty() && !force) {
+		return false;
+	}
+	voxel::RawVolume* v = new voxel::RawVolume(region);
+	return newScene(force, name, v);
 }
 
 void SceneManager::rotate(math::Axis axis) {
@@ -2004,6 +2008,14 @@ void SceneManager::construct() {
 		int nodeId1;
 		int nodeId2;
 		if (args.size() == 1) {
+			if (args[0] == "all") {
+				scenegraph::SceneGraph::MergedVolumePalette merged = _sceneGraph.merge();
+				newScene(true, "merged", merged.first);
+				if (auto *node = _sceneGraph.firstModelNode()) {
+					node->setPalette(merged.second);
+				}
+				return;
+			}
 			nodeId2 = core::string::toInt(args[0]);
 			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 		} else if (args.size() == 2) {
