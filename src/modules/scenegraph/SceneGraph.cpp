@@ -837,6 +837,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
+		// TODO: rotation
 		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, func);
 	}
 	return MergedVolumePalette{merged, mergedPalette};

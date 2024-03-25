@@ -291,7 +291,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 	delete merged.first;
 }
 
-TEST_F(SceneGraphTest, testMergeWithKeyframe) {
+TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 	SceneGraph sceneGraph;
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
@@ -313,6 +313,46 @@ TEST_F(SceneGraphTest, testMergeWithKeyframe) {
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v, true);
 		SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3(10));
+		node.setTransform(0, transform);
+		node.setPivot(glm::vec3(0.0f));
+		sceneGraph.emplace(core::move(node));
+	}
+	SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
+	ASSERT_NE(nullptr, merged.first);
+	EXPECT_EQ(27, merged.first->region().getWidthInVoxels());
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(-10, -10, -10).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(merged.first->voxel(12, 12, 12).getMaterial()));
+	delete merged.first;
+}
+
+// TODO: implement rotation here
+TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node1");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 10));
+		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		node.setVolume(v, true);
+		const glm::vec3 euler(45.0f, 0.0f, 0.0f);
+		SceneGraphTransform transform;
+		transform.setWorldOrientation(glm::quat(euler));
+		transform.setWorldTranslation(glm::vec3(-10));
+		node.setTransform(0, transform);
+		node.setPivot(glm::vec3(1.0f) / glm::vec3(v->region().getDimensionsInVoxels()));
+		sceneGraph.emplace(core::move(node));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("node2");
+		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
+		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		node.setVolume(v, true);
+		const glm::vec3 euler(0.0f, 45.0f, 0.0f);
+		SceneGraphTransform transform;
+		transform.setWorldOrientation(glm::quat(euler));
 		transform.setWorldTranslation(glm::vec3(10));
 		node.setTransform(0, transform);
 		node.setPivot(glm::vec3(0.0f));
