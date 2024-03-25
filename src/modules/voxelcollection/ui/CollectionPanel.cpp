@@ -42,14 +42,14 @@ void CollectionPanel::updateFilters() {
 	{
 		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 		ImGui::PushItemWidth(itemWidth.x);
-		ImGui::InputText("Name", &_currentFilterName);
+		ImGui::InputText(_("Name"), &_currentFilterName);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
 	{
 		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 		ImGui::PushItemWidth(itemWidth.x);
-		ImGui::InputText("License", &_currentFilterLicense);
+		ImGui::InputText(_("License"), &_currentFilterLicense);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
@@ -67,7 +67,7 @@ void CollectionPanel::updateFilters() {
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
 		}
 
-		const char *formatFilterLabel = "Format";
+		const char *formatFilterLabel = _("Format");
 		ImGui::PushItemWidth(_filterFormatTextWidth);
 		int currentlySelected = _currentFilterFormatEntry == -1 ? 0 : _currentFilterFormatEntry;
 		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
@@ -96,13 +96,13 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap,
 	if (ImGui::BeginChild("##collectionpanel")) {
 		updateFilters();
 
-		if (ImGui::BeginTable("Voxel Files", 3,
+		if (ImGui::BeginTable(_("Voxel Files"), 3,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
 								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 			ImGui::TableSetupScrollFreeze(0, 1);
-			ImGui::TableSetupColumn("Thumbnail##nodeproperty");
-			ImGui::TableSetupColumn("Name##nodeproperty");
-			ImGui::TableSetupColumn("License##nodeproperty");
+			ImGui::TableSetupColumn(_("Thumbnail"));
+			ImGui::TableSetupColumn(_("Name"));
+			ImGui::TableSetupColumn(_("License"));
 			ImGui::TableHeadersRow();
 			for (const auto &entry : voxelFilesMap) {
 				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
