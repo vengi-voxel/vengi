@@ -518,6 +518,9 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (node.type() == SceneGraphNodeType::Model) {
 		core_assert(node.volume() != nullptr);
 		core_assert(node.region().isValid());
+		if (node.volume() == nullptr) {
+			return InvalidNodeId;
+		}
 	}
 	const int nodeId = _nextNodeId;
 	if (parent >= nodeId) {
