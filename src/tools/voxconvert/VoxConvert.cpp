@@ -79,7 +79,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor").setDefaultValue("1").setDescription("Set the palette index that is given to the script parameters");
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
-	registerArg("--surface-only").setDescription("Remove any non surface voxel");
+	registerArg("--surface-only").setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
 

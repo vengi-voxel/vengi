@@ -132,7 +132,7 @@ Slices the volumes into pieces of the given size
 
 .TP
 \fB\--surface-only\fR
-Remove any non surface voxel.
+Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.
 
 .TP
 \fB\--translate|-t <x:y:z>\fR
