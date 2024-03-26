@@ -337,12 +337,11 @@ class Value {
   T &Get();
 
   // Lookup value from an array
-  const Value &Get(int idx) const {
+  const Value &Get(size_t idx) const {
     static Value null_value;
     assert(IsArray());
-    assert(idx >= 0);
-    return (static_cast<size_t>(idx) < array_value_.size())
-               ? array_value_[static_cast<size_t>(idx)]
+    return (idx < array_value_.size())
+               ? array_value_[idx]
                : null_value;
   }
 
@@ -1927,7 +1926,7 @@ static bool Equals(const tinygltf::Value &one, const tinygltf::Value &other) {
     }
     case ARRAY_TYPE: {
       if (one.Size() != other.Size()) return false;
-      for (int i = 0; i < int(one.Size()); ++i)
+      for (size_t i = 0; i < one.Size(); ++i)
         if (!Equals(one.Get(i), other.Get(i))) return false;
       return true;
     }
@@ -3020,18 +3019,18 @@ bool GetFileSizeInBytes(size_t *filesize_out, std::string *err,
   }
 
   f.seekg(0, f.end);
-  size_t sz = static_cast<size_t>(f.tellg());
+  const auto sz = f.tellg();
 
   // std::cout << "sz = " << sz << "\n";
   f.seekg(0, f.beg);
 
-  if (int64_t(sz) < 0) {
+  if (sz < 0) {
     if (err) {
       (*err) += "Invalid file size : " + filepath +
                 " (does the path point to a directory?)";
     }
     return false;
-  } else if (sz == 0) {
+  } else if (sz == std::streamoff(0)) {
     if (err) {
       (*err) += "File is empty : " + filepath + "\n";
     }
@@ -3115,18 +3114,18 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
   }
 
   f.seekg(0, f.end);
-  size_t sz = static_cast<size_t>(f.tellg());
+  const auto sz = f.tellg();
 
   // std::cout << "sz = " << sz << "\n";
   f.seekg(0, f.beg);
 
-  if (int64_t(sz) < 0) {
+  if (sz < 0) {
     if (err) {
       (*err) += "Invalid file size : " + filepath +
                 " (does the path point to a directory?)";
     }
     return false;
-  } else if (sz == 0) {
+  } else if (sz == std::streamoff(0)) {
     if (err) {
       (*err) += "File is empty : " + filepath + "\n";
     }
@@ -3151,7 +3150,7 @@ bool WriteWholeFile(std::string *err, const std::string &filepath,
 #ifdef _WIN32
 #if defined(__GLIBCXX__)  // mingw
   int file_descriptor = _wopen(UTF8ToWchar(filepath).c_str(),
-                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY);
+                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY, _S_IWRITE);
   __gnu_cxx::stdio_filebuf<char> wfile_buf(
       file_descriptor, std::ios_base::out | std::ios_base::binary);
   std::ostream f(&wfile_buf);
@@ -7070,10 +7069,10 @@ static bool ValueToJson(const Value &value, detail::json *ret) {
       obj = detail::json(value.Get<std::string>());
       break;
     case ARRAY_TYPE: {
-      for (unsigned int i = 0; i < value.ArrayLen(); ++i) {
-        Value elementValue = value.Get(int(i));
+      for (size_t i = 0; i < value.ArrayLen(); ++i) {
+        Value elementValue = value.Get(i);
         detail::json elementJson;
-        if (ValueToJson(value.Get(int(i)), &elementJson))
+        if (ValueToJson(value.Get(i), &elementJson))
           obj.push_back(elementJson);
       }
       break;
@@ -7127,7 +7126,7 @@ static bool SerializeGltfBufferData(const std::vector<unsigned char> &data,
 #ifdef _WIN32
 #if defined(__GLIBCXX__)  // mingw
   int file_descriptor = _wopen(UTF8ToWchar(binFilename).c_str(),
-                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY);
+                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY, _S_IWRITE);
   __gnu_cxx::stdio_filebuf<char> wfile_buf(
       file_descriptor, std::ios_base::out | std::ios_base::binary);
   std::ostream output(&wfile_buf);
@@ -8334,6 +8333,32 @@ static void SerializeGltfModel(const Model *model, detail::json &o) {
     }
   }
 
+  // MSFT_lod
+
+  // Look if there is a node that employs MSFT_lod
+  auto msft_lod_nodes_it = std::find_if(
+    model->nodes.begin(), model->nodes.end(),
+    [](const Node& node) { return !node.lods.empty(); });
+
+  // Look if there is a material that employs MSFT_lod
+  auto msft_lod_materials_it = std::find_if(
+    model->materials.begin(), model->materials.end(),
+    [](const Material& material) {return !material.lods.empty(); });
+
+  // If either a node or a material employ MSFT_lod, then we need
+  // to add MSFT_lod to the list of used extensions.
+  if (msft_lod_nodes_it != model->nodes.end() || msft_lod_materials_it != model->materials.end()) {
+    // First check if MSFT_lod is already registered as used extension
+    auto has_msft_lod = std::find_if(
+      extensionsUsed.begin(), extensionsUsed.end(),
+      [](const std::string &s) { return (s.compare("MSFT_lod") == 0); });
+
+    // If MSFT_lod is not registered yet, add it
+    if (has_msft_lod == extensionsUsed.end()) {
+      extensionsUsed.push_back("MSFT_lod");
+    }
+  }
+
   // Extensions used
   if (extensionsUsed.size()) {
     SerializeStringArrayProperty("extensionsUsed", extensionsUsed, o);
@@ -8352,7 +8377,7 @@ static bool WriteGltfFile(const std::string &output,
   std::ofstream gltfFile(UTF8ToWchar(output).c_str());
 #elif defined(__GLIBCXX__)
   int file_descriptor = _wopen(UTF8ToWchar(output).c_str(),
-                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY);
+                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY, _S_IWRITE);
   __gnu_cxx::stdio_filebuf<char> wfile_buf(
       file_descriptor, std::ios_base::out | std::ios_base::binary);
   std::ostream gltfFile(&wfile_buf);
@@ -8437,7 +8462,7 @@ static bool WriteBinaryGltfFile(const std::string &output,
   std::ofstream gltfFile(UTF8ToWchar(output).c_str(), std::ios::binary);
 #elif defined(__GLIBCXX__)
   int file_descriptor = _wopen(UTF8ToWchar(output).c_str(),
-                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY);
+                               _O_CREAT | _O_WRONLY | _O_TRUNC | _O_BINARY, _S_IWRITE);
   __gnu_cxx::stdio_filebuf<char> wfile_buf(
       file_descriptor, std::ios_base::out | std::ios_base::binary);
   std::ostream gltfFile(&wfile_buf);
