@@ -5,7 +5,6 @@
 #pragma once
 
 #include "command/CommandHandler.h"
-#include "core/collection/DynamicArray.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/CollectionManager.h"

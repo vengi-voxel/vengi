@@ -12,13 +12,11 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
-#include "ui/IconsLucide.h"
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxelcollection/Downloader.h"
-#include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 
