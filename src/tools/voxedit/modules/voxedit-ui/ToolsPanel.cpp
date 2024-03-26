@@ -5,10 +5,12 @@
 #include "ToolsPanel.h"
 #include "Toolbar.h"
 #include "Util.h"
+#include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "voxedit-ui/MainWindow.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -117,7 +119,33 @@ void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {
-			updateEditMode(listener);
+			struct CommandNodeExecutionListener : public command::CommandExecutionListener {
+				scenegraph::SceneGraphNode *_node;
+				command::CommandExecutionListener &_listener;
+				CommandNodeExecutionListener(scenegraph::SceneGraphNode *node, command::CommandExecutionListener &listener)
+					: _node(node), _listener(listener) {
+				}
+				bool allowed(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
+					if (_node->isReference()) {
+						if (cmd == "modelunref") {
+							return true;
+						}
+						MainWindow::_popupModelUnreference = true;
+						return false;
+					}
+					return _listener.allowed(cmd, args);
+				}
+
+				void operator()(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
+					_listener(cmd, args);
+				}
+			};
+			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+			const int activeNode = sceneGraph.activeNode();
+			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
+				CommandNodeExecutionListener wrapper(node, listener);
+				updateEditMode(wrapper);
+			}
 		}
 	}
 	ImGui::End();

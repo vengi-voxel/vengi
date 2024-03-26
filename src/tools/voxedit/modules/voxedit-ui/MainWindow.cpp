@@ -7,6 +7,7 @@
 #include "ScopedStyle.h"
 #include "Util.h"
 #include "Viewport.h"
+#include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -92,6 +93,7 @@
 #define POPUP_TITLE_WELCOME "Welcome##popuptitle"
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
 #define POPUP_TITLE_RENAME_NODE "Rename node##scenegraphrenamenode"
+#define POPUP_TITLE_MODEL_UNREFERENCE "Unreference Model##popuptitle"
 
 namespace voxedit {
 
@@ -124,6 +126,8 @@ static const struct TemplateModel {
 };
 #undef TM_ENTRY
 // clang-format on
+
+bool MainWindow::_popupModelUnreference = false;
 
 MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem)
@@ -561,6 +565,22 @@ void MainWindow::popupWelcome() {
 		ImGui::EndPopup();
 	}
 }
+void MainWindow::popupModelUnreference() {
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
+	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_UNREFERENCE)) {
+		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"));
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
+			command::Command::execute("modelunref");
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::IconButton(ICON_LC_CHECK, _("No"))) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SetItemDefaultFocus();
+		ImGui::EndPopup();
+	}
+}
 
 void MainWindow::popupNewScene() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_NEW_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -606,6 +626,7 @@ void MainWindow::popupNewScene() {
 }
 
 void MainWindow::popupFailedSave() {
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, _("Failed to save the model!"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##failedsave"))) {
@@ -672,7 +693,7 @@ void MainWindow::popupSceneSettings() {
 }
 
 void MainWindow::popupVolumeSplit() {
-	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##volumesplit"))) {
@@ -739,6 +760,10 @@ void MainWindow::registerPopups() {
 		ImGui::OpenPopup(POPUP_TITLE_NEW_SCENE);
 		_popupNewScene = false;
 	}
+	if (_popupModelUnreference) {
+		ImGui::OpenPopup(POPUP_TITLE_MODEL_UNREFERENCE);
+		_popupModelUnreference = false;
+	}
 	if (_popupFailedToSave) {
 		ImGui::OpenPopup(POPUP_TITLE_FAILED_TO_SAVE);
 		_popupFailedToSave = false;
@@ -791,6 +816,7 @@ void MainWindow::registerPopups() {
 	popupAbout();
 	popupWelcome();
 	popupNodeRename();
+	popupModelUnreference();
 }
 
 void MainWindow::popupNodeRename() {

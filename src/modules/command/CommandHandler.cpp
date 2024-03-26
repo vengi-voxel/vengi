@@ -53,6 +53,9 @@ int executeCommands(const core::String& commandLine, CommandExecutionListener *l
 		core::DynamicArray<core::String> tokens = tokInner.tokens();
 		const core::String cmd = tokens[0];
 		tokens.erase(tokens.begin());
+		if (listener && !listener->allowed(cmd, tokens)) {
+			continue;
+		}
 		if (command::Command::execute(cmd, tokens)) {
 			if (n != -1) {
 				++n;

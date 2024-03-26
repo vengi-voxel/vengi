@@ -18,13 +18,13 @@ private:
 	core::ScopedPtr<voxel::RawVolume> _volume;
 	SceneManager *_sceneMgr;
 
-	void updateBrushVolumePreview(palette::Palette &palette);
+	void updateBrushVolumePreview(palette::Palette &activePalette);
 
 public:
 	ModifierFacade(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
 	bool init() override;
 	void shutdown() override;
-	void render(const video::Camera &camera, palette::Palette &palette);
+	void render(const video::Camera &camera, palette::Palette &activePalette);
 };
 
 } // namespace voxedit

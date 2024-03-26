@@ -41,7 +41,7 @@ static voxel::RawVolume *createPreviewVolume(const voxel::RawVolume *existingVol
 	return new voxel::RawVolume(*existingVolume, region);
 }
 
-void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
+void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _modifierType;
 	if (modifierType == ModifierType::Erase) {
@@ -70,13 +70,13 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_mirrorVolume, false);
 			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
-			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &palette);
+			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &activePalette);
 		}
 		_volume = createPreviewVolume(existingVolume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_volume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-		_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+		_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
 	} else {
 		switch (_brushType) {
 		case BrushType::Stamp: {
@@ -89,7 +89,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 				// TODO: support mirror axis
 				// TODO: use _stampBrush palette?
-				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
 			}
 			break;
 		}
@@ -100,7 +100,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
 				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				_modifierRenderer->updateBrushVolume(0, _volume, &palette);
+				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
 			}
 			break;
 		}
@@ -111,7 +111,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &palette) {
 	}
 }
 
-void ModifierFacade::render(const video::Camera &camera, palette::Palette &palette) {
+void ModifierFacade::render(const video::Camera &camera, palette::Palette &activePalette) {
 	if (_locked) {
 		return;
 	}
@@ -153,7 +153,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &palet
 	Brush *brush = activeBrush();
 	if (brush && brush->active()) {
 		if (brush->dirty()) {
-			updateBrushVolumePreview(palette);
+			updateBrushVolumePreview(activePalette);
 			brush->markClean();
 		}
 		video::polygonOffset(glm::vec3(-0.1f));

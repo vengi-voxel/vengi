@@ -12,8 +12,13 @@ namespace command {
 struct CommandExecutionListener {
 	virtual ~CommandExecutionListener() {
 	}
+
+	virtual bool allowed(const core::String &, const core::DynamicArray<core::String> &) {
+		return true;
+	}
+
 	core::String command;
-	virtual void operator()(const core::String &cmd, const core::DynamicArray<core::String> &args) {
+	virtual void operator()(const core::String &cmd, const core::DynamicArray<core::String> &) {
 		command = cmd;
 	}
 };

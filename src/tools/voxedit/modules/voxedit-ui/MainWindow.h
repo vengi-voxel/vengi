@@ -121,6 +121,7 @@ private:
 	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
 	void popupNewScene();
+	void popupModelUnreference();
 	void popupWelcome();
 	void popupNodeRename();
 	void popupTipOfTheDay();
@@ -139,6 +140,7 @@ public:
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();
+	static bool _popupModelUnreference;
 
 	// commands
 	bool save(const core::String &file, const io::FormatDescription *desc);
