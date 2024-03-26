@@ -34,6 +34,8 @@
 
 namespace voxelformat {
 
+#define AlphaThreshold 0
+
 MeshFormat::MeshFormat() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
 }
@@ -133,6 +135,9 @@ void MeshFormat::transformTris(const voxel::Region &region, const TriCollection 
 		}
 		const float area = tri.area();
 		const core::RGBA rgba = tri.centerColor();
+		if (rgba.a <= AlphaThreshold) {
+			continue;
+		}
 		glm::vec3 c = tri.center();
 		convertToVoxelGrid(c);
 
@@ -156,6 +161,9 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 			return;
 		}
 		const core::RGBA rgba = tri.centerColor();
+		if (rgba.a <= AlphaThreshold) {
+			continue;
+		}
 		const float area = tri.area();
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
@@ -399,6 +407,9 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			}
 			const PosSampling &pos = entry->second;
 			const core::RGBA rgba = pos.avgColor(_flattenFactor);
+			if (rgba.a <= AlphaThreshold) {
+				continue;
+			}
 			colors.put(rgba, true);
 		}
 		const size_t colorCount = colors.size();
@@ -419,6 +430,9 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		}
 		const PosSampling &pos = entry->second;
 		const core::RGBA rgba = pos.avgColor(_flattenFactor);
+		if (rgba.a <= AlphaThreshold) {
+			continue;
+		}
 		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
 		wrapper.setVoxel(entry->first, voxel);
 	}
