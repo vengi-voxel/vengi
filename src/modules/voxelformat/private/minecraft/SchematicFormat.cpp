@@ -134,6 +134,10 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 			volume->setVoxel(v, voxel::createVoxel(palette, state));
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		const priv::NamedBinaryTag &author = schematic.get("author");
+		if (author.valid() && author.type() == priv::TagType::STRING) {
+			node.setProperty("Author", author.string());
+		}
 		node.setVolume(volume, true);
 		node.setPalette(palette);
 		int nodeId = sceneGraph.emplace(core::move(node));
