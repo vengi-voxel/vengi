@@ -23,4 +23,4 @@ A few of the features are:
 * Cropping volumes
 * Presentation mode for e.g. kitbashing sets
 
-There are a lot more features to explore and this list definitely not complete.
+There are a lot more features to explore and this list is definitely not complete.

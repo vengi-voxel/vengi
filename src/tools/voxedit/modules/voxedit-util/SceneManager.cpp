@@ -793,22 +793,14 @@ bool SceneManager::setActivePalette(const palette::Palette &palette, bool search
 	}
 	if (searchBestColors) {
 		const voxel::Region dirtyRegion = node.remapToPalette(palette);
-		if (dirtyRegion.isValid()) {
-			_mementoHandler.markPaletteChange(node, dirtyRegion);
-			node.setPalette(palette);
-			return true;
-		}
 		if (!dirtyRegion.isValid()) {
 			Log::warn("Remapping palette indices failed");
-		} else {
-			modified(nodeId, dirtyRegion);
+			return false;
 		}
-		_mementoHandler.markPaletteChange(node, dirtyRegion);
-		node.setPalette(palette);
-	} else {
-		_mementoHandler.markPaletteChange(node);
-		node.setPalette(palette);
+		modified(nodeId, dirtyRegion);
 	}
+	_mementoHandler.markPaletteChange(node);
+	node.setPalette(palette);
 	return true;
 }
 
