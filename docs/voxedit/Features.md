@@ -21,5 +21,6 @@ A few of the features are:
 * Procedurally generated content like trees and a L-System integration
 * Generate level of details (LOD) volumes
 * Cropping volumes
+* Presentation mode for e.g. kitbashing sets
 
-There are a lot more features to explore. If you feel like something is missing here but is supported, please let me know.
+There are a lot more features to explore and this list definitely not complete.

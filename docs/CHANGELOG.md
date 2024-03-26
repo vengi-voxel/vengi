@@ -14,6 +14,7 @@ General:
 
    - Fixed memory leak in `fbx` loading
    - Added support for starmade templates `smtpl` format
+   - Fixed merging of nodes when pivots are used
 
 VoxConvert:
 
@@ -22,6 +23,8 @@ VoxConvert:
 VoxEdit:
 
    - Added support for browsing the remote voxel collections to the asset panel
+   - Added `modelmerge all` parameter to merge all nodes at once
+   - Added `presentation` command to cycle through all models in a scene
 
 ## 0.0.30 (2024-03-23)
 
