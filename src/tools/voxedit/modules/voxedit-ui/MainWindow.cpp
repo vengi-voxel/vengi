@@ -508,7 +508,7 @@ void MainWindow::newSceneTemplates() {
 	if (_texturePool->cache().empty()) {
 		return;
 	}
-	const float height = _texturePool->cache().begin()->second->height();
+	const float height = _texturePool->cache().find(TEMPLATEMODELS[0].name)->second->height();
 
 	if (ImGui::BeginTable("##templates", 4, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY,
 						  ImVec2(0.0f, height * 3))) {
