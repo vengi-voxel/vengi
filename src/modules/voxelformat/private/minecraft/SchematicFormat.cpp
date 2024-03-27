@@ -27,6 +27,23 @@
 
 namespace voxelformat {
 
+static glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core::String &key) {
+	const priv::NamedBinaryTag &pos = compound.get(key);
+	if (pos.type() != priv::TagType::LIST) {
+		Log::error("Unexpected nbt type for %s: %i", key.c_str(), (int)pos.type());
+		return glm::ivec3(-1);
+	}
+	const priv::NBTList &positions = *pos.list();
+	if (positions.size() != 3) {
+		Log::error("Unexpected nbt %s list entry count: %i", key.c_str(), (int)positions.size());
+		return glm::ivec3(-1);
+	}
+	const int x = positions[0].int32(-1);
+	const int y = positions[1].int32(-1);
+	const int z = positions[2].int32(-1);
+	return glm::ivec3(x, y, z);
+}
+
 bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
 										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 										const LoadContext &loadctx) {
@@ -100,25 +117,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 				Log::error("Unexpected nbt type: %i", (int)compound.type());
 				return false;
 			}
-			const priv::NamedBinaryTag &pos = compound.get("pos");
-			if (pos.type() != priv::TagType::LIST) {
-				Log::error("Unexpected nbt type for pos: %i", (int)pos.type());
-				return false;
-			}
-			const priv::NBTList &positions = *pos.list();
-			if (positions.size() != 3) {
-				Log::error("Unexpected nbt pos list entry count: %i", (int)positions.size());
-				return false;
-			}
-			const int state = compound.get("state").int32(-1);
-			if (state == -1) {
-				Log::error("Unexpected state");
-				return false;
-			}
-			const int x = positions[0].int32(-1);
-			const int y = positions[1].int32(-1);
-			const int z = positions[2].int32(-1);
-			const glm::ivec3 v(x, y, z);
+			const glm::ivec3 v = parsePosList(compound, "pos");
 			mins = (glm::min)(mins, v);
 			maxs = (glm::max)(maxs, v);
 		}
@@ -126,11 +125,7 @@ bool SchematicFormat::loadNbt(const priv::NamedBinaryTag &schematic, scenegraph:
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
 		for (const priv::NamedBinaryTag &compound : list) {
 			const int state = compound.get("state").int32();
-			const priv::NBTList &positions = *compound.get("pos").list();
-			const int x = positions[0].int32(-1);
-			const int y = positions[1].int32(-1);
-			const int z = positions[2].int32(-1);
-			const glm::ivec3 v(x, y, z);
+			const glm::ivec3 v = parsePosList(compound, "pos");
 			volume->setVoxel(v, voxel::createVoxel(palette, state));
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
