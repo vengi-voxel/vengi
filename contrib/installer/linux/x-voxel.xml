@@ -144,6 +144,7 @@
 		<glob pattern="*.schematic"/>
 		<glob pattern="*.schem"/>
 		<glob pattern="*.nbt"/>
+		<glob pattern="*.litematic"/>
 	</mime-type>
 	<mime-type type="application/x-ufo-alien-invasion">
 		<comment>UFO:Alien Invasion</comment>

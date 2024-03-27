@@ -29,18 +29,23 @@ namespace voxelformat {
 
 static glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core::String &key) {
 	const priv::NamedBinaryTag &pos = compound.get(key);
-	if (pos.type() != priv::TagType::LIST) {
-		Log::error("Unexpected nbt type for %s: %i", key.c_str(), (int)pos.type());
-		return glm::ivec3(-1);
+	int x = -1;
+	int y = -1;
+	int z = -1;
+	if (pos.type() == priv::TagType::LIST) {
+		const priv::NBTList &positions = *pos.list();
+		if (positions.size() != 3) {
+			Log::error("Unexpected nbt %s list entry count: %i", key.c_str(), (int)positions.size());
+			return glm::ivec3(-1);
+		}
+		x = positions[0].int32(-1);
+		y = positions[1].int32(-1);
+		z = positions[2].int32(-1);
+	} else if (pos.type() == priv::TagType::COMPOUND) {
+		x = pos.get("x").int32(-1);
+		y = pos.get("y").int32(-1);
+		z = pos.get("z").int32(-1);
 	}
-	const priv::NBTList &positions = *pos.list();
-	if (positions.size() != 3) {
-		Log::error("Unexpected nbt %s list entry count: %i", key.c_str(), (int)positions.size());
-		return glm::ivec3(-1);
-	}
-	const int x = positions[0].int32(-1);
-	const int y = positions[1].int32(-1);
-	const int z = positions[2].int32(-1);
 	return glm::ivec3(x, y, z);
 }
 
@@ -63,6 +68,8 @@ bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::Seekab
 		if (loadNbt(schematic, sceneGraph, palette, dataVersion)) {
 			return true;
 		}
+	} else if (extension == "litematic") {
+		return loadLitematic(schematic, sceneGraph, palette);
 	}
 
 	const int version = schematic.get("Version").int32(-1);
@@ -102,6 +109,105 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegr
 		return parseBlocks(schematic, sceneGraph, palette, blocks, version);
 	}
 	Log::error("Could not find valid 'Blocks' tags");
+	return false;
+}
+
+bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
+											   const priv::NamedBinaryTag &blockStates,
+											   scenegraph::SceneGraphNode &node) {
+	const core::DynamicArray<int64_t> *data = blockStates.longArray();
+	if (data == nullptr) {
+		Log::error("Invalid BlockStates - expected long array");
+		return false;
+	}
+
+	const uint64_t mask = (1 << bits) - 1;
+	for (int y = 0; y < size.y; ++y) {
+		for (int z = 0; z < size.z; ++z) {
+			for (int x = 0; x < size.x; ++x) {
+				const uint64_t index = size.x * size.z * y + size.x * z + x;
+				const uint64_t startBit = index * bits;
+				const uint64_t start = startBit / 64;
+				const uint64_t rshiftVal = startBit & 63;
+				const uint64_t end = startBit % 64 + bits;
+				uint64_t id = 0;
+				if (end <= 64 && start < data->size()) {
+					id = (uint64_t)((*data)[start]) >> rshiftVal & mask;
+				} else {
+					if (start >= data->size() || start + 1 >= data->size()) {
+						Log::error("Invalid BlockStates, out of bounds, start_state: %i, max size: %i, endnum: %i", (int)start,
+								   (int)data->size(), (int)end);
+						return false;
+					}
+					uint64_t move_num_2 = 64 - rshiftVal;
+					id = (((uint64_t)(*data)[start]) >> rshiftVal | ((uint64_t)(*data)[start + 1]) << move_num_2) & mask;
+				}
+				if (id == 0) {
+					continue;
+				}
+				node.volume()->setVoxel(glm::ivec3(x, y, z), voxel::createVoxel(node.palette(), id));
+			}
+		}
+	}
+	return true;
+}
+
+bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+									palette::Palette &palette) {
+	const priv::NamedBinaryTag &versionNbt = schematic.get("Version");
+	if (versionNbt.valid() && versionNbt.type() == priv::TagType::INT) {
+		const int version = versionNbt.int32();
+		Log::debug("version: %i", version);
+		const priv::NamedBinaryTag &regions = schematic.get("Regions");
+		if (!regions.compound()) {
+			Log::error("Could not find valid 'Regions' compound tag");
+			return false;
+		}
+		const priv::NBTCompound regionsCompound = *regions.compound();
+		for (const auto &regionEntry : regionsCompound) {
+			const priv::NamedBinaryTag &regionCompound = regionEntry->second;
+			const core::String &name = regionEntry->first;
+			const glm::ivec3 &pos = parsePosList(regionCompound, "Position");
+			const glm::ivec3 &size = glm::abs(parsePosList(regionCompound, "Size"));
+			const voxel::Region region({0, 0, 0}, size - 1);
+			if (!region.isValid()) {
+				Log::error("Invalid region mins: %i %i %i maxs: %i %i %i", pos.x, pos.y, pos.z, size.x, size.y, size.z);
+				return false;
+			}
+			const priv::NamedBinaryTag &blockStatesPalette = regionCompound.get("BlockStatePalette");
+			if (!blockStatesPalette.valid() || blockStatesPalette.type() != priv::TagType::LIST) {
+				Log::error("Could not find 'BlockStatePalette'");
+				return false;
+			}
+
+			const int n = blockStatesPalette.list()->size();
+			int bits = 0;
+			while (n > (1 << bits)) {
+				++bits;
+			}
+			bits = core_max(bits, 2);
+
+			const priv::NamedBinaryTag &blockStates = regionCompound.get("BlockStates");
+			if (!blockStates.valid() || blockStates.type() != priv::TagType::LONG_ARRAY) {
+				Log::error("Could not find 'BlockStates'");
+				return false;
+			}
+			scenegraph::SceneGraphNode node;
+			node.setPalette(palette);
+			node.setName(name);
+			node.setVolume(new voxel::RawVolume(region), true);
+			if (!readLitematicBlockStates(size, bits, blockStates, node)) {
+				Log::error("Failed to read 'BlockStates'");
+				return false;
+			}
+			if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+				Log::error("Failed to add node to the scenegraph");
+				return false;
+			}
+		}
+		return true;
+	}
+	Log::error("Could not find valid 'Version' tag");
 	return false;
 }
 

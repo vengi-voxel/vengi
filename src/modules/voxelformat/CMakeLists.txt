@@ -190,6 +190,7 @@ set(TEST_FILES
 	tests/slab6_vox_test.kv6
 	tests/slab6_vox_test.kvx
 	tests/slab6_vox_test.vox
+	tests/test.litematic
 	tests/vox_character.vox
 	tests/vox_glasses.vox
 	tests/voxlap5.kv6

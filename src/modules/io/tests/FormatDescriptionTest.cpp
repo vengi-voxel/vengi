@@ -30,7 +30,7 @@ TEST_F(FormatDescriptionTest, testCreateGroupPattern) {
 		{"CubeWorld", {"cub"}, {}, 0u},
 		{"Minecraft region", {"mca", "mcr"}, {}, 0u},
 		{"Minecraft level dat", {"dat"}, {}, 0u},
-		{"Minecraft schematic", {"schematic", "schem", "nbt"}, {}, 0u},
+		{"Minecraft schematic", {"schematic", "schem", "nbt", "litematic"}, {}, 0u},
 		{"Sproxel csv", {"csv"}, {}, 0u},
 		{"Wavefront Object", {"obj"}, {}, 0u},
 		{"GL Transmission Format", {"gltf", "glb"}, {}, 0u},

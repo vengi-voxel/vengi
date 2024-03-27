@@ -422,7 +422,8 @@ const jsonData = {
       "extensions": [
         "schematic",
         "schem",
-        "nbt"
+        "nbt",
+        "litematic"
       ],
       "magics": [],
       "mimetype": "application/x-minecraft-schematic",

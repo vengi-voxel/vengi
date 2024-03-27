@@ -191,7 +191,7 @@ static const io::FormatDescription &minecraftLevelDat() {
 
 static const io::FormatDescription &minecraftSchematic() {
 	static io::FormatDescription f{
-		"Minecraft schematic", {"schematic", "schem", "nbt"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		"Minecraft schematic", {"schematic", "schem", "nbt", "litematic"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 

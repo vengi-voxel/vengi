@@ -20,6 +20,7 @@ class NamedBinaryTag;
 /**
  * @note https://minecraft.wiki/w/Schematic_file_format
  * @note https://github.com/SpongePowered/Schematic-Specification/tree/master/versions
+ * @note https://abfielder.com/
  *
  * @ingroup Formats
  */
@@ -32,9 +33,12 @@ protected:
 
 	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 				 int dataVersion);
-
-	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-					 int version);
+	bool readLitematicBlockStates(const glm::ivec3 &size, int bits, const priv::NamedBinaryTag &blockStates,
+								  scenegraph::SceneGraphNode &node);
+	bool loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+					   palette::Palette &palette);
+	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
+					 palette::Palette &palette, int version);
 	bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 					 const priv::NamedBinaryTag &blocks, int version);
 

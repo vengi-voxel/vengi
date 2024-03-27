@@ -9,6 +9,10 @@ namespace voxelformat {
 
 class SchematicFormatTest : public AbstractVoxFormatTest {};
 
+TEST_F(SchematicFormatTest, testLoadLitematic) {
+	canLoad("test.litematic");
+}
+
 TEST_F(SchematicFormatTest, DISABLED_testLoadVikingIsland) {
 	// https://www.planetminecraft.com/project/viking-island-4911284/
 	canLoad("viking_island.schematic");

@@ -15,6 +15,7 @@ General:
    - Fixed memory leak in `fbx` loading
    - Added support for starmade templates `smtpl` format
    - Fixed merging of nodes when pivots are used
+   - Added support for `litematic` Minecraft support
 
 VoxConvert:
 
