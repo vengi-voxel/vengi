@@ -34,7 +34,7 @@ protected:
 	bool loadNbt(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 				 int dataVersion);
 	bool readLitematicBlockStates(const glm::ivec3 &size, int bits, const priv::NamedBinaryTag &blockStates,
-								  scenegraph::SceneGraphNode &node);
+								  scenegraph::SceneGraphNode &node, const core::Buffer<int> &mcpal);
 	bool loadLitematic(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,
 					   palette::Palette &palette);
 	bool loadSponge3(const priv::NamedBinaryTag &schematic, scenegraph::SceneGraph &sceneGraph,

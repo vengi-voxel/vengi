@@ -114,7 +114,8 @@ bool SchematicFormat::loadSponge3(const priv::NamedBinaryTag &schematic, scenegr
 
 bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 											   const priv::NamedBinaryTag &blockStates,
-											   scenegraph::SceneGraphNode &node) {
+											   scenegraph::SceneGraphNode &node,
+											   const core::Buffer<int> &mcpal) {
 	const core::DynamicArray<int64_t> *data = blockStates.longArray();
 	if (data == nullptr) {
 		Log::error("Invalid BlockStates - expected long array");
@@ -145,7 +146,8 @@ bool SchematicFormat::readLitematicBlockStates(const glm::ivec3 &size, int bits,
 				if (id == 0) {
 					continue;
 				}
-				node.volume()->setVoxel(glm::ivec3(x, y, z), voxel::createVoxel(node.palette(), id));
+				const int colorIdx = mcpal[id];
+				node.volume()->setVoxel(glm::ivec3(x, y, z), voxel::createVoxel(node.palette(), colorIdx));
 			}
 		}
 	}
@@ -180,7 +182,15 @@ bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scene
 				return false;
 			}
 
-			const int n = blockStatesPalette.list()->size();
+			const priv::NBTList &blockStatePaletteNbt = *blockStatesPalette.list();
+			core::Buffer<int> mcpal;
+			mcpal.resize(blockStatePaletteNbt.size());
+			int paletteSize = 0;
+			for (const auto & palNbt : blockStatePaletteNbt) {
+				const priv::NamedBinaryTag &materialName = palNbt.get("Name");
+				mcpal[paletteSize++] = findPaletteIndex(materialName.string()->c_str(), 1);
+			}
+			const int n = blockStatePaletteNbt.size();
 			int bits = 0;
 			while (n > (1 << bits)) {
 				++bits;
@@ -196,7 +206,7 @@ bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scene
 			node.setPalette(palette);
 			node.setName(name);
 			node.setVolume(new voxel::RawVolume(region), true);
-			if (!readLitematicBlockStates(size, bits, blockStates, node)) {
+			if (!readLitematicBlockStates(size, bits, blockStates, node, mcpal)) {
 				Log::error("Failed to read 'BlockStates'");
 				return false;
 			}
