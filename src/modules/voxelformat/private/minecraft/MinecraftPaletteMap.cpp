@@ -155,7 +155,7 @@ namespace voxelformat {
 	MCENTRY("pink_tulip", 38, 0xFF),                                  \
 	MCENTRY("poppy", 38, 0xFF),                                       \
 	MCENTRY("red_tulip", 38, 0xFF),                                   \
-	MCENTRY("white_tulip", 38, 0xFF),                                 \
+	MCENTRY("white_tulip", 30, 0xFF),                                 \
 	MCENTRY("brown_mushroom", 39, 0xFF),                              \
 	MCENTRY("red_mushroom", 40, 0xFF),                                \
 	MCENTRY("gold_block", 41, 0xFF),                                  \
@@ -250,20 +250,20 @@ namespace voxelformat {
 	MCENTRY("cake_block", 92, 0xFF),                                  \
 	MCENTRY("repeater", 93, 0xFF),                                    \
 	MCENTRY("skeleton_skull", 94, 0xFF),                              \
-	MCENTRY("black_stained_glass", 95, 0xFF),                         \
-	MCENTRY("blue_stained_glass", 95, 0xFF),                          \
-	MCENTRY("brown_stained_glass", 95, 0xFF),                         \
-	MCENTRY("cyan_stained_glass", 95, 0xFF),                          \
-	MCENTRY("gray_stained_glass", 95, 0xFF),                          \
-	MCENTRY("green_stained_glass", 95, 0xFF),                         \
-	MCENTRY("light_blue_stained_glass", 95, 0xFF),                    \
-	MCENTRY("light_gray_stained_glass", 95, 0xFF),                    \
-	MCENTRY("lime_stained_glass", 95, 0xFF),                          \
-	MCENTRY("magenta_stained_glass", 95, 0xFF),                       \
-	MCENTRY("orange_stained_glass", 95, 0xFF),                        \
-	MCENTRY("red_stained_glass", 95, 0xFF),                           \
-	MCENTRY("white_stained_glass", 95, 0x88),                         \
-	MCENTRY("yellow_stained_glass", 95, 0xFF),                        \
+	MCENTRY("black_stained_glass", 95, 0xAA),                         \
+	MCENTRY("blue_stained_glass", 8, 0xAA),                           \
+	MCENTRY("brown_stained_glass", 63, 0xAA),                         \
+	MCENTRY("cyan_stained_glass", 218, 0xAA),                         \
+	MCENTRY("gray_stained_glass", 95, 0xAA),                          \
+	MCENTRY("green_stained_glass", 104, 0xAA),                        \
+	MCENTRY("light_blue_stained_glass", 174, 0xAA),                   \
+	MCENTRY("light_gray_stained_glass", 95, 0xAA),                    \
+	MCENTRY("lime_stained_glass", 104, 0xAA),                         \
+	MCENTRY("magenta_stained_glass", 205, 0xAA),                      \
+	MCENTRY("orange_stained_glass", 86, 0xAA),                        \
+	MCENTRY("red_stained_glass", 38, 0xAA),                           \
+	MCENTRY("white_stained_glass", 194, 0xAA),                        \
+	MCENTRY("yellow_stained_glass", 27, 0xAA),                        \
 	MCENTRY("oak_trapdoor", 96, 0xFF),                                \
 	MCENTRY("wooden_trapdoor", 96, 0xFF),                             \
 	MCENTRY("chiseled_stone_brick_monster_egg", 97, 0xFF),            \
@@ -791,7 +791,169 @@ namespace voxelformat {
 	MCENTRY("warped_hyphae", 112, 0xFF),                              \
 	MCENTRY("stripped_warped_hyphae", 112, 0xFF),                     \
 	MCENTRY("warped_wart_block", 220, 0xFF),                          \
-	MCENTRY("structure_block", 255, 0xFF)                             \
+	MCENTRY("structure_block", 205, 0xFF),                            \
+	MCENTRY("cracked_deepslate_tiles", 61, 0xFF),                     \
+	MCENTRY("deepslate_emerald_ore", 61, 0xFF),                       \
+	MCENTRY("muddy_mangrove_roots", 183, 0xFF),                       \
+	MCENTRY("sculk", 22, 0xFF),                                       \
+	MCENTRY("mud", 164, 0xFF),                                        \
+	MCENTRY("cobbled_deepslate", 61, 0xFF),                           \
+	MCENTRY("weathered_cut_copper", 48, 0xFF),                        \
+	MCENTRY("polished_deepslate", 61, 0xFF),                          \
+	MCENTRY("mangrove_wood", 152, 0xFF),                              \
+	MCENTRY("exposed_cut_copper", 181, 0xFF),                         \
+	MCENTRY("mud_bricks", 179, 0xFF),                                 \
+	MCENTRY("acacia_button", 195, 0xFF),                              \
+	MCENTRY("brain_coral", 213, 0xFF),                                \
+	MCENTRY("brain_coral_fan", 213, 0xFF),                            \
+	MCENTRY("chiseled_bookshelf", 86, 0xFF),                          \
+	MCENTRY("cracked_polished_blackstone_bricks", 112, 0xFF),         \
+	MCENTRY("creeper_head", 212, 0xFF),                               \
+	MCENTRY("cut_sandstone_slab", 159, 0xFF),                         \
+	MCENTRY("cyan_wall_banner", 218, 0xFF),                           \
+	MCENTRY("dark_oak_button", 140, 0xFF),                            \
+	MCENTRY("dark_oak_wall_sign", 140, 0xFF),                         \
+	MCENTRY("deepslate_tile_slab", 61, 0xFF),                         \
+	MCENTRY("deepslate_tile_stairs", 61, 0xFF),                       \
+	MCENTRY("fire_coral", 38, 0xFF),                                  \
+	MCENTRY("fire_coral_fan", 38, 0xFF),                              \
+	MCENTRY("green_wall_banner", 6, 0xFF),                            \
+	MCENTRY("horn_coral", 27, 0xFF),                                  \
+	MCENTRY("jungle_button", 136, 0xFF),                              \
+	MCENTRY("light_blue_banner", 210, 0xFF),                          \
+	MCENTRY("light_gray_wall_banner", 56, 0xFF),                      \
+	MCENTRY("lime_wall_banner", 212, 0xFF),                           \
+	MCENTRY("mossy_stone_brick_slab", 14, 0xFF),                      \
+	MCENTRY("mossy_stone_brick_stairs", 14, 0xFF),                    \
+	MCENTRY("mud_brick_wall", 163, 0xFF),                             \
+	MCENTRY("oak_hanging_sign", 5, 0xFF),                             \
+	MCENTRY("orange_banner", 76, 0xFF),                               \
+	MCENTRY("oxidized_cut_copper_slab", 166, 0xFF),                   \
+	MCENTRY("oxidized_cut_copper_stairs", 166, 0xFF),                 \
+	MCENTRY("pink_petals", 213, 0xFF),                                \
+	MCENTRY("pink_wall_banner", 213, 0xFF),                           \
+	MCENTRY("polished_blackstone", 173, 0xFF),                        \
+	MCENTRY("polished_blackstone_bricks", 173, 0xFF),                 \
+	MCENTRY("polished_blackstone_button", 173, 0xFF),                 \
+	MCENTRY("polished_blackstone_slab", 173, 0xFF),                   \
+	MCENTRY("polished_blackstone_wall", 173, 0xFF),                   \
+	MCENTRY("polished_deepslate_wall", 1, 0xFF),                      \
+	MCENTRY("potted_allium", 38, 0xFF),                               \
+	MCENTRY("potted_azure_bluet", 1, 0xFF),                           \
+	MCENTRY("potted_bamboo", 83, 0xFF),                               \
+	MCENTRY("potted_blue_orchid", 38, 0xFF),                          \
+	MCENTRY("potted_cornflower", 1, 0xFF),                            \
+	MCENTRY("potted_crimson_fungus", 75, 0xFF),                       \
+	MCENTRY("potted_dandelion", 37, 0xFF),                            \
+	MCENTRY("potted_dead_bush", 32, 0xFF),                            \
+	MCENTRY("potted_fern", 175, 0xFF),                                \
+	MCENTRY("potted_flowering_azalea_bush", 203, 0xFF),               \
+	MCENTRY("potted_lily_of_the_valley", 141, 0xFF),                  \
+	MCENTRY("potted_orange_tulip", 38, 0xFF),                         \
+	MCENTRY("potted_oxeye_daisy", 1, 0xFF),                           \
+	MCENTRY("potted_pink_tulip", 38, 0xFF),                           \
+	MCENTRY("potted_poppy", 38, 0xFF),                                \
+	MCENTRY("potted_red_mushroom", 40, 0xFF),                         \
+	MCENTRY("potted_red_tulip", 38, 0xFF),                            \
+	MCENTRY("potted_torchflower", 41, 0xFF),                          \
+	MCENTRY("potted_white_tulip", 30, 0xFF),                          \
+	MCENTRY("purple_banner", 211, 0xFF),                              \
+	MCENTRY("quartz_pillar", 35, 0xFF),                               \
+	MCENTRY("red_wall_banner", 74, 0xFF),                             \
+	MCENTRY("short_grass", 48, 0xFF),                                 \
+	MCENTRY("smooth_quartz", 30, 0xFF),                               \
+	MCENTRY("smooth_quartz_slab", 42, 0xFF),                          \
+	MCENTRY("smooth_quartz_stairs", 42, 0xFF),                        \
+	MCENTRY("smooth_sandstone_stairs", 170, 0xFF),                    \
+	MCENTRY("smooth_stone", 93, 0xFF),                                \
+	MCENTRY("spruce_button", 60, 0xFF),                               \
+	MCENTRY("spruce_wall_sign", 60, 0xFF),                            \
+	MCENTRY("stone_brick_wall", 93, 0xFF),                            \
+	MCENTRY("tube_coral", 120, 0xFF),                                 \
+	MCENTRY("water_cauldron", 61, 0xFF),                              \
+	MCENTRY("waxed_copper_block", 10, 0xFF),                          \
+	MCENTRY("waxed_cut_copper_slab", 10, 0xFF),                       \
+	MCENTRY("waxed_cut_copper_stairs", 10, 0xFF),                     \
+	MCENTRY("waxed_exposed_copper", 10, 0xFF),                        \
+	MCENTRY("waxed_exposed_cut_copper", 10, 0xFF),                    \
+	MCENTRY("waxed_exposed_cut_copper_slab", 10, 0xFF),               \
+	MCENTRY("waxed_exposed_cut_copper_stairs", 10, 0xFF),             \
+	MCENTRY("waxed_oxidized_copper", 220, 0xFF),                      \
+	MCENTRY("waxed_oxidized_cut_copper_slab", 220, 0xFF),             \
+	MCENTRY("waxed_weathered_copper", 83, 0xFF),                      \
+	MCENTRY("waxed_weathered_cut_copper_slab", 83, 0xFF),             \
+	MCENTRY("waxed_weathered_cut_copper_stairs", 83, 0xFF),           \
+	MCENTRY("weathered_cut_copper_stairs", 83, 0xFF),                 \
+	MCENTRY("wither_skeleton_skull", 173, 0xFF),                      \
+	MCENTRY("yellow_wall_banner", 27, 0xFF),                          \
+	MCENTRY("zombie_head", 59, 0xFF),                                 \
+	MCENTRY("birch_button", 128, 0xFF),                               \
+	MCENTRY("birch_wall_sign", 128, 0xFF),                            \
+	MCENTRY("blackstone_slab", 122, 0xFF),                            \
+	MCENTRY("blackstone_stairs", 122, 0xFF),                          \
+	MCENTRY("black_wall_banner", 1, 0xFF),                            \
+	MCENTRY("blue_wall_banner", 22, 0xFF),                            \
+	MCENTRY("cherry_fence", 200, 0xFF),                               \
+	MCENTRY("cherry_planks", 200, 0xFF),                              \
+	MCENTRY("cherry_slab", 200, 0xFF),                                \
+	MCENTRY("cherry_stairs", 200, 0xFF),                              \
+	MCENTRY("cherry_trapdoor", 200, 0xFF),                            \
+	MCENTRY("cherry_wall_hanging_sign", 200, 0xFF),                   \
+	MCENTRY("chipped_anvil", 52, 0xFF),                               \
+	MCENTRY("chiseled_nether_bricks", 217, 0xFF),                     \
+	MCENTRY("chiseled_polished_blackstone", 52, 0xFF),                \
+	MCENTRY("crimson_stem", 209, 0xFF),                               \
+	MCENTRY("crimson_wall_hanging_sign", 209, 0xFF),                  \
+	MCENTRY("dark_oak_wall_hanging_sign", 140, 0xFF),                 \
+	MCENTRY("deepslate_bricks", 118, 0xFF),                           \
+	MCENTRY("deepslate_brick_stairs", 118, 0xFF),                     \
+	MCENTRY("deepslate_brick_wall", 118, 0xFF),                       \
+	MCENTRY("mangrove_slab", 152, 0xFF),                              \
+	MCENTRY("mangrove_stairs", 152, 0xFF),                            \
+	MCENTRY("mangrove_trapdoor", 152, 0xFF),                          \
+	MCENTRY("nether_bricks", 217, 0xFF),                              \
+	MCENTRY("polished_blackstone_brick_stairs", 52, 0xFF),            \
+	MCENTRY("polished_blackstone_stairs", 52, 0xFF),                  \
+	MCENTRY("polished_deepslate_slab", 118, 0xFF),                    \
+	MCENTRY("potted_oak_sapling", 6, 0xFF),                           \
+	MCENTRY("stripped_cherry_log", 200, 0xFF),                        \
+	MCENTRY("stripped_crimson_stem", 209, 0xFF),                      \
+	MCENTRY("stripped_mangrove_log", 152, 0xFF),                      \
+	MCENTRY("stripped_warped_stem", 218, 0xFF),                       \
+	MCENTRY("torchflower", 41, 0xFF),                                 \
+	MCENTRY("warped_stem", 218, 0xFF),                                \
+	MCENTRY("waxed_oxidized_cut_copper", 218, 0xFF),                  \
+	MCENTRY("waxed_oxidized_cut_copper_stairs", 218, 0xFF),           \
+	MCENTRY("cobbled_deepslate_slab", 61, 0xFF),                      \
+	MCENTRY("cobbled_deepslate_stairs", 61, 0xFF),                    \
+	MCENTRY("deepslate_brick_slab", 118, 0xFF),                       \
+	MCENTRY("deepslate_tiles", 118, 0xFF),                            \
+	MCENTRY("deepslate_tile_wall", 118, 0xFF),                        \
+	MCENTRY("gray_wall_banner", 118, 0xFF),                           \
+	MCENTRY("light_blue_wall_banner", 8, 0xFF),                       \
+	MCENTRY("mud_brick_slab", 163, 0xFF),                             \
+	MCENTRY("player_head", 140, 0xFF),                                \
+	MCENTRY("player_wall_head", 140, 0xFF),                           \
+	MCENTRY("polished_deepslate_stairs", 118, 0xFF),                  \
+	MCENTRY("potted_cherry_sapling", 202, 0xFF),                      \
+	MCENTRY("spruce_hanging_sign", 64, 0xFF),                         \
+	MCENTRY("wither_skeleton_wall_skull", 52, 0xFF),                  \
+	MCENTRY("blackstone_wall", 122, 0xFF),                            \
+	MCENTRY("cherry_fence_gate", 200, 0xFF),                          \
+	MCENTRY("cherry_hanging_sign", 200, 0xFF),                        \
+	MCENTRY("cherry_leaves", 200, 0xFF),                              \
+	MCENTRY("chiseled_deepslate", 52, 0xFF),                          \
+	MCENTRY("cut_red_sandstone", 91, 0xFF),                           \
+	MCENTRY("cut_red_sandstone_slab", 91, 0xFF),                      \
+	MCENTRY("damaged_anvil", 130, 0xFF),                              \
+	MCENTRY("dead_brain_coral_fan", 98, 0xFF),                        \
+	MCENTRY("decorated_pot", 58, 0xFF),                               \
+	MCENTRY("mangrove_button", 152, 0xFF),                            \
+	MCENTRY("mangrove_leaves", 106, 0xFF),                            \
+	MCENTRY("oxidized_cut_copper", 218, 0xFF),                        \
+	MCENTRY("smooth_red_sandstone_stairs", 10, 0xFF),                 \
+	MCENTRY("verdant_froglight", 105, 0xFF),                          \
+	MCENTRY("waxed_cut_copper", 175, 0xFF),                           \
 }
 
 const PaletteArray &getPaletteArray() {
