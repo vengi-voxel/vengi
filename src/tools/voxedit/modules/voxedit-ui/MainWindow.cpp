@@ -693,6 +693,7 @@ void MainWindow::popupSceneSettings() {
 }
 
 void MainWindow::popupVolumeSplit() {
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"));
