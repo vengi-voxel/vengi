@@ -1048,6 +1048,8 @@ static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
 	if (newKeyFrameIdx == InvalidKeyFrame) {
 		return clua_error(s, "Failed to add keyframe for frame %i", frameIdx);
 	}
+	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	sceneGraph->markMaxFramesDirty();
 	scenegraph::SceneGraphKeyFrame &kf = node->node->keyFrame(newKeyFrameIdx);
 	kf.interpolation = interpolation;
 	luaVoxel_pushkeyframe(s, *node->node, newKeyFrameIdx);
