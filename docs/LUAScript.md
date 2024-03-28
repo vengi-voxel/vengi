@@ -363,6 +363,18 @@ local v1 = g_ivec3.new(1, 1, 1)
 
 There are 3 possible components for this vector. You can also call `g_ivec3.new(1)` to fill all three values with a one. Or call it like this: `g_ivec3.new(1, 2)` to create a vector with the three components of `1, 2, 2`.
 
+## Quaternion
+
+For creating quaternions, you can use `g_quat.new()`
+
+* `rotateXYZ(x, y, z)`
+* `rotateXY(x, y)`
+* `rotateYZ(y, z)`
+* `rotateXZ(x, z)`
+* `rotateX(x)`
+* `rotateY(y)`
+* `rotateZ(z)`
+
 ## Other
 
 * `y` going upwards.

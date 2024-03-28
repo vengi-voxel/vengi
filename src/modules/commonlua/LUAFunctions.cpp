@@ -3,6 +3,7 @@
  */
 
 #include "LUAFunctions.h"
+#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "command/CommandHandler.h"
 #include "core/String.h"
@@ -10,6 +11,10 @@
 #include "app/App.h"
 #include "core/collection/StringSet.h"
 #include "io/Filesystem.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/ext/quaternion_trigonometric.hpp>
 
 int clua_errorhandler(lua_State* s) {
 	Log::error("Lua error handler invoked");
@@ -374,6 +379,65 @@ glm::quat clua_toquat(lua_State *s, int n) {
 	return v;
 }
 
+static glm::quat rotateX(float angle) {
+	return glm::angleAxis(angle, glm::right());
+}
+
+static glm::quat rotateZ(float angle) {
+	return glm::angleAxis(angle, glm::backward());
+}
+
+static glm::quat rotateY(float angle) {
+	return glm::angleAxis(angle, glm::up());
+}
+
+static constexpr glm::quat rotateXZ(float angleX, float angleZ) {
+	return glm::quat(glm::vec3(angleX, 0.0f, angleZ));
+}
+
+static constexpr glm::quat rotateXY(float angleX, float angleY) {
+	return glm::quat(glm::vec3(angleX, angleY, 0.0f));
+}
+
+static int clua_quat_rotate_xyz(lua_State* s) {
+	const float x = lua_tonumber(s, 1);
+	const float z = lua_tonumber(s, 2);
+	return clua_push(s, rotateXZ(x, z));
+}
+
+static int clua_quat_rotate_xy(lua_State* s) {
+	const float x = lua_tonumber(s, 1);
+	const float y = lua_tonumber(s, 2);
+	return clua_push(s, rotateXY(x, y));
+}
+
+static int clua_quat_rotate_yz(lua_State* s) {
+	const float y = lua_tonumber(s, 1);
+	const float z = lua_tonumber(s, 2);
+	return clua_push(s, rotateXY(y, z));
+}
+
+static int clua_quat_rotate_xz(lua_State* s) {
+	const float x = lua_tonumber(s, 1);
+	const float z = lua_tonumber(s, 2);
+	return clua_push(s, rotateXY(x, z));
+}
+
+static int clua_quat_rotate_x(lua_State* s) {
+	const float x = lua_tonumber(s, 1);
+	return clua_push(s, rotateX(x));
+}
+
+static int clua_quat_rotate_y(lua_State* s) {
+	const float y = lua_tonumber(s, 1);
+	return clua_push(s, rotateY(y));
+}
+
+static int clua_quat_rotate_z(lua_State* s) {
+	const float z = lua_tonumber(s, 1);
+	return clua_push(s, rotateZ(z));
+}
+
 void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
 		{"__add", clua_vecadd<glm::quat>},
@@ -387,7 +451,14 @@ void clua_quatregister(lua_State* s) {
 	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
 	clua_registerfuncs(s, funcs, clua_meta<glm::quat>::name());
 	const luaL_Reg globalFuncs[] = {
-		{"new", clua_vecnew<glm::quat>::vecnew},
+		{"new",          clua_vecnew<glm::quat>::vecnew},
+		{"rotateXYZ",    clua_quat_rotate_xyz},
+		{"rotateXY",     clua_quat_rotate_xy},
+		{"rotateYZ",     clua_quat_rotate_yz},
+		{"rotateXZ",     clua_quat_rotate_xz},
+		{"rotateY",      clua_quat_rotate_x},
+		{"rotateX",      clua_quat_rotate_y},
+		{"rotateZ",      clua_quat_rotate_z},
 		{nullptr, nullptr}
 	};
 	const core::String& globalMeta = core::string::format("%s_global", clua_meta<glm::quat>::name());
