@@ -1227,6 +1227,13 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const glm::vec3& pivot = clua_tovec<glm::vec3>(s, 2);
+	node->node->setPivot(pivot);
+	return 0;
+}
+
 static int luaVoxel_scenegraphnode_tostring(lua_State *s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushfstring(s, "node: [%d, %s]", node->node->id(), node->node->name().c_str());
@@ -1322,6 +1329,7 @@ static void prepareState(lua_State* s) {
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},
+		{"setPivot", luaVoxel_scenegraphnode_setpivot},
 		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
 		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
 		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},

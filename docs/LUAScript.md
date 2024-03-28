@@ -142,6 +142,8 @@ end
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
+* `setPivot(vec3)`:
+
 * `volume()`: Gives you access to the volume of the node.
 
 Access these functions like this:

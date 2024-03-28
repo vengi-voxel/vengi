@@ -48,10 +48,16 @@ protected:
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
-			node.setName("test");
+			node.setName("parent");
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
-		ASSERT_NE(nodeId, -1);
+		ASSERT_NE(nodeId, InvalidNodeId);
+		{
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+			node.setVolume(new voxel::RawVolume(_region), true);
+			node.setName("child");
+			sceneGraph.emplace(core::move(node), nodeId);
+		}
 		voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 
 		LUAGenerator g(_testApp->filesystem());
