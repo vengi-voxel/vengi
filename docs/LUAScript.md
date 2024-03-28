@@ -116,6 +116,8 @@ for i, nodeId in ipairs(allNodeIds) do
 end
 ```
 
+* `updateTransforms()`:
+
 ## SceneGraphNode
 
 * `addAnimation(string)`: Add a new animation

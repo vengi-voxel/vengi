@@ -907,6 +907,12 @@ static int luaVoxel_region_gc(lua_State *s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraph_updatetransforms(lua_State* s) {
+	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	sceneGraph->updateTransforms();
+	return 0;
+}
+
 static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
 	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 
@@ -1342,6 +1348,7 @@ static void prepareState(lua_State* s) {
 		{"new", luaVoxel_scenegraph_new_node},
 		{"get", luaVoxel_scenegraph_get_node},
 		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},
+		{"updateTransforms", luaVoxel_scenegraph_updatetransforms},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
