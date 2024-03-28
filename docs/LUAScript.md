@@ -126,6 +126,8 @@ end
 
 * `isModel()`: Returns true if the node is a model node (it has a volume attached)
 
+* `isReference()`: Returns true if the node is a model reference
+
 * `keyFrame(keyFrameIdx)`: Returns an existing keyframe (see below)
 
 * `keyFrameForFrame(frame)`: Returns an existing keyframe that has a frame number <= the given frame

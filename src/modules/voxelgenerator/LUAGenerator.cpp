@@ -981,6 +981,12 @@ static int luaVoxel_scenegraphnode_is_model(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_is_modelref(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->isReference() ? 1 : 0);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_name(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushstring(s, node->node->name().c_str());
@@ -1326,6 +1332,7 @@ static void prepareState(lua_State* s) {
 		{"parent", luaVoxel_scenegraphnode_parent},
 		{"volume", luaVoxel_scenegraphnode_volume},
 		{"isModel", luaVoxel_scenegraphnode_is_model},
+		{"isReference", luaVoxel_scenegraphnode_is_modelref},
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},
