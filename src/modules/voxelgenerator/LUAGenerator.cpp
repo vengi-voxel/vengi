@@ -502,6 +502,13 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_palette_eq(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const palette::Palette *palette2 = luaVoxel_toPalette(s, 2);
+	lua_pushboolean(s, palette->hash() == palette2->hash());
+	return 1;
+}
+
 static int luaVoxel_palette_gc(lua_State *s) {
 	palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	delete palette;
@@ -885,6 +892,13 @@ static int luaVoxel_region_new(lua_State* s) {
 	const int maxsy = (int)luaL_checkinteger(s, 5);
 	const int maxsz = (int)luaL_checkinteger(s, 6);
 	return luaVoxel_pushregion(s, new voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz));
+}
+
+static int luaVoxel_region_eq(lua_State* s) {
+	const voxel::Region *region = luaVoxel_toRegion(s, 1);
+	const voxel::Region *region2 = luaVoxel_toRegion(s, 2);
+	lua_pushboolean(s, *region == *region2);
+	return 1;
 }
 
 static int luaVoxel_region_gc(lua_State *s) {
@@ -1278,6 +1292,7 @@ static void prepareState(lua_State* s) {
 		{"setMins", luaVoxel_region_setmins},
 		{"setMaxs", luaVoxel_region_setmaxs},
 		{"__tostring", luaVoxel_region_tostring},
+		{"__eq", luaVoxel_region_eq},
 		{"__gc", luaVoxel_region_gc},
 		{nullptr, nullptr}
 	};
@@ -1350,6 +1365,7 @@ static void prepareState(lua_State* s) {
 		{"similar", luaVoxel_palette_similar},
 		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{"material", luaVoxel_palette_materialproperty},
+		{"__eq", luaVoxel_palette_eq},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs, luaVoxel_metapalette());
@@ -1364,6 +1380,7 @@ static void prepareState(lua_State* s) {
 		{"setMaterial", luaVoxel_palette_setmaterialproperty},
 		{"material", luaVoxel_palette_materialproperty},
 		{"__gc", luaVoxel_palette_gc},
+		{"__eq", luaVoxel_palette_eq},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, paletteFuncs_gc, luaVoxel_metapalette_gc());
