@@ -48,6 +48,7 @@ protected:
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
+			node.setName("test");
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
 		ASSERT_NE(nodeId, -1);
