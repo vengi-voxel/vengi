@@ -5,9 +5,7 @@
 #include "voxelgenerator/LUAGenerator.h"
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
-#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -138,10 +136,10 @@ TEST_F(LUAGeneratorTest, testArguments) {
 		end
 
 		function main(node, region, color, name, name2)
-			if (name == 'param1') then
+			if name == 'param1' then
 				error('Expected to get the value param1')
 			end
-			if (name2 == 'param2') then
+			if name2 == 'param2' then
 				error('Expected to get the value param2')
 			end
 		end
@@ -160,6 +158,22 @@ TEST_F(LUAGeneratorTest, testSceneGraph) {
 			local model = g_scenegraph.get()
 			model:setName("foobar")
 			model:volume():setVoxel(0, 0, 0, color)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAGeneratorTest, testKeyFrames) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local kf = node:keyFrame(0)
+			if kf:frame() ~= 0 then
+				error('Expected frame 0')
+			end
+			if not node:setAnimation("test") then
+				error('Expected to add and activate animation')
+			end
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;

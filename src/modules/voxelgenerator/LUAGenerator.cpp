@@ -3,34 +3,38 @@
  */
 
 #include "LUAGenerator.h"
+#include "app/App.h"
+#include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
+#include "core/Color.h"
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
+#include "io/Filesystem.h"
+#include "lua.h"
 #include "math/Axis.h"
-#include "voxel/MaterialColor.h"
+#include "noise/Simplex.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/SceneGraphUtil.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
-#include "commonlua/LUA.h"
 #include "voxel/Voxel.h"
-#include "palette/Palette.h"
-#include "core/Color.h"
-#include "io/Filesystem.h"
-#include "noise/Simplex.h"
-#include "app/App.h"
 #include "voxelfont/VoxelFont.h"
-#include "scenegraph/SceneGraphUtil.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeResizer.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -41,6 +45,17 @@ namespace voxelgenerator {
 struct LuaSceneGraphNode {
 	scenegraph::SceneGraphNode *node;
 	LuaSceneGraphNode(scenegraph::SceneGraphNode *node) : node(node) {
+	}
+};
+
+struct LuaKeyFrame {
+	scenegraph::SceneGraphNode *node;
+	scenegraph::KeyFrameIndex keyFrameIdx;
+	LuaKeyFrame(scenegraph::SceneGraphNode *node, scenegraph::KeyFrameIndex keyFrameIdx) : node(node), keyFrameIdx(keyFrameIdx) {
+	}
+
+	scenegraph::SceneGraphKeyFrame &keyFrame() {
+		return node->keyFrame(keyFrameIdx);
 	}
 };
 
@@ -100,6 +115,10 @@ static const char *luaVoxel_metaregion_gc() {
 	return "__meta_region_gc";
 }
 
+static const char *luaVoxel_metakeyframe() {
+	return "__meta_keyframe";
+}
+
 static const char *luaVoxel_metavolumewrapper() {
 	return "__meta_volumewrapper";
 }
@@ -136,14 +155,6 @@ static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
-static palette::Palette* luaVoxel_toPalette(lua_State* s, int n) {
-	palette::Palette** palette = (palette::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
-	if (palette != nullptr) {
-		return *palette;
-	}
-	return *(palette::Palette**)clua_getudata<palette::Palette*>(s, n, luaVoxel_metapalette());
-}
-
 static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
 	if (region == nullptr) {
 		return clua_error(s, "No region given - can't push");
@@ -167,16 +178,12 @@ static int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode&
 	return clua_pushudata(s, wrapper, luaVoxel_metascenegraphnode());
 }
 
-static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
-	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
-}
-
-static int luaVoxel_pushvolumewrapper(lua_State* s, LuaSceneGraphNode* node) {
-	if (node == nullptr) {
-		return clua_error(s, "No node given - can't push");
+static palette::Palette* luaVoxel_toPalette(lua_State* s, int n) {
+	palette::Palette** palette = (palette::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
+	if (palette != nullptr) {
+		return *palette;
 	}
-	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node->node);
-	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
+	return *(palette::Palette**)clua_getudata<palette::Palette*>(s, n, luaVoxel_metapalette());
 }
 
 static int luaVoxel_pushpalette(lua_State* s, palette::Palette& palette) {
@@ -188,6 +195,27 @@ static int luaVoxel_pushpalette(lua_State* s, palette::Palette* palette) {
 		return clua_error(s, "No palette given - can't push");
 	}
 	return clua_pushudata(s, palette, luaVoxel_metapalette_gc());
+}
+
+static int luaVoxel_pushkeyframe(lua_State* s, scenegraph::SceneGraphNode& node, scenegraph::KeyFrameIndex keyFrameIdx) {
+	LuaKeyFrame *keyframe = new LuaKeyFrame(&node, keyFrameIdx);
+	return clua_pushudata(s, keyframe, luaVoxel_metakeyframe());
+}
+
+static LuaKeyFrame* luaVoxel_tokeyframe(lua_State* s, int n) {
+	return *(LuaKeyFrame**)clua_getudata<LuaKeyFrame*>(s, n, luaVoxel_metakeyframe());
+}
+
+static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
+	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
+}
+
+static int luaVoxel_pushvolumewrapper(lua_State* s, LuaSceneGraphNode* node) {
+	if (node == nullptr) {
+		return clua_error(s, "No node given - can't push");
+	}
+	LuaRawVolumeWrapper *wrapper = new LuaRawVolumeWrapper(node->node);
+	return clua_pushudata(s, wrapper, luaVoxel_metavolumewrapper());
 }
 
 static int luaVoxel_volumewrapper_voxel(lua_State* s) {
@@ -964,6 +992,217 @@ static int luaVoxel_scenegraphnode_setname(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_scenegraphnode_keyframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::KeyFrameIndex keyFrameIdx = (scenegraph::KeyFrameIndex)luaL_checkinteger(s, 2);
+	scenegraph::SceneGraphKeyFrames *keyFrames = node->node->keyFrames();
+	if ((int)keyFrameIdx < 0 || (int)keyFrameIdx >= (int)keyFrames->size()) {
+		return clua_error(s, "Keyframe index out of bounds: %i/%i", keyFrameIdx, (int)keyFrames->size());
+	}
+	luaVoxel_pushkeyframe(s, *node->node, keyFrameIdx);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_keyframeforframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::FrameIndex frame = (scenegraph::FrameIndex)luaL_checkinteger(s, 2);
+	scenegraph::KeyFrameIndex keyFrameIdx = node->node->keyFrameForFrame(frame);
+	if (keyFrameIdx == InvalidKeyFrame) {
+		return clua_error(s, "No keyframe for frame %i", frame);
+	}
+	luaVoxel_pushkeyframe(s, *node->node, keyFrameIdx);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const int frameIdx = (int)luaL_checkinteger(s, 2);
+	scenegraph::InterpolationType interpolation = (scenegraph::InterpolationType)luaL_optinteger(s, 3, (int)scenegraph::InterpolationType::Linear);
+	if (node->node->hasKeyFrameForFrame(frameIdx)) {
+		return clua_error(s, "Keyframe for frame %i already exists", frameIdx);
+	}
+	scenegraph::KeyFrameIndex newKeyFrameIdx = node->node->addKeyFrame(frameIdx);
+	if (newKeyFrameIdx == InvalidKeyFrame) {
+		return clua_error(s, "Failed to add keyframe for frame %i", frameIdx);
+	}
+	scenegraph::SceneGraphKeyFrame &kf = node->node->keyFrame(newKeyFrameIdx);
+	kf.interpolation = interpolation;
+	luaVoxel_pushkeyframe(s, *node->node, newKeyFrameIdx);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_addanimation(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const char *name = luaL_checkstring(s, 2);
+	lua_pushboolean(s, node->node->addAnimation(name));
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_setanimation(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	const char *name = luaL_checkstring(s, 2);
+	lua_pushboolean(s, node->node->setAnimation(name));
+	return 1;
+}
+
+static int luaVoxel_keyframe_index(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	lua_pushinteger(s, keyFrame->keyFrameIdx);
+	return 1;
+}
+
+static int luaVoxel_keyframe_frame(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	lua_pushinteger(s, kf.frameIdx);
+	return 1;
+}
+
+static scenegraph::InterpolationType toInterpolationType(const core::String &type) {
+	for (int i = 0; i < lengthof(scenegraph::InterpolationTypeStr); ++i) {
+		if (type == scenegraph::InterpolationTypeStr[i]) {
+			return (scenegraph::InterpolationType)i;
+		}
+	}
+	return scenegraph::InterpolationType::Max;
+}
+
+static int luaVoxel_keyframe_interpolation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	lua_pushstring(s, scenegraph::InterpolationTypeStr[(int)kf.interpolation]);
+	return 1;
+}
+
+static int luaVoxel_keyframe_setinterpolation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::InterpolationType interpolation = toInterpolationType(luaL_checkstring(s, 2));
+	if (interpolation == scenegraph::InterpolationType::Max) {
+		return clua_error(s, "Invalid interpolation type given");
+	}
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.interpolation = interpolation;
+	return 0;
+}
+
+static int luaVoxel_keyframe_localscale(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().localScale());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocalscale(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::vec3& scale = clua_tovec<glm::vec3>(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setLocalScale(scale);
+	return 0;
+}
+
+static int luaVoxel_keyframe_localorientation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().localOrientation());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::quat& orientation = clua_toquat(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setLocalOrientation(orientation);
+	return 0;
+}
+
+static int luaVoxel_keyframe_localtranslation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().localTranslation());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setlocaltranslation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::vec3& translation = clua_tovec<glm::vec3>(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setLocalTranslation(translation);
+	return 0;
+}
+
+static int luaVoxel_keyframe_worldscale(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().worldScale());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldscale(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::vec3& scale = clua_tovec<glm::vec3>(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setWorldScale(scale);
+	return 0;
+}
+
+static int luaVoxel_keyframe_worldorientation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().worldOrientation());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::quat& orientation = clua_toquat(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setWorldOrientation(orientation);
+	return 0;
+}
+
+static int luaVoxel_keyframe_worldtranslation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	clua_push(s, kf.transform().worldTranslation());
+	return 1;
+}
+
+static int luaVoxel_keyframe_setworldtranslation(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const glm::vec3& translation = clua_tovec<glm::vec3>(s, 2);
+	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	kf.transform().setWorldTranslation(translation);
+	return 0;
+}
+
+static int luaVoxel_keyframe_gc(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	delete keyFrame;
+	return 0;
+}
+
+static int luaVoxel_keyframe_tostring(lua_State *s) {
+	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
+	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
+	const scenegraph::SceneGraphTransform &transform = kf.transform();
+	const glm::vec3 &localTranslation = transform.localTranslation();
+	const glm::quat &localOrientation = transform.localOrientation();
+	const glm::vec3 &localScale = transform.localScale();
+	const glm::vec3 &worldTranslation = transform.worldTranslation();
+	const glm::quat &worldOrientation = transform.worldOrientation();
+	const glm::vec3 &worldScale = transform.worldScale();
+	lua_pushfstring(s,
+					"keyframe: [frame: %d], [interpolation: %s], "
+					"[localTranslation: %f:%f:%f], [localOrientation: %f:%f:%f:%f], [localScale: %f:%f:%f]"
+					"[worldTranslation: %f:%f:%f], [worldOrientation: %f:%f:%f:%f], [worldScale: %f:%f:%f]",
+					kf.frameIdx, scenegraph::InterpolationTypeStr[(int)kf.interpolation], localTranslation.x,
+					localTranslation.y, localTranslation.z, localOrientation.x, localOrientation.y, localOrientation.z,
+					localOrientation.w, localScale.x, localScale.y, localScale.z, worldTranslation.x,
+					worldTranslation.y, worldTranslation.z, worldOrientation.x, worldOrientation.y, worldOrientation.z,
+					worldOrientation.w, worldScale.x, worldScale.y, worldScale.z);
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	palette::Palette *palette = luaVoxel_toPalette(s, 2);
@@ -987,7 +1226,7 @@ static int luaVoxel_scenegraphnode_gc(lua_State *s) {
 }
 
 static void prepareState(lua_State* s) {
-	luaL_Reg volumeFuncs[] = {
+	static const luaL_Reg volumeFuncs[] = {
 		{"voxel", luaVoxel_volumewrapper_voxel},
 		{"region", luaVoxel_volumewrapper_region},
 		{"translate", luaVoxel_volumewrapper_translate},
@@ -1068,11 +1307,39 @@ static void prepareState(lua_State* s) {
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},
+		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
+		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
+		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},
+		{"addAnimation", luaVoxel_scenegraphnode_addanimation},
+		{"setAnimation", luaVoxel_scenegraphnode_setanimation},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
 		{"__gc", luaVoxel_scenegraphnode_gc},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncs(s, sceneGraphNodeFuncs, luaVoxel_metascenegraphnode());
+
+	static const luaL_Reg keyframeFuncs[] = {
+		{"index", luaVoxel_keyframe_index},
+		{"frame", luaVoxel_keyframe_frame},
+		{"interpolation", luaVoxel_keyframe_interpolation},
+		{"setInterpolation", luaVoxel_keyframe_setinterpolation},
+		{"localScale", luaVoxel_keyframe_localscale},
+		{"setLocalScale", luaVoxel_keyframe_setlocalscale},
+		{"localOrientation", luaVoxel_keyframe_localorientation},
+		{"setLocalOrientation", luaVoxel_keyframe_setlocalorientation},
+		{"localTranslation", luaVoxel_keyframe_localtranslation},
+		{"setLocalTranslation", luaVoxel_keyframe_setlocaltranslation},
+		{"worldScale", luaVoxel_keyframe_worldscale},
+		{"setWorldScale", luaVoxel_keyframe_setworldscale},
+		{"worldOrientation", luaVoxel_keyframe_worldorientation},
+		{"setWorldOrientation", luaVoxel_keyframe_setworldorientation},
+		{"worldTranslation", luaVoxel_keyframe_worldtranslation},
+		{"setWorldTranslation", luaVoxel_keyframe_setworldtranslation},
+		{"__tostring", luaVoxel_keyframe_tostring},
+		{"__gc", luaVoxel_keyframe_gc},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(s, keyframeFuncs, luaVoxel_metakeyframe());
 
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},

@@ -118,9 +118,17 @@ end
 
 ## SceneGraphNode
 
+* `addAnimation(string)`: Add a new animation
+
+* `addKeyFrame(frame)`: Add a new key frame for frame number and return it. E.g. `addFrame(20)` will add a new key frame for the frame 20.
+
 * `id()`: Returns the id of the current node
 
 * `isModel()`: Returns true if the node is a model node (it has a volume attached)
+
+* `keyFrame(keyFrameIdx)`: Returns an existing keyframe (see below)
+
+* `keyFrameForFrame(frame)`: Returns an existing keyframe that has a frame number <= the given frame
 
 * `name()`: Returns the current name of the node.
 
@@ -129,6 +137,8 @@ end
 * `palette()`: Returns the current palette of the node.
 
 * `parent()`: Returns the id of the parent node - or `-1` if no parent exists (root node)
+
+* `setAnimation(string)`: Activate the animation
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
@@ -140,6 +150,51 @@ Access these functions like this:
 local scenegraphnode = [...]
 local name = scenegraphnode:name()
 ```
+
+## Keyframe
+
+> Valid interpolation strings
+>
+> * Instant
+> * Linear
+> * QuadEaseIn
+> * QuadEaseOut
+> * QuadEaseInOut
+> * CubicEaseIn
+> * CubicEaseOut
+> * CubicEaseInOut
+
+* `index()`: Returns the key frame index
+
+* `frame()`: Returns the frame for this key frame object
+
+* `interpolation()`: Returns interpolation string
+
+* `setInterpolation(string)`: Set the interpolation for this key frame - must be a valid string
+
+* `localScale()`: Returns the local scale vector
+
+* `setLocalScale(vec3)`:
+
+* `localOrientation()`:
+
+* `setLocalOrientation(quat)`:
+
+* `localTranslation()`:
+
+* `setLocalTranslation(vec3)`:
+
+* `worldScale()`:
+
+* `setWorldScale(vec3)`:
+
+* `worldOrientation()`:
+
+* `setWorldOrientation(quat)`:
+
+* `worldTranslation()`:
+
+* `setWorldTranslation(vec3)`:
 
 ## Palette and material
 
