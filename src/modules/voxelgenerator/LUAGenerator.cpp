@@ -912,6 +912,9 @@ static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
 
 	lua_newtable(s);
 	for (const auto &entry : sceneGraph->nodes()) {
+		if (!entry->second.isAnyModelNode()) {
+			continue;
+		}
 		lua_pushinteger(s, entry->key);
 		lua_rawseti(s, -2, lua_rawlen(s, -2) + 1);
 	}
@@ -955,7 +958,7 @@ static int luaVoxel_scenegraph_get_node(lua_State* s) {
 		return clua_error(s, "Could not find node for id %d", nodeId);
 	}
 	scenegraph::SceneGraphNode& node = sceneGraph->node(nodeId);
-	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
+	if (!node.isAnyModelNode()) {
 		return clua_error(s, "Invalid node for id %d", nodeId);
 	}
 	return luaVoxel_pushscenegraphnode(s, node);
@@ -1144,9 +1147,14 @@ static int luaVoxel_keyframe_localtranslation(lua_State *s) {
 
 static int luaVoxel_keyframe_setlocaltranslation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3& translation = clua_tovec<glm::vec3>(s, 2);
+	glm::vec3 val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::vec3((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setLocalTranslation(translation);
+	kf.transform().setLocalTranslation(val);
 	return 0;
 }
 
@@ -1159,9 +1167,14 @@ static int luaVoxel_keyframe_worldscale(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldscale(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3& scale = clua_tovec<glm::vec3>(s, 2);
+	glm::vec3 val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::vec3((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setWorldScale(scale);
+	kf.transform().setWorldScale(val);
 	return 0;
 }
 
@@ -1189,9 +1202,14 @@ static int luaVoxel_keyframe_worldtranslation(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldtranslation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3& translation = clua_tovec<glm::vec3>(s, 2);
+	glm::vec3 val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::vec3((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setWorldTranslation(translation);
+	kf.transform().setWorldTranslation(val);
 	return 0;
 }
 
