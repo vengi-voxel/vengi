@@ -17,6 +17,7 @@ General:
    - Fixed merging of nodes when pivots are used
    - Added support for `litematic` Minecraft support
    - Extended supported Minecraft materials
+   - Extended lua bindings for key frames and transforms
 
 VoxConvert:
 
