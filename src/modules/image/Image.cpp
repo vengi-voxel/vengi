@@ -104,18 +104,24 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	return colorAt(pc.x, pc.y);
 }
 
-bool writeImage(const image::ImagePtr &image, const core::String &filename) {
-	if (!image || !image->isLoaded()) {
+bool writeImage(const image::Image &image, const core::String &filename) {
+	if (!image.isLoaded()) {
 		return false;
 	}
 	if (filename.empty()) {
 		return false;
 	}
-	const io::FilePtr &png = io::filesystem()->open(filename, io::FileMode::SysWrite);
-	if (!png->validHandle())
+	const io::FilePtr &file = io::filesystem()->open(filename, io::FileMode::SysWrite);
+	if (!file->validHandle())
 		return false;
-	io::FileStream pngstream(png);
-	return image->writePng(pngstream);
+	io::FileStream stream(file);
+	return image.writePng(stream);
+}
+
+bool writeImage(const image::ImagePtr &image, const core::String& filename) {
+	if (!image)
+		return false;
+	return writeImage(*image.get(), filename);
 }
 
 ImagePtr loadImage(const io::FilePtr &file) {
