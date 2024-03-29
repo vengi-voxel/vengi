@@ -304,6 +304,11 @@ TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
 	runFile(sceneGraph, "splitobjects.lua");
 }
 
+TEST_F(LUAGeneratorTest, testScriptAnimate) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "animate.lua");
+}
+
 TEST_F(LUAGeneratorTest, testScriptThicken) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "thicken.lua");

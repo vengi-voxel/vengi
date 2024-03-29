@@ -1158,8 +1158,8 @@ static int luaVoxel_keyframe_localorientation(lua_State *s) {
 static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
 	glm::quat val;
-	if (clua_isvec<decltype(val)>(s, 2)) {
-		val = clua_tovec<decltype(val)>(s, 2);
+	if (clua_isquat(s, 2)) {
+		val = clua_toquat(s, 2);
 	} else {
 		const float x = (float)luaL_checknumber(s, 2);
 		const float y = (float)luaL_checknumber(s, 3);
@@ -1212,8 +1212,8 @@ static int luaVoxel_keyframe_worldorientation(lua_State *s) {
 static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
 	glm::quat val;
-	if (clua_isvec<decltype(val)>(s, 2)) {
-		val = clua_tovec<decltype(val)>(s, 2);
+	if (clua_isquat(s, 2)) {
+		val = clua_toquat(s, 2);
 	} else {
 		const float x = (float)luaL_checknumber(s, 2);
 		const float y = (float)luaL_checknumber(s, 3);
