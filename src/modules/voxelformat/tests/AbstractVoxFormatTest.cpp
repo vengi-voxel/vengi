@@ -464,14 +464,14 @@ void AbstractVoxFormatTest::testSaveMultipleModels(const core::String &filename,
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format, voxel::ValidateFlags flags) {
+void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format, const palette::Palette &palette, voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume model1(region);
 	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1;
-	// TODO: the palette is not yet properly
+	node1.setPalette(palette);
 	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));

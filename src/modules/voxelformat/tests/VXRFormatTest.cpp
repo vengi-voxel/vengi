@@ -3,6 +3,7 @@
  */
 
 #include "AbstractVoxFormatTest.h"
+#include "palette/Palette.h"
 #include "voxelformat/private/sandbox/VXMFormat.h"
 #include "voxelformat/private/sandbox/VXRFormat.h"
 
@@ -19,8 +20,9 @@ class VXRFormatTest: public AbstractVoxFormatTest {
 
 TEST_F(VXRFormatTest, testSaveSmallVoxel) {
 	VXMFormat vxm;
-	// TODO: add palette and pivot test
-	testSave("sandbox-smallvolumesavetest0.vxm", &vxm, voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot));
+	palette::Palette pal;
+	pal.nippon();
+	testSave("sandbox-smallvolumesavetest0.vxm", &vxm, pal, voxel::ValidateFlags::AllPaletteMinMatchingColors & ~(voxel::ValidateFlags::Pivot));
 	VXRFormat f;
 	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxr", &f);
 }
