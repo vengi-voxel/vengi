@@ -53,6 +53,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 								  const scenegraph::SceneGraphNode &modelNode) {
 	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	const int activeNode = sceneGraph.activeNode();
 	if (ImGui::BeginNeoTimelineEx(label.c_str(), nullptr, ImGuiNeoTimelineFlags_AllowFrameChanging)) {
 		for (scenegraph::SceneGraphKeyFrame &kf : modelNode.keyFrames()) {
 			int32_t oldFrameIdx = kf.frameIdx;
@@ -71,11 +72,16 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 				ImGui::EndTooltip();
 			}
 		}
-
+		if (activeNode != _lastActivedNodeId && modelNode.id() == activeNode) {
+			// TODO: doesn't work - see issue https://github.com/vengi-voxel/vengi/issues/437
+			ImGui::SetScrollHereY();
+			_lastActivedNodeId = activeNode;
+		}
 		_sceneMgr->setCurrentFrame(currentFrame);
 		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
 			_sceneMgr->nodeActivate(modelNode.id());
-		} else if (sceneGraph.activeNode() == modelNode.id()) {
+			_lastActivedNodeId = modelNode.id();
+		} else if (activeNode == modelNode.id()) {
 			ImGui::SetSelectedTimeline(label.c_str());
 		}
 		uint32_t selectionCount = ImGui::GetNeoKeyframeSelectionSize();
@@ -89,6 +95,12 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 		}
 		ImGui::EndNeoTimeLine();
 	}
+}
+
+bool AnimationTimeline::init() {
+	const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+	_lastActivedNodeId = sceneGraph.activeNode();
+	return true;
 }
 
 void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {

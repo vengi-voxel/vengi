@@ -37,6 +37,7 @@ private:
 	core::String _propertyValue;
 	int _dragDropSourceNodeId = InvalidNodeId;
 	int _dragDropTargetNodeId = InvalidNodeId;
+	int _lastActivedNodeId = InvalidNodeId;
 	SceneManagerPtr _sceneMgr;
 
 	void registerPopups();

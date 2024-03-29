@@ -184,7 +184,8 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 							  int depth, int referencedNodeId) {
 	const int nodeId = node.id();
 	bool open = false;
-	const bool referenceNode = node.reference() == sceneGraph.activeNode();
+	const int activeNode = sceneGraph.activeNode();
+	const bool referenceNode = node.reference() == activeNode;
 	const bool referencedNode = referencedNodeId == nodeId;
 	const bool referenceHighlight = referenceNode || referencedNode;
 
@@ -273,6 +274,11 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		}
 		ImGui::Unindent(indent);
 
+		if (activeNode != _lastActivedNodeId && nodeId == activeNode) {
+			ImGui::SetScrollHereY();
+			_lastActivedNodeId = activeNode;
+		}
+
 		if (nodeId != sceneGraph.root().id()) {
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 				ImGui::TextUnformatted(name.c_str());
@@ -296,6 +302,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		contextMenu(camera, sceneGraph, node, listener);
 		if (ImGui::IsItemActivated()) {
 			_sceneMgr->nodeActivate(nodeId);
+			_lastActivedNodeId = nodeId;
 		}
 		if (referenceNode) {
 			ImGui::TooltipText(_("Reference Node"));
@@ -324,6 +331,8 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 bool SceneGraphPanel::init() {
 	_animationSpeedVar = core::Var::getSafe(cfg::VoxEditAnimationSpeed);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
+	const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+	_lastActivedNodeId = sceneGraph.activeNode();
 	return true;
 }
 

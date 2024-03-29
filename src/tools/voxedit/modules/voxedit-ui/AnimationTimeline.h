@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/SharedPtr.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -27,6 +28,7 @@ private:
 	double _seconds = 0.0;
 	int32_t _startFrame = 0;
 	int32_t _endFrame = -1;
+	int _lastActivedNodeId = InvalidNodeId;
 	struct Selection {
 		scenegraph::FrameIndex frameIdx;
 		int nodeId;
@@ -45,6 +47,7 @@ public:
 	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
 				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
+	bool init();
 	bool update(const char *sequencerTitle, double deltaFrameSeconds);
 	void resetFrames();
 };

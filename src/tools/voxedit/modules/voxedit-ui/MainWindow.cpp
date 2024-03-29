@@ -250,6 +250,7 @@ bool MainWindow::init() {
 	_treePanel.init();
 	_positionsPanel.init();
 	_assetPanel.init();
+	_animationTimeline.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
