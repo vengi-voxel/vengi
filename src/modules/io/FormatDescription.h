@@ -119,6 +119,7 @@ const FormatDescription* fonts();
 const FormatDescription *lua();
 const FormatDescription* palettes();
 
+FormatDescription png();
 FormatDescription jascPalette();
 FormatDescription gimpPalette();
 

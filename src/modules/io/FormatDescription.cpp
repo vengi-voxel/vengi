@@ -13,10 +13,14 @@ namespace io {
 
 namespace format {
 
+FormatDescription png() {
+	return {"Portable Network Graphics", {"png"}, {}, FORMAT_FLAG_SAVE};
+}
+
 const FormatDescription *images() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
-		{"Portable Network Graphics", {"png"}, {}, FORMAT_FLAG_SAVE},
+		png(),
 		{"JPEG", {"jpeg", "jpg"}, {}, FORMAT_FLAG_SAVE},
 		{"Targa image file", {"tga"}, {}, 0u},
 		{"DDS", {"dds"}, {}, 0u},
