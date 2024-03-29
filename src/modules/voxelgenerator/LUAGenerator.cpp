@@ -1054,27 +1054,60 @@ static int luaVoxel_scenegraphnode_keyframeforframe(lua_State* s) {
 	scenegraph::FrameIndex frame = (scenegraph::FrameIndex)luaL_checkinteger(s, 2);
 	scenegraph::KeyFrameIndex keyFrameIdx = node->node->keyFrameForFrame(frame);
 	if (keyFrameIdx == InvalidKeyFrame) {
-		return clua_error(s, "No keyframe for frame %i", frame);
+		return clua_error(s, "No keyframe for frame %d", frame);
 	}
 	luaVoxel_pushkeyframe(s, *node->node, keyFrameIdx);
 	return 1;
+}
+
+static int luaVoxel_scenegraphnode_hasframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::FrameIndex frame = (scenegraph::FrameIndex)luaL_checkinteger(s, 2);
+	lua_pushboolean(s, node->node->hasKeyFrameForFrame(frame));
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_removekeyframeforframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::FrameIndex frame = (scenegraph::FrameIndex)luaL_checkinteger(s, 2);
+	scenegraph::KeyFrameIndex existingIndex = InvalidKeyFrame;
+	if (!node->node->hasKeyFrameForFrame(frame, &existingIndex)) {
+		return clua_error(s, "Failed to remove keyframe for frame %d", frame);
+	}
+	if (!node->node->removeKeyFrame(existingIndex)) {
+		return clua_error(s, "Failed to remove keyframe %d", existingIndex);
+	}
+	return 0;
+}
+
+static int luaVoxel_scenegraphnode_removekeyframe(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::KeyFrameIndex keyFrameIdx = (scenegraph::KeyFrameIndex)luaL_checkinteger(s, 2);
+	if (!node->node->removeKeyFrame(keyFrameIdx)) {
+		return clua_error(s, "Failed to remove keyframe %d", keyFrameIdx);
+	}
+	return 0;
 }
 
 static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	const int frameIdx = (int)luaL_checkinteger(s, 2);
 	scenegraph::InterpolationType interpolation = (scenegraph::InterpolationType)luaL_optinteger(s, 3, (int)scenegraph::InterpolationType::Linear);
-	if (node->node->hasKeyFrameForFrame(frameIdx)) {
-		return clua_error(s, "Keyframe for frame %i already exists", frameIdx);
+	scenegraph::KeyFrameIndex existingIndex = InvalidKeyFrame;
+	if (node->node->hasKeyFrameForFrame(frameIdx, &existingIndex)) {
+		return clua_error(s, "Keyframe for frame %d already exists (%d)", frameIdx, (int)existingIndex);
 	}
 	scenegraph::KeyFrameIndex newKeyFrameIdx = node->node->addKeyFrame(frameIdx);
 	if (newKeyFrameIdx == InvalidKeyFrame) {
-		return clua_error(s, "Failed to add keyframe for frame %i", frameIdx);
+		return clua_error(s, "Failed to add keyframe for frame %d", frameIdx);
 	}
 	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	sceneGraph->markMaxFramesDirty();
 	scenegraph::SceneGraphKeyFrame &kf = node->node->keyFrame(newKeyFrameIdx);
 	kf.interpolation = interpolation;
+	const scenegraph::SceneGraphKeyFrame &prevKf = node->node->keyFrame(newKeyFrameIdx - 1);
+	kf.transform() = prevKf.transform();
+	kf.longRotation = prevKf.longRotation;
 	luaVoxel_pushkeyframe(s, *node->node, newKeyFrameIdx);
 	return 1;
 }
@@ -1387,6 +1420,9 @@ static void prepareState(lua_State* s) {
 		{"keyFrame", luaVoxel_scenegraphnode_keyframe},
 		{"keyFrameForFrame", luaVoxel_scenegraphnode_keyframeforframe},
 		{"addKeyFrame", luaVoxel_scenegraphnode_addframe},
+		{"hasKeyFrameForFrame", luaVoxel_scenegraphnode_hasframe},
+		{"removeKeyFrameForFrame", luaVoxel_scenegraphnode_removekeyframeforframe},
+		{"removeKeyFrame", luaVoxel_scenegraphnode_removekeyframe},
 		{"addAnimation", luaVoxel_scenegraphnode_addanimation},
 		{"setAnimation", luaVoxel_scenegraphnode_setanimation},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
