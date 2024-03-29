@@ -26,6 +26,12 @@ Import given input image as volume. Uses a depth map to make a volume out of the
 
 The `--input` with e.g. `infile.png` will pick the depth map next to the image path called `infile-dm.png` as depth map.
 
+## Slice a volume into png images
+
+`./vengi-voxconvert --input yourfile.vox --output output.png --slices --merge`
+
+This imports `yourfile.vox` - does merge all the nodes into one and then export the png slices.
+
 ## Convert all obj files in a zip
 
 `./vengi-voxconvert --input input.zip --wildcard "*.obj" --output output.vengi`

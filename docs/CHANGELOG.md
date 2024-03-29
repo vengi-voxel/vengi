@@ -22,6 +22,7 @@ General:
 VoxConvert:
 
    - Added zip archive support for `--input`
+   - Added the ability to export into slices with `--slices` when `--output` is a png file
 
 VoxEdit:
 

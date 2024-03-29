@@ -18,6 +18,7 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "io/Stream.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -29,6 +30,7 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
@@ -82,6 +84,7 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--surface-only").setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
+	registerArg("--slice").setDescription("Allows to save the volume data as png slices if the output file is a png file");
 
 	voxelformat::FormatConfig::init();
 
@@ -173,6 +176,47 @@ static void printFormatDetails(const io::FormatDescription *desc, const core::St
 		}
 		Log::printf("}");
 	}
+}
+
+bool VoxConvert::slice(const scenegraph::SceneGraph& sceneGraph, const core::String &outfile) {
+	const core::String &ext = core::string::extractExtension(outfile);
+	const core::String &basePath = core::string::stripExtension(outfile);
+	for (const auto &e : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = e->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		const voxel::RawVolume *volume = node.volume();
+		core_assert(volume != nullptr);
+		const voxel::Region &region = volume->region();
+		const palette::Palette &palette = node.palette();
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			const core::String &filename = core::string::format("%s-%i.%s", basePath.c_str(), z, ext.c_str());
+			image::Image image(filename);
+			core::Buffer<core::RGBA> rgba(region.getWidthInVoxels() * region.getHeightInVoxels());
+			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					const voxel::Voxel &v = volume->voxel(x, y, z);
+					if (voxel::isAir(v.getMaterial())) {
+						continue;
+					}
+					const core::RGBA color = palette.color(v.getColor());
+					const int idx = (region.getUpperY() - y) * region.getWidthInVoxels() + (x - region.getLowerX());
+					rgba[idx] = color;
+				}
+			}
+			if (!image.loadRGBA((const uint8_t*)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
+				Log::error("Failed to load slice image %s", filename.c_str());
+				return false;
+			}
+			if (!image::writeImage(image, filename)) {
+				Log::error("Failed to write slice image %s", filename.c_str());
+				return false;
+			}
+		}
+	}
+	Log::info("Sliced models into %s", outfile.c_str());
+	return true;
 }
 
 app::AppState VoxConvert::onInit() {
@@ -287,21 +331,6 @@ app::AppState VoxConvert::onInit() {
 	if (!outfilesstr.empty()) {
 		Log::info("* output files:      - %s", outfilesstr.c_str());
 	}
-
-	if (outfiles.size() == 1 && io::isA(outfiles.front(), io::format::palettes()) && infiles.size() == 1) {
-		palette::Palette palette;
-		if (!voxelformat::importPalette(infiles[0], palette)) {
-			Log::error("Failed to import the palette from %s", infiles[0].c_str());
-			return app::AppState::InitFailure;
-		}
-		if (palette.save(outfiles.front().c_str())) {
-			Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfiles.front().c_str());
-			return state;
-		}
-		Log::error("Failed to write %s", outfiles.front().c_str());
-		return app::AppState::InitFailure;
-	}
-
 	core::String scriptParameters;
 	if (hasScript) {
 		scriptParameters = getArgVal("--script");
@@ -327,6 +356,22 @@ app::AppState VoxConvert::onInit() {
 	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
 		Log::info("Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
+	}
+
+	if (outfiles.size() == 1 && infiles.size() == 1 && !hasArg("--slice")) {
+		if (io::isA(outfiles.front(), io::format::palettes())) {
+			palette::Palette palette;
+			if (!voxelformat::importPalette(infiles[0], palette)) {
+				Log::error("Failed to import the palette from %s", infiles[0].c_str());
+				return app::AppState::InitFailure;
+			}
+			if (palette.save(outfiles.front().c_str())) {
+				Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfiles.front().c_str());
+				return state;
+			}
+			Log::error("Failed to write %s", outfiles.front().c_str());
+			return app::AppState::InitFailure;
+		}
 	}
 
 	if (!outfiles.empty()) {
@@ -533,18 +578,26 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	for (const core::String &outfile : outfiles) {
-		io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
-		if (!outputFile->validHandle()) {
-			Log::error("Could not open target file: %s", outfile.c_str());
-			return app::AppState::InitFailure;
+		const core::String &ext = core::string::extractExtension(outfile);
+		if (hasArg("--slice") && io::format::png().matchesExtension(ext)) {
+			if (!slice(sceneGraph, outfile)) {
+				Log::error("Failed to slice models");
+				return app::AppState::InitFailure;
+			}
+		} else {
+			io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
+			if (!outputFile->validHandle()) {
+				Log::error("Could not open target file: %s", outfile.c_str());
+				return app::AppState::InitFailure;
+			}
+			Log::debug("Save %i models", (int)sceneGraph.size());
+			voxelformat::SaveContext saveCtx;
+			if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx, false)) {
+				Log::error("Failed to write to output file '%s'", outfile.c_str());
+				return app::AppState::InitFailure;
+			}
+			Log::info("Wrote output file %s", outputFile->name().c_str());
 		}
-		Log::debug("Save %i models", (int)sceneGraph.size());
-		voxelformat::SaveContext saveCtx;
-		if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx, false)) {
-			Log::error("Failed to write to output file '%s'", outfile.c_str());
-			return app::AppState::InitFailure;
-		}
-		Log::info("Wrote output file %s", outputFile->name().c_str());
 	}
 	return state;
 }
