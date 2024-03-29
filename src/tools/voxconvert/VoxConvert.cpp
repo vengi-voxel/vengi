@@ -186,6 +186,7 @@ bool VoxConvert::slice(const scenegraph::SceneGraph& sceneGraph, const core::Str
 		if (!node.isModelNode()) {
 			continue;
 		}
+		Log::info("Slice model %s", node.name().c_str());
 		const voxel::RawVolume *volume = node.volume();
 		core_assert(volume != nullptr);
 		const voxel::Region &region = volume->region();
@@ -1041,7 +1042,7 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 		degree = glm::mod(axisStr.substr(2).toFloat(), 360.0f);
 	}
 	if (degree <= 1.0f) {
-		Log::warn("Don't rotate onaxis %c by %f degree", axisStr[0], degree);
+		Log::warn("Don't rotate on axis %c by %f degree", axisStr[0], degree);
 		return;
 	}
 	Log::info("Rotate on axis %c by %f degree", axisStr[0], degree);
