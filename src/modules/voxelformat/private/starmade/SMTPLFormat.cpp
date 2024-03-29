@@ -256,7 +256,7 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	return true;
 }
 
-void SMTPLFormat::loadPalette(palette::Palette &palette) const {
+void SMTPLFormat::loadPalette(palette::Palette &palette) {
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		uint8_t index = 0;
 		const core::RGBA rgba = BLOCKCOLOR[i].color;

@@ -20,8 +20,8 @@ protected:
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
-	void loadPalette(palette::Palette &palette) const;
 public:
+	static void loadPalette(palette::Palette &palette);
 	bool singleVolume() const override {
 		return true;
 	}
