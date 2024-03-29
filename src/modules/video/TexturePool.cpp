@@ -3,6 +3,8 @@
  */
 
 #include "TexturePool.h"
+#include "command/Command.h"
+#include "core/Log.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
 
@@ -75,6 +77,15 @@ image::ImagePtr TexturePool::loadImage(const core::String &name) {
 	const image::ImagePtr &image = image::loadImage(name);
 	_images.put(name, image);
 	return image;
+}
+
+void TexturePool::construct() {
+	command::Command::registerCommand("texturepoollist", [this](const command::CmdArgs &args) {
+		Log::info("TexturePool");
+		for (const auto &e : _cache) {
+			Log::info("- %s\n", e->first.c_str());
+		}
+	}).setHelp("Show all images in the texture pool");
 }
 
 bool TexturePool::init() {

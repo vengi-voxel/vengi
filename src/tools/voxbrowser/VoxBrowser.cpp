@@ -40,6 +40,7 @@ app::AppState VoxBrowser::onConstruct() {
 	voxelformat::FormatConfig::init();
 
 	_collectionMgr.construct();
+	_texturePool->construct();
 
 	command::Command::registerCommand("downloadall", [this](const command::CmdArgs &args) {
 		_collectionMgr.downloadAll();

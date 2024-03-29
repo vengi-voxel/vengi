@@ -34,6 +34,7 @@ public:
 		return _cache;
 	}
 
+	void construct() override;
 	bool init() override;
 	void shutdown() override;
 	void clear();

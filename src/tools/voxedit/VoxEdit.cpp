@@ -154,6 +154,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	_sceneMgr->construct();
 	_collectionMgr->construct();
+	_texturePool->construct();
 
 	command::Command::registerCommand("screenshot", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
