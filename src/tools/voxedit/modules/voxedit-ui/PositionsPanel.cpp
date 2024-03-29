@@ -21,6 +21,10 @@
 #include "voxel/RawVolume.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace voxedit {
 
@@ -270,14 +274,16 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 			scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
 			const scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 			const glm::mat4 &matrix = _localSpace ? transform.localMatrix() : transform.worldMatrix();
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), matrixTranslation, matrixRotation,
-												  matrixScale);
+			glm::vec3 matrixTranslation, matrixRotation, matrixScale, skew;
+			glm::quat matrixOrientation;
+			glm::vec4 perspective;
+			glm::decompose(matrix, matrixScale, matrixOrientation, matrixTranslation, skew, perspective);
 			bool change = false;
 			ImGui::Checkbox("Local transforms", &_localSpace);
 			ImGui::CheckboxVar("Update children", cfg::VoxEditTransformUpdateChildren);
-			change |= ImGui::InputFloat3("Tr", matrixTranslation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= ImGui::InputFloat3("Tr", glm::value_ptr(matrixTranslation), "%.3f",
+										 ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resettr")) {
 				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
@@ -285,7 +291,8 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			ImGui::TooltipText("Reset");
 
-			change |= ImGui::InputFloat3("Rt", matrixRotation, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			matrixRotation = glm::eulerAngles(matrixOrientation);
+			change |= ImGui::InputFloat3("Rt", glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resetrt")) {
 				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
@@ -293,7 +300,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			ImGui::TooltipText("Reset");
 
-			change |= ImGui::InputFloat3("Sc", matrixScale, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			change |= ImGui::InputFloat3("Sc", glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resetsc")) {
 				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
@@ -332,8 +339,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				if (pivotChanged) {
 					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {
-					ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale,
-															glm::value_ptr(matrix));
+					matrix = glm::recompose(matrixScale, glm::quat(matrixRotation), matrixTranslation, skew, perspective);
 					scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 					if (_localSpace) {
 						transform.setLocalMatrix(matrix);

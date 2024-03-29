@@ -616,7 +616,6 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			_voxelShaderVertData.gray = _meshState->grayed(idx);
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
 
-			// TODO: alpha support - sort according to eye pos
 			video::ScopedPolygonMode polygonMode(mode);
 			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Transparency]);
 			if (normals) {
