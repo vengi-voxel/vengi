@@ -19,8 +19,8 @@
 #endif
 #include <glm/gtx/quaternion.hpp>
 
-extern void clua_assert(lua_State* s, bool pass, const char *msg);
-extern void clua_assert_argc(lua_State* s, bool pass);
+void clua_assert(lua_State* s, bool pass, const char *msg);
+void clua_assert_argc(lua_State* s, bool pass);
 
 template<class T>
 struct clua_meta {};
@@ -56,9 +56,9 @@ template<> struct clua_name<glm::vec3> { static char const *name() {return "g_ve
 template<> struct clua_name<glm::vec4> { static char const *name() {return "g_vec4";} };
 template<> struct clua_name<glm::quat> { static char const *name() {return "g_quat";} };
 
-extern int clua_assignmetatable(lua_State* s, const char *name);
+int clua_assignmetatable(lua_State* s, const char *name);
 
-extern int clua_ioloader(lua_State *s);
+int clua_ioloader(lua_State *s);
 
 template<class T>
 T* clua_newuserdata(lua_State* s, const T& data) {
@@ -122,9 +122,9 @@ T* clua_get(lua_State *s, int n) {
 	return clua_getudata<T*>(s, n, clua_meta<RAWTYPE>::name());
 }
 
-extern bool clua_registernew(lua_State* s, const char *name, lua_CFunction func);
-extern bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
-extern bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
+bool clua_registernew(lua_State* s, const char *name, lua_CFunction func);
+bool clua_registerfuncs(lua_State* s, const luaL_Reg* funcs, const char *name);
+bool clua_registerfuncsglobal(lua_State* s, const luaL_Reg* funcs, const char *meta, const char *name);
 
 
 template<class T>
@@ -203,7 +203,7 @@ inline int clua_push<int>(lua_State* s, const int& v) {
 	return 1;
 }
 
-extern glm::quat clua_toquat(lua_State *s, int n);
+glm::quat clua_toquat(lua_State *s, int n);
 bool clua_isquat(lua_State *s, int n);
 
 template<class T>
@@ -585,21 +585,22 @@ void clua_vecregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<RAWTYPE>::name());
 }
 
-extern int clua_errorhandler(lua_State* s);
-extern void clua_quatregister(lua_State* s);
+int clua_errorhandler(lua_State* s);
+void clua_quatregister(lua_State* s);
 
-extern bool clua_optboolean(lua_State* s, int index, bool defaultVal);
+bool clua_optboolean(lua_State* s, int index, bool defaultVal);
 
-extern int clua_typerror(lua_State *s, int narg, const char *tname);
+int clua_typerror(lua_State *s, int narg, const char *tname);
 
-extern int clua_checkboolean(lua_State *s, int index);
+int clua_checkboolean(lua_State *s, int index);
 
 /**
  * @brief Registers all shared lua modules/globals/functions
  */
-extern void clua_register(lua_State *s);
-extern void clua_mathregister(lua_State *s);
+void clua_register(lua_State *s);
+void clua_mathregister(lua_State *s);
+void clua_httpregister(lua_State *s);
 
-extern void clua_cmdregister(lua_State *s);
-extern void clua_varregister(lua_State *s);
-extern void clua_logregister(lua_State *s);
+void clua_cmdregister(lua_State *s);
+void clua_varregister(lua_State *s);
+void clua_logregister(lua_State *s);

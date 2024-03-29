@@ -10,6 +10,9 @@
 #include "core/Var.h"
 #include "app/App.h"
 #include "core/collection/StringSet.h"
+#include "http/Http.h"
+#include "http/Request.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -515,6 +518,32 @@ void clua_register(lua_State *s) {
 	clua_cmdregister(s);
 	clua_varregister(s);
 	clua_logregister(s);
+}
+
+static int clua_http_get(lua_State *s) {
+	const char *url = luaL_checkstring(s, 1);
+	http::Request request(url, http::RequestType::GET);
+	io::BufferedReadWriteStream outStream;
+	int status = 0;
+	if (!request.execute(outStream, &status)) {
+		return clua_error(s, "Failed to execute request for url: %s", url);
+	}
+	if (!http::isValidStatusCode(status)) {
+		return clua_error(s, "Invalid status code %i for request %s", status, url);
+	}
+	outStream.seek(0);
+	core::String content;
+	outStream.readString(outStream.size(), content);
+	lua_pushstring(s, content.c_str());
+	return 1;
+}
+
+void clua_httpregister(lua_State *s) {
+	static const luaL_Reg shapeFuncs[] = {
+		{"get", clua_http_get},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, shapeFuncs, "__meta_http", "g_http");
 }
 
 void clua_mathregister(lua_State *s) {
