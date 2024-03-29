@@ -146,7 +146,7 @@ end
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
-* `setPivot(vec3)`:
+* `setPivot(vec3)`, `setPivot(x, y, z)`:
 
 * `volume()`: Gives you access to the volume of the node.
 
@@ -180,27 +180,29 @@ local name = scenegraphnode:name()
 
 * `localScale()`: Returns the local scale vector
 
-* `setLocalScale(vec3)`:
+* `setLocalScale(vec3)`, `setLocalScale(x, y, z)`:
 
-* `localOrientation()`:
+* `localOrientation()`: Returns a quaternion object
 
-* `setLocalOrientation(quat)`:
+* `setLocalOrientation(quat)`, `setLocalOrientation(x, y, z, w)`:
 
-* `localTranslation()`:
+* `localTranslation()`: Returns a vec3 object
 
-* `setLocalTranslation(vec3)`:
+* `setLocalTranslation(vec3)`, `setLocalTranslation(x, y, z)`:
 
-* `worldScale()`:
+* `worldScale()`: Returns a vec3 object
 
-* `setWorldScale(vec3)`:
+* `setWorldScale(vec3)`, `setWorldScale(x, y, z)`:
 
-* `worldOrientation()`:
+* `worldOrientation()`: Returns a quaternion object
 
-* `setWorldOrientation(quat)`:
+* `setWorldOrientation(quat)`, `setWorldOrientation(x, y, z, w)`:
 
-* `worldTranslation()`:
+* `worldTranslation()`: Returns a vec3 object
 
-* `setWorldTranslation(vec3)`:
+* `setWorldTranslation(vec3)`, `setWorldTranslation(x, y, z)`:
+
+> **NOTE** After you've modified something on a key frame, you have to call `g_scenegraph.updateTransforms()`!
 
 ## Palette and material
 
