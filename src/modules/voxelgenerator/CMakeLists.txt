@@ -4,6 +4,7 @@ set(LUA_SRCS
 	scripts/modules/perlin.lua
 	scripts/modules/volume.lua
 	scripts/align.lua
+	scripts/animate.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
 	scripts/erode.lua
