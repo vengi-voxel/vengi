@@ -34,9 +34,12 @@
 
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/vector_relational.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/transform.hpp>
-#include <glm/vector_relational.hpp>
 
 namespace voxedit {
 
