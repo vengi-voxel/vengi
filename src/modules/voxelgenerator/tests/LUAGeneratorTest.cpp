@@ -12,6 +12,8 @@
 
 namespace voxelgenerator {
 
+const size_t InitialSceneGraphModelSize = 2u;
+
 class LUAGeneratorTest : public app::AbstractTest {
 protected:
 	const voxel::Region _region{0, 0, 0, 7, 7, 7};
@@ -97,12 +99,13 @@ TEST_F(LUAGeneratorTest, testExecute) {
 			local colors = node:palette():colors()
 			local newpal = g_palette.new()
 			newpal:load("built-in:minecraft")
+			node:setPalette(newpal)
 		end
 	)";
 
 	scenegraph::SceneGraph sceneGraph;
 	run(sceneGraph, script);
-	ASSERT_EQ(1u, sceneGraph.size());
+	ASSERT_EQ(InitialSceneGraphModelSize, sceneGraph.size());
 	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
 	EXPECT_EQ(42u, volume->voxel(0, 0, 0).getColor());
 	EXPECT_NE(0u, volume->voxel(1, 0, 0).getColor());
@@ -287,13 +290,13 @@ TEST_F(LUAGeneratorTest, testScriptSlice) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "slice.lua", {"1", "1", "1"});
 	const uint32_t slices = _region.getWidthInVoxels() * _region.getHeightInVoxels() * _region.getDepthInVoxels();
-	EXPECT_EQ(slices + 1u, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
+	EXPECT_EQ(slices + InitialSceneGraphModelSize, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitcolor.lua");
-	EXPECT_EQ(3u, sceneGraph.nodeSize());
+	EXPECT_EQ(InitialSceneGraphModelSize + 2u, sceneGraph.nodeSize());
 }
 
 TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
