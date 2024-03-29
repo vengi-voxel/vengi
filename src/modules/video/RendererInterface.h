@@ -84,6 +84,7 @@ bool currentState(State state);
 bool disable(State state);
 void colorMask(bool red, bool green, bool blue, bool alpha);
 bool cullFace(Face face);
+Face currentCullFace();
 bool depthFunc(CompareFunc func);
 CompareFunc getDepthFunc();
 void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func);

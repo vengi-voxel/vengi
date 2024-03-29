@@ -398,6 +398,10 @@ bool cullFace(Face face) {
 	return true;
 }
 
+Face currentCullFace() {
+	return glstate().cullFace;
+}
+
 bool depthFunc(CompareFunc func) {
 	if (glstate().depthFunc == func) {
 		return false;
