@@ -58,7 +58,7 @@ local function animate(node, frame, maxKeyFrames)
 	end
 end
 
-function main(unused_node, unused_region, unused_color, unused_padding)
+function main(_, _, _)
 	local allNodeIds = g_scenegraph.nodeIds()
 	for _, nodeId in ipairs(allNodeIds) do
 		local node = g_scenegraph.get(nodeId)
