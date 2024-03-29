@@ -51,7 +51,7 @@ protected:
 	void testSaveSingleVoxel(const core::String &filename, Format *format);
 	void testSaveSmallVolume(const core::String &filename, Format *format);
 
-	void testSave(const core::String &filename, Format *format);
+	void testSave(const core::String &filename, Format *format, voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testSaveLoadVoxel(const core::String &filename, Format *format, int mins = 0, int maxs = 1,
 						   voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette));

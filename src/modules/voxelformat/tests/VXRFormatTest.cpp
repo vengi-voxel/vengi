@@ -19,7 +19,8 @@ class VXRFormatTest: public AbstractVoxFormatTest {
 
 TEST_F(VXRFormatTest, testSaveSmallVoxel) {
 	VXMFormat vxm;
-	testSave("sandbox-smallvolumesavetest0.vxm", &vxm);
+	// TODO: add palette and pivot test
+	testSave("sandbox-smallvolumesavetest0.vxm", &vxm, voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Pivot));
 	VXRFormat f;
 	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxr", &f);
 }

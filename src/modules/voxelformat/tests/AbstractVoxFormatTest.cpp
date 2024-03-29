@@ -52,6 +52,7 @@ void AbstractVoxFormatTest::dump(const core::String &srcFilename, const scenegra
 }
 
 void AbstractVoxFormatTest::dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename) {
+	SCOPED_TRACE(filename.c_str());
 	const io::FilePtr &file = open(filename, io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());
 	io::FileStream stream(file);
@@ -73,6 +74,7 @@ void AbstractVoxFormatTest::dump(const core::String &structName, voxel::RawVolum
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format,
 														 voxel::ValidateFlags flags) {
+	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
@@ -94,6 +96,7 @@ void AbstractVoxFormatTest::testFirstAndLastPaletteIndex(const core::String &fil
 
 void AbstractVoxFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename,
 																   Format &destFormat, voxel::ValidateFlags flags) {
+	SCOPED_TRACE(destFilename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(1));
 	voxel::RawVolume original(region);
 	const palette::Palette pal1 = voxel::getPalette();
@@ -138,6 +141,7 @@ void AbstractVoxFormatTest::canLoad(scenegraph::SceneGraph &sceneGraph, const co
 	if (!file->validHandle()) {
 		GTEST_SKIP() << "Could not open " << filename;
 	} else {
+		SCOPED_TRACE(filename.c_str());
 		io::FileStream stream(file);
 		io::FileDescription fileDesc;
 		fileDesc.set(filename);
@@ -155,6 +159,7 @@ void AbstractVoxFormatTest::checkColor(core::RGBA c1, const palette::Palette &pa
 
 void AbstractVoxFormatTest::testRGBSmall(const core::String &filename, io::SeekableReadStream &stream,
 										 scenegraph::SceneGraph &sceneGraph) {
+	SCOPED_TRACE(filename.c_str());
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
@@ -193,6 +198,7 @@ void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename) {
 
 void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int width, int height,
 											   const core::RGBA expectedColor, int expectedX, int expectedY) {
+	SCOPED_TRACE(filename.c_str());
 	io::FileStream loadStream(open(filename));
 	ASSERT_TRUE(loadStream.valid());
 	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, loadStream, testLoadCtx);
@@ -206,6 +212,7 @@ void AbstractVoxFormatTest::testLoadScreenshot(const core::String &filename, int
 }
 
 void AbstractVoxFormatTest::testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename) {
+	SCOPED_TRACE(filename.c_str());
 	scenegraph::SceneGraph sceneGraph;
 	{
 		// load and check that the file contains the expected colors
@@ -230,6 +237,7 @@ bool AbstractVoxFormatTest::saveSceneGraph(scenegraph::SceneGraph &sceneGraph, c
 }
 
 void AbstractVoxFormatTest::testRGB(const core::String &filename, float maxDelta) {
+	SCOPED_TRACE(filename.c_str());
 	scenegraph::SceneGraph sceneGraph;
 	const io::FilePtr &file = open(filename);
 	ASSERT_TRUE(file->validHandle()) << "Could not open " << filename.c_str();
@@ -377,6 +385,7 @@ void AbstractVoxFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &sr
 }
 
 void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String &filename, Format *format) {
+	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -397,6 +406,7 @@ void AbstractVoxFormatTest::testSaveSingleVoxel(const core::String &filename, Fo
 }
 
 void AbstractVoxFormatTest::testSaveSmallVolume(const core::String &filename, Format *format) {
+	SCOPED_TRACE(filename.c_str());
 	palette::Palette pal;
 	pal.magicaVoxel();
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0, 1, 1));
@@ -423,6 +433,7 @@ void AbstractVoxFormatTest::testSaveSmallVolume(const core::String &filename, Fo
 }
 
 void AbstractVoxFormatTest::testSaveMultipleModels(const core::String &filename, Format *format) {
+	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume model1(region);
 	voxel::RawVolume model2(region);
@@ -453,12 +464,14 @@ void AbstractVoxFormatTest::testSaveMultipleModels(const core::String &filename,
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
 }
 
-void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format) {
+void AbstractVoxFormatTest::testSave(const core::String &filename, Format *format, voxel::ValidateFlags flags) {
+	SCOPED_TRACE(filename.c_str());
 	voxel::Region region(glm::ivec3(0), glm::ivec3(0));
 	voxel::RawVolume model1(region);
 	EXPECT_TRUE(model1.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node1;
+	// TODO: the palette is not yet properly
 	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
 	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
@@ -467,10 +480,12 @@ void AbstractVoxFormatTest::testSave(const core::String &filename, Format *forma
 	bufferedStream.seek(0);
 	EXPECT_TRUE(format->load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), sceneGraph.size());
+	voxel::sceneGraphComparator(sceneGraph, sceneGraphLoad, flags);
 }
 
 void AbstractVoxFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs,
 											  voxel::ValidateFlags flags) {
+	SCOPED_TRACE(filename.c_str());
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 
