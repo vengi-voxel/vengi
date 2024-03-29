@@ -204,6 +204,7 @@ inline int clua_push<int>(lua_State* s, const int& v) {
 }
 
 extern glm::quat clua_toquat(lua_State *s, int n);
+bool clua_isquat(lua_State *s, int n);
 
 template<class T>
 T clua_tovec(lua_State *s, int n) {
@@ -212,18 +213,6 @@ T clua_tovec(lua_State *s, int n) {
 	for (int i = 0; i < T::length(); ++i) {
 		lua_getfield(s, n, VEC_MEMBERS[i]);
 		v[i] = LuaNumberFuncs<typename T::value_type>::check(s, -1);
-		lua_pop(s, 1);
-	}
-	return v;
-}
-
-template<>
-inline glm::quat clua_tovec(lua_State *s, int n) {
-	luaL_checktype(s, n, LUA_TTABLE);
-	glm::quat v(0.0f, 0.0f, 0.0f, 0.0f);
-	for (int i = 0; i < glm::quat::length(); ++i) {
-		lua_getfield(s, n, VEC_MEMBERS[i]);
-		v[i] = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
 		lua_pop(s, 1);
 	}
 	return v;
@@ -257,11 +246,6 @@ int clua_vecadd(lua_State* s) {
 	return clua_push(s, c);
 }
 
-template<>
-inline int clua_vecadd<glm::quat>(lua_State* s) {
-	return clua_error(s, "add not implemented for quat");
-}
-
 template<class T>
 int clua_vecdiv(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
@@ -274,11 +258,6 @@ int clua_vecdiv(lua_State* s) {
 	return clua_push(s, c);
 }
 
-template<>
-inline int clua_vecdiv<glm::quat>(lua_State* s) {
-	return clua_error(s, "div not implemented for quat");
-}
-
 template<class T>
 int clua_vecmul(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
@@ -288,14 +267,6 @@ int clua_vecmul(lua_State* s) {
 		return clua_push(s, c);
 	}
 	const T& c = a * (typename T::value_type)lua_tonumber(s, 2);
-	return clua_push(s, c);
-}
-
-template<>
-inline int clua_vecmul<glm::quat>(lua_State* s) {
-	const glm::quat& a = clua_toquat(s, 1);
-	const glm::quat& b = clua_toquat(s, 2);
-	const glm::quat& c = a * b;
 	return clua_push(s, c);
 }
 
@@ -496,14 +467,6 @@ struct clua_vecfunc<glm::vec<N, int> > {
 	LUA_GLM_VEC_FUNC2_unsupported(int, dot)
 };
 
-template<>
-struct clua_vecnew<glm::quat> {
-static int vecnew(lua_State* s) {
-	glm::quat array = glm::quat_identity<float, glm::defaultp>();
-	return clua_push(s, array);
-}
-};
-
 template<class T>
 static int clua_vecindex(lua_State *s) {
 	const T* v = clua_get<T>(s, 1);
@@ -556,13 +519,13 @@ static int clua_vecnewindex(lua_State *s) {
 	case 'x':
 	case 'r':
 		(*v)[0] = t;
-		return 1;
+		return 0;
 	case '1':
 	case 'y':
 	case 'g':
 		if (T::length() >= 2) {
 			(*v)[1] = t;
-			return 1;
+			return 0;
 		}
 		break;
 	case '2':
@@ -570,7 +533,7 @@ static int clua_vecnewindex(lua_State *s) {
 	case 'b':
 		if (T::length() >= 3) {
 			(*v)[2] = t;
-			return 1;
+			return 0;
 		}
 		break;
 	case '3':
@@ -578,7 +541,7 @@ static int clua_vecnewindex(lua_State *s) {
 	case 'a':
 		if (T::length() >= 4) {
 			(*v)[3] = t;
-			return 1;
+			return 0;
 		}
 		break;
 	default:

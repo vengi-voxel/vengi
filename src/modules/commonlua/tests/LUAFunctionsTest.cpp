@@ -5,6 +5,10 @@
 #include "app/tests/AbstractTest.h"
 #include "commonlua/LUAFunctions.h"
 #include <glm/vector_relational.hpp>
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/string_cast.hpp>
 
 namespace lua {
 
@@ -13,11 +17,11 @@ public:
 	template<typename T>
 	void test(const char *script, const T& expected) {
 		LUA lua;
-		clua_vecregister<T>(lua.state());
+		clua_mathregister(lua);
 		ASSERT_TRUE(lua.load(script)) << lua.error();
 		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 		const T& v = clua_tovec<T>(lua, -1);
-		EXPECT_TRUE(glm::all(glm::equal(expected, v)));
+		EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
 	}
 };
 
@@ -78,6 +82,36 @@ TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
 		end
 	)";
 	test(script, glm::ivec3(1, 2, 1));
+}
+
+TEST_F(LUAFunctionsTest, testQuaternionNew) {
+	const char *script = R"(
+		function test()
+			return g_quat.new(0, 0, 0, 1)
+		end
+	)";
+	const glm::quat expected = glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
+	LUA lua;
+	clua_mathregister(lua);
+	ASSERT_TRUE(lua.load(script)) << lua.error();
+	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
+	const glm::quat& v = clua_toquat(lua, -1);
+	EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
+}
+
+TEST_F(LUAFunctionsTest, testQuaternionRotateX) {
+	const char *script = R"(
+		function test()
+			return g_quat.rotateX(0)
+		end
+	)";
+	const glm::quat expected = glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
+	LUA lua;
+	clua_mathregister(lua);
+	ASSERT_TRUE(lua.load(script)) << lua.error();
+	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
+	const glm::quat& v = clua_toquat(lua, -1);
+	EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
 }
 
 TEST_F(LUAFunctionsTest, testVectorMultiplication) {

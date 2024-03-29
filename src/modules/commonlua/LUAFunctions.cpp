@@ -368,14 +368,25 @@ int clua_ioloader(lua_State *s) {
 	return 1;
 }
 
+bool clua_isquat(lua_State *s, int n) {
+	return lua_istable(s, n);
+}
+
 glm::quat clua_toquat(lua_State *s, int n) {
 	luaL_checktype(s, n, LUA_TTABLE);
 	glm::quat v;
-	for (int i = 0; i < 4; ++i) {
-		lua_getfield(s, n, VEC_MEMBERS[i]);
-		v[i] = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
-		lua_pop(s, 1);
-	}
+	lua_getfield(s, n, VEC_MEMBERS[0]);
+	v.x = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	lua_pop(s, 1);
+	lua_getfield(s, n, VEC_MEMBERS[1]);
+	v.y = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	lua_pop(s, 1);
+	lua_getfield(s, n, VEC_MEMBERS[2]);
+	v.z = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	lua_pop(s, 1);
+	lua_getfield(s, n, VEC_MEMBERS[3]);
+	v.w = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	lua_pop(s, 1);
 	return v;
 }
 
@@ -438,26 +449,61 @@ static int clua_quat_rotate_z(lua_State* s) {
 	return clua_push(s, rotateZ(z));
 }
 
+static int clua_quat_new(lua_State* s) {
+	glm::quat array = glm::quat_identity<float, glm::defaultp>();
+	return clua_push(s, array);
+}
+
+static int clua_quatmul(lua_State* s) {
+	const glm::quat& a = clua_toquat(s, 1);
+	const glm::quat& b = clua_toquat(s, 2);
+	const glm::quat& c = a * b;
+	return clua_push(s, c);
+}
+
+static int clua_quatindex(lua_State *s) {
+	const glm::quat& v = clua_toquat(s, 1);
+	const char* i = luaL_checkstring(s, 2);
+
+	switch (*i) {
+	case '0':
+	case 'x':
+		lua_pushnumber(s, v.x);
+		return 1;
+	case '1':
+	case 'y':
+		lua_pushnumber(s, v.y);
+		return 1;
+	case '2':
+	case 'z':
+		lua_pushnumber(s, v.z);
+		return 1;
+	case '3':
+	case 'w':
+		lua_pushnumber(s, v.w);
+		return 1;
+	default:
+		break;
+	}
+	return clua_error(s, "Invalid component %c", *i);
+}
+
 void clua_quatregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
-		{"__add", clua_vecadd<glm::quat>},
-		{"__sub", clua_vecsub<glm::quat>},
-		{"__mul", clua_vecmul<glm::quat>},
-		{"__unm", clua_vecnegate<glm::quat>},
-		{"__index", clua_vecindex<glm::quat>},
-		{"__newindex", clua_vecnewindex<glm::quat>},
+		{"__mul", clua_quatmul},
+		{"__index", clua_quatindex},
 		{nullptr, nullptr}
 	};
 	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
 	clua_registerfuncs(s, funcs, clua_meta<glm::quat>::name());
 	const luaL_Reg globalFuncs[] = {
-		{"new",          clua_vecnew<glm::quat>::vecnew},
+		{"new",          clua_quat_new},
 		{"rotateXYZ",    clua_quat_rotate_xyz},
 		{"rotateXY",     clua_quat_rotate_xy},
 		{"rotateYZ",     clua_quat_rotate_yz},
 		{"rotateXZ",     clua_quat_rotate_xz},
-		{"rotateY",      clua_quat_rotate_x},
-		{"rotateX",      clua_quat_rotate_y},
+		{"rotateX",      clua_quat_rotate_x},
+		{"rotateY",      clua_quat_rotate_y},
 		{"rotateZ",      clua_quat_rotate_z},
 		{nullptr, nullptr}
 	};
