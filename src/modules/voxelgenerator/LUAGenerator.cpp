@@ -733,7 +733,7 @@ static int luaVoxel_region_tostring(lua_State *s) {
 	const voxel::Region* region = luaVoxel_toRegion(s, 1);
 	const glm::ivec3& mins = region->getLowerCorner();
 	const glm::ivec3& maxs = region->getUpperCorner();
-	lua_pushfstring(s, "region: [%i:%i:%i]/[%i:%i:%i]", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+	lua_pushfstring(s, "region: [%d:%d:%d]/[%d:%d:%d]", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	return 1;
 }
 
