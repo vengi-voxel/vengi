@@ -50,14 +50,14 @@ protected:
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(volume, true);
-			node.setName("parent");
+			node.setName("belt");
 			nodeId = sceneGraph.emplace(core::move(node));
 		}
 		ASSERT_NE(nodeId, InvalidNodeId);
 		{
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(new voxel::RawVolume(_region), true);
-			node.setName("child");
+			node.setName("head");
 			sceneGraph.emplace(core::move(node), nodeId);
 		}
 		voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
