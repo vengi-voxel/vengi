@@ -1125,9 +1125,14 @@ static int luaVoxel_keyframe_localscale(lua_State *s) {
 
 static int luaVoxel_keyframe_setlocalscale(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3& scale = clua_tovec<glm::vec3>(s, 2);
+	glm::vec3 val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::vec3((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setLocalScale(scale);
+	kf.transform().setLocalScale(val);
 	return 0;
 }
 
@@ -1140,9 +1145,14 @@ static int luaVoxel_keyframe_localorientation(lua_State *s) {
 
 static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::quat& orientation = clua_toquat(s, 2);
+	glm::quat val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::quat((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4), (float)luaL_checknumber(s, 5));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setLocalOrientation(orientation);
+	kf.transform().setLocalOrientation(val);
 	return 0;
 }
 
@@ -1195,9 +1205,14 @@ static int luaVoxel_keyframe_worldorientation(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::quat& orientation = clua_toquat(s, 2);
+	glm::quat val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::quat((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4), (float)luaL_checknumber(s, 5));
+	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
-	kf.transform().setWorldOrientation(orientation);
+	kf.transform().setWorldOrientation(val);
 	return 0;
 }
 
@@ -1261,8 +1276,13 @@ static int luaVoxel_scenegraphnode_setpalette(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	const glm::vec3& pivot = clua_tovec<glm::vec3>(s, 2);
-	node->node->setPivot(pivot);
+	glm::vec3 val;
+	if (clua_isvec<decltype(val)>(s, 2)) {
+		val = clua_tovec<decltype(val)>(s, 2);
+	} else {
+		val = glm::vec3((float)luaL_checknumber(s, 2), (float)luaL_checknumber(s, 3), (float)luaL_checknumber(s, 4));
+	}
+	node->node->setPivot(val);
 	return 0;
 }
 
