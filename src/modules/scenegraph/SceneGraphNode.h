@@ -254,7 +254,7 @@ public:
 	 * Or if no direct key frame exists, the key frame that is interpolated towards
 	 */
 	KeyFrameIndex keyFrameForFrame(FrameIndex frameIdx) const;
-	bool hasKeyFrameForFrame(FrameIndex frameIdx) const;
+	bool hasKeyFrameForFrame(FrameIndex frameIdx, KeyFrameIndex *existingIndex = nullptr) const;
 	KeyFrameIndex previousKeyFrameForFrame(FrameIndex frameIdx) const;
 	KeyFrameIndex nextKeyFrameForFrame(FrameIndex frameIdx) const;
 	void setTransform(KeyFrameIndex keyFrameIdx, const SceneGraphTransform &transform);

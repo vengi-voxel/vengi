@@ -591,12 +591,15 @@ SceneGraphKeyFramesMap &SceneGraphNode::allKeyFrames() {
 	return _keyFramesMap;
 }
 
-bool SceneGraphNode::hasKeyFrameForFrame(FrameIndex frameIdx) const {
+bool SceneGraphNode::hasKeyFrameForFrame(FrameIndex frameIdx, KeyFrameIndex *existingIndex) const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
-	const int n = (int)kfs.size();
-	for (int i = 0; i < n; ++i) {
+	const KeyFrameIndex n = (KeyFrameIndex)kfs.size();
+	for (KeyFrameIndex i = 0; i < n; ++i) {
 		const SceneGraphKeyFrame &kf = kfs[i];
 		if (kf.frameIdx == frameIdx) {
+			if (existingIndex) {
+				*existingIndex = i;
+			}
 			return true;
 		}
 	}
