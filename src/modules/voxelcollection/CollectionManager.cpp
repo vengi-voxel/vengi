@@ -20,6 +20,9 @@ CollectionManager::~CollectionManager() {
 }
 
 bool CollectionManager::init() {
+	VoxelSource local;
+	local.name = "local";
+	_sources.push_back(local);
 	return true;
 }
 
@@ -29,9 +32,9 @@ void CollectionManager::shutdown() {
 		Log::debug("Wait for local sources to finish");
 		_local.wait();
 	}
-	if (_online.valid()) {
+	if (_onlineSources.valid()) {
 		Log::debug("Wait for online sources to finish");
-		_online.wait();
+		_onlineSources.wait();
 	}
 }
 
@@ -55,7 +58,7 @@ void CollectionManager::local() {
 			if (!io::isA(entry.name, voxelformat::voxelLoad())) {
 				continue;
 			}
-			voxelcollection::VoxelFile voxelFile;
+			VoxelFile voxelFile;
 			voxelFile.name = entry.fullPath.substr(docs.size());
 			voxelFile.fullPath = entry.fullPath;
 			voxelFile.url = "file://" + entry.fullPath;
@@ -69,36 +72,25 @@ void CollectionManager::local() {
 	});
 }
 
-void CollectionManager::online() {
-	if (_online.valid()) {
+void CollectionManager::online(bool resolve) {
+	if (_onlineSources.valid()) {
 		return;
 	}
-	_online = app::async([&]() {
-		if (_shouldQuit) {
-			return;
-		}
-		voxelcollection::Downloader downloader;
-		auto sources = downloader.sources();
-		Log::info("Found %d online sources", (int)sources.size());
-		for (const voxelcollection::VoxelSource &source : sources) {
-			if (_shouldQuit) {
-				return;
-			}
-			const core::DynamicArray<voxelcollection::VoxelFile> &files = downloader.resolve(_filesystem, source, _shouldQuit);
-			_newVoxelFiles.push(files.begin(), files.end());
-		}
+	_onlineSources = app::async([&]() {
+		Downloader downloader;
+		return downloader.sources();
 	});
 }
 
 void CollectionManager::thumbnailAll() {
 	for (const auto &e : _voxelFilesMap) {
-		for (const voxelcollection::VoxelFile &voxelFile : e->value.files) {
+		for (const VoxelFile &voxelFile : e->value.files) {
 			loadThumbnail(voxelFile);
 		}
 	}
 }
 
-void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFile) {
+void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	if (_texturePool->has(voxelFile.name)) {
 		return;
 	}
@@ -151,9 +143,35 @@ void CollectionManager::loadThumbnail(const voxelcollection::VoxelFile &voxelFil
 	}
 }
 
+void CollectionManager::resolve(const VoxelSource &source) {
+	if (!_onlineResolvedSources.insert(source.name)) {
+		return;
+	}
+	app::async([&]() {
+		Downloader downloader;
+		if (_shouldQuit) {
+			return;
+		}
+		const VoxelFiles &files = downloader.resolve(_filesystem, source, _shouldQuit);
+		_newVoxelFiles.push(files.begin(), files.end());
+	});
+}
+
+bool CollectionManager::resolved(const VoxelSource &source) const {
+	if (source.name == "local") {
+		return _local.valid();
+	}
+	return _onlineResolvedSources.has(source.name);
+}
+
 void CollectionManager::update(double nowSeconds, int n) {
 	if (app::App::getInstance()->shouldQuit()) {
 		_shouldQuit = true;
+	}
+
+	if (_onlineSources.valid() && _onlineSources.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+		_sources.append(_onlineSources.get());
+		_onlineSources = {};
 	}
 
 	image::ImagePtr image;
@@ -163,31 +181,31 @@ void CollectionManager::update(double nowSeconds, int n) {
 		}
 	}
 
-	voxelcollection::VoxelFiles voxelFiles;
+	VoxelFiles voxelFiles;
 	_newVoxelFiles.pop(voxelFiles, n);
 
-	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
+	for (VoxelFile &voxelFile : voxelFiles) {
 		loadThumbnail(voxelFile);
 		auto iter = _voxelFilesMap.find(voxelFile.source);
 		if (iter != _voxelFilesMap.end()) {
-			voxelcollection::VoxelCollection &collection = iter->value;
+			VoxelCollection &collection = iter->value;
 			collection.files.push_back(voxelFile);
 			collection.timestamp = nowSeconds;
 			collection.sorted = false;
 		} else {
-			voxelcollection::VoxelCollection collection{{voxelFile}, nowSeconds, true};
+			VoxelCollection collection{{voxelFile}, nowSeconds, true};
 			_voxelFilesMap.put(voxelFile.source, collection);
 		}
 	}
 	for (auto e : _voxelFilesMap) {
-		voxelcollection::VoxelCollection &collection = e->value;
+		VoxelCollection &collection = e->value;
 		if (collection.sorted) {
 			continue;
 		}
 		if (collection.timestamp + 5.0 > nowSeconds) {
 			continue;
 		}
-		core::sort(collection.files.begin(), collection.files.end(), core::Less<voxelcollection::VoxelFile>());
+		core::sort(collection.files.begin(), collection.files.end(), core::Less<VoxelFile>());
 		collection.sorted = true;
 	}
 	_count += voxelFiles.size();
@@ -202,7 +220,7 @@ void CollectionManager::downloadAll() {
 
 		int current = 0;
 		for (const auto &e : voxelFilesMap) {
-			for (voxelcollection::VoxelFile &voxelFile : e->value.files) {
+			for (VoxelFile &voxelFile : e->value.files) {
 				if (_shouldQuit) {
 					return;
 				}
@@ -220,7 +238,7 @@ void CollectionManager::downloadAll() {
 }
 
 bool CollectionManager::download(VoxelFile &voxelFile) {
-	voxelcollection::Downloader downloader;
+	Downloader downloader;
 	if (downloader.download(_filesystem, voxelFile)) {
 		voxelFile.downloaded = true;
 		return true;
@@ -228,7 +246,7 @@ bool CollectionManager::download(VoxelFile &voxelFile) {
 	return false;
 }
 
-const voxelcollection::VoxelFileMap &CollectionManager::voxelFilesMap() const {
+const VoxelFileMap &CollectionManager::voxelFilesMap() const {
 	return _voxelFilesMap;
 }
 

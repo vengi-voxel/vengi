@@ -181,9 +181,9 @@ bool Downloader::download(const io::FilesystemPtr &filesystem, const VoxelFile &
 	return stream.valid();
 }
 
-core::DynamicArray<VoxelFile> Downloader::resolve(const io::FilesystemPtr &filesystem,
-												  const VoxelSource &source, core::AtomicBool &shouldQuit) const {
-	core::DynamicArray<VoxelFile> files;
+VoxelFiles Downloader::resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source,
+							   core::AtomicBool &shouldQuit) const {
+	VoxelFiles files;
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =

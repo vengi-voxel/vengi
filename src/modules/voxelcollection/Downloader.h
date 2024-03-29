@@ -71,16 +71,18 @@ struct VoxelCollection {
 };
 using VoxelFileMap = core::DynamicStringMap<VoxelCollection>;
 
+using VoxelSources = core::DynamicArray<VoxelSource>;
+
 class Downloader {
 private:
 	void handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &file,
-					   core::DynamicArray<VoxelFile> &files, core::AtomicBool &shouldQuit) const;
+					  VoxelFiles &files, core::AtomicBool &shouldQuit) const;
 
 public:
-	core::DynamicArray<VoxelSource> sources();
-	core::DynamicArray<VoxelSource> sources(const core::String &json);
+	VoxelSources sources();
+	VoxelSources sources(const core::String &json);
 
-	core::DynamicArray<VoxelFile> resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source, core::AtomicBool &shouldQuit) const;
+	VoxelFiles resolve(const io::FilesystemPtr &filesystem, const VoxelSource &source, core::AtomicBool &shouldQuit) const;
 
 	bool download(const io::FilesystemPtr &filesystem, const VoxelFile &file) const;
 };

@@ -6,6 +6,7 @@
 
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
+#include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 
 #define TITLE_ASSET_LIST "Assets##list"
@@ -20,12 +21,14 @@ private:
 	float _filterFormatTextWidth = -1.0f;
 	int _currentFilterFormatEntry = -1;
 	bool _newSelected = false;
+	bool _thumbnails = true;
 	core::String _currentFilterName;
 	core::String _currentFilterLicense;
 	voxelcollection::VoxelFile _selected;
 	video::TexturePoolPtr _texturePool;
 
-	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles, const std::function<void(VoxelFile &voxelFile)> &contextMenu);
+	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
+					   const std::function<void(VoxelFile &voxelFile)> &contextMenu);
 
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
 	void updateFilters();
@@ -36,8 +39,11 @@ public:
 	virtual ~CollectionPanel();
 
 	bool init();
-	int update(const voxelcollection::VoxelFileMap &voxelFilesMap, const std::function<void(VoxelFile &voxelFile)> &contextMenu = {});
+	int update(CollectionManager &collectionMgr,
+			   const std::function<void(VoxelFile &voxelFile)> &contextMenu = {});
 	void shutdown();
+
+	void setThumbnails(bool state);
 
 	bool newSelected() const;
 
@@ -47,6 +53,10 @@ public:
 
 inline bool CollectionPanel::newSelected() const {
 	return _newSelected;
+}
+
+inline void CollectionPanel::setThumbnails(bool state) {
+	_thumbnails = state;
 }
 
 } // namespace voxelcollection

@@ -266,7 +266,7 @@ void MainWindow::update(voxelcollection::CollectionManager &collectionMgr) {
 
 	int n = 0;
 	if (ImGui::Begin(TITLE_ASSET_LIST)) {
-		n = _voxelCollection.update(collectionMgr.voxelFilesMap());
+		n = _voxelCollection.update(collectionMgr);
 	}
 	ImGui::End();
 	updateAsset();

@@ -4,7 +4,9 @@
 
 #include "CollectionPanel.h"
 #include "core/StringUtil.h"
+#include "imgui.h"
 #include "ui/IMGUIEx.h"
+#include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -17,7 +19,7 @@ CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr 
 CollectionPanel::~CollectionPanel() {
 }
 
-bool CollectionPanel::filtered(const voxelcollection::VoxelFile &voxelFile) const {
+bool CollectionPanel::filtered(const VoxelFile &voxelFile) const {
 	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
 		return true;
 	}
@@ -90,9 +92,10 @@ void CollectionPanel::updateFilters() {
 	}
 }
 
-int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap,
+int CollectionPanel::update(CollectionManager &collectionMgr,
 							const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
 	int cnt = 0;
+	const VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
 	if (ImGui::BeginChild("##collectionpanel")) {
 		updateFilters();
 
@@ -100,27 +103,48 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
 								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 			ImGui::TableSetupScrollFreeze(0, 1);
-			ImGui::TableSetupColumn(_("Thumbnail"));
+			if (_thumbnails) {
+				ImGui::TableSetupColumn(_("Thumbnail"));
+			}
 			ImGui::TableSetupColumn(_("Name"));
 			ImGui::TableSetupColumn(_("License"));
 			ImGui::TableHeadersRow();
-			for (const auto &entry : voxelFilesMap) {
-				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-											   ImGuiTreeNodeFlags_SpanAvailWidth;
-				if (isFilterActive()) {
-					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-				}
+			for (const auto &source : collectionMgr.sources()) {
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				const int n = (int)entry->second.files.size();
-				const core::String &label = core::string::format("%s (%i)", entry->first.c_str(), n);
-				ImGui::BeginDisabled(!entry->second.sorted);
-				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const voxelcollection::VoxelFiles &voxelFiles = entry->second.files;
-					cnt += buildVoxelTree(voxelFiles, contextMenu);
-					ImGui::TreePop();
+				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
+											   ImGuiTreeNodeFlags_SpanAvailWidth;
+				auto iter = voxelFilesMap.find(source.name);
+				if (iter != voxelFilesMap.end()) {
+					if (isFilterActive()) {
+						treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+					}
+					const VoxelCollection &collection = iter->second;
+					const int n = (int)collection.files.size();
+					const core::String &label = core::string::format("%s (%i)", source.name.c_str(), n);
+					ImGui::BeginDisabled(!collection.sorted);
+					if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
+						const VoxelFiles &voxelFiles = collection.files;
+						cnt += buildVoxelTree(voxelFiles, contextMenu);
+						ImGui::TreePop();
+					}
+					ImGui::EndDisabled();
+				} else {
+					if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
+						if (collectionMgr.resolved(source)) {
+							ImGui::TextUnformatted(_("Loading..."));
+						} else {
+							if (ImGui::Button(_("Load"))) {
+								if (source.name == "local") {
+									collectionMgr.local();
+								} else {
+									collectionMgr.resolve(source);
+								}
+							}
+						}
+						ImGui::TreePop();
+					}
 				}
-				ImGui::EndDisabled();
 			}
 			ImGui::EndTable();
 		}
@@ -129,16 +153,19 @@ int CollectionPanel::update(const voxelcollection::VoxelFileMap &voxelFilesMap,
 	return cnt;
 }
 
-int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
+int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 									const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
-	core::DynamicArray<voxelcollection::VoxelFile *> f;
+	core::DynamicArray<VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
-	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
+	for (VoxelFile &voxelFile : voxelFiles) {
 		if (filtered(voxelFile)) {
 			continue;
 		}
 		f.push_back(&voxelFile);
+	}
+	if (f.empty()) {
+		return 0;
 	}
 
 	ImGuiListClipper clipper;
@@ -147,16 +174,43 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 	_newSelected = false;
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-			voxelcollection::VoxelFile *voxelFile = f[row];
+			VoxelFile *voxelFile = f[row];
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			const bool selected = _selected == *voxelFile;
 
-			ImGui::PushID(voxelFile->targetFile().c_str());
-			if (ImGui::Selectable("##invis", selected, ImGuiSelectableFlags_SpanAllColumns)) {
-				_selected = *voxelFile;
-				_newSelected = true;
+			if (_thumbnails) {
+				video::Id handle;
+				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+					handle = texture->handle();
+				} else {
+					handle = video::InvalidId;
+				}
+				if (ImGui::ImageButton(handle, ImVec2(64, 64))) {
+					_selected = *voxelFile;
+					_newSelected = true;
+				}
+
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(voxelFile->name.c_str());
+			} else {
+				if (ImGui::Selectable(voxelFile->name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+						_selected = *voxelFile;
+						_newSelected = true;
+					}
+				}
+				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+					if (ImGui::BeginItemTooltip()) {
+						const video::Id handle = texture->handle();
+						ImGui::Image(handle, ImVec2(128, 128));
+						ImGui::EndTooltip();
+					}
+				}
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
 			}
 
 			if (contextMenu) {
@@ -165,20 +219,6 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 					ImGui::EndPopup();
 				}
 			}
-
-			video::Id handle;
-			if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
-				handle = texture->handle();
-			} else {
-				handle = video::InvalidId;
-			}
-			ImGui::Image(handle, ImVec2(64, 64));
-			if (selected) {
-				ImGui::SetItemDefaultFocus();
-			}
-			ImGui::PopID();
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(voxelFile->name.c_str());
 			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(voxelFile->license.c_str());
 		}
@@ -187,7 +227,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 	return (int)f.size();
 }
 
-video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
+video::TexturePtr CollectionPanel::thumbnailLookup(const VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
 	if (_texturePool->has(voxelFile.name)) {
 		return _texturePool->get(voxelFile.name);
@@ -203,7 +243,7 @@ bool CollectionPanel::init() {
 	return true;
 }
 
-voxelcollection::VoxelFile &CollectionPanel::selected() {
+VoxelFile &CollectionPanel::selected() {
 	return _selected;
 }
 
