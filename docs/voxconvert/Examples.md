@@ -28,7 +28,7 @@ The `--input` with e.g. `infile.png` will pick the depth map next to the image p
 
 ## Slice a volume into png images
 
-`./vengi-voxconvert --input yourfile.vox --output output.png --slices --merge`
+`./vengi-voxconvert --input yourfile.vox --output output.png --slice --merge`
 
 This imports `yourfile.vox` - does merge all the nodes into one and then export the png slices.
 
