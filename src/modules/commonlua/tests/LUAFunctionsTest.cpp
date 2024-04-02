@@ -18,10 +18,21 @@ public:
 	void test(const char *script, const T& expected) {
 		LUA lua;
 		clua_mathregister(lua);
+		clua_streamregister(lua);
+		clua_httpregister(lua);
 		ASSERT_TRUE(lua.load(script)) << lua.error();
 		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 		const T& v = clua_tovec<T>(lua, -1);
 		EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
+	}
+
+	void testExec(const char *script) {
+		LUA lua;
+		clua_mathregister(lua);
+		clua_streamregister(lua);
+		clua_httpregister(lua);
+		ASSERT_TRUE(lua.load(script)) << lua.error();
+		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 	}
 };
 
@@ -32,6 +43,30 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 		end
 	)";
 	test(script, glm::ivec3(0, 1, 0));
+}
+
+TEST_F(LUAFunctionsTest, DISABLED_testHTTPGet) {
+	testExec(R"(
+		function test()
+			local str = g_http.get("https://httpbin.org/get"):readString()
+			print(str)
+		end
+	)");
+}
+
+TEST_F(LUAFunctionsTest, DISABLED_testHTTPGetHeaders) {
+	testExec(R"(
+		function test()
+			local headers = {}
+			headers["User-Agent"] = "Mozilla/5.0"
+			local stream, responseHeaders = g_http.get("https://httpbin.org/get")
+			local str = stream:readString()
+			print(str)
+			for k, v in pairs(responseHeaders) do
+				print("key: " .. k .. ", value: " .. v)
+			end
+		end
+	)");
 }
 
 TEST_F(LUAFunctionsTest, testVectorDistance) {

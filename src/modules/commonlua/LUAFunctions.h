@@ -599,7 +599,9 @@ int clua_checkboolean(lua_State *s, int index);
  */
 void clua_register(lua_State *s);
 void clua_mathregister(lua_State *s);
+// needs clua_streamregister
 void clua_httpregister(lua_State *s);
+void clua_streamregister(lua_State *s);
 
 void clua_cmdregister(lua_State *s);
 void clua_varregister(lua_State *s);

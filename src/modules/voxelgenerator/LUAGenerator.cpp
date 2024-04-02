@@ -1520,6 +1520,7 @@ static void prepareState(lua_State* s) {
 	};
 	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
 
+	clua_streamregister(s);
 	clua_httpregister(s);
 	clua_mathregister(s);
 }
