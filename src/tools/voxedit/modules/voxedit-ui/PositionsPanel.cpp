@@ -291,7 +291,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			}
 			ImGui::TooltipText("Reset");
 
-			matrixRotation = glm::eulerAngles(matrixOrientation);
+			matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 			change |= ImGui::InputFloat3("Rt", glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resetrt")) {
@@ -339,7 +339,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				if (pivotChanged) {
 					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {
-					matrix = glm::recompose(matrixScale, glm::quat(matrixRotation), matrixTranslation, skew, perspective);
+					matrix = glm::recompose(matrixScale, glm::quat(glm::radians(matrixRotation)), matrixTranslation, skew, perspective);
 					scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 					if (_localSpace) {
 						transform.setLocalMatrix(matrix);
