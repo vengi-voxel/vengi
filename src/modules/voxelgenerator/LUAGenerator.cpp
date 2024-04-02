@@ -11,6 +11,7 @@
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "lua.h"
 #include "math/Axis.h"
@@ -30,6 +31,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelfont/VoxelFont.h"
+#include "voxelformat/Format.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
@@ -141,6 +144,10 @@ static const char *luaVoxel_metanoise() {
 
 static const char *luaVoxel_metashape() {
 	return "__meta_shape";
+}
+
+static const char *luaVoxel_metaimporter() {
+	return "__meta_importer";
 }
 
 static inline const char *luaVoxel_metaregion() {
@@ -516,6 +523,41 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& vol, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& v) {
 		shape::createLine(vol, pos, last, v, 1);
 	});
+	return 0;
+}
+
+static int luaVoxel_import_palette(lua_State *s) {
+	const char *filename = luaL_checkstring(s, 1);
+	io::SeekableReadStream *readStream = clua_tostream(s, 2);
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	voxelformat::LoadContext ctx;
+	palette::Palette *palette = new palette::Palette();
+	const bool ret = voxelformat::loadPalette(filename, *readStream, *palette, ctx);
+	if (!ret) {
+		delete palette;
+		return clua_error(s, "Could not load palette %s", filename);
+	}
+	return luaVoxel_pushpalette(s, palette);
+}
+
+static int luaVoxel_import_scene(lua_State *s) {
+	const char *filename = luaL_checkstring(s, 1);
+	io::SeekableReadStream *readStream = clua_tostream(s, 2);
+	io::FileDescription fileDesc;
+	fileDesc.set(filename);
+	voxelformat::LoadContext ctx;
+	scenegraph::SceneGraph newSceneGraph;
+	const bool ret = voxelformat::loadFormat(fileDesc, *readStream, newSceneGraph, ctx);
+	if (!ret) {
+		newSceneGraph.clear();
+		return clua_error(s, "Could not load file %s", filename);
+	}
+	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	if (scenegraph::addSceneGraphNodes(*sceneGraph, newSceneGraph, sceneGraph->root().id()) <= 0) {
+		newSceneGraph.clear();
+		return clua_error(s, "Could not import scene graph nodes");
+	}
 	return 0;
 }
 
@@ -1519,6 +1561,13 @@ static void prepareState(lua_State* s) {
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
+
+	static const luaL_Reg importerFuncs[] = {
+		{"palette", luaVoxel_import_palette},
+		{"scene", luaVoxel_import_scene},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, importerFuncs, luaVoxel_metaimporter(), "g_import");
 
 	clua_streamregister(s);
 	clua_httpregister(s);

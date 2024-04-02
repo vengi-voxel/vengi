@@ -535,6 +535,10 @@ io::BufferedReadWriteStream *clua_tostream(lua_State* s, int n) {
 	return *(io::BufferedReadWriteStream**)clua_getudata<io::BufferedReadWriteStream*>(s, n, clua_metastream());
 }
 
+bool clua_isstream(lua_State* s, int n) {
+	return luaL_checkudata(s, n, clua_metastream()) != nullptr;
+}
+
 static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 	if (!lua_istable(s, n)) {
 		return;

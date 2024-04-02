@@ -83,10 +83,15 @@ This will find the best match in the currently used palette and return the index
 Supported `type`s are:
 
 * `int`: `min`, `max` values are supported, too
+
 * `float`: `min`, `max` values are supported, too
+
 * `enum`: `enum` as a property specifies a list of string separated by `,`
+
 * `str`: string input
+
 * `colorindex`: a color index from current palette (clamped)
+
 * `bool`:
 
 The `desc`ription field is just for the user interface of the script parameter list.
@@ -116,7 +121,7 @@ for i, nodeId in ipairs(allNodeIds) do
 end
 ```
 
-* `updateTransforms()`:
+* `updateTransforms()`: Update the key frame transforms when they are dirty after changing values (see `Keyframe`)
 
 ## SceneGraphNode
 
@@ -376,11 +381,17 @@ There are 3 possible components for this vector. You can also call `g_ivec3.new(
 For creating quaternions, you can use `g_quat.new()`
 
 * `rotateXYZ(x, y, z)`: Rotates the object along the X, Y, and Z axes by the specified angles.
+
 * `rotateXY(x, y)`
+
 * `rotateYZ(y, z)`
+
 * `rotateXZ(x, z)`
+
 * `rotateX(x)`: Rotates the object along the X axis by the specified angle.
+
 * `rotateY(y)`: Rotates the object along the Y axis by the specified angle.
+
 * `rotateZ(z)`: Rotates the object along the Z axis by the specified angle.
 
 ## HTTP
@@ -397,6 +408,11 @@ end
 ```
 
 ```lua
+local requestHeaders = {}
+local stream, responseHeaders = g_http.get("https://example.localhost", requestHeaders)
+```
+
+```lua
 local body = "my body"
 local stream, responseHeaders = g_http.post("https://example.localhost", body)
 local str = stream:readString()
@@ -406,36 +422,70 @@ for k, v in pairs(responseHeaders) do
 end
 ```
 
+## Importer
+
+`g_import` is a global that offers the ability to import palettes and scenegraphs/[formats](Formats.md) from e.g. http downloads.
+
+* `palette(filename, stream)`: Returns a palette that was imported
+
+* `scene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
+
 ## Streams
 
 When using e.g. the `g_http` requests, you get stream objects as return values.
 
 * `readString([0-terminated:false])`: Reads a string from the stream. If the optional parameter `0-terminated` is set to `true`, it reads until a null character is encountered otherwise it will read the whole stream as a string.
+
 * `readUInt8()`: Reads an unsigned 8-bit integer from the stream.
+
 * `readInt8()`: Reads a signed 8-bit integer from the stream.
+
 * `readUInt16()`: Reads an unsigned 16-bit integer from the stream.
+
 * `readInt16()`: Reads a signed 16-bit integer from the stream.
+
 * `readUInt32()`: Reads an unsigned 32-bit integer from the stream.
+
 * `readInt32()`: Reads a signed 32-bit integer from the stream.
+
 * `readUInt64()`: Reads an unsigned 64-bit integer from the stream.
+
 * `readInt64()`: Reads a signed 64-bit integer from the stream.
+
 * `readFloat()`: Reads a 32-bit floating-point number from the stream.
+
 * `readDouble()`: Reads a 64-bit floating-point number from the stream.
+
 * `writeString(str, [0-terminated:true])`: Writes a string to the stream. If the optional parameter `0-terminated` is set to `true`, it writes a null character at the end of the string.
+
 * `writeUInt8(value)`: Writes an unsigned 8-bit integer to the stream.
+
 * `writeInt8(value)`: Writes a signed 8-bit integer to the stream.
+
 * `writeUInt16(value)`: Writes an unsigned 16-bit integer to the stream.
+
 * `writeInt16(value)`: Writes a signed 16-bit integer to the stream.
+
 * `writeUInt32(value)`: Writes an unsigned 32-bit integer to the stream.
+
 * `writeInt32(value)`: Writes a signed 32-bit integer to the stream.
+
 * `writeUInt64(value)`: Writes an unsigned 64-bit integer to the stream.
+
 * `writeInt64(value)`: Writes a signed 64-bit integer to the stream.
+
 * `writeFloat(value)`: Writes a 32-bit floating-point number to the stream.
+
 * `writeDouble(value)`: Writes a 64-bit floating-point number to the stream.
+
 * `eos()`: returns whether the stream has reached its end
+
 * `seek(offset, mode)`: change the position in the stream
+
 * `tell()`: returns the current position in the stream
+
 * `pos()`: alias for `tell()`
+
 * `size()`: returns the size of the stream
 
 ## Other
@@ -450,6 +500,22 @@ g_var.int("cl_gamma")
 ```
 
 To get a full list of commands and cvars use the console command `cmdlist` and `cvarlist`.
+
+## Examples
+
+```lua
+local function basename(str)
+	local name = string.gsub(str, "(.*/)(.*)", "%2")
+	return name
+end
+
+function main(_, _, _)
+	local url = "https://github.com/vengi-voxel/vengi/raw/9c101f32b84f949ed82f7545883e80a318760580/data/voxel/guybrush.vox"
+	local filename = basename(url)
+	local stream = g_http.get(url)
+	g_import.scene(filename, stream)
+end
+```
 
 ## Available scripts
 

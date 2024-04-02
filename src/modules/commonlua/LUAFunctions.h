@@ -9,7 +9,6 @@
 #include "core/GLM.h"
 #include "core/StringUtil.h"
 #include "lauxlib.h"
-#include <cstddef>
 #include <lua.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -18,6 +17,10 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/quaternion.hpp>
+
+namespace io {
+class BufferedReadWriteStream;
+}
 
 void clua_assert(lua_State* s, bool pass, const char *msg);
 void clua_assert_argc(lua_State* s, bool pass);
@@ -593,6 +596,10 @@ bool clua_optboolean(lua_State* s, int index, bool defaultVal);
 int clua_typerror(lua_State *s, int narg, const char *tname);
 
 int clua_checkboolean(lua_State *s, int index);
+
+int clua_pushstream(lua_State* s, io::BufferedReadWriteStream *stream);
+io::BufferedReadWriteStream *clua_tostream(lua_State* s, int n);
+bool clua_isstream(lua_State* s, int n);
 
 /**
  * @brief Registers all shared lua modules/globals/functions
