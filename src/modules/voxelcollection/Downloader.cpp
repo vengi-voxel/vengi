@@ -5,6 +5,7 @@
 #include "Downloader.h"
 #include "GithubAPI.h"
 #include "GitlabAPI.h"
+#include "CubZHAPI.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/String.h"
@@ -185,7 +186,24 @@ VoxelFiles Downloader::resolve(const io::FilesystemPtr &filesystem, const VoxelS
 							   core::AtomicBool &shouldQuit) const {
 	VoxelFiles files;
 	Log::info("... check source %s", source.name.c_str());
-	if (source.provider == "github") {
+	if (source.provider == "cubzh") {
+		const core::String &tk = core::Var::get("voxelcollection_cubzh_tk", "")->strVal();
+		const core::String &usrId = core::Var::get("voxelcollection_cubzh_usrid", "")->strVal();
+		const core::DynamicArray<cubzh::TreeEntry> &entries = cubzh::repoList(filesystem, tk, usrId);
+		for (const auto &entry : entries) {
+			if (shouldQuit) {
+				return {};
+			}
+			VoxelFile file;
+			file.source = source.name;
+			file.name = entry.name;
+			file.license = source.license;
+			file.thumbnailUrl = cubzh::downloadUrl(entry.repo, entry.name);
+			file.url = entry.url;
+			file.fullPath = filesystem->writePath(file.targetFile());
+			files.push_back(file);
+		}
+	} else if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(filesystem, source.github.repo, source.github.commit, source.github.path);
 		const core::String &licenseDownloadUrl =

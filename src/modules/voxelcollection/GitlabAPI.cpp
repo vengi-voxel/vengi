@@ -3,6 +3,7 @@
  */
 
 #include "GitlabAPI.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
@@ -40,6 +41,9 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 	}
 	core::DynamicArray<TreeEntry> entries;
 	for (int page = 1; page <= totalPages; ++page) {
+		if (app::App::getInstance()->shouldQuit()) {
+			break;
+		}
 		const core::String url = core::string::format(
 			"https://gitlab.com/api/v4/projects/%s/repository/tree?ref=%s&recursive=1&per_page=100&page=%i&path=%s",
 			encoded.c_str(), branch.c_str(), page, path.c_str());
