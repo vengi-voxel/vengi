@@ -108,7 +108,7 @@ The functions are:
 
 * `align()`: Allow to align all nodes on the floor next to each other without overlapping.
 
-* `new(name, region[, visible])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter.
+* `new(name, [region], [visible])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter. If `region` is given a model is created - otherwise a group node.
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 

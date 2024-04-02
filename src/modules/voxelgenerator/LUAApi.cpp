@@ -170,6 +170,11 @@ static glm::vec<N, T> luaVoxel_getvec(lua_State *s, int idx) {
 	return val;
 }
 
+static bool luaVoxel_isregion(lua_State *s, int n) {
+	return luaL_testudata(s, n, luaVoxel_metaregion()) != nullptr ||
+		   luaL_testudata(s, n, luaVoxel_metaregion_gc()) != nullptr;
+}
+
 static voxel::Region* luaVoxel_toregion(lua_State* s, int n) {
 	voxel::Region** region = (voxel::Region**)luaL_testudata(s, n, luaVoxel_metaregion_gc());
 	if (region != nullptr) {
@@ -995,18 +1000,29 @@ static int luaVoxel_scenegraph_align(lua_State* s) {
 
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
-	const voxel::Region* region = luaVoxel_toregion(s, 2);
-	const bool visible = clua_optboolean(s, 3, true);
-	voxel::RawVolume *v = new voxel::RawVolume(*region);
-	scenegraph::SceneGraphNode node;
-	node.setVolume(v, true);
+	voxel::RawVolume *v = nullptr;
+	bool visible = true;
+	scenegraph::SceneGraphNodeType type;
+	if (luaVoxel_isregion(s, 2)) {
+		const voxel::Region* region = luaVoxel_toregion(s, 2);
+		visible = clua_optboolean(s, 3, true);
+		v = new voxel::RawVolume(*region);
+		type = scenegraph::SceneGraphNodeType::Model;
+	} else {
+		visible = clua_optboolean(s, 2, true);
+		type = scenegraph::SceneGraphNodeType::Group;
+	}
+	scenegraph::SceneGraphNode node(type);
+	if (type == scenegraph::SceneGraphNodeType::Model) {
+		node.setVolume(v, true);
+	}
 	node.setName(name);
 	node.setVisible(visible);
 	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
 	const int nodeId = scenegraph::moveNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
 	if (nodeId == -1) {
-		return clua_error(s, "Failed to add new node");
+		return clua_error(s, "Failed to add new %s node", scenegraph::SceneGraphNodeTypeStr[(int)type]);
 	}
 
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(nodeId));

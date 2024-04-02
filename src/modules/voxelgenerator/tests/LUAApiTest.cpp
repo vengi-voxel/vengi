@@ -190,6 +190,19 @@ TEST_F(LUAApiTest, testKeyFrames) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testSceneGraphNewNode) {
+	const core::String script = R"(
+		function main(node, region, color)
+			local region = g_region.new(0, 0, 0, 1, 1, 1)
+			local model = g_scenegraph.new("test", region, false)
+			model:setName("foobar")
+			model:volume():setVoxel(0, 0, 0, color)
+		end
+	)";
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
 TEST_F(LUAApiTest, testScriptCover) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "cover.lua");
