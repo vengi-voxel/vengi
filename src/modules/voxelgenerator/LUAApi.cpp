@@ -170,7 +170,7 @@ static glm::vec<N, T> luaVoxel_getvec(lua_State *s, int idx) {
 	return val;
 }
 
-static voxel::Region* luaVoxel_toRegion(lua_State* s, int n) {
+static voxel::Region* luaVoxel_toregion(lua_State* s, int n) {
 	voxel::Region** region = (voxel::Region**)luaL_testudata(s, n, luaVoxel_metaregion_gc());
 	if (region != nullptr) {
 		return *region;
@@ -700,95 +700,95 @@ static int luaVoxel_palette_similar(lua_State* s) {
 }
 
 static int luaVoxel_region_width(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getWidthInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_height(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getHeightInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_depth(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getDepthInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_x(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getLowerX());
 	return 1;
 }
 
 static int luaVoxel_region_y(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getLowerY());
 	return 1;
 }
 
 static int luaVoxel_region_z(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	lua_pushinteger(s, region->getLowerZ());
 	return 1;
 }
 
 static int luaVoxel_region_center(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	clua_push(s, region->getCenter());
 	return 1;
 }
 
 static int luaVoxel_region_mins(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	clua_push(s, region->getLowerCorner());
 	return 1;
 }
 
 static int luaVoxel_region_maxs(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	clua_push(s, region->getUpperCorner());
 	return 1;
 }
 
 static int luaVoxel_region_size(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	clua_push(s, region->getDimensionsInVoxels());
 	return 1;
 }
 
 static int luaVoxel_region_intersects(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
-	const voxel::Region* region2 = luaVoxel_toRegion(s, 2);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
+	const voxel::Region* region2 = luaVoxel_toregion(s, 2);
 	lua_pushboolean(s, voxel::intersects(*region, *region2));
 	return 1;
 }
 
 static int luaVoxel_region_contains(lua_State* s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
-	const voxel::Region* region2 = luaVoxel_toRegion(s, 2);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
+	const voxel::Region* region2 = luaVoxel_toregion(s, 2);
 	lua_pushboolean(s, region->containsRegion(*region2));
 	return 1;
 }
 
 static int luaVoxel_region_setmins(lua_State* s) {
-	voxel::Region* region = luaVoxel_toRegion(s, 1);
+	voxel::Region* region = luaVoxel_toregion(s, 1);
 	const glm::ivec3& mins = clua_tovec<glm::ivec3>(s, 2);
 	region->setLowerCorner(mins);
 	return 0;
 }
 
 static int luaVoxel_region_setmaxs(lua_State* s) {
-	voxel::Region* region = luaVoxel_toRegion(s, 1);
+	voxel::Region* region = luaVoxel_toregion(s, 1);
 	const glm::ivec3& maxs = clua_tovec<glm::ivec3>(s, 2);
 	region->setUpperCorner(maxs);
 	return 0;
 }
 
 static int luaVoxel_region_tostring(lua_State *s) {
-	const voxel::Region* region = luaVoxel_toRegion(s, 1);
+	const voxel::Region* region = luaVoxel_toregion(s, 1);
 	const glm::ivec3& mins = region->getLowerCorner();
 	const glm::ivec3& maxs = region->getUpperCorner();
 	lua_pushfstring(s, "region: [%d:%d:%d]/[%d:%d:%d]", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
@@ -953,14 +953,14 @@ static int luaVoxel_region_new(lua_State* s) {
 }
 
 static int luaVoxel_region_eq(lua_State* s) {
-	const voxel::Region *region = luaVoxel_toRegion(s, 1);
-	const voxel::Region *region2 = luaVoxel_toRegion(s, 2);
+	const voxel::Region *region = luaVoxel_toregion(s, 1);
+	const voxel::Region *region2 = luaVoxel_toregion(s, 2);
 	lua_pushboolean(s, *region == *region2);
 	return 1;
 }
 
 static int luaVoxel_region_gc(lua_State *s) {
-	voxel::Region *region = luaVoxel_toRegion(s, 1);
+	voxel::Region *region = luaVoxel_toregion(s, 1);
 	delete region;
 	return 0;
 }
@@ -995,7 +995,7 @@ static int luaVoxel_scenegraph_align(lua_State* s) {
 
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
-	const voxel::Region* region = voxelgenerator::luaVoxel_toRegion(s, 2);
+	const voxel::Region* region = luaVoxel_toregion(s, 2);
 	const bool visible = clua_optboolean(s, 3, true);
 	voxel::RawVolume *v = new voxel::RawVolume(*region);
 	scenegraph::SceneGraphNode node;
