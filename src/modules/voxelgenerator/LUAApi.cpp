@@ -1852,11 +1852,11 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		Log::error("LUA generate: expected to find the main function");
 		return false;
 	}
-	if (!luaL_checkudata(lua, -3, luaVoxel_metascenegraphnode())) {
+	if (luaL_testudata(lua, -3, luaVoxel_metascenegraphnode()) == nullptr) {
 		Log::error("LUA generate: expected to find scene graph node");
 		return false;
 	}
-	if (!luaL_checkudata(lua, -2, luaVoxel_metaregion())) {
+	if (luaL_testudata(lua, -2, luaVoxel_metaregion()) == nullptr) {
 		Log::error("LUA generate: expected to find region");
 		return false;
 	}
