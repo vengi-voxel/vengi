@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelgenerator/LUAGenerator.h"
+#include "voxelgenerator/LUAApi.h"
 #include "app/tests/AbstractTest.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
@@ -14,7 +14,7 @@ namespace voxelgenerator {
 
 const size_t InitialSceneGraphModelSize = 2u;
 
-class LUAGeneratorTest : public app::AbstractTest {
+class LUAApiTest : public app::AbstractTest {
 protected:
 	const voxel::Region _region{0, 0, 0, 7, 7, 7};
 	const glm::ivec3 voxels[6] {
@@ -62,7 +62,7 @@ protected:
 		}
 		voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 
-		LUAGenerator g(_testApp->filesystem());
+		LUAApi g(_testApp->filesystem());
 		ASSERT_TRUE(g.init());
 		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, dirtyRegion, args));
 		if (validateDirtyRegion) {
@@ -72,13 +72,13 @@ protected:
 	}
 };
 
-TEST_F(LUAGeneratorTest, testInit) {
-	LUAGenerator g(_testApp->filesystem());
+TEST_F(LUAApiTest, testInit) {
+	LUAApi g(_testApp->filesystem());
 	ASSERT_TRUE(g.init());
 	g.shutdown();
 }
 
-TEST_F(LUAGeneratorTest, testExecute) {
+TEST_F(LUAApiTest, testExecute) {
 	const core::String script = R"(
 		function main(node, region, color)
 			local w = region:width()
@@ -111,7 +111,7 @@ TEST_F(LUAGeneratorTest, testExecute) {
 	EXPECT_NE(0u, volume->voxel(1, 0, 0).getColor());
 }
 
-TEST_F(LUAGeneratorTest, testArgumentInfo) {
+TEST_F(LUAApiTest, testArgumentInfo) {
 	const core::String script = R"(
 		function arguments()
 			return {
@@ -121,7 +121,7 @@ TEST_F(LUAGeneratorTest, testArgumentInfo) {
 		end
 	)";
 
-	LUAGenerator g(_testApp->filesystem());
+	LUAApi g(_testApp->filesystem());
 	ASSERT_TRUE(g.init());
 
 	core::DynamicArray<LUAParameterDescription> params;
@@ -136,7 +136,7 @@ TEST_F(LUAGeneratorTest, testArgumentInfo) {
 	g.shutdown();
 }
 
-TEST_F(LUAGeneratorTest, testArguments) {
+TEST_F(LUAApiTest, testArguments) {
 	const core::String script = R"(
 		function arguments()
 			return {
@@ -162,7 +162,7 @@ TEST_F(LUAGeneratorTest, testArguments) {
 	run(sceneGraph, script, args);
 }
 
-TEST_F(LUAGeneratorTest, testSceneGraph) {
+TEST_F(LUAApiTest, testSceneGraph) {
 	const core::String script = R"(
 		function main(node, region, color)
 			local model = g_scenegraph.get()
@@ -174,7 +174,7 @@ TEST_F(LUAGeneratorTest, testSceneGraph) {
 	run(sceneGraph, script);
 }
 
-TEST_F(LUAGeneratorTest, testKeyFrames) {
+TEST_F(LUAApiTest, testKeyFrames) {
 	const core::String script = R"(
 		function main(node, region, color)
 			local kf = node:keyFrame(0)
@@ -190,47 +190,47 @@ TEST_F(LUAGeneratorTest, testKeyFrames) {
 	run(sceneGraph, script);
 }
 
-TEST_F(LUAGeneratorTest, testScriptCover) {
+TEST_F(LUAApiTest, testScriptCover) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "cover.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptDeleteRGB) {
+TEST_F(LUAApiTest, testScriptDeleteRGB) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "delete-rgb.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptErode) {
+TEST_F(LUAApiTest, testScriptErode) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "erode.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptFillHollow) {
+TEST_F(LUAApiTest, testScriptFillHollow) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "fillhollow.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptGradient) {
+TEST_F(LUAApiTest, testScriptGradient) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "gradient.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptGrass) {
+TEST_F(LUAApiTest, testScriptGrass) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "grass.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptGrid) {
+TEST_F(LUAApiTest, testScriptGrid) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "grid.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptMaze) {
+TEST_F(LUAApiTest, testScriptMaze) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "maze.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptMove) {
+TEST_F(LUAApiTest, testScriptMove) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "move.lua", {"1", "1", "1"});
 	scenegraph::SceneGraphNode *model = sceneGraph.firstModelNode();
@@ -241,37 +241,37 @@ TEST_F(LUAGeneratorTest, testScriptMove) {
 	}
 }
 
-TEST_F(LUAGeneratorTest, testScriptNoiseBuiltin) {
+TEST_F(LUAApiTest, testScriptNoiseBuiltin) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "noise-builtin.lua", {}, true);
 }
 
-TEST_F(LUAGeneratorTest, testScriptNoise) {
+TEST_F(LUAApiTest, testScriptNoise) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "noise.lua", {}, true);
 }
 
-TEST_F(LUAGeneratorTest, testScriptPlanet) {
+TEST_F(LUAApiTest, testScriptPlanet) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "planet.lua", {}, true);
 }
 
-TEST_F(LUAGeneratorTest, testScriptPyramid) {
+TEST_F(LUAApiTest, testScriptPyramid) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "pyramid.lua", {}, true);
 }
 
-TEST_F(LUAGeneratorTest, testScriptReplaceColor) {
+TEST_F(LUAApiTest, testScriptReplaceColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacecolor.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptReplacePalette) {
+TEST_F(LUAApiTest, testScriptReplacePalette) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "replacepalette.lua", {"built-in:minecraft"});
 }
 
-TEST_F(LUAGeneratorTest, testScriptResize) {
+TEST_F(LUAApiTest, testScriptResize) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "resize.lua");
 	scenegraph::SceneGraphNode *model = sceneGraph.firstModelNode();
@@ -281,40 +281,40 @@ TEST_F(LUAGeneratorTest, testScriptResize) {
 	EXPECT_EQ(region.getUpperCorner(), _region.getUpperCorner() + 1);
 }
 
-TEST_F(LUAGeneratorTest, testScriptSimilarColor) {
+TEST_F(LUAApiTest, testScriptSimilarColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "similarcolor.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptSlice) {
+TEST_F(LUAApiTest, testScriptSlice) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "slice.lua", {"1", "1", "1"});
 	const uint32_t slices = _region.getWidthInVoxels() * _region.getHeightInVoxels() * _region.getDepthInVoxels();
 	EXPECT_EQ(slices + InitialSceneGraphModelSize, sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
 }
 
-TEST_F(LUAGeneratorTest, testScriptSplitColor) {
+TEST_F(LUAApiTest, testScriptSplitColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitcolor.lua");
 	EXPECT_EQ(InitialSceneGraphModelSize + 2u, sceneGraph.nodeSize());
 }
 
-TEST_F(LUAGeneratorTest, testScriptSplitObjects) {
+TEST_F(LUAApiTest, testScriptSplitObjects) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "splitobjects.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptAnimate) {
+TEST_F(LUAApiTest, testScriptAnimate) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "animate.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptThicken) {
+TEST_F(LUAApiTest, testScriptThicken) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "thicken.lua");
 }
 
-TEST_F(LUAGeneratorTest, testScriptAlign) {
+TEST_F(LUAApiTest, testScriptAlign) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "align.lua");
 }

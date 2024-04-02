@@ -94,7 +94,7 @@ inline auto paletteCompleter() {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer),
-	  _luaGenerator(filesystem), _filesystem(filesystem) {
+	  _luaApi(filesystem), _filesystem(filesystem) {
 }
 
 SceneManager::~SceneManager() {
@@ -1593,7 +1593,7 @@ void SceneManager::construct() {
 			Log::error("Usage: xs <lua-generator-script-filename> [help]");
 			return;
 		}
-		const core::String luaCode = _luaGenerator.load(args[0]);
+		const core::String luaCode = _luaApi.load(args[0]);
 		if (luaCode.empty()) {
 			Log::error("Failed to load %s", args[0].c_str());
 			return;
@@ -2395,7 +2395,7 @@ bool SceneManager::init() {
 		Log::error("Failed to initialize the movement controller");
 		return false;
 	}
-	if (!_luaGenerator.init()) {
+	if (!_luaApi.init()) {
 		Log::error("Failed to initialize the lua generator");
 		return false;
 	}
@@ -2416,7 +2416,7 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
-	if (!_luaGenerator.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), dirtyRegion, args)) {
+	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), dirtyRegion, args)) {
 		return false;
 	}
 	if (dirtyRegion.isValid()) {
@@ -2559,7 +2559,7 @@ void SceneManager::shutdown() {
 	_modifierFacade.shutdown();
 	_mementoHandler.shutdown();
 	_voxelFont.shutdown();
-	_luaGenerator.shutdown();
+	_luaApi.shutdown();
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");

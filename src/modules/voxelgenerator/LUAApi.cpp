@@ -2,17 +2,16 @@
  * @file
  */
 
-#include "LUAGenerator.h"
+#include "LUAApi.h"
 #include "app/App.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
-#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
+#include "io/Stream.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/Filesystem.h"
 #include "lua.h"
 #include "math/Axis.h"
 #include "noise/Simplex.h"
@@ -528,7 +527,7 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 
 static int luaVoxel_import_palette(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::SeekableReadStream *readStream = clua_tostream(s, 2);
+	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
@@ -543,7 +542,7 @@ static int luaVoxel_import_palette(lua_State *s) {
 
 static int luaVoxel_import_scene(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::SeekableReadStream *readStream = clua_tostream(s, 2);
+	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
@@ -1574,21 +1573,21 @@ static void prepareState(lua_State* s) {
 	clua_mathregister(s);
 }
 
-LUAGenerator::LUAGenerator(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
+LUAApi::LUAApi(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
 }
 
-bool LUAGenerator::init() {
+bool LUAApi::init() {
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise");
 	}
 	return true;
 }
 
-void LUAGenerator::shutdown() {
+void LUAApi::shutdown() {
 	_noise.shutdown();
 }
 
-bool LUAGenerator::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
+bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params) {
 	lua::LUA lua;
 
 	// load and run once to initialize the global variables
@@ -1748,7 +1747,7 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 	return true;
 }
 
-core::String LUAGenerator::load(const core::String& scriptName) const {
+core::String LUAApi::load(const core::String& scriptName) const {
 	core::String filename = scriptName;
 	io::normalizePath(filename);
 	if (!_filesystem->exists(filename)) {
@@ -1765,7 +1764,7 @@ core::String LUAGenerator::load(const core::String& scriptName) const {
 #endif
 }
 
-core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
+core::DynamicArray<LUAScript> LUAApi::listScripts() const {
 	core::DynamicArray<LUAScript> scripts;
 	core::DynamicArray<io::FilesystemEntry> entities;
 	_filesystem->list("scripts", entities, "*.lua");
@@ -1789,7 +1788,7 @@ core::DynamicArray<LUAScript> LUAGenerator::listScripts() const {
 	return scripts;
 }
 
-bool LUAGenerator::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
+bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
 						const voxel::Region &region, const voxel::Voxel &voxel, voxel::Region &dirtyRegion,
 						const core::DynamicArray<core::String> &args) {
 	core::DynamicArray<LUAParameterDescription> argsInfo;

@@ -34,7 +34,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelgenerator/LUAGenerator.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
@@ -888,7 +888,7 @@ void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph) {
 }
 
 void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color) {
-	voxelgenerator::LUAGenerator script(_filesystem);
+	voxelgenerator::LUAApi script(_filesystem);
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
 	} else {

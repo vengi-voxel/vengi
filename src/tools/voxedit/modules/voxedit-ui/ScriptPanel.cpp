@@ -10,12 +10,11 @@
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "ui/IMGUIEx.h"
 #include "ui/IMGUIApp.h"
+#include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"
-#include "voxelgenerator/LUAGenerator.h"
 
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -23,9 +22,9 @@
 namespace voxedit {
 
 void ScriptPanel::reloadScriptParameters(const core::String &script) {
-	voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
+	voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 	_scriptParameterDescription.clear();
-	luaGenerator.argumentInfo(script, _scriptParameterDescription);
+	luaApi.argumentInfo(script, _scriptParameterDescription);
 	const int parameterCount = (int)_scriptParameterDescription.size();
 	_scriptParameters.clear();
 	_scriptParameters.resize(parameterCount);
@@ -43,11 +42,11 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 		return false;
 	}
 
-	voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
+	voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
 			const core::String &scriptName = _scripts[_currentScript].filename;
-			_activeScript = luaGenerator.load(scriptName);
+			_activeScript = luaApi.load(scriptName);
 			reloadScriptParameters(_activeScript);
 		}
 	}
@@ -170,9 +169,9 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 
 void ScriptPanel::update(const char *title, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
-		voxelgenerator::LUAGenerator &luaGenerator = _sceneMgr->luaGenerator();
+		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 		if (_scripts.empty()) {
-			_scripts = luaGenerator.listScripts();
+			_scripts = luaApi.listScripts();
 		}
 		bool validScriptIndex = updateScriptExecutionPanel(listener);
 		if (ImGui::Button("New##scriptpanel")) {
@@ -180,7 +179,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 			_activeScriptFilename = "";
 			if (!_scripts.empty()) {
 				const core::String &scriptName = _scripts[0].filename;
-				const core::String &script = luaGenerator.load(scriptName);
+				const core::String &script = luaApi.load(scriptName);
 				_textEditor.SetText(script);
 			} else {
 				_textEditor.SetText("");

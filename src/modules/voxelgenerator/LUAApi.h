@@ -65,13 +65,13 @@ struct LUAScript {
 	}
 };
 
-class LUAGenerator : public core::IComponent {
+class LUAApi : public core::IComponent {
 private:
 	noise::Noise _noise;
 	io::FilesystemPtr _filesystem;
 public:
-	LUAGenerator(const io::FilesystemPtr &filesystem);
-	virtual ~LUAGenerator() {}
+	LUAApi(const io::FilesystemPtr &filesystem);
+	virtual ~LUAApi() {}
 	bool init() override;
 	void shutdown() override;
 

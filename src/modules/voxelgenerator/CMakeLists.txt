@@ -36,13 +36,13 @@ set(SRCS
 	TreeGenerator.h TreeGenerator.cpp
 	TreeContext.h
 	LSystem.h LSystem.cpp
-	LUAGenerator.h LUAGenerator.cpp
+	LUAApi.h LUAApi.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} LUA_SRCS ${LUA_SRCS} DEPENDENCIES voxelutil voxelfont noise commonlua scenegraph)
 
 set(TEST_SRCS
 	tests/LSystemTest.cpp
-	tests/LUAGeneratorTest.cpp
+	tests/LUAApiTest.cpp
 	tests/ShapeGeneratorTest.cpp
 )
 

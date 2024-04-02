@@ -6,7 +6,7 @@
 
 #include "ui/Panel.h"
 #include "ui/TextEditor.h"
-#include "voxelgenerator/LUAGenerator.h"
+#include "voxelgenerator/LUAApi.h"
 
 namespace command {
 struct CommandExecutionListener;

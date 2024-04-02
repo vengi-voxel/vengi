@@ -25,7 +25,7 @@
 #include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
 #include "voxelgenerator/LSystem.h"
-#include "voxelgenerator/LUAGenerator.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelutil/Picking.h"
 #include <functional>
@@ -67,7 +67,7 @@ private:
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
 	ModifierFacade _modifierFacade;
-	voxelgenerator::LUAGenerator _luaGenerator;
+	voxelgenerator::LUAApi _luaApi;
 	io::FilesystemPtr _filesystem;
 
 	/**
@@ -401,7 +401,7 @@ public:
 	MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
-	voxelgenerator::LUAGenerator &luaGenerator();
+	voxelgenerator::LUAApi &luaApi();
 
 private:
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
@@ -558,8 +558,8 @@ inline ModifierFacade &SceneManager::modifier() {
 	return _modifierFacade;
 }
 
-inline voxelgenerator::LUAGenerator &SceneManager::luaGenerator() {
-	return _luaGenerator;
+inline voxelgenerator::LUAApi &SceneManager::luaApi() {
+	return _luaApi;
 }
 
 using SceneManagerPtr = core::SharedPtr<SceneManager>;
