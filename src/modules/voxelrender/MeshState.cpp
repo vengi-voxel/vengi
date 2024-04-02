@@ -394,6 +394,20 @@ void MeshState::hide(int idx, bool hide) {
 	_volumeData[idx]._hidden = hide;
 }
 
+video::Face MeshState::cullFace(int idx) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return video::Face::Back;
+	}
+	return _volumeData[idx]._cullFace;
+}
+
+void MeshState::setCullFace(int idx, video::Face face) {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return;
+	}
+	_volumeData[idx]._cullFace = face;
+}
+
 bool MeshState::grayed(int idx) const {
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return true;

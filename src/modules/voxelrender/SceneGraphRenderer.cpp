@@ -216,12 +216,20 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 		if (sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
+			const int negative = (int)std::signbit(transform.scale.x) + (int)std::signbit(transform.scale.y) +
+								 (int)std::signbit(transform.scale.z);
+			if (negative == 1 || negative == 3) {
+				meshState->setCullFace(id, video::Face::Front);
+			} else {
+				meshState->setCullFace(id, video::Face::Back);
+			}
 			const glm::mat4 worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
 			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
+			meshState->setCullFace(id, video::Face::Back);
 			meshState->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
 												  region.getUpperCorner());
 		}

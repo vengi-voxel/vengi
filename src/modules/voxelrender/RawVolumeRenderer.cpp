@@ -18,6 +18,7 @@
 #include "video/Camera.h"
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
+#include "video/ScopedFaceCull.h"
 #include "video/ScopedFrameBuffer.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
@@ -494,6 +495,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 								var.pivot = _meshState->pivot(idx);
 								_shadowMapUniformBlock.update(var);
 								_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer());
+								video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
 								static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
 								video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 							}
@@ -562,6 +564,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 		core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 		video::ScopedPolygonMode polygonMode(mode);
+		video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Opaque]);
 		if (normals) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
@@ -617,6 +620,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 			core_assert_always(_voxelData.update(_voxelShaderVertData));
 
 			video::ScopedPolygonMode polygonMode(mode);
+			video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
 			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[MeshType_Transparency]);
 			if (normals) {
 				core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));

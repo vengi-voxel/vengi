@@ -13,6 +13,7 @@
 #include "core/collection/PriorityQueue.h"
 #include "core/concurrent/ThreadPool.h"
 #include "palette/Palette.h"
+#include "video/Types.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 
@@ -44,6 +45,9 @@ private:
 		core::Optional<palette::Palette> _palette;
 		bool _hidden = false;
 		bool _gray = false;
+		// if all axes scale positive: cull the back face
+		// if one or three axes are negative, then cull the front face
+		video::Face _cullFace = video::Face::Back;
 		int _reference = -1;
 		glm::mat4 _model{1.0f};
 		glm::vec3 _pivot{0.0f};
@@ -163,6 +167,10 @@ public:
 	bool hidden(int idx) const;
 	void gray(int idx, bool gray);
 	bool grayed(int idx) const;
+
+	// for scaling on 1 or 3 axes negative we need to flip the face culling
+	video::Face cullFace(int idx) const;
+	void setCullFace(int idx, video::Face face);
 
 	/**
 	 * @brief In case of a reference - this gives us the index for the
