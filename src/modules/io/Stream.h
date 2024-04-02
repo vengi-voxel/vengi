@@ -258,6 +258,7 @@ public:
 	bool writeUInt32(uint32_t val);
 	bool writeUInt64(uint64_t val);
 	bool writeFloat(float val);
+	bool writeDouble(double val);
 
 	bool writeInt16BE(int16_t val);
 	bool writeInt32BE(int32_t val);
@@ -266,6 +267,7 @@ public:
 	bool writeUInt32BE(uint32_t val);
 	bool writeUInt64BE(uint64_t val);
 	bool writeFloatBE(float val);
+	bool writeDoubleBE(double val);
 
 	bool writeStringFormat(bool terminate, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(3);
 	/**

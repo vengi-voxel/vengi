@@ -231,6 +231,15 @@ bool WriteStream::writeFloat(float value) {
 	return writeUInt32(tmp.i);
 }
 
+bool WriteStream::writeDouble(double val) {
+	union toint {
+		double f;
+		uint64_t i;
+	} tmp;
+	tmp.f = val;
+	return writeUInt64(tmp.i);
+}
+
 bool WriteStream::writeInt16BE(int16_t word) {
 	const int16_t swappedWord = SDL_SwapBE16(word);
 	return write(&swappedWord, sizeof(int16_t)) != -1;
@@ -268,6 +277,15 @@ bool WriteStream::writeFloatBE(float value) {
 	} tmp;
 	tmp.f = value;
 	return writeUInt32BE(tmp.i);
+}
+
+bool WriteStream::writeDoubleBE(double val) {
+	union toint {
+		double f;
+		uint64_t i;
+	} tmp;
+	tmp.f = val;
+	return writeUInt64BE(tmp.i);
 }
 
 bool WriteStream::writeBool(bool value) {
