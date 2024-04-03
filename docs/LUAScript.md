@@ -488,18 +488,43 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 
 * `size()`: returns the size of the stream
 
-## Other
-
-* `y` going upwards.
-
-You have access to the `cvar` and `cmd` lua bindings, too. This means that you can access any `cvar` value or execute any command like `modeladd` or `modelmerge` to modify the whole scene.
+## Cvar
 
 ```lua
-g_cmd.execute("echo test")
 g_var.int("cl_gamma")
 ```
 
-To get a full list of commands and cvars use the console command `cmdlist` and `cvarlist`.
+* `str()`: Returns the string value of the cvar
+
+* `bool()`: Returns the bool value of the cvar
+
+* `int()`: Returns the int value of the cvar
+
+* `float()`: Returns the float values of the cvar
+
+* `setStr(value: string)`: Sets the string value of the cvar
+
+* `setBool(value: bool)`: Sets the bool value of the cvar
+
+* `setInt(value: number)`: Sets the int value of the cvar
+
+* `setFloat(value: number)`: Sets the float values of the cvar
+
+> To get a full list of cvars use the console command `cvarlist`.
+
+## Command
+
+```lua
+g_cmd.execute("echo test")
+```
+
+* `execute(cmdline: string)`: Execute any of the known commands
+
+> To get a full list of commands use the console command `cmdlist`.
+
+## Other useful information
+
+* `y` going upwards - see [basics](Basics.md) for further details.
 
 ## Examples
 

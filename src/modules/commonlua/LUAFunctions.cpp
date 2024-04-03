@@ -307,10 +307,10 @@ void clua_varregister(lua_State* s) {
 		{"bool", clua_vargetbool},
 		{"int", clua_vargetint},
 		{"float", clua_vargetfloat},
-		{"setstr", clua_varsetstr},
-		{"setbool", clua_varsetbool},
-		{"setint", clua_varsetint},
-		{"setfloat", clua_varsetfloat},
+		{"setStr", clua_varsetstr},
+		{"setBool", clua_varsetbool},
+		{"setInt", clua_varsetint},
+		{"setFloat", clua_varsetfloat},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, funcs, "_metavar", "g_var");
