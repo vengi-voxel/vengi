@@ -14,6 +14,9 @@ namespace cubzh {
 struct TreeEntry {
 	core::String repo;
 	core::String name;
+	core::String description;
+	core::String updated;
+	core::String created;
 	core::String id;
 	core::String url;
 	int likes;
