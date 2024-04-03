@@ -416,7 +416,7 @@ Config vars to control the meshing:
 Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
 
 .PP
-\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects
+\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
 .PP
 \fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
 .PP

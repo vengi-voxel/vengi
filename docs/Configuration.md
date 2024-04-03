@@ -103,7 +103,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 |
 | `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 |
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
-| `voxformat_fillhollow`        | Fill the inner parts of completely close objects                                         |
+| `voxformat_fillhollow`        | Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script. |
 | `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        |
 | `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     |
 | `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   |
