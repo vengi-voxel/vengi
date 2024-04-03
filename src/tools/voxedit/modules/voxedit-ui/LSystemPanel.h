@@ -30,7 +30,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	LSystemPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	LSystemPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "lsystem"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void update(const char *title);

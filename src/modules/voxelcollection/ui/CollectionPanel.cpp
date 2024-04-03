@@ -13,7 +13,7 @@
 namespace voxelcollection {
 
 CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
-	: Super(app), _texturePool(texturePool) {
+	: Super(app, "collection"), _texturePool(texturePool) {
 }
 
 CollectionPanel::~CollectionPanel() {

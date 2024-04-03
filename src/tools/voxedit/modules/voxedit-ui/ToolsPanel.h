@@ -31,7 +31,7 @@ private:
 	void updateEditMode(command::CommandExecutionListener &listener);
 
 public:
-	ToolsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	ToolsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "tools"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 };

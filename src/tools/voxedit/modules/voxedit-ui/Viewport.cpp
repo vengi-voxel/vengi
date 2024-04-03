@@ -48,7 +48,7 @@ core::String Viewport::viewportId(int id) {
 }
 
 Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle)
-	: Super(app), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
+	: Super(app, viewportId(id).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
 	_renderContext.sceneMode = sceneMode;
 }
 

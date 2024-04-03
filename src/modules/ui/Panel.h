@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/Log.h"
+
 namespace ui {
 
 class IMGUIApp;
@@ -11,7 +13,8 @@ class IMGUIApp;
 class Panel {
 protected:
 	IMGUIApp *_app;
-	Panel(IMGUIApp *app) : _app(app) {
+	Panel(IMGUIApp *app, const char *title) : _app(app) {
+		Log::debug("create panel %s", title);
 	}
 };
 

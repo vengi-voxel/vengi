@@ -40,7 +40,7 @@ private:
 	void reloadScriptParameters(const core::String &script);
 
 public:
-	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, command::CommandExecutionListener &listener);
 

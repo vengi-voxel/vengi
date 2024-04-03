@@ -19,7 +19,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	StatusBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	StatusBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "statusbar"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, float height, const core::String &lastExecutedCommand);
 };

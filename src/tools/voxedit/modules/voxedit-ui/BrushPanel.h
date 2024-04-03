@@ -21,7 +21,7 @@ class AABBBrush;
 
 class BrushPanel : public ui::Panel {
 private:
-	using Super = ui ::Panel;
+	using Super = ui::Panel;
 	core::String _stamp;
 	int _stampPaletteIndex = 0;
 	SceneManagerPtr _sceneMgr;
@@ -45,7 +45,7 @@ private:
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 public:
-	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "brush"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, command::CommandExecutionListener &listener);
 };

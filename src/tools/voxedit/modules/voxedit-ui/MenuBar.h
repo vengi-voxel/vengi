@@ -24,7 +24,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "menubar"), _sceneMgr(sceneMgr) {
 	}
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 	/**

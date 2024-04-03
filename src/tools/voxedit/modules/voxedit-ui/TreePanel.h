@@ -25,7 +25,7 @@ private:
 
 	void switchTreeType(voxelgenerator::TreeType treeType);
 public:
-	TreePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	TreePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "tree"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void update(const char *title);

@@ -26,7 +26,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	CameraPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	CameraPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "camera"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, video::Camera &camera, command::CommandExecutionListener &listener);
 };

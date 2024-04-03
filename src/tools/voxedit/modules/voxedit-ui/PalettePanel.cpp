@@ -23,7 +23,7 @@
 
 namespace voxedit {
 
-PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
+PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "palette"), _redColor(ImGui::GetColorU32(core::Color::Red())), _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
 	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())), _sceneMgr(sceneMgr) {
 	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }

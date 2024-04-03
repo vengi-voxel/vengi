@@ -41,7 +41,7 @@ private:
 	using Super = ui ::Panel;
 
 public:
-	AnimationTimeline(ui ::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	AnimationTimeline(ui ::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "animationtimeline"), _sceneMgr(sceneMgr) {
 	}
 	void header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame);
 	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,

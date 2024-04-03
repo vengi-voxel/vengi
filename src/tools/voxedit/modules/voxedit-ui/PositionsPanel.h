@@ -31,7 +31,7 @@ private:
 	void sceneView(command::CommandExecutionListener &listener);
 
 public:
-	PositionsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	PositionsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "positions"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void shutdown();

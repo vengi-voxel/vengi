@@ -5,6 +5,7 @@
 #pragma once
 
 #include "command/CommandHandler.h"
+#include "core/collection/ConcurrentQueue.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/CollectionManager.h"
@@ -19,13 +20,14 @@ class AssetPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	void loadTextures(const core::String &dir);
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 	SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	voxelcollection::CollectionPanel _collectionPanel;
+	core::ConcurrentQueue<image::ImagePtr> _images;
 	int _currentSelectedModel = 0;
+	std::future<void> _future;
 
 public:
 	AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,

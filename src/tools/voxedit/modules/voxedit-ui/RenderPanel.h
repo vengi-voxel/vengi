@@ -27,7 +27,7 @@ private:
 	int _currentSample = 0;
 
 public:
-	RenderPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	RenderPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "render"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, const scenegraph::SceneGraph &sceneGraph);
 	bool init();

@@ -19,7 +19,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	MementoPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	MementoPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "memento"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, command::CommandExecutionListener &listener);
 };

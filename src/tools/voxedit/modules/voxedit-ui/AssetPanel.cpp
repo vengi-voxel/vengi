@@ -4,6 +4,7 @@
 
 #include "AssetPanel.h"
 #include "DragAndDropPayload.h"
+#include "app/Async.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "imgui.h"
@@ -23,12 +24,13 @@ namespace voxedit {
 AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
 					   const voxelcollection::CollectionManagerPtr &collectionMgr,
 					   const video::TexturePoolPtr &texturePool, const io::FilesystemPtr &filesystem)
-	: Super(app), _texturePool(texturePool), _filesystem(filesystem), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr),
+	: Super(app, "asset"), _texturePool(texturePool), _filesystem(filesystem), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr),
 	  _collectionPanel(app, texturePool) {
-	loadTextures(_filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures));
 }
 
 void AssetPanel::shutdown() {
+	_future.wait();
+	_images.clear();
 	_collectionPanel.shutdown();
 }
 
@@ -37,20 +39,22 @@ bool AssetPanel::init() {
 		Log::error("Failed to initialize the collection panel");
 		return false;
 	}
+
+	_future = app::async([this] () {
+		const core::String &dir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures);
+		core::DynamicArray<io::FilesystemEntry> entities;
+		_filesystem->list(dir, entities);
+		for (const auto &e : entities) {
+			const core::String &fullName = core::string::path(dir, e.name);
+			if (io::isImage(fullName)) {
+				_images.emplace(image::loadImage(fullName));
+			}
+		}
+	});
+
 	_collectionPanel.setThumbnails(false);
 	_collectionMgr->online(false);
 	return true;
-}
-
-void AssetPanel::loadTextures(const core::String &dir) {
-	core::DynamicArray<io::FilesystemEntry> entities;
-	_filesystem->list(dir, entities);
-	for (const auto &e : entities) {
-		const core::String &fullName = core::string::path(dir, e.name);
-		if (io::isImage(fullName)) {
-			_texturePool->load(fullName, false);
-		}
-	}
 }
 
 void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
@@ -90,6 +94,12 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 			}
 
 			if (ImGui::BeginTabItem(_("Images"))) {
+				image::ImagePtr image;
+				while (_images.pop(image)) {
+					if (image->isLoaded()) {
+						_texturePool->addImage(image);
+					}
+				}
 				int n = 1;
 				ImGuiStyle &style = ImGui::GetStyle();
 				const int maxImages = core_max(1, ImGui::GetWindowSize().x / (50 + style.ItemSpacing.x) - 1);

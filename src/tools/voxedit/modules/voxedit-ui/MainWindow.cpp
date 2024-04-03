@@ -131,7 +131,7 @@ bool MainWindow::_popupModelUnreference = false;
 
 MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem)
-	: Super(app), _texturePool(texturePool), _sceneMgr(sceneMgr),
+	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app),
 #endif

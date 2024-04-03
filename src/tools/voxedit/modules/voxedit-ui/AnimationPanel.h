@@ -29,7 +29,7 @@ private:
 	SceneManagerPtr _sceneMgr;
 
 public:
-	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "animationpanel"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
 };

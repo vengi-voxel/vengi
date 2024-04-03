@@ -52,7 +52,7 @@ private:
 	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
 	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 public:
-	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app), _sceneMgr(sceneMgr) {
+	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "scenegraph"), _sceneMgr(sceneMgr) {
 	}
 	bool _popupNewModelNode = false;
 	bool init();
