@@ -249,7 +249,7 @@ bool AVI::writeFrame(io::SeekableWriteStream &stream, const uint8_t *rgba, int w
 	wrapBool(stream.writeUInt32(FourCC('0','0','d','c')))
 	wrapBool(stream.writeUInt32(0))
 	const int64_t jpegStart = stream.pos();
-	if (!image::Image::writeJPEG(stream, rgba, width, height, 4)) {
+	if (!image::Image::writeJPEG(stream, rgba, width, height, 4, 90)) {
 		Log::error("Failed to write jpeg data");
 		return false;
 	}
