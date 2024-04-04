@@ -459,9 +459,10 @@ app::AppState IMGUIApp::onRunning() {
 												ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
 												ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 				const ImVec2 outerSize(0.0f, 400.0f);
-				if (ImGui::BeginTable("##cvars", 3, TableFlags, outerSize)) {
+				if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
 					ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
 					ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
+					ImGui::TableSetupColumn("##reset", ImGuiTableFlags_SizingFixedFit);
 					ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
@@ -482,6 +483,11 @@ app::AppState IMGUIApp::onRunning() {
 								var->setVal(value);
 							}
 						}
+						ImGui::TableNextColumn();
+						if (ImGui::Button(_("Reset"))) {
+							var->reset();
+						}
+						ImGui::TooltipText(_("Reset to default value"));
 						ImGui::TableNextColumn();
 						ImGui::Text("%s", var->help() ? var->help() : "");
 					});
