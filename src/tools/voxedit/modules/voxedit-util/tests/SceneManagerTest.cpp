@@ -400,7 +400,7 @@ TEST_F(SceneManagerTest, testRemoveUnusedColors) {
 	ASSERT_NE(nullptr, node) << "Failed to get node for id " << nodeId;
 	EXPECT_TRUE(testSetVoxel(testMins(), 1));
 	const palette::Palette &palette = node->palette();
-	EXPECT_EQ(palette::PaletteMaxColors, palette.size());
+	EXPECT_EQ(palette::PaletteMaxColors, (int)palette.size());
 	_sceneMgr->nodeRemoveUnusedColors(nodeId, true);
 	EXPECT_EQ(1, palette.size()) << palette;
 }

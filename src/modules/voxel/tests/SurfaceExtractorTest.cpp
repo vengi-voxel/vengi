@@ -104,7 +104,7 @@ TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
 	SurfaceExtractionContext ctx =
 		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
-	EXPECT_EQ(48, mesh.mesh[0].getNoOfVertices());
+	EXPECT_EQ(48, (int)mesh.mesh[0].getNoOfVertices());
 }
 
 } // namespace voxel
