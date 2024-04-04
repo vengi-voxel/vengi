@@ -70,8 +70,8 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
 									ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-		ImGui::TableSetupColumn("Name##nodeproperty", ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("Value##nodeproperty", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
 		ImGui::TableSetupColumn("##nodepropertydelete", colFlags);
 		ImGui::TableHeadersRow();
 
@@ -109,7 +109,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 				if (ImGui::Button(deleteId.c_str())) {
 					deleteKey = entry->key;
 				}
-				ImGui::TooltipText("Delete this node property");
+				ImGui::TooltipText(_("Delete this node property"));
 			}
 		}
 
