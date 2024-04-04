@@ -18,6 +18,8 @@ General:
    - Added support for `litematic` Minecraft support
    - Extended supported Minecraft materials
    - Extended lua bindings for key frames and transforms
+   - Extended lua bindings for http requests
+   - Fixed face culling for negative scale values
 
 VoxConvert:
 
@@ -29,6 +31,8 @@ VoxEdit:
    - Added support for browsing the remote voxel collections to the asset panel
    - Added `modelmerge all` parameter to merge all nodes at once
    - Added `presentation` command to cycle through all models in a scene
+   - Improved position panel to edit transforms
+   - Improved start-up times
 
 ## 0.0.30 (2024-03-23)
 
