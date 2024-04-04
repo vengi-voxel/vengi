@@ -50,13 +50,13 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 			reloadScriptParameters(_activeScript);
 		}
 	}
-	ImGui::TooltipText("LUA scripts for manipulating the voxel volumes");
+	ImGui::TooltipText(_("LUA scripts for manipulating the voxel volumes"));
 
 	ImGui::SameLine();
 
 	const bool validScriptIndex = _currentScript >= 0 && _currentScript < (int)_scripts.size();
 	const bool validScript = validScriptIndex && _scripts[_currentScript].valid;
-	if (ImGui::DisabledButton("Run##scriptpanel", !validScript)) {
+	if (ImGui::DisabledButton(_("Run"), !validScript)) {
 		_sceneMgr->runScript(_activeScript, _scriptParameters);
 		core::DynamicArray<core::String> args;
 		args.reserve(_scriptParameters.size() + 1);
@@ -64,7 +64,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 		args.append(_scriptParameters);
 		listener("xs", _scriptParameters);
 	}
-	ImGui::TooltipText("Execute the selected script for the currently loaded voxel volumes");
+	ImGui::TooltipText(_("Execute the selected script for the currently loaded voxel volumes"));
 
 	const int n = (int)_scriptParameterDescription.size();
 	if (n && ImGui::CollapsingHeader("Script parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -174,7 +174,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 			_scripts = luaApi.listScripts();
 		}
 		bool validScriptIndex = updateScriptExecutionPanel(listener);
-		if (ImGui::Button("New##scriptpanel")) {
+		if (ImGui::Button(_("New"))) {
 			_scriptEditor = true;
 			_activeScriptFilename = "";
 			if (!_scripts.empty()) {
@@ -185,18 +185,18 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 				_textEditor.SetText("");
 			}
 		}
-		ImGui::TooltipText("Create a new lua script");
+		ImGui::TooltipText(_("Create a new lua script"));
 		if (validScriptIndex) {
 			ImGui::SameLine();
-			if (ImGui::Button("Edit##scriptpanel")) {
+			if (ImGui::Button(_("Edit"))) {
 				_scriptEditor = true;
 				_activeScriptFilename = _scripts[_currentScript].filename;
 				_textEditor.SetText(_activeScript.c_str());
 			}
-			ImGui::TooltipText("Edit the selected lua script");
+			ImGui::TooltipText(_("Edit the selected lua script"));
 		}
 
-		ImGui::URLIconButton(ICON_LC_BOOK, "Scripting manual", "https://vengi-voxel.github.io/vengi/LUAScript/");
+		ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");
 	}
 	ImGui::End();
 }
@@ -207,13 +207,13 @@ bool ScriptPanel::updateEditor(const char *title) {
 	}
 	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {
-			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File##scripteditor"))) {
-				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute##scripteditor"))) {
+			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
+				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute"))) {
 					_activeScript = _textEditor.GetText();
 					reloadScriptParameters(_activeScript);
 				}
 				if (!_activeScriptFilename.empty()) {
-					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save##scripteditor"))) {
+					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save"))) {
 						if (_app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
 													 _textEditor.GetText())) {
 							_activeScript = _textEditor.GetText();
@@ -222,7 +222,7 @@ bool ScriptPanel::updateEditor(const char *title) {
 					}
 					ImGui::TooltipText(_("Overwrite scripts/%s"), _activeScriptFilename.c_str());
 				}
-				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save As##scripteditor"))) {
+				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save As"))) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
@@ -236,40 +236,40 @@ bool ScriptPanel::updateEditor(const char *title) {
 						},
 						{}, io::format::lua());
 				}
-				if (ImGui::MenuItem(_("Close##scripteditor"))) {
+				if (ImGui::MenuItem(_("Close"))) {
 					_scriptEditor = false;
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_PENCIL, _("Edit##scripteditor"))) {
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Undo##scripteditor"), nullptr, false,
+			if (ImGui::BeginIconMenu(ICON_LC_PENCIL, _("Edit"))) {
+				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), nullptr, false,
 									_textEditor.CanUndo())) {
 					_textEditor.Undo();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CW, _("Redo##scripteditor"), nullptr, false, _textEditor.CanRedo())) {
+				if (ImGui::IconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), nullptr, false, _textEditor.CanRedo())) {
 					_textEditor.Redo();
 				}
 
 				ImGui::Separator();
 
-				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy##scripteditor"), nullptr, false, _textEditor.HasSelection())) {
+				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Copy();
 				}
 				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut##scripteditor"), nullptr, false,
 									_textEditor.HasSelection())) {
 					_textEditor.Cut();
 				}
-				if (ImGui::MenuItem(_("Delete##scripteditor"), nullptr, nullptr, _textEditor.HasSelection())) {
+				if (ImGui::MenuItem(_("Delete"), nullptr, nullptr, _textEditor.HasSelection())) {
 					_textEditor.Delete();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste##scripteditor"), nullptr, false,
+				if (ImGui::IconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste"), nullptr, false,
 									ImGui::GetClipboardText() != nullptr)) {
 					_textEditor.Paste();
 				}
 
 				ImGui::Separator();
 
-				if (ImGui::MenuItem(_("Select all##scripteditor"), nullptr, nullptr)) {
+				if (ImGui::MenuItem(_("Select all"), nullptr, nullptr)) {
 					_textEditor.SetSelection(TextEditor::Coordinates(),
 											 TextEditor::Coordinates(_textEditor.GetTotalLines(), 0));
 				}
