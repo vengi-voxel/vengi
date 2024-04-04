@@ -65,6 +65,22 @@ end
 
 Execute this via console `xs scriptfile 1` where `1` will be the value of `n`. Omitting the `1` will add the `default` value from the argument list.
 
+### Download a file and import it
+
+```lua
+local function basename(str)
+	local name = string.gsub(str, "(.*/)(.*)", "%2")
+	return name
+end
+
+function main(_, _, _)
+	local url = "https://github.com/vengi-voxel/vengi/raw/9c101f32b84f949ed82f7545883e80a318760580/data/voxel/guybrush.vox"
+	local filename = basename(url)
+	local stream = g_http.get(url)
+	g_import.scene(filename, stream)
+end
+```
+
 ### Find the best palette match
 
 ```lua
@@ -533,22 +549,6 @@ g_cmd.execute("echo test")
 ## Other useful information
 
 * `y` going upwards - see [basics](Basics.md) for further details.
-
-## Examples
-
-```lua
-local function basename(str)
-	local name = string.gsub(str, "(.*/)(.*)", "%2")
-	return name
-end
-
-function main(_, _, _)
-	local url = "https://github.com/vengi-voxel/vengi/raw/9c101f32b84f949ed82f7545883e80a318760580/data/voxel/guybrush.vox"
-	local filename = basename(url)
-	local stream = g_http.get(url)
-	g_import.scene(filename, stream)
-end
-```
 
 ## Available scripts
 
