@@ -15,7 +15,6 @@
 #include "ui/PopupAbout.h"
 #include "ui/ScopedStyle.h"
 #include "video/Texture.h"
-#include "video/gl/GLTypes.h"
 #include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/Format.h"
@@ -29,7 +28,7 @@
 namespace voxbrowser {
 
 MainWindow::MainWindow(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
-	: Super(app), _voxelCollection(app, texturePool), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
+	: Super(app, "main"), _voxelCollection(app, texturePool), _statusBar(app), _menuBar(app), _texturePool(texturePool) {
 }
 
 MainWindow::~MainWindow() {

@@ -23,6 +23,6 @@ private:                                                                        
 	using Super = ui::Panel;                                                                                           \
                                                                                                                        \
 public:                                                                                                                \
-	name(ui::IMGUIApp *app) : Super(app) {}
+	name(ui::IMGUIApp *app) : Super(app, #name) {}
 
 } // namespace ui
