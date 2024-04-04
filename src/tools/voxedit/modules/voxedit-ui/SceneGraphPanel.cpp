@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraphPanel.h"
+#include "core/Algorithm.h"
 #include "ui/IconsLucide.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
@@ -74,38 +75,42 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::TableSetupColumn("##nodepropertydelete", colFlags);
 		ImGui::TableHeadersRow();
 
-		// TODO: use ImGuiListClipper
-		for (const auto &entry : node.properties()) {
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted(entry->key.c_str());
-			ImGui::TableNextColumn();
-			bool propertyAlreadyHandled = false;
+		ImGuiListClipper clipper;
+		clipper.Begin(node.properties().size());
+		while (clipper.Step()) {
+			auto entry = core::next(node.properties().begin(), clipper.DisplayStart);
+			for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row, ++entry) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(entry->key.c_str());
+				ImGui::TableNextColumn();
+				bool propertyAlreadyHandled = false;
 
-			if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
-				propertyAlreadyHandled = handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
-			}
+				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+					propertyAlreadyHandled = handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
+				}
 
-			if (!propertyAlreadyHandled) {
-				const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
-				if (entry->value == "true" || entry->value == "false") {
-					bool value = core::string::toBool(entry->value);
-					if (ImGui::Checkbox(id.c_str(), &value)) {
-						_sceneMgr->nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
-					}
-				} else {
-					core::String value = entry->value;
-					if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-						_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
+				if (!propertyAlreadyHandled) {
+					const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
+					if (entry->value == "true" || entry->value == "false") {
+						bool value = core::string::toBool(entry->value);
+						if (ImGui::Checkbox(id.c_str(), &value)) {
+							_sceneMgr->nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
+						}
+					} else {
+						core::String value = entry->value;
+						if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+							_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
+						}
 					}
 				}
+				ImGui::TableNextColumn();
+				const core::String &deleteId = core::string::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+				if (ImGui::Button(deleteId.c_str())) {
+					deleteKey = entry->key;
+				}
+				ImGui::TooltipText("Delete this node property");
 			}
-			ImGui::TableNextColumn();
-			const core::String &deleteId = core::string::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
-			if (ImGui::Button(deleteId.c_str())) {
-				deleteKey = entry->key;
-			}
-			ImGui::TooltipText("Delete this node property");
 		}
 
 		ImGui::TableNextRow();

@@ -57,7 +57,7 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 			if (ImGui::Button(_("Stop path tracer"))) {
 				_pathTracer.stop();
 			}
-			ImGui::TooltipText(_("Sample %i/%i"), _currentSample, params.samples);
+			ImGui::TooltipText(_("Sample %i / %i"), _currentSample, params.samples);
 			_pathTracer.update(&_currentSample);
 			_image = _pathTracer.image();
 			if (_image->isLoaded()) {
