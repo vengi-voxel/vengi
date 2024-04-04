@@ -4,7 +4,7 @@ set(SRCS
 	Trace.h
 )
 set(LIB commonlua)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io lua54 http)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io lua54 http image)
 
 set(TEST_SRCS
 	tests/LUAFunctionsTest.cpp

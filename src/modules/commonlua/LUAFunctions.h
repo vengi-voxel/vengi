@@ -8,7 +8,8 @@
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "core/StringUtil.h"
-#include "lauxlib.h"
+#include "image/Image.h"
+#include <lauxlib.h>
 #include <lua.h>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -41,6 +42,7 @@ template<> struct clua_meta<glm::vec2> { static char const *name() {return "__me
 template<> struct clua_meta<glm::vec3> { static char const *name() {return "__meta_vec3";} };
 template<> struct clua_meta<glm::vec4> { static char const *name() {return "__meta_vec4";} };
 template<> struct clua_meta<glm::quat> { static char const *name() {return "__meta_quat";} };
+template<> struct clua_meta<image::Image> { static char const *name() {return "__meta_image";} };
 
 template<class T>
 struct clua_name {};
@@ -595,6 +597,12 @@ int clua_pushstream(lua_State* s, io::BufferedReadWriteStream *stream);
 io::BufferedReadWriteStream *clua_tostream(lua_State* s, int n);
 bool clua_isstream(lua_State* s, int n);
 
+
+image::Image *clua_toimage(lua_State* s, int n);
+bool clua_isimage(lua_State* s, int n);
+// the image is released by lua
+int clua_pushimage(lua_State* s, image::Image *image);
+
 /**
  * @brief Registers all shared lua modules/globals/functions
  */
@@ -604,6 +612,7 @@ void clua_mathregister(lua_State *s);
 void clua_httpregister(lua_State *s);
 void clua_streamregister(lua_State *s);
 
+void clua_imageregister(lua_State *s);
 void clua_cmdregister(lua_State *s);
 void clua_varregister(lua_State *s);
 void clua_logregister(lua_State *s);

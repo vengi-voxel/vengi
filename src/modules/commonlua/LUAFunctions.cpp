@@ -539,6 +539,21 @@ bool clua_isstream(lua_State* s, int n) {
 	return luaL_testudata(s, n, clua_metastream()) != nullptr;
 }
 
+image::Image *clua_toimage(lua_State* s, int n) {
+	return *(image::Image**)clua_getudata<image::Image*>(s, n, clua_meta<image::Image>::name());
+}
+
+bool clua_isimage(lua_State* s, int n) {
+	return luaL_testudata(s, n, clua_meta<image::Image>::name()) != nullptr;
+}
+
+int clua_pushimage(lua_State* s, image::Image *image) {
+	if (image == nullptr) {
+		return clua_error(s, "No image given - can't push");
+	}
+	return clua_pushudata(s, image, clua_meta<image::Image>::name());
+}
+
 static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 	if (!lua_istable(s, n)) {
 		return;
@@ -996,6 +1011,27 @@ static int clua_stream_size(lua_State *s) {
 	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushinteger(s, stream->size());
 	return 1;
+}
+
+static int clua_image_gc(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	delete image;
+	return 0;
+}
+
+static int clua_image_name(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	lua_pushstring(s, image->name().c_str());
+	return 1;
+}
+
+void clua_imageregister(lua_State *s) {
+	static const luaL_Reg imageFuncs[] = {
+		{"name", clua_image_name},
+		{"__gc", clua_image_gc},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncs(s, imageFuncs, clua_meta<image::Image>::name());
 }
 
 void clua_streamregister(lua_State *s) {

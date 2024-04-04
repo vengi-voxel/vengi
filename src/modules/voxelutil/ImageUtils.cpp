@@ -146,11 +146,20 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 }
 
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
+	return importAsPlane(image.get(), thickness);
+}
+
+voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness) {
 	const palette::Palette &palette = voxel::getPalette();
 	return importAsPlane(image, palette, thickness);
 }
 
+
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness) {
+	return importAsPlane(image.get(), palette, thickness);
+}
+
+voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness) {
 	if (thickness <= 0) {
 		Log::error("Thickness can't be 0");
 		return nullptr;
@@ -210,6 +219,10 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Pa
 		Log::error("Couldn't load heightmap %s", heightmapFile.c_str());
 		return nullptr;
 	}
+	return importAsVolume(image, heightmap, palette, maxDepth, bothSides);
+}
+
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides) {
 	if (heightmap->width() != image->width() || heightmap->height() != image->height()) {
 		Log::error("Image dimensions differ for color and heightmap");
 		return nullptr;

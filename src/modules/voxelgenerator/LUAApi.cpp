@@ -530,7 +530,7 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 	return 0;
 }
 
-static int luaVoxel_import_palette(lua_State *s) {
+static int luaVoxel_load_palette(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
 	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
 	io::FileDescription fileDesc;
@@ -540,9 +540,40 @@ static int luaVoxel_import_palette(lua_State *s) {
 	const bool ret = voxelformat::loadPalette(filename, *readStream, *palette, ctx);
 	if (!ret) {
 		delete palette;
-		return clua_error(s, "Could not load palette %s", filename);
+		return clua_error(s, "Could not load palette %s from string", filename);
 	}
 	return luaVoxel_pushpalette(s, palette);
+}
+
+static int luaVoxel_load_image(lua_State *s) {
+	const char *filename = luaL_checkstring(s, 1);
+	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
+	image::Image* image = new image::Image(filename);
+	if (!image->load(*readStream, readStream->size())) {
+		delete image;
+		return clua_error(s, "Image %s could not get loaded from stream", filename);
+	}
+	return clua_pushimage(s, image);
+}
+
+static int luaVoxel_import_imageasplane(lua_State *s) {
+	const image::Image* image = clua_toimage(s, 1);
+	const palette::Palette *palette = luaVoxel_toPalette(s, 2);
+	const int thickness = (int)luaL_optinteger(s, 3, 1);
+	voxel::RawVolume* v = voxelutil::importAsPlane(image, *palette, thickness);
+	if (v == nullptr) {
+		return clua_error(s, "Failed to import image as plane");
+	}
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(v);
+	node.setName(image->name());
+	int newNodeId = sceneGraph->emplace(core::move(node));
+	if (newNodeId == InvalidNodeId) {
+		delete v;
+		return clua_error(s, "Failed to add plane node to scene graph");
+	}
+	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(newNodeId));
 }
 
 static int luaVoxel_import_scene(lua_State *s) {
@@ -1578,12 +1609,16 @@ static void prepareState(lua_State* s) {
 	clua_registerfuncsglobal(s, shapeFuncs, luaVoxel_metashape(), "g_shape");
 
 	static const luaL_Reg importerFuncs[] = {
-		{"palette", luaVoxel_import_palette},
-		{"scene", luaVoxel_import_scene},
+		{"palette", luaVoxel_load_palette},
+		{"image", luaVoxel_load_image},
+
+		{"importScene", luaVoxel_import_scene},
+		{"importImageAsPlane", luaVoxel_import_imageasplane},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, importerFuncs, luaVoxel_metaimporter(), "g_import");
 
+	clua_imageregister(s);
 	clua_streamregister(s);
 	clua_httpregister(s);
 	clua_mathregister(s);

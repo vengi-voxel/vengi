@@ -424,11 +424,19 @@ end
 
 ## Importer
 
-`g_import` is a global that offers the ability to import palettes and scenegraphs/[formats](Formats.md) from e.g. http downloads.
+`g_import` is a global that offers the ability to load images and palettes or imports scene graphs/[formats](Formats.md) from e.g. http downloads.
 
-* `palette(filename, stream)`: Returns a palette that was imported
+* `image(filename, stream)`: Returns an image that was loaded.
 
-* `scene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
+* `palette(filename, stream)`: Returns a palette that was loaded.
+
+* `importScene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
+
+* `importImageAsPlane(filename, image)`: Imports the given image as plane into the current scene graph and returns the node.
+
+## Image
+
+* `name()`: Returns the name of the image
 
 ## Streams
 

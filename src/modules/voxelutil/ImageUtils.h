@@ -27,7 +27,10 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 int importHeightMaxHeight(const image::ImagePtr &image, bool alpha);
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness = 1);
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
+voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness = 1);
+voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness = 1);
 voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
+voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides = false);
 
 }
