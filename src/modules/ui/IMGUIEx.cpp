@@ -459,7 +459,7 @@ void URLItem(const char *title, const char *url, float width) {
 			command::executeCommands(cmd);
 		}
 		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
-		ImGui::SetTooltip("Open in browser\n%s", url);
+		ImGui::SetTooltip(_("Open in browser\n%s"), url);
 	}
 }
 bool ButtonFullWidth(const char *title) {

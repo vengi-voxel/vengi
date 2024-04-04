@@ -13,14 +13,14 @@ namespace ui {
 void metricOption() {
 	const core::VarPtr &metricFlavor = core::Var::getSafe(cfg::MetricFlavor);
 	bool metrics = !metricFlavor->strVal().empty();
-	if (ImGui::Checkbox("Enable sending anonymous metrics", &metrics)) {
+	if (ImGui::Checkbox(_("Enable sending anonymous metrics"), &metrics)) {
 		if (metrics) {
 			metricFlavor->setVal("json");
 		} else {
 			metricFlavor->setVal("");
 		}
 	}
-	ImGui::TooltipText("Send anonymous usage statistics");
+	ImGui::TooltipText(_("Send anonymous usage statistics"));
 }
 
 void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
@@ -35,24 +35,24 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 				if (ImGui::BeginTabItem(app::App::getInstance()->fullAppname().c_str())) {
 					ImGui::Text("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text("This is a beta release!");
+					ImGui::Text(_("This is a beta release!"));
 					if (isNewVersionAvailable) {
-						ImGui::Text("A new version is available!");
+						ImGui::Text(_("A new version is available!"));
 					} else {
-						ImGui::Text("You are using the latest version.");
+						ImGui::Text(_("You are using the latest version."));
 					}
 					metricOption();
 
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLIconItem(ICON_LC_GITHUB, "Bug reports", "https://github.com/vengi-voxel/vengi/issues", w);
-					ImGui::URLIconItem(ICON_LC_HELP_CIRCLE, "Help", "https://vengi-voxel.github.io/vengi/", w);
-					ImGui::URLIconItem(ICON_LC_TWITTER, "Twitter", "https://twitter.com/MartinGerhardy", w);
-					ImGui::URLIconItem(ICON_LC_SQUARE, "Mastodon", "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLIconItem(ICON_LC_SQUARE, "Discord", "https://vengi-voxel.de/discord", w);
+					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues", w);
+					ImGui::URLIconItem(ICON_LC_HELP_CIRCLE, _("Help"), "https://vengi-voxel.github.io/vengi/", w);
+					ImGui::URLIconItem(ICON_LC_TWITTER, _("Twitter"), "https://twitter.com/MartinGerhardy", w);
+					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy", w);
+					ImGui::URLIconItem(ICON_LC_SQUARE, _("Discord"), "https://vengi-voxel.de/discord", w);
 					ImGui::EndTabItem();
 				}
 
-				if (ImGui::BeginTabItem("Credits")) {
+				if (ImGui::BeginTabItem(_("Credits"))) {
 					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
 #ifdef USE_CURL
 					ImGui::Text("libCURL");
@@ -81,7 +81,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::EndTabItem();
 				}
 
-				if (ImGui::BeginTabItem("Paths")) {
+				if (ImGui::BeginTabItem(_("Paths"))) {
 					for (const core::String &path : io::filesystem()->paths()) {
 						const core::String &abspath = io::filesystem()->absolutePath(path);
 						if (abspath.empty()) {
@@ -101,7 +101,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 		}
 		ImGui::EndChild();
 		ImGui::Separator();
-		if (ImGui::IconButton(ICON_LC_CHECK, "Close##about")) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();

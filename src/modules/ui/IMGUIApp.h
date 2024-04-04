@@ -102,6 +102,11 @@ protected:
 	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) override;
 	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) override;
 	virtual bool handleSDLEvent(SDL_Event& event) override;
+
+	void renderBindingsDialog();
+	void renderTexturesDialog();
+	void renderCvarDialog();
+	void renderCommandDialog();
 public:
 	IMGUIApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 	virtual ~IMGUIApp();

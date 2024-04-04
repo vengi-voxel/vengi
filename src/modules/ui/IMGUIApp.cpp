@@ -357,6 +357,178 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 void IMGUIApp::beforeUI() {
 }
 
+void IMGUIApp::renderBindingsDialog() {
+	if (ImGui::Begin(_("Bindings"), &_showBindingsDialog, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Modal)) {
+		const util::BindMap &bindings = _keybindingHandler.bindings();
+		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
+										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		const ImVec2 outerSize(0.0f, 400.0f);
+		if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
+			ImGui::TableSetupColumn(_("Keys"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Context"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableHeadersRow();
+
+			int n = 0;
+			for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
+				const util::CommandModifierPair &pair = i->second;
+				const core::String &command = pair.command;
+				const core::String &keyBinding =
+					util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
+				const command::Command *cmd = nullptr;
+				if (command.contains(" ")) {
+					cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
+				} else {
+					cmd = command::Command::getCommand(command);
+				}
+				if (_bindingsFilter.size() >= 2u) {
+					const bool matchCmd = core::string::icontains(command, _bindingsFilter);
+					const bool matchKey = core::string::icontains(keyBinding, _bindingsFilter);
+					const bool matchHelp = cmd ? core::string::icontains(cmd->help(), _bindingsFilter) : true;
+					if (!matchCmd && !matchKey && !matchHelp) {
+						continue;
+					}
+				}
+				ImGui::TableNextColumn();
+				// TODO: change binding
+				const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
+				if (ImGui::Button(deleteButton.c_str())) {
+					command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
+					// TODO: _lastExecutedCommand
+				}
+				ImGui::SameLine();
+				ImGui::TextUnformatted(keyBinding.c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(command.c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
+				ImGui::TableNextColumn();
+				if (!cmd) {
+					ImGui::TextColored(core::Color::Red(), _("Failed to get command for %s"), command.c_str());
+				} else {
+					ImGui::TextUnformatted(cmd->help().c_str());
+				}
+			}
+			ImGui::EndTable();
+		}
+		if (!_uiKeyMaps.empty()) {
+			const int currentKeyMap = _uiKeyMap->intVal();
+			if (ImGui::BeginCombo(_("Keymap"), _uiKeyMaps[(int)currentKeyMap].c_str(), ImGuiComboFlags_None)) {
+				for (int i = 0; i < (int)_uiKeyMaps.size(); ++i) {
+					const bool selected = i == currentKeyMap;
+					if (ImGui::Selectable(_uiKeyMaps[i].c_str(), selected)) {
+						_uiKeyMap->setVal(core::string::toString(i));
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+		} else {
+			if (ImGui::Button(_("Reset to default"))) {
+				_resetKeybindings = true;
+			}
+		}
+		ImGui::SameLine();
+		ImGui::InputText(_("Filter"), &_bindingsFilter);
+	}
+	ImGui::End();
+}
+
+void IMGUIApp::renderCvarDialog() {
+	if (ImGui::Begin(_("Configuration variables"), &_showCvarDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
+		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
+										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		const ImVec2 outerSize(0.0f, 400.0f);
+		if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
+			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("##reset", ImGuiTableFlags_SizingFixedFit);
+			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableHeadersRow();
+
+			core::Var::visit([](const core::VarPtr &var) {
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(var->name().c_str());
+				ImGui::TableNextColumn();
+				const core::String type = "##" + var->name();
+				if (var->typeIsBool()) {
+					bool value = var->boolVal();
+					if (ImGui::Checkbox(type.c_str(), &value)) {
+						var->setVal(value);
+					}
+				} else {
+					core::String value = var->strVal();
+					if (ImGui::InputText(type.c_str(), &value)) {
+						var->setVal(value);
+					}
+				}
+				ImGui::TableNextColumn();
+				if (ImGui::Button(_("Reset"))) {
+					var->reset();
+				}
+				ImGui::TooltipText(_("Reset to default value"));
+				ImGui::TableNextColumn();
+				ImGui::Text("%s", var->help() ? var->help() : "");
+			});
+			ImGui::EndTable();
+		}
+		if (ImGui::Button(_("Close"))) {
+			_showCvarDialog = false;
+		}
+	}
+	ImGui::End();
+}
+
+void IMGUIApp::renderCommandDialog() {
+	if (ImGui::Begin(_("Commands"), &_showCommandDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
+		static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										   ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
+										   ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		const ImVec2 outerSize(0.0f, 400.0f);
+		if (ImGui::BeginTable("##commands", 2, TableFlags, outerSize)) {
+			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableHeadersRow();
+
+			command::Command::visitSorted([](const command::Command &cmd) {
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(cmd.name().c_str());
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(cmd.help().c_str());
+			});
+			ImGui::EndTable();
+		}
+		if (ImGui::Button(_("Close"))) {
+			_showCommandDialog = false;
+		}
+	}
+	ImGui::End();
+}
+
+void IMGUIApp::renderTexturesDialog() {
+	if (ImGui::Begin(_("Textures"), &_showTexturesDialog)) {
+		const core::Set<video::Id> &textures = video::textures();
+		const ImVec2 size(512, 512);
+		int textureCnt = 0;
+		for (const auto &e : textures) {
+			ImGui::Image(e->first, size, ImVec2(), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
+			// TODO GL_INVALID_OPERATION error generated. Target doesn't match the texture's target.
+			++textureCnt;
+			if (textureCnt % 2) {
+				ImGui::SameLine();
+			}
+		}
+	}
+	ImGui::End();
+}
+
 app::AppState IMGUIApp::onRunning() {
 	core_trace_scoped(IMGUIAppOnRunning);
 	app::AppState state = Super::onRunning();
@@ -410,175 +582,19 @@ app::AppState IMGUIApp::onRunning() {
 		}
 
 		if (_showTexturesDialog) {
-			if (ImGui::Begin(_("Textures"), &_showTexturesDialog)) {
-				const core::Set<video::Id> &textures = video::textures();
-				const ImVec2 size(512, 512);
-				int textureCnt = 0;
-				for (const auto &e : textures) {
-					ImGui::Image(e->first, size, ImVec2(), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 1));
-					// TODO GL_INVALID_OPERATION error generated. Target doesn't match the texture's target.
-					++textureCnt;
-					if (textureCnt % 2) {
-						ImGui::SameLine();
-					}
-				}
-			}
-			ImGui::End();
+			renderTexturesDialog();
 		}
 
 		if (_showCommandDialog) {
-			if (ImGui::Begin(_("Commands"), &_showCommandDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
-				static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-												ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
-												ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-				const ImVec2 outerSize(0.0f, 400.0f);
-				if (ImGui::BeginTable("##commands", 2, TableFlags, outerSize)) {
-					ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
-					ImGui::TableSetupScrollFreeze(0, 1);
-					ImGui::TableHeadersRow();
-
-					command::Command::visitSorted([](const command::Command &cmd) {
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(cmd.name().c_str());
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(cmd.help().c_str());
-					});
-					ImGui::EndTable();
-				}
-				if (ImGui::Button(_("Close"))) {
-					_showCommandDialog = false;
-				}
-			}
-			ImGui::End();
+			renderCommandDialog();
 		}
 
 		if (_showCvarDialog) {
-			if (ImGui::Begin(_("Configuration variables"), &_showCvarDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
-				static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-												ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
-												ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-				const ImVec2 outerSize(0.0f, 400.0f);
-				if (ImGui::BeginTable("##cvars", 4, TableFlags, outerSize)) {
-					ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
-					ImGui::TableSetupColumn("##reset", ImGuiTableFlags_SizingFixedFit);
-					ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
-					ImGui::TableSetupScrollFreeze(0, 1);
-					ImGui::TableHeadersRow();
-
-					core::Var::visit([](const core::VarPtr &var) {
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(var->name().c_str());
-						ImGui::TableNextColumn();
-						const core::String type = "##" + var->name();
-						if (var->typeIsBool()) {
-							bool value = var->boolVal();
-							if (ImGui::Checkbox(type.c_str(), &value)) {
-								var->setVal(value);
-							}
-						} else {
-							core::String value = var->strVal();
-							if (ImGui::InputText(type.c_str(), &value)) {
-								var->setVal(value);
-							}
-						}
-						ImGui::TableNextColumn();
-						if (ImGui::Button(_("Reset"))) {
-							var->reset();
-						}
-						ImGui::TooltipText(_("Reset to default value"));
-						ImGui::TableNextColumn();
-						ImGui::Text("%s", var->help() ? var->help() : "");
-					});
-					ImGui::EndTable();
-				}
-				if (ImGui::Button(_("Close"))) {
-					_showCvarDialog = false;
-				}
-			}
-			ImGui::End();
+			renderCvarDialog();
 		}
 
 		if (_showBindingsDialog) {
-			if (ImGui::Begin(_("Bindings"), &_showBindingsDialog, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Modal)) {
-				const util::BindMap &bindings = _keybindingHandler.bindings();
-				static const uint32_t TableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
-												ImGuiTableFlags_Hideable | ImGuiTableFlags_BordersInner |
-												ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
-				const ImVec2 outerSize(0.0f, 400.0f);
-				if (ImGui::BeginTable("##bindingslist", 4, TableFlags, outerSize)) {
-					ImGui::TableSetupColumn(_("Keys"), ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn(_("Context"), ImGuiTableColumnFlags_WidthFixed);
-					ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
-					ImGui::TableHeadersRow();
-
-					int n = 0;
-					for (util::BindMap::const_iterator i = bindings.begin(); i != bindings.end(); ++i) {
-						const util::CommandModifierPair &pair = i->second;
-						const core::String &command = pair.command;
-						const core::String &keyBinding =
-							util::KeyBindingHandler::toString(i->first, i->second.modifier, pair.count);
-						const command::Command *cmd = nullptr;
-						if (command.contains(" ")) {
-							cmd = command::Command::getCommand(command.substr(0, command.find(" ")));
-						} else {
-							cmd = command::Command::getCommand(command);
-						}
-						if (_bindingsFilter.size() >= 2u) {
-							const bool matchCmd = core::string::icontains(command, _bindingsFilter);
-							const bool matchKey = core::string::icontains(keyBinding, _bindingsFilter);
-							const bool matchHelp = cmd ? core::string::icontains(cmd->help(), _bindingsFilter) : true;
-							if (!matchCmd && !matchKey && !matchHelp) {
-								continue;
-							}
-						}
-						ImGui::TableNextColumn();
-						// TODO: change binding
-						const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
-						if (ImGui::Button(deleteButton.c_str())) {
-							command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
-							// TODO: _lastExecutedCommand
-						}
-						ImGui::SameLine();
-						ImGui::TextUnformatted(keyBinding.c_str());
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(command.c_str());
-						ImGui::TableNextColumn();
-						ImGui::TextUnformatted(core::bindingContextString(pair.context).c_str());
-						ImGui::TableNextColumn();
-						if (!cmd) {
-							ImGui::TextColored(core::Color::Red(), _("Failed to get command for %s"), command.c_str());
-						} else {
-							ImGui::TextUnformatted(cmd->help().c_str());
-						}
-					}
-					ImGui::EndTable();
-				}
-				if (!_uiKeyMaps.empty()) {
-					const int currentKeyMap = _uiKeyMap->intVal();
-					if (ImGui::BeginCombo(_("Keymap"), _uiKeyMaps[(int)currentKeyMap].c_str(), ImGuiComboFlags_None)) {
-						for (int i = 0; i < (int)_uiKeyMaps.size(); ++i) {
-							const bool selected = i == currentKeyMap;
-							if (ImGui::Selectable(_uiKeyMaps[i].c_str(), selected)) {
-								_uiKeyMap->setVal(core::string::toString(i));
-							}
-							if (selected) {
-								ImGui::SetItemDefaultFocus();
-							}
-						}
-						ImGui::EndCombo();
-					}
-				} else {
-					if (ImGui::Button(_("Reset to default"))) {
-						_resetKeybindings = true;
-					}
-				}
-				ImGui::SameLine();
-				ImGui::InputText(_("Filter"), &_bindingsFilter);
-			}
-			ImGui::End();
+			renderBindingsDialog();
 		}
 
 		bool showMetrics = _showMetrics->boolVal();
