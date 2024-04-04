@@ -99,7 +99,7 @@ int CollectionPanel::update(CollectionManager &collectionMgr,
 	if (ImGui::BeginChild("##collectionpanel")) {
 		updateFilters();
 
-		if (ImGui::BeginTable(_("Voxel Files"), 3,
+		if (ImGui::BeginTable(_("Voxel Files"), 2,
 							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
 								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 			ImGui::TableSetupScrollFreeze(0, 1);
