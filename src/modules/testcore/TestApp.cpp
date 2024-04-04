@@ -153,6 +153,14 @@ void TestApp::onRenderUI() {
 		showTexturesDialog();
 	}
 	ImGui::SameLine();
+	if (ImGui::Button(_("Show all commands"))) {
+		showCommandDialog();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(_("Show all cvars"))) {
+		showCvarDialog();
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Quit")) {
 		requestQuit();
 	}

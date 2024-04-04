@@ -20,6 +20,7 @@ General:
    - Extended lua bindings for key frames and transforms
    - Extended lua bindings for http requests
    - Fixed face culling for negative scale values
+   - Added command and cvar dialogs to the help menus
 
 VoxConvert:
 

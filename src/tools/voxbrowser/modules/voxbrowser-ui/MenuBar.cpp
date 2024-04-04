@@ -55,6 +55,12 @@ bool MenuBar::update() {
 				ImGui::EndMenu();
 			}
 #endif
+			if (ImGui::MenuItem(_("Show all commands"))) {
+				_app->showCommandDialog();
+			}
+			if (ImGui::MenuItem(_("Show all cvars"))) {
+				_app->showCvarDialog();
+			}
 			if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
 				_popupAbout = true;
 			}
