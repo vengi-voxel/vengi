@@ -15,6 +15,31 @@
 
 namespace voxedit {
 
+/**
+ * @brief This is an interceptor that doesn't allow to run any command or to modify a model reference
+ *
+ * It instead opens a popup about doing the unreferencing of the model to be able to execute further modifications
+ * on the model itself.
+ */
+struct ReferenceNodeCommandInterceptor : public command::CommandExecutionListener {
+	scenegraph::SceneGraphNode *_node;
+	command::CommandExecutionListener &_listener;
+	ReferenceNodeCommandInterceptor(scenegraph::SceneGraphNode *node, command::CommandExecutionListener &listener)
+		: _node(node), _listener(listener) {
+	}
+	bool allowed(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
+		if (_node->isReference()) {
+			MainWindow::_popupModelUnreference = true;
+			return false;
+		}
+		return _listener.allowed(cmd, args);
+	}
+
+	void operator()(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
+		_listener(cmd, args);
+	}
+};
+
 void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
@@ -119,31 +144,10 @@ void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecu
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {
-			struct CommandNodeExecutionListener : public command::CommandExecutionListener {
-				scenegraph::SceneGraphNode *_node;
-				command::CommandExecutionListener &_listener;
-				CommandNodeExecutionListener(scenegraph::SceneGraphNode *node, command::CommandExecutionListener &listener)
-					: _node(node), _listener(listener) {
-				}
-				bool allowed(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
-					if (_node->isReference()) {
-						if (cmd == "modelunref") {
-							return true;
-						}
-						MainWindow::_popupModelUnreference = true;
-						return false;
-					}
-					return _listener.allowed(cmd, args);
-				}
-
-				void operator()(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
-					_listener(cmd, args);
-				}
-			};
 			const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 			const int activeNode = sceneGraph.activeNode();
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
-				CommandNodeExecutionListener wrapper(node, listener);
+				ReferenceNodeCommandInterceptor wrapper(node, listener);
 				updateEditMode(wrapper);
 			}
 		}
