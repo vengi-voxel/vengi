@@ -14,7 +14,6 @@
 #include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
-#include "ui/dearimgui/ImGuizmo.h"
 #include "ui/dearimgui/implot.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -88,7 +87,7 @@ void PositionsPanel::shutdown() {
 }
 
 void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
-	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, "Region", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const core::String &sizes = _regionSizes->strVal();
 		if (!sizes.empty()) {
@@ -120,52 +119,52 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				const voxel::Region &region = v->region();
 				glm::ivec3 mins = region.getLowerCorner();
 				glm::ivec3 maxs = region.getDimensionsInVoxels();
-				if (xyzValues("pos", mins)) {
+				if (xyzValues(_("pos"), mins)) {
 					const glm::ivec3 &f = mins - region.getLowerCorner();
 					_sceneMgr->nodeShift(nodeId, f);
 				}
 				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
 					ImGui::SameLine();
-					if (ImGui::Button("To Transform")) {
+					if (ImGui::Button(_("To Transform"))) {
 						const glm::ivec3 &f = region.getLowerCorner();
 						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
 						_sceneMgr->nodeShift(nodeId, -f);
 					}
-					ImGui::TooltipText("Convert the region offset into the keyframe transforms");
+					ImGui::TooltipText(_("Convert the region offset into the keyframe transforms"));
 				}
-				if (xyzValues("size", maxs)) {
+				if (xyzValues(_("size"), maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
 					_sceneMgr->nodeResize(nodeId, newRegion);
 				}
 
-				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Gizmo settings", ImGuiTreeNodeFlags_DefaultOpen)) {
-					ImGui::CheckboxVar("Show gizmo", cfg::VoxEditModelGizmo);
-					ImGui::CheckboxVar("Flip Axis", cfg::VoxEditGizmoAllowAxisFlip);
-					ImGui::CheckboxVar("Snap", cfg::VoxEditGizmoSnap);
+				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
+					ImGui::CheckboxVar(_("Show gizmo"), cfg::VoxEditModelGizmo);
+					ImGui::CheckboxVar(_("Flip Axis"), cfg::VoxEditGizmoAllowAxisFlip);
+					ImGui::CheckboxVar(_("Snap"), cfg::VoxEditGizmoSnap);
 				}
 			}
 		}
 
-		ImGui::SliderVarInt("Cursor details", cfg::VoxEditCursorDetails, 0, 2);
+		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
 	}
 
 	ImGui::NewLine();
 
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, "Translate", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		static glm::ivec3 translate{0};
 		veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
 		veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
 		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_GRID_3X3, "Volumes", shiftCmd.c_str(), listener);
+		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
 		ImGui::SameLine();
 		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_BOXES, "Voxels", moveCmd.c_str(), listener);
+		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
 	}
 
 	ImGui::NewLine();
 
-	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, "Cursor", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
 		if (veui::CheckboxAxisFlags(math::Axis::X, "X##cursorlock", &lockedAxis)) {
@@ -209,8 +208,7 @@ void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &n
 	}
 	const scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	const int currentInterpolation = (int)keyFrame.interpolation;
-	if (ImGui::BeginCombo("Interpolation##interpolationstrings",
-						  scenegraph::InterpolationTypeStr[currentInterpolation])) {
+	if (ImGui::BeginCombo(_("Interpolation"), scenegraph::InterpolationTypeStr[currentInterpolation])) {
 		for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
 			const bool isSelected = (currentInterpolation == n);
 			if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
@@ -223,7 +221,7 @@ void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &n
 		}
 		ImGui::EndCombo();
 	}
-	if (ImGui::IconCollapsingHeader(ICON_LC_LINE_CHART, "Interpolation details")) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_LINE_CHART, _("Interpolation details"))) {
 		core::Array<glm::dvec2, 20> data;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
@@ -247,7 +245,7 @@ void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &n
 void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,
 											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
 											   scenegraph::KeyFrameIndex keyFrameIdx) {
-	if (ImGui::Button("Reset all")) {
+	if (ImGui::Button(_("Reset all"))) {
 		scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
 		if (_localSpace) {
 			transform.setLocalMatrix(glm::mat4(1.0f));
@@ -260,12 +258,12 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 		_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
 	}
 	ImGui::SameLine();
-	ImGui::CheckboxVar("Auto Keyframe", cfg::VoxEditAutoKeyFrame);
-	ImGui::TooltipText("Automatically create keyframes when changing transforms");
+	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
+	ImGui::TooltipText(_("Automatically create keyframes when changing transforms"));
 }
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, "Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Transform"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != InvalidNodeId) {
@@ -283,45 +281,45 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 			glm::vec4 perspective{0.0f};
 			bool change = false;
 			if (glm::decompose(matrix, matrixScale, matrixOrientation, matrixTranslation, skew, perspective)) {
-				ImGui::Checkbox("Local transforms", &_localSpace);
-				ImGui::CheckboxVar("Update children", cfg::VoxEditTransformUpdateChildren);
-				change |= ImGui::InputFloat3("Tr", glm::value_ptr(matrixTranslation), "%.3f",
+				ImGui::Checkbox(_("Local transforms"), &_localSpace);
+				ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
+				change |= ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f",
 											ImGuiInputTextFlags_EnterReturnsTrue);
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resettr")) {
 					matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
 					change = true;
 				}
-				ImGui::TooltipText("Reset");
+				ImGui::TooltipText(_("Reset"));
 
 				matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
-				change |= ImGui::InputFloat3("Rt", glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+				change |= ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetrt")) {
 					matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
 					change = true;
 				}
-				ImGui::TooltipText("Reset");
+				ImGui::TooltipText(_("Reset"));
 
-				change |= ImGui::InputFloat3("Sc", glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+				change |= ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetsc")) {
 					matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
 					change = true;
 				}
-				ImGui::TooltipText("Reset");
+				ImGui::TooltipText(_("Reset"));
 			}
 
 			glm::vec3 pivot = node.pivot();
 			bool pivotChanged =
-				ImGui::InputFloat3("Pv", glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+				ImGui::InputFloat3(_("Pv"), glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 			change |= pivotChanged;
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resetpv")) {
 				pivot[0] = pivot[1] = pivot[2] = 0.0f;
 				pivotChanged = change = true;
 			}
-			ImGui::TooltipText("Reset");
+			ImGui::TooltipText(_("Reset"));
 
 			keyFrameActionsAndOptions(sceneGraph, node, frameIdx, keyFrameIdx);
 			keyFrameInterpolationSettings(node, keyFrameIdx);
