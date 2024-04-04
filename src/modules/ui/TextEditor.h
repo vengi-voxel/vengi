@@ -2,6 +2,8 @@
  * ImGuiColorTextEdit (MIT Licensed)
  *
  * https://github.com/BalazsJako/ImGuiColorTextEdit
+ *
+ * updated version: https://github.com/santaclose/ImGuiColorTextEdit/
  */
 
 #pragma once
@@ -16,6 +18,8 @@
 #include <utility>
 
 class TextEditor {
+	static const core::Map<char, char> OPEN_TO_CLOSE_CHAR;
+	static const core::Map<char, char> CLOSE_TO_OPEN_CHAR;
 public:
 	enum class PaletteIndex {
 		Default,
@@ -364,6 +368,8 @@ private:
 	void HandleKeyboardInputs();
 	void HandleMouseInputs();
 	void Render();
+
+	bool FindMatchingBracket(int aLine, int aCharIndex, Coordinates& out);
 
 	float _lineSpacing = 1.0f;
 	Lines _lines;

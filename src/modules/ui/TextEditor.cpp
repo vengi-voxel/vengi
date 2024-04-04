@@ -6,6 +6,17 @@
 
 #include <SDL.h>
 
+const core::Map<char, char> TextEditor::OPEN_TO_CLOSE_CHAR = {
+	{'{', '}'},
+	{'(' , ')'},
+	{'[' , ']'}
+};
+const core::Map<char, char> TextEditor::CLOSE_TO_OPEN_CHAR = {
+	{'}', '{'},
+	{')' , '('},
+	{']' , '['}
+};
+
 template <class InputIt1, class InputIt2, class BinaryPredicate>
 bool equals(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate p) {
 	for (; first1 != last1 && first2 != last2; ++first1, ++first2) {
@@ -698,6 +709,71 @@ void TextEditor::HandleMouseInputs() {
 	}
 }
 
+bool TextEditor::FindMatchingBracket(int aLine, int aCharIndex, Coordinates &out) {
+	// assuming bracket chars cannot be part of utf8 sequence
+	if (CLOSE_TO_OPEN_CHAR.find(_lines[aLine][aCharIndex].mChar) != CLOSE_TO_OPEN_CHAR.end()) {
+		char closeChar = _lines[aLine][aCharIndex].mChar;
+		char openChar = CLOSE_TO_OPEN_CHAR.find(closeChar)->value;
+		int currentLine = aLine;
+		int currentCharIndex = aCharIndex;
+		int counter = 0;
+		while (true) {
+			if (currentCharIndex < (int)_lines[currentLine].size()) {
+				char currentChar = _lines[currentLine][currentCharIndex].mChar;
+				if (currentChar == openChar) {
+					counter--;
+					if (counter == 0) {
+						out = {currentLine, GetCharacterColumn(currentLine, currentCharIndex)};
+						return true;
+					}
+				} else if (currentChar == closeChar) {
+					counter++;
+				}
+			}
+
+			if (currentCharIndex == 0) {
+				if (currentLine == 0) {
+					break;
+				}
+				currentLine--;
+				currentCharIndex = _lines[currentLine].size() - 1;
+			} else
+				currentCharIndex--;
+		}
+	} else if (OPEN_TO_CLOSE_CHAR.find(_lines[aLine][aCharIndex].mChar) != OPEN_TO_CLOSE_CHAR.end()) {
+		char openChar = _lines[aLine][aCharIndex].mChar;
+		char closeChar = OPEN_TO_CLOSE_CHAR.find(openChar)->value;
+		int currentLine = aLine;
+		int currentCharIndex = aCharIndex;
+		int counter = 0;
+		while (true) {
+			if (currentCharIndex < (int)_lines[currentLine].size()) {
+				char currentChar = _lines[currentLine][currentCharIndex].mChar;
+				if (currentChar == closeChar) {
+					counter--;
+					if (counter == 0) {
+						out = {currentLine, GetCharacterColumn(currentLine, currentCharIndex)};
+						return true;
+					}
+				} else if (currentChar == openChar) {
+					counter++;
+				}
+			}
+
+			if (currentCharIndex == (int)_lines[currentLine].size()) {
+				if (currentLine == (int)_lines.size() - 1) {
+					break;
+				}
+				currentLine++;
+				currentCharIndex = 0;
+			} else {
+				currentCharIndex++;
+			}
+		}
+	}
+	return false;
+}
+
 void TextEditor::Render() {
 	/* Compute mCharAdvance regarding to scaled font size (Ctrl + mouse wheel)*/
 	const float fontSize =
@@ -848,6 +924,23 @@ void TextEditor::Render() {
 						drawList->AddRectFilled(cstart, cend, _palette[(int)PaletteIndex::Cursor]);
 						if (elapsed > 800)
 							_startTime = timeEnd;
+#if 0
+						if (cindex < (int)line.size()) {
+							Coordinates matchingBracket;
+							if (FindMatchingBracket(lineNo, cindex, matchingBracket)) {
+								ImVec2 topLeft = {cstart.x, cend.y + 1.0f};
+								ImVec2 bottomRight = {cstart.x + _charAdvance.x, cend.y + 2.0f};
+
+								drawList->AddRectFilled(topLeft, bottomRight, _palette[(int)PaletteIndex::Cursor]);
+								ImVec2 disp = {(_state.mCursorPosition.mColumn - matchingBracket.mColumn) *
+												   _charAdvance.x,
+											   (_state.mCursorPosition.mLine - matchingBracket.mLine) * _charAdvance.y};
+								topLeft = {topLeft.x - disp.x, topLeft.y - disp.y};
+								bottomRight = {bottomRight.x - disp.x, bottomRight.y - disp.y};
+								drawList->AddRectFilled(topLeft, bottomRight, _palette[(int)PaletteIndex::Cursor]);
+							}
+						}
+#endif
 					}
 				}
 			}
@@ -2015,7 +2108,8 @@ void TextEditor::ColorizeInternal() {
 						}
 					}
 				}
-				line[currentIndex].mPreprocessor = withinPreproc;
+				if (currentIndex < (int)line.size())
+					line[currentIndex].mPreprocessor = withinPreproc;
 				currentIndex += core::utf8::lengthInt((int)c);
 				if (currentIndex >= (int)line.size()) {
 					currentIndex = 0;
