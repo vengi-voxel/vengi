@@ -164,6 +164,12 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 #endif
+			if (ImGui::MenuItem(_("Show all commands"))) {
+				app->showCommandDialog();
+			}
+			if (ImGui::MenuItem(_("Show all cvars"))) {
+				app->showCvarDialog();
+			}
 			if (ImGui::MenuItem(_("Tip of the day"))) {
 				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}

@@ -59,6 +59,8 @@ protected:
 	bool _resetKeybindings = false;
 	bool _showBindingsDialog = false;
 	bool _showTexturesDialog = false;
+	bool _showCommandDialog = false;
+	bool _showCvarDialog = false;
 	bool _closeModalPopup = false;
 	bool _showFileDialog = false;
 	bool _persistUISettings = true;
@@ -125,6 +127,8 @@ public:
 
 	void showBindingsDialog();
 	void showTexturesDialog();
+	void showCvarDialog();
+	void showCommandDialog();
 	void fileDialog(const video::FileDialogSelectionCallback& callback, const video::FileDialogOptions& options, video::OpenFileMode mode, const io::FormatDescription* formats = nullptr, const core::String &filename = "") override;
 };
 
@@ -134,6 +138,14 @@ inline void IMGUIApp::showBindingsDialog() {
 
 inline void IMGUIApp::showTexturesDialog() {
 	_showTexturesDialog = true;
+}
+
+inline void IMGUIApp::showCvarDialog() {
+	_showCvarDialog = true;
+}
+
+inline void IMGUIApp::showCommandDialog() {
+	_showCommandDialog = true;
 }
 
 inline ImFont *IMGUIApp::defaultFont() {
