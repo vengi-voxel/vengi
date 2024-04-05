@@ -25,7 +25,8 @@ namespace voxelformat {
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
-		Log::error("Could not load 3zh file: Not enough data in stream " CORE_STRINGIFY(read));                        \
+		Log::error("Could not load 3zh file: Not enough data in stream " CORE_STRINGIFY(read) " (line %i)",            \
+				   (int)__LINE__);                                                                                     \
 		return false;                                                                                                  \
 	}
 
@@ -57,7 +58,7 @@ enum ChunkId {
 	CHUNK_ID_SHAPE_BAKED_LIGHTING_V5 = 14,
 	CHUNK_ID_MAX_V5 = 14,
 
-	CHUNK_ID_PALETTE_LEGACY_V6 = 2,
+	CHUNK_ID_PALETTE_LEGACY_V6 = CHUNK_ID_PALETTE_V5,
 	CHUNK_ID_SHAPE_V6 = 3,
 	CHUNK_ID_SHAPE_SIZE_V6 = 4,
 	CHUNK_ID_SHAPE_BLOCKS_V6 = 5,
@@ -201,25 +202,41 @@ bool CubzhFormat::loadHeader(io::SeekableReadStream &stream, Header &header) con
 	return true;
 }
 
-bool CubzhFormat::loadPalette(const core::String &filename, const Header &header, const Chunk &chunk,
-							  io::ReadStream &stream, palette::Palette &palette) const {
-	const bool legacy =
-		header.version == 5u || (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6);
+bool CubzhFormat::loadPalette5(io::ReadStream &stream, palette::Palette &palette) const {
 	uint8_t colorCount;
-	if (legacy) {
-		Log::debug("Found legacy palette");
-		// rowCount
-		// columnCount
-		stream.skipDelta(2);
-		uint16_t colorCount16;
-		wrap(stream.readUInt16(colorCount16))
-		colorCount = colorCount16;
-		// default color
-		// default background color
-		stream.skipDelta(2);
-	} else {
-		wrap(stream.readUInt8(colorCount))
+	Log::debug("Found legacy palette");
+	// rowCount
+	// columnCount
+	stream.skipDelta(2);
+	uint16_t colorCount16;
+	wrap(stream.readUInt16(colorCount16))
+	colorCount = colorCount16;
+	// default color
+	// default background color
+	stream.skipDelta(2);
+	Log::debug("Palette with %d colors", colorCount);
+
+	palette.setSize(colorCount);
+	for (uint8_t i = 0; i < colorCount; ++i) {
+		uint8_t r, g, b, a;
+		wrap(stream.readUInt8(r))
+		wrap(stream.readUInt8(g))
+		wrap(stream.readUInt8(b))
+		wrap(stream.readUInt8(a))
+		palette.setColor(i, core::RGBA(r, g, b, a));
 	}
+	for (uint8_t i = 0; i < colorCount; ++i) {
+		const bool emissive = stream.readBool();
+		if (emissive) {
+			palette.setEmit(i, 1.0f);
+		}
+	}
+	return true;
+}
+
+bool CubzhFormat::loadPalette6(io::ReadStream &stream, palette::Palette &palette) const {
+	uint8_t colorCount = 0;
+	wrap(stream.readUInt8(colorCount))
 	Log::debug("Palette with %d colors", colorCount);
 
 	palette.setSize(colorCount);
@@ -351,7 +368,7 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 		wrapBool(loadChunkHeader(header, stream, chunk))
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_PALETTE_V5:
-			if (!loadPalette(filename, header, chunk, stream, palette)) {
+			if (!loadPalette5(stream, palette)) {
 				return false;
 			}
 			break;
@@ -444,7 +461,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_PALETTE_V6: {
-			wrapBool(loadPalette(filename, header, chunk, stream, nodePalette))
+			wrapBool(loadPalette6(stream, nodePalette))
 			break;
 		}
 		case priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6: {
@@ -610,11 +627,16 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 			break;
 		}
 		switch (chunk.chunkId) {
-		case priv::CHUNK_ID_PALETTE_V6:
+		case priv::CHUNK_ID_PALETTE_V6: {
+			Log::debug("load palette");
+			CubzhReadStream zhs(header, chunk, stream);
+			wrapBool(loadPalette6(zhs, palette))
+			break;
+		}
 		case priv::CHUNK_ID_PALETTE_LEGACY_V6: {
 			Log::debug("load palette");
 			CubzhReadStream zhs(header, chunk, stream);
-			wrapBool(loadPalette(filename, header, chunk, zhs, palette))
+			wrapBool(loadPalette5(zhs, palette))
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_V6: {
@@ -666,11 +688,15 @@ size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadSt
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
 		if (header.version == 5u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
-			wrapBool(loadPalette(filename, header, chunk, stream, palette))
+			wrapBool(loadPalette5(stream, palette))
 			return palette.size();
-		} else if (header.version == 6u && (chunk.chunkId == priv::CHUNK_ID_PALETTE_V6 || chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6)) {
+		} else if (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V6) {
 			CubzhReadStream zhs(header, chunk, stream);
-			wrapBool(loadPalette(filename, header, chunk, zhs, palette))
+			wrapBool(loadPalette6(zhs, palette))
+			return palette.size();
+		} else if (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6) {
+			CubzhReadStream zhs(header, chunk, stream);
+			wrapBool(loadPalette5(zhs, palette))
 			return palette.size();
 		} else {
 			wrapBool(loadSkipChunk(header, chunk, stream))
@@ -716,6 +742,7 @@ private:
 	int64_t _chunkHeaderEndPos;
 	uint32_t _uncompressedChunkSize = 0;
 	io::WriteStream *_stream2 = nullptr;
+
 public:
 	WriteChunkStream(uint32_t chunkId, io::SeekableWriteStream &stream) : _chunkId(chunkId), _stream(stream) {
 		stream.writeUInt8(_chunkId);
@@ -772,6 +799,7 @@ private:
 	uint32_t _chunkId;
 	io::SeekableWriteStream &_stream;
 	io::BufferedReadWriteStream _buffer;
+
 public:
 	WriteSubChunkStream(uint32_t chunkId, io::SeekableWriteStream &stream) : _chunkId(chunkId), _stream(stream) {
 		stream.writeUInt8(_chunkId);
