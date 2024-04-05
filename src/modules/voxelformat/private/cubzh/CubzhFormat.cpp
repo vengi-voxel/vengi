@@ -366,6 +366,7 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 	while (!stream.eos()) {
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
+		ChunkChecker check(stream, chunk);
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_PALETTE_V5:
 			if (!loadPalette5(stream, palette)) {
@@ -622,6 +623,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 		Log::debug("Remaining stream data: %d", (int)stream.remaining());
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
+		ChunkChecker check(stream, chunk);
 		if (chunk.chunkId < priv::CHUNK_ID_MIN || chunk.chunkId > priv::CHUNK_ID_MAX_V6) {
 			Log::warn("Invalid chunk id found: %u", chunk.chunkId);
 			break;
@@ -687,6 +689,7 @@ size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadSt
 	while (!stream.eos()) {
 		Chunk chunk;
 		wrapBool(loadChunkHeader(header, stream, chunk))
+		ChunkChecker check(stream, chunk);
 		if (header.version == 5u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
 			wrapBool(loadPalette5(stream, palette))
 			return palette.size();

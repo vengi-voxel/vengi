@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Log.h"
 #include "io/Stream.h"
 #include "voxelformat/Format.h"
 
@@ -275,6 +276,27 @@ protected:
 		uint8_t compressed = 0;
 
 		bool supportsCompression() const;
+	};
+
+	struct ChunkChecker {
+		io::SeekableReadStream *_stream;
+		int64_t _pos;
+		int64_t _size;
+		uint8_t _chunkId;
+
+		ChunkChecker(io::SeekableReadStream &stream, const Chunk &chunk) {
+			_stream = &stream;
+			_pos = stream.pos();
+			_size = chunk.chunkSize;
+			_chunkId = chunk.chunkId;
+		}
+		~ChunkChecker() {
+			const int64_t expectedPos = _pos + _size;
+			if (_stream->pos() != expectedPos) {
+				Log::error("Unexpected stream position after reading chunk: %i => %d != %d", (int)_chunkId,
+						   (int)_stream->pos(), (int)expectedPos);
+			}
+		}
 	};
 
 	class CubzhReadStream : public io::ReadStream {
