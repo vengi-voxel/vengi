@@ -340,6 +340,8 @@ protected:
 	bool loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
 
+	bool loadPCubes(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
+					scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 	bool savePCubes(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx);
 

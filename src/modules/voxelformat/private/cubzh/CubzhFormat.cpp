@@ -388,6 +388,35 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 	return true;
 }
 
+bool CubzhFormat::loadPCubes(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
+							 scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+							 const LoadContext &ctx) const {
+	while (!stream.eos()) {
+		Chunk chunk;
+		wrapBool(loadChunkHeader(header, stream, chunk))
+		ChunkChecker check(stream, chunk);
+		switch (chunk.chunkId) {
+		case priv::CHUNK_ID_PALETTE_LEGACY_V6: {
+			Log::debug("load palette");
+			CubzhReadStream zhs(header, chunk, stream);
+			wrapBool(loadPalette5(zhs, palette))
+			break;
+		}
+		case priv::CHUNK_ID_SHAPE_V6: {
+			Log::debug("load shape");
+			CubzhReadStream zhs(header, chunk, stream);
+			wrapBool(loadShape6(filename, header, zhs, sceneGraph, palette, ctx))
+			break;
+		}
+		default:
+			Log::debug("Skip chunk %d", chunk.chunkId);
+			wrapBool(loadSkipChunk(header, chunk, stream))
+			break;
+		}
+	}
+	return true;
+}
+
 bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const {
 	wrap(stream.readUInt8(chunk.chunkId))
 	if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_SHAPE_NAME_V6) {
@@ -677,6 +706,10 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, io::SeekableRe
 									const LoadContext &ctx) {
 	Header header;
 	wrapBool(loadHeader(stream, header))
+	Log::debug("Found version %d", header.version);
+	if (header.legacy) {
+		return loadPCubes(filename, header, stream, sceneGraph, palette, ctx);
+	}
 	if (header.version == 5) {
 		return loadVersion5(filename, header, stream, sceneGraph, palette, ctx);
 	}
