@@ -31,7 +31,6 @@ void extractSurface(SurfaceExtractionContext &ctx) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh);
 	} else {
 		voxel::Region extractRegion = ctx.region;
-		extractRegion.shiftUpperCorner(1, 1, 1);
 		voxel::extractCubicMesh(ctx.volume, extractRegion, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
 								ctx.ambientOcclusion);
 	}
