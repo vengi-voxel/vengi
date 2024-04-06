@@ -335,10 +335,12 @@ protected:
 
 	bool loadVersion5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
-	bool loadPalette6(io::ReadStream &stream, palette::Palette &palette) const;
+
 	bool loadPalette5(io::ReadStream &stream, palette::Palette &palette) const;
 	bool loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
+	bool loadPalette6(io::ReadStream &stream, palette::Palette &palette) const;
+	bool loadPalettePCubes(io::ReadStream &stream, palette::Palette &palette) const;
 
 	bool loadPCubes(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
