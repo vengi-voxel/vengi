@@ -104,7 +104,7 @@ private:
 	core::VarPtr _meshMode;
 	bool deleteMeshes(const glm::ivec3 &pos, int idx);
 	void clear();
-	bool scheduleExtractions(size_t maxExtraction = 1);
+	bool runScheduledExtractions(size_t maxExtraction = 1);
 	void waitForPendingExtractions();
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionCtx &result, MeshType type);
@@ -115,7 +115,15 @@ public:
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
 
-	void extractAll();
+	/**
+	 * @brief Extracts all the pending regions
+	 * @note This method is blocking
+	 * @sa scheduleRegionExtraction()
+	 */
+	void extractAllPending();
+	/**
+	 * @return the amount of pending extractions
+	 */
 	int pendingExtractions() const;
 	void clearPendingExtractions();
 
@@ -145,9 +153,11 @@ public:
 	voxel::SurfaceExtractionType meshMode() const;
 
 	/**
+	 * @brief Split the region according to the configured mesh size
+	 * @note Without calling @c extractAllPending() or @c update() the mesh won't get extracted
 	 * @return @c true if the mesh should get deleted in the renderer
 	 */
-	bool extractRegion(int idx, const voxel::Region &region);
+	bool scheduleRegionExtraction(int idx, const voxel::Region &region);
 
 	[[nodiscard]] voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
 											  bool meshDelete, bool &meshDeleted);

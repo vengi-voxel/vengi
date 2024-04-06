@@ -116,7 +116,7 @@ public:
 	void clear();
 	bool isVisible(int idx) const;
 
-	void extractRegion(int idx, const voxel::Region& region);
+	void scheduleRegionExtraction(int idx, const voxel::Region& region);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer

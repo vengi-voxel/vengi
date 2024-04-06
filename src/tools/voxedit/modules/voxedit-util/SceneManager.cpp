@@ -530,8 +530,10 @@ bool SceneManager::load(const io::FileDescription& file) {
 		voxelformat::LoadContext loadCtx;
 		voxelformat::loadFormat(file, stream, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
-		// TODO: stuff that happens in RawVolumeRenderer::extractRegion and
-		// RawVolumeRenderer::scheduleExtractions should happen here
+		/**
+		 * @todo stuff that happens in MeshState::scheduleRegionExtraction() and
+		 * MeshState::runScheduledExtractions() should happen here
+		 */
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(filePtr->name(), &file.desc);

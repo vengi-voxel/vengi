@@ -129,8 +129,8 @@ void SceneGraphRenderer::update() {
 	_volumeRenderer.update();
 }
 
-void SceneGraphRenderer::extractRegion(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	_volumeRenderer.extractRegion(getVolumeId(node), region);
+void SceneGraphRenderer::scheduleRegionExtraction(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
+	_volumeRenderer.scheduleRegionExtraction(getVolumeId(node), region);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
@@ -212,7 +212,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		_volumeRenderer.setVolume(id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
-			_volumeRenderer.extractRegion(id, region);
+			_volumeRenderer.scheduleRegionExtraction(id, region);
 		}
 		if (sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
@@ -284,7 +284,7 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 								bool waitPending) {
 	prepare(renderContext);
 	if (waitPending) {
-		_volumeRenderer.meshState()->extractAll();
+		_volumeRenderer.meshState()->extractAllPending();
 		_volumeRenderer.update();
 	}
 

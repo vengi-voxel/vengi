@@ -172,7 +172,7 @@ voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::
 	return voxel::Region{mins, maxs};
 }
 
-bool MeshState::scheduleExtractions(size_t maxExtraction) {
+bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 	const size_t n = _extractRegions.size();
 	if (n == 0) {
 		return false;
@@ -234,17 +234,17 @@ bool MeshState::update() {
 
 		for (int i = 0; i < MAX_VOLUMES; ++i) {
 			if (voxel::RawVolume *v = volume(i)) {
-				extractRegion(i, v->region());
+				scheduleRegionExtraction(i, v->region());
 			}
 		}
 		triggerClear = true;
 	}
-	scheduleExtractions();
+	runScheduledExtractions();
 	return triggerClear;
 }
 
-bool MeshState::extractRegion(int idx, const voxel::Region &region) {
-	core_trace_scoped(RawVolumeRendererExtract);
+bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
+	core_trace_scoped(MeshStateScheduleExtraction);
 	const int bufferIndex = resolveIdx(idx);
 	voxel::RawVolume *v = volume(bufferIndex);
 	if (v == nullptr) {
@@ -285,8 +285,8 @@ bool MeshState::extractRegion(int idx, const voxel::Region &region) {
 	return deletedMesh;
 }
 
-void MeshState::extractAll() {
-	while (scheduleExtractions(100)) {
+void MeshState::extractAllPending() {
+	while (runScheduledExtractions(100)) {
 	}
 	waitForPendingExtractions();
 }

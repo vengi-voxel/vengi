@@ -228,8 +228,8 @@ bool RawVolumeRenderer::init() {
 	return true;
 }
 
-void RawVolumeRenderer::extractRegion(int idx, const voxel::Region &region) {
-	if (_meshState->extractRegion(idx, region)) {
+void RawVolumeRenderer::scheduleRegionExtraction(int idx, const voxel::Region &region) {
+	if (_meshState->scheduleRegionExtraction(idx, region)) {
 		deleteMeshes(idx);
 	}
 }
