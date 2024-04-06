@@ -35,6 +35,7 @@
 namespace voxelformat {
 
 #define AlphaThreshold 0
+#define MaxTriangleColorContributions 4
 
 MeshFormat::MeshFormat() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
@@ -147,7 +148,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const TriCollection 
 		auto iter = posMap.find(p);
 		if (iter == posMap.end()) {
 			posMap.emplace(p, {area, rgba});
-		} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != rgba) {
+		} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
 			PosSampling &pos = iter->value;
 			pos.entries.emplace_back(area, rgba);
 		}
@@ -186,7 +187,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 					auto iter = posMap.find(p);
 					if (iter == posMap.end()) {
 						posMap.emplace(p, {area, rgba});
-					} else if (iter->value.entries.size() < 4 && iter->value.entries[0].color != rgba) {
+					} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
 						PosSampling &pos = iter->value;
 						pos.entries.emplace_back(area, rgba);
 					}
