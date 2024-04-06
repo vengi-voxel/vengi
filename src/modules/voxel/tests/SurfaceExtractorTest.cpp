@@ -107,4 +107,29 @@ TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
 	EXPECT_EQ(48, (int)mesh.mesh[0].getNoOfVertices());
 }
 
+TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
+	glm::ivec3 mins(-1, -1, -1);
+	glm::ivec3 maxs(1, -1, 1);
+	voxel::Region region(mins, maxs);
+	voxel::RawVolume v(region);
+	for (int x = mins.x; x <= maxs.x; ++x) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+
+	const bool mergeQuads = true;
+	const bool reuseVertices = true;
+	const bool ambientOcclusion = true;
+
+	voxel::ChunkMesh mesh;
+
+	SurfaceExtractionContext ctx =
+		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+	voxel::extractSurface(ctx);
+	EXPECT_EQ(8, (int)mesh.mesh[0].getNoOfVertices());
+}
+
 } // namespace voxel
