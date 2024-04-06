@@ -45,8 +45,8 @@ enum ChunkId {
 	CHUNK_ID_PREVIEW = 1,
 
 	CHUNK_ID_PALETTE_V5 = 2,
-	CHUNK_ID_SELECTED_COLOR_V5 = 3,
-	CHUNK_ID_SELECTED_BACKGROUND_COLOR_V5 = 4,
+	CHUNK_ID_SELECTED_COLOR_V5 = 3,			   // byte value of the selected color palette index
+	CHUNK_ID_SELECTED_BACKGROUND_COLOR_V5 = 4, // byte value of the selected color palette index
 	CHUNK_ID_SHAPE_V5 = 5,
 	CHUNK_ID_SHAPE_SIZE_V5 = 6,
 	CHUNK_ID_SHAPE_BLOCKS_V5 = 7,
@@ -460,10 +460,10 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	bool sizeChunkFound = false;
 	while (!stream.eos()) {
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
-		Chunk chunk;
-		wrapBool(loadSubChunkHeader(stream, chunk))
+		Chunk subChunk;
+		wrapBool(loadSubChunkHeader(stream, subChunk))
 		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
-		switch (chunk.chunkId) {
+		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))
 			node.setProperty("shapeId", core::string::format("%d", shapeId));
@@ -512,7 +512,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_NAME_V6: {
 			core::String name;
-			stream.readString(chunk.chunkSize, name);
+			stream.readString(subChunk.chunkSize, name);
 			if (!name.empty()) {
 				node.setName(name);
 			}
@@ -550,10 +550,10 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			}
 			break;
 		case priv::CHUNK_ID_SHAPE_BLOCKS_V6: {
-			Log::debug("Shape with %u voxels found", chunk.chunkSize);
+			Log::debug("Shape with %u voxels found", subChunk.chunkSize);
 			if (width == 0) {
-				volumeBuffer.reserve(chunk.chunkSize);
-				for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
+				volumeBuffer.reserve(subChunk.chunkSize);
+				for (uint32_t i = 0; i < subChunk.chunkSize; ++i) {
 					uint8_t index;
 					wrap(stream.readUInt8(index))
 					volumeBuffer.push_back(index);
@@ -561,8 +561,8 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 				break;
 			}
 			uint32_t voxelCount = (uint32_t)width * (uint32_t)height * (uint32_t)depth;
-			if (voxelCount * sizeof(uint8_t) != chunk.chunkSize) {
-				Log::error("Invalid size for blocks chunk: %i", chunk.chunkSize);
+			if (voxelCount * sizeof(uint8_t) != subChunk.chunkSize) {
+				Log::error("Invalid size for blocks chunk: %i", subChunk.chunkSize);
 				return false;
 			}
 			const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
@@ -609,7 +609,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_BAKED_LIGHTING_V6:
 		default:
-			wrapBool(loadSkipSubChunk(chunk, stream))
+			wrapBool(loadSkipSubChunk(subChunk, stream))
 			break;
 		}
 	}
