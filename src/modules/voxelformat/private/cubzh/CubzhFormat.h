@@ -330,14 +330,14 @@ protected:
 
 	bool loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
-	bool loadShape6(const core::String &filename, const Header &header, CubzhReadStream &stream,
+	bool loadShape6(const core::String &filename, const Header &header, const Chunk &chunk, CubzhReadStream &stream,
 					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
 
 	bool loadVersion5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 
 	bool loadPalette5(io::ReadStream &stream, palette::Palette &palette) const;
-	bool loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
+	bool loadShape5(const core::String &filename, const Header &header, const Chunk &chunk, io::SeekableReadStream &stream,
 					scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx) const;
 	bool loadPalette6(io::ReadStream &stream, palette::Palette &palette) const;
 	bool loadPalettePCubes(io::ReadStream &stream, palette::Palette &palette) const;

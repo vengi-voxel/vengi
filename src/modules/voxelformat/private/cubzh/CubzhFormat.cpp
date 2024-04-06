@@ -296,16 +296,16 @@ bool CubzhFormat::loadPalette6(io::ReadStream &stream, palette::Palette &palette
 	return true;
 }
 
-bool CubzhFormat::loadShape5(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
+bool CubzhFormat::loadShape5(const core::String &filename, const Header &header, const Chunk &chunk, io::SeekableReadStream &stream,
 							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
 
-	Chunk chunk;
-	wrapBool(loadSubChunkHeader(stream, chunk))
+	Chunk subChunk;
+	wrapBool(loadSubChunkHeader(stream, subChunk))
 	core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
-	switch (chunk.chunkId) {
+	switch (subChunk.chunkId) {
 	case priv::CHUNK_ID_SHAPE_SIZE_V5:
 		wrap(stream.readUInt16(width))
 		wrap(stream.readUInt16(height))
@@ -337,10 +337,10 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		}
 		break;
 	case priv::CHUNK_ID_SHAPE_BLOCKS_V5: {
-		Log::debug("Shape with %u voxels found", chunk.chunkSize);
+		Log::debug("Shape with %u voxels found", subChunk.chunkSize);
 		if (width == 0) {
-			volumeBuffer.reserve(chunk.chunkSize);
-			for (uint32_t i = 0; i < chunk.chunkSize; ++i) {
+			volumeBuffer.reserve(subChunk.chunkSize);
+			for (uint32_t i = 0; i < subChunk.chunkSize; ++i) {
 				uint8_t index;
 				wrap(stream.readUInt8(index))
 				volumeBuffer.push_back(index);
@@ -348,8 +348,8 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 			break;
 		}
 		uint32_t voxelCount = (uint32_t)width * (uint32_t)height * (uint32_t)depth;
-		if (voxelCount * sizeof(uint8_t) != chunk.chunkSize) {
-			Log::error("Invalid size for blocks chunk: %i", chunk.chunkSize);
+		if (voxelCount * sizeof(uint8_t) != subChunk.chunkSize) {
+			Log::error("Invalid size for blocks chunk: %i", subChunk.chunkSize);
 			return false;
 		}
 		const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
@@ -377,7 +377,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 	}
 	case priv::CHUNK_ID_SHAPE_POINT_V5: {
 		core::String name;
-		wrapBool(stream.readString(chunk.chunkSize, name))
+		wrapBool(stream.readString(subChunk.chunkSize, name))
 		float f3x, f3y, f3z;
 		wrap(stream.readFloat(f3x))
 		wrap(stream.readFloat(f3y))
@@ -386,7 +386,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		break;
 	}
 	default:
-		wrapBool(loadSkipSubChunk(chunk, stream))
+		wrapBool(loadSkipSubChunk(subChunk, stream))
 		break;
 	}
 	if (node.volume() == nullptr) {
@@ -413,7 +413,7 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 			}
 			break;
 		case priv::CHUNK_ID_SHAPE_V5:
-			if (!loadShape5(filename, header, stream, sceneGraph, palette, ctx)) {
+			if (!loadShape5(filename, header, chunk, stream, sceneGraph, palette, ctx)) {
 				return false;
 			}
 			break;
@@ -443,7 +443,7 @@ bool CubzhFormat::loadPCubes(const core::String &filename, const Header &header,
 		case priv::CHUNK_ID_SHAPE_V6: {
 			Log::debug("load shape");
 			CubzhReadStream zhs(header, chunk, stream);
-			wrapBool(loadShape6(filename, header, zhs, sceneGraph, palette, ctx))
+			wrapBool(loadShape6(filename, header, chunk, zhs, sceneGraph, palette, ctx))
 			break;
 		}
 		default:
@@ -481,7 +481,7 @@ bool CubzhFormat::loadSubChunkHeader(io::ReadStream &stream, Chunk &chunk) const
 	return true;
 }
 
-bool CubzhFormat::loadShape6(const core::String &filename, const Header &header, CubzhReadStream &stream,
+bool CubzhFormat::loadShape6(const core::String &filename, const Header &header, const Chunk &chunk, CubzhReadStream &stream,
 							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
@@ -712,7 +712,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 		case priv::CHUNK_ID_SHAPE_V6: {
 			Log::debug("load shape");
 			CubzhReadStream zhs(header, chunk, stream);
-			wrapBool(loadShape6(filename, header, zhs, sceneGraph, palette, ctx))
+			wrapBool(loadShape6(filename, header, chunk, zhs, sceneGraph, palette, ctx))
 			break;
 		}
 		case priv::CHUNK_ID_CAMERA_V6: {
