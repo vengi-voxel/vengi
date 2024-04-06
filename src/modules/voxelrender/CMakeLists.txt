@@ -5,7 +5,6 @@ set(SRCS
 	RawVolumeRenderer.cpp RawVolumeRenderer.h
 	ShaderAttribute.h
 	ImageGenerator.h ImageGenerator.cpp
-	MeshState.h MeshState.cpp
 )
 set(SHADERS
 	voxel
@@ -26,7 +25,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render
 generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
-	tests/MeshStateTest.cpp
 	tests/VoxelRenderShaderTest.cpp
 )
 

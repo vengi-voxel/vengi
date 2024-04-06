@@ -9,6 +9,7 @@ set(SRCS
 	Face.h Face.cpp
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
+	MeshState.h MeshState.cpp
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
@@ -37,6 +38,7 @@ set(TEST_SRCS
 	tests/AmbientOcclusionTest.cpp
 	tests/FaceTest.cpp
 	tests/MeshTests.cpp
+	tests/MeshStateTest.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp

@@ -2,10 +2,11 @@
  * @file
  */
 
-#include "voxelrender/MeshState.h"
+#include "voxel/MeshState.h"
 #include "app/tests/AbstractTest.h"
 #include "core/StringUtil.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "palette/Palette.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/SurfaceExtractor.h"
 
 namespace voxelrender {
@@ -24,14 +25,14 @@ protected:
 
 TEST_F(MeshStateTest, testExtractRegion) {
 	voxel::RawVolume v(voxel::Region(-1, 1));
-	scenegraph::SceneGraphNode node;
-	node.setVolume(&v, false);
 
 	MeshState meshState;
 	meshState.construct();
 	meshState.init();
 	bool deleted = false;
-	(void)meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
+	palette::Palette pal;
+	pal.nippon();
+	(void)meshState.setVolume(0, &v, &pal, true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
@@ -43,14 +44,14 @@ TEST_F(MeshStateTest, testExtractRegion) {
 
 TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	voxel::RawVolume v(voxel::Region(0, 31));
-	scenegraph::SceneGraphNode node;
-	node.setVolume(&v, false);
 
 	MeshState meshState;
 	meshState.construct();
 	meshState.init();
 	bool deleted = false;
-	(void)meshState.setVolume(0, node.volume(), &node.palette(), true, deleted);
+	palette::Palette pal;
+	pal.nippon();
+	(void)meshState.setVolume(0, &v, &pal, true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	// worst case scenario - touching all adjacent regions

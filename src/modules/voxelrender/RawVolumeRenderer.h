@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "MeshState.h"
+#include "voxel/MeshState.h"
 #include "ShadowmapData.h"
 #include "ShadowmapShader.h"
 #include "VoxelShader.h"
