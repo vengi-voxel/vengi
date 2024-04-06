@@ -6,11 +6,10 @@
 #include "app/tests/AbstractTest.h"
 #include "core/StringUtil.h"
 #include "palette/Palette.h"
-#include "util/VarUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/SurfaceExtractor.h"
 
-namespace voxelrender {
+namespace voxel {
 
 class MeshStateTest : public app::AbstractTest {
 private:
@@ -68,11 +67,10 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 
 // https://github.com/vengi-voxel/vengi/issues/445
 TEST_F(MeshStateTest, testExtractRegionBoundaryMeshesIssue445) {
-	glm::ivec3 mins(-4);
-	glm::ivec3 maxs(4);
+	glm::ivec3 mins(-1, 0, -1);
+	glm::ivec3 maxs(3, 1, 3);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
-	util::ScopedVarChange meshSize(cfg::VoxelMeshSize, "2");
 	MeshState meshState;
 	meshState.construct();
 	meshState.init();

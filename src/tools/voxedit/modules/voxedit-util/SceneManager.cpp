@@ -429,7 +429,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 }
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
-	if (newSceneGraph.size() > voxelrender::MAX_VOLUMES) {
+	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
 		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
 		scenegraph::SceneGraphNode newNode;

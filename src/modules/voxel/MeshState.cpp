@@ -9,7 +9,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include <SDL.h>
 
-namespace voxelrender {
+namespace voxel {
 
 bool MeshState::init() {
 	_meshMode = core::Var::getSafe(cfg::VoxelMeshMode);
@@ -422,4 +422,4 @@ void MeshState::gray(int idx, bool gray) {
 	_volumeData[idx]._gray = gray;
 }
 
-} // namespace voxelrender
+} // namespace voxel

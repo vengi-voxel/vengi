@@ -10,17 +10,20 @@
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
 #include "video/Types.h"
-#include "voxedit-util/SceneManager.h"
 #include "../AxisUtil.h"
 #include "voxedit-util/modifier/Selection.h"
 #include "palette/Palette.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/transform.hpp>
 
 namespace voxedit {
 
-ModifierRenderer::ModifierRenderer() : ModifierRenderer(core::make_shared<voxelrender::MeshState>()) {
+ModifierRenderer::ModifierRenderer() : ModifierRenderer(core::make_shared<voxel::MeshState>()) {
 }
 
-ModifierRenderer::ModifierRenderer(const voxelrender::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
+ModifierRenderer::ModifierRenderer(const voxel::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
 }
 
 bool ModifierRenderer::init() {

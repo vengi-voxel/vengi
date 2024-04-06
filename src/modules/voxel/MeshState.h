@@ -22,7 +22,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include <glm/mat4x4.hpp>
 
-namespace voxelrender {
+namespace voxel {
 
 static constexpr int MAX_VOLUMES = 2048;
 
@@ -31,8 +31,8 @@ enum MeshType { MeshType_Opaque, MeshType_Transparency, MeshType_Max };
 /**
  * @brief Handles the mesh extraction of the volumes
  *
- * @note This class doesn't own the @c voxel::RawVolume instances. It's up to the caller to inform this class about deleted
- * or added volumes.
+ * @note This class doesn't own the @c voxel::RawVolume instances. It's up to the caller to inform this class about
+ * deleted or added volumes.
  */
 class MeshState {
 public:
@@ -111,6 +111,10 @@ private:
 
 public:
 	const MeshesMap &meshes(MeshType type) const;
+	/**
+	 * @brief This will transfer the extracted meshes into the mesh state and make
+	 * it available to others
+	 */
 	int pop();
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
@@ -143,7 +147,8 @@ public:
 						const glm::vec3 &maxs);
 
 	/**
-	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned up
+	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned
+	 * up
 	 * @sa marchingCubes()
 	 */
 	bool update();
@@ -216,4 +221,4 @@ inline const voxel::RawVolume *MeshState::volume(int idx) const {
 	return _volumeData[idx]._rawVolume;
 }
 
-} // namespace voxelrender
+} // namespace voxel

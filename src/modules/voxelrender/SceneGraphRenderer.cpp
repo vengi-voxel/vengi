@@ -108,10 +108,10 @@ static inline int getNodeId(int volumeIdx) {
 	return volumeIdx;
 }
 
-SceneGraphRenderer::SceneGraphRenderer(const MeshStatePtr &meshState) : _volumeRenderer(meshState) {
+SceneGraphRenderer::SceneGraphRenderer(const voxel::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
 }
 
-SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<MeshState>()) {
+SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<voxel::MeshState>()) {
 }
 
 void SceneGraphRenderer::construct() {
@@ -152,7 +152,7 @@ void SceneGraphRenderer::clear() {
 
 void SceneGraphRenderer::nodeRemove(int nodeId) {
 	const int id = getVolumeId(nodeId);
-	if (id < 0 || id >= MAX_VOLUMES) {
+	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return;
 	}
 	_volumeRenderer.resetVolume(id);
@@ -160,7 +160,7 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 
 bool SceneGraphRenderer::isVisible(int nodeId) const {
 	const int id = getVolumeId(nodeId);
-	if (id < 0 || id >= MAX_VOLUMES) {
+	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return false;
 	}
 	return _volumeRenderer.isVisible(id);
@@ -174,7 +174,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const bool grayInactive = renderContext.grayInactive;
 	const bool sceneMode = renderContext.sceneMode;
 	// remove those volumes that are no longer part of the scene graph
-	for (int i = 0; i < MAX_VOLUMES; ++i) {
+	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
 			_volumeRenderer.resetVolume(nodeId);
@@ -182,7 +182,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 	_cameras.clear();
 
-	const MeshStatePtr &meshState = _volumeRenderer.meshState();
+	const voxel::MeshStatePtr &meshState = _volumeRenderer.meshState();
 
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
@@ -205,7 +205,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 
 		const int id = getVolumeId(node);
-		if (id >= MAX_VOLUMES) {
+		if (id >= voxel::MAX_VOLUMES) {
 			continue;
 		}
 		voxel::RawVolume *v = meshState->volume(id);
@@ -253,7 +253,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 				continue;
 			}
 			const int id = getVolumeId(node);
-			if (id >= MAX_VOLUMES) {
+			if (id >= voxel::MAX_VOLUMES) {
 				continue;
 			}
 			const int referencedId = getVolumeId(node.reference());

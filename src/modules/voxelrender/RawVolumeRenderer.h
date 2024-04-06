@@ -62,21 +62,21 @@ class RawVolumeRenderer : public core::NonCopyable {
 protected:
 	struct State {
 		bool _culled = false;
-		int32_t _vertexBufferIndex[MeshType_Max]{-1, -1};
-		int32_t _normalBufferIndex[MeshType_Max]{-1, -1};
-		int32_t _indexBufferIndex[MeshType_Max]{-1, -1};
-		video::Buffer _vertexBuffer[MeshType_Max];
+		int32_t _vertexBufferIndex[voxel::MeshType_Max]{-1, -1};
+		int32_t _normalBufferIndex[voxel::MeshType_Max]{-1, -1};
+		int32_t _indexBufferIndex[voxel::MeshType_Max]{-1, -1};
+		video::Buffer _vertexBuffer[voxel::MeshType_Max];
 
-		uint32_t indices(MeshType type) const {
+		uint32_t indices(voxel::MeshType type) const {
 			return _vertexBuffer[type].elements(_indexBufferIndex[type], 1, sizeof(voxel::IndexType));
 		}
 
 		bool hasData() const {
-			return indices(MeshType_Opaque) > 0 || indices(MeshType_Transparency) > 0;
+			return indices(voxel::MeshType_Opaque) > 0 || indices(voxel::MeshType_Transparency) > 0;
 		}
 	};
-	core::Array<State, MAX_VOLUMES> _state{};
-	core::SharedPtr<MeshState> _meshState;
+	core::Array<State, voxel::MAX_VOLUMES> _state{};
+	core::SharedPtr<voxel::MeshState> _meshState;
 
 	uint64_t _paletteHash = 0;
 
@@ -95,8 +95,8 @@ protected:
 	core::VarPtr _bloom;
 
 	void updatePalette(int idx);
-	bool updateBufferForVolume(int idx, MeshType type);
-	void deleteMesh(int idx, MeshType meshType);
+	bool updateBufferForVolume(int idx, voxel::MeshType type);
+	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
 	void updateCulling(int idx, const video::Camera &camera);
 
@@ -110,7 +110,7 @@ protected:
 	bool updateBufferForVolume(int idx);
 public:
 	RawVolumeRenderer();
-	RawVolumeRenderer(const MeshStatePtr &meshState);
+	RawVolumeRenderer(const voxel::MeshStatePtr &meshState);
 
 	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
 	void clear();
@@ -150,10 +150,10 @@ public:
 	 */
 	core::DynamicArray<voxel::RawVolume *> shutdown();
 
-	MeshStatePtr meshState() const;
+	voxel::MeshStatePtr meshState() const;
 };
 
-inline MeshStatePtr RawVolumeRenderer::meshState() const {
+inline voxel::MeshStatePtr RawVolumeRenderer::meshState() const {
 	return _meshState;
 }
 

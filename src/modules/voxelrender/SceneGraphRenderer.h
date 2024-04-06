@@ -41,7 +41,7 @@ protected:
 	void prepare(const RenderContext &renderContext);
 
 public:
-	SceneGraphRenderer(const MeshStatePtr &meshState);
+	SceneGraphRenderer(const voxel::MeshStatePtr &meshState);
 	SceneGraphRenderer();
 	void construct();
 	bool init();

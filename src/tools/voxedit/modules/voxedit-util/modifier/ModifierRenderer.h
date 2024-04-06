@@ -25,7 +25,7 @@ private:
 
 public:
 	ModifierRenderer();
-	ModifierRenderer(const voxelrender::MeshStatePtr &meshState);
+	ModifierRenderer(const voxel::MeshStatePtr &meshState);
 	bool init() override;
 	void shutdown() override;
 
