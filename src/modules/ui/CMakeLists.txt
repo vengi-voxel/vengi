@@ -66,31 +66,32 @@ imgui_build_font(${LIB} ArimoRegular Arimo-Regular.ttf)
 target_include_directories(${LIB} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui)
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
-## Test engine
+if (USE_IMGUITESTENGINE)
+	# use ui_test_engine instead of ui to enable imgui test engine
+	set(TEST_ENGINE_SRCS
+		dearimgui/imgui_test_engine/imgui_capture_tool.cpp
+		dearimgui/imgui_test_engine/imgui_capture_tool.h
+		dearimgui/imgui_test_engine/imgui_te_context.cpp
+		dearimgui/imgui_test_engine/imgui_te_context.h
+		dearimgui/imgui_test_engine/imgui_te_coroutine.cpp
+		dearimgui/imgui_test_engine/imgui_te_coroutine.h
+		dearimgui/imgui_test_engine/imgui_te_engine.cpp
+		dearimgui/imgui_test_engine/imgui_te_engine.h
+		dearimgui/imgui_test_engine/imgui_te_exporters.cpp
+		dearimgui/imgui_test_engine/imgui_te_exporters.h
+		dearimgui/imgui_test_engine/imgui_te_imconfig.h
+		dearimgui/imgui_test_engine/imgui_te_internal.h
+		dearimgui/imgui_test_engine/imgui_te_perftool.cpp
+		dearimgui/imgui_test_engine/imgui_te_perftool.h
+		dearimgui/imgui_test_engine/imgui_te_ui.cpp
+		dearimgui/imgui_test_engine/imgui_te_ui.h
+		dearimgui/imgui_test_engine/imgui_te_utils.cpp
+		dearimgui/imgui_test_engine/imgui_te_utils.h
+	)
 
-set(TEST_ENGINE_SRCS
-	dearimgui/imgui_test_engine/imgui_capture_tool.cpp
-	dearimgui/imgui_test_engine/imgui_capture_tool.h
-	dearimgui/imgui_test_engine/imgui_te_context.cpp
-	dearimgui/imgui_test_engine/imgui_te_context.h
-	dearimgui/imgui_test_engine/imgui_te_coroutine.cpp
-	dearimgui/imgui_test_engine/imgui_te_coroutine.h
-	dearimgui/imgui_test_engine/imgui_te_engine.cpp
-	dearimgui/imgui_test_engine/imgui_te_engine.h
-	dearimgui/imgui_test_engine/imgui_te_exporters.cpp
-	dearimgui/imgui_test_engine/imgui_te_exporters.h
-	dearimgui/imgui_test_engine/imgui_te_imconfig.h
-	dearimgui/imgui_test_engine/imgui_te_internal.h
-	dearimgui/imgui_test_engine/imgui_te_perftool.cpp
-	dearimgui/imgui_test_engine/imgui_te_perftool.h
-	dearimgui/imgui_test_engine/imgui_te_ui.cpp
-	dearimgui/imgui_test_engine/imgui_te_ui.h
-	dearimgui/imgui_test_engine/imgui_te_utils.cpp
-	dearimgui/imgui_test_engine/imgui_te_utils.h
-)
-
-set(TEST_ENGINE ${LIB}_test_engine)
-engine_add_module(TARGET ${TEST_ENGINE} SRCS ${SRCS} ${TEST_ENGINE_SRCS} DEPENDENCIES render app ${LIBS})
-target_compile_definitions(${TEST_ENGINE} PUBLIC ${DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1)
-target_include_directories(${TEST_ENGINE} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui dearimgui/imgui_test_engine)
-set_target_properties(${TEST_ENGINE} PROPERTIES UNITY_BUILD OFF)
+	set(TEST_ENGINE ${LIB}_test_engine)
+	engine_add_module(TARGET ${TEST_ENGINE} SRCS ${SRCS} ${TEST_ENGINE_SRCS} DEPENDENCIES render app ${LIBS})
+	target_compile_definitions(${TEST_ENGINE} PUBLIC ${DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1)
+	target_include_directories(${TEST_ENGINE} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui dearimgui/imgui_test_engine)
+	set_target_properties(${TEST_ENGINE} PROPERTIES UNITY_BUILD OFF)
+endif()
