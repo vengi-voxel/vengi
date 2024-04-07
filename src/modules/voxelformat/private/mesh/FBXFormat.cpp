@@ -484,6 +484,8 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 	ufbxopts.target_axes = ufbx_axes_right_handed_y_up; // TODO: see issue https://github.com/vengi-voxel/vengi/issues/227
 	ufbxopts.target_unit_meters = 1.0f;
+	ufbxopts.target_light_axes = ufbxopts.target_axes;
+	ufbxopts.target_camera_axes = ufbxopts.target_axes;
 
 	ufbx_error ufbxerror;
 
@@ -497,6 +499,9 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		ufbx_format_error(err, sizeof(err), &ufbxerror);
 		Log::error("Error while loading fbx: %s", err);
 	}
+
+	Log::debug("right: %i, up: %i, front: %i", ufbxscene->settings.axes.right, ufbxscene->settings.axes.up,
+			   ufbxscene->settings.axes.front);
 
 	core::StringMap<image::ImagePtr> textures;
 	for (size_t i = 0; i < ufbxscene->meshes.count; ++i) {
