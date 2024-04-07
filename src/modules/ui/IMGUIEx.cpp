@@ -244,8 +244,8 @@ bool ColorEdit3Var(const char* label, const char* varName) {
 	return false;
 }
 
-float CalcTextWidth(const char *text, bool withPadding) {
-	const float w = ImGui::CalcTextSize(text).x;
+float CalcTextWidth(const char *label, bool withPadding) {
+	const float w = ImGui::CalcTextSize(label).x;
 	if (!withPadding) {
 		return w;
 	}
@@ -276,22 +276,22 @@ bool TooltipText(const char* msg, ...) {
 	return false;
 }
 
-void TextCentered(const char *text, bool reset) {
-	const ImVec2& size = ImGui::CalcTextSize(text);
+void TextCentered(const char *label, bool reset) {
+	const ImVec2& size = ImGui::CalcTextSize(label);
 	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
 	const ImVec2 restore = ImGui::GetCursorPos();
 	ImGui::SetCursorPosX((maxs.x - size.x) * 0.5f);
 	ImGui::SetCursorPosY((maxs.y - size.y) * 0.5f);
-	ImGui::TextUnformatted(text);
+	ImGui::TextUnformatted(label);
 	if (reset) {
 		ImGui::SetCursorPos(restore);
 	}
 }
 
-void Headline(const char *text) {
+void Headline(const char *label) {
 	ui::ScopedStyle font;
 	font.setFont(imguiApp()->bigFont());
-	ImGui::TextUnformatted(text);
+	ImGui::TextUnformatted(label);
 }
 
 void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
@@ -323,21 +323,21 @@ bool MenuItemCmd(const char *label, const char *command) {
 	return false;
 }
 
-bool ToggleButton(const char *text, bool state) {
+bool ToggleButton(const char *label, bool state) {
 	if (state) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
 		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::brighter(buttonColor));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::brighter(buttonHoveredColor));
 	}
-	const bool pressed = ImGui::Button(text);
+	const bool pressed = ImGui::Button(label);
 	if (state) {
 		ImGui::PopStyleColor(2);
 	}
 	return pressed;
 }
 
-bool DisabledButton(const char *text, bool disabled, const ImVec2& size) {
+bool DisabledButton(const char *label, bool disabled, const ImVec2& size) {
 	if (disabled) {
 		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
 		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
@@ -345,7 +345,7 @@ bool DisabledButton(const char *text, bool disabled, const ImVec2& size) {
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 	}
-	const bool pressed = ImGui::Button(text, size);
+	const bool pressed = ImGui::Button(label, size);
 	if (disabled) {
 		ImGui::PopItemFlag();
 		ImGui::PopStyleColor(2);
@@ -369,8 +369,8 @@ void TooltipCommand(const char *command) {
 	}
 }
 
-const char *CommandButton(const char *title, const char *command, const char *tooltip, const ImVec2 &size, command::CommandExecutionListener* listener) {
-	if (ImGui::Button(title, size)) {
+const char *CommandButton(const char *label, const char *command, const char *tooltip, const ImVec2 &size, command::CommandExecutionListener* listener) {
+	if (ImGui::Button(label, size)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}
@@ -385,17 +385,17 @@ const char *CommandButton(const char *title, const char *command, const char *to
 	return nullptr;
 }
 
-const char *CommandIconButton(const char *icon, const char *title, const char *command, command::CommandExecutionListener &listener) {
-	core::String label = core::string::format("%s %s", icon, title);
-	return CommandButton(label.c_str(), command, listener);
+const char *CommandIconButton(const char *icon, const char *label, const char *command, command::CommandExecutionListener &listener) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CommandButton(labelWithIcon.c_str(), command, listener);
 }
 
-const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener& listener) {
-	return CommandButton(title, command, nullptr, {0.0f, 0.0f}, &listener);
+const char *CommandButton(const char *label, const char *command, command::CommandExecutionListener& listener) {
+	return CommandButton(label, command, nullptr, {0.0f, 0.0f}, &listener);
 }
 
-bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener) {
-	const bool activated = ImGui::RadioButton(title, enabled);
+bool CommandRadioButton(const char *label, const core::String &command, bool enabled, command::CommandExecutionListener* listener) {
+	const bool activated = ImGui::RadioButton(label, enabled);
 	if (activated) {
 		command::executeCommands(command, listener);
 	}
@@ -403,14 +403,14 @@ bool CommandRadioButton(const char *title, const core::String &command, bool ena
 	return activated;
 }
 
-const char *CommandIconMenuItem(const char *icon, const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
-	core::String label = core::string::format("%s %s", icon, title);
-	return CommandMenuItem(label.c_str(), command, enabled, listener);
+const char *CommandIconMenuItem(const char *icon, const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CommandMenuItem(labelWithIcon.c_str(), command, enabled, listener);
 }
 
-const char *CommandMenuItem(const char *title, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+const char *CommandMenuItem(const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
-	if (ImGui::MenuItem(title, keybinding.c_str(), false, enabled)) {
+	if (ImGui::MenuItem(label, keybinding.c_str(), false, enabled)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}
@@ -426,33 +426,33 @@ static inline void AddUnderLine(ImColor color) {
 	ImGui::GetWindowDrawList()->AddLine(min, max, color, 1.0f);
 }
 
-bool IconSelectable(const char *icon, const char *title, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
-	core::String label = core::string::format("%s %s", icon, title);
-	return Selectable(label.c_str(), selected, flags, size);
+bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return Selectable(labelWithIcon.c_str(), selected, flags, size);
 }
 
-bool URLIconButton(const char *icon, const char *title, const char *url) {
-	core::String label = core::string::format("%s %s", icon, title);
-	return URLButton(label.c_str(), url);
+bool URLIconButton(const char *icon, const char *label, const char *url) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return URLButton(labelWithIcon.c_str(), url);
 }
 
-bool URLButton(const char *title, const char *url) {
+bool URLButton(const char *label, const char *url) {
 	const core::String& cmd = core::String::format("url \"%s\"", url);
-	if (CommandButton(title, cmd.c_str())) {
+	if (CommandButton(label, cmd.c_str())) {
 		imguiApp()->minimize();
 		return true;
 	}
 	return false;
 }
 
-void URLIconItem(const char *icon, const char *title, const char *url, float width) {
-	core::String label = core::string::format("%s %s", icon, title);
-	URLItem(label.c_str(), url, width);
+void URLIconItem(const char *icon, const char *label, const char *url, float width) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	URLItem(labelWithIcon.c_str(), url, width);
 }
 
 // https://gist.github.com/dougbinks/ef0962ef6ebe2cadae76c4e9f0586c69#file-imguiutils-h-L219
-void URLItem(const char *title, const char *url, float width) {
-	ImGui::TextUnformatted(title);
+void URLItem(const char *label, const char *url, float width) {
+	ImGui::TextUnformatted(label);
 	if (ImGui::IsItemHovered()) {
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
 			const core::String &cmd = core::String::format("url \"%s\"", url);
@@ -462,14 +462,14 @@ void URLItem(const char *title, const char *url, float width) {
 		ImGui::SetTooltip(_("Open in browser\n%s"), url);
 	}
 }
-bool ButtonFullWidth(const char *title) {
-	return Button(title, ImVec2(ImGui::GetContentRegionAvail().x, 0));
+bool ButtonFullWidth(const char *label) {
+	return Button(label, ImVec2(ImGui::GetContentRegionAvail().x, 0));
 }
 
-bool Fullscreen(const char *title, ImGuiWindowFlags additionalFlags) {
+bool Fullscreen(const char *label, ImGuiWindowFlags additionalFlags) {
 	SetNextWindowSize(imguiApp()->frameBufferDimension());
 	SetNextWindowPos(ImVec2(0.0f, 0.0f));
-	return Begin(title, nullptr,
+	return Begin(label, nullptr,
 				 additionalFlags | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoDecoration |
 					 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
 					 ImGuiWindowFlags_NoDocking);
@@ -567,7 +567,7 @@ void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4
 	}
 }
 
-void IconDialog(const char *icon, const char *text) {
+void IconDialog(const char *icon, const char *label) {
 	ImGui::AlignTextToFramePadding();
 	ImGui::PushFont(imguiApp()->bigFont());
 	ImGui::TextUnformatted(icon);
@@ -575,39 +575,39 @@ void IconDialog(const char *icon, const char *text) {
 	ImGui::SameLine();
 	ImGui::Spacing();
 	ImGui::SameLine();
-	ImGui::TextWrapped("%s", text);
+	ImGui::TextWrapped("%s", label);
 	ImGui::Spacing();
 	ImGui::Separator();
 }
 
-bool IconCheckbox(const char *icon, const char *text, bool *v) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return ImGui::Checkbox(label.c_str(), v);
+bool IconCheckbox(const char *icon, const char *label, bool *v) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return ImGui::Checkbox(labelWithIcon.c_str(), v);
 }
 
-bool BeginIconCombo(const char *icon, const char* text, const char* preview_value, ImGuiComboFlags flags) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return ImGui::BeginCombo(label.c_str(), preview_value, flags);
+bool BeginIconCombo(const char *icon, const char* label, const char* preview_value, ImGuiComboFlags flags) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return ImGui::BeginCombo(labelWithIcon.c_str(), preview_value, flags);
 }
 
-bool BeginIconMenu(const char *icon, const char *text, bool enabled) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return BeginMenu(label.c_str(), enabled);
+bool BeginIconMenu(const char *icon, const char *label, bool enabled) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return BeginMenu(labelWithIcon.c_str(), enabled);
 }
 
-bool IconMenuItem(const char *icon, const char* text, const char* shortcut, bool selected, bool enabled) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return MenuItem(label.c_str(), shortcut, selected, enabled);
+bool IconMenuItem(const char *icon, const char* label, const char* shortcut, bool selected, bool enabled) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return MenuItem(labelWithIcon.c_str(), shortcut, selected, enabled);
 }
 
-bool IconButton(const char *icon, const char *text, const ImVec2 &size) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return Button(label.c_str(), size);
+bool IconButton(const char *icon, const char *label, const ImVec2 &size) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return Button(labelWithIcon.c_str(), size);
 }
 
-bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2 &size) {
-	const core::String &label = core::string::format("%s %s", icon, text);
-	return DisabledButton(label.c_str(), disabled, size);
+bool DisabledIconButton(const char *icon, const char *label, bool disabled, const ImVec2 &size) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return DisabledButton(labelWithIcon.c_str(), disabled, size);
 }
 
 }
