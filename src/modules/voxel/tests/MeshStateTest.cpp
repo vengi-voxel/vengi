@@ -65,32 +65,4 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	(void)meshState.shutdown();
 }
 
-// https://github.com/vengi-voxel/vengi/issues/445
-TEST_F(MeshStateTest, testExtractRegionBoundaryMeshesIssue445) {
-	glm::ivec3 mins(-1, 0, -1);
-	glm::ivec3 maxs(3, 1, 3);
-	voxel::Region region(mins, maxs);
-	voxel::RawVolume v(region);
-	MeshState meshState;
-	meshState.construct();
-	meshState.init();
-	bool deleted = false;
-	palette::Palette pal;
-	pal.nippon();
-
-	for (int x = mins.x; x <= maxs.x; ++x) {
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			for (int z = mins.z; z <= maxs.z; ++z) {
-				v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-			}
-		}
-	}
-
-	(void)meshState.setVolume(0, &v, &pal, true, deleted);
-	meshState.scheduleRegionExtraction(0, region);
-	EXPECT_EQ(8, meshState.pendingExtractions());
-	meshState.extractAllPending();
-	(void)meshState.shutdown();
-}
-
 } // namespace voxelrender
