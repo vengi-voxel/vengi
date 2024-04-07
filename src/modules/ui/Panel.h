@@ -27,6 +27,8 @@ public:
 	virtual void registerUITests(ImGuiTestEngine *, const char *);
 	const char *testName() const { return _title.c_str(); }
 	const char *testCategory() const;
+
+	void focusWindow(ImGuiTestContext *ctx, const char *title);
 #endif
 };
 

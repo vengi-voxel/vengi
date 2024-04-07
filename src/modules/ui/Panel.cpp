@@ -20,6 +20,15 @@ void Panel::registerUITests(ImGuiTestEngine *, const char *) {
 const char *Panel::testCategory() const {
 	return _app->appname().c_str();
 }
+
+void Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
+	ImGuiWindow* window = ImGui::FindWindowByName(title);
+	IM_CHECK_SILENT(window != nullptr);
+	if (window) {
+		ctx->WindowFocus(window->ID);
+	}
+}
+
 #endif
 
 } // namespace ui
