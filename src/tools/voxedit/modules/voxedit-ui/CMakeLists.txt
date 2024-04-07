@@ -27,6 +27,29 @@ set(SRCS
 	QuitDisallowReason.h
 )
 
+if (USE_IMGUITESTENGINE)
+	list(APPEND SRCS
+		tests/AnimationPanelTest.cpp
+		tests/AnimationTimelineTest.cpp
+		tests/AssetPanelTest.cpp
+		tests/CameraPanelTest.cpp
+		tests/PositionsPanelTest.cpp
+		tests/LSystemPanelTest.cpp
+		tests/MainWindowTest.cpp
+		tests/MenuBarTest.cpp
+		tests/MementoPanelTest.cpp
+		tests/PalettePanelTest.cpp
+		tests/RenderPanelTest.cpp
+		tests/SceneGraphPanelTest.cpp
+		tests/ScriptPanelTest.cpp
+		tests/BrushPanelTest.cpp
+		tests/StatusBarTest.cpp
+		tests/ToolsPanelTest.cpp
+		tests/TreePanelTest.cpp
+		tests/ViewportTest.cpp
+	)
+endif()
+
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer voxelcollection)
 target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
 

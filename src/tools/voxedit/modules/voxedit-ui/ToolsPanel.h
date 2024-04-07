@@ -34,6 +34,9 @@ public:
 	ToolsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "tools"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 } // namespace voxedit

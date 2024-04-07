@@ -50,6 +50,9 @@ public:
 	bool init();
 	bool update(const char *sequencerTitle, double deltaFrameSeconds);
 	void resetFrames();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 inline void AnimationTimeline::resetFrames() {

@@ -33,6 +33,9 @@ public:
 	void colorReductionOptions();
 	static void viewportOptions();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 inline void MenuBar::setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles) {

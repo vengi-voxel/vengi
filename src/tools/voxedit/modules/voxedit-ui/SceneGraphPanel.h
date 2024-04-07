@@ -59,6 +59,9 @@ public:
 	void update(video::Camera &camera, const char *title, ModelNodeSettings *modelNodeSettings,
 				command::CommandExecutionListener &listener);
 	bool hasFocus() const;
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 }

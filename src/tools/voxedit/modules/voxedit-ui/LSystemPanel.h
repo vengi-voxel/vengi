@@ -35,6 +35,9 @@ public:
 	bool init();
 	void update(const char *title);
 	void shutdown();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 }

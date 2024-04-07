@@ -22,6 +22,9 @@ public:
 	StatusBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "statusbar"), _sceneMgr(sceneMgr) {
 	}
 	void update(const char *title, float height, const core::String &lastExecutedCommand);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 }

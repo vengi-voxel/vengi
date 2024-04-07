@@ -34,6 +34,9 @@ public:
 	bool init();
 	void update(const char *title, bool sceneMode, command::CommandExecutionListener &listener);
 	void shutdown();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 } // namespace voxedit

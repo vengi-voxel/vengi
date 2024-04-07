@@ -63,6 +63,9 @@ public:
 	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	void update(const char *title, command::CommandExecutionListener &listener);
 	bool hasFocus() const;
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 }

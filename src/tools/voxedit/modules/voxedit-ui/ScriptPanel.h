@@ -45,6 +45,9 @@ public:
 	void update(const char *title, command::CommandExecutionListener &listener);
 
 	bool updateEditor(const char *title);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 } // namespace voxedit

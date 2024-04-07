@@ -159,6 +159,9 @@ public:
 
 	void resetCamera();
 	bool saveImage(const char *filename);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 inline video::Camera &Viewport::camera() {

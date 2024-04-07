@@ -32,6 +32,9 @@ public:
 	void update(const char *title, const scenegraph::SceneGraph &sceneGraph);
 	bool init();
 	void shutdown();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 } // namespace voxedit
