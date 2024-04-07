@@ -27,6 +27,7 @@ set(SRCS
 	QuitDisallowReason.h
 )
 
+# use ui_test_engine instead of ui to enable imgui test engine
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer voxelcollection)
 target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
 

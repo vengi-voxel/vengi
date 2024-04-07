@@ -13,6 +13,5 @@ set(FILES
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED DESCRIPTION "Voxel Editor")
-# use ui_test_engine instead of ui to enable imgui test engine
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-ui voxedit-util)
 add_dependencies(${PROJECT_NAME} codegen)
