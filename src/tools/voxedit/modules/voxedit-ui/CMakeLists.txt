@@ -25,6 +25,7 @@ set(SRCS
 	Util.h Util.cpp
 	Viewport.h Viewport.cpp
 	QuitDisallowReason.h
+	WindowTitles.h
 )
 
 if (USE_IMGUITESTENGINE)
