@@ -165,8 +165,8 @@ bool InputVarInt(const char* label, const char* varName, int step, int step_fast
 }
 
 bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var) {
-	const core::String &labelStr = core::string::format("%s %s", icon, label);
-	return CheckboxVar(labelStr.c_str(), var);
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CheckboxVar(labelWithIcon.c_str(), var);
 }
 
 bool CheckboxVar(const char* label, const core::VarPtr& var) {
@@ -183,8 +183,8 @@ bool CheckboxVar(const char* label, const core::VarPtr& var) {
 }
 
 bool IconCheckboxVar(const char *icon, const char* label, const char* varName) {
-	const core::String &labelStr = core::string::format("%s %s", icon, label);
-	return CheckboxVar(labelStr.c_str(), varName);
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CheckboxVar(labelWithIcon.c_str(), varName);
 }
 
 bool CheckboxVar(const char* label, const char* varName) {
@@ -196,13 +196,13 @@ bool CheckboxVar(const char* label, const char* varName) {
 }
 
 bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value) {
-	const core::String &labelStr = core::string::format("%s %s", icon, label);
-	return CheckboxFlags(labelStr.c_str(), flags, flags_value);
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CheckboxFlags(labelWithIcon.c_str(), flags, flags_value);
 }
 
 bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags) {
-	const core::String &labelStr = core::string::format("%s %s", icon, label);
-	return CollapsingHeader(labelStr.c_str(), flags);
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return CollapsingHeader(labelWithIcon.c_str(), flags);
 }
 
 bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {

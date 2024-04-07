@@ -8,6 +8,7 @@
 #include "IMGUIEx.h"
 #include "ScopedStyle.h"
 #include "command/CommandHandler.h"
+#include "core/String.h"
 #include "dearimgui/imgui.h"
 
 namespace ui {
@@ -42,9 +43,8 @@ public:
 		if (highlight) {
 			style.highlight(ImGuiCol_Text);
 		}
-		ImGui::PushID(_nextId);
-		bool pressed = ImGui::Button(icon, _size);
-		ImGui::PopID();
+		core::String label = core::String::format("%s###button%d", icon, _nextId);
+		bool pressed = ImGui::Button(label.c_str(), _size);
 		if (pressed) {
 			func();
 		}

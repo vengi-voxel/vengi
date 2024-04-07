@@ -166,8 +166,13 @@ app::AppState IMGUIApp::onConstruct() {
 	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart",
 				   core::Var::boolValidator);
 	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", "Render the ui", core::Var::boolValidator);
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, "Show metric and debug window",
+								  core::Var::boolValidator);
+#else
 	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, "Show metric and debug window",
 								  core::Var::boolValidator);
+#endif
 	_uiFontSize =
 		core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size", [](const core::String &val) {
 			const float size = core::string::toFloat(val);
