@@ -26,7 +26,6 @@ private:
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	voxelcollection::CollectionPanel _collectionPanel;
 	core::ConcurrentQueue<image::ImagePtr> _images;
-	int _currentSelectedModel = 0;
 	std::future<void> _future;
 
 public:
