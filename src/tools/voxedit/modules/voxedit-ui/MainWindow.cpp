@@ -505,13 +505,13 @@ void MainWindow::popupTipOfTheDay() {
 			ImGui::Dummy(ImVec2(0, height));
 		}
 		ImGui::CheckboxVar(_("Show again"), _tipOfTheDay);
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Next##tipoftheday"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Next"))) {
 			++_currentTip;
 			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Close##tipoftheday"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -531,7 +531,7 @@ void MainWindow::popupWelcome() {
 		ImGui::Separator();
 		ImGui::CheckboxVar(_("Simple mode"), _simplifiedView);
 		ImGui::Separator();
-		if (ImGui::IconButton(ICON_LC_X, _("Close##welcome"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -575,13 +575,13 @@ void MainWindow::popupNewScene() {
 
 			ImGui::Text(_("Size"));
 			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, _("Width##sizex"), &_modelNodeSettings.size.x);
-			veui::InputAxisInt(math::Axis::Y, _("Height##sizey"), &_modelNodeSettings.size.y);
-			veui::InputAxisInt(math::Axis::Z, _("Depth##sizez"), &_modelNodeSettings.size.z);
+			veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
+			veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
+			veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
 			ImGui::NewLine();
 		}
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##newscene"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
@@ -590,7 +590,7 @@ void MainWindow::popupNewScene() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Close##newscene"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -601,7 +601,7 @@ void MainWindow::popupFailedSave() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, _("Failed to save the model!"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##failedsave"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -612,14 +612,14 @@ void MainWindow::popupFailedSave() {
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Unsaved changes - are you sure to quit?"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##unsavedscene"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_forceQuit = true;
 			_app->requestQuit();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel##unsavedscene"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -629,7 +629,7 @@ void MainWindow::popupUnsavedChanges() {
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("There are unsaved modifications.\nDo you wish to discard them?"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##unsaved"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				_sceneMgr->load(_loadFile);
@@ -639,7 +639,7 @@ void MainWindow::popupUnsavedDiscard() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("No##unsaved"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("No"))) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -656,7 +656,7 @@ void MainWindow::popupSceneSettings() {
 		ImGui::ColorEdit3Var(_("Diffuse color"), cfg::VoxEditDiffuseColor);
 		ImGui::ColorEdit3Var(_("Ambient color"), cfg::VoxEditAmbientColor);
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Done##scenesettings"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Done"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -669,13 +669,13 @@ void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT)) {
 		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes##volumesplit"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();
 			_sceneMgr->splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("No##volumesplit"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("No"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -698,12 +698,12 @@ void MainWindow::popupModelNodeSettings() {
 
 		ImGui::Text(_("Size"));
 		ImGui::Separator();
-		veui::InputAxisInt(math::Axis::X, _("Width##sizex"), &_modelNodeSettings.size.x);
-		veui::InputAxisInt(math::Axis::Y, _("Height##sizey"), &_modelNodeSettings.size.y);
-		veui::InputAxisInt(math::Axis::Z, _("Depth##sizez"), &_modelNodeSettings.size.z);
+		veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
+		veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
+		veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##modelsettings"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode;
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -823,8 +823,8 @@ void MainWindow::popupAbout() {
 			const ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable;
 			ImGui::Text(_("Voxel load"));
 			if (ImGui::BeginTable("##voxelload", 2, tableFlags)) {
-				ImGui::TableSetupColumn(_("Name##voxelload"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
-				ImGui::TableSetupColumn(_("Extension##voxelload"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
 				ImGui::TableSetupScrollFreeze(0, 1);
 				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
