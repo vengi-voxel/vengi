@@ -38,30 +38,30 @@ set(SRCS
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
 
+set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
+set(LIBS)
+
+if (USE_OPENGLES)
+	list(APPEND DEFINITIONS -DIMGUI_IMPL_OPENGL_ES2)
+endif()
+
 find_package(Freetype)
 if (FREETYPE_FOUND)
 	list(APPEND SRCS dearimgui/misc/freetype/imgui_freetype.cpp)
+	list(APPEND DEFINITIONS -DIMGUI_ENABLE_FREETYPE)
+	list(APPEND LIBS Freetype::Freetype)
 endif()
 
-set(GEN_DIR ${GENERATE_DIR}/${LIB})
-file(MAKE_DIRECTORY ${GEN_DIR})
-
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app)
-
-macro(imgui_build_font NAME TTF_FILE)
-	engine_compressed_file_to_header(${LIB} ${NAME} ${ROOT_DIR}/data/${LIB}/${TTF_FILE} ${GEN_DIR}/${NAME}.h)
+macro(imgui_build_font TARGET NAME TTF_FILE)
+	file(MAKE_DIRECTORY ${GENERATE_DIR}/${TARGET})
+	engine_compressed_file_to_header(${TARGET} ${NAME} ${ROOT_DIR}/data/${TARGET}/${TTF_FILE} ${GENERATE_DIR}/${TARGET}/${NAME}.h)
 endmacro()
 
-imgui_build_font(FontLucide lucide.ttf)
-imgui_build_font(ArimoRegular Arimo-Regular.ttf)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app ${LIBS})
+target_compile_definitions(${LIB} PUBLIC ${DEFINITIONS})
 
-if (FREETYPE_FOUND)
-	target_link_libraries(${LIB} PUBLIC Freetype::Freetype)
-	target_compile_definitions(${LIB} PUBLIC -DIMGUI_ENABLE_FREETYPE)
-endif()
-target_compile_definitions(${LIB} PUBLIC -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
-if (USE_OPENGLES)
-	target_compile_definitions(${LIB} PUBLIC -DIMGUI_IMPL_OPENGL_ES2)
-endif()
-target_include_directories(${LIB} PUBLIC . ${GEN_DIR} dearimgui)
+imgui_build_font(${LIB} FontLucide lucide.ttf)
+imgui_build_font(${LIB} ArimoRegular Arimo-Regular.ttf)
+
+target_include_directories(${LIB} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui)
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
