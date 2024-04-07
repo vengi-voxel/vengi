@@ -219,7 +219,7 @@ void Viewport::renderViewport() {
 
 		if (_sceneMgr->isLoading()) {
 			const float radius = ImGui::GetFontSize() * 12.0f;
-			ImGui::LoadingIndicatorCircle("Loading", radius, core::Color::White(), core::Color::Gray());
+			ImGui::LoadingIndicatorCircle(_("Loading"), radius, core::Color::White(), core::Color::Gray());
 		} else if (ImGui::IsItemHovered() && !modifiedRegion) {
 			renderCursor();
 			updateViewportTrace(headerSize);
@@ -231,7 +231,7 @@ void Viewport::renderViewport() {
 }
 
 void Viewport::menuBarCameraProjection() {
-	static const char *modes[] = {"Perspective", "Orthogonal"};
+	const char *modes[] = {_("Perspective"), _("Orthogonal")};
 	static_assert(lengthof(modes) == (int)video::CameraMode::Max, "Array size doesn't match enum values");
 	const int currentMode = (int)camera().mode();
 	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
@@ -329,7 +329,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		}
 
 		if (!isFixedCamera()) {
-			static const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
+			const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
 			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max,
 						 _("Array size doesn't match enum values"));
 			const int currentCamRotType = (int)camera().rotationType();
@@ -347,7 +347,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 			}
 		}
 
-		static const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
+		const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
 		static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 		const int currentPolygonMode = (int)camera().polygonMode();
 		if (ImGui::BeginCombo(_("Render mode##polygonmode"), polygonModes[currentPolygonMode])) {
