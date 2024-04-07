@@ -109,6 +109,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		}
 	} else {
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
+		ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
 		ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
 	}
 }

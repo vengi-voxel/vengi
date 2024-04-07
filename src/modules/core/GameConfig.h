@@ -69,6 +69,7 @@ constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";
 constexpr const char *VoxformatAmbientocclusion = "voxformat_ambientocclusion";
 constexpr const char *VoxformatRGBFlattenFactor = "voxformat_rgbflattenfactor";
+constexpr const char *VoxformatRGBWeightedAverage = "voxformat_rgbweightedaverage";
 constexpr const char *VoxformatScale = "voxformat_scale";
 constexpr const char *VoxformatSaveVisibleOnly = "voxformat_savevisibleonly";
 constexpr const char *VoxformatMerge = "voxformat_merge";

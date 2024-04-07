@@ -28,6 +28,10 @@ bool FormatConfig::init() {
 											  (int)voxel::SurfaceExtractionType::Max - 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST, "Reuse vertices or always create new ones",
 				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatRGBWeightedAverage, "true", core::CV_NOPERSIST,
+				   "If multiple triangles contribute to the same voxel the color values are averaged based on their "
+				   "area contribution",
+				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST,

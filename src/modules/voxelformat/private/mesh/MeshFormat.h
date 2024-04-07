@@ -36,9 +36,10 @@ public:
 
 protected:
 	/**
-	 * @brief Color flatten factor - see @c PosSampling::avgColor()
+	 * @brief Color flatten factor - see @c PosSampling::getColor()
 	 */
 	uint8_t _flattenFactor;
+	bool _weightedAverage = true;
 
 	struct MeshExt {
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
@@ -100,7 +101,7 @@ protected:
 		inline PosSampling(float area, core::RGBA color) {
 			entries.emplace_back(area, color);
 		}
-		core::RGBA avgColor(uint8_t flattenFactor) const;
+		core::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
 	};
 
 	/**

@@ -39,6 +39,7 @@ namespace voxelformat {
 
 MeshFormat::MeshFormat() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
+	_weightedAverage = core::Var::getSafe(cfg::VoxformatRGBWeightedAverage)->boolVal();
 }
 
 MeshFormat::MeshExt *MeshFormat::getParent(const scenegraph::SceneGraph &sceneGraph, MeshFormat::Meshes &meshes,
@@ -87,21 +88,32 @@ void MeshFormat::subdivideTri(const voxelformat::TexturedTri &tri, TriCollection
 	tinyTris.push_back(tri);
 }
 
-core::RGBA MeshFormat::PosSampling::avgColor(uint8_t flattenFactor) const {
+core::RGBA MeshFormat::PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
 	if (entries.size() == 1) {
 		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
 									   flattenFactor);
 	}
-	float sumArea = 0.0f;
-	for (const PosSamplingEntry &pe : entries) {
-		sumArea += pe.area;
+	if (weightedAverage) {
+		float sumArea = 0.0f;
+		for (const PosSamplingEntry &pe : entries) {
+			sumArea += pe.area;
+		}
+		core::RGBA color(0, 0, 0, 255);
+		if (sumArea <= 0.0f) {
+			return color;
+		}
+		for (const PosSamplingEntry &pe : entries) {
+			color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
+		}
+		return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 	}
-	core::RGBA color(0, 0, 0, 255);
-	if (sumArea <= 0.0f) {
-		return color;
-	}
+	core::RGBA color(0, 0, 0, AlphaThreshold);
+	float area = 0.0f;
 	for (const PosSamplingEntry &pe : entries) {
-		color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
+		if (pe.area > area) {
+			area = pe.area;
+			color = pe.color;
+		}
 	}
 	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 }
@@ -407,7 +419,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 				return;
 			}
 			const PosSampling &pos = entry->second;
-			const core::RGBA rgba = pos.avgColor(_flattenFactor);
+			const core::RGBA rgba = pos.getColor(_flattenFactor, _weightedAverage);
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
@@ -430,7 +442,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			return;
 		}
 		const PosSampling &pos = entry->second;
-		const core::RGBA rgba = pos.avgColor(_flattenFactor);
+		const core::RGBA rgba = pos.getColor(_flattenFactor, _weightedAverage);
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
