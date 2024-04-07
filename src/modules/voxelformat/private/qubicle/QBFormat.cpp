@@ -83,7 +83,13 @@ public:
 			return;
 		}
 		if (!_rleCompressed) {
-			wrapSaveWriter(saveColor(_stream, _palette.color(voxel.getColor())))
+			core::RGBA color(0, 0, 0, 0);
+			if (voxel::isAir(voxel.getMaterial())) {
+				wrapSaveWriter(saveColor(_stream, color))
+			} else {
+				color = _palette.color(voxel.getColor());
+			}
+			wrapSaveWriter(saveColor(_stream, color))
 			return;
 		}
 		constexpr voxel::Voxel Empty;
