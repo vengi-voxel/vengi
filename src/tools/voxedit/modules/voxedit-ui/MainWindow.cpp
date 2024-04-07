@@ -30,11 +30,6 @@
 #include "engine-config.h"
 #include "TipOfTheDay.h"
 
-#ifdef IMGUI_ENABLE_TEST_ENGINE
-#include "ui/dearimgui/imgui_test_engine/imgui_te_engine.h"
-#include "ui/dearimgui/imgui_test_engine/imgui_te_context.h"
-#endif
-
 // generated models
 #include "aquarium.h"
 #include "aquarium_png.h"
@@ -154,26 +149,25 @@ MainWindow::~MainWindow() {
 
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-bool MainWindow::registerUITests(ImGuiTestEngine *engine) {
+void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *) {
 #if ENABLE_RENDER_PANEL
-	_renderPanel.registerUITests(engine);
+	_renderPanel.registerUITests(engine, TITLE_RENDER);
 #endif
-	_lsystemPanel.registerUITests(engine);
-	_brushPanel.registerUITests(engine);
-	_treePanel.registerUITests(engine);
-	_sceneGraphPanel.registerUITests(engine);;
-	_animationPanel.registerUITests(engine);;
-	_toolsPanel.registerUITests(engine);
-	_assetPanel.registerUITests(engine);
-	_mementoPanel.registerUITests(engine);
-	_positionsPanel.registerUITests(engine);;
-	_palettePanel.registerUITests(engine);
-	_menuBar.registerUITests(engine);
-	_statusBar.registerUITests(engine);
-	_scriptPanel.registerUITests(engine);
-	_animationTimeline.registerUITests(engine);;
-	_cameraPanel.registerUITests(engine);
-	return true;
+	_lsystemPanel.registerUITests(engine, TITLE_LSYSTEMPANEL);
+	_brushPanel.registerUITests(engine, TITLE_BRUSHPANEL);
+	_treePanel.registerUITests(engine, TITLE_TREES);
+	_sceneGraphPanel.registerUITests(engine, TITLE_SCENEGRAPH);
+	_animationPanel.registerUITests(engine, TITLE_ANIMATION_SETTINGS);
+	_toolsPanel.registerUITests(engine, TITLE_TOOLS);
+	_assetPanel.registerUITests(engine, TITLE_ASSET);
+	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
+	_positionsPanel.registerUITests(engine, TITLE_POSITIONS);
+	_palettePanel.registerUITests(engine, TITLE_PALETTE);
+	_menuBar.registerUITests(engine, nullptr);
+	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
+	_scriptPanel.registerUITests(engine, TITLE_SCRIPT_EDITOR);
+	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
+	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 }
 #endif
 

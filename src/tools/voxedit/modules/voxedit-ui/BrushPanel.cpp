@@ -9,7 +9,6 @@
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/ScopedPtr.h"
-#include "imgui.h"
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -353,5 +352,20 @@ void BrushPanel::update(const char *title, command::CommandExecutionListener &li
 	}
 	ImGui::End();
 }
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+	ImGuiTest *test = IM_REGISTER_TEST(engine, testCategory(), testName());
+	test->TestFunc = [=](ImGuiTestContext *ctx) {
+		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
+		ctx->SetRef(title);
+		for (int i = 0; i < (int)BrushType::Max; ++i) {
+			ctx->ItemClick(i);
+			const BrushType brushType = modifier.brushType();
+			IM_CHECK_EQ((int)brushType, i);
+		}
+	};
+}
+#endif
 
 } // namespace voxedit

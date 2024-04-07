@@ -519,7 +519,7 @@ app::AppState VoxEdit::onInit() {
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	// register the ui tests late - as we need the main window
-	_mainWindow->registerUITests(_imguiTestEngine);
+	_mainWindow->registerUITests(_imguiTestEngine, nullptr);
 #endif
 
 	return state;

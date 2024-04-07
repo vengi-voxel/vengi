@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "core/Log.h"
 #include "core/String.h"
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-struct ImGuiTestEngine;
+#include "ui/dearimgui/imgui_test_engine/imgui_te_engine.h"
+#include "ui/dearimgui/imgui_test_engine/imgui_te_context.h"
 #endif
 
 namespace ui {
@@ -19,17 +19,14 @@ class Panel {
 protected:
 	IMGUIApp *_app;
 	core::String _title;
-	Panel(IMGUIApp *app, const char *title) : _app(app), _title(title) {
-		Log::debug("create panel %s", _title.c_str());
-	}
+	Panel(IMGUIApp *app, const char *title);
 
 public:
 	virtual ~Panel() {}
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	virtual bool registerUITests(ImGuiTestEngine *engine) {
-		Log::warn("No tests registered for panel %s", _title.c_str());
-		return false;
-	}
+	virtual void registerUITests(ImGuiTestEngine *, const char *);
+	const char *testName() const { return _title.c_str(); }
+	const char *testCategory() const;
 #endif
 };
 

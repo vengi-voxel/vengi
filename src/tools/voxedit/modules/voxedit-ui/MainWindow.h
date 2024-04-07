@@ -151,7 +151,7 @@ public:
 	bool isPaletteWidgetDropTarget() const;
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	bool registerUITests(ImGuiTestEngine *engine) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
 #endif
 
 	void toggleScene();
