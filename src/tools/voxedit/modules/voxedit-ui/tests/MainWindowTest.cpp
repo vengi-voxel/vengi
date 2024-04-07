@@ -28,11 +28,13 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 
-	ImGuiTest *test = IM_REGISTER_TEST(engine, testCategory(), testName());
-	test->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testName(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ctx->SetRef(title);
 		focusWindow(ctx, title);
 		ctx->MenuClick("###File/###New");
+		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
+		ctx->ItemInputValue("##newscenename", "Automated ui test");
+		ctx->ItemClick("###OK");
 	};
 }
 
