@@ -114,6 +114,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files       |
 | `voxformat_merge`             | Merge all models into one object                                                         |
 | `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats |
+| `voxformat_rgbweightedaverage`| If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution |
 | `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       |
 | `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         |
 | `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. |

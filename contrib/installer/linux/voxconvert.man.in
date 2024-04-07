@@ -411,6 +411,8 @@ Config vars to control the meshing:
 .PP
 \fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
 .PP
+\fBvoxformat_rgbweightedaverage\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution
+.PP
 \fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
 
 Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
