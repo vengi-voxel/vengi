@@ -84,6 +84,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		}
 		if (forceApplyOptions || *desc == voxelformat::qubicleBinary()) {
 			ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
+			ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 		}
 		if (forceApplyOptions || *desc == voxelformat::tiberianSun()) {
 			const char *normalTypes[] = {nullptr, nullptr, _("Tiberian Sun"), nullptr, _("Red Alert")};

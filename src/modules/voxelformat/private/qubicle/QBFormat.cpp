@@ -58,6 +58,7 @@ private:
 	const glm::ivec3 _maxs;
 
 	const bool _leftHanded;
+	const bool _rleCompressed;
 	bool _error = false;
 	core::RGBA _currentColor;
 	uint32_t _count = 0;
@@ -72,13 +73,17 @@ private:
 	}
 
 public:
-	MatrixWriter(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool leftHanded)
+	MatrixWriter(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed)
 		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxs(node.region().getUpperCorner()),
-		  _leftHanded(leftHanded) {
+		  _leftHanded(leftHanded), _rleCompressed(rleCompressed) {
 	}
 
 	void addVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
 		if (_error) {
+			return;
+		}
+		if (!_rleCompressed) {
+			wrapSaveWriter(saveColor(_stream, _palette.color(voxel.getColor())))
 			return;
 		}
 		constexpr voxel::Voxel Empty;
@@ -135,7 +140,7 @@ public:
 };
 
 bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
-						  const scenegraph::SceneGraphNode &node, bool leftHanded) const {
+						  const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed) const {
 	const int nameLength = (int)node.name().size();
 	wrapSave(stream.writeUInt8(nameLength));
 	wrapSave(stream.writeString(node.name(), false));
@@ -172,7 +177,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 	if (!leftHanded) {
 		visitOrder = voxelutil::VisitorOrder::XYZ;
 	}
-	MatrixWriter writer(stream, node, leftHanded);
+	MatrixWriter writer(stream, node, leftHanded, rleCompressed);
 	voxelutil::visitVolume(
 		*sceneGraph.resolveVolume(node),
 		[&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); },
@@ -186,13 +191,14 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
 	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
 	const ZAxisOrientation orientation = leftHanded ? ZAxisOrientation::LeftHanded : ZAxisOrientation::RightHanded;
+	const bool rleCompressed = core::Var::getSafe(cfg::VoxformatQBSaveCompressed)->boolVal();
 	wrapSave(stream.writeUInt32((uint32_t)orientation))
-	wrapSave(stream.writeUInt32((uint32_t)Compression::RLE))
+	wrapSave(stream.writeUInt32(rleCompressed ? (uint32_t)Compression::RLE : (uint32_t)Compression::None))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
 	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		if (!saveMatrix(stream, sceneGraph, node, leftHanded)) {
+		if (!saveMatrix(stream, sceneGraph, node, leftHanded, rleCompressed)) {
 			return false;
 		}
 	}

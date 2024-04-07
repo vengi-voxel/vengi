@@ -52,7 +52,7 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
-					const scenegraph::SceneGraphNode &node, bool leftHanded) const;
+					const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 

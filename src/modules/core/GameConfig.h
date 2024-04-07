@@ -92,6 +92,7 @@ constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds"
 constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
 constexpr const char *VoxformatVOXCreateGroups = "voxformat_voxcreategroups";
 constexpr const char *VoxformatQBSaveLeftHanded = "voxformat_qbsavelefthanded";
+constexpr const char *VoxformatQBSaveCompressed = "voxformat_qbsavecompressed";
 constexpr const char *VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness = "voxformat_gltf_khr_materials_pbrspecularglossiness";
 constexpr const char *VoxFormatGLTF_KHR_materials_specular = "voxformat_gltf_khr_materials_specular";
 
