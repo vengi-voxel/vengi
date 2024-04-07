@@ -341,6 +341,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				} else if (material->pbr.base_color.value_components == 4) {
 					baseColorRGBA = priv::_ufbx_to_vec4(material->pbr.base_color.value_vec4);
 				}
+				if (material->features.ior.enabled) {
+					// TODO: rendering features for e.g. magicavoxel
+				}
 			}
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
@@ -524,10 +527,6 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 			if (texture == nullptr) {
 				texture = material->pbr.base_color.texture;
 			}
-
-			// TODO: rendering features for e.g. magicavoxel
-			/*if (material->features.ior.enabled) {
-			}*/
 
 			if (textures.hasKey(texname)) {
 				Log::debug("Texture for material '%s' is already loaded", texname.c_str());
