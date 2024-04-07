@@ -838,6 +838,10 @@ void MainWindow::popupAbout() {
 			ImGui::Dummy(ImVec2(1, 10));
 			ImGui::Text(_("Voxel save"));
 			if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
+				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(desc->name.c_str());
@@ -849,6 +853,10 @@ void MainWindow::popupAbout() {
 			ImGui::Dummy(ImVec2(1, 10));
 			ImGui::Text(_("Palettes"));
 			if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
+				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(desc->name.c_str());
@@ -860,6 +868,10 @@ void MainWindow::popupAbout() {
 			ImGui::Dummy(ImVec2(1, 10));
 			ImGui::Text(_("Images"));
 			if (ImGui::BeginTable("##images", 2, tableFlags)) {
+				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
+				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
 				for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(desc->name.c_str());
