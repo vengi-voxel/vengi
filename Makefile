@@ -278,6 +278,8 @@ update-dearimgui:
 	cp $(UPDATEDIR)/imgui.sync/misc/fonts/binary_to_compressed_c.cpp tools/binary_to_compressed_c
 	cp $(UPDATEDIR)/imgui.sync/misc/freetype/* src/modules/ui/dearimgui/misc/freetype
 	mv src/modules/ui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
+	$(call UPDATE_GIT,imgui_test_engine,https://github.com/ocornut/imgui_test_engine.git)
+	cp -r $(UPDATEDIR)/imgui_test_engine.sync/imgui_test_engine src/modules/ui/dearimgui
 
 update-glm:
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
