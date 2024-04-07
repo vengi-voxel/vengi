@@ -399,6 +399,7 @@ bool PalettePanel::showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &n
 			} else if (!hasAlpha && palette.color(palIdx).a != 255) {
 				_sceneMgr->nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Transparent);
 			}
+			_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, palIdx));
 		}
 		palette.markSave();
 		return true;
