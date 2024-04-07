@@ -56,7 +56,7 @@ void VoxEdit::printUsageHeader() const {
 
 bool VoxEdit::registerUITests() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	return _mainWindow->registerUITests(_imguiTestEngine);
+	return true;
 #else
 	return false;
 #endif
@@ -516,6 +516,11 @@ app::AppState VoxEdit::onInit() {
 			}
 		}
 	}
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	// register the ui tests late - as we need the main window
+	_mainWindow->registerUITests(_imguiTestEngine);
+#endif
 
 	return state;
 }
