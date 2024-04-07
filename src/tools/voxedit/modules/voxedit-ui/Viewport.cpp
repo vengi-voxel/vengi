@@ -236,7 +236,7 @@ void Viewport::menuBarCameraProjection() {
 	const int currentMode = (int)camera().mode();
 	const float modeMaxWidth = ImGui::CalcComboWidth(modes[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("##cameraproj", modes[currentMode])) {
+	if (ImGui::BeginCombo("###cameraproj", modes[currentMode])) {
 		for (int n = 0; n < lengthof(modes); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(modes[n], isSelected)) {
@@ -254,7 +254,7 @@ void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
 	const float modeMaxWidth = ImGui::CalcComboWidth(voxelrender::SceneCameraModeStr[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
-	if (ImGui::BeginCombo("##cameramode", voxelrender::SceneCameraModeStr[currentMode])) {
+	if (ImGui::BeginCombo("###cameramode", voxelrender::SceneCameraModeStr[currentMode])) {
 		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
 			if (ImGui::Selectable(voxelrender::SceneCameraModeStr[n], isSelected)) {
