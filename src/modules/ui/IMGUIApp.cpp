@@ -29,6 +29,12 @@
 #include "video/TextureConfig.h"
 #include "video/Types.h"
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include "dearimgui/imgui_test_engine/imgui_te_ui.h"
+#include "dearimgui/imgui_test_engine/imgui_te_engine.h"
+#include "dearimgui/imgui_test_engine/imgui_te_context.h"
+#endif
+
 #include "ArimoRegular.h"
 #include "FileDialog.h"
 #include "IMGUIEx.h"
@@ -260,6 +266,14 @@ app::AppState IMGUIApp::onInit() {
 	ImGui::CreateContext();
 	ImPlot::CreateContext();
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	// Initialize Test Engine
+	_imguiTestEngine = ImGuiTestEngine_CreateContext();
+	ImGuiTestEngineIO& test_io = ImGuiTestEngine_GetIO(_imguiTestEngine);
+	test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
+	test_io.ConfigVerboseLevelOnError = ImGuiTestVerboseLevel_Debug;
+#endif
+
 	ImGuiIO &io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	if (!isSingleWindowMode() && core::Var::getSafe(cfg::UIMultiMonitor)->boolVal()) {
@@ -296,6 +310,12 @@ app::AppState IMGUIApp::onInit() {
 	_console.init();
 
 	Log::debug("Set up imgui");
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	if (registerUITests()) {
+		ImGuiTestEngine_Start(_imguiTestEngine, ImGui::GetCurrentContext());
+	}
+#endif
 
 	return state;
 }
@@ -574,6 +594,10 @@ app::AppState IMGUIApp::onRunning() {
 		onRenderUI();
 		_console.render(_lastExecutedCommand);
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+		ImGuiTestEngine_ShowTestEngineWindows(_imguiTestEngine, nullptr);
+#endif
+
 		if (_closeModalPopup) {
 			if (ImGui::GetTopMostPopupModal() != nullptr) {
 				GImGui->OpenPopupStack.resize(GImGui->OpenPopupStack.size() - 1);
@@ -636,6 +660,10 @@ app::AppState IMGUIApp::onRunning() {
 		video::activateContext(_window, _rendererContext);
 	}
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGuiTestEngine_PostSwap(_imguiTestEngine);
+#endif
+
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	return app::AppState::Running;
 }
@@ -645,6 +673,9 @@ void IMGUIApp::loadKeymap(int keymap) {
 }
 
 app::AppState IMGUIApp::onCleanup() {
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGuiTestEngine_Stop(_imguiTestEngine);
+#endif
 	if (_imguiBackendInitialized) {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplSDL2_Shutdown();
@@ -655,6 +686,9 @@ app::AppState IMGUIApp::onCleanup() {
 		ImGui::DestroyPlatformWindows();
 		ImGui::DestroyContext();
 	}
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGuiTestEngine_DestroyContext(_imguiTestEngine);
+#endif
 	_console.shutdown();
 	return Super::onCleanup();
 }

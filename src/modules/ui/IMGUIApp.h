@@ -9,6 +9,9 @@
 #include "video/WindowedApp.h"
 #include "IMGUIConsole.h"
 #include "Style.h"
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include "ui/dearimgui/imgui_test_engine/imgui_te_engine.h"
+#endif
 
 struct SDL_Cursor;
 
@@ -83,6 +86,14 @@ protected:
 	ImFont* _bigFont = nullptr;
 	ImFont* _smallFont = nullptr;
 	ImFont* _bigIconFont = nullptr;
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGuiTestEngine *_imguiTestEngine = nullptr;
+#endif
+	// used for the imgui test engine (IM_REGISTER_TEST)
+	virtual bool registerUITests() {
+		return false;
+	}
 
 	FileDialog _fileDialog;
 

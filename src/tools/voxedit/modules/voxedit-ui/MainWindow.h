@@ -150,6 +150,10 @@ public:
 	bool isSceneGraphDropTarget() const;
 	bool isPaletteWidgetDropTarget() const;
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	bool registerUITests(ImGuiTestEngine *engine) override;
+#endif
+
 	void toggleScene();
 	void resetCamera();
 	/**

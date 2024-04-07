@@ -42,6 +42,8 @@ private:
 		Max
 	};
 
+	bool registerUITests() override;
+
 	void loadKeymap(int keymap) override;
 protected:
 	void printUsageHeader() const override;

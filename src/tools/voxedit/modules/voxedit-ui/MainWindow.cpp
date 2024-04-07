@@ -30,6 +30,11 @@
 #include "engine-config.h"
 #include "TipOfTheDay.h"
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+#include "ui/dearimgui/imgui_test_engine/imgui_te_engine.h"
+#include "ui/dearimgui/imgui_test_engine/imgui_te_context.h"
+#endif
+
 // generated models
 #include "aquarium.h"
 #include "aquarium_png.h"
@@ -146,6 +151,31 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 MainWindow::~MainWindow() {
 	shutdownScenes();
 }
+
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+bool MainWindow::registerUITests(ImGuiTestEngine *engine) {
+#if ENABLE_RENDER_PANEL
+	_renderPanel.registerUITests(engine);
+#endif
+	_lsystemPanel.registerUITests(engine);
+	_brushPanel.registerUITests(engine);
+	_treePanel.registerUITests(engine);
+	_sceneGraphPanel.registerUITests(engine);;
+	_animationPanel.registerUITests(engine);;
+	_toolsPanel.registerUITests(engine);
+	_assetPanel.registerUITests(engine);
+	_mementoPanel.registerUITests(engine);
+	_positionsPanel.registerUITests(engine);;
+	_palettePanel.registerUITests(engine);
+	_menuBar.registerUITests(engine);
+	_statusBar.registerUITests(engine);
+	_scriptPanel.registerUITests(engine);
+	_animationTimeline.registerUITests(engine);;
+	_cameraPanel.registerUITests(engine);
+	return true;
+}
+#endif
 
 const char *MainWindow::getTip() const {
 	static char buf[4096];
