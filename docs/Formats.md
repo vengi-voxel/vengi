@@ -28,6 +28,7 @@
 | Qubicle Binary Tree        | qbt         | X       | X      |            | X       |            |
 | Qubicle Exchange           | qef         | X       | X      |            |         |            |
 | Qubicle Project            | qbcl        | X       | X      | X          | X       |            |
+| Rooms.xyz Thing            | thing       | X       |        |            | X       |            |
 | SLAB6 vox                  | vox         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Collection | vxc         | X       |        |            |         |            |
 | Sandbox VoxEdit Hierarchy  | vxr         | X       | X      |            |         | X          |

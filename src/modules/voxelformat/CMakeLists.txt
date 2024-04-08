@@ -45,6 +45,7 @@ set(SRCS
 	private/qubicle/QBFormat.h               private/qubicle/QBFormat.cpp
 	private/qubicle/QBCLFormat.h             private/qubicle/QBCLFormat.cpp
 	private/qubicle/QEFFormat.h              private/qubicle/QEFFormat.cpp
+	private/rooms/ThingFormat.h              private/rooms/ThingFormat.cpp
 	private/sandbox/VXAFormat.h              private/sandbox/VXAFormat.cpp
 	private/sandbox/VXCFormat.h              private/sandbox/VXCFormat.cpp
 	private/sandbox/VXMFormat.h              private/sandbox/VXMFormat.cpp

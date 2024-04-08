@@ -18,6 +18,7 @@
 #include "metric/MetricFacade.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/private/rooms/ThingFormat.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
@@ -97,6 +98,14 @@ const io::FormatDescription &vengi() {
 								   {"vengi"},
 								   {"VENG"},
 								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+	return f;
+}
+
+static const io::FormatDescription &roomsThing() {
+	static io::FormatDescription f{"Rooms.xyz Thing",
+								   {"thing"},
+								   {},
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 
@@ -358,6 +367,7 @@ const io::FormatDescription *voxelLoad() {
 												 cubzh(),
 												 cubzhB64(),
 												 voxel3D(),
+												 roomsThing(),
 												 aceOfSpadesKV6(),
 												 tiberianSun(),
 												 aceOfSpades(),
@@ -465,6 +475,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<CubzhFormat>();
 		} else if (ext == cubzhB64().mainExtension()) {
 			return core::make_shared<CubzhB64Format>();
+		} else if (ext == roomsThing().mainExtension()) {
+			return core::make_shared<ThingFormat>();
 		} else if (gltf().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else {

@@ -669,6 +669,16 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Rooms.xyz Thing",
+      "extensions": [
+        "thing"
+      ],
+      "magics": [],
+      "mimetype": "application/x-rooms.xyz-thing",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "AceOfSpades",
       "extensions": [
         "kv6"
