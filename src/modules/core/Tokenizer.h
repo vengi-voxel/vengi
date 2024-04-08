@@ -12,8 +12,8 @@
 namespace core {
 
 struct TokenizerConfig {
-	bool skipComments = true;
-	bool removeQuotes = true;
+	bool skipComments = true; // skip multiline and singleline comments
+	bool removeQuotes = true; // parse everything in the quotes as one token, but remove the quotes afterwards
 };
 
 class Tokenizer {
@@ -25,7 +25,7 @@ protected:
 	bool _skipComments;
 
 	// skip multiline and singleline comments
-	bool skipComments(const char **s, bool skipWhitespac);
+	bool skipComments(const char **s, bool skipWhitespace);
 	char skip(const char **s, bool skipWhitespace = true);
 	bool isSeparator(char c, const char *sep);
 public:
