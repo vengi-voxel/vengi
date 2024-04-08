@@ -318,7 +318,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
 
-	ui::Toolbar toolbarBrush(buttonSize, &listener);
+	ui::Toolbar toolbarBrush("brushes", buttonSize, &listener);
 	for (int i = 0; i < (int)BrushType::Max; ++i) {
 		core::String cmd = core::string::format("brush%s", BrushTypeStr[i]).toLower();
 		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
@@ -334,7 +334,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 		return;
 	}
 
-	ui::Toolbar toolbarModifiers(buttonSize, &listener);
+	ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
 	if (brushType == BrushType::None) {
 		toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
 		toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));

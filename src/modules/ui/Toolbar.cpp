@@ -8,8 +8,8 @@
 
 namespace ui {
 
-Toolbar::Toolbar(const ImVec2 &size, command::CommandExecutionListener *listener)
-	: _nextId(0), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener) {
+Toolbar::Toolbar(const core::String &name, const ImVec2 &size, command::CommandExecutionListener *listener)
+	: _nextId(0), _pos(ImGui::GetCursorScreenPos()), _startingPosX(_pos.x), _size(size), _listener(listener), _name(name) {
 }
 
 Toolbar::~Toolbar() {
@@ -58,9 +58,12 @@ bool Toolbar::button(const char *icon, const char *command, bool darken) {
 	if (darken) {
 		style.darker(ImGuiCol_Text);
 	}
+	ImGui::PushID(_name.c_str());
 	core::String label = core::String::format("%s###button%d", icon, _nextId);
 	bool pressed = ImGui::CommandButton(label.c_str(), command, nullptr, _size, _listener);
+	ImGui::PopID();
 	next();
+
 	return pressed;
 }
 

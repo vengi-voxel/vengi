@@ -93,7 +93,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 		if (!sizes.empty()) {
 			static const char *max = "888x888x888";
 			const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
-			ui::Toolbar toolbar(buttonSize, &listener);
+			ui::Toolbar toolbar("regions", buttonSize, &listener);
 
 			core::DynamicArray<core::String> regionSizes;
 			core::string::splitString(sizes, regionSizes, ",");

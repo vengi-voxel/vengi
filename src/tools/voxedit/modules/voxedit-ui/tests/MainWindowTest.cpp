@@ -4,7 +4,10 @@
 
 #include "../MainWindow.h"
 #include "../WindowTitles.h"
+#include "core/Log.h"
+#include "imgui_te_context.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
 
 namespace voxedit {
 
@@ -22,16 +25,34 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
 	_positionsPanel.registerUITests(engine, TITLE_POSITIONS);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
-	_menuBar.registerUITests(engine, nullptr);
+	_menuBar.registerUITests(engine, "##menubar");
 	_statusBar.registerUITests(engine, TITLE_STATUSBAR);
-	_scriptPanel.registerUITests(engine, TITLE_SCRIPT_EDITOR);
+	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 
-	IM_REGISTER_TEST(engine, testName(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testName(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		_sceneMgr->markDirty();
+		ImGuiContext& g = *ctx->UiContext;
 		ctx->SetRef(title);
 		focusWindow(ctx, title);
 		ctx->MenuClick("###File/###New");
+		ctx->Yield();
+		IM_CHECK_EQ(g.OpenPopupStack.Size, 1);
+		IM_CHECK_EQ(g.OpenPopupStack[0].PopupId, ctx->GetID(POPUP_TITLE_UNSAVED));
+		ctx->SetRef(POPUP_TITLE_UNSAVED);
+		ctx->ItemClick("###Yes");
+		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
+		ctx->ItemInputValue("##newscenename", "Automated ui test");
+		ctx->ItemClick("###OK");
+	};
+
+	IM_REGISTER_TEST(engine, testName(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
+		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
+		ctx->SetRef(title);
+		focusWindow(ctx, title);
+		ctx->MenuClick("###File/###New");
+		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
 		ctx->ItemInputValue("##newscenename", "Automated ui test");
 		ctx->ItemClick("###OK");

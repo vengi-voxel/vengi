@@ -50,7 +50,7 @@ void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigIconFont());
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-			ui::Toolbar toolbar(buttonSize, &listener);
+			ui::Toolbar toolbar("scenetools", buttonSize, &listener);
 			toolbar.button(ICON_LC_COPY, "nodeduplicate");
 			toolbar.button(ICON_LC_TRASH, "nodedelete");
 			if (nodeType == scenegraph::SceneGraphNodeType::Model) {
@@ -70,7 +70,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ui::ScopedStyle style;
 		style.setFont(_app->bigIconFont());
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
-		ui::Toolbar toolbar(buttonSize, &listener);
+		ui::Toolbar toolbar("edittools", buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
 		toolbar.button(ICON_LC_SCALING, "resizetoselection", _sceneMgr->modifier().selections().empty());
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");

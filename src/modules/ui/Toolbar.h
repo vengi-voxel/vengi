@@ -20,13 +20,14 @@ protected:
 	const float _startingPosX;
 	const ImVec2 _size;
 	command::CommandExecutionListener *_listener;
+	const core::String _name;
 	float windowWidth() const;
 	void setCursor();
 	void next();
 	void newline();
 	void last();
 public:
-	Toolbar(const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
+	Toolbar(const core::String &name, const ImVec2 &size, command::CommandExecutionListener *listener = nullptr);
 	~Toolbar();
 
 	bool button(const char *icon, const char *command, bool darken = false);
@@ -43,11 +44,13 @@ public:
 		if (highlight) {
 			style.highlight(ImGuiCol_Text);
 		}
+		ImGui::PushID(_name.c_str());
 		core::String label = core::String::format("%s###button%d", icon, _nextId);
 		bool pressed = ImGui::Button(label.c_str(), _size);
 		if (pressed) {
 			func();
 		}
+		ImGui::PopID();
 		if (tooltip != nullptr && tooltip[0] != '\0') {
 			ui::ScopedStyle tooltipStyle;
 			tooltipStyle.setFont(imguiApp()->defaultFont());
