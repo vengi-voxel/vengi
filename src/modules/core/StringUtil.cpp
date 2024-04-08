@@ -604,7 +604,8 @@ int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) {
 		hex += 2;
 	}
 	int n = 0;
-	r = g = b = a = 0u;
+	r = g = b = 0u;
+	a = 255u;
 	const size_t l = strlen(hex);
 	if (l % 2 != 0) {
 		return -1;
