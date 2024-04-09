@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "glm/vector_relational.hpp"
+#include <glm/vector_relational.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include <glm/vec3.hpp>
 #include <gtest/gtest.h>
@@ -78,7 +78,7 @@ inline testing::AssertionResult CmpHelperVec3NE(const char *lhs_expression, cons
 
 namespace glm {
 
-::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
+inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
 	os << std::fixed << std::setprecision(7);
 	for (int i = 0; i < v.length(); i++) {
 		if (i > 0) {
