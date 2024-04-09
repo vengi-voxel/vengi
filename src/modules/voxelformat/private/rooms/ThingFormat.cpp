@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
+#include "core/collection/DynamicArray.h"
 #include "glm/gtc/type_ptr.hpp"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
@@ -21,32 +22,74 @@
 
 namespace voxelformat {
 
-bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const {
-	core::String nodeConfig;
-	if (!stream.readString(stream.size(), nodeConfig)) {
-		Log::error("ThingFormat: Failed to read node config");
+bool ThingFormat::parseChildren(core::Tokenizer &tok, NodeSpec &nodeSpec) const {
+	if (!tok.hasNext()) {
+		Log::error("ThingFormat: Expected token but got nothing");
 		return false;
 	}
-	core::Tokenizer tok(nodeConfig.c_str(), nodeConfig.size(), ":");
+	core::String token = tok.next();
+	if (token != "{") {
+		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
+		return false;
+	}
+	token = tok.next();
+	if (token != "{") {
+		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
+		return false;
+	}
+	NodeSpec child;
+	if (parseNode(tok, child)) {
+		nodeSpec.children.push_back(child);
+	} else {
+		Log::error("ThingFormat: Failed to parse child node");
+		return false;
+	}
+	return true;
+}
+
+bool ThingFormat::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const {
+	int depth = 1;
 	while (tok.hasNext()) {
 		core::String token = tok.next();
-		if (token == "name") {
+		if (token == "{") {
+			++depth;
+		} else if (token == "}") {
+			if (depth == 0) {
+				return true;
+			}
+			--depth;
+		} else if (token == "name") {
 			nodeSpec.name = tok.next();
+			Log::debug("ThingFormat: name: %s", nodeSpec.name.c_str());
 		} else if (token == "modelName") {
 			nodeSpec.modelName = tok.next();
+			Log::debug("ThingFormat: modelName: %s", nodeSpec.modelName.c_str());
 		} else if (token == "thingLibraryId") {
 			nodeSpec.thingLibraryId = tok.next();
+			Log::debug("ThingFormat: thingLibraryId: %s", nodeSpec.thingLibraryId.c_str());
 		} else if (token == "opacity") {
 			nodeSpec.opacity = core::string::toFloat(tok.next());
+			Log::debug("ThingFormat: opacity: %f", nodeSpec.opacity);
+		} else if (token == "children") {
+			Log::debug("ThingFormat: found children");
+			parseChildren(tok, nodeSpec);
 		} else if (token == "color") {
 			core::string::parseHex(tok.next().c_str(), nodeSpec.color.r, nodeSpec.color.g, nodeSpec.color.b,
 								   nodeSpec.color.a);
+			Log::debug("ThingFormat: color: %d %d %d %d", nodeSpec.color.r, nodeSpec.color.g, nodeSpec.color.b,
+					   nodeSpec.color.a);
 		} else if (token == "localPos") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localPos));
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localPos), " ,\t");
+			Log::debug("ThingFormat: localPos: %f %f %f", nodeSpec.localPos.x, nodeSpec.localPos.y,
+					   nodeSpec.localPos.z);
 		} else if (token == "localRot") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localRot));
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localRot), " ,\t");
+			Log::debug("ThingFormat: localRot: %f %f %f", nodeSpec.localRot.x, nodeSpec.localRot.y,
+					   nodeSpec.localRot.z);
 		} else if (token == "localSize") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localSize));
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localSize), " ,\t");
+			Log::debug("ThingFormat: localSize: %f %f %f", nodeSpec.localSize.x, nodeSpec.localSize.y,
+					   nodeSpec.localSize.z);
 		} else {
 			Log::debug("ThingFormat: Ignoring token: %s", token.c_str());
 		}
@@ -54,8 +97,18 @@ bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpe
 	return true;
 }
 
+bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const {
+	core::String nodeConfig;
+	if (!stream.readString(stream.size(), nodeConfig)) {
+		Log::error("ThingFormat: Failed to read node config");
+		return false;
+	}
+	core::Tokenizer tok(nodeConfig.c_str(), nodeConfig.size(), ":");
+	return parseNode(tok, nodeSpec);
+}
+
 bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph,
-						   const LoadContext &ctx) {
+						   const LoadContext &ctx, int parent) {
 	if (nodeSpec.modelName.empty()) {
 		Log::error("ThingFormat: Missing modelName in node spec");
 		return false;
@@ -66,6 +119,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		return false;
 	}
 	scenegraph::SceneGraph voxSceneGraph;
+	Log::debug("ThingFormat: Load vox file: %s", nodeSpec.modelName.c_str());
 	VoxFormat format;
 	if (!format.load(nodeSpec.modelName, *modelStream.get(), voxSceneGraph, ctx)) {
 		return false;
@@ -74,6 +128,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		if (!e->second.isModelNode()) {
 			continue;
 		}
+		// TODO: positioning is wrong
 		scenegraph::SceneGraphNode &node = voxSceneGraph.node(e->first);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		scenegraph::SceneGraphTransform transform;
@@ -84,8 +139,12 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			transform.setLocalScale(nodeSpec.localSize / fullSize);
 		}
 		node.setTransform(keyFrameIdx, transform);
+
 		node.setColor(nodeSpec.color);
-		node.setProperty("thingLibraryId", nodeSpec.thingLibraryId);
+		node.setName(nodeSpec.name);
+		if (!nodeSpec.thingLibraryId.empty()) {
+			node.setProperty("thingLibraryId", nodeSpec.thingLibraryId);
+		}
 		palette::Palette &palette = node.palette();
 		for (size_t i = 0; i < palette.size(); ++i) {
 			core::RGBA rgba = palette.color(i);
@@ -94,15 +153,21 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
-	return !scenegraph::copySceneGraph(sceneGraph, voxSceneGraph).empty();
+	voxSceneGraph.updateTransforms();
+	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
+	if (nodes.empty()) {
+		return false;
+	}
+	for (const NodeSpec &child : nodeSpec.children) {
+		if (!loadNode(archive, child, sceneGraph, ctx, nodes[0])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	if (!io::isSupportedArchive(filename)) {
-		Log::error("ThingFormat: Unsupported archive format: %s", filename.c_str());
-		return false;
-	}
 	io::ArchivePtr archive = io::openArchive(io::filesystem(), filename, &stream);
 	if (!archive) {
 		Log::error("ThingFormat: Failed to open archive: %s", filename.c_str());

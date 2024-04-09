@@ -31,7 +31,7 @@ SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
 
 bool isSupportedArchive(const core::String &filename) {
 	const core::String ext = core::string::extractExtension(filename);
-	return ext == "zip" || ext == "pk3" || ext == "thing";
+	return ext == "zip" || ext == "pk3";
 }
 
 ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream) {
