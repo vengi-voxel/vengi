@@ -46,6 +46,7 @@ set(SRCS
 	private/qubicle/QBCLFormat.h             private/qubicle/QBCLFormat.cpp
 	private/qubicle/QEFFormat.h              private/qubicle/QEFFormat.cpp
 	private/rooms/ThingFormat.h              private/rooms/ThingFormat.cpp
+	private/rooms/ThingNodeParser.h          private/rooms/ThingNodeParser.cpp
 	private/sandbox/VXAFormat.h              private/sandbox/VXAFormat.cpp
 	private/sandbox/VXCFormat.h              private/sandbox/VXCFormat.cpp
 	private/sandbox/VXMFormat.h              private/sandbox/VXMFormat.cpp
@@ -100,6 +101,7 @@ set(TEST_SRCS
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
 	tests/TexturedTriTest.cpp
+	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp
 	tests/VolumeFormatTest.cpp
@@ -170,6 +172,7 @@ set(TEST_FILES
 	tests/bug393.obj
 	tests/kvx_save.qb
 	tests/particubes.pcubes
+	tests/testrooms.node
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
 	tests/rgb.vxl

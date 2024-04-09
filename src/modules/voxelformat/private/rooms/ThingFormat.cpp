@@ -6,9 +6,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/Tokenizer.h"
 #include "core/collection/DynamicArray.h"
-#include "glm/gtc/type_ptr.hpp"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
 #include "io/Stream.h"
@@ -22,89 +20,14 @@
 
 namespace voxelformat {
 
-bool ThingFormat::parseChildren(core::Tokenizer &tok, NodeSpec &nodeSpec) const {
-	if (!tok.hasNext()) {
-		Log::error("ThingFormat: Expected token but got nothing");
-		return false;
-	}
-	core::String token = tok.next();
-	if (token != "{") {
-		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
-		return false;
-	}
-	token = tok.next();
-	if (token != "{") {
-		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
-		return false;
-	}
-	NodeSpec child;
-	if (parseNode(tok, child)) {
-		nodeSpec.children.push_back(child);
-	} else {
-		Log::error("ThingFormat: Failed to parse child node");
-		return false;
-	}
-	return true;
-}
-
-bool ThingFormat::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const {
-	int depth = 1;
-	while (tok.hasNext()) {
-		core::String token = tok.next();
-		if (token == "{") {
-			++depth;
-		} else if (token == "}") {
-			if (depth == 0) {
-				return true;
-			}
-			--depth;
-		} else if (token == "name") {
-			nodeSpec.name = tok.next();
-			Log::debug("ThingFormat: name: %s", nodeSpec.name.c_str());
-		} else if (token == "modelName") {
-			nodeSpec.modelName = tok.next();
-			Log::debug("ThingFormat: modelName: %s", nodeSpec.modelName.c_str());
-		} else if (token == "thingLibraryId") {
-			nodeSpec.thingLibraryId = tok.next();
-			Log::debug("ThingFormat: thingLibraryId: %s", nodeSpec.thingLibraryId.c_str());
-		} else if (token == "opacity") {
-			nodeSpec.opacity = core::string::toFloat(tok.next());
-			Log::debug("ThingFormat: opacity: %f", nodeSpec.opacity);
-		} else if (token == "children") {
-			Log::debug("ThingFormat: found children");
-			parseChildren(tok, nodeSpec);
-		} else if (token == "color") {
-			core::string::parseHex(tok.next().c_str(), nodeSpec.color.r, nodeSpec.color.g, nodeSpec.color.b,
-								   nodeSpec.color.a);
-			Log::debug("ThingFormat: color: %d %d %d %d", nodeSpec.color.r, nodeSpec.color.g, nodeSpec.color.b,
-					   nodeSpec.color.a);
-		} else if (token == "localPos") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localPos), " ,\t");
-			Log::debug("ThingFormat: localPos: %f %f %f", nodeSpec.localPos.x, nodeSpec.localPos.y,
-					   nodeSpec.localPos.z);
-		} else if (token == "localRot") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localRot), " ,\t");
-			Log::debug("ThingFormat: localRot: %f %f %f", nodeSpec.localRot.x, nodeSpec.localRot.y,
-					   nodeSpec.localRot.z);
-		} else if (token == "localSize") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localSize), " ,\t");
-			Log::debug("ThingFormat: localSize: %f %f %f", nodeSpec.localSize.x, nodeSpec.localSize.y,
-					   nodeSpec.localSize.z);
-		} else {
-			Log::debug("ThingFormat: Ignoring token: %s", token.c_str());
-		}
-	}
-	return true;
-}
-
 bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const {
 	core::String nodeConfig;
 	if (!stream.readString(stream.size(), nodeConfig)) {
 		Log::error("ThingFormat: Failed to read node config");
 		return false;
 	}
-	core::Tokenizer tok(nodeConfig.c_str(), nodeConfig.size(), ":");
-	return parseNode(tok, nodeSpec);
+	ThingNodeParser parser;
+	return parser.parseNode(nodeConfig, nodeSpec);
 }
 
 bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph,

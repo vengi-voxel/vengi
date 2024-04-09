@@ -1,0 +1,228 @@
+name: "root"
+modelName: "root.vox"
+localPos: "0, 0, 0"
+localRot: "0, 180, 0"
+localSize: "40, 52, 18"
+scale: 1
+color: "#aabbcc"
+opacity: 1
+texName: ""
+texTiling: 0
+mediaName: ""
+flags: 0
+physicsType: 0
+script: ""
+hNodeOfOriginal: "0x00000000"
+onClickLuaSnippet: ""
+thingLibraryId: "abcdefgh"
+renderSpec: {
+  glowThresh: 0.5
+  glowIntensity: 0
+}
+animSpec: {
+  mode: 1
+  startFrame: 0
+  endFrame: -1
+  fps: 4
+  pause: 0
+}
+children: {
+  {
+    name: "child 1"
+    modelName: "child1.vox"
+    localPos: "1, 2, 3"
+    localRot: "4, 5, 6"
+    localSize: "7, 8, 9"
+    scale: 1
+    color: "#aa0000"
+    opacity: 1
+    texName: ""
+    texTiling: 0
+    mediaName: ""
+    flags: 0
+    physicsType: 0
+    script: ""
+    hNodeOfOriginal: "0x00000000"
+    onClickLuaSnippet: ""
+    thingLibraryId: "ghijklmn"
+    renderSpec: {
+      glowThresh: 0.5
+      glowIntensity: 0
+    }
+    animSpec: {
+      mode: 1
+      startFrame: 0
+      endFrame: -1
+      fps: 4
+      pause: 0
+    }
+  }
+  {
+    name: "child 2"
+    modelName: "child2.vox"
+    localPos: "7, 8, 9"
+    localRot: "10, 11, 12"
+    localSize: "13, 14, 15"
+    scale: 1
+    color: "#00aa00"
+    opacity: 1
+    texName: ""
+    texTiling: 0
+    mediaName: ""
+    flags: 0
+    physicsType: 0
+    script: ""
+    hNodeOfOriginal: "0x00000000"
+    onClickLuaSnippet: ""
+    renderSpec: {
+      glowThresh: 0.5
+      glowIntensity: 0
+    }
+    animSpec: {
+      mode: 0
+      startFrame: 0
+      endFrame: -1
+      fps: 4
+      pause: 0
+    }
+  }
+  {
+    name: "child 3 with own children"
+    modelName: "child3.vox"
+    localPos: "13, 14, 15"
+    localRot: "16, 17, 18"
+    localSize: "19, 20, 21"
+    scale: 1
+    color: "#0000aa"
+    opacity: 1
+    texName: ""
+    texTiling: 0
+    mediaName: ""
+    flags: 0
+    physicsType: 0
+    script: ""
+    hNodeOfOriginal: "0x00000000"
+    onClickLuaSnippet: ""
+    thingLibraryId: "12345678"
+    renderSpec: {
+      glowThresh: 0.5
+      glowIntensity: 0
+    }
+    animSpec: {
+      mode: 1
+      startFrame: 0
+      endFrame: -1
+      fps: 4
+      pause: 0
+    }
+    children: {
+      {
+        name: "child 1 of child 3"
+        modelName: "child1ofchild3.vox"
+        localPos: "19, 20, 21"
+        localRot: "22, 23, 24"
+        localSize: "25, 26, 27"
+        scale: 1
+        color: "#ffffff"
+        opacity: 1
+        texName: ""
+        texTiling: 0
+        mediaName: ""
+        flags: 0
+        physicsType: 3
+        script: ""
+        hNodeOfOriginal: "0x00000000"
+        onClickLuaSnippet: ""
+        thingLibraryId: "87654321"
+        renderSpec: {
+          glowThresh: 0
+          glowIntensity: 0.1
+        }
+        animSpec: {
+          mode: 0
+          startFrame: 0
+          endFrame: -1
+          fps: 4
+          pause: 0
+        }
+        children: {
+          {
+            name: "child 1 of child 1 of child 3"
+            modelName: "child1ofchild1ofchild3.vox"
+            localPos: "28, 29, 30"
+            localRot: "31, 32, 33"
+            localSize: "34, 35, 36"
+            scale: 1
+            color: "#ffffff"
+            opacity: 1
+            texName: ""
+            texTiling: 0
+            mediaName: ""
+            flags: 0
+            physicsType: 0
+            script: ""
+            hNodeOfOriginal: "0x00000000"
+            onClickLuaSnippet: ""
+            thingLibraryId: "12038710293"
+            textOverlay: {
+              text: ""
+              align: 0
+              fontSize: 40
+              localPos: "37, 38, 39"
+              localRot: "0, 0, 0"
+              localScale: "10, 10, 10"
+              color: "#000000"
+            }
+            lightSpec: {
+              enabled: true
+              intensity: 0.4
+              range: 120
+              color: "#ffffff"
+              localPos: "-1, 18, 8"
+            }
+            renderSpec: {
+              glowThresh: 0
+              glowIntensity: 0.1
+            }
+            animSpec: {
+              mode: 0
+              startFrame: 0
+              endFrame: -1
+              fps: 4
+              pause: 0
+            }
+          }
+        }
+      }
+    }
+  }
+  {
+    name: "child 4"
+    modelName: "child4.vox"
+    localPos: "-14, -14, -14"
+    localRot: "0.5, 0.5, 0.5"
+    localSize: "1, 2, 3"
+    scale: 1
+    color: "#ffffff"
+    opacity: 1
+    texName: ""
+    texTiling: 0
+    mediaName: ""
+    flags: 0
+    physicsType: 0
+    script: ""
+    hNodeOfOriginal: "0x00000000"
+    onClickLuaSnippet: ""
+    renderSpec: {
+      glowThresh: 0.5
+      glowIntensity: 0
+    }
+    animSpec: {
+      mode: 0
+      startFrame: 0
+      endFrame: -1
+      fps: 4
+      pause: 0
+    }
+  }
+}

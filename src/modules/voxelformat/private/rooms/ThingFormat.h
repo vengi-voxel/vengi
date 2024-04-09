@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "voxelformat/Format.h"
+#include "ThingNodeParser.h"
 
 namespace core {
 class Tokenizer;
@@ -26,21 +26,6 @@ namespace voxelformat {
  */
 class ThingFormat : public Format {
 private:
-	struct NodeSpec {
-		core::String name;
-		core::String modelName;
-		core::String thingLibraryId;
-		float opacity = 1.0f;
-		glm::vec3 localPos{0.0f};
-		glm::vec3 localRot{0.0f};
-		glm::vec3 localSize{0.0f};
-		core::RGBA color{0, 0, 0, 255};
-		core::DynamicArray<NodeSpec> children;
-		// TODO renderSpec and animSpec might be interesting, too
-	};
-	bool parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const;
-	bool parseChildren(core::Tokenizer &tok, NodeSpec &nodeSpec) const;
-
 	bool loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const;
 	bool loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph,
 				  const LoadContext &ctx, int parent = 0);
