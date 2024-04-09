@@ -44,11 +44,11 @@ app::AppState VoxBrowser::onConstruct() {
 
 	command::Command::registerCommand("downloadall", [this](const command::CmdArgs &args) {
 		_collectionMgr.downloadAll();
-	}).setHelp("Download all missing files");
+	}).setHelp(_("Download all missing files"));
 
 	command::Command::registerCommand("thumbnaildownloadall", [this](const command::CmdArgs &args) {
 		_collectionMgr.thumbnailAll();
-	}).setHelp("Download missing thumbnails");
+	}).setHelp(_("Download missing thumbnails"));
 
 	return state;
 }

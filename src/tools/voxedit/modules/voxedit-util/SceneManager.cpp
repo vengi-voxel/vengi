@@ -10,6 +10,7 @@
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/GLM.h"
+#include "core/I18N.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -1588,7 +1589,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
 		const voxel::Region &region = accumulate(modifier().selections());
 		nodeResize(sceneGraph().activeNode(), region);
-	}).setHelp("Resize the volume to the current selection");
+	}).setHelp(_("Resize the volume to the current selection"));
 
 	command::Command::registerCommand("xs", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1611,7 +1612,7 @@ void SceneManager::construct() {
 		} else {
 			Log::info("Executed script %s", args[0].c_str());
 		}
-	}).setHelp("Executes a lua script")
+	}).setHelp(_("Executes a lua script"))
 		.setArgumentCompleter(voxelgenerator::scriptCompleter(_filesystem));
 
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
@@ -1630,13 +1631,13 @@ void SceneManager::construct() {
 		palette::Palette &pal = node.palette();
 		pal.changeIntensity(scale);
 		_mementoHandler.markPaletteChange(node);
-	}).setHelp("Change intensity by scaling the rgb values of the palette");
+	}).setHelp(_("Change intensity by scaling the rgb values of the palette"));
 
 	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
 		const bool updateVoxels = args.empty() ? false : core::string::toBool(args[0]);
 		const int nodeId = activeNode();
 		nodeRemoveUnusedColors(nodeId, updateVoxels);
-	}).setHelp("Remove unused colors from palette");
+	}).setHelp(_("Remove unused colors from palette"));
 
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1659,7 +1660,7 @@ void SceneManager::construct() {
 			pal.sortOriginal();
 		}
 		_mementoHandler.markPaletteChange(node);
-	}).setHelp("Change intensity by scaling the rgb values of the palette").
+	}).setHelp(_("Change intensity by scaling the rgb values of the palette")).
 		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
 	command::Command::registerActionButton("zoom_in", _zoomIn, "Zoom in");
@@ -1672,7 +1673,7 @@ void SceneManager::construct() {
 			Log::debug("switch active node to hovered from scene graph mode: %i", nodeId);
 			nodeActivate(nodeId);
 		}
-	}).setHelp("Switch active node to hovered from scene graph mode");
+	}).setHelp(_("Switch active node to hovered from scene graph mode"));
 
 	command::Command::registerCommand("select", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -1693,11 +1694,11 @@ void SceneManager::construct() {
 				_modifierFacade.invert(node->region());
 			}
 		}
-	}).setHelp("Select all nothing or invert").setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
+	}).setHelp(_("Select all nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
 	command::Command::registerCommand("presentation", [] (const command::CmdArgs& args) {
 		command::Command::execute("hideall; animate 2000 true true");
-	}).setHelp("Cycle through all scene objects");
+	}).setHelp(_("Cycle through all scene objects"));
 
 	command::Command::registerCommand("align", [this] (const command::CmdArgs& args) {
 		_sceneGraph.align();
@@ -1708,7 +1709,7 @@ void SceneManager::construct() {
 			}
 			modified(node.id(), _sceneGraph.resolveRegion(node), true);
 		}
-	}).setHelp("Allow to align all nodes on the floor next to each other without overlapping");
+	}).setHelp(_("Allow to align all nodes on the floor next to each other without overlapping"));
 
 	command::Command::registerCommand("text", [this] (const command::CmdArgs& args) {
 		if (args.size() != 2) {
@@ -1718,7 +1719,7 @@ void SceneManager::construct() {
 		const core::String &str = args[0];
 		const int size = args[1].toInt();
 		renderText(str.c_str(), size);
-	}).setHelp("Render characters at the reference position");
+	}).setHelp(_("Render characters at the reference position"));
 
 	command::Command::registerCommand("modelssave", [&] (const command::CmdArgs& args) {
 		core::String dir = ".";
@@ -1728,7 +1729,7 @@ void SceneManager::construct() {
 		if (!saveModels(dir)) {
 			Log::error("Failed to save models to dir: %s", dir.c_str());
 		}
-	}).setHelp("Save all model nodes into filenames represented by their node names");
+	}).setHelp(_("Save all model nodes into filenames represented by their node names"));
 
 	command::Command::registerCommand("modelsave", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1744,7 +1745,7 @@ void SceneManager::construct() {
 		if (!saveNode(nodeId, file)) {
 			Log::error("Failed to save node %i to file: %s", nodeId, file.c_str());
 		}
-	}).setHelp("Save a single node to the given path with their node names").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Save a single node to the given path with their node names")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("newscene", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
@@ -1762,15 +1763,15 @@ void SceneManager::construct() {
 		if (!newScene(true, name, region)) {
 			Log::warn("Could not create new scene");
 		}
-	}).setHelp("Create a new scene (with a given name and width, height, depth - all optional)");
+	}).setHelp(_("Create a new scene (with a given name and width, height, depth - all optional)"));
 
 	command::Command::registerCommand("crop", [&] (const command::CmdArgs& args) {
 		crop();
-	}).setHelp("Crop the current active node to the voxel boundaries");
+	}).setHelp(_("Crop the current active node to the voxel boundaries"));
 
 	command::Command::registerCommand("splitobjects", [&] (const command::CmdArgs& args) {
 		splitObjects();
-	}).setHelp("Split the current active node into multiple nodes");
+	}).setHelp(_("Split the current active node into multiple nodes"));
 
 	command::Command::registerCommand("scaledown", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1779,7 +1780,7 @@ void SceneManager::construct() {
 			nodeId = core::string::toInt(args[0]);
 		}
 		scaleDown(nodeId);
-	}).setHelp("Scale the current active node or the given node down").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Scale the current active node or the given node down")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("scaleup", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1788,7 +1789,7 @@ void SceneManager::construct() {
 			nodeId = core::string::toInt(args[0]);
 		}
 		scaleUp(nodeId);
-	}).setHelp("Scale the current active node or the given node up").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Scale the current active node or the given node up")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("colortomodel", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1800,27 +1801,27 @@ void SceneManager::construct() {
 			const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
 			colorToNewNode(voxel);
 		}
-	}).setHelp("Move the voxels of the current selected palette index or the given index into a new node");
+	}).setHelp(_("Move the voxels of the current selected palette index or the given index into a new node"));
 
 	command::Command::registerCommand("abortaction", [&] (const command::CmdArgs& args) {
 		_modifierFacade.stop();
-	}).setHelp("Aborts the current modifier action");
+	}).setHelp(_("Aborts the current modifier action"));
 
 	command::Command::registerCommand("fillhollow", [&] (const command::CmdArgs& args) {
 		fillHollow();
-	}).setHelp("Fill the inner parts of closed models");
+	}).setHelp(_("Fill the inner parts of closed models"));
 
 	command::Command::registerCommand("hollow", [&] (const command::CmdArgs& args) {
 		hollow();
-	}).setHelp("Remove non visible voxels");
+	}).setHelp(_("Remove non visible voxels"));
 
 	command::Command::registerCommand("fill", [&] (const command::CmdArgs& args) {
 		fill();
-	}).setHelp("Fill voxels in the current selection");
+	}).setHelp(_("Fill voxels in the current selection"));
 
 	command::Command::registerCommand("clear", [&] (const command::CmdArgs& args) {
 		clear();
-	}).setHelp("Remove all voxels in the current selection");
+	}).setHelp(_("Remove all voxels in the current selection"));
 
 	command::Command::registerCommand("setreferenceposition", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
@@ -1831,7 +1832,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		setReferencePosition(glm::ivec3(x, y, z));
-	}).setHelp("Set the reference position to the specified position");
+	}).setHelp(_("Set the reference position to the specified position"));
 
 	command::Command::registerCommand("movecursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -1842,7 +1843,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		moveCursor(x, y, z);
-	}).setHelp("Move the cursor by the specified offsets");
+	}).setHelp(_("Move the cursor by the specified offsets"));
 
 	command::Command::registerCommand("loadpalette", [this] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -1851,7 +1852,7 @@ void SceneManager::construct() {
 		}
 		bool searchBestColors = false;
 		loadPalette(args[0], searchBestColors, true);
-	}).setHelp("Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'").setArgumentCompleter(paletteCompleter());
+	}).setHelp(_("Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'")).setArgumentCompleter(paletteCompleter());
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
@@ -1863,11 +1864,11 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		setCursorPosition(glm::ivec3(x, y, z), true);
 		_traceViaMouse = false;
-	}).setHelp("Set the cursor to the specified position");
+	}).setHelp(_("Set the cursor to the specified position"));
 
 	command::Command::registerCommand("setreferencepositiontocursor", [&] (const command::CmdArgs& args) {
 		setReferencePosition(cursorPosition());
-	}).setHelp("Set the reference position to the current cursor position");
+	}).setHelp(_("Set the reference position to the current cursor position"));
 
 	command::Command::registerCommand("resize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1883,7 +1884,7 @@ void SceneManager::construct() {
 		} else {
 			resizeAll(glm::ivec3(1));
 		}
-	}).setHelp("Resize your volume about given x, y and z size");
+	}).setHelp(_("Resize your volume about given x, y and z size"));
 
 	command::Command::registerCommand("modelsize", [this] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1899,7 +1900,7 @@ void SceneManager::construct() {
 		} else {
 			nodeResize(activeNode(), glm::ivec3(1));
 		}
-	}).setHelp("Resize your current model node about given x, y and z size");
+	}).setHelp(_("Resize your current model node about given x, y and z size"));
 
 	command::Command::registerCommand("shift", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1911,7 +1912,7 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		shift(x, y, z);
-	}).setHelp("Shift the volume by the given values");
+	}).setHelp(_("Shift the volume by the given values"));
 
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
@@ -1925,7 +1926,7 @@ void SceneManager::construct() {
 			const glm::ivec3& delta = refPos - center;
 			nodeShift(nodeId, delta);
 		});
-	}).setHelp("Center the current active nodes at the reference position");
+	}).setHelp(_("Center the current active nodes at the reference position"));
 
 	command::Command::registerCommand("center_origin", [&](const command::CmdArgs &args) {
 		_sceneGraph.foreachGroup([&](int nodeId) {
@@ -1938,7 +1939,7 @@ void SceneManager::construct() {
 			nodeShift(nodeId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
-	}).setHelp("Center the current active nodes at the origin");
+	}).setHelp(_("Center the current active nodes at the origin"));
 
 	command::Command::registerCommand("move", [&] (const command::CmdArgs& args) {
 		const int argc = (int)args.size();
@@ -1950,11 +1951,11 @@ void SceneManager::construct() {
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
 		move(x, y, z);
-	}).setHelp("Move the voxels inside the volume by the given values without changing the volume bounds");
+	}).setHelp(_("Move the voxels inside the volume by the given values without changing the volume bounds"));
 
 	command::Command::registerCommand("copy", [&] (const command::CmdArgs& args) {
 		copy();
-	}).setHelp("Copy selection");
+	}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
 		const Selections& selections = _modifierFacade.selections();
@@ -1967,27 +1968,27 @@ void SceneManager::construct() {
 		} else {
 			paste(referencePosition());
 		}
-	}).setHelp("Paste clipboard to current selection or reference position");
+	}).setHelp(_("Paste clipboard to current selection or reference position"));
 
 	command::Command::registerCommand("pastecursor", [&] (const command::CmdArgs& args) {
 		paste(_modifierFacade.cursorPosition());
-	}).setHelp("Paste clipboard to current cursor position");
+	}).setHelp(_("Paste clipboard to current cursor position"));
 
 	command::Command::registerCommand("pastenewnode", [&] (const command::CmdArgs& args) {
 		pasteAsNewNode();
-	}).setHelp("Paste clipboard as a new node");
+	}).setHelp(_("Paste clipboard as a new node"));
 
 	command::Command::registerCommand("cut", [&] (const command::CmdArgs& args) {
 		cut();
-	}).setHelp("Cut selection");
+	}).setHelp(_("Cut selection"));
 
 	command::Command::registerCommand("undo", [&] (const command::CmdArgs& args) {
 		undo();
-	}).setHelp("Undo your last step");
+	}).setHelp(_("Undo your last step"));
 
 	command::Command::registerCommand("redo", [&] (const command::CmdArgs& args) {
 		redo();
-	}).setHelp("Redo your last step");
+	}).setHelp(_("Redo your last step"));
 
 	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
 		if (args.size() < 1) {
@@ -1996,7 +1997,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		rotate(axis);
-	}).setHelp("Rotate active nodes around the given axis");
+	}).setHelp(_("Rotate active nodes around the given axis"));
 
 	command::Command::registerCommand("modelmerge", [&] (const command::CmdArgs& args) {
 		int nodeId1;
@@ -2020,19 +2021,19 @@ void SceneManager::construct() {
 			nodeId1 = _sceneGraph.prevModelNode(nodeId2);
 		}
 		mergeNodes(nodeId1, nodeId2);
-	}).setHelp("Merge two given nodes or active model node with the next one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Merge two given nodes or active model node with the next one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modelmergeall", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::All);
-	}).setHelp("Merge all nodes");
+	}).setHelp(_("Merge all nodes"));
 
 	command::Command::registerCommand("modelmergevisible", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Visible);
-	}).setHelp("Merge all visible nodes");
+	}).setHelp(_("Merge all visible nodes"));
 
 	command::Command::registerCommand("modelmergelocked", [&] (const command::CmdArgs& args) {
 		mergeNodes(NodeMergeFlags::Locked);
-	}).setHelp("Merge all locked nodes");
+	}).setHelp(_("Merge all locked nodes"));
 
 	command::Command::registerCommand("animate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -2050,7 +2051,7 @@ void SceneManager::construct() {
 			_animationResetCamera = core::string::toBool(args[2]);
 		}
 		_animationSpeed = core::string::toDouble(args[0]) / 1000.0;
-	}).setHelp("Animate all nodes with the given delay in millis between the frames");
+	}).setHelp(_("Animate all nodes with the given delay in millis between the frames"));
 
 	command::Command::registerCommand("setcolor", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -2060,7 +2061,7 @@ void SceneManager::construct() {
 		const uint8_t index = core::string::toInt(args[0]);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
 		_modifierFacade.setCursorVoxel(voxel);
-	}).setHelp("Use the given index to select the color from the current palette");
+	}).setHelp(_("Use the given index to select the color from the current palette"));
 
 	command::Command::registerCommand("setcolorrgb", [&] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
@@ -2074,7 +2075,7 @@ void SceneManager::construct() {
 		const int index = activePalette().getClosestMatch(color);
 		const voxel::Voxel voxel = voxel::createVoxel(activePalette(), index);
 		_modifierFacade.setCursorVoxel(voxel);
-	}).setHelp("Set the current selected color by finding the closest rgb match in the palette");
+	}).setHelp(_("Set the current selected color by finding the closest rgb match in the palette"));
 
 	command::Command::registerCommand("pickcolor", [&] (const command::CmdArgs& args) {
 		// during mouse movement, the current cursor position might be at an air voxel (this
@@ -2091,7 +2092,7 @@ void SceneManager::construct() {
 			const voxel::Voxel& voxel = v->voxel(cursorPos);
 			_modifierFacade.setCursorVoxel(voxel);
 		}
-	}).setHelp("Pick the current selected color from current cursor voxel");
+	}).setHelp(_("Pick the current selected color from current cursor voxel"));
 
 	command::Command::registerCommand("flip", [&] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -2100,7 +2101,7 @@ void SceneManager::construct() {
 		}
 		const math::Axis axis = math::toAxis(args[0]);
 		flip(axis);
-	}).setHelp("Flip the selected nodes around the given axis").setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
+	}).setHelp(_("Flip the selected nodes around the given axis")).setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
 	command::Command::registerCommand("modeladd", [&] (const command::CmdArgs& args) {
 		const char *name = args.size() > 0 ? args[0].c_str() : "";
@@ -2111,35 +2112,35 @@ void SceneManager::construct() {
 		const int ih = core::string::toInt(height);
 		const int id = core::string::toInt(depth);
 		addModelChild(name, iw, ih, id);
-	}).setHelp("Add a new model node (with a given name and width, height, depth - all optional)");
+	}).setHelp(_("Add a new model node (with a given name and width, height, depth - all optional)"));
 
 	command::Command::registerCommand("nodedelete", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			nodeRemove(*node, false);
 		}
-	}).setHelp("Delete a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Delete a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodelock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(true);
 		}
-	}).setHelp("Lock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Lock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodetogglelock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(!node->locked());
 		}
-	}).setHelp("Toggle the lock state of a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Toggle the lock state of a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeunlock", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId)) {
 			node->setLocked(false);
 		}
-	}).setHelp("Unlock a particular node by id - or the current active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Unlock a particular node by id - or the current active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeactivate", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -2148,28 +2149,28 @@ void SceneManager::construct() {
 		}
 		const int nodeId = core::string::toInt(args[0]);
 		nodeActivate(nodeId);
-	}).setHelp("Set or print the current active node").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Set or print the current active node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodetogglevisible", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(!node->visible());
 		}
-	}).setHelp("Toggle the visible state of a node").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Toggle the visible state of a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("showall", [&] (const command::CmdArgs& args) {
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(true);
 		}
-	}).setHelp("Show all nodes");
+	}).setHelp(_("Show all nodes"));
 
 	command::Command::registerCommand("hideall", [&](const command::CmdArgs &args) {
 		for (auto iter = _sceneGraph.beginAll(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all nodes");
+	}).setHelp(_("Hide all nodes"));
 
 	command::Command::registerCommand("nodeshowallchildren", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
@@ -2179,7 +2180,7 @@ void SceneManager::construct() {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(true);
 		}
-	}).setHelp("Show all children nodes");
+	}).setHelp(_("Show all children nodes"));
 
 	command::Command::registerCommand("nodehideallchildren", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
@@ -2189,7 +2190,7 @@ void SceneManager::construct() {
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			node->setVisible(false);
 		}
-	}).setHelp("Hide all children nodes");
+	}).setHelp(_("Hide all children nodes"));
 
 	command::Command::registerCommand("nodehideothers", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
@@ -2201,21 +2202,21 @@ void SceneManager::construct() {
 			}
 			node.setVisible(false);
 		}
-	}).setHelp("Hide all model nodes except the active one").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Hide all model nodes except the active one")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modellockall", [&](const command::CmdArgs &args) {
 		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(true);
 		}
-	}).setHelp("Lock all nodes");
+	}).setHelp(_("Lock all nodes"));
 
 	command::Command::registerCommand("modelunlockall", [&] (const command::CmdArgs& args) {
 		for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			node.setLocked(false);
 		}
-	}).setHelp("Unlock all nodes");
+	}).setHelp(_("Unlock all nodes"));
 
 	command::Command::registerCommand("noderename", [&] (const command::CmdArgs& args) {
 		if (args.size() == 1) {
@@ -2231,28 +2232,28 @@ void SceneManager::construct() {
 		} else {
 			Log::info("Usage: noderename [<nodeid>] newname");
 		}
-	}).setHelp("Rename the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Rename the current node or the given node id")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("nodeduplicate", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeDuplicate(*node);
 		}
-	}).setHelp("Duplicates the current node or the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Duplicates the current node or the given node id")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modelref", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeReference(*node);
 		}
-	}).setHelp("Create a node reference for the given node id").setArgumentCompleter(nodeCompleter(_sceneGraph));
+	}).setHelp(_("Create a node reference for the given node id")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("modelunref", [&] (const command::CmdArgs& args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 			nodeUnreference(*node);
 		}
-	}).setHelp("Unreference from model and allow to edit the voxels for this node");
+	}).setHelp(_("Unreference from model and allow to edit the voxels for this node"));
 }
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {

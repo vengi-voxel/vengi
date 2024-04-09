@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
+#include "core/I18N.h"
 
 namespace video {
 
@@ -85,7 +86,7 @@ void TexturePool::construct() {
 		for (const auto &e : _cache) {
 			Log::info("- %s\n", e->first.c_str());
 		}
-	}).setHelp("Show all images in the texture pool");
+	}).setHelp(_("Show all images in the texture pool"));
 }
 
 bool TexturePool::init() {

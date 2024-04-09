@@ -5,6 +5,7 @@
 #include "ShapeBrush.h"
 #include "command/Command.h"
 #include "core/Log.h"
+#include "core/I18N.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -18,7 +19,7 @@ void ShapeBrush::construct() {
 		const core::String &cmd = "shape" + typeStr;
 		command::Command::registerCommand(cmd.c_str(), [&, type](const command::CmdArgs &args) {
 			setShapeType((ShapeType)type);
-		}).setHelp("Change the modifier shape type");
+		}).setHelp(_("Change the modifier shape type"));
 	}
 }
 

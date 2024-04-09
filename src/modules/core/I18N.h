@@ -1,6 +1,5 @@
 /**
  * @file
- * @ingroup UI
  */
 
 #pragma once

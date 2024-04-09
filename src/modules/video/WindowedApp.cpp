@@ -11,6 +11,7 @@
 #include "core/Process.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
+#include "core/I18N.h"
 #include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -434,7 +435,7 @@ app::AppState WindowedApp::onConstruct() {
 
 	command::Command::registerCommand("minimize", [&] (const command::CmdArgs& args) {
 		minimize();
-	}).setHelp("Minimize the window");
+	}).setHelp(_("Minimize the window"));
 
 	video::construct();
 

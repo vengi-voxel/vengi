@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "ui/I18N.h"
+#include "core/I18N.h"
 
 namespace voxedit {
 

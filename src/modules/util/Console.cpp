@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
+#include "core/I18N.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Common.h"
@@ -30,8 +31,8 @@ void Console::construct() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
 
-	command::Command::registerCommand("con_clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp("Clear the text from the built-in console");
-	command::Command::registerCommand("con_history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp("Print the command history");
+	command::Command::registerCommand("con_clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp(_("Clear the text from the built-in console"));
+	command::Command::registerCommand("con_history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp(_("Print the command history"));
 }
 
 bool Console::init() {

@@ -45,11 +45,11 @@ app::AppState TestApp::onConstruct() {
 			return;
 		}
 		camera().setRotationType(video::CameraRotationType::Eye);
-	}).setHelp("Camera free look on toggle");
+	}).setHelp(_("Camera free look on toggle"));
 
 	command::Command::registerCommand("togglerelativemouse", [&] (const command::CmdArgs& args) {
 		_cameraMotion ^= true;
-	}).setHelp("Toggle relative mouse rotation mode");
+	}).setHelp(_("Toggle relative mouse rotation mode"));
 
 	return state;
 }

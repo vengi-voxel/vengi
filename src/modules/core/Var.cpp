@@ -8,7 +8,7 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "core/StringUtil.h"
-#include "core/concurrent/ReadWriteLock.h"
+#include "core/concurrent/Lock.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 

@@ -175,11 +175,11 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->saveScreenshot(args[1], viewportId);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current viewport as screenshot");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current viewport as screenshot"));
 
 	command::Command::registerCommand("togglescene", [this](const command::CmdArgs &args) {
 		toggleScene();
-	}).setHelp("Toggle scene mode on/off");
+	}).setHelp(_("Toggle scene mode on/off"));
 
 	command::Command::registerCommand("save", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -195,7 +195,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->save(args[0], nullptr);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene as a volume to the given file"));
 
 	command::Command::registerCommand("saveas", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -203,7 +203,7 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		const core::String &filename = getSuggestedFilename("vengi");
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Save the current scene as a volume to the given file");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene as a volume to the given file"));
 
 	command::Command::registerCommand("exportselection", [&] (const command::CmdArgs& args) {
 		static auto func = [this] (const core::String &file, const io::FormatDescription *desc) {
@@ -212,7 +212,7 @@ app::AppState VoxEdit::onConstruct() {
 			_sceneMgr->saveSelection(fd);
 		};
 		saveDialog(func, fileDialogOptions, voxelformat::voxelSave());
-	}).setHelp("Save the selection from the current active model node");
+	}).setHelp(_("Save the selection from the current active model node"));
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -223,7 +223,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->load(args[0], nullptr);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Load a scene from the given volume file");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Load a scene from the given volume file"));
 
 	command::Command::registerCommand("import", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -231,7 +231,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_sceneMgr->import(args[0]);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Add a volume to the existing scene from the given file");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Add a volume to the existing scene from the given file"));
 
 	command::Command::registerCommand("importdirectory", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -252,7 +252,7 @@ app::AppState VoxEdit::onConstruct() {
 			}
 		}
 		_sceneMgr->importDirectory(args[0], format);
-	}).setHelp("Import all files from a given directory");
+	}).setHelp(_("Import all files from a given directory"));
 
 	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -262,7 +262,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!_sceneMgr->importHeightmap(args[0])) {
 			Log::error("Failed to execute 'importheightmap' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import a 2d heightmap image into the current active node"));
 
 	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -272,7 +272,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!_sceneMgr->importColoredHeightmap(args[0])) {
 			Log::error("Failed to execute 'importcoloredheightmap' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import a 2d heightmap image into the current active node. The height is encoded in the alpha channel with this method.");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import a 2d heightmap image into the current active node. The height is encoded in the alpha channel with this method."));
 
 	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -282,7 +282,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!_sceneMgr->importAsPlane(args[0])) {
 			Log::error("Failed to execute 'importplane' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a plane into a new node");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import an image as a plane into a new node"));
 
 	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -294,7 +294,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (!_sceneMgr->importAsVolume(args[0], maxDepth, bothSides)) {
 			Log::error("Failed to execute 'importvolume' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp("Import an image as a volume into a new node");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import an image as a volume into a new node"));
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
@@ -304,21 +304,21 @@ app::AppState VoxEdit::onConstruct() {
 		if (!_sceneMgr->importPalette(args[0])) {
 			Log::error("Failed to execute 'importpalette' for file '%s'", args[0].c_str());
 		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp("Import an image as a palette");
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
 
 	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return false;
 		}
 		return _mainWindow->createNew(false);
-	}).setHelp("Create a new scene with ui interaction");
+	}).setHelp(_("Create a new scene with ui interaction"));
 
 	command::Command::registerCommand("resetcamera", [this] (const command::CmdArgs& args) {
 		if (_mainWindow == nullptr) {
 			return;
 		}
 		_mainWindow->resetCamera();
-	}).setHelp("Reset cameras in viewports");
+	}).setHelp(_("Reset cameras in viewports"));
 
 	return state;
 }

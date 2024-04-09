@@ -13,6 +13,7 @@
 #include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
+#include "core/I18N.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
 #include "metric/MetricFacade.h"
@@ -344,7 +345,7 @@ void App::onFrame() {
 
 AppState App::onConstruct() {
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
-	logVar->setHelp("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors.");
+	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
 	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
@@ -368,16 +369,16 @@ AppState App::onConstruct() {
 			return;
 		}
 		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
-	}).setHelp("Set a variable value");
+	}).setHelp(_("Set a variable value"));
 
 	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
 		requestQuit();
-	}).setHelp("Quit the application");
+	}).setHelp(_("Quit the application"));
 
 #ifdef DEBUG
 	command::Command::registerCommand("assert", [&](const command::CmdArgs &args) {
 		core_assert_msg(false, "assert triggered");
-	}).setHelp("Trigger an assert");
+	}).setHelp(_("Trigger an assert"));
 #endif
 
 	AppCommand::init(_timeProvider);

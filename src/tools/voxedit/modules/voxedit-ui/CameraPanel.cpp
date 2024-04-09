@@ -6,7 +6,7 @@
 #include "../voxedit-util/SceneManager.h"
 #include "IconsLucide.h"
 #include "command/CommandHandler.h"
-#include "ui/I18N.h"
+#include "core/I18N.h"
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
 #include "voxelrender/SceneGraphRenderer.h"

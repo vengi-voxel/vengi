@@ -10,6 +10,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/Var.h"
+#include "core/I18N.h"
 #include <inttypes.h>
 #include <SDL.h>
 #ifdef _WIN32
@@ -34,10 +35,10 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		if (st) {
 			st->clearHistory();
 		}
-	}).setHelp("Clear the value history of a variable");
+	}).setHelp(_("Clear the value history of a variable"));
 
 	command::Command::registerCommand("void", [] (const command::CmdArgs& args) {
-	}).setHelp("Just a no-operation command");
+	}).setHelp(_("Just a no-operation command"));
 
 	command::Command::registerCommand("url", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -67,7 +68,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		(void)ret;
 #endif
 #endif
-	}).setHelp("Open the given url in a browser");
+	}).setHelp(_("Open the given url in a browser"));
 
 	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -75,7 +76,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		}
 		const core::String& params = core::string::join(args.begin(), args.end(), " ");
 		Log::info("%s", params.c_str());
-	}).setHelp("Print the given arguments to the console (info log level)");
+	}).setHelp(_("Print the given arguments to the console (info log level)"));
 
 	auto fileCompleter = [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		core::DynamicArray<io::FilesystemEntry> entries;
@@ -116,7 +117,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			return;
 		}
 		command::Command::execute(cmds);
-	}).setHelp("Execute a file with script commands").setArgumentCompleter(fileCompleter);
+	}).setHelp(_("Execute a file with script commands")).setArgumentCompleter(fileCompleter);
 
 	command::Command::registerCommand("toggle", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -129,7 +130,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			return;
 		}
 		var->toggleBool();
-	}).setHelp("Toggle between true/false for a variable");
+	}).setHelp(_("Toggle between true/false for a variable"));
 
 	command::Command::registerCommand("inc", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -144,7 +145,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		const float delta = args.size() > 1 ? core::string::toFloat(args[1]) : 1.0f;
 		var->setVal(var->floatVal() + delta);
 		Log::debug("Increase %s by %f", var->name().c_str(), delta);
-	}).setHelp("Increase a cvar value by the given value (default: 1)");
+	}).setHelp(_("Increase a cvar value by the given value (default: 1)"));
 
 	command::Command::registerCommand("dec", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
@@ -159,7 +160,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		const float delta = args.size() > 1 ? core::string::toFloat(args[1]) : 1.0f;
 		var->setVal(var->floatVal() - delta);
 		Log::debug("Decrease %s by %f", var->name().c_str(), delta);
-	}).setHelp("Decrease a cvar value by the given value (default: 1)");
+	}).setHelp(_("Decrease a cvar value by the given value (default: 1)"));
 
 	command::Command::registerCommand("show", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
@@ -172,40 +173,40 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		} else {
 			Log::info("Variable %s not found", args[0].c_str());
 		}
-	}).setHelp("Show the value of a variable");
+	}).setHelp(_("Show the value of a variable"));
 
 	command::Command::registerCommand("timemillis", [&] (const command::CmdArgs& args) {
 		const uint64_t millis = timeProvider->tickNow();
 		Log::info("%" PRId64, millis);
-	}).setHelp("Print current milliseconds to console");
+	}).setHelp(_("Print current milliseconds to console"));
 
 	command::Command::registerCommand("logerror", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::error("%s", args[0].c_str());
-	}).setHelp("Log given message as error");
+	}).setHelp(_("Log given message as error"));
 
 	command::Command::registerCommand("loginfo", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::info("%s", args[0].c_str());
-	}).setHelp("Log given message as info");
+	}).setHelp(_("Log given message as info"));
 
 	command::Command::registerCommand("logdebug", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::debug("%s", args[0].c_str());
-	}).setHelp("Log given message as debug");
+	}).setHelp(_("Log given message as debug"));
 
 	command::Command::registerCommand("logwarn", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			return;
 		}
 		Log::warn("%s", args[0].c_str());
-	}).setHelp("Log given message as warn");
+	}).setHelp(_("Log given message as warn"));
 
 	command::Command::registerCommand("cvarlist", [] (const command::CmdArgs& args) {
 		util::visitVarSorted([&] (const core::VarPtr& var) {
@@ -240,7 +241,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 				Log::info("        %s", help);
 			}
 		}, 0u);
-	}).setHelp("Show the list of known variables (wildcards supported)");
+	}).setHelp(_("Show the list of known variables (wildcards supported)"));
 
 	command::Command::registerCommand("cmdlist", [] (const command::CmdArgs& args) {
 		command::Command::visitSorted([&] (const command::Command& cmd) {
@@ -249,7 +250,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			}
 			Log::info("* %s - %s", cmd.name().c_str(), cmd.help().c_str());
 		});
-	}).setHelp("Show the list of known commands (wildcards supported)");
+	}).setHelp(_("Show the list of known commands (wildcards supported)"));
 }
 
 }

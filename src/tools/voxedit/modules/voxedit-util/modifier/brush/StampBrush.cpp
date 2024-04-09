@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "command/Command.h"
 #include "core/Log.h"
+#include "core/I18N.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
@@ -26,11 +27,11 @@ namespace voxedit {
 void StampBrush::construct() {
 	command::Command::registerCommand("togglestampbrushcenter", [this](const command::CmdArgs &args) {
 		_center ^= true;
-	}).setHelp("Toggle center at cursor");
+	}).setHelp(_("Toggle center at cursor"));
 
 	command::Command::registerCommand("togglestampbrushcontinuous", [this](const command::CmdArgs &args) {
 		_continuous ^= true;
-	}).setHelp("Toggle continuously placing the stamp voxels");
+	}).setHelp(_("Toggle continuously placing the stamp voxels"));
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &context) const {

@@ -5,6 +5,7 @@
 #include "AABBBrush.h"
 #include "command/Command.h"
 #include "core/Log.h"
+#include "core/I18N.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
 #include "voxedit-util/modifier/ModifierButton.h"
@@ -26,31 +27,31 @@ void AABBBrush::construct() {
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::X, _sceneMgr->referencePosition());
-	}).setHelp("Mirror along the x axis at the reference position");
+	}).setHelp(_("Mirror along the x axis at the reference position"));
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Y, _sceneMgr->referencePosition());
-	}).setHelp("Mirror along the y axis at the reference position");
+	}).setHelp(_("Mirror along the y axis at the reference position"));
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
 		toggleMirrorAxis(math::Axis::Z, _sceneMgr->referencePosition());
-	}).setHelp("Mirror along the z axis at the reference position");
+	}).setHelp(_("Mirror along the z axis at the reference position"));
 
 	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
 		setMirrorAxis(math::Axis::None, _sceneMgr->referencePosition());
-	}).setHelp("Disable mirror axis");
+	}).setHelp(_("Disable mirror axis"));
 
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
 		setMode(BRUSH_MODE_CENTER);
-	}).setHelp("Set center plane building");
+	}).setHelp(_("Set center plane building"));
 
 	command::Command::registerCommand("set" + cmdName + "aabb", [this](const command::CmdArgs &args) {
 		setMode(BRUSH_MODE_AABB);
-	}).setHelp("Set default aabb voxel building mode");
+	}).setHelp(_("Set default aabb voxel building mode"));
 
 	command::Command::registerCommand("set" + cmdName + "single", [this](const command::CmdArgs &args) {
 		setMode(BRUSH_MODE_SINGLE);
-	}).setHelp("Set single voxel building mode - continue setting voxels until you release the action button");
+	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
 }
 
 math::Axis AABBBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,

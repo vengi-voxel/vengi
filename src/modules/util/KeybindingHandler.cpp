@@ -11,6 +11,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
+#include "core/I18N.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "util/KeybindingParser.h"
@@ -131,7 +132,7 @@ void KeyBindingHandler::construct() {
 			const core::String& keyBinding = toString(i->first, i->second.modifier, pair.count);
 			Log::info("%-25s %s", keyBinding.c_str(), command.c_str());
 		}
-	}).setHelp("Show all known key bindings");
+	}).setHelp(_("Show all known key bindings"));
 
 	command::Command::registerCommand("bind", [this] (const command::CmdArgs& args) {
 		if (args.size() != 3) {
@@ -159,7 +160,7 @@ void KeyBindingHandler::construct() {
 				Log::info("Added binding for key %s", args[0].c_str());
 			}
 		}
-	}).setHelp("Bind a command to a key");
+	}).setHelp(_("Bind a command to a key"));
 
 	command::Command::registerCommand("unbind", [this](const command::CmdArgs &args) {
 		if (args.size() != 2) {
@@ -189,7 +190,7 @@ void KeyBindingHandler::construct() {
 				Log::info("Failed to delete binding for key '%s' in context '%s'", args[0].c_str(), args[1].c_str());
 			}
 		}
-	}).setHelp("Unbind a key");
+	}).setHelp(_("Unbind a key"));
 }
 
 void KeyBindingHandler::shutdown(int version) {
