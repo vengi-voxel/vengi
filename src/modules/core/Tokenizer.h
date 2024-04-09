@@ -51,14 +51,14 @@ public:
 		if (!hasNext()) {
 			return "";
 		}
-		return _tokens[_posIndex + 1];
+		return _tokens[_posIndex];
 	}
 
 	inline bool isNext(const core::String& token) const {
 		if (!hasNext()) {
 			return false;
 		}
-		return _tokens[_posIndex + 1] == token;
+		return _tokens[_posIndex] == token;
 	}
 
 	inline const core::String& next() {

@@ -45,6 +45,17 @@ TEST_F(TokenizerTest, testTokenizerOnlyFirstMatch) {
 	EXPECT_EQ(1u, t.size()) << toString(t.tokens());
 }
 
+TEST_F(TokenizerTest, testTokenizerPeekNext) {
+	core::Tokenizer t("abc;def", 7, ";");
+	ASSERT_EQ(2u, t.size()) << toString(t.tokens());
+	EXPECT_EQ(t.peekNext(), "abc") << toString(t.tokens());
+	EXPECT_EQ(t.peekNext(), "abc") << toString(t.tokens());
+	EXPECT_TRUE(t.isNext("abc")) << toString(t.tokens());
+	EXPECT_EQ(t.next(), "abc") << toString(t.tokens());
+	EXPECT_EQ(t.peekNext(), "def") << toString(t.tokens());
+	EXPECT_TRUE(t.isNext("def")) << toString(t.tokens());
+}
+
 TEST_F(TokenizerTest, testBase64JsonArray) {
 	core::Tokenizer t("{\n\t[\t\"Zm9vYmFy\",\n \"Zm9vYmFy\"]\n}\n", " \t\n,:", "{}[]");
 	EXPECT_EQ(6u, t.size()) << toString(t.tokens());
