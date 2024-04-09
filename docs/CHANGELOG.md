@@ -39,6 +39,10 @@ VoxEdit:
    - Improved position panel to edit transforms
    - Improved start-up times
 
+Thumbnailer:
+
+   - Fixed logic error in skipping camera nodes
+
 ## 0.0.30 (2024-03-23)
 
 General:

@@ -187,7 +187,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
-		if (renderContext.onlyModels && node.isModelNode()) {
+		if (renderContext.onlyModels && !node.isModelNode()) {
 			continue;
 		}
 
