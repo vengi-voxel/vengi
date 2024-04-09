@@ -194,7 +194,7 @@ core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &sou
 	}
 
 	// TODO: fix references - see copy() above
-
+	target.updateTransforms();
 	return nodesAdded;
 }
 
