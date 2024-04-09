@@ -37,6 +37,9 @@ TEST_F(StringUtilTest, testParseHex) {
 	EXPECT_EQ(2, g);
 	EXPECT_EQ(3, b);
 	EXPECT_EQ(4, a);
+
+	// invalid
+	EXPECT_EQ(-1, core::string::parseHex("#0x01020304", r, g, b, a));
 }
 
 TEST_F(StringUtilTest, testIsInteger) {

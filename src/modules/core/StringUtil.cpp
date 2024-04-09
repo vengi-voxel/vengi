@@ -625,7 +625,7 @@ int parseHex(const char *hex, uint8_t &r, uint8_t &g, uint8_t &b, uint8_t &a) {
 			} else if (ISLOWERHEX((int)*hex)) {
 				v = 10 + (*hex - 'a');
 			} else {
-				break;
+				return -1;
 			}
 			value *= 16;
 			value += v;
