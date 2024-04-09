@@ -24,7 +24,8 @@ General:
    - Added cubzh version 5 (older version) support
    - Added support for writing uncompressed qubicle `qb` files
    - Fixed qubicle `qb` version number
-   - Added support for rooms.xyz `thing` file support
+   - Added basic support for rooms.xyz `thing` file support
+   - Optimized file dialog for large directories
 
 VoxConvert:
 

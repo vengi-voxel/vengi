@@ -82,6 +82,9 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		} else if (type == video::OpenFileMode::Directory) {
 			continue;
 		}
+		if (hide(_entities[i].name)) {
+			continue;
+		}
 		if (_currentFilterEntry != -1) {
 			// this is "all-supported files"
 			const bool showAll = !_filterAll.empty() && _currentFilterEntry == 0;
@@ -406,59 +409,60 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 		}
 
 		// add filtered and sorted directory entries
-		for (size_t i = 0; i < _files.size(); ++i) {
-			const io::FilesystemEntry entry = *_files[i];
-			if (hide(entry.name)) {
-				continue;
-			}
-			ImGui::TableNextColumn();
-			const bool selected = i == _entryIndex;
-			if (selected) {
-				_selectedEntry = *_files[i];
-			}
-			const char *icon = iconForType(entry.type);
-			const float x = ImGui::GetCursorPosX();
-			ImGui::TextUnformatted(icon);
-			ImGui::SameLine();
-			ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
-			if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
-				resetState();
-				_entryIndex = i;
-				_selectedEntry = *_files[i];
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-					if (entry.isDirectory()) {
-						setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
-					} else {
-						doubleClickedFile = true;
+		ImGuiListClipper clipper;
+		clipper.Begin(_files.size(), ImGui::GetTextLineHeightWithSpacing());
+		while (clipper.Step()) {
+			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+				const io::FilesystemEntry entry = *_files[i];
+				ImGui::TableNextColumn();
+				const bool selected = i == (int)_entryIndex;
+				if (selected) {
+					_selectedEntry = *_files[i];
+				}
+				const char *icon = iconForType(entry.type);
+				const float x = ImGui::GetCursorPosX();
+				ImGui::TextUnformatted(icon);
+				ImGui::SameLine();
+				ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
+				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+					resetState();
+					_entryIndex = i;
+					_selectedEntry = *_files[i];
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+						if (entry.isDirectory()) {
+							setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
+						} else {
+							doubleClickedFile = true;
+						}
 					}
 				}
-			}
-			if (entry.type == io::FilesystemEntry::Type::dir) {
-				if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-					_dragAndDropName = core::string::path(_currentPath, entry.name);
-					ImGui::TextUnformatted(_dragAndDropName.c_str());
-					ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
-												ImGuiCond_Always);
-					ImGui::EndDragDropSource();
+				if (entry.type == io::FilesystemEntry::Type::dir) {
+					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+						_dragAndDropName = core::string::path(_currentPath, entry.name);
+						ImGui::TextUnformatted(_dragAndDropName.c_str());
+						ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
+													ImGuiCond_Always);
+						ImGui::EndDragDropSource();
+					}
 				}
-			}
-			ImGui::TableNextColumn();
-			const core::String &humanSize = core::string::humanSize(entry.size);
-			ImGui::TextUnformatted(humanSize.c_str());
-			ImGui::TableNextColumn();
-			if (entry.isDirectory()) {
-				ImGui::TextUnformatted(_("directory"));
-			} else {
-				const core::String &fileExt = core::string::extractExtension(entry.name);
-				if (fileExt.empty()) {
-					ImGui::TextUnformatted("-");
+				ImGui::TableNextColumn();
+				const core::String &humanSize = core::string::humanSize(entry.size);
+				ImGui::TextUnformatted(humanSize.c_str());
+				ImGui::TableNextColumn();
+				if (entry.isDirectory()) {
+					ImGui::TextUnformatted(_("directory"));
 				} else {
-					ImGui::TextUnformatted(fileExt.c_str());
+					const core::String &fileExt = core::string::extractExtension(entry.name);
+					if (fileExt.empty()) {
+						ImGui::TextUnformatted("-");
+					} else {
+						ImGui::TextUnformatted(fileExt.c_str());
+					}
 				}
+				ImGui::TableNextColumn();
+				const core::String &lastModified = core::TimeProvider::toString(entry.mtime);
+				ImGui::TextUnformatted(lastModified.c_str());
 			}
-			ImGui::TableNextColumn();
-			const core::String &lastModified = core::TimeProvider::toString(entry.mtime);
-			ImGui::TextUnformatted(lastModified.c_str());
 		}
 		ImGui::EndTable();
 	}
@@ -658,7 +662,9 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			_selectedEntry.type = io::FilesystemEntry::Type::file;
 			_entryIndex = -1;
 		}
-		ImGui::CheckboxVar(_("Show hidden"), _showHidden);
+		if (ImGui::CheckboxVar(_("Show hidden"), _showHidden)) {
+			applyFilter(type);
+		}
 		popupNewFolder();
 		if (popupAlreadyExists()) {
 			buffer = assemblePath(_currentPath, _selectedEntry);
