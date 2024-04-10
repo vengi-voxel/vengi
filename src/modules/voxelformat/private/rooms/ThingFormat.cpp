@@ -76,7 +76,6 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
-	voxSceneGraph.updateTransforms();
 	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
 	if (nodes.empty()) {
 		return false;
@@ -116,6 +115,7 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 			}
 		}
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 
