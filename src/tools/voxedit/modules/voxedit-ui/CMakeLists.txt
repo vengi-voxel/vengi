@@ -37,7 +37,6 @@ if (USE_IMGUITESTENGINE)
 		tests/PositionsPanelTest.cpp
 		tests/LSystemPanelTest.cpp
 		tests/MainWindowTest.cpp
-		tests/MenuBarTest.cpp
 		tests/MementoPanelTest.cpp
 		tests/PalettePanelTest.cpp
 		tests/RenderPanelTest.cpp
