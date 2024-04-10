@@ -45,6 +45,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 	Log::debug("ThingFormat: Load vox file: %s", nodeSpec.modelName.c_str());
 	VoxFormat format;
 	if (!format.load(nodeSpec.modelName, *modelStream.get(), voxSceneGraph, ctx)) {
+		Log::error("ThingFormat: Failed to load model: %s", nodeSpec.modelName.c_str());
 		return false;
 	}
 	for (const auto &e : voxSceneGraph.nodes()) {
@@ -62,6 +63,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			transform.setLocalScale(nodeSpec.localSize / fullSize);
 		}
 		node.setTransform(keyFrameIdx, transform);
+		node.setPivot(glm::vec3{0.5f});
 
 		node.setColor(nodeSpec.color);
 		node.setName(nodeSpec.name);
@@ -78,6 +80,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 	}
 	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
 	if (nodes.empty()) {
+		Log::error("ThingFormat: Failed to copy the scene graph from node %s", nodeSpec.modelName.c_str());
 		return false;
 	}
 	for (const NodeSpec &child : nodeSpec.children) {
@@ -101,17 +104,18 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 		if (file.isDirectory()) {
 			continue;
 		}
-		if (core::string::extractExtension(file.name) == "node") {
-			if (io::SeekableReadStreamPtr nodeSpecStream = archive->readStream(file.fullPath)) {
-				NodeSpec nodeSpec;
-				if (!loadNodeSpec(*nodeSpecStream.get(), nodeSpec)) {
-					Log::error("ThingFormat: Failed to load node spec: %s", file.name.c_str());
-					return false;
-				}
-				if (!loadNode(archive, nodeSpec, sceneGraph, ctx)) {
-					Log::error("ThingFormat: Failed to load node: %s", file.name.c_str());
-					return false;
-				}
+		if (core::string::extractExtension(file.name) != "node") {
+			continue;
+		}
+		if (const io::SeekableReadStreamPtr &nodeSpecStream = archive->readStream(file.fullPath)) {
+			NodeSpec nodeSpec;
+			if (!loadNodeSpec(*nodeSpecStream.get(), nodeSpec)) {
+				Log::error("ThingFormat: Failed to load node spec: %s", file.name.c_str());
+				return false;
+			}
+			if (!loadNode(archive, nodeSpec, sceneGraph, ctx)) {
+				Log::error("ThingFormat: Failed to load node: %s", file.name.c_str());
+				return false;
 			}
 		}
 	}
@@ -121,36 +125,6 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 
 bool ThingFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	// filename 000000XX.node
-#if 0
-name: "<name>"
-modelName: "<voxfile.vox>"
-localPos: "0, 0, 0"
-localRot: "0, 180, 0"
-localSize: "13, 10, 13"
-color: "#ffffff"
-opacity: 1
-texName: ""
-texTiling: 0
-mediaName: ""
-flags: 0
-physicsType: 0
-script: ""
-hNodeOfOriginal: "0x00000000"
-onClickLuaSnippet: ""
-thingLibraryId: "<someid-skip-it>"
-renderSpec: {
-  glowThresh: 0.5
-  glowIntensity: 0
-}
-animSpec: {
-  mode: 1
-  startFrame: 0
-  endFrame: -1
-  fps: 4
-  pause: 0
-}
-#endif
 	return false;
 }
 
