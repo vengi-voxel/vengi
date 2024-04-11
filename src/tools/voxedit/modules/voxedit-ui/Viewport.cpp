@@ -198,10 +198,10 @@ void Viewport::renderCursor() {
 		const glm::ivec3 &mins = v->region().getLowerCorner();
 		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
 		if (mins.x == 0 && mins.y == 0 && mins.z == 0) {
-			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\n", mins.x, mins.y, mins.z, size.x,
+			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i"), mins.x, mins.y, mins.z, size.x,
 							   size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z);
 		} else {
-			ImGui::TooltipText("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i", mins.x, mins.y,
+			ImGui::TooltipText(_("pos: %i:%i:%i\nsize: %i:%i:%i\nabsolute: %i:%i:%i\nrelative: %i:%i:%i"), mins.x, mins.y,
 							   mins.z, size.x, size.y, size.z, cursorPos.x, cursorPos.y, cursorPos.z,
 							   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
 		}
@@ -334,7 +334,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 			const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
 			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
 			const int currentCamRotType = (int)camera().rotationType();
-			if (ImGui::BeginCombo(_("Camera movement##referencepoint"), camRotTypes[currentCamRotType])) {
+			if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
 				for (int n = 0; n < lengthof(camRotTypes); n++) {
 					const bool isSelected = (currentCamRotType == n);
 					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
@@ -351,7 +351,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
 		static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
 		const int currentPolygonMode = (int)camera().polygonMode();
-		if (ImGui::BeginCombo(_("Render mode##polygonmode"), polygonModes[currentPolygonMode])) {
+		if (ImGui::BeginCombo(_("Render mode"), polygonModes[currentPolygonMode])) {
 			for (int n = 0; n < lengthof(polygonModes); n++) {
 				const bool isSelected = (currentPolygonMode == n);
 				if (ImGui::Selectable(polygonModes[n], isSelected)) {
