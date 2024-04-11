@@ -3280,6 +3280,7 @@ static bool IsWindowACombo(ImGuiWindow* window)
     return true;
 }
 
+// Usage: ComboClick("ComboName/ItemName");
 void    ImGuiTestContext::ComboClick(ImGuiTestRef ref)
 {
     if (IsError())
@@ -3288,12 +3289,17 @@ void    ImGuiTestContext::ComboClick(ImGuiTestRef ref)
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
     LogDebug("ComboClick '%s' %08X", ref.Path ? ref.Path : "NULL", ref.ID);
 
-    IM_ASSERT(ref.Path != NULL);
+    IM_ASSERT(ref.Path != NULL); // Should always pass an actual path, not an ID.
 
     const char* path = ref.Path;
     const char* path_end = path + strlen(path);
-
     const char* p = ImStrchrRangeWithEscaping(path, path_end, '/');
+    if (p == NULL)
+    {
+        LogError("Error: path should contains a / separator, e.g. ComboClick(\"mycombo/myitem\")");
+        IM_CHECK(p != NULL);
+    }
+
     Str128f combo_popup_buf = Str128f("%.*s", (int)(p-path), path);
     ItemClick(combo_popup_buf.c_str());
 

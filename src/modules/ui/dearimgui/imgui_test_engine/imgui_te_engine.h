@@ -81,12 +81,12 @@ enum ImGuiTestVerboseLevel : int
 // Test status (stored in ImGuiTest)
 enum ImGuiTestStatus : int
 {
-    ImGuiTestStatus_Unknown     = -1,
-    ImGuiTestStatus_Success     = 0,
-    ImGuiTestStatus_Queued      = 1,
-    ImGuiTestStatus_Running     = 2,
-    ImGuiTestStatus_Error       = 3,
-    ImGuiTestStatus_Suspended   = 4,
+    ImGuiTestStatus_Unknown     = 0,
+    ImGuiTestStatus_Success     = 1,
+    ImGuiTestStatus_Queued      = 2,
+    ImGuiTestStatus_Running     = 3,
+    ImGuiTestStatus_Error       = 4,
+    ImGuiTestStatus_Suspended   = 5,
     ImGuiTestStatus_COUNT
 };
 
