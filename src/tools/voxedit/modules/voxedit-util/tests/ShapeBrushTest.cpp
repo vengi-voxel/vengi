@@ -8,7 +8,6 @@
 #include "core/TimeProvider.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxedit-util/modifier/ModifierButton.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"

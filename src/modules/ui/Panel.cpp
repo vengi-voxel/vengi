@@ -24,13 +24,15 @@ const char *Panel::testCategory() const {
 	return _app->appname().c_str();
 }
 
-void Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
-	core_assert(title != nullptr);
+bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
+	IM_CHECK_SILENT_RETV(title != nullptr, false);
 	ImGuiWindow* window = ImGui::FindWindowByName(title);
-	IM_CHECK_SILENT(window != nullptr);
-	if (window) {
-		ctx->WindowFocus(window->ID);
+	if (window == nullptr) {
+		ctx->LogError("Error: could not find window with title/id %s", title);
+		IM_CHECK_SILENT_RETV(window != nullptr, false);
 	}
+	ctx->WindowFocus(window->ID);
+	return true;
 }
 
 #endif

@@ -32,16 +32,14 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
 	for (int i = 0; i < _scenes.size(); i++) {
-		const core::String &id = Viewport::viewportId(_scenes[i]->id());
-		Log::error("Registering tests for viewport %s", id.c_str());
-		_scenes[i]->registerUITests(engine, id.c_str());
+		_scenes[i]->registerUITests(engine, nullptr);
 	}
 
 	IM_REGISTER_TEST(engine, testName(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		ImGuiContext& g = *ctx->UiContext;
 		ctx->SetRef(title);
-		focusWindow(ctx, title);
+		IM_CHECK(focusWindow(ctx, title));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
 		IM_CHECK_EQ(g.OpenPopupStack.Size, 1);
@@ -56,7 +54,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testName(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
 		ctx->SetRef(title);
-		focusWindow(ctx, title);
+		IM_CHECK(focusWindow(ctx, title));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);

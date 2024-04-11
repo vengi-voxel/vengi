@@ -13,7 +13,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		// enable edit mode - TODO: find the correct viewport id and don't hardcode it
 		ctx->ItemClick("//###viewport1");
 		ctx->SetRef(title);
-		focusWindow(ctx, title);
+		IM_CHECK(focusWindow(ctx, title));
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
 			const core::String id = core::String::format("brushes/###button%d", i);
 			ctx->ItemClick(id.c_str());

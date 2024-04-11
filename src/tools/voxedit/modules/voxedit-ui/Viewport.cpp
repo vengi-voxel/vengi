@@ -332,8 +332,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 
 		if (!isFixedCamera()) {
 			const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
-			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max,
-						 _("Array size doesn't match enum values"));
+			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
 			const int currentCamRotType = (int)camera().rotationType();
 			if (ImGui::BeginCombo(_("Camera movement##referencepoint"), camRotTypes[currentCamRotType])) {
 				for (int n = 0; n < lengthof(camRotTypes); n++) {

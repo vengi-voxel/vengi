@@ -28,7 +28,7 @@ public:
 	const char *testName() const { return _title.c_str(); }
 	const char *testCategory() const;
 
-	void focusWindow(ImGuiTestContext *ctx, const char *title);
+	bool focusWindow(ImGuiTestContext *ctx, const char *title);
 #endif
 };
 

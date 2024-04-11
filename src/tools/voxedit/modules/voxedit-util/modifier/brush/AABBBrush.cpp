@@ -8,7 +8,6 @@
 #include "core/I18N.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
-#include "voxedit-util/modifier/ModifierButton.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
