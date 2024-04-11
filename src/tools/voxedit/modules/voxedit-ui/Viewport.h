@@ -139,7 +139,7 @@ public:
 	Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle = true);
 	~Viewport();
 
-	static core::String viewportId(int id);
+	static core::String viewportId(int id, bool printable = false);
 
 	void toggleScene();
 	bool isSceneMode() const;

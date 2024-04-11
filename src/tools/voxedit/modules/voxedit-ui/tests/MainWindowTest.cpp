@@ -4,6 +4,7 @@
 
 #include "../MainWindow.h"
 #include "../WindowTitles.h"
+#include "../Viewport.h"
 #include "core/Log.h"
 #include "imgui_te_context.h"
 #include "voxedit-util/SceneManager.h"
@@ -30,6 +31,11 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
+	for (int i = 0; i < _scenes.size(); i++) {
+		const core::String &id = Viewport::viewportId(_scenes[i]->id());
+		Log::error("Registering tests for viewport %s", id.c_str());
+		_scenes[i]->registerUITests(engine, id.c_str());
+	}
 
 	IM_REGISTER_TEST(engine, testName(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();

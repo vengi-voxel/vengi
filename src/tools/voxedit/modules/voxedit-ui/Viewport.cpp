@@ -43,12 +43,14 @@
 
 namespace voxedit {
 
-core::String Viewport::viewportId(int id) {
+core::String Viewport::viewportId(int id, bool printable) {
+	if (printable)
+		return core::string::format("Viewport %i###viewport%i", id, id);
 	return core::string::format("###viewport%i", id);
 }
 
 Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle)
-	: Super(app, viewportId(id).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
+	: Super(app, viewportId(id, true).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
 	_renderContext.sceneMode = sceneMode;
 }
 
