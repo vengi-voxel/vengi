@@ -421,12 +421,12 @@ Language Language::fromEnv(const core::String &env) {
 
 	// std::cout << ln << " " << dt << " " << at << std::endl;
 
-	language = env.substr(0, std::min(std::min(ln, dt), at));
+	language = env.substr(0, core_min(core_min(ln, dt), at));
 
 	if (ln != core::String::npos && ln + 1 < env.size()) // _
 	{
-		country = env.substr(ln + 1, (std::min(dt, at) == core::String::npos) ? core::String::npos
-																			  : std::min(dt, at) - (ln + 1));
+		country = env.substr(ln + 1, (core_min(dt, at) == core::String::npos) ? core::String::npos
+																			  : core_min(dt, at) - (ln + 1));
 	}
 
 	if (dt != core::String::npos && dt + 1 < env.size()) // .
