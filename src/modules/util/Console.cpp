@@ -9,7 +9,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "io/Filesystem.h"
 #include "command/Command.h"
 #include "core/Common.h"

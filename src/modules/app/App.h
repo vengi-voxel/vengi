@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/i18n/DictionaryManager.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/String.h"
@@ -113,6 +114,9 @@ protected:
 	io::FilesystemPtr _filesystem;
 	core::ThreadPoolPtr _threadPool;
 	core::TimeProviderPtr _timeProvider;
+	DictionaryManager _dictManager;
+	const Dictionary *_dict = nullptr;
+
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
 
@@ -304,6 +308,7 @@ public:
 
 	static App* getInstance();
 
+	const char *translate(const char *msgid) const;
 private:
 	core::DynamicArray<Argument> _arguments;
 };

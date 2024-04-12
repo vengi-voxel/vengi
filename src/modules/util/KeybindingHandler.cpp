@@ -11,7 +11,7 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Log.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "util/KeybindingParser.h"

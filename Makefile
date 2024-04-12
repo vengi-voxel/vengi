@@ -78,8 +78,7 @@ thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/vo
 
 pot:
 	$(Q)git grep -l -w "_(" src/ > $(BUILDDIR)/POTFILES
-	$(Q)mkdir -p src/po
-	$(Q)xgettext --directory=. --output=src/po/vengi.pot --sort-by-file --keyword=_ --files-from=$(BUILDDIR)/POTFILES
+	$(Q)xgettext --directory=. --output=data/vengi.pot --omit-header --package-name=vengi --no-location --sort-by-file --keyword=_ --files-from=$(BUILDDIR)/POTFILES
 
 doc-images:
 	$(Q)pngquant -f --ext .png docs/img/*.png
@@ -211,12 +210,6 @@ tracy:
 	$(Q)git submodule update --init --recursive
 	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
 	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
-
-update-tinygettext:
-	$(call UPDATE_GIT,tinygettext,https://github.com/tinygettext/tinygettext.git)
-	mkdir -p contrib/libs/tinygettext
-	cp $(UPDATEDIR)/tinygettext.sync/include/tinygettext/*.h* contrib/libs/tinygettext
-	cp $(UPDATEDIR)/tinygettext.sync/src/*.cpp contrib/libs/tinygettext
 
 update-stb:
 	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)

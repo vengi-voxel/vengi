@@ -6,7 +6,7 @@
 #include "app/App.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"

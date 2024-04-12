@@ -6,7 +6,7 @@
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

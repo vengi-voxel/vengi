@@ -10,7 +10,7 @@
 #include "core/ArrayLength.h"
 #include "core/Color.h"
 #include "core/GLM.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"

@@ -11,7 +11,7 @@
 #include "core/Process.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"

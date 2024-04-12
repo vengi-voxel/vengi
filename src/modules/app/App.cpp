@@ -4,6 +4,7 @@
 
 #include "App.h"
 #include "app/AppCommand.h"
+#include "app/i18n/findlocale.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
@@ -13,7 +14,7 @@
 #include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "engine-config.h"
 #include "io/Filesystem.h"
 #include "metric/MetricFacade.h"
@@ -89,9 +90,14 @@ App *App::getInstance() {
 	return _staticInstance;
 }
 
+const char *App::translate(const char *msgid) const {
+	core_assert(_dict != nullptr);
+	return _dict->translate(msgid);
+}
+
 App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
 	: _filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
-	  _timeProvider(timeProvider) {
+	  _timeProvider(timeProvider), _dictManager(filesystem) {
 #ifdef FE_TONEAREST
 	std::fesetround(FE_TONEAREST);
 #endif
@@ -347,6 +353,16 @@ AppState App::onConstruct() {
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
 	}
+
+	for (const core::String &path : _filesystem->paths()) {
+		_dictManager.addDirectory(path);
+		_dictManager.addDirectory(core::string::path(path, "po"));
+	}
+	FL_Locale *locale;
+	FL_FindLocale(&locale, FL_MESSAGES);
+	_dictManager.setLanguage(Language::fromSpec(locale->lang, locale->country, locale->variant));
+	FL_FreeLocale(&locale);
+	_dict = &_dictManager.getDictionary();
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));

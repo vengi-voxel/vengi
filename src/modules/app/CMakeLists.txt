@@ -3,6 +3,14 @@ set(SRCS
 	AppCommand.cpp AppCommand.h
 	Async.h
 	CommandlineApp.h CommandlineApp.cpp
+
+	i18n/Dictionary.cpp i18n/Dictionary.h
+	i18n/DictionaryManager.cpp i18n/DictionaryManager.h
+	i18n/Iconv.cpp i18n/Iconv.h
+	i18n/Language.cpp i18n/Language.h
+	i18n/PluralForms.cpp i18n/PluralForms.h
+	i18n/POParser.cpp i18n/POParser.h
+	i18n/findlocale.cpp i18n/findlocale.h
 )
 if (APPLE)
 	list(APPEND SRCS AppDocument.m)
@@ -29,6 +37,7 @@ engine_add_module(TARGET test-${LIB} SRCS ${TEST_MODULE_SRCS} DEPENDENCIES gtest
 set(TEST_SRCS
 	tests/AppTest.cpp
 	tests/CommandCompleterTest.cpp
+	tests/POParserTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

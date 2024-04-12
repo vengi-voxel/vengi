@@ -10,7 +10,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include <inttypes.h>
 #include <SDL.h>
 #ifdef _WIN32

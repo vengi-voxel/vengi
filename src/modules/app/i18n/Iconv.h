@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 // tinygettext - A gettext replacement that works directly on .po files
 // Copyright (c) 2006 Ingo Ruhnke <grumbel@gmail.com>
 //
@@ -17,47 +21,26 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-#ifndef HEADER_TINYGETTEXT_PLURAL_FORMS_HPP
-#define HEADER_TINYGETTEXT_PLURAL_FORMS_HPP
+#pragma once
 
-#include <string>
+#include "core/NonCopyable.h"
+#include "core/String.h"
 
-namespace tinygettext {
+namespace app {
 
-typedef unsigned int (*PluralFunc)(int n);
-
-class PluralForms
-{
+class IConv : public core::NonCopyable {
 private:
-  unsigned int nplural;
-  PluralFunc   plural;
+	core::String _toCharset;
+	core::String _fromCharset;
+	SDL_iconv_t _cd;
 
 public:
-  static PluralForms from_string(const std::string& str);
+	IConv();
+	IConv(const core::String &fromcode, const core::String &tocode);
+	~IConv();
 
-  PluralForms()
-    : nplural(),
-      plural()
-  {}
-
-  PluralForms(unsigned int nplural_, PluralFunc plural_)
-    : nplural(nplural_),
-      plural(plural_)
-  {}
-
-  unsigned int get_nplural() const { return nplural; }
-  unsigned int get_plural(int n) const { if (plural) return plural(n); else return 0; }
-
-  bool operator==(const PluralForms& other) const { return nplural == other.nplural && plural == other.plural; }
-  bool operator!=(const PluralForms& other) const { return !(*this == other); }
-
-  explicit operator bool() const {
-    return plural != nullptr;
-  }
+	bool setCharsets(const core::String &fromcode, const core::String &tocode);
+	core::String convert(const core::String &text);
 };
 
-} // namespace tinygettext
-
-#endif
-
-/* EOF */
+} // namespace app

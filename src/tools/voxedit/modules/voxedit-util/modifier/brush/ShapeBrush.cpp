@@ -5,7 +5,7 @@
 #include "ShapeBrush.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/ShapeGenerator.h"

@@ -7,7 +7,7 @@
 #include "core/Log.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
-#include "core/I18N.h"
+#include "app/I18N.h"
 
 namespace video {
 

@@ -1,3 +1,7 @@
+/**
+ * @file
+ */
+
 // tinygettext - A gettext replacement that works directly on .po files
 // Copyright (c) 2006 Ingo Ruhnke <grumbel@gmail.com>
 //
@@ -17,8 +21,49 @@
 //    misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
-namespace tinygettext {
+#pragma once
 
-} // namespace tinygettext
+#include "core/String.h"
 
-/* EOF */
+namespace app {
+
+typedef unsigned int (*PluralFunc)(int n);
+
+class PluralForms {
+private:
+	unsigned int _nplural = 0;
+	PluralFunc _plural = nullptr;
+
+public:
+	static PluralForms fromString(const core::String &str);
+
+	PluralForms() {
+	}
+
+	PluralForms(unsigned int nplural, PluralFunc plural) : _nplural(nplural), _plural(plural) {
+	}
+
+	unsigned int getNPlural() const {
+		return _nplural;
+	}
+
+	unsigned int getPlural(int n) const {
+		if (_plural)
+			return _plural(n);
+		return 0;
+	}
+
+	bool operator==(const PluralForms &other) const {
+		return _nplural == other._nplural && _plural == other._plural;
+	}
+
+	bool operator!=(const PluralForms &other) const {
+		return !(*this == other);
+	}
+
+	explicit operator bool() const {
+		return _plural != nullptr;
+	}
+};
+
+} // namespace app
