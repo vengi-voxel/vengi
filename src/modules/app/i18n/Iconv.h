@@ -25,6 +25,7 @@
 
 #include "core/NonCopyable.h"
 #include "core/String.h"
+#include <SDL_stdinc.h>
 
 namespace app {
 
