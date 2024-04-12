@@ -78,7 +78,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 }
 
 void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AABBBrush &brush) {
-	mirrorAxisRadioButton(_("Disable mirror##mirror"), math::Axis::None, listener, brush);
+	mirrorAxisRadioButton(_("Disable mirror"), math::Axis::None, listener, brush);
 	ImGui::SameLine();
 	mirrorAxisRadioButton(_("X##mirror"), math::Axis::X, listener, brush);
 	ImGui::SameLine();

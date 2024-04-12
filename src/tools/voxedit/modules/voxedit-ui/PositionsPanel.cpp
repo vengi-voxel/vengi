@@ -125,14 +125,14 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 				}
 				if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
 					ImGui::SameLine();
-					if (ImGui::Button(_("To Transform"))) {
+					if (ImGui::Button(_("To transform"))) {
 						const glm::ivec3 &f = region.getLowerCorner();
 						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
 						_sceneMgr->nodeShift(nodeId, -f);
 					}
 					ImGui::TooltipText(_("Convert the region offset into the keyframe transforms"));
 				}
-				if (xyzValues(_("size"), maxs)) {
+				if (xyzValues(_("Size"), maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
 					_sceneMgr->nodeResize(nodeId, newRegion);
 				}
@@ -152,9 +152,9 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		static glm::ivec3 translate{0};
-		veui::InputAxisInt(math::Axis::X, "X##translate", &translate.x, 1);
-		veui::InputAxisInt(math::Axis::X, "Y##translate", &translate.y, 1);
-		veui::InputAxisInt(math::Axis::X, "Z##translate", &translate.z, 1);
+		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
+		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
+		veui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
 		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
 		ImGui::SameLine();
@@ -167,7 +167,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
-		if (veui::CheckboxAxisFlags(math::Axis::X, "X##cursorlock", &lockedAxis)) {
+		if (veui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}
 		ImGui::TooltipCommand("lockx");
@@ -178,7 +178,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (veui::CheckboxAxisFlags(math::Axis::Y, "Y##cursorlock", &lockedAxis)) {
+		if (veui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
 			command::executeCommands("locky", &listener);
 		}
 		ImGui::TooltipCommand("locky");
@@ -188,7 +188,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 
-		if (veui::CheckboxAxisFlags(math::Axis::Z, "Z##cursorlock", &lockedAxis)) {
+		if (veui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
 			command::executeCommands("lockz", &listener);
 		}
 		ImGui::TooltipCommand("lockz");

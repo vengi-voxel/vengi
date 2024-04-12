@@ -24,7 +24,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	}
 	ImGui::TooltipText(("Add a new keyframe to all model nodes"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Remove"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Delete"), _play)) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipText(_("Delete the current keyframe of the active nodes"));

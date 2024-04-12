@@ -17,16 +17,16 @@ bool LSystemPanel::init() {
 void LSystemPanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(LSystemPanel);
-		ImGui::InputText(_("Axiom##noise"), &_lsystemData.axiom);
-		ImGui::InputTextMultiline(_("Rules##noise"), &_lsystemData.rulesStr);
-		ImGui::InputFloat(_("Angle##noise"), &_lsystemData.angle);
-		ImGui::InputFloat(_("Length##noise"), &_lsystemData.length);
-		ImGui::InputFloat(_("Width##noise"), &_lsystemData.width);
-		ImGui::InputFloat(_("Width Increment##noise"), &_lsystemData.widthIncrement);
-		ImGui::InputInt(_("Iterations##noise"), &_lsystemData.iterations);
-		ImGui::InputFloat(_("Leaves Radius##noise"), &_lsystemData.leavesRadius);
+		ImGui::InputText(_("Axiom"), &_lsystemData.axiom);
+		ImGui::InputTextMultiline(_("Rules"), &_lsystemData.rulesStr);
+		ImGui::InputFloat(_("Angle"), &_lsystemData.angle);
+		ImGui::InputFloat(_("Length"), &_lsystemData.length);
+		ImGui::InputFloat(_("Width"), &_lsystemData.width);
+		ImGui::InputFloat(_("Width increment"), &_lsystemData.widthIncrement);
+		ImGui::InputInt(_("Iterations"), &_lsystemData.iterations);
+		ImGui::InputFloat(_("Leaves radius"), &_lsystemData.leavesRadius);
 
-		if (ImGui::IconButton(ICON_LC_PLAY, _("OK##lsystem"))) {
+		if (ImGui::IconButton(ICON_LC_PLAY, _("OK"))) {
 			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr, rules)) {
 				_sceneMgr->lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
@@ -37,8 +37,8 @@ void LSystemPanel::update(const char *title) {
 		const uint32_t tableFlags = ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
 		const ImVec2 outerSize(0.0f, ImGui::GetTextLineHeightWithSpacing() * 6);
 		if (ImGui::BeginTable("##lsystemrules", 2, tableFlags, outerSize)) {
-			ImGui::TableSetupColumn(_("Command##lsystemrules"), ImGuiTableColumnFlags_WidthFixed);
-			ImGui::TableSetupColumn(_("Description##lsystemrules"), ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn(_("Command"), ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 			#define ROWENTRY(C, D) ImGui::TableNextColumn(); ImGui::TextUnformatted(C); ImGui::TableNextColumn(); ImGui::TextUnformatted(D)

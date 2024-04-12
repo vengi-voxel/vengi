@@ -87,7 +87,7 @@ void PalettePanel::handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &
 									   &listener);
 
 			if (palette.color(uiIdx).a != 255) {
-				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove Alpha"))) {
+				if (ImGui::IconMenuItem(ICON_LC_ERASER, _("Remove alpha"))) {
 					_sceneMgr->nodeRemoveAlpha(node.id(), uiIdx);
 				}
 			}
@@ -248,13 +248,13 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::Checkbox(_("Color match"), &_searchFittingColors);
 		ImGui::TooltipText(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##loadpalette"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
 			_sceneMgr->mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel##loadpalette"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -266,19 +266,19 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, _("File"))) {
-			ImGui::CommandIconMenuItem(ICON_LC_PALETTE, _("Load##loadpalette"), "importpalette", true, &listener);
-			if (ImGui::IconMenuItem(ICON_LC_PAINTBRUSH, _("Switch##switchpalette"))) {
+			ImGui::CommandIconMenuItem(ICON_LC_PALETTE, _("Load"), "importpalette", true, &listener);
+			if (ImGui::IconMenuItem(ICON_LC_PAINTBRUSH, _("Switch"))) {
 				reloadAvailablePalettes();
 				_popupSwitchPalette = true;
 			}
-			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export##savepalette"))) {
+			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {
 				_app->saveDialog([&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); }, {}, io::format::palettes(), "palette.png");
 			}
-			if (ImGui::BeginIconMenu(ICON_LC_DOWNLOAD, _("Lospec##lospecpalette"))) {
+			if (ImGui::BeginIconMenu(ICON_LC_DOWNLOAD, _("Lospec"))) {
 				const char *command = "loadpalette";
 				const core::String &keybinding = _app->getKeyBindingsString(command);
-				ImGui::InputText(_("ID##lospecpalette"), &_lospecID);
-				if (ImGui::MenuItem(_("Ok"), keybinding.c_str(), false, true)) {
+				ImGui::InputText(_("ID"), &_lospecID);
+				if (ImGui::MenuItem(_("OK"), keybinding.c_str(), false, true)) {
 					core::String cmd = command;
 					cmd.append(" lospec:");
 					cmd.append(_lospecID);
@@ -290,7 +290,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::TooltipText(_("Export the palette"));
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE, _("Sort##sortpalette"))) {
+		if (ImGui::BeginIconMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE, _("Sort"))) {
 			ImGui::CommandMenuItem(_("Original"), "palette_sort original", true, &listener);
 			ImGui::CommandMenuItem(_("Hue"), "palette_sort hue", true, &listener);
 			ImGui::CommandMenuItem(_("Saturation"), "palette_sort saturation", true, &listener);
@@ -298,11 +298,11 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::CommandMenuItem(_("CIELab"), "palette_sort cielab", true, &listener);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu(_("Tools##toolspalette"))) {
+		if (ImGui::BeginMenu(_("Tools"))) {
 			ImGui::CommandMenuItem(_("Remove unused color"), "palette_removeunused", true, &listener);
 			ImGui::CommandMenuItem(_("Remove and re-create palette"), "palette_removeunused true", true, &listener);
 			ImGui::CommandMenuItem(_("Model from color"), "colortomodel", true, &listener);
-			// TODO: add color quanitisation to parts of the palette
+			// TODO: add color quantisation to parts of the palette
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -354,7 +354,7 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 				addColor(pos.x, palIdx, uiIdx, node, listener);
 			}
 			ImGui::Dummy(ImVec2(0, ImGui::GetFrameHeight()));
-			ImGui::Text(_("palette index: %i (scene voxel index %i)"), currentSelectedPalIdx, currentSceneHoveredPalIdx);
+			ImGui::Text(_("Palette index: %i (scene voxel index %i)"), currentSelectedPalIdx, currentSceneHoveredPalIdx);
 
 			createPopups(node);
 			closestColor(node, listener);

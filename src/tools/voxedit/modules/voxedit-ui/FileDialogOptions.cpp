@@ -38,8 +38,8 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::EndDisabled();
 			ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
 			if (*desc == voxelformat::gltf()) {
-				ImGui::CheckboxVar(_("KHR_materials_pbrSpecularGlossiness"), cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
-				ImGui::CheckboxVar(_("KHR_materials_specular"), cfg::VoxFormatGLTF_KHR_materials_specular);
+				ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness", cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
+				ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
 			}
 			ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
 		} else if (mode == video::OpenFileMode::Open) {
