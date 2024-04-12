@@ -1,0 +1,1952 @@
+msgid ""
+"The lower the value, the more you see. 1 is the highest log level, 5 is just "
+"fatal errors."
+msgstr ""
+
+msgid "Print the version and quit"
+msgstr ""
+
+msgid "Print this help and quit"
+msgstr ""
+
+msgid "Generate completion for bash"
+msgstr ""
+
+msgid "Change log level from 1 (trace) to 6 (only critical)"
+msgstr ""
+
+msgid "Log to the system log"
+msgstr ""
+
+msgid "Set a variable value"
+msgstr ""
+
+msgid "Quit the application"
+msgstr ""
+
+msgid "Trigger an assert"
+msgstr ""
+
+msgid "Clear the value history of a variable"
+msgstr ""
+
+msgid "Just a no-operation command"
+msgstr ""
+
+msgid "Open the given url in a browser"
+msgstr ""
+
+msgid "Print the given arguments to the console (info log level)"
+msgstr ""
+
+msgid "Execute a file with script commands"
+msgstr ""
+
+msgid "Toggle between true/false for a variable"
+msgstr ""
+
+msgid "Increase a cvar value by the given value (default: 1)"
+msgstr ""
+
+msgid "Decrease a cvar value by the given value (default: 1)"
+msgstr ""
+
+msgid "Show the value of a variable"
+msgstr ""
+
+msgid "Print current milliseconds to console"
+msgstr ""
+
+msgid "Log given message as error"
+msgstr ""
+
+msgid "Log given message as info"
+msgstr ""
+
+msgid "Log given message as debug"
+msgstr ""
+
+msgid "Log given message as warn"
+msgstr ""
+
+msgid "Show the list of known variables (wildcards supported)"
+msgstr ""
+
+msgid "Show the list of known commands (wildcards supported)"
+msgstr ""
+
+msgid "Camera free look on toggle"
+msgstr ""
+
+msgid "Toggle relative mouse rotation mode"
+msgstr ""
+
+msgid "Show all commands"
+msgstr ""
+
+msgid "Show all cvars"
+msgstr ""
+
+msgid "Bookmarks"
+msgstr ""
+
+msgid "Cloud"
+msgstr ""
+
+msgid "Desktop"
+msgstr ""
+
+msgid "Documents"
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Pictures"
+msgstr ""
+
+msgid "Public"
+msgstr ""
+
+msgid "Recent"
+msgstr ""
+
+msgid "Quick Access"
+msgstr ""
+
+msgid "This PC"
+msgstr ""
+
+msgid "Files"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "Type"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+msgid "directory"
+msgstr ""
+
+msgid "Add a bookmark for the current active folder"
+msgstr ""
+
+msgid "Show hidden file system entities"
+msgstr ""
+
+msgid "The last selected file type filter in the file dialog"
+msgstr ""
+
+msgid "Enter a name for the new folder"
+msgstr ""
+
+msgid "Create"
+msgstr ""
+
+msgid "Folder name can't be empty"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+#, c-format
+msgid ""
+"%s already exist.\n"
+"Do you want to overwrite the file?"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
+msgid "Save file"
+msgstr ""
+
+msgid "Select a directory"
+msgstr ""
+
+msgid "Select a file"
+msgstr ""
+
+msgid "New folder"
+msgstr ""
+
+msgid "Filename"
+msgstr ""
+
+msgid "Show hidden"
+msgstr ""
+
+msgid "Options"
+msgstr ""
+
+msgid "Choose"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Error: You must select a folder!"
+msgstr ""
+
+msgid "Error: You must select a file!"
+msgstr ""
+
+msgid "Bindings"
+msgstr ""
+
+msgid "Keys"
+msgstr ""
+
+msgid "Command"
+msgstr ""
+
+msgid "Context"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+#, c-format
+msgid "Failed to get command for %s"
+msgstr ""
+
+msgid "Keymap"
+msgstr ""
+
+msgid "Reset to default"
+msgstr ""
+
+msgid "Configuration variables"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Reset to default value"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Commands"
+msgstr ""
+
+msgid "Textures"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Copy to clipboard"
+msgstr ""
+
+msgid "Debug"
+msgstr ""
+
+msgid "Enable debug logging for the console"
+msgstr ""
+
+msgid "Auto scrolling"
+msgstr ""
+
+#, c-format
+msgid ""
+"Open in browser\n"
+"%s"
+msgstr ""
+
+msgid "Enable sending anonymous metrics"
+msgstr ""
+
+msgid "Send anonymous usage statistics"
+msgstr ""
+
+msgid "This is a beta release!"
+msgstr ""
+
+msgid "A new version is available!"
+msgstr ""
+
+msgid "You are using the latest version."
+msgstr ""
+
+msgid "Bug reports"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Twitter"
+msgstr ""
+
+msgid "Mastodon"
+msgstr ""
+
+msgid "Discord"
+msgstr ""
+
+msgid "Credits"
+msgstr ""
+
+msgid "Paths"
+msgstr ""
+
+msgid "Clear the text from the built-in console"
+msgstr ""
+
+msgid "Print the command history"
+msgstr ""
+
+msgid "Show all known key bindings"
+msgstr ""
+
+msgid "Bind a command to a key"
+msgstr ""
+
+msgid "Unbind a key"
+msgstr ""
+
+msgid "Show all images in the texture pool"
+msgstr ""
+
+msgid "Minimize the window"
+msgstr ""
+
+msgid "License"
+msgstr ""
+
+msgid "Format"
+msgstr ""
+
+msgid "Voxel Files"
+msgstr ""
+
+msgid "Thumbnail"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Load"
+msgstr ""
+
+msgid "Download all missing files"
+msgstr ""
+
+msgid "Download missing thumbnails"
+msgstr ""
+
+msgid "Download missing files"
+msgstr ""
+
+msgid "Quit"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Outlines"
+msgstr ""
+
+msgid "Bloom"
+msgstr ""
+
+msgid "Allow multi monitor"
+msgstr ""
+
+msgid "Font size"
+msgstr ""
+
+msgid "CorporateGrey"
+msgstr ""
+
+msgid "Dark"
+msgstr ""
+
+msgid "Light"
+msgstr ""
+
+msgid "Classic"
+msgstr ""
+
+msgid "Color theme"
+msgstr ""
+
+msgid "Notifications"
+msgstr ""
+
+msgid "Reset layout"
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Save the current viewport as screenshot"
+msgstr ""
+
+msgid "Toggle scene mode on/off"
+msgstr ""
+
+msgid "Save the current scene as a volume to the given file"
+msgstr ""
+
+msgid "Save the selection from the current active model node"
+msgstr ""
+
+msgid "Load a scene from the given volume file"
+msgstr ""
+
+msgid "Add a volume to the existing scene from the given file"
+msgstr ""
+
+msgid "Import all files from a given directory"
+msgstr ""
+
+msgid "Import a 2d heightmap image into the current active node"
+msgstr ""
+
+msgid ""
+"Import a 2d heightmap image into the current active node. The height is "
+"encoded in the alpha channel with this method."
+msgstr ""
+
+msgid "Import an image as a plane into a new node"
+msgstr ""
+
+msgid "Import an image as a volume into a new node"
+msgstr ""
+
+msgid "Import an image as a palette"
+msgstr ""
+
+msgid "Create a new scene with ui interaction"
+msgstr ""
+
+msgid "Reset cameras in viewports"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Animation"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Add a new keyframe to the current active node"
+msgstr ""
+
+msgid "Add all"
+msgstr ""
+
+msgid "Delete the current keyframe of the active nodes"
+msgstr ""
+
+msgid "Crop frames"
+msgstr ""
+
+#, c-format
+msgid "Max frames for this animation: %i"
+msgstr ""
+
+#, c-format
+msgid "Keyframe %i, Interpolation: %s"
+msgstr ""
+
+msgid "Copy"
+msgstr ""
+
+msgid "Paste"
+msgstr ""
+
+msgid "Duplicate keyframe"
+msgstr ""
+
+msgid "Delete keyframes"
+msgstr ""
+
+#, c-format
+msgid "Delete %i keyframes"
+msgstr ""
+
+msgid "Models"
+msgstr ""
+
+msgid "Use stamp"
+msgstr ""
+
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+
+msgid "Add to scene"
+msgstr ""
+
+msgid "Images"
+msgstr ""
+
+msgid "Disable mirror"
+msgstr ""
+
+msgid "X##mirror"
+msgstr ""
+
+msgid "Y##mirror"
+msgstr ""
+
+msgid "Z##mirror"
+msgstr ""
+
+msgid "Use selection"
+msgstr ""
+
+msgid "Use the current selection as new stamp"
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "Select a model from the asset panel"
+msgstr ""
+
+msgid "Center##modifiertype"
+msgstr ""
+
+msgid "Continuous##modifiertype"
+msgstr ""
+
+msgid "Replace##stampbrush"
+msgstr ""
+
+msgid "Replace all voxels in the stamp with the selected color"
+msgstr ""
+
+msgid "Reduce size"
+msgstr ""
+
+msgid "Size##stampbrush"
+msgstr ""
+
+msgid "Extrude voxels"
+msgstr ""
+
+msgid "Erase voxels"
+msgstr ""
+
+msgid "Override voxels"
+msgstr ""
+
+msgid "Draws a line from the reference position to the current cursor position"
+msgstr ""
+
+msgid "Draws a path over existing voxels"
+msgstr ""
+
+msgid "Convert palette"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Single"
+msgstr ""
+
+msgid "Center"
+msgstr ""
+
+msgid "Radius"
+msgstr ""
+
+msgid "Use a radius around the current voxel - 0 for spanning a region"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Factor"
+msgstr ""
+
+msgid "Variation threshold"
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Paint the selected plane"
+msgstr ""
+
+msgid "Brush settings"
+msgstr ""
+
+msgid "Click on a voxel to pick the color"
+msgstr ""
+
+msgid "Select areas of voxels"
+msgstr ""
+
+msgid "Position"
+msgstr ""
+
+msgid "Farplane"
+msgstr ""
+
+msgid "Nearplane"
+msgstr ""
+
+msgid "FOV"
+msgstr ""
+
+msgid "Target"
+msgstr ""
+
+msgid "Target distance"
+msgstr ""
+
+msgid "Aspect"
+msgstr ""
+
+msgid "Add new camera"
+msgstr ""
+
+msgid "Uniform scale"
+msgstr ""
+
+msgid "X axis scale"
+msgstr ""
+
+msgid "Y axis scale"
+msgstr ""
+
+msgid "Z axis scale"
+msgstr ""
+
+msgid "Merge quads"
+msgstr ""
+
+msgid "Reuse vertices"
+msgstr ""
+
+msgid "Ambient occlusion"
+msgstr ""
+
+msgid "Apply transformations"
+msgstr ""
+
+msgid "Exports quads"
+msgstr ""
+
+msgid "Vertex colors"
+msgstr ""
+
+msgid "Normals"
+msgstr ""
+
+msgid "Vertex colors as float"
+msgstr ""
+
+msgid "Texture coordinates"
+msgstr ""
+
+msgid "Export materials"
+msgstr ""
+
+msgid "Fill hollow"
+msgstr ""
+
+msgid "Point cloud size"
+msgstr ""
+
+msgid "faster and less memory"
+msgstr ""
+
+msgid "high quality"
+msgstr ""
+
+msgid "Voxelization mode"
+msgstr ""
+
+msgid "Single object"
+msgstr ""
+
+msgid "Save visible only"
+msgstr ""
+
+msgid "Palette mode"
+msgstr ""
+
+msgid "Merge compounds"
+msgstr ""
+
+msgid "Create groups"
+msgstr ""
+
+msgid "Create layers"
+msgstr ""
+
+msgid "Left handed"
+msgstr ""
+
+msgid "Compressed"
+msgstr ""
+
+msgid "Red Alert"
+msgstr ""
+
+msgid "Tiberian Sun"
+msgstr ""
+
+msgid "Normal type"
+msgstr ""
+
+msgid "RGB flatten factor"
+msgstr ""
+
+msgid "RGB weighted average"
+msgstr ""
+
+msgid "Create palette"
+msgstr ""
+
+msgid "Axiom"
+msgstr ""
+
+msgid "Rules"
+msgstr ""
+
+msgid "Angle"
+msgstr ""
+
+msgid "Length"
+msgstr ""
+
+msgid "Width"
+msgstr ""
+
+msgid "Width increment"
+msgstr ""
+
+msgid "Iterations"
+msgstr ""
+
+msgid "Leaves radius"
+msgstr ""
+
+msgid "OK"
+msgstr ""
+
+msgid "Draw line forwards"
+msgstr ""
+
+msgid "Set voxel type"
+msgstr ""
+
+msgid "Move backwards (no drawing)"
+msgstr ""
+
+msgid "Leaf"
+msgstr ""
+
+msgid "Rotate right"
+msgstr ""
+
+msgid "Rotate left"
+msgstr ""
+
+msgid "Rotate forward"
+msgstr ""
+
+msgid "Rotate back"
+msgstr ""
+
+msgid "Increment width"
+msgstr ""
+
+msgid "Decrement width"
+msgstr ""
+
+msgid "Push"
+msgstr ""
+
+msgid "Pop"
+msgstr ""
+
+msgid ""
+"Switch between scene and edit mode by pressing the <cmd:togglescene> key."
+msgstr ""
+
+msgid "Use the file dialog options for format specific options."
+msgstr ""
+
+msgid ""
+"You can record a video of your rotating model in the viewport by using the "
+"'View' menu and the 'Video' option. Make sure to set the camera rotation "
+"speed to e.g. 1."
+msgstr ""
+
+msgid ""
+"When saving to a foreign format you might lose scene details if the format "
+"doesn't support particular features. Make sure to use the vengi format for "
+"highest compatibility."
+msgstr ""
+
+msgid ""
+"Change the color reduction mode to improve the quality of the palette "
+"especially for importing RGBA or mesh based formats."
+msgstr ""
+
+msgid "Drag a model from the assets panel to the stamp brush to use it."
+msgstr ""
+
+msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
+msgstr ""
+
+msgid ""
+"The editor shows the last executed console command in the status bar. You "
+"can use these commands and bind them to keys."
+msgstr ""
+
+msgid ""
+"You can use wasd style scene movement by switching the 'Camera movement' to "
+"'Eye' in the 'View' menu of the viewport."
+msgstr ""
+
+msgid ""
+"In order to use the path modifier, you have to place the reference position "
+"on top of another voxel and place the end of the path on another existing "
+"and connected voxel."
+msgstr ""
+
+msgid ""
+"When importing meshes, you can switch between different voxelization methods "
+"in the options menu."
+msgstr ""
+
+msgid ""
+"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
+"using the erase modifier."
+msgstr ""
+
+msgid "Switch between different color themes in the options menu."
+msgstr ""
+
+msgid ""
+"Please activate anonymous usage metrics in the options or the about dialog."
+msgstr ""
+
+msgid ""
+"You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
+"Vengi own style. Check the bindings window in the options menu."
+msgstr ""
+
+msgid "You can save your viewport as AVI video or as screenshot."
+msgstr ""
+
+msgid "Press <cmd:pickcolor> to pick a color from the scene."
+msgstr ""
+
+msgid ""
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
+msgstr ""
+
+msgid "Show again"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Welcome to VoxEdit!"
+msgstr ""
+
+msgid ""
+"The mission: Create a free, open-source and multi-platform voxel editor with "
+"animation support for artists and developers."
+msgstr ""
+
+msgid ""
+"We would like to enable anonymous usage metrics to improve the editor. "
+"Please consider enabling it."
+msgstr ""
+
+msgid "Simple mode"
+msgstr ""
+
+msgid ""
+"You can't edit a model reference.\n"
+"\n"
+"Do you want to convert the reference into a model?"
+msgstr ""
+
+msgid "Templates"
+msgstr ""
+
+msgid "Empty scene"
+msgstr ""
+
+msgid "Height"
+msgstr ""
+
+msgid "Depth"
+msgstr ""
+
+msgid "Failed to save the model!"
+msgstr ""
+
+msgid "Unsaved changes - are you sure to quit?"
+msgstr ""
+
+msgid ""
+"There are unsaved modifications.\n"
+"Do you wish to discard them?"
+msgstr ""
+
+msgid "Scene settings"
+msgstr ""
+
+msgid "Diffuse color"
+msgstr ""
+
+msgid "Ambient color"
+msgstr ""
+
+msgid "Done"
+msgstr ""
+
+msgid ""
+"Some model volumes are too big for optimal performance.\n"
+"It's encouraged to split them into smaller volumes.\n"
+"Do you wish to split them now?"
+msgstr ""
+
+msgid "Cancel##modelsettings"
+msgstr ""
+
+msgid "Node names should be unique"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Formats"
+msgstr ""
+
+msgid "Voxel load"
+msgstr ""
+
+msgid "Extension"
+msgstr ""
+
+msgid "Voxel save"
+msgstr ""
+
+msgid "Palettes"
+msgstr ""
+
+#, c-format
+msgid "Current state: %i / %i"
+msgstr ""
+
+msgid "Color reduction"
+msgstr ""
+
+msgid ""
+"The color reduction algorithm that is used when importing RGBA colors from "
+"images or rgba formats"
+msgstr ""
+
+msgid "Grid"
+msgstr ""
+
+msgid "Show gizmo"
+msgstr ""
+
+msgid "Show locked axis"
+msgstr ""
+
+msgid "Bounding box"
+msgstr ""
+
+msgid "Bones"
+msgstr ""
+
+msgid "Shadow"
+msgstr ""
+
+msgid "New"
+msgstr ""
+
+msgid "Recently opened"
+msgstr ""
+
+msgid "Save as"
+msgstr ""
+
+msgid "Save selection"
+msgstr ""
+
+msgid "Add file to scene"
+msgstr ""
+
+msgid "Add directory to scene"
+msgstr ""
+
+msgid "Heightmap"
+msgstr ""
+
+msgid "Colored heightmap"
+msgstr ""
+
+msgid "Image as plane"
+msgstr ""
+
+msgid "Image as volume"
+msgstr ""
+
+msgid "Undo"
+msgstr ""
+
+msgid "Redo"
+msgstr ""
+
+msgid "Cut"
+msgstr ""
+
+msgid "Paste at reference"
+msgstr ""
+
+msgid "Paste at cursor"
+msgstr ""
+
+msgid "Paste as new node"
+msgstr ""
+
+msgid "Color picker"
+msgstr ""
+
+msgid "Color wheel"
+msgstr ""
+
+msgid "Simplified UI"
+msgstr ""
+
+msgid "Tip of the day"
+msgstr ""
+
+msgid "Cubes"
+msgstr ""
+
+msgid "Marching cubes"
+msgstr ""
+
+msgid "Mesh mode"
+msgstr ""
+
+msgid "Model animation speed"
+msgstr ""
+
+msgid "Autosave delay in seconds"
+msgstr ""
+
+msgid "Viewports"
+msgstr ""
+
+msgid "Zoom speed"
+msgstr ""
+
+msgid "View distance"
+msgstr ""
+
+msgid "Select"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Invert"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Welcome screen"
+msgstr ""
+
+msgid "Model from color"
+msgstr ""
+
+msgid "Remove alpha"
+msgstr ""
+
+msgid "Duplicate color"
+msgstr ""
+
+msgid "Remove color"
+msgstr ""
+
+msgid "Select the palette"
+msgstr ""
+
+msgid ""
+"To add your own palettes here, put a palette-name.png into one of\n"
+"the search directories or load it into any node to appear here."
+msgstr ""
+
+msgid "Color match"
+msgstr ""
+
+msgid ""
+"Adopt the current voxels to the best fitting colors of\n"
+"the new palette."
+msgstr ""
+
+msgid "Switch"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Lospec"
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Export the palette"
+msgstr ""
+
+msgid "Sort"
+msgstr ""
+
+msgid "Original"
+msgstr ""
+
+msgid "Hue"
+msgstr ""
+
+msgid "Saturation"
+msgstr ""
+
+msgid "Brightness"
+msgstr ""
+
+msgid "CIELab"
+msgstr ""
+
+msgid "Tools"
+msgstr ""
+
+msgid "Remove unused color"
+msgstr ""
+
+msgid "Remove and re-create palette"
+msgstr ""
+
+msgid "Color closest match"
+msgstr ""
+
+msgid "Select a color to find the closest match in the current loaded palette"
+msgstr ""
+
+#, c-format
+msgid "Palette index: %i (scene voxel index %i)"
+msgstr ""
+
+msgid "Color"
+msgstr ""
+
+msgid "Region"
+msgstr ""
+
+msgid "pos"
+msgstr ""
+
+msgid "To transform"
+msgstr ""
+
+msgid "Convert the region offset into the keyframe transforms"
+msgstr ""
+
+msgid "Gizmo settings"
+msgstr ""
+
+msgid "Flip axis"
+msgstr ""
+
+msgid "Snap"
+msgstr ""
+
+msgid "Cursor details"
+msgstr ""
+
+msgid "Translate"
+msgstr ""
+
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Z"
+msgstr ""
+
+msgid "Volumes"
+msgstr ""
+
+msgid "Voxels"
+msgstr ""
+
+msgid "Cursor"
+msgstr ""
+
+msgid "Interpolation"
+msgstr ""
+
+msgid "Interpolation details"
+msgstr ""
+
+msgid "Reset all"
+msgstr ""
+
+msgid "Auto Keyframe"
+msgstr ""
+
+msgid "Automatically create keyframes when changing transforms"
+msgstr ""
+
+msgid "Transform"
+msgstr ""
+
+msgid "Local transforms"
+msgstr ""
+
+msgid "Update children"
+msgstr ""
+
+msgid "Tr"
+msgstr ""
+
+msgid "Rt"
+msgstr ""
+
+msgid "Sc"
+msgstr ""
+
+msgid "Pv"
+msgstr ""
+
+msgid "Rotate"
+msgstr ""
+
+msgid "Activate the rotate operation"
+msgstr ""
+
+msgid "Activate the translate operation"
+msgstr ""
+
+msgid "Snap to grid"
+msgstr ""
+
+msgid "Pivot"
+msgstr ""
+
+msgid "Dimensions"
+msgstr ""
+
+msgid "Samples"
+msgstr ""
+
+msgid "Tracer"
+msgstr ""
+
+msgid "False color"
+msgstr ""
+
+msgid "Bounces"
+msgstr ""
+
+msgid "Batch"
+msgstr ""
+
+msgid "Clamp"
+msgstr ""
+
+msgid "Preview ratio"
+msgstr ""
+
+msgid "Hide environment"
+msgstr ""
+
+msgid "Denoise"
+msgstr ""
+
+msgid "Camera"
+msgstr ""
+
+msgid "Stop path tracer"
+msgstr ""
+
+#, c-format
+msgid "Sample %i / %i"
+msgstr ""
+
+msgid "Start path tracer"
+msgstr ""
+
+msgid "Save image"
+msgstr ""
+
+msgid "Delete this node property"
+msgstr ""
+
+msgid "Rename"
+msgstr ""
+
+msgid "Show all"
+msgstr ""
+
+msgid "Hide all"
+msgstr ""
+
+msgid "Hide others"
+msgstr ""
+
+msgid "Lock all"
+msgstr ""
+
+msgid "Unlock all"
+msgstr ""
+
+msgid "Duplicate"
+msgstr ""
+
+msgid "Create reference"
+msgstr ""
+
+msgid "Merge"
+msgstr ""
+
+msgid "Merge all"
+msgstr ""
+
+msgid "Merge visible"
+msgstr ""
+
+msgid "Merge locked"
+msgstr ""
+
+msgid "Center origin"
+msgstr ""
+
+msgid "Center reference"
+msgstr ""
+
+msgid "Convert to model"
+msgstr ""
+
+msgid "Save all"
+msgstr ""
+
+msgid "Add new group"
+msgstr ""
+
+msgid ""
+"Disabled because inactive nodes are hidden and the active node is always "
+"visible"
+msgstr ""
+
+#, c-format
+msgid "Color##node-%i"
+msgstr ""
+
+msgid "Reference Node"
+msgstr ""
+
+msgid "Reference Target Node"
+msgstr ""
+
+msgid "Delete this model"
+msgstr ""
+
+msgid "Add a new model node"
+msgstr ""
+
+msgid "Add a new group"
+msgstr ""
+
+msgid "Remove the active node with all its children"
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Merge onto##mergeonto"
+msgstr ""
+
+#, c-format
+msgid "Merge %s onto %s"
+msgstr ""
+
+msgid "Move below"
+msgstr ""
+
+msgid "LUA scripts for manipulating the voxel volumes"
+msgstr ""
+
+msgid "Run"
+msgstr ""
+
+msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+
+msgid "Create a new lua script"
+msgstr ""
+
+msgid "Edit the selected lua script"
+msgstr ""
+
+msgid "Scripting manual"
+msgstr ""
+
+msgid "Apply and execute"
+msgstr ""
+
+#, c-format
+msgid "Overwrite scripts/%s"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Grayscale"
+msgstr ""
+
+msgid "Only active"
+msgstr ""
+
+msgid "Grid size"
+msgstr ""
+
+msgid "Command: -"
+msgstr ""
+
+#, c-format
+msgid "Command: %s"
+msgstr ""
+
+#, c-format
+msgid "Command: %s (%s)"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Rotate by 90 degree on the x axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the z axis"
+msgstr ""
+
+msgid "Text##text"
+msgstr ""
+
+msgid "Text##textinput"
+msgstr ""
+
+msgid "Horizontal spacing"
+msgstr ""
+
+msgid "Thickness"
+msgstr ""
+
+msgid "Font##textinput"
+msgstr ""
+
+msgid "Execute##textinput"
+msgstr ""
+
+msgid "Flip on axis"
+msgstr ""
+
+msgid "Seed"
+msgstr ""
+
+msgid "Trunk strength"
+msgstr ""
+
+msgid "Trunk height"
+msgstr ""
+
+msgid "Leaves width"
+msgstr ""
+
+msgid "Leaves height"
+msgstr ""
+
+msgid "Leaves depth"
+msgstr ""
+
+msgid "Branch length"
+msgstr ""
+
+msgid "Branch height"
+msgstr ""
+
+msgid "Branch size"
+msgstr ""
+
+msgid "Trunk width"
+msgstr ""
+
+msgid "Trunk depth"
+msgstr ""
+
+msgid "Branch reduction"
+msgstr ""
+
+msgid "Trunk reduction"
+msgstr ""
+
+msgid "Leaves"
+msgstr ""
+
+msgid "Bezier leaf"
+msgstr ""
+
+msgid "Bezier trunk"
+msgstr ""
+
+msgid "Leaves h-offset"
+msgstr ""
+
+msgid "Branches"
+msgstr ""
+
+msgid "W"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "Branch position factor"
+msgstr ""
+
+msgid "Branch strength"
+msgstr ""
+
+msgid "Branch downward offset"
+msgstr ""
+
+msgid "Start width"
+msgstr ""
+
+msgid "Start depth"
+msgstr ""
+
+msgid "Leaf height"
+msgstr ""
+
+msgid "Step delta"
+msgstr ""
+
+msgid "Leaves min length"
+msgstr ""
+
+msgid "Leaves max length"
+msgstr ""
+
+msgid "Leaves thickness"
+msgstr ""
+
+msgid "OK##treegenerate"
+msgstr ""
+
+#, c-format
+msgid ""
+"pos: %i:%i:%i\n"
+"size: %i:%i:%i\n"
+"absolute: %i:%i:%i"
+msgstr ""
+
+#, c-format
+msgid ""
+"pos: %i:%i:%i\n"
+"size: %i:%i:%i\n"
+"absolute: %i:%i:%i\n"
+"relative: %i:%i:%i"
+msgstr ""
+
+msgid "Loading"
+msgstr ""
+
+msgid "Orthogonal"
+msgstr ""
+
+msgid "Perspective"
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "Reset camera"
+msgstr ""
+
+msgid "Camera rotation"
+msgstr ""
+
+msgid "Screenshot"
+msgstr ""
+
+msgid "Video"
+msgstr ""
+
+msgid "Stop recording"
+msgstr ""
+
+#, c-format
+msgid "Pending frames: %u"
+msgstr ""
+
+#, c-format
+msgid ""
+"You can control the fps of the video with the cvar %s\n"
+"Pending frames: %u"
+msgstr ""
+
+msgid "Eye"
+msgstr ""
+
+msgid "Reference Point"
+msgstr ""
+
+msgid "Camera movement"
+msgstr ""
+
+msgid "Lines"
+msgstr ""
+
+msgid "Points"
+msgstr ""
+
+msgid "Solid"
+msgstr ""
+
+msgid "Render mode"
+msgstr ""
+
+msgid "Scene Mode"
+msgstr ""
+
+msgid "EditMode"
+msgstr ""
+
+msgid "SceneMode"
+msgstr ""
+
+msgid "Resize the volume to the current selection"
+msgstr ""
+
+msgid "Executes a lua script"
+msgstr ""
+
+msgid "Change intensity by scaling the rgb values of the palette"
+msgstr ""
+
+msgid "Remove unused colors from palette"
+msgstr ""
+
+msgid "Switch active node to hovered from scene graph mode"
+msgstr ""
+
+msgid "Select all nothing or invert"
+msgstr ""
+
+msgid "Cycle through all scene objects"
+msgstr ""
+
+msgid ""
+"Allow to align all nodes on the floor next to each other without overlapping"
+msgstr ""
+
+msgid "Render characters at the reference position"
+msgstr ""
+
+msgid "Save all model nodes into filenames represented by their node names"
+msgstr ""
+
+msgid "Save a single node to the given path with their node names"
+msgstr ""
+
+msgid ""
+"Create a new scene (with a given name and width, height, depth - all "
+"optional)"
+msgstr ""
+
+msgid "Crop the current active node to the voxel boundaries"
+msgstr ""
+
+msgid "Split the current active node into multiple nodes"
+msgstr ""
+
+msgid "Scale the current active node or the given node down"
+msgstr ""
+
+msgid "Scale the current active node or the given node up"
+msgstr ""
+
+msgid ""
+"Move the voxels of the current selected palette index or the given index "
+"into a new node"
+msgstr ""
+
+msgid "Aborts the current modifier action"
+msgstr ""
+
+msgid "Fill the inner parts of closed models"
+msgstr ""
+
+msgid "Remove non visible voxels"
+msgstr ""
+
+msgid "Fill voxels in the current selection"
+msgstr ""
+
+msgid "Remove all voxels in the current selection"
+msgstr ""
+
+msgid "Set the reference position to the specified position"
+msgstr ""
+
+msgid "Move the cursor by the specified offsets"
+msgstr ""
+
+msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"
+msgstr ""
+
+msgid "Set the cursor to the specified position"
+msgstr ""
+
+msgid "Set the reference position to the current cursor position"
+msgstr ""
+
+msgid "Resize your volume about given x, y and z size"
+msgstr ""
+
+msgid "Resize your current model node about given x, y and z size"
+msgstr ""
+
+msgid "Shift the volume by the given values"
+msgstr ""
+
+msgid "Center the current active nodes at the reference position"
+msgstr ""
+
+msgid "Center the current active nodes at the origin"
+msgstr ""
+
+msgid ""
+"Move the voxels inside the volume by the given values without changing the "
+"volume bounds"
+msgstr ""
+
+msgid "Copy selection"
+msgstr ""
+
+msgid "Paste clipboard to current selection or reference position"
+msgstr ""
+
+msgid "Paste clipboard to current cursor position"
+msgstr ""
+
+msgid "Paste clipboard as a new node"
+msgstr ""
+
+msgid "Cut selection"
+msgstr ""
+
+msgid "Undo your last step"
+msgstr ""
+
+msgid "Redo your last step"
+msgstr ""
+
+msgid "Rotate active nodes around the given axis"
+msgstr ""
+
+msgid "Merge two given nodes or active model node with the next one"
+msgstr ""
+
+msgid "Merge all nodes"
+msgstr ""
+
+msgid "Merge all visible nodes"
+msgstr ""
+
+msgid "Merge all locked nodes"
+msgstr ""
+
+msgid "Animate all nodes with the given delay in millis between the frames"
+msgstr ""
+
+msgid "Use the given index to select the color from the current palette"
+msgstr ""
+
+msgid ""
+"Set the current selected color by finding the closest rgb match in the "
+"palette"
+msgstr ""
+
+msgid "Pick the current selected color from current cursor voxel"
+msgstr ""
+
+msgid "Flip the selected nodes around the given axis"
+msgstr ""
+
+msgid ""
+"Add a new model node (with a given name and width, height, depth - all "
+"optional)"
+msgstr ""
+
+msgid "Delete a particular node by id - or the current active one"
+msgstr ""
+
+msgid "Lock a particular node by id - or the current active one"
+msgstr ""
+
+msgid ""
+"Toggle the lock state of a particular node by id - or the current active one"
+msgstr ""
+
+msgid "Unlock a particular node by id - or the current active one"
+msgstr ""
+
+msgid "Set or print the current active node"
+msgstr ""
+
+msgid "Toggle the visible state of a node"
+msgstr ""
+
+msgid "Show all nodes"
+msgstr ""
+
+msgid "Hide all nodes"
+msgstr ""
+
+msgid "Show all children nodes"
+msgstr ""
+
+msgid "Hide all children nodes"
+msgstr ""
+
+msgid "Hide all model nodes except the active one"
+msgstr ""
+
+msgid "Lock all nodes"
+msgstr ""
+
+msgid "Unlock all nodes"
+msgstr ""
+
+msgid "Rename the current node or the given node id"
+msgstr ""
+
+msgid "Duplicates the current node or the given node id"
+msgstr ""
+
+msgid "Create a node reference for the given node id"
+msgstr ""
+
+msgid "Unreference from model and allow to edit the voxels for this node"
+msgstr ""
+
+msgid "Change the modifier type to 'select'"
+msgstr ""
+
+msgid "Change the modifier type to 'color picker'"
+msgstr ""
+
+msgid "Change the modifier type to 'erase'"
+msgstr ""
+
+msgid "Change the modifier type to 'place'"
+msgstr ""
+
+msgid "Change the modifier type to 'override'"
+msgstr ""
+
+#, c-format
+msgid "Change the brush type to '%s'"
+msgstr ""
+
+msgid "Change the brush type to 'none'"
+msgstr ""
+
+msgid "Toggle locked mode for the given axis at the current cursor position"
+msgstr ""
+
+msgid "Toggle locked mode for the x axis at the current cursor position"
+msgstr ""
+
+msgid "Toggle locked mode for the y axis at the current cursor position"
+msgstr ""
+
+msgid "Toggle locked mode for the z axis at the current cursor position"
+msgstr ""
+
+msgid "Mirror along the x axis at the reference position"
+msgstr ""
+
+msgid "Mirror along the y axis at the reference position"
+msgstr ""
+
+msgid "Mirror along the z axis at the reference position"
+msgstr ""
+
+msgid "Disable mirror axis"
+msgstr ""
+
+msgid "Set center plane building"
+msgstr ""
+
+msgid "Set default aabb voxel building mode"
+msgstr ""
+
+msgid ""
+"Set single voxel building mode - continue setting voxels until you release "
+"the action button"
+msgstr ""
+
+msgid "Change the modifier shape type"
+msgstr ""
+
+msgid "Toggle center at cursor"
+msgstr ""
+
+msgid "Toggle continuously placing the stamp voxels"
+msgstr ""
