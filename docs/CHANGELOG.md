@@ -26,6 +26,7 @@ General:
    - Fixed qubicle `qb` version number
    - Added basic support for rooms.xyz `thing` file support
    - Optimized file dialog for large directories
+   - Added translation support (`po` files)
 
 VoxConvert:
 
