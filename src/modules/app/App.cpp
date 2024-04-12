@@ -344,6 +344,10 @@ void App::onFrame() {
 }
 
 AppState App::onConstruct() {
+	if (!_filesystem->init(_organisation, _appname)) {
+		Log::warn("Failed to initialize the filesystem");
+	}
+
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 	// this ensures that we are sleeping 1 millisecond if there is enough room for it
@@ -351,15 +355,15 @@ AppState App::onConstruct() {
 	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
 	core::Var::get(cfg::AppVersion, "");
 
-	registerArg("--version").setShort("-v").setDescription("Print the version and quit");
-	registerArg("--help").setShort("-h").setDescription("Print this help and quit");
-	registerArg("--completion").setDescription("Generate completion for bash");
-	registerArg("--loglevel").setShort("-l").setDescription("Change log level from 1 (trace) to 6 (only critical)");
+	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
+	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
+	registerArg("--completion").setDescription(_("Generate completion for bash"));
+	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
 	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {
 		logVar->setVal(logLevelVal);
 	}
-	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false", "Log to the system log", core::Var::boolValidator);
+	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false", _("Log to the system log"), core::Var::boolValidator);
 	core::Var::get(cfg::MetricFlavor, "");
 	Log::init();
 
@@ -418,10 +422,6 @@ AppState App::onConstruct() {
 #else
 		Log::debug("can't activate core dumps");
 #endif
-	}
-
-	if (!_filesystem->init(_organisation, _appname)) {
-		Log::warn("Failed to initialize the filesystem");
 	}
 
 	const io::FilesystemPtr &fs = io::filesystem();
