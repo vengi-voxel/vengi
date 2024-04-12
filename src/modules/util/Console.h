@@ -108,6 +108,7 @@ public:
 	Console();
 	virtual ~Console();
 	virtual void construct() override;
+	void registerOutputCallbacks();
 	virtual bool init() override;
 	virtual void shutdown() override;
 	virtual void update(double deltaFrameSeconds);

@@ -148,8 +148,9 @@ bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 }
 
 app::AppState IMGUIApp::onConstruct() {
-	_console.construct();
+	_console.registerOutputCallbacks();
 	const app::AppState state = Super::onConstruct();
+	_console.construct();
 	_fileDialog.construct();
 	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
 

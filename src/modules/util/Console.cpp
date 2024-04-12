@@ -27,10 +27,12 @@ Console::Console() :
 Console::~Console() {
 }
 
-void Console::construct() {
+void Console::registerOutputCallbacks() {
 	SDL_LogGetOutputFunction((SDL_LogOutputFunction*)&_logFunction, &_logUserData);
 	SDL_LogSetOutputFunction((SDL_LogOutputFunction)logConsole, this);
+}
 
+void Console::construct() {
 	command::Command::registerCommand("con_clear", [&] (const command::CmdArgs& args) { clear(); }).setHelp(_("Clear the text from the built-in console"));
 	command::Command::registerCommand("con_history", [&] (const command::CmdArgs& args) { printHistory(); }).setHelp(_("Print the command history"));
 }
