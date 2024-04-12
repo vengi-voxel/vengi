@@ -831,7 +831,7 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	}
 }
 
-const core::Set<Id>& textures() {
+const core::DynamicSet<Id>& textures() {
 	return glstate().textures;
 }
 

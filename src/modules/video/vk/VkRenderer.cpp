@@ -320,8 +320,8 @@ void deleteVertexArray(Id &id) {
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 }
 
-const core::Set<Id> &textures() {
-	static core::Set<Id> todo;
+const core::DynamicSet<Id> &textures() {
+	static core::DynamicSet<Id> todo;
 	return todo;
 }
 

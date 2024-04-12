@@ -540,7 +540,7 @@ void IMGUIApp::renderCommandDialog() {
 
 void IMGUIApp::renderTexturesDialog() {
 	if (ImGui::Begin(_("Textures"), &_showTexturesDialog)) {
-		const core::Set<video::Id> &textures = video::textures();
+		const core::DynamicSet<video::Id> &textures = video::textures();
 		const ImVec2 size(512, 512);
 		int textureCnt = 0;
 		for (const auto &e : textures) {

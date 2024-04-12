@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/collection/Set.h"
+#include "core/collection/DynamicSet.h"
 #include "core/collection/BitSet.h"
 #include "flextGL.h"
 #include "GLVersion.h"
@@ -23,7 +23,7 @@ namespace _priv {
  * A list of default gl states: http://www.glprogramming.com/red/appendixb.html
  */
 struct GLState {
-	core::Set<Id> textures;
+	core::DynamicSet<Id> textures;
 	bool clipOriginLowerLeft = true;
 	GLVersion glVersion {0, 0};
 	glm::vec4 clearColor {0.0f};

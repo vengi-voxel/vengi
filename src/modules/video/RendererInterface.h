@@ -7,7 +7,7 @@
 #include "RenderBuffer.h"
 #include "ShaderTypes.h"
 #include "core/SharedPtr.h"
-#include "core/collection/Set.h"
+#include "core/collection/DynamicSet.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -120,7 +120,7 @@ Id genProgram();
 void deleteVertexArrays(uint8_t amount, Id *ids);
 void deleteVertexArray(Id &id);
 void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids);
-const core::Set<Id> &textures();
+const core::DynamicSet<Id> &textures();
 void deleteTextures(uint8_t amount, Id *ids);
 Id currentFramebuffer();
 void genFramebuffers(uint8_t amount, Id *ids);
