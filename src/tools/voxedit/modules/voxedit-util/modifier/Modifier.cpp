@@ -63,9 +63,10 @@ void Modifier::construct() {
 
 	for (const Brush *b : _brushes) {
 		const BrushType type = b->type();
+		const core::String hlp = core::string::format(_("Change the brush type to '%s'"), b->name().c_str());
 		command::Command::registerCommand("brush" + b->name().toLower(), [&, type](const command::CmdArgs &args) {
 			setBrushType(type);
-		}).setHelp(_("Change the brush type to '" + b->name() + "'"));
+		}).setHelp(hlp);
 	}
 	command::Command::registerCommand("brushnone", [&](const command::CmdArgs &args) {
 		setBrushType(BrushType::None);

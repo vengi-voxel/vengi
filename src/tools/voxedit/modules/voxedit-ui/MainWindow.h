@@ -38,6 +38,7 @@ struct TemplateModel;
 class MainWindow : public ui::Panel {
 private:
 	using Super = ui::Panel;
+	core::DynamicArray<core::String> _tipOfTheDayList;
 
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;

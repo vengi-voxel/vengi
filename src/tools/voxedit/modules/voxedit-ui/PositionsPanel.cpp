@@ -139,7 +139,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 
 				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
 					ImGui::CheckboxVar(_("Show gizmo"), cfg::VoxEditModelGizmo);
-					ImGui::CheckboxVar(_("Flip Axis"), cfg::VoxEditGizmoAllowAxisFlip);
+					ImGui::CheckboxVar(_("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
 					ImGui::CheckboxVar(_("Snap"), cfg::VoxEditGizmoSnap);
 				}
 			}

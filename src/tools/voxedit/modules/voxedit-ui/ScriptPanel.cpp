@@ -222,7 +222,7 @@ bool ScriptPanel::updateEditor(const char *title) {
 					}
 					ImGui::TooltipText(_("Overwrite scripts/%s"), _activeScriptFilename.c_str());
 				}
-				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save As"))) {
+				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save as"))) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
@@ -255,7 +255,7 @@ bool ScriptPanel::updateEditor(const char *title) {
 				if (ImGui::IconMenuItem(ICON_LC_COPY, _("Copy"), nullptr, false, _textEditor.HasSelection())) {
 					_textEditor.Copy();
 				}
-				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut##scripteditor"), nullptr, false,
+				if (ImGui::IconMenuItem(ICON_LC_SCISSORS, _("Cut"), nullptr, false,
 									_textEditor.HasSelection())) {
 					_textEditor.Cut();
 				}

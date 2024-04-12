@@ -27,7 +27,6 @@
 #include "voxelformat/VolumeFormat.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "engine-config.h"
-#include "TipOfTheDay.h"
 #include "WindowTitles.h"
 
 // generated models
@@ -111,7 +110,27 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _positionsPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _cameraPanel(app, _sceneMgr) {
-	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(TIPOFTHEDAY));
+
+	_tipOfTheDayList.push_back(_("Switch between scene and edit mode by pressing the <cmd:togglescene> key."));
+	_tipOfTheDayList.push_back(_("Use the file dialog options for format specific options."));
+	_tipOfTheDayList.push_back(_("You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1."));
+	_tipOfTheDayList.push_back(_("When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."));
+	_tipOfTheDayList.push_back(_("Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."));
+	_tipOfTheDayList.push_back(_("Drag a model from the assets panel to the stamp brush to use it."));
+	_tipOfTheDayList.push_back(_("You can reset the camera simply by pressing <cmd:resetcamera>."));
+	_tipOfTheDayList.push_back(_("The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."));
+	_tipOfTheDayList.push_back(_("You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport."));
+	_tipOfTheDayList.push_back(_("In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."));
+	_tipOfTheDayList.push_back(_("When importing meshes, you can switch between different voxelization methods in the options menu."));
+	_tipOfTheDayList.push_back(_("Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."));
+	_tipOfTheDayList.push_back(_("Switch between different color themes in the options menu."));
+	_tipOfTheDayList.push_back(_("Please activate anonymous usage metrics in the options or the about dialog."));
+	_tipOfTheDayList.push_back(_("You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."));
+	_tipOfTheDayList.push_back(_("You can save your viewport as AVI video or as screenshot."));
+	_tipOfTheDayList.push_back(_("Press <cmd:pickcolor> to pick a color from the scene."));
+	_tipOfTheDayList.push_back(_("Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."));
+
+	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)_tipOfTheDayList.size());
 }
 
 MainWindow::~MainWindow() {
@@ -120,7 +139,7 @@ MainWindow::~MainWindow() {
 
 const char *MainWindow::getTip() const {
 	static char buf[4096];
-	const char *tip = TIPOFTHEDAY[_currentTip];
+	const char *tip = _tipOfTheDayList[_currentTip].c_str();
 	if (!util::replacePlaceholders(_app->keybindingHandler(), tip, buf, sizeof(buf))) {
 		return tip;
 	}
@@ -507,7 +526,7 @@ void MainWindow::popupTipOfTheDay() {
 		ImGui::CheckboxVar(_("Show again"), _tipOfTheDay);
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Next"))) {
 			++_currentTip;
-			_currentTip %= (uint32_t)lengthof(TIPOFTHEDAY);
+			_currentTip %= (uint32_t)_tipOfTheDayList.size();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
