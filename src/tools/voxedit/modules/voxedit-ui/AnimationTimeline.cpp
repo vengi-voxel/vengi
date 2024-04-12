@@ -22,7 +22,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, _("Add all"), _play)) {
 		_sceneMgr->nodeAllAddKeyFrames(currentFrame);
 	}
-	ImGui::TooltipText(("Add a new keyframe to all model nodes"));
+	ImGui::TooltipText(_("Add a new keyframe to all model nodes"));
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Delete"), _play)) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
