@@ -130,7 +130,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 						_sceneMgr->nodeShiftAllKeyframes(nodeId, f);
 						_sceneMgr->nodeShift(nodeId, -f);
 					}
-					ImGui::TooltipText(_("Convert the region offset into the keyframe transforms"));
+					ImGui::TooltipTextUnformatted(_("Convert the region offset into the keyframe transforms"));
 				}
 				if (xyzValues(_("Size"), maxs)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
@@ -259,7 +259,7 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 	}
 	ImGui::SameLine();
 	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
-	ImGui::TooltipText(_("Automatically create keyframes when changing transforms"));
+	ImGui::TooltipTextUnformatted(_("Automatically create keyframes when changing transforms"));
 }
 
 void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
@@ -290,7 +290,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 					matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
 					change = true;
 				}
-				ImGui::TooltipText(_("Reset"));
+				ImGui::TooltipTextUnformatted(_("Reset"));
 
 				matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 				change |= ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
@@ -299,7 +299,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 					matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
 					change = true;
 				}
-				ImGui::TooltipText(_("Reset"));
+				ImGui::TooltipTextUnformatted(_("Reset"));
 
 				change |= ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
 				ImGui::SameLine();
@@ -307,7 +307,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 					matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
 					change = true;
 				}
-				ImGui::TooltipText(_("Reset"));
+				ImGui::TooltipTextUnformatted(_("Reset"));
 			}
 
 			glm::vec3 pivot = node.pivot();
@@ -319,7 +319,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 				pivot[0] = pivot[1] = pivot[2] = 0.0f;
 				pivotChanged = change = true;
 			}
-			ImGui::TooltipText(_("Reset"));
+			ImGui::TooltipTextUnformatted(_("Reset"));
 
 			keyFrameActionsAndOptions(sceneGraph, node, frameIdx, keyFrameIdx);
 			keyFrameInterpolationSettings(node, keyFrameIdx);
@@ -372,16 +372,16 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 		bool dirty = false;
 
 		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
-		ImGui::TooltipText(_("Activate the rotate operation"));
+		ImGui::TooltipTextUnformatted(_("Activate the rotate operation"));
 
 		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
-		ImGui::TooltipText(_("Activate the translate operation"));
+		ImGui::TooltipTextUnformatted(_("Activate the translate operation"));
 
 		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
-		// ImGui::TooltipText(_("Activate the bounds operation"));
+		// ImGui::TooltipTextUnformatted(_("Activate the bounds operation"));
 
 		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
-		// ImGui::TooltipText(_("Activate the uniform scale operation"));
+		// ImGui::TooltipTextUnformatted(_("Activate the uniform scale operation"));
 
 		if (dirty) {
 			_gizmoOperations->setVal(operations);

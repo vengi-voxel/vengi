@@ -112,7 +112,8 @@ IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
 IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
 IMGUI_API bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
-
+IMGUI_API void TextWrappedUnformatted(const char* text);
+IMGUI_API bool TooltipTextUnformatted(const char *text);
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const ImVec2 &size = ImVec2(0, 0),

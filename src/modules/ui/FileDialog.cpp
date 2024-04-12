@@ -486,7 +486,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 	if (ImGui::Button(ICON_LC_BOOKMARK)) {
 		addBookmark(_currentPath);
 	}
-	ImGui::TooltipText(_("Add a bookmark for the current active folder"));
+	ImGui::TooltipTextUnformatted(_("Add a bookmark for the current active folder"));
 
 	ImGui::SameLine();
 
@@ -535,7 +535,7 @@ void FileDialog::popupNewFolder() {
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text(_("Enter a name for the new folder"));
+		ImGui::TextUnformatted(_("Enter a name for the new folder"));
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
 		if (ImGui::Button(_("Create"))) {
 			if (_newFolderName.name.empty()) {

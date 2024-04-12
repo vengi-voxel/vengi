@@ -102,7 +102,7 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 			}
 		}
 	}
-	ImGui::TooltipText(_("Use the current selection as new stamp"));
+	ImGui::TooltipTextUnformatted(_("Use the current selection as new stamp"));
 }
 
 void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
@@ -150,7 +150,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	if (ImGui::Button(_("Replace##stampbrush"))) {
 		brush.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, _stampPaletteIndex), palette);
 	}
-	ImGui::TooltipText(_("Replace all voxels in the stamp with the selected color"));
+	ImGui::TooltipTextUnformatted(_("Replace all voxels in the stamp with the selected color"));
 
 	if (ImGui::CollapsingHeader(_("Reduce size"))) {
 		voxel::Region region = brush.volume()->region();
@@ -167,20 +167,20 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	if (modifier.isMode(ModifierType::Place)) {
-		ImGui::TextWrapped(_("Extrude voxels"));
+		ImGui::TextWrappedUnformatted(_("Extrude voxels"));
 	} else if (modifier.isMode(ModifierType::Erase)) {
-		ImGui::TextWrapped(_("Erase voxels"));
+		ImGui::TextWrappedUnformatted(_("Erase voxels"));
 	} else if (modifier.isMode(ModifierType::Override)) {
-		ImGui::TextWrapped(_("Override voxels"));
+		ImGui::TextWrappedUnformatted(_("Override voxels"));
 	}
 }
 
 void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrapped(_("Draws a line from the reference position to the current cursor position"));
+	ImGui::TextWrappedUnformatted(_("Draws a line from the reference position to the current cursor position"));
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrapped(_("Draws a path over existing voxels"));
+	ImGui::TextWrappedUnformatted(_("Draws a path over existing voxels"));
 }
 
 void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listener) {
@@ -191,7 +191,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 
 	Modifier &modifier = _sceneMgr->modifier();
 	if (!modifier.stampBrush().active()) {
-		ImGui::TextWrapped(_("Select a model from the asset panel"));
+		ImGui::TextWrappedUnformatted(_("Select a model from the asset panel"));
 		ui::ScopedStyle style;
 		style.disableItem();
 		stampBrushOptions(node, palette, listener);
@@ -229,7 +229,7 @@ void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
 		if (ImGui::InputInt(_("Radius"), &radius)) {
 			brush.setRadius(radius);
 		}
-		ImGui::TooltipText(_("Use a radius around the current voxel - 0 for spanning a region"));
+		ImGui::TooltipTextUnformatted(_("Use a radius around the current voxel - 0 for spanning a region"));
 	}
 }
 
@@ -278,7 +278,7 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	if (ImGui::RadioButton(_("Plane"), brush.plane())) {
 		brush.setPlane();
 	}
-	ImGui::TooltipText(_("Paint the selected plane"));
+	ImGui::TooltipTextUnformatted(_("Paint the selected plane"));
 	aabbBrushModeOptions(brush);
 }
 
@@ -302,9 +302,9 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	}
 	if (brushType == BrushType::None) {
 		if (modifier.isMode(ModifierType::ColorPicker)) {
-			ImGui::TextWrapped(_("Click on a voxel to pick the color"));
+			ImGui::TextWrappedUnformatted(_("Click on a voxel to pick the color"));
 		} else if (modifier.isMode(ModifierType::Select)) {
-			ImGui::TextWrapped(_("Select areas of voxels"));
+			ImGui::TextWrappedUnformatted(_("Select areas of voxels"));
 		}
 	}
 }

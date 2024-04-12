@@ -36,7 +36,7 @@ void MenuBar::colorReductionOptions() {
 		}
 		ImGui::EndCombo();
 	}
-	ImGui::TooltipText(
+	ImGui::TooltipTextUnformatted(
 		_("The color reduction algorithm that is used when importing RGBA colors from images or rgba formats"));
 }
 

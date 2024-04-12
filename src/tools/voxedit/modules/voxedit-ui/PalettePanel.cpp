@@ -242,11 +242,11 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 			}
 			ImGui::EndCombo();
 		}
-		ImGui::TooltipText(_("To add your own palettes here, put a palette-name.png into one of\n"
+		ImGui::TooltipTextUnformatted(_("To add your own palettes here, put a palette-name.png into one of\n"
 						   "the search directories or load it into any node to appear here."));
 
 		ImGui::Checkbox(_("Color match"), &_searchFittingColors);
-		ImGui::TooltipText(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
+		ImGui::TooltipTextUnformatted(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
@@ -287,7 +287,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 				ImGui::TooltipCommand(command);
 				ImGui::EndMenu();
 			}
-			ImGui::TooltipText(_("Export the palette"));
+			ImGui::TooltipTextUnformatted(_("Export the palette"));
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE, _("Sort"))) {
@@ -322,7 +322,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 		const core::RGBA rgba = core::Color::getRGBA(_closestColor);
 		_closestMatch = palette.getClosestMatch(rgba);
 	}
-	ImGui::TooltipText(_("Select a color to find the closest match in the current loaded palette"));
+	ImGui::TooltipTextUnformatted(_("Select a color to find the closest match in the current loaded palette"));
 	ImGui::SameLine();
 	char buf[256];
 	core::string::formatBuf(buf, sizeof(buf), "%i##closestmatchpalpanel", _closestMatch);

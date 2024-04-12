@@ -498,7 +498,7 @@ void IMGUIApp::renderCvarDialog() {
 				if (ImGui::Button(_("Reset"))) {
 					var->reset();
 				}
-				ImGui::TooltipText(_("Reset to default value"));
+				ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				ImGui::TableNextColumn();
 				ImGui::Text("%s", var->help() ? var->help() : "");
 			});

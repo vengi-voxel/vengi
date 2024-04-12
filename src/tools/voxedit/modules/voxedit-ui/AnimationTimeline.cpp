@@ -17,23 +17,23 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS, _("Add"), _play)) {
 		_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
 	}
-	ImGui::TooltipText(_("Add a new keyframe to the current active node"));
+	ImGui::TooltipTextUnformatted(_("Add a new keyframe to the current active node"));
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, _("Add all"), _play)) {
 		_sceneMgr->nodeAllAddKeyFrames(currentFrame);
 	}
-	ImGui::TooltipText(_("Add a new keyframe to all model nodes"));
+	ImGui::TooltipTextUnformatted(_("Add a new keyframe to all model nodes"));
 	ImGui::SameLine();
 	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Delete"), _play)) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
-	ImGui::TooltipText(_("Delete the current keyframe of the active nodes"));
+	ImGui::TooltipTextUnformatted(_("Delete the current keyframe of the active nodes"));
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_LC_ARROW_RIGHT_LEFT)) {
 		_startFrame = 0;
 		_endFrame = core_max(64, maxFrame + 1);
 	}
-	ImGui::TooltipText(_("Crop frames"));
+	ImGui::TooltipTextUnformatted(_("Crop frames"));
 	ImGui::SameLine();
 
 	if (_play) {

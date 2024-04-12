@@ -87,13 +87,13 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	const float buttonWidth = (float)_app->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
 		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText(_("Rotate by 90 degree on the x axis"));
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
 		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText(_("Rotate by 90 degree on the y axis"));
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
 		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
-		ImGui::TooltipText(_("Rotate by 90 degree on the z axis"));
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
 	}
 
 	if (ImGui::CollapsingHeader(_("Text##text"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -103,18 +103,18 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL "##textinput", &_text.size)) {
 			_text.size = glm::clamp(_text.size, 6, 255);
 		}
-		ImGui::TooltipText(_("Font size"));
+		ImGui::TooltipTextUnformatted(_("Font size"));
 		ImGui::SameLine();
 
 		ImGui::SetNextItemWidth(100.0f);
 		ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &_text.spacing);
-		ImGui::TooltipText(_("Horizontal spacing"));
+		ImGui::TooltipTextUnformatted(_("Horizontal spacing"));
 
 		ImGui::SetNextItemWidth(100.0f);
 		if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &_text.thickness)) {
 			_text.thickness = glm::clamp(_text.thickness, 1, 255);
 		}
-		ImGui::TooltipText(_("Thickness"));
+		ImGui::TooltipTextUnformatted(_("Thickness"));
 
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(100.0f);

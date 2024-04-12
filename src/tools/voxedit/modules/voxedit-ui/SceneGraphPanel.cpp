@@ -109,7 +109,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 				if (ImGui::Button(deleteId.c_str())) {
 					deleteKey = entry->key;
 				}
-				ImGui::TooltipText(_("Delete this node property"));
+				ImGui::TooltipTextUnformatted(_("Delete this node property"));
 			}
 		}
 
@@ -207,7 +207,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			_sceneMgr->nodeSetVisible(nodeId, visible);
 		}
 		if (_hideInactive->boolVal()) {
-			ImGui::TooltipText(_("Disabled because inactive nodes are hidden and the active node is always visible"));
+			ImGui::TooltipTextUnformatted(_("Disabled because inactive nodes are hidden and the active node is always visible"));
 		}
 	}
 	{ // column 2
@@ -310,9 +310,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			_lastActivedNodeId = nodeId;
 		}
 		if (referenceNode) {
-			ImGui::TooltipText(_("Reference Node"));
+			ImGui::TooltipTextUnformatted(_("Reference Node"));
 		} else if (referencedNode) {
-			ImGui::TooltipText(_("Reference Target Node"));
+			ImGui::TooltipTextUnformatted(_("Reference Target Node"));
 		}
 	}
 	{ // column 5
@@ -322,7 +322,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		if (ImGui::Button(deleteId.c_str())) {
 			_sceneMgr->nodeRemove(nodeId, false);
 		}
-		ImGui::TooltipText(_("Delete this model"));
+		ImGui::TooltipTextUnformatted(_("Delete this model"));
 	}
 
 	if (open) {

@@ -50,7 +50,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 			reloadScriptParameters(_activeScript);
 		}
 	}
-	ImGui::TooltipText(_("LUA scripts for manipulating the voxel volumes"));
+	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
 
 	ImGui::SameLine();
 
@@ -64,10 +64,10 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 		args.append(_scriptParameters);
 		listener("xs", _scriptParameters);
 	}
-	ImGui::TooltipText(_("Execute the selected script for the currently loaded voxel volumes"));
+	ImGui::TooltipTextUnformatted(_("Execute the selected script for the currently loaded voxel volumes"));
 
 	const int n = (int)_scriptParameterDescription.size();
-	if (n && ImGui::CollapsingHeader("Script parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (n && ImGui::CollapsingHeader(_("Script parameters"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		for (int i = 0; i < n; ++i) {
 			const voxelgenerator::LUAParameterDescription &p = _scriptParameterDescription[i];
 			switch (p.type) {
@@ -185,7 +185,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 				_textEditor.SetText("");
 			}
 		}
-		ImGui::TooltipText(_("Create a new lua script"));
+		ImGui::TooltipTextUnformatted(_("Create a new lua script"));
 		if (validScriptIndex) {
 			ImGui::SameLine();
 			if (ImGui::Button(_("Edit"))) {
@@ -193,7 +193,7 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 				_activeScriptFilename = _scripts[_currentScript].filename;
 				_textEditor.SetText(_activeScript.c_str());
 			}
-			ImGui::TooltipText(_("Edit the selected lua script"));
+			ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
 		}
 
 		ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");

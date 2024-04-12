@@ -73,7 +73,7 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 							modifier.setBrushType(BrushType::Stamp);
 						}
 					}
-					ImGui::TooltipText(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+					ImGui::TooltipTextUnformatted(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
 					if (ImGui::MenuItem(_("Add to scene"))) {
 						if (!file.downloaded) {
 							_collectionMgr->download(file);

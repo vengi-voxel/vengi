@@ -20,7 +20,7 @@ void metricOption() {
 			metricFlavor->setVal("");
 		}
 	}
-	ImGui::TooltipText(_("Send anonymous usage statistics"));
+	ImGui::TooltipTextUnformatted(_("Send anonymous usage statistics"));
 }
 
 void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
@@ -35,11 +35,11 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 				if (ImGui::BeginTabItem(app::App::getInstance()->fullAppname().c_str())) {
 					ImGui::Text("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::Text(_("This is a beta release!"));
+					ImGui::TextUnformatted(_("This is a beta release!"));
 					if (isNewVersionAvailable) {
-						ImGui::Text(_("A new version is available!"));
+						ImGui::TextUnformatted(_("A new version is available!"));
 					} else {
-						ImGui::Text(_("You are using the latest version."));
+						ImGui::TextUnformatted(_("You are using the latest version."));
 					}
 					metricOption();
 

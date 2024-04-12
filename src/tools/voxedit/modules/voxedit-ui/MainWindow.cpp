@@ -541,10 +541,10 @@ void MainWindow::popupWelcome() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_WELCOME)) {
 		ImGui::IconDialog(ICON_LC_LIGHTBULB, _("Welcome to VoxEdit!"));
-		ImGui::TextWrapped(_("The mission: Create a free, open-source and multi-platform voxel "
+		ImGui::TextWrappedUnformatted(_("The mission: Create a free, open-source and multi-platform voxel "
 						   "editor with animation support for artists and developers."));
 		ImGui::Separator();
-		ImGui::TextWrapped(_("We would like to enable anonymous usage metrics to improve the editor. "
+		ImGui::TextWrappedUnformatted(_("We would like to enable anonymous usage metrics to improve the editor. "
 						   "Please consider enabling it."));
 		ui::metricOption();
 		ImGui::Separator();
@@ -580,19 +580,19 @@ void MainWindow::popupNewScene() {
 		}
 
 		if (ImGui::CollapsingHeader(_("Empty scene"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::Text(_("Name"));
+			ImGui::TextUnformatted(_("Name"));
 			ImGui::Separator();
 			ImGui::InputText("##newscenename", &_modelNodeSettings.name);
 			ImGui::NewLine();
 
-			ImGui::Text(_("Position"));
+			ImGui::TextUnformatted(_("Position"));
 			ImGui::Separator();
 			veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
 			veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
 			veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 			ImGui::NewLine();
 
-			ImGui::Text(_("Size"));
+			ImGui::TextUnformatted(_("Size"));
 			ImGui::Separator();
 			veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
 			veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
@@ -703,19 +703,19 @@ void MainWindow::popupVolumeSplit() {
 
 void MainWindow::popupModelNodeSettings() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_NODE_SETTINGS, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::Text(_("Name"));
+		ImGui::TextUnformatted(_("Name"));
 		ImGui::Separator();
 		ImGui::InputText("##modelsettingsname", &_modelNodeSettings.name);
 		ImGui::NewLine();
 
-		ImGui::Text(_("Position"));
+		ImGui::TextUnformatted(_("Position"));
 		ImGui::Separator();
 		veui::InputAxisInt(math::Axis::X, "##posx", &_modelNodeSettings.position.x);
 		veui::InputAxisInt(math::Axis::Y, "##posy", &_modelNodeSettings.position.y);
 		veui::InputAxisInt(math::Axis::Z, "##posz", &_modelNodeSettings.position.z);
 		ImGui::NewLine();
 
-		ImGui::Text(_("Size"));
+		ImGui::TextUnformatted(_("Size"));
 		ImGui::Separator();
 		veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
 		veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
@@ -840,7 +840,7 @@ void MainWindow::popupAbout() {
 	ui::popupAbout([]() {
 		if (ImGui::BeginTabItem(_("Formats"))) {
 			const ImGuiTableFlags tableFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable;
-			ImGui::Text(_("Voxel load"));
+			ImGui::TextUnformatted(_("Voxel load"));
 			if (ImGui::BeginTable("##voxelload", 2, tableFlags)) {
 				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
 				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
@@ -855,7 +855,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text(_("Voxel save"));
+			ImGui::TextUnformatted(_("Voxel save"));
 			if (ImGui::BeginTable("##voxelsave", 2, tableFlags)) {
 				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
 				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
@@ -870,7 +870,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text(_("Palettes"));
+			ImGui::TextUnformatted(_("Palettes"));
 			if (ImGui::BeginTable("##palettes", 2, tableFlags)) {
 				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
 				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
@@ -885,7 +885,7 @@ void MainWindow::popupAbout() {
 				ImGui::EndTable();
 			}
 			ImGui::Dummy(ImVec2(1, 10));
-			ImGui::Text(_("Images"));
+			ImGui::TextUnformatted(_("Images"));
 			if (ImGui::BeginTable("##images", 2, tableFlags)) {
 				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch, 0.7f, 0);
 				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);

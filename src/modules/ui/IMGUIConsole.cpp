@@ -104,7 +104,7 @@ bool IMGUIConsole::render(command::CommandExecutionListener &listener) {
 				if (ImGui::Checkbox(_("Debug"), &debug)) {
 					core::Var::getSafe(cfg::CoreLogLevel)->setVal(debug ? (int)Log::Level::Debug : (int)Log::Level::Info);
 				}
-				ImGui::TooltipText(_("Enable debug logging for the console"));
+				ImGui::TooltipTextUnformatted(_("Enable debug logging for the console"));
 				ImGui::IconCheckbox(ICON_LC_LOCK, _("Auto scrolling"), &_autoScrollEnabled);
 				ImGui::EndMenu();
 			}
