@@ -27,6 +27,7 @@ from the Author.
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL_stdinc.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -36,7 +37,7 @@ from the Author.
 #include "findlocale.h"
 
 static int is_lcchar(const int c) {
-	return isalnum(c);
+	return SDL_isalnum(c);
 }
 
 static void lang_country_variant_from_envstring(const char *str, char **lang, char **country, char **variant) {
@@ -51,9 +52,9 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	if (start != end) {
 		int i;
 		int len = end - start;
-		char *s = (char *)malloc(len + 1);
+		char *s = (char *)SDL_malloc(len + 1);
 		for (i = 0; i < len; ++i) {
-			s[i] = tolower(str[start + i]);
+			s[i] = SDL_tolower(str[start + i]);
 		}
 		s[i] = '\0';
 		*lang = s;
@@ -73,9 +74,9 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	if (start != end) {
 		int i;
 		int len = end - start;
-		char *s = (char *)malloc(len + 1);
+		char *s = (char *)SDL_malloc(len + 1);
 		for (i = 0; i < len; ++i) {
-			s[i] = toupper(str[start + i]);
+			s[i] = SDL_toupper(str[start + i]);
 		}
 		s[i] = '\0';
 		*country = s;
@@ -95,7 +96,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 	if (start != end) {
 		int i;
 		int len = end - start;
-		char *s = (char *)malloc(len + 1);
+		char *s = (char *)SDL_malloc(len + 1);
 		for (i = 0; i < len; ++i) {
 			s[i] = str[start + i];
 		}
@@ -119,9 +120,9 @@ static int accumulate_locstring(const char *str, FL_Locale *l) {
 			return 1;
 		}
 	}
-	free(lang);
-	free(country);
-	free(variant);
+	SDL_free(lang);
+	SDL_free(country);
+	SDL_free(variant);
 	return 0;
 }
 
@@ -130,30 +131,30 @@ static int accumulate_env(const char *name, FL_Locale *l) {
 	char *lang = NULL;
 	char *country = NULL;
 	char *variant = NULL;
-	env = getenv(name);
+	env = SDL_getenv(name);
 	if (env) {
 		return accumulate_locstring(env, l);
 	}
-	free(lang);
-	free(country);
-	free(variant);
+	SDL_free(lang);
+	SDL_free(country);
+	SDL_free(variant);
 	return 0;
 }
 
 static void canonise_fl(FL_Locale *l) {
 	/* this function fixes some common locale-specifying mistakes */
 	/* en_UK -> en_GB */
-	if (l->lang && 0 == strcmp(l->lang, "en")) {
-		if (l->country && 0 == strcmp(l->country, "UK")) {
-			free((void *)l->country);
-			l->country = strdup("GB");
+	if (l->lang && 0 == SDL_strcmp(l->lang, "en")) {
+		if (l->country && 0 == SDL_strcmp(l->country, "UK")) {
+			SDL_free((void *)l->country);
+			l->country = SDL_strdup("GB");
 		}
 	}
 	/* ja_JA -> ja_JP */
-	if (l->lang && 0 == strcmp(l->lang, "ja")) {
-		if (l->country && 0 == strcmp(l->country, "JA")) {
-			free((void *)l->country);
-			l->country = strdup("JP");
+	if (l->lang && 0 == SDL_strcmp(l->lang, "ja")) {
+		if (l->country && 0 == SDL_strcmp(l->country, "JA")) {
+			SDL_free((void *)l->country);
+			l->country = SDL_strdup("JP");
 		}
 	}
 }
@@ -427,7 +428,7 @@ static const int lcid_to_fl(LCID lcid, FL_Locale *rtn) {
 
 FL_Success FL_FindLocale(FL_Locale **locale, FL_Domain domain) {
 	FL_Success success = FL_FAILED;
-	FL_Locale *rtn = (FL_Locale *)malloc(sizeof(FL_Locale));
+	FL_Locale *rtn = (FL_Locale *)SDL_malloc(sizeof(FL_Locale));
 	rtn->lang = NULL;
 	rtn->country = NULL;
 	rtn->variant = NULL;
@@ -483,15 +484,15 @@ void FL_FreeLocale(FL_Locale **locale) {
 		FL_Locale *l = *locale;
 		if (l) {
 			if (l->lang) {
-				free((void *)l->lang);
+				SDL_free((void *)l->lang);
 			}
 			if (l->country) {
-				free((void *)l->country);
+				SDL_free((void *)l->country);
 			}
 			if (l->variant) {
-				free((void *)l->variant);
+				SDL_free((void *)l->variant);
 			}
-			free(l);
+			SDL_free(l);
 			*locale = NULL;
 		}
 	}

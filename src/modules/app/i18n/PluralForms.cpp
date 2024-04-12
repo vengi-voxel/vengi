@@ -205,7 +205,7 @@ PluralForms PluralForms::fromString(const core::String &str) {
 	// Remove spaces from string before lookup
 	core::String space_less_str;
 	for (size_t i = 0; i < str.size(); ++i)
-		if (!isspace(str[i]))
+		if (!SDL_isspace(str[i]))
 			space_less_str += str[i];
 
 	auto it = plural_forms.find(space_less_str);

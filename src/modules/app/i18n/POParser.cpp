@@ -329,7 +329,7 @@ bool POParser::parse() {
 					if (msgstr_num.empty()) {
 						return error("expected 'msgstr[N] (0 <= N <= 9)'");
 					}
-				} else if (prefix("msgstr[") && _currentLine.size() > 8 && isdigit(_currentLine[7]) &&
+				} else if (prefix("msgstr[") && _currentLine.size() > 8 && SDL_isdigit(_currentLine[7]) &&
 						   _currentLine[8] == ']') {
 					unsigned int number = static_cast<unsigned int>(_currentLine[7] - '0');
 					core::String msgstr = getString(9);

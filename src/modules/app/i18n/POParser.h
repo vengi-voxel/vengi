@@ -39,7 +39,6 @@ private:
 	bool _useFuzzy;
 	bool _error = false;
 
-	bool _running = false;
 	bool _eof = false;
 	bool _big5 = false;
 
