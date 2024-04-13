@@ -9,7 +9,7 @@
 #include "image/Image.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
-#include "core/collection/StringMap.h"
+#include "core/collection/DynamicStringMap.h"
 
 namespace video {
 
@@ -18,8 +18,8 @@ namespace video {
  */
 class TexturePool : public core::IComponent {
 private:
-	core::StringMap<TexturePtr> _cache;
-	core::StringMap<image::ImagePtr> _images;
+	core::DynamicStringMap<TexturePtr> _cache;
+	core::DynamicStringMap<image::ImagePtr> _images;
 	TexturePtr _empty;
 public:
 	video::TexturePtr load(const core::String& name, bool emptyAsFallback = true);
@@ -30,7 +30,7 @@ public:
 	image::ImagePtr loadImage(const core::String& name, const uint8_t *rgba, size_t size);
 	video::TexturePtr addImage(const image::ImagePtr &image);
 
-	const core::StringMap<TexturePtr> &cache() {
+	const core::DynamicStringMap<TexturePtr> &cache() {
 		return _cache;
 	}
 
