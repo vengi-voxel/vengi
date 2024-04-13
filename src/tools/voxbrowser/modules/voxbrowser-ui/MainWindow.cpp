@@ -106,20 +106,20 @@ void MainWindow::updateAsset() {
 		if (voxelFile.name.empty()) {
 			ui::ScopedStyle style;
 			style.setFont(_app->bigFont());
-			ImGui::TextCentered("Nothing selected");
+			ImGui::TextCentered(_("Nothing selected"));
 		} else if (const video::TexturePtr &texture = _voxelCollection.thumbnailLookup(voxelFile)) {
 			image(texture);
 		} else {
 			{
 				ui::ScopedStyle style;
 				style.setFont(_app->bigFont());
-				ImGui::TextCentered("No thumbnail available", false);
+				ImGui::TextCentered(_("No thumbnail available"), false);
 			}
 
 			if (voxelFile.downloaded && !_texturePool->has(voxelFile.name)) {
 				createThumbnail(voxelFile);
 			} else {
-				if (ImGui::Button("Download")) {
+				if (ImGui::Button(_("Download"))) {
 					http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
 					if (stream.valid()) {
 						voxelFile.downloaded = true;
@@ -168,25 +168,25 @@ void MainWindow::createThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 void MainWindow::updateAssetDetails() {
 	voxelcollection::VoxelFile &voxelFile = _voxelCollection.selected();
 	if (ImGui::Begin(TITLE_ASSET_DETAILS)) {
-		ImGui::Text("Name: %s", voxelFile.name.c_str());
-		ImGui::Text("Source: %s", voxelFile.source.c_str());
-		ImGui::Text("License: %s", voxelFile.license.c_str());
+		ImGui::Text(_("Name: %s"), voxelFile.name.c_str());
+		ImGui::Text(_("Source: %s"), voxelFile.source.c_str());
+		ImGui::Text(_("License: %s"), voxelFile.license.c_str());
 		if (!voxelFile.thumbnailUrl.empty()) {
 			ImGui::URLItem("Thumbnail", voxelFile.thumbnailUrl.c_str());
 		}
-		ImGui::URLItem("URL", voxelFile.url.c_str());
+		ImGui::URLItem(_("URL"), voxelFile.url.c_str());
 		if (voxelFile.downloaded || io::filesystem()->open(voxelFile.fullPath, io::FileMode::SysRead)->exists()) {
 			voxelFile.downloaded = true;
-			if (ImGui::Button("Open")) {
+			if (ImGui::Button(_("Open"))) {
 				command::executeCommands("url \"file://" + voxelFile.fullPath + "\"");
 			}
 			if (!_texturePool->has(voxelFile.name)) {
-				if (ImGui::Button("Create thumbnail")) {
+				if (ImGui::Button(_("Create thumbnail"))) {
 					createThumbnail(voxelFile);
 				}
 			}
 		} else {
-			if (ImGui::Button("Download")) {
+			if (ImGui::Button(_("Download"))) {
 				http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
 				if (stream.valid()) {
 					voxelFile.downloaded = true;
