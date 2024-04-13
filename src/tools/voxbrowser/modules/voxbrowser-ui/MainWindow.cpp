@@ -124,7 +124,7 @@ void MainWindow::updateAsset() {
 					if (stream.valid()) {
 						voxelFile.downloaded = true;
 					} else {
-						Log::warn("Failed to download %s", voxelFile.url.c_str());
+						Log::warn("Failed to download from url '%s' (%s)", voxelFile.url.c_str(), voxelFile.name.c_str());
 					}
 				}
 			}
@@ -191,7 +191,7 @@ void MainWindow::updateAssetDetails() {
 				if (stream.valid()) {
 					voxelFile.downloaded = true;
 				} else {
-					Log::warn("Failed to download %s", voxelFile.url.c_str());
+					Log::warn("Failed to download from url '%s' (%s)", voxelFile.url.c_str(), voxelFile.name.c_str());
 				}
 			}
 		}
@@ -274,17 +274,6 @@ void MainWindow::update(voxelcollection::CollectionManager &collectionMgr) {
 	registerPopups();
 
 	ImGui::End();
-
-#if 0
-	if (ImGui::Begin("Texture Pool")) {
-		const core::StringMap<video::TexturePtr> &cache = _texturePool.cache();
-		for (const auto &entry : cache) {
-			ImGui::Text("%s: width: %i height: %i", entry->first.c_str(), entry->second->width(),
-						entry->second->height());
-		}
-	}
-	ImGui::End();
-#endif
 
 	_statusBar.downloadProgress((float)collectionMgr.downloadProgress() / 100.0f);
 	_statusBar.update(TITLE_STATUSBAR, statusBarHeight, n, collectionMgr.allEntries());
