@@ -90,10 +90,6 @@ App *App::getInstance() {
 	return _staticInstance;
 }
 
-const char *App::translate(const char *msgid) const {
-	core_assert(_dict != nullptr);
-	return _dict->translate(msgid);
-}
 
 App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
 	: _filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
@@ -349,6 +345,28 @@ void App::onFrame() {
 	core_trace_end_frame("Main");
 }
 
+const char *App::translate(const char *msgid) const {
+	core_assert(_dict != nullptr);
+	return _dict->translate(msgid);
+}
+
+bool App::setLanguage(const core::String &language) {
+	if (language.empty()) {
+		_dictManager.setLanguage(_systemLanguage);
+		_dict = &_dictManager.getDictionary(_systemLanguage);
+	} else {
+		Language lang = Language::fromEnv(language);
+		if (!lang) {
+			Log::error("Unknown language: %s", language.c_str());
+			return false;
+		}
+		_dictManager.setLanguage(lang);
+		Log::debug("set language to %s", lang.str().c_str());
+		_dict = &_dictManager.getDictionary(lang);
+	}
+	return true;
+}
+
 AppState App::onConstruct() {
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
@@ -361,9 +379,8 @@ AppState App::onConstruct() {
 
 	FL_Locale *locale;
 	FL_FindLocale(&locale, FL_MESSAGES);
-	_dictManager.setLanguage(Language::fromSpec(locale->lang, locale->country, locale->variant));
+	_systemLanguage = Language::fromSpec(locale->lang, locale->country, locale->variant);
 	FL_FreeLocale(&locale);
-	_dict = &_dictManager.getDictionary();
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
 	core::VarPtr syslogVar = core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
@@ -434,6 +451,10 @@ AppState App::onConstruct() {
 	}
 	Log::init();
 
+	core::VarPtr langVar = core::Var::get(cfg::CoreLanguage, _systemLanguage.str().c_str());
+	setLanguage(langVar->strVal());
+
+	langVar->setHelp(_("The language to use - empty means system default"));
 	syslogVar->setHelp(_("Log to the system log"));
 	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
 

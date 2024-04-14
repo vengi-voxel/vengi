@@ -118,6 +118,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar(_("Tip of the day"), cfg::VoxEditTipOftheDay);
 
 				ui::metricOption();
+				_app->languageOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {
 					_("Cubes"), _("Marching cubes")};

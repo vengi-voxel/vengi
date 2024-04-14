@@ -49,6 +49,7 @@ constexpr const char *CoreLogLevel = "core_loglevel";
 constexpr const char *CoreSysLog = "core_syslog";
 constexpr const char *CorePath = "core_path";
 constexpr const char *CoreColorReduction = "core_colorreduction";
+constexpr const char *CoreLanguage = "core_language";
 
 // The size of the mesh chunk
 constexpr const char *VoxelMeshSize = "voxel_meshsize";

@@ -33,6 +33,7 @@ bool MenuBar::update() {
 				ImGui::EndDisabled();
 				ImGui::CheckboxVar(_("Bloom"), cfg::ClientBloom);
 				ui::metricOption();
+				_app->languageOption();
 				ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
 				ImGui::InputVarInt(_("Font size"), cfg::UIFontSize, 1, 5);
 				const core::Array<core::String, ImGui::MaxStyles> uiStyles = {_("CorporateGrey"), _("Dark"), _("Light"),

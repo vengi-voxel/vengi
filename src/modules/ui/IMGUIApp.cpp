@@ -5,6 +5,7 @@
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "Style.h"
+#include "app/i18n/Language.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
@@ -676,6 +677,27 @@ app::AppState IMGUIApp::onRunning() {
 
 void IMGUIApp::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("escape", "ui_close", "ui");
+}
+
+void IMGUIApp::languageOption() {
+	const core::VarPtr &languageVar = core::Var::getSafe(cfg::CoreLanguage);
+	core::String currentLanguage = languageVar->strVal();
+	if (ImGui::BeginCombo(_("Language"), languageVar->strVal().c_str())) {
+		const core::DynamicArray<app::Language> &languages = _dictManager.getLanguages();
+		app::Language currentLang = app::Language::fromEnv(currentLanguage);
+		for (const auto &lang : languages) {
+			bool isSelected = lang == currentLang;
+			if (ImGui::Selectable(lang.str().c_str(), isSelected)) {
+				languageVar->setVal(lang.str());
+				setLanguage(lang.str());
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::TooltipTextUnformatted(_("To change the language everywhere restart the application"));
 }
 
 app::AppState IMGUIApp::onCleanup() {

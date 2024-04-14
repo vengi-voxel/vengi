@@ -141,6 +141,8 @@ public:
 	ImFont *bigIconFont();
 	ImFont *smallFont();
 
+	void languageOption();
+
 	void showBindingsDialog();
 	void showTexturesDialog();
 	void showCvarDialog();

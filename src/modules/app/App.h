@@ -116,6 +116,7 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	DictionaryManager _dictManager;
 	const Dictionary *_dict = nullptr;
+	Language _systemLanguage;
 
 	core::VarPtr _logLevelVar;
 	core::VarPtr _syslogVar;
@@ -182,6 +183,8 @@ public:
 	bool saveConfiguration();
 
 	bool hasEnoughMemory(size_t bytes) const;
+
+	bool setLanguage(const core::String &language);
 
 	// includes organisation - but not the version
 	core::String fullAppname() const;
