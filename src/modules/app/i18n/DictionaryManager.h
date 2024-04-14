@@ -50,6 +50,9 @@ private:
 
 	Dictionary _emptyDict;
 
+	// available languages from po files found in the search paths
+	core::DynamicArray<Language> _languages;
+
 	io::FilesystemPtr _filesystem;
 
 	void clearCache();

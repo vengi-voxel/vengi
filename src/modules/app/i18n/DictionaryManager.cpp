@@ -48,6 +48,7 @@ void DictionaryManager::clearCache() {
 		delete i->second;
 	}
 	_dictionaries.clear();
+	_languages.clear();
 
 	_currentDict = nullptr;
 }
@@ -125,21 +126,24 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 }
 
 core::DynamicArray<Language> DictionaryManager::getLanguages() {
-	core::DynamicArray<Language> languages;
-
+	if (!_languages.empty()) {
+		return _languages;
+	}
+	_languages.push_back(Language::fromSpec("en", "GB"));
 	for (SearchPath::iterator p = _searchPath.begin(); p != _searchPath.end(); ++p) {
 		core::DynamicArray<io::FilesystemEntry> files;
 		if (!_filesystem->list(p->c_str(), files, "*.po")) {
 			continue;
 		}
-		for (const auto &file : files) {
+		for (const io::FilesystemEntry &file : files) {
 			const Language &lng = Language::fromEnv(core::string::extractFilename(file.name));
 			if (lng) {
-				languages.push_back(lng);
+				_languages.push_back(lng);
 			}
 		}
 	}
-	return languages;
+	core::sort(_languages.begin(), _languages.end(), core::Less<Language>());
+	return _languages;
 }
 
 void DictionaryManager::setLanguage(const Language &language) {

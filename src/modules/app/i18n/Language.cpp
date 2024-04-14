@@ -389,12 +389,11 @@ Language Language::fromSpec(const core::String &language, const core::String &co
 
 		const LanguageSpec *best_match = nullptr;
 		int best_match_score = 0;
-		for (core::DynamicArray<const LanguageSpec *>::iterator j = lst.begin(); j != lst.end();
-			 ++j) { // Search for the language that best matches the given spec, value country more then modifier
-			int score = Language::match(Language(*j), tmplang);
+		for (const LanguageSpec* spec : lst) { // Search for the language that best matches the given spec, value country more then modifier
+			int score = Language::match(Language(spec), tmplang);
 
 			if (score > best_match_score) {
-				best_match = *j;
+				best_match = spec;
 				best_match_score = score;
 			}
 		}
