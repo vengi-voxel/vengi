@@ -72,7 +72,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 	}
 	// Dictionary for languages lang isn't loaded, so we load it
 	Dictionary *dict = new Dictionary(_charset);
-
+	Log::debug("Create dictionary for language: %s", language.str().c_str());
 	_dictionaries.put(language, dict);
 
 	for (auto p = _searchPath.begin(); p != _searchPath.end(); ++p) {
@@ -108,6 +108,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 			if (!in) {
 				Log::error("failure opening: %s", pofile.c_str());
 			} else {
+				Log::debug("Parsing po file %s", pofile.c_str());
 				io::FileStream stream(in);
 				POParser::parse(pofile, stream, *dict);
 			}
@@ -115,6 +116,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 			Log::debug("no matching .po file found for language: %s", language.getName().c_str());
 		}
 	}
+	Log::debug("Dictionary for language: %s loaded with %i entries", language.str().c_str(), (int)dict->size());
 
 	if (!language.getCountry().empty()) {
 		dict->addFallback(&getDictionary(Language::fromSpec(language.getLanguage())));

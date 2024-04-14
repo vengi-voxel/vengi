@@ -85,6 +85,10 @@ const char *Dictionary::translatePlural(const Entries &dict, const char *msgid, 
 	return msgidPlural;
 }
 
+size_t Dictionary::size() const {
+	return _ctxtEntries.size() + _entries.size();
+}
+
 const char *Dictionary::translate(const char *msgid) const {
 	return translate(_entries, msgid);
 }

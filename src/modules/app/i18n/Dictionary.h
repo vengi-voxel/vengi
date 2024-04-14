@@ -67,6 +67,8 @@ public:
 	/** Translate the string \a msgid. */
 	const char *translate(const char *msgid) const;
 
+	size_t size() const;
+
 	/**
 	 * Translate the string \a msgid to its correct plural form, based
 	 * on the number of items given by \a num. \a msgid_plural is \a msgid in
