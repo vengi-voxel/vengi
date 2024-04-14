@@ -16,6 +16,9 @@ Panel::Panel(IMGUIApp *app, const char *title) : _app(app), _title(title) {
 }
 
 Panel::~Panel() {
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	unregisterUITests(_app->imguiTestEngine());
+#endif
 }
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE

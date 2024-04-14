@@ -143,6 +143,12 @@ public:
 
 	void languageOption();
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	ImGuiTestEngine *imguiTestEngine() const {
+		return _imguiTestEngine;
+	}
+#endif
+
 	void showBindingsDialog();
 	void showTexturesDialog();
 	void showCvarDialog();
