@@ -79,6 +79,7 @@ set(TEST_SRCS
 	tests/CubFormatTest.cpp
 	tests/CubzhFormatTest.cpp
 	tests/CubzhB64FormatTest.cpp
+	tests/FBXFormatTest.cpp
 	tests/GLTFFormatTest.cpp
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp

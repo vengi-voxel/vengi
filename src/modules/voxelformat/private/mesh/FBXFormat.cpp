@@ -104,7 +104,6 @@ Definitions: {
 }
 
 Objects: {
-
 )",
 							 PROJECT_VERSION, app::App::getInstance()->fullAppname().c_str(), PROJECT_VERSION, meshCount);
 
@@ -167,10 +166,12 @@ Objects: {
 				if (i > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
-				stream.writeStringFormat(false, "%i,%i,%i", (int)one, (int)two, (int)three);
+				stream.writeStringFormat(false, "%i,%i,-%i", (int)one, (int)two, (int)(three + 1));
 			}
 			wrapBool(stream.writeString("\n", false))
 			wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
+
+			// TODO: LayerElementNormal
 
 			if (withTexCoords) {
 				wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
@@ -189,7 +190,7 @@ Objects: {
 					}
 					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
 				}
-				wrapBool(stream.writeString("\n\n", false))
+				wrapBool(stream.writeString("\n\t\t}\n", false))
 				// TODO: UVIndex needed or only for IndexToDirect?
 
 				wrapBool(stream.writeString("\t\tLayerElementTexture: 0 {\n"
@@ -200,7 +201,7 @@ Objects: {
 											"\t\t\tBlendMode: \"Translucent\"\n"
 											"\t\t\tTextureAlpha: 1\n"
 											"\t\t\tTextureId: 0\n"
-											"\t\t}\n"))
+											"\t\t}\n", false))
 			}
 
 			if (withColor) {
@@ -219,13 +220,11 @@ Objects: {
 					if (i > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
-					stream.writeStringFormat(false, "%f,%f,%f,%f", color.r, color.g, color.b, color.a);
+					stream.writeStringFormat(false, "%.05f,%.05f,%.05f,%.05f", color.r, color.g, color.b, color.a);
 				}
-				wrapBool(stream.writeString("\n\n", false))
-				// TODO: ColorIndex needed or only for IndexToDirect?
-
 				// close LayerElementColor
-				wrapBool(stream.writeString("\t\t}\n", false))
+				wrapBool(stream.writeString("\n\t\t}\n", false))
+				// TODO: ColorIndex needed or only for IndexToDirect?
 
 				wrapBool(stream.writeString("\t\tLayer: 0 {\n"
 											"\t\t\tVersion: 100\n"
@@ -238,9 +237,11 @@ Objects: {
 			}
 
 			// close the model
-			wrapBool(stream.writeString("\t}\n}\n\n", false))
+			wrapBool(stream.writeString("\t}\n", false))
 		}
 	}
+	// close objects
+	wrapBool(stream.writeString("}\n", false))
 	return true;
 }
 
