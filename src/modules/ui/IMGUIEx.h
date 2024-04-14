@@ -141,6 +141,7 @@ IMGUI_API bool IconSelectable(const char *icon, const char *title, bool selected
 IMGUI_API void URLIconItem(const char *icon, const char *title, const char *url, float width = 0.0f);
 IMGUI_API void URLItem(const char *title, const char *url, float width = 0.0f);
 IMGUI_API bool ButtonFullWidth(const char *title);
+IMGUI_API bool IconTreeNodeEx(const char *icon, const char* label, ImGuiTreeNodeFlags flags = 0);
 
 IMGUI_API void TooltipCommand(const char *command);
 IMGUI_API void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix, const float gridSize);

@@ -34,6 +34,7 @@ bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
 		IM_CHECK_SILENT_RETV(window != nullptr, false);
 	}
 	ctx->WindowFocus(window->ID);
+	ctx->SetRef(window);
 	return true;
 }
 

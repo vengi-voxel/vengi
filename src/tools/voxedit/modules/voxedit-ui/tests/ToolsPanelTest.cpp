@@ -3,17 +3,14 @@
  */
 
 #include "../ToolsPanel.h"
+#include "core/StringUtil.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testCategory(), "toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
-		// edittools###button0
-		// scenetools###button0
-		ImGuiTestItemList items;
 		bool editMode = ctx->ItemInfo("edittools/###button0", ImGuiTestOpFlags_NoError)->ID != 0;
 		bool sceneMode = false;
 		if (!editMode)

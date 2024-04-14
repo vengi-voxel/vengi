@@ -6,6 +6,7 @@
 #include "DragAndDropPayload.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "core/Color.h"
@@ -18,7 +19,6 @@
 #include "scenegraph/SceneGraphNode.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"
 #define PALETTEACTIONPOPUP "##paletteactionpopup"
 
 namespace voxedit {

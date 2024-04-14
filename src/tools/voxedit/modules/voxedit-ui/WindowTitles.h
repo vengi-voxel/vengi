@@ -15,7 +15,7 @@
 #define TITLE_CAMERA " Camera##title"
 #define TITLE_ASSET ICON_LC_LIST " Assets##title"
 #define TITLE_SCRIPT ICON_LC_CODE " Scripts##title"
-#define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene##title"
+#define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene###scenegraph"
 #define TITLE_RENDER ICON_LC_IMAGE " Render##title"
 #define TITLE_TREES ICON_LC_TREE_PINE " Trees##title"
 #define TITLE_BRUSHPANEL ICON_LC_BRUSH " Brush##title"
@@ -34,3 +34,4 @@
 #define POPUP_TITLE_VOLUME_SPLIT "Volume split##popuptitle"
 #define POPUP_TITLE_RENAME_NODE "Rename node##scenegraphrenamenode"
 #define POPUP_TITLE_MODEL_UNREFERENCE "Unreference Model##popuptitle"
+#define POPUP_TITLE_LOAD_PALETTE "Select Palette##popuptitle"

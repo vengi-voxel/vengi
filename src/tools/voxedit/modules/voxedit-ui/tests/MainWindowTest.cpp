@@ -36,7 +36,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		ImGuiContext& g = *ctx->UiContext;
-		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
@@ -51,7 +50,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
-		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
@@ -59,6 +57,8 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		ctx->ItemInputValue("##newscenename", "Automated ui test");
 		ctx->ItemClick("###OK");
 	};
+
+	// TODO: new scene select template
 }
 
 } // namespace voxedit

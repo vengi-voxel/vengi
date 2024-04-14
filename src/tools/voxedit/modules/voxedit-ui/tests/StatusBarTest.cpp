@@ -3,17 +3,27 @@
  */
 
 #include "../StatusBar.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *title) {
-#if 0
 	IM_REGISTER_TEST(engine, testCategory(), "none")->TestFunc = [=](ImGuiTestContext *ctx) {
-		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
+		const struct {
+			const char *cvarName;
+			const char *label;
+		} checkboxes[]{{cfg::VoxEditGrayInactive, "Grayscale"}, {cfg::VoxEditHideInactive, "Only active"}};
+		for (int i = 0; i < lengthof(checkboxes); ++i) {
+			core::VarPtr var = core::Var::get(checkboxes[i].cvarName);
+			const bool before = var->boolVal();
+			ctx->ItemClick(checkboxes[i].label);
+			IM_CHECK(before != var->boolVal());
+			ctx->ItemClick(checkboxes[i].label);
+			IM_CHECK(before == var->boolVal());
+		}
 	};
-#endif
 }
 
 } // namespace voxedit

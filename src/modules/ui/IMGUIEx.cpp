@@ -487,6 +487,15 @@ bool ButtonFullWidth(const char *label) {
 	return Button(label, ImVec2(ImGui::GetContentRegionAvail().x, 0));
 }
 
+bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flags) {
+	ImGuiWindow *window = GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	core::String labelWithIcon = core::string::format("%s %s", icon, label);
+	return TreeNodeBehavior(window->GetID(label), flags, labelWithIcon.c_str(), nullptr);
+}
+
 bool Fullscreen(const char *label, ImGuiWindowFlags additionalFlags) {
 	SetNextWindowSize(imguiApp()->frameBufferDimension());
 	SetNextWindowPos(ImVec2(0.0f, 0.0f));

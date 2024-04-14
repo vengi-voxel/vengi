@@ -235,30 +235,30 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 
 		ImGui::TableNextColumn();
 
-		core::String name;
+		const char *icon = "";
 		switch (node.type()) {
 		case scenegraph::SceneGraphNodeType::ModelReference:
-			name = ICON_LC_CODESANDBOX;
+			icon = ICON_LC_CODESANDBOX;
 			break;
 		case scenegraph::SceneGraphNodeType::Model:
-			name = ICON_LC_BOXES;
+			icon = ICON_LC_BOXES;
 			break;
 		case scenegraph::SceneGraphNodeType::Root:
 		case scenegraph::SceneGraphNodeType::Group:
-			name = ICON_LC_GROUP;
+			icon = ICON_LC_GROUP;
 			break;
 		case scenegraph::SceneGraphNodeType::Camera:
-			name = ICON_LC_CAMERA;
+			icon = ICON_LC_CAMERA;
 			break;
 		case scenegraph::SceneGraphNodeType::Unknown:
-			name = ICON_LC_HELP_CIRCLE;
+			icon = ICON_LC_HELP_CIRCLE;
 			break;
 		case scenegraph::SceneGraphNodeType::AllModels:
 		case scenegraph::SceneGraphNodeType::All:
 		case scenegraph::SceneGraphNodeType::Max:
 			break;
 		}
-		name.append(core::string::format(" %s##%i", node.name().c_str(), nodeId));
+		const core::String &name = core::string::format("%s##%i", node.name().c_str(), nodeId);
 		const bool selected = nodeId == sceneGraph.activeNode();
 		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth;
 		if (node.isLeaf()) {
@@ -273,9 +273,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 		const float indent = (float)depth * (ImGui::GetStyle().FramePadding.x + 4.0f);
 		ImGui::Indent(indent);
 		if (node.isLeaf()) {
-			ImGui::TreeNodeEx(name.c_str(), treeFlags);
+			ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
 		} else {
-			open = ImGui::TreeNodeEx(name.c_str(), treeFlags);
+			open = ImGui::IconTreeNodeEx(icon, name.c_str(), treeFlags);
 		}
 		ImGui::Unindent(indent);
 
@@ -360,7 +360,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 		if (size.y <= textLineHeight * 2.0f) {
 			size.y = textLineHeight * 2.0f;
 		}
-		if (ImGui::BeginChild("master##scenegraphpanel", size)) {
+		if (ImGui::BeginChild("main", size)) {
 			const bool onlyOneModel = sceneGraph.size(scenegraph::SceneGraphNodeType::Model) <= 1;
 			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 			ui::Toolbar toolbar("scenegraphtools", buttonSize);
@@ -420,7 +420,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 				ImGui::TableSetupColumn(ICON_LC_EYE "##visiblenode", colFlags);
 				ImGui::TableSetupColumn(ICON_LC_LOCK "##lockednode", colFlags);
 				ImGui::TableSetupColumn("##nodecolor", colFlags);
-				ImGui::TableSetupColumn("Name##node", ImGuiTableColumnFlags_WidthStretch);
+				ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
 				ImGui::TableSetupColumn("##nodedelete", colFlags);
 				ImGui::TableHeadersRow();
 				// TODO: filter by name and type
