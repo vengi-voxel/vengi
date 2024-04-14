@@ -394,7 +394,7 @@ bool POParser::parse() {
 			}
 		}
 
-		if (!isEmptyLine()) {
+		if (!_eof && !isEmptyLine()) {
 			return error("expected empty line");
 		}
 
