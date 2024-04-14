@@ -380,6 +380,9 @@ AppState App::onConstruct() {
 	FL_Locale *locale;
 	FL_FindLocale(&locale, FL_MESSAGES);
 	_systemLanguage = Language::fromSpec(locale->lang, locale->country, locale->variant);
+	if (!_systemLanguage) {
+		_systemLanguage = Language::fromSpec("en", "GB");
+	}
 	FL_FreeLocale(&locale);
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
