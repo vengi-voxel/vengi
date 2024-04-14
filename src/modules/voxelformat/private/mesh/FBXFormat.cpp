@@ -341,9 +341,9 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				} else if (material->pbr.base_color.value_components == 4) {
 					baseColorRGBA = priv::_ufbx_to_vec4(material->pbr.base_color.value_vec4);
 				}
-				if (material->features.ior.enabled) {
-					// TODO: rendering features for e.g. magicavoxel
-				}
+			}
+			if (material->features.ior.enabled) {
+				// TODO: rendering features for e.g. magicavoxel
 			}
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
@@ -374,7 +374,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					}
 					const ufbx_vec2 &uv =
 						mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
-					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
+					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale; // TODO: transform here - see issue https://github.com/vengi-voxel/vengi/issues/227
 					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
 				}
 				tri.texture = texture;
