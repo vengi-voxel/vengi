@@ -55,28 +55,22 @@ void TreePanel::switchTreeType(voxelgenerator::TreeType treeType) {
 	_treeGeneratorContext.cfg.type = treeType;
 }
 
-void TreePanel::update(const char *title) {
-	const struct {
-		const char *name;
-		voxelgenerator::TreeType type;
-	} treeTypes[] = {{_("Pine"), voxelgenerator::TreeType::Pine},
-					 {_("Dome"), voxelgenerator::TreeType::Dome},
-					 {_("Dome Hanging"), voxelgenerator::TreeType::DomeHangingLeaves},
-					 {_("Cone"), voxelgenerator::TreeType::Cone},
-					 {_("Fir"), voxelgenerator::TreeType::Fir},
-					 {_("Ellipsis2"), voxelgenerator::TreeType::BranchesEllipsis},
-					 {_("Ellipsis"), voxelgenerator::TreeType::Ellipsis},
-					 {_("Cube"), voxelgenerator::TreeType::Cube},
-					 {_("Cube Sides"), voxelgenerator::TreeType::CubeSideCubes},
-					 {_("Palm"), voxelgenerator::TreeType::Palm},
-					 {_("SpaceColonization"), voxelgenerator::TreeType::SpaceColonization}};
-	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
+const char *TreePanel::treeTypeName(int i) const {
+	// I18N: by having this static, this requires a restart to change the language
+	static const char *treeTypes[] = {_("Pine"),	   _("Dome"),	   _("Dome Hanging"),	  _("Cone"),
+									  _("Fir"),		   _("Ellipsis2"), _("Ellipsis"),		  _("Cube"),
+									  _("Cube Sides"), _("Palm"),	   _("SpaceColonization")};
+	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max,
+				  "Missing support for tree types in the ui");
+	return treeTypes[i];
+}
 
+void TreePanel::update(const char *title) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);
-		if (ImGui::BeginIconCombo(ICON_LC_TREES, _("Type"), treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
-			for (int i = 0; i < lengthof(treeTypes); ++i) {
-				if (ImGui::Selectable(treeTypes[i].name, i == core::enumVal(_treeGeneratorContext.cfg.type))) {
+		if (ImGui::BeginIconCombo(ICON_LC_TREES, _("Type"), treeTypeName(core::enumVal(_treeGeneratorContext.cfg.type)), 0)) {
+			for (int i = 0; i < (int)voxelgenerator::TreeType::Max; ++i) {
+				if (ImGui::Selectable(treeTypeName(i), i == core::enumVal(_treeGeneratorContext.cfg.type))) {
 					switchTreeType((voxelgenerator::TreeType)i);
 				}
 			}

@@ -23,6 +23,7 @@ private:
 	voxelgenerator::TreeContext _treeGeneratorContext;
 	SceneManagerPtr _sceneMgr;
 
+	const char *treeTypeName(int i) const;
 	void switchTreeType(voxelgenerator::TreeType treeType);
 public:
 	TreePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "tree"), _sceneMgr(sceneMgr) {
