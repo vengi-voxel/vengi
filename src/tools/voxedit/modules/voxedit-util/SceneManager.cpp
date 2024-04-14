@@ -1446,9 +1446,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	setCursorPosition(cursorPosition(), true);
-	glm::ivec3 center = region.getCenter();
-	center.y = region.getLowerY();
-	setReferencePosition(center);
+	setReferencePosition(region.getLowerCenter());
 	resetLastTrace();
 	return true;
 }
@@ -1469,9 +1467,7 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 		Log::error("Failed to add empty volume to new scene graph");
 		return false;
 	}
-	glm::ivec3 center = v->region().getCenter();
-	center.y = v->region().getLowerY();
-	setReferencePosition(center);
+	setReferencePosition(v->region().getLowerCenter());
 	resetSceneState();
 	_lastFilename.clear();
 	return true;

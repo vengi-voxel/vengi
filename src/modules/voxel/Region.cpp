@@ -171,6 +171,12 @@ const glm::ivec3& Region::getCenter() const {
 	return _center;
 }
 
+glm::ivec3 Region::getLowerCenter() const {
+	glm::ivec3 c = _center;
+	c.y = _mins.y;
+	return c;
+}
+
 glm::vec3 Region::calcCenterf() const {
 	return glm::vec3(_mins) + glm::vec3(_voxels) / 2.0f;
 }

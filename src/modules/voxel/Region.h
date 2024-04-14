@@ -81,6 +81,8 @@ public:
 	/** Gets the position of the upper corner. */
 	const glm::ivec3& getUpperCorner() const;
 
+	glm::ivec3 getLowerCenter() const;
+
 	glm::vec3 getLowerCornerf() const;
 	glm::vec3 getUpperCornerf() const;
 

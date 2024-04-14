@@ -82,8 +82,7 @@ TEST_F(PaintBrushTest, testExecuteSingleRadius) {
 
 	BrushContext brushContext;
 	prepareBrushContext(brushContext);
-	brushContext.cursorPosition = wrapper.region().getCenter();
-	brushContext.cursorPosition.y = wrapper.region().getLowerY();
+	brushContext.cursorPosition = wrapper.region().getLowerCenter();
 
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
 
