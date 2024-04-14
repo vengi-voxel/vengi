@@ -866,10 +866,10 @@ msgid "Welcome to VoxEdit!"
 msgstr "Willkommen bei VoxEdit!"
 
 msgid "The mission: Create a free, open-source and multi-platform voxel editor with animation support for artists and developers."
-msgstr "Die Mission: Erstellen Sie einen kostenlosen, Open-Source- und plattformübergreifenden Voxel-Editor mit Animationsunterstützung für Künstler und Entwickler."
+msgstr "Die Mission: Bereitstellen eines kostenlosen, Open-Source- und plattformübergreifenden Voxel-Editors mit Animationsunterstützung für Voxelkünstler und Entwickler."
 
 msgid "We would like to enable anonymous usage metrics to improve the editor. Please consider enabling it."
-msgstr "Wir möchten anonyme Nutzungsstatistiken aktivieren, um den Editor zu verbessern. Bitte aktivieren Sie es."
+msgstr "Wir würden gerne anonyme Nutzungsstatistiken aktivieren, um den Editor zu verbessern. Bitte aktivieren Sie es um uns zu unterstützen."
 
 msgid "Simple mode"
 msgstr "Einfacher Modus"
