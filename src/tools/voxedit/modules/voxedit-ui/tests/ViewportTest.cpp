@@ -10,8 +10,7 @@
 namespace voxedit {
 
 void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
-	ImGuiTest *testSetVoxel = IM_REGISTER_TEST(engine, testName(), "set voxel");
-	testSetVoxel->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testName(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (isSceneMode()) {
 			return;
 		}

@@ -56,25 +56,25 @@ void TreePanel::switchTreeType(voxelgenerator::TreeType treeType) {
 }
 
 void TreePanel::update(const char *title) {
-	static const struct {
+	const struct {
 		const char *name;
 		voxelgenerator::TreeType type;
-	} treeTypes[] = {{ICON_LC_TREE_PINE " Pine", voxelgenerator::TreeType::Pine},
-					 {"Dome", voxelgenerator::TreeType::Dome},
-					 {"Dome Hanging", voxelgenerator::TreeType::DomeHangingLeaves},
-					 {"Cone", voxelgenerator::TreeType::Cone},
-					 {"Fir", voxelgenerator::TreeType::Fir},
-					 {"Ellipsis2", voxelgenerator::TreeType::BranchesEllipsis},
-					 {"Ellipsis", voxelgenerator::TreeType::Ellipsis},
-					 {"Cube", voxelgenerator::TreeType::Cube},
-					 {"Cube Sides", voxelgenerator::TreeType::CubeSideCubes},
-					 {ICON_LC_PALMTREE " Palm", voxelgenerator::TreeType::Palm},
-					 {"SpaceColonization", voxelgenerator::TreeType::SpaceColonization}};
+	} treeTypes[] = {{_("Pine"), voxelgenerator::TreeType::Pine},
+					 {_("Dome"), voxelgenerator::TreeType::Dome},
+					 {_("Dome Hanging"), voxelgenerator::TreeType::DomeHangingLeaves},
+					 {_("Cone"), voxelgenerator::TreeType::Cone},
+					 {_("Fir"), voxelgenerator::TreeType::Fir},
+					 {_("Ellipsis2"), voxelgenerator::TreeType::BranchesEllipsis},
+					 {_("Ellipsis"), voxelgenerator::TreeType::Ellipsis},
+					 {_("Cube"), voxelgenerator::TreeType::Cube},
+					 {_("Cube Sides"), voxelgenerator::TreeType::CubeSideCubes},
+					 {_("Palm"), voxelgenerator::TreeType::Palm},
+					 {_("SpaceColonization"), voxelgenerator::TreeType::SpaceColonization}};
 	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max, "Missing support for tree types in the ui");
 
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);
-		if (ImGui::BeginIconCombo(ICON_LC_TREES, "Type", treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
+		if (ImGui::BeginIconCombo(ICON_LC_TREES, _("Type"), treeTypes[core::enumVal(_treeGeneratorContext.cfg.type)].name, 0)) {
 			for (int i = 0; i < lengthof(treeTypes); ++i) {
 				if (ImGui::Selectable(treeTypes[i].name, i == core::enumVal(_treeGeneratorContext.cfg.type))) {
 					switchTreeType((voxelgenerator::TreeType)i);
@@ -132,7 +132,7 @@ void TreePanel::update(const char *title) {
 		default:
 			break;
 		}
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK##treegenerate"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_treeGeneratorContext.cfg.pos = _sceneMgr->referencePosition();
 			_sceneMgr->createTree(_treeGeneratorContext);
 		}
