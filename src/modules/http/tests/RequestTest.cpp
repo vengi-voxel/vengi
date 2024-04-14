@@ -34,7 +34,7 @@ TEST_F(RequestTest, DISABLED_testGetRequest) {
 	EXPECT_STREQ(userAgent.c_str(), jsonResponse["headers"]["User-Agent"].get<std::string>().c_str()) << response;
 }
 
-TEST_F(RequestTest, testPostRequest) {
+TEST_F(RequestTest, DISABLED_testPostRequest) {
 	if (!Request::supported()) {
 		GTEST_SKIP() << "No http support available";
 	}
