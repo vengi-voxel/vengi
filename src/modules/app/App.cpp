@@ -358,6 +358,7 @@ AppState App::onConstruct() {
 		_dictManager.addDirectory(path);
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
+
 	FL_Locale *locale;
 	FL_FindLocale(&locale, FL_MESSAGES);
 	_dictManager.setLanguage(Language::fromSpec(locale->lang, locale->country, locale->variant));
@@ -365,44 +366,10 @@ AppState App::onConstruct() {
 	_dict = &_dictManager.getDictionary();
 
 	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
-	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
-	// this ensures that we are sleeping 1 millisecond if there is enough room for it
-	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
-	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
-	core::Var::get(cfg::AppVersion, "");
+	core::VarPtr syslogVar = core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
+	syslogVar->setValidator(core::Var::boolValidator);
 
-	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
-	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
-	registerArg("--completion").setDescription(_("Generate completion for bash"));
-	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
-	const core::String &logLevelVal = getArgVal("--loglevel");
-	if (!logLevelVal.empty()) {
-		logVar->setVal(logLevelVal);
-	}
-	core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false", _("Log to the system log"), core::Var::boolValidator);
-	core::Var::get(cfg::MetricFlavor, "");
-	Log::init();
-
-	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
-		if (args.size() < 2) {
-			Log::info("usage: set <name> <value>");
-			return;
-		}
-		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
-	}).setHelp(_("Set a variable value"));
-
-	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
-		requestQuit();
-	}).setHelp(_("Quit the application"));
-
-#ifdef DEBUG
-	command::Command::registerCommand("assert", [&](const command::CmdArgs &args) {
-		core_assert_msg(false, "assert triggered");
-	}).setHelp(_("Trigger an assert"));
-#endif
-
-	AppCommand::init(_timeProvider);
-
+	Log::debug("Initialize the cvars");
 	for (int i = 0; i < _argc; ++i) {
 		if (_argv[i][0] != '-' || (_argv[i][0] != '\0' && _argv[i][1] == '-')) {
 			continue;
@@ -420,44 +387,8 @@ AppState App::onConstruct() {
 			Log::debug("Set %s to %s", var.c_str(), value);
 		}
 	}
-
 	Log::init();
 
-	Log::debug("%s: " PROJECT_VERSION, _appname.c_str());
-
-	for (int i = 0; i < _argc; ++i) {
-		Log::debug("argv[%i] = %s", i, _argv[i]);
-	}
-
-	if (_coredump) {
-#ifdef HAVE_SYS_RESOURCE_H
-		struct rlimit core_limits;
-		core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
-		setrlimit(RLIMIT_CORE, &core_limits);
-		Log::debug("activate core dumps");
-#else
-		Log::debug("can't activate core dumps");
-#endif
-	}
-
-	const io::FilesystemPtr &fs = io::filesystem();
-	const core::String &logfilePath = fs->writePath("log.txt");
-	Log::init(logfilePath.c_str());
-
-	return AppState::Init;
-}
-
-void App::onBeforeInit() {
-}
-
-AppState App::onInit() {
-	Log::debug("Initialize sdl");
-
-	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
-	Log::debug("Initialize the threadpool");
-	_threadPool->init();
-
-	Log::debug("Initialize the cvars");
 	const io::FilePtr &varsFile = _filesystem->open(_appname + ".vars");
 	const core::String &content = varsFile->load();
 	core::Tokenizer t(content);
@@ -501,6 +432,82 @@ AppState App::onInit() {
 
 		core::Var::get(name, value.c_str(), flagsMask);
 	}
+	Log::init();
+
+	syslogVar->setHelp(_("Log to the system log"));
+	logVar->setHelp(_("The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."));
+
+	// this ensures that we are sleeping 1 millisecond if there is enough room for it
+	_framesPerSecondsCap = core::Var::get(cfg::CoreMaxFPS, "1000.0");
+	// is filled by the application itself - can be used to detect new versions - but as default it's just an empty cvar
+	core::Var::get(cfg::AppVersion, "");
+
+	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
+	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
+	registerArg("--completion").setDescription(_("Generate completion for bash"));
+	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
+	const core::String &logLevelVal = getArgVal("--loglevel");
+	if (!logLevelVal.empty()) {
+		logVar->setVal(logLevelVal);
+	}
+	core::Var::get(cfg::MetricFlavor, "");
+	Log::init();
+
+	command::Command::registerCommand("set", [](const command::CmdArgs &args) {
+		if (args.size() < 2) {
+			Log::info("usage: set <name> <value>");
+			return;
+		}
+		core::Var::get(args[0], "")->setVal(core::string::join(args.begin() + 1, args.end(), " "));
+	}).setHelp(_("Set a variable value"));
+
+	command::Command::registerCommand("quit", [&](const command::CmdArgs &args) {
+		requestQuit();
+	}).setHelp(_("Quit the application"));
+
+#ifdef DEBUG
+	command::Command::registerCommand("assert", [&](const command::CmdArgs &args) {
+		core_assert_msg(false, "assert triggered");
+	}).setHelp(_("Trigger an assert"));
+#endif
+
+	AppCommand::init(_timeProvider);
+
+	Log::init();
+
+	Log::debug("%s: " PROJECT_VERSION, _appname.c_str());
+
+	for (int i = 0; i < _argc; ++i) {
+		Log::debug("argv[%i] = %s", i, _argv[i]);
+	}
+
+	if (_coredump) {
+#ifdef HAVE_SYS_RESOURCE_H
+		struct rlimit core_limits;
+		core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
+		setrlimit(RLIMIT_CORE, &core_limits);
+		Log::debug("activate core dumps");
+#else
+		Log::debug("can't activate core dumps");
+#endif
+	}
+
+	const io::FilesystemPtr &fs = io::filesystem();
+	const core::String &logfilePath = fs->writePath("log.txt");
+	Log::init(logfilePath.c_str());
+
+	return AppState::Init;
+}
+
+void App::onBeforeInit() {
+}
+
+AppState App::onInit() {
+	Log::debug("Initialize sdl");
+
+	SDL_Init(SDL_INIT_TIMER | SDL_INIT_EVENTS);
+	Log::debug("Initialize the threadpool");
+	_threadPool->init();
 
 	Log::debug("Initialize the log system");
 	Log::init();
