@@ -9,8 +9,7 @@ namespace voxedit {
 
 void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 #if 0
-	ImGuiTest *test = IM_REGISTER_TEST(engine, testCategory(), testName());
-	test->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "none")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
 	};

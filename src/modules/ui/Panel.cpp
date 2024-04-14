@@ -15,13 +15,12 @@ Panel::Panel(IMGUIApp *app, const char *title) : _app(app), _title(title) {
 	Log::debug("create panel %s", _title.c_str());
 }
 
+Panel::~Panel() {
+}
+
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 void Panel::registerUITests(ImGuiTestEngine *, const char *) {
 	Log::warn("No tests registered for panel %s", _title.c_str());
-}
-
-const char *Panel::testCategory() const {
-	return _app->appname().c_str();
 }
 
 bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
@@ -33,6 +32,13 @@ bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
 	}
 	ctx->WindowFocus(window->ID);
 	return true;
+}
+
+void Panel::unregisterUITests(ImGuiTestEngine *engine) {
+	// https://github.com/ocornut/imgui_test_engine/issues/46
+	// while (ImGuiTest* test = engine->ImGuiTestEngine_FindTestByName(engine, testCategory())) {
+	// 	engine->TestsAll->erase(test);
+	// }
 }
 
 #endif

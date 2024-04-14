@@ -8,7 +8,7 @@
 namespace voxedit {
 
 void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
-	IM_REGISTER_TEST(engine, testName(), "toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));
 		// edittools###button0

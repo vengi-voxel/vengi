@@ -8,7 +8,7 @@
 namespace voxedit {
 
 void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
-	IM_REGISTER_TEST(engine, testName(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 		// enable edit mode - TODO: find the correct viewport id and don't hardcode it
 		ctx->ItemClick("//###viewport1");

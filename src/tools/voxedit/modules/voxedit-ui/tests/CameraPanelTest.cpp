@@ -9,7 +9,7 @@
 namespace voxedit {
 
 void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
-	IM_REGISTER_TEST(engine, testName(), "create camera node")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "create camera node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		const size_t beforeCamera = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
 		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));

@@ -5,8 +5,6 @@
 #include "../MainWindow.h"
 #include "../WindowTitles.h"
 #include "../Viewport.h"
-#include "core/Log.h"
-#include "imgui_te_context.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 
@@ -35,7 +33,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		_scenes[i]->registerUITests(engine, nullptr);
 	}
 
-	IM_REGISTER_TEST(engine, testName(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		ImGuiContext& g = *ctx->UiContext;
 		ctx->SetRef(title);
@@ -51,7 +49,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		ctx->ItemClick("###OK");
 	};
 
-	IM_REGISTER_TEST(engine, testName(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
 		ctx->SetRef(title);
 		IM_CHECK(focusWindow(ctx, title));

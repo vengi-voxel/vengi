@@ -4,13 +4,12 @@
 
 #include "../Viewport.h"
 #include "command/CommandHandler.h"
-#include "imgui_te_context.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
 void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
-	IM_REGISTER_TEST(engine, testName(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (isSceneMode()) {
 			return;
 		}

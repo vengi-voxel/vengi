@@ -22,11 +22,11 @@ protected:
 	Panel(IMGUIApp *app, const char *title);
 
 public:
-	virtual ~Panel() {}
+	virtual ~Panel();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	virtual void registerUITests(ImGuiTestEngine *, const char *);
-	const char *testName() const { return _title.c_str(); }
-	const char *testCategory() const;
+	void unregisterUITests(ImGuiTestEngine *);
+	const char *testCategory() const { return _title.c_str(); }
 
 	bool focusWindow(ImGuiTestContext *ctx, const char *title);
 #endif
