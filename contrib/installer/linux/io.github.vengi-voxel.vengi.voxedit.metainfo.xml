@@ -8,7 +8,7 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <description>
-    <p>A voxel editor with animation support and loading/saving into a lot of voxel volume formats.</p>
+    <p>A voxel editor with animation and scripting support as well as loading/saving into a lot of voxel volume or mesh formats.</p>
   </description>
   <screenshots>
     <screenshot type="default">
@@ -28,10 +28,13 @@
     <category>Utility</category>
   </categories>
   <releases>
-    <release version="v0.0.29" date="2025-05-15" type="stable">
+    <release version="v0.0.30" date="2024-03-23" type="stable">
       <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.29</url>
     </release>
-    <release version="v0.0.28" date="2025-01-17" type="stable">
+    <release version="v0.0.29" date="2024-03-15" type="stable">
+      <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.29</url>
+    </release>
+    <release version="v0.0.28" date="2024-01-17" type="stable">
       <url>https://github.com/vengi-voxel/vengi/releases/tag/v0.0.28</url>
     </release>
     <release version="v0.0.27" date="2023-09-19" type="stable">
