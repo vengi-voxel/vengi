@@ -17,8 +17,18 @@ msgstr ""
 "X-Crowdin-File-ID: 2\n"
 "X-Generator: Poedit 3.4.2\n"
 
-msgid "The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."
-msgstr "Je niedriger der Wert, desto mehr sehen Sie. 1 ist das höchste Protokollniveau, 5 sind nur schwerwiegende Fehler."
+msgid "The language to use - empty means system default"
+msgstr ""
+
+msgid "Log to the system log"
+msgstr "In das Systemprotokoll schreiben"
+
+msgid ""
+"The lower the value, the more you see. 1 is the highest log level, 5 is just "
+"fatal errors."
+msgstr ""
+"Je niedriger der Wert, desto mehr sehen Sie. 1 ist das höchste "
+"Protokollniveau, 5 sind nur schwerwiegende Fehler."
 
 msgid "Print the version and quit"
 msgstr "Die Version anzeigen und beenden"
@@ -31,9 +41,6 @@ msgstr "Vervollständigung für Bash generieren"
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
 msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
-
-msgid "Log to the system log"
-msgstr "In das Systemprotokoll schreiben"
 
 msgid "Set a variable value"
 msgstr "Einen Variablenwert setzen"
@@ -54,7 +61,8 @@ msgid "Open the given url in a browser"
 msgstr "Die angegebene URL in einem Browser öffnen"
 
 msgid "Print the given arguments to the console (info log level)"
-msgstr "Die angegebenen Argumente auf der Konsole ausgeben (Info-Protokollniveau)"
+msgstr ""
+"Die angegebenen Argumente auf der Konsole ausgeben (Info-Protokollniveau)"
 
 msgid "Execute a file with script commands"
 msgstr "Eine Datei mit Skriptbefehlen ausführen"
@@ -173,6 +181,7 @@ msgstr "Der Ordnername darf nicht leer sein"
 msgid "Cancel"
 msgstr "Abbrechen"
 
+#, c-format
 msgid ""
 "%s already exist.\n"
 "Do you want to overwrite the file?"
@@ -237,6 +246,11 @@ msgstr "Befehl"
 msgid "Context"
 msgstr "Beschreibung"
 
+#, fuzzy
+msgid "Description"
+msgstr "Position"
+
+#, c-format
 msgid "Failed to get command for %s"
 msgstr "Fehler beim Abrufen des Befehls für %s"
 
@@ -270,6 +284,12 @@ msgstr "Befehle"
 msgid "Textures"
 msgstr "Texturen"
 
+msgid "Language"
+msgstr ""
+
+msgid "To change the language everywhere restart the application"
+msgstr ""
+
 msgid "Clear"
 msgstr "Löschen"
 
@@ -285,6 +305,7 @@ msgstr "Debug-Protokollierung für die Konsole aktivieren"
 msgid "Auto scrolling"
 msgstr "Automatisches Scrollen"
 
+#, c-format
 msgid ""
 "Open in browser\n"
 "%s"
@@ -373,6 +394,32 @@ msgstr "Alle fehlenden Dateien herunterladen"
 msgid "Download missing thumbnails"
 msgstr "Fehlende Miniaturansichten herunterladen"
 
+msgid "Nothing selected"
+msgstr ""
+
+#, fuzzy
+msgid "No thumbnail available"
+msgstr "Den Wert einer Variable anzeigen"
+
+#, fuzzy, c-format
+msgid "Name: %s"
+msgstr "Name"
+
+#, c-format
+msgid "Source: %s"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "License: %s"
+msgstr "Lizenz"
+
+msgid "URL"
+msgstr ""
+
+#, fuzzy
+msgid "Create thumbnail"
+msgstr "Miniaturansicht"
+
 msgid "Download missing files"
 msgstr "Fehlende Dateien herunterladen"
 
@@ -442,8 +489,12 @@ msgstr "Alle Dateien aus einem angegebenen Verzeichnis importieren"
 msgid "Import a 2d heightmap image into the current active node"
 msgstr "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren"
 
-msgid "Import a 2d heightmap image into the current active node. The height is encoded in the alpha channel with this method."
-msgstr "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren. Die Höhe wird mit dieser Methode im Alpha-Kanal codiert."
+msgid ""
+"Import a 2d heightmap image into the current active node. The height is "
+"encoded in the alpha channel with this method."
+msgstr ""
+"Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren. Die Höhe "
+"wird mit dieser Methode im Alpha-Kanal codiert."
 
 msgid "Import an image as a plane into a new node"
 msgstr "Ein Bild als Ebene in einen neuen Knoten importieren"
@@ -475,15 +526,21 @@ msgstr "Ein neues Keyframes zum aktuellen aktiven Knoten hinzufügen"
 msgid "Add all"
 msgstr "Alle hinzufügen"
 
+#, fuzzy
+msgid "Add a new keyframe to all model nodes"
+msgstr "Ein neues Keyframes zum aktuellen aktiven Knoten hinzufügen"
+
 msgid "Delete the current keyframe of the active nodes"
 msgstr "Das aktuelle Keyframes der aktiven Knoten löschen"
 
 msgid "Crop frames"
 msgstr "Bilder zuschneiden"
 
+#, c-format
 msgid "Max frames for this animation: %i"
 msgstr "Maximale Anzahl von Bildern für diese Animation: %i"
 
+#, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr "Keyframe %i, Interpolation: %s"
 
@@ -499,6 +556,7 @@ msgstr "Keyframe duplizieren"
 msgid "Delete keyframes"
 msgstr "Keyframes löschen"
 
+#, c-format
 msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
 
@@ -508,8 +566,11 @@ msgstr "Modelle"
 msgid "Use stamp"
 msgstr "Stempel verwenden"
 
-msgid "This is only possible if the model doesn't exceed the max allowed stamp size"
-msgstr "Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße nicht überschreitet"
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
+"nicht überschreitet"
 
 msgid "Add to scene"
 msgstr "Zur Szene hinzufügen"
@@ -569,7 +630,8 @@ msgid "Override voxels"
 msgstr "Voxel überschreiben"
 
 msgid "Draws a line from the reference position to the current cursor position"
-msgstr "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
+msgstr ""
+"Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
 
 msgid "Draws a path over existing voxels"
 msgstr "Zeichnet einen Pfad über vorhandene Voxel"
@@ -590,7 +652,8 @@ msgid "Radius"
 msgstr "Radius"
 
 msgid "Use a radius around the current voxel - 0 for spanning a region"
-msgstr "Verwende einen Radius um den aktuellen Voxel - 0 um eine Region zu umspannen"
+msgstr ""
+"Verwende einen Radius um den aktuellen Voxel - 0 um eine Region zu umspannen"
 
 msgid "Mode"
 msgstr "Modus"
@@ -802,50 +865,103 @@ msgstr "Drücken"
 msgid "Pop"
 msgstr "Herausnehmen"
 
-msgid "Switch between scene and edit mode by pressing the <cmd:togglescene> key."
-msgstr "Zwischen Szenen- und Bearbeitungsmodus wechseln, indem Sie die <cmd:togglescene>-Taste drücken."
+msgid ""
+"Switch between scene and edit mode by pressing the <cmd:togglescene> key."
+msgstr ""
+"Zwischen Szenen- und Bearbeitungsmodus wechseln, indem Sie die <cmd:"
+"togglescene>-Taste drücken."
 
 msgid "Use the file dialog options for format specific options."
 msgstr "Verwenden Sie die Dateidialogoptionen für formatabhängige Optionen."
 
-msgid "You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1."
-msgstr "Sie können ein Video Ihres rotierenden Modells in der Ansicht erstellen, indem Sie das Menü 'Ansicht' und die Option 'Video' verwenden. Stellen Sie sicher, dass Sie die Kamerarotationsgeschwindigkeit z. B. auf 1 einstellen."
+msgid ""
+"You can record a video of your rotating model in the viewport by using the "
+"'View' menu and the 'Video' option. Make sure to set the camera rotation "
+"speed to e.g. 1."
+msgstr ""
+"Sie können ein Video Ihres rotierenden Modells in der Ansicht erstellen, "
+"indem Sie das Menü 'Ansicht' und die Option 'Video' verwenden. Stellen Sie "
+"sicher, dass Sie die Kamerarotationsgeschwindigkeit z. B. auf 1 einstellen."
 
-msgid "When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."
-msgstr "Beim Speichern in einem fremden Format können Szenendetails verloren gehen, wenn das Format bestimmte Funktionen nicht unterstützt. Verwenden Sie für höchste Kompatibilität das Vengi-Format."
+msgid ""
+"When saving to a foreign format you might lose scene details if the format "
+"doesn't support particular features. Make sure to use the vengi format for "
+"highest compatibility."
+msgstr ""
+"Beim Speichern in einem fremden Format können Szenendetails verloren gehen, "
+"wenn das Format bestimmte Funktionen nicht unterstützt. Verwenden Sie für "
+"höchste Kompatibilität das Vengi-Format."
 
-msgid "Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."
-msgstr "Ändern Sie den Farbreduktionsmodus, um die Qualität der Palette zu verbessern, insbesondere beim Import von RGBA- oder meshbasierten Formaten."
+msgid ""
+"Change the color reduction mode to improve the quality of the palette "
+"especially for importing RGBA or mesh based formats."
+msgstr ""
+"Ändern Sie den Farbreduktionsmodus, um die Qualität der Palette zu "
+"verbessern, insbesondere beim Import von RGBA- oder meshbasierten Formaten."
 
 msgid "Drag a model from the assets panel to the stamp brush to use it."
-msgstr "Ziehen Sie ein Modell aus dem Asset-Panel auf den Stempel-Pinsel, um es zu verwenden."
+msgstr ""
+"Ziehen Sie ein Modell aus dem Asset-Panel auf den Stempel-Pinsel, um es zu "
+"verwenden."
 
 msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
-msgstr "Sie können die Kamera einfach durch Drücken von <cmd:resetcamera> zurücksetzen."
+msgstr ""
+"Sie können die Kamera einfach durch Drücken von <cmd:resetcamera> "
+"zurücksetzen."
 
-msgid "The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."
-msgstr "Der Editor zeigt den zuletzt ausgeführten Konsolenbefehl in der Statusleiste an. Sie können diese Befehle verwenden und ihnen Tasten zuweisen."
+msgid ""
+"The editor shows the last executed console command in the status bar. You "
+"can use these commands and bind them to keys."
+msgstr ""
+"Der Editor zeigt den zuletzt ausgeführten Konsolenbefehl in der Statusleiste "
+"an. Sie können diese Befehle verwenden und ihnen Tasten zuweisen."
 
-msgid "You can use wasd style scene movement by switching the 'Camera movement' to 'Eye' in the 'View' menu of the viewport."
-msgstr "Sie können die Szenenbewegung im WASD-Stil aktivieren, indem Sie die 'Kamerabewegung' im 'Ansicht'-Menü der Ansicht auf 'Auge' umschalten."
+msgid ""
+"You can use wasd style scene movement by switching the 'Camera movement' to "
+"'Eye' in the 'View' menu of the viewport."
+msgstr ""
+"Sie können die Szenenbewegung im WASD-Stil aktivieren, indem Sie die "
+"'Kamerabewegung' im 'Ansicht'-Menü der Ansicht auf 'Auge' umschalten."
 
-msgid "In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."
-msgstr "Um den Pfadmodifikator zu verwenden, müssen Sie die Referenzposition auf einem anderen Voxel platzieren und das Ende des Pfads auf einem anderen vorhandenen und verbundenen Voxel platzieren."
+msgid ""
+"In order to use the path modifier, you have to place the reference position "
+"on top of another voxel and place the end of the path on another existing "
+"and connected voxel."
+msgstr ""
+"Um den Pfadmodifikator zu verwenden, müssen Sie die Referenzposition auf "
+"einem anderen Voxel platzieren und das Ende des Pfads auf einem anderen "
+"vorhandenen und verbundenen Voxel platzieren."
 
-msgid "When importing meshes, you can switch between different voxelization methods in the options menu."
-msgstr "Beim Importieren von Meshes können Sie im Optionsmenü zwischen verschiedenen Voxelisierungsmethoden wechseln."
+msgid ""
+"When importing meshes, you can switch between different voxelization methods "
+"in the options menu."
+msgstr ""
+"Beim Importieren von Meshes können Sie im Optionsmenü zwischen verschiedenen "
+"Voxelisierungsmethoden wechseln."
 
-msgid "Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."
-msgstr "Löschen Sie Voxel im Bearbeitungsmodus, indem Sie <cmd:+actionexecutedelete> drücken oder den Löschmodifikator verwenden."
+msgid ""
+"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
+"using the erase modifier."
+msgstr ""
+"Löschen Sie Voxel im Bearbeitungsmodus, indem Sie <cmd:+actionexecutedelete> "
+"drücken oder den Löschmodifikator verwenden."
 
 msgid "Switch between different color themes in the options menu."
 msgstr "Wechseln Sie im Optionsmenü zwischen verschiedenen Farbthemen."
 
-msgid "Please activate anonymous usage metrics in the options or the about dialog."
-msgstr "Bitte aktivieren Sie anonyme Nutzungsstatistiken in den Optionen oder im Info-Dialog."
+msgid ""
+"Please activate anonymous usage metrics in the options or the about dialog."
+msgstr ""
+"Bitte aktivieren Sie anonyme Nutzungsstatistiken in den Optionen oder im "
+"Info-Dialog."
 
-msgid "You can change your default key bindings to Magicavoxel, Blender, Qubicle or Vengi own style. Check the bindings window in the options menu."
-msgstr "Sie können Ihre Standard-Tastenbelegungen auf den Magicavoxel-, Blender-, Qubicle- oder Vengi-eigenen Stil ändern. Überprüfen Sie das Bindungsfenster im Optionsmenü."
+msgid ""
+"You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
+"Vengi own style. Check the bindings window in the options menu."
+msgstr ""
+"Sie können Ihre Standard-Tastenbelegungen auf den Magicavoxel-, Blender-, "
+"Qubicle- oder Vengi-eigenen Stil ändern. Überprüfen Sie das Bindungsfenster "
+"im Optionsmenü."
 
 msgid "You can save your viewport as AVI video or as screenshot."
 msgstr "Sie können Ihre Ansicht als AVI-Video oder als Screenshot speichern."
@@ -853,8 +969,12 @@ msgstr "Sie können Ihre Ansicht als AVI-Video oder als Screenshot speichern."
 msgid "Press <cmd:pickcolor> to pick a color from the scene."
 msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
 
-msgid "Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."
-msgstr "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder <cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
+msgid ""
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
+"mirroraxisshapebrushz> to mirror the current selection."
+msgstr ""
+"Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
+"<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
 
 msgid "Show again"
 msgstr "Erneut anzeigen"
@@ -865,11 +985,20 @@ msgstr "Weiter"
 msgid "Welcome to VoxEdit!"
 msgstr "Willkommen bei VoxEdit!"
 
-msgid "The mission: Create a free, open-source and multi-platform voxel editor with animation support for artists and developers."
-msgstr "Die Mission: Bereitstellen eines kostenlosen, Open-Source- und plattformübergreifenden Voxel-Editors mit Animationsunterstützung für Voxelkünstler und Entwickler."
+msgid ""
+"The mission: Create a free, open-source and multi-platform voxel editor with "
+"animation support for artists and developers."
+msgstr ""
+"Die Mission: Bereitstellen eines kostenlosen, Open-Source- und "
+"plattformübergreifenden Voxel-Editors mit Animationsunterstützung für "
+"Voxelkünstler und Entwickler."
 
-msgid "We would like to enable anonymous usage metrics to improve the editor. Please consider enabling it."
-msgstr "Wir würden gerne anonyme Nutzungsstatistiken aktivieren, um den Editor zu verbessern. Bitte aktivieren Sie es um uns zu unterstützen."
+msgid ""
+"We would like to enable anonymous usage metrics to improve the editor. "
+"Please consider enabling it."
+msgstr ""
+"Wir würden gerne anonyme Nutzungsstatistiken aktivieren, um den Editor zu "
+"verbessern. Bitte aktivieren Sie es um uns zu unterstützen."
 
 msgid "Simple mode"
 msgstr "Einfacher Modus"
@@ -960,8 +1089,12 @@ msgstr "Aktueller Zustand: %i / %i"
 msgid "Color reduction"
 msgstr "Farbreduktion"
 
-msgid "The color reduction algorithm that is used when importing RGBA colors from images or rgba formats"
-msgstr "Der Farbreduktionsalgorithmus, der beim Importieren von RGBA-Farben aus Bildern oder RGBA-Formaten verwendet wird"
+msgid ""
+"The color reduction algorithm that is used when importing RGBA colors from "
+"images or rgba formats"
+msgstr ""
+"Der Farbreduktionsalgorithmus, der beim Importieren von RGBA-Farben aus "
+"Bildern oder RGBA-Formaten verwendet wird"
 
 msgid "Grid"
 msgstr "Raster"
@@ -1099,8 +1232,10 @@ msgid ""
 "To add your own palettes here, put a palette-name.png into one of\n"
 "the search directories or load it into any node to appear here."
 msgstr ""
-"Um Ihre eigenen Paletten hier hinzuzufügen, legen Sie eine palette-name.png in einen der\n"
-"Suchverzeichnisse oder laden Sie sie in einen beliebigen Knoten, um sie hier anzuzeigen."
+"Um Ihre eigenen Paletten hier hinzuzufügen, legen Sie eine palette-name.png "
+"in einen der\n"
+"Suchverzeichnisse oder laden Sie sie in einen beliebigen Knoten, um sie hier "
+"anzuzeigen."
 
 msgid "Color match"
 msgstr "Farbabgleich"
@@ -1158,7 +1293,9 @@ msgid "Color closest match"
 msgstr "Nächste Farbe"
 
 msgid "Select a color to find the closest match in the current loaded palette"
-msgstr "Wählen Sie eine Farbe aus, um die nächstgelegene Übereinstimmung in der aktuellen geladenen Palette zu finden"
+msgstr ""
+"Wählen Sie eine Farbe aus, um die nächstgelegene Übereinstimmung in der "
+"aktuellen geladenen Palette zu finden"
 
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
@@ -1177,10 +1314,14 @@ msgid "To transform"
 msgstr "Zu Transform"
 
 msgid "Convert the region offset into the keyframe transforms"
-msgstr "Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
+msgstr ""
+"Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
 
 msgid "Gizmo settings"
 msgstr "Gizmo-Einstellungen"
+
+msgid "Flip axis"
+msgstr "Achse umkehren"
 
 msgid "Snap"
 msgstr "Ausrichten"
@@ -1259,9 +1400,6 @@ msgstr "Am Raster ausrichten"
 
 msgid "Pivot"
 msgstr "Pivot"
-
-msgid "Flip axis"
-msgstr "Achse umkehren"
 
 msgid "Dimensions"
 msgstr "Dimensionen"
@@ -1363,8 +1501,12 @@ msgstr "Alle speichern"
 msgid "Add new group"
 msgstr "Neue Gruppe hinzufügen"
 
-msgid "Disabled because inactive nodes are hidden and the active node is always visible"
-msgstr "Deaktiviert, da inaktive Knoten ausgeblendet werden und der aktive Knoten immer sichtbar ist"
+msgid ""
+"Disabled because inactive nodes are hidden and the active node is always "
+"visible"
+msgstr ""
+"Deaktiviert, da inaktive Knoten ausgeblendet werden und der aktive Knoten "
+"immer sichtbar ist"
 
 #, c-format
 msgid "Color##node-%i"
@@ -1381,6 +1523,10 @@ msgstr "Dieses Modell löschen"
 
 msgid "Add a new model node"
 msgstr "Neuen Modellknoten hinzufügen"
+
+#, fuzzy
+msgid "Add a new group"
+msgstr "Neue Gruppe hinzufügen"
 
 msgid "Remove the active node with all its children"
 msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
@@ -1405,7 +1551,11 @@ msgid "Run"
 msgstr "Ausführen"
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr "Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
+msgstr ""
+"Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
+
+msgid "Script parameters"
+msgstr ""
 
 msgid "Create a new lua script"
 msgstr "Ein neues LUA-Skript erstellen"
@@ -1422,12 +1572,6 @@ msgstr "Anwenden und ausführen"
 #, c-format
 msgid "Overwrite scripts/%s"
 msgstr "Skripte/%s überschreiben"
-
-msgid "Save As"
-msgstr "Speichern unter"
-
-msgid "Cut##scripteditor"
-msgstr "Ausschneiden##skripteditor"
 
 msgid "Select all"
 msgstr "Alles auswählen"
@@ -1690,20 +1834,31 @@ msgstr "Alles auswählen, nichts oder invertieren"
 msgid "Cycle through all scene objects"
 msgstr "Durch alle Szenenobjekte wechseln"
 
-msgid "Allow to align all nodes on the floor next to each other without overlapping"
-msgstr "Ermöglicht das Ausrichten aller Knoten nebeneinander auf dem Boden, ohne sich zu überlappen"
+msgid ""
+"Allow to align all nodes on the floor next to each other without overlapping"
+msgstr ""
+"Ermöglicht das Ausrichten aller Knoten nebeneinander auf dem Boden, ohne "
+"sich zu überlappen"
 
 msgid "Render characters at the reference position"
 msgstr "Zeichen an der Referenzposition rendern"
 
 msgid "Save all model nodes into filenames represented by their node names"
-msgstr "Alle Modellknoten in Dateinamen speichern, die durch ihre Knotennamen repräsentiert werden"
+msgstr ""
+"Alle Modellknoten in Dateinamen speichern, die durch ihre Knotennamen "
+"repräsentiert werden"
 
 msgid "Save a single node to the given path with their node names"
-msgstr "Einen einzelnen Knoten mit ihren Knotennamen in den angegebenen Pfad speichern"
+msgstr ""
+"Einen einzelnen Knoten mit ihren Knotennamen in den angegebenen Pfad "
+"speichern"
 
-msgid "Create a new scene (with a given name and width, height, depth - all optional)"
-msgstr "Eine neue Szene erstellen (mit einem angegebenen Namen und Breite, Höhe, Tiefe - alle optional)"
+msgid ""
+"Create a new scene (with a given name and width, height, depth - all "
+"optional)"
+msgstr ""
+"Eine neue Szene erstellen (mit einem angegebenen Namen und Breite, Höhe, "
+"Tiefe - alle optional)"
 
 msgid "Crop the current active node to the voxel boundaries"
 msgstr "Den aktuellen aktiven Knoten auf die Voxelgrenzen zuschneiden"
@@ -1717,8 +1872,12 @@ msgstr "Den aktuellen aktiven Knoten oder den angegebenen Knoten verkleinern"
 msgid "Scale the current active node or the given node up"
 msgstr "Den aktuellen aktiven Knoten oder den angegebenen Knoten vergrößern"
 
-msgid "Move the voxels of the current selected palette index or the given index into a new node"
-msgstr "Die Voxel des aktuellen ausgewählten Palettenindex oder des angegebenen Index in einen neuen Knoten verschieben"
+msgid ""
+"Move the voxels of the current selected palette index or the given index "
+"into a new node"
+msgstr ""
+"Die Voxel des aktuellen ausgewählten Palettenindex oder des angegebenen "
+"Index in einen neuen Knoten verschieben"
 
 msgid "Aborts the current modifier action"
 msgstr "Bricht die aktuelle Modifier-Aktion ab"
@@ -1751,10 +1910,13 @@ msgid "Set the reference position to the current cursor position"
 msgstr "Setzt die Referenzposition auf die aktuelle Cursorposition"
 
 msgid "Resize your volume about given x, y and z size"
-msgstr "Ändert die Größe des Volumens entsprechend der angegebenen x-, y- und z-Größe"
+msgstr ""
+"Ändert die Größe des Volumens entsprechend der angegebenen x-, y- und z-Größe"
 
 msgid "Resize your current model node about given x, y and z size"
-msgstr "Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen x-, y- und z-Größe"
+msgstr ""
+"Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
+"x-, y- und z-Größe"
 
 msgid "Shift the volume by the given values"
 msgstr "Verschiebt das Volumen um die angegebenen Werte"
@@ -1765,14 +1927,19 @@ msgstr "Zentriert die aktuellen aktiven Knoten auf der Referenzposition"
 msgid "Center the current active nodes at the origin"
 msgstr "Zentriert die aktuellen aktiven Knoten am Ursprung"
 
-msgid "Move the voxels inside the volume by the given values without changing the volume bounds"
-msgstr "Verschiebt die Voxel innerhalb des Volumens um die angegebenen Werte, ohne die Volumengrenzen zu ändern"
+msgid ""
+"Move the voxels inside the volume by the given values without changing the "
+"volume bounds"
+msgstr ""
+"Verschiebt die Voxel innerhalb des Volumens um die angegebenen Werte, ohne "
+"die Volumengrenzen zu ändern"
 
 msgid "Copy selection"
 msgstr "Auswahl kopieren"
 
 msgid "Paste clipboard to current selection or reference position"
-msgstr "Fügt die Zwischenablage in die aktuelle Auswahl oder die Referenzposition ein"
+msgstr ""
+"Fügt die Zwischenablage in die aktuelle Auswahl oder die Referenzposition ein"
 
 msgid "Paste clipboard to current cursor position"
 msgstr "Fügt die Zwischenablage an der aktuellen Cursorposition ein"
@@ -1793,7 +1960,9 @@ msgid "Rotate active nodes around the given axis"
 msgstr "Rotiert aktive Knoten um die angegebene Achse"
 
 msgid "Merge two given nodes or active model node with the next one"
-msgstr "Führt zwei angegebene Knoten oder den aktiven Modellknoten mit dem nächsten zusammen"
+msgstr ""
+"Führt zwei angegebene Knoten oder den aktiven Modellknoten mit dem nächsten "
+"zusammen"
 
 msgid "Merge all nodes"
 msgstr "Alle Knoten zusammenführen"
@@ -1805,13 +1974,21 @@ msgid "Merge all locked nodes"
 msgstr "Alle gesperrten Knoten zusammenführen"
 
 msgid "Animate all nodes with the given delay in millis between the frames"
-msgstr "Animiert alle Knoten mit der angegebenen Verzögerung in Millisekunden zwischen den Frames"
+msgstr ""
+"Animiert alle Knoten mit der angegebenen Verzögerung in Millisekunden "
+"zwischen den Frames"
 
 msgid "Use the given index to select the color from the current palette"
-msgstr "Verwendet den angegebenen Index, um die Farbe aus der aktuellen Palette auszuwählen"
+msgstr ""
+"Verwendet den angegebenen Index, um die Farbe aus der aktuellen Palette "
+"auszuwählen"
 
-msgid "Set the current selected color by finding the closest rgb match in the palette"
-msgstr "Setzt die aktuell ausgewählte Farbe, indem der nächstgelegene RGB-Wert in der Palette gefunden wird"
+msgid ""
+"Set the current selected color by finding the closest rgb match in the "
+"palette"
+msgstr ""
+"Setzt die aktuell ausgewählte Farbe, indem der nächstgelegene RGB-Wert in "
+"der Palette gefunden wird"
 
 msgid "Pick the current selected color from current cursor voxel"
 msgstr "Wählt die aktuell ausgewählte Farbe aus dem aktuellen Cursor-Voxel aus"
@@ -1819,20 +1996,33 @@ msgstr "Wählt die aktuell ausgewählte Farbe aus dem aktuellen Cursor-Voxel aus
 msgid "Flip the selected nodes around the given axis"
 msgstr "Kippt die ausgewählten Knoten um die angegebene Achse"
 
-msgid "Add a new model node (with a given name and width, height, depth - all optional)"
-msgstr "Fügt einen neuen Modellknoten hinzu (mit einem angegebenen Namen und Breite, Höhe, Tiefe - alle optional)"
+msgid ""
+"Add a new model node (with a given name and width, height, depth - all "
+"optional)"
+msgstr ""
+"Fügt einen neuen Modellknoten hinzu (mit einem angegebenen Namen und Breite, "
+"Höhe, Tiefe - alle optional)"
 
 msgid "Delete a particular node by id - or the current active one"
-msgstr "Löscht einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven Knoten"
+msgstr ""
+"Löscht einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
 
 msgid "Lock a particular node by id - or the current active one"
-msgstr "Sperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven Knoten"
+msgstr ""
+"Sperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
 
-msgid "Toggle the lock state of a particular node by id - or the current active one"
-msgstr "Schaltet den Sperrzustand eines bestimmten Knotens anhand der ID - oder den aktuellen aktiven Knoten um"
+msgid ""
+"Toggle the lock state of a particular node by id - or the current active one"
+msgstr ""
+"Schaltet den Sperrzustand eines bestimmten Knotens anhand der ID - oder den "
+"aktuellen aktiven Knoten um"
 
 msgid "Unlock a particular node by id - or the current active one"
-msgstr "Entsperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven Knoten"
+msgstr ""
+"Entsperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
 
 msgid "Set or print the current active node"
 msgstr "Setzt oder gibt den aktuellen aktiven Knoten aus"
@@ -1858,6 +2048,14 @@ msgstr "Alle Modellknoten außer dem aktiven ausblenden"
 msgid "Lock all nodes"
 msgstr "Alle Knoten sperren"
 
+#, fuzzy
+msgid "Unlock all nodes"
+msgstr "Alle Knoten sperren"
+
+#, fuzzy
+msgid "Rename the current node or the given node id"
+msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
+
 msgid "Duplicates the current node or the given node id"
 msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
 
@@ -1865,7 +2063,9 @@ msgid "Create a node reference for the given node id"
 msgstr "Erstellt eine Knotenreferenz für die angegebene Knoten-ID"
 
 msgid "Unreference from model and allow to edit the voxels for this node"
-msgstr "Entfernt die Referenz zum Modell und ermöglicht das Bearbeiten der Voxel für diesen Knoten"
+msgstr ""
+"Entfernt die Referenz zum Modell und ermöglicht das Bearbeiten der Voxel für "
+"diesen Knoten"
 
 msgid "Change the modifier type to 'select'"
 msgstr "Ändert den Modifier-Typ auf 'Auswählen'"
@@ -1890,16 +2090,24 @@ msgid "Change the brush type to 'none'"
 msgstr "Ändert den Pinseltyp auf 'keiner'"
 
 msgid "Toggle locked mode for the given axis at the current cursor position"
-msgstr "Schaltet den gesperrten Modus für die angegebene Achse an der aktuellen Cursorposition um"
+msgstr ""
+"Schaltet den gesperrten Modus für die angegebene Achse an der aktuellen "
+"Cursorposition um"
 
 msgid "Toggle locked mode for the x axis at the current cursor position"
-msgstr "Schaltet den gesperrten Modus für die X-Achse an der aktuellen Cursorposition um"
+msgstr ""
+"Schaltet den gesperrten Modus für die X-Achse an der aktuellen "
+"Cursorposition um"
 
 msgid "Toggle locked mode for the y axis at the current cursor position"
-msgstr "Schaltet den gesperrten Modus für die Y-Achse an der aktuellen Cursorposition um"
+msgstr ""
+"Schaltet den gesperrten Modus für die Y-Achse an der aktuellen "
+"Cursorposition um"
 
 msgid "Toggle locked mode for the z axis at the current cursor position"
-msgstr "Schaltet den gesperrten Modus für die Z-Achse an der aktuellen Cursorposition um"
+msgstr ""
+"Schaltet den gesperrten Modus für die Z-Achse an der aktuellen "
+"Cursorposition um"
 
 msgid "Mirror along the x axis at the reference position"
 msgstr "Spiegelt entlang der X-Achse an der Referenzposition"
@@ -1919,8 +2127,12 @@ msgstr "Setzt den Bau des Zentrumsplans"
 msgid "Set default aabb voxel building mode"
 msgstr "Setzt den Standard-AABB-Voxel-Bau-Modus"
 
-msgid "Set single voxel building mode - continue setting voxels until you release the action button"
-msgstr "Setzt den Einzel-Voxel-Bau-Modus - setzen Sie Voxel fort, bis Sie die Aktionstaste loslassen"
+msgid ""
+"Set single voxel building mode - continue setting voxels until you release "
+"the action button"
+msgstr ""
+"Setzt den Einzel-Voxel-Bau-Modus - setzen Sie Voxel fort, bis Sie die "
+"Aktionstaste loslassen"
 
 msgid "Change the modifier shape type"
 msgstr "Ändert den Modifier-Formtyp"
@@ -1930,3 +2142,9 @@ msgstr "Schaltet das Zentrum am Cursor um"
 
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+#~ msgid "Save As"
+#~ msgstr "Speichern unter"
+
+#~ msgid "Cut##scripteditor"
+#~ msgstr "Ausschneiden##skripteditor"

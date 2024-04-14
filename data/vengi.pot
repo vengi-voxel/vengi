@@ -1,3 +1,9 @@
+msgid "The language to use - empty means system default"
+msgstr ""
+
+msgid "Log to the system log"
+msgstr ""
+
 msgid ""
 "The lower the value, the more you see. 1 is the highest log level, 5 is just "
 "fatal errors."
@@ -13,9 +19,6 @@ msgid "Generate completion for bash"
 msgstr ""
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
-msgstr ""
-
-msgid "Log to the system log"
 msgstr ""
 
 msgid "Set a variable value"
@@ -256,6 +259,12 @@ msgstr ""
 msgid "Textures"
 msgstr ""
 
+msgid "Language"
+msgstr ""
+
+msgid "To change the language everywhere restart the application"
+msgstr ""
+
 msgid "Clear"
 msgstr ""
 
@@ -356,6 +365,30 @@ msgid "Download all missing files"
 msgstr ""
 
 msgid "Download missing thumbnails"
+msgstr ""
+
+msgid "Nothing selected"
+msgstr ""
+
+msgid "No thumbnail available"
+msgstr ""
+
+#, c-format
+msgid "Name: %s"
+msgstr ""
+
+#, c-format
+msgid "Source: %s"
+msgstr ""
+
+#, c-format
+msgid "License: %s"
+msgstr ""
+
+msgid "URL"
+msgstr ""
+
+msgid "Create thumbnail"
 msgstr ""
 
 msgid "Download missing files"
@@ -460,6 +493,9 @@ msgid "Add a new keyframe to the current active node"
 msgstr ""
 
 msgid "Add all"
+msgstr ""
+
+msgid "Add a new keyframe to all model nodes"
 msgstr ""
 
 msgid "Delete the current keyframe of the active nodes"
@@ -1420,6 +1456,9 @@ msgid "Run"
 msgstr ""
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+
+msgid "Script parameters"
 msgstr ""
 
 msgid "Create a new lua script"
