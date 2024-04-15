@@ -1099,7 +1099,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_BLOCKS_V6, ws);
-			voxel::RawVolume *volume = node.volume();
+			const voxel::RawVolume *volume = node.volume();
 			const voxel::Region &region = volume->region();
 			const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 			for (int x = region.getLowerX(); x <= region.getUpperX(); x++) {

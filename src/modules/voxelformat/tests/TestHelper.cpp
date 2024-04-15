@@ -92,7 +92,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 	const glm::vec3 &pivot = node.pivot();
 	os << os.iword(indent) << "  |- pivot " << pivot.x << ":" << pivot.y << ":" << pivot.z << std::endl;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
-		voxel::RawVolume *v = node.volume();
+		const voxel::RawVolume *v = node.volume();
 		int voxels = 0;
 		os << os.iword(indent) << "  |- volume: " << (v != nullptr ? v->region().toString().c_str() : "no volume")
 		   << std::endl;

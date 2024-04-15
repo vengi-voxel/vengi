@@ -218,7 +218,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
-	voxel::RawVolume &volume = *node->volume();
+	const voxel::RawVolume &volume = *node->volume();
 
 	const int64_t numBytesPos = stream.pos();
 	core_assert(numBytesPos == 0);

@@ -51,7 +51,7 @@ void AbstractVoxFormatTest::dump(const core::String &srcFilename, const scenegra
 	}
 }
 
-void AbstractVoxFormatTest::dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename) {
+void AbstractVoxFormatTest::dump(const core::String &structName, const voxel::RawVolume *v, const core::String &filename) {
 	SCOPED_TRACE(filename.c_str());
 	const io::FilePtr &file = open(filename, io::FileMode::SysWrite);
 	ASSERT_TRUE(file->validHandle());

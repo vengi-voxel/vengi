@@ -162,7 +162,7 @@ bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	wrapBool(stream.writeString("DATA ", false))
-	voxel::RawVolume &volume = *node->volume();
+	const voxel::RawVolume &volume = *node->volume();
 	const palette::Palette &palette = node->palette();
 	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y++) {

@@ -466,7 +466,7 @@ void MementoHandler::markNodeRemoved(const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	voxel::RawVolume *volume = node.volume();
+	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
 	core::Optional<palette::Palette> palette;
 	palette.setValue(node.palette());
@@ -479,7 +479,7 @@ void MementoHandler::markNodeAdded(const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	voxel::RawVolume *volume = node.volume();
+	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
 	core::Optional<palette::Palette> palette;
 	palette.setValue(node.palette());
@@ -498,7 +498,7 @@ void MementoHandler::markModification(const scenegraph::SceneGraphNode &node, co
 	const int nodeId = node.id();
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	voxel::RawVolume *volume = node.volume();
+	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
 	core::Optional<palette::Palette> palette;
 	if (_states.empty()) {
@@ -514,7 +514,7 @@ void MementoHandler::markPaletteChange(const scenegraph::SceneGraphNode &node, c
 	const int parentId = node.parent();
 	const core::String &name = node.name();
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	voxel::RawVolume *volume = nullptr;
+	const voxel::RawVolume *volume = nullptr;
 	if (modifiedRegion.isValid()) {
 		volume = node.volume();
 	}
@@ -533,7 +533,7 @@ void MementoHandler::markNodeRenamed(const scenegraph::SceneGraphNode &node) {
 	const int parentId = node.parent();
 	const core::String &name = node.name();
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	voxel::RawVolume *volume = node.volume();
+	const voxel::RawVolume *volume = node.volume();
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const glm::mat4 &transformMatrix = transform.worldMatrix();
 	Log::debug("Mark node %i renamed (%s)", nodeId, name.c_str());

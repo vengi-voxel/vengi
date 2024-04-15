@@ -788,7 +788,7 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 	Log::info("%*s  |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
 	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
-		voxel::RawVolume *v = node.volume();
+		const voxel::RawVolume *v = node.volume();
 		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++stats.voxels; });

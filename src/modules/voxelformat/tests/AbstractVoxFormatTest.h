@@ -27,7 +27,7 @@ protected:
 	void checkColor(core::RGBA, const palette::Palette &palette, uint8_t index, float maxDelta);
 
 	void dump(const core::String &srcFilename, const scenegraph::SceneGraph &sceneGraph);
-	void dump(const core::String &structName, voxel::RawVolume *v, const core::String &filename);
+	void dump(const core::String &structName, const voxel::RawVolume *v, const core::String &filename);
 
 	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags);
 	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename, Format &destFormat,
