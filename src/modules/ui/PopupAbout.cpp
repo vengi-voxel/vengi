@@ -45,7 +45,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 
 					ImGui::Dummy(ImVec2(1, 10));
 					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues", w);
-					ImGui::URLIconItem(ICON_LC_HELP_CIRCLE, _("Help"), "https://vengi-voxel.github.io/vengi/", w);
+					ImGui::URLIconItem(ICON_LC_CIRCLE_HELP, _("Help"), "https://vengi-voxel.github.io/vengi/", w);
 					ImGui::URLIconItem(ICON_LC_TWITTER, _("Twitter"), "https://twitter.com/MartinGerhardy", w);
 					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy", w);
 					ImGui::URLIconItem(ICON_LC_SQUARE, _("Discord"), "https://vengi-voxel.de/discord", w);

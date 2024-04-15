@@ -27,7 +27,7 @@
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_LC_MOUSE_POINTER_SQUARE_DASHED,
+static constexpr const char *BrushTypeIcons[] = {ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
 												 ICON_LC_BOXES,
 												 ICON_LC_GROUP,
 												 ICON_LC_STAMP,

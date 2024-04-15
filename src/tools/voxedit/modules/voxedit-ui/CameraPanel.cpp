@@ -47,7 +47,7 @@ void CameraPanel::update(const char *title, video::Camera &camera, command::Comm
 			command::executeCommands("resetcamera", &listener);
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_PLUS_SQUARE, _("Add new camera"))) {
+		if (ImGui::IconButton(ICON_LC_SQUARE_PLUS, _("Add new camera"))) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			_sceneMgr->moveNodeToSceneGraph(cameraNode);
 		}

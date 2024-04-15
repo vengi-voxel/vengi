@@ -567,7 +567,7 @@ void MainWindow::popupWelcome() {
 void MainWindow::popupModelUnreference() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_MODEL_UNREFERENCE)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			command::Command::execute("modelunref");
 			ImGui::CloseCurrentPopup();
@@ -627,7 +627,7 @@ void MainWindow::popupNewScene() {
 void MainWindow::popupFailedSave() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopup(POPUP_TITLE_FAILED_TO_SAVE, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_ALERT_TRIANGLE, _("Failed to save the model!"));
+		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("Failed to save the model!"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			ImGui::CloseCurrentPopup();
 		}
@@ -638,7 +638,7 @@ void MainWindow::popupFailedSave() {
 
 void MainWindow::popupUnsavedChanges() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED_SCENE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Unsaved changes - are you sure to quit?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Unsaved changes - are you sure to quit?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_forceQuit = true;
 			_app->requestQuit();
@@ -655,7 +655,7 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	if (ImGui::BeginPopupModal(POPUP_TITLE_UNSAVED, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("There are unsaved modifications.\nDo you wish to discard them?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("There are unsaved modifications.\nDo you wish to discard them?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
@@ -694,7 +694,7 @@ void MainWindow::popupSceneSettings() {
 void MainWindow::popupVolumeSplit() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	if (ImGui::BeginPopupModal(POPUP_TITLE_VOLUME_SPLIT)) {
-		ImGui::IconDialog(ICON_LC_HELP_CIRCLE, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();

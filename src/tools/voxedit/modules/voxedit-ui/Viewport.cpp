@@ -315,7 +315,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 		const char *icon = ICON_LC_CLAPPERBOARD;
 		const char *text = _("Video");
 		if (_avi.isRecording()) {
-			icon = ICON_LC_STOP_CIRCLE;
+			icon = ICON_LC_CIRCLE_STOP;
 			text = _("Stop recording");
 		}
 		if (ImGui::IconMenuItem(icon, text)) {

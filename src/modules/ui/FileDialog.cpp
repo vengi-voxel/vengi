@@ -563,7 +563,7 @@ bool FileDialog::popupAlreadyExists() {
 	if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(imguiApp()->bigFont());
-		ImGui::TextUnformatted(ICON_LC_ALERT_TRIANGLE);
+		ImGui::TextUnformatted(ICON_LC_TRIANGLE_ALERT);
 		ImGui::PopFont();
 		ImGui::SameLine();
 		ImGui::Spacing();

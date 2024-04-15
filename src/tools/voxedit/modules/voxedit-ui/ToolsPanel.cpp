@@ -76,8 +76,8 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
 		toolbar.button(ICON_LC_EXPAND, "modelsize");
 		toolbar.button(ICON_LC_UNGROUP, "colortomodel");
-		toolbar.button(ICON_LC_CHEVRON_DOWN_SQUARE, "scaledown");
-		toolbar.button(ICON_LC_CHEVRON_UP_SQUARE, "scaleup");
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_DOWN, "scaledown");
+		toolbar.button(ICON_LC_SQUARE_CHEVRON_UP, "scaleup");
 		toolbar.button(ICON_LC_PAINT_BUCKET, "fillhollow");
 		toolbar.button(ICON_LC_ERASER, "hollow");
 		toolbar.button(ICON_LC_X, "clear");

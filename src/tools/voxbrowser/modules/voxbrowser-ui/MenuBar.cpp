@@ -47,7 +47,7 @@ bool MenuBar::update() {
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, _("Help"))) {
+		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
 				if (ImGui::Button(_("Textures"))) {

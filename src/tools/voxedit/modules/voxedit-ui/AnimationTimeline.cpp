@@ -19,12 +19,12 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	}
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to the current active node"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_PLUS_SQUARE, _("Add all"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_PLUS, _("Add all"), _play)) {
 		_sceneMgr->nodeAllAddKeyFrames(currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Add a new keyframe to all model nodes"));
 	ImGui::SameLine();
-	if (ImGui::DisabledIconButton(ICON_LC_MINUS_SQUARE, _("Delete"), _play)) {
+	if (ImGui::DisabledIconButton(ICON_LC_SQUARE_MINUS, _("Delete"), _play)) {
 		_sceneMgr->nodeRemoveKeyFrame(InvalidNodeId, currentFrame);
 	}
 	ImGui::TooltipTextUnformatted(_("Delete the current keyframe of the active nodes"));
@@ -37,7 +37,7 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	ImGui::SameLine();
 
 	if (_play) {
-		if (ImGui::Button(ICON_LC_STOP_CIRCLE)) {
+		if (ImGui::Button(ICON_LC_CIRCLE_STOP)) {
 			_play = false;
 		}
 	} else {
@@ -138,7 +138,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 		popupFlags |= ImGuiWindowFlags_NoTitleBar;
 		popupFlags |= ImGuiWindowFlags_NoSavedSettings;
 		if (ImGui::BeginPopup("keyframe-context-menu", popupFlags)) {
-			if (ImGui::IconSelectable(ICON_LC_PLUS_SQUARE, _("Add"))) {
+			if (ImGui::IconSelectable(ICON_LC_SQUARE_PLUS, _("Add"))) {
 				_sceneMgr->nodeAddKeyFrame(InvalidNodeId, currentFrame);
 				_clearSelection = true;
 				ImGui::CloseCurrentPopup();

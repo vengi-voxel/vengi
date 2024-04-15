@@ -76,9 +76,9 @@ const char *ImGuiToast::icon() const {
 	case ImGuiToastType_Debug:
 		return ICON_LC_INFO;
 	case ImGuiToastType_Warning:
-		return ICON_LC_ALERT_TRIANGLE;
+		return ICON_LC_TRIANGLE_ALERT;
 	case ImGuiToastType_Error:
-		return ICON_LC_ALERT_OCTAGON;
+		return ICON_LC_OCTAGON_ALERT;
 	case ImGuiToastType_Info:
 	default:
 		return ICON_LC_INFO;

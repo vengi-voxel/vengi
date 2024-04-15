@@ -80,8 +80,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", !_sceneMgr->modifier().selections().empty(), &listener);
 			ImGui::Separator();
 
-			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, _("Add file to scene"), "import", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_PLUS_SQUARE, _("Add directory to scene"), "importdirectory", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add file to scene"), "import", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add directory to scene"), "importdirectory", true, &listener);
 			ImGui::Separator();
 			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Heightmap"), "importheightmap", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Colored heightmap"), "importcoloredheightmap", true, &listener);
@@ -156,7 +156,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandMenuItem(_("All"), "select all", true, &listener);
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginIconMenu(ICON_LC_HELP_CIRCLE, _("Help"))) {
+		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
 #ifdef DEBUG
 			if (ImGui::BeginIconMenu(ICON_LC_BUG, _("Debug"))) {
 				if (ImGui::Button(_("Textures"))) {

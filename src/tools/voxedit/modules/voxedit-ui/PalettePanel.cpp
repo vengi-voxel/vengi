@@ -310,7 +310,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 }
 
 void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
-	ImGui::SliderFloat(ICON_LC_SLIDERS, &_intensityChange, -1.0f, 1.0f);
+	ImGui::SliderFloat(ICON_LC_SLIDERS_HORIZONTAL, &_intensityChange, -1.0f, 1.0f);
 	ImGui::SameLine();
 	const core::String &paletteChangeCmd = core::string::format("palette_changeintensity %f", _intensityChange);
 	if (ImGui::CommandButton(_("Apply"), paletteChangeCmd.c_str(), nullptr, ImVec2(0.0f, 0.0f), &listener)) {
