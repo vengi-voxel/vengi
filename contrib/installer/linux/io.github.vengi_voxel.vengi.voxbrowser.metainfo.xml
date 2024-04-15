@@ -39,4 +39,5 @@
   <url type="bugtracker">https://github.com/vengi-voxel/vengi/issues</url>
   <url type="donation">https://www.paypal.me/MartinGerhardy</url>
   <content_rating type="oars-1.1"/>
+  <launchable type="desktop-id">voxbrowser.desktop</launchable>
 </component>
