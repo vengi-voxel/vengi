@@ -687,6 +687,7 @@ ImVec2 ImGuiTestContext::GetMainMonitorWorkSize()
     return ImGui::GetMainViewport()->WorkSize;
 }
 
+#if IMGUI_TEST_ENGINE_ENABLE_CAPTURE
 static bool ImGuiTestContext_CanCaptureScreenshot(ImGuiTestContext* ctx)
 {
     ImGuiTestEngineIO* io = ctx->EngineIO;
@@ -698,6 +699,7 @@ static bool ImGuiTestContext_CanCaptureVideo(ImGuiTestContext* ctx)
     ImGuiTestEngineIO* io = ctx->EngineIO;
     return io->ConfigCaptureEnabled && ImFileExist(io->VideoCaptureEncoderPath);
 }
+#endif
 
 bool ImGuiTestContext::CaptureAddWindow(ImGuiTestRef ref)
 {
@@ -752,7 +754,7 @@ bool ImGuiTestContext::CaptureScreenshot(int capture_flags)
     return ret;
 #else
     IM_UNUSED(args);
-    LogWarning("Skipped capturing screenshot: capture disabled by IMGUI_TEST_ENGINE_ENABLE_CAPTURE=0.");
+    LogWarning("Skipped screenshot capture: disabled by IMGUI_TEST_ENGINE_ENABLE_CAPTURE=0.");
     return false;
 #endif
 }
@@ -805,7 +807,7 @@ bool ImGuiTestContext::CaptureBeginVideo()
     return ImGuiTestEngine_CaptureBeginVideo(Engine, args);
 #else
     IM_UNUSED(args);
-    LogWarning("Skipped recording GIF: capture disabled by IMGUI_TEST_ENGINE_ENABLE_CAPTURE.");
+    LogWarning("Skipped recording GIF: disabled by IMGUI_TEST_ENGINE_ENABLE_CAPTURE=0.");
     return false;
 #endif
 }
@@ -820,6 +822,7 @@ bool ImGuiTestContext::CaptureEndVideo()
     if (!ret)
         return false;
 
+#if IMGUI_TEST_ENGINE_ENABLE_CAPTURE
     // In-progress capture was canceled by user. Delete incomplete file.
     if (IsError())
     {
@@ -838,6 +841,7 @@ bool ImGuiTestContext::CaptureEndVideo()
         else
             LogWarning("Skipped saving '%s' video because: Video Encoder not found.", args->InOutputFile);
     }
+#endif
 
     return ret;
 }
