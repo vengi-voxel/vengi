@@ -482,7 +482,7 @@ function(engine_install_deps TARGET)
 	)
 
 	foreach (PO_FILE ${PO_FILES})
-		configure_file(${DATA_DIR}/shared/${PO_FILE} ${CMAKE_BINARY_DIR}/${TARGET} COPYONLY)
+		configure_file(${DATA_DIR}/shared/${PO_FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${PO_FILE} COPYONLY)
 	endforeach()
 
 	if (INSTALL_FILES)
