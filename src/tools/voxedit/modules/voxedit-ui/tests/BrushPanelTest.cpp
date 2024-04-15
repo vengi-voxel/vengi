@@ -21,6 +21,9 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 			IM_CHECK_EQ((int)brushType, i);
 		}
 	};
+
+	// TODO: select
+	// TODO: copy and paste
 }
 
 } // namespace voxedit
