@@ -1072,16 +1072,18 @@ bool SceneManager::copy() {
 	if (selections.empty()) {
 		return false;
 	}
-	voxel::RawVolume* v = activeVolume();
-	if (v == nullptr) {
+	const int nodeId = activeNode();
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.volume() == nullptr) {
 		return false;
 	}
-	_copy = voxedit::tool::copy(v, selections);
-	return true;
+	tool::VoxelData voxelData(node.volume(), node.palette(), false);
+	_copy = voxedit::tool::copy(voxelData, selections);
+	return _copy;
 }
 
 bool SceneManager::pasteAsNewNode() {
-	if (_copy == nullptr) {
+	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
 	}
@@ -1089,22 +1091,24 @@ bool SceneManager::pasteAsNewNode() {
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	scenegraph::copyNode(node, newNode, false);
-	newNode.setVolume(new voxel::RawVolume(*_copy), true);
+	newNode.setVolume(new voxel::RawVolume(*_copy.volume), true);
+	newNode.setPalette(*_copy.palette);
 	return moveNodeToSceneGraph(newNode, node.parent()) != InvalidNodeId;
 }
 
 bool SceneManager::paste(const glm::ivec3& pos) {
-	if (_copy == nullptr) {
+	if (!_copy) {
 		Log::debug("Nothing copied yet - failed to paste");
 		return false;
 	}
 	const int nodeId = activeNode();
-	voxel::RawVolume* v = volume(nodeId);
-	if (v == nullptr) {
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.volume() == nullptr) {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	voxedit::tool::paste(v, _copy, pos, modifiedRegion);
+	tool::VoxelData voxelData(node.volume(), node.palette(), false);
+	voxedit::tool::paste(voxelData, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
 		return false;
@@ -1121,19 +1125,20 @@ bool SceneManager::cut() {
 		return false;
 	}
 	const int nodeId = activeNode();
-	voxel::RawVolume* v = volume(nodeId);
-	if (v == nullptr) {
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	if (node.volume() == nullptr) {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	_copy = voxedit::tool::cut(v, selections, modifiedRegion);
-	if (_copy == nullptr) {
+	tool::VoxelData voxelData(node.volume(), node.palette(), false);
+	_copy = voxedit::tool::cut(voxelData, selections, modifiedRegion);
+	if (!_copy) {
 		Log::debug("Failed to cut");
 		return false;
 	}
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to cut");
-		delete _copy;
+		_copy = {};
 		return false;
 	}
 	const int64_t dismissMillis = core::Var::getSafe(cfg::VoxEditModificationDismissMillis)->intVal();

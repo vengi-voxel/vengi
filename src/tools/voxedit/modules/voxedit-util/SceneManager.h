@@ -19,6 +19,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "util/Movement.h"
+#include "voxedit-util/Clipboard.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -62,7 +63,7 @@ private:
 	MementoHandler _mementoHandler;
 	util::Movement _movement;
 	voxelfont::VoxelFont _voxelFont;
-	core::ScopedPtr<voxel::RawVolume> _copy;
+	tool::VoxelData _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
@@ -503,7 +504,7 @@ public:
 };
 
 inline bool SceneManager::hasClipboardCopy() const {
-	return _copy != nullptr;
+	return _copy;
 }
 
 inline scenegraph::FrameIndex SceneManager::currentFrame() const {

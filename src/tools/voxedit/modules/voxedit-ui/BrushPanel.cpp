@@ -96,10 +96,8 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 	if (ImGui::Button(_("Use selection"))) {
 		const Selections &selections = modifier.selections();
 		if (!selections.empty()) {
-			core::ScopedPtr<voxel::RawVolume> copy(voxedit::tool::copy(node.volume(), selections));
-			if (copy) {
-				modifier.stampBrush().setVolume(*copy, palette);
-			}
+			const voxel::RawVolume stampVolume(node.volume(), selections);
+			modifier.stampBrush().setVolume(stampVolume, palette);
 		}
 	}
 	ImGui::TooltipTextUnformatted(_("Use the current selection as new stamp"));
