@@ -30,7 +30,16 @@ msgstr "Just a translation"
 
 msgid "Single line string"
 msgstr "Translation for Single line string"
-	)";
+
+#~ msgid "OK##treegenerate"
+#~ msgstr "OK##baumgenerieren"
+
+#~ msgid "Save As"
+#~ msgstr "Speichern unter"
+
+#~ msgid "Cut##scripteditor"
+#~ msgstr "Ausschneiden##skripteditor"
+)";
 };
 
 TEST_F(POParserTest, testParse) {

@@ -59,6 +59,7 @@ void POParser::nextLine() {
 	_lineNumber += 1;
 	if (!_in.readLine(_currentLine)) {
 		_eof = true;
+		_currentLine.clear();
 	}
 }
 
