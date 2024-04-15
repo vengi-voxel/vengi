@@ -179,6 +179,7 @@ IMGUI_API ImGuiTestEngineIO&  ImGuiTestEngine_GetIO(ImGuiTestEngine* engine);
 // Macros: Register Test
 #define IM_REGISTER_TEST(_ENGINE, _CATEGORY, _NAME)  ImGuiTestEngine_RegisterTest(_ENGINE, _CATEGORY, _NAME, __FILE__, __LINE__)
 IMGUI_API ImGuiTest*          ImGuiTestEngine_RegisterTest(ImGuiTestEngine* engine, const char* category, const char* name, const char* src_file = NULL, int src_line = 0); // Prefer calling IM_REGISTER_TEST()
+IMGUI_API void                ImGuiTestEngine_UnregisterTest(ImGuiTestEngine* engine, ImGuiTest* test);
 
 // Functions: Main
 IMGUI_API void                ImGuiTestEngine_QueueTest(ImGuiTestEngine* engine, ImGuiTest* test, ImGuiTestRunFlags run_flags = 0);

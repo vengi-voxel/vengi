@@ -354,6 +354,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
     int tests_completed = 0;
     int tests_succeeded = 0;
     int tests_failed = 0;
+    ImVector<ImGuiTest*> tests_to_remove;
     if (ImGui::BeginTable("Tests", 3, ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody | ImGuiTableFlags_SizingFixedFit))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
@@ -515,6 +516,11 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                 if (ImGui::MenuItem("Clear log", NULL, false, !test_log->IsEmpty()))
                     test_log->Clear();
 
+                // [DEBUG] Simple way to exercise ImGuiTestEngine_UnregisterTest()
+                //ImGui::Separator();
+                //if (ImGui::MenuItem("Remove test"))
+                //    tests_to_remove.push_back(test);
+
                 ImGui::EndPopup();
             }
 
@@ -570,6 +576,10 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
         ImGui::PopStyleVar(2);
         ImGui::EndTable();
     }
+
+    // Process removal
+    for (ImGuiTest* test : tests_to_remove)
+        ImGuiTestEngine_UnregisterTest(e, test);
 
     // Display test status recap (colors match per-test run button colors defined above)
     {

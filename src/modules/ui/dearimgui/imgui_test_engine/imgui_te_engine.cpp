@@ -1172,6 +1172,32 @@ ImGuiTest* ImGuiTestEngine_RegisterTest(ImGuiTestEngine* engine, const char* cat
     return t;
 }
 
+void ImGuiTestEngine_UnregisterTest(ImGuiTestEngine* engine, ImGuiTest* test)
+{
+    // Cannot unregister a running test. Please contact us if you need this.
+    if (engine->TestContext != NULL)
+        IM_ASSERT(engine->TestContext->Test != test);
+
+    // Remove from lists
+    bool found = engine->TestsAll.find_erase(test);
+    IM_ASSERT(found); // Calling ImGuiTestEngine_UnregisterTest() on an unknown test.
+    for (int n = 0; n < engine->TestsQueue.Size; n++)
+    {
+        ImGuiTestRunTask& task = engine->TestsQueue[n];
+        if (task.Test == test)
+        {
+            engine->TestsQueue.erase(&task);
+            n--;
+        }
+    }
+    if (engine->UiSelectAndScrollToTest == test)
+        engine->UiSelectAndScrollToTest = NULL;
+    if (engine->UiSelectedTest == test)
+        engine->UiSelectedTest = NULL;
+
+    IM_DELETE(test);
+}
+
 ImGuiPerfTool* ImGuiTestEngine_GetPerfTool(ImGuiTestEngine* engine)
 {
     return engine->PerfTool;
