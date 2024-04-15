@@ -29,9 +29,6 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_scriptPanel.registerUITests(engine, TITLE_SCRIPT);
 	_animationTimeline.registerUITests(engine, TITLE_ANIMATION_TIMELINE);
 	_cameraPanel.registerUITests(engine, TITLE_CAMERA);
-	for (int i = 0; i < _scenes.size(); i++) {
-		_scenes[i]->registerUITests(engine, nullptr);
-	}
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();

@@ -204,6 +204,12 @@ bool MainWindow::initScenes() {
 	}
 	_lastHoveredScene = _scenes[0];
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	for (int i = 0; i < _scenes.size(); i++) {
+		_scenes[i]->registerUITests(_app->imguiTestEngine(), nullptr);
+	}
+#endif
+
 	_simplifiedView->markClean();
 	_numViewports->markClean();
 	return success;

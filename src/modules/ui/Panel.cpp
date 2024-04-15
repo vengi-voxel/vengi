@@ -40,9 +40,9 @@ bool Panel::focusWindow(ImGuiTestContext *ctx, const char *title) {
 
 void Panel::unregisterUITests(ImGuiTestEngine *engine) {
 	// https://github.com/ocornut/imgui_test_engine/issues/46
-	// while (ImGuiTest* test = engine->ImGuiTestEngine_FindTestByName(engine, testCategory())) {
-	// 	engine->TestsAll->erase(test);
-	// }
+	while (ImGuiTest* test = ImGuiTestEngine_FindTestByName(engine, testCategory(), nullptr)) {
+		ImGuiTestEngine_UnregisterTest(engine, test);
+	}
 }
 
 #endif
