@@ -476,10 +476,19 @@ function(engine_install_deps TARGET)
 			configure_file(${LUA_SRCS_DIR}/lua/${luasrc} ${CMAKE_BINARY_DIR}/${TARGET}/${datafiledir}/${filename} COPYONLY)
 		endforeach()
 	endforeach()
+
+	set(PO_FILES
+		de_DE.po
+	)
+
+	foreach (PO_FILE ${PO_FILES})
+		configure_file(${DATA_DIR}/shared/${PO_FILE} ${CMAKE_BINARY_DIR}/${TARGET} COPYONLY)
+	endforeach()
+
 	if (INSTALL_FILES)
 		list(REMOVE_DUPLICATES INSTALL_FILES)
 		list(REVERSE INSTALL_FILES)
-		list(APPEND shared/de_DE.po)
+		list(APPEND INSTALL_FILES shared/de_DE.po)
 		foreach (datafile ${INSTALL_FILES})
 			string(REGEX REPLACE "^[^/]+" "" target_datafile "${datafile}")
 			string(LENGTH ${target_datafile} target_datafile_length)
