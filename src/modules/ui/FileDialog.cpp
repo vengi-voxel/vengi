@@ -366,6 +366,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 	ImGui::BeginChild(_("Files"), childSize, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClickedFile = false;
+	bool doubleClickedDir = false;
 	static const uint32_t TableFlags =
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
@@ -430,7 +431,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 					_selectedEntry = *_files[i];
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						if (entry.isDirectory()) {
-							setCurrentPath(type, assemblePath(_currentPath, *_files[i]));
+							doubleClickedDir = true;
 						} else {
 							doubleClickedFile = true;
 						}
@@ -467,6 +468,11 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 		ImGui::EndTable();
 	}
 	ImGui::EndChild();
+
+	if (doubleClickedDir) {
+		setCurrentPath(type, assemblePath(_currentPath, _selectedEntry));
+	}
+
 	return doubleClickedFile;
 }
 
