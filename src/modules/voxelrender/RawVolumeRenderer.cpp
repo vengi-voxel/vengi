@@ -660,7 +660,7 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	video::useProgram(oldShader);
 }
 
-void RawVolumeRenderer::setVolume(int idx, const scenegraph::SceneGraphNode &node, bool deleteMesh) {
+void RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
 	setVolume(idx, node.volume(), &node.palette(), deleteMesh);
 }
 

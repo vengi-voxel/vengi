@@ -794,7 +794,14 @@ voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 	return n.region();
 }
 
-voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
+const voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const {
+	if (n.type() == SceneGraphNodeType::ModelReference) {
+		return resolveVolume(node(n.reference()));
+	}
+	return n.volume();
+}
+
+voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolveVolume(node(n.reference()));
 	}

@@ -277,7 +277,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	scenegraph::SceneGraphNode newNode;
 	scenegraph::copyNode(*node, newNode, false);
 	if (node->isReference()) {
-		newNode.setVolume(_sceneGraph.resolveVolume(*node), false);
+		newNode.setVolume(_sceneGraph.resolveVolume(*node));
 	}
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;
@@ -587,7 +587,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 
 void SceneManager::colorToNewNode(const voxel::Voxel voxelColor) {
 	const int nodeId = _sceneGraph.activeNode();
-	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	voxel::RawVolume *v = _sceneGraph.resolveVolume(node);
 	if (v == nullptr) {
 		return;

@@ -125,7 +125,7 @@ public:
 	 * @sa volume()
 	 */
 	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete);
-	void setVolume(int idx, const scenegraph::SceneGraphNode& node, bool deleteMesh);
+	void setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh);
 
 	void resetVolume(int idx);
 

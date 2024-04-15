@@ -165,7 +165,7 @@ public:
 	 * nullptr, too - use @c SceneGraph::resolveVolume() instead.
 	 * @return voxel::RawVolume - might be @c nullptr
 	 */
-	voxel::RawVolume *volume() const;
+	const voxel::RawVolume *volume() const;
 	/**
 	 * @note If this node is a reference node ( @c SceneGraphNodeType::ModelReference ) then this will return @c
 	 * nullptr, too - use @c SceneGraph::resolveVolume() instead.
@@ -367,7 +367,7 @@ inline int SceneGraphNode::id() const {
 	return _id;
 }
 
-inline voxel::RawVolume *SceneGraphNode::volume() const {
+inline const voxel::RawVolume *SceneGraphNode::volume() const {
 	if (_type != SceneGraphNodeType::Model) {
 		return nullptr;
 	}

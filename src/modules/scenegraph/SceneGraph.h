@@ -221,7 +221,8 @@ public:
 	/**
 	 * Performs the recursive lookup in case of model references
 	 */
-	voxel::RawVolume *resolveVolume(const SceneGraphNode &node) const;
+	const voxel::RawVolume *resolveVolume(const SceneGraphNode &node) const;
+	voxel::RawVolume *resolveVolume(SceneGraphNode &node);
 
 	/**
 	 * @brief Delete the owned volumes

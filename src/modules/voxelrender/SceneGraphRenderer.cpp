@@ -186,7 +186,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 
 	const int activeNode = sceneGraph.activeNode();
 	for (auto entry : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &node = entry->second;
+		scenegraph::SceneGraphNode &node = entry->value;
 		if (renderContext.onlyModels && !node.isModelNode()) {
 			continue;
 		}
@@ -208,7 +208,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		if (id >= voxel::MAX_VOLUMES) {
 			continue;
 		}
-		voxel::RawVolume *v = meshState->volume(id);
+		const voxel::RawVolume *v = meshState->volume(id);
 		_volumeRenderer.setVolume(id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
