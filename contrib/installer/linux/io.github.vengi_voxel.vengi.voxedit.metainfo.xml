@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component type="desktop">
   <!--Created with jdAppdataEdit 5.0-->
-  <id>io.github.vengi-voxel.vengi.voxedit</id>
+  <id>io.github.vengi_voxel.vengi.voxedit</id>
   <name>vengi VoxEdit</name>
   <summary>voxel editor</summary>
   <developer_name>Martin Gerhardy</developer_name>

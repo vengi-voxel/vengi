@@ -45,6 +45,10 @@ Thumbnailer:
 
    - Fixed logic error in skipping camera nodes
 
+Packaging:
+
+   - Renamed AppStream package to `io.github.vengi_voxel.vengi.voxedit` for DBUS compatibility
+
 ## 0.0.30 (2024-03-23)
 
 General:
