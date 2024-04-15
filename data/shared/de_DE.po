@@ -1629,6 +1629,39 @@ msgstr "Ausführen##texteingabe"
 msgid "Flip on axis"
 msgstr "Auf Achse umdrehen"
 
+msgid "Cone"
+msgstr ""
+
+msgid "Dome"
+msgstr ""
+
+msgid "Dome Hanging"
+msgstr ""
+
+msgid "Pine"
+msgstr ""
+
+msgid "Cube"
+msgstr ""
+
+msgid "Ellipsis"
+msgstr ""
+
+msgid "Ellipsis2"
+msgstr ""
+
+msgid "Fir"
+msgstr "Tanne"
+
+msgid "Cube Sides"
+msgstr ""
+
+msgid "Palm"
+msgstr "Palme"
+
+msgid "SpaceColonization"
+msgstr ""
+
 msgid "Seed"
 msgstr "Seed"
 
@@ -1718,9 +1751,6 @@ msgstr "Maximale Blattlänge"
 
 msgid "Leaves thickness"
 msgstr "Blattdicke"
-
-msgid "OK##treegenerate"
-msgstr "OK##baumgenerieren"
 
 #, c-format
 msgid ""
@@ -2142,6 +2172,9 @@ msgstr "Schaltet das Zentrum am Cursor um"
 
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+#~ msgid "OK##treegenerate"
+#~ msgstr "OK##baumgenerieren"
 
 #~ msgid "Save As"
 #~ msgstr "Speichern unter"

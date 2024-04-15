@@ -1533,6 +1533,39 @@ msgstr ""
 msgid "Flip on axis"
 msgstr ""
 
+msgid "Cone"
+msgstr ""
+
+msgid "Dome"
+msgstr ""
+
+msgid "Dome Hanging"
+msgstr ""
+
+msgid "Pine"
+msgstr ""
+
+msgid "Cube"
+msgstr ""
+
+msgid "Ellipsis"
+msgstr ""
+
+msgid "Ellipsis2"
+msgstr ""
+
+msgid "Fir"
+msgstr ""
+
+msgid "Cube Sides"
+msgstr ""
+
+msgid "Palm"
+msgstr ""
+
+msgid "SpaceColonization"
+msgstr ""
+
 msgid "Seed"
 msgstr ""
 
@@ -1621,9 +1654,6 @@ msgid "Leaves max length"
 msgstr ""
 
 msgid "Leaves thickness"
-msgstr ""
-
-msgid "OK##treegenerate"
 msgstr ""
 
 #, c-format
