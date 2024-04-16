@@ -40,6 +40,7 @@ VoxEdit:
    - Added `presentation` command to cycle through all models in a scene
    - Improved position panel to edit transforms
    - Improved start-up times
+   - Pasting from a different palette will search the closest colors
 
 Thumbnailer:
 
