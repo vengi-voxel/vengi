@@ -69,7 +69,7 @@ The log level is configured by the `core_loglevel` variable. The lower the value
 
 ## General
 
-To get a rough usage overview, you can start an application with `--help`. It will print out the commands and configuration variables
+To get a rough usage overview, you can start any application with `--help`. It will print out the commands and configuration variables
 with a description and hints how to modify/use them.
 
 ## Video settings
