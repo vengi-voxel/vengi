@@ -287,16 +287,16 @@ void Viewport::toggleScene() {
 }
 
 void Viewport::toggleVideoRecording() {
-	if (!_avi.isRecording()) {
+	if (!_captureTool.isRecording()) {
 		video::WindowedApp::getInstance()->saveDialog(
 			[this](const core::String &file, const io::FormatDescription *desc) {
 				const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
-				_avi.startRecording(file.c_str(), dim.x, dim.y);
+				_captureTool.startRecording(file.c_str(), dim.x, dim.y);
 			},
 			{}, nullptr, "video.avi");
 	} else {
 		Log::debug("Stop recording");
-		_avi.stopRecording();
+		_captureTool.stopRecording();
 	}
 }
 
@@ -314,14 +314,14 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 
 		const char *icon = ICON_LC_CLAPPERBOARD;
 		const char *text = _("Video");
-		if (_avi.isRecording()) {
+		if (_captureTool.isRecording()) {
 			icon = ICON_LC_CIRCLE_STOP;
 			text = _("Stop recording");
 		}
 		if (ImGui::IconMenuItem(icon, text)) {
 			toggleVideoRecording();
 		}
-		const uint32_t pendingFrames = _avi.pendingFrames();
+		const uint32_t pendingFrames = _captureTool.pendingFrames();
 		if (pendingFrames > 0u) {
 			ImGui::SameLine();
 			ImGui::Text(_("Pending frames: %u"), pendingFrames);
@@ -413,16 +413,16 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	}
 	ImGui::End();
 
-	if (_avi.isRecording()) {
-		_avi.enqueueFrame(renderToImage("**video**"));
-	} else if (_avi.hasFinished()) {
-		_avi.flush();
+	if (_captureTool.isRecording()) {
+		_captureTool.enqueueFrame(renderToImage("**video**"));
+	} else if (_captureTool.hasFinished()) {
+		_captureTool.flush();
 	}
 }
 
 void Viewport::shutdown() {
 	_renderContext.shutdown();
-	_avi.abort();
+	_captureTool.abort();
 }
 
 image::ImagePtr Viewport::renderToImage(const char *imageName) {

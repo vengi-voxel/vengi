@@ -10,17 +10,23 @@
 
 namespace image {
 
-class AVIRecorder {
+enum class CaptureType { AVI, MPEG2, Max };
+
+class CaptureTool {
 private:
+	CaptureType _type;
+	int _fps = 30;
 	image::AVI _avi{};
 	core::SharedPtr<io::FileStream> _videoWriteStream = nullptr;
 	core::ConcurrentQueue<image::ImagePtr> _frameQueue;
 	core::AtomicBool _stop = false;
 
-	static int encodeFrame(AVIRecorder *data);
+	static int encodeFrame(CaptureTool *data);
 
 public:
-	~AVIRecorder() {
+	CaptureTool(CaptureType type = CaptureType::AVI) : _type(type) {
+	}
+	~CaptureTool() {
 		abort();
 	}
 	bool isRecording() const;

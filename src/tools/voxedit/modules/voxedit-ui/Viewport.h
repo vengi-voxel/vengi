@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ui/Panel.h"
-#include "image/AVIRecorder.h"
+#include "image/CaptureTool.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "video/Camera.h"
@@ -41,7 +41,7 @@ private:
 	bool _transformMementoLocked = false;
 
 	voxelrender::SceneCameraMode _camMode = voxelrender::SceneCameraMode::Free;
-	image::AVIRecorder _avi;
+	image::CaptureTool _captureTool;
 	SceneManagerPtr _sceneMgr;
 
 	/**

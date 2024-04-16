@@ -1,7 +1,9 @@
 set(SRCS
+	external/jo_mpeg.cpp external/jo_mpeg.h
+
 	Image.cpp Image.h
 	AVI.cpp AVI.h
-	AVIRecorder.cpp AVIRecorder.h
+	CaptureTool.cpp CaptureTool.h
 )
 set(LIB image)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES io util stb_image)
@@ -12,6 +14,7 @@ endif()
 set(TEST_SRCS
 	tests/ImageTest.cpp
 	tests/AVITest.cpp
+	tests/MPEG2Test.cpp
 )
 
 set(TEST_FILES
