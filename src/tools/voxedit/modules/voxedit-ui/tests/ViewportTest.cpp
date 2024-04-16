@@ -21,7 +21,6 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	};
 
 	// TODO: a scene mode test to create another node and select a node
-	// TODO: copy and paste
 }
 
 } // namespace voxedit
