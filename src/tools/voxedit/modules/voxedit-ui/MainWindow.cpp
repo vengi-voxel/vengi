@@ -245,6 +245,7 @@ bool MainWindow::init() {
 	_lsystemPanel.init();
 	_treePanel.init();
 	_nodeInspectorPanel.init();
+	_toolsPanel.init();
 	_assetPanel.init();
 	_animationTimeline.init();
 
@@ -279,6 +280,7 @@ void MainWindow::shutdown() {
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
 	_nodeInspectorPanel.shutdown();
+	_toolsPanel.shutdown();
 	_assetPanel.shutdown();
 }
 

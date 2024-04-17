@@ -77,9 +77,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 }
 
 bool NodeInspectorPanel::init() {
-	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
-	_showGizmo = core::Var::getSafe(cfg::VoxEditShowaxis);
 	return true;
 }
 
@@ -357,43 +355,6 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 				_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
 			}
 		}
-	}
-
-	ImGui::NewLine();
-
-	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), _showGizmo);
-
-		ImGui::Indent();
-		if (!_showGizmo->boolVal())
-			ImGui::BeginDisabled();
-
-		int operations = _gizmoOperations->intVal();
-		bool dirty = false;
-
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
-		ImGui::TooltipTextUnformatted(_("Activate the rotate operation"));
-
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
-		ImGui::TooltipTextUnformatted(_("Activate the translate operation"));
-
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
-		// ImGui::TooltipTextUnformatted(_("Activate the bounds operation"));
-
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
-		// ImGui::TooltipTextUnformatted(_("Activate the uniform scale operation"));
-
-		if (dirty) {
-			_gizmoOperations->setVal(operations);
-		}
-		ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
-		ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
-		ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
-
-		if (!_showGizmo->boolVal())
-			ImGui::EndDisabled();
-
-		ImGui::Unindent();
 	}
 }
 

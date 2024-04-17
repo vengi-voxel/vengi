@@ -10,7 +10,9 @@
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "voxedit-ui/Gizmo.h"
 #include "voxedit-ui/MainWindow.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
@@ -39,6 +41,15 @@ struct ReferenceNodeCommandInterceptor : public command::CommandExecutionListene
 		_listener(cmd, args);
 	}
 };
+
+bool ToolsPanel::init() {
+	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
+	_showGizmo = core::Var::getSafe(cfg::VoxEditShowaxis);
+	return true;
+}
+
+void ToolsPanel::shutdown() {
+}
 
 void ToolsPanel::updateSceneMode(command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -151,6 +162,43 @@ void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecu
 				updateEditMode(wrapper);
 			}
 		}
+
+	ImGui::NewLine();
+
+	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), _showGizmo);
+
+		ImGui::Indent();
+		if (!_showGizmo->boolVal())
+			ImGui::BeginDisabled();
+
+		int operations = _gizmoOperations->intVal();
+		bool dirty = false;
+
+		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
+		ImGui::TooltipTextUnformatted(_("Activate the rotate operation"));
+
+		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
+		ImGui::TooltipTextUnformatted(_("Activate the translate operation"));
+
+		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
+		// ImGui::TooltipTextUnformatted(_("Activate the bounds operation"));
+
+		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
+		// ImGui::TooltipTextUnformatted(_("Activate the uniform scale operation"));
+
+		if (dirty) {
+			_gizmoOperations->setVal(operations);
+		}
+		ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
+		ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
+		ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
+
+		if (!_showGizmo->boolVal())
+			ImGui::EndDisabled();
+
+		ImGui::Unindent();
+	}
 	}
 	ImGui::End();
 }

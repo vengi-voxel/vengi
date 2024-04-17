@@ -19,9 +19,7 @@ private:
 	using Super = ui ::Panel;
 	bool _lastChanged = false;
 	bool _localSpace = false;
-	core::VarPtr _gizmoOperations;
 	core::VarPtr _regionSizes;
-	core::VarPtr _showGizmo;
 	SceneManagerPtr _sceneMgr;
 
 	void modelView(command::CommandExecutionListener &listener);
