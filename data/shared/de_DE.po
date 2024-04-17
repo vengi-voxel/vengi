@@ -1213,6 +1213,65 @@ msgstr "Alle"
 msgid "Welcome screen"
 msgstr "Willkommensbildschirm"
 
+msgid "Region"
+msgstr "Region"
+
+msgid "pos"
+msgstr "Pos"
+
+msgid "To transform"
+msgstr "Zu Transform"
+
+msgid "Convert the region offset into the keyframe transforms"
+msgstr ""
+"Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
+
+msgid "Interpolation"
+msgstr "Interpolation"
+
+msgid "Interpolation details"
+msgstr "Interpolationsdetails"
+
+msgid "Reset all"
+msgstr "Alles zurücksetzen"
+
+msgid "Auto Keyframe"
+msgstr "Automatischer Keyframe"
+
+msgid "Automatically create keyframes when changing transforms"
+msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
+
+msgid "Transform"
+msgstr "Transformation"
+
+msgid "Local transforms"
+msgstr "Lokale Transformationen"
+
+msgid "Update children"
+msgstr ""
+
+msgid "Tr"
+msgstr "Tr"
+
+msgid "Rt"
+msgstr "Rt"
+
+msgid "Sc"
+msgstr "Sc"
+
+msgid "Pv"
+msgstr "Pv"
+
+msgid "Properties"
+msgstr ""
+
+msgid "Delete this node property"
+msgstr "Diese Knoteneigenschaft löschen"
+
+#, fuzzy
+msgid "Add a new node property"
+msgstr "Neuen Modellknoten hinzufügen"
+
 msgid "Model from color"
 msgstr "Modell aus Farbe"
 
@@ -1304,103 +1363,6 @@ msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
 msgid "Color"
 msgstr "Farbe"
 
-msgid "Region"
-msgstr "Region"
-
-msgid "pos"
-msgstr "Pos"
-
-msgid "To transform"
-msgstr "Zu Transform"
-
-msgid "Convert the region offset into the keyframe transforms"
-msgstr ""
-"Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
-
-msgid "Gizmo settings"
-msgstr "Gizmo-Einstellungen"
-
-msgid "Flip axis"
-msgstr "Achse umkehren"
-
-msgid "Snap"
-msgstr "Ausrichten"
-
-msgid "Cursor details"
-msgstr "Cursor-Details"
-
-msgid "Translate"
-msgstr "Verschieben"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
-
-msgid "Volumes"
-msgstr "Volumen"
-
-msgid "Voxels"
-msgstr "Voxel"
-
-msgid "Cursor"
-msgstr "Cursor"
-
-msgid "Interpolation"
-msgstr "Interpolation"
-
-msgid "Interpolation details"
-msgstr "Interpolationsdetails"
-
-msgid "Reset all"
-msgstr "Alles zurücksetzen"
-
-msgid "Auto Keyframe"
-msgstr "Automatischer Keyframe"
-
-msgid "Automatically create keyframes when changing transforms"
-msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
-
-msgid "Transform"
-msgstr "Transformation"
-
-msgid "Local transforms"
-msgstr "Lokale Transformationen"
-
-msgid "Update children"
-msgstr ""
-
-msgid "Tr"
-msgstr "Tr"
-
-msgid "Rt"
-msgstr "Rt"
-
-msgid "Sc"
-msgstr "Sc"
-
-msgid "Pv"
-msgstr "Pv"
-
-msgid "Rotate"
-msgstr "Drehen"
-
-msgid "Activate the rotate operation"
-msgstr "Die Drehoperation aktivieren"
-
-msgid "Activate the translate operation"
-msgstr "Die Verschiebeoperation aktivieren"
-
-msgid "Snap to grid"
-msgstr "Am Raster ausrichten"
-
-msgid "Pivot"
-msgstr "Pivot"
-
 msgid "Dimensions"
 msgstr "Dimensionen"
 
@@ -1446,9 +1408,6 @@ msgstr "Pfadverfolgung starten"
 
 msgid "Save image"
 msgstr "Bild speichern"
-
-msgid "Delete this node property"
-msgstr "Diese Knoteneigenschaft löschen"
 
 msgid "Rename"
 msgstr "Umbenennen"
@@ -1531,9 +1490,6 @@ msgstr "Neue Gruppe hinzufügen"
 msgid "Remove the active node with all its children"
 msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
 
-msgid "Details"
-msgstr "Details"
-
 msgid "Merge onto##mergeonto"
 msgstr "Zusammenführen auf##zusammenführenauf"
 
@@ -1608,11 +1564,36 @@ msgstr "Um 90 Grad um die y-Achse drehen"
 msgid "Rotate by 90 degree on the z axis"
 msgstr "Um 90 Grad um die z-Achse drehen"
 
-msgid "Text##text"
-msgstr "Text##text"
+msgid "Flip on axis"
+msgstr "Auf Achse umdrehen"
 
-msgid "Text##textinput"
-msgstr "Text##texteingabe"
+msgid "Translate"
+msgstr "Verschieben"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Volumes"
+msgstr "Volumen"
+
+msgid "Voxels"
+msgstr "Voxel"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Cursor details"
+msgstr "Cursor-Details"
+
+#, fuzzy
+msgid "Text"
+msgstr "Texturen"
 
 msgid "Horizontal spacing"
 msgstr "Horizontaler Abstand"
@@ -1620,38 +1601,58 @@ msgstr "Horizontaler Abstand"
 msgid "Thickness"
 msgstr "Dicke"
 
-msgid "Font##textinput"
-msgstr "Schriftart##texteingabe"
+#, fuzzy
+msgid "Font"
+msgstr "Schriftgröße"
 
-msgid "Execute##textinput"
-msgstr "Ausführen##texteingabe"
+msgid "Execute"
+msgstr ""
 
-msgid "Flip on axis"
-msgstr "Auf Achse umdrehen"
+msgid "Gizmo settings"
+msgstr "Gizmo-Einstellungen"
 
-msgid "Cone"
+msgid "Rotate"
+msgstr "Drehen"
+
+msgid "Activate the rotate operation"
+msgstr "Die Drehoperation aktivieren"
+
+msgid "Activate the translate operation"
+msgstr "Die Verschiebeoperation aktivieren"
+
+msgid "Pivot"
+msgstr "Pivot"
+
+msgid "Snap to grid"
+msgstr "Am Raster ausrichten"
+
+msgid "Flip axis"
+msgstr "Achse umkehren"
+
+msgid "Pine"
 msgstr ""
 
 msgid "Dome"
 msgstr ""
 
-msgid "Dome Hanging"
+msgid "Dome Hanging Leaves"
 msgstr ""
 
-msgid "Pine"
-msgstr ""
-
-msgid "Cube"
-msgstr ""
-
-msgid "Ellipsis"
-msgstr ""
-
-msgid "Ellipsis2"
+msgid "Cone"
 msgstr ""
 
 msgid "Fir"
 msgstr "Tanne"
+
+#, fuzzy
+msgid "Branches Ellipsis"
+msgstr "Astgröße"
+
+msgid "Ellipsis"
+msgstr ""
+
+msgid "Cube"
+msgstr ""
 
 msgid "Cube Sides"
 msgstr ""
@@ -2172,6 +2173,24 @@ msgstr "Schaltet das Zentrum am Cursor um"
 
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+#~ msgid "Snap"
+#~ msgstr "Ausrichten"
+
+#~ msgid "Details"
+#~ msgstr "Details"
+
+#~ msgid "Text##text"
+#~ msgstr "Text##text"
+
+#~ msgid "Text##textinput"
+#~ msgstr "Text##texteingabe"
+
+#~ msgid "Font##textinput"
+#~ msgstr "Schriftart##texteingabe"
+
+#~ msgid "Execute##textinput"
+#~ msgstr "Ausführen##texteingabe"
 
 #~ msgid "OK##treegenerate"
 #~ msgstr "OK##baumgenerieren"

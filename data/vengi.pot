@@ -1130,6 +1130,63 @@ msgstr ""
 msgid "Welcome screen"
 msgstr ""
 
+msgid "Region"
+msgstr ""
+
+msgid "pos"
+msgstr ""
+
+msgid "To transform"
+msgstr ""
+
+msgid "Convert the region offset into the keyframe transforms"
+msgstr ""
+
+msgid "Interpolation"
+msgstr ""
+
+msgid "Interpolation details"
+msgstr ""
+
+msgid "Reset all"
+msgstr ""
+
+msgid "Auto Keyframe"
+msgstr ""
+
+msgid "Automatically create keyframes when changing transforms"
+msgstr ""
+
+msgid "Transform"
+msgstr ""
+
+msgid "Local transforms"
+msgstr ""
+
+msgid "Update children"
+msgstr ""
+
+msgid "Tr"
+msgstr ""
+
+msgid "Rt"
+msgstr ""
+
+msgid "Sc"
+msgstr ""
+
+msgid "Pv"
+msgstr ""
+
+msgid "Properties"
+msgstr ""
+
+msgid "Delete this node property"
+msgstr ""
+
+msgid "Add a new node property"
+msgstr ""
+
 msgid "Model from color"
 msgstr ""
 
@@ -1213,102 +1270,6 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-msgid "Region"
-msgstr ""
-
-msgid "pos"
-msgstr ""
-
-msgid "To transform"
-msgstr ""
-
-msgid "Convert the region offset into the keyframe transforms"
-msgstr ""
-
-msgid "Gizmo settings"
-msgstr ""
-
-msgid "Flip axis"
-msgstr ""
-
-msgid "Snap"
-msgstr ""
-
-msgid "Cursor details"
-msgstr ""
-
-msgid "Translate"
-msgstr ""
-
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Z"
-msgstr ""
-
-msgid "Volumes"
-msgstr ""
-
-msgid "Voxels"
-msgstr ""
-
-msgid "Cursor"
-msgstr ""
-
-msgid "Interpolation"
-msgstr ""
-
-msgid "Interpolation details"
-msgstr ""
-
-msgid "Reset all"
-msgstr ""
-
-msgid "Auto Keyframe"
-msgstr ""
-
-msgid "Automatically create keyframes when changing transforms"
-msgstr ""
-
-msgid "Transform"
-msgstr ""
-
-msgid "Local transforms"
-msgstr ""
-
-msgid "Update children"
-msgstr ""
-
-msgid "Tr"
-msgstr ""
-
-msgid "Rt"
-msgstr ""
-
-msgid "Sc"
-msgstr ""
-
-msgid "Pv"
-msgstr ""
-
-msgid "Rotate"
-msgstr ""
-
-msgid "Activate the rotate operation"
-msgstr ""
-
-msgid "Activate the translate operation"
-msgstr ""
-
-msgid "Snap to grid"
-msgstr ""
-
-msgid "Pivot"
-msgstr ""
-
 msgid "Dimensions"
 msgstr ""
 
@@ -1353,9 +1314,6 @@ msgid "Start path tracer"
 msgstr ""
 
 msgid "Save image"
-msgstr ""
-
-msgid "Delete this node property"
 msgstr ""
 
 msgid "Rename"
@@ -1436,9 +1394,6 @@ msgstr ""
 msgid "Remove the active node with all its children"
 msgstr ""
 
-msgid "Details"
-msgstr ""
-
 msgid "Merge onto##mergeonto"
 msgstr ""
 
@@ -1512,10 +1467,34 @@ msgstr ""
 msgid "Rotate by 90 degree on the z axis"
 msgstr ""
 
-msgid "Text##text"
+msgid "Flip on axis"
 msgstr ""
 
-msgid "Text##textinput"
+msgid "Translate"
+msgstr ""
+
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Z"
+msgstr ""
+
+msgid "Volumes"
+msgstr ""
+
+msgid "Voxels"
+msgstr ""
+
+msgid "Cursor"
+msgstr ""
+
+msgid "Cursor details"
+msgstr ""
+
+msgid "Text"
 msgstr ""
 
 msgid "Horizontal spacing"
@@ -1524,37 +1503,55 @@ msgstr ""
 msgid "Thickness"
 msgstr ""
 
-msgid "Font##textinput"
+msgid "Font"
 msgstr ""
 
-msgid "Execute##textinput"
+msgid "Execute"
 msgstr ""
 
-msgid "Flip on axis"
+msgid "Gizmo settings"
 msgstr ""
 
-msgid "Cone"
+msgid "Rotate"
 msgstr ""
 
-msgid "Dome"
+msgid "Activate the rotate operation"
 msgstr ""
 
-msgid "Dome Hanging"
+msgid "Activate the translate operation"
+msgstr ""
+
+msgid "Pivot"
+msgstr ""
+
+msgid "Snap to grid"
+msgstr ""
+
+msgid "Flip axis"
 msgstr ""
 
 msgid "Pine"
 msgstr ""
 
-msgid "Cube"
+msgid "Dome"
+msgstr ""
+
+msgid "Dome Hanging Leaves"
+msgstr ""
+
+msgid "Cone"
+msgstr ""
+
+msgid "Fir"
+msgstr ""
+
+msgid "Branches Ellipsis"
 msgstr ""
 
 msgid "Ellipsis"
 msgstr ""
 
-msgid "Ellipsis2"
-msgstr ""
-
-msgid "Fir"
+msgid "Cube"
 msgstr ""
 
 msgid "Cube Sides"
