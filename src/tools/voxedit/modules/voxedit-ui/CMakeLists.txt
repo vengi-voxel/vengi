@@ -46,6 +46,8 @@ if (USE_IMGUITESTENGINE)
 		tests/ToolsPanelTest.cpp
 		tests/TreePanelTest.cpp
 		tests/ViewportTest.cpp
+
+		tests/TestUtil.h tests/TestUtil.cpp
 	)
 endif()
 
