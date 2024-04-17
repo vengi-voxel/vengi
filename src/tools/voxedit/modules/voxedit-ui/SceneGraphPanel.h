@@ -30,11 +30,8 @@ private:
 	using Super = ui::Panel;
 	core::VarPtr _animationSpeedVar;
 	core::VarPtr _hideInactive;
-	bool _showNodeDetails = true;
 	bool _hasFocus = false;
 	bool _popupDragAndDrop = false;
-	core::String _propertyKey;
-	core::String _propertyValue;
 	int _dragDropSourceNodeId = InvalidNodeId;
 	int _dragDropTargetNodeId = InvalidNodeId;
 	int _lastActivedNodeId = InvalidNodeId;
@@ -45,11 +42,6 @@ private:
 	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
 							  scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
 							  int depth, int referencedNodeId);
-	/**
-	 * @return @c true if the property was handled with a special ui input widget - @c false if it should just be a
-	 * normal text input field
-	 */
-	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
 	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 public:
 	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "scenegraph"), _sceneMgr(sceneMgr) {

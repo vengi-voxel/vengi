@@ -383,6 +383,7 @@ void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
+	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_BRUSHPANEL, dockId);
 }
 
@@ -390,6 +391,7 @@ void MainWindow::leftWidget() {
 	const bool editMode = isAnyEditMode();
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
+	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	if (editMode) {
 		_brushPanel.update(TITLE_BRUSHPANEL, listener);
 	}
@@ -443,7 +445,6 @@ bool MainWindow::isSceneMode() const {
 // right side
 
 void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ASSET, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
@@ -466,7 +467,6 @@ void MainWindow::rightWidget() {
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
-	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);

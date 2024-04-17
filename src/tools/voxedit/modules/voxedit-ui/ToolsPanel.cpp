@@ -44,7 +44,8 @@ struct ReferenceNodeCommandInterceptor : public command::CommandExecutionListene
 
 bool ToolsPanel::init() {
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
-	_showGizmo = core::Var::getSafe(cfg::VoxEditShowaxis);
+	_showGizmoScene = core::Var::getSafe(cfg::VoxEditShowaxis);
+	_showGizmoModel = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	return true;
 }
 
@@ -107,8 +108,67 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
 	}
 
-	if (ImGui::CollapsingHeader(_("Text##text"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::InputText(_("Text##textinput"), &_text.input);
+	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X##flip", "flip x", nullptr, nullptr, buttonWidth,
+						 &listener);
+		ImGui::SameLine();
+		veui::AxisButton(math::Axis::Y, ICON_LC_MOVE_VERTICAL " Y##flip", "flip y", nullptr, nullptr, buttonWidth,
+						 &listener);
+		ImGui::SameLine();
+		veui::AxisButton(math::Axis::Z, ICON_LC_MOVE_DIAGONAL " Z##flip", "flip z", nullptr, nullptr, buttonWidth,
+						 &listener);
+	}
+
+	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		static glm::ivec3 translate{0};
+		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
+		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
+		veui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
+		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
+		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
+		ImGui::SameLine();
+		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
+		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
+	}
+
+	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
+		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
+		if (veui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
+			command::executeCommands("lockx", &listener);
+		}
+		ImGui::TooltipCommand("lockx");
+		ImGui::SameLine();
+		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
+		if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
+		}
+
+		if (veui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
+			command::executeCommands("locky", &listener);
+		}
+		ImGui::TooltipCommand("locky");
+		ImGui::SameLine();
+		if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
+		}
+
+		if (veui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
+			command::executeCommands("lockz", &listener);
+		}
+		ImGui::TooltipCommand("lockz");
+		ImGui::SameLine();
+		if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
+			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
+			command::executeCommands(commandLine, &listener);
+		}
+		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
+	}
+
+	if (ImGui::CollapsingHeader(_("Text"))) {
+		ImGui::InputText(_("Text"), &_text.input);
 
 		ImGui::SetNextItemWidth(100.0f);
 		if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL "##textinput", &_text.size)) {
@@ -129,24 +189,11 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputFile(_("Font##textinput"), &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFile(_("Font"), &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
 
-		if (ImGui::Button(_("Execute##textinput"))) {
+		if (ImGui::Button(_("Execute"))) {
 			_sceneMgr->renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
 		}
-	}
-
-	ImGui::NewLine();
-
-	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X##flip", "flip x", nullptr, nullptr, buttonWidth,
-						 &listener);
-		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, ICON_LC_MOVE_VERTICAL " Y##flip", "flip y", nullptr, nullptr, buttonWidth,
-						 &listener);
-		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, ICON_LC_MOVE_DIAGONAL " Z##flip", "flip z", nullptr, nullptr, buttonWidth,
-						 &listener);
 	}
 }
 
@@ -163,42 +210,43 @@ void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecu
 			}
 		}
 
-	ImGui::NewLine();
+		if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			const core::VarPtr &gizmoVar = sceneMode ? _showGizmoScene : _showGizmoModel;
+			ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), gizmoVar);
 
-	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::IconCheckboxVar(ICON_LC_AXIS_3D, _("Show gizmo"), _showGizmo);
+			ImGui::Indent();
+			if (!gizmoVar->boolVal())
+				ImGui::BeginDisabled();
 
-		ImGui::Indent();
-		if (!_showGizmo->boolVal())
-			ImGui::BeginDisabled();
+			if (sceneMode) {
+				int operations = _gizmoOperations->intVal();
+				bool dirty = false;
 
-		int operations = _gizmoOperations->intVal();
-		bool dirty = false;
+				dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
+				ImGui::TooltipTextUnformatted(_("Activate the rotate operation"));
 
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_ROTATE_3D, _("Rotate"), &operations, GizmoOperation_Rotate);
-		ImGui::TooltipTextUnformatted(_("Activate the rotate operation"));
+				dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
+				ImGui::TooltipTextUnformatted(_("Activate the translate operation"));
 
-		dirty |= ImGui::IconCheckboxFlags(ICON_LC_MOVE_3D, _("Translate"), &operations, GizmoOperation_Translate);
-		ImGui::TooltipTextUnformatted(_("Activate the translate operation"));
+				// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
+				// ImGui::TooltipTextUnformatted(_("Activate the bounds operation"));
 
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_BOX, _("Bounds"), &operations, GizmoOperation_Bounds);
-		// ImGui::TooltipTextUnformatted(_("Activate the bounds operation"));
+				// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
+				// ImGui::TooltipTextUnformatted(_("Activate the uniform scale operation"));
 
-		// dirty |= ImGui::IconCheckboxFlags(ICON_LC_SCALE_3D, _("Scale"), &operations, GizmoOperation_Scale);
-		// ImGui::TooltipTextUnformatted(_("Activate the uniform scale operation"));
+				if (dirty) {
+					_gizmoOperations->setVal(operations);
+				}
+				ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
+			}
+			ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
+			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
 
-		if (dirty) {
-			_gizmoOperations->setVal(operations);
+			if (!gizmoVar->boolVal())
+				ImGui::EndDisabled();
+
+			ImGui::Unindent();
 		}
-		ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
-		ImGui::IconCheckboxVar(ICON_LC_REFRESH_CCW_DOT, _("Pivot"), cfg::VoxEditGizmoPivot);
-		ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
-
-		if (!_showGizmo->boolVal())
-			ImGui::EndDisabled();
-
-		ImGui::Unindent();
-	}
 	}
 	ImGui::End();
 }

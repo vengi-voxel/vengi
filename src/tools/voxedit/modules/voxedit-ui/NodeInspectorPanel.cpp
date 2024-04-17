@@ -134,66 +134,7 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
 					_sceneMgr->nodeResize(nodeId, newRegion);
 				}
-
-				if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Gizmo settings"), ImGuiTreeNodeFlags_DefaultOpen)) {
-					ImGui::CheckboxVar(_("Show gizmo"), cfg::VoxEditModelGizmo);
-					ImGui::CheckboxVar(_("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
-					ImGui::CheckboxVar(_("Snap"), cfg::VoxEditGizmoSnap);
-				}
 			}
-		}
-
-		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
-	}
-
-	ImGui::NewLine();
-
-	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		static glm::ivec3 translate{0};
-		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
-		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
-		veui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, 1);
-		const core::String &shiftCmd = core::string::format("shift %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_GRID_3X3, _("Volumes"), shiftCmd.c_str(), listener);
-		ImGui::SameLine();
-		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
-		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
-	}
-
-	ImGui::NewLine();
-
-	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
-		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
-		if (veui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
-			command::executeCommands("lockx", &listener);
-		}
-		ImGui::TooltipCommand("lockx");
-		ImGui::SameLine();
-		const int step = core::Var::getSafe(cfg::VoxEditGridsize)->intVal();
-		if (veui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
-			command::executeCommands(commandLine, &listener);
-		}
-
-		if (veui::CheckboxAxisFlags(math::Axis::Y, _("Y"), &lockedAxis)) {
-			command::executeCommands("locky", &listener);
-		}
-		ImGui::TooltipCommand("locky");
-		ImGui::SameLine();
-		if (veui::InputAxisInt(math::Axis::Y, "##cursory", &cursorPosition.y, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
-			command::executeCommands(commandLine, &listener);
-		}
-
-		if (veui::CheckboxAxisFlags(math::Axis::Z, _("Z"), &lockedAxis)) {
-			command::executeCommands("lockz", &listener);
-		}
-		ImGui::TooltipCommand("lockz");
-		ImGui::SameLine();
-		if (veui::InputAxisInt(math::Axis::Z, "##cursorz", &cursorPosition.z, step)) {
-			const core::String commandLine = core::string::format("cursor %i %i %i", cursorPosition.x, cursorPosition.y, cursorPosition.z);
-			command::executeCommands(commandLine, &listener);
 		}
 	}
 }
@@ -261,8 +202,8 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 }
 
 void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) {
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Transform"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
 		if (activeNode != InvalidNodeId) {
 			scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
@@ -356,6 +297,117 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			}
 		}
 	}
+	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Properties"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		detailView(sceneGraph.node(sceneGraph.activeNode()));
+	}
+}
+
+void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
+	core::String deleteKey;
+	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
+										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
+										ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg |
+										ImGuiTableFlags_NoSavedSettings;
+	ui::ScopedStyle style;
+	style.setIndentSpacing(0.0f);
+	if (ImGui::BeginTable("##nodelist", 3, tableFlags)) {
+		const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
+									ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
+
+		ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn(_("Value"), ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("##nodepropertydelete", colFlags);
+		ImGui::TableHeadersRow();
+
+		ImGuiListClipper clipper;
+		clipper.Begin(node.properties().size());
+		while (clipper.Step()) {
+			auto entry = core::next(node.properties().begin(), clipper.DisplayStart);
+			for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row, ++entry) {
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(entry->key.c_str());
+				ImGui::TableNextColumn();
+				bool propertyAlreadyHandled = false;
+
+				if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+					propertyAlreadyHandled = handleCameraProperty(scenegraph::toCameraNode(node), entry->key, entry->value);
+				}
+
+				if (!propertyAlreadyHandled) {
+					const core::String &id = core::string::format("##%i-%s", node.id(), entry->key.c_str());
+					if (entry->value == "true" || entry->value == "false") {
+						bool value = core::string::toBool(entry->value);
+						if (ImGui::Checkbox(id.c_str(), &value)) {
+							_sceneMgr->nodeSetProperty(node.id(), entry->key, value ? "true" : "false");
+						}
+					} else {
+						core::String value = entry->value;
+						if (ImGui::InputText(id.c_str(), &value, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+							_sceneMgr->nodeSetProperty(node.id(), entry->key, value);
+						}
+					}
+				}
+				ImGui::TableNextColumn();
+				const core::String &deleteId = core::string::format(ICON_LC_TRASH "##%i-%s-delete", node.id(), entry->key.c_str());
+				if (ImGui::Button(deleteId.c_str())) {
+					deleteKey = entry->key;
+				}
+				ImGui::TooltipTextUnformatted(_("Delete this node property"));
+			}
+		}
+
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::InputText("##newpropertykey", &_propertyKey);
+		ImGui::TableNextColumn();
+		ImGui::InputText("##newpropertyvalue", &_propertyValue);
+		ImGui::TableNextColumn();
+		if (ImGui::Button(ICON_LC_PLUS "##nodepropertyadd")) {
+			_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
+			_propertyKey = _propertyValue = "";
+		}
+		ImGui::TooltipTextUnformatted(_("Add a new node property"));
+
+		ImGui::EndTable();
+	}
+
+	if (!deleteKey.empty()) {
+		_sceneMgr->nodeRemoveProperty(node.id(), deleteKey);
+	}
+}
+
+bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value) {
+	const core::String &id = core::string::format("##%i-%s", node.id(), key.c_str());
+	if (key == scenegraph::SceneGraphNodeCamera::PropMode) {
+		int currentMode = value == scenegraph::SceneGraphNodeCamera::Modes[0] ? 0 : 1;
+
+		if (ImGui::BeginCombo(id.c_str(), scenegraph::SceneGraphNodeCamera::Modes[currentMode])) {
+			for (int n = 0; n < IM_ARRAYSIZE(scenegraph::SceneGraphNodeCamera::Modes); n++) {
+				const bool isSelected = (currentMode == n);
+				if (ImGui::Selectable(scenegraph::SceneGraphNodeCamera::Modes[n], isSelected)) {
+					_sceneMgr->nodeSetProperty(node.id(), key, scenegraph::SceneGraphNodeCamera::Modes[n]);
+				}
+				if (isSelected) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+	} else if (scenegraph::SceneGraphNodeCamera::isFloatProperty(key)) {
+		float fvalue = core::string::toFloat(value);
+		if (ImGui::InputFloat(id.c_str(), &fvalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(fvalue));
+		}
+	} else if (scenegraph::SceneGraphNodeCamera::isIntProperty(key)) {
+		int ivalue = core::string::toInt(value);
+		if (ImGui::InputInt(id.c_str(), &ivalue, ImGuiInputTextFlags_EnterReturnsTrue)) {
+			_sceneMgr->nodeSetProperty(node.id(), key, core::string::toString(ivalue));
+		}
+	} else {
+		return false;
+	}
+	return true;
 }
 
 void NodeInspectorPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {

@@ -28,7 +28,8 @@ private:
 
 	SceneManagerPtr _sceneMgr;
 	core::VarPtr _gizmoOperations;
-	core::VarPtr _showGizmo;
+	core::VarPtr _showGizmoScene;
+	core::VarPtr _showGizmoModel;
 	void updateSceneMode(command::CommandExecutionListener &listener);
 	void updateEditMode(command::CommandExecutionListener &listener);
 
