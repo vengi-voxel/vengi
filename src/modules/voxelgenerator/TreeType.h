@@ -9,17 +9,18 @@
 namespace voxelgenerator {
 
 enum class TreeType : int32_t {
+	Pine,
 	Dome,
 	DomeHangingLeaves,
 	Cone,
-	Ellipsis,
+	Fir,
 	BranchesEllipsis,
+	Ellipsis,
 	Cube,
 	CubeSideCubes,
-	Pine,
-	Fir,
 	Palm,
 	SpaceColonization,
+
 	Max
 };
 
