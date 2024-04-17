@@ -1,19 +1,6 @@
 /*
  * simplecpp - A simple and high-fidelity C/C++ preprocessor library
- * Copyright (C) 2016-2022 Daniel Marjamäki.
- *
- * This library is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either
- * version 3 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright (C) 2016-2023 simplecpp team
  */
 
 #ifndef simplecppH
@@ -193,8 +180,10 @@ namespace simplecpp {
             SYNTAX_ERROR,
             PORTABILITY_BACKSLASH,
             UNHANDLED_CHAR_ERROR,
-            EXPLICIT_INCLUDE_NOT_FOUND
+            EXPLICIT_INCLUDE_NOT_FOUND,
+            FILE_NOT_FOUND
         } type;
+        explicit Output(const std::vector<std::string>& files, Type type, const std::string& msg) : type(type), location(files), msg(msg) {}
         Location location;
         std::string msg;
     };
@@ -299,7 +288,8 @@ namespace simplecpp {
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
         std::string lastLine(int maxsize=1000) const;
-        bool isLastLinePreprocessor(int maxsize=100000) const;
+        const Token* lastLineTok(int maxsize=1000) const;
+        bool isLastLinePreprocessor(int maxsize=1000) const;
 
         unsigned int fileIndex(const std::string &filename);
 
@@ -330,13 +320,14 @@ namespace simplecpp {
      * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
-        DUI() : clearIncludeCache(false) {}
+        DUI() : clearIncludeCache(false), removeComments(false) {}
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
         std::string std;
         bool clearIncludeCache;
+        bool removeComments; /** remove comment tokens from included files */
     };
 
     SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
