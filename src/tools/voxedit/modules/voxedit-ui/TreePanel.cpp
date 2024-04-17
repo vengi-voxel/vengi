@@ -4,8 +4,8 @@
 
 #include "TreePanel.h"
 #include "IconsLucide.h"
-#include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
+#include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
@@ -57,9 +57,17 @@ void TreePanel::switchTreeType(voxelgenerator::TreeType treeType) {
 
 const char *TreePanel::treeTypeName(int i) const {
 	// I18N: by having this static, this requires a restart to change the language
-	static const char *treeTypes[] = {_("Pine"),	   _("Dome"),	   _("Dome Hanging"),	  _("Cone"),
-									  _("Fir"),		   _("Ellipsis2"), _("Ellipsis"),		  _("Cube"),
-									  _("Cube Sides"), _("Palm"),	   _("SpaceColonization")};
+	static const char *treeTypes[] = {_("Pine"),
+									  _("Dome"),
+									  _("Dome Hanging Leaves"),
+									  _("Cone"),
+									  _("Fir"),
+									  _("Branches Ellipsis"),
+									  _("Ellipsis"),
+									  _("Cube"),
+									  _("Cube Sides"),
+									  _("Palm"),
+									  _("SpaceColonization")};
 	static_assert(lengthof(treeTypes) == (int)voxelgenerator::TreeType::Max,
 				  "Missing support for tree types in the ui");
 	return treeTypes[i];
@@ -77,7 +85,7 @@ void TreePanel::update(const char *title) {
 			ImGui::EndCombo();
 		}
 
-		ImGui::InputInt(_("Seed"), (int*)&_treeGeneratorContext.cfg.seed);
+		ImGui::InputInt(_("Seed"), (int *)&_treeGeneratorContext.cfg.seed);
 		ImGui::InputInt(_("Trunk strength"), &_treeGeneratorContext.cfg.trunkStrength);
 		ImGui::InputInt(_("Trunk height"), &_treeGeneratorContext.cfg.trunkHeight);
 		ImGui::InputInt(_("Leaves width"), &_treeGeneratorContext.cfg.leavesWidth);
@@ -138,4 +146,4 @@ void TreePanel::shutdown() {
 	// TODO: persist the tree settings
 }
 
-}
+} // namespace voxedit
