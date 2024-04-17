@@ -4,6 +4,7 @@
 
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
+#include "Panel.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
 #include "imgui.h"
@@ -729,6 +730,30 @@ void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback &callback, co
 	_fileDialogOptions = options;
 	_fileDialogMode = mode;
 	_fileDialog.openDir(mode, formats, filename);
+}
+
+void IMGUIApp::addPanel(Panel *panel) {
+	_panels.push_back(panel);
+}
+
+void IMGUIApp::removePanel(Panel *panel) {
+	auto iter = core::find(_panels.begin(), _panels.end(), panel);
+	if (iter != _panels.end()) {
+		_panels.erase(iter);
+	}
+}
+
+Panel* IMGUIApp::getPanel(const core::String &title) {
+	for (Panel *panel : _panels) {
+		if (panel->_title == title) {
+			Log::error("Found title: %s", panel->_title.c_str());
+			return panel;
+		}
+	}
+	for (Panel *panel : _panels) {
+		Log::error("Panel: %s", panel->_title.c_str());
+	}
+	return nullptr;
 }
 
 } // namespace ui

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "FileDialog.h"
+#include "core/Algorithm.h"
 #include "core/collection/DynamicArray.h"
 #include "video/WindowedApp.h"
 #include "IMGUIConsole.h"
@@ -16,6 +17,8 @@
 struct SDL_Cursor;
 
 namespace ui {
+
+class Panel;
 
 // https://github.com/aiekick/ImGuiFileDialog
 /**
@@ -97,6 +100,8 @@ protected:
 
 	FileDialog _fileDialog;
 
+	core::DynamicArray<Panel*> _panels;
+
 	void setColorTheme();
 	/**
 	 * @brief Configure the default keymap bindings for the application
@@ -148,6 +153,10 @@ public:
 		return _imguiTestEngine;
 	}
 #endif
+
+	void addPanel(Panel *panel);
+	void removePanel(Panel *panel);
+	Panel* getPanel(const core::String &title);
 
 	void showBindingsDialog();
 	void showTexturesDialog();

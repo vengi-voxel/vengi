@@ -17,6 +17,7 @@ class IMGUIApp;
 
 class Panel {
 protected:
+	friend class IMGUIApp;
 	IMGUIApp *_app;
 	core::String _title;
 	Panel(IMGUIApp *app, const char *title);

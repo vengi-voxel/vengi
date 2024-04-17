@@ -13,12 +13,14 @@ namespace ui {
 
 Panel::Panel(IMGUIApp *app, const char *title) : _app(app), _title(title) {
 	Log::debug("create panel %s", _title.c_str());
+	_app->addPanel(this);
 }
 
 Panel::~Panel() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	unregisterUITests(_app->imguiTestEngine());
 #endif
+	_app->removePanel(this);
 }
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
