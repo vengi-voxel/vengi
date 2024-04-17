@@ -4,14 +4,14 @@
 #pragma once
 
 #include "app/App.h"
+#include "core/Color.h"
 #include "core/Common.h"
 #include "core/Trace.h"
-#include "core/Color.h"
-#include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
-#include "voxel/Voxel.h"
 #include "voxel/Region.h"
+#include "voxel/Voxel.h"
 
 namespace voxelutil {
 
@@ -46,7 +46,8 @@ static bool isHidden(Sampler &srcSampler) {
  * be exactly half of the size of the sourceRegion.
  */
 template<typename SourceVolume, typename DestVolume>
-void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette, const voxel::Region& sourceRegion, DestVolume& destVolume, const voxel::Region& destRegion) {
+void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette, const voxel::Region &sourceRegion,
+			   DestVolume &destVolume, const voxel::Region &destRegion) {
 	core_trace_scoped(ScaleVolumeDown);
 	typename SourceVolume::Sampler srcSampler(sourceVolume);
 
@@ -75,7 +76,7 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 							if (!srcSampler.currentPositionValid()) {
 								continue;
 							}
-							const voxel::Voxel& child = srcSampler.voxel();
+							const voxel::Voxel &child = srcSampler.voxel();
 
 							if (isBlocked(child.getMaterial())) {
 								++solidVoxels;
@@ -83,7 +84,7 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 									colorGuardVoxel = child;
 									continue;
 								}
-								const glm::vec4& color = core::Color::fromRGBA(palette.color(child.getColor()));
+								const glm::vec4 &color = core::Color::fromRGBA(palette.color(child.getColor()));
 								avgColorRed += color.r;
 								avgColorGreen += color.g;
 								avgColorBlue += color.b;
@@ -103,7 +104,8 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 						avgColorBlue += color.b;
 						++colorContributors;
 					}
-					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors, avgColorBlue / colorContributors, 1.0f);
+					const glm::vec4 avgColor(avgColorRed / colorContributors, avgColorGreen / colorContributors,
+											 avgColorBlue / colorContributors, 1.0f);
 					core::RGBA avgRGBA = core::Color::getRGBA(avgColor);
 					const int index = palette.getClosestMatch(avgRGBA);
 					voxel::Voxel voxel = voxel::createVoxel(palette, index);
@@ -136,9 +138,12 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 					continue;
 				}
 				// Only process voxels on a material-air boundary.
-				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel0px0py1pz().getMaterial() != voxel::VoxelType::Air
-						&& dstSampler.peekVoxel0px1ny0pz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel0px1py0pz().getMaterial() != voxel::VoxelType::Air
-						&& dstSampler.peekVoxel1nx0py0pz().getMaterial() != voxel::VoxelType::Air && dstSampler.peekVoxel1px0py0pz().getMaterial() != voxel::VoxelType::Air) {
+				if (dstSampler.peekVoxel0px0py1nz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler.peekVoxel0px0py1pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler.peekVoxel0px1ny0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler.peekVoxel0px1py0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler.peekVoxel1nx0py0pz().getMaterial() != voxel::VoxelType::Air &&
+					dstSampler.peekVoxel1px0py0pz().getMaterial() != voxel::VoxelType::Air) {
 					continue;
 				}
 				const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
@@ -154,7 +159,7 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 						for (int32_t childX = -1; childX < 3; childX++) {
 							srcSampler.setPosition(srcPos + glm::ivec3(childX, childY, childZ));
 
-							const voxel::Voxel& child = srcSampler.voxel();
+							const voxel::Voxel &child = srcSampler.voxel();
 							if (child.getMaterial() == voxel::VoxelType::Air) {
 								continue;
 							}
@@ -181,7 +186,7 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 								++exposedFaces;
 							}
 
-							const glm::vec4& color = core::Color::fromRGBA(palette.color(child.getColor()));
+							const glm::vec4 &color = core::Color::fromRGBA(palette.color(child.getColor()));
 							totalRed += color.r * exposedFaces;
 							totalGreen += color.g * exposedFaces;
 							totalBlue += color.b * exposedFaces;
@@ -196,7 +201,8 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 					++totalExposedFaces;
 				}
 
-				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces, totalBlue / totalExposedFaces, 1.0f);
+				const glm::vec4 avgColor(totalRed / totalExposedFaces, totalGreen / totalExposedFaces,
+										 totalBlue / totalExposedFaces, 1.0f);
 				core::RGBA avgRGBA = core::Color::getRGBA(avgColor);
 				const int index = palette.getClosestMatch(avgRGBA);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, index);
@@ -207,14 +213,16 @@ void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette
 }
 
 template<typename SourceVolume, typename DestVolume>
-void scaleDown(const SourceVolume& sourceVolume, const palette::Palette &palette, DestVolume& destVolume) {
+void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette, DestVolume &destVolume) {
 	scaleDown(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
 }
 
-voxel::RawVolume *scaleUp(const voxel::RawVolume& sourceVolume) {
+voxel::RawVolume *scaleUp(const voxel::RawVolume &sourceVolume) {
 	const voxel::Region srcRegion = sourceVolume.region();
-	const glm::ivec3& targetDimensions = srcRegion.getDimensionsInVoxels() * 2;
-	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensions);
+	const glm::ivec3 &dim = srcRegion.getDimensionsInVoxels();
+	const glm::ivec3 &mins = srcRegion.getLowerCorner();
+	const glm::ivec3 &targetDimensions = dim * 2 - 1;
+	const voxel::Region destRegion(mins, mins + targetDimensions);
 	if (!app::App::getInstance()->hasEnoughMemory(voxel::RawVolume::size(destRegion))) {
 		return nullptr;
 	}
@@ -223,16 +231,16 @@ voxel::RawVolume *scaleUp(const voxel::RawVolume& sourceVolume) {
 											 glm::ivec3(1, 1, 0), glm::ivec3(0, 0, 1), glm::ivec3(1, 0, 1),
 											 glm::ivec3(0, 1, 1), glm::ivec3(1, 1, 1)};
 
-	voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxel::RawVolume::Sampler sourceSampler(sourceVolume);
-	sourceSampler.setPosition(srcRegion.getLowerCorner());
-	for (int32_t x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); x += 1) {
+	sourceSampler.setPosition(mins);
+	for (int32_t x = 0; x < dim.x; ++x) {
 		voxel::RawVolume::Sampler sampler2 = sourceSampler;
-		for (int32_t y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); y += 1) {
+		for (int32_t y = 0; y < dim.y; ++y) {
 			voxel::RawVolume::Sampler sampler3 = sampler2;
-			for (int32_t z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); z += 1) {
+			for (int32_t z = 0; z < dim.z; ++z) {
 				const voxel::Voxel &voxel = sampler3.voxel();
-				const glm::ivec3 targetPos(x * 2, y * 2, z * 2);
+				const glm::ivec3 targetPos(mins.x + x * 2, mins.y + y * 2, mins.z + z * 2);
 				for (int i = 0; i < 8; ++i) {
 					destVolume->setVoxel(targetPos + directions[i], voxel);
 				}
@@ -245,4 +253,4 @@ voxel::RawVolume *scaleUp(const voxel::RawVolume& sourceVolume) {
 	return destVolume;
 }
 
-}
+} // namespace voxelutil

@@ -19,7 +19,7 @@ voxel::RawVolume* resize(const voxel::RawVolume* source, const voxel::Region &re
 	voxel::RawVolume* newVolume = new voxel::RawVolume(region);
 	const voxel::Region& srcRegion = source->region();
 	voxel::RawVolumeWrapper wrapper(newVolume);
-	voxelutil::mergeVolumes(&wrapper, source, srcRegion, srcRegion);
+	voxelutil::mergeVolumes(&wrapper, source, region, srcRegion);
 	return newVolume;
 }
 

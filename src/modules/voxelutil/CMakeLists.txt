@@ -22,6 +22,8 @@ set(TEST_SRCS
 	tests/ImageUtilsTest.cpp
 	tests/PickingTest.cpp
 	tests/VolumeMergerTest.cpp
+	tests/VolumeRescalerTest.cpp
+	tests/VolumeResizerTest.cpp
 	tests/VolumeRotatorTest.cpp
 	tests/VolumeSplitterTest.cpp
 	tests/VolumeCropperTest.cpp
