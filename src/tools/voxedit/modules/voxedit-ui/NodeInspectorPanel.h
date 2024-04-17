@@ -14,7 +14,7 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
-class PositionsPanel : public ui::Panel {
+class NodeInspectorPanel : public ui::Panel {
 private:
 	using Super = ui ::Panel;
 	bool _lastChanged = false;
@@ -31,7 +31,7 @@ private:
 	void sceneView(command::CommandExecutionListener &listener);
 
 public:
-	PositionsPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "positions"), _sceneMgr(sceneMgr) {
+	NodeInspectorPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "positions"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void shutdown();

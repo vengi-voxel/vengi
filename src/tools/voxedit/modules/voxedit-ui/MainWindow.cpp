@@ -107,7 +107,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _animationPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
-	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _positionsPanel(app, _sceneMgr),
+	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _nodeInspectorPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _cameraPanel(app, _sceneMgr) {
 
@@ -244,7 +244,7 @@ bool MainWindow::init() {
 	_sceneGraphPanel.init();
 	_lsystemPanel.init();
 	_treePanel.init();
-	_positionsPanel.init();
+	_nodeInspectorPanel.init();
 	_assetPanel.init();
 	_animationTimeline.init();
 
@@ -278,7 +278,7 @@ void MainWindow::shutdown() {
 #endif
 	_lsystemPanel.shutdown();
 	_treePanel.shutdown();
-	_positionsPanel.shutdown();
+	_nodeInspectorPanel.shutdown();
 	_assetPanel.shutdown();
 }
 
@@ -441,7 +441,7 @@ bool MainWindow::isSceneMode() const {
 // right side
 
 void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_POSITIONS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_TOOLS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ASSET, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
@@ -464,7 +464,7 @@ void MainWindow::rightWidget() {
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
-	_positionsPanel.update(TITLE_POSITIONS, _lastSceneMode, listener);
+	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);

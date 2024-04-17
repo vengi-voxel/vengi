@@ -8,7 +8,7 @@ set(SRCS
 	DragAndDropPayload.h
 	FileDialogOptions.h FileDialogOptions.cpp
 	Gizmo.h
-	PositionsPanel.h PositionsPanel.cpp
+	NodeInspectorPanel.h NodeInspectorPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp
 	MenuBar.h MenuBar.cpp
@@ -33,7 +33,7 @@ if (USE_IMGUITESTENGINE)
 		tests/AnimationTimelineTest.cpp
 		tests/AssetPanelTest.cpp
 		tests/CameraPanelTest.cpp
-		tests/PositionsPanelTest.cpp
+		tests/NodeInspectorPanelTest.cpp
 		tests/LSystemPanelTest.cpp
 		tests/MainWindowTest.cpp
 		tests/MementoPanelTest.cpp

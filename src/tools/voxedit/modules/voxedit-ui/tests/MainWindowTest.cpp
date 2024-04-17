@@ -22,7 +22,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	_toolsPanel.registerUITests(engine, TITLE_TOOLS);
 	_assetPanel.registerUITests(engine, TITLE_ASSET);
 	_mementoPanel.registerUITests(engine, TITLE_MEMENTO);
-	_positionsPanel.registerUITests(engine, TITLE_POSITIONS);
+	_nodeInspectorPanel.registerUITests(engine, TITLE_NODE_INSPECTOR);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
 	_menuBar.registerUITests(engine, "##menubar");
 	_statusBar.registerUITests(engine, TITLE_STATUSBAR);

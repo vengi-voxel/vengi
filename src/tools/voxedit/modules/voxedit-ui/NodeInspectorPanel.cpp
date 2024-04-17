@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "PositionsPanel.h"
+#include "NodeInspectorPanel.h"
 #include "Util.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
@@ -76,17 +76,17 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 	return retVal;
 }
 
-bool PositionsPanel::init() {
+bool NodeInspectorPanel::init() {
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
 	_showGizmo = core::Var::getSafe(cfg::VoxEditShowaxis);
 	return true;
 }
 
-void PositionsPanel::shutdown() {
+void NodeInspectorPanel::shutdown() {
 }
 
-void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
+void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const core::String &sizes = _regionSizes->strVal();
@@ -200,7 +200,7 @@ void PositionsPanel::modelView(command::CommandExecutionListener &listener) {
 	}
 }
 
-void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node,
+void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node,
 												   scenegraph::KeyFrameIndex keyFrameIdx) {
 	ui::ScopedStyle style;
 	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
@@ -242,7 +242,7 @@ void PositionsPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &n
 	}
 }
 
-void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,
+void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,
 											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
 											   scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (ImGui::Button(_("Reset all"))) {
@@ -262,7 +262,7 @@ void PositionsPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sce
 	ImGui::TooltipTextUnformatted(_("Automatically create keyframes when changing transforms"));
 }
 
-void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
+void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) {
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Transform"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 		const int activeNode = sceneGraph.activeNode();
@@ -397,7 +397,7 @@ void PositionsPanel::sceneView(command::CommandExecutionListener &listener) {
 	}
 }
 
-void PositionsPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
+void NodeInspectorPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
 	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			sceneView(listener);
