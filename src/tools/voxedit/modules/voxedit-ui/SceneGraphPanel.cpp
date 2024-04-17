@@ -123,6 +123,7 @@ void SceneGraphPanel::detailView(scenegraph::SceneGraphNode &node) {
 			_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
+		ImGui::TooltipTextUnformatted(_("Add a new node property"));
 
 		ImGui::EndTable();
 	}
