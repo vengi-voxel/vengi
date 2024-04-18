@@ -342,6 +342,27 @@ update-ogt_vox:
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
 	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/ogt_vox.h
 
+update-yocto:
+	$(call UPDATE_GIT,yocto-gl,https://github.com/xelatihy/yocto-gl.git)
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_bvh.cpp contrib/libs/yocto/yocto_bvh.cpp
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_bvh.h contrib/libs/yocto/yocto_bvh.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_color.h contrib/libs/yocto/yocto_color.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_geometry.h contrib/libs/yocto/yocto_geometry.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_image.cpp contrib/libs/yocto/yocto_image.cpp
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_image.h contrib/libs/yocto/yocto_image.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_math.h contrib/libs/yocto/yocto_math.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_noise.h contrib/libs/yocto/yocto_noise.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_parallel.h contrib/libs/yocto/yocto_parallel.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_sampling.h contrib/libs/yocto/yocto_sampling.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_scene.cpp contrib/libs/yocto/yocto_scene.cpp
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_scene.h contrib/libs/yocto/yocto_scene.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_shading.h contrib/libs/yocto/yocto_shading.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_shape.cpp contrib/libs/yocto/yocto_shape.cpp
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_shape.h contrib/libs/yocto/yocto_shape.h
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_trace.cpp contrib/libs/yocto/yocto_trace.cpp
+	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_trace.h contrib/libs/yocto/yocto_trace.h
+	sed -i 's/[ \t]*$$//' contrib/libs/yocto/*.[ch]*
+
 update-tinygltf:
 	$(call UPDATE_GIT,tinygltf,https://github.com/syoyo/tinygltf.git)
 	cp $(UPDATEDIR)/tinygltf.sync/tiny_gltf.h src/modules/voxelformat/external
