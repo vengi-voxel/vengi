@@ -176,16 +176,16 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 	if (usableColor) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			if (dragAndDropSortColors()) {
-				ImGui::Text("Release CTRL to change the voxel color");
+				ImGui::Text(_("Release CTRL to change the voxel color"));
 			} else {
-				ImGui::Text("Press CTRL to re-order");
+				ImGui::Text(_("Press CTRL to re-order"));
 			}
 			ImGui::SetDragDropPayload(dragdrop::PaletteIndexPayload, (const void*)&palIdx, sizeof(uint8_t), ImGuiCond_Always);
 			static_assert(sizeof(palIdx) == sizeof(uint8_t), "Unexpected palette index size");
 			ImGui::EndDragDropSource();
 		}
 	} else {
-		ImGui::TooltipText("Empty color slot");
+		ImGui::TooltipText(_("Empty color slot"));
 	}
 
 	handleDragAndDrop(palIdx, uiIdx, node, palette);

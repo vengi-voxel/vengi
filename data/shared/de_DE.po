@@ -578,6 +578,9 @@ msgstr "Zur Szene hinzufügen"
 msgid "Images"
 msgstr "Bilder"
 
+msgid "Shape"
+msgstr ""
+
 msgid "Disable mirror"
 msgstr "Spiegelung deaktivieren"
 
@@ -1283,6 +1286,16 @@ msgstr "Farbe duplizieren"
 
 msgid "Remove color"
 msgstr "Farbe entfernen"
+
+msgid "Release CTRL to change the voxel color"
+msgstr ""
+
+msgid "Press CTRL to re-order"
+msgstr ""
+
+#, fuzzy
+msgid "Empty color slot"
+msgstr "Vertexfarben als Fließkommazahlen"
 
 msgid "Select the palette"
 msgstr "Palette auswählen"

@@ -40,7 +40,7 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 
 	const ShapeType currentSelectedShapeType = modifier.shapeBrush().shapeType();
-	if (ImGui::BeginCombo("Shape", ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
+	if (ImGui::BeginCombo(_("Shape"), ShapeTypeStr[(int)currentSelectedShapeType], ImGuiComboFlags_None)) {
 		for (int i = 0; i < (int)ShapeType::Max; ++i) {
 			const ShapeType type = (ShapeType)i;
 			const bool selected = type == currentSelectedShapeType;

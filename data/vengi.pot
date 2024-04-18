@@ -544,6 +544,9 @@ msgstr ""
 msgid "Images"
 msgstr ""
 
+msgid "Shape"
+msgstr ""
+
 msgid "Disable mirror"
 msgstr ""
 
@@ -1197,6 +1200,15 @@ msgid "Duplicate color"
 msgstr ""
 
 msgid "Remove color"
+msgstr ""
+
+msgid "Release CTRL to change the voxel color"
+msgstr ""
+
+msgid "Press CTRL to re-order"
+msgstr ""
+
+msgid "Empty color slot"
 msgstr ""
 
 msgid "Select the palette"
