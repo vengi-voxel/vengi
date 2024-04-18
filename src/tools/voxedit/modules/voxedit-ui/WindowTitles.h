@@ -17,6 +17,7 @@
 #define TITLE_SCRIPT ICON_LC_CODE " Scripts###scriptpanel"
 #define TITLE_SCENEGRAPH ICON_LC_WORKFLOW " Scene###scenegraph"
 #define TITLE_RENDER ICON_LC_IMAGE " Render###renderpanel"
+#define TITLE_RENDERSETTINGS ICON_LC_IMAGE " Render Settings###rendersettingspanel"
 #define TITLE_TREES ICON_LC_TREE_PINE " Trees###treepanel"
 #define TITLE_BRUSHPANEL ICON_LC_BRUSH " Brush###brushpanel"
 #define TITLE_LSYSTEMPANEL ICON_LC_LEAF " L-System###lsystempanel"

@@ -103,7 +103,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem)
 	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
-	  _renderPanel(app),
+	  _renderPanel(app, _sceneMgr),
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _animationPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
@@ -402,6 +402,9 @@ void MainWindow::leftWidget() {
 // main space
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
+#if ENABLE_RENDER_PANEL
+	ImGui::DockBuilderDockWindow(TITLE_RENDERSETTINGS, dockId);
+#endif
 	for (int i = 0; i < cfg::MaxViewports; ++i) {
 		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
 	}
@@ -423,6 +426,9 @@ void MainWindow::mainWidget() {
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->update(&listener);
 	}
+#if ENABLE_RENDER_PANEL
+	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
+#endif
 
 	// bottom
 	_scriptPanel.updateEditor(TITLE_SCRIPT_EDITOR);
@@ -457,7 +463,9 @@ void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_SCENEGRAPH, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_TREES, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_LSYSTEMPANEL, dockId);
-	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
+#if ENABLE_RENDER_PANEL
+	ImGui::DockBuilderDockWindow(TITLE_RENDERSETTINGS, dockId);
+#endif
 	ImGui::DockBuilderDockWindow(TITLE_SCRIPT, dockId);
 }
 
@@ -480,7 +488,7 @@ void MainWindow::rightWidget() {
 	// bottom
 	_sceneGraphPanel.update(_lastHoveredScene->camera(), TITLE_SCENEGRAPH, &_modelNodeSettings, listener);
 #if ENABLE_RENDER_PANEL
-	_renderPanel.update(TITLE_RENDER, _sceneMgr->sceneGraph());
+	_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
 #endif
 	if (!_simplifiedView->boolVal()) {
 		_treePanel.update(TITLE_TREES);

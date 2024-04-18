@@ -44,9 +44,6 @@ struct PathTracerState {
 	bool started = false;
 	glm::vec3 ambientColor{0.0f};
 	glm::vec3 diffuseColor{0.0f};
-	int materialTransparent = 0;
-	int materialOpaque = 0;
-	int materialGlow = 0;
 
 	PathTracerState() : context(yocto::make_trace_context({})) {
 	}
@@ -55,9 +52,6 @@ struct PathTracerState {
 class PathTracer {
 private:
 	PathTracerState _state;
-
-	void setupGlowMaterial(const scenegraph::SceneGraphNode &node);
-	void setupBaseColorMaterial(const scenegraph::SceneGraphNode &node);
 
 	void addCamera(const scenegraph::SceneGraphNodeCamera &node);
 	void addCamera(const char *name, const video::Camera &cam);

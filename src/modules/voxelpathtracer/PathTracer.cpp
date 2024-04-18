@@ -9,16 +9,17 @@
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Stream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelrender/SceneGraphRenderer.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "yocto_scene.h"
 
 namespace voxelpathtracer {
 
@@ -89,23 +90,10 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	}
 	core_assert((int)indices.size() % 3 == 0);
 	const int tris = (int)indices.size() / 3;
-	yocto::shape_data nonGlow;
-	yocto::shape_data glow;
+	yocto::shape_data shapes[palette::PaletteMaxColors];
 	const voxel::VertexArray &vertices = mesh.getVertexVector();
 	const voxel::NormalArray &normals = mesh.getNormalVector();
 	const bool useNormals = normals.size() == vertices.size();
-	nonGlow.colors.reserve(vertices.size());
-	nonGlow.positions.reserve(vertices.size());
-	nonGlow.texcoords.reserve(vertices.size());
-	nonGlow.triangles.reserve(tris);
-	glow.colors.reserve(vertices.size());
-	glow.positions.reserve(vertices.size());
-	glow.texcoords.reserve(vertices.size());
-	glow.triangles.reserve(tris);
-	if (useNormals) {
-		nonGlow.normals.reserve(normals.size());
-		glow.normals.reserve(normals.size());
-	}
 
 	const glm::vec3 size = glm::vec3(sceneGraph.resolveRegion(node).getDimensionsInVoxels());
 	const glm::vec3 pivot = node.pivot();
@@ -119,28 +107,21 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		const glm::vec3 pos1 = transform.apply(vertex1.position, pivot * size);
 		const glm::vec3 pos2 = transform.apply(vertex2.position, pivot * size);
 		// uv is the same for all three vertices
-		const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette::PaletteMaxColors, 1);
-		yocto::shape_data *shape;
-		// color is the same for all three vertices
-		core::RGBA rgba;
-		if (palette.hasEmit(vertex0.colorIndex)) {
-			rgba = palette.emitColor(vertex0.colorIndex);
-			shape = &glow;
-		} else {
-			rgba = palette.color(vertex0.colorIndex);
-			shape = &nonGlow;
-		}
+		// const glm::vec2 &uv = image::Image::uv(vertex0.colorIndex, 0, palette::PaletteMaxColors, 1);
+		yocto::shape_data *shape = &shapes[vertex0.colorIndex];
 
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
-		shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
-		shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
+		// const core::RGBA rgba = palette.color(vertex0.colorIndex);
+		// const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		// shape->colors.push_back(priv::toColor(color, vertex0.ambientOcclusion));
+		// shape->colors.push_back(priv::toColor(color, vertex1.ambientOcclusion));
+		// shape->colors.push_back(priv::toColor(color, vertex2.ambientOcclusion));
+
 		shape->positions.push_back(priv::toVec3f(pos0));
 		shape->positions.push_back(priv::toVec3f(pos1));
 		shape->positions.push_back(priv::toVec3f(pos2));
-		shape->texcoords.push_back({uv[0], uv[1]});
-		shape->texcoords.push_back({uv[0], uv[1]});
-		shape->texcoords.push_back({uv[0], uv[1]});
+		// shape->texcoords.push_back({uv[0], uv[1]});
+		// shape->texcoords.push_back({uv[0], uv[1]});
+		// shape->texcoords.push_back({uv[0], uv[1]});
 		if (useNormals) {
 			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 0]]));
 			shape->normals.push_back(priv::toVec3f(normals[indices[i * 3 + 1]]));
@@ -152,18 +133,17 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		shape->triangles.push_back(vidx);
 	}
 	const glm::vec3 &mins = mesh.getOffset();
-	yocto::instance_data instance_data;
-	instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
+	_state.scene.shapes.reserve(palette::PaletteMaxColors);
+	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		yocto::shape_data &shape = shapes[i];
+		if (shape.triangles.empty()) {
+			continue;
+		}
+		_state.scene.shapes.push_back(shape);
 
-	if (!nonGlow.triangles.empty()) {
-		_state.scene.shapes.push_back(nonGlow);
-		instance_data.material = opaque ? _state.materialOpaque : _state.materialTransparent;
-		instance_data.shape = (int)_state.scene.shapes.size() - 1;
-		_state.scene.instances.push_back(instance_data);
-	}
-	if (!glow.triangles.empty()) {
-		_state.scene.shapes.push_back(glow);
-		instance_data.material = _state.materialGlow;
+		yocto::instance_data instance_data;
+		instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
+		instance_data.material = _state.scene.materials.size() + i;
 		instance_data.shape = (int)_state.scene.shapes.size() - 1;
 		_state.scene.instances.push_back(instance_data);
 	}
@@ -191,57 +171,84 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 	camera.focus = cam.targetDistance() * 2.0f;
 }
 
-void PathTracer::setupBaseColorMaterial(const scenegraph::SceneGraphNode &node) {
-	yocto::texture_data texture;
-	texture.height = 1;
-	texture.width = palette::PaletteMaxColors;
-	for (int i = 0; i < node.palette().colorCount(); ++i) {
-		const core::RGBA color = node.palette().color(i);
-		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
+static yocto::material_type mapMaterialType(palette::MaterialType type) {
+	// https://xelatihy.github.io/yocto-gl/yocto/yocto_scene/#materials
+	switch (type) {
+		case palette::MaterialType::Diffuse:
+			return yocto::material_type::matte;
+		case palette::MaterialType::Emit:
+			return yocto::material_type::volumetric;
+		case palette::MaterialType::Metal:
+			return yocto::material_type::reflective;
+		case palette::MaterialType::Glass:
+			return yocto::material_type::refractive;
+		case palette::MaterialType::Blend:
+			return yocto::material_type::transparent;
+		case palette::MaterialType::Media:
+			return yocto::material_type::subsurface;
 	}
-	for (int i = node.palette().colorCount(); i < texture.width; ++i) {
-		texture.pixelsb.push_back({});
-	}
-	_state.scene.textures.push_back(texture);
-
-	yocto::material_data materialOpaque;
-	materialOpaque.type = yocto::material_type::matte;
-	materialOpaque.color = {1.0f, 1.0f, 1.0f};
-	materialOpaque.emission = priv::toVec3f(glm::clamp(_state.ambientColor + _state.diffuseColor, 0.0f, 1.0f));
-	materialOpaque.color_tex = (int)_state.scene.textures.size() - 1;
-	_state.scene.materials.push_back(materialOpaque);
-	_state.materialOpaque = (int)_state.scene.materials.size() - 1;
-
-	yocto::material_data materialTransparent;
-	materialTransparent.type = yocto::material_type::transparent;
-	materialTransparent.color = {1.0f, 1.0f, 1.0f};
-	materialTransparent.emission = priv::toVec3f(glm::clamp(_state.ambientColor + _state.diffuseColor, 0.0f, 1.0f));
-	materialTransparent.color_tex = (int)_state.scene.textures.size() - 1;
-	_state.scene.materials.push_back(materialTransparent);
-	_state.materialTransparent = (int)_state.scene.materials.size() - 1;
+	return yocto::material_type::matte;
 }
 
-void PathTracer::setupGlowMaterial(const scenegraph::SceneGraphNode &node) {
-	yocto::texture_data texture;
-	texture.height = 1;
-	texture.width = palette::PaletteMaxColors;
-	for (int i = 0; i < node.palette().colorCount(); ++i) {
-		const core::RGBA color = node.palette().emitColor(i);
-		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
-	}
-	for (int i = node.palette().colorCount(); i < texture.width; ++i) {
-		texture.pixelsb.push_back({});
-	}
-	_state.scene.textures.push_back(texture);
+static void setupMaterial(yocto::scene_data &scene, const palette::Palette &palette, int i) {
+	const palette::Material &ownMaterial = palette.material(i);
 
 	yocto::material_data material;
-	material.type = yocto::material_type::volumetric;
-	material.color = {1.0f, 1.0f, 1.0f};
-	material.emission = priv::toVec3f(glm::clamp(_state.ambientColor + _state.diffuseColor, 0.0f, 1.0f));
-	material.emission_tex = (int)_state.scene.textures.size() - 1;
-	_state.scene.materials.push_back(material);
-	_state.materialGlow = (int)_state.scene.materials.size() - 1;
+	material.type = mapMaterialType(ownMaterial.type);
+	const glm::vec4 color = core::Color::fromRGBA(palette.color(i));
+	material.color = priv::toVec3f(color);
+	if (ownMaterial.has(palette::MaterialProperty::MaterialEmit)) {
+		material.scattering = priv::toVec3f(core::Color::fromRGBA(palette.emitColor(i)));
+		if (material.type == yocto::material_type::matte) {
+			material.type = yocto::material_type::volumetric;
+		}
+	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialMetal)) {
+		material.metallic = ownMaterial.value(palette::MaterialProperty::MaterialMetal);
+	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialRoughness)) {
+		material.roughness = ownMaterial.value(palette::MaterialProperty::MaterialRoughness);
+	}
+	if (ownMaterial.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
+		material.ior = ownMaterial.value(palette::MaterialProperty::MaterialIndexOfRefraction);
+	}
+	material.opacity = color.a;
+	// TODO: map these
+	// material.emission
+	// material.scanisotropy
+	// material.trdepth
+	scene.materials.push_back(material);
 }
+
+#if 0
+static void addEmissiveTexture(yocto::scene_data &scene, const palette::Palette &palette) {
+	yocto::texture_data texture;
+	texture.height = 1;
+	texture.width = palette::PaletteMaxColors;
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA color = palette.emitColor(i);
+		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
+	}
+	for (int i = palette.colorCount(); i < texture.width; ++i) {
+		texture.pixelsb.push_back({});
+	}
+	scene.textures.push_back(texture);
+}
+
+static void addPaletteTexture(yocto::scene_data &scene, const palette::Palette &palette) {
+	yocto::texture_data texture;
+	texture.height = 1;
+	texture.width = palette::PaletteMaxColors;
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		const core::RGBA color = palette.color(i);
+		texture.pixelsb.push_back({color.r, color.g, color.b, color.a});
+	}
+	for (int i = palette.colorCount(); i < texture.width; ++i) {
+		texture.pixelsb.push_back({});
+	}
+	scene.textures.push_back(texture);
+}
+#endif
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const video::Camera *camera) {
 	_state.scene = {};
@@ -262,13 +269,11 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		voxel::ChunkMesh mesh(65536, 65536, true);
 		voxel::Region region = v->region();
 
+		const palette::Palette &palette = node.palette();
 		voxel::SurfaceExtractionContext ctx =
-			voxel::createContext(type, v, region, node.palette(), mesh, v->region().getLowerCorner());
+			voxel::createContext(type, v, region, palette, mesh, region.getLowerCorner());
 
 		voxel::extractSurface(ctx);
-
-		setupGlowMaterial(node);
-		setupBaseColorMaterial(node);
 
 		// scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		// const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
@@ -277,6 +282,13 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 		}
 		if (!createScene(sceneGraph, node, mesh.mesh[1], false)) {
 			return false;
+		}
+
+		// addPaletteTexture(_state.scene, palette);
+		// addEmissiveTexture(_state.scene, palette);
+
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			setupMaterial(_state.scene, palette, i);
 		}
 	}
 
