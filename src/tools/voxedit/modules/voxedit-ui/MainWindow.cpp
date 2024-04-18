@@ -498,9 +498,9 @@ void MainWindow::addTemplate(const TemplateModel &model) {
 	fileDesc.desc = voxelformat::vengi();
 	ImGui::TableNextColumn();
 	const video::TexturePtr &texture = _texturePool->get(name);
-	const core::String id = "##" + name;
 	const ImVec2 size((float)texture->width(), (float)texture->height());
-	if (ImGui::ImageButton(texture->handle(), size)) {
+	const core::String id = "##" + name;
+	if (ImGui::ImageButton(id.c_str(), texture->handle(), size)) {
 		ImGui::CloseCurrentPopup();
 		_sceneMgr->load(fileDesc, (const uint8_t *)model.data, (size_t)model.size);
 	}

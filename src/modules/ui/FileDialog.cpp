@@ -25,8 +25,9 @@
 
 namespace ui {
 
-static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists##FileOverwritePopup";
-static const char *NEW_FOLDER_POPUP = "Create folder##NewFolderPopup";
+// TODO: I18N
+static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists###fileoverwritepopup";
+static const char *NEW_FOLDER_POPUP = "Create folder###newfolderpopup";
 static const char *FILEDIALOGBOOKMARKDND = "filedialog-dir";
 
 enum class FileDialogColumnId {

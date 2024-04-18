@@ -29,9 +29,7 @@ IMGUI_API void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &
 IMGUI_API void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0 = ImVec2(),
 					 const ImVec2 &uv1 = ImVec2(1, 1), const ImVec4 &tintColor = ImVec4(1, 1, 1, 1),
 					 const ImVec4 &borderColor = ImVec4());
-IMGUI_API bool ImageButton(video::Id handle, const ImVec2 &size, const ImVec2 &uv0 = ImVec2(),
-						   const ImVec2 &uv1 = ImVec2(1, 1), int frame_padding = -1,
-						   const ImVec4 &borderColor = ImVec4(), const ImVec4 &tintColor = ImVec4(1, 1, 1, 1), ImGuiButtonFlags flags = 0);
+IMGUI_API bool ImageButton(const char *str_id, video::Id handle, const ImVec2 &size);
 IMGUI_API bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec2(const char *label, glm::vec2 &vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0);

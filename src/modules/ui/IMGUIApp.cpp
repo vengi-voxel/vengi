@@ -746,12 +746,12 @@ void IMGUIApp::removePanel(Panel *panel) {
 Panel* IMGUIApp::getPanel(const core::String &title) {
 	for (Panel *panel : _panels) {
 		if (panel->_title == title) {
-			Log::error("Found title: %s", panel->_title.c_str());
 			return panel;
 		}
 	}
+	Log::error("Panel not found - available are:");
 	for (Panel *panel : _panels) {
-		Log::error("Panel: %s", panel->_title.c_str());
+		Log::error("- %s", panel->_title.c_str());
 	}
 	return nullptr;
 }

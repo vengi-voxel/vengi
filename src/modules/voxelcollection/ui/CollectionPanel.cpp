@@ -188,7 +188,8 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 				} else {
 					handle = video::InvalidId;
 				}
-				if (ImGui::ImageButton(handle, ImVec2(64, 64))) {
+				core::String id = core::string::format("%i", row);
+				if (ImGui::ImageButton(id.c_str(), handle, ImVec2(64, 64))) {
 					_selected = *voxelFile;
 					_newSelected = true;
 				}
