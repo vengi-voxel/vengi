@@ -363,7 +363,7 @@ void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
 		ImGui::TableNextColumn();
 		ImGui::InputText("##newpropertyvalue", &_propertyValue);
 		ImGui::TableNextColumn();
-		if (ImGui::Button(ICON_LC_PLUS "##nodepropertyadd")) {
+		if (ImGui::Button(ICON_LC_PLUS "###nodepropertyadd")) {
 			_sceneMgr->nodeSetProperty(node.id(), _propertyKey, _propertyValue);
 			_propertyKey = _propertyValue = "";
 		}
