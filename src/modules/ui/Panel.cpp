@@ -39,7 +39,8 @@ bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	ctx->Yield();
 	if (g.OpenPopupStack.Size == currentPopupSize) {
 		IM_CHECK_RETV(g.OpenPopupStack[g.OpenPopupStack.Size - 1].PopupId == ctx->GetID("###fileoverwritepopup"), false);
-		ctx->ItemClick("/###fileoverwritepopup/###Yes");
+		IM_CHECK_RETV(focusWindow(ctx, "###fileoverwritepopup"), false);
+		ctx->ItemClick("Yes");
 		ctx->Yield();
 	}
 
