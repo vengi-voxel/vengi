@@ -21,7 +21,7 @@ void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		ctx->MouseMove("##menubar/###File");
 		ctx->MouseClick();
 		ctx->MenuClick("//$FOCUSED/###Save as");
-		saveFile(ctx, "test.lua");
+		IM_CHECK(saveFile(ctx, "test.lua"));
 	};
 }
 
