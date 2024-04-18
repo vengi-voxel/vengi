@@ -37,7 +37,7 @@ private:
 	bool handleCameraProperty(scenegraph::SceneGraphNodeCamera &node, const core::String &key, const core::String &value);
 
 public:
-	NodeInspectorPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "positions"), _sceneMgr(sceneMgr) {
+	NodeInspectorPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "nodeinspector"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
 	void shutdown();
