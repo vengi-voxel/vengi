@@ -4,6 +4,7 @@
 
 #include "../SceneGraphPanel.h"
 #include "voxedit-util/SceneManager.h"
+#include "../WindowTitles.h"
 
 namespace voxedit {
 
@@ -21,7 +22,19 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		ctx->MouseClick(ImGuiMouseButton_Right);
 	};
 
-	// TODO: test for toolbar actions
+	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ImGuiContext& g = *ctx->UiContext;
+		IM_CHECK(focusWindow(ctx, title));
+
+		ctx->ItemClick("scenegraphtools/###button0");
+		ctx->Yield();
+
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_MODEL_NODE_SETTINGS));
+		ctx->ItemInputValue("##modelsettingsname", "automated ui test node");
+		ctx->ItemClick("###OK");
+		ctx->Yield();
+	};
+
 	// TODO: test for details view with adding and removing properties
 }
 

@@ -753,7 +753,7 @@ void MainWindow::popupModelNodeSettings() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel##modelsettings"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
 			ImGui::CloseCurrentPopup();
 		}
 
