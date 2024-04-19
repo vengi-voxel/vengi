@@ -342,6 +342,11 @@ update-ogt_vox:
 	cp $(UPDATEDIR)/ogl_vox.sync/src/ogt_vox.h src/modules/voxelformat/external
 	sed -i 's/[ \t]*$$//' src/modules/voxelformat/external/ogt_vox.h
 
+update-meshoptimizer:
+	$(call UPDATE_GIT,meshoptimizer,https://github.com/zeux/meshoptimizer.git)
+	rm -f contrib/libs/meshoptimizer/*.[ch]*
+	cp $(UPDATEDIR)/meshoptimizer.sync/src/* contrib/libs/meshoptimizer
+
 update-yocto:
 	$(call UPDATE_GIT,yocto-gl,https://github.com/xelatihy/yocto-gl.git)
 	cp $(UPDATEDIR)/yocto-gl.sync/libs/yocto/yocto_bvh.cpp contrib/libs/yocto/yocto_bvh.cpp
