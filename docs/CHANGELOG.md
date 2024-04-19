@@ -27,6 +27,7 @@ General:
    - Added basic support for rooms.xyz `thing` file support
    - Optimized file dialog for large directories
    - Added translation support (`po` files)
+   - Fixed error in up-scaling volumes
 
 VoxConvert:
 
@@ -41,6 +42,9 @@ VoxEdit:
    - Improved position panel to edit transforms
    - Improved start-up times
    - Pasting from a different palette will search the closest colors
+   - Fixed off-by-one error in `ve_regionsizes` cvar handling
+   - Re-enabled the yocto-pathtracer panels again
+   - Moved some ui elements into other panels
 
 Thumbnailer:
 
