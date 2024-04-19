@@ -26,3 +26,17 @@ if(MSVC)
 	target_compile_options(yocto PUBLIC /D_CRT_SECURE_NO_WARNINGS)
 	target_compile_options(yocto PUBLIC /EHsc)
 endif(MSVC)
+
+set(MARCH native)
+#set(MARCH generic)
+# http://christian-seiler.de/projekte/fpmath/
+if (MSVC)
+	# Errors out with RTC1 and Ox are incompatible
+	#target_compile_options(${LIB} PRIVATE /Ox)
+else()
+	check_c_compiler_flag(-mtune=${MARCH} HAVE_FLAG_MTUNE_${MARCH})
+	if (HAVE_FLAG_MTUNE_${MARCH})
+		target_compile_options(yocto PRIVATE -mtune=${MARCH})
+	endif()
+	target_compile_options(yocto PRIVATE -O3)
+endif()
