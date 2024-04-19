@@ -10,7 +10,7 @@
 namespace voxedit {
 
 void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
-	IM_REGISTER_TEST(engine, testCategory(), "none")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "default rule")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (core::Var::getSafe(cfg::VoxEditSimplifiedView)->boolVal()) {
 			return;
 		}

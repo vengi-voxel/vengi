@@ -3,7 +3,10 @@
  */
 
 #include "../NodeInspectorPanel.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "util/VarUtil.h"
 #include "voxedit-ui/Viewport.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
 
@@ -41,8 +44,6 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *ti
 	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
 		const int viewportId = viewportSceneMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
-
-		// by activating the edit mode viewport - we activate the brush panel
 		const core::String id = Viewport::viewportId(viewportId);
 		ctx->ItemClick(id.c_str());
 
@@ -50,6 +51,26 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *ti
 		ctx->ItemInputValue("##nodelist/##newpropertykey", "Key");
 		ctx->ItemInputValue("##nodelist/##newpropertyvalue", "Value");
 		ctx->ItemClick("##nodelist/###nodepropertyadd");
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "sizes")->TestFunc = [=](ImGuiTestContext *ctx) {
+		util::ScopedVarChange scoped(cfg::VoxEditRegionSizes, "3 3 3,2 2 2,1 1 1");
+		const int viewportId = viewportEditMode(ctx, _app);
+		IM_CHECK_SILENT(viewportId != -1);
+		const core::String id = Viewport::viewportId(viewportId);
+		ctx->ItemClick(id.c_str());
+		ctx->Yield();
+
+		IM_CHECK(focusWindow(ctx, title));
+
+		ctx->ItemClick("2x2x2##regionsize");
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(activeNode);
+		IM_CHECK(model != nullptr);
+		const voxel::Region &region = model->region();
+		IM_CHECK_EQ(2, region.getDimensionsInVoxels().x);
+		IM_CHECK_EQ(2, region.getDimensionsInVoxels().y);
+		IM_CHECK_EQ(2, region.getDimensionsInVoxels().z);
 	};
 }
 
