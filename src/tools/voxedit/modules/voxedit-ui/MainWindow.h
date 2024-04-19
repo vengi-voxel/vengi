@@ -28,7 +28,7 @@
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
 
-#define ENABLE_RENDER_PANEL 0
+#define ENABLE_RENDER_PANEL 1
 #if ENABLE_RENDER_PANEL
 #include "voxedit-ui/RenderPanel.h"
 #endif

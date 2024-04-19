@@ -159,16 +159,35 @@ void PathTracer::addCamera(const char *name, const video::Camera &cam) {
 	yocto::scene_data &scene = _state.scene;
 	scene.camera_names.emplace_back(name);
 	yocto::camera_data &camera = scene.cameras.emplace_back();
-	camera.orthographic = cam.mode() == video::CameraMode::Orthogonal;
-	camera.film = 0.036f;
-	camera.aspect = cam.aspect();
-	camera.aperture = 0;
-	camera.lens = 0.050f;
+
 	const yocto::vec3f &from = priv::toVec3f(cam.eye());
 	const yocto::vec3f &to = priv::toVec3f(cam.target());
 	const yocto::vec3f &up = priv::toVec3f(cam.up());
 	camera.frame = yocto::lookat_frame(from, to, up);
-	camera.focus = cam.targetDistance() * 2.0f;
+	camera.aspect = cam.aspect();
+
+	camera.orthographic = cam.mode() == video::CameraMode::Orthogonal;
+	if (camera.orthographic) {
+		camera.film = cam.size().x;
+		if (cam.rotationType() == video::CameraRotationType::Target) {
+			camera.focus = cam.targetDistance();
+		} else {
+			camera.focus = cam.farPlane();
+		}
+		camera.lens = camera.film / camera.focus;
+	} else {
+		camera.film = 0.036f;
+		float distance = camera.film / (2.0f * glm::tan(cam.fieldOfView() / 2.0f));
+		if (camera.aspect > 1.0f) {
+			distance /= camera.aspect;
+		}
+		if (cam.rotationType() == video::CameraRotationType::Target) {
+			camera.focus = cam.targetDistance();
+		} else {
+			camera.focus = cam.farPlane();
+		}
+		camera.lens = camera.focus * distance / (camera.focus + distance);
+	}
 }
 
 static yocto::material_type mapMaterialType(palette::MaterialType type) {
@@ -363,13 +382,7 @@ bool PathTracer::update(int *currentSample) {
 
 image::ImagePtr PathTracer::image() {
 	yocto::image_data image;
-	if (!yocto::trace_done(_state.context)) {
-		image = yocto::make_image(_state.state.width, _state.state.height, true);
-		yocto::trace_preview(image, _state.context, _state.state, _state.scene, _state.bvh, _state.lights,
-							 _state.params);
-	} else {
-		image = yocto::get_image(_state.state);
-	}
+	image = yocto::get_image(_state.state);
 
 	priv::YoctoImageReadStream stream(image);
 	image::ImagePtr i = image::createEmptyImage("pathtracer");
