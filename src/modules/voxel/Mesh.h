@@ -53,6 +53,8 @@ public:
 	void addTriangle(IndexType index0, IndexType index1, IndexType index2);
 	void setNormal(IndexType index, const glm::vec3 &normal);
 
+	void optimize();
+
 	void clear();
 	bool isEmpty() const;
 	void removeUnusedVertices();

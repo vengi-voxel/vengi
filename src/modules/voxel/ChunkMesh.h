@@ -49,6 +49,11 @@ struct ChunkMesh {
 			mesh[i].calculateNormals();
 		}
 	}
+	void optimize() {
+		for (int i = 0; i < Meshes; ++i) {
+			mesh[i].optimize();
+		}
+	}
 };
 
 } // namespace voxel

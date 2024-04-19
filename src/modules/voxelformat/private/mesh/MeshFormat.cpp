@@ -579,8 +579,12 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 									 reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
 			if (withNormals) {
+				Log::debug("Calculate normals");
 				mesh->calculateNormals();
 			}
+			Log::debug("Optimize mesh");
+			mesh->optimize();
+
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
 		});

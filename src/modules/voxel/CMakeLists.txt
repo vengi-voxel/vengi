@@ -18,7 +18,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette meshoptimizer)
 engine_target_optimize(${LIB})
 
 set(TEST_SRCS

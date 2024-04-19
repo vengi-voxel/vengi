@@ -9,6 +9,7 @@
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "util/BufferUtil.h"
+#include "meshoptimizer.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -497,6 +498,10 @@ bool Mesh::sort(const glm::vec3 &cameraPos) {
 		return glm::distance(lhs.center(), cameraPos) < glm::distance(rhs.center(), cameraPos);
 	});
 	return true;
+}
+
+void Mesh::optimize() {
+	// TODO: https://github.com/vengi-voxel/vengi/issues/372
 }
 
 } // namespace voxel
