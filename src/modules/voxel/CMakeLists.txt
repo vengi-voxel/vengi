@@ -19,19 +19,7 @@ set(SRCS
 	Voxel.h Voxel.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette)
-set(MARCH native)
-#set(MARCH generic)
-# http://christian-seiler.de/projekte/fpmath/
-if (MSVC)
-	# Errors out with RTC1 and Ox are incompatible
-	#target_compile_options(${LIB} PRIVATE /Ox)
-else()
-	check_c_compiler_flag(-mtune=${MARCH} HAVE_FLAG_MTUNE_${MARCH})
-	if (HAVE_FLAG_MTUNE_${MARCH})
-		target_compile_options(${LIB} PRIVATE -mtune=${MARCH})
-	endif()
-	target_compile_options(${LIB} PRIVATE -O3)
-endif()
+engine_target_optimize(${LIB})
 
 set(TEST_SRCS
 	tests/AbstractVoxelTest.h
