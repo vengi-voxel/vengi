@@ -42,8 +42,6 @@ struct PathTracerState {
 	yocto::trace_lights lights;
 	yocto::trace_state state;
 	bool started = false;
-	glm::vec3 ambientColor{0.0f};
-	glm::vec3 diffuseColor{0.0f};
 
 	PathTracerState() : context(yocto::make_trace_context({})) {
 	}
