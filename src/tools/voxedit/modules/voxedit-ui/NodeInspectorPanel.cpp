@@ -96,17 +96,22 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 			core::DynamicArray<core::String> regionSizes;
 			core::string::splitString(sizes, regionSizes, ",");
 			for (const core::String &s : regionSizes) {
-				glm::ivec3 maxs;
+				glm::ivec3 maxs(0);
 				core::string::parseIVec3(s, &maxs[0]);
+				bool valid = true;
 				for (int i = 0; i < 3; ++i) {
 					if (maxs[i] <= 0 || maxs[i] > 256) {
-						return;
+						valid = false;
+						break;
 					}
+				}
+				if (!valid) {
+					continue;
 				}
 				const core::String &title = core::string::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
 				toolbar.customNoStyle([&]() {
 					if (ImGui::Button(title.c_str())) {
-						voxel::Region newRegion(glm::ivec3(0), maxs);
+						voxel::Region newRegion(glm::ivec3(0), maxs - 1);
 						_sceneMgr->nodeResize(nodeId, newRegion);
 					}
 				});
