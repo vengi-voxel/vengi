@@ -3334,6 +3334,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		}
 	}
 	const voxel::Region& region = node.region();
+	// TODO: postpone this to the next update() call - see https://github.com/vengi-voxel/vengi/issues/453
 	updateGridRenderer(region);
 	if (!region.containsPoint(referencePosition())) {
 		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
