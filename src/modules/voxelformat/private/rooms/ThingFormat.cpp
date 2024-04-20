@@ -9,6 +9,7 @@
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -16,7 +17,9 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/MaterialColor.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelutil/ImageUtils.h"
 
 namespace voxelformat {
 
@@ -28,6 +31,63 @@ bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpe
 	}
 	ThingNodeParser parser;
 	return parser.parseNode(nodeConfig, nodeSpec);
+}
+
+static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, const glm::vec3 &localPos,
+												   const glm::vec3 &localRot, const glm::vec3 &localSize) {
+	// TODO: positioning is wrong
+	scenegraph::SceneGraphTransform transform;
+	transform.setLocalOrientation(glm::quat(glm::radians(localRot)));
+	transform.setLocalTranslation(localPos);
+	if (localSize.x != 0.0f && localSize.y != 0.0f && localSize.z != 0.0f) {
+		const glm::vec3 fullSize(region.getDimensionsInVoxels());
+		transform.setLocalScale(localSize / fullSize);
+	}
+	return transform;
+}
+
+void ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &nodeSpec,
+							scenegraph::SceneGraph &voxSceneGraph) {
+	if (nodeSpec.mediaName.empty()) {
+		Log::debug("No media name found");
+		return;
+	}
+	if (!io::isImage(nodeSpec.mediaName)) {
+		Log::debug("Media name is no image %s", nodeSpec.mediaName.c_str());
+		return;
+	}
+	const auto &mediaStream = archive->readStream(nodeSpec.mediaName);
+	if (!mediaStream) {
+		Log::error("ThingFormat: Failed to open media: %s", nodeSpec.mediaName.c_str());
+		return;
+	}
+	const MediaCanvas &mediaCanvas = nodeSpec.mediaCanvas;
+	const image::ImagePtr &img = image::loadImage(nodeSpec.mediaName, *mediaStream.get());
+	if (!img || !img->isLoaded()) {
+		Log::error("Failed to load image %s", nodeSpec.mediaName.c_str());
+		return;
+	}
+	if (!img->resize(mediaCanvas.localScale.x, mediaCanvas.localScale.y)) {
+		Log::error("Failed to resize image to %fx%f", mediaCanvas.localScale.x, mediaCanvas.localScale.y);
+		return;
+	}
+	const palette::Palette &palette = voxel::getPalette();
+	voxel::RawVolume *mediaPlane = voxelutil::importAsPlane(img, palette);
+	if (mediaPlane) {
+		scenegraph::SceneGraphNode mediaNode;
+		mediaNode.setVolume(mediaPlane);
+		mediaNode.setPivot(glm::vec3{0.5f});
+		mediaNode.setPalette(palette);
+		mediaNode.setColor(nodeSpec.color);
+		mediaNode.setName(nodeSpec.mediaName);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::SceneGraphTransform &transform =
+			toTransform(mediaNode.region(), mediaCanvas.localPos, mediaCanvas.localRot, mediaCanvas.localScale);
+		mediaNode.setTransform(keyFrameIdx, transform);
+		voxSceneGraph.emplace(core::move(mediaNode));
+	} else {
+		Log::error("ThingFormat: Failed to import media plane: %s", nodeSpec.mediaName.c_str());
+	}
 }
 
 bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSpec, scenegraph::SceneGraph &sceneGraph,
@@ -52,19 +112,11 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		if (!e->second.isModelNode()) {
 			continue;
 		}
-		// TODO: positioning is wrong
 		scenegraph::SceneGraphNode &node = voxSceneGraph.node(e->first);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		scenegraph::SceneGraphTransform transform;
-		transform.setLocalOrientation(glm::quat(glm::radians(nodeSpec.localRot)));
-		transform.setLocalTranslation(nodeSpec.localPos);
-		if (nodeSpec.localSize.x != 0.0f && nodeSpec.localSize.y != 0.0f && nodeSpec.localSize.z != 0.0f) {
-			const glm::vec3 fullSize(node.region().getDimensionsInVoxels());
-			transform.setLocalScale(nodeSpec.localSize / fullSize);
-		}
+		scenegraph::SceneGraphTransform transform = toTransform(node.region(), nodeSpec.localPos, nodeSpec.localRot, nodeSpec.localSize);
 		node.setTransform(keyFrameIdx, transform);
 		node.setPivot(glm::vec3{0.5f});
-
 		node.setColor(nodeSpec.color);
 		node.setName(nodeSpec.name);
 		if (!nodeSpec.thingLibraryId.empty()) {
@@ -78,6 +130,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 			palette.setColor(i, rgba);
 		}
 	}
+	addMediaImage(archive, nodeSpec, voxSceneGraph);
 	const core::DynamicArray<int> &nodes = scenegraph::copySceneGraph(sceneGraph, voxSceneGraph, parent);
 	if (nodes.empty()) {
 		Log::error("ThingFormat: Failed to copy the scene graph from node %s", nodeSpec.modelName.c_str());

@@ -45,6 +45,96 @@ static void skipBlock(core::Tokenizer &tok) {
 	}
 }
 
+static bool parseAnimSpec(NodeSpec &nodeSpec, core::Tokenizer &tok) {
+	if (!tok.hasNext()) {
+		Log::error("ThingFormat: Expected token but got nothing");
+		return false;
+	}
+	core::String token = tok.next();
+	if (token != "{") {
+		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
+		return false;
+	}
+	while (tok.hasNext()) {
+		token = tok.next();
+		if (token == "}") {
+			return true;
+		}
+		if (token == "mode") {
+			nodeSpec.animSpec.mode = core::string::toInt(tok.next());
+		} else if (token == "startFrame") {
+			nodeSpec.animSpec.startFrame = core::string::toInt(tok.next());
+		} else if (token == "endFrame") {
+			nodeSpec.animSpec.endFrame = core::string::toInt(tok.next());
+		} else if (token == "fps") {
+			nodeSpec.animSpec.fps = core::string::toInt(tok.next());
+		} else if (token == "pause") {
+			nodeSpec.animSpec.pause = core::string::toInt(tok.next());
+		} else {
+			Log::debug("ThingFormat: Ignoring token: '%s'", token.c_str());
+		}
+	}
+	return true;
+}
+
+static bool parseRenderSpec(NodeSpec &nodeSpec, core::Tokenizer &tok) {
+	if (!tok.hasNext()) {
+		Log::error("ThingFormat: Expected token but got nothing");
+		return false;
+	}
+	core::String token = tok.next();
+	if (token != "{") {
+		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
+		return false;
+	}
+	while (tok.hasNext()) {
+		token = tok.next();
+		if (token == "}") {
+			return true;
+		}
+		if (token == "glowThresh") {
+			nodeSpec.renderSpec.glowThresh = core::string::toFloat(tok.next());
+		} else if (token == "glowIntensity") {
+			nodeSpec.renderSpec.glowIntensity = core::string::toFloat(tok.next());
+		} else {
+			Log::debug("ThingFormat: Ignoring token: '%s'", token.c_str());
+		}
+	}
+	return true;
+}
+
+static bool parseMediaCanvas(NodeSpec &nodeSpec, core::Tokenizer &tok) {
+	if (!tok.hasNext()) {
+		Log::error("ThingFormat: Expected token but got nothing");
+		return false;
+	}
+	core::String token = tok.next();
+	if (token != "{") {
+		Log::error("ThingFormat: Expected '{' but got: %s", token.c_str());
+		return false;
+	}
+	while (tok.hasNext()) {
+		token = tok.next();
+		if (token == "}") {
+			return true;
+		}
+		if (token == "mediaStartTime") {
+			nodeSpec.mediaCanvas.mediaStartTime = core::string::toInt(tok.next());
+		} else if (token == "mediaVolume") {
+			nodeSpec.mediaCanvas.mediaVolume = core::string::toInt(tok.next());
+		} else if (token == "localPos") {
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localPos), " ,\t");
+		} else if (token == "localRot") {
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localRot), " ,\t");
+		} else if (token == "localScale") {
+			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localScale), " ,\t");
+		} else {
+			Log::debug("ThingFormat: Ignoring token: '%s'", token.c_str());
+		}
+	}
+	return true;
+}
+
 bool ThingNodeParser::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const {
 	while (tok.hasNext()) {
 		core::String token = tok.next();
@@ -64,6 +154,20 @@ bool ThingNodeParser::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const 
 			nodeSpec.modelName = tok.next();
 		} else if (token == "thingLibraryId") {
 			nodeSpec.thingLibraryId = tok.next();
+		} else if (token == "mediaName") {
+			nodeSpec.mediaName = tok.next();
+		} else if (token == "animSpec") {
+			if (!parseAnimSpec(nodeSpec, tok)) {
+				return false;
+			}
+		} else if (token == "renderSpec") {
+			if (!parseRenderSpec(nodeSpec, tok)) {
+				return false;
+			}
+		} else if (token == "mediaCanvas") {
+			if (!parseMediaCanvas(nodeSpec, tok)) {
+				return false;
+			}
 		} else if (token == "opacity") {
 			nodeSpec.opacity = core::string::toFloat(tok.next());
 		} else if (token == "children") {
