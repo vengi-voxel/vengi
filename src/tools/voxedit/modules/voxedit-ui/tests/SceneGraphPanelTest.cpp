@@ -3,6 +3,7 @@
  */
 
 #include "../SceneGraphPanel.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "../WindowTitles.h"
 
@@ -26,6 +27,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, title));
 
+		const int before = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
 		ctx->ItemClick("scenegraphtools/###button0");
 		ctx->Yield();
 
@@ -33,6 +35,18 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		ctx->ItemInputValue("##modelsettingsname", "automated ui test node");
 		ctx->ItemClick("###OK");
 		ctx->Yield();
+
+		const int after = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
+		IM_CHECK(after == before + 1);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "group node")->TestFunc = [=](ImGuiTestContext *ctx) {
+		ImGuiContext& g = *ctx->UiContext;
+		IM_CHECK(focusWindow(ctx, title));
+		const int before = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Group);
+		ctx->ItemClick("scenegraphtools/###button1");
+		const int after = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Group);
+		IM_CHECK(after == before + 1);
 	};
 
 	// TODO: test for details view with adding and removing properties
