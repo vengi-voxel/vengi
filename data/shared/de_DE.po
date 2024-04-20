@@ -1061,9 +1061,6 @@ msgstr ""
 "Es wird empfohlen, sie in kleinere Volumen aufzuteilen.\n"
 "Möchten Sie sie jetzt aufteilen?"
 
-msgid "Cancel##modelsettings"
-msgstr "Abbrechen##modelsettings"
-
 msgid "Node names should be unique"
 msgstr ""
 
@@ -1376,38 +1373,8 @@ msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
 msgid "Color"
 msgstr "Farbe"
 
-msgid "Dimensions"
-msgstr "Dimensionen"
-
-msgid "Samples"
-msgstr "Samples"
-
-msgid "Tracer"
-msgstr "Tracer"
-
-msgid "False color"
-msgstr "Falsche Farbe"
-
-msgid "Bounces"
-msgstr "Bounces"
-
-msgid "Batch"
-msgstr "Stapel"
-
-msgid "Clamp"
-msgstr "Clamp"
-
-msgid "Preview ratio"
-msgstr "Vorschauverhältnis"
-
-msgid "Hide environment"
-msgstr "Umgebung ausblenden"
-
-msgid "Denoise"
-msgstr "Rauschunterdrückung"
-
-msgid "Camera"
-msgstr "Kamera"
+msgid "Save image"
+msgstr "Bild speichern"
 
 msgid "Stop path tracer"
 msgstr "Pfadverfolgung stoppen"
@@ -1419,8 +1386,74 @@ msgstr "Beispiel %i / %i"
 msgid "Start path tracer"
 msgstr "Pfadverfolgung starten"
 
-msgid "Save image"
-msgstr "Bild speichern"
+msgid "Dimensions"
+msgstr "Dimensionen"
+
+msgid "Tracer"
+msgstr "Tracer"
+
+msgid "Samples"
+msgstr "Samples"
+
+msgid ""
+" the number of per-pixel samples used while rendering and is the only "
+"parameter used to control the tradeoff between noise and speed."
+msgstr ""
+
+msgid "Bounces"
+msgstr "Bounces"
+
+msgid ""
+"the maximum number of bounces and should be high for scenes with glass and "
+"volumes, but otherwise a low number would suffice."
+msgstr ""
+
+msgid "Clamp"
+msgstr "Clamp"
+
+msgid "remove high-energy fireflies"
+msgstr ""
+
+msgid "Preview ratio"
+msgstr "Vorschauverhältnis"
+
+msgid "Batch"
+msgstr "Stapel"
+
+msgid "No caustics"
+msgstr ""
+
+msgid "removes certain path that cause caustics"
+msgstr ""
+
+msgid "Hide environment"
+msgstr "Umgebung ausblenden"
+
+msgid "removes the environment map from the camera rays."
+msgstr ""
+
+msgid " apply a linear filter to the image pixels"
+msgstr ""
+
+#, fuzzy
+msgid "High Quality BVH"
+msgstr "hohe Qualität"
+
+msgid "High quality bounding volume hierarchy"
+msgstr ""
+
+msgid "Denoise"
+msgstr "Rauschunterdrückung"
+
+#, fuzzy
+msgid "High quality"
+msgstr "hohe Qualität"
+
+msgid "Geometry preview"
+msgstr ""
+
+msgid "Camera"
+msgstr "Kamera"
 
 msgid "Rename"
 msgstr "Umbenennen"
@@ -1503,8 +1536,9 @@ msgstr "Neue Gruppe hinzufügen"
 msgid "Remove the active node with all its children"
 msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
 
-msgid "Merge onto##mergeonto"
-msgstr "Zusammenführen auf##zusammenführenauf"
+#, fuzzy
+msgid "Merge onto"
+msgstr "%s auf %s zusammenführen"
 
 #, c-format
 msgid "Merge %s onto %s"
@@ -2186,6 +2220,15 @@ msgstr "Schaltet das Zentrum am Cursor um"
 
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+#~ msgid "Cancel##modelsettings"
+#~ msgstr "Abbrechen##modelsettings"
+
+#~ msgid "False color"
+#~ msgstr "Falsche Farbe"
+
+#~ msgid "Merge onto##mergeonto"
+#~ msgstr "Zusammenführen auf##zusammenführenauf"
 
 #~ msgid "Snap"
 #~ msgstr "Ausrichten"

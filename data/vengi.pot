@@ -980,9 +980,6 @@ msgid ""
 "Do you wish to split them now?"
 msgstr ""
 
-msgid "Cancel##modelsettings"
-msgstr ""
-
 msgid "Node names should be unique"
 msgstr ""
 
@@ -1282,37 +1279,7 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-msgid "Dimensions"
-msgstr ""
-
-msgid "Samples"
-msgstr ""
-
-msgid "Tracer"
-msgstr ""
-
-msgid "False color"
-msgstr ""
-
-msgid "Bounces"
-msgstr ""
-
-msgid "Batch"
-msgstr ""
-
-msgid "Clamp"
-msgstr ""
-
-msgid "Preview ratio"
-msgstr ""
-
-msgid "Hide environment"
-msgstr ""
-
-msgid "Denoise"
-msgstr ""
-
-msgid "Camera"
+msgid "Save image"
 msgstr ""
 
 msgid "Stop path tracer"
@@ -1325,7 +1292,71 @@ msgstr ""
 msgid "Start path tracer"
 msgstr ""
 
-msgid "Save image"
+msgid "Dimensions"
+msgstr ""
+
+msgid "Tracer"
+msgstr ""
+
+msgid "Samples"
+msgstr ""
+
+msgid ""
+" the number of per-pixel samples used while rendering and is the only "
+"parameter used to control the tradeoff between noise and speed."
+msgstr ""
+
+msgid "Bounces"
+msgstr ""
+
+msgid ""
+"the maximum number of bounces and should be high for scenes with glass and "
+"volumes, but otherwise a low number would suffice."
+msgstr ""
+
+msgid "Clamp"
+msgstr ""
+
+msgid "remove high-energy fireflies"
+msgstr ""
+
+msgid "Preview ratio"
+msgstr ""
+
+msgid "Batch"
+msgstr ""
+
+msgid "No caustics"
+msgstr ""
+
+msgid "removes certain path that cause caustics"
+msgstr ""
+
+msgid "Hide environment"
+msgstr ""
+
+msgid "removes the environment map from the camera rays."
+msgstr ""
+
+msgid " apply a linear filter to the image pixels"
+msgstr ""
+
+msgid "High Quality BVH"
+msgstr ""
+
+msgid "High quality bounding volume hierarchy"
+msgstr ""
+
+msgid "Denoise"
+msgstr ""
+
+msgid "High quality"
+msgstr ""
+
+msgid "Geometry preview"
+msgstr ""
+
+msgid "Camera"
 msgstr ""
 
 msgid "Rename"
@@ -1406,7 +1437,7 @@ msgstr ""
 msgid "Remove the active node with all its children"
 msgstr ""
 
-msgid "Merge onto##mergeonto"
+msgid "Merge onto"
 msgstr ""
 
 #, c-format
