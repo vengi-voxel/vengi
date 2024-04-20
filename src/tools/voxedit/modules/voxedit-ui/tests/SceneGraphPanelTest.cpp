@@ -21,6 +21,8 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		// move to the node and open the context menu
 		ctx->MouseMove(uiNodeId.c_str());
 		ctx->MouseClick(ImGuiMouseButton_Right);
+
+		// TODO: execute the context menu actions
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {

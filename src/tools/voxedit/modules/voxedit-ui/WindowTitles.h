@@ -24,6 +24,7 @@
 #define TITLE_ANIMATION_SETTINGS ICON_LC_LAYOUT_LIST " Animation###animationpanel"
 #define TITLE_SCRIPT_EDITOR ICON_LC_CODE " Script Editor###scripteditor"
 
+#define POPUP_TITLE_SCENEGRAPHDRAGANDDROP "##scenegraphdraganddroppopup"
 #define POPUP_TITLE_UNSAVED "Unsaved Modifications###unsavedpopup"
 #define POPUP_TITLE_NEW_SCENE "New scene###newscenepopup"
 #define POPUP_TITLE_FAILED_TO_SAVE "Failed to save###failedtosavepopup"

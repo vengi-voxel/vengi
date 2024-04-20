@@ -3,25 +3,23 @@
  */
 
 #include "SceneGraphPanel.h"
+#include "DragAndDropPayload.h"
 #include "core/Algorithm.h"
-#include "ui/IconsLucide.h"
+#include "core/Color.h"
+#include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
-#include "core/Log.h"
-#include "core/Color.h"
-#include "voxedit-util/ModelNodeSettings.h"
-#include "voxedit-util/Config.h"
-#include "voxedit-util/SceneManager.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "ui/ScopedStyle.h"
 #include "ui/Toolbar.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "DragAndDropPayload.h"
+#include "voxedit-ui/WindowTitles.h"
+#include "voxedit-util/Config.h"
+#include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxelrender/SceneGraphRenderer.h"
 #include <glm/gtc/type_ptr.hpp>
-
-#define SCENEGRAPHPOPUP "##scenegraphpopup"
-#define SCENEGRAPHDRAGANDDROPPOPUP "##scenegraphdraganddroppopup"
 
 namespace voxedit {
 
@@ -40,36 +38,36 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 
 		// don't access node data below this - the commands that are executed here can make the node reference invalid
 
-		ImGui::CommandIconMenuItem(ICON_LC_TERMINAL, _("Rename" SCENEGRAPHPOPUP), "toggle ve_popuprenamenode", true, &listener);
-		commandNodeMenu(ICON_LC_EYE, _("Show all" SCENEGRAPHPOPUP), "nodeshowallchildren", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_EYE_OFF, _("Hide all" SCENEGRAPHPOPUP), "nodehideallchildren", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_EYE_OFF, _("Hide others" SCENEGRAPHPOPUP), "nodehideothers", nodeId, validModels > 1, &listener);
-		ImGui::CommandIconMenuItem(ICON_LC_LOCK, _("Lock all" SCENEGRAPHPOPUP), "modellockall", true, &listener);
-		ImGui::CommandIconMenuItem(ICON_LC_LOCK_OPEN, _("Unlock all" SCENEGRAPHPOPUP), "modelunlockall", true, &listener);
-		commandNodeMenu(ICON_LC_COPY, _("Duplicate" SCENEGRAPHPOPUP), "nodeduplicate", nodeId, true, &listener);
-		commandNodeMenu(ICON_LC_TRASH, _("Delete" SCENEGRAPHPOPUP), "nodedelete", nodeId, true, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_TERMINAL, _("Rename"), "toggle ve_popuprenamenode", true, &listener);
+		commandNodeMenu(ICON_LC_EYE, _("Show all"), "nodeshowallchildren", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF, _("Hide all"), "nodehideallchildren", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_EYE_OFF, _("Hide others"), "nodehideothers", nodeId, validModels > 1, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_LOCK, _("Lock all"), "modellockall", true, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_LOCK_OPEN, _("Unlock all"), "modelunlockall", true, &listener);
+		commandNodeMenu(ICON_LC_COPY, _("Duplicate"), "nodeduplicate", nodeId, true, &listener);
+		commandNodeMenu(ICON_LC_TRASH, _("Delete"), "nodedelete", nodeId, true, &listener);
 
 		if (nodeType == scenegraph::SceneGraphNodeType::Model) {
-			commandNodeMenu(ICON_LC_COPY, _("Create reference" SCENEGRAPHPOPUP), "modelref", nodeId, true, &listener);
+			commandNodeMenu(ICON_LC_COPY, _("Create reference"), "modelref", nodeId, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(nodeId);
-			commandNodeMenu(ICON_LC_GROUP, _("Merge" SCENEGRAPHPOPUP), "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge all" SCENEGRAPHPOPUP), "modelmergeall", validModels > 1, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge visible" SCENEGRAPHPOPUP), "modelmergevisible", validModels > 1, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked" SCENEGRAPHPOPUP), "modelmergelocked", validModels > 1, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center origin" SCENEGRAPHPOPUP), "center_origin", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center reference" SCENEGRAPHPOPUP), "center_referenceposition", true, &listener);
-			commandNodeMenu(ICON_LC_SAVE, _("Save" SCENEGRAPHPOPUP), "modelsave", nodeId, true, &listener);
+			commandNodeMenu(ICON_LC_GROUP, _("Merge"), "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge all"), "modelmergeall", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge visible"), "modelmergevisible", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked"), "modelmergelocked", validModels > 1, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center origin"), "center_origin", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SHRINK, _("Center reference"), "center_referenceposition", true, &listener);
+			commandNodeMenu(ICON_LC_SAVE, _("Save"), "modelsave", nodeId, true, &listener);
 		} else if (nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
-			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model" SCENEGRAPHPOPUP), "modelunref", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_CODESANDBOX, _("Convert to model"), "modelunref", true, &listener);
 		}
-		ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save all" SCENEGRAPHPOPUP), "modelssave", validModels > 1, &listener);
+		ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save all"), "modelssave", validModels > 1, &listener);
 
-		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new group" SCENEGRAPHPOPUP))) {
+		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new group"))) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
 			_sceneMgr->moveNodeToSceneGraph(groupNode, nodeId);
 		}
-		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new camera" SCENEGRAPHPOPUP))) {
+		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new camera"))) {
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			_sceneMgr->moveNodeToSceneGraph(cameraNode);
 		}
@@ -326,7 +324,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 	ImGui::End();
 
 	if (_popupDragAndDrop) {
-		ImGui::OpenPopup(SCENEGRAPHDRAGANDDROPPOPUP);
+		ImGui::OpenPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP);
 		_popupDragAndDrop = false;
 	}
 
@@ -335,7 +333,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNode
 
 void SceneGraphPanel::registerPopups() {
 	ImGuiWindowFlags popupFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
-	if (ImGui::BeginPopup(SCENEGRAPHDRAGANDDROPPOPUP, popupFlags)) {
+	if (ImGui::BeginPopup(POPUP_TITLE_SCENEGRAPHDRAGANDDROP, popupFlags)) {
 		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
 		const scenegraph::SceneGraphNode *sourceNode = _sceneMgr->sceneGraphNode(_dragDropSourceNodeId);
 		const scenegraph::SceneGraphNode *targetNode = _sceneMgr->sceneGraphNode(_dragDropTargetNodeId);
@@ -343,7 +341,7 @@ void SceneGraphPanel::registerPopups() {
 		const bool canChangeParent = sceneGraph.canChangeParent(sceneGraph.node(_dragDropSourceNodeId), _dragDropTargetNodeId);
 		if (sourceNode && targetNode) {
 			if (sourceNode->isModelNode() && targetNode->isModelNode()) {
-				if (ImGui::IconButton(ICON_LC_LINK, _("Merge onto##mergeonto"))) {
+				if (ImGui::IconButton(ICON_LC_LINK, _("Merge onto"))) {
 					_sceneMgr->mergeNodes(_dragDropTargetNodeId, _dragDropSourceNodeId);
 					ImGui::CloseCurrentPopup();
 				}
