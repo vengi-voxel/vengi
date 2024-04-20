@@ -38,7 +38,7 @@ public:
 	virtual bool isVisible(int nodeId) const {
 		return true;
 	}
-	virtual void nodeRemove(int nodeId) {
+	virtual void removeNode(int nodeId) {
 	}
 	/**
 	 * @brief Before calling this, make sure to set the SceneGraph pointer in the RenderContext

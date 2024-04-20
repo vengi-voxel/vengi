@@ -3,33 +3,72 @@
  */
 
 #include "../SceneGraphPanel.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "../WindowTitles.h"
 
 namespace voxedit {
 
+static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext *ctx, int nodeId, const char *uiId) {
+	scenegraph::SceneGraphNode *modelNode = sceneMgr->sceneGraphModelNode(nodeId);
+	IM_CHECK(modelNode != nullptr);
+	ImGuiTestItemInfo *info = ctx->ItemInfo("##nodelist");
+	const core::String uiNodeId = core::string::format("##nodelist/root##0/%s##%i", modelNode->name().c_str(), modelNode->id());
+	// move to the node and open the context menu
+	ctx->MouseMove(uiNodeId.c_str());
+	ctx->MouseClick(ImGuiMouseButton_Right);
+	const core::String clickId = core::string::format("//$FOCUSED/%s", uiId);
+	ctx->MenuClick(clickId.c_str());
+}
+
 void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testCategory(), "context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, title));
 		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtest", voxel::Region(0, 31)));
-		const int activeNode = _sceneMgr->sceneGraph().activeNode();
-		scenegraph::SceneGraphNode *modelNode = _sceneMgr->sceneGraphModelNode(activeNode);
-		IM_CHECK(modelNode != nullptr);
-		ImGuiTestItemInfo *info = ctx->ItemInfo("##nodelist");
-		const core::String uiNodeId = core::string::format("##nodelist/root##0/%s##%i", modelNode->name().c_str(), modelNode->id());
-		// move to the node and open the context menu
-		ctx->MouseMove(uiNodeId.c_str());
-		ctx->MouseClick(ImGuiMouseButton_Right);
 
-		// TODO: execute the context menu actions
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		// duplicate the node
+		const int beforeDuplicate = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Duplicate");
+		const int afterDuplicate = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+		IM_CHECK(afterDuplicate == beforeDuplicate + 1);
+
+		// rename the node
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Rename");
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_RENAME_NODE));
+		ctx->ItemInputValue("Name", "automated ui test rename");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, title)); // back to the scene graph panel
+
+		// create reference
+		const int beforeReference = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Create reference");
+		const int afterReference = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		IM_CHECK(afterReference == beforeReference + 1);
+
+		// delete the reference again
+		const int beforeDelete = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Delete");
+		const int afterDelete = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
+		IM_CHECK(afterDelete == beforeDelete - 1);
+
+		// merge all
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "###Merge all");
+		const int afterMerge = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+		IM_CHECK(afterMerge == 1);
+
+		// TODO: all other actions, too
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, title));
 
-		const int before = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		const int before = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		ctx->ItemClick("scenegraphtools/###button0");
 		ctx->Yield();
 
@@ -38,16 +77,19 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		ctx->ItemClick("###OK");
 		ctx->Yield();
 
-		const int after = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
+		const int after = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(after == before + 1);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "group node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, title));
-		const int before = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Group);
+
+		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+
+		const int before = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
 		ctx->ItemClick("scenegraphtools/###button1");
-		const int after = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Group);
+		const int after = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
 		IM_CHECK(after == before + 1);
 	};
 

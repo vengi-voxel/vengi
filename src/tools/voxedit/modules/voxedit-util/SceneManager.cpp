@@ -1443,7 +1443,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	node.setVolume(volume, true);
 	// the old volume pointer might no longer be used
-	_sceneRenderer->nodeRemove(node.id());
+	_sceneRenderer->removeNode(node.id());
 
 	const voxel::Region& region = volume->region();
 	updateGridRenderer(region);
@@ -3124,7 +3124,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		_mementoHandler.removeLast();
 		return false;
 	}
-	_sceneRenderer->nodeRemove(nodeId);
+	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);

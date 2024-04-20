@@ -251,7 +251,7 @@ bool SceneRenderer::isVisible(int nodeId) const {
 	return _volumeRenderer.isVisible(nodeId);
 }
 
-void SceneRenderer::nodeRemove(int nodeId) {
+void SceneRenderer::removeNode(int nodeId) {
 	_volumeRenderer.nodeRemove(nodeId);
 }
 
