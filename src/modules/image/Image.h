@@ -35,7 +35,7 @@ private:
 	core::String _name;
 	int _width = -1;
 	int _height = -1;
-	int _depth = -1;
+	int _depthOfColor = -1;
 	uint8_t* _data = nullptr;
 
 public:
@@ -58,6 +58,8 @@ public:
 	 */
 	glm::vec2 uv(int x, int y) const;
 	static glm::vec2 uv(int x, int y, int w, int h);
+
+	bool resize(int w, int h);
 
 	static void flipVerticalRGBA(uint8_t *pixels, int w, int h);
 	bool writePng(io::SeekableWriteStream &stream) const;
@@ -96,7 +98,7 @@ public:
 	}
 
 	inline int depth() const {
-		return _depth;
+		return _depthOfColor;
 	}
 };
 

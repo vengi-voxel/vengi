@@ -32,7 +32,7 @@
 
 #include "yocto_image.h"
 
-#include <stb_image_resize.h>
+#include <stb_image_resize2.h>
 
 #include <future>
 #include <memory>
@@ -228,11 +228,11 @@ image_data resize_image(
         res_height * (double)image.width / (double)image.height);
   }
   auto result = make_image(res_width, res_height, image.linear);
-  stbir_resize_float_generic((float*)image.pixels.data(), (int)image.width,
-      (int)image.height, (int)(sizeof(vec4f) * image.width),
-      (float*)result.pixels.data(), (int)result.width, (int)result.height,
-      (int)(sizeof(vec4f) * result.width), 4, 3, 0, STBIR_EDGE_CLAMP,
-      STBIR_FILTER_DEFAULT, STBIR_COLORSPACE_LINEAR, nullptr);
+  stbir_resize(image.pixels.data(), image.width, image.height,
+               (int)(sizeof(vec4f) * image.width), result.pixels.data(),
+               (int)result.width, (int)result.height,
+               (int)(sizeof(vec4f) * result.width), STBIR_RGBA,
+               STBIR_TYPE_FLOAT, STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT);
   return result;
 }
 
@@ -926,10 +926,9 @@ void resize_image(vector<vec4f>& res, const vector<vec4f>& img, int width,
     res_width = (int)round(res_height * (double)width / (double)height);
   }
   res.resize((size_t)res_width * (size_t)res_height);
-  stbir_resize_float_generic((float*)img.data(), width, height,
-      sizeof(vec4f) * width, (float*)res.data(), res_width, res_height,
-      sizeof(vec4f) * res_width, 4, 3, 0, STBIR_EDGE_CLAMP,
-      STBIR_FILTER_DEFAULT, STBIR_COLORSPACE_LINEAR, nullptr);
+  stbir_resize(img.data(), width, height, sizeof(vec4f) * width, res.data(),
+               res_width, res_height, sizeof(vec4f) * res_width, STBIR_RGBA,
+               STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT);
 }
 void resize_image(vector<vec4b>& res, const vector<vec4b>& img, int width,
     int height, int res_width, int res_height) {
@@ -939,10 +938,9 @@ void resize_image(vector<vec4b>& res, const vector<vec4b>& img, int width,
     res_width = (int)round(res_height * (double)width / (double)height);
   }
   res.resize((size_t)res_width * (size_t)res_height);
-  stbir_resize_uint8_generic((byte*)img.data(), width, height,
-      sizeof(vec4b) * width, (byte*)res.data(), res_width, res_height,
-      sizeof(vec4b) * res_width, 4, 3, 0, STBIR_EDGE_CLAMP,
-      STBIR_FILTER_DEFAULT, STBIR_COLORSPACE_LINEAR, nullptr);
+  stbir_resize(img.data(), width, height, sizeof(vec4b) * width, res.data(),
+               res_width, res_height, sizeof(vec4b) * res_width, STBIR_RGBA,
+               STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_DEFAULT);
 }
 
 void image_difference(vector<vec4f>& diff, const vector<vec4f>& a,

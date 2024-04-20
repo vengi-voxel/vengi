@@ -17,6 +17,7 @@
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "io/Base64.h"
+#include <stb_image_resize2.h>
 
 #include <glm/common.hpp>
 #include <glm/ext/scalar_common.hpp>
@@ -69,8 +70,8 @@ bool Image::load(const io::FilePtr &file) {
 const uint8_t *Image::at(int x, int y) const {
 	core_assert_msg(x >= 0 && x < _width, "x out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
 	core_assert_msg(y >= 0 && y < _height, "y out of bounds: x: %i, y: %i, w: %i, h: %i", x, y, _width, _height);
-	const int colSpan = _width * _depth;
-	const intptr_t offset = x * _depth + y * colSpan;
+	const int colSpan = _width * _depthOfColor;
+	const intptr_t offset = x * _depthOfColor + y * colSpan;
 	return _data + offset;
 }
 
@@ -81,8 +82,8 @@ void Image::setColor(core::RGBA rgba, int x, int y) {
 	if (y < 0 || y >= _height) {
 		return;
 	}
-	const int colSpan = _width * _depth;
-	const intptr_t offset = x * _depth + y * colSpan;
+	const int colSpan = _width * _depthOfColor;
+	const intptr_t offset = x * _depthOfColor + y * colSpan;
 	*(core::RGBA *)(_data + offset) = rgba;
 }
 
@@ -202,9 +203,9 @@ bool Image::load(io::ReadStream &stream, int length) {
 	clbk.read = stream_read;
 	clbk.skip = stream_skip;
 	clbk.eof = stream_eos;
-	_data = stbi_load_from_callbacks(&clbk, &stream, &_width, &_height, &_depth, STBI_rgb_alpha);
+	_data = stbi_load_from_callbacks(&clbk, &stream, &_width, &_height, &_depthOfColor, STBI_rgb_alpha);
 	// we are always using rgba
-	_depth = 4;
+	_depthOfColor = 4;
 	if (_data == nullptr) {
 		_state = io::IOSTATE_FAILED;
 		Log::debug("Failed to load image %s: unsupported format", _name.c_str());
@@ -253,7 +254,7 @@ bool Image::loadRGBA(io::ReadStream &stream, int w, int h) {
 		return false;
 	}
 	// we are always using rgba
-	_depth = 4;
+	_depthOfColor = 4;
 	Log::debug("Loaded image %s", _name.c_str());
 	_state = io::IOSTATE_LOADED;
 	return true;
@@ -341,6 +342,21 @@ glm::vec2 Image::uv(int x, int y, int w, int h) {
 	return glm::vec2((float)x / (float)w, 1.0f - ((float)y / (float)h));
 }
 
+bool Image::resize(int w, int h) {
+	uint8_t *res = (uint8_t *)STBI_MALLOC(w * h * _depthOfColor);
+	if (stbir_resize(_data, _width, _height, _depthOfColor * _width, res, w, h, _depthOfColor * w,
+					 (stbir_pixel_layout)_depthOfColor, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP,
+					 STBIR_FILTER_DEFAULT) == nullptr) {
+		core_free(res);
+		return false;
+	}
+	stbi_image_free(_data);
+	_data = res;
+	_width = w;
+	_height = h;
+	return true;
+}
+
 uint8_t *createPng(const void *pixels, int width, int height, int depth, int *pngSize) {
 	return (uint8_t *)stbi_write_png_to_mem((const unsigned char *)pixels, 0, width, height, depth, pngSize);
 }
@@ -354,7 +370,7 @@ static void stream_write_func(void *context, void *data, int size) {
 }
 
 bool Image::writePng(io::SeekableWriteStream &stream) const {
-	return writePng(stream, _data, _width, _height, _depth);
+	return writePng(stream, _data, _width, _height, _depthOfColor);
 }
 
 bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth,
@@ -369,7 +385,7 @@ bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t *buffer, int
 
 core::String Image::pngBase64() const {
 	io::BufferedReadWriteStream s;
-	if (!writePng(s, _data, _width, _height, _depth)) {
+	if (!writePng(s, _data, _width, _height, _depthOfColor)) {
 		return "";
 	}
 	s.seek(0);
