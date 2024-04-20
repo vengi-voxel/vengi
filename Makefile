@@ -216,11 +216,12 @@ update-stb:
 	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)
 	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* contrib/libs/stb_image
 	rm contrib/libs/stb_image/SOIL2.*
-	find contrib/libs/stb_image -type f -exec dos2unix {} \;
-	find contrib/libs/stb_image -type f -exec sed -i 's/[ \t]*$$//' {} \;
 	$(call UPDATE_GIT,stb,https://github.com/nothings/stb.git)
 	cp $(UPDATEDIR)/stb.sync/stb_truetype.h src/modules/voxelfont/external/stb_truetype.h
 	cp $(UPDATEDIR)/stb.sync/stb_rect_pack.h src/modules/scenegraph/external/stb_rect_pack.h
+	cp $(UPDATEDIR)/stb.sync/stb_image_resize2.h contrib/libs/stb_image
+	find contrib/libs/stb_image -type f -exec dos2unix {} \;
+	find contrib/libs/stb_image -type f -exec sed -i 's/[ \t]*$$//' {} \;
 
 update-googletest:
 	$(call UPDATE_GIT,googletest,https://github.com/google/googletest.git)
