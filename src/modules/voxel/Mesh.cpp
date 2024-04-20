@@ -8,8 +8,8 @@
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
-#include "util/BufferUtil.h"
 #include "meshoptimizer.h"
+#include "util/BufferUtil.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -501,6 +501,9 @@ bool Mesh::sort(const glm::vec3 &cameraPos) {
 }
 
 void Mesh::optimize() {
+	if (isEmpty()) {
+		return;
+	}
 	// TODO: https://github.com/vengi-voxel/vengi/issues/372
 }
 
