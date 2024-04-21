@@ -92,15 +92,16 @@ protected:
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *_imguiTestEngine = nullptr;
-#endif
+
 	// used for the imgui test engine (IM_REGISTER_TEST)
 	virtual bool registerUITests() {
-		return false;
+		_fileDialog.registerUITests(_imguiTestEngine, "filedialog");
+		return true;
 	}
-
-	FileDialog _fileDialog;
+#endif
 
 	core::DynamicArray<Panel*> _panels;
+	FileDialog _fileDialog;
 
 	void setColorTheme();
 	/**
@@ -137,6 +138,7 @@ public:
 	virtual app::AppState onConstruct() override;
 	virtual app::AppState onInit() override;
 	virtual app::AppState onRunning() override;
+	// the main window should get the id "###app"
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
 	const glm::vec4 &color(style::StyleColor color);

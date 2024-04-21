@@ -54,14 +54,6 @@ void VoxEdit::printUsageHeader() const {
 	Log::info("Git commit " GIT_COMMIT " - " GIT_COMMIT_DATE);
 }
 
-bool VoxEdit::registerUITests() {
-#ifdef IMGUI_ENABLE_TEST_ENGINE
-	return true;
-#else
-	return false;
-#endif
-}
-
 app::AppState VoxEdit::onCleanup() {
 	_sceneMgr->shutdown();
 	if (_mainWindow) {

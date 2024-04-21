@@ -202,6 +202,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 }
 
 bool FileDialog::readDir(video::OpenFileMode type) {
+	_type = type;
 	_entities.clear();
 	if (!io::filesystem()->list(_currentPath, _entities)) {
 		Log::warn("Failed to list dir %s", _currentPath.c_str());
@@ -212,7 +213,7 @@ bool FileDialog::readDir(video::OpenFileMode type) {
 	return true;
 }
 
-bool FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
+bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const core::String& path, float width, const char *title, const char *icon) {
 	if (path.empty()) {
 		return false;
 	}
@@ -229,6 +230,7 @@ bool FileDialog::quickAccessEntry(video::OpenFileMode type, const core::String& 
 	} else {
 		bookmarkTitle = title;
 	}
+	bookmarkTitle += core::string::format("###%i", index);
 	if (icon != nullptr) {
 		const float x = ImGui::GetCursorPosX();
 		ImGui::TextUnformatted(icon);
@@ -267,7 +269,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
 	const float height = 25.0f * ImGui::GetFontSize();
 	const float width = 17.0f * ImGui::GetFontSize();
-	ImGui::BeginChild(_("Bookmarks"), ImVec2(width, height), ImGuiChildFlags_Border);
+	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
 	static const char *folderNames[] = {_("Download"), _("Desktop"), _("Documents"), _("Pictures"), _("Public"), _("Recent"), _("Cloud")};
@@ -281,22 +283,24 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			if (dir.empty()) {
 				continue;
 			}
-			quickAccessEntry(type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
+			quickAccessEntry(n, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
+		int i = 0;
 		for (const core::String &path : io::filesystem()->otherPaths()) {
-			quickAccessEntry(type, path, contentRegionWidth);
+			quickAccessEntry(i++, type, path, contentRegionWidth);
 		}
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode(_("This PC"))) {
 		const io::Paths& paths = io::filesystem()->paths();
+		int i = 0;
 		for (const core::String& path : paths) {
 			const core::String& absPath = io::filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				continue;
 			}
-			quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
+			quickAccessEntry(i++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
 		}
 		ImGui::TreePop();
 	}
@@ -311,15 +315,16 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		}
 		core::DynamicArray<core::String> bm;
 		core::string::splitString(bookmarks, bm, ";");
+		int i = 0;
 		for (const core::String& path : bm) {
 			const core::String& absPath = io::filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				removeBookmark(path);
 				continue;
 			}
-			if (quickAccessEntry(type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
+			if (quickAccessEntry(i++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
 				if (ImGui::BeginPopupContextItem()) {
-					if (ImGui::IconButton(ICON_LC_TRASH, "Remove bookmark")) {
+					if (ImGui::IconButton(ICON_LC_TRASH, _("Remove bookmark"))) {
 						removeBookmark(path);
 						ImGui::CloseCurrentPopup();
 					}
@@ -490,7 +495,7 @@ void FileDialog::addBookmark(const core::String &bookmark) {
 }
 
 void FileDialog::currentPathPanel(video::OpenFileMode type) {
-	if (ImGui::Button(ICON_LC_BOOKMARK)) {
+	if (ImGui::Button(ICON_LC_BOOKMARK "###addbookmark")) {
 		addBookmark(_currentPath);
 	}
 	ImGui::TooltipTextUnformatted(_("Add a bookmark for the current active folder"));
@@ -630,22 +635,23 @@ void FileDialog::showError(const TimedError &error) const {
 	}
 }
 
+const char *FileDialog::popupTitle(video::OpenFileMode type) {
+	switch (type) {
+	case video::OpenFileMode::Save:
+		return _("Save file");
+	case video::OpenFileMode::Directory:
+		return _("Select a directory");
+	case video::OpenFileMode::Open:
+	default:
+		break;
+	}
+	return _("Select a file");
+}
+
 bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
-	const char *title;
-	switch (type) {
-	case video::OpenFileMode::Save:
-		title = _("Save file");
-		break;
-	case video::OpenFileMode::Directory:
-		title = _("Select a directory");
-		break;
-	case video::OpenFileMode::Open:
-	default:
-		title = _("Select a file");
-		break;
-	}
+	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
 	}

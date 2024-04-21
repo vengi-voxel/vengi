@@ -53,7 +53,7 @@ namespace ui {
 
 IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				   size_t threadPoolSize)
-	: Super(filesystem, timeProvider, threadPoolSize) {
+	: Super(filesystem, timeProvider, threadPoolSize), _panels(), _fileDialog(this) {
 }
 
 IMGUIApp::~IMGUIApp() {
@@ -733,6 +733,7 @@ void IMGUIApp::fileDialog(const video::FileDialogSelectionCallback &callback, co
 }
 
 void IMGUIApp::addPanel(Panel *panel) {
+	core_assert(panel != nullptr);
 	_panels.push_back(panel);
 }
 

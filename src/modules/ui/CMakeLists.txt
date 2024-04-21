@@ -69,6 +69,8 @@ set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 if (USE_IMGUITESTENGINE)
 	# use ui_test_engine instead of ui to enable imgui test engine
 	set(TEST_ENGINE_SRCS
+		tests/FileDialogTest.cpp
+
 		dearimgui/imgui_test_engine/imgui_capture_tool.cpp
 		dearimgui/imgui_test_engine/imgui_capture_tool.h
 		dearimgui/imgui_test_engine/imgui_te_context.cpp
