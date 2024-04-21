@@ -55,7 +55,7 @@ bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 		TextureConfig textureCfg;
 		textureCfg.format(cfg.colorTextureFormat());
 		textureCfg.samples(cfg.samples());
-		_colorAttachments[core::enumVal(FrameBufferAttachment::Color0)] = video::createTexture(textureCfg, dim.x, dim.y);
+		addColorAttachment(FrameBufferAttachment::Color0, video::createTexture(textureCfg, dim.x, dim.y));
 		_clearFlag |= ClearFlag::Color;
 	}
 
