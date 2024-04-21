@@ -27,8 +27,14 @@ public:
 	bool init();
 	void shutdown();
 
+	int samples() const;
+
 	Id handle() const;
 };
+
+inline int RenderBuffer::samples() const {
+	return _samples;
+}
 
 inline Id RenderBuffer::handle() const {
 	return _rbo;

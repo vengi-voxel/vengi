@@ -19,6 +19,9 @@ FrameBuffer::~FrameBuffer() {
 }
 
 void FrameBuffer::addColorAttachment(FrameBufferAttachment attachment, const TexturePtr& texture) {
+	if (texture && texture->config().samples() != _samples) {
+		Log::error("Texture samples do not match framebuffer samples for attachment %i", (int)attachment);
+	}
 	_colorAttachments[core::enumVal(attachment)] = texture;
 }
 
@@ -27,6 +30,9 @@ bool FrameBuffer::hasColorAttachment(FrameBufferAttachment attachment) {
 }
 
 void FrameBuffer::addBufferAttachment(FrameBufferAttachment attachment, const RenderBufferPtr& renderBuffer) {
+	if (renderBuffer && renderBuffer->samples() != _samples) {
+		Log::error("Renderbuffer samples do not match framebuffer samples for attachment %i", (int)attachment);
+	}
 	_bufferAttachments[core::enumVal(attachment)] = renderBuffer;
 }
 
@@ -35,6 +41,7 @@ bool FrameBuffer::hasBufferAttachment(FrameBufferAttachment attachment) {
 }
 
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
+	_samples = cfg.samples();
 	const glm::ivec2& dim = cfg.dimension();
 	for (const auto& a : cfg.textureAttachments()) {
 		const FrameBufferAttachment key = a->key;

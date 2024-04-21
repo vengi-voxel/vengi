@@ -44,6 +44,7 @@ public:
 	operator Id ();
 	TextureType type() const;
 	TextureFormat format() const;
+	const TextureConfig& config() const;
 	int layers() const;
 	int width();
 	int height();
@@ -73,6 +74,10 @@ public:
 
 inline int Texture::layers() const {
 	return _layerCount;
+}
+
+inline const TextureConfig &Texture::config() const {
+	return _config;
 }
 
 inline TextureFormat Texture::format() const {
