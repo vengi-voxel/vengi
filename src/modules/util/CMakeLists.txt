@@ -1,5 +1,4 @@
 set(SRCS
-	EMailValidator.h EMailValidator.cpp
 	BufferUtil.cpp BufferUtil.h
 	Console.h Console.cpp
 	KeybindingParser.h KeybindingParser.cpp
@@ -17,7 +16,6 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command http json
 set(TEST_SRCS
 	tests/BufferUtilTest.cpp
 	tests/ConsoleTest.cpp
-	tests/EMailValidatorTest.cpp
 	tests/IncludeUtilTest.cpp
 	tests/IniParserTest.cpp
 	tests/KeybindingParserTest.cpp
