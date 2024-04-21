@@ -29,23 +29,28 @@ static uint32_t maxIndexValue(const uint8_t *in, size_t inSize, size_t inIndexSi
 }
 
 template<class SOURCE, class TARGET>
-void compress(const uint8_t *in, size_t inSize, uint8_t *buf, size_t bufSize) {
+bool compress(const uint8_t *in, size_t inSize, uint8_t *buf, size_t bufSize) {
 	const size_t indices = inSize / sizeof(SOURCE);
+	const size_t outIndices = bufSize / sizeof(TARGET);
+	if (outIndices < indices) {
+		return false;
+	}
 	for (size_t i = 0; i < indices; ++i) {
 		const SOURCE index = *(const SOURCE*)in;
 		*(TARGET*)buf = (TARGET)index;
 		in += sizeof(SOURCE);
 		buf += sizeof(TARGET);
 	}
+	return true;
 }
 
-void indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, size_t &bytesPerIndex, uint8_t *buf, size_t bufSize) {
+bool indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, size_t &bytesPerIndex, uint8_t *buf, size_t bufSize) {
 	// nothing can be done here
 	if (inIndexSize == 1) {
 		core_assert(inSize / inIndexSize <= bufSize);
 		core_memcpy(buf, in, core_min(bufSize, inSize));
 		bytesPerIndex = 1;
-		return;
+		return true;
 	}
 
 	uint32_t m = maxIndexValue(in, inSize, inIndexSize);
@@ -64,20 +69,22 @@ void indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, size_t 
 	// there is nothing to compress here - just copy the buffer
 	if (inIndexSize == bytesPerIndex) {
 		core_memcpy(buf, in, core_min(bufSize, inSize));
-		return;
+		return true;
 	}
 
 	if (inIndexSize == 2) {
 		core_assert(bytesPerIndex == 1);
-		compress<uint16_t, uint8_t>(in, inSize, buf, bufSize);
-	} else if (inIndexSize == 4) {
+		return compress<uint16_t, uint8_t>(in, inSize, buf, bufSize);
+	}
+	if (inIndexSize == 4) {
 		if (bytesPerIndex == 1) {
-			compress<uint32_t, uint8_t>(in, inSize, buf, bufSize);
+			return compress<uint32_t, uint8_t>(in, inSize, buf, bufSize);
 		} else {
 			core_assert(bytesPerIndex == 2);
-			compress<uint32_t, uint16_t>(in, inSize, buf, bufSize);
+			return compress<uint32_t, uint16_t>(in, inSize, buf, bufSize);
 		}
 	}
+	return false;
 }
 
 }

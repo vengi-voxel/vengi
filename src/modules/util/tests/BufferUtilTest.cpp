@@ -14,7 +14,7 @@ TEST_F(BufferUtilTest, testIndexCompress) {
 	const uint32_t indices[] = { 1, 2, 3, 4 };
 	size_t bytesPerIndex;
 	uint8_t out[4];
-	indexCompress(indices, sizeof(indices), bytesPerIndex, out, sizeof(out));
+	ASSERT_TRUE(indexCompress(indices, sizeof(indices), bytesPerIndex, out, sizeof(out)));
 
 	EXPECT_EQ(1U, bytesPerIndex);
 
@@ -28,7 +28,7 @@ TEST_F(BufferUtilTest, testIndexNoCompress) {
 	const uint8_t indices[] = { 1, 2, 3, 4 };
 	size_t bytesPerIndex;
 	uint8_t out[4];
-	indexCompress(indices, sizeof(indices), bytesPerIndex, out, sizeof(out));
+	ASSERT_TRUE(indexCompress(indices, sizeof(indices), bytesPerIndex, out, sizeof(out)));
 
 	EXPECT_EQ(1U, bytesPerIndex);
 

@@ -24,7 +24,7 @@ namespace util {
  * @param[out] buf The buffer with the compressed indices
  * @param[in] bufSize The target buffer size for the compressed indices
  */
-extern void indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, size_t &bytesPerIndex, uint8_t *buf, size_t bufSize);
+bool indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, size_t &bytesPerIndex, uint8_t *buf, size_t bufSize);
 
 /**
  * @brief Compresses the given indices to a smaller index type
@@ -41,8 +41,8 @@ extern void indexCompress(const uint8_t *in, size_t inSize, size_t inIndexSize, 
  * @param[in] bufSize The target buffer size for the compressed indices
  */
 template<class SRC, class TGT>
-void indexCompress(const SRC *in, size_t inSize, size_t &bytesPerIndex, TGT *buf, size_t bufSize) {
-	indexCompress((const uint8_t*)in, inSize, sizeof(SRC), bytesPerIndex, (uint8_t*)buf, bufSize);
+bool indexCompress(const SRC *in, size_t inSize, size_t &bytesPerIndex, TGT *buf, size_t bufSize) {
+	return indexCompress((const uint8_t*)in, inSize, sizeof(SRC), bytesPerIndex, (uint8_t*)buf, bufSize);
 }
 
 }
