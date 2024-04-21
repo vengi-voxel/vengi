@@ -63,7 +63,7 @@ private:
 	bool quickAccessEntry(video::OpenFileMode type, const core::String& path, float width, const char *title = nullptr, const char *icon = nullptr);
 	void quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks);
 	void currentPathPanel(video::OpenFileMode type);
-	bool buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile);
+	bool buttons(core::String &entityPath, video::OpenFileMode type, bool doubleClickedFile);
 	void popupNewFolder();
 	bool popupAlreadyExists();
 	void filter(video::OpenFileMode type);
@@ -82,11 +82,11 @@ public:
 
 	bool openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename = "");
 	/**
-	* @param buffer Output buffer for the full path of the selected entity
+	* @param entityPath Output buffer for the full path of the selected entity
 	* @return @c true if user input was made - either an entity was selected, or the selection was cancelled.
 	* @return @c false if no user input was made yet and the dialog should still run
 	*/
-	bool showFileDialog(video::FileDialogOptions &fileDialogOptions, core::String &buffer, video::OpenFileMode type,
+	bool showFileDialog(video::FileDialogOptions &fileDialogOptions, core::String &entityPath, video::OpenFileMode type,
 						const io::FormatDescription **formatDesc = nullptr);
 };
 

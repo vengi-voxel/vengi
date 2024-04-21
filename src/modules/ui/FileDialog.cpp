@@ -630,7 +630,7 @@ void FileDialog::showError(const TimedError &error) const {
 	}
 }
 
-bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &buffer, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
+bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
 	const char *title;
@@ -674,14 +674,14 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		popupNewFolder();
 		if (popupAlreadyExists()) {
-			buffer = assemblePath(_currentPath, _selectedEntry);
+			entityPath = assemblePath(_currentPath, _selectedEntry);
 			resetState();
 			*formatDesc = _currentFilterFormat;
 			ImGui::EndPopup();
 			return true;
 		}
 		filter(type);
-		if (buttons(buffer, type, doubleClickedFile)) {
+		if (buttons(entityPath, type, doubleClickedFile)) {
 			*formatDesc = _currentFilterFormat;
 			ImGui::EndPopup();
 			return true;
@@ -695,7 +695,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 	return false;
 }
 
-bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool doubleClickedFile) {
+bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, bool doubleClickedFile) {
 	const char *buttonText = _("Choose");
 	if (type == video::OpenFileMode::Open) {
 		buttonText = _("Open");
@@ -717,7 +717,7 @@ bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool do
 			if (_selectedEntry.name.empty()) {
 				_error = TimedError(_("Error: You must select a folder!"), timeProvider->tickNow(), 1500UL);
 			} else {
-				buffer = assemblePath(_currentPath, _selectedEntry);
+				entityPath = assemblePath(_currentPath, _selectedEntry);
 				resetState();
 				return true;
 			}
@@ -729,7 +729,7 @@ bool FileDialog::buttons(core::String &buffer, video::OpenFileMode type, bool do
 				if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 				} else {
-					buffer = fullPath;
+					entityPath = fullPath;
 					resetState();
 					return true;
 				}
