@@ -5,35 +5,34 @@
  */
 
 #include "GLRenderer.h"
-#include "core/Enum.h"
-#include "video/Renderer.h"
-#include "GLTypes.h"
-#include "GLState.h"
-#include "GLMapping.h"
 #include "GLHelper.h"
+#include "GLMapping.h"
+#include "GLState.h"
+#include "GLTypes.h"
+#include "core/ArrayLength.h"
+#include "core/Assert.h"
+#include "core/Common.h"
+#include "core/Enum.h"
+#include "core/Log.h"
+#include "core/StandardLib.h"
+#include "core/StringUtil.h"
+#include "core/Var.h"
+#include "core/collection/DynamicArray.h"
+#include "engine-config.h"
+#include "video/Renderer.h"
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/TextureConfig.h"
-#include "core/Common.h"
-#include "core/Assert.h"
-#include "core/Log.h"
-#include "core/ArrayLength.h"
-#include "core/Var.h"
-#include "core/Assert.h"
-#include "core/StringUtil.h"
-#include "core/StandardLib.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
-#include <glm/common.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <SDL.h>
-#include "core/collection/DynamicArray.h"
 #include "video/Trace.h"
 #include "video/Types.h"
 #include "video/gl/flextGL.h"
-#include "engine-config.h"
+#include <SDL.h>
+#include <glm/common.hpp>
+#include <glm/fwd.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 #ifdef TRACY_ENABLE
 #include "core/tracy/TracyOpenGL.hpp"
 #endif
@@ -125,7 +124,7 @@ bool checkError(bool triggerAssert) {
 #endif
 }
 
-//TODO: use FrameBufferConfig
+// TODO: use FrameBufferConfig
 void readBuffer(GBufferTextureType textureType) {
 	video_trace_scoped(ReadBuffer);
 	core_assert(glReadBuffer != nullptr);
@@ -184,11 +183,11 @@ float currentLineWidth() {
 	return glstate().lineWidth;
 }
 
-const glm::vec4& currentClearColor() {
+const glm::vec4 &currentClearColor() {
 	return glstate().clearColor;
 }
 
-bool clearColor(const glm::vec4& clearColor) {
+bool clearColor(const glm::vec4 &clearColor) {
 	if (glstate().clearColor == clearColor) {
 		return false;
 	}
@@ -262,14 +261,14 @@ bool viewport(int x, int y, int w, int h) {
 	return true;
 }
 
-void getViewport(int& x, int& y, int& w, int& h) {
+void getViewport(int &x, int &y, int &w, int &h) {
 	x = glstate().viewportX;
 	y = glstate().viewportY;
 	w = glstate().viewportW;
 	h = glstate().viewportH;
 }
 
-void getScissor(int& x, int& y, int& w, int& h) {
+void getScissor(int &x, int &y, int &w, int &h) {
 	x = glstate().scissorX;
 	y = glstate().scissorY;
 	w = glstate().scissorW;
@@ -429,7 +428,7 @@ bool blendEquation(BlendEquation func) {
 	return true;
 }
 
-void getBlendState(bool& enabled, BlendMode& src, BlendMode& dest, BlendEquation& func) {
+void getBlendState(bool &enabled, BlendMode &src, BlendMode &dest, BlendEquation &func) {
 	const int stateIndex = core::enumVal(State::Blend);
 	enabled = glstate().states[stateIndex];
 	src = glstate().blendSrcRGB;
@@ -489,7 +488,7 @@ PolygonMode polygonMode(Face face, PolygonMode mode) {
 	return old;
 }
 
-bool polygonOffset(const glm::vec2& offset) {
+bool polygonOffset(const glm::vec2 &offset) {
 	if (glstate().polygonOffset == offset) {
 		return false;
 	}
@@ -558,13 +557,13 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	video_trace_scoped(ReadTexture);
 	bindTexture(unit, type, handle);
-	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
+	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
-	*pixels = (uint8_t*)core_malloc(h * pitch);
+	*pixels = (uint8_t *)core_malloc(h * pitch);
 	core_assert(glPixelStorei != nullptr);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	core_assert(glGetTexImage != nullptr);
-	glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void*)*pixels);
+	glGetTexImage(_priv::TextureTypes[core::enumVal(type)], 0, f.dataFormat, f.dataType, (void *)*pixels);
 	if (checkError()) {
 		core_free(*pixels);
 		*pixels = nullptr;
@@ -610,13 +609,13 @@ Id boundBuffer(BufferType type) {
 	return glstate().bufferHandle[typeIndex];
 }
 
-void* mapBuffer(Id handle, BufferType type, AccessMode mode) {
+void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	video_trace_scoped(MapBuffer);
 	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glMapNamedBuffer != nullptr);
-		void* data = glMapNamedBuffer(handle, glMode);
+		void *data = glMapNamedBuffer(handle, glMode);
 		checkError();
 		return data;
 	}
@@ -672,20 +671,20 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	return true;
 }
 
-void genBuffers(uint8_t amount, Id* ids) {
+void genBuffers(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateBuffers != nullptr);
-		glCreateBuffers((GLsizei)amount, (GLuint*)ids);
+		glCreateBuffers((GLsizei)amount, (GLuint *)ids);
 		checkError();
 	} else {
 		core_assert(glGenBuffers != nullptr);
-		glGenBuffers((GLsizei)amount, (GLuint*)ids);
+		glGenBuffers((GLsizei)amount, (GLuint *)ids);
 		checkError();
 	}
 }
 
-void deleteBuffers(uint8_t amount, Id* ids) {
+void deleteBuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -698,26 +697,26 @@ void deleteBuffers(uint8_t amount, Id* ids) {
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteBuffers != nullptr);
-	glDeleteBuffers((GLsizei)amount, (GLuint*)ids);
+	glDeleteBuffers((GLsizei)amount, (GLuint *)ids);
 	checkError();
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
 
-void genVertexArrays(uint8_t amount, Id* ids) {
+void genVertexArrays(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateVertexArrays != nullptr);
-		glCreateVertexArrays((GLsizei)amount, (GLuint*)ids);
+		glCreateVertexArrays((GLsizei)amount, (GLuint *)ids);
 	} else {
 		core_assert(glGenVertexArrays != nullptr);
-		glGenVertexArrays((GLsizei)amount, (GLuint*)ids);
+		glGenVertexArrays((GLsizei)amount, (GLuint *)ids);
 	}
 	checkError();
 }
 
-void deleteShader(Id& id) {
+void deleteShader(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -741,7 +740,7 @@ Id genShader(ShaderType type) {
 	return id;
 }
 
-void deleteProgram(Id& id) {
+void deleteProgram(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -764,7 +763,7 @@ Id genProgram() {
 	return id;
 }
 
-void deleteVertexArrays(uint8_t amount, Id* ids) {
+void deleteVertexArrays(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -776,14 +775,14 @@ void deleteVertexArrays(uint8_t amount, Id* ids) {
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteVertexArrays != nullptr);
-	glDeleteVertexArrays((GLsizei)amount, (GLuint*)ids);
+	glDeleteVertexArrays((GLsizei)amount, (GLuint *)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
 
-void deleteVertexArray(Id& id) {
+void deleteVertexArray(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -794,16 +793,16 @@ void deleteVertexArray(Id& id) {
 	id = InvalidId;
 }
 
-void genTextures(const TextureConfig &cfg, uint8_t amount, Id* ids) {
+void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		const GLenum glTexType = _priv::TextureTypes[core::enumVal(cfg.type())];
 		core_assert(glCreateTextures != nullptr);
-		glCreateTextures(glTexType, (GLsizei)amount, (GLuint*)ids);
+		glCreateTextures(glTexType, (GLsizei)amount, (GLuint *)ids);
 		checkError();
 	} else {
 		core_assert(glGenTextures != nullptr);
-		glGenTextures((GLsizei)amount, (GLuint*)ids);
+		glGenTextures((GLsizei)amount, (GLuint *)ids);
 		checkError();
 	}
 	for (int i = 0; i < amount; ++i) {
@@ -811,13 +810,13 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id* ids) {
 	}
 }
 
-void deleteTextures(uint8_t amount, Id* ids) {
+void deleteTextures(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteTextures != nullptr);
-	glDeleteTextures((GLsizei)amount, (GLuint*)ids);
+	glDeleteTextures((GLsizei)amount, (GLuint *)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		glstate().textures.remove(ids[i]);
@@ -831,23 +830,23 @@ void deleteTextures(uint8_t amount, Id* ids) {
 	}
 }
 
-const core::DynamicSet<Id>& textures() {
+const core::DynamicSet<Id> &textures() {
 	return glstate().textures;
 }
 
-bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t** pixels) {
+bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t **pixels) {
 	video_trace_scoped(ReadFrameBuffer);
 	core_assert(glstate().framebufferHandle != InvalidId);
 	if (glstate().framebufferHandle == InvalidId) {
 		return false;
 	}
-	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
+	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const int pitch = w * f.bits / 8;
-	*pixels = (uint8_t*)SDL_malloc(h * pitch);
+	*pixels = (uint8_t *)SDL_malloc(h * pitch);
 	core_assert(glPixelStorei != nullptr);
 	core_assert(glReadPixels != nullptr);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glReadPixels(x, y, w, h, f.dataFormat, f.dataType, (void*)*pixels);
+	glReadPixels(x, y, w, h, f.dataFormat, f.dataType, (void *)*pixels);
 	if (checkError()) {
 		SDL_free(*pixels);
 		*pixels = nullptr;
@@ -856,14 +855,14 @@ bool readFramebuffer(int x, int y, int w, int h, TextureFormat format, uint8_t**
 	return true;
 }
 
-void genFramebuffers(uint8_t amount, Id* ids) {
+void genFramebuffers(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateFramebuffers != nullptr);
-		glCreateFramebuffers((GLsizei)amount, (GLuint*)ids);
+		glCreateFramebuffers((GLsizei)amount, (GLuint *)ids);
 	} else {
 		core_assert(glGenFramebuffers != nullptr);
-		glGenFramebuffers((GLsizei)amount, (GLuint*)ids);
+		glGenFramebuffers((GLsizei)amount, (GLuint *)ids);
 	}
 	checkError();
 }
@@ -872,7 +871,7 @@ Id currentFramebuffer() {
 	return glstate().framebufferHandle;
 }
 
-void deleteFramebuffers(uint8_t amount, Id* ids) {
+void deleteFramebuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -884,26 +883,26 @@ void deleteFramebuffers(uint8_t amount, Id* ids) {
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteFramebuffers != nullptr);
-	glDeleteFramebuffers((GLsizei)amount, (const GLuint*)ids);
+	glDeleteFramebuffers((GLsizei)amount, (const GLuint *)ids);
 	checkError();
 	for (int i = 0; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
 
-void genRenderbuffers(uint8_t amount, Id* ids) {
+void genRenderbuffers(uint8_t amount, Id *ids) {
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glCreateRenderbuffers != nullptr);
-		glCreateRenderbuffers((GLsizei)amount, (GLuint*)ids);
+		glCreateRenderbuffers((GLsizei)amount, (GLuint *)ids);
 	} else {
 		core_assert(glGenRenderbuffers != nullptr);
-		glGenRenderbuffers((GLsizei)amount, (GLuint*)ids);
+		glGenRenderbuffers((GLsizei)amount, (GLuint *)ids);
 	}
 	checkError();
 }
 
-void deleteRenderbuffers(uint8_t amount, Id* ids) {
+void deleteRenderbuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -914,14 +913,14 @@ void deleteRenderbuffers(uint8_t amount, Id* ids) {
 	}
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	core_assert(glDeleteRenderbuffers != nullptr);
-	glDeleteRenderbuffers((GLsizei)amount, (GLuint*)ids);
+	glDeleteRenderbuffers((GLsizei)amount, (GLuint *)ids);
 	checkError();
 	for (uint8_t i = 0u; i < amount; ++i) {
 		ids[i] = InvalidId;
 	}
 }
 
-void configureAttribute(const Attribute& a) {
+void configureAttribute(const Attribute &a) {
 	video_trace_scoped(ConfigureVertexAttribute);
 	core_assert(glstate().programHandle != InvalidId);
 	core_assert(glEnableVertexAttribArray != nullptr);
@@ -1034,7 +1033,7 @@ Id bindRenderbuffer(Id handle) {
 	return prev;
 }
 
-void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, size_t size) {
+void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
 	video_trace_scoped(BufferData);
 	if (size <= 0) {
 		return;
@@ -1070,7 +1069,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void* data, s
 	checkError();
 }
 
-void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data, size_t size) {
+void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
 	video_trace_scoped(BufferSubData);
 	if (size == 0) {
 		return;
@@ -1099,7 +1098,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void* data
 }
 
 // the fbo is flipped in memory, we have to deal with it here
-const glm::vec4& framebufferUV() {
+const glm::vec4 &framebufferUV() {
 	static const glm::vec4 uv(0.0f, 1.0f, 1.0, 0.0f);
 	return uv;
 }
@@ -1176,13 +1175,13 @@ bool setupFramebuffer(const TexturePtr (&colorTextures)[core::enumVal(FrameBuffe
 			Log::warn("Max draw buffers exceeded");
 			return false;
 		}
-		attachments.sort([] (GLenum lhs, GLenum rhs) { return lhs > rhs; });
+		attachments.sort([](GLenum lhs, GLenum rhs) { return lhs > rhs; });
 		if (useFeature(Feature::DirectStateAccess)) {
 			core_assert(glNamedFramebufferDrawBuffers != nullptr);
-			glNamedFramebufferDrawBuffers(glstate().framebufferHandle, (GLsizei) attachments.size(), attachments.data());
+			glNamedFramebufferDrawBuffers(glstate().framebufferHandle, (GLsizei)attachments.size(), attachments.data());
 		} else {
 			core_assert(glDrawBuffers != nullptr);
-			glDrawBuffers((GLsizei) attachments.size(), attachments.data());
+			glDrawBuffers((GLsizei)attachments.size(), attachments.data());
 		}
 		checkError();
 	}
@@ -1208,7 +1207,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 		}
 	} else {
 		core_assert(glDrawBuffers != nullptr);
-		glDrawBuffers((GLsizei) 1, &glAttachment);
+		glDrawBuffers((GLsizei)1, &glAttachment);
 		checkError();
 	}
 	if (shouldClear) {
@@ -1226,7 +1225,7 @@ bool bindFrameBufferAttachment(Id texture, FrameBufferAttachment attachment, int
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void setupTexture(const TextureConfig& config) {
+void setupTexture(const TextureConfig &config) {
 	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
 	core_assert(glTexParameteri != nullptr);
@@ -1278,24 +1277,25 @@ void setupTexture(const TextureConfig& config) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 	}
 	/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
-	//glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
+	// glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 	/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
-	//glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
+	// glTexParameteri(glType, GL_TEXTURE_MAX_LEVEL, 0);
 	checkError();
 }
 
-void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t* data, int index, int samples) {
+void uploadTexture(TextureType type, TextureFormat format, int width, int height, const uint8_t *data, int index,
+				   int samples) {
 	video_trace_scoped(UploadTexture);
-	const _priv::Formats& f = _priv::textureFormats[core::enumVal(format)];
+	const _priv::Formats &f = _priv::textureFormats[core::enumVal(format)];
 	const GLenum glType = _priv::TextureTypes[core::enumVal(type)];
 	core_assert(type != TextureType::Max);
 	if (type == TextureType::Texture1D) {
 		core_assert(height == 1);
 		core_assert(glTexImage1D != nullptr);
-		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
+		glTexImage1D(glType, 0, f.internalFormat, width, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
 	} else if (type == TextureType::Texture2D) {
 		core_assert(glTexImage2D != nullptr);
-		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid*)data);
+		glTexImage2D(glType, 0, f.internalFormat, width, height, 0, f.dataFormat, f.dataType, (const GLvoid *)data);
 		checkError();
 	} else if (type == TextureType::Texture2DMultisample) {
 		core_assert(samples > 0);
@@ -1313,7 +1313,7 @@ void uploadTexture(TextureType type, TextureFormat format, int width, int height
 	}
 }
 
-void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset) {
+void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
 	video_trace_scoped(DrawElements);
 	if (numIndices <= 0) {
 		return;
@@ -1323,7 +1323,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void* offset
 	const GLenum glType = _priv::DataTypes[core::enumVal(type)];
 	video::validate(glstate().programHandle);
 	core_assert(glDrawElements != nullptr);
-	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid*)offset);
+	glDrawElements(glMode, (GLsizei)numIndices, glType, (GLvoid *)offset);
 	checkError();
 }
 
@@ -1367,7 +1367,7 @@ void enableDebug(DebugSeverity severity) {
 	Log::info("enable opengl debug messages");
 }
 
-bool compileShader(Id id, ShaderType shaderType, const core::String& source, const core::String& name) {
+bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name) {
 	video_trace_scoped(CompileShader);
 	if (id == InvalidId) {
 		return false;
@@ -1376,7 +1376,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	video::checkError();
 	const GLuint lid = (GLuint)id;
 	core_assert(glShaderSource != nullptr);
-	glShaderSource(lid, 1, (const GLchar**) &src, nullptr);
+	glShaderSource(lid, 1, (const GLchar **)&src, nullptr);
 	video::checkError();
 	core_assert(glCompileShader != nullptr);
 	glCompileShader(lid);
@@ -1395,7 +1395,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	video::checkError();
 
 	if (infoLogLength > 1) {
-		GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+		GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 		core_assert(glGetShaderInfoLog != nullptr);
 		glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 		video::checkError();
@@ -1425,7 +1425,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 			core::DynamicArray<core::String> tokens;
 			core::string::splitString(source, tokens, "\n");
 			int i = 1;
-			for (const core::String& line : tokens) {
+			for (const core::String &line : tokens) {
 				Log::error("%03i: %s", i, line.c_str());
 				++i;
 			}
@@ -1437,7 +1437,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String& source, con
 	return false;
 }
 
-bool linkComputeShader(Id program, Id comp, const core::String& name) {
+bool linkComputeShader(Id program, Id comp, const core::String &name) {
 	video_trace_scoped(LinkComputeShader);
 	const GLuint lid = (GLuint)program;
 	core_assert(glAttachShader != nullptr);
@@ -1456,7 +1456,7 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 		video::checkError();
 
 		if (infoLogLength > 1) {
-			GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+			GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 			core_assert(glGetShaderInfoLog != nullptr);
 			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 			video::checkError();
@@ -1481,7 +1481,8 @@ bool linkComputeShader(Id program, Id comp, const core::String& name) {
 }
 
 bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
-	if (glstate().imageHandle == textureHandle && glstate().imageFormat == format && glstate().imageAccessMode == mode) {
+	if (glstate().imageHandle == textureHandle && glstate().imageFormat == format &&
+		glstate().imageAccessMode == mode) {
 		return false;
 	}
 	const GLenum glFormat = _priv::ImageFormatTypes[core::enumVal(format)];
@@ -1496,7 +1497,7 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	return true;
 }
 
-bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
+bool runShader(Id program, const glm::uvec3 &workGroups, bool wait) {
 	video_trace_scoped(RunShader);
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
 		return false;
@@ -1523,7 +1524,7 @@ bool runShader(Id program, const glm::uvec3& workGroups, bool wait) {
 	return false;
 }
 
-bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name) {
+bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
 	video_trace_scoped(LinkShader);
 	const GLuint lid = (GLuint)program;
 	core_assert(glAttachShader != nullptr);
@@ -1549,7 +1550,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 		checkError();
 
 		if (infoLogLength > 1) {
-			GLchar* strInfoLog = new GLchar[infoLogLength + 1];
+			GLchar *strInfoLog = new GLchar[infoLogLength + 1];
 			core_assert(glGetShaderInfoLog != nullptr);
 			glGetShaderInfoLog(lid, infoLogLength, nullptr, strInfoLog);
 			checkError();
@@ -1579,7 +1580,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String& name)
 	return true;
 }
 
-int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name) {
+int fetchUniforms(Id program, ShaderUniforms &uniforms, const core::String &name) {
 	video_trace_scoped(FetchUniforms);
 	int uniformsCnt = _priv::fillUniforms(program, uniforms, name, false);
 	int uniformBlocksCnt = _priv::fillUniforms(program, uniforms, name, true);
@@ -1590,16 +1591,18 @@ int fetchUniforms(Id program, ShaderUniforms& uniforms, const core::String& name
 				continue;
 			}
 			if (e->value.size > limit(Limit::MaxUniformBufferSize)) {
-				Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+				Log::error("Max uniform buffer size exceeded for uniform %s at location %i (max is %i)", e->key.c_str(),
+						   e->value.location, limit(Limit::MaxUniformBufferSize));
 			} else if (e->value.size <= 0) {
-				Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(), e->value.location, limit(Limit::MaxUniformBufferSize));
+				Log::error("Failed to query size of uniform buffer %s at location %i (max is %i)", e->key.c_str(),
+						   e->value.location, limit(Limit::MaxUniformBufferSize));
 			}
 		}
 	}
 	return uniformsCnt + uniformBlocksCnt;
 }
 
-int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String& name) {
+int fetchAttributes(Id program, ShaderAttributes &attributes, const core::String &name) {
 	video_trace_scoped(FetchAttributes);
 	char varName[MAX_SHADER_VAR_NAME];
 	int numAttributes = 0;
@@ -1623,25 +1626,25 @@ int fetchAttributes(Id program, ShaderAttributes& attributes, const core::String
 	return numAttributes;
 }
 
-void destroyContext(RendererContext& context) {
+void destroyContext(RendererContext &context) {
 	SDL_GL_DeleteContext((SDL_GLContext)context);
 }
 
-RendererContext createContext(SDL_Window* window) {
+RendererContext createContext(SDL_Window *window) {
 	core_assert(window != nullptr);
 	Log::debug("Trying to create an opengl context");
 	return (RendererContext)SDL_GL_CreateContext(window);
 }
 
-void activateContext(SDL_Window* window, RendererContext& context) {
+void activateContext(SDL_Window *window, RendererContext &context) {
 	SDL_GL_MakeCurrent(window, (SDL_GLContext)context);
 }
 
-void startFrame(SDL_Window* window, RendererContext& context) {
+void startFrame(SDL_Window *window, RendererContext &context) {
 	activateContext(window, context);
 }
 
-void endFrame(SDL_Window* window) {
+void endFrame(SDL_Window *window) {
 	SDL_GL_SwapWindow(window);
 }
 
@@ -1660,18 +1663,18 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #else
 	int contextFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-	const core::VarPtr& glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
+	const core::VarPtr &glVersion = core::Var::getSafe(cfg::ClientOpenGLVersion);
 	int glMinor = 0, glMajor = 0;
 	if (SDL_sscanf(glVersion->strVal().c_str(), "%3i.%3i", &glMajor, &glMinor) != 2) {
-		const GLVersion& version = GL4_3;
+		const GLVersion &version = GL4_3;
 		glMajor = version.majorVersion;
 		glMinor = version.minorVersion;
 	}
 	GLVersion glv(glMajor, glMinor);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
-	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	int samples = multisampleSamples->intVal();
 	int buffers = multisampleBuffers->intVal();
 	if (samples <= 0) {
@@ -1726,9 +1729,9 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	_priv::setupFeatures();
 	_priv::setupLimitsAndSpecs();
 
-	const char *glvendor = (const char*)glGetString(GL_VENDOR);
-	const char* glrenderer = (const char*)glGetString(GL_RENDERER);
-	const char* glversion = (const char*)glGetString(GL_VERSION);
+	const char *glvendor = (const char *)glGetString(GL_VENDOR);
+	const char *glrenderer = (const char *)glGetString(GL_RENDERER);
+	const char *glversion = (const char *)glGetString(GL_VERSION);
 	Log::debug("GL_VENDOR: %s", glvendor);
 	Log::debug("GL_RENDERER: %s", glrenderer);
 	Log::debug("GL_VERSION: %s", glversion);
@@ -1781,8 +1784,8 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 	}
 
-	const core::VarPtr& multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
-	const core::VarPtr& multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
+	const core::VarPtr &multisampleBuffers = core::Var::getSafe(cfg::ClientMultiSampleBuffers);
+	const core::VarPtr &multisampleSamples = core::Var::getSafe(cfg::ClientMultiSampleSamples);
 	bool multisampling = multisampleSamples->intVal() > 0 && multisampleBuffers->intVal() > 0;
 	if (multisampling) {
 		int buffers, samples;
@@ -1825,4 +1828,4 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	return true;
 }
 
-}
+} // namespace video
