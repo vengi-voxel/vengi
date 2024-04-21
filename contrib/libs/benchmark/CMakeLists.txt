@@ -8,6 +8,7 @@ set(SRCS
 	src/benchmark_runner.h
 	src/benchmark_runner.cc
 	src/check.h
+	src/check.cc
 	src/colorprint.cc
 	src/colorprint.h
 	src/commandlineflags.cc
@@ -23,6 +24,8 @@ set(SRCS
 	src/json_reporter.cc
 	src/log.h
 	src/mutex.h
+	src/perf_counters.h
+	src/perf_counters.cc
 	src/re.h
 	src/reporter.cc
 	src/sleep.cc
