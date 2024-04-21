@@ -112,9 +112,6 @@ msgstr "Alle Befehle anzeigen"
 msgid "Show all cvars"
 msgstr "Alle cvars anzeigen"
 
-msgid "Bookmarks"
-msgstr "Lesezeichen"
-
 msgid "Cloud"
 msgstr "Cloud"
 
@@ -141,6 +138,13 @@ msgstr "Schnellzugriff"
 
 msgid "This PC"
 msgstr "Dieser PC"
+
+msgid "Bookmarks"
+msgstr "Lesezeichen"
+
+#, fuzzy
+msgid "Remove bookmark"
+msgstr "Farbe entfernen"
 
 msgid "Files"
 msgstr "Dateien"
