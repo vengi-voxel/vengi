@@ -403,7 +403,7 @@ void MainWindow::leftWidget() {
 
 void MainWindow::configureMainTopWidgetDock(ImGuiID dockId) {
 #if ENABLE_RENDER_PANEL
-	ImGui::DockBuilderDockWindow(TITLE_RENDERSETTINGS, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_RENDER, dockId);
 #endif
 	for (int i = 0; i < cfg::MaxViewports; ++i) {
 		ImGui::DockBuilderDockWindow(Viewport::viewportId(i).c_str(), dockId);
