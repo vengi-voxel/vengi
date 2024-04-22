@@ -8,6 +8,13 @@
 #include "imgui.h"
 #include "imgui_internal.h"         // ImPool<>, ImRect, ImGuiItemStatusFlags, ImFormatString
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"                  // [__GNUC__ >= 8] warning: 'memset/memcpy' clearing/writing an object of type 'xxxx' with no trivial copy-assignment; use assignment or value-initialization instead
+#endif
+
 //-----------------------------------------------------------------------------
 // Function Pointers
 //-----------------------------------------------------------------------------
@@ -288,21 +295,19 @@ struct IMGUI_API ImGuiTestEngineIO
 struct ImGuiTestItemInfo
 {
     ImGuiID                     ID = 0;                     // Item ID
-    char                        DebugLabel[32] = {};        // Shortened label for debugging purpose
+    char                        DebugLabel[32] = {};        // Shortened/truncated label for debugging and convenience purpose
     ImGuiWindow*                Window = NULL;              // Item Window
-    int                         RefCount : 8;               // User can increment this if they want to hold on the result pointer across frames, otherwise the task will be GC-ed.
     unsigned int                NavLayer : 1;               // Nav layer of the item (ImGuiNavLayer)
     int                         Depth : 16;                 // Depth from requested parent id. 0 == ID is immediate child of requested parent id.
-    int                         TimestampMain = -1;         // Timestamp of main result (all fields)
-    int                         TimestampStatus = -1;       // Timestamp of StatusFlags
+    int                         TimestampMain;              // Timestamp of main result (all fields)
+    int                         TimestampStatus;            // Timestamp of StatusFlags
     ImGuiID                     ParentID = 0;               // Item Parent ID (value at top of the ID stack)
     ImRect                      RectFull = ImRect();        // Item Rectangle
     ImRect                      RectClipped = ImRect();     // Item Rectangle (clipped with window->ClipRect at time of item submission)
     ImGuiItemFlags              InFlags = 0;                // Item flags
     ImGuiItemStatusFlags        StatusFlags = 0;            // Item Status flags (fully updated for some items only, compare TimestampStatus to FrameCount)
 
-    ImGuiTestItemInfo()         { RefCount = 0; NavLayer = 0; Depth = 0; }
-    bool                        IsEmpty() const         { return ID == 0; }
+    ImGuiTestItemInfo()         { memset(this, 0, sizeof(*this)); }
 };
 
 // Result of an GatherItems() query
@@ -439,3 +444,9 @@ struct IMGUI_API ImGuiTestRunTask
 };
 
 //-------------------------------------------------------------------------
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif

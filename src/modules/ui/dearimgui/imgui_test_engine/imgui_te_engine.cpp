@@ -805,7 +805,7 @@ static void ImGuiTestEngine_PostNewFrame(ImGuiTestEngine* engine, ImGuiContext* 
     for (int task_n = 0; task_n < engine->InfoTasks.Size; task_n++)
     {
         ImGuiTestInfoTask* task = engine->InfoTasks[task_n];
-        if (task->FrameCount < engine->FrameCount - LOCATION_TASK_ELAPSE_FRAMES && task->Result.RefCount == 0)
+        if (task->FrameCount < engine->FrameCount - LOCATION_TASK_ELAPSE_FRAMES)
         {
             IM_DELETE(task);
             engine->InfoTasks.erase(engine->InfoTasks.Data + task_n);

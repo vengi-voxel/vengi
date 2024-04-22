@@ -90,7 +90,8 @@ struct IMGUI_API ImGuiTestRefDesc
     char            Buf[80];
 
     const char* c_str()             { return Buf; }
-    ImGuiTestRefDesc(const ImGuiTestRef& ref, const ImGuiTestItemInfo* item);
+    ImGuiTestRefDesc(const ImGuiTestRef& ref);
+    ImGuiTestRefDesc(const ImGuiTestRef& ref, const ImGuiTestItemInfo& item);
 };
 
 //-------------------------------------------------------------------------
@@ -304,7 +305,7 @@ struct IMGUI_API ImGuiTestContext
     ImGuiTestRef GetRef();
 
     // Windows
-    ImGuiTestItemInfo* WindowInfo(ImGuiTestRef window_ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    ImGuiTestItemInfo WindowInfo(ImGuiTestRef window_ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
     void        WindowClose(ImGuiTestRef window_ref);
     void        WindowCollapse(ImGuiTestRef window_ref, bool collapsed);
     void        WindowFocus(ImGuiTestRef window_ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
@@ -402,10 +403,10 @@ struct IMGUI_API ImGuiTestContext
     // Low-level queries
     // - ItemInfo queries never returns a NULL pointer, instead they return an empty instance (info->IsEmpty(), info->ID == 0) and set contexted as errored.
     // - You can use ImGuiTestOpFlags_NoError to do a query without marking context as errored. This is what ItemExists() does.
-    ImGuiTestItemInfo*  ItemInfo(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
-    ImGuiTestItemInfo*  ItemInfoOpenFullPath(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    ImGuiTestItemInfo   ItemInfo(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    ImGuiTestItemInfo   ItemInfoOpenFullPath(ImGuiTestRef ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
     ImGuiID             ItemInfoHandleWildcardSearch(const char* wildcard_prefix_start, const char* wildcard_prefix_end, const char* wildcard_suffix_start);
-    ImGuiTestItemInfo*  ItemInfoNull();
+    ImGuiTestItemInfo   ItemInfoNull() { return ImGuiTestItemInfo(); }
     void                GatherItems(ImGuiTestItemList* out_list, ImGuiTestRef parent, int depth = -1);
 
     // Item/Widgets manipulation

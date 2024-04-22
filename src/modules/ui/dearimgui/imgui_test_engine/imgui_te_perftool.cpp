@@ -1843,7 +1843,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
         ctx->WindowMove("", ImVec2(50, 50));
         ctx->WindowResize("", ImVec2(1400, 900));
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
-        ImGuiWindow* plot_child = ctx->WindowInfo("plot")->Window;  // "plot/PerfTool" prior to implot 2023/08/21
+        ImGuiWindow* plot_child = ctx->WindowInfo("plot").Window;  // "plot/PerfTool" prior to implot 2023/08/21
         IM_CHECK(plot_child != NULL);
 
         // Move legend to right side.
@@ -1910,7 +1910,7 @@ void RegisterTests_TestEnginePerfTool(ImGuiTestEngine* e)
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
         ctx->ItemDoubleClick("splitter");   // Hide info table
 
-        ImGuiWindow* plot_child = ctx->WindowInfo("plot")->Window;  // "plot/PerfTool" prior to implot 2023/08/21
+        ImGuiWindow* plot_child = ctx->WindowInfo("plot").Window;  // "plot/PerfTool" prior to implot 2023/08/21
         IM_CHECK(plot_child != NULL);
 
         // Move legend to right side.

@@ -17,7 +17,7 @@ void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *title) {
 
 		ctx->ItemClick("###addbookmark");
 
-		ctx->SetRef(ctx->WindowInfo("bookmarks_child")->ID);
+		ctx->SetRef(ctx->WindowInfo("bookmarks_child").ID);
 		ctx->ItemClick("Bookmarks");
 
 		ctx->MouseMove("Bookmarks/###0");
