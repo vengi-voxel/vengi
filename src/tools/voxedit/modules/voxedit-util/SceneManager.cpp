@@ -2515,6 +2515,9 @@ bool SceneManager::update(double nowSeconds) {
 
 	_modifierFacade.brushContext().fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
 	_modifierFacade.update(nowSeconds);
+
+	updateDirtyRendererStates();
+
 	_sceneRenderer->update();
 	setGridResolution(_gridSize->intVal());
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
@@ -2659,7 +2662,18 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 	if (oldCursorPos == pos) {
 		return;
 	}
-	_sceneRenderer->updateLockedPlanes(lockedAxis, _sceneGraph, cursorPosition());
+	_dirtyRenderer |= DirtyRendererLockedAxis;
+}
+
+void SceneManager::updateDirtyRendererStates() {
+	if (_dirtyRenderer & DirtyRendererLockedAxis) {
+		_dirtyRenderer &= ~DirtyRendererLockedAxis;
+		_sceneRenderer->updateLockedPlanes(_modifierFacade.lockedAxis(), _sceneGraph, cursorPosition());
+	}
+	if (_dirtyRenderer & DirtyRendererGridRenderer) {
+		_dirtyRenderer &= ~DirtyRendererGridRenderer;
+		updateGridRenderer(_sceneGraph.node(activeNode()).region());
+	}
 }
 
 bool SceneManager::trace(bool sceneMode, bool force) {
@@ -3334,8 +3348,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		}
 	}
 	const voxel::Region& region = node.region();
-	// TODO: postpone this to the next update() call - see https://github.com/vengi-voxel/vengi/issues/453
-	updateGridRenderer(region);
+	_dirtyRenderer |= DirtyRendererGridRenderer;
 	if (!region.containsPoint(referencePosition())) {
 		const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
 		setReferencePosition(glm::ivec3(pivot));

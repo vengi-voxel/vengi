@@ -94,6 +94,10 @@ private:
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
 
+	static const uint32_t DirtyRendererLockedAxis = 1 << 0;
+	static const uint32_t DirtyRendererGridRenderer = 1 << 1;
+	uint32_t _dirtyRenderer = 0u;
+
 	// model animation speed
 	double _animationSpeed = 0.0;
 	bool _animationResetCamera = false;
@@ -138,6 +142,7 @@ private:
 	void autosave();
 	void setReferencePosition(const glm::ivec3 &pos);
 	void updateGridRenderer(const voxel::Region &region);
+	void updateDirtyRendererStates();
 	void zoom(video::Camera &camera, float level) const;
 	bool mouseRayTrace(bool force);
 	void updateCursor();

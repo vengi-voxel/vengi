@@ -111,7 +111,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _cameraPanel(app, _sceneMgr) {
 
-	_tipOfTheDayList.push_back(_("Switch between scene and edit mode by pressing the <cmd:togglescene> key."));
+	_tipOfTheDayList.push_back(_("Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."));
 	_tipOfTheDayList.push_back(_("Use the file dialog options for format specific options."));
 	_tipOfTheDayList.push_back(_("You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1."));
 	_tipOfTheDayList.push_back(_("When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."));
