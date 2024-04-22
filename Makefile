@@ -276,6 +276,10 @@ update-dearimgui:
 	mv src/modules/ui/dearimgui/imgui_demo.cpp src/tests/testimgui/Demo.cpp
 	$(call UPDATE_GIT,imgui_test_engine,https://github.com/ocornut/imgui_test_engine.git)
 	cp -r $(UPDATEDIR)/imgui_test_engine.sync/imgui_test_engine src/modules/ui/dearimgui
+	rm -f src/modules/ui/dearimgui/imgui_test_engine/imgui_test_engine.vcxproj
+	rm -f src/modules/ui/dearimgui/imgui_test_engine/imgui_test_engine.vcxproj.filters
+	rm -f src/modules/ui/dearimgui/imgui_test_engine/thirdparty/Str/.editorconfig
+	rm -f src/modules/ui/dearimgui/imgui_test_engine/thirdparty/Str/Str.natvis
 
 update-glm:
 	$(call UPDATE_GIT,glm,https://github.com/g-truc/glm.git)
