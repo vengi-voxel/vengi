@@ -830,6 +830,43 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	}
 }
 
+IdPtr genFenc() {
+	return (IdPtr)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+
+void deleteFence(IdPtr& id) {
+	if (id == InvalidIdPtr) {
+		return;
+	}
+	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
+	glDeleteSync((GLsync)id);
+	id = InvalidId;
+}
+
+bool checkFence(IdPtr id, uint64_t timeout) {
+	if (id == InvalidIdPtr) {
+		return false;
+	}
+	if (timeout == 0) {
+		return false;
+	}
+	static_assert(sizeof(IdPtr) >= sizeof(GLsync), "Unexpected sizes");
+#if SANITY_CHECKS_GL
+	if (!glIsSync((GLsync)id)) {
+		return false;
+	}
+#endif
+	const int retVal = glClientWaitSync((GLsync)id, GL_SYNC_FLUSH_COMMANDS_BIT, (GLuint64)timeout);
+	checkError();
+	if (retVal == GL_CONDITION_SATISFIED || retVal == GL_ALREADY_SIGNALED) {
+		return true;
+	}
+	// if (retVal == GL_TIMEOUT_EXPIRED) {
+	// 	return false;
+	// }
+	return false;
+}
+
 const core::DynamicSet<Id> &textures() {
 	return glstate().textures;
 }
