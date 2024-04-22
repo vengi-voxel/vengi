@@ -238,6 +238,28 @@ msgstr "Fehler: Sie müssen einen Ordner auswählen!"
 msgid "Error: You must select a file!"
 msgstr "Fehler: Sie müssen eine Datei auswählen!"
 
+msgid "Change the ui colors - [0-3]"
+msgstr ""
+
+msgid "Timeout for notifications in millis"
+msgstr ""
+
+msgid "Allow multi monitor setups - requires a restart"
+msgstr ""
+
+#, fuzzy
+msgid "Render the ui"
+msgstr "Rendermodus"
+
+msgid "Show metric and debug window"
+msgstr ""
+
+msgid "Allow to change the ui font size"
+msgstr ""
+
+msgid "Which keybinding to use"
+msgstr ""
+
 msgid "Bindings"
 msgstr "Tastenbelegungen"
 
@@ -371,6 +393,31 @@ msgstr "Eine Taste entbinden"
 msgid "Show all images in the texture pool"
 msgstr "Alle Bilder im Texturpool anzeigen"
 
+msgid "Activate shadow map"
+msgstr ""
+
+msgid "Activate bloom post processing"
+msgstr ""
+
+#, fuzzy
+msgid "Activate shadow debug rendering"
+msgstr "Die Drehoperation aktivieren"
+
+msgid "Activate cascade shadow map debug rendering"
+msgstr ""
+
+msgid "Gamma correction"
+msgstr ""
+
+msgid "Render voxel outline"
+msgstr ""
+
+msgid "Limit the framerate to the monitor refresh rate"
+msgstr ""
+
+msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
+msgstr ""
+
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
 
@@ -468,6 +515,91 @@ msgstr "Layout zurücksetzen"
 
 msgid "About"
 msgstr "Über"
+
+msgid "Use the color wheel in the palette color editing"
+msgstr ""
+
+msgid "Always show the color picker below the palette"
+msgstr ""
+
+msgid "Milliseconds that a region should get highlighted in a few situations"
+msgstr ""
+
+msgid "Show fixed region sizes in the positions panel"
+msgstr ""
+
+#, fuzzy
+msgid "Show the grid"
+msgstr "Versteckte anzeigen"
+
+#, fuzzy
+msgid "Show the currently locked axis"
+msgstr "Gesperrte Achse anzeigen"
+
+msgid "Show the axis aligned bounding box"
+msgstr ""
+
+msgid "Show the bones in scene mode"
+msgstr ""
+
+msgid "Render with shadows - make sure to set the scene lighting up properly"
+msgstr ""
+
+msgid ""
+"Millisecond delay between frames hide/unhide when using the scene graph "
+"panel play button to animate the models in the scene"
+msgstr ""
+
+msgid "The size of the voxel grid"
+msgstr ""
+
+#, fuzzy
+msgid "Render the inactive nodes in gray scale mode"
+msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
+
+#, fuzzy
+msgid "Hide the inactive nodes"
+msgstr "Alle Kindknoten ausblenden"
+
+#, fuzzy
+msgid "Show the axis"
+msgstr "Gesperrte Achse anzeigen"
+
+#, fuzzy
+msgid "Print cursor details in edit mode"
+msgstr "Aktuelle Millisekunden auf der Konsole ausgeben"
+
+#, fuzzy
+msgid "Set auto keyframe"
+msgstr "Automatischer Keyframe"
+
+msgid "Bitmask of gizmo operations in scene mode"
+msgstr ""
+
+#, fuzzy
+msgid "Activate the pivot mode for the gizmo in scene mode"
+msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
+
+msgid "Flip axis or stay along the positive world/local axis"
+msgstr ""
+
+msgid "Use the grid size for snap"
+msgstr ""
+
+msgid "Show the gizmo to also translate the region"
+msgstr ""
+
+msgid "The amount of viewports (not in simple ui mode)"
+msgstr ""
+
+msgid "Hide some panels to simplify the ui"
+msgstr ""
+
+msgid "Show the tip of the day on startup"
+msgstr ""
+
+msgid "Trigger opening of popup"
+msgstr ""
 
 msgid "Save the current viewport as screenshot"
 msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"

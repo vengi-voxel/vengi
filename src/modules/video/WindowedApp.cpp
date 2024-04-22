@@ -410,18 +410,18 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientMultiSampleBuffers, "0");
 	core::Var::get(cfg::ClientMultiSampleSamples, "0");
 	core::Var::get(cfg::ClientWindowHighDPI, "false", core::CV_READONLY);
-	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, "Activate shadow map", core::Var::boolValidator);
-	core::Var::get(cfg::ClientBloom, "true", "Activate bloom post processing", core::Var::boolValidator);
-	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, "Activate shadow debug rendering", core::Var::boolValidator);
+	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER, _("Activate shadow map"), core::Var::boolValidator);
+	core::Var::get(cfg::ClientBloom, "true", _("Activate bloom post processing"), core::Var::boolValidator);
+	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER, _("Activate shadow debug rendering"), core::Var::boolValidator);
 	core::Var::get(cfg::ClientShadowMapSize, "1024");
-	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER, "Activate cascade shadow map debug rendering", core::Var::boolValidator);
-	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER, "Gamma correction");
+	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER, _("Activate cascade shadow map debug rendering"), core::Var::boolValidator);
+	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER, _("Gamma correction"));
 	core::Var::get(cfg::ClientWindowDisplay, 0);
 	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
-	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, "Render voxel outline", core::Var::boolValidator);
-	core::Var::get(cfg::ClientVSync, "true", "Limit the framerate to the monitor refresh rate", core::Var::boolValidator);
-	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, "0 disables it, 1 only highest severity, 2 medium severity, 3 everything");
+	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, _("Render voxel outline"), core::Var::boolValidator);
+	core::Var::get(cfg::ClientVSync, "true", _("Limit the framerate to the monitor refresh rate"), core::Var::boolValidator);
+	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));
 	core::Var::get(cfg::ClientCameraZoomSpeed, "0.1");
 
 	core::Var::get(cfg::ClientCameraMaxZoom, "1000.0", 0u, "", [](const core::String &val) {

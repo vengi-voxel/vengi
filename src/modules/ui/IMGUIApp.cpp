@@ -161,28 +161,28 @@ app::AppState IMGUIApp::onConstruct() {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
 	}
 	_uistyle =
-		core::Var::get(cfg::UIStyle, uiStyleDefaultValue.c_str(), "Change the ui colors - [0-3]", [](const core::String &val) {
+		core::Var::get(cfg::UIStyle, uiStyleDefaultValue.c_str(), _("Change the ui colors - [0-3]"), [](const core::String &val) {
 			const int themeIdx = core::string::toInt(val);
 			return themeIdx >= ImGui::StyleCorporateGrey && themeIdx < ImGui::MaxStyles;
 		});
-	core::Var::get(cfg::UINotifyDismissMillis, "3000", "Timeout for notifications in millis");
-	core::Var::get(cfg::UIMultiMonitor, "true", "Allow multi monitor setups - requires a restart",
+	core::Var::get(cfg::UINotifyDismissMillis, "3000", _("Timeout for notifications in millis"));
+	core::Var::get(cfg::UIMultiMonitor, "true", _("Allow multi monitor setups - requires a restart"),
 				   core::Var::boolValidator);
-	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", "Render the ui", core::Var::boolValidator);
+	_renderUI = core::Var::get(cfg::ClientRenderUI, "true", _("Render the ui"), core::Var::boolValidator);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, "Show metric and debug window",
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "true", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
 #else
-	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, "Show metric and debug window",
+	_showMetrics = core::Var::get(cfg::UIShowMetrics, "false", core::CV_NOPERSIST, _("Show metric and debug window"),
 								  core::Var::boolValidator);
 #endif
 	_uiFontSize =
-		core::Var::get(cfg::UIFontSize, "14", -1, "Allow to change the ui font size", [](const core::String &val) {
+		core::Var::get(cfg::UIFontSize, "14", -1, _("Allow to change the ui font size"), [](const core::String &val) {
 			const float size = core::string::toFloat(val);
 			return size >= 2.0f;
 		});
 
-	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", "Which keybinding to use");
+	_uiKeyMap = core::Var::get(cfg::UIKeyMap, "0", _("Which keybinding to use"));
 	core_assert(!_uiKeyMap->isDirty());
 
 	command::Command::registerCommand("ui_showtextures",
