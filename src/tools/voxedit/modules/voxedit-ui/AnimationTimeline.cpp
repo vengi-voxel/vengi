@@ -110,7 +110,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDragging;
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
 
-	if (ImGui::BeginNeoSequencer("##neo-sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
+	if (ImGui::BeginNeoSequencer("sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
 		core::Buffer<Selection> selectionBuffer;
 		if (_clearSelection) {
 			ImGui::NeoClearSelection();
@@ -193,10 +193,7 @@ bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeco
 	}
 	if (ImGui::Begin(sequencerTitle)) {
 		header(currentFrame, maxFrame);
-		if (ImGui::BeginChild("##neo-sequencer-child")) {
-			sequencer(currentFrame);
-		}
-		ImGui::EndChild();
+		sequencer(currentFrame);
 	}
 	ImGui::End();
 	return true;
