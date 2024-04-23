@@ -19,7 +19,56 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 			core::String name = core::string::format("//$FOCUSED/%s", palette::Palette::builtIn[i]);
 			ctx->ItemClick(name.c_str());
 			ctx->ItemClick("###OK");
+			palette::Palette check;
+			check.load(palette::Palette::builtIn[i]);
+			const palette::Palette& activePalette = _sceneMgr->activePalette();
+			IM_CHECK_EQ(activePalette.colorCount(), check.colorCount());
+			IM_CHECK_EQ(activePalette.color(0), check.color(0));
 		}
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "lospec")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, title));
+		ctx->SetRef(title);
+		ctx->MenuClick("###File/###Lospec/ID");
+		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
+		ctx->ItemClick("//$FOCUSED/OK");
+		ctx->MenuClick("###File/###Export");
+		saveFile(ctx, "palette-lospec.png");
+		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		IM_CHECK_EQ(activePalette.colorCount(), 16);
+		IM_CHECK_EQ(activePalette.color(0), core::RGBA(0, 0, 0, 255));
+		IM_CHECK_EQ(activePalette.color(4), core::RGBA(255, 255, 255, 255));
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, title));
+		ctx->SetRef(title);
+		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		const core::RGBA slot0 = activePalette.color(0);
+		const core::RGBA slot1 = activePalette.color(1);
+		ctx->ItemDragAndDrop("$$0", "$$1");
+		ctx->Yield();
+		IM_CHECK_EQ(activePalette.color(0), slot1);
+		IM_CHECK_EQ(activePalette.color(1), slot0);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color ctrl")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, title));
+		ctx->SetRef(title);
+		const palette::Palette& activePalette = _sceneMgr->activePalette();
+		const core::RGBA slot0 = activePalette.color(0);
+		const core::RGBA slot1 = activePalette.color(1);
+		const int index0 = activePalette.index(0);
+		const int index1 = activePalette.index(1);
+		ctx->KeyDown(ImGuiMod_Ctrl);
+		ctx->ItemDragAndDrop("$$0", "$$1");
+		ctx->KeyUp(ImGuiMod_Ctrl);
+		IM_CHECK_EQ(activePalette.color(0), slot0);
+		IM_CHECK_EQ(activePalette.color(1), slot1);
+		IM_CHECK_EQ(activePalette.index(0), index1);
+		IM_CHECK_EQ(activePalette.index(1), index0);
+		ctx->MenuClick("###Sort/Original");
 	};
 }
 
