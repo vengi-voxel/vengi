@@ -166,12 +166,13 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 		drawList->AddRect(v1, v2, core::RGBA(0, 0, 0, 255));
 	}
 
-	const core::String &id = core::string::format("##palitem-%i", uiIdx);
-	if (ImGui::InvisibleButton(id.c_str(), colorButtonSize)) {
+	ImGui::PushID(uiIdx);
+	if (ImGui::InvisibleButton("", colorButtonSize)) {
 		if (usableColor) {
 			_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, uiIdx));
 		}
 	}
+	ImGui::PopID();
 
 	if (usableColor) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
