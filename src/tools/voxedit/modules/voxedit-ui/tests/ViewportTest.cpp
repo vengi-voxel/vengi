@@ -28,6 +28,8 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK_EQ(1, voxelutil::visitVolume(*model->volume(), voxelutil::EmptyVisitor(), voxelutil::SkipEmpty()));
 	};
 
+	// TODO: viewport menubar tests
+
 #if 0
 	IM_REGISTER_TEST(engine, testCategory(), "select node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (!isSceneMode()) {

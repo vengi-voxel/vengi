@@ -9,7 +9,7 @@
 namespace voxedit {
 
 void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *title) {
-	IM_REGISTER_TEST(engine, testCategory(), "none")->TestFunc = [=](ImGuiTestContext *ctx) {
+	IM_REGISTER_TEST(engine, testCategory(), "toggle settings")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, title));
 		const struct {
 			const char *cvarName;
