@@ -86,37 +86,37 @@ A few cvars exists to tweak the export or import of several formats.
 
 Some of these settings are only for voxel format, others are only for the mesh formats like ply, gltf, stl, fbx and obj.
 
-| Name                          | Description                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    |
-| `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    |
-| `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 |
-| `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 |
-| `voxformat_scale`             | Scale the vertices for voxelization on all axis by the given factor                      |
-| `voxformat_scale_x`           | Scale the vertices for voxelization on X axis by the given factor                        |
-| `voxformat_scale_y`           | Scale the vertices for voxelization on Y axis by the given factor                        |
-| `voxformat_scale_z`           | Scale the vertices for voxelization on Z axis by the given factor                        |
-| `voxformat_quads`             | Export to quads                                                                          |
-| `voxformat_withcolor`         | Export vertex colors                                                                     |
-| `voxformat_withnormals`       | Export smoothed normals for cubic surface meshes (marching cubes always uses normals)    |
-| `voxformat_withtexcoords`     | Export texture coordinates                                                               |
-| `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 |
-| `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 |
-| `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. |
-| `voxformat_fillhollow`        | Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script. |
-| `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        |
-| `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     |
-| `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   |
-| `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            |
-| `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   |
-| `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   |
-| `voxformat_gltf_khr_materials_pbrspecularglossiness` | Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files |
-| `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files       |
-| `voxformat_merge`             | Merge all models into one object                                                         |
-| `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats |
-| `voxformat_rgbweightedaverage`| If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution |
-| `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       |
-| `voxformat_qbsavecompressed`  | Save qubicle with RLE compression                                                        |
-| `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         |
-| `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. |
-| `voxel_meshmode`              | Set to 1 to use the marching cubes algorithm to produce the mesh                         |
+| Name                          | Description                                                                              | Example      |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    | true/false   |
+| `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    | true/false   |
+| `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 | true/false   |
+| `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 | true/false   |
+| `voxformat_scale`             | Scale the vertices for voxelization on all axis by the given factor                      | 1.0          |
+| `voxformat_scale_x`           | Scale the vertices for voxelization on X axis by the given factor                        | 1.0          |
+| `voxformat_scale_y`           | Scale the vertices for voxelization on Y axis by the given factor                        | 1.0          |
+| `voxformat_scale_z`           | Scale the vertices for voxelization on Z axis by the given factor                        | 1.0          |
+| `voxformat_quads`             | Export to quads                                                                          | true/false   |
+| `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
+| `voxformat_withnormals`       | Export smoothed normals for cubic surface meshes (marching cubes always uses normals)    | true/false   |
+| `voxformat_withtexcoords`     | Export texture coordinates                                                               | true/false   |
+| `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 | true/false   |
+| `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
+| `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. | true/false   |
+| `voxformat_fillhollow`        | Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script. | true/false   |
+| `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        | 1            |
+| `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
+| `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   | true/false   |
+| `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            | true/false   |
+| `voxformat_voxcreatelayers`   | Magicavoxel vox layers                                                                   | true/false   |
+| `voxformat_voxcreategroups`   | Magicavoxel vox groups                                                                   | true/false   |
+| `voxformat_gltf_khr_materials_pbrspecularglossiness` | Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files | true/false   |
+| `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files       | true/false   |
+| `voxformat_merge`             | Merge all models into one object                                                         | true/false   |
+| `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats | 1            |
+| `voxformat_rgbweightedaverage`| If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution | true/false   |
+| `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       | true/false   |
+| `voxformat_qbsavecompressed`  | Save qubicle with RLE compression                                                        | true/false   |
+| `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         | 0/1          |
+| `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. | Octree       |
+| `voxel_meshmode`              | Set to 1 to use the marching cubes algorithm to produce the mesh                         | 0/1          |

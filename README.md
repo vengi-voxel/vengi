@@ -1,4 +1,4 @@
-[![Total downloads](https://img.shields.io/github/vengi-voxel/vengi-voxel/vengi/total?longCache=true&style=for-the-badge&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/vengi-voxel/vengi/releases/latest)
+[![Total downloads](https://img.shields.io/github/downloads/vengi-voxel/vengi/total?longCache=true&style=for-the-badge&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/vengi-voxel/vengi/releases/latest)
  [![Discord server](https://img.shields.io/discord/622817134682177555?label=Discord&logo=Discord&logoColor=fff&style=for-the-badge)](https://vengi-voxel.de/discord)
  [![Mastodon](https://img.shields.io/mastodon/follow/000355843?longCache=true&style=for-the-badge&label=Mastodon&logoColor=fff)](https://mastodon.social/@mgerhardy)
  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?longCache=true&style=for-the-badge&label=License&logoColor=fff)](https://opensource.org/licenses/MIT)

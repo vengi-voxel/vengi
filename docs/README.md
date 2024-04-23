@@ -1,5 +1,7 @@
 # Welcome to vengi
 
+[![Downloads](https://img.shields.io/github/downloads/vengi-voxel/vengi/total?longCache=true&style=plastic&label=Downloads&logoColor=fff&logo=GitHub)](https://github.com/vengi-voxel/vengi/releases/latest)
+
 This is a collection of voxel tools. It includes a [voxel editor](voxedit/Index.md) with animation support
 and loading/saving into a lot of [voxel volume formats](Formats.md). There are other tools like e.g. a [thumbnailer](thumbnailer/Index.md) for
 your filemanager and a command line tool to [convert or modify](voxconvert/Index.md) between several voxel formats.
