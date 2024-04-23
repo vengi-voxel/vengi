@@ -15,7 +15,7 @@ You can also manually edit the `keybindings-x.cfg` file in your user settings di
 
 You can also change the bindings in the console by using the `bind` command.
 
-> Usage of the bind: `bind <modifier+key> <command> <context>`.
+> Usage of the bind command: `bind <modifier+key> <command> <context>`.
 > `context` is one of `all`, `model`, `scene`, `editing` (`editing` is both `scene` and `model`)
 
 To get a list of bindable commands, type the `cmdlist` command to the console and hit enter.
