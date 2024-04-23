@@ -2,6 +2,8 @@
 
 This tool parses GLSL shader files (mainly `*.vert`, `*.frag`, `*.geom` and `*.comp`) and generates C++ source files for them.
 
+> You automatically get the shaders added back to the code after saving a shader file and trigger a re-build.
+
 The cmake macros expect the shader source below the module in a `shaders/` directory.
 
 ```cmake
