@@ -6,7 +6,6 @@
 
 #include "core/IComponent.h"
 #include "core/collection/ConcurrentQueue.h"
-#include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Atomic.h"
 #include "io/Filesystem.h"
