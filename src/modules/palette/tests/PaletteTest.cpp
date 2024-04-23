@@ -84,6 +84,7 @@ TEST_F(PaletteTest, testSaveBuiltInPalette) {
 	EXPECT_EQ("nippon", pal.name());
 }
 
+// disabled because it requires network access
 TEST_F(PaletteTest, DISABLED_testLospec) {
 	Palette pal;
 	ASSERT_TRUE(pal.load("lospec:raspberry"));

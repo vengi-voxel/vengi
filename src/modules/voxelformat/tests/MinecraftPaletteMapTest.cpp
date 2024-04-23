@@ -22,6 +22,7 @@ TEST_F(MinecraftPaletteMapTest, testParse) {
 }
 
 // parses a blocks.json file to find new colors
+// disabled because the blocks.json file is not available in the repository and was parsed already
 TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 	const core::String &str = io::filesystem()->load("blocks.json");
 	if (str.empty()) {

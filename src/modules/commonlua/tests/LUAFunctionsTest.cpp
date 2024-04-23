@@ -45,6 +45,7 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 	test(script, glm::ivec3(0, 1, 0));
 }
 
+// disabled because it requires network access
 TEST_F(LUAFunctionsTest, DISABLED_testHTTPGet) {
 	testExec(R"(
 		function test()
@@ -54,6 +55,7 @@ TEST_F(LUAFunctionsTest, DISABLED_testHTTPGet) {
 	)");
 }
 
+// disabled because it requires network access
 TEST_F(LUAFunctionsTest, DISABLED_testHTTPGetHeaders) {
 	testExec(R"(
 		function test()

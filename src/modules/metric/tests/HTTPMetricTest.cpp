@@ -17,6 +17,7 @@ private:
 	using Super = app::AbstractTest;
 };
 
+// disabled because it requires network access
 TEST_F(HTTPMetricTest, DISABLED_testHTTPMetricSender) {
 	if (!http::Request::supported()) {
 		GTEST_SKIP() << "No http support available";

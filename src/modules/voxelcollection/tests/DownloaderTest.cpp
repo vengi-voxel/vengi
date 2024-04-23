@@ -54,6 +54,7 @@ TEST_F(DownloaderTest, testParseSources) {
 	ASSERT_EQ("master", sources[1].github.commit);
 }
 
+// disabled because it requires network access
 TEST_F(DownloaderTest, DISABLED_testDownloadJsonAndParse) {
 	Downloader downloader;
 	const core::DynamicArray<VoxelSource> &sources = downloader.sources();

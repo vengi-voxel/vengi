@@ -9,6 +9,7 @@ namespace voxelcollection {
 
 class GitlabAPITest : public app::AbstractTest {};
 
+// disabled because it requires network access
 TEST_F(GitlabAPITest, DISABLED_testReposGitTrees) {
 	const auto &sources =
 		gitlab::reposGitTrees(_testApp->filesystem(), "veloren/veloren", "master", "assets/voxygen/voxel/armor");

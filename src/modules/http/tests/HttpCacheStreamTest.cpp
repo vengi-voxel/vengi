@@ -12,6 +12,7 @@ namespace http {
 
 class HttpCacheStreamTest : public app::AbstractTest {};
 
+// disabled because it requires network access
 TEST_F(HttpCacheStreamTest, DISABLED_testGetRequest) {
 	if (!Request::supported()) {
 		GTEST_SKIP() << "No http support available";

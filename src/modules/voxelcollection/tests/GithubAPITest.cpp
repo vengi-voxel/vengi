@@ -9,6 +9,7 @@ namespace voxelcollection {
 
 class GithubAPITest : public app::AbstractTest {};
 
+// disabled because it requires network access
 TEST_F(GithubAPITest, DISABLED_testReposGitTrees) {
 	const auto &sources = github::reposGitTrees(_testApp->filesystem(), "vengi-voxel/voxelized", "main");
 	ASSERT_FALSE(sources.empty());

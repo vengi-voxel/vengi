@@ -13,6 +13,7 @@ namespace http {
 
 class RequestTest : public app::AbstractTest {};
 
+// disabled because it requires network access
 TEST_F(RequestTest, DISABLED_testGetRequest) {
 	if (!Request::supported()) {
 		GTEST_SKIP() << "No http support available";
@@ -34,6 +35,7 @@ TEST_F(RequestTest, DISABLED_testGetRequest) {
 	EXPECT_STREQ(userAgent.c_str(), jsonResponse["headers"]["User-Agent"].get<std::string>().c_str()) << response;
 }
 
+// disabled because it requires network access
 TEST_F(RequestTest, DISABLED_testPostRequest) {
 	if (!Request::supported()) {
 		GTEST_SKIP() << "No http support available";
