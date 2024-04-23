@@ -80,7 +80,7 @@ Span an selection box to operate in. Either for copy/pasting or to limit a certa
 
 ![voxedit-asset](../img/voxedit-asset.png)
 
-This is an online and local asset browser for support formats from gitlab, github, custom urls and apis
+This is an online and local asset browser for supported [formats](../Formats.md) from gitlab, github, custom urls and apis
 
 ## Camera
 
