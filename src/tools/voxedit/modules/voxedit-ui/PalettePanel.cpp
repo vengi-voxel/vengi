@@ -306,6 +306,11 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			// TODO: add color quantisation to parts of the palette
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
+			ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
+			ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
+			ImGui::EndMenu();
+		}
 		ImGui::EndMenuBar();
 	}
 }
