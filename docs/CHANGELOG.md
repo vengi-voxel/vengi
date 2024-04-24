@@ -28,6 +28,7 @@ General:
    - Optimized file dialog for large directories
    - Added translation support (`po` files)
    - Fixed error in up-scaling volumes
+   - Fixed x-axis flip for cubzh `3zh` files
 
 VoxConvert:
 

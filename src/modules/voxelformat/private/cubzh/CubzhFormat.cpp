@@ -332,7 +332,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 								continue;
 							}
 							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-							volume->setVoxel(x, y, z, voxel);
+							volume->setVoxel(width - x - 1, y, z, voxel);
 						}
 					}
 				}
@@ -374,7 +374,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 				const uint32_t x = i - (uint32_t)(z * (width * height)) - (uint32_t)(y * width);
 
 				const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-				volume->setVoxel(x, y, z, voxel);
+				volume->setVoxel(width - x - 1, y, z, voxel);
 			}
 			break;
 		}
@@ -584,7 +584,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 								continue;
 							}
 							const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-							volume->setVoxel(x, y, z, voxel);
+							volume->setVoxel(width - x - 1, y, z, voxel);
 						}
 					}
 				}
@@ -623,7 +623,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 							continue;
 						}
 						const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-						volume->setVoxel(x, y, z, voxel);
+						volume->setVoxel(width - x - 1, y, z, voxel);
 					}
 				}
 			}

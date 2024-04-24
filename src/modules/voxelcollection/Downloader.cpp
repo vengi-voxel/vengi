@@ -196,7 +196,7 @@ VoxelFiles Downloader::resolve(const io::FilesystemPtr &filesystem, const VoxelS
 			}
 			VoxelFile file;
 			file.source = source.name;
-			file.name = entry.name;
+			file.name = entry.repo + "-" + entry.name + ".3zh";
 			file.license = source.license;
 			file.thumbnailUrl = cubzh::downloadUrl(entry.repo, entry.name);
 			file.url = entry.url;
