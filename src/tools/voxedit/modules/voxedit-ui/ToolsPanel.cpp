@@ -98,28 +98,33 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	const float buttonWidth = (float)_app->fontSize() * 4;
 	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, "X##rotate", "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::PushID("##rotatevolumeonaxis");
+		veui::AxisButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, "Y##rotate", "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		veui::AxisButton(math::Axis::Y, _("Y"), "rotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, "Z##rotate", "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		veui::AxisButton(math::Axis::Z, _("Z"), "rotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
+		ImGui::PopID();
 	}
 
 	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
-		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X##flip", "flip x", nullptr, nullptr, buttonWidth,
+		ImGui::PushID("##flipvolumeonaxis");
+		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X", "flip x", nullptr, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, ICON_LC_MOVE_VERTICAL " Y##flip", "flip y", nullptr, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Y, ICON_LC_MOVE_VERTICAL " Y", "flip y", nullptr, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, ICON_LC_MOVE_DIAGONAL " Z##flip", "flip z", nullptr, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Z, ICON_LC_MOVE_DIAGONAL " Z", "flip z", nullptr, nullptr, buttonWidth,
 						 &listener);
+		ImGui::PopID();
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Translate"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::PushID("##translatevolume");
 		static glm::ivec3 translate{0};
 		veui::InputAxisInt(math::Axis::X, _("X"), &translate.x, 1);
 		veui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, 1);
@@ -129,9 +134,11 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SameLine();
 		const core::String &moveCmd = core::string::format("move %i %i %i", translate.x, translate.y, translate.z);
 		ImGui::CommandIconButton(ICON_LC_BOXES, _("Voxels"), moveCmd.c_str(), listener);
+		ImGui::PopID();
 	}
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::PushID("##cursor");
 		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
 		if (veui::CheckboxAxisFlags(math::Axis::X, _("X"), &lockedAxis)) {
@@ -165,6 +172,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 			command::executeCommands(commandLine, &listener);
 		}
 		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
+		ImGui::PopID();
 	}
 
 	if (ImGui::CollapsingHeader(_("Text"))) {

@@ -78,13 +78,15 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 }
 
 void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AABBBrush &brush) {
+	ImGui::PushID("##mirrorplanes");
 	mirrorAxisRadioButton(_("Disable mirror"), math::Axis::None, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton(_("X##mirror"), math::Axis::X, listener, brush);
+	mirrorAxisRadioButton(_("X"), math::Axis::X, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton(_("Y##mirror"), math::Axis::Y, listener, brush);
+	mirrorAxisRadioButton(_("Y"), math::Axis::Y, listener, brush);
 	ImGui::SameLine();
-	mirrorAxisRadioButton(_("Z##mirror"), math::Axis::Z, listener, brush);
+	mirrorAxisRadioButton(_("Z"), math::Axis::Z, listener, brush);
+	ImGui::PopID();
 }
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
