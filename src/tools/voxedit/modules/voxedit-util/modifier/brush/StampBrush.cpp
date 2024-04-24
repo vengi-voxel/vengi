@@ -23,6 +23,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include <glm/vector_relational.hpp>
 
 namespace voxedit {
 
@@ -50,7 +51,8 @@ void StampBrush::construct() {
 		Modifier &modifier = _sceneMgr->modifier();
 		const Selections &selections = modifier.selections();
 		if (!selections.empty()) {
-			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
+			if (const scenegraph::SceneGraphNode *node =
+					_sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
 				const voxel::RawVolume stampVolume(node->volume(), selections);
 				setVolume(stampVolume, node->palette());
 				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
@@ -59,6 +61,17 @@ void StampBrush::construct() {
 			}
 		}
 	}).setHelp(_("Use the current selection as new stamp"));
+
+	command::Command::registerCommand("stampbrushusenode", [this](const command::CmdArgs &) {
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+			if (glm::all(glm::lessThan(node->region().getDimensionsInVoxels(), glm::ivec3(64)))) {
+				setVolume(*node->volume(), node->palette());
+			} else {
+				Log::warn("Node is too large to be used as stamp");
+			}
+		}
+	}).setHelp(_("Use the current selected node volume as new stamp"));
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &context) const {

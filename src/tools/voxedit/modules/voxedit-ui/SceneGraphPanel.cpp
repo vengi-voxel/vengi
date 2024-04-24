@@ -51,6 +51,7 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			commandNodeMenu(ICON_LC_COPY, _("Create reference"), "modelref", nodeId, true, &listener);
 			const int prevNode = sceneGraph.prevModelNode(nodeId);
 			commandNodeMenu(ICON_LC_GROUP, _("Merge"), "modelmerge", nodeId, prevNode != InvalidNodeId, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Use as stamp"), "stampbrushusenode", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge all"), "modelmergeall", validModels > 1, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge visible"), "modelmergevisible", validModels > 1, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_GROUP, _("Merge locked"), "modelmergelocked", validModels > 1, &listener);
