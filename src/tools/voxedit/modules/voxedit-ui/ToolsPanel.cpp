@@ -112,13 +112,13 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	if (ImGui::CollapsingHeader(_("Flip on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##flipvolumeonaxis");
-		veui::AxisButton(math::Axis::X, ICON_LC_MOVE_HORIZONTAL " X", "flip x", nullptr, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::X, _("X"), "flip x", ICON_LC_MOVE_HORIZONTAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Y, ICON_LC_MOVE_VERTICAL " Y", "flip y", nullptr, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Y, _("Y"), "flip y", ICON_LC_MOVE_VERTICAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::SameLine();
-		veui::AxisButton(math::Axis::Z, ICON_LC_MOVE_DIAGONAL " Z", "flip z", nullptr, nullptr, buttonWidth,
+		veui::AxisButton(math::Axis::Z, _("Z"), "flip z", ICON_LC_MOVE_DIAGONAL, nullptr, buttonWidth,
 						 &listener);
 		ImGui::PopID();
 	}
