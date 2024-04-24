@@ -25,7 +25,7 @@
 namespace voxedit {
 
 Modifier::Modifier(SceneManager *sceneMgr)
-	: _shapeBrush(sceneMgr), _paintBrush(sceneMgr), _actionExecuteButton(sceneMgr),
+	: _shapeBrush(sceneMgr), _stampBrush(sceneMgr), _paintBrush(sceneMgr), _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);

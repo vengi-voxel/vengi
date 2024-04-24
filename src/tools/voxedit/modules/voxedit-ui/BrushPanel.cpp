@@ -89,20 +89,14 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AA
 	ImGui::PopID();
 }
 
-void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette) {
+void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
+								   command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
 	if (modifier.selections().empty()) {
 		selectionStyle.disableItem();
 	}
-	if (ImGui::Button(_("Use selection"))) {
-		const Selections &selections = modifier.selections();
-		if (!selections.empty()) {
-			const voxel::RawVolume stampVolume(node.volume(), selections);
-			modifier.stampBrush().setVolume(stampVolume, palette);
-		}
-	}
-	ImGui::TooltipTextUnformatted(_("Use the current selection as new stamp"));
+	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
 }
 
 void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
@@ -121,12 +115,12 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	}
 
 	bool center = brush.centerMode();
-	if (ImGui::Checkbox(_("Center##modifiertype"), &center)) {
+	if (ImGui::Checkbox(_("Center"), &center)) {
 		command::executeCommands("togglestampbrushcenter", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcenter");
 	bool continuous = brush.continuousMode();
-	if (ImGui::Checkbox(_("Continuous##modifiertype"), &continuous)) {
+	if (ImGui::Checkbox(_("Continuous"), &continuous)) {
 		command::executeCommands("togglestampbrushcontinuous", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcontinuous");
@@ -147,15 +141,29 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		ImGui::EndDragDropTarget();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button(_("Replace##stampbrush"))) {
+	if (ImGui::Button(_("Replace"))) {
 		brush.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, _stampPaletteIndex), palette);
 	}
 	ImGui::TooltipTextUnformatted(_("Replace all voxels in the stamp with the selected color"));
 
+	const float buttonWidth = (float)_app->fontSize() * 4;
+	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::PushID("##rotateonaxis");
+		veui::AxisButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
+		ImGui::SameLine();
+		veui::AxisButton(math::Axis::Y, _("Y"), "stampbrushrotate y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the y axis"));
+		ImGui::SameLine();
+		veui::AxisButton(math::Axis::Z, _("Z"), "stampbrushrotate z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the z axis"));
+		ImGui::PopID();
+	}
+
 	if (ImGui::CollapsingHeader(_("Reduce size"))) {
 		voxel::Region region = brush.volume()->region();
 		glm::ivec3 size = region.getDimensionsInVoxels();
-		if (ImGui::InputInt3(_("Size##stampbrush"), glm::value_ptr(size), ImGuiInputTextFlags_EnterReturnsTrue)) {
+		if (ImGui::InputInt3(_("Size"), glm::value_ptr(size), ImGuiInputTextFlags_EnterReturnsTrue)) {
 			if (glm::any(glm::greaterThan(size, region.getDimensionsInVoxels()))) {
 				size = glm::min(size, region.getDimensionsInVoxels());
 			}
@@ -198,7 +206,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 	} else {
 		stampBrushOptions(node, palette, listener);
 	}
-	stampBrushUseSelection(node, palette);
+	stampBrushUseSelection(node, palette, listener);
 	if (ImGui::Button(_("Convert palette"))) {
 		modifier.stampBrush().convertToPalette(palette);
 	}

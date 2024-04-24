@@ -11,6 +11,8 @@
 
 namespace voxedit {
 
+class SceneManager;
+
 class StampBrush : public Brush {
 private:
 	using Super = Brush;
@@ -21,11 +23,11 @@ protected:
 	glm::ivec3 _lastCursorPosition{0};
 	bool _center = true;
 	bool _continuous = false;
+	SceneManager *_sceneMgr;
 
 public:
 	static constexpr int MaxSize = 32;
-
-	StampBrush() : Super(BrushType::Stamp) {
+	StampBrush(SceneManager *sceneMgr) : Super(BrushType::Stamp), _sceneMgr(sceneMgr) {
 	}
 	virtual ~StampBrush() = default;
 	void construct() override;

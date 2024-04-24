@@ -4,10 +4,13 @@
 
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "app/tests/AbstractTest.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/ISceneRenderer.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "palette/Palette.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -17,7 +20,9 @@ protected:
 };
 
 TEST_F(StampBrushTest, testExecute) {
-	StampBrush brush;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	StampBrush brush(&mgr);
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	voxel::RawVolume volume(voxel::Region(-3, 3));

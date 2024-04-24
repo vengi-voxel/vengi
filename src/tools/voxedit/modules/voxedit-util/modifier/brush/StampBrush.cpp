@@ -4,14 +4,15 @@
 
 #include "StampBrush.h"
 #include "app/App.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "app/I18N.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -19,6 +20,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeResizer.h"
+#include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -32,6 +34,28 @@ void StampBrush::construct() {
 	command::Command::registerCommand("togglestampbrushcontinuous", [this](const command::CmdArgs &args) {
 		_continuous ^= true;
 	}).setHelp(_("Toggle continuously placing the stamp voxels"));
+
+	command::Command::registerCommand("stampbrushrotate", [this](const command::CmdArgs &args) {
+		if (args.size() < 1) {
+			Log::info("Usage: rotate <x|y|z>");
+			return;
+		}
+		const math::Axis axis = math::toAxis(args[0]);
+		_volume = voxelutil::rotateAxis(_volume, axis);
+		_volume->translate(-_volume->region().getLowerCorner());
+		markDirty();
+	}).setHelp(_("Rotate stamp volume around the given axis"));
+
+	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
+		const auto &modifier = _sceneMgr->modifier();
+		const Selections &selections = modifier.selections();
+		if (!selections.empty()) {
+			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
+				const voxel::RawVolume stampVolume(node->volume(), selections);
+				setVolume(stampVolume, node->palette());
+			}
+		}
+	}).setHelp(_("Use the current selection as new stamp"));
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
