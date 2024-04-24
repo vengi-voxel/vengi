@@ -39,6 +39,7 @@ nav:
       - Translation.md
   - VoxBrowser:
       - voxbrowser/Index.md
+      - voxbrowser/Screenshots.md
   - VoxConvert:
       - voxconvert/Index.md
       - voxconvert/Usage.md
