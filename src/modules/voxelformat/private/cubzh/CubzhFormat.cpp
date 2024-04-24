@@ -957,7 +957,7 @@ bool CubzhFormat::savePCubes(const scenegraph::SceneGraph &sceneGraph, const cor
 			const voxel::RawVolume *volume = merged.first;
 			const voxel::Region &region = volume->region();
 			const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
-			for (int x = region.getLowerX(); x <= region.getUpperX(); x++) {
+			for (int x = region.getUpperX(); x >= region.getLowerX(); x--) {
 				for (int y = region.getLowerY(); y <= region.getUpperY(); y++) {
 					for (int z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
 						const voxel::Voxel &voxel = volume->voxel(x, y, z);
@@ -1102,7 +1102,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 			const voxel::RawVolume *volume = node.volume();
 			const voxel::Region &region = volume->region();
 			const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
-			for (int x = region.getLowerX(); x <= region.getUpperX(); x++) {
+			for (int x = region.getUpperX(); x >= region.getLowerX(); x--) {
 				for (int y = region.getLowerY(); y <= region.getUpperY(); y++) {
 					for (int z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
 						const voxel::Voxel &voxel = volume->voxel(x, y, z);
