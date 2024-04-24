@@ -47,12 +47,15 @@ void StampBrush::construct() {
 	}).setHelp(_("Rotate stamp volume around the given axis"));
 
 	command::Command::registerCommand("stampbrushuseselection", [this](const command::CmdArgs &) {
-		const auto &modifier = _sceneMgr->modifier();
+		Modifier &modifier = _sceneMgr->modifier();
 		const Selections &selections = modifier.selections();
 		if (!selections.empty()) {
 			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->sceneGraph().activeNode())) {
 				const voxel::RawVolume stampVolume(node->volume(), selections);
 				setVolume(stampVolume, node->palette());
+				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
+				// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
+				modifier.unselect();
 			}
 		}
 	}).setHelp(_("Use the current selection as new stamp"));
