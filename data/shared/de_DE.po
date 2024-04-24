@@ -720,20 +720,17 @@ msgstr ""
 msgid "Disable mirror"
 msgstr "Spiegelung deaktivieren"
 
-msgid "X##mirror"
-msgstr "X##mirror"
+msgid "X"
+msgstr "X"
 
-msgid "Y##mirror"
-msgstr "Y##mirror"
+msgid "Y"
+msgstr "Y"
 
-msgid "Z##mirror"
-msgstr "Z##mirror"
+msgid "Z"
+msgstr "Z"
 
 msgid "Use selection"
 msgstr "Auswahl verwenden"
-
-msgid "Use the current selection as new stamp"
-msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
 
 msgid "Model"
 msgstr "Modell"
@@ -741,23 +738,33 @@ msgstr "Modell"
 msgid "Select a model from the asset panel"
 msgstr "Ein Modell aus dem Asset-Panel auswählen"
 
-msgid "Center##modifiertype"
-msgstr "Zentrieren##modifiertype"
+msgid "Center"
+msgstr "Zentriert"
 
-msgid "Continuous##modifiertype"
-msgstr "Kontinuierlich##modifiertype"
+msgid "Continuous"
+msgstr ""
 
-msgid "Replace##stampbrush"
-msgstr "Ersetzen##stampbrush"
+msgid "Replace"
+msgstr ""
 
 msgid "Replace all voxels in the stamp with the selected color"
 msgstr "Alle Voxel im Stempel mit der ausgewählten Farbe ersetzen"
 
+#, fuzzy
+msgid "Rotate on axis"
+msgstr "Nach vorne drehen"
+
+msgid "Rotate by 90 degree on the x axis"
+msgstr "Um 90 Grad um die x-Achse drehen"
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr "Um 90 Grad um die y-Achse drehen"
+
+msgid "Rotate by 90 degree on the z axis"
+msgstr "Um 90 Grad um die z-Achse drehen"
+
 msgid "Reduce size"
 msgstr "Größe reduzieren"
-
-msgid "Size##stampbrush"
-msgstr "Größe##stampbrush"
 
 msgid "Extrude voxels"
 msgstr "Voxel extrudieren"
@@ -783,9 +790,6 @@ msgstr "Standard"
 
 msgid "Single"
 msgstr "Einzeln"
-
-msgid "Center"
-msgstr "Zentriert"
 
 msgid "Radius"
 msgstr "Radius"
@@ -1004,8 +1008,10 @@ msgstr "Drücken"
 msgid "Pop"
 msgstr "Herausnehmen"
 
+#, fuzzy
 msgid ""
-"Switch between scene and edit mode by pressing the <cmd:togglescene> key."
+"Switch between scene and edit mode (not in simple UI mode) by pressing the "
+"<cmd:togglescene> key."
 msgstr ""
 "Zwischen Szenen- und Bearbeitungsmodus wechseln, indem Sie die <cmd:"
 "togglescene>-Taste drücken."
@@ -1618,6 +1624,10 @@ msgstr "Referenz erstellen"
 msgid "Merge"
 msgstr "Zusammenführen"
 
+#, fuzzy
+msgid "Use as stamp"
+msgstr "Stempel verwenden"
+
 msgid "Merge all"
 msgstr "Alle zusammenführen"
 
@@ -1738,29 +1748,11 @@ msgstr "Befehl: %s (%s)"
 msgid "Action"
 msgstr "Aktion"
 
-msgid "Rotate by 90 degree on the x axis"
-msgstr "Um 90 Grad um die x-Achse drehen"
-
-msgid "Rotate by 90 degree on the y axis"
-msgstr "Um 90 Grad um die y-Achse drehen"
-
-msgid "Rotate by 90 degree on the z axis"
-msgstr "Um 90 Grad um die z-Achse drehen"
-
 msgid "Flip on axis"
 msgstr "Auf Achse umdrehen"
 
 msgid "Translate"
 msgstr "Verschieben"
-
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Z"
-msgstr "Z"
 
 msgid "Volumes"
 msgstr "Volumen"
@@ -2356,6 +2348,38 @@ msgstr "Schaltet das Zentrum am Cursor um"
 
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+#, fuzzy
+msgid "Rotate stamp volume around the given axis"
+msgstr "Rotiert aktive Knoten um die angegebene Achse"
+
+msgid "Use the current selection as new stamp"
+msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
+
+#, fuzzy
+msgid "Use the current selected node volume as new stamp"
+msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
+
+#~ msgid "X##mirror"
+#~ msgstr "X##mirror"
+
+#~ msgid "Y##mirror"
+#~ msgstr "Y##mirror"
+
+#~ msgid "Z##mirror"
+#~ msgstr "Z##mirror"
+
+#~ msgid "Center##modifiertype"
+#~ msgstr "Zentrieren##modifiertype"
+
+#~ msgid "Continuous##modifiertype"
+#~ msgstr "Kontinuierlich##modifiertype"
+
+#~ msgid "Replace##stampbrush"
+#~ msgstr "Ersetzen##stampbrush"
+
+#~ msgid "Size##stampbrush"
+#~ msgstr "Größe##stampbrush"
 
 #~ msgid "Cancel##modelsettings"
 #~ msgstr "Abbrechen##modelsettings"

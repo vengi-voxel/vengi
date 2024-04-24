@@ -147,7 +147,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	ImGui::TooltipTextUnformatted(_("Replace all voxels in the stamp with the selected color"));
 
 	const float buttonWidth = (float)_app->fontSize() * 4;
-	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotateonaxis");
 		veui::AxisButton(math::Axis::X, _("X"), "stampbrushrotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));

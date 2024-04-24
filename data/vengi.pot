@@ -675,19 +675,16 @@ msgstr ""
 msgid "Disable mirror"
 msgstr ""
 
-msgid "X##mirror"
+msgid "X"
 msgstr ""
 
-msgid "Y##mirror"
+msgid "Y"
 msgstr ""
 
-msgid "Z##mirror"
+msgid "Z"
 msgstr ""
 
 msgid "Use selection"
-msgstr ""
-
-msgid "Use the current selection as new stamp"
 msgstr ""
 
 msgid "Model"
@@ -696,22 +693,31 @@ msgstr ""
 msgid "Select a model from the asset panel"
 msgstr ""
 
-msgid "Center##modifiertype"
+msgid "Center"
 msgstr ""
 
-msgid "Continuous##modifiertype"
+msgid "Continuous"
 msgstr ""
 
-msgid "Replace##stampbrush"
+msgid "Replace"
 msgstr ""
 
 msgid "Replace all voxels in the stamp with the selected color"
 msgstr ""
 
-msgid "Reduce size"
+msgid "Rotate on axis"
 msgstr ""
 
-msgid "Size##stampbrush"
+msgid "Rotate by 90 degree on the x axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr ""
+
+msgid "Rotate by 90 degree on the z axis"
+msgstr ""
+
+msgid "Reduce size"
 msgstr ""
 
 msgid "Extrude voxels"
@@ -736,9 +742,6 @@ msgid "Default"
 msgstr ""
 
 msgid "Single"
-msgstr ""
-
-msgid "Center"
 msgstr ""
 
 msgid "Radius"
@@ -958,7 +961,8 @@ msgid "Pop"
 msgstr ""
 
 msgid ""
-"Switch between scene and edit mode by pressing the <cmd:togglescene> key."
+"Switch between scene and edit mode (not in simple UI mode) by pressing the "
+"<cmd:togglescene> key."
 msgstr ""
 
 msgid "Use the file dialog options for format specific options."
@@ -1511,6 +1515,9 @@ msgstr ""
 msgid "Merge"
 msgstr ""
 
+msgid "Use as stamp"
+msgstr ""
+
 msgid "Merge all"
 msgstr ""
 
@@ -1626,28 +1633,10 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-msgid "Rotate by 90 degree on the x axis"
-msgstr ""
-
-msgid "Rotate by 90 degree on the y axis"
-msgstr ""
-
-msgid "Rotate by 90 degree on the z axis"
-msgstr ""
-
 msgid "Flip on axis"
 msgstr ""
 
 msgid "Translate"
-msgstr ""
-
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Z"
 msgstr ""
 
 msgid "Volumes"
@@ -2183,4 +2172,13 @@ msgid "Toggle center at cursor"
 msgstr ""
 
 msgid "Toggle continuously placing the stamp voxels"
+msgstr ""
+
+msgid "Rotate stamp volume around the given axis"
+msgstr ""
+
+msgid "Use the current selection as new stamp"
+msgstr ""
+
+msgid "Use the current selected node volume as new stamp"
 msgstr ""

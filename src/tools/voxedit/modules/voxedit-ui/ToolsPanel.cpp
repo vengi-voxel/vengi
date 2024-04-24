@@ -97,7 +97,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	}
 
 	const float buttonWidth = (float)_app->fontSize() * 4;
-	if (ImGui::CollapsingHeader("Rotate on axis", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(_("Rotate on axis"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushID("##rotatevolumeonaxis");
 		veui::AxisButton(math::Axis::X, _("X"), "rotate x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 		ImGui::TooltipTextUnformatted(_("Rotate by 90 degree on the x axis"));
