@@ -45,6 +45,7 @@ VoxEdit:
    - Fixed off-by-one error in `ve_regionsizes` cvar handling
    - Re-enabled the yocto-pathtracer panels again
    - Moved some ui elements into other panels
+   - Improved stamp brush features
 
 Thumbnailer:
 
