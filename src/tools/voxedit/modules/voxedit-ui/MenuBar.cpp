@@ -103,11 +103,13 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", !selections.empty(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", !selections.empty(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference"), "paste",
-								   _sceneMgr->hasClipboardCopy(), &listener);
+								   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor"), "pastecursor",
-								   _sceneMgr->hasClipboardCopy(), &listener);
+								   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as new node"), "pastenewnode",
-								   _sceneMgr->hasClipboardCopy(), &listener);
+								   _sceneMgr->clipBoardData(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as stamp"), "stampbrushpaste",
+								   _sceneMgr->clipBoardData(), &listener);
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				viewportOptions();

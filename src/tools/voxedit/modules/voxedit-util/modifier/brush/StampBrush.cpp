@@ -12,6 +12,7 @@
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/Clipboard.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
@@ -72,6 +73,13 @@ void StampBrush::construct() {
 			}
 		}
 	}).setHelp(_("Use the current selected node volume as new stamp"));
+
+	command::Command::registerCommand("stampbrushpaste", [this](const command::CmdArgs &) {
+		const tool::VoxelData &clipBoard = _sceneMgr->clipBoardData();
+		if (clipBoard) {
+			setVolume(*clipBoard.volume, *clipBoard.palette);
+		}
+	}).setHelp(_("Paste the current clipboard content as stamp"));
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &context) const {

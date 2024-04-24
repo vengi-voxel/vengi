@@ -398,7 +398,7 @@ public:
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 
-	bool hasClipboardCopy() const;
+	const tool::VoxelData& clipBoardData() const;
 
 	// component access
 	const ModifierFacade &modifier() const;
@@ -508,7 +508,7 @@ public:
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
 
-inline bool SceneManager::hasClipboardCopy() const {
+inline const tool::VoxelData& SceneManager::clipBoardData() const {
 	return _copy;
 }
 
