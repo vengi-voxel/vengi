@@ -20,14 +20,22 @@ HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String
 		return;
 	}
 	if (!fs->exists(file)) {
+		Log::debug("try to download %s", file.c_str());
 		io::BufferedReadWriteStream bufStream(1024 * 1024);
 		int statusCode = 0;
 		if (http::download(url, bufStream, &statusCode)) {
 			if (http::isValidStatusCode(statusCode)) {
 				bufStream.seek(0);
-				if (fs->write(file, bufStream)) {
-					_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-					_newInCache = true;
+				if (core::string::isAbsolutePath(file)) {
+					if (fs->syswrite(file, bufStream)) {
+						_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
+						_newInCache = true;
+					}
+				} else {
+					if (fs->write(file, bufStream)) {
+						_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
+						_newInCache = true;
+					}
 				}
 			} else if (statusCode == 429) {
 				Log::warn("Too many requests, retrying in 5 seconds... %s (%s)", url.c_str(), file.c_str());
@@ -35,9 +43,16 @@ HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String
 				if (http::download(url, bufStream, &statusCode)) {
 					if (http::isValidStatusCode(statusCode)) {
 						bufStream.seek(0);
-						if (fs->write(file, bufStream)) {
-							_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-							_newInCache = true;
+						if (core::string::isAbsolutePath(file)) {
+							if (fs->syswrite(file, bufStream)) {
+								_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
+								_newInCache = true;
+							}
+						} else {
+							if (fs->write(file, bufStream)) {
+								_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
+								_newInCache = true;
+							}
 						}
 					}
 				}
