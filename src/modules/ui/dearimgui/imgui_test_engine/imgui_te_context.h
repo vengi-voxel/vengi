@@ -431,18 +431,25 @@ struct IMGUI_API ImGuiTestContext
     void        ItemInputValue(ImGuiTestRef ref, float f);
     void        ItemInputValue(ImGuiTestRef ref, const char* str);
 
-    // Item/Widgets: Drag and Mouse operations
-    void        ItemHold(ImGuiTestRef ref, float time);
-    void        ItemHoldForFrames(ImGuiTestRef ref, int frames);
-    void        ItemDragOverAndHold(ImGuiTestRef ref_src, ImGuiTestRef ref_dst);
-    void        ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref_dst, ImGuiMouseButton button = 0);
-    void        ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_delta);
+    // Item/Widgets: Helpers to easily read a value by selecting Slider/Drag/Input text, copying into clipboard and parsing it.
+    // - This requires the item to be selectable (we will later provide helpers that works in more general manner)
+    // - Original clipboard value is restored afterward.
+    bool        ItemSelectAndReadValue(ImGuiTestRef ref, ImGuiDataType data_type, void* out_data, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
+    void        ItemSelectAndReadValue(ImGuiTestRef ref, int* out_v);
+    void        ItemSelectAndReadValue(ImGuiTestRef ref, float* out_v);
 
     // Item/Widgets: Status query
     bool        ItemExists(ImGuiTestRef ref);
     bool        ItemIsChecked(ImGuiTestRef ref);
     bool        ItemIsOpened(ImGuiTestRef ref);
     void        ItemVerifyCheckedIfAlive(ImGuiTestRef ref, bool checked);
+
+    // Item/Widgets: Drag and Mouse operations
+    void        ItemHold(ImGuiTestRef ref, float time);
+    void        ItemHoldForFrames(ImGuiTestRef ref, int frames);
+    void        ItemDragOverAndHold(ImGuiTestRef ref_src, ImGuiTestRef ref_dst);
+    void        ItemDragAndDrop(ImGuiTestRef ref_src, ImGuiTestRef ref_dst, ImGuiMouseButton button = 0);
+    void        ItemDragWithDelta(ImGuiTestRef ref_src, ImVec2 pos_delta);
 
     // Helpers for Tab Bars widgets
     void        TabClose(ImGuiTestRef ref);
