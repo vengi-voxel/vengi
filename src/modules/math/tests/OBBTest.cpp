@@ -24,4 +24,11 @@ TEST_F(OBBTest, testBounds) {
 	ASSERT_VEC3_NEAR(bounds.second, glm::vec3(1.0f), 0.000001f);
 }
 
+TEST_F(OBBTest, testIntersects) {
+	OBB<float> obb(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3x3(1.0f));
+	float distance;
+	ASSERT_TRUE(obb.intersect(glm::vec3(10.0f, 0.0, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), distance));
+	ASSERT_FLOAT_EQ(distance, 9.0f);
+}
+
 }
