@@ -186,6 +186,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
+		// TODO: make this an aabb and use the transform matrix from the rawvolumerenderer
 		_shapeBuilder.obb(obb);
 	}
 
@@ -196,6 +197,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		core_assert(v != nullptr);
 		const voxel::Region &region = v->region();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(activeNode, frameIdx);
+		// TODO: make this an aabb and use the transform matrix from the rawvolumerenderer
 		_shapeBuilder.obb(toOBB(sceneMode, region, activeNode.pivot(), transform));
 	}
 
