@@ -537,17 +537,11 @@ function(engine_target_link_libraries)
 endfunction()
 
 function(engine_target_optimize TARGET)
-	set(MARCH native)
-	#set(MARCH generic)
 	# http://christian-seiler.de/projekte/fpmath/
 	if (MSVC)
 		# Errors out with RTC1 and Ox are incompatible
 		#target_compile_options(${LIB} PRIVATE /Ox)
 	else()
-		check_c_compiler_flag(-mtune=${MARCH} HAVE_FLAG_MTUNE_${MARCH})
-		if (HAVE_FLAG_MTUNE_${MARCH})
-			target_compile_options(${TARGET} PRIVATE -mtune=${MARCH})
-		endif()
 		target_compile_options(${TARGET} PRIVATE -O3)
 		target_compile_definitions(${TARGET} PRIVATE -DNDEBUG)
 	endif()
