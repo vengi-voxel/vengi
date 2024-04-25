@@ -15,13 +15,6 @@ BENCHMARK_DEFINE_F(OBBBenchmark, Contains)(benchmark::State &state) {
 	}
 }
 
-BENCHMARK_DEFINE_F(OBBBenchmark, Bounds)(benchmark::State &state) {
-	for (auto _ : state) {
-		math::OBB<float> obb(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3x3(1.0f));
-		benchmark::DoNotOptimize(obb.bounds());
-	}
-}
-
 BENCHMARK_DEFINE_F(OBBBenchmark, Intersects)(benchmark::State &state) {
 	for (auto _ : state) {
 		math::OBB<float> obb(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3x3(1.0f));
@@ -31,7 +24,6 @@ BENCHMARK_DEFINE_F(OBBBenchmark, Intersects)(benchmark::State &state) {
 }
 
 BENCHMARK_REGISTER_F(OBBBenchmark, Contains);
-BENCHMARK_REGISTER_F(OBBBenchmark, Bounds);
 BENCHMARK_REGISTER_F(OBBBenchmark, Intersects);
 
 BENCHMARK_MAIN();

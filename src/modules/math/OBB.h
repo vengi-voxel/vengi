@@ -72,23 +72,6 @@ public:
 		return _rotation;
 	}
 
-	core::Pair<Vec, Vec> bounds() const {
-		Vec corners[] = {Vec(-_extents.x, -_extents.y, -_extents.z), Vec(_extents.x, -_extents.y, -_extents.z),
-						 Vec(-_extents.x, _extents.y, -_extents.z),	 Vec(_extents.x, _extents.y, -_extents.z),
-						 Vec(-_extents.x, -_extents.y, _extents.z),	 Vec(_extents.x, -_extents.y, _extents.z),
-						 Vec(-_extents.x, _extents.y, _extents.z),	 Vec(_extents.x, _extents.y, _extents.z)};
-		for (int i = 0; i < 8; i++) {
-			corners[i] = _origin + glm::vec3(_rotation * glm::vec4(corners[i], 1.0f));
-		}
-		Vec minCoords(FLT_MAX);
-		Vec maxCoords(-FLT_MAX);
-		for (int i = 0; i < 8; i++) {
-			minCoords = glm::min(minCoords, corners[i]);
-			maxCoords = glm::max(maxCoords, corners[i]);
-		}
-		return core::Pair<Vec, Vec>(minCoords, maxCoords);
-	}
-
 	bool contains(const glm::vec3 &point) const {
 		const Vec min = _origin - _extents;
 		const Vec max = _origin + _extents;
