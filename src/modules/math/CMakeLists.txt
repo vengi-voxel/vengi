@@ -22,6 +22,7 @@ set(TEST_SRCS
 	tests/AABBTest.cpp
 	tests/FrustumTest.cpp
 	tests/MathTest.cpp
+	tests/OBBTest.cpp
 	tests/OctreeTest.cpp
 	tests/PlaneTest.cpp
 	tests/QuadTreeTest.cpp
