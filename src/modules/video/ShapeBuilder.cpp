@@ -171,17 +171,17 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 }
 
 void ShapeBuilder::obb(const math::OBB<float>& obb, float thickness) {
-	glm::vec3 vecs[8] = {
-		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
-		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
-		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
-	};
 	const glm::vec3& halfWidth = obb.extents();
+	glm::vec3 vecs[8] = {
+		glm::vec3(-halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y,  halfWidth.z),
+		glm::vec3( halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y,  halfWidth.z),
+		glm::vec3(-halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y, -halfWidth.z),
+		glm::vec3( halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y, -halfWidth.z)
+	};
 	const glm::vec3& center = obb.origin();
-
+	const glm::mat3x3 rot(obb.rotation());
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		vecs[i] = glm::vec3(obb.rotation() * glm::vec4(vecs[i] * halfWidth, 1.0f)) + center;
+		vecs[i] = rot * vecs[i] + center;
 	}
 
 	reserve(24, 24);
