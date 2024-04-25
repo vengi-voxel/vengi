@@ -170,39 +170,42 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 	}
 }
 
-void ShapeBuilder::obb(const math::OBB<float>& obb, float thickness) {
+void ShapeBuilder::obb(const math::OBB<float>& obb) {
 	const glm::vec3& halfWidth = obb.extents();
-	glm::vec3 vecs[8] = {
+	const glm::vec3 vecs[8] = {
 		glm::vec3(-halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y,  halfWidth.z),
 		glm::vec3( halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y,  halfWidth.z),
 		glm::vec3(-halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y, -halfWidth.z),
 		glm::vec3( halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y, -halfWidth.z)
 	};
+
+	setPrimitive(Primitive::Lines);
+	reserve(lengthof(vecs), 24);
+
 	const glm::vec3& center = obb.origin();
 	const glm::mat3x3 rot(obb.rotation());
+	int indices[8];
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		vecs[i] = rot * vecs[i] + center;
+		indices[i] = addVertex(rot * vecs[i] + center);
 	}
 
-	reserve(24, 24);
-
 	// front
-	line(vecs[0], vecs[1], thickness);
-	line(vecs[1], vecs[3], thickness);
-	line(vecs[3], vecs[2], thickness);
-	line(vecs[2], vecs[0], thickness);
+	addIndex(indices[0], indices[1]);
+	addIndex(indices[1], indices[3]);
+	addIndex(indices[3], indices[2]);
+	addIndex(indices[2], indices[0]);
 
 	// back
-	line(vecs[4], vecs[5], thickness);
-	line(vecs[5], vecs[7], thickness);
-	line(vecs[7], vecs[6], thickness);
-	line(vecs[6], vecs[4], thickness);
+	addIndex(indices[4], indices[5]);
+	addIndex(indices[5], indices[7]);
+	addIndex(indices[7], indices[6]);
+	addIndex(indices[6], indices[4]);
 
 	// connections
-	line(vecs[0], vecs[4], thickness);
-	line(vecs[2], vecs[6], thickness);
-	line(vecs[1], vecs[5], thickness);
-	line(vecs[3], vecs[7], thickness);
+	addIndex(indices[0], indices[4]);
+	addIndex(indices[2], indices[6]);
+	addIndex(indices[1], indices[5]);
+	addIndex(indices[3], indices[7]);
 }
 
 void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth, float thickness) {
