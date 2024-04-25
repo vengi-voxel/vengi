@@ -83,6 +83,7 @@ endif()
 
 set(TEST_SRCS
 	tests/ShaderTest.cpp
+	tests/ShapeBuilderTest.cpp
 	tests/CameraTest.cpp
 	tests/RendererTest.cpp
 )
