@@ -171,22 +171,33 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 }
 
 void ShapeBuilder::obb(const math::OBB<float>& obb) {
-	const glm::vec3& halfWidth = obb.extents();
-	const glm::vec3 vecs[8] = {
-		glm::vec3(-halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y,  halfWidth.z),
-		glm::vec3( halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y,  halfWidth.z),
-		glm::vec3(-halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y, -halfWidth.z),
-		glm::vec3( halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y, -halfWidth.z)
-	};
-
 	setPrimitive(Primitive::Lines);
-	reserve(lengthof(vecs), 24);
+	reserve(8, 24);
 
 	const glm::vec3& center = obb.origin();
 	const glm::mat3x3 rot(obb.rotation());
 	int indices[8];
-	for (size_t i = 0; i < lengthof(vecs); ++i) {
-		indices[i] = addVertex(rot * vecs[i] + center);
+	if (rot != glm::mat3(1.0f)) {
+		const glm::vec3& halfWidth = obb.extents();
+		const glm::vec3 vecs[8] = {
+			glm::vec3(-halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y,  halfWidth.z),
+			glm::vec3( halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y,  halfWidth.z),
+			glm::vec3(-halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y, -halfWidth.z),
+			glm::vec3( halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y, -halfWidth.z)
+		};
+		for (size_t i = 0; i < lengthof(vecs); ++i) {
+			indices[i] = addVertex(rot * vecs[i] + center);
+		}
+	} else {
+		const glm::vec3& halfWidth = obb.extents();
+		indices[0] = addVertex(glm::vec3(-halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[1] = addVertex(glm::vec3(-halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[2] = addVertex(glm::vec3( halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[3] = addVertex(glm::vec3( halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[4] = addVertex(glm::vec3(-halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[5] = addVertex(glm::vec3(-halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[6] = addVertex(glm::vec3( halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[7] = addVertex(glm::vec3( halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
 	}
 
 	// front
