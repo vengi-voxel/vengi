@@ -271,25 +271,13 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					}
 				}
 				glm::mat4 matrix;
-				_lastChanged = true;
 
 				if (pivotChanged) {
 					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {
 					matrix = glm::recompose(matrixScale, glm::quat(glm::radians(matrixRotation)), matrixTranslation, skew, perspective);
-					scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-					if (_localSpace) {
-						transform.setLocalMatrix(matrix);
-					} else {
-						transform.setWorldMatrix(matrix);
-					}
-					const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
-					transform.update(sceneGraph, node, frameIdx, updateChildren);
+					_sceneMgr->nodeUpdateTransform(node.id(), matrix, keyFrameIdx, _localSpace);
 				}
-			}
-			if (!change && _lastChanged) {
-				_lastChanged = false;
-				_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
 			}
 		}
 	}
