@@ -27,6 +27,7 @@
 #include "math/Random.h"
 #include "math/Ray.h"
 #include "metric/MetricFacade.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
@@ -2869,6 +2870,26 @@ bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdatePivot(*node, pivot);
+	}
+	return false;
+}
+
+bool SceneManager::nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node,
+												   scenegraph::KeyFrameIndex keyFrameIdx,
+												   scenegraph::InterpolationType interpolation) {
+	// TODO: check that keyframe already exists
+	node.keyFrame(keyFrameIdx).interpolation = interpolation;
+	_mementoHandler.markKeyFramesChange(node);
+	markDirty();
+	return true;
+}
+
+bool SceneManager::nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, scenegraph::InterpolationType interpolation) {
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeUpdateKeyFrameInterpolation(*node, keyFrameIdx, interpolation);
 	}
 	return false;
 }

@@ -156,8 +156,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 		for (int n = 0; n < lengthof(scenegraph::InterpolationTypeStr); n++) {
 			const bool isSelected = (currentInterpolation == n);
 			if (ImGui::Selectable(scenegraph::InterpolationTypeStr[n], isSelected)) {
-				// TODO: undo missing
-				node.keyFrame(keyFrameIdx).interpolation = (scenegraph::InterpolationType)n;
+				_sceneMgr->nodeUpdateKeyFrameInterpolation(node.id(), keyFrameIdx, (scenegraph::InterpolationType)n);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();
