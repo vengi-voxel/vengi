@@ -29,6 +29,7 @@ General:
    - Added translation support (`po` files)
    - Fixed error in up-scaling volumes
    - Fixed x-axis flip for cubzh `3zh` files
+   - Added cvar `voxformat_rgbweightedaverage` to control the color
 
 VoxConvert:
 
