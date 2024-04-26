@@ -189,16 +189,8 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
 											   scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (ImGui::Button(_("Reset all"))) {
-		scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-		if (_localSpace) {
-			transform.setLocalMatrix(glm::mat4(1.0f));
-		} else {
-			transform.setWorldMatrix(glm::mat4(1.0f));
-		}
 		node.setPivot({0.0f, 0.0f, 0.0f});
-		const bool updateChildren = core::Var::getSafe(cfg::VoxEditTransformUpdateChildren)->boolVal();
-		transform.update(sceneGraph, node, frameIdx, updateChildren);
-		_sceneMgr->mementoHandler().markNodeTransform(node, keyFrameIdx);
+		_sceneMgr->nodeUpdateTransform(node.id(), glm::mat4(1.0f), keyFrameIdx, _localSpace);
 	}
 	ImGui::SameLine();
 	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);

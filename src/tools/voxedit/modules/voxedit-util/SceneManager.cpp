@@ -2894,18 +2894,18 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFr
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, const glm::mat4 *deltaMatrix,
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
 		nodeForeachGroup([&] (int nodeId) {
 			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-				nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, local);
+				nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
 			}
 		});
 		return true;
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		return nodeUpdateTransform(*node, matrix, deltaMatrix, keyFrameIdx, local);
+		return nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
 	}
 	return false;
 }
@@ -3021,7 +3021,7 @@ bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
 }
 
 bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
-									   const glm::mat4 *deltaMatrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 	if (local) {

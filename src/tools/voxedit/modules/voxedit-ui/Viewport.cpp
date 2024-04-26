@@ -705,7 +705,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 						keyFrameIdx = newKeyFrameIdx;
 					}
 				}
-				_sceneMgr->nodeUpdateTransform(activeNode, matrix, &deltaMatrix, keyFrameIdx, false);
+				_sceneMgr->nodeUpdateTransform(activeNode, matrix, keyFrameIdx, false);
 			}
 		} else {
 			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();

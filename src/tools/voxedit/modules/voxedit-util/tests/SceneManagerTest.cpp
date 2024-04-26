@@ -515,7 +515,7 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
 
-		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, &ctranslationMat, keyFrameIndex, false));
+		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, keyFrameIndex, false));
 		cworldTranslation = ctransform.worldTranslation();
 		ASSERT_VEC3_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC3_NEAR(cworldTranslation, clocalTranslationVec, 0.0001f);
