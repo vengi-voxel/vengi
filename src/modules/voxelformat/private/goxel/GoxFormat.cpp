@@ -589,12 +589,16 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::String &name = core::string::format("mat%i", i);
-		const float value[3] = {0.0f, 0.0f, 0.0f};
 		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
-		wrapBool(saveChunk_DictEntry(stream, "color", palette.color(i)))
-		wrapBool(saveChunk_DictEntry(stream, "metallic", value[0]))
-		wrapBool(saveChunk_DictEntry(stream, "roughness", value[0]))
-		wrapBool(saveChunk_DictEntry(stream, "emission", value))
+		const core::RGBA rgba = palette.color(i);
+		const glm::vec4 &color = core::Color::fromRGBA(rgba);
+		wrapBool(saveChunk_DictEntry(stream, "color", color));
+		const palette::Material &material = palette.material(i);
+		const core::RGBA emitRGBA = palette.emitColor(i);
+		const glm::vec3 &emitColor = core::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit);
+		wrapBool(saveChunk_DictEntry(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
+		wrapBool(saveChunk_DictEntry(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
+		wrapBool(saveChunk_DictEntry(stream, "emission", emitColor))
 	}
 	return true;
 }

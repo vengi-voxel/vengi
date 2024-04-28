@@ -100,6 +100,7 @@ private:
 	bool loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph);
 
+	// TODO: not endian safe
 	bool saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize);
 
 	template<class T>
