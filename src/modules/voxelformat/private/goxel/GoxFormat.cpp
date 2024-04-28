@@ -3,6 +3,7 @@
  */
 
 #include "GoxFormat.h"
+#include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -107,7 +108,7 @@ void GoxFormat::loadChunk_ValidateCRC(io::SeekableReadStream &stream) {
 	stream.readUInt32(crc);
 }
 
-bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value) {
+bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize) {
 	const int64_t endPos = c.streamStartPos + c.length;
 	if (stream.pos() >= endPos) {
 		return false;
@@ -130,7 +131,6 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	loadChunk_ReadData(stream, key, keySize);
 	key[keySize] = '\0';
 
-	int valueSize;
 	wrap(stream.readInt32(valueSize));
 	if (valueSize >= 256) {
 		Log::error("Max size of 256 exceeded for dict value: %i", valueSize);
@@ -184,7 +184,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 
 	palette::PaletteLookup palLookup(palette);
 	if ((stream.readUInt32(blockCount)) != 0) {
-		Log ::error("Could not load gox file: Failed to read blockCount");
+		Log::error("Could not load gox file: Failed to read blockCount");
 		delete modelVolume;
 		return false;
 	}
@@ -192,7 +192,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	for (uint32_t i = 0; i < blockCount; ++i) {
 		uint32_t index;
 		if ((stream.readUInt32(index)) != 0) {
-			Log ::error("Could not load gox file: Failure to read block index");
+			Log::error("Could not load gox file: Failure to read block index");
 			delete modelVolume;
 			return false;
 		}
@@ -217,17 +217,17 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 
 		int32_t x, y, z;
 		if (stream.readInt32(x) != 0) {
-			Log ::error("Could not load gox file: Failure to read block coordinate");
+			Log::error("Could not load gox file: Failure to read block coordinate");
 			delete modelVolume;
 			return false;
 		}
 		if (stream.readInt32(y) != 0) {
-			Log ::error("Could not load gox file: Failure to read block coordinate");
+			Log::error("Could not load gox file: Failure to read block coordinate");
 			delete modelVolume;
 			return false;
 		}
 		if (stream.readInt32(z) != 0) {
-			Log ::error("Could not load gox file: Failure to read block coordinate");
+			Log::error("Could not load gox file: Failure to read block coordinate");
 			delete modelVolume;
 			return false;
 		}
@@ -263,6 +263,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 				}
 			}
 		}
+		// TODO: it looks like the whole node gets the same material in gox...
 		// this will remove empty blocks and the final volume might have a smaller region.
 		// TODO: we should remove this once we have sparse volumes support
 		if (!empty) {
@@ -281,10 +282,11 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	bool visible = true;
 	char dictKey[256];
 	char dictValue[256];
+	int valueLength = 0;
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphNode node;
 	node.setName(core::string::format("model %i", size));
-	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
+	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 255 chars max
 			node.setName(dictValue);
@@ -295,7 +297,8 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			// "mat" (4x4 matrix)
 			scenegraph::SceneGraphTransform transform;
 			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
-			glm::mat4 mat;
+			glm::mat4 mat(0.0f);
+			// TODO: axis
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
 			}
@@ -320,6 +323,8 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "box") || !strcmp(dictKey, "shape")) {
 			// "box" 4x4 bounding box float
 			// "shape" - currently unsupported TODO
+		} else {
+			Log::debug("LAYR chunk with key: %s and size %i", dictKey, valueLength);
 		}
 	}
 
@@ -363,13 +368,59 @@ bool GoxFormat::loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableRead
 							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
-	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
-		// "name" 127 chars max
-		// "color" 4xfloat
-		// "metallic" float
-		// "roughness" float
-		// "emission" 3xfloat
+	int valueLength = 0;
+	core::String name;
+	palette::Material material;
+	bool emissionFound = false;
+	glm::vec4 color(0.0f);
+	glm::vec3 emission(0.0f);
+
+	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
+		if (!strcmp(dictKey, "name")) {
+			// 127 chars max
+			name = dictValue;
+		} else {
+			io::MemoryReadStream subStream(dictValue, valueLength);
+			if (!strcmp(dictKey, "color")) {
+				// "color" 4xfloat
+				for (int i = 0; i < 4; ++i) {
+					subStream.readFloat(color[i]);
+				}
+			} else if (!strcmp(dictKey, "metallic")) {
+				// "metallic" float
+				float metallic = 0.0f;
+				subStream.readFloat(metallic);
+				if (metallic > 0.0f) {
+					material.type = palette::MaterialType::Metal;
+					material.setValue(palette::MaterialProperty::MaterialMetal, metallic);
+				}
+			} else if (!strcmp(dictKey, "roughness")) {
+				// "roughness" float
+				float roughness = 0.0f;
+				subStream.readFloat(roughness);
+				material.setValue(palette::MaterialProperty::MaterialRoughness, roughness);
+			} else if (!strcmp(dictKey, "emission")) {
+				// "emission" 3xfloat
+				for (int i = 0; i < 3; ++i) {
+					subStream.readFloat(emission[i]);
+				}
+				emissionFound = true;
+			} else {
+				Log::debug("MATE chunk with key: %s and size %i", dictKey, valueLength);
+			}
+		}
+		if (emissionFound) {
+			float emissionFactor = 0.0f;
+			for (int i = 0; i < 3; ++i) {
+				emissionFactor = core_max(emissionFactor, glm::abs(color[i] - emission[i]));
+			}
+			material.setValue(palette::MaterialProperty::MaterialEmit, emissionFactor);
+		}
 	}
+	if (name.empty()) {
+		return false;
+	}
+	state.materials.put(name, material);
 	return true;
 }
 
@@ -377,8 +428,9 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
+	int valueLength = 0;
 	scenegraph::SceneGraphNodeCamera node;
-	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
+	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
 			// "name" 127 chars max
 			node.setName(dictValue);
@@ -387,7 +439,7 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 			node.setProperty(dictKey, "true");
 		} else if (!strcmp(dictKey, "dist")) {
 			// "dist" float
-			io::MemoryReadStream subStream(dictValue, sizeof(float));
+			io::MemoryReadStream subStream(dictValue, valueLength);
 			float farPlane;
 			subStream.readFloat(farPlane);
 			node.setFarPlane(farPlane);
@@ -402,14 +454,17 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" 4x4 float
 			scenegraph::SceneGraphTransform transform;
-			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
-			glm::mat4 mat;
+			io::MemoryReadStream subStream(dictValue, valueLength);
+			glm::mat4 mat(0.0f);
+			// TODO: axis
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
 			}
 			transform.setWorldMatrix(mat);
 			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			node.setTransform(keyFrameIdx, transform);
+		} else {
+			Log::debug("CAMR chunk with key: %s and size %i", dictKey, valueLength);
 		}
 	}
 	sceneGraph.emplace(core::move(node));
@@ -420,7 +475,9 @@ bool GoxFormat::loadChunk_IMG(State &state, const GoxChunk &c, io::SeekableReadS
 							  scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
-	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
+	int valueLength = 0;
+	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
+		Log::debug("IMG chunk with key: %s and size %i", dictKey, valueLength);
 		// "box" 4x4 float bounding box
 	}
 	return true;
@@ -430,14 +487,33 @@ bool GoxFormat::loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableRead
 							   scenegraph::SceneGraph &sceneGraph) {
 	char dictKey[256];
 	char dictValue[256];
-	while (loadChunk_DictEntry(c, stream, dictKey, dictValue)) {
-		// "pitch" float
-		// "yaw" float
-		// "intensity" float
-		// "fixed" bool
-		// "ambient" float
-		// "shadow" float
+	int valueLength = 0;
+	bool fixed = false;
+	float intensity = 0.0f;
+	float pitch = 0.0f;
+	float yaw = 0.0f;
+	float ambient = 0.0f;
+	float shadow = 0.0f;
+	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
+		io::MemoryReadStream subStream(dictValue, valueLength);
+		if (!strcmp(dictKey, "pitch")) {
+			subStream.readFloat(pitch);
+		} else if (!strcmp(dictKey, "yaw")) {
+			subStream.readFloat(yaw);
+		} else if (!strcmp(dictKey, "intensity")) {
+			subStream.readFloat(intensity);
+		} else if (!strcmp(dictKey, "fixed")) {
+			fixed = subStream.readBool();
+		} else if (!strcmp(dictKey, "ambient")) {
+			subStream.readFloat(ambient);
+		} else if (!strcmp(dictKey, "shadow")) {
+			subStream.readFloat(shadow);
+		} else {
+			Log::debug("LIGH chunk with key: %s and size %i", dictKey, valueLength);
+		}
 	}
+	Log::debug("Loaded LIGH chunk with pitch: %f, yaw: %f, intensity: %f, fixed: %i, ambient: %f, shadow: %f", pitch,
+		yaw, intensity, fixed, ambient, shadow);
 	return true;
 }
 
@@ -525,8 +601,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	return !sceneGraph.empty();
 }
 
-bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value,
-									size_t valueSize) {
+bool GoxFormat::saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const char *key, size_t valueSize) {
 	const int keyLength = (int)SDL_strlen(key);
 	wrapBool(stream.writeUInt32(keyLength))
 	if (stream.write(key, keyLength) == -1) {
@@ -534,26 +609,81 @@ bool GoxFormat::saveChunk_DictEntry(io::SeekableWriteStream &stream, const char 
 		return false;
 	}
 	wrapBool(stream.writeUInt32(valueSize))
-	if (stream.write(value, valueSize) == -1) {
-		Log::error("Failed to write dict entry value");
+	// here comes the data
+	return true;
+}
+
+bool GoxFormat::saveChunk_DictString(io::SeekableWriteStream &stream, const char *key, const core::String &value) {
+	if (!saveChunk_DictEntryHeader(stream, key, value.size())) {
 		return false;
 	}
+	return stream.write(value.c_str(), value.size()) != -1;
+}
+
+bool GoxFormat::saveChunk_DictFloat(io::SeekableWriteStream &stream, const char *key, float value) {
+	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
+		return false;
+	}
+	return stream.writeFloat(value);
+}
+
+bool GoxFormat::saveChunk_DictBool(io::SeekableWriteStream &stream, const char *key, bool value) {
+	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
+		return false;
+	}
+	return stream.writeBool(value);
+}
+
+bool GoxFormat::saveChunk_DictInt(io::SeekableWriteStream &stream, const char *key, int32_t value) {
+	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
+		return false;
+	}
+	return stream.writeInt32(value);
+}
+
+bool GoxFormat::saveChunk_DictColor(io::SeekableWriteStream &stream, const char *key, const core::RGBA &value) {
+	if (!saveChunk_DictEntryHeader(stream, key, 4 * sizeof(float))) {
+		return false;
+	}
+	const glm::vec4 &color = core::Color::fromRGBA(value);
+	return stream.writeFloat(color.r) && stream.writeFloat(color.g) && stream.writeFloat(color.b) &&
+		   stream.writeFloat(color.a);
+}
+
+bool GoxFormat::saveChunk_DictMat4(io::SeekableWriteStream &stream, const char *key, const glm::mat4 &value) {
+	if (!saveChunk_DictEntryHeader(stream, key, 16 * sizeof(float))) {
+		return false;
+	}
+	const float *p = glm::value_ptr(value);
+	// TODO: axis
+	for (int i = 0; i < 16; ++i) {
+		if (!stream.writeFloat(*p++)) {
+			return false;
+		}
+	}
 	return true;
+}
+
+bool GoxFormat::saveChunk_DictVec3(io::SeekableWriteStream &stream, const char *key, const glm::vec3 &value) {
+	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
+		return false;
+	}
+	return stream.writeFloat(value.x) && stream.writeFloat(value.y) && stream.writeFloat(value.z);
 }
 
 bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) {
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::Camera); iter != sceneGraph.end(); ++iter) {
 		GoxScopedChunkWriter scoped(stream, FourCC('C', 'A', 'M', 'R'));
 		const scenegraph::SceneGraphNodeCamera &cam = toCameraNode(*iter);
-		wrapBool(saveChunk_DictEntry(stream, "name", cam.name().c_str(), cam.name().size()))
-		wrapBool(saveChunk_DictEntry(stream, "active", "false", 5))
+		wrapBool(saveChunk_DictString(stream, "name", cam.name()))
+		wrapBool(saveChunk_DictString(stream, "active", "false"))
 		const float distance = cam.farPlane();
-		wrapBool(saveChunk_DictEntry(stream, "dist", &distance, sizeof(distance)))
+		wrapBool(saveChunk_DictFloat(stream, "dist", distance))
 		const bool ortho = cam.isOrthographic();
-		wrapBool(saveChunk_DictEntry(stream, "ortho", &ortho, sizeof(ortho)))
+		wrapBool(saveChunk_DictBool(stream, "ortho", ortho))
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(cam, 0);
 		const glm::mat4 &worldMatrix = transform.worldMatrix();
-		wrapBool(saveChunk_DictEntry(stream, "mat", &worldMatrix, sizeof(worldMatrix)))
+		wrapBool(saveChunk_DictMat4(stream, "mat", worldMatrix))
 	}
 	return true;
 }
@@ -585,16 +715,15 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::String &name = core::string::format("mat%i", i);
-		wrapBool(saveChunk_DictEntry(stream, "name", name.c_str(), name.size()))
+		wrapBool(saveChunk_DictString(stream, "name", name))
 		const core::RGBA rgba = palette.color(i);
-		const glm::vec4 &color = core::Color::fromRGBA(rgba);
-		wrapBool(saveChunk_DictEntry(stream, "color", color));
+		wrapBool(saveChunk_DictColor(stream, "color", rgba));
 		const palette::Material &material = palette.material(i);
 		const core::RGBA emitRGBA = palette.emitColor(i);
-		const glm::vec3 &emitColor = core::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit);
-		wrapBool(saveChunk_DictEntry(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
-		wrapBool(saveChunk_DictEntry(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
-		wrapBool(saveChunk_DictEntry(stream, "emission", emitColor))
+		const glm::vec3 &emitColor = glm::clamp(core::Color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
+		wrapBool(saveChunk_DictFloat(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
+		wrapBool(saveChunk_DictFloat(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
+		wrapBool(saveChunk_DictVec3(stream, "emission", emitColor))
 	}
 	return true;
 }
@@ -646,17 +775,17 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 			Log::error("Invalid amount of layer blocks: %i", layerBlocks);
 			return false;
 		}
-		wrapBool(saveChunk_DictEntry(stream, "name", node.name().c_str(), node.name().size()))
+		wrapBool(saveChunk_DictString(stream, "name", node.name()))
 		glm::mat4 mat(1.0f);
-		wrapBool(saveChunk_DictEntry(stream, "mat", (const uint8_t *)glm::value_ptr(mat), sizeof(mat)))
-		wrapBool(saveChunk_DictEntry(stream, "id", layerId))
+		wrapBool(saveChunk_DictMat4(stream, "mat", mat))
+		wrapBool(saveChunk_DictInt(stream, "id", layerId))
 		const core::RGBA layerRGBA = node.color();
-		wrapBool(saveChunk_DictEntry(stream, "color", layerRGBA.rgba))
+		wrapBool(saveChunk_DictColor(stream, "color", layerRGBA.rgba))
 #if 0
 		wrapBool(saveChunk_DictEntry(stream, "base_id", &layer->base_id))
 		wrapBool(saveChunk_DictEntry(stream, "material", &material_idx))
 #endif
-		wrapBool(saveChunk_DictEntry(stream, "visible", node.visible()))
+		wrapBool(saveChunk_DictBool(stream, "visible", node.visible()))
 
 		++layerId;
 	}

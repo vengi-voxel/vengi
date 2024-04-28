@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "core/collection/StringMap.h"
+#include "palette/Palette.h"
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
@@ -82,12 +84,13 @@ private:
 	struct State {
 		int32_t version = 0;
 		core::DynamicArray<image::ImagePtr> images;
+		core::StringMap<palette::Material> materials;
 	};
 
 	bool loadChunk_Header(GoxChunk &c, io::SeekableReadStream &stream);
 	bool loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, int size);
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
-	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value);
+	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize);
 	bool loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
 	bool loadChunk_BL16(State &state, const GoxChunk &c, io::SeekableReadStream &stream);
@@ -100,13 +103,14 @@ private:
 	bool loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph);
 
-	// TODO: not endian safe
-	bool saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const void *value, size_t valueSize);
-
-	template<class T>
-	bool saveChunk_DictEntry(io::SeekableWriteStream &stream, const char *key, const T &value) {
-		return saveChunk_DictEntry(stream, key, &value, sizeof(T));
-	}
+	bool saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const char *key, size_t valueSize);
+	bool saveChunk_DictString(io::SeekableWriteStream &stream, const char *key, const core::String &value);
+	bool saveChunk_DictFloat(io::SeekableWriteStream &stream, const char *key, float value);
+	bool saveChunk_DictBool(io::SeekableWriteStream &stream, const char *key, bool value);
+	bool saveChunk_DictMat4(io::SeekableWriteStream &stream, const char *key, const glm::mat4 &value);
+	bool saveChunk_DictVec3(io::SeekableWriteStream &stream, const char *key, const glm::vec3 &value);
+	bool saveChunk_DictInt(io::SeekableWriteStream &stream, const char *key, int32_t value);
+	bool saveChunk_DictColor(io::SeekableWriteStream &stream, const char *key, const core::RGBA &value);
 
 	// Write image info and preview pic - not used.
 	bool saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
