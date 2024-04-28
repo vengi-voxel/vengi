@@ -112,11 +112,10 @@ private:
 	bool saveChunk_DictInt(io::WriteStream &stream, const core::String &key, int32_t value);
 	bool saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const core::RGBA &value);
 
-	// Write image info and preview pic - not used.
+	// Write image info and preview pic.
 	bool saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
 					   const SaveContext &ctx);
-	bool saveChunk_PREV(io::SeekableWriteStream &stream);
-	// Write all the cameras - not used.
+	// Write all the cameras.
 	bool saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph);
 	// Write all the lights - not used.
 	bool saveChunk_LIGH(io::SeekableWriteStream &stream);
