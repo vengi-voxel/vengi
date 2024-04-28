@@ -601,7 +601,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	return !sceneGraph.empty();
 }
 
-bool GoxFormat::saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const core::String &key, size_t valueSize) {
+bool GoxFormat::saveChunk_DictEntryHeader(io::WriteStream &stream, const core::String &key, size_t valueSize) {
 	const int keyLength = key.size();
 	wrapBool(stream.writeUInt32(keyLength))
 	if (stream.write(key.c_str(), keyLength) == -1) {
@@ -613,35 +613,35 @@ bool GoxFormat::saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const
 	return true;
 }
 
-bool GoxFormat::saveChunk_DictString(io::SeekableWriteStream &stream, const core::String &key, const core::String &value) {
+bool GoxFormat::saveChunk_DictString(io::WriteStream &stream, const core::String &key, const core::String &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, value.size())) {
 		return false;
 	}
 	return stream.write(value.c_str(), value.size()) != -1;
 }
 
-bool GoxFormat::saveChunk_DictFloat(io::SeekableWriteStream &stream, const core::String &key, float value) {
+bool GoxFormat::saveChunk_DictFloat(io::WriteStream &stream, const core::String &key, float value) {
 	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
 		return false;
 	}
 	return stream.writeFloat(value);
 }
 
-bool GoxFormat::saveChunk_DictBool(io::SeekableWriteStream &stream, const core::String &key, bool value) {
+bool GoxFormat::saveChunk_DictBool(io::WriteStream &stream, const core::String &key, bool value) {
 	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
 		return false;
 	}
 	return stream.writeBool(value);
 }
 
-bool GoxFormat::saveChunk_DictInt(io::SeekableWriteStream &stream, const core::String &key, int32_t value) {
+bool GoxFormat::saveChunk_DictInt(io::WriteStream &stream, const core::String &key, int32_t value) {
 	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
 		return false;
 	}
 	return stream.writeInt32(value);
 }
 
-bool GoxFormat::saveChunk_DictColor(io::SeekableWriteStream &stream, const core::String &key, const core::RGBA &value) {
+bool GoxFormat::saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const core::RGBA &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, 4 * sizeof(float))) {
 		return false;
 	}
@@ -650,7 +650,7 @@ bool GoxFormat::saveChunk_DictColor(io::SeekableWriteStream &stream, const core:
 		   stream.writeFloat(color.a);
 }
 
-bool GoxFormat::saveChunk_DictMat4(io::SeekableWriteStream &stream, const core::String &key, const glm::mat4 &value) {
+bool GoxFormat::saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const glm::mat4 &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, 16 * sizeof(float))) {
 		return false;
 	}
@@ -664,7 +664,7 @@ bool GoxFormat::saveChunk_DictMat4(io::SeekableWriteStream &stream, const core::
 	return true;
 }
 
-bool GoxFormat::saveChunk_DictVec3(io::SeekableWriteStream &stream, const core::String &key, const glm::vec3 &value) {
+bool GoxFormat::saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const glm::vec3 &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
 		return false;
 	}
