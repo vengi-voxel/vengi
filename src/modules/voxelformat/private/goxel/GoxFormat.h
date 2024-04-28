@@ -103,14 +103,14 @@ private:
 	bool loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph);
 
-	bool saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const char *key, size_t valueSize);
-	bool saveChunk_DictString(io::SeekableWriteStream &stream, const char *key, const core::String &value);
-	bool saveChunk_DictFloat(io::SeekableWriteStream &stream, const char *key, float value);
-	bool saveChunk_DictBool(io::SeekableWriteStream &stream, const char *key, bool value);
-	bool saveChunk_DictMat4(io::SeekableWriteStream &stream, const char *key, const glm::mat4 &value);
-	bool saveChunk_DictVec3(io::SeekableWriteStream &stream, const char *key, const glm::vec3 &value);
-	bool saveChunk_DictInt(io::SeekableWriteStream &stream, const char *key, int32_t value);
-	bool saveChunk_DictColor(io::SeekableWriteStream &stream, const char *key, const core::RGBA &value);
+	bool saveChunk_DictEntryHeader(io::SeekableWriteStream &stream, const core::String &key, size_t valueSize);
+	bool saveChunk_DictString(io::SeekableWriteStream &stream, const core::String &key, const core::String &value);
+	bool saveChunk_DictFloat(io::SeekableWriteStream &stream, const core::String &key, float value);
+	bool saveChunk_DictBool(io::SeekableWriteStream &stream, const core::String &key, bool value);
+	bool saveChunk_DictMat4(io::SeekableWriteStream &stream, const core::String &key, const glm::mat4 &value);
+	bool saveChunk_DictVec3(io::SeekableWriteStream &stream, const core::String &key, const glm::vec3 &value);
+	bool saveChunk_DictInt(io::SeekableWriteStream &stream, const core::String &key, int32_t value);
+	bool saveChunk_DictColor(io::SeekableWriteStream &stream, const core::String &key, const core::RGBA &value);
 
 	// Write image info and preview pic - not used.
 	bool saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
