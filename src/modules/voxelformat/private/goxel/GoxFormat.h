@@ -109,7 +109,7 @@ private:
 	}
 
 	// Write image info and preview pic - not used.
-	bool saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
+	bool saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
 					   const SaveContext &ctx);
 	bool saveChunk_PREV(io::SeekableWriteStream &stream);
 	// Write all the cameras - not used.

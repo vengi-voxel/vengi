@@ -558,7 +558,7 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 	return true;
 }
 
-bool GoxFormat::saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
+bool GoxFormat::saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
 							  const SaveContext &savectx) {
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
@@ -573,10 +573,6 @@ bool GoxFormat::saveChunk_IMG(const scenegraph::SceneGraph &sceneGraph, io::Seek
 		return stream.seek(pos) == pos;
 	}
 	return true;
-}
-
-bool GoxFormat::saveChunk_PREV(io::SeekableWriteStream &stream) {
-	return true; // not used
 }
 
 bool GoxFormat::saveChunk_LIGH(io::SeekableWriteStream &stream) {
@@ -730,8 +726,7 @@ bool GoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
 	wrapSave(stream.writeUInt32(2))
 
-	wrapBool(saveChunk_IMG(sceneGraph, stream, ctx))
-	wrapBool(saveChunk_PREV(stream))
+	wrapBool(saveChunk_PREV(sceneGraph, stream, ctx))
 	int blocks = 0;
 	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))
 	wrapBool(saveChunk_MATE(stream, sceneGraph))
