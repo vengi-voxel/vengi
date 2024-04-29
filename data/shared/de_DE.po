@@ -142,9 +142,8 @@ msgstr "Dieser PC"
 msgid "Bookmarks"
 msgstr "Lesezeichen"
 
-#, fuzzy
 msgid "Remove bookmark"
-msgstr "Farbe entfernen"
+msgstr "Lesezeichen entfernen"
 
 msgid "Files"
 msgstr "Dateien"
@@ -247,9 +246,8 @@ msgstr ""
 msgid "Allow multi monitor setups - requires a restart"
 msgstr ""
 
-#, fuzzy
 msgid "Render the ui"
-msgstr "Rendermodus"
+msgstr "Rendern des Benutzerinterfaces"
 
 msgid "Show metric and debug window"
 msgstr ""
@@ -272,9 +270,8 @@ msgstr "Befehl"
 msgid "Context"
 msgstr "Beschreibung"
 
-#, fuzzy
 msgid "Description"
-msgstr "Position"
+msgstr "Beschreibung"
 
 #, c-format
 msgid "Failed to get command for %s"
@@ -448,28 +445,26 @@ msgstr "Fehlende Miniaturansichten herunterladen"
 msgid "Nothing selected"
 msgstr ""
 
-#, fuzzy
 msgid "No thumbnail available"
-msgstr "Den Wert einer Variable anzeigen"
+msgstr "Miniaturansicht nicht verfügbar"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Name: %s"
-msgstr "Name"
+msgstr "Name: %s"
 
 #, c-format
 msgid "Source: %s"
-msgstr ""
+msgstr "Quelle: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "License: %s"
-msgstr "Lizenz"
+msgstr "Lizenz: %s"
 
 msgid "URL"
 msgstr ""
 
-#, fuzzy
 msgid "Create thumbnail"
-msgstr "Miniaturansicht"
+msgstr "Miniaturansicht erzeugen"
 
 msgid "Download missing files"
 msgstr "Fehlende Dateien herunterladen"
@@ -1304,6 +1299,10 @@ msgstr "Einfügen an Cursorposition"
 msgid "Paste as new node"
 msgstr ""
 
+#, fuzzy
+msgid "Paste as stamp"
+msgstr "Stempel verwenden"
+
 msgid "Color picker"
 msgstr "Farbauswahl"
 
@@ -2019,6 +2018,9 @@ msgstr "Bearbeitungsmodus"
 msgid "SceneMode"
 msgstr "Szenenmodus"
 
+msgid "Create a reference node"
+msgstr "Referenzknoten erstellen"
+
 msgid "Resize the volume to the current selection"
 msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
 
@@ -2254,13 +2256,11 @@ msgstr "Alle Modellknoten außer dem aktiven ausblenden"
 msgid "Lock all nodes"
 msgstr "Alle Knoten sperren"
 
-#, fuzzy
 msgid "Unlock all nodes"
-msgstr "Alle Knoten sperren"
+msgstr "Alle Knoten entsperren"
 
-#, fuzzy
 msgid "Rename the current node or the given node id"
-msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
+msgstr "Bennene den aktuellen Knoten oder die angegebene Knoten-ID um"
 
 msgid "Duplicates the current node or the given node id"
 msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
@@ -2349,70 +2349,14 @@ msgstr "Schaltet das Zentrum am Cursor um"
 msgid "Toggle continuously placing the stamp voxels"
 msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
 
-#, fuzzy
 msgid "Rotate stamp volume around the given axis"
-msgstr "Rotiert aktive Knoten um die angegebene Achse"
+msgstr "Rotiert Stempel um die angegebene Achse"
 
 msgid "Use the current selection as new stamp"
 msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
 
-#, fuzzy
 msgid "Use the current selected node volume as new stamp"
-msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
+msgstr "Den aktuellen Knoten als neuen Stempel verwenden"
 
-#~ msgid "X##mirror"
-#~ msgstr "X##mirror"
-
-#~ msgid "Y##mirror"
-#~ msgstr "Y##mirror"
-
-#~ msgid "Z##mirror"
-#~ msgstr "Z##mirror"
-
-#~ msgid "Center##modifiertype"
-#~ msgstr "Zentrieren##modifiertype"
-
-#~ msgid "Continuous##modifiertype"
-#~ msgstr "Kontinuierlich##modifiertype"
-
-#~ msgid "Replace##stampbrush"
-#~ msgstr "Ersetzen##stampbrush"
-
-#~ msgid "Size##stampbrush"
-#~ msgstr "Größe##stampbrush"
-
-#~ msgid "Cancel##modelsettings"
-#~ msgstr "Abbrechen##modelsettings"
-
-#~ msgid "False color"
-#~ msgstr "Falsche Farbe"
-
-#~ msgid "Merge onto##mergeonto"
-#~ msgstr "Zusammenführen auf##zusammenführenauf"
-
-#~ msgid "Snap"
-#~ msgstr "Ausrichten"
-
-#~ msgid "Details"
-#~ msgstr "Details"
-
-#~ msgid "Text##text"
-#~ msgstr "Text##text"
-
-#~ msgid "Text##textinput"
-#~ msgstr "Text##texteingabe"
-
-#~ msgid "Font##textinput"
-#~ msgstr "Schriftart##texteingabe"
-
-#~ msgid "Execute##textinput"
-#~ msgstr "Ausführen##texteingabe"
-
-#~ msgid "OK##treegenerate"
-#~ msgstr "OK##baumgenerieren"
-
-#~ msgid "Save As"
-#~ msgstr "Speichern unter"
-
-#~ msgid "Cut##scripteditor"
-#~ msgstr "Ausschneiden##skripteditor"
+msgid "Paste the current clipboard content as stamp"
+msgstr "Die Zwischenablage als neuen Stempel verwenden"

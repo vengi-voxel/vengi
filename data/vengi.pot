@@ -1208,6 +1208,9 @@ msgstr ""
 msgid "Paste as new node"
 msgstr ""
 
+msgid "Paste as stamp"
+msgstr ""
+
 msgid "Color picker"
 msgstr ""
 
@@ -1892,6 +1895,9 @@ msgstr ""
 msgid "SceneMode"
 msgstr ""
 
+msgid "Create a reference node"
+msgstr ""
+
 msgid "Resize the volume to the current selection"
 msgstr ""
 
@@ -2181,4 +2187,7 @@ msgid "Use the current selection as new stamp"
 msgstr ""
 
 msgid "Use the current selected node volume as new stamp"
+msgstr ""
+
+msgid "Paste the current clipboard content as stamp"
 msgstr ""
