@@ -1720,6 +1720,11 @@
                         materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_ior;
                         materials.matl[material_id].ior = (float)atof(ior_string);
                     }
+                    const char* ri_string = _vox_dict_get_value_as_string(&dict, "_ri", NULL);
+                    if (ri_string) {
+                        materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_ior;
+                        materials.matl[material_id].ior = (float)atof(ri_string) - 1.0f;
+                    }
                     const char* att_string = _vox_dict_get_value_as_string(&dict, "_att", NULL);
                     if (att_string) {
                         materials.matl[material_id].content_flags |= k_ogt_vox_matl_have_att;
