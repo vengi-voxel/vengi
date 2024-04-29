@@ -704,6 +704,7 @@ void IMGUIApp::languageOption() {
 app::AppState IMGUIApp::onCleanup() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine_Stop(_imguiTestEngine);
+	_fileDialog.unregisterUITests(_imguiTestEngine);
 #endif
 	if (_imguiBackendInitialized) {
 		ImGui_ImplOpenGL3_Shutdown();
@@ -717,6 +718,7 @@ app::AppState IMGUIApp::onCleanup() {
 	}
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine_DestroyContext(_imguiTestEngine);
+	_imguiTestEngine = nullptr;
 #endif
 	_console.shutdown();
 	return Super::onCleanup();
