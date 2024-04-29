@@ -5,6 +5,7 @@
 #include "../MainWindow.h"
 #include "../WindowTitles.h"
 #include "../Viewport.h"
+#include "TestUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 
@@ -55,7 +56,16 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		ctx->ItemClick("###OK");
 	};
 
-	// TODO: new scene select template
+	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {
+		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
+		IM_CHECK(focusWindow(ctx, title));
+		ctx->MenuClick("###File/###New");
+		ctx->Yield();
+		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
+		ctx->ItemClick("##templates/##Knight");
+		IM_CHECK(_sceneMgr->sceneGraph().findNodeByName("K_Waist") != nullptr);
+	};
+
 	// TODO: file dialog load and save
 }
 
