@@ -572,6 +572,7 @@ bool Viewport::createReference(const scenegraph::SceneGraphNode &node) const {
 		return false;
 	}
 	if (!ImGui::IsKeyPressed(ImGuiKey_MouseLeft)) {
+		ImGui::TooltipTextUnformatted(_("Create a reference node"));
 		return false;
 	}
 	return true;
