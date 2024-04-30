@@ -95,7 +95,8 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 	const voxel::NormalArray &normals = mesh.getNormalVector();
 	const bool useNormals = normals.size() == vertices.size();
 
-	const glm::vec3 size = glm::vec3(sceneGraph.resolveRegion(node).getDimensionsInVoxels());
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
+	const glm::vec3 size = glm::vec3(region.getDimensionsInVoxels());
 	const glm::vec3 pivot = node.pivot();
 
 	for (int i = 0; i < tris; i++) {
@@ -132,7 +133,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		const yocto::vec3i vidx{offsetStart + 0, offsetStart + 1, offsetStart + 2};
 		shape->triangles.push_back(vidx);
 	}
-	const glm::vec3 &mins = mesh.getOffset();
+	// const glm::vec3 &mins = mesh.getOffset();
 	_state.scene.shapes.reserve(palette::PaletteMaxColors);
 	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 		yocto::shape_data &shape = shapes[i];
@@ -142,7 +143,7 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const sce
 		_state.scene.shapes.push_back(shape);
 
 		yocto::instance_data instance_data;
-		instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
+		// instance_data.frame = yocto::translation_frame(priv::toVec3f(mins));
 		instance_data.material = _state.scene.materials.size() + i;
 		instance_data.shape = (int)_state.scene.shapes.size() - 1;
 		_state.scene.instances.push_back(instance_data);
