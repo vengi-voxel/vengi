@@ -260,13 +260,17 @@ int SceneGraph::nextModelNode(int nodeId) const {
 	if (ownNode.parent() == InvalidNodeId) {
 		return InvalidNodeId;
 	}
+	bool foundOwnChild = false;
 	const auto &children = node(ownNode.parent()).children();
 	for (int child : children) {
 		if (child == nodeId) {
+			foundOwnChild = true;
 			continue;
 		}
-		if (node(child).isAnyModelNode()) {
-			return child;
+		if (foundOwnChild) {
+			if (node(child).isAnyModelNode()) {
+				return child;
+			}
 		}
 	}
 	bool found = false;
