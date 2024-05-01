@@ -315,7 +315,8 @@ function(engine_add_executable)
 	endif()
 
 	if (INSTALL_DATA)
-		cpack_add_component(${_EXE_TARGET} DISPLAY_NAME "${COMMANDLINE}" DESCRIPTION ${DESCRIPTION})
+		message(STATUS "Installation for ${_EXE_TARGET} with ${COMMANDLINE} and ${DESCRIPTION}")
+		cpack_add_component(${_EXE_TARGET} DISPLAY_NAME "${COMMANDLINE}" DESCRIPTION "${DESCRIPTION}")
 	endif()
 
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_EXECUTABLE True)
