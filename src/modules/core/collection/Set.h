@@ -16,6 +16,9 @@ public:
 	Set(int maxSize = 4096) : Super(maxSize) {
 	}
 
+	/**
+	 * @return @c false if the key already exists
+	 */
 	bool insert(const T& key) {
 		if (has(key)) {
 			return false;
