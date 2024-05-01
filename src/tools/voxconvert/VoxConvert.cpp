@@ -11,6 +11,7 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
+#include "core/collection/StringSet.h"
 #include "core/concurrent/Concurrency.h"
 #include "engine-git.h"
 #include "image/Image.h"
@@ -603,11 +604,14 @@ app::AppState VoxConvert::onInit() {
 	return state;
 }
 
-core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName, const core::String &outExt, int id) {
+core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, const core::String &modelName,
+												 const core::String &outExt, int id, bool uniqueNames) {
 	const core::String &ext = outExt.empty() ? core::string::extractExtension(inputfile) : outExt;
 	core::String name;
 	if (modelName.empty()) {
 		name = core::string::format("model-%i.%s", id, ext.c_str());
+	} else if (uniqueNames) {
+		name = core::string::format("%s.%s", modelName.c_str(), ext.c_str());
 	} else {
 		name = core::string::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
 	}
@@ -734,17 +738,36 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 	return true;
 }
 
+static bool hasUniqueModelNames(const scenegraph::SceneGraph &sceneGraph) {
+	core::StringSet names;
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
+		if (!names.insert(node.name())) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext) {
 	Log::info("Export models into single objects");
 	int id = 0;
 	voxelformat::SaveContext saveCtx;
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
+	const auto &nodes = sceneGraph.nodes();
+	const bool uniqueNames = hasUniqueModelNames(sceneGraph);
+	for (auto entry : nodes) {
+		const scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isModelNode()) {
+			continue;
+		}
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		const core::String& filename = getFilenameForModelName(inputfile, node.name(), ext, id);
+		const core::String& filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);
 		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
