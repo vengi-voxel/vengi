@@ -499,6 +499,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	palette::Palette nodePalette = palette;
 	bool hasPivot = false;
 	bool sizeChunkFound = false;
+	bool paletteFound = false;
 	while (!stream.eos()) {
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
 		Chunk subChunk;
@@ -538,6 +539,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_PALETTE_V6: {
 			wrapBool(loadPalette6(stream, nodePalette))
+			paletteFound = true;
 			break;
 		}
 		case priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6: {
@@ -691,6 +693,9 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	if (parentShapeId != 0) {
 		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByPropertyValue("shapeId", core::string::format("%d", parentShapeId))) {
 			parent = parentNode->id();
+			if (!paletteFound) {
+				node.setPalette(parentNode->palette());
+			}
 		} else {
 			Log::warn("Could not find node with parent shape id %d", parentShapeId);
 		}
