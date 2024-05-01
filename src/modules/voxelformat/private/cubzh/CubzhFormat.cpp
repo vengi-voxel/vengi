@@ -507,12 +507,15 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
 			wrap(stream.readUInt16(shapeId))
+			Log::debug("Load shape id %u", shapeId);
 			node.setProperty("shapeId", core::string::format("%d", shapeId));
 			break;
 		case priv::CHUNK_ID_SHAPE_PARENT_ID_V6:
 			wrap(stream.readUInt16(parentShapeId))
+			Log::debug("Load parent id %u", parentShapeId);
 			break;
 		case priv::CHUNK_ID_SHAPE_TRANSFORM_V6: {
+			Log::debug("Load transform");
 			wrap(stream.readFloat(pos.x))
 			wrap(stream.readFloat(pos.y))
 			wrap(stream.readFloat(pos.z))
@@ -525,6 +528,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_PIVOT_V6: {
+			Log::debug("Load pivot");
 			wrap(stream.readFloat(pivot.x))
 			wrap(stream.readFloat(pivot.y))
 			wrap(stream.readFloat(pivot.z))
@@ -537,6 +541,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6: {
+			Log::debug("Load collision box");
 			glm::vec3 mins;
 			glm::vec3 maxs;
 			wrap(stream.readFloat(mins.x))
@@ -548,6 +553,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6: {
+			Log::debug("Load hidden state");
 			node.setVisible(!stream.readBool());
 			break;
 		}
@@ -557,9 +563,11 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			if (!name.empty()) {
 				node.setName(name);
 			}
+			Log::debug("Load node name: %s", name.c_str());
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_SIZE_V6:
+			Log::debug("Load shape size");
 			wrap(stream.readUInt16(width))
 			wrap(stream.readUInt16(height))
 			wrap(stream.readUInt16(depth))
@@ -630,6 +638,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_POINT_V6: {
+			Log::debug("Load shape point");
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
 			float f3x, f3y, f3z;
@@ -640,6 +649,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6: {
+			Log::debug("Load shape point rotation");
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
 			glm::vec3 poiPos;
@@ -650,6 +660,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_BAKED_LIGHTING_V6:
 		default:
+			Log::debug("Ignore subchunk %u", subChunk.chunkId);
 			wrapBool(loadSkipSubChunk(subChunk, stream))
 			break;
 		}
@@ -701,13 +712,13 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 		}
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_PALETTE_V6: {
-			Log::debug("load palette");
+			Log::debug("load v6 palette");
 			CubzhReadStream zhs(header, chunk, stream);
 			wrapBool(loadPalette6(zhs, palette))
 			break;
 		}
 		case priv::CHUNK_ID_PALETTE_LEGACY_V6: {
-			Log::debug("load palette");
+			Log::debug("load legacy palette");
 			CubzhReadStream zhs(header, chunk, stream);
 			wrapBool(loadPalette5(zhs, palette))
 			break;
@@ -734,6 +745,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 			break;
 		}
 		default:
+			Log::debug("ignore chunk with id %i", chunk.chunkId);
 			wrapBool(loadSkipChunk(header, chunk, stream))
 			break;
 		}
