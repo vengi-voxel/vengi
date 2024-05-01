@@ -4,6 +4,8 @@
 
 #include "Assert.h"
 #include "Log.h"
+#include "core/String.h"
+#include "core/StringUtil.h"
 #include <SDL_assert.h>
 
 #ifdef HAVE_BACKWARD
@@ -12,6 +14,12 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
+
+static core::String g_crashLogPath = "crash.log";
+
+const char *core_crashlog_path() {
+	return g_crashLogPath.c_str();
+}
 
 static_assert(sizeof(SDL_AssertData) == sizeof(AssertData));
 
@@ -23,11 +31,20 @@ static SDL_assert_state coreAssertionHandler(const SDL_assert_data *data, void *
 	if (state == SDL_ASSERTION_RETRY) {
 		return state;
 	}
+	if (state == SDL_ASSERTION_ABORT) {
+		core_write_stacktrace();
+		return state;
+	}
 	return state;
 }
 
-void core_assert_init() {
-	SDL_SetAssertionHandler(coreAssertionHandler, nullptr);
+void core_assert_init(const char *crashLogDir) {
+	if (crashLogDir != nullptr) {
+		g_crashLogPath = core::string::path(crashLogDir, "crash.log");
+	}
+	if (SDL_GetAssertionHandler(nullptr) != coreAssertionHandler) {
+		SDL_SetAssertionHandler(coreAssertionHandler, nullptr);
+	}
 }
 
 bool core_report_assert(AssertData &data, const char *file, int line, const char *function) {
@@ -52,6 +69,7 @@ bool core_assert_impl_message(AssertData &data, char *buf, int bufSize, const ch
 	if (state == SDL_ASSERTION_BREAK) {
 		SDL_TriggerBreakpoint();
 	}
+
 	return false;
 }
 
@@ -71,10 +89,25 @@ void core_get_stacktrace(char *buf, size_t size) {
 #endif
 }
 
+void core_write_stacktrace(const char *file) {
+#if defined(HAVE_BACKWARD)
+	core::String p = file == nullptr ? g_crashLogPath.c_str() : file;
+	if (p.empty()) {
+		p = "crash.log";
+	}
+	printf("write crash to file: %s\n", p.c_str());
+	std::ofstream os(p.c_str());
+	backward::StackTrace st;
+	st.load_here(32);
+	backward::Printer printer;
+	printer.print(st, os);
+#endif
+}
+
 void core_stacktrace() {
 #ifdef __EMSCRIPTEN__
 	EM_ASM({ stackTrace(); });
-#else
+#elif defined(HAVE_BACKWARD)
 	std::ostringstream os;
 	backward::StackTrace st;
 	st.load_here(32);

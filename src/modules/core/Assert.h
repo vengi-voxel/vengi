@@ -17,9 +17,11 @@ struct AssertData {
 	struct AssertData *next;
 };
 
-void core_assert_init();
+const char *core_crashlog_path();
+void core_assert_init(const char *crashLogDir);
 void core_get_stacktrace(char *buf, size_t size);
 void core_stacktrace();
+void core_write_stacktrace(const char *file = nullptr);
 bool core_report_assert(AssertData &data, const char *file, int line, const char *function);
 
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking

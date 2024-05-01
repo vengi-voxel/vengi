@@ -30,6 +30,7 @@ General:
    - Fixed error in up-scaling volumes
    - Fixed x-axis flip for cubzh `3zh` files
    - Added cvar `voxformat_rgbweightedaverage` to control the color contributions for a triangle
+   - Added the ability to upload crash dumps
 
 VoxConvert:
 

@@ -7,6 +7,7 @@ import threading
 import queue
 import configparser
 import logging
+import uuid
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -60,6 +61,22 @@ def home():
 @app.route('/browser-data')
 def browserData():
     return send_file("voxbrowser-sources.json", as_attachment=True, download_name="voxbrowser-sources.json")
+
+@app.route('/crashlog', methods = ['POST'])
+def crashlog():
+    if request.data is None:
+        return Response("Missing crashlog data", status_code = 400)
+    fileuuid = uuid.uuid4()
+    fileuuidstr = str(fileuuid)
+
+    userAgent = request.headers['User-Agent']
+
+    # this directory must exists in the current working dir and must be writable
+    with open(f"crashlogs/{fileuuidstr}.txt", "w") as fo:
+        fo.write("----------------------------\n")
+        fo.write(f"Application: {userAgent}\n")
+        fo.write(request.data.decode("utf-8"))
+    return Response(status = 204)
 
 @app.route('/metric', methods = ['POST'])
 def metric():

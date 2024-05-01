@@ -7,6 +7,7 @@
 #include "app/i18n/findlocale.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
+#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
@@ -16,7 +17,9 @@
 #include "core/concurrent/ThreadPool.h"
 #include "app/I18N.h"
 #include "engine-config.h"
+#include "http/Request.h"
 #include "io/Filesystem.h"
+#include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
 #include <SDL.h>
@@ -64,16 +67,23 @@ void App::runFrameEmscripten() {
 }
 #endif
 
-static void catch_function(int signo) {
-	core_stacktrace();
-	abort();
+#ifdef _WIN32
+static LONG WINAPI app_crash_handler(LPEXCEPTION_POINTERS) {
+	core_write_stacktrace();
+	return EXCEPTION_EXECUTE_HANDLER;
 }
+#else
+static void app_crash_handler(int signal) {
+	core_write_stacktrace();
+	_exit(1);
+}
+#endif
 
-static void graceful_shutdown(int signo) {
+static void app_graceful_shutdown(int signo) {
 	App::getInstance()->requestQuit();
 }
 
-static void loop_debug_log(int signo) {
+static void app_loop_debug_log(int signo) {
 	const core::VarPtr &log = core::Var::getSafe(cfg::CoreLogLevel);
 	int current = log->intVal();
 	current--;
@@ -89,7 +99,6 @@ App *App::getInstance() {
 	core_assert(_staticInstance != nullptr);
 	return _staticInstance;
 }
-
 
 App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, size_t threadPoolSize)
 	: _filesystem(filesystem), _threadPool(core::make_shared<core::ThreadPool>(threadPoolSize, "Core")),
@@ -130,14 +139,34 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 		_osVersion = "undetected";
 	}
 
-	core_assert_init();
-	signal(SIGSEGV, catch_function);
+	core_assert_init(nullptr);
+
+#ifdef _WIN32
+	SetUnhandledExceptionFilter(&app_crash_handler);
+#else
+	struct sigaction action = {};
+	action.sa_handler = app_crash_handler;
+	action.sa_flags = SA_SIGINFO;
+	sigaction(SIGSEGV, &action, nullptr); // Invalid memory reference
+	sigaction(SIGABRT, &action, nullptr); // Abort signal from abort(3)
+	sigaction(SIGBUS, &action, nullptr);  // Bus error (bad memory access)
+	sigaction(SIGFPE, &action, nullptr);  // Floating point exception
+	sigaction(SIGILL, &action, nullptr);  // Illegal Instruction
+	sigaction(SIGIOT, &action, nullptr);  // IOT trap. A synonym for SIGABRT
+	sigaction(SIGQUIT, &action, nullptr); // Quit from keyboard
+	sigaction(SIGSYS, &action, nullptr);  // Bad argument to routine (SVr4)
+	sigaction(SIGTRAP, &action, nullptr); // Trace/breakpoint trap
+	sigaction(SIGXCPU, &action, nullptr); // CPU time limit exceeded (4.2BSD)
+	sigaction(SIGXFSZ, &action, nullptr); // File size limit exceeded (4.2BSD)
+#endif
+
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
-	signal(SIGINT, graceful_shutdown);
-	signal(42, loop_debug_log);
+	signal(SIGINT, app_graceful_shutdown);
+	// send the signal 42 to enable debug logging in a running application
+	signal(42, app_loop_debug_log);
 }
 
 App::~App() {
@@ -178,7 +207,7 @@ void App::remBlocker(AppState blockedState) {
 bool App::isRunning(int pid) const {
 #ifdef __WIN32__
 	HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
-	if (process == NULL) {
+	if (process == nullptr) {
 		return false;
 	}
 	DWORD ret = WaitForSingleObject(process, 0);
@@ -251,22 +280,40 @@ void App::onFrame() {
 				memset(&messageboxdata, 0, sizeof(messageboxdata));
 				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
 				messageboxdata.title = "Detected previous crash";
-				messageboxdata.message = "The previous session crashed - would you like to reset the configuration?";
-				messageboxdata.numbuttons = 2;
-				SDL_MessageBoxButtonData buttons[2];
+				core::String crashLog = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead)->load();
+				messageboxdata.message = "The previous session crashed. Please upload the crash logs. \nAnd if the error persists, please try to reset the configuration?";
+				messageboxdata.numbuttons = crashLog.empty() ? 2 : 3;
+				SDL_MessageBoxButtonData buttons[3];
 				memset(&buttons, 0, sizeof(buttons));
-				buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 				buttons[0].buttonid = 0;
-				buttons[0].text = "Yes";
+				buttons[0].text = "Reset";
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
 				buttons[1].buttonid = 1;
 				buttons[1].text = "No";
+				if (messageboxdata.numbuttons == 3) {
+					buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+					buttons[2].buttonid = 2;
+					buttons[2].text = "Upload crash log";
+				}
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;
-				if (SDL_ShowMessageBox(&messageboxdata, &buttonId)) {
+				if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
 					if (buttonId == 0) {
-						Log::error("Reset cvars to their default values");
+						Log::info("Reset cvars to their default values");
 						core::Var::visit([](const core::VarPtr &var) { var->reset(); });
+					}
+					if (buttonId == 2) {
+						Log::info("Upload crash log");
+						http::Request request("https://vengi-voxel.de/api/crashlog", http::RequestType::POST);
+						request.setBody(crashLog);
+						const core::String userAgent = fullAppname() + "/" PROJECT_VERSION;
+						request.setUserAgent(userAgent);
+						request.addHeader("Content-Type", "text/plain");
+						io::NOPWriteStream stream;
+						int statusCode = 0;
+						if (!request.execute(stream, &statusCode)) {
+							Log::error("Failed to upload crash log with status: %i", statusCode);
+						}
 					}
 				}
 			}
@@ -371,6 +418,7 @@ AppState App::onConstruct() {
 	if (!_filesystem->init(_organisation, _appname)) {
 		Log::warn("Failed to initialize the filesystem");
 	}
+	core_assert_init(_filesystem->homePath().c_str());
 
 	for (const core::String &path : _filesystem->paths()) {
 		_dictManager.addDirectory(path);
