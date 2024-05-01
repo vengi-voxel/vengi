@@ -81,7 +81,7 @@ PathTracer::~PathTracer() {
 
 bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							 const voxel::Mesh &mesh, bool opaque) {
-	const palette::Palette &palette = node.palette();
+	// const palette::Palette &palette = node.palette();
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 	const voxel::IndexArray &indices = mesh.getIndexVector();
