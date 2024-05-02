@@ -13,12 +13,7 @@ namespace voxedit {
 
 void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
-		const int viewportId = viewportEditMode(ctx, _app);
-		IM_CHECK_SILENT(viewportId != -1);
-
-		// by activating the edit mode viewport - we activate the brush panel
-		const core::String id = Viewport::viewportId(viewportId);
-		ctx->ItemClick(id.c_str());
+		viewportEditMode(ctx, _app);
 
 		// now we can focus the brush panel
 		IM_CHECK(focusWindow(ctx, title));
@@ -39,20 +34,13 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 		modifier.setModifierType(ModifierType::Select);
 
 		const int viewportId = viewportEditMode(ctx, _app);
-		IM_CHECK_SILENT(viewportId != -1);
-
-		const core::String id = Viewport::viewportId(viewportId);
-		ctx->ItemClick(id.c_str());
-
-		ImGuiWindow* window = ImGui::FindWindowByName(id.c_str());
-		IM_CHECK_SILENT(window != nullptr);
-		ctx->MouseMoveToPos(window->Rect().GetCenter());
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 
 		modifier.unselect();
 		IM_CHECK(modifier.selections().empty());
 
 		command::executeCommands("+actionexecute 1 1");
-		ctx->MouseMoveToPos(window->Rect().GetTL());
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
 		command::executeCommands("-actionexecute 1 1");
 		IM_CHECK(!modifier.selections().empty());
 
