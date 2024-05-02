@@ -49,6 +49,7 @@ VoxEdit:
    - Re-enabled the yocto-pathtracer panels again
    - Moved some ui elements into other panels
    - Improved stamp brush features
+   - Fixed brush regression in combination with the override mode
 
 Thumbnailer:
 
