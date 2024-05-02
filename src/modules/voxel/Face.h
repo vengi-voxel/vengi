@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Enum.h"
+#include "math/Axis.h"
 #include "voxel/Voxel.h"
 #include <glm/vec3.hpp>
 
@@ -13,6 +14,8 @@ namespace voxel {
 enum class FaceNames : uint8_t {
 	PositiveX = 0, PositiveY = 1, PositiveZ = 2, NegativeX = 3, NegativeY = 4, NegativeZ = 5, Max
 };
+
+math::Axis faceToAxis(FaceNames face);
 
 inline bool isHorizontalFace(FaceNames face) {
 	return face == FaceNames::PositiveX || face == FaceNames::PositiveZ || face == FaceNames::NegativeX || face == FaceNames::NegativeZ;

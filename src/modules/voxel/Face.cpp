@@ -12,6 +12,22 @@
 
 namespace voxel {
 
+math::Axis faceToAxis(FaceNames face) {
+	switch (face) {
+	case FaceNames::PositiveX:
+	case FaceNames::NegativeX:
+		return math::Axis::X;
+	case FaceNames::PositiveY:
+	case FaceNames::NegativeY:
+		return math::Axis::Y;
+	case FaceNames::PositiveZ:
+	case FaceNames::NegativeZ:
+		return math::Axis::Z;
+	default:
+		return math::Axis::X;
+	}
+}
+
 FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float offsetMins, float offsetMaxs) {
 	const glm::vec3& rayDirection = glm::normalize(hitPos - rayOrigin);
 	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, offsetMins, offsetMaxs);
