@@ -29,6 +29,7 @@ protected:
 public:
 	virtual ~Panel();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
+	IMGUIApp *app() { return _app; }
 	virtual void registerUITests(ImGuiTestEngine *, const char *);
 	void unregisterUITests(ImGuiTestEngine *);
 	const char *testCategory() const { return _title.c_str(); }
