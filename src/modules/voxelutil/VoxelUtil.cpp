@@ -400,8 +400,17 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel) {
+	bool firstVoxelIsAir = false;
+	bool firstVoxel = true;
 	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
 		const voxel::Voxel &v = volume.voxel(p);
+		if (firstVoxel) {
+			firstVoxelIsAir = voxel::isAir(v.getMaterial());
+		}
+		firstVoxel = false;
+		if (firstVoxelIsAir) {
+			return voxel::isAir(v.getMaterial());
+		}
 		return voxel::isBlocked(v.getMaterial());
 	};
 	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {

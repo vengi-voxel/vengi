@@ -4,10 +4,14 @@
 
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
 #include "app/tests/AbstractTest.h"
+#include "AbstractBrushTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxedit-util/ISceneRenderer.h"
+#include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "palette/Palette.h"
+#include "voxedit-util/modifier/brush/Brush.h"
+#include "voxel/Face.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -45,6 +49,11 @@ TEST_F(PlaneBrushTest, testExtrude) {
 	}
 
 	brush.shutdown();
+}
+
+TEST_P(BrushTestParamTest, testPlaneBrush) {
+	PlaneBrush brush;
+	testPlaceAndOverride(brush);
 }
 
 } // namespace voxedit

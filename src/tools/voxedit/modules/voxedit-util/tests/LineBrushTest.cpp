@@ -7,6 +7,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/tests/AbstractBrushTest.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -37,6 +38,11 @@ TEST_F(LineBrushTest, testExecute) {
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.referencePos).getMaterial()));
 
 	brush.shutdown();
+}
+
+TEST_P(BrushTestParamTest, testLineBrush) {
+	LineBrush brush;
+	testPlaceAndOverride(brush);
 }
 
 } // namespace voxedit

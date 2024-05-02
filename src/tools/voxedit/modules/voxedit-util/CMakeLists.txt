@@ -37,6 +37,7 @@ set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator voxelfont)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
+	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
 	tests/LineBrushTest.cpp
 	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp

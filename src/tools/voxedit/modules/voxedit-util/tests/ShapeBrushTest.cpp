@@ -10,6 +10,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxedit-util/tests/AbstractBrushTest.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -121,16 +122,11 @@ TEST_F(ShapeBrushTest, testModifierActionMirrorAxisZ) {
 	testMirror(math::Axis::Z, glm::ivec3(-2), glm::ivec3(1, -2, -2));
 }
 
-TEST_F(ShapeBrushTest, DISABLED_testPlace) {
-	// TODO: implement me
-}
-
-TEST_F(ShapeBrushTest, DISABLED_testErase) {
-	// TODO: implement me
-}
-
-TEST_F(ShapeBrushTest, DISABLED_testPaint) {
-	// TODO: implement me
+TEST_P(BrushTestParamTest, testShapeBrush) {
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	ShapeBrush brush(&mgr);
+	testPlaceAndOverride(brush);
 }
 
 }; // namespace voxedit
