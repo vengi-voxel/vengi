@@ -69,8 +69,6 @@ protected:
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
 
-	Brush *activeBrush();
-
 	voxel::Region calcSelectionRegion() const;
 
 public:
@@ -132,6 +130,7 @@ public:
 	BrushType setBrushType(BrushType type);
 	BrushType brushType() const;
 
+	Brush *activeBrush();
 	const AABBBrush *activeAABBBrush() const;
 	AABBBrush *activeAABBBrush();
 	voxel::Region calcBrushRegion();

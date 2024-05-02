@@ -81,7 +81,7 @@ public:
 			}
 		}
 		voxel::Voxel placeVoxel = voxel;
-		if (!_override && _erase) {
+		if (_erase) {
 			placeVoxel = voxel::createVoxel(voxel::VoxelType::Air, 0);
 		}
 		if (skip(x, y, z)) {
