@@ -309,6 +309,8 @@ void App::onFrame() {
 						const core::String userAgent = fullAppname() + "/" PROJECT_VERSION;
 						request.setUserAgent(userAgent);
 						request.addHeader("Content-Type", "text/plain");
+						request.addHeader("X-OperatingSystem", _osName);
+						request.addHeader("X-OperatingSystemVersion", _osVersion);
 						io::NOPWriteStream stream;
 						int statusCode = 0;
 						if (!request.execute(stream, &statusCode)) {
