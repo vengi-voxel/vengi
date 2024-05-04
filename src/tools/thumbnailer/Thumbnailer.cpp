@@ -23,6 +23,7 @@ Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimePr
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
+	_wantCrashLogs = true;
 	_initialLogLevel = SDL_LOG_PRIORITY_ERROR;
 }
 

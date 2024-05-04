@@ -21,6 +21,7 @@
 VoxBrowser::VoxBrowser(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider, const video::TexturePoolPtr &texturePool)
 	: Super(filesystem, timeProvider, core::halfcpus()), _collectionMgr(filesystem, texturePool), _texturePool(texturePool) {
 	init(ORGANISATION, "voxbrowser");
+	_wantCrashLogs = true;
 }
 
 app::AppState VoxBrowser::onCleanup() {

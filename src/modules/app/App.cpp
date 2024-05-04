@@ -231,7 +231,7 @@ bool App::createPid() {
 	}
 	_filesystem->write("app.pid", core::string::toString(_pid));
 	// the pid doesn't exist anymore, so this was most likely a crash
-	return true;
+	return _wantCrashLogs;
 }
 
 void App::deletePid() {
@@ -289,11 +289,11 @@ void App::onFrame() {
 				buttons[0].text = "Reset";
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
 				buttons[1].buttonid = 1;
-				buttons[1].text = "No";
+				buttons[1].text = "Continue";
 				if (messageboxdata.numbuttons == 3) {
 					buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 					buttons[2].buttonid = 2;
-					buttons[2].text = "Upload crash log";
+					buttons[2].text = "Upload";
 				}
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;

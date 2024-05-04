@@ -53,6 +53,7 @@
 VoxConvert::VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
+	_wantCrashLogs = true;
 }
 
 app::AppState VoxConvert::onConstruct() {

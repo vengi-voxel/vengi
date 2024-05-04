@@ -86,6 +86,10 @@ protected:
 	 */
 	bool _coredump = false;
 	/**
+	 * @brief Set this to true to upload the crash logs to the vengi server
+	 */
+	bool _wantCrashLogs = false;
+	/**
 	 * @brief The seconds delta of the start of the current frame
 	 * and the start of the last frame
 	 */

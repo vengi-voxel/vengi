@@ -40,6 +40,7 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	_allowRelativeMouseMode = false;
 	_iniVersion = 6;
 	_keybindingsVersion = 1;
+	_wantCrashLogs = true;
 
 	// see KeyBindings enum
 	_uiKeyMaps.push_back("Magicavoxel");
