@@ -281,7 +281,9 @@ void App::onFrame() {
 				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
 				messageboxdata.title = "Detected previous crash";
 				core::String crashLog = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead)->load();
-				messageboxdata.message = "The previous session crashed. Please upload the crash logs. \nAnd if the error persists, please try to reset the configuration?";
+				messageboxdata.message = "Please upload the crash logs."
+					"\n"
+					"If the error persists, reset the configuration";
 				messageboxdata.numbuttons = crashLog.empty() ? 2 : 3;
 				SDL_MessageBoxButtonData buttons[3];
 				memset(&buttons, 0, sizeof(buttons));
