@@ -186,6 +186,23 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	PathBrush &brush = modifier.pathBrush();
+	voxelutil::Connectivity c = brush.connectivity();
+	int selected = (int)c;
+	const char *items[] = {_("6-connected"), _("18-connected"), _("26-connected")};
+	if (ImGui::BeginCombo(_("Connectivity"), items[selected])) {
+		for (int i = 0; i < lengthof(items); ++i) {
+			bool isSelected = selected == i;
+			if (ImGui::Selectable(items[i], isSelected)) {
+				brush.setConnectivity((voxelutil::Connectivity)i);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
 	ImGui::TextWrappedUnformatted(_("Draws a path over existing voxels"));
 }
 

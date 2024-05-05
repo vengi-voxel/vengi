@@ -137,6 +137,7 @@ public:
 
 	ShapeBrush &shapeBrush();
 	StampBrush &stampBrush();
+	PathBrush &pathBrush();
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
 	const BrushContext &brushContext() const;
@@ -200,6 +201,10 @@ inline ShapeBrush &Modifier::shapeBrush() {
 
 inline StampBrush &Modifier::stampBrush() {
 	return _stampBrush;
+}
+
+inline PathBrush &Modifier::pathBrush() {
+	return _pathBrush;
 }
 
 inline PaintBrush &Modifier::paintBrush() {
