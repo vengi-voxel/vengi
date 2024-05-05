@@ -47,9 +47,7 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 		name = core::string::format("%i", node.id());
 	}
 	wrapBool(stream.writeString(node.name(), true))
-	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
-		wrapBool(stream.writeString("", true))
-	} else {
+	if (node.isAnyModelNode()) {
 		const core::String baseName = core::string::stripExtension(core::string::extractFilename(filename));
 		const core::String finalName = baseName + name + ".vxm";
 		wrapBool(stream.writeString(finalName, true))
@@ -62,11 +60,16 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 		}
 		io::FileStream wstream(outputFile);
 		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::SceneGraphNode newNode;
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		copyNode(node, newNode, false);
+		if (node.isReference()) {
+			newNode.setVolume(sceneGraph.resolveVolume(node));
+		}
 		newSceneGraph.emplace(core::move(newNode));
 		wrapBool(f.save(newSceneGraph, fullPath, wstream, ctx))
 		Log::debug("Saved the model to %s", fullPath.c_str());
+	} else {
+		wrapBool(stream.writeString("", true))
 	}
 
 	wrapBool(saveNodeProperties(&node, stream))
@@ -488,7 +491,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 	wrap(stream.readInt32(children))
 
 	if (version >= 8) {
-		handleVersion8AndLater(stream, rootNode, ctx);
+		wrapBool(handleVersion8AndLater(stream, rootNode, ctx));
 	}
 
 	Log::debug("Found %i children", children);
