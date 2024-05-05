@@ -252,6 +252,10 @@ void FormatPrinter::printMarkdownTables() {
 
 void FormatPrinter::printApplicationWix() {
 	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	Log::printf("<!--\n");
+	Log::printf("	using the formatprinter and capturing the stdout to write it into this file can add BOMs under windows\n");
+	Log::printf("	if you are getting weird errors about unclosed tokens, remove the BOM\n");
+	Log::printf("-->\n");
 	Log::printf("<CPackWiXPatch>\n");
 	Log::printf("	<!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->\n");
 	Log::printf("	<CPackWiXFragment Id=\"CM_CP_voxedit.voxedit.vengi_voxedit.exe\">\n");
@@ -264,7 +268,7 @@ void FormatPrinter::printApplicationWix() {
 	Log::printf("		<!-- App Paths -->\n");
 	Log::printf("		<RegistryKey Root=\"HKLM\" Key=\"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\vengi_voxedit.exe\">\n");
 	Log::printf("			<RegistryValue Type=\"string\" Value=\"[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]\" />\n");
-	Log::printf("			<RegistryValue Type=\"string\" Name=\"Path\" Value=\"[#CM_CP_voxedit.voxedit.vengi_voxedit.exe]\" />\n");
+	Log::printf("			<RegistryValue Type=\"string\" Name=\"Path\" Value=\"[INSTALL_ROOT]\" />\n");
 	Log::printf("		</RegistryKey>\n");
 	Log::printf("\n");
 	Log::printf("		<!-- Default Programs Capabilities -->\n");
