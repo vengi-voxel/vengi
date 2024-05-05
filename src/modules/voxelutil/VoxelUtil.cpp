@@ -22,24 +22,79 @@
 
 namespace voxelutil {
 
-bool isTouching(const voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos) {
-	static const glm::ivec3 offsets[] = {
-		glm::ivec3(0, 0, -1),	glm::ivec3(0, 0, +1),	glm::ivec3(0, -1, 0),	glm::ivec3(0, +1, 0),
-		glm::ivec3(-1, 0, 0),	glm::ivec3(+1, 0, 0),	glm::ivec3(0, -1, -1),	glm::ivec3(0, -1, +1),
-		glm::ivec3(0, +1, -1),	glm::ivec3(0, +1, +1),	glm::ivec3(-1, 0, -1),	glm::ivec3(-1, 0, +1),
-		glm::ivec3(+1, 0, -1),	glm::ivec3(+1, 0, +1),	glm::ivec3(-1, -1, 0),	glm::ivec3(-1, +1, 0),
-		glm::ivec3(+1, -1, 0),	glm::ivec3(+1, +1, 0),	glm::ivec3(-1, -1, -1), glm::ivec3(-1, -1, +1),
-		glm::ivec3(-1, +1, -1), glm::ivec3(-1, +1, +1), glm::ivec3(+1, -1, -1), glm::ivec3(+1, -1, +1),
-		glm::ivec3(+1, +1, -1), glm::ivec3(+1, +1, +1)};
-	const voxel::Region &region = volume.region();
-	for (int i = 0; i < lengthof(offsets); ++i) {
-		const glm::ivec3 &volPos = pos + offsets[i];
-		if (!region.containsPoint(volPos)) {
-			continue;
+bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectivity connectivity) {
+	static const glm::ivec3 arrayPathfinderFaces[6] = {
+			glm::ivec3(0, 0, -1),
+			glm::ivec3(0, 0, +1),
+			glm::ivec3(0, -1, 0),
+			glm::ivec3(0, +1, 0),
+			glm::ivec3(-1, 0, 0),
+			glm::ivec3(+1, 0, 0) };
+
+	static const glm::ivec3 arrayPathfinderEdges[12] = {
+			glm::ivec3(0, -1, -1),
+			glm::ivec3(0, -1, +1),
+			glm::ivec3(0, +1, -1),
+			glm::ivec3(0, +1, +1),
+			glm::ivec3(-1, 0, -1),
+			glm::ivec3(-1, 0, +1),
+			glm::ivec3(+1, 0, -1),
+			glm::ivec3(+1, 0, +1),
+			glm::ivec3(-1, -1, 0),
+			glm::ivec3(-1, +1, 0),
+			glm::ivec3(+1, -1, 0),
+			glm::ivec3(+1, +1, 0) };
+
+	static const glm::ivec3 arrayPathfinderCorners[8] = {
+			glm::ivec3(-1, -1, -1),
+			glm::ivec3(-1, -1, +1),
+			glm::ivec3(-1, +1, -1),
+			glm::ivec3(-1, +1, +1),
+			glm::ivec3(+1, -1, -1),
+			glm::ivec3(+1, -1, +1),
+			glm::ivec3(+1, +1, -1),
+			glm::ivec3(+1, +1, +1) };
+
+	voxel::RawVolume::Sampler sampler(volume);
+	if (!sampler.setPosition(pos)) {
+		return false;
+	}
+	switch (connectivity) {
+	case Connectivity::TwentySixConnected:
+		for (const glm::ivec3 &offset : arrayPathfinderCorners) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				return true;
+			}
 		}
-		if (voxel::isBlocked(volume.voxel(volPos).getMaterial())) {
-			return true;
+		/* fallthrough */
+
+	case Connectivity::EighteenConnected:
+		for (const glm::ivec3 &offset : arrayPathfinderEdges) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				return true;
+			}
 		}
+		/* fallthrough */
+
+	case Connectivity::SixConnected:
+		for (const glm::ivec3 &offset : arrayPathfinderFaces) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				return true;
+			}
+		}
+		break;
 	}
 	return false;
 }
