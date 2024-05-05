@@ -674,7 +674,7 @@ const jsonData = {
         "thing"
       ],
       "magics": [],
-      "mimetype": "application/x-rooms.xyz-thing",
+      "mimetype": "application/x-rooms-xyz-thing",
       "animation": false,
       "save": false
     },

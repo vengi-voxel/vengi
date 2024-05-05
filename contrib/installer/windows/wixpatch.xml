@@ -416,7 +416,7 @@
 		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".thing" Value="" Type="string" />
 		<RegistryValue Root="HKCR" Key=".thing\OpenWithProgids" Name="vengi-voxedit.thing" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.thing" Description="Rooms.xyz Thing" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
-			<Extension Id="thing" ContentType="application/x-rooms.xyz-thing">
+			<Extension Id="thing" ContentType="application/x-rooms-xyz-thing">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
@@ -479,7 +479,7 @@
 		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vmaxb" Value="" Type="string" />
 		<RegistryValue Root="HKCR" Key=".vmaxb\OpenWithProgids" Name="vengi-voxedit.vmaxb" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vmaxb" Description="VoxelMax" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
-			<Extension Id="vmaxb" ContentType="application/x-voxelmax-vmax.zip">
+			<Extension Id="vmaxb" ContentType="application/x-voxelmax-vmax-zip">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
