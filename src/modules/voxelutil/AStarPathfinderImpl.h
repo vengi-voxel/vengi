@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "Connectivity.h"
 #include <glm/vec3.hpp>
 #include <algorithm>
 #include <limits> //For numeric_limits
@@ -15,16 +16,6 @@ namespace voxelutil {
 
 class OpenNodesContainer;
 class ClosedNodesContainer;
-
-/// The Connectivity of a voxel determines how many neighbours it has.
-enum Connectivity {
-	/// Each voxel has six neighbours, which are those sharing a face.
-	SixConnected,
-	/// Each voxel has 18 neighbours, which are those sharing a face or an edge.
-	EighteenConnected,
-	/// Each voxel has 26 neighbours, which are those sharing a face, edge, or corner.
-	TwentySixConnected
-};
 
 struct Node {
 	Node(int x, int y, int z) :
