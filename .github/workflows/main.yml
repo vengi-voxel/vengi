@@ -242,6 +242,12 @@ jobs:
             cmake --install . --component voxbrowser --prefix voxbrowser-install
             cpack
 
+        - name: Upload the vengi msi
+          uses: actions/upload-artifact@v4
+          with:
+            name: win-vengi-msi
+            path: build/vengi.msi
+
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
           with:
