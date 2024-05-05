@@ -743,7 +743,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		voxelutil::visitVolume(
 			*sceneGraph.resolveVolume(node), voxel::Region(mins, maxs), BlockSize, BlockSize, BlockSize,
 			[&](int x, int y, int z, const voxel::Voxel &) {
-				if (isEmptyBlock(node.volume(), glm::ivec3(BlockSize), x, y, z)) {
+				if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
 					return;
 				}
 				++layerBlocks;
@@ -757,7 +757,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		for (int y = mins.y; y <= maxs.y; y += BlockSize) {
 			for (int z = mins.z; z <= maxs.z; z += BlockSize) {
 				for (int x = mins.x; x <= maxs.x; x += BlockSize) {
-					if (isEmptyBlock(node.volume(), glm::ivec3(BlockSize), x, y, z)) {
+					if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
 						continue;
 					}
 					Log::debug("Saved LAYR chunk %i at %i:%i:%i", blockUid, x, y, z);
