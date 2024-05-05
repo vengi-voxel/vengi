@@ -91,7 +91,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeFloat(pivot.y));
 	wrapBool(stream.writeFloat(pivot.z));
 
-	wrapBool(stream.writeBool(false));
+	wrapBool(stream.writeBool(false)); // surface
 	// has surface - set to false otherwise
 	// the following data is needed:
 	// 3 int start
@@ -181,11 +181,11 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	// always false - but the format support multiple chunks - so leave this here as a reference
 	for (int c = 0; c < chunkAmount; ++c) {
 		core::String id = "";
-		stream.writeString(id);
+		wrapBool(stream.writeString(id, true))
 		uint8_t offset = 0;
-		wrapBool(stream.writeUInt8(offset));
+		wrapBool(stream.writeUInt8(offset))
 		uint8_t chunkLength = 0;
-		wrapBool(stream.writeUInt8(chunkLength));
+		wrapBool(stream.writeUInt8(chunkLength))
 	}
 
 	wrapBool(stream.writeUInt8(numColors))
@@ -209,7 +209,7 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		voxel::RawVolume::Sampler sampler(sceneGraph.resolveVolume(node));
-		wrapBool(stream.writeString(node.name()))
+		wrapBool(stream.writeString(node.name(), true))
 		wrapBool(stream.writeBool(node.visible()))
 
 		uint32_t rleCount = 0u;
@@ -443,7 +443,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	Log::debug("Volume of size %u:%u:%u", size.x, size.y, size.z);
 
 	if (version >= 11) {
-		stream.skip(256l * 4l); // palette data rgba
+		// TODO: parse the material emit data
+		stream.skip(256l * 4l); // palette data rgba for albedo materials
 		stream.skip(256l * 4l); // palette data rgba for emissive materials
 		uint8_t chunkAmount;	// palette chunks
 		wrap(stream.readUInt8(chunkAmount));

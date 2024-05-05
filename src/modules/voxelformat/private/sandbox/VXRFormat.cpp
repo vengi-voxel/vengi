@@ -129,7 +129,7 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const core::String defaultAnim = animationIds[0];
 	wrapBool(stream.writeString(defaultAnim.c_str(), true))
 	wrapBool(stream.writeInt32(1))
-	wrapBool(stream.writeString(stringProperty(&root, "basetemplate")))
+	wrapBool(stream.writeString(stringProperty(&root, "basetemplate"), true))
 	wrapBool(stream.writeBool(boolProperty(&root, "static", false)))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXAFormat)
