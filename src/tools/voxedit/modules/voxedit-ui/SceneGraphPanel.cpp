@@ -186,13 +186,10 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			}
 		}
 		if (ImGui::BeginDragDropTarget()) {
-			const ImGuiPayload *payload = ImGui::GetDragDropPayload();
-			if (payload->IsDataType(dragdrop::SceneNodePayload)) {
-				if (ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload) != nullptr) {
-					_dragDropSourceNodeId = *(int *)payload->Data;
-					_dragDropTargetNodeId = nodeId;
-					_popupDragAndDrop = true;
-				}
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
+				_dragDropSourceNodeId = *(int *)payload->Data;
+				_dragDropTargetNodeId = nodeId;
+				_popupDragAndDrop = true;
 			}
 			ImGui::EndDragDropTarget();
 		}
