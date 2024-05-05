@@ -81,15 +81,6 @@ protected:
 	virtual glm::ivec3 maxSize() const;
 
 	/**
-	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph
-	 * with only one model
-	 * @sa maxSize()
-	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the
-	 * latter would split it again if the max size was exceeded.
-	 */
-	virtual bool singleVolume() const;
-
-	/**
 	 * @brief Checks whether the given chunk is empty (only contains air).
 	 *
 	 * @param v The volume
@@ -147,6 +138,15 @@ protected:
 public:
 	Format();
 	virtual ~Format() = default;
+
+	/**
+	 * @brief If a format only supports a single volume. If this returns true, the @¢ save() method gets a scene graph
+	 * with only one model
+	 * @sa maxSize()
+	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the
+	 * latter would split it again if the max size was exceeded.
+	 */
+	virtual bool singleVolume() const;
 
 	/**
 	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.

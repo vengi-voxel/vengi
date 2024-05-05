@@ -22,13 +22,13 @@ protected:
 						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+public:
+	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+					   const LoadContext &ctx) override;
 
 	bool singleVolume() const override {
 		return true;
 	}
-public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
-					   const LoadContext &ctx) override;
 };
 
 } // namespace voxelformat

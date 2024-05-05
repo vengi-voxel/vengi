@@ -22,12 +22,12 @@ protected:
 					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
 	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 					   const LoadContext &ctx) override;
-
-	bool singleVolume() const override {
-		return true;
-	}
 	int emptyPaletteIndex() const override {
 		return 255;
+	}
+public:
+	bool singleVolume() const override {
+		return true;
 	}
 };
 
