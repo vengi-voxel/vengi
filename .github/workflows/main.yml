@@ -238,6 +238,7 @@ jobs:
           run: |
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component thumbnailer --prefix thumbnailer-install
             cmake --install . --component voxconvert --prefix voxconvert-install
             cmake --install . --component voxbrowser --prefix voxbrowser-install
             cpack
@@ -272,6 +273,12 @@ jobs:
           with:
             name: win-voxbrowser
             path: build/voxbrowser-install/
+
+        - name: Upload the thumbnailer artifacts
+          uses: actions/upload-artifact@v4
+          with:
+            name: win-thumbnailer
+            path: build/thumbnailer-install/
 
         - name: Upload the nsis installer artifacts
           uses: actions/upload-artifact@v4
