@@ -133,11 +133,13 @@ protected:
 	 * additional files.
 	 * @param[out] stream The target stream to write into
 	 * @param[in] ctx A context object for saving
+	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
 	virtual bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							io::SeekableWriteStream &stream, const SaveContext &ctx) = 0;
 	/**
 	 * @brief If the format supports multiple models or groups, this method load them into the scene graph
+	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
 	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
@@ -149,6 +151,7 @@ public:
 	/**
 	 * Some formats have embedded screenshots of the model. This method doesn't load anything else than that image.
 	 * @note Not supported by many formats.
+	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
 	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
 										   const LoadContext &ctx);
@@ -160,12 +163,19 @@ public:
 	 * means a lot of computation time is wasted and we should consider implementing this for as many as possible
 	 * formats.
 	 *
+	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 * @return the amount of colors found in the palette
 	 */
 	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
 							   const LoadContext &ctx);
+	/**
+	 * @todo don't use a stream, but an archive for formats that are split over several files
+	 */
 	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  const LoadContext &ctx);
+	/**
+	 * @todo don't use a stream, but an archive for formats that are split over several files
+	 */
 	virtual bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					  io::SeekableWriteStream &stream, const SaveContext &ctx);
 };
