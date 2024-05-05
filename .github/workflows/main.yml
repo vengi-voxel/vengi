@@ -280,12 +280,6 @@ jobs:
             name: win-thumbnailer
             path: build/thumbnailer-install/
 
-        - name: Upload the nsis installer artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-installer
-            path: build/vengi-*-Windows.exe
-
     windows-debug:
         timeout-minutes: 45
         runs-on: windows-2019
