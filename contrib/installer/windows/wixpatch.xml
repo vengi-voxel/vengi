@@ -1,14 +1,486 @@
 <CPackWiXPatch>
-  <!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->
-  <CPackWiXFragment Id="CM_CP_voxedit.vengi_voxedit.exe">
-    <Environment
-      Id='UpdatePath'
-      Name='PATH'
-      Action='set'
-      Permanent='no'
-      System='no'
-      Part='last'
-      Value='[INSTALL_ROOT]'
-    />
-  </CPackWiXFragment>
+	<!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->
+	<CPackWiXFragment Id="CM_CP_voxedit.vengi_voxedit.exe">
+		<Environment Id="PATH" Name="PATH" Value="[INSTALL_ROOT]" Permanent="yes" Part="last" Action="set" System="yes" />
+
+		<!-- Open With -->
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe" Type="string" Name="FriendlyAppName" Value="Vengi Voxel Editor"/>
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\shell\open\command" Type="string" Value="[#CM_FP_voxedit.vengi_voxedit.exe] &quot;%1&quot;"/>
+
+		<!-- App Paths -->
+		<RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\vengi_voxedit.exe">
+			<RegistryValue Type="string" Value="[#CM_FP_voxedit.vengi_voxedit.exe]" />
+			<RegistryValue Type="string" Name="Path" Value="[INSTALL_ROOT]" />
+		</RegistryKey>
+
+		<!-- Default Programs Capabilities -->
+		<RegistryKey Root="HKLM" Key="SOFTWARE\Clients\Media\vengi-voxedit\Capabilities">
+			<RegistryValue Type="string" Name="ApplicationName" Value="vengi-voxedit" />
+			<RegistryValue Type="string" Name="ApplicationDescription" Value="Vengi Voxel Editor" />
+		</RegistryKey>
+
+		<!-- Registered file extensions -->
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vengi" Value="vengi-voxedit.vengi" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vengi" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vengi\OpenWithProgids" Name="vengi-voxedit.vengi" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vengi" Description="Vengi" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vengi">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".qb" Value="vengi-voxedit.qb" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qb" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".qb\OpenWithProgids" Name="vengi-voxedit.qb" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.qb" Description="Qubicle Binary" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="qb">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vox" Value="vengi-voxedit.vox" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vox" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vox\OpenWithProgids" Name="vengi-voxedit.vox" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vox" Description="MagicaVoxel" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".qbt" Value="vengi-voxedit.qbt" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qbt" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".qbt\OpenWithProgids" Name="vengi-voxedit.qbt" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.qbt" Description="Qubicle Binary Tree" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="qbt">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".qbcl" Value="vengi-voxedit.qbcl" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qbcl" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".qbcl\OpenWithProgids" Name="vengi-voxedit.qbcl" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.qbcl" Description="Qubicle Project" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="qbcl">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vxt" Value="vengi-voxedit.vxt" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxt" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vxt\OpenWithProgids" Name="vengi-voxedit.vxt" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vxt" Description="Sandbox VoxEdit Tilemap" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vxt">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vxc" Value="vengi-voxedit.vxc" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxc" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vxc\OpenWithProgids" Name="vengi-voxedit.vxc" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vxc" Description="Sandbox VoxEdit Collection" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vxc">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vxm" Value="vengi-voxedit.vxm" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxm" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vxm\OpenWithProgids" Name="vengi-voxedit.vxm" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vxm" Description="Sandbox VoxEdit Model" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vxm">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vxr" Value="vengi-voxedit.vxr" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxr" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vxr\OpenWithProgids" Name="vengi-voxedit.vxr" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vxr" Description="Sandbox VoxEdit Hierarchy" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vxr">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".binvox" Value="vengi-voxedit.binvox" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".binvox" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".binvox\OpenWithProgids" Name="vengi-voxedit.binvox" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.binvox" Description="BinVox" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="binvox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".gox" Value="vengi-voxedit.gox" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gox" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".gox\OpenWithProgids" Name="vengi-voxedit.gox" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.gox" Description="Goxel" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="gox">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".cub" Value="vengi-voxedit.cub" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".cub" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".cub\OpenWithProgids" Name="vengi-voxedit.cub" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.cub" Description="CubeWorld" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="cub">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".mts" Value="vengi-voxedit.mts" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mts" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mts\OpenWithProgids" Name="vengi-voxedit.mts" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mts" Description="Minetest" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="mts">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".mca" Value="vengi-voxedit.mca" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mca" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mca\OpenWithProgids" Name="vengi-voxedit.mca" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mca" Description="Minecraft region" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="mca">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".mcr" Value="vengi-voxedit.mcr" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".mcr" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".mcr\OpenWithProgids" Name="vengi-voxedit.mcr" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.mcr" Description="Minecraft region" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="mcr">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".dat" Value="vengi-voxedit.dat" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".dat" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".dat\OpenWithProgids" Name="vengi-voxedit.dat" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.dat" Description="Minecraft level dat" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="dat">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".schematic" Value="vengi-voxedit.schematic" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".schematic" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".schematic\OpenWithProgids" Name="vengi-voxedit.schematic" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.schematic" Description="Minecraft schematic" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="schematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".schem" Value="vengi-voxedit.schem" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".schem" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".schem\OpenWithProgids" Name="vengi-voxedit.schem" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.schem" Description="Minecraft schematic" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="schem">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".nbt" Value="vengi-voxedit.nbt" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".nbt" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".nbt\OpenWithProgids" Name="vengi-voxedit.nbt" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.nbt" Description="Minecraft schematic" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="nbt">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".litematic" Value="vengi-voxedit.litematic" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".litematic" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".litematic\OpenWithProgids" Name="vengi-voxedit.litematic" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.litematic" Description="Minecraft schematic" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="litematic">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".bsp" Value="vengi-voxedit.bsp" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bsp" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".bsp\OpenWithProgids" Name="vengi-voxedit.bsp" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.bsp" Description="UFO:Alien Invasion" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="bsp">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".md2" Value="vengi-voxedit.md2" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".md2" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".md2\OpenWithProgids" Name="vengi-voxedit.md2" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.md2" Description="Quake 2 Model" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="md2">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".fbx" Value="vengi-voxedit.fbx" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".fbx" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".fbx\OpenWithProgids" Name="vengi-voxedit.fbx" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.fbx" Description="FBX" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="fbx">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".csv" Value="vengi-voxedit.csv" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".csv" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".csv\OpenWithProgids" Name="vengi-voxedit.csv" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.csv" Description="Sproxel csv" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="csv">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".xraw" Value="vengi-voxedit.xraw" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".xraw" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".xraw\OpenWithProgids" Name="vengi-voxedit.xraw" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.xraw" Description="Magicavoxel XRAW" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="xraw">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".sment" Value="vengi-voxedit.sment" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".sment" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".sment\OpenWithProgids" Name="vengi-voxedit.sment" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.sment" Description="StarMade Blueprint" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="sment">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".smd2" Value="vengi-voxedit.smd2" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smd2" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".smd2\OpenWithProgids" Name="vengi-voxedit.smd2" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.smd2" Description="StarMade Blueprint" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="smd2">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".smd3" Value="vengi-voxedit.smd3" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smd3" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".smd3\OpenWithProgids" Name="vengi-voxedit.smd3" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.smd3" Description="StarMade Blueprint" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="smd3">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".smtpl" Value="vengi-voxedit.smtpl" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".smtpl" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".smtpl\OpenWithProgids" Name="vengi-voxedit.smtpl" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.smtpl" Description="StarMade Template" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="smtpl">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".scn" Value="vengi-voxedit.scn" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".scn" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".scn\OpenWithProgids" Name="vengi-voxedit.scn" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.scn" Description="AnimaToon" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="scn">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vbx" Value="vengi-voxedit.vbx" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vbx" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vbx\OpenWithProgids" Name="vengi-voxedit.vbx" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vbx" Description="VoxelBuilder" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vbx">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".obj" Value="vengi-voxedit.obj" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".obj" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".obj\OpenWithProgids" Name="vengi-voxedit.obj" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.obj" Description="Wavefront Object" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="obj">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".gltf" Value="vengi-voxedit.gltf" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".gltf" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".gltf\OpenWithProgids" Name="vengi-voxedit.gltf" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.gltf" Description="GL Transmission Format" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="gltf">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".glb" Value="vengi-voxedit.glb" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".glb" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".glb\OpenWithProgids" Name="vengi-voxedit.glb" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.glb" Description="GL Transmission Format" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="glb">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vrm" Value="vengi-voxedit.vrm" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vrm" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vrm\OpenWithProgids" Name="vengi-voxedit.vrm" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vrm" Description="GL Transmission Format" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vrm">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".stl" Value="vengi-voxedit.stl" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".stl" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".stl\OpenWithProgids" Name="vengi-voxedit.stl" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.stl" Description="Standard Triangle Language" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="stl">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".ply" Value="vengi-voxedit.ply" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ply" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".ply\OpenWithProgids" Name="vengi-voxedit.ply" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.ply" Description="Polygon File Format" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="ply">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".kvx" Value="vengi-voxedit.kvx" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kvx" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".kvx\OpenWithProgids" Name="vengi-voxedit.kvx" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.kvx" Description="Build engine" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="kvx">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".pcubes" Value="vengi-voxedit.pcubes" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".pcubes" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".pcubes\OpenWithProgids" Name="vengi-voxedit.pcubes" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.pcubes" Description="Particubes" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="pcubes">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".particubes" Value="vengi-voxedit.particubes" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".particubes" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".particubes\OpenWithProgids" Name="vengi-voxedit.particubes" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.particubes" Description="Particubes" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="particubes">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".3zh" Value="vengi-voxedit.3zh" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".3zh" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".3zh\OpenWithProgids" Name="vengi-voxedit.3zh" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.3zh" Description="Cubzh" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="3zh">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".b64" Value="vengi-voxedit.b64" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".b64" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".b64\OpenWithProgids" Name="vengi-voxedit.b64" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.b64" Description="Cubzh World" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="b64">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".v3a" Value="vengi-voxedit.v3a" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".v3a" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".v3a\OpenWithProgids" Name="vengi-voxedit.v3a" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.v3a" Description="Voxel3D" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="v3a">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".thing" Value="vengi-voxedit.thing" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".thing" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".thing\OpenWithProgids" Name="vengi-voxedit.thing" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.thing" Description="Rooms.xyz Thing" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="thing">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".kv6" Value="vengi-voxedit.kv6" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".kv6" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".kv6\OpenWithProgids" Name="vengi-voxedit.kv6" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.kv6" Description="AceOfSpades" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="kv6">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vxl" Value="vengi-voxedit.vxl" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vxl" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vxl\OpenWithProgids" Name="vengi-voxedit.vxl" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vxl" Description="Tiberian Sun" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vxl">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".qef" Value="vengi-voxedit.qef" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".qef" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".qef\OpenWithProgids" Name="vengi-voxedit.qef" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.qef" Description="Qubicle Exchange" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="qef">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".csm" Value="vengi-voxedit.csm" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".csm" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".csm\OpenWithProgids" Name="vengi-voxedit.csm" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.csm" Description="Chronovox" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="csm">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".nvm" Value="vengi-voxedit.nvm" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".nvm" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".nvm\OpenWithProgids" Name="vengi-voxedit.nvm" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.nvm" Description="Nicks Voxel Model" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="nvm">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vmax.zip" Value="vengi-voxedit.vmax.zip" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vmax.zip" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vmax.zip\OpenWithProgids" Name="vengi-voxedit.vmax.zip" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vmax.zip" Description="VoxelMax" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vmax.zip">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\Clients\Media\vengi-voxedit\Capabilities\FileAssociations" Name=".vmaxb" Value="vengi-voxedit.vmaxb" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".vmaxb" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".vmaxb\OpenWithProgids" Name="vengi-voxedit.vmaxb" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.vmaxb" Description="VoxelMax" Icon="CM_FP_voxedit.vengi_voxedit.exe">
+			<Extension Id="vmaxb">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+
+		<!-- Default Programs entry -->
+		<RegistryValue Root="HKLM" Key="SOFTWARE\RegisteredApplications" Name="venig-voxedit" Value="SOFTWARE\Clients\Mediaengi-voxedit\Capabilities" Type="string" />
+	</CPackWiXFragment>
 </CPackWiXPatch>

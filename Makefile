@@ -181,6 +181,9 @@ endif
 docs/Formats.md: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --markdown > $@
 
+contrib/installer/windows/wixpatch.xml: formatprinter
+	$(Q)$(call EXEC_PATH,formatprinter) --wix > $@
+
 tools/html/data.js: formatprinter
 	$(Q)printf "const jsonData = " > $@
 	$(Q)$(call EXEC_PATH,formatprinter) --palette --image --voxel | jq >> $@
@@ -192,7 +195,7 @@ contrib/installer/linux/x-voxel.xml: formatprinter
 contrib/installer/osx/voxedit.plist.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --plist > $@
 
-formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md
+formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md contrib/installer/windows/wixpatch.xml
 
 dependency-%:
 	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)

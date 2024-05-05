@@ -18,6 +18,7 @@ private:
 	void printMarkdownTables();
 	void printManPageLoadSaveFormats();
 	void printApplicationPlist();
+	void printApplicationWix();
 
 	core::StringSet _uniqueMimetypes;
 	core::String uniqueMimetype(const io::FormatDescription &desc);
