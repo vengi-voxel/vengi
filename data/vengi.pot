@@ -690,7 +690,7 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
-msgid "Select a model from the asset panel"
+msgid "Select a model from the asset panel or scene graph panel"
 msgstr ""
 
 msgid "Center"
@@ -730,6 +730,18 @@ msgid "Override voxels"
 msgstr ""
 
 msgid "Draws a line from the reference position to the current cursor position"
+msgstr ""
+
+msgid "18-connected"
+msgstr ""
+
+msgid "26-connected"
+msgstr ""
+
+msgid "6-connected"
+msgstr ""
+
+msgid "Connectivity"
 msgstr ""
 
 msgid "Draws a path over existing voxels"

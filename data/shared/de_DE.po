@@ -49,7 +49,7 @@ msgid "Quit the application"
 msgstr "Die Anwendung beenden"
 
 msgid "Trigger an assert"
-msgstr "Eine Assertion auslösen"
+msgstr "Einen Fehler provozieren"
 
 msgid "Clear the value history of a variable"
 msgstr "Den Verlauf des Variablenwerts löschen"
@@ -308,10 +308,10 @@ msgid "Textures"
 msgstr "Texturen"
 
 msgid "Language"
-msgstr ""
+msgstr "Sprache"
 
 msgid "To change the language everywhere restart the application"
-msgstr ""
+msgstr "Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -391,7 +391,7 @@ msgid "Show all images in the texture pool"
 msgstr "Alle Bilder im Texturpool anzeigen"
 
 msgid "Activate shadow map"
-msgstr ""
+msgstr "Aktivieren des Schattenrenderings"
 
 msgid "Activate bloom post processing"
 msgstr ""
@@ -404,7 +404,7 @@ msgid "Activate cascade shadow map debug rendering"
 msgstr ""
 
 msgid "Gamma correction"
-msgstr ""
+msgstr "Gammakorrektur"
 
 msgid "Render voxel outline"
 msgstr ""
@@ -443,7 +443,7 @@ msgid "Download missing thumbnails"
 msgstr "Fehlende Miniaturansichten herunterladen"
 
 msgid "Nothing selected"
-msgstr ""
+msgstr "Nichts ausgewählt"
 
 msgid "No thumbnail available"
 msgstr "Miniaturansicht nicht verfügbar"
@@ -461,7 +461,7 @@ msgid "License: %s"
 msgstr "Lizenz: %s"
 
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 msgid "Create thumbnail"
 msgstr "Miniaturansicht erzeugen"
@@ -523,13 +523,11 @@ msgstr ""
 msgid "Show fixed region sizes in the positions panel"
 msgstr ""
 
-#, fuzzy
 msgid "Show the grid"
-msgstr "Versteckte anzeigen"
+msgstr "Gitter anzeigen"
 
-#, fuzzy
 msgid "Show the currently locked axis"
-msgstr "Gesperrte Achse anzeigen"
+msgstr "Aktuell gesperrte Achse anzeigen"
 
 msgid "Show the axis aligned bounding box"
 msgstr ""
@@ -548,23 +546,19 @@ msgstr ""
 msgid "The size of the voxel grid"
 msgstr ""
 
-#, fuzzy
 msgid "Render the inactive nodes in gray scale mode"
-msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
+msgstr "Die inaktiven Knoten in grau darstellen"
 
-#, fuzzy
 msgid "Hide the inactive nodes"
-msgstr "Alle Kindknoten ausblenden"
+msgstr "Alle inaktiven Knoten ausblenden"
 
-#, fuzzy
 msgid "Show the axis"
-msgstr "Gesperrte Achse anzeigen"
+msgstr "Achsen anzeigen"
 
 #, fuzzy
 msgid "Print cursor details in edit mode"
 msgstr "Aktuelle Millisekunden auf der Konsole ausgeben"
 
-#, fuzzy
 msgid "Set auto keyframe"
 msgstr "Automatischer Keyframe"
 
@@ -657,9 +651,8 @@ msgstr "Ein neues Keyframes zum aktuellen aktiven Knoten hinzufügen"
 msgid "Add all"
 msgstr "Alle hinzufügen"
 
-#, fuzzy
 msgid "Add a new keyframe to all model nodes"
-msgstr "Ein neues Keyframes zum aktuellen aktiven Knoten hinzufügen"
+msgstr "Ein neues Keyframes zu allen Model-Knoten hinzufügen"
 
 msgid "Delete the current keyframe of the active nodes"
 msgstr "Das aktuelle Keyframes der aktiven Knoten löschen"
@@ -730,8 +723,8 @@ msgstr "Auswahl verwenden"
 msgid "Model"
 msgstr "Modell"
 
-msgid "Select a model from the asset panel"
-msgstr "Ein Modell aus dem Asset-Panel auswählen"
+msgid "Select a model from the asset panel or scene graph panel"
+msgstr "Ein Modell aus dem Asset-Panel oder dem Szenegraph-Panel auswählen"
 
 msgid "Center"
 msgstr "Zentriert"
@@ -745,9 +738,8 @@ msgstr ""
 msgid "Replace all voxels in the stamp with the selected color"
 msgstr "Alle Voxel im Stempel mit der ausgewählten Farbe ersetzen"
 
-#, fuzzy
 msgid "Rotate on axis"
-msgstr "Nach vorne drehen"
+msgstr "Um Achse rotieren"
 
 msgid "Rotate by 90 degree on the x axis"
 msgstr "Um 90 Grad um die x-Achse drehen"
@@ -773,6 +765,18 @@ msgstr "Voxel überschreiben"
 msgid "Draws a line from the reference position to the current cursor position"
 msgstr ""
 "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
+
+msgid "18-connected"
+msgstr ""
+
+msgid "26-connected"
+msgstr ""
+
+msgid "6-connected"
+msgstr ""
+
+msgid "Connectivity"
+msgstr "Konnektivität"
 
 msgid "Draws a path over existing voxels"
 msgstr "Zeichnet einen Pfad über vorhandene Voxel"
@@ -1003,12 +1007,11 @@ msgstr "Drücken"
 msgid "Pop"
 msgstr "Herausnehmen"
 
-#, fuzzy
 msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "
 "<cmd:togglescene> key."
 msgstr ""
-"Zwischen Szenen- und Bearbeitungsmodus wechseln, indem Sie die <cmd:"
+"Zwischen Szenen- und Bearbeitungsmodus wechseln (nicht im einfachen UI Modus), indem Sie die <cmd:"
 "togglescene>-Taste drücken."
 
 msgid "Use the file dialog options for format specific options."

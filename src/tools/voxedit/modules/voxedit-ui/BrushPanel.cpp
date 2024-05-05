@@ -101,12 +101,18 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 								   command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	StampBrush &brush = modifier.stampBrush();
-	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel or scene graph panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
 			if (brush.load(filename)) {
 				_stamp = filename;
+			}
+		}
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::SceneNodePayload)) {
+			int nodeId = *(int *)payload->Data;
+			if (const scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNode(nodeId)) {
+				brush.setVolume(*model->volume(), model->palette());
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -214,7 +220,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 
 	Modifier &modifier = _sceneMgr->modifier();
 	if (!modifier.stampBrush().active()) {
-		ImGui::TextWrappedUnformatted(_("Select a model from the asset panel"));
+		ImGui::TextWrappedUnformatted(_("Select a model from the asset panel or scene graph panel"));
 		ui::ScopedStyle style;
 		style.disableItem();
 		stampBrushOptions(node, palette, listener);
