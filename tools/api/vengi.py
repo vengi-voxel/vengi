@@ -70,11 +70,18 @@ def crashlog():
     fileuuidstr = str(fileuuid)
 
     userAgent = request.headers['User-Agent']
+    operatingSystem = request.headers['X-OperatingSystem']
+    operatingSystemVersion = request.headers['X-OperatingSystemVersion']
+    if operatingSystem is None:
+        operatingSystem = "Unknown"
+    if operatingSystemVersion is None:
+        operatingSystemVersion = "0.0"
 
     # this directory must exists in the current working dir and must be writable
     with open(f"crashlogs/{fileuuidstr}.txt", "w") as fo:
         fo.write("----------------------------\n")
         fo.write(f"Application: {userAgent}\n")
+        fo.write(f"OS: {operatingSystem}/{operatingSystemVersion}\n")
         fo.write(request.data.decode("utf-8"))
     return Response(status = 204)
 
