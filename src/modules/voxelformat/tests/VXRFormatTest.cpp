@@ -27,6 +27,16 @@ TEST_F(VXRFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("sandbox-smallvolumesavetest.vxr", &f);
 }
 
+TEST_F(VXRFormatTest, testSaveSmallVolume) {
+	VXRFormat f;
+	testSaveSmallVolume("testSaveSmallVolume.vxr", &f);
+}
+
+TEST_F(VXRFormatTest, testSaveLoadVoxel) {
+	VXRFormat f;
+	testSaveLoadVoxel("testSaveLoadVoxel.vxr", &f);
+}
+
 TEST_F(VXRFormatTest, testGiantDinosaur) {
 	VXRFormat f;
 	scenegraph::SceneGraph sceneGraph;
