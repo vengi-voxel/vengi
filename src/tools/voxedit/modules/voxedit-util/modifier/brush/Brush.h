@@ -52,14 +52,35 @@ protected:
 	}
 
 public:
+	/**
+	 * @brief Execute the brush action on the given volume
+	 * @return @c true if the brush action was successful
+	 */
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &ctx) = 0;
+	/**
+	 * @brief Reset the brush state and force a re-creating of the preview volume
+	 */
 	virtual void reset();
+	/**
+	 * @brief E.g. checks whether the brush preview volume needs to be updated
+	 * @sa markDirty()
+	 */
 	virtual void update(const BrushContext &ctx, double nowSeconds);
+	/**
+	 * @return the type of the brush as string
+	 * @sa type()
+	 */
 	core::String name() const;
+	/**
+	 * @sa name()
+	 */
 	BrushType type() const;
 
-	// allow to change the modifier type if the brush doesn't support the given mode
+	/**
+	 * @brief allow to change the modifier type if the brush doesn't support the given mode
+	 * @return the supported modifier type
+	 */
 	ModifierType modifierType(ModifierType type = ModifierType::None) const;
 
 	/**
