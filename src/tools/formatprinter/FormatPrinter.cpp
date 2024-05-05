@@ -128,6 +128,7 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	if (_uniqueMimetypes.has(mt)) {
 		mt += "-" + desc.mainExtension();
 	}
+	core::string::replaceAllChars(mt, '.', '-');
 	_uniqueMimetypes.insert(mt);
 	return mt;
 }
