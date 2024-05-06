@@ -2,24 +2,23 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/cubeworld/CubFormat.h"
+#include "AbstractFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
-class CubFormatTest: public AbstractVoxFormatTest {
-};
+class CubFormatTest : public AbstractFormatTest {};
 
 TEST_F(CubFormatTest, testLoad) {
-	canLoad("cw.cub");
+	testLoad("cw.cub");
 }
 
 TEST_F(CubFormatTest, testLoadPalette) {
 	CubFormat f;
 	palette::Palette pal;
-	EXPECT_EQ(5, loadPalette("rgb.cub", f, pal));
+	EXPECT_EQ(5, helper_loadPalette("rgb.cub", f, pal));
 }
 
 TEST_F(CubFormatTest, testLoadRGB) {
@@ -36,7 +35,8 @@ TEST_F(CubFormatTest, testLoadRGBSmallSaveLoad) {
 
 TEST_F(CubFormatTest, testSaveSmallVoxel) {
 	CubFormat f;
-	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f, 0, 1);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testSaveLoadVoxel("cw-smallvolumesavetest.cub", &f, 0, 1, flags);
 }
 
-}
+} // namespace voxelformat

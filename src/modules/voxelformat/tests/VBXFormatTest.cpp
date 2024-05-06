@@ -2,16 +2,14 @@
  * @file
  */
 
-#include "voxelformat/private/voxelbuilder/VBXFormat.h"
-#include "AbstractVoxFormatTest.h"
-#include "voxelformat/VolumeFormat.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class VBXFormatTest : public AbstractVoxFormatTest {};
+class VBXFormatTest : public AbstractFormatTest {};
 
 TEST_F(VBXFormatTest, testLoad) {
-	canLoad("voxelbuilder.vbx");
+	testLoad("voxelbuilder.vbx");
 }
 
 } // namespace voxelformat

@@ -2,25 +2,24 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
+#include "AbstractFormatTest.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxelformat/VolumeFormat.h"
-#include "io/FileStream.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
 
 namespace voxelformat {
 
-class QBCLFormatTest: public AbstractVoxFormatTest {
+class QBCLFormatTest: public AbstractFormatTest {
 };
 
 TEST_F(QBCLFormatTest, testLoad) {
-	canLoad("qubicle.qbcl", 30);
+	testLoad("qubicle.qbcl", 30);
 }
 
 TEST_F(QBCLFormatTest, testSaveSmallVoxel) {
 	QBCLFormat f;
-	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbcl", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbcl", &f, 0, 1, flags);
 }
 
 TEST_F(QBCLFormatTest, testLoadRGB) {
@@ -41,25 +40,9 @@ TEST_F(QBCLFormatTest, testLoadScreenshot) {
 
 TEST_F(QBCLFormatTest, testLoadCrabby) {
 	scenegraph::SceneGraph qbclsceneGraph;
-	{
-		const core::String filename = "crabby.qbcl";
-		const io::FilePtr& file = open(filename);
-		ASSERT_TRUE(file->validHandle());
-		io::FileStream stream(file);
-		io::FileDescription fileDesc;
-		fileDesc.set(filename);
-		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, qbclsceneGraph, testLoadCtx));
-	}
+	testLoad(qbclsceneGraph, "crabby.qbcl");
 	scenegraph::SceneGraph voxsceneGraph;
-	{
-		const core::String filename = "crabby.vox";
-		const io::FilePtr& file = open(filename);
-		ASSERT_TRUE(file->validHandle());
-		io::FileStream stream(file);
-		io::FileDescription fileDesc;
-		fileDesc.set(filename);
-		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, voxsceneGraph, testLoadCtx));
-	}
+	testLoad(voxsceneGraph, "crabby.vox");
 	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
 }
 

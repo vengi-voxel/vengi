@@ -2,15 +2,14 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class CSMFormatTest: public AbstractVoxFormatTest {
-};
+class CSMFormatTest : public AbstractFormatTest {};
 
 TEST_F(CSMFormatTest, testLoad) {
-	canLoad("chronovox-studio.csm", 11);
+	testLoad("chronovox-studio.csm", 11);
 }
 
-}
+} // namespace voxelformat

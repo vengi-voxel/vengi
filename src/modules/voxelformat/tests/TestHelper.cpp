@@ -5,6 +5,7 @@
 #include "TestHelper.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "math/Random.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -372,6 +373,26 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
 						  ValidateFlags flags, float maxDelta) {
+	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
+		const scenegraph::SceneGraph::MergedVolumePalette &merged1 = graph1.merge();
+		core::ScopedPtr<voxel::RawVolume> v1(merged1.first);
+		const scenegraph::SceneGraph::MergedVolumePalette &merged2 = graph2.merge();
+		core::ScopedPtr<voxel::RawVolume> v2(merged2.first);
+		ASSERT_NE(nullptr, merged1.first);
+		ASSERT_NE(nullptr, merged2.first);
+		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
+			voxel::paletteComparator(merged1.second, merged2.second, maxDelta);
+		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
+			voxel::partialPaletteComparator(merged1.second, merged2.second, maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
+			voxel::paletteComparatorScaled(merged1.second, merged2.second, (int)maxDelta);
+		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
+				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
+			voxel::orderPaletteComparator(merged1.second, merged2.second, maxDelta);
+		}
+		volumeComparator(*v1, merged1.second, *v2, merged2.second, flags, maxDelta);
+		return;
+	}
 	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));
 	auto iter1 = graph1.beginModel();
 	auto iter2 = graph2.beginModel();

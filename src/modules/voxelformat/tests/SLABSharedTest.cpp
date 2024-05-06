@@ -3,13 +3,13 @@
  */
 
 #include "voxelformat/private/slab6/SLABShared.h"
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
-class SLABSharedTest : public AbstractVoxFormatTest {};
+class SLABSharedTest : public AbstractFormatTest {};
 
 TEST_F(SLABSharedTest, testRGBColor) {
 	io::BufferedReadWriteStream stream;

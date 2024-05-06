@@ -2,48 +2,28 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "io/File.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
+#include "AbstractFormatTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/private/mesh/GLTFFormat.h"
-#include "voxelformat/private/magicavoxel/VoxFormat.h"
-#include "voxelformat/private/qubicle/QBFormat.h"
-#include "io/FileStream.h"
 
 namespace voxelformat {
 
-class GLTFFormatTest : public AbstractVoxFormatTest {};
+class GLTFFormatTest : public AbstractFormatTest {};
 
 TEST_F(GLTFFormatTest, testExportMesh) {
 	scenegraph::SceneGraph sceneGraph;
-	{
-		QBFormat sourceFormat;
-		const core::String filename = "rgb.qb";
-		const io::FilePtr &file = open(filename);
-		io::FileStream stream(file);
-		EXPECT_TRUE(sourceFormat.load(filename, stream, sceneGraph, testLoadCtx));
-	}
-	ASSERT_TRUE(sceneGraph.size() > 0);
-	GLTFFormat f;
-	const core::String outFilename = "exportrgb.gltf";
-	const io::FilePtr &outFile = open(outFilename, io::FileMode::SysWrite);
-	io::FileStream outStream(outFile);
-	EXPECT_TRUE(f.saveGroups(sceneGraph, outFilename, outStream, testSaveCtx));
+	testLoad(sceneGraph, "rgb.qb");
+	helper_saveSceneGraph(sceneGraph, "exportrgb.gltf");
 }
 
 TEST_F(GLTFFormatTest, testImportAnimation) {
-	GLTFFormat f;
-	const core::String filename = "glTF/BoxAnimated.glb";
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
-	ASSERT_EQ(2u, sceneGraph.size());
+	testLoad(sceneGraph, "glTF/BoxAnimated.glb", 2);
 	auto iter = sceneGraph.beginModel();
 	++iter;
-	scenegraph::SceneGraphNode& node = *iter;
+	scenegraph::SceneGraphNode &node = *iter;
 	EXPECT_GE(sceneGraph.animations().size(), 1u);
 	EXPECT_EQ("animation 0", sceneGraph.animations().back());
 	EXPECT_TRUE(sceneGraph.setAnimation(sceneGraph.animations().back()));
@@ -52,21 +32,16 @@ TEST_F(GLTFFormatTest, testImportAnimation) {
 }
 
 TEST_F(GLTFFormatTest, testVoxelizeCube) {
-	GLTFFormat f;
-	const core::String filename = "glTF/cube/Cube.gltf";
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
-	ASSERT_EQ(1u, sceneGraph.size());
+	testLoad(sceneGraph, "glTF/cube/Cube.gltf", 1);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	const voxel::RawVolume *v = node->volume();
 	ASSERT_NE(nullptr, v);
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1, -1, -1).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1,  0, -1).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel( 0,  0,  0).getMaterial()));
-	EXPECT_TRUE(voxel::isBlocked(v->voxel( 0, -1, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(-1, 0, -1).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isBlocked(v->voxel(0, -1, -1).getMaterial()));
 }
 
 TEST_F(GLTFFormatTest, testRGB) {
@@ -75,34 +50,27 @@ TEST_F(GLTFFormatTest, testRGB) {
 
 TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	GLTFFormat f;
-	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
 }
 
 TEST_F(GLTFFormatTest, testVoxelizeLantern) {
-	GLTFFormat f;
-	const core::String filename = "glTF/lantern/Lantern.gltf";
-	const io::FilePtr &file = open(filename);
-	io::FileStream stream(file);
 	scenegraph::SceneGraph sceneGraph;
-	EXPECT_TRUE(f.loadGroups(filename, stream, sceneGraph, testLoadCtx));
-	EXPECT_TRUE(sceneGraph.size() > 0);
+	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
 }
 
 TEST_F(GLTFFormatTest, DISABLED_testMaterials) {
 	// load the mv scenegraph
-	VoxFormat mv;
 	scenegraph::SceneGraph mvSceneGraph;
-	ASSERT_TRUE(loadGroups("test_material.vox", mv, mvSceneGraph));
-	ASSERT_EQ(12u, mvSceneGraph.size());
+	testLoad(mvSceneGraph, "test_material.vox", 12u);
 	// now save as gltf
-	ASSERT_TRUE(saveSceneGraph(mvSceneGraph, "test_material.gltf"));
+	ASSERT_TRUE(helper_saveSceneGraph(mvSceneGraph, "test_material.gltf"));
 	// load the gltf scenegraph
-	GLTFFormat gltf;
 	scenegraph::SceneGraph gltfSceneGraph;
-	ASSERT_TRUE(loadGroups("test_material.gltf", gltf, gltfSceneGraph));
-	ASSERT_EQ(12u, gltfSceneGraph.size());
+	testLoad(gltfSceneGraph, "test_material.gltf", 12u);
 	// compare the materials
-	for (auto iter = mvSceneGraph.beginModel(), iter2 = gltfSceneGraph.beginModel(); iter != mvSceneGraph.end(); ++iter, ++iter2) {
+	for (auto iter = mvSceneGraph.beginModel(), iter2 = gltfSceneGraph.beginModel(); iter != mvSceneGraph.end();
+		 ++iter, ++iter2) {
 		const scenegraph::SceneGraphNode &mvNode = *iter;
 		const scenegraph::SceneGraphNode &gltfNode = *iter2;
 		const palette::Palette &mvPalette = mvNode.palette();

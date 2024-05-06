@@ -2,16 +2,14 @@
  * @file
  */
 
-#include "voxelformat/private/cubzh/CubzhB64Format.h"
-#include "AbstractVoxFormatTest.h"
-#include "voxelformat/tests/TestHelper.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class CubzhB64FormatTest : public AbstractVoxFormatTest {};
+class CubzhB64FormatTest : public AbstractFormatTest {};
 
 TEST_F(CubzhB64FormatTest, testLoad) {
-	canLoad("hubmap.b64");
+	testLoad("hubmap.b64");
 }
 
 } // namespace voxelformat

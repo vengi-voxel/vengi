@@ -2,14 +2,12 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/sandbox/VXMFormat.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class VXMFormatTest: public AbstractVoxFormatTest {
-};
+class VXMFormatTest : public AbstractFormatTest {};
 
 TEST_F(VXMFormatTest, testRGB) {
 	testRGB("rgb.vxm");
@@ -24,11 +22,11 @@ TEST_F(VXMFormatTest, testLoadRGBSmallSaveLoad) {
 }
 
 TEST_F(VXMFormatTest, testLoadVersion4) {
-	canLoad("test.vxm");
+	testLoad("test.vxm");
 }
 
 TEST_F(VXMFormatTest, testLoadVersion12) {
-	canLoad("test2.vxm");
+	testLoad("test2.vxm");
 }
 
 TEST_F(VXMFormatTest, testSaveSmallVolume) {
@@ -41,4 +39,4 @@ TEST_F(VXMFormatTest, testSaveLoadVoxel) {
 	testSaveLoadVoxel("testSaveLoadVoxel.vxm", &f);
 }
 
-}
+} // namespace voxelformat

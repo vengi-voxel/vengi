@@ -3,11 +3,11 @@
  */
 
 #include "voxelformat/private/mesh/FBXFormat.h"
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class FBXFormatTest : public AbstractVoxFormatTest {};
+class FBXFormatTest : public AbstractFormatTest {};
 
 TEST_F(FBXFormatTest, DISABLED_testSaveLoadVoxel) {
 	FBXFormat f;

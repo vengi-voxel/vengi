@@ -2,16 +2,15 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class SMFormatTest: public AbstractVoxFormatTest {
-};
+class SMFormatTest : public AbstractFormatTest {};
 
 TEST_F(SMFormatTest, testLoad) {
 	// from fre starmade demo - allowed to use for testing purposes
-	canLoad("Isanth_Type-Zero_Bc.sment", 1);
+	testLoad("Isanth_Type-Zero_Bc.sment", 1);
 }
 
-}
+} // namespace voxelformat

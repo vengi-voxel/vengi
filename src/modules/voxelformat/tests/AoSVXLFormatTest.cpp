@@ -2,39 +2,40 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
+#include "AbstractFormatTest.h"
+#include "io/BufferedReadWriteStream.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
-class AoSVXLFormatTest: public AbstractVoxFormatTest {
+class AoSVXLFormatTest : public AbstractFormatTest {
 protected:
 	bool onInitApp() override {
-		if (!AbstractVoxFormatTest::onInitApp()) {
+		if (!AbstractFormatTest::onInitApp()) {
 			return false;
 		}
 		// just to speed up the test runs...
-		//core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
+		// core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->setVal("8");
 		return true;
 	}
 };
 
 TEST_F(AoSVXLFormatTest, testLoad) {
-	canLoad("aceofspades.vxl", 1);
+	testLoad("aceofspades.vxl", 1);
 }
 
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	AoSVXLFormat f;
 	palette::Palette pal;
-	EXPECT_GT(loadPalette("aceofspades.vxl", f, pal), 200);
+	EXPECT_GT(helper_loadPalette("aceofspades.vxl", f, pal), 200);
 }
 
 TEST_F(AoSVXLFormatTest, testLoadSaveAndLoadSceneGraph) {
 	AoSVXLFormat src;
 	AoSVXLFormat target;
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
+	voxel::ValidateFlags flags =
+		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette | voxel::ValidateFlags::Color);
 	testLoadSaveAndLoadSceneGraph("aceofspades.vxl", src, "aceofspades-test.vxl", target, flags);
 }
 
@@ -62,4 +63,4 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	EXPECT_EQ(sceneGraphLoad.size(), 1u);
 }
 
-}
+} // namespace voxelformat

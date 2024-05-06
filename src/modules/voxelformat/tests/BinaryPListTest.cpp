@@ -5,8 +5,6 @@
 #include "voxelformat/private/voxelmax/BinaryPList.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Log.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 
 namespace voxelformat {

@@ -71,7 +71,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric)
 
 set(TEST_SRCS
-	tests/AbstractVoxFormatTest.h tests/AbstractVoxFormatTest.cpp
+	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
 	tests/AnimaToonFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/BinVoxFormatTest.cpp

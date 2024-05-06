@@ -2,15 +2,14 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class QuakeBSPFormatTest: public AbstractVoxFormatTest {
-};
+class QuakeBSPFormatTest : public AbstractFormatTest {};
 
 TEST_F(QuakeBSPFormatTest, DISABLED_testLoad) {
-	canLoad("ufoai.bsp");
+	testLoad("ufoai.bsp");
 }
 
-}
+} // namespace voxelformat

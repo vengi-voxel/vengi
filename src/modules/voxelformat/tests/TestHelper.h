@@ -52,19 +52,23 @@ enum class ValidateFlags {
 
 	PaletteMinMatchingColors = 256, // only check the first n colors of a palette. There are formats that always have
 									// 256 colors, and if we compare those palettes to a palette of a format which also
-									// supports less colors, we would get a false negative
+									// supports less colors, we would get a false negative - the order of the colors
+									// still has to match!
 
 	PaletteColorOrderDiffers = 512, // colors must match, but might have a different order in the palette. This happens
 									// often for rgb(a) based formats - when the coordinate system between format
 									// conversions differ, the first voxel color will get the first palette entry.
 
-	PaletteColorsScaled = 1024,
+	PaletteColorsScaled = 1024, // palette color count must match - but the colors might be slightly different - see
+								// the maxDelta parameters in the tests
+
+	SceneGraphModels = 2048, // disable this for single volume formats
 
 	Transform = Animations | Scale | Pivot | Translation,
-	All = Palette | Color | Transform,											// no region here
-	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform, // no region here
-	AllPaletteColorOrderDiffers = PaletteColorOrderDiffers | Color | Transform, // no region here
-	AllPaletteColorsScaled = PaletteColorsScaled | Color | Transform,			// no region here
+	All = Palette | Color | Transform | SceneGraphModels,										   // no region here
+	AllPaletteMinMatchingColors = PaletteMinMatchingColors | Color | Transform | SceneGraphModels, // no region here
+	AllPaletteColorOrderDiffers = PaletteColorOrderDiffers | Color | Transform | SceneGraphModels, // no region here
+	AllPaletteColorsScaled = PaletteColorsScaled | Color | Transform | SceneGraphModels,		   // no region here
 	Max
 };
 CORE_ENUM_BIT_OPERATIONS(ValidateFlags);

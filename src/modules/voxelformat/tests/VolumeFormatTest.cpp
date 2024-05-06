@@ -3,13 +3,13 @@
  */
 
 #include "voxelformat/VolumeFormat.h"
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 
 namespace voxelformat {
 
-class VolumeFormatTest : public AbstractVoxFormatTest {};
+class VolumeFormatTest : public AbstractFormatTest {};
 
 TEST_F(VolumeFormatTest, testImportPalette) {
 	palette::Palette palette;
@@ -22,7 +22,7 @@ TEST_F(VolumeFormatTest, testLoadFormat) {
 	const char *files[] = {"rgb.csv", "rgb.cub", "rgb.gox", "rgb.qb", "rgb.qbcl",
 						   "rgb.qef", "rgb.vox", "rgb.vxl", "rgb.vxm"};
 	for (int i = 0; i < lengthof(files); ++i) {
-		io::FilePtr file = open(files[i]);
+		io::FilePtr file = _testApp->filesystem()->open(files[i]);
 		ASSERT_TRUE(file->validHandle());
 		io::FileStream stream(file);
 		io::FileDescription fileDesc;

@@ -2,16 +2,15 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class GoxFormatTest: public AbstractVoxFormatTest {
-};
+class GoxFormatTest : public AbstractFormatTest {};
 
 TEST_F(GoxFormatTest, testLoad) {
-	canLoad("test.gox");
+	testLoad("test.gox");
 }
 
 TEST_F(GoxFormatTest, testSaveSmallVoxel) {
@@ -27,4 +26,4 @@ TEST_F(GoxFormatTest, testLoadScreenshot) {
 	testLoadScreenshot("chr_knight.gox", 128, 128, core::RGBA(158, 59, 59), 65, 27);
 }
 
-}
+} // namespace voxelformat

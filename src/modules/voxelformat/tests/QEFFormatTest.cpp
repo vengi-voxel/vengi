@@ -2,21 +2,19 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/qubicle/QEFFormat.h"
-#include "voxelformat/VolumeFormat.h"
+#include "AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class QEFFormatTest: public AbstractVoxFormatTest {
-};
+class QEFFormatTest : public AbstractFormatTest {};
 
 TEST_F(QEFFormatTest, testLoad) {
-	canLoad("qubicle.qef");
+	testLoad("qubicle.qef");
 }
 
 TEST_F(QEFFormatTest, testLoad2) {
-	canLoad("testload.qef");
+	testLoad("testload.qef");
 }
 
 TEST_F(QEFFormatTest, testLoadRGB) {
@@ -28,4 +26,4 @@ TEST_F(QEFFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("qubicle-smallvolumesavetest.qef", &f);
 }
 
-}
+} // namespace voxelformat

@@ -5,17 +5,17 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/Color.h"
 #include "core/tests/TestColorHelper.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "video/ShapeBuilder.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/tests/AbstractVoxFormatTest.h"
+#include "voxelformat/tests/AbstractFormatTest.h"
 
 namespace voxelformat {
 
-class MeshFormatTest : public AbstractVoxFormatTest {};
+class MeshFormatTest : public AbstractFormatTest {};
 
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshFormat::TriCollection tinyTris;
@@ -44,7 +44,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 		tri.uv[2] = glm::vec2((float)(i + 1) / 256.0f, 1.0f);
 		const core::RGBA color = tri.colorAt(tri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
-										<< core::Color::print(color);
+									   << core::Color::print(color);
 	}
 }
 
@@ -117,8 +117,8 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
-		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &, const core::String &,
-						io::SeekableWriteStream &, const glm::vec3 &, bool, bool, bool) override {
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
+						const core::String &, io::SeekableWriteStream &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
 		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::TriCollection &tris) {

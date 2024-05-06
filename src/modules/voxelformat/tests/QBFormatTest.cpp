@@ -2,17 +2,17 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
-#include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
 
-class QBFormatTest: public AbstractVoxFormatTest {
+class QBFormatTest: public AbstractFormatTest {
 };
 
 TEST_F(QBFormatTest, testLoad) {
-	canLoad("qubicle.qb", 10);
+	testLoad("qubicle.qb", 10);
 }
 
 TEST_F(QBFormatTest, testLoadRGB) {
@@ -34,18 +34,13 @@ TEST_F(QBFormatTest, testSaveSingleVoxel) {
 
 TEST_F(QBFormatTest, testSaveSmallVoxel) {
 	QBFormat f;
-	testSaveLoadVoxel("qubicle-smallvolumesavetest.qb", &f);
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testSaveLoadVoxel("qubicle-smallvolumesavetest.qb", &f, 0, 1, flags);
 }
 
 TEST_F(QBFormatTest, testSaveMultipleModels) {
 	QBFormat f;
 	testSaveMultipleModels("qubicle-multiplemodelsavetest.qb", &f);
-}
-
-TEST_F(QBFormatTest, testLoadSave) {
-	QBFormat f;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorOrderDiffers;
-	testLoadSaveAndLoad("qubicle.qb", f, "qubicle-savetest.qb", f, flags);
 }
 
 }

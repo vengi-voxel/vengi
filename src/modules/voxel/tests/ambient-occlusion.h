@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * Created with AbstractVoxFormatTest::dump from data/tests/ambient-occlusion.vengi
+ * Created with AbstractFormatTest::dump from data/tests/ambient-occlusion.vengi
  */
 
 #pragma once

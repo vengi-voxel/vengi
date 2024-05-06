@@ -2,18 +2,16 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
-#include "io/FileStream.h"
+#include "AbstractFormatTest.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
-#include "voxelformat/VolumeFormat.h"
 
 namespace voxelformat {
 
-class QBTFormatTest: public AbstractVoxFormatTest {
+class QBTFormatTest: public AbstractFormatTest {
 };
 
 TEST_F(QBTFormatTest, testLoad) {
-	canLoad("qubicle.qbt", 17);
+	testLoad("qubicle.qbt", 17);
 }
 
 TEST_F(QBTFormatTest, testLoadRGBSmall) {
@@ -41,33 +39,15 @@ TEST_F(QBTFormatTest, testSaveMultipleModels) {
 
 TEST_F(QBTFormatTest, testSave) {
 	QBTFormat f;
-	testLoadSaveAndLoad("qubicle.qbt", f, "qubicle-savetest.qbt", f);
+	testConvert("qubicle.qbt", f, "qubicle-savetest.qbt", f);
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleModels) {
 	scenegraph::SceneGraph sceneGraph;
-	{
-		QBTFormat f;
-		io::FilePtr file = open("qubicle.qbt");
-		io::FileStream stream(file);
-		EXPECT_TRUE(f.load(file->name(), stream, sceneGraph, testLoadCtx));
-		EXPECT_EQ(17u, sceneGraph.size());
-	}
-	{
-		QBTFormat f;
-		const io::FilePtr &file = open("qubicle-savetest.qbt", io::FileMode::SysWrite);
-		io::FileStream stream(file);
-		EXPECT_TRUE(f.save(sceneGraph, file->name(), stream, testSaveCtx));
-		EXPECT_EQ(17u, sceneGraph.size());
-	}
+	testLoad(sceneGraph, "qubicle.qbt", 17);
+	helper_saveSceneGraph(sceneGraph, "qubicle-savetest.qbt");
 	sceneGraph.clear();
-	{
-		QBTFormat f;
-		io::FilePtr file = open("qubicle-savetest.qbt");
-		io::FileStream stream(file);
-		EXPECT_TRUE(f.load(file->name(), stream, sceneGraph, testLoadCtx));
-		EXPECT_EQ(17u, sceneGraph.size());
-	}
+	testLoad(sceneGraph, "qubicle-savetest.qbt", 17);
 }
 
 }

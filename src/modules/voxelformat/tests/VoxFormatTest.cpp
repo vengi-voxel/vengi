@@ -3,10 +3,8 @@
  */
 
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/File.h"
-#include "io/FileStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
@@ -21,43 +19,23 @@
 
 namespace voxelformat {
 
-class VoxFormatTest : public AbstractVoxFormatTest {};
+class VoxFormatTest : public AbstractFormatTest {};
 
 // TODO: add a test to check the group handling scene graph layout in general.
 
 TEST_F(VoxFormatTest, testLoad) {
-	canLoad("magicavoxel.vox");
+	testLoad("magicavoxel.vox");
 }
-
-#if 0
-TEST_F(VoxFormatTest, testDumpcubictest) {
-	VoxFormat f;
-	const io::FilePtr &file = open("cubictest.vox");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
-	scenegraph::SceneGraph sceneGraph;
-	io::FileDescription fileDesc;
-	fileDesc.set(file->name());
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
-	dump("cubictest.vox", sceneGraph);
-}
-#endif
 
 TEST_F(VoxFormatTest, testLoadMaterials) {
 	VoxFormat f;
 	scenegraph::SceneGraph mvSceneGraph;
 	{
-		const io::FilePtr &file = open("test_material.vox");
-		ASSERT_TRUE(file->validHandle());
-		io::FileStream stream(file);
-		io::FileDescription fileDesc;
-		fileDesc.set(file->name());
-		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, mvSceneGraph, testLoadCtx));
+		testLoad(mvSceneGraph, "test_material.vox", 12u);
 	}
 
 	palette::Palette mvPalette;
 	{
-		ASSERT_EQ(12u, mvSceneGraph.size());
 		scenegraph::SceneGraphNode *node = mvSceneGraph.firstModelNode();
 		ASSERT_TRUE(node != nullptr);
 		mvPalette = node->palette();
@@ -68,25 +46,16 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 	scenegraph::SceneGraph sceneGraph;
 
 #if VOX_TEST_SAVE_TO_FILE
-	{
-		const io::FilePtr &filesave = open(name, io::FileMode::SysWrite);
-		io::FileStream stream(filesave);
-		ASSERT_TRUE(f.save(mvSceneGraph, name, stream, testSaveCtx));
-	}
-	{
-		const io::FilePtr &fileLoadAfterSave = open(name);
-		io::FileStream streamread(fileLoadAfterSave);
-		f.load(name, streamread, sceneGraph, testLoadCtx);
-	}
+	saveSceneGraph(mvSceneGraph, name);
+	canLoad(sceneGraph, name, 12u);
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-
 	ASSERT_TRUE(f.save(mvSceneGraph, name, stream, testSaveCtx));
 	stream.seek(0);
 	f.load(name, stream, sceneGraph, testLoadCtx);
+	ASSERT_EQ(12u, sceneGraph.size());
 #endif
 
-	ASSERT_EQ(12u, sceneGraph.size());
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_TRUE(node != nullptr);
 	const palette::Palette &palette = node->palette();
@@ -101,20 +70,13 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 }
 
 TEST_F(VoxFormatTest, testLoadCharacter) {
-	VoxFormat f;
-	const io::FilePtr &file = open("vox_character.vox");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
-	scenegraph::SceneGraph sceneGraph;
-	io::FileDescription fileDesc;
-	fileDesc.set(file->name());
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
-	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		character_0::create(),	character_1::create(),	character_2::create(),	character_3::create(),
 		character_4::create(),	character_5::create(),	character_6::create(),	character_7::create(),
 		character_8::create(),	character_9::create(),	character_10::create(), character_11::create(),
 		character_12::create(), character_13::create(), character_14::create(), character_15::create()};
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "vox_character.vox", lengthof(volumes));
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
 	auto iter = sceneGraph.beginModel();
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
@@ -126,17 +88,9 @@ TEST_F(VoxFormatTest, testLoadCharacter) {
 }
 
 TEST_F(VoxFormatTest, testLoadGlasses) {
-	VoxFormat f;
-	const io::FilePtr &file = open("vox_glasses.vox");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
-	scenegraph::SceneGraph sceneGraph;
-	io::FileDescription fileDesc;
-	fileDesc.set(file->name());
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
-	ASSERT_EQ(1u, sceneGraph.size());
-	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {glasses_0::create()};
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "vox_glasses.vox", lengthof(volumes));
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
 	auto iter = sceneGraph.beginModel();
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
@@ -148,16 +102,6 @@ TEST_F(VoxFormatTest, testLoadGlasses) {
 }
 
 TEST_F(VoxFormatTest, testLoad8OnTop) {
-	VoxFormat f;
-	const io::FilePtr &file = open("8ontop.vox");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
-	scenegraph::SceneGraph sceneGraph;
-	io::FileDescription fileDesc;
-	fileDesc.set(file->name());
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx));
-	ASSERT_EQ(72u, sceneGraph.size());
-	// dump(file->fileName(), sceneGraph);
 	core::SharedPtr<voxel::RawVolume> volumes[] = {
 		eightontop_0::create(),	 eightontop_1::create(),  eightontop_2::create(),  eightontop_3::create(),
 		eightontop_4::create(),	 eightontop_5::create(),  eightontop_6::create(),  eightontop_7::create(),
@@ -178,6 +122,8 @@ TEST_F(VoxFormatTest, testLoad8OnTop) {
 		eightontop_64::create(), eightontop_65::create(), eightontop_66::create(), eightontop_67::create(),
 		eightontop_68::create(), eightontop_69::create(), eightontop_70::create(), eightontop_71::create(),
 	};
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "8ontop.vox", lengthof(volumes));
 	ASSERT_EQ(lengthof(volumes), (int)sceneGraph.size());
 	auto iter = sceneGraph.beginModel();
 	for (int i = 0; i < lengthof(volumes); ++i, ++iter) {
@@ -207,7 +153,8 @@ TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 
 TEST_F(VoxFormatTest, testSaveMultipleModels) {
 	VoxFormat f;
-	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f);
+	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f,
+						   voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
 }
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {
@@ -228,29 +175,20 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 	}
 
 #if VOX_TEST_SAVE_TO_FILE
-	{
-		const io::FilePtr &filesave = open(name, io::FileMode::SysWrite);
-		io::FileStream stream(filesave);
-		ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testSaveCtx));
-	}
-	{
-		const io::FilePtr &fileLoadAfterSave = open(name);
-		io::FileStream streamread(fileLoadAfterSave);
-		f.load(name, streamread, sceneGraph, testLoadCtx);
-	}
+	saveSceneGraph(sceneGraphsave, name);
+	canLoad(sceneGraph, name, 3u);
 #else
 	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-
 	ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testSaveCtx));
 	stream.seek(0);
 	f.load(name, stream, sceneGraph, testLoadCtx);
-#endif
 	EXPECT_EQ(3, (int)sceneGraph.size());
+#endif
 }
 
 TEST_F(VoxFormatTest, testSave) {
 	VoxFormat f;
-	testLoadSaveAndLoad("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxel::ValidateFlags::All);
+	testConvert("magicavoxel.vox", f, "magicavoxel-save.vox", f, voxel::ValidateFlags::All);
 }
 
 } // namespace voxel

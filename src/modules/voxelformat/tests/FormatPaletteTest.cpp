@@ -2,19 +2,19 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "palette/Palette.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
-#include "voxelformat/VolumeFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
-class FormatPaletteTest : public AbstractVoxFormatTest {
+class FormatPaletteTest : public AbstractFormatTest {
 protected:
 	bool checkNoAlpha(const palette::Palette &palette) {
 		for (int i = 0; i < palette.colorCount(); ++i) {
@@ -28,11 +28,12 @@ protected:
 	// the palettes have to match, as all the colors from the rgb format are saved to the palette of the target format
 	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors,
 								voxelformat::Format &paletteFormat, const core::String &palFile,
-								voxel::ValidateFlags flags = voxel::ValidateFlags::PaletteMinMatchingColors, float maxDelta = 0.00001f) {
+								voxel::ValidateFlags flags = voxel::ValidateFlags::PaletteMinMatchingColors,
+								float maxDelta = 0.00001f) {
 		SCOPED_TRACE("rgb file: " + rgbFile);
 		SCOPED_TRACE("pal file: " + palFile);
 
-		io::FileStream rgbStream(open(rgbFile));
+		io::FileStream rgbStream(_testApp->filesystem()->open(rgbFile));
 		palette::Palette rgbPalette;
 		EXPECT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx))
 			<< "Found expected amount of colors in the rgb format";
@@ -41,10 +42,12 @@ protected:
 		rgbStream.seek(0);
 
 		scenegraph::SceneGraph rgbSceneGraph;
-		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile;
+		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph, testLoadCtx))
+			<< "Failed to load rgb model " << rgbFile;
 
 		io::BufferedReadWriteStream palWriteStream;
-		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testSaveCtx)) << "Failed to write pal model " << palFile;
+		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testSaveCtx))
+			<< "Failed to write pal model " << palFile;
 		palWriteStream.seek(0);
 
 		palette::Palette palPalette;
@@ -54,11 +57,13 @@ protected:
 
 		if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
 			voxel::paletteComparator(palPalette, rgbPalette, maxDelta);
-		} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) == voxel::ValidateFlags::PaletteMinMatchingColors) {
+		} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) ==
+				   voxel::ValidateFlags::PaletteMinMatchingColors) {
 			voxel::partialPaletteComparator(palPalette, rgbPalette, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
 			voxel::paletteComparatorScaled(palPalette, rgbPalette, (int)maxDelta);
-		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
+		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
+				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
 			voxel::orderPaletteComparator(palPalette, rgbPalette, maxDelta);
 		}
 
@@ -71,23 +76,27 @@ protected:
 		}
 	}
 
-	// the colors have to match but can differ in their count - the rgb format only saves those colors that are used by at least one voxel
-	void testPaletteToRGBFormat(voxelformat::Format &palFormat, const core::String &palFile, size_t palExpectedColors, voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors) {
+	// the colors have to match but can differ in their count - the rgb format only saves those colors that are used by
+	// at least one voxel
+	void testPaletteToRGBFormat(voxelformat::Format &palFormat, const core::String &palFile, size_t palExpectedColors,
+								voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors) {
 		SCOPED_TRACE("pal file: " + palFile);
 		SCOPED_TRACE("rgb file: " + rgbFile);
 
-		io::FileStream palStream(open(palFile));
+		io::FileStream palStream(_testApp->filesystem()->open(palFile));
 		palette::Palette palPalette;
 		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, palStream, palPalette, testLoadCtx));
-		//ASSERT_TRUE(checkNoAlpha(palPalette));
+		// ASSERT_TRUE(checkNoAlpha(palPalette));
 
 		palStream.seek(0);
 
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile;
+		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph, testLoadCtx))
+			<< "Failed to load pal model " << palFile;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testSaveCtx)) << "Failed to write rgb model " << rgbFile;
+		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testSaveCtx))
+			<< "Failed to write rgb model " << rgbFile;
 		rgbWriteStream.seek(0);
 
 		palette::Palette rgbPalette;
@@ -101,11 +110,12 @@ protected:
 		}
 	}
 
-	void testRGBToRGBFormat(voxelformat::Format &rgbFormat1, const core::String &rgbFile1, voxelformat::Format &rgbFormat2, const core::String &rgbFile2, size_t expectedColors) {
+	void testRGBToRGBFormat(voxelformat::Format &rgbFormat1, const core::String &rgbFile1,
+							voxelformat::Format &rgbFormat2, const core::String &rgbFile2, size_t expectedColors) {
 		SCOPED_TRACE("1. rgb file: " + rgbFile1);
 		SCOPED_TRACE("2. rgb file: " + rgbFile2);
 
-		io::FileStream palStream(open(rgbFile1));
+		io::FileStream palStream(_testApp->filesystem()->open(rgbFile1));
 		palette::Palette rgbPalette1;
 		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, palStream, rgbPalette1, testLoadCtx));
 		ASSERT_TRUE(checkNoAlpha(rgbPalette1));
@@ -113,10 +123,12 @@ protected:
 		palStream.seek(0);
 
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load rgb model " << rgbFile1;
+		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph, testLoadCtx))
+			<< "Failed to load rgb model " << rgbFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testSaveCtx)) << "Failed to write rgb model " << rgbFile2;
+		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testSaveCtx))
+			<< "Failed to write rgb model " << rgbFile2;
 		rgbWriteStream.seek(0);
 
 		palette::Palette rgbPalette2;
@@ -131,27 +143,31 @@ protected:
 		}
 	}
 
-	void testPaletteToPaletteFormat(voxelformat::Format &palFormat1, const core::String &palFile1, voxelformat::Format &palFormat2, const core::String &palFile2, size_t expectedColors) {
+	void testPaletteToPaletteFormat(voxelformat::Format &palFormat1, const core::String &palFile1,
+									voxelformat::Format &palFormat2, const core::String &palFile2,
+									size_t expectedColors) {
 		SCOPED_TRACE("1. pal file: " + palFile1);
 		SCOPED_TRACE("2. pal file: " + palFile2);
 
-		io::FileStream palStream(open(palFile1));
+		io::FileStream palStream(_testApp->filesystem()->open(palFile1));
 		palette::Palette palPalette1;
 		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, palStream, palPalette1, testLoadCtx));
-		//ASSERT_TRUE(checkNoAlpha(palPalette1));
+		// ASSERT_TRUE(checkNoAlpha(palPalette1));
 
 		palStream.seek(0);
 
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph, testLoadCtx)) << "Failed to load pal model " << palFile1;
+		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph, testLoadCtx))
+			<< "Failed to load pal model " << palFile1;
 
 		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testSaveCtx)) << "Failed to write pal model " << palFile2;
+		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testSaveCtx))
+			<< "Failed to write pal model " << palFile2;
 		rgbWriteStream.seek(0);
 
 		palette::Palette palPalette2;
 		ASSERT_EQ(palFormat2.loadPalette(palFile2, rgbWriteStream, palPalette2, testLoadCtx), expectedColors);
-		//ASSERT_TRUE(checkNoAlpha(palPalette2));
+		// ASSERT_TRUE(checkNoAlpha(palPalette2));
 
 		for (size_t i = 0; i < expectedColors; ++i) {
 			ASSERT_EQ(palPalette1.color(i), palPalette2.color(i))

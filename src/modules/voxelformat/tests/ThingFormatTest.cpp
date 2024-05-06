@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxelformat/private/rooms/ThingNodeParser.h"
 
@@ -51,10 +51,10 @@ TEST_F(ThingNodeParserTest, testParseNode) {
 	ASSERT_EQ(nodeSpec.children[2].children[0].thingLibraryId, "87654321");
 }
 
-class ThingFormatTest : public AbstractVoxFormatTest {};
+class ThingFormatTest : public AbstractFormatTest {};
 
 TEST_F(ThingFormatTest, testLoad) {
-	canLoad("foo.thing", 1);
+	testLoad("foo.thing", 1);
 }
 
 } // namespace voxelformat

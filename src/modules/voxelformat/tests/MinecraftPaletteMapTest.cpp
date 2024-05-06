@@ -8,8 +8,8 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "palette/Palette.h"
-#include <json.hpp>
 #include <glm/vec3.hpp>
+#include <json.hpp>
 
 namespace voxelformat {
 
@@ -44,7 +44,7 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 		{
 			int idx = 0;
 			glm::ivec3 color;
-			for (const auto & c : rgb) {
+			for (const auto &c : rgb) {
 				color[idx++] = c.get<int>();
 			}
 			rgba.r = color[0];
@@ -63,7 +63,7 @@ TEST_F(MinecraftPaletteMapTest, DISABLED_testNewColors) {
 				int palMatch = pal.getClosestMatch(rgba);
 				printf("\tMCENTRY(\"%s\", %i, 0xFF),                   \\\n", blockId.c_str(), palMatch);
 			} else {
-				//Log::error("Found %s", blockId.c_str());
+				// Log::error("Found %s", blockId.c_str());
 			}
 		}
 	}

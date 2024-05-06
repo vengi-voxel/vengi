@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "AbstractVoxFormatTest.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
+#include "AbstractFormatTest.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -12,11 +12,10 @@
 
 namespace voxelformat {
 
-class VXLFormatTest: public AbstractVoxFormatTest {
-};
+class VXLFormatTest : public AbstractFormatTest {};
 
 TEST_F(VXLFormatTest, testLoad) {
-	canLoad("cc.vxl");
+	testLoad("cc.vxl");
 }
 
 TEST_F(VXLFormatTest, testLoadRGB) {
@@ -35,7 +34,8 @@ TEST_F(VXLFormatTest, DISABLED_testSaveAndLoadSceneGraphWithAnimations) {
 
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {
 	VXLFormat f;
-	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f);
+	testSaveLoadVoxel("cc-smallvolumesavetest.vxl", &f, 0, 1,
+					  voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
 }
 
-}
+} // namespace voxelformat

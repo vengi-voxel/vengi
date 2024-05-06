@@ -3,17 +3,16 @@
  */
 
 #include "voxelformat/private/cubzh/CubzhFormat.h"
-#include "AbstractVoxFormatTest.h"
+#include "AbstractFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/cubzh/PCubesFormat.h"
-#include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
 
-class CubzhFormatTest : public AbstractVoxFormatTest {};
+class CubzhFormatTest : public AbstractFormatTest {};
 
 TEST_F(CubzhFormatTest, testLoadPCUBES) {
-	canLoad("particubes.pcubes");
+	testLoad("particubes.pcubes");
 }
 
 TEST_F(CubzhFormatTest, testSaveSmallVoxelPCubes) {
@@ -23,13 +22,13 @@ TEST_F(CubzhFormatTest, testSaveSmallVoxelPCubes) {
 
 // not included - copy the file manually to execute the test
 TEST_F(CubzhFormatTest, testLoad3ZH) {
-	canLoad("cubzh.3zh");
+	testLoad("cubzh.3zh");
 }
 
 TEST_F(CubzhFormatTest, testLoadPalette) {
 	PCubesFormat f;
 	palette::Palette pal;
-	EXPECT_EQ(96, loadPalette("particubes.pcubes", f, pal));
+	EXPECT_EQ(96, helper_loadPalette("particubes.pcubes", f, pal));
 }
 
 TEST_F(CubzhFormatTest, testSaveSmallVoxel3ZH) {
