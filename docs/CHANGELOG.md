@@ -31,6 +31,7 @@ General:
    - Fixed x-axis flip for cubzh `3zh` files
    - Added cvar `voxformat_rgbweightedaverage` to control the color contributions for a triangle
    - Added the ability to upload crash dumps
+   - Improved support for reference nodes in a lot of formats
 
 VoxConvert:
 
