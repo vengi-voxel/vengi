@@ -137,8 +137,9 @@ static bool writeRLE(io::WriteStream &stream, core::RGBA color, uint8_t count) {
 	return true;
 }
 
-bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph::SceneGraphNode &node) const {
-	const voxel::Region &region = node.region();
+bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph::SceneGraph &sceneGraph,
+							const scenegraph::SceneGraphNode &node) const {
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const scenegraph::SceneGraphTransform &transform = node.transform(0);
 	const glm::ivec3 &translation = transform.localTranslation();
 	const glm::ivec3 &mins = region.getLowerCorner();
@@ -171,7 +172,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 
 	io::BufferedReadWriteStream rleDataStream(size.x * size.y * size.z * 32);
 
-	const voxel::RawVolume *v = node.volume();
+	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	const palette::Palette &palette = node.palette();
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
@@ -228,7 +229,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 
 bool QBCLFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 							  const scenegraph::SceneGraphNode &node) const {
-	wrapSave(saveMatrix(stream, node))
+	wrapSave(saveMatrix(stream, sceneGraph, node))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
 		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
@@ -265,10 +266,10 @@ bool QBCLFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sc
 bool QBCLFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						  const scenegraph::SceneGraphNode &node) const {
 	const scenegraph::SceneGraphNodeType type = node.type();
-	if (type == scenegraph::SceneGraphNodeType::Model) {
+	if (node.isAnyModelNode()) {
 		if (node.children().empty()) {
 			qbcl::ScopedQBCLHeader header(stream, node.type());
-			wrapSave(saveMatrix(stream, node) && header.success())
+			wrapSave(saveMatrix(stream, sceneGraph, node) && header.success())
 		} else {
 			qbcl::ScopedQBCLHeader scoped(stream, qbcl::NODE_TYPE_COMPOUND);
 			wrapSave(saveCompound(stream, sceneGraph, node) && scoped.success())

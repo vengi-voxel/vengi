@@ -50,7 +50,8 @@ private:
 				  const scenegraph::SceneGraphNode &node, bool colorMap) const;
 	bool saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					  const scenegraph::SceneGraphNode &node, bool colorMap) const;
-	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool colorMap) const;
+	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+					const scenegraph::SceneGraphNode &node, bool colorMap) const;
 	bool saveColorMap(io::SeekableWriteStream &stream, const palette::Palette &palette) const;
 	bool saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 				   const scenegraph::SceneGraphNode &node, bool colorMap) const;

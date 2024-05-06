@@ -73,9 +73,10 @@ private:
 	}
 
 public:
-	MatrixWriter(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed)
-		: _stream(stream), _volume(node.volume()), _palette(node.palette()), _maxs(node.region().getUpperCorner()),
-		  _leftHanded(leftHanded), _rleCompressed(rleCompressed) {
+	MatrixWriter(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+				 const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed)
+		: _stream(stream), _volume(sceneGraph.resolveVolume(node)), _palette(node.palette()),
+		  _maxs(_volume->region().getUpperCorner()), _leftHanded(leftHanded), _rleCompressed(rleCompressed) {
 	}
 
 	void addVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
@@ -183,7 +184,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 	if (!leftHanded) {
 		visitOrder = voxelutil::VisitorOrder::XYZ;
 	}
-	MatrixWriter writer(stream, node, leftHanded, rleCompressed);
+	MatrixWriter writer(stream, sceneGraph, node, leftHanded, rleCompressed);
 	voxelutil::visitVolume(
 		*sceneGraph.resolveVolume(node),
 		[&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); },

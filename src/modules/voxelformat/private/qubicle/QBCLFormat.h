@@ -43,7 +43,8 @@ private:
 		bool unknown;
 		bool locked;
 	};
-	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node) const;
+	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+					const scenegraph::SceneGraphNode &node) const;
 	bool saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 				   const scenegraph::SceneGraphNode &node) const;
 	bool saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,

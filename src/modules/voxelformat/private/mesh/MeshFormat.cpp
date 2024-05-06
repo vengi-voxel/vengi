@@ -291,7 +291,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
 				  vdim.x, vdim.y, vdim.z);
 	}
-	scenegraph::SceneGraphNode node;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 

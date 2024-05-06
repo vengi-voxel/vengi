@@ -94,7 +94,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						   const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 						   uint64_t nodeSectionOffset) const {
-	const voxel::Region &region = node.region();
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(size, maxSize()))) {
 		Log::error("Node %i exceeds max supported dimensions", node.id());
@@ -121,6 +121,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 
 	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 
+	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	const int64_t spanDataOffset = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		const int64_t spanStartPos = stream.pos();
@@ -131,12 +132,12 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 		int32_t spanStartOffset = vxl::EmptyColumn;
 		int32_t spanEndOffset = vxl::EmptyColumn;
 		int64_t spanEndPos = stream.pos();
-		if (!spanIsEmpty(node.volume(), x, z)) {
+		if (!spanIsEmpty(v, x, z)) {
 			uint8_t skipCount = 0u;
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
-				int voxelCount = calculateSpanLength(node.volume(), x, y, z);
+				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, node.volume(), x, y, z, skipCount, voxelCount, normalType))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalType))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -145,7 +146,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, node.volume(), 0, 0, 0, skipCount, 0, normalType))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalType))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -194,8 +195,8 @@ bool VXLFormat::writeLayerHeader(io::SeekableWriteStream &stream, const scenegra
 	return true;
 }
 
-bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
-							   const vxl::VXLLayerOffset &offsets) const {
+bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+							   const scenegraph::SceneGraphNode &node, const vxl::VXLLayerOffset &offsets) const {
 	Log::debug("SpanStartOffset: %i", (int32_t)offsets.start);
 	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
 	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
@@ -206,7 +207,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
-	const voxel::Region &region = node.region();
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
 	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
@@ -321,7 +322,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayerInfo(stream, *node, layerOffsets[i]))
+		wrapBool(writeLayerInfo(stream, sceneGraph, *node, layerOffsets[i]))
 	}
 	return true;
 }
@@ -332,7 +333,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core::DynamicArray<const scenegraph::SceneGraphNode *> barrel;
 	core::DynamicArray<const scenegraph::SceneGraphNode *> turret;
 
-	const uint32_t numNodes = sceneGraph.size();
+	const uint32_t numNodes = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	body.reserve(numNodes);
 	barrel.reserve(numNodes);
 	turret.reserve(numNodes);

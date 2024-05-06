@@ -31,8 +31,8 @@ private:
 					uint64_t nodeSectionOffset) const;
 	bool writeLayerHeader(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
 						  uint32_t nodeIdx) const;
-	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
-						const vxl::VXLLayerOffset &offsets) const;
+	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						const scenegraph::SceneGraphNode &node, const vxl::VXLLayerOffset &offsets) const;
 	bool writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, const palette::Palette &palette);
 
 	// reading

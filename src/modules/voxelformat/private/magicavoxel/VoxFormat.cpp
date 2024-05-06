@@ -339,7 +339,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
 			ogt_model.voxel_data = dataptr;
 			voxelutil::visitVolume(
-				*node.volume(),
+				*sceneGraph.resolveVolume(node),
 				[&](int, int, int, const voxel::Voxel &voxel) {
 					*dataptr++ = voxel.getColor();
 				},

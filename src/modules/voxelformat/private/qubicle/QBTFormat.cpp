@@ -18,6 +18,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
+#include "voxel/RawVolume.h"
 #include <glm/common.hpp>
 
 namespace voxelformat {
@@ -127,9 +128,9 @@ public:
 		return false;                                                                                                  \
 	}
 
-bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
-						   bool colorMap) const {
-	const voxel::Region &region = node.region();
+bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
+						   const scenegraph::SceneGraphNode &node, bool colorMap) const {
+	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const glm::ivec3 size = region.getDimensionsInVoxels();
@@ -140,10 +141,11 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 	io::BufferedReadWriteStream bufferStream(zlibBufSize);
 	io::ZipWriteStream zipStream(bufferStream);
 
+	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	for (int x = mins.x; x <= maxs.x; ++x) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
-				const voxel::Voxel &voxel = node.volume()->voxel(x, y, z);
+				const voxel::Voxel &voxel = v->voxel(x, y, z);
 				if (isAir(voxel.getMaterial())) {
 					zipStream.writeUInt8(0);
 					zipStream.writeUInt8(0);
@@ -163,7 +165,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 					zipStream.writeUInt8(voxelColor.b);
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
-				// TODO: const voxel::FaceBits faceBits = voxel::visibleFaces(*node.volume(), x, y, z);
+				// TODO: const voxel::FaceBits faceBits = voxel::visibleFaces(v, x, y, z);
 				zipStream.writeUInt8(0xff);
 			}
 		}
@@ -220,7 +222,7 @@ bool QBTFormat::saveColorMap(io::SeekableWriteStream &stream, const palette::Pal
 
 bool QBTFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 							 const scenegraph::SceneGraphNode &node, bool colorMap) const {
-	wrapSave(saveMatrix(stream, node, colorMap))
+	wrapSave(saveMatrix(stream, sceneGraph, node, colorMap))
 	wrapSave(stream.writeUInt32((int)node.children().size()));
 	for (int nodeId : node.children()) {
 		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(nodeId);
@@ -232,10 +234,10 @@ bool QBTFormat::saveCompound(io::SeekableWriteStream &stream, const scenegraph::
 bool QBTFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						 const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	const scenegraph::SceneGraphNodeType type = node.type();
-	if (type == scenegraph::SceneGraphNodeType::Model) {
+	if (node.isAnyModelNode()) {
 		if (node.children().empty()) {
 			qbt::ScopedQBTHeader header(stream, node.type());
-			wrapSave(saveMatrix(stream, node, colorMap) && header.success())
+			wrapSave(saveMatrix(stream, sceneGraph, node, colorMap) && header.success())
 		} else {
 			qbt::ScopedQBTHeader scoped(stream, qbt::NODE_TYPE_COMPOUND);
 			wrapSave(saveCompound(stream, sceneGraph, node, colorMap) && scoped.success())
