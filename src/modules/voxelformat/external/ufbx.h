@@ -266,7 +266,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 12, 0)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 13, 0)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -3489,6 +3489,9 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 
 	// Vertex 'W' attribute length differs from main attribute.
 	UFBX_WARNING_BAD_VERTEX_W_ATTRIBUTE,
+
+	// Missing polygon mapping type.
+	UFBX_WARNING_MISSING_POLYGON_MAPPING,
 
 	// Out-of-bounds index has been clamped to be in-bounds.
 	// HINT: You can use `ufbx_index_error_handling` to adjust behavior.
