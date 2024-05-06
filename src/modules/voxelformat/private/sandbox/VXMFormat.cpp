@@ -75,10 +75,8 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'M', 'C')));
 	glm::vec3 pivot(0.5f);
 
-	if (sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) == 1u) {
-		if (const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode()) {
-			pivot = node->worldPivot();
-		}
+	if (const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode()) {
+		pivot = node->worldPivot();
 	}
 
 	const voxel::Region &region = sceneGraph.region();
