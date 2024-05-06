@@ -19,18 +19,17 @@ bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	const glm::ivec3 &end = context.cursorPosition;
 	const int activeNode = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
-		sceneGraph.resolveVolume(node), start, end, &listResult,
-		[=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
-			if (!vol->region().containsPoint(pos)) {
-				return false;
-			}
-			if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
-				return false;
-			}
-			return voxelutil::isTouching(*vol, pos, _connectivity);
-		},
-		4.0f, 10000, _connectivity);
+	auto func = [=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
+		if (!vol->region().containsPoint(pos)) {
+			return false;
+		}
+		if (voxel::isBlocked(vol->voxel(pos).getMaterial())) {
+			return false;
+		}
+		return voxelutil::isTouching(*vol, pos, _connectivity);
+	};
+	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(sceneGraph.resolveVolume(node), start, end, &listResult,
+															  func, 4.0f, 10000, _connectivity);
 	voxelutil::AStarPathfinder pathfinder(params);
 	if (!pathfinder.execute()) {
 		Log::debug("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
