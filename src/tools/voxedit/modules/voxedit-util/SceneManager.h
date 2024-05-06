@@ -63,7 +63,7 @@ private:
 	MementoHandler _mementoHandler;
 	util::Movement _movement;
 	voxelfont::VoxelFont _voxelFont;
-	tool::VoxelData _copy;
+	voxel::VoxelData _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
@@ -398,7 +398,7 @@ public:
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
 
-	const tool::VoxelData& clipBoardData() const;
+	const voxel::VoxelData& clipBoardData() const;
 
 	// component access
 	const ModifierFacade &modifier() const;
@@ -511,7 +511,7 @@ public:
 	void nodeForeachGroup(const std::function<void(int)> &f);
 };
 
-inline const tool::VoxelData& SceneManager::clipBoardData() const {
+inline const voxel::VoxelData& SceneManager::clipBoardData() const {
 	return _copy;
 }
 

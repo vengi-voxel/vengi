@@ -17,6 +17,7 @@ set(SRCS
 	SparseVolume.h SparseVolume.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
+	VoxelData.h VoxelData.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette meshoptimizer)
 engine_target_optimize(${LIB})

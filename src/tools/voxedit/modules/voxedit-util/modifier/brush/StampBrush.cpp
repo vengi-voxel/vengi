@@ -75,7 +75,7 @@ void StampBrush::construct() {
 	}).setHelp(_("Use the current selected node volume as new stamp"));
 
 	command::Command::registerCommand("stampbrushpaste", [this](const command::CmdArgs &) {
-		const tool::VoxelData &clipBoard = _sceneMgr->clipBoardData();
+		const voxel::VoxelData &clipBoard = _sceneMgr->clipBoardData();
 		if (clipBoard) {
 			setVolume(*clipBoard.volume, *clipBoard.palette);
 		}

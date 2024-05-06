@@ -12,7 +12,7 @@
 namespace voxedit {
 namespace tool {
 
-VoxelData copy(const VoxelData &voxelData, const Selections &selections) {
+voxel::VoxelData copy(const voxel::VoxelData &voxelData, const Selections &selections) {
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
@@ -23,10 +23,10 @@ VoxelData copy(const VoxelData &voxelData, const Selections &selections) {
 	}
 
 	voxel::RawVolume *v = new voxel::RawVolume(voxelData.volume, selections);
-	return VoxelData(v, voxelData.palette, true);
+	return voxel::VoxelData(v, voxelData.palette, true);
 }
 
-VoxelData cut(VoxelData &voxelData, const Selections &selections, voxel::Region &modifiedRegion) {
+voxel::VoxelData cut(voxel::VoxelData &voxelData, const Selections &selections, voxel::Region &modifiedRegion) {
 	if (!voxelData) {
 		Log::debug("Copy failed: no voxel data");
 		return {};
@@ -61,7 +61,8 @@ VoxelData cut(VoxelData &voxelData, const Selections &selections, voxel::Region 
 	return {v, voxelData.palette, true};
 }
 
-void paste(VoxelData &out, const VoxelData &in, const glm::ivec3 &referencePosition, voxel::Region &modifiedRegion) {
+void paste(voxel::VoxelData &out, const voxel::VoxelData &in, const glm::ivec3 &referencePosition,
+		   voxel::Region &modifiedRegion) {
 	if (!in) {
 		Log::debug("Paste failed: no in voxel data");
 		return;
