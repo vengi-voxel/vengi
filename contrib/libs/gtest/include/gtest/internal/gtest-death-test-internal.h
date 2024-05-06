@@ -52,9 +52,7 @@ GTEST_DECLARE_string_(internal_run_death_test);
 namespace testing {
 namespace internal {
 
-// Names of the flags (needed for parsing Google Test flags).
-const char kDeathTestStyleFlag[] = "death_test_style";
-const char kDeathTestUseFork[] = "death_test_use_fork";
+// Name of the flag (needed for parsing Google Test flag).
 const char kInternalRunDeathTestFlag[] = "internal_run_death_test";
 
 #ifdef GTEST_HAS_DEATH_TEST
@@ -73,7 +71,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 //
 // exit status:  The integer exit information in the format specified
 //               by wait(2)
-// exit code:    The integer code passed to exit(3), _exit(2), or
+// exit code:    The integer code passed to exit(3), _Exit(2), or
 //               returned from main()
 class GTEST_API_ DeathTest {
  public:
