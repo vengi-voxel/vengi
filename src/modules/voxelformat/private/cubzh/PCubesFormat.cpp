@@ -56,6 +56,13 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 			wrapBool(sub.writeUInt16(dimensions.z))
 		}
 		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
+			const glm::vec3 &pivot = node->worldPivot();
+			wrapBool(sub.writeFloat(pivot.x))
+			wrapBool(sub.writeFloat(pivot.y))
+			wrapBool(sub.writeFloat(pivot.z))
+		}
+		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_BLOCKS_V6, ws);
 			const voxel::RawVolume *volume = node->volume();
 			const voxel::Region &region = volume->region();
