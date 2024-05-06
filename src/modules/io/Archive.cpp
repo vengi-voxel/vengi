@@ -8,6 +8,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
+#include "io/Stream.h"
 #include "io/ZipArchive.h"
 
 namespace io {
@@ -27,6 +28,10 @@ SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
 	}
 	stream->seek(0);
 	return stream;
+}
+
+SeekableWriteStreamPtr Archive::writeStream(const core::String &filePath) {
+	return SeekableWriteStreamPtr{};
 }
 
 bool isSupportedArchive(const core::String &filename) {

@@ -299,13 +299,6 @@ public:
 	bool writePascalStringUInt16BE(const core::String &str);
 };
 
-class NOPWriteStream : public io::WriteStream {
-public:
-	int write(const void *buf, size_t size) override {
-		return (int)size;
-	}
-};
-
 /**
  * @brief WriteStream with the option to jump back and forth in while writing
  * @ingroup IO
@@ -330,6 +323,22 @@ public:
 	 * @sa seek()
 	 */
 	virtual int64_t pos() const = 0;
+};
+
+class NOPWriteStream : public io::SeekableWriteStream {
+public:
+	int write(const void *buf, size_t size) override {
+		return (int)size;
+	}
+	int64_t seek(int64_t position, int whence = SEEK_SET) override {
+		return 0;
+	}
+	int64_t size() const override {
+		return 0;
+	}
+	int64_t pos() const override {
+		return 0;
+	}
 };
 
 template<class SeekableStream>

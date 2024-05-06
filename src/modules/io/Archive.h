@@ -15,6 +15,7 @@ class Filesystem;
 
 using ArchiveFiles = core::DynamicArray<io::FilesystemEntry>;
 using SeekableReadStreamPtr = core::SharedPtr<SeekableReadStream>;
+using SeekableWriteStreamPtr = core::SharedPtr<SeekableWriteStream>;
 using FilesystemPtr = core::SharedPtr<Filesystem>;
 
 /**
@@ -47,6 +48,7 @@ public:
 	 * this might not be the most efficient way to read a file from an archive
 	 */
 	virtual SeekableReadStreamPtr readStream(const core::String &filePath);
+	virtual SeekableWriteStreamPtr writeStream(const core::String &filePath);
 };
 
 inline const ArchiveFiles &Archive::files() const {

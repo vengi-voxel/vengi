@@ -18,7 +18,7 @@ protected:
 	io::FilesystemPtr _filesytem;
 	bool _fullPath;
 
-	io::FilePtr open(const core::String &path) const;
+	io::FilePtr open(const core::String &path, FileMode mode) const;
 public:
 	FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath = true);
 	virtual ~FilesystemArchive();
@@ -27,6 +27,7 @@ public:
 	bool exists(const core::String &file);
 	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
 	SeekableReadStreamPtr readStream(const core::String &filePath) override;
+	SeekableWriteStreamPtr writeStream(const core::String &filePath) override;
 };
 
 } // namespace io

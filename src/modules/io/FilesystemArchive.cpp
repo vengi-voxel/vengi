@@ -35,11 +35,11 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 	return ret;
 }
 
-io::FilePtr FilesystemArchive::open(const core::String &path) const {
+io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) const {
 	for (const auto &e : _files) {
 		// TODO: implement case insensitive search
 		if (core::string::endsWith(e.fullPath, path)) {
-			const io::FilePtr &file = _filesytem->open(e.fullPath);
+			const io::FilePtr &file = _filesytem->open(e.fullPath, mode);
 			if (!file->validHandle()) {
 				Log::debug("Could not open %s", e.fullPath.c_str());
 				continue;
@@ -53,11 +53,11 @@ io::FilePtr FilesystemArchive::open(const core::String &path) const {
 }
 
 bool FilesystemArchive::exists(const core::String &filePath) {
-	return open(filePath);
+	return open(filePath, FileMode::Read);
 }
 
 bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
-	const io::FilePtr &file = open(filePath);
+	const io::FilePtr &file = open(filePath, FileMode::Read);
 	if (!file) {
 		Log::error("Failed to load archive file: %s", filePath.c_str());
 		return false;
@@ -67,7 +67,15 @@ bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStre
 }
 
 SeekableReadStreamPtr FilesystemArchive::readStream(const core::String &filePath) {
-	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath));
+	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath, FileMode::Read));
+	if (!stream->valid()) {
+		return {};
+	}
+	return stream;
+}
+
+SeekableWriteStreamPtr FilesystemArchive::writeStream(const core::String &filePath) {
+	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath, FileMode::Write));
 	if (!stream->valid()) {
 		return {};
 	}
