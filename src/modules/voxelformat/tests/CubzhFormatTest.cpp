@@ -5,6 +5,7 @@
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "AbstractVoxFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
@@ -16,7 +17,7 @@ TEST_F(CubzhFormatTest, testLoadPCUBES) {
 }
 
 TEST_F(CubzhFormatTest, testSaveSmallVoxelPCubes) {
-	CubzhFormat f;
+	PCubesFormat f;
 	testSaveLoadVoxel("pcubes-smallvolumesavetest.pcubes", &f, 0, 1);
 }
 
@@ -26,7 +27,7 @@ TEST_F(CubzhFormatTest, testLoad3ZH) {
 }
 
 TEST_F(CubzhFormatTest, testLoadPalette) {
-	CubzhFormat f;
+	PCubesFormat f;
 	palette::Palette pal;
 	EXPECT_EQ(96, loadPalette("particubes.pcubes", f, pal));
 }

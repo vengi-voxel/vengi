@@ -19,7 +19,9 @@ set(SRCS
 	private/commandconquer/VXLFormat.h       private/commandconquer/VXLFormat.cpp
 	private/commandconquer/VXLShared.h       private/commandconquer/VXLShared.cpp
 	private/cubeworld/CubFormat.h            private/cubeworld/CubFormat.cpp
+	private/cubzh/CubzhShared.h
 	private/cubzh/CubzhFormat.h              private/cubzh/CubzhFormat.cpp
+	private/cubzh/PCubesFormat.h             private/cubzh/PCubesFormat.cpp
 	private/cubzh/CubzhB64Format.h           private/cubzh/CubzhB64Format.cpp
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp

@@ -27,6 +27,7 @@
 #include "voxelformat/private/cubeworld/CubFormat.h"
 #include "voxelformat/private/cubzh/CubzhB64Format.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
+#include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
@@ -471,6 +472,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<XRawFormat>();
 		} else if (ext == voxel3D().mainExtension()) {
 			return core::make_shared<V3AFormat>();
+		} else if (ext == particubes().mainExtension()) {
+			return core::make_shared<PCubesFormat>();
 		} else if (ext == particubes().mainExtension() || ext == cubzh().mainExtension()) {
 			return core::make_shared<CubzhFormat>();
 		} else if (ext == cubzhB64().mainExtension()) {
