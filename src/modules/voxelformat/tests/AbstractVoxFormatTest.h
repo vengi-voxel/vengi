@@ -49,7 +49,7 @@ protected:
 
 	void testSaveMultipleModels(const core::String &filename, Format *format);
 	void testSaveSingleVoxel(const core::String &filename, Format *format);
-	void testSaveSmallVolume(const core::String &filename, Format *format);
+	void testSaveSmallVolume(const core::String &filename, Format *format, voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testSave(const core::String &filename, Format *format, const palette::Palette &palette, voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
