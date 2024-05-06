@@ -23,9 +23,14 @@ TEST_F(PathBrushTest, testExecute) {
 			volume.setVoxel(x, region.getLowerY(), z, voxel::Voxel(voxel::VoxelType::Generic, 0));
 		}
 	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
 	scenegraph::SceneGraph sceneGraph;
+	int nodeId;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(&volume, false);
+		nodeId = sceneGraph.emplace(core::move(node));
+	}
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
 	brushContext.referencePos = volume.region().getLowerCorner();
