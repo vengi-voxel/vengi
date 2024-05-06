@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "io/FileStream.h"
+#include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {
 
@@ -145,7 +146,7 @@ bool HVAFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	}
 
 	stream.writeUInt32(numFrames);
-	uint32_t numNodes = sceneGraph.size();
+	uint32_t numNodes = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	stream.writeUInt32(numNodes);
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
