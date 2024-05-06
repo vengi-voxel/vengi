@@ -177,7 +177,7 @@ void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model 
 							  const scenegraph::SceneGraphNode &node, Stack &stack,
 							  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations) {
 	tinygltf::Node gltfNode;
-	if (node.isModelNode()) {
+	if (node.isAnyModelNode()) {
 		gltfNode.mesh = (int)gltfModel.meshes.size();
 	}
 	gltfNode.name = node.name().c_str();
@@ -702,7 +702,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		palette::Palette palette = node.palette();
 
 		int texcoordIndex = 0;
-		if (node.isModelNode()) {
+		if (node.isAnyModelNode()) {
 			generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
 		}
 
