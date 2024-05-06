@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/ArrayLength.h"
-#include "core/Enum.h"
 
 namespace voxedit {
 
