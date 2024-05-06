@@ -20,7 +20,7 @@ bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	const int activeNode = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
 	voxelutil::AStarPathfinderParams<voxel::RawVolume> params(
-		node.volume(), start, end, &listResult,
+		sceneGraph.resolveVolume(node), start, end, &listResult,
 		[=](const voxel::RawVolume *vol, const glm::ivec3 &pos) {
 			if (!vol->region().containsPoint(pos)) {
 				return false;
