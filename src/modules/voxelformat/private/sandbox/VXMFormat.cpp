@@ -73,7 +73,13 @@ image::ImagePtr VXMFormat::loadScreenshot(const core::String &filename, io::Seek
 bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'M', 'C')));
-	const glm::vec3 pivot(0.5f);
+	glm::vec3 pivot(0.5f);
+
+	if (sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) == 1u) {
+		if (const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode()) {
+			pivot = node->worldPivot();
+		}
+	}
 
 	const voxel::Region &region = sceneGraph.region();
 	const glm::ivec3 &mins = region.getLowerCorner();
