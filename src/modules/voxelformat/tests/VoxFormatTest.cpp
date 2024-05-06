@@ -205,7 +205,7 @@ TEST_F(VoxFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("mv-smallvolumesavetest.vox", &f);
 }
 
-TEST_F(VoxFormatTest, testSaveMultipleLayers) {
+TEST_F(VoxFormatTest, testSaveMultipleModels) {
 	VoxFormat f;
 	testSaveMultipleModels("mv-multiplemodelsavetest.vox", &f);
 }

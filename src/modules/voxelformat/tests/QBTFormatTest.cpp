@@ -34,7 +34,7 @@ TEST_F(QBTFormatTest, testSaveSmallVoxel) {
 	testSaveLoadVoxel("qubicle-smallvolumesavetest.qbt", &f);
 }
 
-TEST_F(QBTFormatTest, testSaveMultipleLayers) {
+TEST_F(QBTFormatTest, testSaveMultipleModels) {
 	QBTFormat f;
 	testSaveMultipleModels("qubicle-multiplemodelsavetest.qbt", &f);
 }
@@ -44,7 +44,7 @@ TEST_F(QBTFormatTest, testSave) {
 	testLoadSaveAndLoad("qubicle.qbt", f, "qubicle-savetest.qbt", f);
 }
 
-TEST_F(QBTFormatTest, testResaveMultipleLayers) {
+TEST_F(QBTFormatTest, testResaveMultipleModels) {
 	scenegraph::SceneGraph sceneGraph;
 	{
 		QBTFormat f;
