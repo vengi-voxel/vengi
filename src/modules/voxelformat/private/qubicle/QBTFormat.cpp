@@ -57,6 +57,7 @@ public:
 			Log::debug("Write model node");
 			break;
 		case scenegraph::SceneGraphNodeType::Model:
+		case scenegraph::SceneGraphNodeType::ModelReference:
 			nodeType = qbt::NODE_TYPE_MATRIX;
 			Log::debug("Write matrix node");
 			break;
@@ -236,7 +237,7 @@ bool QBTFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::Scen
 	const scenegraph::SceneGraphNodeType type = node.type();
 	if (node.isAnyModelNode()) {
 		if (node.children().empty()) {
-			qbt::ScopedQBTHeader header(stream, node.type());
+			qbt::ScopedQBTHeader header(stream, type);
 			wrapSave(saveMatrix(stream, sceneGraph, node, colorMap) && header.success())
 		} else {
 			qbt::ScopedQBTHeader scoped(stream, qbt::NODE_TYPE_COMPOUND);

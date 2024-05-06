@@ -56,6 +56,7 @@ public:
 			Log::debug("Write model node");
 			break;
 		case scenegraph::SceneGraphNodeType::Model:
+		case scenegraph::SceneGraphNodeType::ModelReference:
 			nodeType = qbcl::NODE_TYPE_MATRIX;
 			Log::debug("Write matrix node");
 			break;

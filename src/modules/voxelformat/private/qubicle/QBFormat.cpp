@@ -202,7 +202,7 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	wrapSave(stream.writeUInt32((uint32_t)orientation))
 	wrapSave(stream.writeUInt32(rleCompressed ? (uint32_t)Compression::RLE : (uint32_t)Compression::None))
 	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size()))
+	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels)))
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		if (!saveMatrix(stream, sceneGraph, node, leftHanded, rleCompressed)) {
