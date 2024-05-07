@@ -193,19 +193,24 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 }
 
 bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						  io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	wrapSave(stream.writeUInt32(257)) // version
-	wrapSave(stream.writeUInt32((uint32_t)ColorFormat::RGBA))
+						  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	wrapSave(stream->writeUInt32(257)) // version
+	wrapSave(stream->writeUInt32((uint32_t)ColorFormat::RGBA))
 	const bool leftHanded = core::Var::getSafe(cfg::VoxformatQBSaveLeftHanded)->boolVal();
 	const ZAxisOrientation orientation = leftHanded ? ZAxisOrientation::LeftHanded : ZAxisOrientation::RightHanded;
 	const bool rleCompressed = core::Var::getSafe(cfg::VoxformatQBSaveCompressed)->boolVal();
-	wrapSave(stream.writeUInt32((uint32_t)orientation))
-	wrapSave(stream.writeUInt32(rleCompressed ? (uint32_t)Compression::RLE : (uint32_t)Compression::None))
-	wrapSave(stream.writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
-	wrapSave(stream.writeUInt32((uint32_t)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels)))
+	wrapSave(stream->writeUInt32((uint32_t)orientation))
+	wrapSave(stream->writeUInt32(rleCompressed ? (uint32_t)Compression::RLE : (uint32_t)Compression::None))
+	wrapSave(stream->writeUInt32((uint32_t)VisibilityMask::AlphaChannelVisibleByValue))
+	wrapSave(stream->writeUInt32((uint32_t)sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels)))
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		if (!saveMatrix(stream, sceneGraph, node, leftHanded, rleCompressed)) {
+		if (!saveMatrix(*stream, sceneGraph, node, leftHanded, rleCompressed)) {
 			return false;
 		}
 	}
@@ -448,25 +453,31 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, RGBAMap
 	return true;
 }
 
-size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							 const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
+
 	State state;
-	wrap(stream.readUInt32(state._version))
+	wrap(stream->readUInt32(state._version))
 	uint32_t colorFormat;
-	wrap(stream.readUInt32(colorFormat))
+	wrap(stream->readUInt32(colorFormat))
 	state._colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
-	wrap(stream.readUInt32(zAxisOrientation))
+	wrap(stream->readUInt32(zAxisOrientation))
 	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
-	wrap(stream.readUInt32(compressed))
+	wrap(stream->readUInt32(compressed))
 	state._compressed = (Compression)compressed;
 	uint32_t visibilityMaskEncoded;
-	wrap(stream.readUInt32(visibilityMaskEncoded))
+	wrap(stream->readUInt32(visibilityMaskEncoded))
 	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
 
 	uint32_t numMatrices;
-	wrap(stream.readUInt32(numMatrices))
+	wrap(stream->readUInt32(numMatrices))
 	if (numMatrices > 16384) {
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return 0;
@@ -474,7 +485,7 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	RGBAMap colors;
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix colors: %u", i);
-		if (!readPalette(state, stream, colors)) {
+		if (!readPalette(state, *stream, colors)) {
 			Log::error("Failed to load the matrix colors %u", i);
 			break;
 		}
@@ -490,26 +501,31 @@ size_t QBFormat::loadPalette(const core::String &filename, io::SeekableReadStrea
 	return palette.colorCount();
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool QBFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	State state;
-	wrap(stream.readUInt32(state._version))
+	wrap(stream->readUInt32(state._version))
 	uint32_t colorFormat;
-	wrap(stream.readUInt32(colorFormat))
+	wrap(stream->readUInt32(colorFormat))
 	state._colorFormat = (ColorFormat)colorFormat;
 	uint32_t zAxisOrientation;
-	wrap(stream.readUInt32(zAxisOrientation))
+	wrap(stream->readUInt32(zAxisOrientation))
 	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
 	uint32_t compressed;
-	wrap(stream.readUInt32(compressed))
+	wrap(stream->readUInt32(compressed))
 	state._compressed = (Compression)compressed;
 	uint32_t visibilityMaskEncoded;
-	wrap(stream.readUInt32(visibilityMaskEncoded))
+	wrap(stream->readUInt32(visibilityMaskEncoded))
 	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
 
 	uint32_t numMatrices;
-	wrap(stream.readUInt32(numMatrices))
+	wrap(stream->readUInt32(numMatrices))
 	if (numMatrices > 16384) {
 		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return false;
@@ -526,7 +542,7 @@ bool QBFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	palette::PaletteLookup palLookup(palette);
 	for (uint32_t i = 0; i < numMatrices; i++) {
 		Log::debug("Loading matrix: %u", i);
-		if (!readMatrix(state, stream, sceneGraph, palLookup)) {
+		if (!readMatrix(state, *stream, sceneGraph, palLookup)) {
 			Log::error("Failed to load the matrix %u", i);
 			break;
 		}

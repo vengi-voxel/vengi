@@ -10,6 +10,7 @@
 
 #include "core/collection/DynamicMap.h"
 #include "image/Image.h"
+#include "io/Archive.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/FormatThumbnail.h"
@@ -127,12 +128,12 @@ protected:
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
 	virtual bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							io::SeekableWriteStream &stream, const SaveContext &ctx) = 0;
+							const io::ArchivePtr &archive, const SaveContext &ctx) = 0;
 	/**
 	 * @brief If the format supports multiple models or groups, this method load them into the scene graph
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
-	virtual bool loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+	virtual bool loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) = 0;
 
 public:
@@ -153,7 +154,7 @@ public:
 	 * @note Not supported by many formats.
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
-	virtual image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+	virtual image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										   const LoadContext &ctx);
 
 	/**
@@ -166,18 +167,18 @@ public:
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 * @return the amount of colors found in the palette
 	 */
-	virtual size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	virtual size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx);
 	/**
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
-	virtual bool load(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	virtual bool load(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					  const LoadContext &ctx);
 	/**
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
 	virtual bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					  io::SeekableWriteStream &stream, const SaveContext &ctx);
+					  const io::ArchivePtr &archive, const SaveContext &ctx);
 };
 
 /**
@@ -194,7 +195,7 @@ class NoColorFormat : public Format {};
  */
 class PaletteFormat : public Format {
 protected:
-	virtual bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	virtual bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								   const LoadContext &ctx) = 0;
 
@@ -211,13 +212,13 @@ protected:
 	virtual int emptyPaletteIndex() const {
 		return -1;
 	}
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override final;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
-	bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, io::SeekableWriteStream &stream,
+	bool save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
 			  const SaveContext &ctx) override final;
 };
 
@@ -229,10 +230,10 @@ public:
  */
 class RGBAFormat : public Format {
 protected:
-	virtual bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+	virtual bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) = 0;
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;
 };
 

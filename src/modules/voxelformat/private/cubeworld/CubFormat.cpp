@@ -4,6 +4,7 @@
 
 #include "CubFormat.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/PaletteLookup.h"
 
@@ -22,25 +23,30 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return 0;
+	}
 	uint32_t width, depth, height;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
-		return false;
+		return 0;
 	}
 
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
 				uint8_t r, g, b;
-				wrap(stream.readUInt8(r))
-				wrap(stream.readUInt8(g))
-				wrap(stream.readUInt8(b))
+				wrap(stream->readUInt8(r))
+				wrap(stream->readUInt8(g))
+				wrap(stream->readUInt8(b))
 				if (r == 0u && g == 0u && b == 0u) {
 					// empty voxel
 					continue;
@@ -53,13 +59,18 @@ size_t CubFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 	uint32_t width, depth, height;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -79,9 +90,9 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
 				uint8_t r, g, b;
-				wrap(stream.readUInt8(r))
-				wrap(stream.readUInt8(g))
-				wrap(stream.readUInt8(b))
+				wrap(stream->readUInt8(r))
+				wrap(stream->readUInt8(g))
+				wrap(stream->readUInt8(b))
 				if (r == 0u && g == 0u && b == 0u) {
 					// empty voxel
 					continue;
@@ -103,7 +114,12 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 #undef wrap
 
 bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -116,9 +132,9 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t depth = region.getDepthInVoxels();
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.writeUInt32(width))
-	wrapBool(stream.writeUInt32(depth))
-	wrapBool(stream.writeUInt32(height))
+	wrapBool(stream->writeUInt32(width))
+	wrapBool(stream->writeUInt32(depth))
+	wrapBool(stream->writeUInt32(height))
 
 	const palette::Palette &palette = node->palette();
 	for (uint32_t y = 0u; y < height; ++y) {
@@ -127,9 +143,9 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel &voxel = sampler.voxel();
 				if (voxel.getMaterial() == voxel::VoxelType::Air) {
-					wrapBool(stream.writeUInt8(0))
-					wrapBool(stream.writeUInt8(0))
-					wrapBool(stream.writeUInt8(0))
+					wrapBool(stream->writeUInt8(0))
+					wrapBool(stream->writeUInt8(0))
+					wrapBool(stream->writeUInt8(0))
 					continue;
 				}
 
@@ -137,9 +153,9 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				if (rgba.r == 0u && rgba.g == 0u && rgba.b == 0u) {
 					rgba = palette.color(palette.findReplacement(voxel.getColor()));
 				}
-				wrapBool(stream.writeUInt8(rgba.r))
-				wrapBool(stream.writeUInt8(rgba.g))
-				wrapBool(stream.writeUInt8(rgba.b))
+				wrapBool(stream->writeUInt8(rgba.r))
+				wrapBool(stream->writeUInt8(rgba.g))
+				wrapBool(stream->writeUInt8(rgba.b))
 			}
 		}
 	}

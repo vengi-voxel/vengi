@@ -16,6 +16,7 @@
 #include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
+#include "io/Archive.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -472,14 +473,14 @@ MeshFormat::MeshExt::MeshExt(voxel::ChunkMesh *_mesh, const scenegraph::SceneGra
 	  pivot(node.pivot()), nodeId(node.id()) {
 }
 
-bool MeshFormat::loadGroups(const core::String &filename, io::SeekableReadStream &file,
+bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	const bool retVal = voxelizeGroups(filename, file, sceneGraph, ctx);
+	const bool retVal = voxelizeGroups(filename, archive, sceneGraph, ctx);
 	sceneGraph.updateTransforms();
 	return retVal;
 }
 
-bool MeshFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &, scenegraph::SceneGraph &,
+bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,
 								const LoadContext &) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());
 	return false;
@@ -554,7 +555,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 }
 
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							const io::ArchivePtr &archive, const SaveContext &ctx) {
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
@@ -619,7 +620,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		state = false;
 	} else {
 		Log::debug("Save meshes");
-		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, stream, {1.0f, 1.0f, 1.0f},
+		state = saveMeshes(meshIdxNodeMap, sceneGraph, nonEmptyMeshes, filename, archive, {1.0f, 1.0f, 1.0f},
 						   type == voxel::SurfaceExtractionType::Cubic ? quads : false, withColor, withTexCoords);
 	}
 	for (MeshExt &meshext : meshes) {

@@ -4,6 +4,7 @@
 
 #include "SLAB6VoxFormat.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "SLABShared.h"
@@ -22,35 +23,45 @@
 
 namespace voxelformat {
 
-size_t SLAB6VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream,
+size_t SLAB6VoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive,
 								   palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
 	uint32_t depth, height, width;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
 		return false;
 	}
 
-	stream.skip((int64_t)width * height * depth);
+	stream->skip((int64_t)width * height * depth);
 	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(priv::readRGBScaledColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
 	return palette.colorCount();
 }
 
-bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint32_t depth, height, width;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -63,12 +74,12 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 		return false;
 	}
 
-	const int64_t voxelPos = stream.pos();
-	stream.skip((int64_t)width * height * depth);
+	const int64_t voxelPos = stream->pos();
+	stream->skip((int64_t)width * height * depth);
 	palette.setSize(palette::PaletteMaxColors);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(priv::readRGBScaledColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
 
@@ -76,13 +87,13 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 
-	stream.seek(voxelPos);
+	stream->seek(voxelPos);
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 	for (uint32_t w = 0u; w < width; ++w) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t h = 0u; h < height; ++h) {
 				uint8_t palIdx;
-				wrap(stream.readUInt8(palIdx))
+				wrap(stream->readUInt8(palIdx))
 				if (palIdx == emptyColorIndex) {
 					continue;
 				}
@@ -100,7 +111,12 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, io::Seekabl
 }
 
 bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-								io::SeekableWriteStream &stream, const SaveContext &ctx) {
+								const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -109,9 +125,9 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
-	wrapBool(stream.writeUInt32(dim.x))
-	wrapBool(stream.writeUInt32(dim.z))
-	wrapBool(stream.writeUInt32(dim.y))
+	wrapBool(stream->writeUInt32(dim.x))
+	wrapBool(stream->writeUInt32(dim.z))
+	wrapBool(stream->writeUInt32(dim.y))
 
 	// we have to flip depth with height for our own coordinate system
 	for (int w = region.getLowerX(); w <= region.getUpperX(); ++w) {
@@ -119,10 +135,10 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 			for (int h = region.getUpperY(); h >= region.getLowerY(); --h) {
 				const voxel::Voxel &voxel = node->volume()->voxel(w, h, d);
 				if (voxel::isAir(voxel.getMaterial())) {
-					wrapBool(stream.writeUInt8(emptyColorIndex))
+					wrapBool(stream->writeUInt8(emptyColorIndex))
 				} else {
 					core_assert(voxel.getColor() != emptyColorIndex);
-					wrapBool(stream.writeUInt8(voxel.getColor()))
+					wrapBool(stream->writeUInt8(voxel.getColor()))
 				}
 			}
 		}
@@ -130,11 +146,11 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA &color = palette.color(i);
-		wrapBool(priv::writeRGBScaledColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(priv::writeRGBScaledColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 
 	return true;

@@ -5,6 +5,7 @@
 #include "KVXFormat.h"
 #include "SLABShared.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/Vector.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -63,18 +64,23 @@ struct VoxtypeKVX {
 		return false;                                                                                                  \
 	}
 
-bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	// Total # of bytes (not including numbytes) in each mip-map level
 	// but there is only 1 mip-map level (or 5 in unstripped kvx files)
 	uint32_t numbytes;
-	wrap(stream.readUInt32(numbytes))
+	wrap(stream->readUInt32(numbytes))
 
 	// Dimensions of voxel. (our depth is kvx height)
 	uint32_t xsiz_w, ysiz_d, zsiz_h;
-	wrap(stream.readUInt32(xsiz_w))
-	wrap(stream.readUInt32(ysiz_d))
-	wrap(stream.readUInt32(zsiz_h))
+	wrap(stream->readUInt32(xsiz_w))
+	wrap(stream->readUInt32(ysiz_d))
+	wrap(stream->readUInt32(zsiz_h))
 
 	Log::debug("Dimensions: %i:%i:%i", xsiz_w, ysiz_d, zsiz_h);
 
@@ -94,9 +100,9 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 */
 	scenegraph::SceneGraphTransform transform;
 	int32_t pivx_w, pivy_d, pivz_h;
-	wrap(stream.readInt32(pivx_w))
-	wrap(stream.readInt32(pivy_d))
-	wrap(stream.readInt32(pivz_h))
+	wrap(stream->readInt32(pivx_w))
+	wrap(stream->readInt32(pivy_d))
+	wrap(stream->readInt32(pivz_h))
 
 	// For extra precision, this location has been shifted up by 8 bits.
 	pivx_w >>= 8;
@@ -120,12 +126,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	uint16_t xyoffsets[256][257];
 	uint32_t xoffsets[257];
 	for (uint32_t x = 0u; x <= xsiz_w; ++x) {
-		wrap(stream.readUInt32(xoffsets[x]))
+		wrap(stream->readUInt32(xoffsets[x]))
 	}
 
 	for (uint32_t x = 0u; x < xsiz_w; ++x) {
 		for (uint32_t y = 0u; y <= ysiz_d; ++y) {
-			wrap(stream.readUInt16(xyoffsets[x][y]))
+			wrap(stream->readUInt16(xyoffsets[x][y]))
 		}
 	}
 
@@ -135,12 +141,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 		return false;
 	}
 	// Read the color palette from the end of the file and convert to our palette
-	const int64_t currentPos = stream.pos();
-	if (stream.seek(-3l * palette::PaletteMaxColors, SEEK_END) == -1) {
+	const int64_t currentPos = stream->pos();
+	if (stream->seek(-3l * palette::PaletteMaxColors, SEEK_END) == -1) {
 		Log::error("Can't seek to palette data");
 		return false;
 	}
-	if (stream.pos() < currentPos) {
+	if (stream->pos() < currentPos) {
 		Log::error("Seek to palette data yields invalid stream position");
 		return false;
 	}
@@ -153,10 +159,10 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	 */
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		core::RGBA color;
-		wrapBool(priv::readRGBScaledColor(stream, color))
+		wrapBool(priv::readRGBScaledColor(*stream, color))
 		palette.setColor(i, color);
 	}
-	stream.seek(currentPos);
+	stream->seek(currentPos);
 
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
@@ -176,12 +182,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 			while (n > 0) {
 				priv::VoxtypeKVX header;
-				wrap(stream.readUInt8(header.ztop))
-				wrap(stream.readUInt8(header.zlength))
-				wrap(stream.readUInt8((uint8_t &)header.vis))
+				wrap(stream->readUInt8(header.ztop))
+				wrap(stream->readUInt8(header.zlength))
+				wrap(stream->readUInt8((uint8_t &)header.vis))
 				for (uint8_t i = 0u; i < header.zlength; ++i) {
 					uint8_t col;
-					wrap(stream.readUInt8(col))
+					wrap(stream->readUInt8(col))
 					voxel::Voxel voxel = voxel::createVoxel(palette, col);
 					const int nx = (int)x;
 					const int ny = region.getUpperY() - (int)header.ztop - (int)i;
@@ -206,7 +212,12 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -220,27 +231,27 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const voxel::RawVolume &volume = *node->volume();
 
-	const int64_t numBytesPos = stream.pos();
+	const int64_t numBytesPos = stream->pos();
 	core_assert(numBytesPos == 0);
-	wrapBool(stream.writeUInt32(0)) // numbytes
+	wrapBool(stream->writeUInt32(0)) // numbytes
 
 	// flip y and z here
-	wrapBool(stream.writeUInt32(dim.x))
-	wrapBool(stream.writeUInt32(dim.z))
-	wrapBool(stream.writeUInt32(dim.y))
+	wrapBool(stream->writeUInt32(dim.x))
+	wrapBool(stream->writeUInt32(dim.z))
+	wrapBool(stream->writeUInt32(dim.y))
 	Log::debug("Dimensions: %i:%i:%i", dim.x, dim.z, dim.y);
 
 	// TODO: support the pivot
 	glm::ivec3 pivot(0); // normalized pivot
-	wrapBool(stream.writeInt32(-pivot.x))
-	wrapBool(stream.writeInt32(pivot.z))
-	wrapBool(stream.writeInt32(-pivot.y))
+	wrapBool(stream->writeInt32(-pivot.x))
+	wrapBool(stream->writeInt32(pivot.z))
+	wrapBool(stream->writeInt32(-pivot.y))
 
-	const int64_t offsetPos = stream.pos();
+	const int64_t offsetPos = stream->pos();
 	const size_t xoffsetSize = (dim.x + 1) * sizeof(uint32_t);
 	const size_t xyoffsetSize = dim.x * (dim.z + 1) * sizeof(uint16_t);
 	// skip offset tables for now - filled later
-	if (stream.seek(xoffsetSize + xyoffsetSize, SEEK_CUR) == -1) {
+	if (stream->seek(xoffsetSize + xyoffsetSize, SEEK_CUR) == -1) {
 		Log::error("Can't seek past offset tables");
 		return false;
 	}
@@ -265,11 +276,11 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 				if (!bytes || z > voxdat.ztop + voxdat.zlength) {
 					if (bytes) {
-						stream.writeUInt8(voxdat.ztop);
-						stream.writeUInt8(voxdat.zlength);
-						stream.writeUInt8((uint8_t)voxdat.vis);
+						stream->writeUInt8(voxdat.ztop);
+						stream->writeUInt8(voxdat.zlength);
+						stream->writeUInt8((uint8_t)voxdat.vis);
 						for (uint8_t k = 0u; k < voxdat.zlength; ++k) {
-							stream.writeUInt8(voxdat.colors[k]);
+							stream->writeUInt8(voxdat.colors[k]);
 						}
 
 						xoffset += bytes;
@@ -288,11 +299,11 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				bytes++;
 			}
 			if (bytes) {
-				stream.writeUInt8(voxdat.ztop);
-				stream.writeUInt8(voxdat.zlength);
-				stream.writeUInt8((uint8_t)voxdat.vis);
+				stream->writeUInt8(voxdat.ztop);
+				stream->writeUInt8(voxdat.zlength);
+				stream->writeUInt8((uint8_t)voxdat.vis);
 				for (uint8_t k = 0u; k < voxdat.zlength; ++k) {
-					stream.writeUInt8(voxdat.colors[k]);
+					stream->writeUInt8(voxdat.colors[k]);
 				}
 				xoffset += bytes;
 			}
@@ -305,32 +316,32 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const palette::Palette &palette = node->palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const core::RGBA color = palette.color(i);
-		wrapBool(priv::writeRGBScaledColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(priv::writeRGBScaledColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 
-	if (stream.seek(offsetPos) == -1) {
+	if (stream->seek(offsetPos) == -1) {
 		Log::error("Can't seek to offset tables");
 		return false;
 	}
 	for (int x = 0u; x <= dim.x; ++x) {
-		wrapBool(stream.writeInt32(xoffsets[x]))
+		wrapBool(stream->writeInt32(xoffsets[x]))
 	}
 	for (int x = 0u; x < dim.x; ++x) {
 		for (int y = 0; y <= dim.z; ++y) {
-			wrapBool(stream.writeUInt16(xyoffsets[x][y]))
+			wrapBool(stream->writeUInt16(xyoffsets[x][y]))
 		}
 	}
-	if (stream.seek(numBytesPos) == -1) {
+	if (stream->seek(numBytesPos) == -1) {
 		Log::error("Can't seek to numbytes");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(xoffsets[dim.x] + 24)); // header size
+	wrapBool(stream->writeUInt32(xoffsets[dim.x] + 24)); // header size
 
-	if (stream.seek(0, SEEK_END) == -1) {
+	if (stream->seek(0, SEEK_END) == -1) {
 		Log::error("Can't seek to end of file");
 		return false;
 	}

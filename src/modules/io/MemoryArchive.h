@@ -4,14 +4,13 @@
 
 #pragma once
 
+#include "core/SharedPtr.h"
 #include "core/collection/StringMap.h"
 #include "io/Archive.h"
-#include "io/BufferedReadWriteStream.h"
-#include "core/SharedPtr.h"
 
 namespace io {
 
-using BufferedReadWriteStreamPtr = core::SharedPtr<BufferedReadWriteStream>;
+class BufferedReadWriteStream;
 
 /**
  * Archive that stores files in memory.
@@ -22,7 +21,7 @@ using BufferedReadWriteStreamPtr = core::SharedPtr<BufferedReadWriteStream>;
  */
 class MemoryArchive : public Archive {
 private:
-	core::StringMap<BufferedReadWriteStream*> _entries;
+	core::StringMap<BufferedReadWriteStream *> _entries;
 
 public:
 	virtual ~MemoryArchive();
@@ -30,8 +29,14 @@ public:
 	void shutdown() override;
 	bool add(const core::String &name, const uint8_t *data, size_t size);
 	bool remove(const core::String &name);
-	SeekableReadStream* readStream(const core::String &filePath) override;
-	SeekableWriteStream* writeStream(const core::String &filePath) override;
+	SeekableReadStream *readStream(const core::String &filePath) override;
+	SeekableWriteStream *writeStream(const core::String &filePath) override;
 };
+
+using MemoryArchivePtr = core::SharedPtr<MemoryArchive>;
+
+inline MemoryArchivePtr openMemoryArchive() {
+	return core::make_shared<MemoryArchive>();
+}
 
 } // namespace io

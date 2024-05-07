@@ -12,6 +12,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
@@ -172,41 +173,46 @@ const uint32_t MAXSPRITES = 1024;
 		return false;                                                                                                  \
 	}
 
-size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'v', 'x', 'l')) {
 		Log::error("Invalid magic");
 		return 0;
 	}
 
 	uint32_t xsiz_w, ysiz_d, zsiz_h;
-	wrap(stream.readUInt32(xsiz_w))
-	wrap(stream.readUInt32(ysiz_d))
-	wrap(stream.readUInt32(zsiz_h))
+	wrap(stream->readUInt32(xsiz_w))
+	wrap(stream->readUInt32(ysiz_d))
+	wrap(stream->readUInt32(zsiz_h))
 	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x))
-	wrap(stream.readFloat(pivot.y))
-	wrap(stream.readFloat(pivot.z))
+	wrap(stream->readFloat(pivot.x))
+	wrap(stream->readFloat(pivot.y))
+	wrap(stream->readFloat(pivot.z))
 
 	uint32_t numvoxs;
-	wrap(stream.readUInt32(numvoxs))
+	wrap(stream->readUInt32(numvoxs))
 
 	const int64_t headerSize = 32;
 	const int64_t xLenSize = (int64_t)(xsiz_w * sizeof(uint32_t));
 	const int64_t yLenSize = (int64_t)((size_t)xsiz_w * (size_t)ysiz_d * sizeof(uint16_t));
 	const int64_t paletteOffset = headerSize + (int64_t)(numvoxs * 8) + xLenSize + yLenSize;
-	if (stream.seek(paletteOffset) != -1) {
-		if (stream.remaining() != 0) {
+	if (stream->seek(paletteOffset) != -1) {
+		if (stream->remaining() != 0) {
 			uint32_t palMagic;
-			wrap(stream.readUInt32(palMagic))
+			wrap(stream->readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				// slab6 suggest palette
 				palette.setSize(palette::PaletteMaxColors);
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
-					wrapBool(priv::readRGBScaledColor(stream, color))
+					wrapBool(priv::readRGBScaledColor(*stream, color))
 					palette.setColor(i, color);
 				}
 			}
@@ -215,13 +221,13 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 
 	// SPal not found, most likely slab5
-	stream.seek(headerSize);
+	stream->seek(headerSize);
 
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(priv::readBGRColor(stream, color));
+		wrapBool(priv::readBGRColor(*stream, color));
 		palette.tryAdd(color, false);
-		wrap2(stream.skip(5));
+		wrap2(stream->skip(5));
 	}
 
 	return palette.size();
@@ -234,28 +240,26 @@ size_t KV6Format::loadPalette(const core::String &filename, io::SeekableReadStre
 		return false;                                                                                                  \
 	}
 
-bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *volume,
+bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &archive, const voxel::RawVolume *volume,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	const io::FilePtr &kfaFile = filesystem->open(filename);
-	if (!kfaFile->validHandle()) {
-		// if there is no hva file, we still don't show an error
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	io::FileStream stream(kfaFile);
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'w', 'l', 'k')) {
 		Log::error("Invalid magic number");
 		return false;
 	}
 	core::String kv6Name;
-	wrapBool(stream.readPascalStringUInt32LE(kv6Name))
+	wrapBool(stream->readPascalStringUInt32LE(kv6Name))
 	Log::debug("kv6Name: %s", kv6Name.c_str());
 
 	priv::KFAData kfa;
 	uint32_t numHinge;
-	wrap(stream.readUInt32(numHinge))
+	wrap(stream->readUInt32(numHinge))
 	if (numHinge >= priv::MAXSPRITES) {
 		Log::error("Max allowed hinges exceeded: %u (max is %u)", numHinge, priv::MAXSPRITES);
 		return false;
@@ -265,43 +269,43 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 	for (uint32_t i = 0; i < numHinge; ++i) {
 		priv::KFAHinge hinge;
 		hinge.id = i;
-		wrap(stream.readInt32(hinge.parent))
+		wrap(stream->readInt32(hinge.parent))
 		for (int n = 0; n < 2; ++n) {
-			wrap(stream.readFloat(hinge.p[n].x))
-			wrap(stream.readFloat(hinge.p[n].z))
-			wrap(stream.readFloat(hinge.p[n].y))
+			wrap(stream->readFloat(hinge.p[n].x))
+			wrap(stream->readFloat(hinge.p[n].z))
+			wrap(stream->readFloat(hinge.p[n].y))
 		}
 		for (int n = 0; n < 2; ++n) {
-			wrap(stream.readFloat(hinge.v[n].x))
-			wrap(stream.readFloat(hinge.v[n].z))
-			wrap(stream.readFloat(hinge.v[n].y))
+			wrap(stream->readFloat(hinge.v[n].x))
+			wrap(stream->readFloat(hinge.v[n].z))
+			wrap(stream->readFloat(hinge.v[n].y))
 		}
-		wrap(stream.readInt16(hinge.vmin))
-		wrap(stream.readInt16(hinge.vmax))
-		wrap(stream.readInt8(hinge.type))
-		wrap2(stream.skip(7))
+		wrap(stream->readInt16(hinge.vmin))
+		wrap(stream->readInt16(hinge.vmax))
+		wrap(stream->readInt8(hinge.type))
+		wrap2(stream->skip(7))
 		kfa.hinge.push_back(hinge);
 	}
 	uint32_t numFrames;
-	wrap(stream.readUInt32(numFrames))
+	wrap(stream->readUInt32(numFrames))
 	Log::debug("numfrm: %u", numFrames);
 	kfa.frmval.resize(numFrames);
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		kfa.frmval[i].reserve(numHinge);
 		for (uint32_t j = 0; j < numHinge; ++j) {
 			int16_t angle;
-			wrap(stream.readInt16(angle))
+			wrap(stream->readInt16(angle))
 			kfa.frmval[i].push_back(angle);
 		}
 	}
 	uint32_t numSequences;
-	wrap(stream.readUInt32(numSequences))
+	wrap(stream->readUInt32(numSequences))
 	Log::debug("numseq: %u", numSequences);
 	kfa.seq.reserve(numSequences);
 	for (uint32_t i = 0; i < numSequences; ++i) {
 		priv::KFASeqTyp seq;
-		wrap(stream.readInt32(seq.time))
-		wrap(stream.readInt32(seq.frame))
+		wrap(stream->readInt32(seq.time))
+		wrap(stream->readInt32(seq.frame))
 		kfa.seq.push_back(seq);
 	}
 
@@ -360,10 +364,15 @@ bool KV6Format::loadKFA(const core::String &filename, const voxel::RawVolume *vo
 	return true;
 }
 
-bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool KV6Format::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('K', 'v', 'x', 'l')) {
 		Log::error("Invalid magic");
 		return false;
@@ -371,9 +380,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	// Dimensions of voxel. (our depth is kv6 height)
 	uint32_t width, depth, height;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 256 || depth > 256 || height > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", width, height, depth);
@@ -381,9 +390,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	glm::vec3 pivot;
-	wrap(stream.readFloat(pivot.x)) // width
-	wrap(stream.readFloat(pivot.z)) // depth
-	wrap(stream.readFloat(pivot.y)) // height
+	wrap(stream->readFloat(pivot.x)) // width
+	wrap(stream->readFloat(pivot.z)) // depth
+	wrap(stream->readFloat(pivot.y)) // height
 
 	glm::vec3 normalizedPivot = pivot / glm::vec3(width, height, depth);
 
@@ -394,7 +403,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	uint32_t numvoxs;
-	wrap(stream.readUInt32(numvoxs))
+	wrap(stream->readUInt32(numvoxs))
 	Log::debug("numvoxs: %u", numvoxs);
 	if (numvoxs > priv::MAXVOXS) {
 		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, priv::MAXVOXS);
@@ -407,17 +416,17 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const int64_t paletteOffset = headerSize + (int64_t)numvoxs * (int64_t)8 + xoffsetSize + xyoffsetSize;
 	// palette SPal (suggested palette) added in slab6
 	bool slab5 = true;
-	if (stream.seek(paletteOffset) != -1) {
-		if (stream.remaining() != 0) {
+	if (stream->seek(paletteOffset) != -1) {
+		if (stream->remaining() != 0) {
 			uint32_t palMagic = 0u;
-			wrap(stream.readUInt32(palMagic))
+			wrap(stream->readUInt32(palMagic))
 			if (palMagic == FourCC('S', 'P', 'a', 'l')) {
 				Log::debug("Found embedded palette of slab6");
 				slab5 = false; // slab6
 				palette.setSize(palette::PaletteMaxColors);
 				for (int i = 0; i < palette::PaletteMaxColors; ++i) {
 					core::RGBA color;
-					wrapBool(priv::readRGBScaledColor(stream, color));
+					wrapBool(priv::readRGBScaledColor(*stream, color));
 					palette.setColor(i, color);
 				}
 			}
@@ -428,17 +437,17 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	} else {
 		Log::debug("Found slab6");
 	}
-	stream.seek(headerSize);
+	stream->seek(headerSize);
 
 	core::ScopedPtr<priv::State> state(new priv::State());
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
-		wrapBool(priv::readBGRColor(stream, color));
-		wrap2(stream.skip(1)) // slab6 always 128
-		wrap(stream.readUInt8(state->voxdata[c].z))
-		wrap2(stream.skip(1)) // slab6 always 0
-		wrap(stream.readUInt8((uint8_t &)state->voxdata[c].vis))
-		wrap(stream.readUInt8(state->voxdata[c].dir))
+		wrapBool(priv::readBGRColor(*stream, color));
+		wrap2(stream->skip(1)) // slab6 always 128
+		wrap(stream->readUInt8(state->voxdata[c].z))
+		wrap2(stream->skip(1)) // slab6 always 0
+		wrap(stream->readUInt8((uint8_t &)state->voxdata[c].vis))
+		wrap(stream->readUInt8(state->voxdata[c].dir))
 
 		if (slab5) {
 			palette.tryAdd(color, false, &state->voxdata[c].col, false);
@@ -450,13 +459,13 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {
-		wrap(stream.readInt32(state->xoffsets[x]))
+		wrap(stream->readInt32(state->xoffsets[x]))
 		Log::debug("xoffsets[%u]: %i", x, state->xoffsets[x]);
 	}
 
 	for (uint32_t x = 0u; x < width; ++x) {
 		for (uint32_t y = 0u; y < depth; ++y) {
-			wrap(stream.readUInt16(state->xyoffsets[x][y]))
+			wrap(stream->readUInt16(state->xyoffsets[x][y]))
 			Log::debug("xyoffsets[%u][%u]: %u", x, y, state->xyoffsets[x][y]);
 		}
 	}
@@ -475,9 +484,11 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	const core::String &basename = core::string::stripExtension(filename);
-	if (loadKFA(basename + ".kfa", volume, sceneGraph, palette)) {
-		delete volume;
-		return true;
+	if (archive->exists(basename + ".kfa")) {
+		if (loadKFA(basename + ".kfa", archive, volume, sceneGraph, palette)) {
+			delete volume;
+			return true;
+		}
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
@@ -500,7 +511,12 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -542,55 +558,55 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
-	wrapBool(stream.writeUInt32(FourCC('K', 'v', 'x', 'l')))
+	wrapBool(stream->writeUInt32(FourCC('K', 'v', 'x', 'l')))
 
 	const int xsiz_w = dim.x;
 	// flip y and z here
 	const int ysiz_d = dim.z;
 	const int zsiz_h = dim.y;
-	wrapBool(stream.writeUInt32(xsiz_w))
-	wrapBool(stream.writeUInt32(ysiz_d))
-	wrapBool(stream.writeUInt32(zsiz_h))
+	wrapBool(stream->writeUInt32(xsiz_w))
+	wrapBool(stream->writeUInt32(ysiz_d))
+	wrapBool(stream->writeUInt32(zsiz_h))
 
 	glm::vec3 pivot = node->pivot() * glm::vec3(region.getDimensionsInVoxels());
-	wrapBool(stream.writeFloat(pivot.x))
-	wrapBool(stream.writeFloat(pivot.z))
-	wrapBool(stream.writeFloat(pivot.y))
+	wrapBool(stream->writeFloat(pivot.x))
+	wrapBool(stream->writeFloat(pivot.z))
+	wrapBool(stream->writeFloat(pivot.y))
 
-	wrapBool(stream.writeUInt32(numvoxs))
+	wrapBool(stream->writeUInt32(numvoxs))
 
 	for (const priv::VoxtypeKV6 &data : voxdata) {
 		const core::RGBA color = node->palette().color(data.col);
-		wrapBool(priv::writeBGRColor(stream, color)) // range 0.255
-		wrapBool(stream.writeUInt8(128))			 // 128 as we save slab6
-		wrapBool(stream.writeUInt8(data.z))
-		wrapBool(stream.writeUInt8(0)) // 0 as we save slab6
-		wrapBool(stream.writeUInt8((uint8_t)data.vis))
-		wrapBool(stream.writeUInt8(data.dir))
+		wrapBool(priv::writeBGRColor(*stream, color)) // range 0.255
+		wrapBool(stream->writeUInt8(128))			 // 128 as we save slab6
+		wrapBool(stream->writeUInt8(data.z))
+		wrapBool(stream->writeUInt8(0)) // 0 as we save slab6
+		wrapBool(stream->writeUInt8((uint8_t)data.vis))
+		wrapBool(stream->writeUInt8(data.dir))
 		Log::debug("voxel z-low: %u, vis: %i. dir: %u, pal: %u", data.z, (uint8_t)data.vis, data.dir, data.col);
 	}
 
 	for (int x = 0u; x < xsiz_w; ++x) {
-		wrapBool(stream.writeInt32(xoffsets[x]))
+		wrapBool(stream->writeInt32(xoffsets[x]))
 		Log::debug("xoffsets[%u]: %i", x, xoffsets[x]);
 	}
 
 	for (int x = 0; x < xsiz_w; ++x) {
 		for (int y = 0; y < ysiz_d; ++y) {
-			wrapBool(stream.writeUInt16(xyoffsets[x][y]))
+			wrapBool(stream->writeUInt16(xyoffsets[x][y]))
 			Log::debug("xyoffsets[%u][%u]: %u", x, y, xyoffsets[x][y]);
 		}
 	}
 
 	const uint32_t palMagic = FourCC('S', 'P', 'a', 'l');
-	wrapBool(stream.writeUInt32(palMagic))
+	wrapBool(stream->writeUInt32(palMagic))
 	for (int i = 0; i < node->palette().colorCount(); ++i) {
 		const core::RGBA color = node->palette().color(i);
-		wrapBool(priv::writeRGBScaledColor(stream, color)) // range 0..63
+		wrapBool(priv::writeRGBScaledColor(*stream, color)) // range 0..63
 	}
 	for (int i = node->palette().colorCount(); i < palette::PaletteMaxColors; ++i) {
 		core::RGBA color(0);
-		wrapBool(priv::writeRGBScaledColor(stream, color))
+		wrapBool(priv::writeRGBScaledColor(*stream, color))
 	}
 
 	return true;

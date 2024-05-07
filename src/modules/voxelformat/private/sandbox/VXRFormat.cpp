@@ -6,13 +6,13 @@
 #include "VXAFormat.h"
 #include "VXMFormat.h"
 #include "app/App.h"
-#include "core/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "io/FileStream.h"
+#include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -40,8 +40,8 @@ namespace voxelformat {
 	}
 
 bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-								  const core::String &filename, io::SeekableWriteStream &stream,
-								  const SaveContext &ctx) {
+								  const core::String &filename, const io::ArchivePtr &archive,
+								  io::SeekableWriteStream &stream, const SaveContext &ctx) {
 	core::String name = node.name();
 	if (name.empty()) {
 		name = core::string::format("%i", node.id());
@@ -52,13 +52,6 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 		const core::String finalName = baseName + name + ".vxm";
 		wrapBool(stream.writeString(finalName, true))
 		const core::String fullPath = core::string::stripExtension(filename) + name + ".vxm";
-		VXMFormat f;
-		io::FilePtr outputFile = io::filesystem()->open(fullPath, io::FileMode::SysWrite);
-		if (!outputFile) {
-			Log::error("Failed to open %s for writing", fullPath.c_str());
-			return false;
-		}
-		io::FileStream wstream(outputFile);
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		copyNode(node, newNode, false);
@@ -66,7 +59,8 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 			newNode.setVolume(sceneGraph.resolveVolume(node));
 		}
 		newSceneGraph.emplace(core::move(newNode));
-		wrapBool(f.save(newSceneGraph, fullPath, wstream, ctx))
+		VXMFormat f;
+		wrapBool(f.save(newSceneGraph, fullPath, archive, ctx))
 		Log::debug("Saved the model to %s", fullPath.c_str());
 	} else {
 		wrapBool(stream.writeString("", true))
@@ -78,7 +72,7 @@ bool VXRFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 	wrapBool(stream.writeInt32(childCount));
 	for (int child : node.children()) {
 		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, stream, ctx))
+		wrapBool(saveRecursiveNode(sceneGraph, cnode, filename, archive, stream, ctx))
 	}
 	return true;
 }
@@ -116,7 +110,12 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::S
 }
 
 bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -124,56 +123,44 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::error("Empty scene graph - can't save vxr");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'R', '9')))
+	wrapBool(stream->writeUInt32(FourCC('V', 'X', 'R', '9')))
 	scenegraph::SceneGraphAnimationIds animationIds = sceneGraph.animations();
 	if (animationIds.empty()) {
 		animationIds.push_back("Idle");
 	}
 	const core::String defaultAnim = animationIds[0];
-	wrapBool(stream.writeString(defaultAnim.c_str(), true))
-	wrapBool(stream.writeInt32(1))
-	wrapBool(stream.writeString(stringProperty(&root, "basetemplate"), true))
-	wrapBool(stream.writeBool(boolProperty(&root, "static", false)))
+	wrapBool(stream->writeString(defaultAnim.c_str(), true))
+	wrapBool(stream->writeInt32(1))
+	wrapBool(stream->writeString(stringProperty(&root, "basetemplate"), true))
+	wrapBool(stream->writeBool(boolProperty(&root, "static", false)))
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXAFormat)
-		wrapBool(stream.writeString(SANDBOX_CONTROLLER_NODE, true))
-		wrapBool(stream.writeString("", true))
+		wrapBool(stream->writeString(SANDBOX_CONTROLLER_NODE, true))
+		wrapBool(stream->writeString("", true))
 
-		wrapBool(saveNodeProperties(nullptr, stream))
+		wrapBool(saveNodeProperties(nullptr, *stream))
 		Log::debug("add controller node with %i children", childCount);
-		wrapBool(stream.writeInt32(childCount))
+		wrapBool(stream->writeInt32(childCount))
 	}
 	for (int child : children) {
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, filename, stream, ctx))
+		wrapBool(saveRecursiveNode(sceneGraph, node, filename, archive, *stream, ctx))
 	}
 	const core::String &basePath = core::string::extractPath(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
 	for (const core::String &id : animationIds) {
 		const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), id.c_str());
 		const core::String &vxaPath = core::string::path(basePath, vxaFilename);
-		io::FilePtr outputFile = io::filesystem()->open(vxaPath, io::FileMode::SysWrite);
-		if (!outputFile) {
-			Log::error("Failed to open %s for writing", vxaPath.c_str());
-			return false;
-		}
-		io::FileStream wstream(outputFile);
-		wrapBool(saveVXA(sceneGraph, vxaPath, wstream, id, ctx))
+		wrapBool(saveVXA(sceneGraph, vxaPath, archive, id, ctx))
 	}
 	return true;
 }
 
-bool VXRFormat::loadChildVXM(const core::String &vxmPath, scenegraph::SceneGraph &sceneGraph,
+bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 							 scenegraph::SceneGraphNode &node, int version, const LoadContext &ctx) {
-	const io::FilePtr &file = io::filesystem()->open(vxmPath);
-	if (!file->validHandle()) {
-		Log::error("Could not open file '%s'", vxmPath.c_str());
-		return false;
-	}
-	io::FileStream stream(file);
 	VXMFormat f;
 	scenegraph::SceneGraph childSceneGraph;
-	if (!f.load(vxmPath, stream, childSceneGraph, ctx)) {
+	if (!f.load(vxmPath, archive, childSceneGraph, ctx)) {
 		Log::error("Failed to load '%s'", vxmPath.c_str());
 		return false;
 	}
@@ -311,7 +298,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 }
 
 // the positions that were part of the previous vxr versions are now in vxa
-bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream &stream,
+bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 							scenegraph::SceneGraph &sceneGraph, int version, int parent, const LoadContext &ctx) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	char id[1024];
@@ -322,7 +309,7 @@ bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream 
 	if (filename[0] != '\0') {
 		Log::debug("load vxm %s", filename);
 		const core::String modelPath = core::string::path(core::string::extractPath(vxmPath), filename);
-		if (!loadChildVXM(modelPath, sceneGraph, node, version, ctx)) {
+		if (!loadChildVXM(modelPath, archive, sceneGraph, node, version, ctx)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
 	}
@@ -390,19 +377,24 @@ bool VXRFormat::importChild(const core::String &vxmPath, io::SeekableReadStream 
 		int32_t children = 0;
 		wrap(stream.readInt32(children))
 		for (int32_t i = 0; i < children; ++i) {
-			wrapBool(importChild(vxmPath, stream, sceneGraph, version, nodeId != InvalidNodeId ? nodeId : parent, ctx))
+			wrapBool(importChild(vxmPath, archive, stream, sceneGraph, version, nodeId != InvalidNodeId ? nodeId : parent, ctx))
 		}
 	}
 	return true;
 }
 
-image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+image::ImagePtr VXRFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										  const LoadContext &ctx) {
-	const core::String imageName = filename + ".png";
-	return image::loadImage(imageName);
+	const core::String image = filename + ".png";
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(image));
+	if (!stream) {
+		Log::error("Could not load file %s", image.c_str());
+		return image::ImagePtr();
+	}
+	return image::loadImage(image, *stream, stream->size());
 }
 
-bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::SeekableReadStream &stream,
+bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 											 scenegraph::SceneGraph &sceneGraph, int version, const LoadContext &ctx) {
 	uint32_t childAndModelCount;
 	wrap(stream.readUInt32(childAndModelCount))
@@ -426,7 +418,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, io::S
 		wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
 		if (vxmFilename[0] != '\0') {
 			const core::String modelPath = core::string::path(core::string::extractPath(filename), vxmFilename);
-			if (!loadChildVXM(modelPath, sceneGraph, *node, version, ctx)) {
+			if (!loadChildVXM(modelPath, archive, sceneGraph, *node, version, ctx)) {
 				Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
 			}
 		}
@@ -475,7 +467,7 @@ bool VXRFormat::handleVersion8AndLater(io::SeekableReadStream &stream, scenegrap
 	return true;
 }
 
-bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::SeekableReadStream &stream,
+bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
 										   scenegraph::SceneGraph &sceneGraph, int version, const LoadContext &ctx) {
 	const int rootNodeId = sceneGraph.root().id();
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
@@ -496,7 +488,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 
 	Log::debug("Found %i children", children);
 	for (int32_t i = 0; i < children; ++i) {
-		wrapBool(importChild(filename, stream, sceneGraph, version, rootNodeId, ctx))
+		wrapBool(importChild(filename, archive, stream, sceneGraph, version, rootNodeId, ctx))
 	}
 
 	const core::String &basePath = core::string::extractPath(filename);
@@ -512,7 +504,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 		}
 		Log::debug("Load vxa: %s", entry.name.c_str());
 		const core::String &vxaPath = core::string::path(basePath, entry.name);
-		if (!loadVXA(sceneGraph, vxaPath, ctx)) {
+		if (!loadVXA(sceneGraph, vxaPath, archive, ctx)) {
 			Log::warn("Failed to load %s", vxaPath.c_str());
 		}
 	}
@@ -525,29 +517,29 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, io::See
 }
 
 bool VXRFormat::saveVXA(const scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath,
-						io::SeekableWriteStream &vxaStream, const core::String &animation, const SaveContext &ctx) {
+						const io::ArchivePtr &archive, const core::String &animation, const SaveContext &ctx) {
 	VXAFormat f;
-	return f.save(sceneGraph, vxaPath, vxaStream, ctx);
+	return f.save(sceneGraph, vxaPath, archive, ctx);
 }
 
-bool VXRFormat::loadVXA(scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath, const LoadContext &ctx) {
+bool VXRFormat::loadVXA(scenegraph::SceneGraph &sceneGraph, const core::String &vxaPath, const io::ArchivePtr &archive, const LoadContext &ctx) {
 	Log::debug("Try to load a vxa file: %s", vxaPath.c_str());
-	const io::FilePtr &file = io::filesystem()->open(vxaPath);
-	if (!file->validHandle()) {
+	VXAFormat format;
+	return format.load(vxaPath, archive, sceneGraph, ctx);
+}
+
+bool VXRFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	io::FileStream stream(file);
-	VXAFormat format;
-	return format.load(vxaPath, stream, sceneGraph, ctx);
-}
-
-bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &, const LoadContext &ctx) {
 	uint8_t magic[4];
-	wrap(stream.readUInt8(magic[0]))
-	wrap(stream.readUInt8(magic[1]))
-	wrap(stream.readUInt8(magic[2]))
-	wrap(stream.readUInt8(magic[3]))
+	wrap(stream->readUInt8(magic[0]))
+	wrap(stream->readUInt8(magic[1]))
+	wrap(stream->readUInt8(magic[2]))
+	wrap(stream->readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'R') {
 		Log::error("Could not load vxr file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
@@ -570,9 +562,9 @@ bool VXRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	}
 
 	if (version <= 3) {
-		return loadGroupsVersion3AndEarlier(filename, stream, sceneGraph, version, ctx);
+		return loadGroupsVersion3AndEarlier(filename, archive, *stream, sceneGraph, version, ctx);
 	}
-	return loadGroupsVersion4AndLater(filename, stream, sceneGraph, version, ctx);
+	return loadGroupsVersion4AndLater(filename, archive, *stream, sceneGraph, version, ctx);
 }
 
 #undef wrap

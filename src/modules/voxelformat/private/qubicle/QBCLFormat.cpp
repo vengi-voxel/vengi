@@ -10,6 +10,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
+#include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
@@ -41,7 +42,7 @@ private:
 public:
 	ScopedQBCLHeader(io::SeekableWriteStream &stream, uint32_t nodeType) : _stream(stream) {
 		Log::debug("Write node type %u", nodeType);
-		if (!_stream.writeUInt32(nodeType)) {
+		if (!stream.writeUInt32(nodeType)) {
 			Log::error("Failed to write the node type %u", nodeType);
 			_success = false;
 		}
@@ -66,7 +67,7 @@ public:
 			break;
 		}
 
-		if (!_stream.writeUInt32(nodeType)) {
+		if (!stream.writeUInt32(nodeType)) {
 			Log::error("Failed to write the node type %u", nodeType);
 			_success = false;
 		}
@@ -282,10 +283,15 @@ bool QBCLFormat::saveNode(io::SeekableWriteStream &stream, const scenegraph::Sce
 }
 
 bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							io::SeekableWriteStream &stream, const SaveContext &savectx) {
-	wrapBool(stream.writeUInt32(FourCC('Q', 'B', 'C', 'L')))
-	wrapBool(stream.writeUInt32(131331))
-	wrapBool(stream.writeUInt32(qbcl::VERSION))
+							const io::ArchivePtr &archive, const SaveContext &savectx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	wrapBool(stream->writeUInt32(FourCC('Q', 'B', 'C', 'L')))
+	wrapBool(stream->writeUInt32(131331))
+	wrapBool(stream->writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
 	ThumbnailContext ctx;
 	ctx.outputSize = glm::ivec2(128);
@@ -293,15 +299,15 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	if (image) {
 		const int size = image->width() * image->height() * image->depth();
 		if (size > 0) {
-			wrapBool(stream.writeUInt32(image->width()))
-			wrapBool(stream.writeUInt32(image->height()))
+			wrapBool(stream->writeUInt32(image->width()))
+			wrapBool(stream->writeUInt32(image->height()))
 			for (int x = 0; x < image->width(); ++x) {
 				for (int y = 0; y < image->height(); ++y) {
 					const core::RGBA color = image->colorAt(x, y);
-					stream.writeUInt8(color.b);
-					stream.writeUInt8(color.g);
-					stream.writeUInt8(color.r);
-					stream.writeUInt8(color.a);
+					stream->writeUInt8(color.b);
+					stream->writeUInt8(color.g);
+					stream->writeUInt8(color.r);
+					stream->writeUInt8(color.a);
 				}
 			}
 			imageAdded = true;
@@ -311,31 +317,36 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	}
 
 	if (!imageAdded) {
-		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
-		wrapBool(stream.writeUInt32(0)) // thumbnail w/h
+		wrapBool(stream->writeUInt32(0)) // thumbnail w/h
+		wrapBool(stream->writeUInt32(0)) // thumbnail w/h
 	}
 
 	const scenegraph::SceneGraphNode &rootNode = sceneGraph.root();
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Title")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Description")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Metadata")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Author")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Company")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Website")))
-	wrapBool(stream.writePascalStringUInt32LE(rootNode.property("Copyright")))
-	wrapBool(stream.writeUInt64(0)) // timestamp1
-	wrapBool(stream.writeUInt64(0)) // timestamp2
-	return saveNode(stream, sceneGraph, sceneGraph.root());
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Title")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Description")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Metadata")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Author")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Company")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Website")))
+	wrapBool(stream->writePascalStringUInt32LE(rootNode.property("Copyright")))
+	wrapBool(stream->writeUInt64(0)) // timestamp1
+	wrapBool(stream->writeUInt64(0)) // timestamp2
+	return saveNode(*stream, sceneGraph, sceneGraph.root());
 }
 
-size_t QBCLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t QBCLFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	Header header;
-	wrapBool(readHeader(stream, header))
+	wrapBool(readHeader(*stream, header))
 	header.loadPalette = true;
 
 	scenegraph::SceneGraph sceneGraph;
-	wrapBool(readNodes(filename, stream, sceneGraph, sceneGraph.root().id(), palette, header))
+	wrapBool(readNodes(filename, *stream, sceneGraph, sceneGraph.root().id(), palette, header))
 
 	Log::debug("qbcl: loaded %i colors", palette.colorCount());
 	return palette.colorCount();
@@ -604,14 +615,19 @@ bool QBCLFormat::readHeader(io::SeekableReadStream &stream, Header &header) {
 	return true;
 }
 
-bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	Header header;
-	wrapBool(readHeader(stream, header))
+	wrapBool(readHeader(*stream, header))
 
 	palette::Palette palCopy = palette;
-	wrapBool(readNodes(filename, stream, sceneGraph, -1, palCopy, header))
+	wrapBool(readNodes(filename, *stream, sceneGraph, -1, palCopy, header))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty("Title", header.title);
@@ -625,28 +641,33 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	return true;
 }
 
-image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+image::ImagePtr QBCLFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return image::ImagePtr();
+	}
 	uint32_t magic;
-	wrapImg(stream.readUInt32(magic))
+	wrapImg(stream->readUInt32(magic))
 	if (magic != FourCC('Q', 'B', 'C', 'L')) {
 		Log::error("Invalid magic found - no qbcl file");
 		return image::ImagePtr();
 	}
 	uint32_t version;
-	wrapImg(stream.readUInt32(version))
+	wrapImg(stream->readUInt32(version))
 	uint32_t flags;
-	wrapImg(stream.readUInt32(flags))
+	wrapImg(stream->readUInt32(flags))
 	uint32_t thumbWidth;
-	wrapImg(stream.readUInt32(thumbWidth))
+	wrapImg(stream->readUInt32(thumbWidth))
 	uint32_t thumbHeight;
-	wrapImg(stream.readUInt32(thumbHeight))
+	wrapImg(stream->readUInt32(thumbHeight))
 	if (thumbWidth <= 0 || thumbHeight <= 0) {
 		Log::debug("No embedded screenshot found in %s", filename.c_str());
 		return image::ImagePtr();
 	}
 	image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename));
-	if (!img->loadBGRA(stream, thumbWidth, thumbHeight)) {
+	if (!img->loadBGRA(*stream, thumbWidth, thumbHeight)) {
 		Log::error("Failed to read the qbcl thumbnail buffer of width %u and height %u", thumbWidth, thumbHeight);
 		return image::ImagePtr();
 	}

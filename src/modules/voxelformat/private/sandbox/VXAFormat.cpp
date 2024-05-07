@@ -9,6 +9,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/MD5.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
@@ -246,13 +247,18 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 	return true;
 }
 
-bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint8_t magic[4];
-	wrap(stream.readUInt8(magic[0]))
-	wrap(stream.readUInt8(magic[1]))
-	wrap(stream.readUInt8(magic[2]))
-	wrap(stream.readUInt8(magic[3]))
+	wrap(stream->readUInt8(magic[0]))
+	wrap(stream->readUInt8(magic[1]))
+	wrap(stream->readUInt8(magic[2]))
+	wrap(stream->readUInt8(magic[3]))
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'A') {
 		Log::error("Could not load vxa file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
 		return false;
@@ -278,8 +284,8 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	uint64_t md5[2];
-	wrap(stream.readUInt64(md5[0]))
-	wrap(stream.readUInt64(md5[1]))
+	wrap(stream->readUInt64(md5[0]))
+	wrap(stream->readUInt64(md5[1]))
 
 	uint64_t hash[2]{0};
 	vxa_priv::calculateHash(sceneGraph, hash);
@@ -290,10 +296,10 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 	}
 
 	char animId[1024];
-	wrapBool(stream.readString(sizeof(animId), animId, true))
+	wrapBool(stream->readString(sizeof(animId), animId, true))
 	Log::debug("anim: '%s'", animId);
 	int32_t rootChildren = 0;
-	wrap(stream.readInt32(rootChildren))
+	wrap(stream->readInt32(rootChildren))
 	Log::debug("rootChildren: %i", rootChildren);
 	if (rootChildren == 0) {
 		Log::debug("No children node found in vxa - positioning might be wrong");
@@ -315,12 +321,12 @@ bool VXAFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 		const int nodeId = sceneGraph.root().children()[i];
 		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		if (version <= 2) {
-			if (!recursiveImportNodeBefore3(filename, stream, sceneGraph, node, animId, version)) {
+			if (!recursiveImportNodeBefore3(filename, *stream, sceneGraph, node, animId, version)) {
 				Log::error("VXA: failed to import children for version %i", version);
 				return false;
 			}
 		} else {
-			if (!recursiveImportNodeSince3(filename, stream, sceneGraph, node, animId, version)) {
+			if (!recursiveImportNodeSince3(filename, *stream, sceneGraph, node, animId, version)) {
 				Log::error("VXA: failed to import children for version %i", version);
 				return false;
 			}
@@ -368,7 +374,12 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 }
 
 bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -385,22 +396,22 @@ bool VXAFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	const core::String &animationId = baseFilename.substr(idx + 1);
 
-	wrapBool(stream.writeUInt32(FourCC('V', 'X', 'A', '2')))
+	wrapBool(stream->writeUInt32(FourCC('V', 'X', 'A', '2')))
 	uint64_t hash[2]{0};
 	vxa_priv::calculateHash(sceneGraph, hash);
-	wrapBool(stream.writeUInt64(hash[0]))
-	wrapBool(stream.writeUInt64(hash[1]))
-	wrapBool(stream.writeString(animationId.c_str(), true))
+	wrapBool(stream->writeUInt64(hash[0]))
+	wrapBool(stream->writeUInt64(hash[1]))
+	wrapBool(stream->writeString(animationId.c_str(), true))
 	Log::debug("Save animation %s", animationId.c_str());
-	wrapBool(stream.writeInt32(1)) // root node has one child
+	wrapBool(stream->writeInt32(1)) // root node has one child
 	if (childCount != 1 || sceneGraph.node(children[0]).name() != SANDBOX_CONTROLLER_NODE) {
 		// add controller node (see VXRFormat)
-		wrapBool(stream.writeInt32(0)) // no key frames for controller node
-		wrapBool(stream.writeInt32(childCount))
+		wrapBool(stream->writeInt32(0)) // no key frames for controller node
+		wrapBool(stream->writeInt32(childCount))
 	}
 	for (int child : children) {
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
-		wrapBool(saveRecursiveNode(sceneGraph, node, animationId, filename, stream))
+		wrapBool(saveRecursiveNode(sceneGraph, node, animationId, filename, *stream))
 	}
 	Log::debug("Save vxa to %s", filename.c_str());
 	return true;

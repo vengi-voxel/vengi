@@ -4,7 +4,7 @@
 
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "AbstractFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
+#include "io/Archive.h"
 #include "voxelformat/tests/TestHelper.h"
 
 namespace voxelformat {
@@ -28,7 +28,7 @@ TEST_F(AoSVXLFormatTest, testLoad) {
 TEST_F(AoSVXLFormatTest, testLoadPalette) {
 	AoSVXLFormat f;
 	palette::Palette pal;
-	EXPECT_GT(helper_loadPalette("aceofspades.vxl", f, pal), 200);
+	EXPECT_GT(helper_loadPalette("aceofspades.vxl", helper_filesystemarchive(), f, pal), 200);
 }
 
 TEST_F(AoSVXLFormatTest, testLoadSaveAndLoadSceneGraph) {
@@ -54,12 +54,11 @@ TEST_F(AoSVXLFormatTest, testSave) {
 	scenegraph::SceneGraphNode node1;
 	node1.setVolume(&model1, false);
 	sceneGraph.emplace(core::move(node1));
-	io::BufferedReadWriteStream bufferedStream((int64_t)(10 * 1024 * 1024));
 
-	ASSERT_TRUE(f.save(sceneGraph, filename, bufferedStream, testSaveCtx));
-	bufferedStream.seek(0);
+	io::ArchivePtr archive = helper_archive();
+	ASSERT_TRUE(f.save(sceneGraph, filename, archive, testSaveCtx));
 	scenegraph::SceneGraph sceneGraphLoad;
-	EXPECT_TRUE(f.load(filename, bufferedStream, sceneGraphLoad, testLoadCtx));
+	EXPECT_TRUE(f.load(filename, archive, sceneGraphLoad, testLoadCtx));
 	EXPECT_EQ(sceneGraphLoad.size(), 1u);
 }
 

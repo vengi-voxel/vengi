@@ -21,11 +21,11 @@ private:
 	/**
 	 * Helper method to load a scenegraph
 	 */
-	bool helper_loadIntoSceneGraph(const core::String &filename, Format &format, scenegraph::SceneGraph &sceneGraph);
+	bool helper_loadIntoSceneGraph(const core::String &filename, const io::ArchivePtr &archive, Format &format, scenegraph::SceneGraph &sceneGraph);
 	void testSaveLoadVolumes(const core::String &filename, const voxel::RawVolume &v, Format *format,
 							voxel::ValidateFlags flags = voxel::ValidateFlags::All,
 							float maxDelta = 0.001f);
-	void testRGBSmall(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph);
+	void testRGBSmall(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph);
 
 protected:
 	static const voxel::Voxel Empty;
@@ -36,8 +36,12 @@ protected:
 		testSaveCtx.thumbnailCreator = helper_testThumbnailCreator;
 	}
 
+	io::ArchivePtr helper_archive(const core::String &filename = "");
+	io::ArchivePtr helper_filesystemarchive();
+
 	void testFirstAndLastPaletteIndex(const core::String &filename, Format *format, voxel::ValidateFlags flags);
-	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &destFilename, Format &destFormat,
+	void testFirstAndLastPaletteIndexConversion(Format &srcFormat, const core::String &srcFilename, Format &destFormat,
+												const core::String &destFilename,
 												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1);
@@ -81,7 +85,7 @@ protected:
 	/**
 	 * @brief Not a test, but a helper method to load a palette from a given format
 	 */
-	int helper_loadPalette(const core::String &filename, Format &format, palette::Palette &palette);
+	int helper_loadPalette(const core::String &filename, const io::ArchivePtr &archive, Format &format, palette::Palette &palette);
 
 	/**
 	 * @brief Not a test, but a helper method to store a scenegraph for manual inspection

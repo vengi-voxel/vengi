@@ -6,8 +6,10 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -31,9 +33,14 @@ namespace voxelformat {
 		}                                                                                                              \
 	} while (0)
 
-bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
-	const int64_t length = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	const int64_t length = stream->size();
 	if (length < SECTOR_BYTES) {
 		Log::error("File does not contain enough data");
 		return false;
@@ -52,7 +59,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	switch (type) {
 	case 'r':	// Region file format
 	case 'a': { // Anvil file format
-		const int64_t fileSize = stream.remaining();
+		const int64_t fileSize = stream->remaining();
 		if (fileSize < 2l * SECTOR_BYTES) {
 			Log::error("This region file has not enough data for the 8kb header");
 			return false;
@@ -60,26 +67,26 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			uint8_t raw[3];
-			wrap(stream.readUInt8(raw[0]));
-			wrap(stream.readUInt8(raw[1]));
-			wrap(stream.readUInt8(raw[2]));
-			wrap(stream.readUInt8(_offsets[i].sectorCount));
+			wrap(stream->readUInt8(raw[0]));
+			wrap(stream->readUInt8(raw[1]));
+			wrap(stream->readUInt8(raw[2]));
+			wrap(stream->readUInt8(_offsets[i].sectorCount));
 
 			_offsets[i].offset = ((raw[0] << 16) + (raw[1] << 8) + raw[2]) * SECTOR_BYTES;
 		}
 
 		for (int i = 0; i < SECTOR_INTS; ++i) {
 			uint32_t lastModValue;
-			wrap(stream.readUInt32BE(lastModValue));
+			wrap(stream->readUInt32BE(lastModValue));
 		}
 
 		// might be an empty region file
-		if (stream.eos()) {
+		if (stream->eos()) {
 			Log::warn("Empty region file");
 			return false;
 		}
 
-		const bool success = loadMinecraftRegion(sceneGraph, stream, palette);
+		const bool success = loadMinecraftRegion(sceneGraph, *stream, palette);
 		return success;
 	}
 	}
@@ -527,24 +534,29 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	}
 
 bool MCRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		uint8_t raw[3] = {0, 0, 0};	 // TODO
 		_offsets[i].sectorCount = 0; // TODO
 
 		core_assert(_offsets[i].offset < sizeof(_offsets));
-		wrapBool(stream.writeUInt8(raw[0]));
-		wrapBool(stream.writeUInt8(raw[1]));
-		wrapBool(stream.writeUInt8(raw[2]));
-		wrapBool(stream.writeUInt8(_offsets[i].sectorCount));
+		wrapBool(stream->writeUInt8(raw[0]));
+		wrapBool(stream->writeUInt8(raw[1]));
+		wrapBool(stream->writeUInt8(raw[2]));
+		wrapBool(stream->writeUInt8(_offsets[i].sectorCount));
 	}
 
 	for (int i = 0; i < SECTOR_INTS; ++i) {
 		uint32_t lastModValue = 0u;
-		wrapBool(stream.writeUInt32BE(lastModValue));
+		wrapBool(stream->writeUInt32BE(lastModValue));
 	}
 
-	return saveMinecraftRegion(sceneGraph, stream);
+	return saveMinecraftRegion(sceneGraph, *stream);
 }
 
 bool MCRFormat::saveMinecraftRegion(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {

@@ -4,8 +4,10 @@
 
 #include "SproxelFormat.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
+#include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "palette/PaletteLookup.h"
@@ -58,10 +60,15 @@ static bool skipComma(io::SeekableReadStream &stream) {
 	return true;
 }
 
-size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t SproxelFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 								  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
 	char buf[512];
-	if (!stream.readLine(sizeof(buf), buf)) {
+	if (!stream->readLine(sizeof(buf), buf)) {
 		Log::error("Could not load sproxel csv file");
 		return 0u;
 	}
@@ -81,7 +88,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
 				char hex[10];
-				if ((stream.read(hex, 9)) == -1) {
+				if ((stream->read(hex, 9)) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					return 0u;
 				}
@@ -97,28 +104,33 @@ size_t SproxelFormat::loadPalette(const core::String &filename, io::SeekableRead
 					palette.tryAdd(color, false);
 				}
 				if (x != size.x - 1) {
-					if (!skipComma(stream)) {
+					if (!skipComma(*stream)) {
 						Log::error("Failed to skip 1 byte");
 						return false;
 					}
 				}
 			}
-			if (!skipNewline(stream)) {
+			if (!skipNewline(*stream)) {
 				return false;
 			}
 		}
-		if (!skipNewline(stream)) {
+		if (!skipNewline(*stream)) {
 			return false;
 		}
 	}
 	return palette.colorCount();
 }
 
-bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	char buf[512];
-	wrapBool(stream.readLine(sizeof(buf), buf))
+	wrapBool(stream->readLine(sizeof(buf), buf))
 
 	core::Tokenizer tok(buf, ",");
 	if (tok.size() != 3u) {
@@ -145,7 +157,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 		for (int z = 0; z < sizez; z++) {
 			for (int x = 0; x < sizex; x++) {
 				char hex[10];
-				if (stream.read(hex, 9) == -1) {
+				if (stream->read(hex, 9) == -1) {
 					Log::error("Could not load sproxel csv color line");
 					return false;
 				}
@@ -163,17 +175,17 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 					volume->setVoxel(x, y, z, voxel);
 				}
 				if (x != sizex - 1) {
-					if (!skipComma(stream)) {
+					if (!skipComma(*stream)) {
 						Log::error("Failed to skip 1 byte");
 						return false;
 					}
 				}
 			}
-			if (!skipNewline(stream)) {
+			if (!skipNewline(*stream)) {
 				return false;
 			}
 		}
-		if (!skipNewline(stream)) {
+		if (!skipNewline(*stream)) {
 			return false;
 		}
 	}
@@ -183,7 +195,12 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRea
 }
 
 bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -195,7 +212,7 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
-	if (!stream.writeStringFormat(false, "%i,%i,%i\n", width, height, depth)) {
+	if (!stream->writeStringFormat(false, "%i,%i,%i\n", width, height, depth)) {
 		Log::error("Could not save sproxel csv file");
 		return false;
 	}
@@ -206,18 +223,18 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 				core_assert_always(sampler.setPosition(lower.x + x, lower.y + y, lower.z + z));
 				const voxel::Voxel &voxel = sampler.voxel();
 				if (voxel.getMaterial() == voxel::VoxelType::Air) {
-					stream.writeString("#00000000", false);
+					stream->writeString("#00000000", false);
 				} else {
 					const core::RGBA rgba = palette.color(voxel.getColor());
-					stream.writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
+					stream->writeStringFormat(false, "#%02X%02X%02X%02X", rgba.r, rgba.g, rgba.b, rgba.a);
 				}
 				if (x != width - 1) {
-					stream.writeString(",", false);
+					stream->writeString(",", false);
 				}
 			}
-			stream.writeString("\n", false);
+			stream->writeString("\n", false);
 		}
-		stream.writeString("\n", false);
+		stream->writeString("\n", false);
 	}
 	return true;
 }

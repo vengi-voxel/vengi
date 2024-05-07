@@ -37,10 +37,10 @@ bool importPalette(const core::String &filename, palette::Palette &palette);
  * @brief Tries to load the embedded palette from the given file. If the format doesn't have a palette embedded, this
  * returns @c 0
  */
-size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 				   const LoadContext &ctx);
-image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx);
-bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx);
+bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 				const LoadContext &ctx);
 
 /**
@@ -49,7 +49,7 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph,
 				const SaveContext &ctx, bool useVengiAsFallback = true);
 bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc,
-				io::SeekableWriteStream &stream, const SaveContext &ctx);
+				const io::ArchivePtr &archive, const SaveContext &ctx);
 
 bool isMeshFormat(const core::String &filename, bool save);
 bool isMeshFormat(const io::FormatDescription &desc);

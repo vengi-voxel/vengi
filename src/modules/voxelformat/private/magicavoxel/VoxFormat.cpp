@@ -5,6 +5,7 @@
 #include "VoxFormat.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "scenegraph/SceneGraph.h"
@@ -31,11 +32,16 @@ int VoxFormat::emptyPaletteIndex() const {
 	return EMPTY_PALETTE;
 }
 
-size_t VoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t VoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
-	const size_t size = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
+	const size_t size = stream->size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
-	if (stream.read(buffer, size) == -1) {
+	if (stream->read(buffer, size) == -1) {
 		core_free(buffer);
 		return 0;
 	}
@@ -154,11 +160,16 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	return true;
 }
 
-bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
-	const size_t size = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
+	const size_t size = stream->size();
 	uint8_t *buffer = (uint8_t *)core_malloc(size);
-	if (stream.read(buffer, size) == -1) {
+	if (stream->read(buffer, size) == -1) {
 		core_free(buffer);
 		return false;
 	}
@@ -367,7 +378,12 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 }
 
 bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &savectx) {
+						   const io::ArchivePtr &archive, const SaveContext &savectx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	MVSceneContext ctx;
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	saveNode(sceneGraph, sceneGraph.node(root.id()), ctx, k_invalid_group_index, 0);
@@ -493,7 +509,7 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::error("Failed to write the scene");
 		return false;
 	}
-	if (stream.write(buffer, buffersize) == -1) {
+	if (stream->write(buffer, buffersize) == -1) {
 		Log::error("Failed to write to the stream");
 		return false;
 	}

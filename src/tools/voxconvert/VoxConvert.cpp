@@ -19,8 +19,10 @@
 #include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "io/ZipArchive.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -51,8 +53,8 @@
 #define MaxHeightmapWidth 4096
 #define MaxHeightmapHeight 4096
 
-VoxConvert::VoxConvert(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
-		Super(filesystem, timeProvider, core::cpus()) {
+VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
+	: Super(filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
 	_wantCrashLogs = true;
 }
@@ -69,25 +71,44 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
 	registerArg("--image-as-plane").setDescription("Import given input images as planes");
 	registerArg("--image-as-volume").setDescription("Import given input image as volume");
-	registerArg("--image-as-volume-max-depth").setDefaultValue("8").setDescription("Importing image as volume max depth");
-	registerArg("--image-as-volume-both-sides").setDefaultValue("false").setDescription("Importing image as volume for both sides");
+	registerArg("--image-as-volume-max-depth")
+		.setDefaultValue("8")
+		.setDescription("Importing image as volume max depth");
+	registerArg("--image-as-volume-both-sides")
+		.setDefaultValue("false")
+		.setDescription("Importing image as volume for both sides");
 	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
-	registerArg("--colored-heightmap").setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
+	registerArg("--colored-heightmap")
+		.setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files").addFlag(ARGUMENT_FLAG_FILE);
-	registerArg("--wildcard").setShort("-w").setDescription("Allow to specify input file filter if --input is a directory");
+	registerArg("--wildcard")
+		.setShort("-w")
+		.setDescription("Allow to specify input file filter if --input is a directory");
 	registerArg("--merge").setShort("-m").setDescription("Merge models into one volume");
 	registerArg("--mirror").setDescription("Mirror by the given axis (x, y or z)");
-	registerArg("--output").setShort("-o").setDescription("Allow to specify the output file").addFlag(ARGUMENT_FLAG_FILE);
-	registerArg("--rotate").setDescription("Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
+	registerArg("--output")
+		.setShort("-o")
+		.setDescription("Allow to specify the output file")
+		.addFlag(ARGUMENT_FLAG_FILE);
+	registerArg("--rotate")
+		.setDescription(
+			"Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
 	registerArg("--resize").setDescription("Resize the volume by the given x (right), y (up) and z (back) values");
 	registerArg("--scale").setShort("-s").setDescription("Scale model to 50% of its original size");
-	registerArg("--script").setDefaultValue("script.lua").setDescription("Apply the given lua script to the output volume");
-	registerArg("--scriptcolor").setDefaultValue("1").setDescription("Set the palette index that is given to the script parameters");
+	registerArg("--script")
+		.setDefaultValue("script.lua")
+		.setDescription("Apply the given lua script to the output volume");
+	registerArg("--scriptcolor")
+		.setDefaultValue("1")
+		.setDescription("Set the palette index that is given to the script parameters");
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
-	registerArg("--surface-only").setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.");
+	registerArg("--surface-only")
+		.setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner "
+						"side of your mesh.");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
-	registerArg("--slice").setDescription("Allows to save the volume data as png slices if the output file is a png file");
+	registerArg("--slice").setDescription(
+		"Allows to save the volume data as png slices if the output file is a png file");
 
 	voxelformat::FormatConfig::init();
 
@@ -151,7 +172,8 @@ void VoxConvert::usage() const {
 	Log::info(" * Discord: https://vengi-voxel.de/discord");
 
 	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
-		Log::info("Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
+		Log::info(
+			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
 	}
 }
@@ -181,7 +203,7 @@ static void printFormatDetails(const io::FormatDescription *desc, const core::St
 	}
 }
 
-bool VoxConvert::slice(const scenegraph::SceneGraph& sceneGraph, const core::String &outfile) {
+bool VoxConvert::slice(const scenegraph::SceneGraph &sceneGraph, const core::String &outfile) {
 	const core::String &ext = core::string::extractExtension(outfile);
 	const core::String &basePath = core::string::stripExtension(outfile);
 	for (const auto &e : sceneGraph.nodes()) {
@@ -209,7 +231,7 @@ bool VoxConvert::slice(const scenegraph::SceneGraph& sceneGraph, const core::Str
 					rgba[idx] = color;
 				}
 			}
-			if (!image.loadRGBA((const uint8_t*)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
+			if (!image.loadRGBA((const uint8_t *)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
 				Log::error("Failed to load slice image %s", filename.c_str());
 				return false;
 			}
@@ -300,19 +322,19 @@ app::AppState VoxConvert::onInit() {
 		}
 	}
 
-	_mergeModels      = hasArg("--merge");
-	_scaleModels      = hasArg("--scale");
-	_mirrorModels     = hasArg("--mirror");
-	_rotateModels     = hasArg("--rotate");
-	_translateModels  = hasArg("--translate");
-	_exportPalette    = hasArg("--export-palette");
-	_exportModels     = hasArg("--export-models");
-	_cropModels       = hasArg("--crop");
-	_surfaceOnly      = hasArg("--surface-only");
-	_splitModels      = hasArg("--split");
-	_dumpSceneGraph   = hasArg("--dump");
-	_dumpMeshDetails  = hasArg("--dump-mesh");
-	_resizeModels     = hasArg("--resize");
+	_mergeModels = hasArg("--merge");
+	_scaleModels = hasArg("--scale");
+	_mirrorModels = hasArg("--mirror");
+	_rotateModels = hasArg("--rotate");
+	_translateModels = hasArg("--translate");
+	_exportPalette = hasArg("--export-palette");
+	_exportModels = hasArg("--export-models");
+	_cropModels = hasArg("--crop");
+	_surfaceOnly = hasArg("--surface-only");
+	_splitModels = hasArg("--split");
+	_dumpSceneGraph = hasArg("--dump");
+	_dumpMeshDetails = hasArg("--dump-mesh");
+	_resizeModels = hasArg("--resize");
 
 	Log::info("Options");
 	if (inputIsMesh || outputIsMesh) {
@@ -343,22 +365,23 @@ app::AppState VoxConvert::onInit() {
 		}
 		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
-	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph   ? "true" : "false"));
-	Log::info("* dump mesh details: - %s", (_dumpMeshDetails  ? "true" : "false"));
-	Log::info("* merge models:      - %s", (_mergeModels      ? "true" : "false"));
-	Log::info("* scale models:      - %s", (_scaleModels      ? "true" : "false"));
-	Log::info("* crop models:       - %s", (_cropModels       ? "true" : "false"));
-	Log::info("* surface only:      - %s", (_surfaceOnly      ? "true" : "false"));
-	Log::info("* split models:      - %s", (_splitModels      ? "true" : "false"));
-	Log::info("* mirror models:     - %s", (_mirrorModels     ? "true" : "false"));
-	Log::info("* translate models:  - %s", (_translateModels  ? "true" : "false"));
-	Log::info("* rotate models:     - %s", (_rotateModels     ? "true" : "false"));
-	Log::info("* export palette:    - %s", (_exportPalette    ? "true" : "false"));
-	Log::info("* export models:     - %s", (_exportModels     ? "true" : "false"));
-	Log::info("* resize models:     - %s", (_resizeModels     ? "true" : "false"));
+	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph ? "true" : "false"));
+	Log::info("* dump mesh details: - %s", (_dumpMeshDetails ? "true" : "false"));
+	Log::info("* merge models:      - %s", (_mergeModels ? "true" : "false"));
+	Log::info("* scale models:      - %s", (_scaleModels ? "true" : "false"));
+	Log::info("* crop models:       - %s", (_cropModels ? "true" : "false"));
+	Log::info("* surface only:      - %s", (_surfaceOnly ? "true" : "false"));
+	Log::info("* split models:      - %s", (_splitModels ? "true" : "false"));
+	Log::info("* mirror models:     - %s", (_mirrorModels ? "true" : "false"));
+	Log::info("* translate models:  - %s", (_translateModels ? "true" : "false"));
+	Log::info("* rotate models:     - %s", (_rotateModels ? "true" : "false"));
+	Log::info("* export palette:    - %s", (_exportPalette ? "true" : "false"));
+	Log::info("* export models:     - %s", (_exportModels ? "true" : "false"));
+	Log::info("* resize models:     - %s", (_resizeModels ? "true" : "false"));
 
 	if (core::Var::getSafe(cfg::MetricFlavor)->strVal().empty()) {
-		Log::info("Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
+		Log::info(
+			"Please enable anonymous usage statistics. You can do this by setting the metric_flavor cvar to 'json'");
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
 	}
 
@@ -393,8 +416,9 @@ app::AppState VoxConvert::onInit() {
 		return app::AppState::InitFailure;
 	}
 
+	const io::ArchivePtr &fsArchive = io::openFilesystemArchive(filesystem());
 	scenegraph::SceneGraph sceneGraph;
-	for (const core::String& infile : infiles) {
+	for (const core::String &infile : infiles) {
 		if (shouldQuit()) {
 			break;
 		}
@@ -411,7 +435,7 @@ app::AppState VoxConvert::onInit() {
 					continue;
 				}
 				const core::String fullpath = core::string::path(infile, entry.name);
-				if (handleInputFile(fullpath, sceneGraph, entities.size() > 1)) {
+				if (handleInputFile(fullpath, fsArchive, sceneGraph, entities.size() > 1)) {
 					++success;
 				}
 			}
@@ -421,33 +445,10 @@ app::AppState VoxConvert::onInit() {
 			}
 		} else if (io::isSupportedArchive(infile)) {
 			io::FileStream archiveStream(filesystem()->open(infile, io::FileMode::SysRead));
-			io::ArchivePtr archive = io::openArchive(filesystem(), infile, &archiveStream);
+			io::ArchivePtr archive = io::openZipArchive(&archiveStream);
 			if (!archive) {
 				Log::error("Failed to open archive %s", infile.c_str());
 				return app::AppState::InitFailure;
-			}
-
-			// save the files to our home, then process it
-			for (const auto &entry : archive->files()) {
-				if (shouldQuit()) {
-					break;
-				}
-				if (!entry.isFile()) {
-					continue;
-				}
-				const core::String &fullPath = entry.fullPath;
-				const io::FilePtr &targetFile = filesystem()->open(fullPath, io::FileMode::Write);
-				io::FileStream targetStream(targetFile);
-				core::ScopedPtr<io::SeekableReadStream> readStream(archive->readStream(fullPath));
-				if (!readStream) {
-					Log::error("Failed to extract %s", fullPath.c_str());
-					return app::AppState::InitFailure;
-				}
-				io::ReadStream &s = *readStream;
-				if (!targetStream.writeStream(s)) {
-					Log::error("Failed to write %s", fullPath.c_str());
-					return app::AppState::InitFailure;
-				}
 			}
 
 			const core::String filter = getArgVal("--wildcard", "");
@@ -468,12 +469,12 @@ app::AppState VoxConvert::onInit() {
 					}
 				}
 				const core::String &fullPath = filesystem()->writePath(entry.fullPath);
-				if (!handleInputFile(fullPath, sceneGraph, archive->files().size() > 1)) {
+				if (!handleInputFile(fullPath, archive, sceneGraph, archive->files().size() > 1)) {
 					Log::error("Failed to handle input file %s", fullPath.c_str());
 				}
 			}
 		} else {
-			if (!handleInputFile(infile, sceneGraph, infiles.size() > 1)) {
+			if (!handleInputFile(infile, fsArchive, sceneGraph, infiles.size() > 1)) {
 				return app::AppState::InitFailure;
 			}
 		}
@@ -630,17 +631,18 @@ static void printProgress(const char *name, int cur, int max) {
 	// Log::info("%s: %i/%i", name, cur, max);
 }
 
-bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
+bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePtr &archive,
+								 scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
-	const io::FilePtr inputFile = filesystem()->open(infile, io::FileMode::SysRead);
-	if (!inputFile->exists()) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(infile));
+	if (!stream) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
 		return false;
 	}
-	const bool inputIsImage = inputFile->isAnyOf(io::format::images());
+	const bool inputIsImage = io::isA(infile, io::format::images());
 	if (inputIsImage) {
-		const image::ImagePtr& image = image::loadImage(inputFile);
+		const image::ImagePtr &image = image::loadImage(infile, *stream);
 		if (!image || !image->isLoaded()) {
 			Log::error("Couldn't load image %s", infile.c_str());
 			return false;
@@ -662,9 +664,10 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			if (maxHeight == 1) {
 				Log::warn("There is no height value in the image - it is imported as flat plane");
 			}
-			Log::info("Generate from heightmap (%i:%i) with max height of %i", image->width(), image->height(), maxHeight);
+			Log::info("Generate from heightmap (%i:%i) with max height of %i", image->width(), image->height(),
+					  maxHeight);
 			voxel::Region region(0, 0, 0, image->width() - 1, maxHeight - 1, image->height() - 1);
-			voxel::RawVolume* volume = new voxel::RawVolume(region);
+			voxel::RawVolume *volume = new voxel::RawVolume(region);
 			voxel::RawVolumeWrapper wrapper(volume);
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -677,7 +680,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
 			}
 			node.setVolume(volume, true);
-			node.setName(inputFile->fileName());
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsVolume) {
@@ -690,7 +693,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
-			node.setName(inputFile->fileName());
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (importAsPlane) {
@@ -701,7 +704,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(v, true);
-			node.setName(inputFile->fileName());
+			node.setName(core::string::extractFilename(infile));
 			sceneGraph.emplace(core::move(node));
 		}
 		if (_exportPalette) {
@@ -713,13 +716,12 @@ bool VoxConvert::handleInputFile(const core::String &infile, scenegraph::SceneGr
 			Log::info("Wrote palette %s", filename.c_str());
 		}
 	} else {
-		io::FileStream inputFileStream(inputFile);
 		scenegraph::SceneGraph newSceneGraph;
 		voxelformat::LoadContext loadCtx;
 		loadCtx.monitor = printProgress;
 		io::FileDescription fileDesc;
-		fileDesc.set(inputFile->name());
-		if (!voxelformat::loadFormat(fileDesc, inputFileStream, newSceneGraph, loadCtx)) {
+		fileDesc.set(infile);
+		if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 			return false;
 		}
 
@@ -760,7 +762,8 @@ static bool hasUniqueModelNames(const scenegraph::SceneGraph &sceneGraph) {
 	return true;
 }
 
-void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext) {
+void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGraph, const core::String &inputfile,
+											   const core::String &ext) {
 	Log::info("Export models into single objects");
 	int id = 0;
 	voxelformat::SaveContext saveCtx;
@@ -775,8 +778,9 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGrap
 		scenegraph::SceneGraphNode newNode;
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
-		const core::String& filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);
-		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph, saveCtx)) {
+		const core::String &filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);
+		if (voxelformat::saveFormat(filesystem()->open(filename, io::FileMode::SysWrite), nullptr, newSceneGraph,
+									saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
 			Log::error(" .. %s", filename.c_str());
@@ -792,7 +796,7 @@ glm::ivec3 VoxConvert::getArgIvec3(const core::String &name) {
 	return t;
 }
 
-void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph) {
 	Log::info("split volumes at %i:%i:%i", size.x, size.y, size.z);
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	sceneGraph.clear();
@@ -807,8 +811,9 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGrap
 	}
 }
 
-VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent, bool meshDetails) {
-	const scenegraph::SceneGraphNode& node = sceneGraph.node(nodeId);
+VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, int indent,
+											 bool meshDetails) {
+	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
 	const scenegraph::SceneGraphNodeType type = node.type();
 
@@ -832,16 +837,17 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 		Log::info("%*s  |- farplane: %f", indent, " ", cameraNode.farPlane());
 		Log::info("%*s  |- mode: %s", indent, " ", cameraNode.isOrthographic() ? "ortho" : "perspective");
 	}
-	for (const auto & entry : node.properties()) {
+	for (const auto &entry : node.properties()) {
 		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
 	}
 	for (const scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
 		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frameIdx);
 		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
-		Log::info("%*s    |- interpolation: %s", indent, " ", scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
+		Log::info("%*s    |- interpolation: %s", indent, " ",
+				  scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 		Log::info("%*s    |- transform", indent, " ");
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &tr  = transform.worldTranslation();
+		const glm::vec3 &tr = transform.worldTranslation();
 		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
 		const glm::vec3 &ltr = transform.localTranslation();
 		Log::info("%*s      |- local translation %f:%f:%f", indent, " ", ltr.x, ltr.y, ltr.z);
@@ -862,7 +868,8 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
-		const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
+		const voxel::SurfaceExtractionType type =
+			(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx =
 			voxel::createContext(type, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0}, mergeQuads,
@@ -884,19 +891,19 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph& scene
 	return stats;
 }
 
-void VoxConvert::dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::dumpMeshDetails(const scenegraph::SceneGraph &sceneGraph) {
 	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, true);
 	Log::info("Voxel count: %i", stats.voxels);
 	Log::info("Vertex count: %i", stats.vertices);
 	Log::info("Index count: %i", stats.indices);
 }
 
-void VoxConvert::dump(const scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::dump(const scenegraph::SceneGraph &sceneGraph) {
 	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, false);
 	Log::info("Voxel count: %i", stats.voxels);
 }
 
-void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::crop(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Crop volumes");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
@@ -904,7 +911,7 @@ void VoxConvert::crop(scenegraph::SceneGraph& sceneGraph) {
 	}
 }
 
-void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Remove non-surface voxels");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
@@ -918,7 +925,7 @@ void VoxConvert::removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph) {
 	}
 }
 
-void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneGraph& sceneGraph, uint8_t color) {
+void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneGraph &sceneGraph, uint8_t color) {
 	voxelgenerator::LUAApi script(_filesystem);
 	if (!script.init()) {
 		Log::warn("Failed to initialize the script bindings");
@@ -957,22 +964,22 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 	script.shutdown();
 }
 
-void VoxConvert::scale(scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::scale(scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Scale models");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region srcRegion = node.region();
-		const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+		const glm::ivec3 &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 		const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 		if (destRegion.isValid()) {
-			voxel::RawVolume* destVolume = new voxel::RawVolume(destRegion);
+			voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 			voxelutil::scaleDown(*node.volume(), node.palette(), *destVolume);
 			node.setVolume(destVolume, true);
 		}
 	}
 }
 
-void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Resize models");
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
@@ -985,7 +992,7 @@ void VoxConvert::resize(const glm::ivec3 &size, scenegraph::SceneGraph& sceneGra
 	}
 }
 
-void VoxConvert::filterModels(scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::filterModels(scenegraph::SceneGraph &sceneGraph) {
 	const core::String &filter = getArgVal("--filter");
 	if (filter.empty()) {
 		Log::warn("No filter specified");
@@ -995,7 +1002,7 @@ void VoxConvert::filterModels(scenegraph::SceneGraph& sceneGraph) {
 	core::Set<int> models;
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(filter, tokens, ",");
-	for (const core::String& token : tokens) {
+	for (const core::String &token : tokens) {
 		if (token.contains("-")) {
 			const int start = token.toInt();
 			const size_t index = token.find("-");
@@ -1023,7 +1030,8 @@ void VoxConvert::filterModels(scenegraph::SceneGraph& sceneGraph) {
 	Log::info("Filtered models: %i", (int)models.size());
 }
 
-void VoxConvert::filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value) {
+void VoxConvert::filterModelsByProperty(scenegraph::SceneGraph &sceneGraph, const core::String &property,
+										const core::String &value) {
 	if (property.empty()) {
 		Log::warn("No property specified to filter");
 		return;
@@ -1051,7 +1059,7 @@ void VoxConvert::filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, cons
 	Log::info("Filtered models: %i", (int)sceneGraph.size(scenegraph::SceneGraphNodeType::Model));
 }
 
-void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::mirror(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
@@ -1063,7 +1071,7 @@ void VoxConvert::mirror(const core::String& axisStr, scenegraph::SceneGraph& sce
 	}
 }
 
-void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::rotate(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph) {
 	const math::Axis axis = math::toAxis(axisStr);
 	if (axis == math::Axis::None) {
 		return;
@@ -1085,7 +1093,7 @@ void VoxConvert::rotate(const core::String& axisStr, scenegraph::SceneGraph& sce
 	}
 }
 
-void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph) {
+void VoxConvert::translate(const glm::ivec3 &pos, scenegraph::SceneGraph &sceneGraph) {
 	Log::info("Translate by %i:%i:%i", pos.x, pos.y, pos.z);
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		scenegraph::SceneGraphNode &node = *iter;
@@ -1096,8 +1104,8 @@ void VoxConvert::translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneG
 }
 
 int main(int argc, char *argv[]) {
-	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
+	const io::FilesystemPtr &filesystem = core::make_shared<io::Filesystem>();
+	const core::TimeProviderPtr &timeProvider = core::make_shared<core::TimeProvider>();
 	VoxConvert app(filesystem, timeProvider);
 	return app.startMainLoop(argc, argv);
 }

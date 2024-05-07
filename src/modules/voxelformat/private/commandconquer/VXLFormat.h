@@ -47,24 +47,21 @@ private:
 
 	bool saveVXL(const scenegraph::SceneGraph &sceneGraph,
 				 core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-				 io::SeekableWriteStream &stream);
+				 const io::ArchivePtr &archive);
 
 	bool prepareModel(vxl::VXLModel &mdl) const;
 	bool readHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, palette::Palette &palette);
 
-	bool loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-					  const LoadContext &ctx);
-
 protected:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat

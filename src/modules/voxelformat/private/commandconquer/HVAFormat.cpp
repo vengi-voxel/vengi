@@ -5,6 +5,8 @@
 #include "HVAFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
+#include "io/Archive.h"
 #include "io/FileStream.h"
 #include "scenegraph/SceneGraphNode.h"
 
@@ -86,18 +88,16 @@ static void convertHVARead(glm::mat4 &vengiMatrix, const vxl::VXLLayerInfo &foot
 	translation.z *= footer.scale * sectionScale.y;
 }
 
-bool HVAFormat::loadHVA(const core::String &filename, const vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph) {
+bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &archive, const vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph) {
 	vxl::HVAModel file;
 	{
-		const io::FilesystemPtr &filesystem = io::filesystem();
-		const io::FilePtr &hvaFile = filesystem->open(filename);
-		if (!hvaFile->validHandle()) {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
 			// if there is no hva file, we still don't show an error
 			return true;
 		}
-		io::FileStream stream(hvaFile);
-		wrapBool(readHVAHeader(stream, file.header));
-		wrapBool(readHVAFrames(stream, mdl, file));
+		wrapBool(readHVAHeader(*stream, file.header));
+		wrapBool(readHVAFrames(*stream, mdl, file));
 	}
 	Log::debug("load %u frames", file.header.numFrames);
 	for (uint32_t keyFrameIdx = 0; keyFrameIdx < file.header.numFrames; ++keyFrameIdx) {
@@ -188,15 +188,14 @@ bool HVAFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 	return true;
 }
 
-bool HVAFormat::saveHVA(const core::String &filename, const scenegraph::SceneGraph &sceneGraph) {
-	const io::FilesystemPtr &filesystem = io::filesystem();
-	io::FilePtr hvaFile = filesystem->open(filename, io::FileMode::SysWrite);
-	if (!hvaFile->validHandle()) {
+bool HVAFormat::saveHVA(const core::String &filename, const io::ArchivePtr &archive, const scenegraph::SceneGraph &sceneGraph) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
 		return false;
 	}
-	io::FileStream stream(hvaFile);
-	wrapBool(writeHVAHeader(stream, sceneGraph));
-	wrapBool(writeHVAFrames(stream, sceneGraph));
+	wrapBool(writeHVAHeader(*stream, sceneGraph));
+	wrapBool(writeHVAFrames(*stream, sceneGraph));
 	return true;
 }
 

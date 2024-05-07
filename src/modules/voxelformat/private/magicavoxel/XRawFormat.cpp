@@ -5,6 +5,8 @@
 #include "XRawFormat.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
+#include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
@@ -69,10 +71,15 @@ static int readVoxel(io::SeekableReadStream &stream, const palette::Palette &pal
 	return -1;
 }
 
-size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('X', 'R', 'A', 'W')) {
 		Log::error("Could not load xraw file: Invalid magic number");
@@ -80,22 +87,22 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	}
 
 	ColorChannelDataType colorChannelDataType;
-	wrap(stream.readUInt8((uint8_t &)colorChannelDataType))
+	wrap(stream->readUInt8((uint8_t &)colorChannelDataType))
 
 	ColorChannelCount colorChannelCount;
-	wrap(stream.readUInt8((uint8_t &)colorChannelCount))
+	wrap(stream->readUInt8((uint8_t &)colorChannelCount))
 
 	uint8_t bitsPerColorChannel;
-	wrap(stream.readUInt8(bitsPerColorChannel))
+	wrap(stream->readUInt8(bitsPerColorChannel))
 
 	uint8_t bitsPerIndex;
-	wrap(stream.readUInt8(bitsPerIndex))
+	wrap(stream->readUInt8(bitsPerIndex))
 
 	// address = x + y * width + z * (width * height)
 	uint32_t width, depth, height;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -104,7 +111,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 
 	// 256, 32768
 	uint32_t paletteSize;
-	wrap(stream.readUInt32(paletteSize))
+	wrap(stream->readUInt32(paletteSize))
 
 	if (colorChannelDataType != ColorChannelDataType::TypeUnsignedInteger) {
 		Log::error("Could not load xraw file: Unsupported color channel data type: %i", (int)colorChannelDataType);
@@ -127,7 +134,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 		return 0;
 	}
 
-	if (stream.skip(width * height * depth * bitsPerIndex / 8u) == -1) {
+	if (stream->skip(width * height * depth * bitsPerIndex / 8u) == -1) {
 		Log::error("Could not load xraw file: Not enough data in stream");
 		return 0;
 	}
@@ -135,7 +142,7 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	// palette buffer
 
 	for (uint32_t i = 0u; i < paletteSize; ++i) {
-		const core::RGBA rgba = readColor(stream);
+		const core::RGBA rgba = readColor(*stream);
 		const core::RGBA color = flattenRGB(rgba);
 		palette.tryAdd(color, false);
 	}
@@ -143,11 +150,16 @@ size_t XRawFormat::loadPalette(const core::String &filename, io::SeekableReadStr
 	return palette.size();
 }
 
-bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('X', 'R', 'A', 'W')) {
 		Log::error("Could not load xraw file: Invalid magic number");
@@ -155,34 +167,34 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	}
 
 	ColorChannelDataType colorChannelDataType;
-	wrap(stream.readUInt8((uint8_t &)colorChannelDataType))
+	wrap(stream->readUInt8((uint8_t &)colorChannelDataType))
 	if (colorChannelDataType != ColorChannelDataType::TypeUnsignedInteger) {
 		Log::error("Could not load xraw file: Unsupported color channel data type: %i", (int)colorChannelDataType);
 		return 0;
 	}
 
 	ColorChannelCount colorChannelCount;
-	wrap(stream.readUInt8((uint8_t &)colorChannelCount))
+	wrap(stream->readUInt8((uint8_t &)colorChannelCount))
 	if (colorChannelCount != ColorChannelCount::RGBA) {
 		Log::error("Could not load xraw file: Unsupported color channel count: %i", (int)colorChannelCount);
 		return 0;
 	}
 
 	uint8_t bitsPerColorChannel;
-	wrap(stream.readUInt8(bitsPerColorChannel))
+	wrap(stream->readUInt8(bitsPerColorChannel))
 	if (bitsPerColorChannel != 8) {
 		Log::error("Could not load xraw file: Unsupported bits per color channel: %i", bitsPerColorChannel);
 		return 0;
 	}
 
 	uint8_t bitsPerIndex;
-	wrap(stream.readUInt8(bitsPerIndex))
+	wrap(stream->readUInt8(bitsPerIndex))
 
 	// address = x + y * width + z * (width * height)
 	uint32_t width, depth, height;
-	wrap(stream.readUInt32(width))
-	wrap(stream.readUInt32(depth))
-	wrap(stream.readUInt32(height))
+	wrap(stream->readUInt32(width))
+	wrap(stream->readUInt32(depth))
+	wrap(stream->readUInt32(height))
 
 	if (width > 2048 || height > 2048 || depth > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", width, height, depth);
@@ -191,7 +203,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 
 	// 256, 32768
 	uint32_t paletteSize;
-	wrap(stream.readUInt32(paletteSize))
+	wrap(stream->readUInt32(paletteSize))
 
 	// end of header
 
@@ -204,7 +216,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
-				const int index = readVoxel(stream, palette, paletteSize, bitsPerIndex);
+				const int index = readVoxel(*stream, palette, paletteSize, bitsPerIndex);
 				if (index == 0 || index == ~(uint16_t)0) {
 					continue;
 				}
@@ -225,24 +237,29 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadSt
 #undef wrap
 
 bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 	const voxel::Region &region = node->region();
 
-	wrapBool(stream.writeUInt32(FourCC('X', 'R', 'A', 'W')))
+	wrapBool(stream->writeUInt32(FourCC('X', 'R', 'A', 'W')))
 
-	wrapBool(stream.writeUInt8((uint8_t)ColorChannelDataType::TypeUnsignedInteger))
-	wrapBool(stream.writeUInt8((uint8_t)ColorChannelCount::RGBA))
-	wrapBool(stream.writeUInt8(8)) // bitsPerColorChannel
-	wrapBool(stream.writeUInt8(8)) // bitsPerIndex
+	wrapBool(stream->writeUInt8((uint8_t)ColorChannelDataType::TypeUnsignedInteger))
+	wrapBool(stream->writeUInt8((uint8_t)ColorChannelCount::RGBA))
+	wrapBool(stream->writeUInt8(8)) // bitsPerColorChannel
+	wrapBool(stream->writeUInt8(8)) // bitsPerIndex
 
 	// we have to flip depth with height for our own coordinate system
-	wrapBool(stream.writeUInt32(region.getWidthInVoxels()))
-	wrapBool(stream.writeUInt32(region.getDepthInVoxels()))
-	wrapBool(stream.writeUInt32(region.getHeightInVoxels()))
+	wrapBool(stream->writeUInt32(region.getWidthInVoxels()))
+	wrapBool(stream->writeUInt32(region.getDepthInVoxels()))
+	wrapBool(stream->writeUInt32(region.getHeightInVoxels()))
 
-	wrapBool(stream.writeUInt32(palette::PaletteMaxColors))
+	wrapBool(stream->writeUInt32(palette::PaletteMaxColors))
 
 	palette::Palette palette = node->palette();
 	uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
@@ -255,23 +272,23 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		*node->volume(),
 		[&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
 			if (voxel.getMaterial() == voxel::VoxelType::Air) {
-				wrapBool(stream.writeUInt8(0))
+				wrapBool(stream->writeUInt8(0))
 			} else if (voxel.getColor() == 0) {
-				wrapBool(stream.writeUInt8(replacement))
+				wrapBool(stream->writeUInt8(replacement))
 			} else {
-				wrapBool(stream.writeUInt8(voxel.getColor()))
+				wrapBool(stream->writeUInt8(voxel.getColor()))
 			}
 			return true;
 		},
 		voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
-	wrapBool(stream.writeUInt32(0)) // first palette entry is always 0 - empty voxel
+	wrapBool(stream->writeUInt32(0)) // first palette entry is always 0 - empty voxel
 	for (int i = 1; i < palette.colorCount(); ++i) {
 		const core::RGBA rgba = palette.color(i);
-		wrapBool(stream.writeUInt32(rgba.rgba))
+		wrapBool(stream->writeUInt32(rgba.rgba))
 	}
 	for (int i = palette.colorCount(); i < palette::PaletteMaxColors; ++i) {
-		wrapBool(stream.writeUInt32(0))
+		wrapBool(stream->writeUInt32(0))
 	}
 
 	return true;

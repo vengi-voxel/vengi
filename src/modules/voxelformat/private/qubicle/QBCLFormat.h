@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "io/Stream.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -64,16 +65,16 @@ private:
 					  const NodeHeader &nodeHeader);
 	bool readNodes(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				   int parent, palette::Palette &palette, Header &header);
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
-	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
 };
 

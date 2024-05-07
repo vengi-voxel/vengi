@@ -49,11 +49,16 @@ static glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core:
 	return glm::ivec3(x, y, z);
 }
 
-bool SchematicFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool SchematicFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 										scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 										const LoadContext &loadctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	palette.minecraft();
-	io::ZipReadStream zipStream(stream);
+	io::ZipReadStream zipStream(*stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
 	const priv::NamedBinaryTag &schematic = priv::NamedBinaryTag::parse(ctx);
@@ -499,7 +504,12 @@ void SchematicFormat::addMetadata_r(const core::String &key, const priv::NamedBi
 }
 
 bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-								 io::SeekableWriteStream &stream, const SaveContext &ctx) {
+								 const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	// save as sponge-3
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
 	if (merged.first == nullptr) {
@@ -511,7 +521,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	const glm::ivec3 &mins = region.getLowerCorner();
 
-	io::ZipWriteStream zipStream(stream);
+	io::ZipWriteStream zipStream(*stream);
 
 	priv::NBTCompound compound;
 	compound.put("Width", (int16_t)size.x);

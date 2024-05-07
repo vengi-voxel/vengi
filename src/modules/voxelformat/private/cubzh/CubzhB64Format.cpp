@@ -10,6 +10,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "io/Archive.h"
 #include "io/Base64ReadStream.h"
 #include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
@@ -153,19 +154,29 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-bool CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename,
+bool CubzhB64Format::load3zh(const io::ArchivePtr &archive, const core::String &filename,
 							scenegraph::SceneGraph &modelScene, const palette::Palette &palette,
 							const LoadContext &ctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive.readStream(filename));
-	if (!stream) {
-		Log::error("Failed to open file: %s", filename.c_str());
-		return false;
+	core::String fullPath = filename;
+
+	if (!archive->exists(fullPath)) {
+		const core::String &path = core::string::extractPath(fullPath);
+		const core::String &file = core::string::extractFilenameWithExtension(fullPath);
+		if (archive->exists(core::string::path(path, "..", "cache", file))) {
+			fullPath = core::string::path(path, "..", "cache", file);
+		} else if (archive->exists(core::string::path(path, "cache", file))) {
+			fullPath = core::string::path(path, "cache", file);
+		} else {
+			Log::error("3zh file not found: %s", fullPath.c_str());
+			return false;
+		}
 	}
+
 	CubzhFormat format;
-	return format.load(filename, *stream, modelScene, ctx);
+	return format.load(fullPath, archive, modelScene, ctx);
 }
 
-bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &stream,
+bool CubzhB64Format::readObjects(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								 const LoadContext &ctx, int version) {
 	if (version == 3 || version == 2) {
@@ -179,14 +190,6 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 	wrap(stream.readUInt16(numObjects))
 	Log::trace("numObjects: %i", numObjects);
 	uint16_t instanceCount = 0;
-
-	const core::String &path = core::string::extractPath(filename);
-
-	// e.g. the hubmap.b64 is in bundle/misc, the 3zh files in bundle/cache
-	io::FilesystemArchive archive(io::filesystem());
-	archive.add(core::string::path(path, "..", "cache"), "*.3zh", 1);
-	archive.add(path, "*.3zh", 1);
-	archive.add(core::string::path(path, "cache"), "*.3zh", 1);
 
 	while (instanceCount < numObjects) {
 		core::String fullname3zh;
@@ -339,7 +342,7 @@ bool CubzhB64Format::loadVersion1(const core::String &filename, io::ReadStream &
 	return false;
 }
 
-bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &stream,
+bool CubzhB64Format::loadVersion2(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
 	Ambience ambience;
@@ -354,7 +357,7 @@ bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 			break;
 		case 2:
-			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 2))
+			wrapBool(readObjects(filename, archive, stream, sceneGraph, palette, ctx, 2))
 			break;
 		case 3:
 			wrapBool(readBlocks(stream, sceneGraph, palette, ctx))
@@ -368,7 +371,7 @@ bool CubzhB64Format::loadVersion2(const core::String &filename, io::ReadStream &
 	return true;
 }
 
-bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &stream,
+bool CubzhB64Format::loadVersion3(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
 	Ambience ambience;
@@ -384,7 +387,7 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 			break;
 		case 2:
-			wrapBool(readObjects(filename, stream, sceneGraph, palette, ctx, 3))
+			wrapBool(readObjects(filename, archive, stream, sceneGraph, palette, ctx, 3))
 			break;
 		case 3:
 			wrapBool(readBlocks(stream, sceneGraph, palette, ctx))
@@ -398,10 +401,15 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, io::ReadStream &
 	return true;
 }
 
-bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 									const LoadContext &ctx) {
-	io::Base64ReadStream base64Stream(stream);
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	io::Base64ReadStream base64Stream(*stream);
 	uint8_t version;
 	wrap(base64Stream.readUInt8(version))
 	Log::debug("Found version %i", (int)version);
@@ -410,18 +418,18 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, io::SeekableRe
 			return false;
 		}
 	} else if (version == 2) {
-		if (!loadVersion2(filename, base64Stream, sceneGraph, palette, ctx)) {
+		if (!loadVersion2(filename, archive, base64Stream, sceneGraph, palette, ctx)) {
 			return false;
 		}
 	} else if (version == 3) {
-		if (!loadVersion3(filename, base64Stream, sceneGraph, palette, ctx)) {
+		if (!loadVersion3(filename, archive, base64Stream, sceneGraph, palette, ctx)) {
 			return false;
 		}
 	} else {
 		Log::error("Unsupported version found: %i", (int)version);
 		return false;
 	}
-	Log::debug("%i bytes left in the stream", (int)stream.remaining());
+	Log::debug("%i bytes left in the stream", (int)stream->remaining());
 	return true;
 }
 

@@ -50,9 +50,9 @@ protected:
 		core::String txt;
 	};
 	void setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, const Ambience &ambience) const;
-	bool load3zh(io::FilesystemArchive &archive, const core::String &filename, scenegraph::SceneGraph &modelScene,
+	bool load3zh(const io::ArchivePtr &archive, const core::String &filename, scenegraph::SceneGraph &modelScene,
 				const palette::Palette &palette, const LoadContext &ctx);
-	bool readObjects(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool readObjects(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					 const palette::Palette &palette, const LoadContext &ctx, int version);
 	bool readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					  const LoadContext &ctx);
@@ -62,14 +62,14 @@ protected:
 					const LoadContext &ctx);
 	bool loadVersion1(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadVersion2(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool loadVersion2(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadVersion3(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool loadVersion3(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) {
+					const io::ArchivePtr &archive, const SaveContext &ctx) {
 		return false;
 	}
 };

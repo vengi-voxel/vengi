@@ -28,4 +28,6 @@ public:
 	SeekableWriteStream* writeStream(const core::String &filePath) override;
 };
 
+ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path = "");
+
 } // namespace io

@@ -62,7 +62,7 @@ static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
 	return true;
 }
 
-bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							  const LoadContext &ctx) {
 	core::Map<int, int> blockPal;
@@ -71,16 +71,27 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 	}
 	const core::String &extension = core::string::extractExtension(filename);
 	if (extension == "smd3") {
-		return readSmd3(stream, sceneGraph, blockPal, {0, 0, 0}, palette);
-	} else if (extension == "smd2") {
-		return readSmd2(stream, sceneGraph, blockPal, {0, 0, 0}, palette);
-	} else if (extension == "sment") {
-		io::ZipArchive archive;
-		if (!archive.init(filename, &stream)) {
-			Log::error("Failed to load zip archive from %s", filename.c_str());
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
 			return false;
 		}
-		const io::ArchiveFiles &files = archive.files();
+		return readSmd3(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+	} else if (extension == "smd2") {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
+			return false;
+		}
+		return readSmd2(*stream, sceneGraph, blockPal, {0, 0, 0}, palette);
+	} else if (extension == "sment") {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		if (!stream) {
+			Log::error("Could not load file %s", filename.c_str());
+			return false;
+		}
+		io::ArchivePtr zipArchive = io::openZipArchive(stream);
+		const io::ArchiveFiles &files = zipArchive->files();
 		for (const io::FilesystemEntry &e : files) {
 			const core::String &extension = core::string::extractExtension(e.name);
 			const bool isSmd3 = extension == "smd3";
@@ -96,7 +107,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 						position[i] = core::string::toInt(e.name.substr(dot + 1)) * priv::segments;
 					}
 				}
-				core::ScopedPtr<io::SeekableReadStream> modelStream(archive.readStream(e.fullPath));
+				core::ScopedPtr<io::SeekableReadStream> modelStream(zipArchive->readStream(e.fullPath));
 				if (!modelStream) {
 					Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 					continue;
@@ -184,7 +195,7 @@ static glm::ivec3 posByIndex(uint32_t blockIndex) {
 	return glm::ivec3(x, y, z);
 }
 
-size_t SMFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							 const LoadContext &ctx) {
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		uint8_t index = 0;

@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/Buffer.h"
@@ -720,28 +721,33 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 	return voxelizeNode(name, sceneGraph, tris) > 0;
 }
 
-bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 
 	BspHeader header;
-	wrap(stream.readUInt32(header.magic))
+	wrap(stream->readUInt32(header.magic))
 	if (header.magic == q1Version) {
 		header.version = 29;
 	} else {
-		wrap(stream.readUInt32(header.version))
+		wrap(stream->readUInt32(header.version))
 	}
 	for (int i = 0; i < lengthof(header.lumps); ++i) {
-		wrap(stream.readUInt32(header.lumps[i].offset))
-		wrap(stream.readUInt32(header.lumps[i].len))
+		wrap(stream->readUInt32(header.lumps[i].offset))
+		wrap(stream->readUInt32(header.lumps[i].len))
 	}
 
 	if (header.version == 79 && header.magic == bspMagic) {
-		return loadUFOAlienInvasionBsp(filename, stream, sceneGraph, header);
+		return loadUFOAlienInvasionBsp(filename, *stream, sceneGraph, header);
 	}
 	if (header.magic == q1Version) {
-		return loadQuake1Bsp(filename, stream, sceneGraph, header);
+		return loadQuake1Bsp(filename, *stream, sceneGraph, header);
 	}
 
 	uint8_t buf[4];

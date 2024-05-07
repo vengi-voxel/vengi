@@ -4,11 +4,10 @@
 
 #include "VXTFormat.h"
 #include "VXMFormat.h"
-#include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/Archive.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -30,9 +29,14 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &in,
+bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &, const LoadContext &ctx) {
-	io::ZipReadStream stream(in, (int)in.size());
+	core::ScopedPtr<io::SeekableReadStream> in(archive->readStream(filename));
+	if (!in) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	io::ZipReadStream stream(*in, (int)in->size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -61,15 +65,9 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	for (int32_t i = 0; i < models; ++i) {
 		char path[1024];
 		wrapBool(stream.readString(sizeof(path), path, true))
-		const io::FilePtr &file = io::filesystem()->open(path);
-		if (!file->validHandle()) {
-			Log::warn("Could not load file %s", path);
-			continue;
-		}
-		io::FileStream childStream(file);
 		VXMFormat f;
 		scenegraph::SceneGraph subGraph;
-		if (!f.load(path, childStream, subGraph, ctx)) {
+		if (!f.load(path, archive, subGraph, ctx)) {
 			Log::warn("Failed to load vxm tile %s", path);
 			continue;
 		}
@@ -141,7 +139,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 }
 
 bool VXTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	return false;
 }
 

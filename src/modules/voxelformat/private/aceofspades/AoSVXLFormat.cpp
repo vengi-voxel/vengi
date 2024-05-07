@@ -4,6 +4,7 @@
 
 #include "AoSVXLFormat.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -40,12 +41,17 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
-bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
-	const int64_t size = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	const int64_t size = stream->size();
 	uint8_t *data = (uint8_t *)core_malloc(size);
-	if (stream.read(data, size) == -1) {
+	if (stream->read(data, size) == -1) {
 		Log::error("Failed to read vxl stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
 		return false;
@@ -96,11 +102,16 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, io::SeekableRead
 	return true;
 }
 
-size_t AoSVXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 								 const LoadContext &ctx) {
-	const int64_t size = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return 0;
+	}
+	const int64_t size = stream->size();
 	uint8_t *data = (uint8_t *)core_malloc(size);
-	if (stream.read(data, size) == -1) {
+	if (stream->read(data, size) == -1) {
 		Log::error("Failed to read vxl stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
 		return 0;
@@ -154,7 +165,12 @@ glm::ivec3 AoSVXLFormat::maxSize() const {
 }
 
 bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 	const voxel::Region &region = sceneGraph.region();
 	glm::ivec3 size = region.getDimensionsInVoxels();
 	glm::ivec3 targetSize(512, size.y, 512);
@@ -195,7 +211,7 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		if (read == 0) {
 			break;
 		}
-		if (stream.write(buf, read) == -1) {
+		if (stream->write(buf, read) == -1) {
 			Log::error("Could not write AoE vxl file to stream");
 			libvxl_stream_free(&s);
 			libvxl_free(&map);

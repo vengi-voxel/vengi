@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/Color.h"
 #include "core/tests/TestColorHelper.h"
+#include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/ShapeBuilder.h"
@@ -118,7 +119,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 	class TestMesh : public MeshFormat {
 	public:
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &,
-						const core::String &, io::SeekableWriteStream &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
 		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::TriCollection &tris) {

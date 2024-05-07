@@ -31,14 +31,14 @@ TEST_F(ConvertTest, testVoxToVXMPalette) {
 	VoxFormat src;
 	VXMFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
-	testFirstAndLastPaletteIndexConversion(src, "palette-check.vxm", target, flags);
+	testFirstAndLastPaletteIndexConversion(src, "palette-in.vox", target, "palette-check.vxm", flags);
 }
 
 TEST_F(ConvertTest, testVoxToSLAB6VoxPalette) {
 	VoxFormat src;
 	SLAB6VoxFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Palette);
-	testFirstAndLastPaletteIndexConversion(src, "palette-check.vox", target, flags);
+	testFirstAndLastPaletteIndexConversion(src, "palette-in.vox", target, "palette-check.vox", flags);
 }
 
 TEST_F(ConvertTest, testVoxToVXM) {

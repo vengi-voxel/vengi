@@ -9,6 +9,7 @@
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
+#include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -664,8 +665,13 @@ void GLTFFormat::generateMaterials(bool withTexCoords, tinygltf::Model &gltfMode
 }
 
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+							const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const core::String &ext = core::string::extractExtension(filename);
 	const bool writeBinary = ext == "glb";
 
@@ -784,7 +790,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		gltfModel.cameras.push_back(gltfCamera);
 	}
 
-	io::StdOStreamBuf buf(stream);
+	io::StdOStreamBuf buf(*stream);
 	std::ostream gltfStream(&buf);
 	if (!gltf.WriteGltfSceneToStream(&gltfModel, gltfStream, false, writeBinary)) {
 		Log::error("Could not save to file");
@@ -1630,13 +1636,18 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	return true;
 }
 
-bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	stream.peekUInt32(magic);
-	const int64_t size = stream.size();
+	stream->peekUInt32(magic);
+	const int64_t size = stream->size();
 	uint8_t *data = (uint8_t *)core_malloc(size);
-	if (stream.read(data, size) == -1) {
+	if (stream->read(data, size) == -1) {
 		Log::error("Failed to read gltf stream for %s of size %i", filename.c_str(), (int)size);
 		core_free(data);
 		return false;

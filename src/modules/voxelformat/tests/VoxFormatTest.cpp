@@ -4,7 +4,6 @@
 
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "AbstractFormatTest.h"
-#include "io/BufferedReadWriteStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
@@ -14,8 +13,6 @@
 #include "vox_character.h"
 #include "vox_glasses.h"
 #include "8ontop.h"
-
-#define VOX_TEST_SAVE_TO_FILE 0
 
 namespace voxelformat {
 
@@ -45,16 +42,9 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 
 	scenegraph::SceneGraph sceneGraph;
 
-#if VOX_TEST_SAVE_TO_FILE
-	saveSceneGraph(mvSceneGraph, name);
-	canLoad(sceneGraph, name, 12u);
-#else
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-	ASSERT_TRUE(f.save(mvSceneGraph, name, stream, testSaveCtx));
-	stream.seek(0);
-	f.load(name, stream, sceneGraph, testLoadCtx);
-	ASSERT_EQ(12u, sceneGraph.size());
-#endif
+	io::ArchivePtr archive = helper_filesystemarchive();
+	helper_saveSceneGraph(mvSceneGraph, name);
+	testLoad(sceneGraph, name, 12u);
 
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_TRUE(node != nullptr);
@@ -174,16 +164,10 @@ TEST_F(VoxFormatTest, testSaveBigVolume) {
 		sceneGraphsave.emplace(core::move(node));
 	}
 
-#if VOX_TEST_SAVE_TO_FILE
-	saveSceneGraph(sceneGraphsave, name);
-	canLoad(sceneGraph, name, 3u);
-#else
-	io::BufferedReadWriteStream stream(10 * 1024 * 1024);
-	ASSERT_TRUE(f.save(sceneGraphsave, name, stream, testSaveCtx));
-	stream.seek(0);
-	f.load(name, stream, sceneGraph, testLoadCtx);
+	io::ArchivePtr archive = helper_archive();
+	ASSERT_TRUE(f.save(sceneGraphsave, name, archive, testSaveCtx));
+	f.load(name, archive, sceneGraph, testLoadCtx);
 	EXPECT_EQ(3, (int)sceneGraph.size());
-#endif
 }
 
 TEST_F(VoxFormatTest, testSave) {

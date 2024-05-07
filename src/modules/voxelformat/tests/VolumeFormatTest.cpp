@@ -4,8 +4,7 @@
 
 #include "voxelformat/VolumeFormat.h"
 #include "AbstractFormatTest.h"
-#include "io/File.h"
-#include "io/FileStream.h"
+#include "io/FilesystemArchive.h"
 
 namespace voxelformat {
 
@@ -21,14 +20,12 @@ TEST_F(VolumeFormatTest, testImportPalette) {
 TEST_F(VolumeFormatTest, testLoadFormat) {
 	const char *files[] = {"rgb.csv", "rgb.cub", "rgb.gox", "rgb.qb", "rgb.qbcl",
 						   "rgb.qef", "rgb.vox", "rgb.vxl", "rgb.vxm"};
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
 	for (int i = 0; i < lengthof(files); ++i) {
-		io::FilePtr file = _testApp->filesystem()->open(files[i]);
-		ASSERT_TRUE(file->validHandle());
-		io::FileStream stream(file);
 		io::FileDescription fileDesc;
-		fileDesc.set(file->name());
+		fileDesc.set(files[i]);
 		scenegraph::SceneGraph newSceneGraph;
-		EXPECT_TRUE(loadFormat(fileDesc, stream, newSceneGraph, testLoadCtx)) << "Failed to load " << files[i];
+		EXPECT_TRUE(loadFormat(fileDesc, archive, newSceneGraph, testLoadCtx)) << "Failed to load " << files[i];
 		EXPECT_GT(newSceneGraph.size(), 0u) << "Empty scene graph for " << files[i];
 	}
 }

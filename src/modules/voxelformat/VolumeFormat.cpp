@@ -5,10 +5,13 @@
 #include "VolumeFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Archive.h"
+#include "io/FilesystemArchive.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -488,9 +491,14 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 	return {};
 }
 
-image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream, const LoadContext &ctx) {
+image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeScreenshot);
-	const uint32_t magic = loadMagic(stream);
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::warn("Failed to open file for %s", filename.c_str());
+		return image::ImagePtr();
+	}
+	const uint32_t magic = loadMagic(*stream);
 
 	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
@@ -503,8 +511,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStr
 	}
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
-		stream.seek(0);
-		return f->loadScreenshot(filename, stream, ctx);
+		return f->loadScreenshot(filename, archive, ctx);
 	}
 	Log::error("Failed to load model screenshot from file %s - "
 			   "unsupported file format",
@@ -517,15 +524,9 @@ bool importPalette(const core::String &filename, palette::Palette &palette) {
 		return palette.load(filename.c_str());
 	}
 	if (io::isA(filename, voxelformat::voxelLoad())) {
-		const io::FilesystemPtr &fs = io::filesystem();
-		const io::FilePtr &palFile = fs->open(filename);
-		if (!palFile->validHandle()) {
-			Log::warn("Failed to open palette file at %s", filename.c_str());
-			return false;
-		}
-		io::FileStream stream(palFile);
+		const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
 		LoadContext loadCtx;
-		if (voxelformat::loadPalette(filename, stream, palette, loadCtx) <= 0) {
+		if (voxelformat::loadPalette(filename, archive, palette, loadCtx) <= 0) {
 			Log::warn("Failed to load palette from %s", filename.c_str());
 			return false;
 		}
@@ -535,10 +536,15 @@ bool importPalette(const core::String &filename, palette::Palette &palette) {
 	return false;
 }
 
-size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 				   const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumePalette);
-	const uint32_t magic = loadMagic(stream);
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::warn("Failed to open palette file at %s", filename.c_str());
+		return 0;
+	}
+	const uint32_t magic = loadMagic(*stream);
 	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", filename.c_str());
@@ -549,8 +555,7 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 		return 0;
 	}
 	if (const core::SharedPtr<Format> &f = getFormat(*desc, magic)) {
-		stream.seek(0);
-		const size_t n = f->loadPalette(filename, stream, palette, ctx);
+		const size_t n = f->loadPalette(filename, archive, palette, ctx);
 		palette.markDirty();
 		return n;
 	}
@@ -560,10 +565,15 @@ size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream,
 	return 0;
 }
 
-bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &stream,
+bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archive,
 				scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
-	const uint32_t magic = loadMagic(stream);
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(fileDesc.name));
+	if (!stream) {
+		Log::warn("Failed to open file at %s", fileDesc.name.c_str());
+		return false;
+	}
+	const uint32_t magic = loadMagic(*stream);
 	const io::FormatDescription *desc = io::getDescription(fileDesc, magic, voxelLoad());
 	if (desc == nullptr) {
 		return false;
@@ -571,7 +581,7 @@ bool loadFormat(const io::FileDescription &fileDesc, io::SeekableReadStream &str
 	const core::String &filename = fileDesc.name;
 	const core::SharedPtr<Format> &f = getFormat(*desc, magic);
 	if (f) {
-		if (!f->load(filename, stream, newSceneGraph, ctx)) {
+		if (!f->load(filename, archive, newSceneGraph, ctx)) {
 			Log::error("Error while loading %s", filename.c_str());
 			newSceneGraph.clear();
 		}
@@ -629,7 +639,7 @@ bool isModelFormat(const core::String &filename) {
 }
 
 bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc,
-				io::SeekableWriteStream &stream, const SaveContext &ctx) {
+				const io::ArchivePtr &archive, const SaveContext &ctx) {
 	if (sceneGraph.empty()) {
 		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
@@ -643,7 +653,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 	if (desc != nullptr) {
 		core::SharedPtr<Format> f = getFormat(*desc, 0u);
 		if (f) {
-			if (f->save(sceneGraph, filename, stream, ctx)) {
+			if (f->save(sceneGraph, filename, archive, ctx)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				metric::count("save", 1, {{"type", ext}});
 				return true;
@@ -656,7 +666,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		if (desc->matchesExtension(ext)) {
 			core::SharedPtr<Format> f = getFormat(*desc, 0u);
 			if (f) {
-				if (f->save(sceneGraph, filename, stream, ctx)) {
+				if (f->save(sceneGraph, filename, archive, ctx)) {
 					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 					metric::count("save", 1, {{"type", ext}});
 					return true;
@@ -676,8 +686,8 @@ bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, s
 		return false;
 	}
 
-	io::FileStream stream(filePtr);
-	if (!saveFormat(sceneGraph, filePtr->name(), desc, stream, ctx)) {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	if (!saveFormat(sceneGraph, filePtr->name(), desc, archive, ctx)) {
 		if (!useVengiAsFallback) {
 			Log::error("Failed to save file %s", filePtr->name().c_str());
 			return false;
@@ -686,7 +696,7 @@ bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, s
 		VENGIFormat vengiFormat;
 		const core::String &newName = core::string::replaceExtension(filePtr->name(), "vengi");
 		io::FileStream newStream(io::filesystem()->open(newName, io::FileMode::SysWrite));
-		return vengiFormat.save(sceneGraph, newName, newStream, ctx);
+		return vengiFormat.save(sceneGraph, newName, archive, ctx);
 	}
 	return true;
 }

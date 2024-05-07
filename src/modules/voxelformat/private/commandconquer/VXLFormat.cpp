@@ -8,11 +8,13 @@
 #include "core/Common.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
+#include "io/Archive.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
@@ -276,15 +278,20 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 
 bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 						core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-						io::SeekableWriteStream &stream) {
+						const io::ArchivePtr &archive) {
 	if (nodes.empty()) {
 		return false;
 	}
-	const uint32_t numLayers = (uint32_t)nodes.size();
-	wrapBool(writeHeader(stream, numLayers, nodes[0]->palette()))
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	const uint32_t numLayers = nodes.size();
+	wrapBool(writeHeader(*stream, numLayers, nodes[0]->palette()))
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayerHeader(stream, *node, i))
+		wrapBool(writeLayerHeader(*stream, *node, i))
 	}
 
 	{
@@ -299,36 +306,36 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 	}
 
 	core::Buffer<vxl::VXLLayerOffset> layerOffsets(numLayers);
-	const uint64_t bodyStart = stream.pos();
+	const uint64_t bodyStart = stream->pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayer(stream, sceneGraph, *node, layerOffsets[i], bodyStart))
+		wrapBool(writeLayer(*stream, sceneGraph, *node, layerOffsets[i], bodyStart))
 	}
 
-	const uint64_t afterBodyPos = stream.pos();
+	const uint64_t afterBodyPos = stream->pos();
 	const uint64_t bodySize = afterBodyPos - bodyStart;
 	Log::debug("write %u bytes as body size", (uint32_t)bodySize);
-	if (stream.seek(vxl::HeaderBodySizeOffset) == -1) {
+	if (stream->seek(vxl::HeaderBodySizeOffset) == -1) {
 		Log::error("Failed to seek to body size");
 		return false;
 	}
-	wrapBool(stream.writeUInt32((uint32_t)bodySize))
-	if (stream.seek(afterBodyPos) == -1) {
+	wrapBool(stream->writeUInt32((uint32_t)bodySize))
+	if (stream->seek(afterBodyPos) == -1) {
 		Log::error("Failed to seek to after body");
 		return false;
 	}
 
-	core_assert((uint64_t)stream.pos() == (uint64_t)(vxl::HeaderSize + vxl::LayerHeaderSize * numLayers + bodySize));
+	core_assert((uint64_t)stream->pos() == (uint64_t)(vxl::HeaderSize + vxl::LayerHeaderSize * numLayers + bodySize));
 
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayerInfo(stream, sceneGraph, *node, layerOffsets[i]))
+		wrapBool(writeLayerInfo(*stream, sceneGraph, *node, layerOffsets[i]))
 	}
 	return true;
 }
 
 bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::DynamicArray<const scenegraph::SceneGraphNode *> body;
 	core::DynamicArray<const scenegraph::SceneGraphNode *> barrel;
 	core::DynamicArray<const scenegraph::SceneGraphNode *> turret;
@@ -352,25 +359,23 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	if (!saveVXL(sceneGraph, body, filename, stream)) {
+	if (!saveVXL(sceneGraph, body, filename, archive)) {
 		return false;
 	}
 	if (!barrel.empty()) {
 		const core::String &extFilename = basename + "barl.vxl";
-		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
-		if (extStream.valid() && !saveVXL(sceneGraph, barrel, extFilename, extStream)) {
+		if (!saveVXL(sceneGraph, barrel, extFilename, archive)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
 	if (!turret.empty()) {
 		const core::String &extFilename = basename + "tur.vxl";
-		io::FileStream extStream(io::filesystem()->open(extFilename, io::FileMode::SysWrite));
-		if (extStream.valid() && !saveVXL(sceneGraph, turret, extFilename, extStream)) {
+		if (!saveVXL(sceneGraph, turret, extFilename, archive)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
 	HVAFormat hva;
-	return hva.saveHVA(basename + ".hva", sceneGraph);
+	return hva.saveHVA(basename + ".hva", archive, sceneGraph);
 }
 
 bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx,
@@ -630,55 +635,62 @@ bool VXLFormat::prepareModel(vxl::VXLModel &mdl) const {
 	return true;
 }
 
-bool VXLFormat::loadFromFile(const core::String &filename, scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
-							 const LoadContext &ctx) {
-	const io::FilePtr &file = io::filesystem()->open(filename);
-	if (file && file->validHandle()) {
-		io::FileStream stream(file);
-		return loadGroupsPalette(filename, stream, sceneGraph, palette, ctx);
-	}
-	return true;
-}
-
-size_t VXLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t VXLFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return 0;
+	}
 	vxl::VXLModel mdl;
-	if (!readHeader(stream, mdl, palette)) {
-		return false;
+	if (!readHeader(*stream, mdl, palette)) {
+		return 0;
 	}
 	return palette.colorCount();
 }
 
-bool VXLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool VXLFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	vxl::VXLModel mdl;
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 
-	wrapBool(readHeader(stream, mdl, palette))
+	wrapBool(readHeader(*stream, mdl, palette))
 	wrapBool(prepareModel(mdl))
 
-	wrapBool(readLayerHeaders(stream, mdl))
-	const int64_t bodyPos = stream.pos();
-	if (stream.skip(mdl.header.dataSize) == -1) {
+	wrapBool(readLayerHeaders(*stream, mdl))
+	const int64_t bodyPos = stream->pos();
+	if (stream->skip(mdl.header.dataSize) == -1) {
 		Log::error("Failed to skip %u bytes", mdl.header.dataSize);
 		return false;
 	}
-	wrapBool(readLayerInfos(stream, mdl))
+	wrapBool(readLayerInfos(*stream, mdl))
 
-	if (stream.seek(bodyPos) == -1) {
+	if (stream->seek(bodyPos) == -1) {
 		Log::error("Failed to seek");
 		return false;
 	}
-	wrapBool(readLayers(stream, mdl, sceneGraph, palette))
+	wrapBool(readLayers(*stream, mdl, sceneGraph, palette))
 
 	const core::String &basename = core::string::stripExtension(filename);
-	HVAFormat hva;
-	wrapBool(hva.loadHVA(basename + ".hva", mdl, sceneGraph))
+
+	if (archive->exists(basename + ".hva")) {
+		HVAFormat hva;
+		wrapBool(hva.loadHVA(basename + ".hva", archive, mdl, sceneGraph))
+	}
 
 	if (!core::string::endsWith(filename, "barl.vxl")) {
-		wrapBool(loadFromFile(basename + "barl.vxl", sceneGraph, palette, ctx));
+		if (archive->exists(basename + "barl.vxl")) {
+			wrapBool(loadGroupsPalette(basename + "barl.vxl", archive, sceneGraph, palette, ctx))
+		}
 	}
 	if (!core::string::endsWith(filename, "tur.vxl")) {
-		wrapBool(loadFromFile(basename + "tur.vxl", sceneGraph, palette, ctx));
+		if (archive->exists(basename + "tur.vxl")) {
+			wrapBool(loadGroupsPalette(basename + "tur.vxl", archive, sceneGraph, palette, ctx))
+		}
 	}
 
 	return true;

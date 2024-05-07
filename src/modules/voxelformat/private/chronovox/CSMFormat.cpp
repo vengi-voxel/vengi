@@ -5,6 +5,8 @@
 #include "CSMFormat.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
+#include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/PaletteLookup.h"
@@ -72,15 +74,20 @@ static core::String makeNameUnique(const scenegraph::SceneGraph &sceneGraph, cor
 	return name;
 }
 
-bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic, version, blank, matrixCount;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 	const bool isNVM = magic == FourCC('.', 'N', 'V', 'M');
-	wrap(stream.readUInt32(version))
-	wrap(stream.readUInt32(blank))
-	wrap(stream.readUInt32(matrixCount))
+	wrap(stream->readUInt32(version))
+	wrap(stream->readUInt32(blank))
+	wrap(stream->readUInt32(matrixCount))
 	Log::debug("CSM version: %i", version);
 
 	if (isNVM && version > 2) {
@@ -96,19 +103,19 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
 		core::String name;
 		core::String parent;
-		wrapBool(readString(stream, name, readStringAsInt))
+		wrapBool(readString(*stream, name, readStringAsInt))
 		if (version > 1) {
-			wrapBool(readString(stream, parent, readStringAsInt))
+			wrapBool(readString(*stream, parent, readStringAsInt))
 		}
 		int16_t posx, posy, posz;
-		wrap(stream.readInt16(posx))
-		wrap(stream.readInt16(posy))
-		wrap(stream.readInt16(posz))
+		wrap(stream->readInt16(posx))
+		wrap(stream->readInt16(posy))
+		wrap(stream->readInt16(posz))
 
 		uint16_t sizex, sizey, sizez;
-		wrap(stream.readUInt16(sizex))
-		wrap(stream.readUInt16(sizey))
-		wrap(stream.readUInt16(sizez))
+		wrap(stream->readUInt16(sizex))
+		wrap(stream->readUInt16(sizey))
+		wrap(stream->readUInt16(sizez))
 
 		if (sizex > MaxRegionSize || sizey > MaxRegionSize || sizez > MaxRegionSize) {
 			Log::error("Volume exceeds the max allowed size: %i:%i:%i", sizex, sizey, sizez);
@@ -130,15 +137,15 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 
 		while (matrixIndex < voxels) {
 			uint8_t count;
-			wrap(stream.readUInt8(count))
+			wrap(stream->readUInt8(count))
 			uint8_t r;
-			wrap(stream.readUInt8(r))
+			wrap(stream->readUInt8(r))
 			uint8_t g;
-			wrap(stream.readUInt8(g))
+			wrap(stream->readUInt8(g))
 			uint8_t b;
-			wrap(stream.readUInt8(b))
+			wrap(stream->readUInt8(b))
 			uint8_t interactiontype;
-			wrap(stream.readUInt8(interactiontype))
+			wrap(stream->readUInt8(interactiontype))
 			if (interactiontype == 0u) {
 				matrixIndex += count;
 				continue;
@@ -185,7 +192,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 #undef wrapBool
 
 bool CSMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	return false;
 }
 

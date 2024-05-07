@@ -12,6 +12,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -269,7 +270,12 @@ bool QBTFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sce
 }
 
 bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode &root = sceneGraph.root();
 	const scenegraph::SceneGraphNodeChildren &children = root.children();
 	const int childCount = (int)children.size();
@@ -278,28 +284,28 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
-	wrapSave(stream.writeUInt32(FourCC('Q', 'B', ' ', '2')))
-	wrapSave(stream.writeUInt8(1));	   // version
-	wrapSave(stream.writeUInt8(0));	   // version
-	wrapSave(stream.writeFloat(1.0f)); // globalscale
-	wrapSave(stream.writeFloat(1.0f)); // globalscale
-	wrapSave(stream.writeFloat(1.0f)); // globalscale
+	wrapSave(stream->writeUInt32(FourCC('Q', 'B', ' ', '2')))
+	wrapSave(stream->writeUInt8(1));	   // version
+	wrapSave(stream->writeUInt8(0));	   // version
+	wrapSave(stream->writeFloat(1.0f)); // globalscale
+	wrapSave(stream->writeFloat(1.0f)); // globalscale
+	wrapSave(stream->writeFloat(1.0f)); // globalscale
 	const bool colorMap = core::Var::getSafe(cfg::VoxformatQBTPaletteMode)->boolVal();
 	if (colorMap) {
 		const palette::Palette &palette = sceneGraph.firstPalette();
-		if (!saveColorMap(stream, palette)) {
+		if (!saveColorMap(*stream, palette)) {
 			return false;
 		}
 	} else {
 		palette::Palette palette;
-		if (!saveColorMap(stream, palette)) {
+		if (!saveColorMap(*stream, palette)) {
 			return false;
 		}
 	}
-	if (!stream.writeString("DATATREE", false)) {
+	if (!stream->writeString("DATATREE", false)) {
 		return false;
 	}
-	return saveNode(stream, sceneGraph, sceneGraph.root(), colorMap);
+	return saveNode(*stream, sceneGraph, sceneGraph.root(), colorMap);
 }
 
 bool QBTFormat::skipNode(io::SeekableReadStream &stream) {
@@ -594,24 +600,29 @@ bool QBTFormat::loadHeader(io::SeekableReadStream &stream, Header &state) {
 	return true;
 }
 
-size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t QBTFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
 	Header state;
-	if (!loadHeader(stream, state)) {
+	if (!loadHeader(*stream, state)) {
 		Log::error("Could not load qbt file: Could not read header");
 		return 0u;
 	}
 
-	const int64_t pos = stream.pos();
+	const int64_t pos = stream->pos();
 
-	while (stream.remaining() > 0) {
+	while (stream->remaining() > 0) {
 		char buf[8];
-		if (!stream.readString(sizeof(buf), buf)) {
+		if (!stream->readString(sizeof(buf), buf)) {
 			Log::error("Could not load qbt file: Could not read chunk id");
 			return 0u;
 		}
 		if (0 == memcmp(buf, "COLORMAP", 7)) {
-			if (!loadColorMap(stream, palette)) {
+			if (!loadColorMap(*stream, palette)) {
 				Log::error("Failed to load color map");
 				return 0;
 			}
@@ -621,7 +632,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 				return colorCount;
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
-			wrapBool(skipNode(stream))
+			wrapBool(skipNode(*stream))
 		} else {
 			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
 					   buf[6], buf[7]);
@@ -631,17 +642,17 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	Log::debug("no palette found");
 
 	// no COLORMAP data was found
-	stream.seek(pos);
+	stream->seek(pos);
 
-	while (stream.remaining() > 0) {
+	while (stream->remaining() > 0) {
 		char buf[8];
-		if (!stream.readString(sizeof(buf), buf)) {
+		if (!stream->readString(sizeof(buf), buf)) {
 			Log::error("Could not load qbt file: Could not read chunk id");
 			return 0u;
 		}
 		if (0 == memcmp(buf, "DATATREE", 8)) {
 			scenegraph::SceneGraph sceneGraph;
-			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
+			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
 				Log::error("Failed to load node");
 				return 0u;
 			}
@@ -656,16 +667,21 @@ size_t QBTFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return 0;
 }
 
-bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool QBTFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	Header state;
-	wrapBool(loadHeader(stream, state))
+	wrapBool(loadHeader(*stream, state))
 
-	while (stream.remaining() > 0) {
+	while (stream->remaining() > 0) {
 		char buf[8];
-		wrapBool(stream.readString(sizeof(buf), buf));
+		wrapBool(stream->readString(sizeof(buf), buf));
 		if (0 == memcmp(buf, "COLORMAP", 7)) {
-			if (!loadColorMap(stream, palette)) {
+			if (!loadColorMap(*stream, palette)) {
 				Log::error("Failed to load color map");
 				return false;
 			}
@@ -677,7 +693,7 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			}
 		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			Log::debug("load data tree");
-			if (!loadNode(stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
+			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state)) {
 				Log::error("Failed to load node");
 				return false;
 			}

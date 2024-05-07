@@ -18,7 +18,7 @@ TEST_F(CubFormatTest, testLoad) {
 TEST_F(CubFormatTest, testLoadPalette) {
 	CubFormat f;
 	palette::Palette pal;
-	EXPECT_EQ(5, helper_loadPalette("rgb.cub", f, pal));
+	EXPECT_EQ(5, helper_loadPalette("rgb.cub", helper_filesystemarchive(), f, pal));
 }
 
 TEST_F(CubFormatTest, testLoadRGB) {

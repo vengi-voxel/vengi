@@ -316,7 +316,7 @@ protected:
 		bool empty() const;
 	};
 
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
@@ -326,7 +326,7 @@ protected:
 	bool loadSkipSubChunk(const Chunk &chunk, io::ReadStream &stream) const;
 
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 	bool loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
@@ -346,10 +346,10 @@ protected:
 					scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
-	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
 
 	int emptyPaletteIndex() const override {

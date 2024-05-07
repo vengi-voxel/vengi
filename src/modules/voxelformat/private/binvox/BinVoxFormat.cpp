@@ -5,7 +5,9 @@
 #include "BinVoxFormat.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
@@ -68,10 +70,17 @@ bool BinVoxFormat::readData(State &state, const core::String &filename, io::Seek
 	return true;
 }
 
-bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool BinVoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	char line[512];
-	wrapBool(stream.readLine(sizeof(line), line))
+
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+
+	wrapBool(stream->readLine(sizeof(line), line))
 	if (0 != strcmp(line, "#binvox 1")) {
 		Log::error("Expected to get '#binvox 1', but got '%s'", line);
 		return false;
@@ -84,7 +93,7 @@ bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 	}
 
 	for (;;) {
-		wrapBool(stream.readLine(sizeof(line), line))
+		wrapBool(stream->readLine(sizeof(line), line))
 		if (core::string::startsWith(line, "dim ")) {
 			if (SDL_sscanf(line, "dim %u %u %u", &state._d, &state._h, &state._w) != 3) {
 				Log::error("Failed to parse binvox dimensions");
@@ -111,7 +120,7 @@ bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 			return false;
 		}
 	}
-	if (!readData(state, filename, stream, sceneGraph)) {
+	if (!readData(state, filename, *stream, sceneGraph)) {
 		Log::warn("Could not load the data from %s", filename.c_str());
 		return false;
 	}
@@ -120,7 +129,12 @@ bool BinVoxFormat::loadGroups(const core::String &filename, io::SeekableReadStre
 }
 
 bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 	const voxel::Region &region = node->region();
@@ -134,11 +148,11 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const glm::ivec3 &offset = -mins;
 	const float scale = 1.0f;
 
-	wrapBool(stream.writeString("#binvox 1\n", false))
-	stream.writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
-	stream.writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.y, offset.z);
-	stream.writeStringFormat(false, "scale %f\n", scale);
-	wrapBool(stream.writeString("data\n", false))
+	wrapBool(stream->writeString("#binvox 1\n", false))
+	stream->writeStringFormat(false, "dim %u %u %u\n", width, depth, height);
+	stream->writeStringFormat(false, "translate %i %i %i\n", offset.x, offset.y, offset.z);
+	stream->writeStringFormat(false, "scale %f\n", scale);
+	wrapBool(stream->writeString("data\n", false))
 
 	uint8_t count = 0u;
 	uint8_t value = 0u;
@@ -159,8 +173,8 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		if (isAir(voxel.getMaterial())) {
 			if (value != 0u || count == 255u) {
 				if (count > 0u) {
-					wrapBool(stream.writeUInt8(value))
-					wrapBool(stream.writeUInt8(count))
+					wrapBool(stream->writeUInt8(value))
+					wrapBool(stream->writeUInt8(count))
 				}
 				voxels += count;
 				count = 0u;
@@ -174,8 +188,8 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 			}
 			if (value != v || count == 255u) {
 				if (count > 0u) {
-					wrapBool(stream.writeUInt8(value))
-					wrapBool(stream.writeUInt8(count))
+					wrapBool(stream->writeUInt8(value))
+					wrapBool(stream->writeUInt8(count))
 				}
 				voxels += count;
 				count = 0u;
@@ -195,8 +209,8 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		}
 	}
 	core_assert_msg(count > 0u, "Expected to have at least one voxel left: %i", (int)count);
-	wrapBool(stream.writeUInt8(value))
-	wrapBool(stream.writeUInt8(count))
+	wrapBool(stream->writeUInt8(value))
+	wrapBool(stream->writeUInt8(count))
 	voxels += count;
 	const uint32_t expectedVoxels = width * height * depth;
 	if (voxels != expectedVoxels) {

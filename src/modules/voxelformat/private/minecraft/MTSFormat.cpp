@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/Array3DView.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -24,25 +25,30 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 	if (magic != FourCC('M', 'T', 'S', 'M')) {
 		Log::error("Invalid magic");
 		return false;
 	}
 	uint16_t version;
-	wrap(stream.readUInt16BE(version))
+	wrap(stream->readUInt16BE(version))
 	if (version > 4u) {
 		Log::error("Unsupported version: %i", (int)version);
 		return false;
 	}
 
 	glm::i16vec3 size;
-	wrap(stream.readInt16BE(size.x))
-	wrap(stream.readInt16BE(size.y))
-	wrap(stream.readInt16BE(size.z))
+	wrap(stream->readInt16BE(size.x))
+	wrap(stream->readInt16BE(size.y))
+	wrap(stream->readInt16BE(size.z))
 
 	Log::debug("Size: %i:%i:%i", size.x, size.y, size.z);
 
@@ -51,21 +57,21 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 
 	if (version >= 3) {
 		for (int16_t y = 0; y < size.y; ++y) {
-			wrap(stream.readUInt8(probs[y]))
+			wrap(stream->readUInt8(probs[y]))
 		}
 	} else {
 		probs.fill(0xFF);
 	}
 
 	uint16_t idmapcount;
-	wrap(stream.readUInt16BE(idmapcount))
+	wrap(stream->readUInt16BE(idmapcount))
 	Log::debug("idmapcount: %i", idmapcount);
 
 	core::DynamicArray<core::String> names;
 	names.reserve(idmapcount);
 	for (uint16_t i = 0; i < idmapcount; ++i) {
 		core::String name;
-		if (!stream.readPascalStringUInt16BE(name)) {
+		if (!stream->readPascalStringUInt16BE(name)) {
 			Log::error("Failed to read material name");
 			return false;
 		}
@@ -86,7 +92,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	core::Buffer<Node> databuf;
 	databuf.resize(nodecount);
 
-	io::ZipReadStream zipStream(stream);
+	io::ZipReadStream zipStream(*stream);
 	for (int i = 0; i < nodecount; ++i) {
 		wrap(zipStream.readUInt16BE(databuf[i].param0))
 	}
@@ -122,7 +128,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 #undef wrap
 
 bool MTSFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &) {
+						   const io::ArchivePtr &archive, const SaveContext &) {
 	return false;
 }
 
