@@ -4,6 +4,7 @@
 
 #include "V3AFormat.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
@@ -26,14 +27,19 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool V3AFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	core::String line;
 	int width, depth, height;
 	width = depth = height = 0;
-	while (!stream.eos()) {
-		wrapBool(stream.readLine(line));
+	while (!stream->eos()) {
+		wrapBool(stream->readLine(line));
 		if (core::string::startsWith(line, "VERSION")) {
 			line = line.substr(8);
 			if (line != "1.0") {
@@ -89,7 +95,7 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	int y = 0;
 	do {
 		if (line.empty()) {
-			if (!stream.readLine(line)) {
+			if (!stream->readLine(line)) {
 				break;
 			}
 			y = 0;
@@ -125,7 +131,7 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 			volume->setVoxel(x, y, (int)i / 4, voxel);
 		}
 		++y;
-	} while (stream.readLine(line));
+	} while (stream->readLine(line));
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
@@ -142,7 +148,12 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	}
 
 bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -151,17 +162,17 @@ bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
 
-	wrapBool(stream.writeString("VERSION 1.0\r\n", false))
-	wrapBool(stream.writeString("TYPE VoxelCubic\r\n", false))
-	if (!stream.writeStringFormat(false, "DIMENSION %d.0 %d.0 %d.0\r\n", width, height, depth)) {
+	wrapBool(stream->writeString("VERSION 1.0\r\n", false))
+	wrapBool(stream->writeString("TYPE VoxelCubic\r\n", false))
+	if (!stream->writeStringFormat(false, "DIMENSION %d.0 %d.0 %d.0\r\n", width, height, depth)) {
 		Log::error("Failed to write DIMENSION line");
 		return false;
 	}
-	if (!stream.writeStringFormat(false, "SIZE %d %d %d\r\n", width, height, depth)) {
+	if (!stream->writeStringFormat(false, "SIZE %d %d %d\r\n", width, height, depth)) {
 		Log::error("Failed to write SIZE line");
 		return false;
 	}
-	wrapBool(stream.writeString("DATA ", false))
+	wrapBool(stream->writeString("DATA ", false))
 	const voxel::RawVolume &volume = *node->volume();
 	const palette::Palette &palette = node->palette();
 	for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x++) {
@@ -169,18 +180,18 @@ bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
 				const voxel::Voxel &voxel = volume.voxel(x, y, z);
 				if (voxel::isAir(voxel.getMaterial())) {
-					wrapBool(stream.writeString("-1 -1 -1 -1 ", false))
+					wrapBool(stream->writeString("-1 -1 -1 -1 ", false))
 				} else {
 					const core::RGBA color = palette.color(voxel.getColor());
-					if (!stream.writeStringFormat(false, "%d %d %d %d ", color.r, color.g, color.b, color.a)) {
+					if (!stream->writeStringFormat(false, "%d %d %d %d ", color.r, color.g, color.b, color.a)) {
 						Log::error("Failed to write voxel data");
 						return false;
 					}
 				}
 			}
-			wrapBool(stream.writeString("\r\n", false))
+			wrapBool(stream->writeString("\r\n", false))
 		}
-		wrapBool(stream.writeString("\r\n", false))
+		wrapBool(stream->writeString("\r\n", false))
 	}
 
 	return true;

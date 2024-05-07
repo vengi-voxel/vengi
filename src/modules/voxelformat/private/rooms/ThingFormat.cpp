@@ -12,6 +12,7 @@
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "io/ZipArchive.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -97,15 +98,10 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		Log::error("ThingFormat: Missing modelName in node spec");
 		return false;
 	}
-	core::ScopedPtr<io::SeekableReadStream> modelStream(archive->readStream(nodeSpec.modelName));
-	if (!modelStream) {
-		Log::error("ThingFormat: Failed to open model: %s", nodeSpec.modelName.c_str());
-		return false;
-	}
 	scenegraph::SceneGraph voxSceneGraph;
 	Log::debug("ThingFormat: Load vox file: %s", nodeSpec.modelName.c_str());
 	VoxFormat format;
-	if (!format.load(nodeSpec.modelName, *modelStream, voxSceneGraph, ctx)) {
+	if (!format.load(nodeSpec.modelName, archive, voxSceneGraph, ctx)) {
 		Log::error("ThingFormat: Failed to load model: %s", nodeSpec.modelName.c_str());
 		return false;
 	}
@@ -145,15 +141,16 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 	return true;
 }
 
-bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	io::ArchivePtr archive = io::openArchive(io::filesystem(), filename, &stream);
-	if (!archive) {
-		Log::error("ThingFormat: Failed to open archive: %s", filename.c_str());
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
+	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 
-	const io::ArchiveFiles &files = archive->files();
+	const io::ArchiveFiles &files = zipArchive->files();
 	for (const io::FilesystemEntry &file : files) {
 		if (file.isDirectory()) {
 			continue;
@@ -161,14 +158,14 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 		if (core::string::extractExtension(file.name) != "node") {
 			continue;
 		}
-		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(archive->readStream(file.fullPath));
+		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath));
 		if (nodeSpecStream) {
 			NodeSpec nodeSpec;
 			if (!loadNodeSpec(*nodeSpecStream, nodeSpec)) {
 				Log::error("ThingFormat: Failed to load node spec: %s", file.name.c_str());
 				return false;
 			}
-			if (!loadNode(archive, nodeSpec, sceneGraph, ctx)) {
+			if (!loadNode(zipArchive, nodeSpec, sceneGraph, ctx)) {
 				Log::error("ThingFormat: Failed to load node: %s", file.name.c_str());
 				return false;
 			}
@@ -179,7 +176,7 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 }
 
 bool ThingFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							 const io::ArchivePtr &archive, const SaveContext &ctx) {
 	return false;
 }
 

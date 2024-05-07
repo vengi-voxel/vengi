@@ -4,6 +4,7 @@
 
 #include "FilesystemArchive.h"
 #include "core/Log.h"
+#include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "io/File.h"
 #include "io/FileStream.h"
@@ -47,6 +48,7 @@ static FileMode convertMode(const core::String &path, FileMode mode) {
 }
 
 io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) const {
+	Log::debug("searching for %s in %i files", path.c_str(), (int)_files.size());
 	for (const auto &e : _files) {
 		// TODO: implement case insensitive search
 		if (core::string::endsWith(e.fullPath, path)) {
@@ -69,8 +71,17 @@ io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) con
 	return {};
 }
 
-bool FilesystemArchive::exists(const core::String &filePath) const {
-	return open(filePath, FileMode::Read);
+bool FilesystemArchive::exists(const core::String &path) const {
+	for (const auto &e : _files) {
+		// TODO: implement case insensitive search
+		if (core::string::endsWith(e.fullPath, path)) {
+			return true;
+		}
+	}
+	if (_files.empty()) {
+		return _filesytem->exists(path);
+	}
+	return false;
 }
 
 SeekableReadStream* FilesystemArchive::readStream(const core::String &filePath) {
@@ -89,6 +100,14 @@ SeekableWriteStream* FilesystemArchive::writeStream(const core::String &filePath
 		return nullptr;
 	}
 	return stream;
+}
+
+ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path) {
+	core::SharedPtr<FilesystemArchive> fa = core::make_shared<FilesystemArchive>(fs);
+	if (!path.empty() && fs->isReadableDir(path)) {
+		fa->init(path);
+	}
+	return fa;
 }
 
 } // namespace io

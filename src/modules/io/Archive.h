@@ -14,8 +14,6 @@ namespace io {
 class Filesystem;
 
 using ArchiveFiles = core::DynamicArray<io::FilesystemEntry>;
-using SeekableReadStreamPtr = core::SharedPtr<SeekableReadStream>;
-using SeekableWriteStreamPtr = core::SharedPtr<SeekableWriteStream>;
 using FilesystemPtr = core::SharedPtr<Filesystem>;
 
 /**

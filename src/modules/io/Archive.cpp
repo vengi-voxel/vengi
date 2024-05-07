@@ -36,27 +36,11 @@ bool isSupportedArchive(const core::String &filename) {
 }
 
 ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream) {
-	if (fs->isReadableDir(path)) {
-		auto archive = core::make_shared<FilesystemArchive>(fs);
-		if (!archive->init(path, stream)) {
-			return ArchivePtr{};
-		}
-		return archive;
+	const core::String &ext = core::string::extractExtension(path);
+	if (ext == "zip" || ext == "pk3" || ext == "thing") {
+		return openZipArchive(stream);
 	}
-	const core::String ext = core::string::extractExtension(path);
-	if (ext == "zip" || ext == "pk3" || ext == "thing" || (stream != nullptr && ZipArchive::validStream(*stream))) {
-		auto archive = core::make_shared<ZipArchive>();
-		if (!archive->init(path, stream)) {
-			return ArchivePtr{};
-		}
-		return archive;
-	}
-	const core::String &directory = core::string::extractPath(path);
-	auto archive = core::make_shared<FilesystemArchive>(fs);
-	if (!archive->init(directory, stream)) {
-		return ArchivePtr{};
-	}
-	return archive;
+	return openFilesystemArchive(fs, path);
 }
 
 } // namespace io

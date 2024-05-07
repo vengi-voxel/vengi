@@ -29,4 +29,6 @@ public:
 	void shutdown() override;
 };
 
+ArchivePtr openZipArchive(io::SeekableReadStream *stream);
+
 } // namespace io

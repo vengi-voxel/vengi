@@ -18,11 +18,11 @@ namespace voxelformat {
  */
 class KV6Format : public PaletteFormat {
 protected:
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 	/**
 	 * @brief KWALK kv6 sprite animations
@@ -32,11 +32,11 @@ protected:
 	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/share/documentation/kwalkhlp.txt
 	 * Example files at https://github.com/Ericson2314/Voxlap/tree/no-asm/share (anasplit.kfa)
 	 */
-	bool loadKFA(const core::String &filename, const voxel::RawVolume *volume, scenegraph::SceneGraph &sceneGraph,
-				 const palette::Palette &palette);
+	bool loadKFA(const core::String &filename, const io::ArchivePtr &archive, const voxel::RawVolume *volume,
+				 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
 	bool singleVolume() const override {

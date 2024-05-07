@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/MemoryReadStream.h"
@@ -144,10 +145,15 @@ bool GoxFormat::loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &s
 	return true;
 }
 
-image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return image::ImagePtr();
+	}
 	uint32_t magic;
-	wrapImg(stream.readUInt32(magic))
+	wrapImg(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
 		Log::error("Invalid magic");
@@ -155,7 +161,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	}
 
 	uint32_t version;
-	wrapImg(stream.readUInt32(version))
+	wrapImg(stream->readUInt32(version))
 
 	if (version != 2) {
 		Log::error("Unknown gox format version found: %u", version);
@@ -163,15 +169,15 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, io::Seek
 	}
 
 	GoxChunk c;
-	while (loadChunk_Header(c, stream)) {
+	while (loadChunk_Header(c, *stream)) {
 		if (c.type == FourCC('P', 'R', 'E', 'V')) {
 			image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename) + ".png");
-			img->load(stream, c.length);
+			img->load(*stream, c.length);
 			return img;
 		} else {
-			stream.seek(c.length, SEEK_CUR);
+			stream->seek(c.length, SEEK_CUR);
 		}
-		loadChunk_ValidateCRC(stream);
+		loadChunk_ValidateCRC(*stream);
 	}
 	return image::ImagePtr();
 }
@@ -517,10 +523,15 @@ bool GoxFormat::loadChunk_LIGH(State &state, const GoxChunk &c, io::SeekableRead
 	return true;
 }
 
-size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
 		Log::error("Invalid magic");
@@ -528,7 +539,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 
 	State state;
-	wrap(stream.readInt32(state.version))
+	wrap(stream->readInt32(state.version))
 
 	if (state.version > 2) {
 		Log::error("Unknown gox format version found: %u", state.version);
@@ -536,13 +547,13 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	}
 
 	GoxChunk c;
-	while (loadChunk_Header(c, stream)) {
+	while (loadChunk_Header(c, *stream)) {
 		if (c.type == FourCC('B', 'L', '1', '6')) {
-			wrapBool(loadChunk_BL16(state, c, stream))
+			wrapBool(loadChunk_BL16(state, c, *stream))
 		} else {
-			stream.seek(c.length, SEEK_CUR);
+			stream->seek(c.length, SEEK_CUR);
 		}
-		loadChunk_ValidateCRC(stream);
+		loadChunk_ValidateCRC(*stream);
 	}
 
 	for (image::ImagePtr &img : state.images) {
@@ -560,11 +571,16 @@ size_t GoxFormat::loadPalette(const core::String &filename, io::SeekableReadStre
 	return palette.size();
 }
 
-bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic))
+	wrap(stream->readUInt32(magic))
 
 	if (magic != FourCC('G', 'O', 'X', ' ')) {
 		Log::error("Invalid magic");
@@ -572,7 +588,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	}
 
 	State state;
-	wrap(stream.readInt32(state.version))
+	wrap(stream->readInt32(state.version))
 
 	if (state.version > 2) {
 		Log::error("Unknown gox format version found: %u", state.version);
@@ -580,23 +596,23 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	}
 
 	GoxChunk c;
-	while (loadChunk_Header(c, stream)) {
+	while (loadChunk_Header(c, *stream)) {
 		if (c.type == FourCC('B', 'L', '1', '6')) {
-			wrapBool(loadChunk_BL16(state, c, stream))
+			wrapBool(loadChunk_BL16(state, c, *stream))
 		} else if (c.type == FourCC('L', 'A', 'Y', 'R')) {
-			wrapBool(loadChunk_LAYR(state, c, stream, sceneGraph, palette))
+			wrapBool(loadChunk_LAYR(state, c, *stream, sceneGraph, palette))
 		} else if (c.type == FourCC('C', 'A', 'M', 'R')) {
-			wrapBool(loadChunk_CAMR(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_CAMR(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('M', 'A', 'T', 'E')) {
-			wrapBool(loadChunk_MATE(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_MATE(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('I', 'M', 'G', ' ')) {
-			wrapBool(loadChunk_IMG(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_IMG(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('L', 'I', 'G', 'H')) {
-			wrapBool(loadChunk_LIGH(state, c, stream, sceneGraph))
+			wrapBool(loadChunk_LIGH(state, c, *stream, sceneGraph))
 		} else {
-			stream.seek(c.length, SEEK_CUR);
+			stream->seek(c.length, SEEK_CUR);
 		}
-		loadChunk_ValidateCRC(stream);
+		loadChunk_ValidateCRC(*stream);
 	}
 	return !sceneGraph.empty();
 }
@@ -851,17 +867,22 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 }
 
 bool GoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	wrapSave(stream.writeUInt32(FourCC('G', 'O', 'X', ' ')))
-	wrapSave(stream.writeUInt32(2))
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	wrapSave(stream->writeUInt32(FourCC('G', 'O', 'X', ' ')))
+	wrapSave(stream->writeUInt32(2))
 
-	wrapBool(saveChunk_PREV(sceneGraph, stream, ctx))
+	wrapBool(saveChunk_PREV(sceneGraph, *stream, ctx))
 	int blocks = 0;
-	wrapBool(saveChunk_BL16(stream, sceneGraph, blocks))
-	wrapBool(saveChunk_MATE(stream, sceneGraph))
-	wrapBool(saveChunk_LAYR(stream, sceneGraph, blocks))
-	wrapBool(saveChunk_CAMR(stream, sceneGraph))
-	wrapBool(saveChunk_LIGH(stream))
+	wrapBool(saveChunk_BL16(*stream, sceneGraph, blocks))
+	wrapBool(saveChunk_MATE(*stream, sceneGraph))
+	wrapBool(saveChunk_LAYR(*stream, sceneGraph, blocks))
+	wrapBool(saveChunk_CAMR(*stream, sceneGraph))
+	wrapBool(saveChunk_LIGH(*stream))
 
 	return true;
 }

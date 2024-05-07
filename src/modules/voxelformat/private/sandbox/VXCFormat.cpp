@@ -6,6 +6,7 @@
 #include "VXRFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
@@ -29,9 +30,14 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream &in, scenegraph::SceneGraph &sceneGraph,
+bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						   const LoadContext &ctx) {
-	io::ZipReadStream stream(in, (int)in.size());
+	core::ScopedPtr<io::SeekableReadStream> in(archive->readStream(filename));
+	if (!in) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	io::ZipReadStream stream(*in, (int)in->size());
 	uint8_t magic[4];
 	wrap(stream.readUInt8(magic[0]))
 	wrap(stream.readUInt8(magic[1]))
@@ -67,18 +73,14 @@ bool VXCFormat::loadGroups(const core::String &filename, io::SeekableReadStream 
 
 	if (!vxr.empty()) {
 		VXRFormat f;
-		io::FilePtr vxrFile = io::filesystem()->open(vxr);
-		if (vxrFile->validHandle()) {
-			io::FileStream fstream(vxrFile);
-			f.load(vxr, fstream, sceneGraph, ctx);
-		}
+		f.load(vxr, archive, sceneGraph, ctx);
 	}
 	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 
 bool VXCFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-						   io::SeekableWriteStream &stream, const SaveContext &ctx) {
+						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	return false;
 }
 

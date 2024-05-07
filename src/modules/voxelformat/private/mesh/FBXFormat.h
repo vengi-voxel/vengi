@@ -28,7 +28,7 @@ private:
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						 const scenegraph::SceneGraph &sceneGraph);
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 				  scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
@@ -41,7 +41,7 @@ private:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 };
 

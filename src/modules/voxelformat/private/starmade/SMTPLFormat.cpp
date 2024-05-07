@@ -6,6 +6,7 @@
 #include "SMPalette.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Voxel.h"
@@ -27,25 +28,30 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool SMTPLFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint8_t version;
-	wrap(stream.readUInt8(version))
+	wrap(stream->readUInt8(version))
 	glm::ivec3 mins;
-	wrap(stream.readInt32BE(mins.x))
-	wrap(stream.readInt32BE(mins.y))
-	wrap(stream.readInt32BE(mins.z))
+	wrap(stream->readInt32BE(mins.x))
+	wrap(stream->readInt32BE(mins.y))
+	wrap(stream->readInt32BE(mins.z))
 
 	glm::ivec3 maxs;
-	wrap(stream.readInt32BE(maxs.x))
-	wrap(stream.readInt32BE(maxs.y))
-	wrap(stream.readInt32BE(maxs.z))
+	wrap(stream->readInt32BE(maxs.x))
+	wrap(stream->readInt32BE(maxs.y))
+	wrap(stream->readInt32BE(maxs.z))
 
 	Log::debug("Region: %i:%i:%i - %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 
 	uint32_t numBlocks;
-	wrap(stream.readUInt32BE(numBlocks))
+	wrap(stream->readUInt32BE(numBlocks))
 
 	Log::debug("Number of blocks: %i", numBlocks);
 
@@ -71,20 +77,20 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRe
 	node.setVolume(volume, true);
 	for (uint32_t i = 0; i < numBlocks; ++i) {
 		uint32_t x, y, z;
-		wrap(stream.readUInt32BE(x))
-		wrap(stream.readUInt32BE(y))
-		wrap(stream.readUInt32BE(z))
+		wrap(stream->readUInt32BE(x))
+		wrap(stream->readUInt32BE(y))
+		wrap(stream->readUInt32BE(z))
 		// TODO the following bytes are handled differently since version > 3
 		uint8_t type;
-		wrap(stream.readUInt8(type))
+		wrap(stream->readUInt8(type))
 #if 0
 		uint8_t orientation;
-		wrap(stream.readUInt8(orientation))
+		wrap(stream->readUInt8(orientation))
 		uint8_t active;
-		wrap(stream.readUInt8(active))
+		wrap(stream->readUInt8(active))
 #else
 		uint16_t block;
-		wrap(stream.readUInt16BE(block))
+		wrap(stream->readUInt16BE(block))
 #endif
 		int color = 0;
 		blockPal.get(block, color);
@@ -92,77 +98,77 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, io::SeekableRe
 	}
 #if 0
 	uint32_t connections;
-	wrap(stream.readUInt32BE(connections))
+	wrap(stream->readUInt32BE(connections))
 	Log::debug("Connections: %i", connections);
 	for (uint32_t i = 0; i < connections; ++i) {
 		int64_t key;
-		wrap(stream.readInt64BE(key))
+		wrap(stream->readInt64BE(key))
 		int32_t size;
-		wrap(stream.readInt32BE(size))
+		wrap(stream->readInt32BE(size))
 		for (int32_t j = 0; j < size; ++j) {
 			int64_t value;
-			wrap(stream.readInt64BE(value))
+			wrap(stream->readInt64BE(value))
 		}
 	}
 
 	if (version >= 2) {
 		uint32_t texts;
-		wrap(stream.readUInt32BE(texts))
+		wrap(stream->readUInt32BE(texts))
 		Log::debug("Texts: %i", texts);
 		for (uint32_t i = 0; i < texts; ++i) {
 			int64_t key;
-			wrap(stream.readInt64BE(key))
+			wrap(stream->readInt64BE(key))
 			core::String text;
-			wrap(stream.readPascalStringUInt16BE(text))
+			wrap(stream->readPascalStringUInt16BE(text))
 		}
 		if (version >= 3) {
 			uint32_t filters;
-			wrap(stream.readUInt32BE(filters))
+			wrap(stream->readUInt32BE(filters))
 			Log::debug("Filters: %i", filters);
 			for (uint32_t i = 0; i < filters; ++i) {
 				int64_t key;
-				wrap(stream.readInt64BE(key))
+				wrap(stream->readInt64BE(key))
 				int32_t size;
-				wrap(stream.readInt32BE(size))
+				wrap(stream->readInt32BE(size))
 				for (int32_t j = 0; j < size; ++j) {
 					int16_t key;
-					wrap(stream.readInt16BE(key))
+					wrap(stream->readInt16BE(key))
 					int32_t value;
-					wrap(stream.readInt32BE(value))
+					wrap(stream->readInt32BE(value))
 				}
 			}
 			uint32_t productions;
-			wrap(stream.readUInt32BE(productions))
+			wrap(stream->readUInt32BE(productions))
 			Log::debug("Productions: %i", productions);
 			for (uint32_t i = 0; i < productions; ++i) {
 				int64_t key;
-				wrap(stream.readInt64BE(key))
+				wrap(stream->readInt64BE(key))
 				int16_t text;
-				wrap(stream.readInt16BE(text))
+				wrap(stream->readInt16BE(text))
 			}
 			if (version >= 5) {
 				int32_t productionLimits;
-				wrap(stream.readInt32BE(productionLimits))
+				wrap(stream->readInt32BE(productionLimits))
 				Log::debug("Production limits: %i", productionLimits);
 				for (int32_t i = 0; i < productionLimits; ++i) {
 					int64_t key;
-					wrap(stream.readInt64BE(key))
+					wrap(stream->readInt64BE(key))
 					int32_t text;
-					wrap(stream.readInt32BE(text))
+					wrap(stream->readInt32BE(text))
 				}
 				int32_t fillUpFilters;
-				wrap(stream.readInt32BE(fillUpFilters))
+				wrap(stream->readInt32BE(fillUpFilters))
 				Log::debug("Fill up filters: %i", fillUpFilters);
 				for (int32_t i = 0; i < fillUpFilters; ++i) {
 					int64_t key;
-					wrap(stream.readInt64BE(key))
+					wrap(stream->readInt64BE(key))
 					int32_t size;
-					wrap(stream.readInt32BE(size))
+					wrap(stream->readInt32BE(size))
 					for (int32_t j = 0; j < size; ++j) {
 						int16_t key;
-						wrap(stream.readInt16BE(key))
+						wrap(stream->readInt16BE(key))
 						int32_t value;
-						wrap(stream.readInt32BE(value))
+						wrap(stream->readInt32BE(value))
 					}
 				}
 			}
@@ -194,7 +200,12 @@ static uint16_t resolveBlockId(const palette::Palette &starMadePal, const palett
 }
 
 bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							 const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
@@ -207,22 +218,22 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	const uint32_t depth = region.getDepthInVoxels();
 
 	uint8_t version = 3;
-	wrapBool(stream.writeUInt8(version))
+	wrapBool(stream->writeUInt8(version))
 	glm::ivec3 mins{0};
-	wrapBool(stream.writeInt32BE(mins.x))
-	wrapBool(stream.writeInt32BE(mins.y))
-	wrapBool(stream.writeInt32BE(mins.z))
+	wrapBool(stream->writeInt32BE(mins.x))
+	wrapBool(stream->writeInt32BE(mins.y))
+	wrapBool(stream->writeInt32BE(mins.z))
 
-	wrapBool(stream.writeUInt32BE(width))
-	wrapBool(stream.writeUInt32BE(height))
-	wrapBool(stream.writeUInt32BE(depth))
+	wrapBool(stream->writeUInt32BE(width))
+	wrapBool(stream->writeUInt32BE(height))
+	wrapBool(stream->writeUInt32BE(depth))
 
 	palette::Palette starMadePal;
 	loadPalette(starMadePal);
 
 	const int32_t numBlocks = voxelutil::visitVolume(
 		*node->volume(), [](int, int, int, const voxel::Voxel &) {}, voxelutil::SkipEmpty());
-	wrapBool(stream.writeUInt32BE(numBlocks))
+	wrapBool(stream->writeUInt32BE(numBlocks))
 	Log::debug("Number of blocks: %i", numBlocks);
 
 	int32_t blocks = 0;
@@ -234,12 +245,12 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 				if (voxel::isAir(voxel.getMaterial())) {
 					continue;
 				}
-				wrapBool(stream.writeUInt32BE(x))
-				wrapBool(stream.writeUInt32BE(y))
-				wrapBool(stream.writeUInt32BE(z))
-				wrapBool(stream.writeUInt8(0)) // type
+				wrapBool(stream->writeUInt32BE(x))
+				wrapBool(stream->writeUInt32BE(y))
+				wrapBool(stream->writeUInt32BE(z))
+				wrapBool(stream->writeUInt8(0)) // type
 				uint16_t blockId = resolveBlockId(starMadePal, node->palette(), voxel.getColor());
-				wrapBool(stream.writeUInt16BE(blockId))
+				wrapBool(stream->writeUInt16BE(blockId))
 				++blocks;
 			}
 		}
@@ -248,10 +259,10 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		Log::error("Number of blocks written does not match the expected number: %i != %i", blocks, numBlocks);
 		return false;
 	}
-	wrapBool(stream.writeUInt32BE(0)) // no connections
-	wrapBool(stream.writeUInt32BE(0)) // no texts
-	wrapBool(stream.writeUInt32BE(0)) // no inventory filters
-	wrapBool(stream.writeUInt32BE(0)) // no productions
+	wrapBool(stream->writeUInt32BE(0)) // no connections
+	wrapBool(stream->writeUInt32BE(0)) // no texts
+	wrapBool(stream->writeUInt32BE(0)) // no inventory filters
+	wrapBool(stream->writeUInt32BE(0)) // no productions
 
 	return true;
 }
@@ -272,7 +283,7 @@ void SMTPLFormat::loadPalette(palette::Palette &palette) {
 	}
 }
 
-size_t SMTPLFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t SMTPLFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 								const LoadContext &ctx) {
 	loadPalette(palette);
 	return palette.size();

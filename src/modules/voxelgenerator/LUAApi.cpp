@@ -12,6 +12,7 @@
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/StreamArchive.h"
 #include "lua.h"
 #include "math/Axis.h"
 #include "noise/Simplex.h"
@@ -532,12 +533,13 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 
 static int luaVoxel_load_palette(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
+	io::SeekableReadStream *readStream = clua_tostream(s, 2);
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
+	auto archive = core::make_shared<io::StreamArchive>(readStream);
 	palette::Palette *palette = new palette::Palette();
-	const bool ret = voxelformat::loadPalette(filename, *readStream, *palette, ctx);
+	const bool ret = voxelformat::loadPalette(filename, archive, *palette, ctx);
 	if (!ret) {
 		delete palette;
 		return clua_error(s, "Could not load palette %s from string", filename);
@@ -578,12 +580,13 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 
 static int luaVoxel_import_scene(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
+	io::SeekableReadStream *readStream = clua_tostream(s, 2);
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
 	scenegraph::SceneGraph newSceneGraph;
-	const bool ret = voxelformat::loadFormat(fileDesc, *readStream, newSceneGraph, ctx);
+	auto archive = core::make_shared<io::StreamArchive>(readStream);
+	const bool ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
 	if (!ret) {
 		newSceneGraph.clear();
 		return clua_error(s, "Could not load file %s", filename);

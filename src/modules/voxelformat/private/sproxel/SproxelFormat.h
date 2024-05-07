@@ -17,13 +17,13 @@ namespace voxelformat {
  */
 class SproxelFormat : public RGBASinglePaletteFormat {
 protected:
-	bool loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 
 	bool singleVolume() const override {

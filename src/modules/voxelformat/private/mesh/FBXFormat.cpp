@@ -6,9 +6,11 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/String.h"
 #include "engine-config.h"
+#include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Mesh.h"
@@ -27,14 +29,20 @@ namespace voxelformat {
 	}
 
 bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	return saveMeshesAscii(meshes, filename, stream, scale, quad, withColor, withTexCoords, sceneGraph);
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	return saveMeshesAscii(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
+// TODO: unused
 class FBXScopedHeader {
 private:
-	io::SeekableWriteStream &_stream;
+	io::SeekableWriteStream *_stream;
 	/**
 	 * @brief EndOffset is the distance from the beginning of the file to the end of the node record (i.e. the first
 	 * byte of whatever comes next). This can be used to easily skip over unknown or not required records.
@@ -42,16 +50,16 @@ private:
 	int64_t _endOffsetPos;
 
 public:
-	FBXScopedHeader(io::SeekableWriteStream &stream) : _stream(stream) {
-		_endOffsetPos = stream.pos();
-		stream.writeUInt32(0u);
+	FBXScopedHeader(io::SeekableWriteStream *stream) : _stream(stream) {
+		_endOffsetPos = stream->pos();
+		stream->writeUInt32(0u);
 	}
 
 	~FBXScopedHeader() {
-		const int64_t currentPos = _stream.pos();
-		_stream.seek(_endOffsetPos);
-		_stream.writeUInt32(currentPos);
-		_stream.seek(currentPos);
+		const int64_t currentPos = _stream->pos();
+		_stream->seek(_endOffsetPos);
+		_stream->writeUInt32(currentPos);
+		_stream->seek(currentPos);
 	}
 };
 
@@ -462,11 +470,16 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 	return nodeId;
 }
 
-bool FBXFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	ufbx_stream ufbxstream;
 	core_memset(&ufbxstream, 0, sizeof(ufbxstream));
-	ufbxstream.user = &stream;
+	ufbxstream.user = stream;
 	ufbxstream.read_fn = priv::_ufbx_read_fn;
 	ufbxstream.skip_fn = priv::_ufbx_skip_fn;
 

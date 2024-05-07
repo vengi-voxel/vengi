@@ -10,6 +10,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
 #include "ui/PopupAbout.h"
@@ -139,10 +140,9 @@ void MainWindow::createThumbnail(const voxelcollection::VoxelFile &voxelFile) {
 	io::FileDescription fileDesc;
 	fileDesc.set(fullPath);
 	voxelformat::LoadContext loadctx;
-	const io::FilePtr &file = _app->filesystem()->open(fullPath, io::FileMode::SysRead);
-	io::FileStream stream(file);
-	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
-		Log::error("Failed to load given input file: %s", file->name().c_str());
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_app->filesystem());
+	if (!voxelformat::loadFormat(fileDesc, archive, sceneGraph, loadctx)) {
+		Log::error("Failed to load given input file: %s", fileDesc.name.c_str());
 		return;
 	}
 

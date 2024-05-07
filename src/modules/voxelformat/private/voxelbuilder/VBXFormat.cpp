@@ -6,6 +6,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
 #include "io/BufferedReadWriteStream.h"
@@ -32,9 +33,9 @@ bool VBXFormat::loadGLB(const core::String &data, scenegraph::SceneGraph &sceneG
 	}
 	stream.seek(0);
 	GLTFFormat format;
-	if (!format.load("file.glb", stream, sceneGraph, ctx)) {
-		Log::error("Failed to load embedded glb file: %s", data.c_str());
-	}
+	// if (!format.load("file.glb", stream, sceneGraph, ctx)) {
+	// 	Log::error("Failed to load embedded glb file: %s", data.c_str());
+	// }
 	return true;
 }
 
@@ -68,11 +69,16 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 	return true;
 }
 
-bool VBXFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	core::StringMap<core::StringMap<core::String>> ini;
-	if (!util::parseIni(stream, ini)) {
+	if (!util::parseIni(*stream, ini)) {
 		Log::error("Failed to parse ini file: %s", filename.c_str());
 		return false;
 	}
@@ -137,10 +143,15 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 	return true;
 }
 
-size_t VBXFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t VBXFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return 0;
+	}
 	util::IniMap ini;
-	if (!util::parseIni(stream, ini)) {
+	if (!util::parseIni(*stream, ini)) {
 		Log::error("Failed to parse ini file: %s", filename.c_str());
 		return 0;
 	}

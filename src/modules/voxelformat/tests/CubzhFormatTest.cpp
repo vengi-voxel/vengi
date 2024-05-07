@@ -28,7 +28,7 @@ TEST_F(CubzhFormatTest, testLoad3ZH) {
 TEST_F(CubzhFormatTest, testLoadPalette) {
 	PCubesFormat f;
 	palette::Palette pal;
-	EXPECT_EQ(96, helper_loadPalette("particubes.pcubes", f, pal));
+	EXPECT_EQ(96, helper_loadPalette("particubes.pcubes", helper_filesystemarchive(), f, pal));
 }
 
 TEST_F(CubzhFormatTest, testSaveSmallVoxel3ZH) {

@@ -6,10 +6,12 @@
 #include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "engine-config.h"
+#include "io/Archive.h"
 #include "io/EndianStreamReadWrapper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -767,17 +769,22 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 	return voxelizeNode(filename, sceneGraph, tris);
 }
 
-bool PLYFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	core::String line;
-	wrapBool(stream.readLine(line))
+	wrapBool(stream->readLine(line))
 	if (line != "ply") {
 		Log::error("Invalid ply header");
 		return false;
 	}
 
 	Header header;
-	if (!parseHeader(stream, header)) {
+	if (!parseHeader(*stream, header)) {
 		return false;
 	}
 
@@ -785,18 +792,23 @@ bool PLYFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 	// element is available too, this is a mesh
 	auto predicate = [](const Element &e) { return e.name == "face"; };
 	if (core::find_if(header.elements.begin(), header.elements.end(), predicate) == header.elements.end()) {
-		return parsePointCloud(filename, stream, sceneGraph, ctx, header);
+		return parsePointCloud(filename, *stream, sceneGraph, ctx, header);
 	}
 
-	return parseMesh(filename, stream, sceneGraph, ctx, header);
+	return parseMesh(filename, *stream, sceneGraph, ctx, header);
 }
 
 #undef wrapBool
 #undef wrap
 
 bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
 	int elements = 0;
 	int indices = 0;
 	for (const auto &meshExt : meshes) {
@@ -815,23 +827,23 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	}
 
 	const core::String paletteName = core::string::replaceExtension(voxel::getPalette().name(), "png");
-	stream.writeStringFormat(false, "ply\nformat ascii 1.0\n");
-	stream.writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
-	stream.writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
+	stream->writeStringFormat(false, "ply\nformat ascii 1.0\n");
+	stream->writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	stream->writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
 
-	stream.writeStringFormat(false, "element vertex %i\n", elements);
-	stream.writeStringFormat(false, "property float x\n");
-	stream.writeStringFormat(false, "property float z\n");
-	stream.writeStringFormat(false, "property float y\n");
+	stream->writeStringFormat(false, "element vertex %i\n", elements);
+	stream->writeStringFormat(false, "property float x\n");
+	stream->writeStringFormat(false, "property float z\n");
+	stream->writeStringFormat(false, "property float y\n");
 	if (withTexCoords) {
-		stream.writeStringFormat(false, "property float s\n");
-		stream.writeStringFormat(false, "property float t\n");
+		stream->writeStringFormat(false, "property float s\n");
+		stream->writeStringFormat(false, "property float t\n");
 	}
 	if (withColor) {
-		stream.writeStringFormat(false, "property uchar red\n");
-		stream.writeStringFormat(false, "property uchar green\n");
-		stream.writeStringFormat(false, "property uchar blue\n");
-		stream.writeStringFormat(false, "property uchar alpha\n");
+		stream->writeStringFormat(false, "property uchar red\n");
+		stream->writeStringFormat(false, "property uchar green\n");
+		stream->writeStringFormat(false, "property uchar blue\n");
+		stream->writeStringFormat(false, "property uchar alpha\n");
 	}
 
 	int faces;
@@ -841,9 +853,9 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		faces = indices / 3;
 	}
 
-	stream.writeStringFormat(false, "element face %i\n", faces);
-	stream.writeStringFormat(false, "property list uchar uint vertex_indices\n");
-	stream.writeStringFormat(false, "end_header\n");
+	stream->writeStringFormat(false, "element face %i\n", faces);
+	stream->writeStringFormat(false, "property list uchar uint vertex_indices\n");
+	stream->writeStringFormat(false, "end_header\n");
 
 	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
@@ -867,16 +879,16 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					pos = v.position;
 				}
 				pos *= scale;
-				stream.writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
+				stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 				if (withTexCoords) {
 					const glm::vec2 &uv = paletteUV(v.colorIndex);
-					stream.writeStringFormat(false, " %f %f", uv.x, uv.y);
+					stream->writeStringFormat(false, " %f %f", uv.x, uv.y);
 				}
 				if (withColor) {
 					const core::RGBA color = palette.color(v.colorIndex);
-					stream.writeStringFormat(false, " %u %u %u %u", color.r, color.g, color.b, color.a);
+					stream->writeStringFormat(false, " %u %u %u %u", color.r, color.g, color.b, color.a);
 				}
-				stream.writeStringFormat(false, "\n");
+				stream->writeStringFormat(false, "\n");
 			}
 		}
 	}
@@ -901,14 +913,14 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t two = idxOffset + indices[j + 1];
 					const uint32_t three = idxOffset + indices[j + 2];
 					const uint32_t four = idxOffset + indices[j + 5];
-					stream.writeStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
+					stream->writeStringFormat(false, "4 %i %i %i %i\n", (int)one, (int)two, (int)three, (int)four);
 				}
 			} else {
 				for (int j = 0; j < ni; j += 3) {
 					const uint32_t one = idxOffset + indices[j + 0];
 					const uint32_t two = idxOffset + indices[j + 1];
 					const uint32_t three = idxOffset + indices[j + 2];
-					stream.writeStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
+					stream->writeStringFormat(false, "3 %i %i %i\n", (int)one, (int)two, (int)three);
 				}
 			}
 			idxOffset += nv;

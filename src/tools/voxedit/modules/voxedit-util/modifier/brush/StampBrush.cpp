@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "io/File.h"
 #include "io/FileStream.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -182,17 +183,16 @@ void StampBrush::convertToPalette(const palette::Palette &palette) {
 }
 
 bool StampBrush::load(const core::String &filename) {
-	const io::FilePtr &filePtr = io::filesystem()->open(filename);
-	if (!filePtr->validHandle()) {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	if (!archive->exists(filename)) {
 		Log::error("Failed to open model file %s", filename.c_str());
 		return false;
 	}
 	scenegraph::SceneGraph newSceneGraph;
-	io::FileStream stream(filePtr);
 	voxelformat::LoadContext loadCtx;
 	io::FileDescription fileDesc;
-	fileDesc.set(filePtr->name());
-	if (!voxelformat::loadFormat(fileDesc, stream, newSceneGraph, loadCtx)) {
+	fileDesc.set(filename);
+	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 		Log::error("Failed to load %s", filename.c_str());
 		return false;
 	}

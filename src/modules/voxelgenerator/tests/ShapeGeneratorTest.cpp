@@ -5,9 +5,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/ScopedPtr.h"
-#include "io/File.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"
 #include "math/Axis.h"
 #include "voxel/MaterialColor.h"
@@ -89,13 +87,11 @@ protected:
 	}
 
 	void verify(const char* filename) {
-		voxelformat::QBFormat format;
-		const io::FilePtr& file = io::filesystem()->open(filename);
-		ASSERT_TRUE(file) << "Can't open " << filename;
-		io::FileStream stream(file);
+		const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
 		scenegraph::SceneGraph sceneGraph;
 		voxelformat::LoadContext loadCtx;
-		ASSERT_TRUE(format.load(file->fileName(), stream, sceneGraph, loadCtx));
+		voxelformat::QBFormat format;
+		ASSERT_TRUE(format.load(filename, archive, sceneGraph, loadCtx));
 		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge();
 		core::ScopedPtr<voxel::RawVolume> v( merged.first);
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "io/Archive.h"
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
@@ -53,7 +54,7 @@ protected:
 	};
 	using Meshes = core::DynamicArray<MeshExt>;
 	virtual bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-							const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+							const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 
@@ -66,7 +67,7 @@ protected:
 	 * Convert your input mesh into @c voxelformat::TexturedTri instances and use the methods of this class to help voxelizing those.
 	 * @see voxelizeNode()
 	 */
-	virtual bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &file,
+	virtual bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 
 	/**
@@ -142,10 +143,10 @@ public:
 	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
 
 	MeshFormat();
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &file, scenegraph::SceneGraph &sceneGraph,
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat

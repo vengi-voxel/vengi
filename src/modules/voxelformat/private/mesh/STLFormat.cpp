@@ -6,7 +6,9 @@
 #include "core/Color.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Mesh.h"
 
@@ -114,22 +116,27 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	return true;
 }
 
-bool STLFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	uint32_t magic;
-	wrap(stream.readUInt32(magic));
+	wrap(stream->readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
 
 	TriCollection tris;
 	if (ascii) {
 		Log::debug("found ascii format");
-		if (!parseAscii(stream, tris)) {
+		if (!parseAscii(*stream, tris)) {
 			Log::error("Failed to parse ascii stl file %s", filename.c_str());
 			return false;
 		}
 	} else {
 		Log::debug("found binary format");
-		if (!parseBinary(stream, tris)) {
+		if (!parseBinary(*stream, tris)) {
 			Log::error("Failed to parse binary stl file %s", filename.c_str());
 			return false;
 		}
@@ -162,14 +169,19 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const MeshExt &mesh
 }
 
 bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	stream.writeStringFormat(false, "github.com/vengi-voxel/vengi");
-	const size_t delta = priv::BinaryHeaderSize - stream.pos();
-	for (size_t i = 0; i < delta; ++i) {
-		stream.writeUInt8(0);
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
 	}
-	core_assert(stream.pos() == priv::BinaryHeaderSize);
+	stream->writeStringFormat(false, "github.com/vengi-voxel/vengi");
+	const size_t delta = priv::BinaryHeaderSize - stream->pos();
+	for (size_t i = 0; i < delta; ++i) {
+		stream->writeUInt8(0);
+	}
+	core_assert(stream->pos() == priv::BinaryHeaderSize);
 
 	int faceCount = 0;
 	for (const auto &meshExt : meshes) {
@@ -186,7 +198,7 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			faceCount += ni / 3;
 		}
 	}
-	stream.writeUInt32(faceCount);
+	stream->writeUInt32(faceCount);
 
 	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
@@ -216,24 +228,24 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				const glm::vec3 edge2 = glm::vec3(v3.position - v1.position);
 				const glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
 				for (int j = 0; j < 3; ++j) {
-					if (!stream.writeFloat(normal[j])) {
+					if (!stream->writeFloat(normal[j])) {
 						return false;
 					}
 				}
 
-				if (!writeVertex(stream, meshExt, v1, transform, scale)) {
+				if (!writeVertex(*stream, meshExt, v1, transform, scale)) {
 					return false;
 				}
 
-				if (!writeVertex(stream, meshExt, v2, transform, scale)) {
+				if (!writeVertex(*stream, meshExt, v2, transform, scale)) {
 					return false;
 				}
 
-				if (!writeVertex(stream, meshExt, v3, transform, scale)) {
+				if (!writeVertex(*stream, meshExt, v3, transform, scale)) {
 					return false;
 				}
 
-				stream.writeUInt16(0);
+				stream->writeUInt16(0);
 			}
 		}
 	}

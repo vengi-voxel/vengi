@@ -5,6 +5,7 @@
 #pragma once
 
 #include "VXLShared.h"
+#include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 
@@ -23,8 +24,8 @@ protected:
 	bool readHVAFrames(io::SeekableReadStream &stream, const vxl::VXLModel &mdl, vxl::HVAModel &file) const;
 
 public:
-	bool loadHVA(const core::String &filename, const vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph);
-	bool saveHVA(const core::String &filename, const scenegraph::SceneGraph &sceneGraph);
+	bool loadHVA(const core::String &filename, const io::ArchivePtr &archive, const vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph);
+	bool saveHVA(const core::String &filename, const io::ArchivePtr &archive, const scenegraph::SceneGraph &sceneGraph);
 };
 
 } // namespace voxelformat

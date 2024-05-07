@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/HttpCacheStream.h"
+#include "io/FilesystemArchive.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -127,7 +128,8 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			}
 			http::HttpCacheStream stream(_filesystem, voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
-			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, stream, loadCtx);
+			const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, archive, loadCtx);
 			if (!thumbnailImage || !thumbnailImage->isLoaded()) {
 				Log::debug("Failed to load given input file: %s", voxelFile.fullPath.c_str());
 				return;

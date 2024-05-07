@@ -4,7 +4,9 @@
 
 #include "CubzhFormat.h"
 #include "CubzhShared.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "io/Archive.h"
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -694,65 +696,80 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 	return true;
 }
 
-bool CubzhFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool CubzhFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
 	Header header;
-	wrapBool(loadHeader(stream, header))
+	wrapBool(loadHeader(*stream, header))
 	Log::debug("Found version %d", header.version);
 	if (header.legacy) {
-		return loadPCubes(filename, header, stream, sceneGraph, palette, ctx);
+		return loadPCubes(filename, header, *stream, sceneGraph, palette, ctx);
 	}
 	if (header.version == 5) {
-		return loadVersion5(filename, header, stream, sceneGraph, palette, ctx);
+		return loadVersion5(filename, header, *stream, sceneGraph, palette, ctx);
 	}
-	return loadVersion6(filename, header, stream, sceneGraph, palette, ctx);
+	return loadVersion6(filename, header, *stream, sceneGraph, palette, ctx);
 }
 
-size_t CubzhFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t CubzhFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 								const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return 0;
+	}
 	Header header;
-	wrapBool(loadHeader(stream, header))
-	while (!stream.eos()) {
+	wrapBool(loadHeader(*stream, header))
+	while (!stream->eos()) {
 		Chunk chunk;
-		wrapBool(loadChunkHeader(header, stream, chunk))
-		ChunkChecker check(stream, chunk);
+		wrapBool(loadChunkHeader(header, *stream, chunk))
+		ChunkChecker check(*stream, chunk);
 		if (header.version == 5u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V5) {
-			wrapBool(loadPalettePCubes(stream, palette))
+			wrapBool(loadPalettePCubes(*stream, palette))
 			return palette.size();
 		} else if (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_V6) {
-			CubzhReadStream zhs(header, chunk, stream);
+			CubzhReadStream zhs(header, chunk, *stream);
 			wrapBool(loadPalette6(zhs, palette))
 			return palette.size();
 		} else if (header.version == 6u && chunk.chunkId == priv::CHUNK_ID_PALETTE_LEGACY_V6) {
-			CubzhReadStream zhs(header, chunk, stream);
+			CubzhReadStream zhs(header, chunk, *stream);
 			wrapBool(loadPalettePCubes(zhs, palette))
 			return palette.size();
 		} else {
-			wrapBool(loadSkipChunk(header, chunk, stream))
+			wrapBool(loadSkipChunk(header, chunk, *stream))
 		}
 	}
 	return palette.size();
 }
 
-image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 											const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return image::ImagePtr();
+	}
 	Header header;
-	if (!loadHeader(stream, header)) {
+	if (!loadHeader(*stream, header)) {
 		Log::error("Failed to read header");
 		return image::ImagePtr();
 	}
-	while (!stream.eos()) {
+	while (!stream->eos()) {
 		Chunk chunk;
-		if (!loadChunkHeader(header, stream, chunk)) {
+		if (!loadChunkHeader(header, *stream, chunk)) {
 			return image::ImagePtr();
 		}
 		if (chunk.chunkId == priv::CHUNK_ID_PREVIEW) {
 			image::ImagePtr img = image::createEmptyImage(core::string::extractFilename(filename) + ".png");
-			img->load(stream, chunk.chunkSize);
+			img->load(*stream, chunk.chunkSize);
 			return img;
 		}
-		if (!loadSkipChunk(header, chunk, stream)) {
+		if (!loadSkipChunk(header, chunk, *stream)) {
 			Log::error("Failed to skip chunk %d with size %d", chunk.chunkId, chunk.chunkSize);
 			break;
 		}
@@ -770,24 +787,29 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, io::Se
 	}
 
 bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							 io::SeekableWriteStream &stream, const SaveContext &ctx) {
-	stream.write("CUBZH!", 6);
-	wrapBool(stream.writeUInt32(6)) // version
-	wrapBool(stream.writeUInt8(1))	// zip compression
-	const int64_t totalSizePos = stream.pos();
-	wrapBool(stream.writeUInt32(0)) // total size is written at the end
-	const int64_t afterHeaderPos = stream.pos();
+							 const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	stream->write("CUBZH!", 6);
+	wrapBool(stream->writeUInt32(6)) // version
+	wrapBool(stream->writeUInt8(1))	// zip compression
+	const int64_t totalSizePos = stream->pos();
+	wrapBool(stream->writeUInt32(0)) // total size is written at the end
+	const int64_t afterHeaderPos = stream->pos();
 
 	ThumbnailContext thumbnailCtx;
 	thumbnailCtx.outputSize = glm::ivec2(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailCtx);
 	if (image) {
-		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, stream);
+		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, *stream);
 		image->writePng(ws);
 	}
 
 	{
-		WriteChunkStream ws(priv::CHUNK_ID_PALETTE_V6, stream);
+		WriteChunkStream ws(priv::CHUNK_ID_PALETTE_V6, *stream);
 		const palette::Palette &palette = sceneGraph.firstPalette();
 		const uint8_t colorCount = palette.colorCount();
 		ws.writeUInt8(colorCount);
@@ -807,7 +829,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		if (!node.isAnyModelNode()) {
 			continue;
 		}
-		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, stream);
+		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, *stream);
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_ID_V6, ws);
 			wrapBool(sub.writeUInt16(node.id()))
@@ -926,13 +948,13 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 		}
 	}
 
-	const uint32_t totalSize = stream.size() - afterHeaderPos;
-	if (stream.seek(totalSizePos) == -1) {
+	const uint32_t totalSize = stream->size() - afterHeaderPos;
+	if (stream->seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(totalSize))
-	stream.seek(0, SEEK_END);
+	wrapBool(stream->writeUInt32(totalSize))
+	stream->seek(0, SEEK_END);
 	return true;
 }
 

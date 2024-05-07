@@ -3,17 +3,15 @@
  */
 
 #include "OBJFormat.h"
-#include "app/App.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "engine-config.h"
 #include "image/Image.h"
-#include "io/File.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/Archive.h"
 #include "io/StdStreamBuf.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -57,25 +55,25 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 }
 
 bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const Meshes &meshes,
-						   const core::String &filename, io::SeekableWriteStream &stream, const glm::vec3 &scale,
+						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
-	stream.writeStringFormat(false, "# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
-	wrapBool(stream.writeStringFormat(false, "\n"))
-	wrapBool(stream.writeStringFormat(false, "g Model\n"))
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	stream->writeStringFormat(false, "# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
+	wrapBool(stream->writeStringFormat(false, "\n"))
+	wrapBool(stream->writeStringFormat(false, "g Model\n"))
 
 	Log::debug("Exporting %i layers", (int)meshes.size());
 
 	const core::String &mtlname = core::string::replaceExtension(filename, "mtl");
 	Log::debug("Use mtl file: %s", mtlname.c_str());
 
-	const io::FilePtr &file = io::filesystem()->open(mtlname, io::FileMode::SysWrite);
-	if (!file->validHandle()) {
-		Log::error("Failed to create mtl file at %s", file->name().c_str());
-		return false;
-	}
-	io::FileStream matlstream(file);
-	wrapBool(matlstream.writeString("# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n", false))
-	wrapBool(matlstream.writeString("\n", false))
+	core::ScopedPtr<io::SeekableWriteStream> matlstream(archive->writeStream(mtlname));
+	wrapBool(matlstream->writeString("# version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n", false))
+	wrapBool(matlstream->writeString("\n", false))
 
 	core::Map<uint64_t, int> paletteMaterialIndices((int)sceneGraph.size());
 
@@ -109,9 +107,9 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			if (objectName[0] == '\0') {
 				objectName = "Noname";
 			}
-			stream.writeStringFormat(false, "o %s\n", objectName);
-			stream.writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
-			if (!stream.writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
+			stream->writeStringFormat(false, "o %s\n", objectName);
+			stream->writeStringFormat(false, "mtllib %s\n", core::string::extractFilenameWithExtension(mtlname).c_str());
+			if (!stream->writeStringFormat(false, "usemtl %s\n", hashId.c_str())) {
 				Log::error("Failed to write obj usemtl %s\n", hashId.c_str());
 				return false;
 			}
@@ -126,17 +124,17 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					pos = v.position;
 				}
 				pos *= scale;
-				stream.writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
+				stream->writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 				if (withColor) {
 					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
-					stream.writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
+					stream->writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 				}
-				wrapBool(stream.writeStringFormat(false, "\n"))
+				wrapBool(stream->writeStringFormat(false, "\n"))
 			}
 			if (withNormals) {
 				for (int i = 0; i < nv; ++i) {
 					const glm::vec3 &norm = normals[i];
-					stream.writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
+					stream->writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
 				}
 			}
 
@@ -145,10 +143,10 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					for (int i = 0; i < ni; i += 6) {
 						const voxel::VoxelVertex &v = vertices[indices[i]];
 						const glm::vec2 &uv = paletteUV(v.colorIndex);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 					}
 				}
 
@@ -160,19 +158,19 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t four = idxOffset + indices[i + 5] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
+							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
 													 uvi + 1, (int)one, (int)two, uvi + 2, (int)two, (int)three,
 													 uvi + 3, (int)three, (int)four, uvi + 4, (int)four);
 						} else {
-							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two,
+							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i %i/%i\n", (int)one, uvi + 1, (int)two,
 													 uvi + 2, (int)three, uvi + 3, (int)four, uvi + 4);
 						}
 					} else {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two,
+							stream->writeStringFormat(false, "f %i//%i %i//%i %i//%i %i//%i\n", (int)one, (int)two,
 													 (int)three, (int)four, (int)one, (int)two, (int)three, (int)four);
 						} else {
-							stream.writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three,
+							stream->writeStringFormat(false, "f %i %i %i %i\n", (int)one, (int)two, (int)three,
 													 (int)four);
 						}
 					}
@@ -183,9 +181,9 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					for (int i = 0; i < ni; i += 3) {
 						const voxel::VoxelVertex &v = vertices[indices[i]];
 						const glm::vec2 &uv = paletteUV(v.colorIndex);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
-						stream.writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
+						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 					}
 				}
 
@@ -195,20 +193,20 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					const uint32_t three = idxOffset + indices[i + 2] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
+							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
 													 texcoordOffset + i + 1, (int)one, (int)two, texcoordOffset + i + 2,
 													 (int)two, (int)three, texcoordOffset + i + 3, (int)three);
 						} else {
-							stream.writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1,
+							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1,
 													 (int)two, texcoordOffset + i + 2, (int)three,
 													 texcoordOffset + i + 3);
 						}
 					} else {
 						if (withNormals) {
-							stream.writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three,
+							stream->writeStringFormat(false, "f %i//%i %i//%i %i//%i\n", (int)one, (int)two, (int)three,
 													 (int)one, (int)two, (int)three);
 						} else {
-							stream.writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
+							stream->writeStringFormat(false, "f %i %i %i\n", (int)one, (int)two, (int)three);
 						}
 					}
 				}
@@ -222,7 +220,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				palettename.append(".png");
 				paletteMaterialIndices.put(palette.hash(), 1);
 				const core::String &mapKd = core::string::extractFilenameWithExtension(palettename);
-				if (!writeMtlFile(matlstream, hashId, mapKd)) {
+				if (!writeMtlFile(*matlstream, hashId, mapKd)) {
 					return false;
 				}
 				if (!palette.save(palettename.c_str())) {
@@ -236,15 +234,20 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 #undef wrapBool
 
-bool OBJFormat::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
 	const core::String &mtlbasedir = core::string::extractPath(filename);
-	io::StdIStreamBuf stdStreamBuf(stream);
+	io::StdIStreamBuf stdStreamBuf(*stream);
 	std::istream inputStream(&stdStreamBuf);
 	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
 	Log::debug("Load obj %s", filename.c_str());

@@ -174,4 +174,13 @@ SeekableWriteStream* ZipArchive::writeStream(const core::String &filePath) {
 	return nullptr;
 }
 
+ArchivePtr openZipArchive(io::SeekableReadStream *stream) {
+	if (!stream || !ZipArchive::validStream(*stream)) {
+		return ArchivePtr{};
+	}
+	core::SharedPtr<ZipArchive> za = core::make_shared<ZipArchive>();
+	za->init("", stream);
+	return za;
+}
+
 } // namespace io

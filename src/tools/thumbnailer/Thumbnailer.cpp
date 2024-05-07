@@ -6,10 +6,11 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
-#include "core/Var.h"
 #include "image/Image.h"
+#include "io/Archive.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
@@ -94,19 +95,18 @@ app::AppState Thumbnailer::onInit() {
 	return state;
 }
 
-static image::ImagePtr volumeThumbnail(const core::String &fileName, io::SeekableReadStream &stream,
+static image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchivePtr &archive,
 									   voxelformat::ThumbnailContext &ctx) {
 	voxelformat::LoadContext loadctx;
-	image::ImagePtr image = voxelformat::loadScreenshot(fileName, stream, loadctx);
+	image::ImagePtr image = voxelformat::loadScreenshot(fileName, archive, loadctx);
 	if (image && image->isLoaded()) {
 		return image;
 	}
 
 	scenegraph::SceneGraph sceneGraph;
-	stream.seek(0);
 	io::FileDescription fileDesc;
 	fileDesc.set(fileName);
-	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
+	if (!voxelformat::loadFormat(fileDesc, archive, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return image::ImagePtr();
 	}
@@ -117,12 +117,11 @@ static image::ImagePtr volumeThumbnail(const core::String &fileName, io::Seekabl
 static bool volumeTurntable(const core::String &fileName, const core::String &imageFile,
 							voxelformat::ThumbnailContext ctx, int loops) {
 	scenegraph::SceneGraph sceneGraph;
-	io::FileStream stream(io::filesystem()->open(fileName, io::FileMode::SysRead));
-	stream.seek(0);
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
 	voxelformat::LoadContext loadctx;
 	io::FileDescription fileDesc;
 	fileDesc.set(fileName);
-	if (!voxelformat::loadFormat(fileDesc, stream, sceneGraph, loadctx)) {
+	if (!voxelformat::loadFormat(fileDesc, archive, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
 		return false;
 	}
@@ -185,12 +184,12 @@ app::AppState Thumbnailer::onRunning() {
 	if (renderTurntable) {
 		volumeTurntable(_infile->name(), _outfile, ctx, 16);
 	} else {
-		io::FileStream stream(_infile);
-		if (!stream.valid()) {
+		const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+		if (!archive) {
 			Log::error("Failed to open %s for reading", _infile->name().c_str());
 			return app::AppState::Cleanup;
 		}
-		const image::ImagePtr &image = volumeThumbnail(_infile->name(), stream, ctx);
+		const image::ImagePtr &image = volumeThumbnail(_infile->name(), archive, ctx);
 		saveImage(image);
 	}
 

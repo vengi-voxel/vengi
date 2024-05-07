@@ -4,6 +4,7 @@
 
 #include "PCubesFormat.h"
 #include "CubzhShared.h"
+#include "core/ScopedPtr.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 
@@ -16,18 +17,24 @@ namespace voxelformat {
 	}
 
 bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							  io::SeekableWriteStream &stream, const SaveContext &ctx) {
+							  const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 
-	stream.write("PARTICUBES!", 11);
-	wrapBool(stream.writeUInt32(6)) // version
-	wrapBool(stream.writeUInt8(1))	// zip compression
-	const int64_t totalSizePos = stream.pos();
-	wrapBool(stream.writeUInt32(0)) // total size is written at the end
-	const int64_t afterHeaderPos = stream.pos();
+	stream->write("PARTICUBES!", 11);
+	wrapBool(stream->writeUInt32(6)) // version
+	wrapBool(stream->writeUInt8(1))	// zip compression
+	const int64_t totalSizePos = stream->pos();
+	wrapBool(stream->writeUInt32(0)) // total size is written at the end
+	const int64_t afterHeaderPos = stream->pos();
 
 	{
-		WriteChunkStream sub(priv::CHUNK_ID_PALETTE_LEGACY_V6, stream);
+		WriteChunkStream sub(priv::CHUNK_ID_PALETTE_LEGACY_V6, *stream);
 		const palette::Palette &palette = node->palette();
 		const uint8_t colorCount = palette.colorCount();
 		wrapBool(sub.writeUInt8(1))
@@ -47,7 +54,7 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		}
 	}
 	{
-		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, stream);
+		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, *stream);
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
 			const glm::ivec3 &dimensions = node->region().getDimensionsInVoxels();
@@ -82,13 +89,13 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		}
 	}
 
-	const uint32_t totalSize = (uint32_t)(stream.size() - afterHeaderPos);
-	if (stream.seek(totalSizePos) == -1) {
+	const uint32_t totalSize = (uint32_t)(stream->size() - afterHeaderPos);
+	if (stream->seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(totalSize))
-	stream.seek(0, SEEK_END);
+	wrapBool(stream->writeUInt32(totalSize))
+	stream->seek(0, SEEK_END);
 	return true;
 }
 

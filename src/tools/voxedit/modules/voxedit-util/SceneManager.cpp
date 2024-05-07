@@ -17,11 +17,13 @@
 #include "core/TimeProvider.h"
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Archive.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
-#include "io/MemoryReadStream.h"
+#include "io/MemoryArchive.h"
 #include "io/Stream.h"
 #include "math/Axis.h"
 #include "math/Random.h"
@@ -446,17 +448,12 @@ bool SceneManager::import(const core::String& file) {
 		Log::error("Can't import model: No file given");
 		return false;
 	}
-	const io::FilePtr& filePtr = _filesystem->open(file);
-	if (!filePtr->validHandle()) {
-		Log::error("Failed to open model file %s", file.c_str());
-		return false;
-	}
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	scenegraph::SceneGraph newSceneGraph;
-	io::FileStream stream(filePtr);
 	voxelformat::LoadContext loadCtx;
 	io::FileDescription fileDesc;
-	fileDesc.set(filePtr->name());
-	if (!voxelformat::loadFormat(fileDesc, stream, newSceneGraph, loadCtx)) {
+	fileDesc.set(file);
+	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 		Log::error("Failed to load %s", file.c_str());
 		return false;
 	}
@@ -478,8 +475,8 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 	if (directory.empty()) {
 		return false;
 	}
-	core::DynamicArray<io::FilesystemEntry> entities;
-	_filesystem->list(directory, entities, format ? format->wildCard() : "", depth);
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem, directory);
+	const core::DynamicArray<io::FilesystemEntry> &entities = archive->files();
 	if (entities.empty()) {
 		Log::info("Could not find any model in %s", directory.c_str());
 		return false;
@@ -499,7 +496,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		voxelformat::LoadContext loadCtx;
 		io::FileDescription fileDesc;
 		fileDesc.set(filePtr->name(), format);
-		if (!voxelformat::loadFormat(fileDesc, stream, newSceneGraph, loadCtx)) {
+		if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 			Log::error("Failed to load %s", e.fullPath.c_str());
 		} else {
 			mergeIfNeeded(newSceneGraph);
@@ -516,21 +513,15 @@ bool SceneManager::load(const io::FileDescription& file) {
 	if (file.empty()) {
 		return false;
 	}
-	const io::FilePtr& filePtr = _filesystem->open(file.name);
-	if (!filePtr->validHandle()) {
-		Log::error("Failed to open model file '%s'", file.c_str());
-		return false;
-	}
-
 	if (_loadingFuture.valid()) {
 		Log::error("Failed to load '%s' - still loading another model", file.c_str());
 		return false;
 	}
-	_loadingFuture = app::async([filePtr, file] () {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+	_loadingFuture = app::async([archive, file] () {
 		scenegraph::SceneGraph newSceneGraph;
-		io::FileStream stream(filePtr);
 		voxelformat::LoadContext loadCtx;
-		voxelformat::loadFormat(file, stream, newSceneGraph, loadCtx);
+		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
 		/**
 		 * @todo stuff that happens in MeshState::scheduleRegionExtraction() and
@@ -538,15 +529,16 @@ bool SceneManager::load(const io::FileDescription& file) {
 		 */
 		return core::move(newSceneGraph);
 	});
-	_lastFilename.set(filePtr->name(), &file.desc);
+	_lastFilename.set(file.name, &file.desc);
 	return true;
 }
 
 bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
 	scenegraph::SceneGraph newSceneGraph;
-	io::MemoryReadStream stream(data, size);
+	io::MemoryArchivePtr archive = io::openMemoryArchive();
+	archive->add(file.name, data, size);
 	voxelformat::LoadContext loadCtx;
-	voxelformat::loadFormat(file, stream, newSceneGraph, loadCtx);
+	voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
 	mergeIfNeeded(newSceneGraph);
 	if (loadSceneGraph(core::move(newSceneGraph))) {
 		_needAutoSave = false;

@@ -52,7 +52,7 @@ public:
 	static_assert(sizeof(MD2FrameHeader) == 40, "MD2FrameHeader size is wrong");
 
 private:
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 				   const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
@@ -60,7 +60,7 @@ private:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
 					bool withTexCoords = true) override {
 		return false;

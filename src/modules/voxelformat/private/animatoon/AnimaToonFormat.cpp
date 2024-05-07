@@ -5,7 +5,9 @@
 #include "AnimaToonFormat.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Archive.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
@@ -24,12 +26,17 @@ namespace voxelformat {
 #error "GLM_FORCE_QUAT_DATA_WXYZ is not supported here"
 #endif
 
-bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStream &stream,
+bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 									 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 									 const LoadContext &ctx) {
-	const int64_t size = stream.size();
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	const int64_t size = stream->size();
 	core::String str(size, ' ');
-	if (!stream.readString((int)str.size(), str.c_str())) {
+	if (!stream->readString((int)str.size(), str.c_str())) {
 		Log::error("Failed to read string from stream");
 		return false;
 	}

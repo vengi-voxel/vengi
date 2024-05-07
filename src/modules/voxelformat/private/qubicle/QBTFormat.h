@@ -42,7 +42,7 @@ private:
 	bool loadNode(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph, int parent,
 				  palette::Palette &palette, Header &state);
 	bool loadColorMap(io::SeekableReadStream &stream, palette::Palette &palette);
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
@@ -56,10 +56,10 @@ private:
 	bool saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 				   const scenegraph::SceneGraphNode &node, bool colorMap) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
 public:
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

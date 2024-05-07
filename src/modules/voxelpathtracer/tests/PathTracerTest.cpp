@@ -6,7 +6,7 @@
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"
-#include "io/FileStream.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
@@ -32,16 +32,13 @@ public:
 };
 
 TEST_F(PathTracerTest, testHMec) {
-	const io::FilePtr &file = io::filesystem()->open("hmec.vxl");
-	ASSERT_TRUE(file->validHandle());
-	io::FileStream stream(file);
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
 	io::FileDescription fileDesc;
-	fileDesc.set(file->name());
+	fileDesc.set("hmec.vxl");
 	scenegraph::SceneGraph sceneGraph;
 	voxelformat::LoadContext testLoadCtx;
-
-	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, stream, sceneGraph, testLoadCtx))
-		<< "Could not load " << file->name();
+	ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
+		<< "Could not load " << fileDesc.name.c_str();
 
 	voxelpathtracer::PathTracer pathTracer;
 	pathTracer.state().params.resolution = 512;
@@ -55,6 +52,6 @@ TEST_F(PathTracerTest, testHMec) {
 	ASSERT_TRUE(img->isLoaded());
 	ASSERT_EQ(512, img->width());
 	// ASSERT_EQ(dimensions, img->height());
-	image::writeImage(img, file->name() + ".png");
+	image::writeImage(img, "hmec.vxl.png");
 	ASSERT_TRUE(pathTracer.stop());
 }

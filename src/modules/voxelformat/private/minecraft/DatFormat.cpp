@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/File.h"
@@ -24,11 +25,16 @@
 
 namespace voxelformat {
 
-bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool DatFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								  const LoadContext &loadctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	palette.minecraft();
-	io::ZipReadStream zipStream(stream);
+	io::ZipReadStream zipStream(*stream);
 	priv::NamedBinaryTagContext ctx;
 	ctx.stream = &zipStream;
 	const priv::NamedBinaryTag &root = priv::NamedBinaryTag::parse(ctx);
@@ -90,28 +96,19 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 			continue;
 		}
 		const core::String &regionFilename = core::string::path(baseName, "region", e.name);
-		const io::FilePtr &file = io::filesystem()->open(regionFilename);
-		if (!file->validHandle()) {
-			Log::warn("Could not open %s", regionFilename.c_str());
-			continue;
-		}
-		futures.emplace_back(app::async([file, &loadctx]() {
-			io::FileStream fileStream(file);
-			scenegraph::SceneGraph newSceneGraph;
-			if (fileStream.size() <= 2l * MCRFormat::SECTOR_BYTES) {
-				Log::debug("Skip empty region file %s", file->name().c_str());
-				return core::move(newSceneGraph);
-			}
+		futures.emplace_back(app::async([regionFilename, &archive, &loadctx]() {
 			MCRFormat mcrFormat;
-			if (!mcrFormat.load(file->name(), fileStream, newSceneGraph, loadctx)) {
-				Log::warn("Could not load %s", file->name().c_str());
+			scenegraph::SceneGraph newSceneGraph;
+			if (!mcrFormat.load(regionFilename, archive, newSceneGraph, loadctx)) {
+				Log::debug("Could not load %s", regionFilename.c_str());
+				return core::move(newSceneGraph);
 			}
 			const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
 			newSceneGraph.clear();
 			if (merged.first == nullptr) {
 				return core::move(newSceneGraph);
 			}
-			scenegraph::SceneGraphNode node;
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setVolume(merged.first, true);
 			node.setPalette(merged.second);
 			newSceneGraph.emplace(core::move(node));

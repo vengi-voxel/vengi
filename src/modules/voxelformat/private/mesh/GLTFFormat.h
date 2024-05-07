@@ -140,12 +140,12 @@ private:
 	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
 	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;
 
-	bool voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
-					const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
+					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
 };
 

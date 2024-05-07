@@ -4,17 +4,16 @@
 
 #include "VMaxFormat.h"
 #include "BinaryPList.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/Archive.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/LZFSEReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/StdStreamBuf.h"
 #include "io/Stream.h"
+#include "io/ZipArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Morton.h"
@@ -157,16 +156,17 @@ bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) 
 	return true;
 }
 
-bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+bool VMaxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								   const LoadContext &ctx) {
-	VMaxScene scene;
-	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
-	if (!archive) {
-		Log::error("Failed to create archive for %s", filename.c_str());
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
-	if (!loadSceneJson(archive, scene)) {
+	io::ArchivePtr zipArchive = io::openZipArchive(stream);
+	VMaxScene scene;
+	if (!loadSceneJson(zipArchive, scene)) {
 		return false;
 	}
 
@@ -184,10 +184,10 @@ bool VMaxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRea
 			continue;
 		}
 		palette::Palette vmaxPalette;
-		if (!loadPaletteFromArchive(archive, obj.pal, vmaxPalette, ctx)) {
+		if (!loadPaletteFromArchive(zipArchive, obj.pal, vmaxPalette, ctx)) {
 			return false;
 		}
-		if (!loadObjectFromArchive(filename, archive, sceneGraph, ctx, obj, vmaxPalette)) {
+		if (!loadObjectFromArchive(filename, zipArchive, sceneGraph, ctx, obj, vmaxPalette)) {
 			Log::error("Failed to load object %s", obj.n.c_str());
 			return false;
 		}
@@ -421,20 +421,16 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 
-image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										   const LoadContext &ctx) {
-	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
-	if (!archive) {
-		Log::error("Failed to create archive for %s", filename.c_str());
-		return image::ImagePtr{};
-	}
 	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
-	core::ScopedPtr<io::SeekableReadStream> contentsStream(archive->readStream(thumbnailPath));
-	if (!contentsStream) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(thumbnailPath));
+	if (!stream) {
 		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
 		return image::ImagePtr();
 	}
-	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), *contentsStream);
+
+	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), *stream);
 }
 
 bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
@@ -457,14 +453,8 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 	return true;
 }
 
-size_t VMaxFormat::loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
-	const io::ArchivePtr &archive = io::openArchive(io::filesystem(), filename, &stream);
-	if (!archive) {
-		Log::error("Failed to create archive for %s", filename.c_str());
-		return 0u;
-	}
-
 	// TODO: there is also a "pal" dict in the vmaxb plist file for some files
 	// pal->dict
 	//      colors->data

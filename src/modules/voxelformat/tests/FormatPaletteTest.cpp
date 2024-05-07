@@ -33,25 +33,21 @@ protected:
 		SCOPED_TRACE("rgb file: " + rgbFile);
 		SCOPED_TRACE("pal file: " + palFile);
 
-		io::FileStream rgbStream(_testApp->filesystem()->open(rgbFile));
+		io::ArchivePtr archive = helper_filesystemarchive();
 		palette::Palette rgbPalette;
-		EXPECT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, rgbStream, rgbPalette, testLoadCtx))
+		EXPECT_EQ(rgbExpectedColors, rgbFormat.loadPalette(rgbFile, archive, rgbPalette, testLoadCtx))
 			<< "Found expected amount of colors in the rgb format";
 		ASSERT_TRUE(checkNoAlpha(rgbPalette)) << "Found alpha in the rgb palette";
 
-		rgbStream.seek(0);
-
 		scenegraph::SceneGraph rgbSceneGraph;
-		ASSERT_TRUE(rgbFormat.load(rgbFile, rgbStream, rgbSceneGraph, testLoadCtx))
+		ASSERT_TRUE(rgbFormat.load(rgbFile, archive, rgbSceneGraph, testLoadCtx))
 			<< "Failed to load rgb model " << rgbFile;
 
-		io::BufferedReadWriteStream palWriteStream;
-		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, palWriteStream, testSaveCtx))
+		ASSERT_TRUE(paletteFormat.save(rgbSceneGraph, palFile, archive, testSaveCtx))
 			<< "Failed to write pal model " << palFile;
-		palWriteStream.seek(0);
 
 		palette::Palette palPalette;
-		ASSERT_GT(paletteFormat.loadPalette(palFile, palWriteStream, palPalette, testLoadCtx), 0u)
+		ASSERT_GT(paletteFormat.loadPalette(palFile, archive, palPalette, testLoadCtx), 0u)
 			<< "Found expected amount of colors in the palette format";
 		// ASSERT_TRUE(checkNoAlpha(palPalette));
 
@@ -83,24 +79,21 @@ protected:
 		SCOPED_TRACE("pal file: " + palFile);
 		SCOPED_TRACE("rgb file: " + rgbFile);
 
-		io::FileStream palStream(_testApp->filesystem()->open(palFile));
+		io::ArchivePtr archive = helper_filesystemarchive();
+
 		palette::Palette palPalette;
-		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, palStream, palPalette, testLoadCtx));
+		ASSERT_EQ(palExpectedColors, palFormat.loadPalette(palFile, archive, palPalette, testLoadCtx));
 		// ASSERT_TRUE(checkNoAlpha(palPalette));
 
-		palStream.seek(0);
-
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat.load(palFile, palStream, palSceneGraph, testLoadCtx))
+		ASSERT_TRUE(palFormat.load(palFile, archive, palSceneGraph, testLoadCtx))
 			<< "Failed to load pal model " << palFile;
 
-		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, rgbWriteStream, testSaveCtx))
+		ASSERT_TRUE(rgbFormat.save(palSceneGraph, rgbFile, archive, testSaveCtx))
 			<< "Failed to write rgb model " << rgbFile;
-		rgbWriteStream.seek(0);
 
 		palette::Palette rgbPalette;
-		ASSERT_EQ(rgbFormat.loadPalette(rgbFile, rgbWriteStream, rgbPalette, testLoadCtx), rgbExpectedColors);
+		ASSERT_EQ(rgbFormat.loadPalette(rgbFile, archive, rgbPalette, testLoadCtx), rgbExpectedColors);
 		ASSERT_TRUE(checkNoAlpha(rgbPalette));
 
 		for (size_t i = 0; i < rgbExpectedColors; ++i) {
@@ -115,24 +108,21 @@ protected:
 		SCOPED_TRACE("1. rgb file: " + rgbFile1);
 		SCOPED_TRACE("2. rgb file: " + rgbFile2);
 
-		io::FileStream palStream(_testApp->filesystem()->open(rgbFile1));
+		io::ArchivePtr archive = helper_filesystemarchive();
+
 		palette::Palette rgbPalette1;
-		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, palStream, rgbPalette1, testLoadCtx));
+		ASSERT_EQ(expectedColors, rgbFormat1.loadPalette(rgbFile1, archive, rgbPalette1, testLoadCtx));
 		ASSERT_TRUE(checkNoAlpha(rgbPalette1));
 
-		palStream.seek(0);
-
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(rgbFormat1.load(rgbFile1, palStream, palSceneGraph, testLoadCtx))
+		ASSERT_TRUE(rgbFormat1.load(rgbFile1, archive, palSceneGraph, testLoadCtx))
 			<< "Failed to load rgb model " << rgbFile1;
 
-		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, rgbWriteStream, testSaveCtx))
+		ASSERT_TRUE(rgbFormat2.save(palSceneGraph, rgbFile2, archive, testSaveCtx))
 			<< "Failed to write rgb model " << rgbFile2;
-		rgbWriteStream.seek(0);
 
 		palette::Palette rgbPalette2;
-		ASSERT_EQ(rgbFormat2.loadPalette(rgbFile2, rgbWriteStream, rgbPalette2, testLoadCtx), expectedColors);
+		ASSERT_EQ(rgbFormat2.loadPalette(rgbFile2, archive, rgbPalette2, testLoadCtx), expectedColors);
 		ASSERT_TRUE(checkNoAlpha(rgbPalette2));
 
 		// the colors might have a different ordering here it depends on the order we read the volume for the rgb format
@@ -149,24 +139,21 @@ protected:
 		SCOPED_TRACE("1. pal file: " + palFile1);
 		SCOPED_TRACE("2. pal file: " + palFile2);
 
-		io::FileStream palStream(_testApp->filesystem()->open(palFile1));
+		io::ArchivePtr archive = helper_filesystemarchive();
+
 		palette::Palette palPalette1;
-		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, palStream, palPalette1, testLoadCtx));
+		ASSERT_EQ(expectedColors, palFormat1.loadPalette(palFile1, archive, palPalette1, testLoadCtx));
 		// ASSERT_TRUE(checkNoAlpha(palPalette1));
 
-		palStream.seek(0);
-
 		scenegraph::SceneGraph palSceneGraph;
-		ASSERT_TRUE(palFormat1.load(palFile1, palStream, palSceneGraph, testLoadCtx))
+		ASSERT_TRUE(palFormat1.load(palFile1, archive, palSceneGraph, testLoadCtx))
 			<< "Failed to load pal model " << palFile1;
 
-		io::BufferedReadWriteStream rgbWriteStream;
-		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, rgbWriteStream, testSaveCtx))
+		ASSERT_TRUE(palFormat2.save(palSceneGraph, palFile2, archive, testSaveCtx))
 			<< "Failed to write pal model " << palFile2;
-		rgbWriteStream.seek(0);
 
 		palette::Palette palPalette2;
-		ASSERT_EQ(palFormat2.loadPalette(palFile2, rgbWriteStream, palPalette2, testLoadCtx), expectedColors);
+		ASSERT_EQ(palFormat2.loadPalette(palFile2, archive, palPalette2, testLoadCtx), expectedColors);
 		// ASSERT_TRUE(checkNoAlpha(palPalette2));
 
 		for (size_t i = 0; i < expectedColors; ++i) {

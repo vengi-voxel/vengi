@@ -5,7 +5,9 @@
 #include "MD2Format.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Archive.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -25,37 +27,42 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool MD2Format::voxelizeGroups(const core::String &filename, io::SeekableReadStream &stream,
+bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
 	MD2Header hdr;
 
-	const int64_t startOffset = stream.pos();
+	const int64_t startOffset = stream->pos();
 
-	wrap(stream.readUInt32(hdr.magic))
+	wrap(stream->readUInt32(hdr.magic))
 	if (hdr.magic != FourCC('I', 'D', 'P', '2')) {
 		Log::error("Could not load md2 file: Invalid magic");
 		return false;
 	}
-	wrap(stream.readUInt32(hdr.version))
+	wrap(stream->readUInt32(hdr.version))
 	if (hdr.version != MD2_VERSION) {
 		Log::error("Could not load md2 file: Invalid version");
 		return false;
 	}
-	wrap(stream.readUInt32(hdr.skinWidth))
-	wrap(stream.readUInt32(hdr.skinHeight))
-	wrap(stream.readUInt32(hdr.frameSize))
-	wrap(stream.readUInt32(hdr.numSkins))
-	wrap(stream.readUInt32(hdr.numVerts))
-	wrap(stream.readUInt32(hdr.numST))
-	wrap(stream.readUInt32(hdr.numTris))
-	wrap(stream.readUInt32(hdr.numGLCmds))
-	wrap(stream.readUInt32(hdr.numFrames))
-	wrap(stream.readUInt32(hdr.offsetSkins))
-	wrap(stream.readUInt32(hdr.offsetST))
-	wrap(stream.readUInt32(hdr.offsetTris))
-	wrap(stream.readUInt32(hdr.offsetFrames))
-	wrap(stream.readUInt32(hdr.offsetGLCmds))
-	wrap(stream.readUInt32(hdr.offsetEnd))
+	wrap(stream->readUInt32(hdr.skinWidth))
+	wrap(stream->readUInt32(hdr.skinHeight))
+	wrap(stream->readUInt32(hdr.frameSize))
+	wrap(stream->readUInt32(hdr.numSkins))
+	wrap(stream->readUInt32(hdr.numVerts))
+	wrap(stream->readUInt32(hdr.numST))
+	wrap(stream->readUInt32(hdr.numTris))
+	wrap(stream->readUInt32(hdr.numGLCmds))
+	wrap(stream->readUInt32(hdr.numFrames))
+	wrap(stream->readUInt32(hdr.offsetSkins))
+	wrap(stream->readUInt32(hdr.offsetST))
+	wrap(stream->readUInt32(hdr.offsetTris))
+	wrap(stream->readUInt32(hdr.offsetFrames))
+	wrap(stream->readUInt32(hdr.offsetGLCmds))
+	wrap(stream->readUInt32(hdr.offsetEnd))
 
 	if (hdr.numVerts >= MD2_MAX_VERTS) {
 		Log::error("Max verts exceeded");
@@ -72,10 +79,10 @@ bool MD2Format::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 
 	core::StringMap<image::ImagePtr> textures;
 
-	stream.seek(startOffset + hdr.offsetSkins);
+	stream->seek(startOffset + hdr.offsetSkins);
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
 		core::String skinname;
-		if (!stream.readString(MD2_MAX_SKINNAME, skinname)) {
+		if (!stream->readString(MD2_MAX_SKINNAME, skinname)) {
 			Log::error("Failed to read skin name");
 			return false;
 		}
@@ -87,7 +94,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, io::SeekableReadStr
 		textures.put(skinname, image::loadImage(lookupTexture(filename, skinname)));
 	}
 
-	if (!loadFrame(filename, stream, startOffset, hdr, 0, sceneGraph, textures)) {
+	if (!loadFrame(filename, *stream, startOffset, hdr, 0, sceneGraph, textures)) {
 		Log::error("Failed to load frame");
 		return false;
 	}

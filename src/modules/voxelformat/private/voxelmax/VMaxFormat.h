@@ -241,18 +241,18 @@ private:
 							   const palette::Palette &palette) const;
 	bool loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName, palette::Palette &palette,
 								const LoadContext &ctx) const;
-	bool loadGroupsPalette(const core::String &filename, io::SeekableReadStream &stream,
+	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 
 public:
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override {
+					const io::ArchivePtr &archive, const SaveContext &ctx) override {
 		return false;
 	}
-	image::ImagePtr loadScreenshot(const core::String &filename, io::SeekableReadStream &stream,
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
-	size_t loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette,
+	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 };
 

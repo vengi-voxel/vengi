@@ -15,10 +15,10 @@ namespace voxelformat {
  */
 class VXCFormat : public Format {
 protected:
-	bool loadGroups(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-					io::SeekableWriteStream &stream, const SaveContext &ctx) override;
+					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 };
 
 } // namespace voxelformat
