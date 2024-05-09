@@ -33,6 +33,19 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 	return ret;
 }
 
+static FileMode convertMode(const core::String &path, FileMode mode) {
+	if (core::string::isAbsolutePath(path)) {
+		if (mode == FileMode::Read) {
+			return FileMode::SysRead;
+		}
+		if (mode == FileMode::Write) {
+			return FileMode::SysWrite;
+		}
+		core_assert_msg(false, "mode not supported: %d", (int)mode);
+	}
+	return mode;
+}
+
 io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) const {
 	for (const auto &e : _files) {
 		// TODO: implement case insensitive search
@@ -45,6 +58,12 @@ io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) con
 			return file;
 		}
 		Log::trace("%s doesn't match %s", e.fullPath.c_str(), path.c_str());
+	}
+	if (_files.empty()) {
+		const io::FilePtr &file = _filesytem->open(path, convertMode(path, mode));
+		if (file->validHandle()) {
+			return file;
+		}
 	}
 	Log::warn("Could not open %s", path.c_str());
 	return {};
