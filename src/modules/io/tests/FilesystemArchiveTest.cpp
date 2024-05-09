@@ -3,13 +3,14 @@
  */
 
 #include "io/FilesystemArchive.h"
+#include "app/tests/AbstractTest.h"
 #include "core/tests/TestHelper.h"
 #include "io/Filesystem.h"
 #include <gtest/gtest.h>
 
 namespace io {
 
-class FilesystemArchiveTest : public testing::Test {
+class FilesystemArchiveTest : public app::AbstractTest {
 protected:
 	io::FilesystemPtr fs;
 

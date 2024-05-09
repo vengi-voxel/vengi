@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "app/tests/AbstractTest.h"
 #include "core/tests/TestHelper.h"
 #include "io/Filesystem.h"
 #include "core/Algorithm.h"
@@ -12,7 +13,7 @@
 
 namespace io {
 
-class FilesystemTest : public testing::Test {};
+class FilesystemTest : public app::AbstractTest {};
 
 ::std::ostream &operator<<(::std::ostream &ostream, const core::DynamicArray<io::FilesystemEntry> &val) {
 	for (const auto &e : val) {

@@ -1,3 +1,4 @@
+#include "app/tests/AbstractTest.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -5,7 +6,7 @@
 
 namespace io {
 
-class FileTest : public testing::Test {};
+class FileTest : public app::AbstractTest {};
 
 TEST_F(FileTest, testIsAnyOf) {
 	io::Filesystem fs;

@@ -5,7 +5,6 @@
 #include "AbstractTest.h"
 #include "core/Log.h"
 #include "core/Var.h"
-#include "command/Command.h"
 #include "core/TimeProvider.h"
 #include "io/Filesystem.h"
 
@@ -74,6 +73,9 @@ AppState AbstractTest::TestApp::onInit() {
 	if (!_test->onInitApp()) {
 		return AppState::InitFailure;
 	}
+#ifdef SDL_HINT_SHUTDOWN_DBUS_ON_QUIT
+	SDL_SetHint(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, "1");
+#endif
 
 	return state;
 }
@@ -84,6 +86,7 @@ AbstractTest::TestApp::~TestApp() {
 		core_trace_scoped(AppMainLoop);
 		onFrame();
 	}
+	SDL_Quit();
 }
 
 }
