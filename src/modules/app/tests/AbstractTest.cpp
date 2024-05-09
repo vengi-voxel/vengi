@@ -7,6 +7,7 @@
 #include "core/Var.h"
 #include "core/TimeProvider.h"
 #include "io/Filesystem.h"
+#include <SDL.h>
 
 extern char **_argv;
 extern int _argc;
