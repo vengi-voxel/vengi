@@ -12,26 +12,6 @@
 
 namespace io {
 
-ZipArchive::ZipArchive() {
-}
-
-ZipArchive::~ZipArchive() {
-	ZipArchive::shutdown();
-}
-
-void ZipArchive::shutdown() {
-	reset();
-}
-
-void ZipArchive::reset() {
-	if (_zip == nullptr) {
-		return;
-	}
-	mz_zip_end((mz_zip_archive*)_zip);
-	core_free(_zip);
-	_zip = nullptr;
-}
-
 static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf, size_t targetBufSize) {
 	io::SeekableReadStream *stream = (io::SeekableReadStream *)userdata;
 	mz_int64 currentPos = stream->pos();
@@ -76,6 +56,26 @@ static void ziparchive_free(void *opaque, void *address) {
 
 static void *ziparchive_realloc(void *opaque, void *address, size_t items, size_t size) {
 	return core_realloc(address, items * size);
+}
+
+ZipArchive::ZipArchive() {
+}
+
+ZipArchive::~ZipArchive() {
+	ZipArchive::shutdown();
+}
+
+void ZipArchive::shutdown() {
+	reset();
+}
+
+void ZipArchive::reset() {
+	if (_zip == nullptr) {
+		return;
+	}
+	mz_zip_end((mz_zip_archive*)_zip);
+	core_free(_zip);
+	_zip = nullptr;
 }
 
 bool ZipArchive::validStream(io::SeekableReadStream &stream) {
