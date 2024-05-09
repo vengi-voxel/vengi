@@ -379,31 +379,25 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			Log::debug("Skip reading home path");
 			continue;
 		}
-		const core::String fullpath = core::string::path(p, filename);
-		io::File fullFile(fullpath, FileMode::Read);
-		if (fullFile.exists()) {
-			fullFile.close();
+		core::String fullpath = core::string::path(p, filename);
+		if (fs_exists(fullpath.c_str())) {
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
-			return core::make_shared<io::File>(fullpath, openmode);
+			return core::make_shared<io::File>(core::move(fullpath), openmode);
 		}
 		if (isRelativePath(p)) {
 			for (const core::String &s : _paths) {
 				if (s == p) {
 					continue;
 				}
-				const core::String fullrelpath = core::string::path(s, p, filename);
-				io::File fullrelFile(fullrelpath, FileMode::Read);
-				if (fullrelFile.exists()) {
-					fullrelFile.close();
+				core::String fullrelpath = core::string::path(s, p, filename);
+				if (fs_exists(fullrelpath.c_str())) {
 					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
-					return core::make_shared<io::File>(fullrelpath, openmode);
+					return core::make_shared<io::File>(core::move(fullrelpath), openmode);
 				}
 			}
 		}
 	}
-	io::File f(filename, FileMode::Read);
-	if (f.exists()) {
-		f.close();
+	if (fs_exists(filename.c_str())) {
 		Log::debug("loading file '%s'", filename.c_str());
 		return core::make_shared<io::File>(filename, openmode);
 	}
