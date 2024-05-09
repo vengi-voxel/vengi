@@ -28,9 +28,9 @@ public:
 
 TEST_F(FilesystemArchiveTest, testFilesytemArchive) {
 	io::FilesystemArchive fsa(fs);
-	fsa.add(".");
+	fsa.add(".", "*.txt");
 	ASSERT_FALSE(fsa.files().empty());
-	SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().fullPath);
+	SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().name);
 	ASSERT_TRUE(stream);
 	EXPECT_TRUE(fsa.exists("iotest.txt"));
 }
