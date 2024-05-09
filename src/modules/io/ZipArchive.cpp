@@ -165,4 +165,9 @@ bool ZipArchive::load(const core::String &filePath, io::SeekableWriteStream &out
 	return true;
 }
 
+SeekableWriteStreamPtr ZipArchive::writeStream(const core::String &filePath) {
+	// TODO: implement me
+	return SeekableWriteStreamPtr{};
+}
+
 } // namespace io
