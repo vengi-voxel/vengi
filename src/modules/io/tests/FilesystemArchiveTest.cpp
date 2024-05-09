@@ -2,25 +2,26 @@
  * @file
  */
 
+#include "io/FilesystemArchive.h"
 #include "core/tests/TestHelper.h"
 #include "io/Filesystem.h"
-#include "io/FilesystemArchive.h"
 #include <gtest/gtest.h>
 
 namespace io {
 
 class FilesystemArchiveTest : public testing::Test {
 protected:
-    io::FilesystemPtr fs;
+	io::FilesystemPtr fs;
+
 public:
 	void SetUp() override {
-        fs = core::make_shared<io::Filesystem>();
-	    EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
+		fs = core::make_shared<io::Filesystem>();
+		EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
 	}
 
 	void TearDown() override {
-	    fs->shutdown();
-        fs.release();
+		fs->shutdown();
+		fs.release();
 	}
 };
 
