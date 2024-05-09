@@ -46,6 +46,7 @@ protected:
 
 public:
 	File(const core::String& rawPath, FileMode mode = FileMode::Read);
+	File(core::String&& rawPath, FileMode mode = FileMode::Read);
 	virtual ~File();
 
 	/**

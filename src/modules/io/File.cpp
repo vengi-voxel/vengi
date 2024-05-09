@@ -28,6 +28,12 @@ File::File(const core::String& rawPath, FileMode mode) :
 	_file = createRWops(mode);
 }
 
+File::File(core::String&& rawPath, FileMode mode) :
+		IOResource(), _rawPath(core::move(rawPath)), _mode(mode) {
+	normalizePath(_rawPath);
+	_file = createRWops(mode);
+}
+
 File::~File() {
 	close();
 }
