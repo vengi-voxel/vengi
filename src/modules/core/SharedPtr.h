@@ -85,7 +85,7 @@ public:
 	}
 
 	SharedPtr &operator=(const SharedPtr &obj) {
-		if (&obj == this) {
+		if (&obj == this || _ptr == obj._ptr) {
 			return *this;
 		}
 		release();
@@ -96,6 +96,9 @@ public:
 	}
 
 	SharedPtr &operator=(SharedPtr &&obj) noexcept {
+		if (&obj == this || _ptr == obj._ptr) {
+			return *this;
+		}
 		release();
 		_ptr = obj._ptr;
 		_refCnt = obj._refCnt;
