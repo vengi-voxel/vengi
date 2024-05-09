@@ -24,6 +24,9 @@ bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *s
 }
 
 bool FilesystemArchive::add(const core::String &path, const core::String &filter, int depth) {
+	if (path.empty()) {
+		return false;
+	}
 	ArchiveFiles files;
 	const bool ret = _filesytem->list(path, files, filter, depth);
 	_files.append(files);
