@@ -18,7 +18,7 @@ protected:
 		io::MemoryReadStream stream(base64Input.c_str(), base64Input.size());
 		io::Base64ReadStream base64Stream(stream);
 
-		EXPECT_EQ(0, base64Input.size() % 4) << "Unexpected input size: " << base64Input.size() << " for " << base64Input;
+		EXPECT_EQ(0u, base64Input.size() % 4) << "Unexpected input size: " << base64Input.size() << " for " << base64Input;
 
 		core::String out;
 		base64Stream.readString(expectedOutput.size(), out, false);
