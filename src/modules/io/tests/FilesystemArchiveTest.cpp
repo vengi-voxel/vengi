@@ -26,8 +26,8 @@ public:
 	}
 };
 
-TEST_F(FilesystemArchiveTest, testFilesytemArchiveShortNames) {
-	io::FilesystemArchive fsa(fs, false);
+TEST_F(FilesystemArchiveTest, testFilesytemArchive) {
+	io::FilesystemArchive fsa(fs);
     fsa.add(".");
     ASSERT_FALSE(fsa.files().empty());
     SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().fullPath);

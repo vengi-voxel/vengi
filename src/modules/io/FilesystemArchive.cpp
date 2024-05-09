@@ -11,8 +11,8 @@
 
 namespace io {
 
-FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath)
-	: _filesytem(filesytem), _fullPath(fullPath) {
+FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem)
+	: _filesytem(filesytem) {
 }
 
 FilesystemArchive::~FilesystemArchive() {
@@ -26,11 +26,6 @@ bool FilesystemArchive::init(const core::String &path, io::SeekableReadStream *s
 bool FilesystemArchive::add(const core::String &path, const core::String &filter, int depth) {
 	ArchiveFiles files;
 	const bool ret = _filesytem->list(path, files, filter, depth);
-	if (_fullPath) {
-		for (FilesystemEntry &e : files) {
-			e.fullPath = core::string::path(path, e.fullPath);
-		}
-	}
 	_files.append(files);
 	return ret;
 }

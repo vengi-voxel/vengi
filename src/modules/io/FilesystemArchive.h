@@ -16,11 +16,10 @@ namespace io {
 class FilesystemArchive : public Archive {
 protected:
 	io::FilesystemPtr _filesytem;
-	bool _fullPath;
 
 	io::FilePtr open(const core::String &path, FileMode mode) const;
 public:
-	FilesystemArchive(const io::FilesystemPtr &filesytem, bool fullPath = true);
+	FilesystemArchive(const io::FilesystemPtr &filesytem);
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);

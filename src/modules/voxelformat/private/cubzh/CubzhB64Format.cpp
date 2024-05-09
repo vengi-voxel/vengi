@@ -182,7 +182,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &s
 	const core::String &path = core::string::extractPath(filename);
 
 	// e.g. the hubmap.b64 is in bundle/misc, the 3zh files in bundle/cache
-	io::FilesystemArchive archive(io::filesystem(), false);
+	io::FilesystemArchive archive(io::filesystem());
 	archive.add(core::string::path(path, "..", "cache"), "*.3zh", 1);
 	archive.add(path, "*.3zh", 1);
 	archive.add(core::string::path(path, "cache"), "*.3zh", 1);
