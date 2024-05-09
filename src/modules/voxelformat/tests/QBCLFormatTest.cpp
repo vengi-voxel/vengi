@@ -40,9 +40,9 @@ TEST_F(QBCLFormatTest, testLoadScreenshot) {
 
 TEST_F(QBCLFormatTest, testLoadCrabby) {
 	scenegraph::SceneGraph qbclsceneGraph;
-	testLoad(qbclsceneGraph, "crabby.qbcl");
+	testLoad(qbclsceneGraph, "crabby.qbcl", 2);
 	scenegraph::SceneGraph voxsceneGraph;
-	testLoad(voxsceneGraph, "crabby.vox");
+	testLoad(voxsceneGraph, "crabby.vox", 2);
 	voxel::sceneGraphComparator(qbclsceneGraph, voxsceneGraph, voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette);
 }
 

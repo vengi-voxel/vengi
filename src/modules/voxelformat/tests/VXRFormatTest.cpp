@@ -39,7 +39,7 @@ TEST_F(VXRFormatTest, testSaveLoadVoxel) {
 
 TEST_F(VXRFormatTest, testGiantDinosaur) {
 	scenegraph::SceneGraph sceneGraph;
-	testLoad(sceneGraph, "giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.vxr");
+	testLoad(sceneGraph, "giant_dinosaur/Reptiles_Biped_Giant_Dinossaur_V2.vxr", 22);
 	{
 		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("Hip");
 		ASSERT_NE(nullptr, node);
