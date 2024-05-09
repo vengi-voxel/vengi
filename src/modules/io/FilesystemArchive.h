@@ -23,7 +23,7 @@ public:
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);
-	bool exists(const core::String &file);
+	bool exists(const core::String &file) const override;
 	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
 	SeekableReadStreamPtr readStream(const core::String &filePath) override;
 	SeekableWriteStreamPtr writeStream(const core::String &filePath) override;

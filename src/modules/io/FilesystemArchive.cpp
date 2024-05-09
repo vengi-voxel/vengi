@@ -47,7 +47,7 @@ io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) con
 	return {};
 }
 
-bool FilesystemArchive::exists(const core::String &filePath) {
+bool FilesystemArchive::exists(const core::String &filePath) const {
 	return open(filePath, FileMode::Read);
 }
 

@@ -30,6 +30,7 @@ protected:
 public:
 	const ArchiveFiles &files() const;
 	virtual ~Archive() = default;
+	virtual bool exists(const core::String &file) const;
 
 	/**
 	 * @param[in] stream @c io::SeekableReadStream pointer can be @c nullptr

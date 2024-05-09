@@ -3,6 +3,7 @@
  */
 
 #include "Archive.h"
+#include "core/Algorithm.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
@@ -21,8 +22,13 @@ void Archive::shutdown() {
 	_files.clear();
 }
 
+bool Archive::exists(const core::String &file) const {
+	return core::find_if(_files.begin(), _files.end(), [&](const auto &e1) { return e1.fullPath == file; }) !=
+		   _files.end();
+}
+
 SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
-	core::SharedPtr<BufferedReadWriteStream> stream = core::make_shared<BufferedReadWriteStream>();
+	const core::SharedPtr<BufferedReadWriteStream> &stream = core::make_shared<BufferedReadWriteStream>();
 	if (!load(filePath, *(stream.get()))) {
 		return SeekableReadStreamPtr{};
 	}
@@ -35,7 +41,7 @@ SeekableWriteStreamPtr Archive::writeStream(const core::String &filePath) {
 }
 
 bool isSupportedArchive(const core::String &filename) {
-	const core::String ext = core::string::extractExtension(filename);
+	const core::String &ext = core::string::extractExtension(filename);
 	return ext == "zip" || ext == "pk3";
 }
 

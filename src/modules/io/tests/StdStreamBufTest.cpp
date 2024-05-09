@@ -3,7 +3,6 @@
  */
 
 #include "io/StdStreamBuf.h"
-#include "core/ArrayLength.h"
 #include "io/BufferedReadWriteStream.h"
 #include <gtest/gtest.h>
 
