@@ -59,6 +59,9 @@ app::AppState TestApp::onInit() {
 	if (state != app::AppState::Running) {
 		return state;
 	}
+#ifdef SDL_HINT_SHUTDOWN_DBUS_ON_QUIT
+	SDL_SetHint(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, "1");
+#endif
 	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));
 	Log::init();
 
