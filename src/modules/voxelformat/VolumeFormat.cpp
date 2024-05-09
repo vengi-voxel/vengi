@@ -635,10 +635,6 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		Log::error("Failed to save model file %s - no volumes given", filename.c_str());
 		return false;
 	}
-	const core::String &type = sceneGraph.root().property("Type");
-	if (!type.empty()) {
-		Log::debug("Save '%s' file to '%s'", type.c_str(), filename.c_str());
-	}
 	const core::String &ext = core::string::extractExtension(filename);
 	if (desc) {
 		if (!desc->matchesExtension(ext)) {
@@ -658,7 +654,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		}
 	}
 	for (desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
+		if (desc->matchesExtension(ext)) {
 			core::SharedPtr<Format> f = getFormat(*desc, 0u);
 			if (f) {
 				if (f->save(sceneGraph, filename, stream, ctx)) {
