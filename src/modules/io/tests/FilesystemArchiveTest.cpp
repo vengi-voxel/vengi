@@ -28,11 +28,11 @@ public:
 
 TEST_F(FilesystemArchiveTest, testFilesytemArchive) {
 	io::FilesystemArchive fsa(fs);
-    fsa.add(".");
-    ASSERT_FALSE(fsa.files().empty());
-    SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().fullPath);
-    ASSERT_TRUE(stream);
-    EXPECT_TRUE(fsa.exists("iotest.txt"));
+	fsa.add(".");
+	ASSERT_FALSE(fsa.files().empty());
+	SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().fullPath);
+	ASSERT_TRUE(stream);
+	EXPECT_TRUE(fsa.exists("iotest.txt"));
 }
 
 } // namespace io
