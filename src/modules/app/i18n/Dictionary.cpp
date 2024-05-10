@@ -71,10 +71,10 @@ const char *Dictionary::translatePlural(const Entries &dict, const char *msgid, 
 
 		return msgidPlural;
 	}
-	Log::debug("Couldn't translate: %s", msgid);
-	Log::debug("Candidates:");
+	Log::trace("Couldn't translate: %s", msgid);
+	Log::trace("Candidates:");
 	for (const auto &e : dict) {
-		Log::debug("'%s'", e->first.c_str());
+		Log::trace("'%s'", e->first.c_str());
 	}
 
 	if (count == 1) {
@@ -98,7 +98,7 @@ const char *Dictionary::translate(const Entries &dict, const char *msgid) const 
 	if (i != dict.end() && !i->second.empty()) {
 		return i->second[0].c_str();
 	}
-	Log::debug("Couldn't translate: %s", msgid);
+	Log::trace("Couldn't translate: %s", msgid);
 
 	if (_hasFallback) {
 		return _fallback->translate(msgid);
@@ -111,7 +111,7 @@ const char *Dictionary::translateCtxt(const char *msgctxt, const char *msgid) co
 	if (i != _ctxtEntries.end()) {
 		return translate(i->second, msgid);
 	}
-	Log::debug("Couldn't translate: %s", msgid);
+	Log::trace("Couldn't translate: %s", msgid);
 	return msgid;
 }
 
@@ -121,7 +121,7 @@ const char *Dictionary::translateCtxtPlural(const char *msgctxt, const char *msg
 	if (i != _ctxtEntries.end()) {
 		return translatePlural(i->second, msgid, msgidplural, num);
 	}
-	Log::debug("Couldn't translate: %s", msgid);
+	Log::trace("Couldn't translate: %s", msgid);
 	if (num != 1) {
 		// default to english
 		return msgidplural;
