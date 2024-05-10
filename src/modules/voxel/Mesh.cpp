@@ -504,7 +504,16 @@ void Mesh::optimize() {
 	if (isEmpty()) {
 		return;
 	}
-	// TODO: https://github.com/vengi-voxel/vengi/issues/372
+	core_trace_scoped(MeshOptimize);
+	meshopt_optimizeVertexCache(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.size());
+	meshopt_optimizeOverdraw(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), &_vecVertices.data()->position.x, _vecVertices.size(), sizeof(VoxelVertex), 1.05f);
+	meshopt_optimizeVertexFetch(_vecVertices.data(), _vecIndices.data(), _vecIndices.size(), _vecVertices.data(), _vecVertices.size(), sizeof(VoxelVertex));
+	const IndexArray oldIndices(_vecIndices);
+	const size_t newSize =
+		meshopt_simplify(_vecIndices.data(), oldIndices.data(), oldIndices.size(), &_vecVertices.data()->position.x,
+						 _vecVertices.size(), sizeof(VoxelVertex), oldIndices.size() / 2, 0.1f, 0, nullptr);
+	Log::debug("newSize: %i, oldsize: %i", (int)newSize, (int)oldIndices.size());
+	_vecIndices.resize(newSize);
 }
 
 } // namespace voxel

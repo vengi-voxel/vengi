@@ -95,7 +95,7 @@ static void generateVertex(math::Axis axis, const palette::Palette &palette, Raw
 	sampler.movePositive(axis);
 }
 
-void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &region, ChunkMesh *result) {
+void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &palette, const Region &region, ChunkMesh *result, bool optimize) {
 	core_assert_msg(volume != nullptr, "Provided volume cannot be null");
 	core_assert_msg(result != nullptr, "Provided mesh cannot be null");
 
@@ -279,6 +279,9 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 		core::exchange(indicesBuf, previousIndicesBuf);
 	}
 
+	if (optimize) {
+		result->optimize();
+	}
 	result->setOffset(region.getLowerCorner());
 	result->removeUnusedVertices();
 	result->compressIndices();

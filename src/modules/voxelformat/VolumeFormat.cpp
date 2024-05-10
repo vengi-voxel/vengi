@@ -4,7 +4,6 @@
 
 #include "VolumeFormat.h"
 #include "app/App.h"
-#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"

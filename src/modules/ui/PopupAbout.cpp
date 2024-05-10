@@ -66,6 +66,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
 					ImGui::URLItem("lucide", "https://lucide.dev/", w);
+					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", w);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
 					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
 					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);

@@ -388,7 +388,7 @@ static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 	return 0; //Should never happen.
 }
 
-void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, ChunkMesh* result, const glm::ivec3& translate, bool mergeQuads, bool reuseVertices, bool ambientOcclusion) {
+void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, ChunkMesh* result, const glm::ivec3& translate, bool mergeQuads, bool reuseVertices, bool ambientOcclusion, bool optimize) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	result->clear();
@@ -726,6 +726,9 @@ void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, Chu
 		}
 	}
 
+	if (optimize) {
+		result->optimize();
+	}
 	result->removeUnusedVertices();
 	result->compressIndices();
 }

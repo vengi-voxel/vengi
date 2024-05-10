@@ -30,6 +30,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar(_("Reuse vertices"), cfg::VoxformatReusevertices);
 			ImGui::CheckboxVar(_("Ambient occlusion"), cfg::VoxformatAmbientocclusion);
 			ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatTransform);
+			ImGui::CheckboxVar(_("Apply optimizations"), cfg::VoxformatOptimize);
 			ImGui::CheckboxVar(_("Exports quads"), cfg::VoxformatQuads);
 			ImGui::CheckboxVar(_("Vertex colors"), cfg::VoxformatWithColor);
 			ImGui::CheckboxVar(_("Normals"), cfg::VoxformatWithNormals);

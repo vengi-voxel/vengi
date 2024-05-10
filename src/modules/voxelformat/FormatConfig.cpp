@@ -58,6 +58,8 @@ bool FormatConfig::init() {
 				   "Export with uv coordinates of the palette image", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatTransform, "true", core::CV_NOPERSIST,
 				   "Apply the scene graph transform to mesh exports", core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatOptimize, "false", core::CV_NOPERSIST,
+				   "Apply mesh optimization steps to meshes", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST,
 				   "Fill the hollows when voxelizing a mesh format", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVoxelizeMode, "0", core::CV_NOPERSIST,

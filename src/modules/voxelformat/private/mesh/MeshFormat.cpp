@@ -563,6 +563,8 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	const bool withNormals = core::Var::getSafe(cfg::VoxformatWithNormals)->boolVal();
 	const bool withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords)->boolVal();
 	const bool applyTransform = core::Var::getSafe(cfg::VoxformatTransform)->boolVal();
+	const bool optimizeMesh = core::Var::getSafe(cfg::VoxformatOptimize)->boolVal();
+
 	const voxel::SurfaceExtractionType type = (voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 
 	const size_t models = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
@@ -582,8 +584,9 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 				Log::debug("Calculate normals");
 				mesh->calculateNormals();
 			}
-			Log::debug("Optimize mesh");
-			mesh->optimize();
+			if (optimizeMesh) {
+				mesh->optimize();
+			}
 
 			core::ScopedLock scoped(lock);
 			meshes.emplace_back(mesh, node, applyTransform);
