@@ -55,6 +55,7 @@ function(generate_shaders TARGET)
 	foreach (SHADER ${ARGN})
 		generate_shader(${TARGET}-shaders ${SHADER} ${GEN_DIR} ${SHADERTOOL_INCLUDE_DIRS})
 	endforeach()
+	add_dependencies(${TARGET} ${TARGET}-shaders)
 	target_link_libraries(${TARGET} PUBLIC ${TARGET}-shaders)
 endfunction()
 
