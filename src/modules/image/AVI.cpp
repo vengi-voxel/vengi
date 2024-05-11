@@ -3,6 +3,7 @@
  */
 
 #include "AVI.h"
+#include "core/Assert.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "image/Image.h"

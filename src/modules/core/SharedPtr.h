@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/concurrent/Atomic.h"
-#include "core/Assert.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
 #include <new>
