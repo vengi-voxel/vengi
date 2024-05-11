@@ -127,4 +127,10 @@
   <url type="donation">https://www.paypal.me/MartinGerhardy</url>
   <content_rating type="oars-1.1"/>
   <launchable type="desktop-id">vengi-voxedit.desktop</launchable>
+  <provides>
+    <id>io.github.mgerhardy.vengi.voxedit</id>
+  </provides>
+  <replaces>
+    <id>io.github.mgerhardy.vengi.voxedit</id>
+  </replaces>
 </component>
