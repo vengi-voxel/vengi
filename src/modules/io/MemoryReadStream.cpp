@@ -7,7 +7,7 @@
 
 namespace io {
 
-MemoryReadStream::MemoryReadStream(const void *buf, uint32_t size) : _buf((const uint8_t*)buf), _size(size) {
+MemoryReadStream::MemoryReadStream(const void *buf, size_t size) : _buf((const uint8_t*)buf), _size(size) {
 }
 
 MemoryReadStream::~MemoryReadStream() {

@@ -190,7 +190,7 @@ bool SchematicFormat::loadLitematic(const priv::NamedBinaryTag &schematic, scene
 				const priv::NamedBinaryTag &materialName = palNbt.get("Name");
 				mcpal[paletteSize++] = findPaletteIndex(materialName.string()->c_str(), 1);
 			}
-			const int n = blockStatePaletteNbt.size();
+			const int n = (int)blockStatePaletteNbt.size();
 			int bits = 0;
 			while (n > (1 << bits)) {
 				++bits;

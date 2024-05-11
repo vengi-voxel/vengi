@@ -46,7 +46,7 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 			return {};
 		}
 		outStream.seek(0);
-		outStream.readString(outStream.size(), json);
+		outStream.readString((int)outStream.size(), json);
 	}
 	return sources(json);
 }

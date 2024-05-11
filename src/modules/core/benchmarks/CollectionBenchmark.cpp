@@ -13,7 +13,7 @@ BENCHMARK_DEFINE_F(MapBenchmark, compareToMapStd) (benchmark::State& state) {
 		const int64_t n = state.range(0);
 		for (int64_t i = 0; i < n; ++i) {
 			map.insert(std::make_pair(i, i));
-			const int value = map[i];
+			const int value = (int)map[i];
 			if (value != i) {
 				state.SkipWithError("Failed!");
 				break;
@@ -28,7 +28,7 @@ BENCHMARK_DEFINE_F(MapBenchmark, compareToUnorderedMapStd) (benchmark::State& st
 		const int64_t n = state.range(0);
 		for (int64_t i = 0; i < n; ++i) {
 			unorderedMap.insert(std::make_pair(i, i));
-			const int value = unorderedMap[i];
+			const int value = (int)unorderedMap[i];
 			if (value != i) {
 				state.SkipWithError("Failed!");
 				break;

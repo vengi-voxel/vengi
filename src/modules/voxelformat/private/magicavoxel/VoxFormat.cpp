@@ -165,7 +165,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, io::SeekableRead
 	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_groups |
 								   k_read_scene_flags_keep_empty_models_instances |
 								   k_read_scene_flags_keep_duplicate_models;
-	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, size, ogt_vox_flags);
+	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, (uint32_t)size, ogt_vox_flags);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
@@ -233,7 +233,7 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 		ogt_instance.layer_index = layerIdx;
 		ogt_instance.name = node.name().c_str();
 		ogt_instance.hidden = !node.visible();
-		ogt_instance.transform_anim.num_keyframes = keyFrames.size();
+		ogt_instance.transform_anim.num_keyframes = (uint32_t)keyFrames.size();
 		// set this to the start pointer of the ctx.keyframeTransforms array - the array is filled below
 		ogt_instance.transform_anim.keyframes =
 			ogt_instance.transform_anim.num_keyframes ? &ctx.keyframeTransforms[ctx.transformKeyFrameIdx] : nullptr;
@@ -307,7 +307,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		{
 			ogt_vox_cam ogt_cam;
 			core_memset(&ogt_cam, 0, sizeof(ogt_cam));
-			ogt_cam.camera_id = ctx.cameras.size();
+			ogt_cam.camera_id = (uint32_t)ctx.cameras.size();
 			const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
 			ogt_cam.angle[0] = euler[0];
 			ogt_cam.angle[1] = euler[2];
@@ -347,7 +347,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 
 			ctx.models.push_back(ogt_model);
 		}
-		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, ctx.models.size() - 1);
+		saveInstance(sceneGraph, node, ctx, parentGroupIdx, layerIdx, (uint32_t)(ctx.models.size() - 1));
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
@@ -381,22 +381,22 @@ bool VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	ogt_vox_scene output_scene;
 	core_memset(&output_scene, 0, sizeof(output_scene));
-	output_scene.num_groups = ctx.groups.size();
+	output_scene.num_groups = (uint32_t)ctx.groups.size();
 	if (output_scene.num_groups > 0) {
 		output_scene.groups = &ctx.groups[0];
 	}
-	output_scene.num_instances = ctx.instances.size();
+	output_scene.num_instances = (uint32_t)ctx.instances.size();
 	if (output_scene.num_instances > 0) {
 		output_scene.instances = &ctx.instances[0];
 	}
-	output_scene.num_layers = ctx.layers.size();
+	output_scene.num_layers = (uint32_t)ctx.layers.size();
 	if (output_scene.num_layers > 0) {
 		output_scene.layers = &ctx.layers[0];
 	}
-	output_scene.num_models = modelPtr.size();
+	output_scene.num_models = (uint32_t)modelPtr.size();
 	output_scene.models = modelsPtr;
 	core_memset(&output_scene.materials, 0, sizeof(output_scene.materials));
-	output_scene.num_cameras = ctx.cameras.size();
+	output_scene.num_cameras = (uint32_t)ctx.cameras.size();
 	if (output_scene.num_cameras > 0) {
 		output_scene.cameras = &ctx.cameras[0];
 	}

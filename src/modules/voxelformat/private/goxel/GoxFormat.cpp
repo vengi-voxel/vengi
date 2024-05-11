@@ -72,7 +72,7 @@ public:
 		core_assert_msg(chunkStart <= currentPos, "%u should be <= %u", (uint32_t)chunkStart, (uint32_t)currentPos);
 		const uint64_t chunkSize = currentPos - chunkStart;
 		_stream.seek(_chunkSizePos);
-		_stream.writeUInt32(chunkSize);
+		_stream.writeUInt32((uint32_t)chunkSize);
 		_stream.seek(currentPos);
 		_stream.writeUInt32(0); // CRC - not calculated
 		uint8_t buf[4];
@@ -602,13 +602,13 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStr
 }
 
 bool GoxFormat::saveChunk_DictEntryHeader(io::WriteStream &stream, const core::String &key, size_t valueSize) {
-	const int keyLength = key.size();
+	const int keyLength = (int)key.size();
 	wrapBool(stream.writeUInt32(keyLength))
 	if (stream.write(key.c_str(), keyLength) == -1) {
 		Log::error("Failed to write dict entry key");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(valueSize))
+	wrapBool(stream.writeUInt32((uint32_t)valueSize))
 	// here comes the data
 	return true;
 }

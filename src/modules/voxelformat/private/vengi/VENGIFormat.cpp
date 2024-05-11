@@ -56,7 +56,7 @@ bool VENGIFormat::saveNodeProperties(const scenegraph::SceneGraph &sceneGraph, c
 		return true;
 	}
 	wrapBool(stream.writeUInt32(FourCC('P', 'R', 'O', 'P')))
-	wrapBool(stream.writeUInt32(properties.size()))
+	wrapBool(stream.writeUInt32((uint32_t)properties.size()))
 	for (const auto &e : properties) {
 		wrapBool(stream.writePascalStringUInt16LE(e->key))
 		wrapBool(stream.writePascalStringUInt16LE(e->value))

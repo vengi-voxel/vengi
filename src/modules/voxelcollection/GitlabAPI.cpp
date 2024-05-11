@@ -54,7 +54,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 			return entries;
 		}
 		core::String json;
-		stream.readString(stream.size(), json);
+		stream.readString((int)stream.size(), json);
 		nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 		if (!jsonResponse.is_array()) {
 			const core::String str = jsonResponse.dump().c_str();

@@ -111,10 +111,10 @@ static core::RGBA toColor(const tinygltf::Accessor *gltfAttributeAccessor, const
 
 template<typename T>
 void copyGltfIndices(const uint8_t *data, size_t count, size_t stride, core::DynamicArray<uint32_t> &indices,
-					 uint32_t offset) {
+					 size_t offset) {
 	indices.reserve(indices.size() + count);
 	for (size_t i = 0; i < count; i++) {
-		indices.push_back((uint32_t)(*(const T *)data) + offset);
+		indices.push_back((uint32_t)((*(const T *)data) + offset));
 		data += stride;
 	}
 }
@@ -1557,7 +1557,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
 				const size_t indicedEnd = vertices.size();
 				for (size_t i = 0; i < indicedEnd; ++i) {
-					indices.push_back(i);
+					indices.push_back((uint32_t)i);
 				}
 			} else {
 				Log::warn("Unexpected primitive mode for assembling the indices: %i", primitive.mode);
@@ -1650,15 +1650,15 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, io::SeekableReadSt
 	tinygltf::Model gltfModel;
 	if (magic == FourCC('g', 'l', 'T', 'F')) {
 		Log::debug("Detected binary gltf stream");
-		state = gltfLoader.LoadBinaryFromMemory(&gltfModel, &err, nullptr, data, size, filePath.c_str(),
+		state = gltfLoader.LoadBinaryFromMemory(&gltfModel, &err, nullptr, data, (unsigned int)size, filePath.c_str(),
 												tinygltf::SectionCheck::NO_REQUIRE);
 		if (!state) {
 			Log::error("Failed to load binary gltf file: %s", err.c_str());
 		}
 	} else {
 		Log::debug("Detected ascii gltf stream");
-		state = gltfLoader.LoadASCIIFromString(&gltfModel, &err, nullptr, (const char *)data, size, filePath.c_str(),
-											   tinygltf::SectionCheck::NO_REQUIRE);
+		state = gltfLoader.LoadASCIIFromString(&gltfModel, &err, nullptr, (const char *)data, (unsigned int)size,
+											   filePath.c_str(), tinygltf::SectionCheck::NO_REQUIRE);
 		if (!state) {
 			Log::error("Failed to load ascii gltf file: %s", err.c_str());
 		}

@@ -18,7 +18,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "yocto_scene.h"
 
 namespace voxelpathtracer {
@@ -27,12 +26,6 @@ namespace priv {
 
 static inline yocto::vec3f toVec3f(const glm::vec3 &in) {
 	return yocto::vec3f{in.x, in.y, in.z};
-}
-
-static inline yocto::vec4f toColor(const glm::vec4 &color, uint8_t ao) {
-	// matches voxel.frag values
-	static const float aoValues[]{0.15f, 0.6f, 0.8f, 1.0f};
-	return yocto::vec4f{color.r * aoValues[ao], color.g * aoValues[ao], color.b * aoValues[ao], color.a};
 }
 
 /**

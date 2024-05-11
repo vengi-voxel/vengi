@@ -68,7 +68,7 @@ static void calculateHash(const scenegraph::SceneGraph &sceneGraph, uint64_t has
 		addNodeToHashStream_r(sceneGraph, node, stream);
 	}
 	uint8_t digest[16];
-	core::md5sum(stream.getBuffer(), stream.size(), digest);
+	core::md5sum(stream.getBuffer(), (uint32_t)stream.size(), digest);
 	io::MemoryReadStream md5stream(digest, sizeof(digest));
 	md5stream.readUInt64(hash[0]);
 	md5stream.readUInt64(hash[1]);
@@ -334,7 +334,7 @@ bool VXAFormat::saveRecursiveNode(const scenegraph::SceneGraph &sceneGraph, cons
 								  const core::String &animation, const core::String &filename,
 								  io::SeekableWriteStream &stream) {
 	const scenegraph::SceneGraphKeyFrames &kfs = node.keyFrames(animation);
-	wrapBool(stream.writeUInt32(kfs.size()))
+	wrapBool(stream.writeUInt32((uint32_t)kfs.size()))
 	for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
 		wrapBool(stream.writeInt32(kf.frameIdx))
 		const int interpolation = vxa_priv::getInterpolationType(kf.interpolation);

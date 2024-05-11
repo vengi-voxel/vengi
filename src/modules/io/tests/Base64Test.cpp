@@ -21,7 +21,7 @@ protected:
 		EXPECT_EQ(0u, base64Input.size() % 4) << "Unexpected input size: " << base64Input.size() << " for " << base64Input;
 
 		core::String out;
-		base64Stream.readString(expectedOutput.size(), out, false);
+		base64Stream.readString((int)expectedOutput.size(), out, false);
 		ASSERT_EQ(out, expectedOutput);
 		ASSERT_TRUE(stream.eos()) << "Still " << stream.remaining() << " bytes left in the stream of size "
 								  << stream.size() << " at pos " << stream.pos();
@@ -38,7 +38,7 @@ protected:
 		stream.seek(0);
 		core::String base64;
 		EXPECT_EQ(expectedBase64Output.size(), (size_t)stream.size());
-		stream.readString(stream.size(), base64, false);
+		stream.readString((int)stream.size(), base64, false);
 		EXPECT_EQ(expectedBase64Output, base64);
 	}
 };
@@ -51,7 +51,7 @@ TEST_F(Base64Test, testBase64Decode) {
 
 	char strbuff[7];
 	stream.seek(0);
-	EXPECT_TRUE(stream.readString(sizeof(strbuff) - 1, strbuff, false));
+	EXPECT_TRUE(stream.readString((int)(sizeof(strbuff) - 1), strbuff, false));
 	strbuff[6] = '\0';
 	EXPECT_STREQ("foobar", strbuff);
 }

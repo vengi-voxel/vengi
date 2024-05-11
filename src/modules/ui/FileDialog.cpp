@@ -417,7 +417,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type) {
 
 		// add filtered and sorted directory entries
 		ImGuiListClipper clipper;
-		clipper.Begin(_files.size(), ImGui::GetTextLineHeightWithSpacing());
+		clipper.Begin((int)_files.size(), ImGui::GetTextLineHeightWithSpacing());
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
 				const io::FilesystemEntry entry = *_files[i];

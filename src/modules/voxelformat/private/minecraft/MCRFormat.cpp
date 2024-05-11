@@ -593,7 +593,7 @@ bool MCRFormat::saveCompressedNBT(const scenegraph::SceneGraph &sceneGraph, io::
 		Log::error("Failed to seek for nbt size pos");
 		return false;
 	}
-	wrapBool(stream.writeUInt32BE(nbtSize))
+	wrapBool(stream.writeUInt32BE((uint32_t)nbtSize))
 	return stream.seek(nbtEndOffset) != -1;
 }
 

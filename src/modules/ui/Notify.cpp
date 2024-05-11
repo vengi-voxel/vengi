@@ -90,7 +90,7 @@ const char *ImGuiToast::content() const {
 }
 
 uint32_t ImGuiToast::elapsedTime() const {
-	return SDL_GetTicks() - _creationTime;
+	return (uint32_t)(SDL_GetTicks() - _creationTime);
 }
 
 ImGuiToastPhase ImGuiToast::phase(int dismissMillis) const {

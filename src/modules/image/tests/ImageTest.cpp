@@ -60,34 +60,34 @@ TEST_F(ImageTest, testWriteJPEG) {
 	io::BufferedReadWriteStream stream1;
 	ASSERT_TRUE(image::Image::writeJPEG(stream1, (const uint8_t*)img1, 6, 6, 4));
 	stream1.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, (int)stream1.size()));
 
 	io::BufferedReadWriteStream stream2;
 	ASSERT_TRUE(image::Image::writeJPEG(stream2, (const uint8_t*)img2, 6, 6, 4));
 	stream2.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, (int)stream1.size()));
 
 	io::BufferedReadWriteStream stream3;
 	ASSERT_TRUE(image::Image::writeJPEG(stream3, (const uint8_t*)img3, 6, 6, 4));
 	stream3.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, (int)stream1.size()));
 }
 
 TEST_F(ImageTest, testWritePng) {
 	io::BufferedReadWriteStream stream1;
 	ASSERT_TRUE(image::Image::writePng(stream1, (const uint8_t*)img1, 6, 6, 4));
 	stream1.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream1, (int)stream1.size()));
 
 	io::BufferedReadWriteStream stream2;
 	ASSERT_TRUE(image::Image::writePng(stream2, (const uint8_t*)img2, 6, 6, 4));
 	stream2.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream2, (int)stream1.size()));
 
 	io::BufferedReadWriteStream stream3;
 	ASSERT_TRUE(image::Image::writePng(stream3, (const uint8_t*)img3, 6, 6, 4));
 	stream3.seek(0);
-	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, stream1.size()));
+	ASSERT_TRUE(image::createEmptyImage("image")->load(stream3, (int)stream1.size()));
 }
 
 TEST_F(ImageTest, testGet) {

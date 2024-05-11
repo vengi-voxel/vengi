@@ -25,7 +25,7 @@ namespace voxelformat {
 
 bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpec) const {
 	core::String nodeConfig;
-	if (!stream.readString(stream.size(), nodeConfig)) {
+	if (!stream.readString((int)stream.size(), nodeConfig)) {
 		Log::error("ThingFormat: Failed to read node config");
 		return false;
 	}

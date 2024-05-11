@@ -201,9 +201,9 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	Log::debug("SpanEndOffset: %i", (int32_t)offsets.end);
 	Log::debug("SpanDataOffset: %i", (int32_t)offsets.data);
 	Log::debug("Write layer footer at %u", (int)stream.pos());
-	wrapBool(stream.writeUInt32(offsets.start))
-	wrapBool(stream.writeUInt32(offsets.end))
-	wrapBool(stream.writeUInt32(offsets.data))
+	wrapBool(stream.writeUInt32((uint32_t)offsets.start))
+	wrapBool(stream.writeUInt32((uint32_t)offsets.end))
+	wrapBool(stream.writeUInt32((uint32_t)offsets.data))
 
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
@@ -280,7 +280,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 	if (nodes.empty()) {
 		return false;
 	}
-	const uint32_t numLayers = nodes.size();
+	const uint32_t numLayers = (uint32_t)nodes.size();
 	wrapBool(writeHeader(stream, numLayers, nodes[0]->palette()))
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
@@ -312,7 +312,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 		Log::error("Failed to seek to body size");
 		return false;
 	}
-	wrapBool(stream.writeUInt32(bodySize))
+	wrapBool(stream.writeUInt32((uint32_t)bodySize))
 	if (stream.seek(afterBodyPos) == -1) {
 		Log::error("Failed to seek to after body");
 		return false;
@@ -333,7 +333,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core::DynamicArray<const scenegraph::SceneGraphNode *> barrel;
 	core::DynamicArray<const scenegraph::SceneGraphNode *> turret;
 
-	const uint32_t numNodes = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
+	const size_t numNodes = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
 	body.reserve(numNodes);
 	barrel.reserve(numNodes);
 	turret.reserve(numNodes);
