@@ -26,12 +26,19 @@ public:
 	}
 };
 
-TEST_F(FilesystemArchiveTest, testFilesytemArchive) {
+TEST_F(FilesystemArchiveTest, testFilesytemArchiveCurrentDir) {
 	io::FilesystemArchive fsa(fs);
-	fsa.add(".", "*.txt");
+	fsa.init(".");
 	ASSERT_FALSE(fsa.files().empty());
-	SeekableReadStreamPtr stream = fsa.readStream(fsa.files().front().name);
-	ASSERT_TRUE(stream);
+	FilesystemEntry entry = fsa.files().front();
+	ASSERT_TRUE(fsa.readStream(entry.fullPath)) << "Should be able to read a file with a full path";
+	ASSERT_TRUE(fsa.readStream(entry.name))
+		<< "Should be able to read a file with just the name because the archive was for the current working dir";
+	EXPECT_TRUE(fsa.exists("iotest.txt"));
+}
+
+TEST_F(FilesystemArchiveTest, testFilesytemArchiveNoDir) {
+	io::FilesystemArchive fsa(fs);
 	EXPECT_TRUE(fsa.exists("iotest.txt"));
 }
 
