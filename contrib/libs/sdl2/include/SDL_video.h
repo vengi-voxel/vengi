@@ -60,7 +60,7 @@ typedef struct SDL_DisplayMode
 } SDL_DisplayMode;
 
 /**
- * The type used to identify a window
+ * The opaque type used to identify a window.
  *
  * \sa SDL_CreateWindow
  * \sa SDL_CreateWindowFrom
@@ -215,6 +215,8 @@ typedef enum SDL_FlashOperation
 
 /**
  * An opaque handle to an OpenGL context.
+ *
+ * \sa SDL_GL_CreateContext
  */
 typedef void *SDL_GLContext;
 
@@ -770,7 +772,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  * \param w the width of the window, in screen coordinates
  * \param h the height of the window, in screen coordinates
  * \param flags 0, or one or more SDL_WindowFlags OR'd together
- * \returns the window that was created or NULL on failure; call
+ * \returns the `SDL_Window` that was created or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.0.
@@ -1261,6 +1263,10 @@ extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_Window * window);
  * `flags` may be `SDL_WINDOW_FULLSCREEN`, for "real" fullscreen with a
  * videomode change; `SDL_WINDOW_FULLSCREEN_DESKTOP` for "fake" fullscreen
  * that takes the size of the desktop; and 0 for windowed mode.
+ *
+ * Note that for some renderers, this function may trigger an
+ * SDL_RENDER_TARGETS_RESET event. Your application should be prepared to
+ * handle this event by reuploading textures!
  *
  * \param window the window to change
  * \param flags `SDL_WINDOW_FULLSCREEN`, `SDL_WINDOW_FULLSCREEN_DESKTOP` or 0

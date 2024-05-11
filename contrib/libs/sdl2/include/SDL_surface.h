@@ -97,7 +97,7 @@ typedef struct SDL_Surface
 } SDL_Surface;
 
 /**
- * \brief The type of function used for surface blitting functions.
+ * The type of function used for surface blitting functions.
  */
 typedef int (SDLCALL *SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
                                  struct SDL_Surface * dst, SDL_Rect * dstrect);
@@ -214,6 +214,7 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
  *
  * \sa SDL_CreateRGBSurface
  * \sa SDL_CreateRGBSurfaceWithFormat
+ * \sa SDL_CreateRGBSurfaceWithFormatFrom
  * \sa SDL_FreeSurface
  */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
@@ -787,7 +788,7 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  * of the clip rectangle and `rect`.
  *
  * \param dst the SDL_Surface structure that is the drawing target
- * \param rects an array of SDL_Rects representing the rectangles to fill.
+ * \param rects an array of SDL_Rect representing the rectangles to fill.
  * \param count the number of rectangles in the array
  * \param color the color to fill with
  * \returns 0 on success or a negative error code on failure; call

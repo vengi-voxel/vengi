@@ -149,18 +149,11 @@ typedef Uint16 SDL_AudioFormat;
 /* @} *//* Audio flags */
 
 /**
- *  This function is called when the audio device needs more data.
+ * This function is called when the audio device needs more data.
  *
- *  \param userdata An application-specific parameter saved in
- *                  the SDL_AudioSpec structure
- *  \param stream A pointer to the audio data buffer.
- *  \param len    The length of that buffer in bytes.
- *
- *  Once the callback returns, the buffer will no longer be valid.
- *  Stereo samples are stored in a LRLRLR ordering.
- *
- *  You can choose to avoid callbacks and use SDL_QueueAudio() instead, if
- *  you like. Just open your audio device with a NULL callback.
+ * \param userdata An application-specific parameter saved in the
+ *                 SDL_AudioSpec structure
+ * \param stream A pointer to the audio data buffer.
  */
 typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                             int len);
@@ -1177,8 +1170,9 @@ extern DECLSPEC void SDLCALL SDL_MixAudio(Uint8 * dst, const Uint8 * src,
  * \param format the SDL_AudioFormat structure representing the desired audio
  *               format
  * \param len the length of the audio buffer in bytes
- * \param volume ranges from 0 - 128, and should be set to SDL_MIX_MAXVOLUME
- *               for full audio volume
+ * \param volume ranges from -128 - ∞ (at -128, the volume is at 0%, at 0 -
+ *               100% and the higher the number, the bigger the %), and should
+ *               be set to SDL_MIX_MAXVOLUME for full audio volume
  *
  * \since This function is available since SDL 2.0.0.
  */
