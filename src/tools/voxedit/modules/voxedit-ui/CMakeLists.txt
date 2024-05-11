@@ -74,9 +74,9 @@ set(VENGI_MODELS
 	skeleton
 	river
 )
+engine_generated_library(vengi-models)
 foreach (vengi_model ${VENGI_MODELS})
-	set(header ${GENERATE_DIR}/${vengi_model}.h)
-	set(pngheader ${GENERATE_DIR}/${vengi_model}_png.h)
-	engine_file_to_header(${LIB} ${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${header})
-	engine_file_to_header(${LIB} ${vengi_model}_png ${DATA_DIR}/voxedit/${vengi_model}.png ${pngheader})
+	engine_file_to_header(vengi-models ${vengi_model} ${DATA_DIR}/voxedit/${vengi_model}.vengi ${GENERATE_DIR}/${vengi_model}.h)
+	engine_file_to_header(vengi-models ${vengi_model}_png ${DATA_DIR}/voxedit/${vengi_model}.png ${GENERATE_DIR}/${vengi_model}_png.h)
 endforeach()
+target_link_libraries(${LIB} PRIVATE vengi-models)

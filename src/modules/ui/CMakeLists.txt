@@ -52,18 +52,15 @@ if (FREETYPE_FOUND)
 	list(APPEND LIBS Freetype::Freetype)
 endif()
 
-macro(imgui_build_font TARGET NAME TTF_FILE)
-	file(MAKE_DIRECTORY ${GENERATE_DIR}/${TARGET})
-	engine_compressed_file_to_header(${TARGET} ${NAME} ${ROOT_DIR}/data/${TARGET}/${TTF_FILE} ${GENERATE_DIR}/${TARGET}/${NAME}.h)
-endmacro()
-
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app ${LIBS})
 target_compile_definitions(${LIB} PUBLIC ${DEFINITIONS})
 
-imgui_build_font(${LIB} FontLucide lucide.ttf)
-imgui_build_font(${LIB} ArimoRegular Arimo-Regular.ttf)
+engine_generated_library(ui-fonts)
+engine_compressed_file_to_header(ui-fonts FontLucide ${ROOT_DIR}/data/ui/lucide.ttf ${GENERATE_DIR}/ui/FontLucide.h)
+engine_compressed_file_to_header(ui-fonts ArimoRegular ${ROOT_DIR}/data/ui/Arimo-Regular.ttf ${GENERATE_DIR}/ui/ArimoRegular.h)
+target_link_libraries(${LIB} PRIVATE ui-fonts)
 
-target_include_directories(${LIB} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui)
+target_include_directories(${LIB} PUBLIC . dearimgui)
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 
 if (USE_IMGUITESTENGINE)

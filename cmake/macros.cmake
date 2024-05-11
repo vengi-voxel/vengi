@@ -15,8 +15,16 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	configure_file(${DATA_DIR}/${FILE} ${CMAKE_BINARY_DIR}/${TARGET}/${DESTINATION}/${filename} COPYONLY)
 endfunction()
 
+function(engine_generated_library TARGET)
+	add_library(${TARGET} OBJECT)
+	set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE CXX)
+	add_dependencies(codegen ${TARGET})
+endfunction()
+
 function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
+	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
+		file(MAKE_DIRECTORY ${OUTPUT_DIR})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
@@ -27,19 +35,17 @@ function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
-		if (NOT CMAKE_GENERATOR MATCHES "Xcode")
-			add_custom_target(engine_compressed_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
-			add_dependencies(codegen engine_compressed_file_to_header_${NAME})
-		endif()
-		target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
-		message(STATUS "Source code generation must be done by native toolchain")
+		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
-	engine_mark_as_generated(${OUTPUT_FILE})
+	target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
+	target_include_directories(${TARGET} PUBLIC ${OUTPUT_DIR})
 endfunction()
 
 function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
+	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
+		file(MAKE_DIRECTORY ${OUTPUT_DIR})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
@@ -51,15 +57,11 @@ function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
-		if (NOT CMAKE_GENERATOR MATCHES "Xcode")
-			add_custom_target(engine_file_to_header_${NAME} DEPENDS ${OUTPUT_FILE})
-			add_dependencies(codegen engine_file_to_header_${NAME})
-		endif()
-		target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
-		message(STATUS "Source code generation must be done by native toolchain")
+		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
-	engine_mark_as_generated(${OUTPUT_FILE})
+	target_sources(${TARGET} PRIVATE ${OUTPUT_FILE})
+	target_include_directories(${TARGET} PUBLIC ${OUTPUT_DIR})
 endfunction()
 
 function(engine_add_sharedlibrary)
@@ -527,7 +529,7 @@ function(engine_target_link_libraries)
 	cmake_parse_arguments(_LIBS "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
 	set_property(GLOBAL PROPERTY ${_LIBS_TARGET}_DEPENDENCIES ${_LIBS_DEPENDENCIES})
-	target_link_libraries(${_LIBS_TARGET} ${_LIBS_DEPENDENCIES})
+	target_link_libraries(${_LIBS_TARGET} PUBLIC ${_LIBS_DEPENDENCIES})
 
 	get_property(EXECUTABLE GLOBAL PROPERTY ${_LIBS_TARGET}_EXECUTABLE)
 	if (EXECUTABLE)

@@ -28,24 +28,12 @@ function(shader_include_dir TARGET DEPENDENCY)
 endfunction()
 
 function(generate_shaders TARGET)
-	set(files ${ARGN})
-	set(GEN_DIR ${GENERATE_DIR}/shaders/${TARGET}/)
-	set(_template_header ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
-	set(_template_cpp ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.cpp.in)
-	set(_template_constants_header ${ROOT_DIR}/src/tools/shadertool/ShaderConstantsTemplate.h.in)
-	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
-	file(MAKE_DIRECTORY ${GEN_DIR})
-	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
-	set(_headers)
-	set(_sources)
-	set(_constantsheaders)
-	add_custom_target(UpdateShaders${TARGET})
 	if (NOT DEFINED video_SOURCE_DIR)
 		message(FATAL_ERROR "video project not found")
 	endif()
+
 	set(SHADERTOOL_INCLUDE_DIRS)
-	set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-	list(APPEND SHADERTOOL_INCLUDE_DIRS "${_dir}")
+	list(APPEND SHADERTOOL_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 	set(DEPENDENCIES)
 	engine_resolve_dependencies(${TARGET} DEPENDENCIES)
 	foreach (D ${DEPENDENCIES})
@@ -59,63 +47,77 @@ function(generate_shaders TARGET)
 		list(APPEND SHADERTOOL_INCLUDE_DIRS_PARAM "-I")
 		list(APPEND SHADERTOOL_INCLUDE_DIRS_PARAM "${IDIR}")
 	endforeach()
-	foreach (_file ${files})
-		set(_shaders)
-		if (EXISTS ${_dir}/${_file}.frag AND EXISTS ${_dir}/${_file}.vert)
-			list(APPEND _shaders ${_dir}/${_file}.frag ${_dir}/${_file}.vert)
-			if (EXISTS ${_dir}/${_file}.geom)
-				list(APPEND _shaders ${_dir}/${_file}.geom)
-			endif()
-		endif()
-		if (EXISTS ${_dir}/${_file}.comp)
-			list(APPEND _shaders ${_dir}/${_file}.comp)
-		endif()
-		if (_shaders)
-			set(_shadersdeps)
-			foreach (s ${_shaders})
-				read_shader_includes(${s} "${SHADERTOOL_INCLUDE_DIRS}" _shadersdeps)
-			endforeach()
-			convert_to_camel_case(${_file} _f)
-			set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
-			set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
-			set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
-			if (NOT CMAKE_CROSSCOMPILING)
-				set(_args
-					${SHADERTOOL_INCLUDE_DIRS_PARAM}
-					--shader ${_dir}/${_file}
-					--constantstemplate ${_template_constants_header}
-					--headertemplate ${_template_header}
-					--sourcetemplate ${_template_cpp}
-					--buffertemplate ${_template_ub}
-					--sourcedir ${GEN_DIR}
-				)
-				if (USE_GLSLANG_VALIDATOR AND GLSLANG_EXECUTABLE)
-					list(APPEND _args --glslang ${GLSLANG_EXECUTABLE})
-				endif()
-				add_custom_command(
-					OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
-					IMPLICIT_DEPENDS C ${_shaders}
-					COMMENT "Validate ${_file}"
-					COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
-						$<TARGET_FILE:shadertool>
-						${_args}
-					DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
-				)
-			else()
-				message(STATUS "Source code generation must be done by native toolchain")
-			endif()
-			list(APPEND _headers ${_shaderheaderpath})
-			list(APPEND _sources ${_shadersourcepath})
-			list(APPEND _constantsheaders ${_shaderconstantheaderpath})
-		else()
-			message(FATAL_ERROR "Could not find any shader files for ${_file} and target '${TARGET}'")
-		endif()
-	endforeach()
 
-	if (NOT CMAKE_GENERATOR MATCHES "Xcode")
-		add_custom_target(generate_shaders_${TARGET} DEPENDS ${_headers} ${_constantsheaders})
-		add_dependencies(codegen generate_shaders_${TARGET})
+	set(GEN_DIR ${GENERATE_DIR}/shaders/${TARGET}/)
+	engine_generated_library(${TARGET}-shaders)
+	target_include_directories(${TARGET}-shaders PUBLIC ${GEN_DIR})
+	target_link_libraries(${TARGET}-shaders PUBLIC video)
+	foreach (SHADER ${ARGN})
+		generate_shader(${TARGET}-shaders ${SHADER} ${GEN_DIR} ${SHADERTOOL_INCLUDE_DIRS})
+	endforeach()
+	target_link_libraries(${TARGET} PUBLIC ${TARGET}-shaders)
+endfunction()
+
+function(generate_shader TARGET SHADER GEN_DIR SHADERTOOL_INCLUDE_DIRS)
+	set(_template_header ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
+	set(_template_cpp ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.cpp.in)
+	set(_template_constants_header ${ROOT_DIR}/src/tools/shadertool/ShaderConstantsTemplate.h.in)
+	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
+	set(_headers)
+	set(_sources)
+	set(_constantsheaders)
+	set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+	set(_shaders)
+
+	if (EXISTS ${_dir}/${SHADER}.frag AND EXISTS ${_dir}/${SHADER}.vert)
+		list(APPEND _shaders ${_dir}/${SHADER}.frag ${_dir}/${SHADER}.vert)
+		if (EXISTS ${_dir}/${SHADER}.geom)
+			list(APPEND _shaders ${_dir}/${SHADER}.geom)
+		endif()
 	endif()
+	if (EXISTS ${_dir}/${SHADER}.comp)
+		list(APPEND _shaders ${_dir}/${SHADER}.comp)
+	endif()
+	if (_shaders)
+		set(_shadersdeps)
+		foreach (s ${_shaders})
+			read_shader_includes(${s} "${SHADERTOOL_INCLUDE_DIRS}" _shadersdeps)
+		endforeach()
+		convert_to_camel_case(${SHADER} _f)
+		set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
+		set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
+		set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
+		if (NOT CMAKE_CROSSCOMPILING)
+			set(_args
+				${SHADERTOOL_INCLUDE_DIRS_PARAM}
+				--shader ${_dir}/${SHADER}
+				--constantstemplate ${_template_constants_header}
+				--headertemplate ${_template_header}
+				--sourcetemplate ${_template_cpp}
+				--buffertemplate ${_template_ub}
+				--sourcedir ${GEN_DIR}
+			)
+			if (USE_GLSLANG_VALIDATOR AND GLSLANG_EXECUTABLE)
+				list(APPEND _args --glslang ${GLSLANG_EXECUTABLE})
+			endif()
+			add_custom_command(
+				OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
+				IMPLICIT_DEPENDS C ${_shaders}
+				COMMENT "Validate ${SHADER}"
+				COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
+					$<TARGET_FILE:shadertool>
+					${_args}
+				DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
+			)
+		else()
+			message(STATUS "Source code generation must be done by native toolchain")
+		endif()
+		list(APPEND _headers ${_shaderheaderpath})
+		list(APPEND _sources ${_shadersourcepath})
+		list(APPEND _constantsheaders ${_shaderconstantheaderpath})
+	else()
+		message(FATAL_ERROR "Could not find any shader files for ${SHADER} and target '${TARGET}'")
+	endif()
+
 	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders})
-	engine_mark_as_generated(${_headers} ${_shaderconstantheaderpath} ${_sources})
 endfunction()
