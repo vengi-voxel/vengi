@@ -98,7 +98,7 @@ public:
 			Log::error("Failed to seek to the chunk size position in the header");
 			return;
 		}
-		_stream.writeUInt32(chunkSize);
+		_stream.writeUInt32((uint32_t)chunkSize);
 		if (_uncompressedSizePos != -1) {
 			if (_stream.seek(_uncompressedSizePos) == -1) {
 				Log::error("Failed to seek to the uncompressed size position in the header");
@@ -140,7 +140,7 @@ public:
 	}
 	~WriteSubChunkStream() {
 		_buffer.seek(0);
-		_stream.writeUInt32(_buffer.size());
+		_stream.writeUInt32((uint32_t)_buffer.size());
 		_stream.write(_buffer.getBuffer(), _buffer.size());
 	}
 	int write(const void *buf, size_t size) override {

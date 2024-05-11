@@ -206,7 +206,7 @@ void TestOctree::onRenderUI() {
 	} VectorGetter;
 	VectorGetter mds(_itemVector);
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
-	const int numEntries = _itemVector.size();
+	const int numEntries = (int)_itemVector.size();
 	ImGui::Combo("Nodes", &_itemIndex, &VectorGetter::resolve, &mds,
 			numEntries, glm::clamp(numEntries, 0, 25));
 	ImGui::PopItemWidth();

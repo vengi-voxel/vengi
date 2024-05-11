@@ -12,7 +12,7 @@ class IniParserTest : public app::AbstractTest {};
 TEST_F(IniParserTest, testParseSection) {
 	util::IniSectionMap values;
 	const core::String input = "name=foo\nbgcolor=bar\nvoxels=baz\n";
-	io::MemoryReadStream stream(input.c_str(), input.size());
+	io::MemoryReadStream stream(input.c_str(), (uint32_t)input.size());
 
 	ASSERT_TRUE(util::parseIniSection(stream, values));
 	ASSERT_TRUE(values.hasKey("name"));
@@ -22,7 +22,7 @@ TEST_F(IniParserTest, testParseSection) {
 TEST_F(IniParserTest, testParseIni) {
 	util::IniMap ini;
 	const core::String input = ";comment\n[empty]\n;comment\n\n[filled]\nname=foo\nbgcolor=bar\nvoxels=baz\n";
-	io::MemoryReadStream stream(input.c_str(), input.size());
+	io::MemoryReadStream stream(input.c_str(), (uint32_t)input.size());
 
 	ASSERT_TRUE(util::parseIni(stream, ini));
 	ASSERT_TRUE(ini.hasKey("empty"));

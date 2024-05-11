@@ -82,7 +82,7 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		}
 	}
 
-	const uint32_t totalSize = stream.size() - afterHeaderPos;
+	const uint32_t totalSize = (uint32_t)(stream.size() - afterHeaderPos);
 	if (stream.seek(totalSizePos) == -1) {
 		Log::error("Failed to seek to the total size position in the header");
 		return false;
