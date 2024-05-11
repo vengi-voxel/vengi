@@ -6,6 +6,7 @@
 #include "BinaryPList.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -86,14 +87,13 @@ constexpr int MaxVolumeSize = 256u;
 } // namespace vmax
 
 bool VMaxFormat::loadSceneJson(const io::ArchivePtr &archive, VMaxScene &scene) const {
-	io::BufferedReadWriteStream stream;
-	if (!archive->load("scene.json", stream)) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream("scene.json"));
+	if (!stream) {
 		Log::error("Failed to load scene.json");
 		return false;
 	}
 
-	stream.seek(0);
-	io::StdIStreamBuf buf(stream);
+	io::StdIStreamBuf buf(*stream);
 	std::istream is(&buf);
 	nlohmann::json json;
 	is >> json;
@@ -254,17 +254,17 @@ VMaxFormat::VolumeId VMaxFormat::parseId(const priv::BinaryPList &snapshot) cons
 bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx,
 									   const VMaxObject &obj, const palette::Palette &palette) const {
-	io::BufferedReadWriteStream data;
-	if (!archive->load(obj.data, data)) {
+	core::ScopedPtr<io::SeekableReadStream> data(archive->readStream(obj.data));
+	if (!data) {
 		Log::error("Failed to load %s", obj.data.c_str());
 		return false;
 	}
-	if (data.seek(0) == -1) {
+	if (data->seek(0) == -1) {
 		Log::error("Failed to seek to the beginning of the sub stream");
 		return false;
 	}
 
-	io::LZFSEReadStream stream(data);
+	io::LZFSEReadStream stream(*data);
 
 	// io::filesystem()->write(filename + ".plist", stream);
 	// stream.seek(0);
@@ -428,34 +428,24 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, io::See
 		Log::error("Failed to create archive for %s", filename.c_str());
 		return image::ImagePtr{};
 	}
-	io::BufferedReadWriteStream contentsStream;
 	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
-	if (!archive->load(thumbnailPath, contentsStream)) {
+	core::ScopedPtr<io::SeekableReadStream> contentsStream(archive->readStream(thumbnailPath));
+	if (!contentsStream) {
 		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
 		return image::ImagePtr();
 	}
-
-	if (contentsStream.seek(0) == -1) {
-		Log::error("Failed to seek to the beginning of the sub stream for %s", filename.c_str());
-		return image::ImagePtr();
-	}
-	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), contentsStream);
+	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), *contentsStream);
 }
 
 bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
 										palette::Palette &palette, const LoadContext &ctx) const {
-	io::BufferedReadWriteStream stream;
-	if (!archive->load(paletteName, stream)) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(paletteName));
+	if (!stream) {
 		Log::error("Failed to load %s", paletteName.c_str());
 		return false;
 	}
 
-	if (stream.seek(0) == -1) {
-		Log::error("Failed to seek to the beginning of the sub stream for the palette %s", paletteName.c_str());
-		return false;
-	}
-
-	const image::ImagePtr &img = image::loadImage(paletteName, stream);
+	const image::ImagePtr &img = image::loadImage(paletteName, *stream);
 	if (!img->isLoaded()) {
 		Log::error("Failed to load image %s", paletteName.c_str());
 		return false;

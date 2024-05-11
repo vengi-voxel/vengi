@@ -6,6 +6,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "io/BufferedReadWriteStream.h"
 #define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
 #include "io/Stream.h"
@@ -33,7 +34,7 @@ static size_t ziparchive_read(void *userdata, mz_uint64 offset, void *targetBuf,
 }
 
 static size_t ziparchive_write(void *userdata, mz_uint64 offset, const void *targetBuf, size_t targetBufSize) {
-	io::SeekableWriteStream *out = (io::SeekableWriteStream *)userdata;
+	io::BufferedReadWriteStream *out = (io::BufferedReadWriteStream *)userdata;
 	if (out->seek((int64_t)offset, SEEK_SET) == -1) {
 		return 0u;
 	}
@@ -151,23 +152,26 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 	return true;
 }
 
-bool ZipArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
+SeekableReadStream* ZipArchive::readStream(const core::String &filePath) {
 	if ((mz_zip_archive*)_zip == nullptr) {
 		Log::error("No zip archive loaded");
-		return false;
+		return nullptr;
 	}
-	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, (void *)&out, 0)) {
+	BufferedReadWriteStream* stream = new BufferedReadWriteStream();
+	if (!mz_zip_reader_extract_file_to_callback((mz_zip_archive*)_zip, filePath.c_str(), ziparchive_write, stream, 0)) {
 		const mz_zip_error error = mz_zip_get_last_error((mz_zip_archive*)_zip);
 		const char *err = mz_zip_get_error_string(error);
 		Log::error("Failed to extract file '%s' from zip: %s", filePath.c_str(), err);
-		return false;
+		delete stream;
+		return nullptr;
 	}
-	return true;
+	stream->seek(0);
+	return stream;
 }
 
-SeekableWriteStreamPtr ZipArchive::writeStream(const core::String &filePath) {
+SeekableWriteStream* ZipArchive::writeStream(const core::String &filePath) {
 	// TODO: implement me
-	return SeekableWriteStreamPtr{};
+	return nullptr;
 }
 
 } // namespace io

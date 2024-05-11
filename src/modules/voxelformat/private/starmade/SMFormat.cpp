@@ -7,10 +7,12 @@
 #include "core/Bits.h"
 #include "core/Color.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -94,21 +96,17 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, io::SeekableReadStre
 						position[i] = core::string::toInt(e.name.substr(dot + 1)) * priv::segments;
 					}
 				}
-				io::BufferedReadWriteStream modelStream((int64_t)e.size);
-				if (!archive.load(e.fullPath, modelStream)) {
+				core::ScopedPtr<io::SeekableReadStream> modelStream(archive.readStream(e.fullPath));
+				if (!modelStream) {
 					Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 					continue;
 				}
-				if (modelStream.seek(0) == -1) {
-					Log::error("Failed to seek back to the start of the stream for %s", e.fullPath.c_str());
-					continue;
-				}
 				if (isSmd3) {
-					if (!readSmd3(modelStream, sceneGraph, blockPal, position, palette)) {
+					if (!readSmd3(*modelStream, sceneGraph, blockPal, position, palette)) {
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 					}
 				} else if (isSmd2) {
-					if (!readSmd2(modelStream, sceneGraph, blockPal, position, palette)) {
+					if (!readSmd2(*modelStream, sceneGraph, blockPal, position, palette)) {
 						Log::warn("Failed to load %s from %s", e.fullPath.c_str(), filename.c_str());
 					}
 				}

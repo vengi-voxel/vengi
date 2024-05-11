@@ -22,10 +22,10 @@ public:
 	virtual ~ZipArchive();
 
 	static bool validStream(io::SeekableReadStream &stream);
-	virtual SeekableWriteStreamPtr writeStream(const core::String &filePath) override;
+	SeekableReadStream* readStream(const core::String &filePath) override;
+	SeekableWriteStream* writeStream(const core::String &filePath) override;
 
 	bool init(const core::String &path, io::SeekableReadStream *stream) override;
-	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
 	void shutdown() override;
 };
 

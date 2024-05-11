@@ -4,8 +4,10 @@
 
 #include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ScopedPtr.h"
 #include "core/tests/TestHelper.h"
 #include "io/Filesystem.h"
+#include "io/Stream.h"
 #include <gtest/gtest.h>
 
 namespace io {
@@ -31,8 +33,10 @@ TEST_F(FilesystemArchiveTest, testFilesytemArchiveCurrentDir) {
 	fsa.init(".");
 	ASSERT_FALSE(fsa.files().empty());
 	FilesystemEntry entry = fsa.files().front();
-	ASSERT_TRUE(fsa.readStream(entry.fullPath)) << "Should be able to read a file with a full path";
-	ASSERT_TRUE(fsa.readStream(entry.name))
+	core::ScopedPtr<io::SeekableReadStream> rs(fsa.readStream(entry.fullPath));
+	ASSERT_TRUE(rs) << "Should be able to read a file with a full path";
+	core::ScopedPtr<io::SeekableReadStream> rs2(fsa.readStream(entry.name));
+	ASSERT_TRUE(rs2)
 		<< "Should be able to read a file with just the name because the archive was for the current working dir";
 	EXPECT_TRUE(fsa.exists("iotest.txt"));
 }

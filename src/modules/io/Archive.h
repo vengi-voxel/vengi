@@ -26,7 +26,6 @@ using FilesystemPtr = core::SharedPtr<Filesystem>;
 class Archive {
 protected:
 	ArchiveFiles _files;
-
 public:
 	const ArchiveFiles &files() const;
 	virtual ~Archive() = default;
@@ -36,20 +35,21 @@ public:
 	 * @param[in] stream @c io::SeekableReadStream pointer can be @c nullptr
 	 */
 	virtual bool init(const core::String &path, io::SeekableReadStream *stream);
+	/**
+	 * @note Shutting down the archive might invalidate all streams that were created by the archive implementation
+	 */
 	virtual void shutdown();
 
 	/**
-	 * @param[in] filePath The relative filePath to the path the archive was initialized with. For example if the
-	 * archive was initialized with @c "/data" and the file is @c "/data/level1/level2/file.txt" then the @c filePath is
-	 * only @c "level1/level2/file.txt".
-	 */
-	virtual bool load(const core::String &filePath, io::SeekableWriteStream &out) = 0;
-	/**
 	 * @note the default implementation of readStream() uses load() internally
 	 * this might not be the most efficient way to read a file from an archive
+	 * @sa core::ScopedPtr
 	 */
-	virtual SeekableReadStreamPtr readStream(const core::String &filePath);
-	virtual SeekableWriteStreamPtr writeStream(const core::String &filePath);
+	virtual SeekableReadStream* readStream(const core::String &filePath) = 0;
+	/**
+	 * @sa core::ScopedPtr
+	 */
+	virtual SeekableWriteStream* writeStream(const core::String &filePath);
 };
 
 inline const ArchiveFiles &Archive::files() const {

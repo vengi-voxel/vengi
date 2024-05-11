@@ -245,7 +245,7 @@ public:
 		return true;
 	}
 
-	bool write(ReadStream &stream);
+	bool writeStream(ReadStream &stream);
 
 	bool writeBool(bool val);
 
@@ -338,6 +338,65 @@ public:
 	}
 	int64_t pos() const override {
 		return 0;
+	}
+};
+
+class SeekableReadWriteStreamWrapper : public io::SeekableWriteStream, public io::SeekableReadStream {
+private:
+	io::SeekableWriteStream* _ws;
+	io::SeekableReadStream* _rs;
+
+public:
+	SeekableReadWriteStreamWrapper(io::SeekableWriteStream* ws) : _ws(ws), _rs(nullptr) {
+	}
+
+	SeekableReadWriteStreamWrapper(io::SeekableReadStream* rs) : _ws(nullptr), _rs(rs) {
+	}
+
+	virtual ~SeekableReadWriteStreamWrapper() = default;
+
+	int write(const void *buf, size_t size) override {
+		if (_ws) {
+			return _ws->write(buf, size);
+		}
+		return -1;
+	}
+
+	int read(void *dataPtr, size_t dataSize) override {
+		if (_rs) {
+			return _rs->read(dataPtr, dataSize);
+		}
+		return -1;
+	}
+
+	int64_t seek(int64_t position, int whence = SEEK_SET) override {
+		if (_rs) {
+			return _rs->seek(position, whence);
+		}
+		if (_ws) {
+			return _ws->seek(position, whence);
+		}
+		return -1;
+	}
+
+	int64_t size() const override {
+		if (_rs) {
+			return _rs->size();
+		}
+		if (_ws) {
+			return _ws->size();
+		}
+		return -1;
+	}
+
+	int64_t pos() const override {
+		if (_rs) {
+			return _rs->pos();
+		}
+		if (_ws) {
+			return _ws->pos();
+		}
+		return -1;
 	}
 };
 

@@ -24,9 +24,8 @@ public:
 	bool init(const core::String &path, io::SeekableReadStream *stream = nullptr) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);
 	bool exists(const core::String &file) const override;
-	bool load(const core::String &filePath, io::SeekableWriteStream &out) override;
-	SeekableReadStreamPtr readStream(const core::String &filePath) override;
-	SeekableWriteStreamPtr writeStream(const core::String &filePath) override;
+	SeekableReadStream* readStream(const core::String &filePath) override;
+	SeekableWriteStream* writeStream(const core::String &filePath) override;
 };
 
 } // namespace io

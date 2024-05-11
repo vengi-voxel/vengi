@@ -5,6 +5,7 @@
 #include "ThingFormat.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
@@ -56,13 +57,13 @@ void ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 		Log::debug("Media name is no image %s", nodeSpec.mediaName.c_str());
 		return;
 	}
-	const auto &mediaStream = archive->readStream(nodeSpec.mediaName);
+	core::ScopedPtr<io::SeekableReadStream> mediaStream(archive->readStream(nodeSpec.mediaName));
 	if (!mediaStream) {
 		Log::error("ThingFormat: Failed to open media: %s", nodeSpec.mediaName.c_str());
 		return;
 	}
 	const MediaCanvas &mediaCanvas = nodeSpec.mediaCanvas;
-	const image::ImagePtr &img = image::loadImage(nodeSpec.mediaName, *mediaStream.get());
+	const image::ImagePtr &img = image::loadImage(nodeSpec.mediaName, *mediaStream);
 	if (!img || !img->isLoaded()) {
 		Log::error("Failed to load image %s", nodeSpec.mediaName.c_str());
 		return;
@@ -96,7 +97,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		Log::error("ThingFormat: Missing modelName in node spec");
 		return false;
 	}
-	io::SeekableReadStreamPtr modelStream = archive->readStream(nodeSpec.modelName);
+	core::ScopedPtr<io::SeekableReadStream> modelStream(archive->readStream(nodeSpec.modelName));
 	if (!modelStream) {
 		Log::error("ThingFormat: Failed to open model: %s", nodeSpec.modelName.c_str());
 		return false;
@@ -104,7 +105,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 	scenegraph::SceneGraph voxSceneGraph;
 	Log::debug("ThingFormat: Load vox file: %s", nodeSpec.modelName.c_str());
 	VoxFormat format;
-	if (!format.load(nodeSpec.modelName, *modelStream.get(), voxSceneGraph, ctx)) {
+	if (!format.load(nodeSpec.modelName, *modelStream, voxSceneGraph, ctx)) {
 		Log::error("ThingFormat: Failed to load model: %s", nodeSpec.modelName.c_str());
 		return false;
 	}
@@ -160,9 +161,10 @@ bool ThingFormat::loadGroups(const core::String &filename, io::SeekableReadStrea
 		if (core::string::extractExtension(file.name) != "node") {
 			continue;
 		}
-		if (const io::SeekableReadStreamPtr &nodeSpecStream = archive->readStream(file.fullPath)) {
+		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(archive->readStream(file.fullPath));
+		if (nodeSpecStream) {
 			NodeSpec nodeSpec;
-			if (!loadNodeSpec(*nodeSpecStream.get(), nodeSpec)) {
+			if (!loadNodeSpec(*nodeSpecStream, nodeSpec)) {
 				Log::error("ThingFormat: Failed to load node spec: %s", file.name.c_str());
 				return false;
 			}

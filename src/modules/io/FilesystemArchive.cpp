@@ -73,28 +73,20 @@ bool FilesystemArchive::exists(const core::String &filePath) const {
 	return open(filePath, FileMode::Read);
 }
 
-bool FilesystemArchive::load(const core::String &filePath, io::SeekableWriteStream &out) {
-	const io::FilePtr &file = open(filePath, FileMode::Read);
-	if (!file) {
-		Log::error("Failed to load archive file: %s", filePath.c_str());
-		return false;
-	}
-	io::FileStream stream(file);
-	return out.write(stream);
-}
-
-SeekableReadStreamPtr FilesystemArchive::readStream(const core::String &filePath) {
-	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath, FileMode::Read));
+SeekableReadStream* FilesystemArchive::readStream(const core::String &filePath) {
+	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Read));
 	if (!stream->valid()) {
-		return {};
+		delete stream;
+		return nullptr;
 	}
 	return stream;
 }
 
-SeekableWriteStreamPtr FilesystemArchive::writeStream(const core::String &filePath) {
-	const core::SharedPtr<io::FileStream> &stream = core::make_shared<io::FileStream>(open(filePath, FileMode::Write));
+SeekableWriteStream* FilesystemArchive::writeStream(const core::String &filePath) {
+	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Write));
 	if (!stream->valid()) {
-		return {};
+		delete stream;
+		return nullptr;
 	}
 	return stream;
 }

@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "io/Base64ReadStream.h"
@@ -155,13 +156,13 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 bool CubzhB64Format::load3zh(io::FilesystemArchive &archive, const core::String &filename,
 							scenegraph::SceneGraph &modelScene, const palette::Palette &palette,
 							const LoadContext &ctx) {
-	io::SeekableReadStreamPtr stream = archive.readStream(filename);
+	core::ScopedPtr<io::SeekableReadStream> stream(archive.readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open file: %s", filename.c_str());
 		return false;
 	}
 	CubzhFormat format;
-	return format.load(filename, *stream.get(), modelScene, ctx);
+	return format.load(filename, *stream, modelScene, ctx);
 }
 
 bool CubzhB64Format::readObjects(const core::String &filename, io::ReadStream &stream,

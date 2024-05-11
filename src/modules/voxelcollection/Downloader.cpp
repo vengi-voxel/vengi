@@ -8,6 +8,7 @@
 #include "CubZHAPI.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -139,12 +140,12 @@ void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelF
 
 		if (io::isSupportedArchive(file.name)) {
 			// save file and call handleArchive again
-			io::SeekableReadStreamPtr rs = archive->readStream(file.fullPath);
+			core::ScopedPtr<io::SeekableReadStream> rs(archive->readStream(file.fullPath));
 			if (!rs) {
 				Log::error("Failed to read file %s", file.fullPath.c_str());
 				continue;
 			}
-			if (filesystem->write(archiveFileName, *rs.get())) {
+			if (filesystem->write(archiveFileName, *rs)) {
 				handleArchive(filesystem, subFile, files, shouldQuit);
 			} else {
 				Log::error("Failed to write file %s", file.fullPath.c_str());
@@ -160,12 +161,12 @@ void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelF
 			files.push_back(subFile);
 			continue;
 		}
-		io::SeekableReadStreamPtr rs = archive->readStream(file.fullPath);
+		core::ScopedPtr<io::SeekableReadStream> rs(archive->readStream(file.fullPath));
 		if (!rs) {
 			Log::error("Failed to read file %s", file.fullPath.c_str());
 			continue;
 		}
-		if (filesystem->write(archiveFileName, *rs.get())) {
+		if (filesystem->write(archiveFileName, *rs)) {
 			files.push_back(subFile);
 		} else {
 			Log::error("Failed to write file %s", file.name.c_str());

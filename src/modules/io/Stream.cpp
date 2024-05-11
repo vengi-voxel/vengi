@@ -14,7 +14,7 @@
 
 namespace io {
 
-bool WriteStream::write(ReadStream &stream) {
+bool WriteStream::writeStream(ReadStream &stream) {
 	uint8_t buf[1024 * 32];
 	while (!stream.eos()) {
 		int l = stream.read(buf, sizeof(buf));

@@ -6,6 +6,7 @@
 #include "core/Enum.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -437,8 +438,14 @@ app::AppState VoxConvert::onInit() {
 				const core::String &fullPath = entry.fullPath;
 				const io::FilePtr &targetFile = filesystem()->open(fullPath, io::FileMode::Write);
 				io::FileStream targetStream(targetFile);
-				if (!archive->load(fullPath, targetStream)) {
+				core::ScopedPtr<io::SeekableReadStream> readStream(archive->readStream(fullPath));
+				if (!readStream) {
 					Log::error("Failed to extract %s", fullPath.c_str());
+					return app::AppState::InitFailure;
+				}
+				io::ReadStream &s = *readStream;
+				if (!targetStream.writeStream(s)) {
+					Log::error("Failed to write %s", fullPath.c_str());
 					return app::AppState::InitFailure;
 				}
 			}

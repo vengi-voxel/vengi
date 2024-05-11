@@ -6,7 +6,6 @@
 #include "core/Algorithm.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/Stream.h"
@@ -27,17 +26,8 @@ bool Archive::exists(const core::String &file) const {
 		   _files.end();
 }
 
-SeekableReadStreamPtr Archive::readStream(const core::String &filePath) {
-	const core::SharedPtr<BufferedReadWriteStream> &stream = core::make_shared<BufferedReadWriteStream>();
-	if (!load(filePath, *(stream.get()))) {
-		return SeekableReadStreamPtr{};
-	}
-	stream->seek(0);
-	return stream;
-}
-
-SeekableWriteStreamPtr Archive::writeStream(const core::String &filePath) {
-	return SeekableWriteStreamPtr{};
+SeekableWriteStream* Archive::writeStream(const core::String &filePath) {
+	return nullptr;
 }
 
 bool isSupportedArchive(const core::String &filename) {
