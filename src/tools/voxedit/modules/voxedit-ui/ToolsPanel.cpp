@@ -174,35 +174,6 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		ImGui::SliderVarInt(_("Cursor details"), cfg::VoxEditCursorDetails, 0, 2);
 		ImGui::PopID();
 	}
-
-	if (ImGui::CollapsingHeader(_("Text"))) {
-		ImGui::InputText(_("Text"), &_text.input);
-
-		ImGui::SetNextItemWidth(100.0f);
-		if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL "##textinput", &_text.size)) {
-			_text.size = glm::clamp(_text.size, 6, 255);
-		}
-		ImGui::TooltipTextUnformatted(_("Font size"));
-		ImGui::SameLine();
-
-		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &_text.spacing);
-		ImGui::TooltipTextUnformatted(_("Horizontal spacing"));
-
-		ImGui::SetNextItemWidth(100.0f);
-		if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &_text.thickness)) {
-			_text.thickness = glm::clamp(_text.thickness, 1, 255);
-		}
-		ImGui::TooltipTextUnformatted(_("Thickness"));
-
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(100.0f);
-		ImGui::InputFile(_("Font"), &_text.font, io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
-
-		if (ImGui::Button(_("Execute"))) {
-			_sceneMgr->renderText(_text.input.c_str(), _text.size, _text.thickness, _text.spacing, _text.font.c_str());
-		}
-	}
 }
 
 void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {

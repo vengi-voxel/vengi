@@ -19,6 +19,7 @@
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
+#include "voxedit-util/modifier/brush/TextBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -61,6 +62,7 @@ protected:
 	LineBrush _lineBrush;
 	PathBrush _pathBrush;
 	PaintBrush _paintBrush;
+	TextBrush _textBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -136,6 +138,7 @@ public:
 	voxel::Region calcBrushRegion();
 
 	ShapeBrush &shapeBrush();
+	TextBrush &textBrush();
 	StampBrush &stampBrush();
 	PathBrush &pathBrush();
 	PaintBrush &paintBrush();
@@ -193,6 +196,10 @@ inline const BrushContext &Modifier::brushContext() const {
 
 inline BrushType Modifier::brushType() const {
 	return _brushType;
+}
+
+inline TextBrush &Modifier::textBrush() {
+	return _textBrush;
 }
 
 inline ShapeBrush &Modifier::shapeBrush() {

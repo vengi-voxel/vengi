@@ -18,14 +18,6 @@ class ToolsPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 
-	struct Text {
-		core::String font = "font.ttf";
-		core::String input = "example";
-		int size = 16;
-		int spacing = 0;
-		int thickness = 1;
-	} _text;
-
 	SceneManagerPtr _sceneMgr;
 	core::VarPtr _gizmoOperations;
 	core::VarPtr _showGizmoScene;

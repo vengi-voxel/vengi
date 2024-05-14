@@ -45,6 +45,7 @@ private:
 	void aabbBrushModeOptions(AABBBrush &brush);
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
+	void updateTextBrushPanel(command::CommandExecutionListener &listener);
 public:
 	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "brush"), _sceneMgr(sceneMgr) {
 	}

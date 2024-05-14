@@ -80,8 +80,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	} else {
 		switch (_brushType) {
 		case BrushType::Stamp: {
-			voxel::RawVolume *v = _stampBrush.volume();
-			if (v != nullptr) {
+			if (_stampBrush.active()) {
 				const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
 				_volume = createPreviewVolume(nullptr, region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
@@ -107,6 +106,17 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		case BrushType::Path: {
 			if (voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode())) {
 				_volume = createPreviewVolume(nullptr, v->region());
+				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+				dummyNode.setVolume(_volume, false);
+				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
+			}
+			break;
+		}
+		case BrushType::Text: {
+			const voxel::Region region = _textBrush.calcRegion(_brushContext);
+			if (region.isValid()) {
+				_volume = createPreviewVolume(nullptr, region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
 				executeBrush(sceneGraph, dummyNode, modifierType, voxel);

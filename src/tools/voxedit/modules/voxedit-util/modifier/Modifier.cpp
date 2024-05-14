@@ -25,7 +25,7 @@
 namespace voxedit {
 
 Modifier::Modifier(SceneManager *sceneMgr)
-	: _shapeBrush(sceneMgr), _stampBrush(sceneMgr), _paintBrush(sceneMgr), _actionExecuteButton(sceneMgr),
+	: _shapeBrush(sceneMgr), _stampBrush(sceneMgr), _paintBrush(sceneMgr), _textBrush(sceneMgr), _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
@@ -33,6 +33,7 @@ Modifier::Modifier(SceneManager *sceneMgr)
 	_brushes.push_back(&_lineBrush);
 	_brushes.push_back(&_pathBrush);
 	_brushes.push_back(&_paintBrush);
+	_brushes.push_back(&_textBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 

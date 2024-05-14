@@ -31,7 +31,8 @@ static constexpr const char *BrushTypeIcons[] = {ICON_LC_SQUARE_DASHED_MOUSE_POI
 												 ICON_LC_STAMP,
 												 ICON_LC_PEN_LINE,
 												 ICON_LC_FOOTPRINTS,
-												 ICON_LC_PAINTBRUSH};
+												 ICON_LC_PAINTBRUSH,
+												 ICON_LC_TEXT};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -270,6 +271,42 @@ void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listen
 	aabbBrushModeOptions(brush);
 }
 
+void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	TextBrush &brush = modifier.textBrush();
+	if (ImGui::InputText(_("Text"), &brush.input())) {
+		brush.markDirty();
+	}
+
+	ImGui::SetNextItemWidth(100.0f);
+	int size = brush.size();
+	if (ImGui::InputInt(ICON_LC_MOVE_VERTICAL, &size)) {
+		brush.setSize(size);
+	}
+	ImGui::TooltipTextUnformatted(_("Font size"));
+	ImGui::SameLine();
+
+	ImGui::SetNextItemWidth(100.0f);
+	int spacing = brush.spacing();
+	if (ImGui::InputInt(ICON_LC_MOVE_HORIZONTAL "##textinput", &spacing)) {
+		brush.setSpacing(spacing);
+	}
+	ImGui::TooltipTextUnformatted(_("Horizontal spacing"));
+
+	ImGui::SetNextItemWidth(100.0f);
+	int thickness = brush.thickness();
+	if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &thickness)) {
+		brush.setThickness(thickness);
+	}
+	ImGui::TooltipTextUnformatted(_("Thickness"));
+
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(100.0f);
+	if (ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly)) {
+		brush.markDirty();
+	}
+}
+
 void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	PaintBrush &brush = modifier.paintBrush();
@@ -327,6 +364,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updatePathBrushPanel(listener);
 		} else if (brushType == BrushType::Paint) {
 			updatePaintBrushPanel(listener);
+		} else if (brushType == BrushType::Text) {
+			updateTextBrushPanel(listener);
 		}
 	}
 	if (brushType == BrushType::None) {

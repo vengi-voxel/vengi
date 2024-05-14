@@ -23,7 +23,6 @@
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelfont/VoxelFont.h"
 #include "voxelformat/Format.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelgenerator/LUAApi.h"
@@ -62,7 +61,6 @@ private:
 	scenegraph::SceneGraph _sceneGraph;
 	MementoHandler _mementoHandler;
 	util::Movement _movement;
-	voxelfont::VoxelFont _voxelFont;
 	voxel::VoxelData _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;
 	core::TimeProviderPtr _timeProvider;
@@ -309,7 +307,6 @@ public:
 				 float length, float width, float widthIncrement, int iterations, float leavesRadius);
 
 	void fillPlane(const image::ImagePtr &image);
-	void renderText(const char *text, int size = 16, int thickness = 1, int spacing = 0, const char *font = "font.ttf");
 
 	/**
 	 * @brief Save the volume data to the given file
