@@ -18,13 +18,14 @@ endfunction()
 function(engine_generated_library TARGET)
 	add_library(${TARGET} OBJECT)
 	set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE CXX)
-	add_dependencies(codegen ${TARGET})
 endfunction()
 
 function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
 		file(MAKE_DIRECTORY ${OUTPUT_DIR})
+		set(MD5_VAR "")
+		string(MD5 MD5_VAR ${OUTPUT_FILE})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
@@ -35,6 +36,8 @@ function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		add_custom_target(${MD5_VAR} DEPENDS ${OUTPUT_FILE} COMMENT "Checking if re-generation is required")
+		add_dependencies(codegen ${MD5_VAR})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
@@ -46,6 +49,8 @@ function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
 		file(MAKE_DIRECTORY ${OUTPUT_DIR})
+		set(MD5_VAR "")
+		string(MD5 MD5_VAR ${OUTPUT_FILE})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
@@ -57,6 +62,8 @@ function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		add_custom_target(${MD5_VAR} DEPENDS ${OUTPUT_FILE} COMMENT "Checking if re-generation is required")
+		add_dependencies(codegen ${MD5_VAR})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
