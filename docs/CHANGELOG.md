@@ -14,6 +14,10 @@ General:
 
    - Add meshoptimizer support (new cvar `voxformat_optimize`)
 
+VoxEdit:
+
+   - Converted the text-voxel-rendering into a new brush
+
 ## 0.0.31 (2024-05-09)
 
 General:
