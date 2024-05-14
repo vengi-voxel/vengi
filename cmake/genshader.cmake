@@ -1,4 +1,4 @@
-function(read_shader_includes shaderpath include_dirs includes_list_out)
+function(engine_read_shader_includes shaderpath include_dirs includes_list_out)
 	file(READ "${shaderpath}" contents)
 	string(REGEX REPLACE ";" "\\\\;" contents "${contents}")
 	string(REGEX REPLACE "\r" "" contents "${contents}")
@@ -22,12 +22,7 @@ function(read_shader_includes shaderpath include_dirs includes_list_out)
 	set(${includes_list_out} ${_local_list} PARENT_SCOPE)
 endfunction()
 
-function(shader_include_dir TARGET DEPENDENCY)
-	set(GEN_DIR ${GENERATE_DIR}/shaders/${DEPENDENCY}/)
-	target_include_directories(${TARGET} PUBLIC ${GEN_DIR})
-endfunction()
-
-function(generate_shaders TARGET)
+function(engine_generate_shaders TARGET)
 	if (NOT DEFINED video_SOURCE_DIR)
 		message(FATAL_ERROR "video project not found")
 	endif()
@@ -60,71 +55,66 @@ function(generate_shaders TARGET)
 endfunction()
 
 function(generate_shader TARGET SHADER GEN_DIR SHADERTOOL_INCLUDE_DIRS)
-	set(_template_header ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.h.in)
-	set(_template_cpp ${ROOT_DIR}/src/tools/shadertool/ShaderTemplate.cpp.in)
-	set(_template_constants_header ${ROOT_DIR}/src/tools/shadertool/ShaderConstantsTemplate.h.in)
-	set(_template_ub ${ROOT_DIR}/src/tools/shadertool/UniformBufferTemplate.h.in)
-	set(_headers)
-	set(_sources)
-	set(_constantsheaders)
-	set(_dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-	set(_shaders)
+	set(SRC_DIR ${ROOT_DIR}/src/tools/shadertool)
+	set(SHADER_TEMPLATE_HDR_FILE ${SRC_DIR}/ShaderTemplate.h.in)
+	set(SHADER_TEMPLATE_CPP_FILE ${SRC_DIR}/ShaderTemplate.cpp.in)
+	set(SHADER_TEMPLATE_CONST_FILE ${SRC_DIR}/ShaderConstantsTemplate.h.in)
+	set(SHADER_TEMPLATE_UB_FILE ${SRC_DIR}/UniformBufferTemplate.h.in)
+	set(SHADER_SEARCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+	set(FOUND_SHADER_FILES)
 
-	if (EXISTS ${_dir}/${SHADER}.frag AND EXISTS ${_dir}/${SHADER}.vert)
-		list(APPEND _shaders ${_dir}/${SHADER}.frag ${_dir}/${SHADER}.vert)
-		if (EXISTS ${_dir}/${SHADER}.geom)
-			list(APPEND _shaders ${_dir}/${SHADER}.geom)
+	if (EXISTS ${SHADER_SEARCH_DIR}/${SHADER}.frag AND EXISTS ${SHADER_SEARCH_DIR}/${SHADER}.vert)
+		list(APPEND FOUND_SHADER_FILES ${SHADER_SEARCH_DIR}/${SHADER}.frag ${SHADER_SEARCH_DIR}/${SHADER}.vert)
+		if (EXISTS ${SHADER_SEARCH_DIR}/${SHADER}.geom)
+			list(APPEND FOUND_SHADER_FILES ${SHADER_SEARCH_DIR}/${SHADER}.geom)
 		endif()
 	endif()
-	if (EXISTS ${_dir}/${SHADER}.comp)
-		list(APPEND _shaders ${_dir}/${SHADER}.comp)
+	if (EXISTS ${SHADER_SEARCH_DIR}/${SHADER}.comp)
+		list(APPEND FOUND_SHADER_FILES ${SHADER_SEARCH_DIR}/${SHADER}.comp)
 	endif()
-	if (_shaders)
-		set(_shadersdeps)
-		foreach (s ${_shaders})
-			read_shader_includes(${s} "${SHADERTOOL_INCLUDE_DIRS}" _shadersdeps)
+	if (FOUND_SHADER_FILES)
+		set(SHADER_DEPENDENCIES)
+		foreach (FOUND_SHADER_FILE ${FOUND_SHADER_FILES})
+			engine_read_shader_includes(${FOUND_SHADER_FILE} "${SHADERTOOL_INCLUDE_DIRS}" SHADER_DEPENDENCIES)
 		endforeach()
-		convert_to_camel_case(${SHADER} _f)
-		set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
-		set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
-		set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
+		convert_to_camel_case(${SHADER} SHADER_NAME_CAMEL_CASE)
+		set(SHADER_TARGET_HDR_FILE "${GEN_DIR}${SHADER_NAME_CAMEL_CASE}Shader.h")
+		set(SHADER_TARGET_CPP_FILE "${GEN_DIR}${SHADER_NAME_CAMEL_CASE}Shader.cpp")
+		set(SHADER_TARGET_CONST_FILE "${GEN_DIR}${SHADER_NAME_CAMEL_CASE}ShaderConstants.h")
 		set(MD5_VAR "")
-		string(MD5 MD5_VAR ${_shaderheaderpath})
+		string(MD5 MD5_VAR ${SHADER_TARGET_HDR_FILE})
 		if (NOT CMAKE_CROSSCOMPILING)
 			set(_args
 				${SHADERTOOL_INCLUDE_DIRS_PARAM}
-				--shader ${_dir}/${SHADER}
-				--constantstemplate ${_template_constants_header}
-				--headertemplate ${_template_header}
-				--sourcetemplate ${_template_cpp}
-				--buffertemplate ${_template_ub}
+				--shader ${SHADER_SEARCH_DIR}/${SHADER}
+				--constantstemplate ${SHADER_TEMPLATE_CONST_FILE}
+				--headertemplate ${SHADER_TEMPLATE_HDR_FILE}
+				--sourcetemplate ${SHADER_TEMPLATE_CPP_FILE}
+				--buffertemplate ${SHADER_TEMPLATE_UB_FILE}
 				--sourcedir ${GEN_DIR}
 			)
 			if (USE_GLSLANG_VALIDATOR AND GLSLANG_EXECUTABLE)
 				list(APPEND _args --glslang ${GLSLANG_EXECUTABLE})
 			endif()
 			add_custom_command(
-				OUTPUT ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath}
-				IMPLICIT_DEPENDS C ${_shaders}
+				OUTPUT ${SHADER_TARGET_HDR_FILE} ${SHADER_TARGET_CPP_FILE} ${SHADER_TARGET_CONST_FILE}
+				IMPLICIT_DEPENDS C ${FOUND_SHADER_FILES}
 				COMMENT "Validate ${SHADER}"
 				COMMAND ${CMAKE_COMMAND} -E env "APP_HOMEPATH=${CMAKE_CURRENT_BINARY_DIR}/" "LSAN_OPTIONS=exitcode=0"
 					$<TARGET_FILE:shadertool>
 					${_args}
-				DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
+				DEPENDS shadertool ${FOUND_SHADER_FILES} ${SHADER_DEPENDENCIES} ${SHADER_TEMPLATE_HDR_FILE} ${SHADER_TEMPLATE_CPP_FILE} ${SHADER_TEMPLATE_UB_FILE} ${SHADER_TEMPLATE_CONST_FILE}
 			)
-		elseif (NOT EXISTS "${GEN_DIR}${_f}Shader.h")
+		elseif (NOT EXISTS "${SHADER_TARGET_HDR_FILE}")
 			message(WARNING "Source code generation must be done by native toolchain")
 		else()
-			set_source_files_properties(${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath} PROPERTIES GENERATED TRUE)
+			set_source_files_properties(${SHADER_TARGET_HDR_FILE} ${SHADER_TARGET_CPP_FILE} ${SHADER_TARGET_CONST_FILE} PROPERTIES GENERATED TRUE)
 		endif()
-		add_custom_target(${MD5_VAR} DEPENDS ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath} COMMENT "Checking if re-generation is required")
+		add_custom_target(${MD5_VAR} DEPENDS ${SHADER_TARGET_HDR_FILE} ${SHADER_TARGET_CPP_FILE} ${SHADER_TARGET_CONST_FILE} COMMENT "Checking if re-generation is required")
 		add_dependencies(codegen ${MD5_VAR})
-		list(APPEND _headers ${_shaderheaderpath})
-		list(APPEND _sources ${_shadersourcepath})
-		list(APPEND _constantsheaders ${_shaderconstantheaderpath})
+		target_sources(${TARGET} PRIVATE ${SHADER_TARGET_HDR_FILE} ${SHADER_TARGET_CPP_FILE} ${SHADER_TARGET_CONST_FILE})
 	else()
 		message(FATAL_ERROR "Could not find any shader files for ${SHADER} and target '${TARGET}'")
 	endif()
 
-	target_sources(${TARGET} PRIVATE ${_sources} ${_headers} ${_constantsheaders})
 endfunction()

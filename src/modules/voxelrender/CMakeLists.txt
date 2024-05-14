@@ -22,7 +22,7 @@ foreach (SHADER ${SHADERS})
 endforeach()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES render scenegraph)
-generate_shaders(${LIB} ${SHADERS})
+engine_generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/VoxelRenderShaderTest.cpp

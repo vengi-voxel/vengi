@@ -18,7 +18,7 @@ foreach (SHADER ${SHADERS})
 endforeach()
 set(LIB render)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video)
-generate_shaders(${LIB} ${SHADERS})
+engine_generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/RenderShaderTest.cpp

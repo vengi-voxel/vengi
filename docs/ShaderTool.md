@@ -8,7 +8,7 @@ The cmake macros expect the shader source below the module in a `shaders/` direc
 
 ```cmake
 set(SHADERS first second)
-generate_shaders(mymodulename ${SHADERS})
+engine_generate_shaders(mymodulename ${SHADERS})
 ```
 
 The shaders given in this example would be located at `src/modules/mymodulename/shaders/first.*`. The tool automatically detects the type of programs that should be connected in the final shader.
