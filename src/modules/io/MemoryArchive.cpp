@@ -58,6 +58,7 @@ SeekableReadStream *MemoryArchive::readStream(const core::String &filePath) {
 	if (iter == _entries.end()) {
 		return nullptr;
 	}
+	iter->second->seek(0);
 	return new SeekableReadWriteStreamWrapper((io::SeekableReadStream*)iter->second);
 }
 
