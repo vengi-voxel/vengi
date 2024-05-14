@@ -49,7 +49,7 @@ bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, p
 	const io::FormatDescription *desc = io::getDescription(filename, magic, io::format::palettes());
 	if (desc == nullptr) {
 		Log::warn("Palette format %s isn't supported", filename.c_str());
-		return image::ImagePtr();
+		return false;
 	}
 	if (const core::SharedPtr<PaletteFormat> &f = getFormat(*desc, magic)) {
 		stream.seek(0);
