@@ -100,7 +100,7 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 		for (int x = 0; x < w; ++x) {
 			// antialiasing
 			if (bitmap[y * w + x] >= 25) {
-				glm::ivec3 v(x + ix0, h - y, 0);
+				glm::ivec3 v(x + ix0, h - 1 - y, 0);
 				for (int i = 0; i < thickness; ++i) {
 					v.z = i;
 					volume.setVoxel(pos + v, voxel);
