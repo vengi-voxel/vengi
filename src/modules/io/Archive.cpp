@@ -4,7 +4,6 @@
 
 #include "Archive.h"
 #include "core/Algorithm.h"
-#include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
