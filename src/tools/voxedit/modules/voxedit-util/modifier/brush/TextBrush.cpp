@@ -61,7 +61,7 @@ void TextBrush::reset() {
 	Super::reset();
 	_font = "font.ttf";
 	_input = "text";
-	_size = 10;
+	_size = 16;
 	_spacing = 1;
 	_thickness = 1;
 }
