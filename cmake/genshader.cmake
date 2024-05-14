@@ -88,6 +88,8 @@ function(generate_shader TARGET SHADER GEN_DIR SHADERTOOL_INCLUDE_DIRS)
 		set(_shaderheaderpath "${GEN_DIR}${_f}Shader.h")
 		set(_shadersourcepath "${GEN_DIR}${_f}Shader.cpp")
 		set(_shaderconstantheaderpath "${GEN_DIR}${_f}ShaderConstants.h")
+		set(MD5_VAR "")
+		string(MD5 MD5_VAR ${_shaderheaderpath})
 		if (NOT CMAKE_CROSSCOMPILING)
 			set(_args
 				${SHADERTOOL_INCLUDE_DIRS_PARAM}
@@ -110,9 +112,13 @@ function(generate_shader TARGET SHADER GEN_DIR SHADERTOOL_INCLUDE_DIRS)
 					${_args}
 				DEPENDS shadertool ${_shaders} ${_shadersdeps} ${_template_header} ${_template_cpp} ${_template_ub} ${_template_constants_header}
 			)
+		elseif (NOT EXISTS "${GEN_DIR}${_f}Shader.h")
+			message(WARNING "Source code generation must be done by native toolchain")
 		else()
-			message(STATUS "Source code generation must be done by native toolchain")
+			set_source_files_properties(${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath} PROPERTIES GENERATED TRUE)
 		endif()
+		add_custom_target(${MD5_VAR} DEPENDS ${_shaderheaderpath} ${_shadersourcepath} ${_shaderconstantheaderpath} COMMENT "Checking if re-generation is required")
+		add_dependencies(codegen ${MD5_VAR})
 		list(APPEND _headers ${_shaderheaderpath})
 		list(APPEND _sources ${_shadersourcepath})
 		list(APPEND _constantsheaders ${_shaderconstantheaderpath})
