@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/UTF8.h"
 #include "io/Filesystem.h"
 #include "voxel/RawVolumeWrapper.h"
 
@@ -66,8 +67,21 @@ void VoxelFont::shutdown() {
 	_filename = "";
 }
 
+void VoxelFont::dimensions(const char *string, uint8_t size, int &w, int &h) const {
+	const char **s = &string;
+	const float scale = stbtt_ScaleForPixelHeight(_font, (float)size);
+	int ix0, iy0, ix1, iy1;
+	w = 0;
+	h = 0;
+	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
+		stbtt_GetCodepointBitmapBox(_font, c, scale, scale, &ix0, &iy0, &ix1, &iy1);
+		w += (ix1 - ix0);
+		h = core_max(h, iy1 - iy0);
+	}
+}
+
 int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos,
-								voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
+							   voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
 	const float scale = stbtt_ScaleForPixelHeight(_font, (float)size);
 	int w;
 	int h;

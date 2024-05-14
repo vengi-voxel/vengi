@@ -13,7 +13,7 @@ struct stbtt_fontinfo;
 namespace voxel {
 class RawVolumeWrapper;
 class Voxel;
-}
+} // namespace voxel
 
 namespace voxelfont {
 
@@ -22,19 +22,21 @@ namespace voxelfont {
  */
 class VoxelFont {
 private:
-	stbtt_fontinfo* _font = nullptr;
+	stbtt_fontinfo *_font = nullptr;
 	uint8_t *_ttfBuffer = nullptr;
 	core::String _filename;
 
-	bool renderGlyphs(const char* string);
+	bool renderGlyphs(const char *string);
 
 public:
 	~VoxelFont();
 
-	bool init(const char* font);
+	bool init(const char *font);
 	void shutdown();
 
-	int renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos, voxel::RawVolumeWrapper &volume, const voxel::Voxel& voxel);
+	void dimensions(const char *string, uint8_t size, int &w, int &h) const;
+	int renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos,
+						voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel);
 };
 
-}
+} // namespace voxelfont
