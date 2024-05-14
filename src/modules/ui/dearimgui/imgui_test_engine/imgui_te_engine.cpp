@@ -2081,14 +2081,14 @@ void ImGuiTestEngineHook_Log(ImGuiContext* ui_ctx, const char* fmt, ...)
 // Your custom assert code may optionally want to call this.
 void ImGuiTestEngine_AssertLog(const char* expr, const char* file, const char* function, int line)
 {
-    ImGuiTestEngine* engine = GImGuiTestEngine;
-    if (ImGuiTestContext* ctx = engine->TestContext)
-    {
-        ctx->LogError("Assert: '%s'", expr);
-        ctx->LogWarning("In %s:%d, function %s()", file, line, function);
-        if (ImGuiTest* test = ctx->Test)
-            ctx->LogWarning("While running test: %s %s", test->Category, test->Name);
-    }
+    if (ImGuiTestEngine* engine = GImGuiTestEngine)
+        if (ImGuiTestContext* ctx = engine->TestContext)
+        {
+            ctx->LogError("Assert: '%s'", expr);
+            ctx->LogWarning("In %s:%d, function %s()", file, line, function);
+            if (ImGuiTest* test = ctx->Test)
+                ctx->LogWarning("While running test: %s %s", test->Category, test->Name);
+        }
 }
 
 // Used by IM_CHECK_OP() macros

@@ -2140,16 +2140,21 @@ void    ImGuiTestContext::MouseLiftDragThreshold(ImGuiMouseButton button)
     g.IO.MouseDragMaxDistanceSqr[button] = (g.IO.MouseDragThreshold * g.IO.MouseDragThreshold) + (g.IO.MouseDragThreshold * g.IO.MouseDragThreshold);
 }
 
-// Modeled on FindHoveredWindow() in imgui.cpp.
-// Ideally that core function would be refactored to avoid this copy.
-// - Need to take account of MovingWindow specificities and early out.
-// - Need to be able to skip viewport compare.
-// So for now we use a custom function.
 ImGuiWindow* ImGuiTestContext::FindHoveredWindowAtPos(const ImVec2& pos)
 {
+#if IMGUI_VERSION_NUM >= 19062
+    ImGuiWindow* hovered_window = NULL;
+    ImGui::FindHoveredWindowEx(pos, true, &hovered_window, NULL);
+    return hovered_window;
+#else
+    // Modeled on FindHoveredWindow() in imgui.cpp.
+    // Ideally that core function would be refactored to avoid this copy.
+    // - Need to take account of MovingWindow specificities and early out.
+    // - Need to be able to skip viewport compare.
+    // So for now we use a custom function.
     ImGuiContext& g = *UiContext;
-    const ImVec2 padding_regular = g.Style.TouchExtraPadding;
-    const ImVec2 padding_for_resize = g.IO.ConfigWindowsResizeFromEdges ? g.WindowsHoverPadding : padding_regular;
+    ImVec2 padding_regular = g.Style.TouchExtraPadding;
+    ImVec2 padding_for_resize = g.IO.ConfigWindowsResizeFromEdges ? g.WindowsHoverPadding : padding_regular;
     for (int i = g.Windows.Size - 1; i >= 0; i--)
     {
         ImGuiWindow* window = g.Windows[i];
@@ -2159,12 +2164,8 @@ ImGuiWindow* ImGuiTestContext::FindHoveredWindowAtPos(const ImVec2& pos)
             continue;
 
         // Using the clipped AABB, a child window will typically be clipped by its parent (not always)
-        ImRect bb(window->OuterRectClipped);
-        if (window->Flags & (ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
-            bb.Expand(padding_regular);
-        else
-            bb.Expand(padding_for_resize);
-        if (!bb.Contains(pos))
+        ImVec2 hit_padding = (window->Flags & (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) ? padding_regular : padding_for_resize;
+        if (!window->OuterRectClipped.ContainsWithPad(pos, hit_padding))
             continue;
 
         // Support for one rectangular hole in any given window
@@ -2180,6 +2181,7 @@ ImGuiWindow* ImGuiTestContext::FindHoveredWindowAtPos(const ImVec2& pos)
         return window;
     }
     return NULL;
+#endif
 }
 
 static bool IsPosOnVoid(ImGuiContext& g, const ImVec2& pos)
