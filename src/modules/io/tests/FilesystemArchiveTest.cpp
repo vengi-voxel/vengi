@@ -29,7 +29,7 @@ public:
 };
 
 // TODO: fix me in pipeline
-TEST_F(FilesystemArchiveTest, DISALBED_testFilesytemArchiveCurrentDir) {
+TEST_F(FilesystemArchiveTest, DISABLED_testFilesytemArchiveCurrentDir) {
 	io::FilesystemArchive fsa(fs);
 	fsa.init(".");
 	ASSERT_FALSE(fsa.files().empty());
