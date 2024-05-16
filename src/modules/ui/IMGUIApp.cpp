@@ -262,10 +262,8 @@ static void _imguiFree(void *mem, void *) {
 	core_free(mem);
 }
 
-#ifdef IMGUI_ENABLE_TEST_ENGINE
 static void ImGui_ImplSDL2_NoShowWindow(ImGuiViewport *) {
 }
-#endif
 
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
@@ -329,11 +327,12 @@ app::AppState IMGUIApp::onInit() {
 	if (registerUITests()) {
 		ImGuiTestEngine_Start(_imguiTestEngine, ImGui::GetCurrentContext());
 	}
+#endif
+	// if we decide to hide the window, we don't want docking to show externalized windows
 	if (!_showWindow) {
 		ImGuiPlatformIO &platform_io = ImGui::GetPlatformIO();
 		platform_io.Platform_ShowWindow = ImGui_ImplSDL2_NoShowWindow;
 	}
-#endif
 
 	return state;
 }
