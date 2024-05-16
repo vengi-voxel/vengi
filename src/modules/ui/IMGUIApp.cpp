@@ -432,8 +432,8 @@ void IMGUIApp::renderBindingsDialog() {
 				// TODO: change binding
 				const core::String &deleteButton = core::string::format(ICON_LC_TRASH "##del-key-%i", n++);
 				if (ImGui::Button(deleteButton.c_str())) {
-					command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()));
-					// TODO: _lastExecutedCommand
+					command::executeCommands(core::string::format("unbind \"%s\"", keyBinding.c_str()),
+											 &_lastExecutedCommand);
 				}
 				ImGui::SameLine();
 				ImGui::TextUnformatted(keyBinding.c_str());
