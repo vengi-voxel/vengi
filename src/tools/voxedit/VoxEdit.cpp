@@ -41,6 +41,8 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	_iniVersion = 6;
 	_keybindingsVersion = 1;
 	_wantCrashLogs = true;
+	// TODO: set this to false when running dear imgui test engine in the ci pipelines
+	// _showWindow = false;
 
 	// see KeyBindings enum
 	_uiKeyMaps.push_back("Magicavoxel");

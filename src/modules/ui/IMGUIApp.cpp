@@ -262,6 +262,11 @@ static void _imguiFree(void *mem, void *) {
 	core_free(mem);
 }
 
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+static void ImGui_ImplSDL2_NoShowWindow(ImGuiViewport *) {
+}
+#endif
+
 app::AppState IMGUIApp::onInit() {
 	const app::AppState state = Super::onInit();
 	video::checkError();
@@ -278,6 +283,7 @@ app::AppState IMGUIApp::onInit() {
 	// Initialize Test Engine
 	_imguiTestEngine = ImGuiTestEngine_CreateContext();
 	ImGuiTestEngineIO& test_io = ImGuiTestEngine_GetIO(_imguiTestEngine);
+	test_io.ConfigLogToTTY = _showWindow ? false : true;
 	test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
 	test_io.ConfigVerboseLevelOnError = ImGuiTestVerboseLevel_Debug;
 #endif
@@ -322,6 +328,10 @@ app::AppState IMGUIApp::onInit() {
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	if (registerUITests()) {
 		ImGuiTestEngine_Start(_imguiTestEngine, ImGui::GetCurrentContext());
+	}
+	if (!_showWindow) {
+		ImGuiPlatformIO &platform_io = ImGui::GetPlatformIO();
+		platform_io.Platform_ShowWindow = ImGui_ImplSDL2_NoShowWindow;
 	}
 #endif
 
@@ -603,7 +613,9 @@ app::AppState IMGUIApp::onRunning() {
 		_console.render(_lastExecutedCommand);
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-		ImGuiTestEngine_ShowTestEngineWindows(_imguiTestEngine, nullptr);
+		if (_showWindow) {
+			ImGuiTestEngine_ShowTestEngineWindows(_imguiTestEngine, nullptr);
+		}
 #endif
 
 		if (_closeModalPopup) {
@@ -673,6 +685,27 @@ app::AppState IMGUIApp::onRunning() {
 #endif
 
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
+
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	// run the tests in command line mode if the window is hidden
+	if (!_showWindow) {
+		// delay the execution of the tests a few frames to allow all tests to be registered by the app
+		if (_startedFromCommandlineFrameDelay > 0) {
+			_startedFromCommandlineFrameDelay--;
+		}
+		if (_startedFromCommandlineFrameDelay == 0) {
+			ImGuiTestEngine_QueueTests(_imguiTestEngine, ImGuiTestGroup_Tests, "tests", ImGuiTestRunFlags_RunFromCommandLine);
+			_startedFromCommandlineFrameDelay--;
+		}
+
+		if (_startedFromCommandlineFrameDelay == -1) {
+			if (ImGuiTestEngine_IsTestQueueEmpty(_imguiTestEngine)) {
+				requestQuit();
+			}
+		}
+	}
+#endif
+
 	return app::AppState::Running;
 }
 
