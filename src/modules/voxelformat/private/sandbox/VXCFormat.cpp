@@ -4,13 +4,11 @@
 
 #include "VXCFormat.h"
 #include "VXRFormat.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 
@@ -63,8 +61,16 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		wrap(stream.readUInt32(fileSize))
 		io::BufferedReadWriteStream substream(stream, fileSize);
 		substream.seek(0);
-		// TODO: currently we need them as files - we don't have a virtual filesystem that could deal with this yet...
-		io::filesystem()->write(path, substream.getBuffer(), substream.size());
+		// TODO: don't write this into the filesystem, but load it directly
+		core::ScopedPtr<io::SeekableWriteStream> ws(archive->writeStream(path));
+		if (!ws) {
+			Log::error("Could not open file %s for writing", path);
+			return false;
+		}
+		if (ws->write(substream.getBuffer(), substream.size()) == -1) {
+			Log::error("Could not write to file %s", path);
+			return false;
+		}
 		const core::String &ext = core::string::extractExtension(path);
 		if (ext == "vxr") {
 			vxr = path;
