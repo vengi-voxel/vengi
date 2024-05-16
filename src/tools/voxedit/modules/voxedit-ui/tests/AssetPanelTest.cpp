@@ -5,6 +5,7 @@
 #include "../AssetPanel.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
+#include "core/StringUtil.h"
 #include "TestUtil.h"
 
 namespace voxedit {

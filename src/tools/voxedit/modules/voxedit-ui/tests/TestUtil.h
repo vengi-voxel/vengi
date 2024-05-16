@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNode.h" // InvalidNodeId
 #include "ui/IMGUIApp.h"
 
 namespace voxedit {

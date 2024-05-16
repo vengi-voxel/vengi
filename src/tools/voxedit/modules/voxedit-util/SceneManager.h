@@ -9,7 +9,6 @@
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
-#include "core/ScopedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
