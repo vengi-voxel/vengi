@@ -4,6 +4,7 @@
 
 #include "AppCommand.h"
 #include "command/Command.h"
+#include "command/CommandCompleter.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
 #include "util/VarUtil.h"
@@ -78,34 +79,6 @@ void init(const core::TimeProviderPtr& timeProvider) {
 		Log::info("%s", params.c_str());
 	}).setHelp(_("Print the given arguments to the console (info log level)"));
 
-	auto fileCompleter = [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		core::DynamicArray<io::FilesystemEntry> entries;
-		const io::FilesystemPtr& filesystem = io::filesystem();
-		const io::FilePtr& file = filesystem->open(str);
-		core::String filter;
-		core::String dir = file->path();
-		if (dir.empty()) {
-			filter = str + "*";
-			dir = ".";
-		} else {
-			filter = file->fileName() + "*";
-		}
-		filesystem->list(dir, entries, filter);
-		int i = 0;
-		for (const io::FilesystemEntry& entry : entries) {
-			if (entry.type == io::FilesystemEntry::Type::unknown) {
-				continue;
-			}
-			if (dir.empty()) {
-				matches.push_back(entry.name);
-			} else {
-				matches.push_back(core::string::path(dir, entry.name));
-			}
-			++i;
-		}
-		return i;
-	};
-
 	command::Command::registerCommand("exec", [] (const command::CmdArgs& args) {
 		if (args.size() != 1) {
 			Log::info("Usage: exec <file>");
@@ -117,7 +90,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			return;
 		}
 		command::Command::execute(cmds);
-	}).setHelp(_("Execute a file with script commands")).setArgumentCompleter(fileCompleter);
+	}).setHelp(_("Execute a file with script commands")).setArgumentCompleter(command::fileCompleter(io::filesystem(), "", "*.cfg"));
 
 	command::Command::registerCommand("toggle", [] (const command::CmdArgs& args) {
 		if (args.empty()) {
