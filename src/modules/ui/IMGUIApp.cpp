@@ -35,6 +35,7 @@
 #include "dearimgui/imgui_test_engine/imgui_te_ui.h"
 #include "dearimgui/imgui_test_engine/imgui_te_engine.h"
 #include "dearimgui/imgui_test_engine/imgui_te_context.h"
+#include "dearimgui/imgui_test_engine/imgui_te_exporters.h"
 #endif
 
 #include "ArimoRegular.h"
@@ -701,6 +702,8 @@ app::AppState IMGUIApp::onRunning() {
 			if (ImGuiTestEngine_IsTestQueueEmpty(_imguiTestEngine)) {
 				int testedCnt = 0;
 				int successCnt = 0;
+				core::String testresults = _appname + "-ui-tests.xml";
+				ImGuiTestEngine_ExportEx(_imguiTestEngine, ImGuiTestEngineExportFormat_JUnitXml, testresults.c_str());
 				ImGuiTestEngine_GetResult(_imguiTestEngine, testedCnt, successCnt);
 				if (successCnt != testedCnt) {
 					_exitCode = 1;
