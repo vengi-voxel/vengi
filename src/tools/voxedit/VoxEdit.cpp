@@ -23,8 +23,6 @@
 
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/FileDialogOptions.h"
-#include "voxedit-util/SceneRenderer.h"
-#include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "engine-git.h"
@@ -41,8 +39,6 @@ VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPt
 	_iniVersion = 6;
 	_keybindingsVersion = 1;
 	_wantCrashLogs = true;
-	// TODO: set this to false when running dear imgui test engine in the ci pipelines
-	// _showWindow = false;
 
 	// see KeyBindings enum
 	_uiKeyMaps.push_back("Magicavoxel");
@@ -512,11 +508,6 @@ app::AppState VoxEdit::onInit() {
 		}
 	}
 
-#ifdef IMGUI_ENABLE_TEST_ENGINE
-	// register the ui tests late - as we need the main window
-	_mainWindow->registerUITests(_imguiTestEngine, "###app");
-#endif
-
 	return state;
 }
 
@@ -554,17 +545,4 @@ app::AppState VoxEdit::onRunning() {
 		core::setBindingContext(core::BindingContext::UI);
 	}
 	return state;
-}
-
-int main(int argc, char *argv[]) {
-	const io::FilesystemPtr& filesystem = core::make_shared<io::Filesystem>();
-	const core::TimeProviderPtr& timeProvider = core::make_shared<core::TimeProvider>();
-	const core::SharedPtr<voxedit::SceneRenderer>& sceneRenderer = core::make_shared<voxedit::SceneRenderer>();
-	const core::SharedPtr<voxedit::ModifierRenderer>& modifierRenderer = core::make_shared<voxedit::ModifierRenderer>();
-	const video::TexturePoolPtr &texturePool = core::make_shared<video::TexturePool>();
-	const voxedit::SceneManagerPtr &sceneMgr =
-		core::make_shared<voxedit::SceneManager>(timeProvider, filesystem, sceneRenderer, modifierRenderer);
-	const voxelcollection::CollectionManagerPtr &collectionMgr = core::make_shared<voxelcollection::CollectionManager>(filesystem, texturePool);
-	VoxEdit app(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool);
-	return app.startMainLoop(argc, argv);
 }

@@ -15,17 +15,19 @@ namespace voxedit {
 class MainWindow;
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
-}
+} // namespace voxedit
 
 /**
  * @brief This is a voxel editor that can import and export multiple mesh/voxel formats.
  *
  * @ingroup Tools
  */
-class VoxEdit: public ui::IMGUIApp {
+class VoxEdit : public ui::IMGUIApp {
 private:
 	using Super = ui::IMGUIApp;
-	voxedit::MainWindow* _mainWindow = nullptr;
+
+protected:
+	voxedit::MainWindow *_mainWindow = nullptr;
 	core::DynamicArray<io::FormatDescription> _paletteFormats;
 	voxedit::SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
@@ -53,7 +55,7 @@ public:
 
 	void onRenderUI() override;
 
-	void onDropFile(const core::String& file) override;
+	void onDropFile(const core::String &file) override;
 
 	bool allowedToQuit() override;
 

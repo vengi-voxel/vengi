@@ -4,6 +4,7 @@ add_subdirectory(modules)
 project(voxedit)
 set(SRCS
 	VoxEdit.h VoxEdit.cpp
+	VoxEditMain.cpp
 )
 
 set(FILES
@@ -14,3 +15,12 @@ set(FILES
 
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} FILES ${FILES} WINDOWED DESCRIPTION "Voxel Editor")
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES voxedit-ui voxedit-util)
+
+if (USE_IMGUITESTENGINE)
+	set(TEST_SRCS
+		VoxEdit.h VoxEdit.cpp
+		VoxEditTest.cpp
+	)
+	engine_add_executable(TARGET tests-voxedit SRCS ${TEST_SRCS} FILES ${FILES} NOINSTALL DESCRIPTION "Voxel Editor Tests")
+	engine_target_link_libraries(TARGET tests-voxedit DEPENDENCIES voxedit-ui voxedit-util)
+endif()
