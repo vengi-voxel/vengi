@@ -699,6 +699,12 @@ app::AppState IMGUIApp::onRunning() {
 
 		if (_startedFromCommandlineFrameDelay == -1) {
 			if (ImGuiTestEngine_IsTestQueueEmpty(_imguiTestEngine)) {
+				int testedCnt = 0;
+				int successCnt = 0;
+				ImGuiTestEngine_GetResult(_imguiTestEngine, testedCnt, successCnt);
+				if (successCnt != testedCnt) {
+					_exitCode = 1;
+				}
 				requestQuit();
 			}
 		}
