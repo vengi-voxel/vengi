@@ -2555,7 +2555,11 @@ void    ImGuiTestContext::KeyCharsReplace(const char* chars)
 
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
     LogDebug("KeyCharsReplace('%s')", chars);
+#if IMGUI_VERSION_NUM < 19063
     KeyPress(ImGuiKey_A | ImGuiMod_Shortcut);
+#else
+    KeyPress(ImGuiKey_A | ImGuiMod_Ctrl);
+#endif
     if (chars[0])
         KeyChars(chars);
     else
@@ -2569,7 +2573,11 @@ void    ImGuiTestContext::KeyCharsReplaceEnter(const char* chars)
 
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
     LogDebug("KeyCharsReplaceEnter('%s')", chars);
+#if IMGUI_VERSION_NUM < 19063
     KeyPress(ImGuiKey_A | ImGuiMod_Shortcut);
+#else
+    KeyPress(ImGuiKey_A | ImGuiMod_Ctrl);
+#endif
     if (chars[0])
         KeyChars(chars);
     else
@@ -2980,8 +2988,13 @@ bool    ImGuiTestContext::ItemSelectAndReadValue(ImGuiTestRef ref, ImGuiDataType
     Str256 backup_clipboard = ImGui::GetClipboardText();
 
     ItemInput(ref, flags);
+#if IMGUI_VERSION_NUM < 19063
     KeyPress(ImGuiKey_A | ImGuiMod_Shortcut);
     KeyPress(ImGuiKey_C | ImGuiMod_Shortcut);   // Copy to clipboard
+#else
+    KeyPress(ImGuiKey_A | ImGuiMod_Ctrl);
+    KeyPress(ImGuiKey_C | ImGuiMod_Ctrl);       // Copy to clipboard
+#endif
     KeyPress(ImGuiKey_Enter);
 
     const char* clipboard = ImGui::GetClipboardText();

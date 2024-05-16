@@ -592,17 +592,34 @@ void ImGuiTestEngine_ApplyInputToImGuiContext(ImGuiTestEngine* engine)
             case ImGuiTestInputType_Key:
             {
                 ImGuiKeyChord key_chord = input.KeyChord;
-#if IMGUI_VERSION_NUM >= 19016
+#if IMGUI_VERSION_NUM >= 19016 && IMGUI_VERSION_NUM < 19063
                 key_chord = ImGui::FixupKeyChord(&g, key_chord); // This will add ImGuiMod_Alt when pressing ImGuiKey_LeftAlt or ImGuiKey_LeftRight
+#endif
+#if IMGUI_VERSION_NUM >= 19063
+                key_chord = ImGui::FixupKeyChord(key_chord);     // This will add ImGuiMod_Alt when pressing ImGuiKey_LeftAlt or ImGuiKey_LeftRight
 #endif
                 ImGuiKey key = (ImGuiKey)(key_chord & ~ImGuiMod_Mask_);
                 ImGuiKeyChord mods = (key_chord & ImGuiMod_Mask_);
                 if (mods != 0x00)
                 {
                     // OSX conversion
-#if IMGUI_VERSION_NUM >= 18912
+#if IMGUI_VERSION_NUM >= 18912 && IMGUI_VERSION_NUM < 19063
                     if (mods & ImGuiMod_Shortcut)
                         mods = (mods & ~ImGuiMod_Shortcut) | (g.IO.ConfigMacOSXBehaviors ? ImGuiMod_Super : ImGuiMod_Ctrl);
+#endif
+#if IMGUI_VERSION_NUM >= 19063
+                    // MacOS: swap Cmd(Super) and Ctrl WILL BE SWAPPED BACK BY io.AddKeyEvent()
+                    if (g.IO.ConfigMacOSXBehaviors)
+                    {
+                        if ((mods & (ImGuiMod_Ctrl | ImGuiMod_Super)) == ImGuiMod_Super)
+                            mods = (mods & ~ImGuiMod_Super) | ImGuiMod_Ctrl;
+                        else if ((mods & (ImGuiMod_Ctrl | ImGuiMod_Super)) == ImGuiMod_Ctrl)
+                            mods = (mods & ~ImGuiMod_Ctrl) | ImGuiMod_Super;
+                        if (key == ImGuiKey_LeftSuper)      { key = ImGuiKey_LeftCtrl; }
+                        else if (key == ImGuiKey_LeftSuper) { key = ImGuiKey_RightCtrl; }
+                        else if (key == ImGuiKey_LeftCtrl)  { key = ImGuiKey_LeftSuper; }
+                        else if (key == ImGuiKey_LeftCtrl)  { key = ImGuiKey_RightSuper; }
+                    }
 #endif
                     // Submitting a ImGuiMod_XXX without associated key needs to add at least one of the key.
                     if (mods & ImGuiMod_Ctrl)

@@ -51,7 +51,10 @@ Index of this file:
 #pragma warning (push)
 #pragma warning (disable: 4456)                             // declaration of 'xx' hides previous local declaration
 #pragma warning (disable: 4457)                             // declaration of 'xx' hides function parameter
-#else
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"// warning: 'sprintf' has been explicitly marked deprecated here
+#elif defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
@@ -77,7 +80,9 @@ using namespace IMGUI_STB_NAMESPACE;
 
 #ifdef _MSC_VER
 #pragma warning (pop)
-#else
+#elif defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 

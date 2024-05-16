@@ -26,6 +26,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>   // stat()
 #endif
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#endif
 
 #if defined(__linux) || defined(__linux__) || defined(__MACH__) || defined(__MSL__) || defined(__MINGW32__)
 #include <pthread.h>    // pthread_setname_np()
@@ -1002,6 +1005,27 @@ bool    ImOsIsDebuggerPresent()
         debugger_pid = atoi(tracer_pid);
     }
     return debugger_pid != 0;
+#elif defined(__APPLE__)
+    // https://stackoverflow.com/questions/2200277/detecting-debugger-on-mac-os-x
+    int                 junk;
+    int                 mib[4];
+    struct kinfo_proc   info;
+    size_t              size;
+
+    // Initialize mib, which tells sysctl the info we want, in this case
+    // we're looking for information about a specific process ID.
+    info.kp_proc.p_flag = 0;
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC;
+    mib[2] = KERN_PROC_PID;
+    mib[3] = getpid();
+
+    size = sizeof(info);
+    junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+    IM_ASSERT(junk == 0);
+
+    // We're being debugged if the P_TRACED flag is set.
+    return (info.kp_proc.p_flag & P_TRACED) != 0;
 #else
     // FIXME
     return false;
