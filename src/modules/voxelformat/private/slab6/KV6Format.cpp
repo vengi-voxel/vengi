@@ -4,7 +4,6 @@
 
 #include "KV6Format.h"
 #include "SLABShared.h"
-#include "app/App.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
@@ -13,8 +12,6 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

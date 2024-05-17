@@ -3,10 +3,8 @@
  */
 
 #include "ThingFormat.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/FilesystemEntry.h"
@@ -150,14 +148,9 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	}
 	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 
-	const io::ArchiveFiles &files = zipArchive->files();
+	io::ArchiveFiles files;
+	zipArchive->list("*.node", files);
 	for (const io::FilesystemEntry &file : files) {
-		if (file.isDirectory()) {
-			continue;
-		}
-		if (core::string::extractExtension(file.name) != "node") {
-			continue;
-		}
 		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath));
 		if (nodeSpecStream) {
 			NodeSpec nodeSpec;

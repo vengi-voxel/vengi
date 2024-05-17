@@ -3,7 +3,6 @@
  */
 
 #include "CubzhB64Format.h"
-#include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -12,7 +11,6 @@
 #include "core/StringUtil.h"
 #include "io/Archive.h"
 #include "io/Base64ReadStream.h"
-#include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"

@@ -7,10 +7,6 @@
 #include "io/Stream.h"
 #include "voxelformat/Format.h"
 
-namespace io {
-class FilesystemArchive;
-}
-
 namespace voxelformat {
 
 /**

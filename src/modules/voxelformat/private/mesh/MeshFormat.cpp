@@ -486,6 +486,7 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	return false;
 }
 
+// TODO: use io::Archive here, too
 core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) {
 	const core::String &meshPath = core::string::extractPath(meshFilename);
 	core::String name = in;

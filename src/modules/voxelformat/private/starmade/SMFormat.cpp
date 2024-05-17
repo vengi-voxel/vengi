@@ -11,7 +11,6 @@
 #include "core/StringUtil.h"
 #include "core/collection/Map.h"
 #include "io/Archive.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "io/ZipReadStream.h"
@@ -91,7 +90,8 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			return false;
 		}
 		io::ArchivePtr zipArchive = io::openZipArchive(stream);
-		const io::ArchiveFiles &files = zipArchive->files();
+		io::ArchiveFiles files;
+		zipArchive->list("*.smd3,*.smd2", files);
 		for (const io::FilesystemEntry &e : files) {
 			const core::String &extension = core::string::extractExtension(e.name);
 			const bool isSmd3 = extension == "smd3";

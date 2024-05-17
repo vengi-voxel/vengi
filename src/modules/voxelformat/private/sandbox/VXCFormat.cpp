@@ -55,13 +55,11 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	core::SharedPtr<VXCArchive> vxcArchive = core::make_shared<VXCArchive>(stream);
-	const io::ArchiveFiles &files = vxcArchive->files();
+	io::ArchiveFiles files;
+	vxcArchive->list(".vxr", files);
 	for (const io::FilesystemEntry &entry : files) {
-		Log::debug("Found file %s", entry.name.c_str());
-		if (core::string::endsWith(entry.name.toLower(), ".vxr")) {
-			VXRFormat f;
-			f.load(entry.name, vxcArchive, sceneGraph, ctx);
-		}
+		VXRFormat f;
+		f.load(entry.name, vxcArchive, sceneGraph, ctx);
 	}
 	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();

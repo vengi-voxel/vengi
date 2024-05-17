@@ -170,13 +170,6 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 			Log::debug("Use image %s", texture.name);
 			textureMap.put(texture.name, tex);
 			texture.image = tex;
-#if 0
-			core::String png = tex->name() + ".png";
-			const io::FilePtr file = io::filesystem()->open(core::string::path(io::filesystem()->currentDir(), png), io::FileMode::SysWrite);
-			io::FileStream stream(file);
-			image::Image::writePng(stream, (const uint8_t*)buffer.data(), width, height, 4);
-			Log::error("write png file %s", png.c_str());
-#endif
 		} else {
 			Log::warn("Failed to load %s", texture.name);
 		}

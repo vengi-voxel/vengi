@@ -10,9 +10,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "io/File.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/Archive.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -75,13 +73,9 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		Log::debug("Minecraft version: (data: %i, name: %s, series: %s)", version,
 				   versionName ? versionName->c_str() : "-", versionSeries ? versionSeries->c_str() : "-");
 	}
-	core::DynamicArray<io::FilesystemEntry> entities;
+	io::ArchiveFiles entities;
 	const core::String baseName = core::string::extractPath(filename);
-	if (!io::filesystem()->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr")) {
-		Log::error("Failed to search minecraft region files");
-		return false;
-	}
-
+	archive->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr");
 	if (entities.empty()) {
 		Log::error("Could not find any region file");
 		return false;
