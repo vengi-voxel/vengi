@@ -4,13 +4,16 @@
 
 #include "VXCFormat.h"
 #include "VXRFormat.h"
+#include "VXCArchive.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxelformat/Format.h"
 
 namespace voxelformat {
 
@@ -51,35 +54,14 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		return false;
 	}
 
-	uint32_t entries;
-	wrap(stream.readUInt32(entries))
-	core::String vxr;
-	for (uint32_t i = 0; i < entries; ++i) {
-		char path[1024];
-		wrapBool(stream.readString(sizeof(path), path, true))
-		uint32_t fileSize;
-		wrap(stream.readUInt32(fileSize))
-		io::BufferedReadWriteStream substream(stream, fileSize);
-		substream.seek(0);
-		// TODO: don't write this into the filesystem, but load it directly
-		core::ScopedPtr<io::SeekableWriteStream> ws(archive->writeStream(path));
-		if (!ws) {
-			Log::error("Could not open file %s for writing", path);
-			return false;
+	core::SharedPtr<VXCArchive> vxcArchive = core::make_shared<VXCArchive>(stream);
+	const io::ArchiveFiles &files = vxcArchive->files();
+	for (const io::FilesystemEntry &entry : files) {
+		Log::debug("Found file %s", entry.name.c_str());
+		if (core::string::endsWith(entry.name.toLower(), ".vxr")) {
+			VXRFormat f;
+			f.load(entry.name, vxcArchive, sceneGraph, ctx);
 		}
-		if (ws->write(substream.getBuffer(), substream.size()) == -1) {
-			Log::error("Could not write to file %s", path);
-			return false;
-		}
-		const core::String &ext = core::string::extractExtension(path);
-		if (ext == "vxr") {
-			vxr = path;
-		}
-	}
-
-	if (!vxr.empty()) {
-		VXRFormat f;
-		f.load(vxr, archive, sceneGraph, ctx);
 	}
 	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();

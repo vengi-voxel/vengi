@@ -472,7 +472,6 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 	const int rootNodeId = sceneGraph.root().id();
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(rootNodeId);
 
-	// TODO: allow to specify the animation to import... (via cvar?)
 	char defaultAnim[1024] = "";
 	if (version >= 7) {
 		wrapBool(stream.readString(sizeof(defaultAnim), defaultAnim, true))
@@ -493,8 +492,8 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 
 	const core::String &basePath = core::string::extractPath(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
-	core::DynamicArray<io::FilesystemEntry> entities;
-	io::filesystem()->list(basePath, entities, "*.vxa");
+	io::ArchiveFiles entities;
+	archive->list(basePath, entities, "*.vxa");
 
 	for (const io::FilesystemEntry &entry : entities) {
 		Log::debug("Found vxa: %s for name %s", entry.name.c_str(), baseName.c_str());
