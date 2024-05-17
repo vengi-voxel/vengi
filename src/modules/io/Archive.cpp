@@ -25,7 +25,22 @@ bool Archive::exists(const core::String &file) const {
 		   _files.end();
 }
 
-SeekableWriteStream* Archive::writeStream(const core::String &filePath) {
+void Archive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
+	for (const auto &entry : _files) {
+		if (!core::string::startsWith(entry.fullPath, basePath)) {
+			continue;
+		}
+		if (core::string::matches(entry.name, filter)) {
+			out.push_back(entry);
+		}
+	}
+}
+
+void Archive::list(const core::String &filter, ArchiveFiles &out) const {
+	list("", out, filter);
+}
+
+SeekableWriteStream *Archive::writeStream(const core::String &filePath) {
 	return nullptr;
 }
 

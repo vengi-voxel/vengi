@@ -24,8 +24,12 @@ using FilesystemPtr = core::SharedPtr<Filesystem>;
 class Archive {
 protected:
 	ArchiveFiles _files;
+
 public:
 	const ArchiveFiles &files() const;
+	virtual void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter = "*") const;
+	virtual void list(const core::String &filter, ArchiveFiles &out) const;
+
 	virtual ~Archive() = default;
 	virtual bool exists(const core::String &file) const;
 
@@ -43,11 +47,11 @@ public:
 	 * this might not be the most efficient way to read a file from an archive
 	 * @sa core::ScopedPtr
 	 */
-	virtual SeekableReadStream* readStream(const core::String &filePath) = 0;
+	virtual SeekableReadStream *readStream(const core::String &filePath) = 0;
 	/**
 	 * @sa core::ScopedPtr
 	 */
-	virtual SeekableWriteStream* writeStream(const core::String &filePath);
+	virtual SeekableWriteStream *writeStream(const core::String &filePath);
 };
 
 inline const ArchiveFiles &Archive::files() const {

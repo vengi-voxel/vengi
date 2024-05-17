@@ -12,8 +12,7 @@
 
 namespace io {
 
-FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem)
-	: _filesytem(filesytem) {
+FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem) : _filesytem(filesytem) {
 }
 
 FilesystemArchive::~FilesystemArchive() {
@@ -84,7 +83,15 @@ bool FilesystemArchive::exists(const core::String &path) const {
 	return false;
 }
 
-SeekableReadStream* FilesystemArchive::readStream(const core::String &filePath) {
+void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
+	if (!_files.empty()) {
+		Super::list(basePath, out, filter);
+		return;
+	}
+	_filesytem->list(basePath, out, filter);
+}
+
+SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) {
 	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Read));
 	if (!stream->valid()) {
 		delete stream;
@@ -93,7 +100,7 @@ SeekableReadStream* FilesystemArchive::readStream(const core::String &filePath) 
 	return stream;
 }
 
-SeekableWriteStream* FilesystemArchive::writeStream(const core::String &filePath) {
+SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
 	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Write));
 	if (!stream->valid()) {
 		delete stream;
