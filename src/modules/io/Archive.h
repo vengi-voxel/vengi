@@ -27,7 +27,13 @@ protected:
 
 public:
 	const ArchiveFiles &files() const;
-	virtual void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter = "*") const;
+	/**
+	 * @brief List all entities in the archive that match the given optional filter and base directory
+	 * @param basePath The directory to list (can be empty)
+	 * @param out The list of directory entities that were found
+	 * @param[in] filter Wildcard for filtering the returned entities. Separated by a comma. Example *.vox,*.qb,*.mcr
+	 */
+	virtual void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const;
 	virtual void list(const core::String &filter, ArchiveFiles &out) const;
 
 	virtual ~Archive() = default;

@@ -27,7 +27,7 @@ bool Archive::exists(const core::String &file) const {
 
 void Archive::list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const {
 	for (const auto &entry : _files) {
-		if (!core::string::startsWith(entry.fullPath, basePath)) {
+		if (!basePath.empty() && !core::string::startsWith(entry.fullPath, basePath)) {
 			continue;
 		}
 		if (core::string::matches(entry.name, filter)) {
