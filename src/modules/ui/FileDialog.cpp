@@ -19,7 +19,9 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemEntry.h"
 #include "io/FormatDescription.h"
-#include "io/MemoryReadStream.h" // emscripten
+#ifdef __EMSCRIPTEN__
+#include "io/MemoryReadStream.h"
+#endif
 #include "ui/IMGUIApp.h"
 #include "video/OpenFileMode.h"
 
