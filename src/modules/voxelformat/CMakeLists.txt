@@ -178,6 +178,9 @@ set(TEST_FILES
 	tests/testrooms.node
 	tests/r.0.-2.mca
 	tests/r.0.-2.qb
+	tests/ufoai.bsp
+	tests/fuel_can.md2
+	tests/fuel_can.png
 	tests/rgb.vxl
 	tests/rgb.csv
 	tests/rgb.gltf
