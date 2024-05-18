@@ -171,7 +171,6 @@ set(TEST_FILES
 	tests/cw.cub
 	tests/crabby.qbcl
 	tests/crabby.vox
-	tests/chr_knight.gox
 	tests/bug393.obj
 	tests/kvx_save.qb
 	tests/particubes.pcubes
@@ -263,6 +262,7 @@ set(TEST_FILES
 	tests/chr_knight.qb
 	tests/chr_knight.qbcl
 	tests/chr_knight.gox
+	tests/chr_knight.fbx
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

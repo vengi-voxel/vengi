@@ -23,7 +23,7 @@ TEST_F(SchematicFormatTest, testLoadStructory) {
 	testLoad("brick_chimney_1.nbt");
 }
 
-TEST_F(SchematicFormatTest, DISABLED_testSaveSmallVoxel) {
+TEST_F(SchematicFormatTest, testSaveSmallVoxel) {
 	SchematicFormat f;
 	testSaveLoadVoxel("minecraft-smallvolumesavetest.schematic", &f);
 }

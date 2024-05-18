@@ -8,9 +8,9 @@ namespace voxelformat {
 
 class VMaxFormatTest : public AbstractFormatTest {};
 
-TEST_F(VMaxFormatTest, DISABLED_testLoad0) {
+TEST_F(VMaxFormatTest, testLoad0) {
 	// Node 'snapshots' is empty - this scene doesn't contain anything
-	testLoad("0voxel.vmax.zip");
+	testLoad("0voxel.vmax.zip", 0);
 }
 
 TEST_F(VMaxFormatTest, testLoad1) {

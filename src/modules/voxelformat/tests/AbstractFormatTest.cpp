@@ -120,9 +120,14 @@ void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core
 		SCOPED_TRACE(filename.c_str());
 		io::FileDescription fileDesc;
 		fileDesc.set(filename);
-		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
-			<< "Could not load " << filename;
-		ASSERT_EQ(expectedVolumes, sceneGraph.size());
+		if (expectedVolumes <= 0) {
+			ASSERT_FALSE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
+				<< "Unexpected success to load " << filename;
+		} else {
+			ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx))
+				<< "Could not load " << filename;
+			ASSERT_EQ(expectedVolumes, sceneGraph.size());
+		}
 	}
 }
 
