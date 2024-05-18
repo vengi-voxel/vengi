@@ -8,7 +8,7 @@ namespace voxelformat {
 
 class MD2FormatTest : public AbstractFormatTest {};
 
-TEST_F(MD2FormatTest, DISABLED_testVoxelize) {
+TEST_F(MD2FormatTest, testVoxelize) {
 	testLoad("cube.md2");
 }
 

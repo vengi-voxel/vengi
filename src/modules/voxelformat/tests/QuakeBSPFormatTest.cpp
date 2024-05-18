@@ -8,7 +8,7 @@ namespace voxelformat {
 
 class QuakeBSPFormatTest : public AbstractFormatTest {};
 
-TEST_F(QuakeBSPFormatTest, DISABLED_testLoad) {
+TEST_F(QuakeBSPFormatTest, testLoad) {
 	testLoad("ufoai.bsp");
 }
 
