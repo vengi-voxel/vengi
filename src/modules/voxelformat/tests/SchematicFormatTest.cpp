@@ -13,12 +13,12 @@ TEST_F(SchematicFormatTest, testLoadLitematic) {
 	testLoad("test.litematic");
 }
 
-TEST_F(SchematicFormatTest, DISABLED_testLoadVikingIsland) {
+TEST_F(SchematicFormatTest, testLoadVikingIsland) {
 	// https://www.planetminecraft.com/project/viking-island-4911284/
 	testLoad("viking_island.schematic");
 }
 
-TEST_F(SchematicFormatTest, DISABLED_testLoadStructory) {
+TEST_F(SchematicFormatTest, testLoadStructory) {
 	// https://www.planetminecraft.com/data-pack/structory/
 	testLoad("brick_chimney_1.nbt");
 }
