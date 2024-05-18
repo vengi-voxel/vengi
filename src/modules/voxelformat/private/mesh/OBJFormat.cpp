@@ -249,6 +249,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const core::String &mtlbasedir = core::string::extractPath(filename);
 	io::StdIStreamBuf stdStreamBuf(*stream);
 	std::istream inputStream(&stdStreamBuf);
+	// TODO: use the archive
 	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
 	Log::debug("Load obj %s", filename.c_str());
 	const bool ret =

@@ -19,11 +19,12 @@ private:
 
 protected:
 	io::FilesystemPtr _filesytem;
+	bool _sysmode;
 
 	io::FilePtr open(const core::String &path, FileMode mode) const;
 
 public:
-	FilesystemArchive(const io::FilesystemPtr &filesytem);
+	FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode = true);
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream = nullptr) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);
@@ -34,6 +35,9 @@ public:
 	SeekableWriteStream *writeStream(const core::String &filePath) override;
 };
 
-ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path = "");
+/**
+ * @param[in] sysmode Specifies the use of the @c FileMode values when opening files for reading or writing.
+ */
+ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path = "", bool sysmode = true);
 
 } // namespace io

@@ -40,7 +40,7 @@ const voxel::Voxel AbstractFormatTest::Empty;
 
 io::ArchivePtr AbstractFormatTest::helper_archive(const core::String &filename) {
 #if WRITE_TO_FILE
-	return io::openFilesystemArchive(_testApp->filesystem(), filename);
+	return io::openFilesystemArchive(_testApp->filesystem());
 #else
 	return io::openMemoryArchive();
 #endif

@@ -12,7 +12,7 @@
 
 namespace io {
 
-FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem) : _filesytem(filesytem) {
+FilesystemArchive::FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode) : _filesytem(filesytem), _sysmode(sysmode) {
 }
 
 FilesystemArchive::~FilesystemArchive() {
@@ -92,7 +92,7 @@ void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, co
 }
 
 SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) {
-	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Read));
+	io::FileStream *stream = new io::FileStream(open(filePath, _sysmode ? FileMode::SysRead : FileMode::Read));
 	if (!stream->valid()) {
 		delete stream;
 		return nullptr;
@@ -101,7 +101,7 @@ SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) 
 }
 
 SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
-	io::FileStream *stream = new io::FileStream(open(filePath, FileMode::Write));
+	io::FileStream *stream = new io::FileStream(open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write));
 	if (!stream->valid()) {
 		delete stream;
 		return nullptr;
@@ -109,8 +109,8 @@ SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath
 	return stream;
 }
 
-ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path) {
-	core::SharedPtr<FilesystemArchive> fa = core::make_shared<FilesystemArchive>(fs);
+ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path, bool sysmode) {
+	core::SharedPtr<FilesystemArchive> fa = core::make_shared<FilesystemArchive>(fs, sysmode);
 	if (!path.empty() && fs->isReadableDir(path)) {
 		fa->init(path);
 	}
