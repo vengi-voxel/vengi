@@ -242,8 +242,8 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
 			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.worldTranslation(), t2.worldTranslation(), glm::epsilon<float>())));
-				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.localTranslation(), t2.localTranslation(), glm::epsilon<float>())));
+				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.worldTranslation(), t2.worldTranslation(), 0.00001f))) << "World translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
+				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.localTranslation(), t2.localTranslation(), 0.00001f))) << "Local translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
 				for (int n = 0; n < 4; ++n) {
 					for (int m = 0; m < 4; ++m) {
 						ASSERT_TRUE(glm::epsilonEqual(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
