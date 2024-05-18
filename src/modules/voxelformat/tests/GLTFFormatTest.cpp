@@ -69,34 +69,7 @@ TEST_F(GLTFFormatTest, DISABLED_testMaterials) {
 	// load the gltf scenegraph
 	scenegraph::SceneGraph gltfSceneGraph;
 	testLoad(gltfSceneGraph, "test_material.gltf", 12u);
-	// compare the materials
-	for (auto iter = mvSceneGraph.beginModel(), iter2 = gltfSceneGraph.beginModel(); iter != mvSceneGraph.end();
-		 ++iter, ++iter2) {
-		const scenegraph::SceneGraphNode &mvNode = *iter;
-		const scenegraph::SceneGraphNode &gltfNode = *iter2;
-		const palette::Palette &mvPalette = mvNode.palette();
-		const palette::Palette &gltfPalette = gltfNode.palette();
-		for (int i = 0; i < gltfPalette.colorCount(); ++i) {
-			int foundColorMatch = -1;
-			int foundMaterialMatch = -1;
-			const palette::Material &gltfMaterial = gltfPalette.material(i);
-			for (int j = 0; j < mvPalette.colorCount(); ++j) {
-				// check if the color matches the gltf palette color
-				if (gltfPalette.color(i) != mvPalette.color(j)) {
-					continue;
-				}
-				foundColorMatch = true;
-				const palette::Material &mvMaterial = mvPalette.material(j);
-				if (mvMaterial == gltfMaterial) {
-					foundMaterialMatch = j;
-					break;
-				}
-			}
-			ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the magicavoxel palette";
-			ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << gltfMaterial
-											  << " versus " << mvPalette.material(foundColorMatch);
-		}
-	}
+	voxel::materialComparator(mvSceneGraph, gltfSceneGraph);
 }
 
 } // namespace voxelformat

@@ -369,6 +369,41 @@ void volumeComparator(const voxel::RawVolume &volume1, const palette::Palette &p
 	}
 }
 
+void materialComparator(const palette::Palette &pal1, const palette::Palette &pal2) {
+	for (int i = 0; i < pal2.colorCount(); ++i) {
+		int foundColorMatch = -1;
+		int foundMaterialMatch = -1;
+		const palette::Material &pal2Mat = pal2.material(i);
+		for (int j = 0; j < pal1.colorCount(); ++j) {
+			// check if the color matches the pal2 palette color
+			if (pal2.color(i) != pal1.color(j)) {
+				continue;
+			}
+			foundColorMatch = true;
+			const palette::Material &pal1Mat = pal1.material(j);
+			if (pal1Mat == pal2Mat) {
+				foundMaterialMatch = j;
+				break;
+			}
+		}
+		ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the pal1 palette: " << pal1.name();
+		ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << pal2Mat
+											<< " versus " << pal1.material(foundColorMatch);
+	}
+}
+
+void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2) {
+	for (auto iter = graph1.beginModel(), iter2 = graph2.beginModel(); iter != graph1.end(); ++iter, ++iter2) {
+		const scenegraph::SceneGraphNode &graph1Node = *iter;
+		const scenegraph::SceneGraphNode &graph2Node = *iter2;
+		const palette::Palette &graph1Pal = graph1Node.palette();
+		const palette::Palette &graph2Pal = graph2Node.palette();
+		materialComparator(graph1Pal, graph2Pal);
+		if (testing::Test::HasFatalFailure())
+			break;
+	}
+}
+
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
 						  ValidateFlags flags, float maxDelta) {
 	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
