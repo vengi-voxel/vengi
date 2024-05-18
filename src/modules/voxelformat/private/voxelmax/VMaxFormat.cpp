@@ -52,11 +52,16 @@ namespace voxelformat {
 	}
 
 #define jsonFloat(json, name, obj)                                                                                     \
-	if ((json).find(#name) == (json).end() || !(json)[#name].is_number_float()) {                                      \
+	if ((json).find(#name) == (json).end()) {                                                                          \
 		const std::string dump = (json).dump();                                                                        \
 		Log::debug("Failed to parse json float " #name ": %s", dump.c_str());                                          \
-	} else {                                                                                                           \
+	} else if ((json)[#name].is_number_float()) {                                                                      \
 		(obj).name = (json)[#name].get<float>();                                                                       \
+	} else if ((json)[#name].is_number_integer()) {                                                                    \
+		(obj).name = (float)(json)[#name].get<int>();                                                                  \
+	} else {                                                                                                           \
+		const std::string dump = (json).dump();                                                                        \
+		Log::debug("Failed to parse json float " #name ": %s", dump.c_str());                                          \
 	}
 
 #define jsonBool(json, name, obj)                                                                                      \
