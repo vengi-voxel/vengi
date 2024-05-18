@@ -30,7 +30,7 @@ void Archive::list(const core::String &basePath, ArchiveFiles &out, const core::
 		if (!basePath.empty() && !core::string::startsWith(entry.fullPath, basePath)) {
 			continue;
 		}
-		if (core::string::matches(entry.name, filter)) {
+		if (core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
 			out.push_back(entry);
 		}
 	}
