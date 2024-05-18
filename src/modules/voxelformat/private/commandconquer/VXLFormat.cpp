@@ -125,8 +125,8 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		const int64_t spanStartPos = stream.pos();
 
-		const uint8_t x = (uint8_t)(i % size.x);
-		const uint8_t z = size.z - 1 - (uint8_t)(i / size.x);
+		const uint8_t x = (uint8_t)(i % size.x) + region.getLowerX();
+		const uint8_t z = size.z - 1 - (uint8_t)(i / size.x) + region.getLowerZ();
 
 		int32_t spanStartOffset = vxl::EmptyColumn;
 		int32_t spanEndOffset = vxl::EmptyColumn;
