@@ -456,4 +456,12 @@ TEST_F(ConvertTest, DISABLED_testQBChrKnightToKV6) {
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
 }
 
+// TODO: animations should work here already
+TEST_F(ConvertTest, DISABLED_testVengiToGLTF) {
+	VENGIFormat src;
+	GLTFFormat target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All;
+	testLoadSaveAndLoadSceneGraph("bat_anim.vengi", src, "convert-bat_anim.gltf", target, flags);
+}
+
 } // namespace voxelformat
