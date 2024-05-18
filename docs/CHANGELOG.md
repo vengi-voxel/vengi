@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Add meshoptimizer support (new cvar `voxformat_optimize`)
+   - Fixed missing region shift for `vxl` (Command and Conquer)
 
 VoxEdit:
 
