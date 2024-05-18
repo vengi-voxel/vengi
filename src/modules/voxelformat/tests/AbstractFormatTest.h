@@ -69,7 +69,7 @@ protected:
 				  voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testSaveLoadVoxel(const core::String &filename, Format *format, int mins = 0, int maxs = 1,
-						   voxel::ValidateFlags flags = voxel::ValidateFlags::All);
+						   voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 	void testSaveLoadCube(const core::String &filename, Format *format,
 						  voxel::ValidateFlags flags = voxel::ValidateFlags::All, float maxDelta = 0.001f);
 	void testConvert(const core::String &srcFilename, Format &srcFormat, const core::String &destFilename,

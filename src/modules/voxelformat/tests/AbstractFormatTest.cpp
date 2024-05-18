@@ -420,7 +420,7 @@ void AbstractFormatTest::testSave(const core::String &filename, Format *format, 
 }
 
 void AbstractFormatTest::testSaveLoadVoxel(const core::String &filename, Format *format, int mins, int maxs,
-										   voxel::ValidateFlags flags) {
+										   voxel::ValidateFlags flags, float maxDelta) {
 	SCOPED_TRACE(filename.c_str());
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
@@ -435,7 +435,7 @@ void AbstractFormatTest::testSaveLoadVoxel(const core::String &filename, Format 
 	original.setVoxel(maxs, mins, mins, voxel::createVoxel(voxel::VoxelType::Generic, 127));
 	original.setVoxel(maxs, mins, maxs, voxel::createVoxel(voxel::VoxelType::Generic, 200));
 
-	testSaveLoadVolumes(filename, original, format, flags);
+	testSaveLoadVolumes(filename, original, format, flags, maxDelta);
 }
 
 void AbstractFormatTest::testSaveLoadCube(const core::String &filename, Format *format, voxel::ValidateFlags flags,
