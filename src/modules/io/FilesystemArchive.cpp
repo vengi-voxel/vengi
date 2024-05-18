@@ -35,10 +35,10 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 
 static FileMode convertMode(const core::String &path, FileMode mode) {
 	if (core::string::isAbsolutePath(path)) {
-		if (mode == FileMode::Read) {
+		if (mode == FileMode::Read || mode == FileMode::SysRead) {
 			return FileMode::SysRead;
 		}
-		if (mode == FileMode::Write) {
+		if (mode == FileMode::Write || mode == FileMode::SysWrite) {
 			return FileMode::SysWrite;
 		}
 		core_assert_msg(false, "mode not supported: %d", (int)mode);
