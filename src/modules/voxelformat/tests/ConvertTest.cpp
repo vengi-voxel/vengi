@@ -339,6 +339,36 @@ TEST_F(ConvertTest, testQBToSLAB6Vox) {
 	testConvert("slab6_vox_test.vox", src, "convert-slab6_vox_test.vox", target, flags);
 }
 
+TEST_F(ConvertTest, testQBToKV6) {
+	QBFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags =
+		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	testConvert("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
+}
+
+TEST_F(ConvertTest, testVengiToKV6) {
+	VENGIFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
+	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kv6-broken.kv6", target, flags, 4.0f);
+}
+
+TEST_F(ConvertTest, testKVXToKV6) {
+	KVXFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags =
+		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
+	testConvert("test.kvx", src, "convert-test.kv6", target, flags, 0.026f);
+}
+
+TEST_F(ConvertTest, testKVXToKV6ChrKnight) {
+	KVXFormat f1;
+	KV6Format f2;
+	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot;
+	testConvertSceneGraph("slab6_vox_test.kvx", f1, "slab6_vox_test.kv6", f2, flags);
+}
+
 // TODO: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
@@ -359,14 +389,6 @@ TEST_F(ConvertTest, testQBChrKnightToKVX) {
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
 }
 
-TEST_F(ConvertTest, testQBToKV6) {
-	QBFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
-	testConvert("kvx_save.qb", src, "convert-kvx_save.kv6", target, flags);
-}
-
 // TODO: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat src;
@@ -376,34 +398,12 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	testConvert("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-TEST_F(ConvertTest, testVengiToKV6) {
-	VENGIFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled;
-	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kv6-broken.kv6", target, flags, 4.0f);
-}
-
 // TODO: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testVengiToKVX) {
 	VENGIFormat src;
 	KVXFormat target;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::AllPaletteColorsScaled & ~voxel::ValidateFlags::Pivot;
 	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
-}
-
-TEST_F(ConvertTest, testKVXToKV6) {
-	KVXFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
-	testConvert("test.kvx", src, "convert-test.kv6", target, flags, 0.026f);
-}
-
-TEST_F(ConvertTest, testKVXToKV6ChrKnight) {
-	KVXFormat f1;
-	KV6Format f2;
-	voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Pivot;
-	testConvertSceneGraph("slab6_vox_test.kvx", f1, "slab6_vox_test.kv6", f2, flags);
 }
 
 // TODO: one color is missing
