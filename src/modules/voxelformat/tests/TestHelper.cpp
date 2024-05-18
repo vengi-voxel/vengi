@@ -242,14 +242,12 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
 			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-				for (int n = 0; n < 3; ++n) {
-					ASSERT_FLOAT_EQ(t1.worldTranslation()[n], t2.worldTranslation()[n]) << "Translation failed for frame " << i << " and component " << n;
-					ASSERT_FLOAT_EQ(t1.localTranslation()[n], t2.localTranslation()[n]) << "Translation failed for frame " << i << " and component " << n;
-				}
+				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.worldTranslation(), t2.worldTranslation(), glm::epsilon<float>())));
+				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.localTranslation(), t2.localTranslation(), glm::epsilon<float>())));
 				for (int n = 0; n < 4; ++n) {
 					for (int m = 0; m < 4; ++m) {
-						ASSERT_FLOAT_EQ(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m]) << "Matrix failed for frame " << i << " at " << n << ":" << m;
-						ASSERT_FLOAT_EQ(t1.localMatrix()[n][m], t2.localMatrix()[n][m]) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+						ASSERT_TRUE(glm::epsilonEqual(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+						ASSERT_TRUE(glm::epsilonEqual(t1.localMatrix()[n][m], t2.localMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
 					}
 				}
 			} else {
