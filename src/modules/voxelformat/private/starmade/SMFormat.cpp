@@ -92,6 +92,10 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 		io::ArchivePtr zipArchive = io::openZipArchive(stream);
 		io::ArchiveFiles files;
 		zipArchive->list("*.smd3,*.smd2", files);
+		if (files.empty()) {
+			Log::error("No smd3 or smd2 files found in %s", filename.c_str());
+			return false;
+		}
 		for (const io::FilesystemEntry &e : files) {
 			const core::String &extension = core::string::extractExtension(e.name);
 			const bool isSmd3 = extension == "smd3";
