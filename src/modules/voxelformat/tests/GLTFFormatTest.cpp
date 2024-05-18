@@ -59,6 +59,7 @@ TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 	testLoad(sceneGraph, "glTF/lantern/Lantern.gltf", 3u);
 }
 
+// TODO: material are not yet properly loaded back from gltf
 TEST_F(GLTFFormatTest, DISABLED_testMaterials) {
 	// load the mv scenegraph
 	scenegraph::SceneGraph mvSceneGraph;
