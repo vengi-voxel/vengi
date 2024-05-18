@@ -55,7 +55,7 @@ protected:
 			voxel::paletteComparator(palPalette, rgbPalette, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) ==
 				   voxel::ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(palPalette, rgbPalette, maxDelta);
+			voxel::partialPaletteComparator(palPalette, rgbPalette, flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
 			voxel::paletteComparatorScaled(palPalette, rgbPalette, (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==

@@ -369,6 +369,14 @@ TEST_F(ConvertTest, testKVXToKV6ChrKnight) {
 	testConvertSceneGraph("slab6_vox_test.kvx", f1, "slab6_vox_test.kv6", f2, flags);
 }
 
+TEST_F(ConvertTest, testQBChrKnightToKV6) {
+	QBFormat src;
+	KV6Format target;
+	const voxel::ValidateFlags flags =
+		(voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow | voxel::ValidateFlags::PaletteColorsScaled) & ~(voxel::ValidateFlags::SceneGraphModels);
+	testConvert("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags, 4);
+}
+
 // TODO: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
@@ -445,15 +453,6 @@ TEST_F(ConvertTest, testQbToGox) {
 	const voxel::ValidateFlags flags =
 		voxel::ValidateFlags::All & ~(voxel::ValidateFlags::Translation | voxel::ValidateFlags::Palette);
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
-}
-
-// TODO: colors are scaled: PaletteColorsScaled - but currently not both flags are usable
-TEST_F(ConvertTest, DISABLED_testQBChrKnightToKV6) {
-	QBFormat src;
-	KV6Format target;
-	const voxel::ValidateFlags flags =
-		voxel::ValidateFlags::AllPaletteMinMatchingColors | voxel::ValidateFlags::IgnoreHollow;
-	testConvert("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags);
 }
 
 // TODO: animations should work here already

@@ -213,18 +213,25 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 	}
 }
 
-void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, float maxDelta) {
+void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, voxel::ValidateFlags flags, float maxDelta) {
 	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < n; ++i) {
 		const core::RGBA &c1 = pal1.color(i);
 		const core::RGBA &c2 = pal2.color(i);
 		if (c1 != c2) {
-			const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
-			ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
-									   << "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
-									   << "\nPalette 1:\n"
-									   << palette::Palette::print(pal1) << "\nPalette 2:\n"
-									   << palette::Palette::print(pal2);
+			if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
+				EXPECT_NEAR(c1.r, c2.r, (int)maxDelta);
+				EXPECT_NEAR(c1.g, c2.g, (int)maxDelta);
+				EXPECT_NEAR(c1.b, c2.b, (int)maxDelta);
+				EXPECT_NEAR(c1.a, c2.a, (int)maxDelta);
+			} else {
+				const float delta = core::Color::getDistance(c1, c2, core::Color::Distance::HSB);
+				ASSERT_LT(delta, maxDelta) << "Palette color differs at " << i << ", color1[" << core::Color::print(c1)
+										<< "], color2[" << core::Color::print(c2) << "], delta[" << delta << "]"
+										<< "\nPalette 1:\n"
+										<< palette::Palette::print(pal1) << "\nPalette 2:\n"
+										<< palette::Palette::print(pal2);
+			}
 		}
 	}
 }
@@ -416,7 +423,7 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			voxel::paletteComparator(merged1.second, merged2.second, maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(merged1.second, merged2.second, maxDelta);
+			voxel::partialPaletteComparator(merged1.second, merged2.second, flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
 			voxel::paletteComparatorScaled(merged1.second, merged2.second, (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
@@ -435,7 +442,7 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			voxel::paletteComparator(node1.palette(), node2.palette(), maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(node1.palette(), node2.palette(), maxDelta);
+			voxel::partialPaletteComparator(node1.palette(), node2.palette(), flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
 			voxel::paletteComparatorScaled(node1.palette(), node2.palette(), (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) == voxel::ValidateFlags::PaletteColorOrderDiffers) {
