@@ -89,7 +89,7 @@ STDAPI DllCanUnloadNow() {
 	return (dllRefs == 0) ? S_OK : S_FALSE;
 }
 
-// regsvr32 /s voxelthumb.dll
+// regsvr32 vengi-voxelthumb.dll
 STDAPI DllRegisterServer() {
 	HRESULT hr = E_FAIL;
 	if (_tcslen(dllPath)) {
@@ -103,7 +103,7 @@ STDAPI DllRegisterServer() {
 							   _T("ThreadingModel"), _T("Apartment")));
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				core::String id = core::string::format("Software\\Classes\\%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				core::String id = core::string::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
 				BAIL_ON_FAIL(setRegKey(HKEY_LOCAL_MACHINE, id.c_str(), NULL, THUMBNAIL_HANDLER_CLSID));
 			}
 		}
@@ -117,14 +117,14 @@ STDAPI DllRegisterServer() {
 	return hr;
 }
 
-// regsvr32 /s /u voxelthumb.dll
+// regsvr32 /u vengi-voxelthumb.dll
 STDAPI DllUnregisterServer() {
 	HRESULT hr =
 		HRESULT_FROM_WIN32(RegDeleteTree(HKEY_LOCAL_MACHINE, _T("Software\\Classes\\CLSID\\") THUMBNAIL_HANDLER_CLSID));
 	if (SUCCEEDED(hr)) {
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
-				core::String id = core::string::format("Software\\Classes\\%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
+				core::String id = core::string::format("Software\\Classes\\.%s\\" SHELLEX_THUMBNAIL_CLSID, ext.c_str());
 				hr = RegDeleteTree(HKEY_LOCAL_MACHINE, id.c_str());
 			}
 		}
