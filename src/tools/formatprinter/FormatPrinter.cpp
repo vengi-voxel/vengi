@@ -250,6 +250,8 @@ void FormatPrinter::printMarkdownTables() {
 	}
 }
 
+#define REG_PATH_THUMBEXT "ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}"
+#define VOXTHUMB_CLSID "{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}"
 void FormatPrinter::printApplicationWix() {
 	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	Log::printf("<!--\n");
@@ -258,6 +260,30 @@ void FormatPrinter::printApplicationWix() {
 	Log::printf("-->\n");
 	Log::printf("<CPackWiXPatch>\n");
 	Log::printf("	<!--  Fragment ID is from: <your build dir>/_CPack_Packages/win64/WIX/files.wxs -->\n");
+	Log::printf("	<CPackWiXFragment Id=\"CM_CP_voxelthumb.vengi_voxelthumb.dll\">\n");
+	Log::printf("		<RegistryKey Root=\"HKCR\" Key=\"CLSID\\" VOXTHUMB_CLSID "\" ForceDeleteOnUninstall=\"yes\">\n");
+	Log::printf("			<RegistryValue Type=\"string\" Value=\"Vengi thumbnailer\" />\n");
+	Log::printf("			<RegistryKey Key=\"InprocServer32\">\n");
+	Log::printf("				<RegistryValue Type=\"string\" Value=\"[#CM_FP_voxelthumb.vengi_voxelthumb.dll]\" />\n");
+	Log::printf("				<RegistryValue Type=\"string\" Name=\"ThreadingModel\" Value=\"Both\" />\n");	
+	Log::printf("			</RegistryKey>\n");
+	Log::printf("		</RegistryKey>\n");
+	core::StringSet uniqueExtensions;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		for (const core::String &e : desc->exts) {
+			if (!uniqueExtensions.insert(e)) {
+				continue;
+			}
+			Log::printf("		<RegistryKey Root=\"HKCR\" Key=\"SystemFileAssociations\\.%s\">\n", e.c_str());
+			Log::printf("			<RegistryValue Key=\"" REG_PATH_THUMBEXT"\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" />\n", e.c_str(), e.c_str());
+			Log::printf("		</RegistryKey>\n");
+			Log::printf("		<RegistryKey Root=\"HKCR\" Key=\".%s\">\n", e.c_str());
+			Log::printf("			<RegistryValue Key=\"" REG_PATH_THUMBEXT"\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" />\n", e.c_str(), e.c_str());
+			Log::printf("		</RegistryKey>\n");
+		}
+	}
+	uniqueExtensions.clear();
+	Log::printf("	</CPackWiXFragment>\n");
 	Log::printf("	<CPackWiXFragment Id=\"CM_CP_voxedit.voxedit.vengi_voxedit.exe\">\n");
 	Log::printf("		<Environment Id=\"PATH\" Name=\"PATH\" Value=\"[INSTALL_ROOT]\" Permanent=\"yes\" Part=\"last\" Action=\"set\" System=\"yes\" />\n");
 	Log::printf("\n");
@@ -278,7 +304,6 @@ void FormatPrinter::printApplicationWix() {
 	Log::printf("		</RegistryKey>\n");
 	Log::printf("\n");
 	Log::printf("		<!-- Registered file extensions -->\n");
-	core::StringSet uniqueExtensions;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		for (const core::String &e : desc->exts) {
 			if (!uniqueExtensions.insert(e)) {
