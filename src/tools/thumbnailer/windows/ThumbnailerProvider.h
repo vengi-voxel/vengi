@@ -29,7 +29,7 @@ public:
 	IFACEMETHODIMP_(ULONG) Release() override;
 
 	// IInitializeWithFile::Initialize()
-	IFACEMETHODIMP Initialize(LPCWSTR pfilePath, DWORD grfMode) override;
+	HRESULT Initialize(LPCWSTR pszFilePath, DWORD grfMode) override;
 
 	// IThumbnailProvider::GetThumbnail()
 	IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) override;

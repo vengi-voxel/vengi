@@ -8,9 +8,14 @@
 #include "core/TimeProvider.h"
 #include "io/Filesystem.h"
 
+#include <Windows.h>
 #include <Shlwapi.h>
+#include <tchar.h>
 #include <stdint.h>
 #include <stdio.h>
+
+extern void DllAddRef();
+extern void DllRelease();
 
 class DLLThumbnailer : public Thumbnailer {
 private:
@@ -49,15 +54,17 @@ public:
 };
 
 ThumbnailerProvider::ThumbnailerProvider() : count(1) {
+	DllAddRef();
 }
 
 ThumbnailerProvider::~ThumbnailerProvider() {
+	DllRelease();
 }
 
 IFACEMETHODIMP ThumbnailerProvider::QueryInterface(REFIID riid, void **ppv) {
 	static const QITAB qit[] = {
+		QITABENT(ThumbnailerProvider, IInitializeWithFile),
 		QITABENT(ThumbnailerProvider, IThumbnailProvider),
-		QITABENT(ThumbnailerProvider, IInitializeWithStream),
 		{0},
 	};
 	return QISearch(this, qit, riid, ppv);
@@ -75,13 +82,12 @@ IFACEMETHODIMP_(ULONG) ThumbnailerProvider::Release() {
 	return refs;
 }
 
-IFACEMETHODIMP ThumbnailerProvider::Initialize(LPCWSTR pfilePath, DWORD grfMode) {
-	HRESULT hr = E_INVALIDARG;
+HRESULT ThumbnailerProvider::Initialize(LPCWSTR pfilePath, DWORD grfMode) {
 	char filename[10240];
 	size_t size;
 	wcstombs_s(&size, filename, 10240, pfilePath, 10240);
 	m_pPathFile = core::String(filename);
-	return hr;
+	return S_OK;
 }
 
 IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_ALPHATYPE *pdwAlpha) {
@@ -100,13 +106,16 @@ IFACEMETHODIMP ThumbnailerProvider::GetThumbnail(UINT cx, HBITMAP *phbmp, WTS_AL
 	core::string::formatBuf(argv5, sizeof(argv5), "%s", m_pPathFile.c_str());
 	char *argv[] = {argv1, argv2, argv3, argv4, argv5};
 	app.startMainLoop(5, argv);
+	*pdwAlpha = WTSAT_ARGB;
 	return (*phbmp) ? S_OK : S_FALSE;
 }
 
 ThumbnailerProviderFactory::ThumbnailerProviderFactory() : count(1) {
+	DllAddRef();
 }
 
 ThumbnailerProviderFactory::~ThumbnailerProviderFactory() {
+	DllRelease();
 }
 
 IFACEMETHODIMP ThumbnailerProviderFactory::QueryInterface(REFIID riid, void **ppv) {
