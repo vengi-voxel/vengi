@@ -1238,6 +1238,7 @@ void TableDiscardInstanceAndSettings(ImGuiID table_id)
 // Helper to verify ImDrawData integrity of buffer count (broke before e.g. #6716)
 void DrawDataVerifyMatchingBufferCount(ImDrawData* draw_data)
 {
+#if IMGUI_VERSION_NUM >= 18973
     int total_vtx_count = 0;
     int total_idx_count = 0;
     for (ImDrawList* draw_list : draw_data->CmdLists)
@@ -1249,6 +1250,9 @@ void DrawDataVerifyMatchingBufferCount(ImDrawData* draw_data)
     IM_UNUSED(total_idx_count);
     IM_ASSERT(total_vtx_count == draw_data->TotalVtxCount);
     IM_ASSERT(total_idx_count == draw_data->TotalIdxCount);
+#else
+    IM_UNUSED(draw_data);
+#endif
 }
 
 //-----------------------------------------------------------------------------

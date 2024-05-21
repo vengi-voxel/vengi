@@ -286,7 +286,6 @@ struct IMGUI_API ImGuiTestContext
 
     // Yield, Timing
     void        Yield(int count = 1);
-    void        YieldUntil(int frame_count);
     void        Sleep(float time_in_second);            // Sleep for a given simulation time, unless in Fast mode
     void        SleepShort();                           // Standard short delay of io.ActionDelayShort (~0.15f), unless in Fast mode.
     void        SleepStandard();                        // Standard regular delay of io.ActionDelayStandard (~0.40f), unless in Fast mode.
@@ -300,11 +299,14 @@ struct IMGUI_API ImGuiTestContext
     // - SetRef("//$FOCUSED"), ItemClick("Button") --> click "Button" in focused window.
     // See https://github.com/ocornut/imgui_test_engine/wiki/Named-References about using ImGuiTestRef in all ImGuiTestContext functions.
     // Note: SetRef() may take multiple frames to complete if specified ref is an item id.
+    // Note: SetRef() ignores current reference, so they are always absolute path.
     void        SetRef(ImGuiTestRef ref);
     void        SetRef(ImGuiWindow* window); // Shortcut to SetRef(window->Name) which works for ChildWindow (see code)
     ImGuiTestRef GetRef();
 
     // Windows
+    // - Use WindowInfo() to access path to child windows, since the paths are internally mangled.
+    // - SetRef(WindowInfo("Parent/Child")->Window) --> set ref to child window.
     ImGuiTestItemInfo WindowInfo(ImGuiTestRef window_ref, ImGuiTestOpFlags flags = ImGuiTestOpFlags_None);
     void        WindowClose(ImGuiTestRef window_ref);
     void        WindowCollapse(ImGuiTestRef window_ref, bool collapsed);
@@ -503,6 +505,8 @@ struct IMGUI_API ImGuiTestContext
 
     // Obsolete functions
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    // Obsoleted 2024/05/21
+    void        YieldUntil(int frame_count)     { while (FrameCount < frame_count) { Yield(); } }
     // Obsoleted 2022/10/11
     ImGuiID     GetIDByInt(int n);                                      // Prefer using "$$123"
     ImGuiID     GetIDByInt(int n, ImGuiTestRef seed_ref);

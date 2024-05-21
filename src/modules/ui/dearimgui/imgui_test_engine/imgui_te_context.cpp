@@ -344,12 +344,6 @@ void    ImGuiTestContext::Yield(int count)
     }
 }
 
-void    ImGuiTestContext::YieldUntil(int frame_count)
-{
-    while (FrameCount < frame_count)
-        ImGuiTestEngine_Yield(Engine);
-}
-
 // Supported values for ImGuiTestRunFlags:
 // - ImGuiTestRunFlags_NoError: if child test fails, return false and do not mark parent test as failed.
 // - ImGuiTestRunFlags_ShareVars: share generic vars and custom vars between child and parent tests.
@@ -492,6 +486,7 @@ void ImGuiTestContext::SetInputMode(ImGuiInputSource input_mode)
     }
 }
 
+// Shortcut for when we have a window pointer, avoid mistakes with slashes in child names.
 void ImGuiTestContext::SetRef(ImGuiWindow* window)
 {
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
@@ -511,7 +506,7 @@ void ImGuiTestContext::SetRef(ImGuiWindow* window)
         WindowCollapse(window->ID, false);
 }
 
-// SetRef() ok in GUI Func ONLY if pointer to a pointer.
+// It is exceptionally OK to call SetRef() in GuiFunc, as a facility to call seeded ctx->GetId() in GuiFunc.
 // FIXME-TESTS: May be good to focus window when docked? Otherwise locate request won't even see an item?
 void ImGuiTestContext::SetRef(ImGuiTestRef ref)
 {
@@ -534,13 +529,23 @@ void ImGuiTestContext::SetRef(ImGuiTestRef ref)
     }
     RefWindowID = 0;
 
+    // Early out
+    if (ref.IsEmpty())
+        return;
+
     // Try to infer window
-    // (1) Try first element of ref path, it is most likely a window name and item lookup won't be necessary.
+    // (This is in order to set viewport, uncollapse window, and store its base id for leading "/" operator)
+
+    // (0) Windows is fully specified in path?
     ImGuiWindow* window = GetWindowByRef("");
+
+    // (1) Try first element of ref path, it is most likely a window name and item lookup won't be necessary.
     if (window == NULL && ref.Path != NULL)
     {
+        // "Window/SomeItem" -> search for "Window"
         const char* name_begin = ref.Path;
-        while (*name_begin == '/') name_begin++;
+        while (*name_begin == '/') // Skip leading slashes
+            name_begin++;
         const char* name_end = name_begin - 1;
         do
         {
@@ -561,6 +566,7 @@ void ImGuiTestContext::SetRef(ImGuiTestRef ref)
             window = item_info.Window;
     }
 
+    // Set viewport and base ID for single "/" operator.
     if (window)
     {
         RefWindowID = window->ID;
@@ -1696,8 +1702,11 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
         // it make test-engine behavior a little less deterministic.
         // Incorrectly written tests could possibly succeed or fail based on position of other windows.
         bool is_covered = FindHoveredWindowAtPos(pos) != item.Window;
+#if IMGUI_VERSION_NUM >= 18944
         bool is_inhibited = ImGui::IsWindowContentHoverable(item.Window) == false;
-
+#else
+        bool is_inhibited = false;
+#endif
         // FIXME-TESTS-NOT_SAME_AS_END_USER: This has too many side effect, could we do without?
         // - e.g. This can close a modal.
         if (is_covered || is_inhibited)
@@ -1719,8 +1728,11 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     {
         // Avoid unnecessary focus
         bool is_covered = FindHoveredWindowAtPos(pos) != item.Window;
+#if IMGUI_VERSION_NUM >= 18944
         bool is_inhibited = ImGui::IsWindowContentHoverable(item.Window) == false;
-
+#else
+        bool is_inhibited = false;
+#endif
         if (is_covered || is_inhibited)
             WindowBringToFront(window->ID);
     }
@@ -2165,7 +2177,9 @@ ImGuiWindow* ImGuiTestContext::FindHoveredWindowAtPos(const ImVec2& pos)
 
         // Using the clipped AABB, a child window will typically be clipped by its parent (not always)
         ImVec2 hit_padding = (window->Flags & (ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) ? padding_regular : padding_for_resize;
-        if (!window->OuterRectClipped.ContainsWithPad(pos, hit_padding))
+        ImRect r = window->OuterRectClipped;
+        r.Expand(hit_padding);
+        if (!r.Contains(pos))
             continue;
 
         // Support for one rectangular hole in any given window

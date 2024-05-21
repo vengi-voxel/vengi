@@ -280,7 +280,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
 #if IMGUI_VERSION_NUM >= 18837
     bool run = ImGui::Button("Run") || ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_R);
 #else
-    bool = ImGui::Button("Run");
+    bool run = ImGui::Button("Run");
 #endif
 #if IMGUI_VERSION_NUM > 18963
     ImGui::SetItemTooltip("Ctrl+R");
