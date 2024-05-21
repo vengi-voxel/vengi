@@ -265,7 +265,7 @@ void FormatPrinter::printApplicationWix() {
 	Log::printf("			<RegistryValue Type=\"string\" Value=\"Vengi thumbnailer\" />\n");
 	Log::printf("			<RegistryKey Key=\"InprocServer32\">\n");
 	Log::printf("				<RegistryValue Type=\"string\" Value=\"[#CM_FP_voxelthumb.vengi_voxelthumb.dll]\" />\n");
-	Log::printf("				<RegistryValue Type=\"string\" Name=\"ThreadingModel\" Value=\"Both\" />\n");	
+	Log::printf("				<RegistryValue Type=\"string\" Name=\"ThreadingModel\" Value=\"Both\" />\n");
 	Log::printf("			</RegistryKey>\n");
 	Log::printf("		</RegistryKey>\n");
 	core::StringSet uniqueExtensions;
@@ -274,11 +274,8 @@ void FormatPrinter::printApplicationWix() {
 			if (!uniqueExtensions.insert(e)) {
 				continue;
 			}
-			Log::printf("		<RegistryKey Root=\"HKCR\" Key=\"SystemFileAssociations\\.%s\">\n", e.c_str());
-			Log::printf("			<RegistryValue Key=\"" REG_PATH_THUMBEXT"\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" />\n", e.c_str(), e.c_str());
-			Log::printf("		</RegistryKey>\n");
 			Log::printf("		<RegistryKey Root=\"HKCR\" Key=\".%s\">\n", e.c_str());
-			Log::printf("			<RegistryValue Key=\"" REG_PATH_THUMBEXT"\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" />\n", e.c_str(), e.c_str());
+			Log::printf("			<RegistryValue Key=\"" REG_PATH_THUMBEXT"\" Type=\"string\" Value=\"" VOXTHUMB_CLSID "\" />\n");
 			Log::printf("		</RegistryKey>\n");
 		}
 	}
