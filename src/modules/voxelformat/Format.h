@@ -123,7 +123,7 @@ protected:
 	 * @param[in] sceneGraph The @c SceneGraph instance to save
 	 * @param[in] filename The target file name. Some formats needs this next to the stream to identify or load
 	 * additional files.
-	 * @param[out] stream The target stream to write into
+	 * @param[out] archive The target archive
 	 * @param[in] ctx A context object for saving
 	 * @todo don't use a stream, but an archive for formats that are split over several files
 	 */
