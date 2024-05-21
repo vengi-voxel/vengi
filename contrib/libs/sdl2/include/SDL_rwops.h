@@ -19,11 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: RWOPS */
+
 /**
- *  \file SDL_rwops.h
+ * # CategoryRWOPS
  *
- *  This file provides a general interface for SDL to read and write
- *  data streams.  It can easily be extended to files, memory, etc.
+ * This file provides a general interface for SDL to read and write data
+ * streams. It can easily be extended to files, memory, etc.
  */
 
 #ifndef SDL_rwops_h_

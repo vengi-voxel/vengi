@@ -19,10 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: GUID */
+
 /**
- *  \file SDL_guid.h
+ * # CategoryGUID
  *
- *  Include file for handling SDL_GUID values.
+ * A GUID is a 128-bit value that represents something that is uniquely
+ * identifiable by this value: "globally unique."
  */
 
 #ifndef SDL_guid_h_
@@ -38,11 +41,15 @@ extern "C" {
 #endif
 
 /**
- * An SDL_GUID is a 128-bit identifier for an input device that identifies
- * that device across runs of SDL programs on the same platform.
+ * An SDL_GUID is a 128-bit identifier.
  *
- * If the device is detached and then re-attached to a different port, or if
- * the base system is rebooted, the device should still report the same GUID.
+ * This is an acronym for "Globally Unique ID."
+ *
+ * While a GUID can be used to assign a unique value to almost anything, in
+ * SDL these are largely used to identify input devices across runs of SDL
+ * programs on the same platform.If the device is detached and then
+ * re-attached to a different port, or if the base system is rebooted, the
+ * device should still report the same GUID.
  *
  * GUIDs are as precise as possible but are not guaranteed to distinguish
  * physically distinct but equivalent devices. For example, two game

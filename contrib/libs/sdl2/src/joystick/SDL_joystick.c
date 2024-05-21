@@ -385,10 +385,20 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x0eb7, 0x0e03), /* Fanatec CSL Elite Wheel Base */
     MAKE_VIDPID(0x11ff, 0x0511), /* DragonRise Inc. Wired Wheel (initial mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400) */
     MAKE_VIDPID(0x1209, 0xffb0), /* Generic FFBoard OpenFFBoard universal forcefeedback wheel */
+    MAKE_VIDPID(0x16d0, 0x0d5a), /* Simucube 1 Wheelbase */
+    MAKE_VIDPID(0x16d0, 0x0d5f), /* Simucube 2 Ultimate Wheelbase */
+    MAKE_VIDPID(0x16d0, 0x0d60), /* Simucube 2 Pro Wheelbase */
+    MAKE_VIDPID(0x16d0, 0x0d61), /* Simucube 2 Sport Wheelbase */
     MAKE_VIDPID(0x2433, 0xf300), /* Asetek SimSports Invicta Wheelbase */
     MAKE_VIDPID(0x2433, 0xf301), /* Asetek SimSports Forte Wheelbase */
     MAKE_VIDPID(0x2433, 0xf303), /* Asetek SimSports La Prima Wheelbase */
     MAKE_VIDPID(0x2433, 0xf306), /* Asetek SimSports Tony Kannan Wheelbase */
+    MAKE_VIDPID(0x3416,	0x0301), /* Cammus C5 Wheelbase */
+    MAKE_VIDPID(0x346e, 0x0000), /* Moza R16/R21 Wheelbase */
+    MAKE_VIDPID(0x346e, 0x0002), /* Moza R9 Wheelbase */
+    MAKE_VIDPID(0x346e, 0x0004), /* Moza R5 Wheelbase */
+    MAKE_VIDPID(0x346e, 0x0005), /* Moza R3 Wheelbase */
+    MAKE_VIDPID(0x346e, 0x0006), /* Moza R12 Wheelbase */
 };
 static SDL_vidpid_list wheel_devices = {
     SDL_HINT_JOYSTICK_WHEEL_DEVICES, 0, 0, NULL,

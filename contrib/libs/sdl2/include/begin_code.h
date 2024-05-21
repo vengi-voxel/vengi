@@ -19,12 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/* WIKI CATEGORY: BeginCode */
+
 /**
- *  \file begin_code.h
- *
- *  This file sets things up for C dynamic library function definitions,
- *  static inlined functions, and structures aligned at 4-byte alignment.
- *  If you don't like ugly C preprocessor code, don't look at this file. :)
+ * begin_code.h sets things up for C dynamic library function definitions,
+ * static inlined functions, and structures aligned at 4-byte alignment.
+ * If you don't like ugly C preprocessor code, don't look at this file. :)
  */
 
 /* This shouldn't be nested -- included it around code only. */

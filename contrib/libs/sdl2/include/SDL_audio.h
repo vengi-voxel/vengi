@@ -22,9 +22,9 @@
 /* !!! FIXME: several functions in here need Doxygen comments. */
 
 /**
- *  \file SDL_audio.h
+ * # CategoryAudio
  *
- *  Access to the raw audio mixing buffer for the SDL library.
+ * Access to the raw audio mixing buffer for the SDL library.
  */
 
 #ifndef SDL_audio_h_
@@ -154,6 +154,7 @@ typedef Uint16 SDL_AudioFormat;
  * \param userdata An application-specific parameter saved in the
  *                 SDL_AudioSpec structure
  * \param stream A pointer to the audio data buffer.
+ * \param len Length of **stream** in bytes.
  */
 typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                             int len);
