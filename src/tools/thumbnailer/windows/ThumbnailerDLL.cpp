@@ -12,6 +12,7 @@
 #include "voxelformat/VolumeFormat.h"
 #include "ThumbnailerProvider.h"
 
+// https://learn.microsoft.com/en-us/windows/win32/shell/thumbnail-providers
 #define SHELLEX_THUMBNAIL_CLSID _T("ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}")
 #define THUMBNAIL_HANDLER_TITLE _T("Voxel thumbnailer handler")
 #define THUMBNAIL_HANDLER_CLSID _T("{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}")
