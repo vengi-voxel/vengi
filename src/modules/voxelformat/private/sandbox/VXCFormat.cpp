@@ -59,7 +59,7 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		Log::debug("Found file %s", e.name.c_str());
 	}
 	io::ArchiveFiles files;
-	vxcArchive->list(".vxr", files);
+	vxcArchive->list("*.vxr", files);
 	for (const io::FilesystemEntry &entry : files) {
 		VXRFormat f;
 		f.load(entry.name, vxcArchive, sceneGraph, ctx);
@@ -85,21 +85,11 @@ image::ImagePtr VXCFormat::loadScreenshot(const core::String &filename, const io
 	}
 	io::ZipReadStream stream(*in, (int)in->size());
 	uint8_t magic[4];
-	if (!stream.readUInt8(magic[0])) {
-		Log::error("Failed to read magic");
-		return {};
-	}
-	if (!stream.readUInt8(magic[1])) {
-		Log::error("Failed to read magic");
-		return {};
-	}
-	if (!stream.readUInt8(magic[2])) {
-		Log::error("Failed to read magic");
-		return {};
-	}
-	if (!stream.readUInt8(magic[3])) {
-		Log::error("Failed to read magic");
-		return {};
+	for (int i = 0; i < lengthof(magic); ++i) {
+		if (stream.readUInt8(magic[i]) == -1) {
+			Log::error("Failed to read magic");
+			return {};
+		}
 	}
 	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'C') {
 		Log::error("Could not load vxc file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
@@ -119,13 +109,13 @@ image::ImagePtr VXCFormat::loadScreenshot(const core::String &filename, const io
 		return {};
 	}
 	for (const io::FilesystemEntry &entry : files) {
-		if (entry.name != "thumbnail.png") {
+		if (entry.name.toLower() != "thumbnail.png") {
 			Log::debug("Skip image %s", entry.name.c_str());
 			continue;
 		}
-		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(entry.name));
+		core::ScopedPtr<io::SeekableReadStream> stream(vxcArchive->readStream(entry.fullPath));
 		if (!stream) {
-			Log::error("Could not load file %s", entry.name.c_str());
+			Log::error("Could not load file %s", entry.fullPath.c_str());
 			return image::ImagePtr();
 		}
 		return image::loadImage(entry.name, *stream, stream->size());

@@ -15,6 +15,7 @@ General:
    - Add meshoptimizer support (new cvar `voxformat_optimize`)
    - Fixed missing region shift for `vxl` (Command and Conquer)
    - Fixed MagicaVoxel `vox` file loading for files that don't contain instances, but only models
+   - Added `vxc` thumbnail support
 
 VoxEdit:
 

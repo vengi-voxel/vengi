@@ -163,7 +163,7 @@ static const io::FormatDescription &sandboxTilemap() {
 }
 
 static const io::FormatDescription &sandboxCollection() {
-	static io::FormatDescription f{"Sandbox VoxEdit Collection", {"vxc"}, {}, 0u};
+	static io::FormatDescription f{"Sandbox VoxEdit Collection", {"vxc"}, {}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
 	return f;
 }
 

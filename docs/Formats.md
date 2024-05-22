@@ -30,7 +30,7 @@
 | Qubicle Project            | qbcl        | X       | X      | X          | X       |            |
 | Rooms.xyz Thing            | thing       | X       |        |            | X       |            |
 | SLAB6 vox                  | vox         | X       | X      |            | X       |            |
-| Sandbox VoxEdit Collection | vxc         | X       |        |            |         |            |
+| Sandbox VoxEdit Collection | vxc         | X       |        | X          |         |            |
 | Sandbox VoxEdit Hierarchy  | vxr         | X       | X      |            |         | X          |
 | Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |
