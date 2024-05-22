@@ -7,10 +7,10 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "palette/Palette.h"
 #include "scenegraph/CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include <SDL_endian.h>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -24,6 +24,13 @@
 
 namespace voxelformat {
 
+static glm::mat4 computeTransformationMatrix(const glm::mat4 transform, const glm::vec3 &pivot) {
+	static const glm::mat4 shiftMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f));
+	const glm::mat4 pivotMatrix = glm::translate(glm::mat4(1.0f), -pivot);
+	const glm::mat4 combinedMatrix = transform * shiftMatrix * pivotMatrix;
+	return combinedMatrix;
+}
+
 glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameIdx, const ogt_vox_scene *scene,
 							const ogt_vox_model *ogtModel) {
 	ogt_vox_transform t = ogt_vox_sample_instance_transform_global(&ogtInstance, frameIdx, scene);
@@ -31,7 +38,8 @@ glm::mat4 ogtTransformToMat(const ogt_vox_instance &ogtInstance, uint32_t frameI
 	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
 	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
 	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
-	return glm::mat4{col0, col1, col2, col3};
+	const glm::vec3 &ogtPivot = ogtVolumePivot(ogtModel);
+	return computeTransformationMatrix(glm::mat4{col0, col1, col2, col3}, ogtPivot);
 }
 
 void *_ogt_alloc(size_t size) {

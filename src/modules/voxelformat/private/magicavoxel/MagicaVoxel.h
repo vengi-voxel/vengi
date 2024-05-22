@@ -54,12 +54,10 @@ static const ogt_vox_transform ogt_identity_transform{
  *
  * @param mat The world space model matrix (rotation and translation) for the chunk
  * @param pos The position inside the untransformed chunk (local position)
- * @param pivot The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
- * note that the @c w component must be @c 0.0
  * @return glm::vec4 The transformed world position
  */
-inline glm::vec4 calcTransform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec4 &pivot) {
-	return glm::floor(mat * (glm::vec4((float)pos.x + 0.5f, (float)pos.y + 0.5f, (float)pos.z + 0.5f, 1.0f) - pivot));
+inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
+	return glm::floor(mat * glm::vec4(pos, 1.0f));
 }
 
 void *_ogt_alloc(size_t size);
@@ -78,10 +76,14 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 
-inline glm::ivec3 ogtVolumeSize(const ogt_vox_model *model) {
-	return glm::ivec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
+inline glm::vec3 ogtVolumeSize(const ogt_vox_model *model) {
+	return glm::vec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
 }
 
+/**
+ * @note The pivot to do the rotation around. This is the @code chunk_size - 1 + 0.5 @endcode. Please
+ * note that the @c w component must be @c 0.0
+ */
 inline glm::vec4 ogtVolumePivot(const ogt_vox_model *model) {
 	return glm::vec4((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
 					 0.0f);
