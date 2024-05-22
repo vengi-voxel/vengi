@@ -271,8 +271,8 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 			models.emplace_back(nullptr, InvalidNodeId);
 			continue;
 		}
-		voxel::Region region(glm::ivec3(0),
-							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
+		voxel::Region region(glm::ivec3(0, 0, -ogtModel->size_y - 1),
+							 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, 0));
 		voxel::RawVolume *v = new voxel::RawVolume(region);
 
 		const uint8_t *ogtVoxel = ogtModel->voxel_data;
@@ -283,7 +283,7 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 						continue;
 					}
 					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					v->setVoxel(region.getUpperX() - (int)x, (int)z, (int)y, voxel);
+					v->setVoxel(region.getUpperX() - (int)x, (int)z, region.getUpperZ() - (int)y, voxel);
 				}
 			}
 		}
