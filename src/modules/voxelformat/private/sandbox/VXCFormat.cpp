@@ -60,6 +60,10 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 	io::ArchiveFiles files;
 	vxcArchive->list("*.vxr", files);
+	if (files.empty()) {
+		Log::debug("Could not find any vxr file in the vxc archive");
+		return false;
+	}
 	for (const io::FilesystemEntry &entry : files) {
 		VXRFormat f;
 		f.load(entry.name, vxcArchive, sceneGraph, ctx);
