@@ -227,6 +227,15 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			return false;
 		}
 	}
+	if (scene->num_instances == 0 && scene->num_models > 0) {
+		for (MVModelToNode &m : models) {
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+			node.setVolume(m.volume, true);
+			node.setPalette(palette);
+			sceneGraph.emplace(core::move(node), sceneGraph.root().id());
+			m.volume = nullptr;
+		}
+	}
 
 	loadCameras(scene, sceneGraph);
 	return true;
