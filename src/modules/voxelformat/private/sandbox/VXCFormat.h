@@ -19,6 +19,9 @@ protected:
 					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+public:
+	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+								   const LoadContext &ctx) override;
 };
 
 } // namespace voxelformat

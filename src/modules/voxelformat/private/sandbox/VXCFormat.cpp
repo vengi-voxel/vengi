@@ -3,8 +3,8 @@
  */
 
 #include "VXCFormat.h"
-#include "VXRFormat.h"
 #include "VXCArchive.h"
+#include "VXRFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -31,8 +31,8 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						   const LoadContext &ctx) {
+bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+						   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> in(archive->readStream(filename));
 	if (!in) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -55,6 +55,9 @@ bool VXCFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 
 	core::SharedPtr<VXCArchive> vxcArchive = core::make_shared<VXCArchive>(stream);
+	for (const auto &e : vxcArchive->files()) {
+		Log::debug("Found file %s", e.name.c_str());
+	}
 	io::ArchiveFiles files;
 	vxcArchive->list(".vxr", files);
 	for (const io::FilesystemEntry &entry : files) {
@@ -72,5 +75,63 @@ bool VXCFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 #undef wrap
 #undef wrapBool
+
+image::ImagePtr VXCFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
+										  const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> in(archive->readStream(filename));
+	if (!in) {
+		Log::error("Could not load file %s", filename.c_str());
+		return {};
+	}
+	io::ZipReadStream stream(*in, (int)in->size());
+	uint8_t magic[4];
+	if (!stream.readUInt8(magic[0])) {
+		Log::error("Failed to read magic");
+		return {};
+	}
+	if (!stream.readUInt8(magic[1])) {
+		Log::error("Failed to read magic");
+		return {};
+	}
+	if (!stream.readUInt8(magic[2])) {
+		Log::error("Failed to read magic");
+		return {};
+	}
+	if (!stream.readUInt8(magic[3])) {
+		Log::error("Failed to read magic");
+		return {};
+	}
+	if (magic[0] != 'V' || magic[1] != 'X' || magic[2] != 'C') {
+		Log::error("Could not load vxc file: Invalid magic found (%c%c%c%c)", magic[0], magic[1], magic[2], magic[3]);
+		return {};
+	}
+	int version = magic[3] - '0';
+	if (version != 1) {
+		Log::error("Could not load vxc file: Unsupported version found (%i)", version);
+		return {};
+	}
+
+	core::SharedPtr<VXCArchive> vxcArchive = core::make_shared<VXCArchive>(stream);
+	io::ArchiveFiles files;
+	vxcArchive->list("*.png", files);
+	if (files.empty()) {
+		Log::debug("Could not find any png file in the vxc archive");
+		return {};
+	}
+	for (const io::FilesystemEntry &entry : files) {
+		if (entry.name != "thumbnail.png") {
+			Log::debug("Skip image %s", entry.name.c_str());
+			continue;
+		}
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(entry.name));
+		if (!stream) {
+			Log::error("Could not load file %s", entry.name.c_str());
+			return image::ImagePtr();
+		}
+		return image::loadImage(entry.name, *stream, stream->size());
+	}
+	Log::debug("Could not find thumbnail.png in the vxc archive");
+	return {};
+}
 
 } // namespace voxelformat
