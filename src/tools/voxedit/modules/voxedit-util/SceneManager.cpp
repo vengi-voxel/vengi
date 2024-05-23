@@ -2421,7 +2421,11 @@ void SceneManager::animate(double nowSeconds) {
 
 	_currentAnimationNodeId = _sceneGraph.nextModelNode(_currentAnimationNodeId);
 	if (_currentAnimationNodeId == InvalidNodeId) {
-		_currentAnimationNodeId = _sceneGraph.nextModelNode(_sceneGraph.root().id());
+		if (const auto *node = _sceneGraph.firstModelNode()) {
+			_currentAnimationNodeId = node->id();
+		} else {
+			_animationSpeed = 0.0f;
+		}
 	}
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(_currentAnimationNodeId);
 	if (node.isAnyModelNode()) {
