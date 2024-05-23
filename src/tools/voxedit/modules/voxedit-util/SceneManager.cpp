@@ -29,6 +29,7 @@
 #include "math/Random.h"
 #include "math/Ray.h"
 #include "metric/MetricFacade.h"
+#include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "video/Camera.h"
 #include "voxel/Face.h"
@@ -2855,6 +2856,33 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFr
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateKeyFrameInterpolation(*node, keyFrameIdx, interpolation);
+	}
+	return false;
+}
+
+bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
+									   math::Axis axis) {
+	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+	if (axis == math::Axis::X) {
+		transform.mirrorX();
+	} else if ((axis & (math::Axis::X | math::Axis::Z)) == (math::Axis::X | math::Axis::Z)) {
+		transform.mirrorXZ();
+	} else if ((axis & (math::Axis::X | math::Axis::Y | math::Axis::Z)) ==
+			   (math::Axis::X | math::Axis::Y | math::Axis::Z)) {
+		transform.mirrorXYZ();
+	} else {
+		return false;
+	}
+	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
+	_mementoHandler.markNodeTransform(node, keyFrameIdx);
+	markDirty();
+	return true;
+}
+
+bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeTransformMirror(*node, keyFrameIdx, axis);
 	}
 	return false;
 }

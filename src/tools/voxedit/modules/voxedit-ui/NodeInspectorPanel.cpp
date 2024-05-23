@@ -195,6 +195,18 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 	ImGui::SameLine();
 	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
 	ImGui::TooltipTextUnformatted(_("Automatically create keyframes when changing transforms"));
+
+	if (ImGui::Button(_("Mirror X"))) {
+		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X);
+	}
+
+	if (ImGui::Button(_("Mirror XZ"))) {
+		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X | math::Axis::Z);
+	}
+
+	if (ImGui::Button(_("Mirror XYZ"))) {
+		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X | math::Axis::Y | math::Axis::Z);
+	}
 }
 
 void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) {
