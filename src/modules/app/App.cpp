@@ -280,11 +280,18 @@ void App::onFrame() {
 				memset(&messageboxdata, 0, sizeof(messageboxdata));
 				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
 				messageboxdata.title = "Detected previous crash";
-				core::String crashLog = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead)->load();
-				messageboxdata.message = "Please upload the crash logs."
-					"\n"
-					"If the error persists, reset the configuration";
+				const io::FilePtr &file = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead);
+				core::String crashLog = file->load();
+				const core::String crashlogFilename = file->name();
+				file->close();
 				messageboxdata.numbuttons = crashLog.empty() ? 2 : 3;
+				if (messageboxdata.numbuttons == 3) {
+					messageboxdata.message = "Please upload the crash logs."
+						"\n"
+						"If the error persists, reset the configuration";
+				} else {
+					messageboxdata.message = "If the error persists, reset the configuration";
+				}
 				SDL_MessageBoxButtonData buttons[3];
 				memset(&buttons, 0, sizeof(buttons));
 				buttons[0].buttonid = 0;
@@ -292,11 +299,9 @@ void App::onFrame() {
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
 				buttons[1].buttonid = 1;
 				buttons[1].text = "Continue";
-				if (messageboxdata.numbuttons == 3) {
-					buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-					buttons[2].buttonid = 2;
-					buttons[2].text = "Upload";
-				}
+				buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+				buttons[2].buttonid = 2;
+				buttons[2].text = "Upload";
 				messageboxdata.buttons = buttons;
 				int buttonId = -1;
 				if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
@@ -317,6 +322,8 @@ void App::onFrame() {
 						int statusCode = 0;
 						if (!request.execute(stream, &statusCode)) {
 							Log::error("Failed to upload crash log with status: %i", statusCode);
+						} else {
+							_filesystem->removeFile(crashlogFilename);
 						}
 					}
 				}
