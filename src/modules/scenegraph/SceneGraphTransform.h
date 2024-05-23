@@ -74,6 +74,10 @@ public:
 	void setLocalOrientation(const glm::quat &orientation);
 	void setLocalScale(const glm::vec3 &scale);
 
+	void mirrorX();
+	void mirrorXYZ();
+	void mirrorXZ();
+
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
 	const glm::mat4x4 &worldMatrix() const;

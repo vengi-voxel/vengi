@@ -94,6 +94,49 @@ void SceneGraphTransform::setLocalOrientation(const glm::quat &orientation) {
 	_localOrientation = orientation;
 }
 
+void SceneGraphTransform::mirrorX() {
+	if (_dirty & DIRTY_WORLDVALUES) {
+		_worldTranslation.x = -_worldTranslation.x;
+		_worldScale.x = -_worldScale.x;
+		_worldOrientation.x = -_worldOrientation.x;
+		_worldOrientation.y = -_worldOrientation.y;
+		_worldOrientation.z = -_worldOrientation.z;
+	} else {
+		_localTranslation.x = -_localTranslation.x;
+		_localScale.x = -_localScale.x;
+		_localOrientation.x = -_localOrientation.x;
+		_localOrientation.y = -_localOrientation.y;
+		_localOrientation.z = -_localOrientation.z;
+		_dirty |= DIRTY_LOCALVALUES;
+	}
+}
+
+void SceneGraphTransform::mirrorXYZ() {
+	if (_dirty & DIRTY_WORLDVALUES) {
+		_worldTranslation = -_worldTranslation;
+		_worldScale = -_worldScale;
+	} else {
+		_localTranslation = -_localTranslation;
+		_localScale = -_localScale;
+		_dirty |= DIRTY_LOCALVALUES;
+	}
+}
+
+void SceneGraphTransform::mirrorXZ() {
+	if (_dirty & DIRTY_WORLDVALUES) {
+		_worldTranslation.x = -_worldTranslation.x;
+		_worldTranslation.z = -_worldTranslation.z;
+		_worldScale.x = -_worldScale.x;
+		_worldScale.z = -_worldScale.z;
+	} else {
+		_localTranslation.x = -_localTranslation.x;
+		_localTranslation.z = -_localTranslation.z;
+		_localScale.x = -_localScale.x;
+		_localScale.z = -_localScale.z;
+		_dirty |= DIRTY_LOCALVALUES;
+	}
+}
+
 void SceneGraphTransform::setLocalScale(const glm::vec3 &scale) {
 	if (_localScale == scale) {
 		return;
