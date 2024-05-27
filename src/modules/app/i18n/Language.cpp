@@ -383,8 +383,8 @@ Language Language::fromSpec(const core::String &language, const core::String &co
 
 		LanguageSpec tmpspec;
 		tmpspec.language = language.c_str();
-		tmpspec.country = country.c_str();
-		tmpspec.modifier = modifier.c_str();
+		tmpspec.country = country.empty() ? nullptr : country.c_str();
+		tmpspec.modifier = modifier.empty() ? nullptr : modifier.c_str();
 		Language tmplang(&tmpspec);
 
 		const LanguageSpec *best_match = nullptr;

@@ -38,6 +38,7 @@ set(TEST_SRCS
 	tests/AppTest.cpp
 	tests/CommandCompleterTest.cpp
 	tests/POParserTest.cpp
+	tests/I18NTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
