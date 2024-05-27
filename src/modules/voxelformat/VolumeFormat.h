@@ -6,11 +6,9 @@
 #pragma once
 
 #include "Format.h"
-#include "io/File.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
-#include "video/Texture.h"
 
 namespace palette {
 class Palette;
