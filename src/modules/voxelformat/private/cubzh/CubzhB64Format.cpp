@@ -47,6 +47,7 @@ bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("map name: %s", name.c_str());
+	// TODO: the name is a 3zh file like this directory.file[.3zh] with lua directory separator .
 	return true;
 }
 

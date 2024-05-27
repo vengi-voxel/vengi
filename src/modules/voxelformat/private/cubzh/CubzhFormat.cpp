@@ -172,14 +172,16 @@ bool CubzhFormat::loadPalettePCubes(io::ReadStream &stream, palette::Palette &pa
 	return true;
 }
 
-bool CubzhFormat::loadPalette5(io::ReadStream &stream, palette::Palette &palette) const {
+bool CubzhFormat::loadPalette5(io::ReadStream &stream, palette::Palette &palette, int version) const {
 	uint8_t colorCount;
 	Log::debug("Found v5 palette");
-	uint8_t colorEncoding;
-	wrap(stream.readUInt8(colorEncoding))
-	if (colorEncoding != 1) {
-		Log::error("Unsupported color encoding %d", colorEncoding);
-		return false;
+	if (version == 5) {
+		uint8_t colorEncoding;
+		wrap(stream.readUInt8(colorEncoding))
+		if (colorEncoding != 1) {
+			Log::error("Unsupported color encoding %d", colorEncoding);
+			return false;
+		}
 	}
 	uint8_t rowCount;
 	wrap(stream.readUInt8(rowCount))
@@ -193,6 +195,14 @@ bool CubzhFormat::loadPalette5(io::ReadStream &stream, palette::Palette &palette
 		Log::error("Invalid color count %d", colorCount16);
 		return 0;
 	}
+
+	if (version == 5) {
+		uint8_t defaultColor;
+		wrap(stream.readUInt8(defaultColor))
+		uint8_t defaultBackgroundColor;
+		wrap(stream.readUInt8(defaultBackgroundColor))
+	}
+
 	palette.setSize(colorCount);
 	for (uint8_t i = 0; i < colorCount; ++i) {
 		uint8_t r, g, b, a;
@@ -348,7 +358,7 @@ bool CubzhFormat::loadVersion5(const core::String &filename, const Header &heade
 		ChunkChecker check(stream, chunk);
 		switch (chunk.chunkId) {
 		case priv::CHUNK_ID_PALETTE_V5:
-			if (!loadPalette5(stream, palette)) {
+			if (!loadPalette5(stream, palette, 5)) {
 				return false;
 			}
 			break;
@@ -662,7 +672,7 @@ bool CubzhFormat::loadVersion6(const core::String &filename, const Header &heade
 		case priv::CHUNK_ID_PALETTE_LEGACY_V6: {
 			Log::debug("load legacy palette");
 			CubzhReadStream zhs(header, chunk, stream);
-			wrapBool(loadPalette5(zhs, palette))
+			wrapBool(loadPalette5(zhs, palette, 6))
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_V6: {
