@@ -1768,9 +1768,8 @@ msgstr "Cursor"
 msgid "Cursor details"
 msgstr "Cursor-Details"
 
-#, fuzzy
 msgid "Text"
-msgstr "Texturen"
+msgstr "Text"
 
 msgid "Horizontal spacing"
 msgstr "Horizontaler Abstand"
@@ -1778,9 +1777,8 @@ msgstr "Horizontaler Abstand"
 msgid "Thickness"
 msgstr "Dicke"
 
-#, fuzzy
 msgid "Font"
-msgstr "Schriftgröße"
+msgstr "Schriftart"
 
 msgid "Execute"
 msgstr ""
@@ -1821,9 +1819,8 @@ msgstr ""
 msgid "Fir"
 msgstr "Tanne"
 
-#, fuzzy
 msgid "Branches Ellipsis"
-msgstr "Astgröße"
+msgstr ""
 
 msgid "Ellipsis"
 msgstr ""
