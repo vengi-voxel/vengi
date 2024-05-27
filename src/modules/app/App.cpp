@@ -430,8 +430,12 @@ AppState App::onConstruct() {
 	}
 
 	FL_Locale *locale = nullptr;
-	FL_FindLocale(&locale, FL_MESSAGES);
-	_systemLanguage = Language::fromSpec(locale->lang, locale->country, locale->variant);
+	if (FL_FindLocale(&locale, FL_MESSAGES) != FL_FAILED) {
+		core::String lang = locale->lang ? locale->lang : "";
+		core::String country = locale->country ? locale->country : "";
+		core::String variant = locale->variant ? locale->variant : "";
+		_systemLanguage = Language::fromSpec(lang, country, variant);
+	}
 	if (!_systemLanguage) {
 		_systemLanguage = Language::fromSpec("en", "GB");
 	}
