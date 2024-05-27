@@ -9,7 +9,6 @@
 #include "core/Log.h"
 #include "core/TimeProvider.h"
 #include "core/concurrent/Concurrency.h"
-#include "http/HttpCacheStream.h"
 #include "io/Archive.h"
 #include "io/File.h"
 #include "io/Filesystem.h"

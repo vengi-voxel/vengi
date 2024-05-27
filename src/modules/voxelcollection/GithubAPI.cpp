@@ -8,6 +8,7 @@
 #include "core/Trace.h"
 #include "http/HttpCacheStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include <json.hpp>
 
 namespace voxelcollection {
@@ -23,7 +24,8 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	core::String file = "github-" + repository + "-" + branch + ".json";
 	core::string::replaceAllChars(file, '/', '-');
-	http::HttpCacheStream stream(filesystem, file, url);
+	const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
+	http::HttpCacheStream stream(archive, file, url);
 	core::DynamicArray<TreeEntry> entries;
 	if (!stream.valid()) {
 		return entries;

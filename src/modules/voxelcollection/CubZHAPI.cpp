@@ -8,7 +8,6 @@
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "http/Http.h"
-#include "http/HttpCacheStream.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"

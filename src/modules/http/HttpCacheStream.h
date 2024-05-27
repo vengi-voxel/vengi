@@ -10,8 +10,8 @@
 namespace io {
 class FileStream;
 class BufferedReadWriteStream;
-class Filesystem;
-typedef core::SharedPtr<Filesystem> FilesystemPtr;
+class Archive;
+typedef core::SharedPtr<Archive> ArchivePtr;
 } // namespace io
 
 namespace http {
@@ -26,15 +26,16 @@ class HttpCacheStream : public io::SeekableReadStream {
 private:
 	const core::String _file;
 	const core::String _url;
-	io::FileStream *_fileStream = nullptr;
+	io::SeekableReadStream *_readStream = nullptr;
 	bool _newInCache = false;
+	void write(const io::ArchivePtr &archive, const core::String &file, io::BufferedReadWriteStream &bufStream);
 
 public:
 	/**
-	 * @param[in] file The path to the file stored in the virtual filesystem
+	 * @param[in] file The path to the file stored in the archive
 	 * @sa io::Filesystem::homePath()
 	 */
-	HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url);
+	HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
 	virtual ~HttpCacheStream();
 
 	bool valid() const;

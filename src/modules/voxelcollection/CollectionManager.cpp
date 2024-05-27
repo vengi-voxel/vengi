@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/HttpCacheStream.h"
+#include "io/Archive.h"
 #include "io/FilesystemArchive.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
@@ -113,12 +114,13 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 		Log::warn("Failed to create directory for thumbnails at: %s", voxelFile.targetDir().c_str());
 		return;
 	}
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	if (!voxelFile.thumbnailUrl.empty()) {
 		app::async([=]() {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(_filesystem, voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
+			http::HttpCacheStream stream(archive, voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
@@ -126,7 +128,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(_filesystem, voxelFile.fullPath, voxelFile.url);
+			http::HttpCacheStream stream(archive, voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
 			const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, archive, loadCtx);

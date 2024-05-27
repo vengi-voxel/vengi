@@ -121,7 +121,8 @@ void MainWindow::updateAsset() {
 				createThumbnail(voxelFile);
 			} else {
 				if (ImGui::Button(_("Download"))) {
-					http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
+					const io::ArchivePtr &archive = io::openFilesystemArchive(_app->filesystem());
+					http::HttpCacheStream stream(archive, voxelFile.targetFile(), voxelFile.url);
 					if (stream.valid()) {
 						voxelFile.downloaded = true;
 					} else {
@@ -187,7 +188,8 @@ void MainWindow::updateAssetDetails() {
 			}
 		} else {
 			if (ImGui::Button(_("Download"))) {
-				http::HttpCacheStream stream(_app->filesystem(), voxelFile.targetFile(), voxelFile.url);
+				const io::ArchivePtr &archive = io::openFilesystemArchive(_app->filesystem());
+				http::HttpCacheStream stream(archive, voxelFile.targetFile(), voxelFile.url);
 				if (stream.valid()) {
 					voxelFile.downloaded = true;
 				} else {

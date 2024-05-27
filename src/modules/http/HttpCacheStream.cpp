@@ -6,103 +6,95 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/Http.h"
+#include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
-#include "io/Filesystem.h"
+#include "io/Stream.h"
 #include <SDL_timer.h>
 
 namespace http {
 
-HttpCacheStream::HttpCacheStream(const io::FilesystemPtr &fs, const core::String &file, const core::String &url)
+HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url)
 	: _file(file), _url(url) {
 	if (core::string::startsWith(url, "file://")) {
-		_fileStream = new io::FileStream(fs->open(url.substr(7), io::FileMode::Read));
+		_readStream = archive->readStream(url.substr(7));
 		return;
 	}
-	if (!fs->exists(file)) {
-		Log::debug("try to download %s", file.c_str());
-		io::BufferedReadWriteStream bufStream(1024 * 1024);
-		int statusCode = 0;
-		if (http::download(url, bufStream, &statusCode)) {
-			if (http::isValidStatusCode(statusCode)) {
-				bufStream.seek(0);
-				if (core::string::isAbsolutePath(file)) {
-					if (fs->syswrite(file, bufStream)) {
-						_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-						_newInCache = true;
-					}
-				} else {
-					if (fs->write(file, bufStream)) {
-						_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-						_newInCache = true;
-					}
+	if (archive->exists(file)) {
+		Log::error("Use cached file at %s", file.c_str());
+		_readStream = archive->readStream(file);
+		return;
+	}
+	Log::error("try to download %s", file.c_str());
+	io::BufferedReadWriteStream bufStream(1024 * 1024);
+	int statusCode = 0;
+	if (http::download(url, bufStream, &statusCode)) {
+		if (http::isValidStatusCode(statusCode)) {
+			write(archive, file, bufStream);
+		} else if (statusCode == 429) {
+			Log::warn("Too many requests, retrying in 5 seconds... %s (%s)", url.c_str(), file.c_str());
+			SDL_Delay(5000);
+			if (http::download(url, bufStream, &statusCode)) {
+				if (http::isValidStatusCode(statusCode)) {
+					write(archive, file, bufStream);
 				}
-			} else if (statusCode == 429) {
-				Log::warn("Too many requests, retrying in 5 seconds... %s (%s)", url.c_str(), file.c_str());
-				SDL_Delay(5000);
-				if (http::download(url, bufStream, &statusCode)) {
-					if (http::isValidStatusCode(statusCode)) {
-						bufStream.seek(0);
-						if (core::string::isAbsolutePath(file)) {
-							if (fs->syswrite(file, bufStream)) {
-								_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-								_newInCache = true;
-							}
-						} else {
-							if (fs->write(file, bufStream)) {
-								_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
-								_newInCache = true;
-							}
-						}
-					}
-				}
-			} else {
-				Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 			}
+		} else {
+			Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 		}
-	} else {
-		Log::debug("Use cached file at %s", file.c_str());
-		_fileStream = new io::FileStream(fs->open(file, io::FileMode::Read));
 	}
 }
 
 HttpCacheStream::~HttpCacheStream() {
-	delete _fileStream;
+	delete _readStream;
+}
+
+void HttpCacheStream::write(const io::ArchivePtr &archive, const core::String &file,
+							io::BufferedReadWriteStream &bufStream) {
+	bufStream.seek(0);
+	if (io::SeekableWriteStream *ws = archive->writeStream(file)) {
+		ws->write(bufStream.getBuffer(), bufStream.size());
+		delete ws;
+		_readStream = archive->readStream(file);
+		_newInCache = true;
+		Log::error("Wrote %s", file.c_str());
+	} else {
+		Log::error("Failed to write %s", file.c_str());
+	}
 }
 
 bool HttpCacheStream::valid() const {
-	if (_fileStream == nullptr) {
+	if (_readStream == nullptr) {
 		return false;
 	}
-	return _fileStream->valid();
+	return true;
 }
 
 int HttpCacheStream::read(void *dataPtr, size_t dataSize) {
 	if (!valid()) {
 		return -1;
 	}
-	return _fileStream->read(dataPtr, dataSize);
+	return _readStream->read(dataPtr, dataSize);
 }
 
 int64_t HttpCacheStream::seek(int64_t position, int whence) {
 	if (!valid()) {
 		return -1;
 	}
-	return _fileStream->seek(position, whence);
+	return _readStream->seek(position, whence);
 }
 
 int64_t HttpCacheStream::size() const {
 	if (!valid()) {
 		return -1;
 	}
-	return _fileStream->size();
+	return _readStream->size();
 }
 
 int64_t HttpCacheStream::pos() const {
 	if (!valid()) {
 		return 0;
 	}
-	return _fileStream->pos();
+	return _readStream->pos();
 }
 
 } // namespace http

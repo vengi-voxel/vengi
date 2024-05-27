@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
 #include "http/Request.h"
+#include "io/FilesystemArchive.h"
 #include <gtest/gtest.h>
 
 namespace http {
@@ -24,13 +25,15 @@ TEST_F(HttpCacheStreamTest, DISABLED_testGetRequest) {
 		ASSERT_TRUE(io::filesystem()->removeFile(io::filesystem()->writePath(filename)));
 	}
 	{
-		http::HttpCacheStream stream(_testApp->filesystem(), filename, "https://httpbin.org/get");
+		http::HttpCacheStream stream(io::openFilesystemArchive(_testApp->filesystem()), filename,
+									 "https://httpbin.org/get");
 		ASSERT_TRUE(stream.valid());
 		ASSERT_TRUE(stream.isNewInCache());
 		ASSERT_GT(stream.size(), 0);
 	}
 	{
-		http::HttpCacheStream stream(_testApp->filesystem(), filename, "https://httpbin.org/get");
+		http::HttpCacheStream stream(io::openFilesystemArchive(_testApp->filesystem()), filename,
+									 "https://httpbin.org/get");
 		ASSERT_TRUE(stream.valid());
 		ASSERT_FALSE(stream.isNewInCache());
 		ASSERT_GT(stream.size(), 0);

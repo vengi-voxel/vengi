@@ -21,6 +21,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "math/Math.h"
 #include "private/PaletteFormat.h"
@@ -581,7 +582,7 @@ bool Palette::load(const image::ImagePtr &img) {
 
 bool Palette::loadLospec(const core::String &lospecId, const core::String &gimpPalette) {
 	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
-	http::HttpCacheStream cacheStream(io::filesystem(), gimpPalette, url);
+	http::HttpCacheStream cacheStream(io::openFilesystemArchive(io::filesystem()), gimpPalette, url);
 	return palette::loadPalette(gimpPalette, cacheStream, *this);
 }
 

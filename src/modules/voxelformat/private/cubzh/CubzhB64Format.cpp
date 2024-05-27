@@ -73,7 +73,13 @@ bool CubzhB64Format::readChunkMap(const core::String &filename, const io::Archiv
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("map name: %s", name.c_str());
-	// TODO: the name is a 3zh file like this directory.file[.3zh] with lua directory separator .
+
+	scenegraph::SceneGraph modelScene;
+	if (loadObject(archive, name, modelScene, ctx)) {
+		scenegraph::copySceneGraph(sceneGraph, modelScene);
+	} else {
+		Log::warn("Failed to load 3zh file: %s", name.c_str());
+	}
 	return true;
 }
 
@@ -226,8 +232,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 
 		scenegraph::SceneGraph modelScene;
 		if (!loadObject(archive, luaName, modelScene, ctx)) {
-			Log::error("Failed to load 3zh file: %s", luaName.c_str());
-			return false;
+			Log::warn("Failed to load 3zh file: %s", luaName.c_str());
 		}
 
 		core::DynamicArray<int> modelNodeIds;

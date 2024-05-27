@@ -19,6 +19,7 @@
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
 #include <json.hpp>
@@ -118,7 +119,7 @@ static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries, c
 
 void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelFile &archiveFile,
 							   core::DynamicArray<VoxelFile> &files, core::AtomicBool &shouldQuit) const {
-	http::HttpCacheStream stream(filesystem, archiveFile.targetFile(), archiveFile.url);
+	http::HttpCacheStream stream(io::openFilesystemArchive(filesystem), archiveFile.targetFile(), archiveFile.url);
 	io::ArchivePtr archive = io::openArchive(filesystem, archiveFile.fullPath, &stream);
 	if (!archive) {
 		Log::error("Failed to open archive %s", archiveFile.targetFile().c_str());
@@ -175,7 +176,8 @@ void Downloader::handleArchive(const io::FilesystemPtr &filesystem, const VoxelF
 }
 
 bool Downloader::download(const io::FilesystemPtr &filesystem, const VoxelFile &file) const {
-	http::HttpCacheStream stream(filesystem, file.targetFile(), file.url);
+	const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
+	http::HttpCacheStream stream(archive, file.targetFile(), file.url);
 	if (stream.isNewInCache()) {
 		Log::info("Downloaded %s", file.targetFile().c_str());
 		return true;

@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Log.h"
 #include "http/HttpCacheStream.h"
+#include "io/FilesystemArchive.h"
 #include "voxelcollection/Downloader.h"
 
 namespace voxelcollection {
@@ -22,7 +23,8 @@ TEST_F(CubZHAPITest, DISABLED_testRepoList) {
 		file.name = entry.repo + "-" + entry.name + ".3zh";
 		file.url = entry.url;
 		file.fullPath = _testApp->filesystem()->writePath(file.targetFile());
-		http::HttpCacheStream stream(_testApp->filesystem(), file.fullPath, file.url);
+		const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem());
+		http::HttpCacheStream stream(archive, file.fullPath, file.url);
 		if (stream.isNewInCache()) {
 			Log::debug("Downloaded: %s", file.url.c_str());
 		}

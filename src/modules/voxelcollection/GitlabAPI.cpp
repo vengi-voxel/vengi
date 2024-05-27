@@ -10,6 +10,7 @@
 #include "core/collection/StringMap.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"
+#include "io/FilesystemArchive.h"
 #include <json.hpp>
 
 namespace voxelcollection {
@@ -49,7 +50,8 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem,
 			encoded.c_str(), branch.c_str(), page, path.c_str());
 		core::String file = core::string::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
 		core::string::replaceAllChars(file, '/', '-');
-		http::HttpCacheStream stream(filesystem, file, url);
+		const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
+		http::HttpCacheStream stream(archive, file, url);
 		if (!stream.valid()) {
 			return entries;
 		}
