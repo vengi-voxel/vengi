@@ -231,4 +231,17 @@ void SparseVolume::Sampler::moveNegativeZ(uint32_t offset) {
 	}
 }
 
+Region SparseVolume::calculateRegion() const {
+	if (_map.empty()) {
+		return Region::InvalidRegion;
+	}
+
+	const glm::ivec3 &p = _map.begin()->key;
+	Region region(p, p);
+	for (auto *e : _map) {
+		region.accumulate(e->key);
+	}
+	return region;
+}
+
 } // namespace voxel

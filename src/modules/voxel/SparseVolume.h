@@ -103,6 +103,8 @@ public:
 		return _region;
 	}
 
+	[[nodiscard]] Region calculateRegion() const;
+
 	inline bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
 		return setVoxel({x, y, z}, voxel);
 	}
