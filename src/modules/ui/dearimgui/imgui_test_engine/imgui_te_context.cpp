@@ -3690,7 +3690,17 @@ void    ImGuiTestContext::WindowResize(ImGuiTestRef ref, ImVec2 size)
     // Extra yield as newly created window that have AutoFitFramesX/AutoFitFramesY set are temporarily not submitting their resize widgets. Give them a bit of slack.
     Yield();
 
-    ImGuiID id = ImGui::GetWindowResizeCornerID(window, 0);
+    // Aim at resize border or resize corner
+    ImGuiID border_x2 = ImGui::GetWindowResizeBorderID(window, ImGuiDir_Right);
+    ImGuiID border_y2 = ImGui::GetWindowResizeBorderID(window, ImGuiDir_Down);
+    ImGuiID resize_br = ImGui::GetWindowResizeCornerID(window, 0);
+    ImGuiID id;
+    if (ImAbs(size.x - window->Size.x) < 0.0001f && ItemExists(border_y2))
+        id = border_y2;
+    else if (ImAbs(size.y - window->Size.y) < 0.0001f && ItemExists(border_x2))
+        id = border_x2;
+    else
+        id = resize_br;
     MouseMove(id, ImGuiTestOpFlags_IsSecondAttempt);
 
     if (size.x <= 0.0f || size.y <= 0.0f)

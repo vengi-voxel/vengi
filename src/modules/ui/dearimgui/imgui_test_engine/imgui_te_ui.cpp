@@ -277,13 +277,16 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetFrameHeight() + style.ItemInnerSpacing.x);
 
     //ImGui::Text("TESTS (%d)", engine->TestsAll.Size);
-#if IMGUI_VERSION_NUM >= 18837
-    bool run = ImGui::Button("Run") || ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_R);
-#else
+#if IMGUI_VERSION_NUM >= 19066
+    ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_R, ImGuiInputFlags_Tooltip | ImGuiInputFlags_RouteFromRootWindow);
     bool run = ImGui::Button("Run");
-#endif
+#elif IMGUI_VERSION_NUM >= 18837
+    bool run = ImGui::Button("Run") || ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_R);
 #if IMGUI_VERSION_NUM > 18963
     ImGui::SetItemTooltip("Ctrl+R");
+#endif
+#else
+    bool run = ImGui::Button("Run");
 #endif
     if (run)
     {
