@@ -4,8 +4,10 @@
 
 #include "../MementoHandler.h"
 #include "app/tests/AbstractTest.h"
+#include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
 
 namespace voxedit {
@@ -621,6 +623,55 @@ TEST_F(MementoHandlerTest, testSceneNodeMove) {
 	EXPECT_TRUE(_mementoHandler.canRedo());
 	const MementoState &stateRedo = _mementoHandler.redo();
 	EXPECT_EQ(groupId, stateRedo.parentId);
+}
+
+TEST_F(MementoHandlerTest, testSceneNodeTransform) {
+	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	const glm::vec3 initial(1.0f, 2.0f, 3.0f);
+	glm::vec3 mirrored;
+	{
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(initial);
+		transform.update(_sceneGraph, *node, 0, false);
+		node->setTransform(0, transform);
+	}
+	_mementoHandler.markInitialNodeState(*node);
+	EXPECT_EQ(1, (int)_mementoHandler.stateSize());
+	{
+		scenegraph::SceneGraphTransform &transform = node->transform(0);
+		transform.mirrorX();
+		transform.update(_sceneGraph, *node, 0, false);
+		mirrored = transform.worldTranslation();
+		node->setTransform(0, transform);
+	}
+	_mementoHandler.markNodeTransform(*node, 0);
+	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
+
+	const MementoState &stateUndo = _mementoHandler.undo();
+	EXPECT_EQ(MementoType::SceneNodeTransform, stateUndo.type);
+	EXPECT_EQ(0, stateUndo.keyFrameIdx);
+	ASSERT_TRUE(stateUndo.worldMatrix.hasValue());
+
+	{
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldMatrix(*stateUndo.worldMatrix.value());
+		transform.update(_sceneGraph, *node, 0, true);
+		EXPECT_VEC3_NEAR(transform.worldTranslation(), initial, 0.0001f);
+	}
+
+	EXPECT_TRUE(_mementoHandler.canRedo());
+	const MementoState &stateRedo = _mementoHandler.redo();
+	EXPECT_EQ(0, stateRedo.keyFrameIdx);
+	EXPECT_EQ(MementoType::SceneNodeTransform, stateRedo.type);
+	ASSERT_TRUE(stateRedo.worldMatrix.hasValue());
+
+	{
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldMatrix(*stateRedo.worldMatrix.value());
+		transform.update(_sceneGraph, *node, 0, true);
+		EXPECT_VEC3_NEAR(transform.worldTranslation(), mirrored, 0.0001f);
+	}
 }
 
 } // namespace voxedit

@@ -328,11 +328,25 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 MementoState MementoHandler::undoTransform(const MementoState &s) {
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
-		if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::SceneNodeAdded ||
-			 prevS.type == MementoType::Modification) &&
-			prevS.nodeId == s.nodeId && prevS.keyFrameIdx == s.keyFrameIdx) {
+		if (prevS.nodeId != s.nodeId) {
+			continue;
+		}
+		if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::Modification) &&
+			prevS.keyFrameIdx == s.keyFrameIdx) {
 			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,			 s.referenceId, s.name,
 								s.nodeType, s.region, s.pivot,	  prevS.worldMatrix, s.keyFrameIdx, s.palette};
+		}
+		if (prevS.type == MementoType::SceneNodeAdded && prevS.keyFrames.hasValue()) {
+			for (const auto &e : *prevS.keyFrames.value()) {
+				for (const auto &f : e->second) {
+					if (f.frameIdx == s.keyFrameIdx) {
+						return MementoState{
+							s.type,		   s.data,	   s.parentId, s.nodeId, s.referenceId,
+							s.name,		   s.nodeType, s.region,   s.pivot,	 f.transform().worldMatrix(),
+							s.keyFrameIdx, s.palette};
+					}
+				}
+			}
 		}
 	}
 	return _states[0];

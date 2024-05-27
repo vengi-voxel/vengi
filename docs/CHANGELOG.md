@@ -21,6 +21,7 @@ General:
 VoxEdit:
 
    - Converted the text-voxel-rendering into a new brush
+   - Fixed undo node transform changes as first action
 
 ## 0.0.31 (2024-05-09)
 
