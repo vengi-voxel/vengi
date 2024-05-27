@@ -467,7 +467,7 @@ dep_option(SDL_WAYLAND_SHARED      "Dynamically load Wayland support" ON "SDL_WA
 dep_option(SDL_WAYLAND_LIBDECOR    "Use client-side window decorations on Wayland" ON "SDL_WAYLAND" OFF)
 dep_option(SDL_WAYLAND_LIBDECOR_SHARED     "Dynamically load libdecor support" ON "SDL_WAYLAND_LIBDECOR;SDL_WAYLAND_SHARED" OFF)
 dep_option(SDL_WAYLAND_QT_TOUCH    "QtWayland server support for Wayland video driver" ON "SDL_WAYLAND" OFF)
-set_option(SDL_RPI                 "Use Raspberry Pi video driver" ${UNIX_SYS})
+set_option(SDL_RPI                 "Use Raspberry Pi 0-3 video driver" ${UNIX_SYS})
 set_option(SDL_COCOA               "Use Cocoa video driver" ${APPLE})
 set_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(SDL_XINPUT              "Use Xinput for Windows" ${WINDOWS})
@@ -1812,13 +1812,11 @@ elseif(WINDOWS)
     check_include_file(d3d9.h HAVE_D3D_H)
     check_include_file(d3d11_1.h HAVE_D3D11_H)
     check_c_source_compiles("
-      #include <winsdkver.h>
-      #include <sdkddkver.h>
       #include <d3d12.h>
+      #include <d3d12sdklayers.h>
       ID3D12Device1 *device;
-      #if WDK_NTDDI_VERSION > 0x0A000008
-      int main(int argc, char **argv) { return 0; }
-      #endif" HAVE_D3D12_H)
+      int main(int argc, char **argv) {return 0; }
+      " HAVE_D3D12_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
