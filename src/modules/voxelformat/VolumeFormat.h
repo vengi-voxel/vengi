@@ -46,8 +46,6 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension
  */
-bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph,
-				const SaveContext &ctx, bool useVengiAsFallback = true);
 bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::FormatDescription *desc,
 				const io::ArchivePtr &archive, const SaveContext &ctx);
 

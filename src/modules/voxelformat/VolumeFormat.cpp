@@ -679,26 +679,4 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 	return false;
 }
 
-bool saveFormat(const io::FilePtr &filePtr, const io::FormatDescription *desc, scenegraph::SceneGraph &sceneGraph,
-				const SaveContext &ctx, bool useVengiAsFallback) {
-	if (!filePtr->validHandle()) {
-		Log::error("Failed to save model - no valid file given");
-		return false;
-	}
-
-	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
-	if (!saveFormat(sceneGraph, filePtr->name(), desc, archive, ctx)) {
-		if (!useVengiAsFallback) {
-			Log::error("Failed to save file %s", filePtr->name().c_str());
-			return false;
-		}
-		Log::warn("Failed to save file %s - saving as vengi instead", filePtr->name().c_str());
-		VENGIFormat vengiFormat;
-		const core::String &newName = core::string::replaceExtension(filePtr->name(), "vengi");
-		io::FileStream newStream(io::filesystem()->open(newName, io::FileMode::SysWrite));
-		return vengiFormat.save(sceneGraph, newName, archive, ctx);
-	}
-	return true;
-}
-
 } // namespace voxelformat

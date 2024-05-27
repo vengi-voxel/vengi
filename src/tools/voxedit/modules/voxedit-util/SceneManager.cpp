@@ -263,11 +263,6 @@ void SceneManager::autosave() {
 }
 
 bool SceneManager::saveNode(int nodeId, const core::String& file) {
-	const io::FilePtr& filePtr = _filesystem->open(file, io::FileMode::SysWrite);
-	if (!filePtr->validHandle()) {
-		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
-		return false;
-	}
 	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr) {
 		Log::warn("Node with id %i wasn't found", nodeId);
@@ -286,11 +281,12 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	if (voxelformat::saveFormat(filePtr, &_lastFilename.desc, newSceneGraph, saveCtx)) {
-		Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	if (voxelformat::saveFormat(newSceneGraph, file, &_lastFilename.desc, archive, saveCtx)) {
+		Log::info("Saved node %i to %s", nodeId, file.c_str());
 		return true;
 	}
-	Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
+	Log::warn("Failed to save node %i to %s", nodeId, file.c_str());
 	return false;
 }
 
@@ -410,21 +406,16 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 		Log::warn("No filename given for saving");
 		return false;
 	}
-	const io::FilePtr& filePtr = _filesystem->open(file.name, io::FileMode::SysWrite);
-	if (!filePtr->validHandle()) {
-		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
-		return false;
-	}
-
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	if (voxelformat::saveFormat(filePtr, &file.desc, _sceneGraph, saveCtx)) {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	if (voxelformat::saveFormat(_sceneGraph, file.name, &file.desc, archive, saveCtx)) {
 		if (!autosave) {
 			_dirty = false;
 			_lastFilename = file;
 			const core::String &ext = core::string::extractExtension(file.name);
 			metric::count("save", 1, {{"type", ext}});
-			core::Var::get(cfg::VoxEditLastFile)->setVal(filePtr->name());
+			core::Var::get(cfg::VoxEditLastFile)->setVal(file.name);
 		}
 		_needAutoSave = false;
 		return true;
@@ -1038,11 +1029,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
-	const io::FilePtr& filePtr = _filesystem->open(file.name, io::FileMode::SysWrite);
-	if (!filePtr->validHandle()) {
-		Log::warn("Failed to open the given file '%s' for writing", file.c_str());
-		return false;
-	}
+	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
 	for (const Selection &selection : selections) {
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode;
@@ -1051,10 +1038,10 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		newSceneGraph.emplace(core::move(newNode));
 		voxelformat::SaveContext saveCtx;
 		saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-		if (voxelformat::saveFormat(filePtr, &file.desc, newSceneGraph, saveCtx)) {
-			Log::info("Saved node %i to %s", nodeId, filePtr->name().c_str());
+		if (voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
+			Log::info("Saved node %i to %s", nodeId, file.name.c_str());
 		} else {
-			Log::warn("Failed to save node %i to %s", nodeId, filePtr->name().c_str());
+			Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
 			return false;
 		}
 	}
