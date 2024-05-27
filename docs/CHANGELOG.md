@@ -16,6 +16,7 @@ General:
    - Fixed missing region shift for `vxl` (Command and Conquer)
    - Fixed MagicaVoxel `vox` file loading for files that don't contain instances, but only models
    - Added `vxc` thumbnail support
+   - Fixed a translation related crash for all apps on windows
 
 VoxEdit:
 
