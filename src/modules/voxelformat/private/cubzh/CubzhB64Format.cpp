@@ -14,6 +14,9 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/RawVolume.h"
+#include "voxel/SparseVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <stdint.h>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -127,7 +130,9 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 	uint16_t numBlocks;
 	wrap(stream.readUInt16(numBlocks))
 	Log::debug("numBlocks: %i", (int)numBlocks);
-	for (uint16_t i = 0; i < numBlocks; ++i) {
+
+	voxel::SparseVolume v;
+	for (int i = 0; i < (int)numBlocks; ++i) {
 		core::String key;
 		wrapBool(stream.readPascalStringUInt16LE(key))
 		Log::debug("block key: %s", key.c_str());
@@ -143,10 +148,27 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 			const int x = i % 1000;
 			const int y = i / 1000 % 1000;
 			const int z = i / 1000000;
-			// TODO: set the block
+			v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));
 			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, core::Color::toHex(color).c_str());
 		}
 	}
+
+	const voxel::Region &sparseRegion = v.calculateRegion();
+	if (!sparseRegion.isValid()) {
+		Log::debug("Empty block");
+		return true;
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setName("Blocks");
+	node.setVolume(new voxel::RawVolume(sparseRegion), true);
+	v.copyTo(*node.volume());
+	const int nodeId = sceneGraph.emplace(core::move(node));
+	if (nodeId == InvalidNodeId) {
+		Log::error("Failed to create blocks node");
+		return false;
+	}
+
 	return true;
 }
 
