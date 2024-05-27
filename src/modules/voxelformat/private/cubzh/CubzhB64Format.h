@@ -46,24 +46,36 @@ protected:
 		core::String txt;
 	};
 	void setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, const Ambience &ambience) const;
-	bool load3zh(const io::ArchivePtr &archive, const core::String &filename, scenegraph::SceneGraph &modelScene,
-				const palette::Palette &palette, const LoadContext &ctx);
-	bool readObjects(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					 const palette::Palette &palette, const LoadContext &ctx, int version);
-	bool readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-					  const LoadContext &ctx);
+	/**
+	 * @param[in] archive The io::Archive to load the given file from
+	 * @param[in] luaName The file to load from the archive. Can contain directory parts with lua directory separators.
+	 * @param[in] modelScene The scene to load the objects into
+	 */
+	bool loadObject(const io::ArchivePtr &archive, const core::String &luaName, scenegraph::SceneGraph &modelScene,
+					const LoadContext &ctx);
+	/**
+	 * @brief Load all 3zh objects that are placed in the world
+	 */
+	bool readObjects(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+					 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx,
+					 int version);
+	/**
+	 * @brief Load the map chunk of the file that contains the 3zh map file name and the scaling factor of the world
+	 */
+	bool readChunkMap(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
 	bool readAmbience(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					  const LoadContext &ctx, Ambience &ambience);
 	bool readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					const LoadContext &ctx);
-	bool loadVersion1(const core::String &filename, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadVersion2(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadVersion3(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					  const palette::Palette &palette, const LoadContext &ctx);
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
+	bool loadVersion1(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
+	bool loadVersion2(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
+	bool loadVersion3(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
+	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const palette::Palette &palette, const LoadContext &ctx);
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) {
 		return false;

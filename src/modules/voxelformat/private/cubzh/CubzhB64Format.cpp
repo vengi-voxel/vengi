@@ -39,8 +39,34 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool CubzhB64Format::readChunkMap(io::ReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-								  const palette::Palette &palette, const LoadContext &ctx) {
+bool CubzhB64Format::loadObject(const io::ArchivePtr &archive, const core::String &luaName,
+								scenegraph::SceneGraph &modelScene, const LoadContext &ctx) {
+	core::String fullPath = luaName;
+
+	// load the 3zh file
+	fullPath.replaceAllChars('.', '/'); // replace the lua dir separator
+	fullPath.append(".3zh");
+
+	if (!archive->exists(fullPath)) {
+		const core::String &path = core::string::extractPath(fullPath);
+		const core::String &file = core::string::extractFilenameWithExtension(fullPath);
+		if (archive->exists(core::string::path(path, "..", "cache", file))) {
+			fullPath = core::string::path(path, "..", "cache", file);
+		} else if (archive->exists(core::string::path(path, "cache", file))) {
+			fullPath = core::string::path(path, "cache", file);
+		} else {
+			Log::error("3zh file not found: %s", fullPath.c_str());
+			return false;
+		}
+	}
+
+	CubzhFormat format;
+	return format.load(fullPath, archive, modelScene, ctx);
+}
+
+bool CubzhB64Format::readChunkMap(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
+								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+								  const LoadContext &ctx) {
 	double scale;
 	wrap(stream.readDouble(scale)) // default is 5
 	Log::debug("map scale: %f", scale);
@@ -175,28 +201,6 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 #define CHECK_ID(field, id) core_memcmp((field), (id), 2) == 0
 
-bool CubzhB64Format::load3zh(const io::ArchivePtr &archive, const core::String &filename,
-							scenegraph::SceneGraph &modelScene, const palette::Palette &palette,
-							const LoadContext &ctx) {
-	core::String fullPath = filename;
-
-	if (!archive->exists(fullPath)) {
-		const core::String &path = core::string::extractPath(fullPath);
-		const core::String &file = core::string::extractFilenameWithExtension(fullPath);
-		if (archive->exists(core::string::path(path, "..", "cache", file))) {
-			fullPath = core::string::path(path, "..", "cache", file);
-		} else if (archive->exists(core::string::path(path, "cache", file))) {
-			fullPath = core::string::path(path, "cache", file);
-		} else {
-			Log::error("3zh file not found: %s", fullPath.c_str());
-			return false;
-		}
-	}
-
-	CubzhFormat format;
-	return format.load(fullPath, archive, modelScene, ctx);
-}
-
 bool CubzhB64Format::readObjects(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								 const LoadContext &ctx, int version) {
@@ -213,20 +217,16 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 	uint16_t instanceCount = 0;
 
 	while (instanceCount < numObjects) {
-		core::String fullname3zh;
-		wrapBool(stream.readPascalStringUInt16LE(fullname3zh))
+		core::String luaName;
+		wrapBool(stream.readPascalStringUInt16LE(luaName))
 
 		uint16_t numInstances;
 		wrap(stream.readUInt16(numInstances))
 		Log::trace("numInstances: %i, instanceCount: %i, numObjects: %i", numInstances, instanceCount, numObjects);
 
-		// load the 3zh file
-		fullname3zh.replaceAllChars('.', '/'); // replace the lua dir separator
-		fullname3zh.append(".3zh");
-
 		scenegraph::SceneGraph modelScene;
-		if (!load3zh(archive, fullname3zh, modelScene, palette, ctx)) {
-			Log::error("Failed to load 3zh file: %s", fullname3zh.c_str());
+		if (!loadObject(archive, luaName, modelScene, ctx)) {
+			Log::error("Failed to load 3zh file: %s", luaName.c_str());
 			return false;
 		}
 
@@ -315,13 +315,14 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 			if (modelNodeIds.empty()) {
 				modelNodeIds = scenegraph::copySceneGraph(sceneGraph, modelScene, instanceGroupNodeId);
 				if (modelNodeIds.empty()) {
-					Log::error("Failed to copy scene graph from %s", fullname3zh.c_str());
+					Log::error("Failed to copy scene graph from %s", luaName.c_str());
 					return false;
 				}
-				Log::debug("Added %i nodes from %s", (int)modelNodeIds.size(), fullname3zh.c_str());
+				Log::debug("Added %i nodes from %s", (int)modelNodeIds.size(), luaName.c_str());
 			} else {
 				for (int modelNodeId : modelNodeIds) {
-					const int refNodeId = scenegraph::createNodeReference(sceneGraph, sceneGraph.node(modelNodeId), instanceGroupNodeId);
+					const int refNodeId =
+						scenegraph::createNodeReference(sceneGraph, sceneGraph.node(modelNodeId), instanceGroupNodeId);
 					if (refNodeId == InvalidNodeId) {
 						Log::error("Failed to create reference node for model %i", modelNodeId);
 						return false;
@@ -353,17 +354,16 @@ void CubzhB64Format::setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, c
 	root.setProperty("ambientDirLightFactor", ambience.ambientDirLightFactor);
 
 	root.setProperty("txt", ambience.txt);
-
 }
 
-bool CubzhB64Format::loadVersion1(const core::String &filename, io::ReadStream &stream,
+bool CubzhB64Format::loadVersion1(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
 	// TODO: not supported - base64 lua tables
 	Ambience ambience;
 	uint8_t chunkId;
 	wrap(stream.readUInt8(chunkId))
-	wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
+	wrapBool(readChunkMap(filename, archive, stream, sceneGraph, palette, ctx))
 	wrap(stream.readUInt8(chunkId))
 	wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
 	wrap(stream.readUInt8(chunkId))
@@ -381,7 +381,7 @@ bool CubzhB64Format::loadVersion2(const core::String &filename, const io::Archiv
 		wrap(stream.readUInt8(chunkId))
 		switch (chunkId) {
 		case 0:
-			wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
+			wrapBool(readChunkMap(filename, archive, stream, sceneGraph, palette, ctx))
 			break;
 		case 1:
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
@@ -411,7 +411,7 @@ bool CubzhB64Format::loadVersion3(const core::String &filename, const io::Archiv
 		Log::debug("chunk id: %u", chunkId);
 		switch (chunkId) {
 		case 0:
-			wrapBool(readChunkMap(stream, sceneGraph, palette, ctx))
+			wrapBool(readChunkMap(filename, archive, stream, sceneGraph, palette, ctx))
 			break;
 		case 1:
 			wrapBool(readAmbience(stream, sceneGraph, palette, ctx, ambience))
@@ -444,7 +444,7 @@ bool CubzhB64Format::loadGroupsRGBA(const core::String &filename, const io::Arch
 	wrap(base64Stream.readUInt8(version))
 	Log::debug("Found version %i", (int)version);
 	if (version == 1) {
-		if (!loadVersion1(filename, base64Stream, sceneGraph, palette, ctx)) {
+		if (!loadVersion1(filename, archive, base64Stream, sceneGraph, palette, ctx)) {
 			return false;
 		}
 	} else if (version == 2) {
