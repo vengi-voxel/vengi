@@ -596,18 +596,15 @@ app::AppState VoxConvert::onInit() {
 				return app::AppState::InitFailure;
 			}
 		} else {
-			io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
-			if (!outputFile->validHandle()) {
-				Log::error("Could not open target file: %s", outfile.c_str());
-				return app::AppState::InitFailure;
-			}
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
-			if (!voxelformat::saveFormat(outputFile, nullptr, sceneGraph, saveCtx, false)) {
+			const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+
+			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, archive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());
 				return app::AppState::InitFailure;
 			}
-			Log::info("Wrote output file %s", outputFile->name().c_str());
+			Log::info("Wrote output file %s", outfile.c_str());
 		}
 	}
 	return state;

@@ -429,7 +429,7 @@ AppState App::onConstruct() {
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
 
-	FL_Locale *locale;
+	FL_Locale *locale = nullptr;
 	FL_FindLocale(&locale, FL_MESSAGES);
 	_systemLanguage = Language::fromSpec(locale->lang, locale->country, locale->variant);
 	if (!_systemLanguage) {

@@ -288,7 +288,7 @@ static const LanguageSpec languages[] = {{"aa", 0, 0, "Afar", "ʿAfár af"},
 										 {"zh", "HK", 0, "Chinese (Hong Kong)", 0},
 										 {"zh", "TW", 0, "Chinese (traditional)", 0},
 										 {"zu", 0, 0, "Zulu", 0},
-										 {NULL, 0, 0, NULL, 0}};
+										 {nullptr, nullptr, nullptr, nullptr, nullptr}};
 //*}
 
 namespace {
@@ -367,7 +367,7 @@ Language Language::fromSpec(const core::String &language, const core::String &co
 
 	if (language_map.empty()) { // Init language_map
 		for (int i = 0; languages[i].language != nullptr; ++i) {
-			const char *lng = languages[i].language;
+			const core::String lng = languages[i].language;
 			auto iter = language_map.find(lng);
 			if (iter == language_map.end()) {
 				language_map.put(lng, {&languages[i]});
