@@ -270,7 +270,16 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 					wrapBool(stream.readPascalStringUInt16LE(base64))
 					// TODO
 				} else if (CHECK_ID(fieldId, "pm")) {
-					// StaticPerBlock is the default
+					// Disabled = 0
+					// Trigger = 1
+					// TriggerPerBlock = 2
+					// Static = 3
+					// StaticPerBlock = 4 (default)
+					// Dynamic = 5
+					// TODO
+					wrap(stream.readUInt8(physicMode))
+					wrap(stream.readUInt8(physicMode))
+					wrap(stream.readUInt8(physicMode))
 					wrap(stream.readUInt8(physicMode))
 				} else {
 					Log::error("Unknown field id: %c%c", fieldId[0], fieldId[1]);
