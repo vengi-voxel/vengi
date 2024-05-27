@@ -59,7 +59,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 		s[i] = '\0';
 		*lang = s;
 	} else {
-		*lang = NULL;
+		*lang = nullptr;
 	}
 
 	if (str[end] && str[end] != ':') { /* not at end of str */
@@ -81,7 +81,7 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 		s[i] = '\0';
 		*country = s;
 	} else {
-		*country = NULL;
+		*country = nullptr;
 	}
 
 	if (str[end] && str[end] != ':') { /* not at end of str */
@@ -103,14 +103,14 @@ static void lang_country_variant_from_envstring(const char *str, char **lang, ch
 		s[i] = '\0';
 		*variant = s;
 	} else {
-		*variant = NULL;
+		*variant = nullptr;
 	}
 }
 
 static int accumulate_locstring(const char *str, FL_Locale *l) {
-	char *lang = NULL;
-	char *country = NULL;
-	char *variant = NULL;
+	char *lang = nullptr;
+	char *country = nullptr;
+	char *variant = nullptr;
 	if (str) {
 		lang_country_variant_from_envstring(str, &lang, &country, &variant);
 		if (lang) {
@@ -128,9 +128,9 @@ static int accumulate_locstring(const char *str, FL_Locale *l) {
 
 static int accumulate_env(const char *name, FL_Locale *l) {
 	char *env;
-	char *lang = NULL;
-	char *country = NULL;
-	char *variant = NULL;
+	char *lang = nullptr;
+	char *country = nullptr;
+	char *variant = nullptr;
 	env = SDL_getenv(name);
 	if (env) {
 		return accumulate_locstring(env, l);
@@ -166,7 +166,7 @@ static void canonise_fl(FL_Locale *l) {
 #define RML(pn, sn) MAKELANGID(LANG_##pn, SUBLANG_##sn)
 typedef struct {
 	LANGID id;
-	char *code;
+	const char *code;
 } IDToCode;
 static const IDToCode both_to_code[] = {
 	{ML(ENGLISH, US), "en_US.ISO_8859-1"},
@@ -403,20 +403,18 @@ static const IDToCode primary_to_code[] = {
 static int num_primary_to_code = sizeof(primary_to_code) / sizeof(*primary_to_code);
 static int num_both_to_code = sizeof(both_to_code) / sizeof(*both_to_code);
 
-static const int lcid_to_fl(LCID lcid, FL_Locale *rtn) {
+static int lcid_to_fl(LCID lcid, FL_Locale *rtn) {
 	LANGID langid = LANGIDFROMLCID(lcid);
 	LANGID primary_lang = PRIMARYLANGID(langid);
-	LANGID sub_lang = SUBLANGID(langid);
-	int i;
 	/* try to find an exact primary/sublanguage combo that we know about */
-	for (i = 0; i < num_both_to_code; ++i) {
+	for (int i = 0; i < num_both_to_code; ++i) {
 		if (both_to_code[i].id == langid) {
 			accumulate_locstring(both_to_code[i].code, rtn);
 			return 1;
 		}
 	}
 	/* fallback to just checking the primary language id */
-	for (i = 0; i < num_primary_to_code; ++i) {
+	for (int i = 0; i < num_primary_to_code; ++i) {
 		if (primary_to_code[i].id == primary_lang) {
 			accumulate_locstring(primary_to_code[i].code, rtn);
 			return 1;
@@ -429,9 +427,9 @@ static const int lcid_to_fl(LCID lcid, FL_Locale *rtn) {
 FL_Success FL_FindLocale(FL_Locale **locale, FL_Domain domain) {
 	FL_Success success = FL_FAILED;
 	FL_Locale *rtn = (FL_Locale *)SDL_malloc(sizeof(FL_Locale));
-	rtn->lang = NULL;
-	rtn->country = NULL;
-	rtn->variant = NULL;
+	rtn->lang = nullptr;
+	rtn->country = nullptr;
+	rtn->variant = nullptr;
 
 #ifdef WIN32
 	/* win32 >= mswindows95 */
@@ -493,7 +491,7 @@ void FL_FreeLocale(FL_Locale **locale) {
 				SDL_free((void *)l->variant);
 			}
 			SDL_free(l);
-			*locale = NULL;
+			*locale = nullptr;
 		}
 	}
 }
