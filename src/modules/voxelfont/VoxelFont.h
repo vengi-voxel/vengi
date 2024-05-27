@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/String.h"
+#include "math/Axis.h"
 #include <glm/fwd.hpp>
 #include <stdint.h>
 
@@ -36,7 +37,7 @@ public:
 
 	void dimensions(const char *string, uint8_t size, int &w, int &h) const;
 	int renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos,
-						voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel);
+						voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, math::Axis axis = math::Axis::X);
 };
 
 } // namespace voxelfont

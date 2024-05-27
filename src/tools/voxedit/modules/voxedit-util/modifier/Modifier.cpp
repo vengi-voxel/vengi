@@ -344,6 +344,12 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		_brushContext.cursorVoxel = voxel;
+		// TODO: change the cursor position if the brush region is outside the volume
+		// this allows us to keep all voxels inside the volume boundaries even on the
+		// +x, +y and +z sides where the voxels are currently flowing out of the volume
+		//
+		// this should be a global brush option
+		// also see https://github.com/vengi-voxel/vengi/issues/444
 		brush->execute(sceneGraph, wrapper, _brushContext);
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {

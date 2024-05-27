@@ -3,14 +3,25 @@
  */
 
 #include "TextBrush.h"
+#include "command/Command.h"
 #include "core/Log.h"
+#include "app/I18N.h"
 #include "core/UTF8.h"
+#include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include <glm/vector_relational.hpp>
 
 namespace voxedit {
 
 void TextBrush::construct() {
+	command::Command::registerCommand("textbrushaxis", [this](const command::CmdArgs &args) {
+		if (args.size() < 1) {
+			Log::info("Usage: textbrushaxis <x|y|z>");
+			return;
+		}
+		_axis = math::toAxis(args[0]);
+		markDirty();
+	}).setHelp(_("Change the text brush axis"));
 }
 
 voxel::Region TextBrush::calcRegion(const BrushContext &context) {
@@ -26,7 +37,11 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) {
 	const int h = dimY;
 	const int d = _thickness;
 	const glm::ivec3 &mins = context.cursorPosition;
-	const glm::ivec3 maxs(mins.x + w, mins.y + h, mins.z + d);
+	glm::ivec3 maxs = mins;
+	const int widthIndex = math::getIndexForAxis(_axis);
+	maxs[(widthIndex + 0) % 3] += w;
+	maxs[(widthIndex + 1) % 3] += h;
+	maxs[(widthIndex + 2) % 3] += d;
 	return voxel::Region(mins, maxs);
 }
 
@@ -49,9 +64,11 @@ bool TextBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	const char *t = _input.c_str();
 	const char **s = &t;
 	glm::ivec3 pos = context.cursorPosition;
+	const int widthIndex = math::getIndexForAxis(_axis);
+
 	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
-		pos.x += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, context.cursorVoxel);
-		pos.x += _spacing;
+		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, context.cursorVoxel, _axis);
+		pos[widthIndex] += _spacing;
 	}
 
 	return true;

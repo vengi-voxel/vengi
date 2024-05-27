@@ -293,15 +293,22 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	}
 	ImGui::TooltipTextUnformatted(_("Horizontal spacing"));
 
-	ImGui::SetNextItemWidth(100.0f);
 	int thickness = brush.thickness();
 	if (ImGui::InputInt(ICON_LC_EXPAND "##textinput", &thickness)) {
 		brush.setThickness(thickness);
 	}
 	ImGui::TooltipTextUnformatted(_("Thickness"));
 
+	const float buttonWidth = (float)_app->fontSize() * 4;
+	veui::AxisButton(math::Axis::X, _("X"), "textbrushaxis x", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::TooltipTextUnformatted(_("Print text along the x axis"));
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(100.0f);
+	veui::AxisButton(math::Axis::Y, _("Y"), "textbrushaxis y", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::TooltipTextUnformatted(_("Print text along the y axis"));
+	ImGui::SameLine();
+	veui::AxisButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
+	ImGui::TooltipTextUnformatted(_("Print text along the z axis"));
+
 	if (ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly)) {
 		brush.markDirty();
 	}

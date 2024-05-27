@@ -40,6 +40,10 @@ struct BrushContext {
 	int gridResolution = 1;
 };
 
+/**
+ * @brief Base class for all brushes
+ * @sa ModifierVolumeWrapper
+ */
 class Brush : public core::IComponent, public core::DirtyState {
 protected:
 	const BrushType _brushType;

@@ -25,6 +25,7 @@ protected:
 	int _spacing = 1;
 	int _thickness = 1;
 	voxelfont::VoxelFont _voxelFont;
+	math::Axis _axis = math::Axis::X;
 
 public:
 	TextBrush(SceneManager *sceneMgr) : Super(BrushType::Text), _sceneMgr(sceneMgr) {

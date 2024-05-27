@@ -81,7 +81,7 @@ void VoxelFont::dimensions(const char *string, uint8_t size, int &w, int &h) con
 }
 
 int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos,
-							   voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
+							   voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, math::Axis axis) {
 	const float scale = stbtt_ScaleForPixelHeight(_font, (float)size);
 	int w;
 	int h;
@@ -96,13 +96,22 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 	int ix0, iy0, ix1, iy1;
 	stbtt_GetCodepointBitmapBox(_font, codepoint, 0.0f, scale, &ix0, &iy0, &ix1, &iy1);
 
+	const int widthIndex = math::getIndexForAxis(axis);
+	glm::ivec3 dim;
+	dim[(widthIndex + 0) % 3] = w;
+	dim[(widthIndex + 1) % 3] = h;
+	dim[(widthIndex + 2) % 3] = thickness;
+
 	for (int y = 0; y < h; ++y) {
 		for (int x = 0; x < w; ++x) {
 			// antialiasing
 			if (bitmap[y * w + x] >= 25) {
-				glm::ivec3 v(x + ix0, h - 1 - y, 0);
-				for (int i = 0; i < thickness; ++i) {
-					v.z = i;
+				glm::ivec3 v;
+				v[(widthIndex + 0) % 3] = x + ix0;
+				v[(widthIndex + 1) % 3] = dim[(widthIndex + 1) % 3] - 1 - y;
+				v[(widthIndex + 2) % 3] = 0;
+				for (int z = 0; z < thickness; ++z) {
+					v[(widthIndex + 2) % 3] = z;
 					volume.setVoxel(pos + v, voxel);
 				}
 			}
