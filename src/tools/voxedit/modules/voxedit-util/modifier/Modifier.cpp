@@ -338,24 +338,51 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	return true;
 }
 
+/**
+ * change the cursor position if the brush region is outside the volume
+ * this allows us to keep all voxels inside the volume boundaries even on the
+ * +x, +y and +z sides where the voxels are currently flowing out of the volume
+ *
+ * @todo: this should be a global brush option - also see https://github.com/vengi-voxel/vengi/issues/444
+ */
+static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region &brushRegion, const glm::ivec3 &cursor) {
+	if (!brushRegion.isValid()) {
+		return cursor;
+	}
+	if (region.containsRegion(brushRegion)) {
+		return cursor;
+	}
+	glm::ivec3 delta(0);
+	if (brushRegion.getUpperX() > region.getUpperX()) {
+		delta.x = region.getUpperX() - brushRegion.getUpperX();
+	}
+	if (brushRegion.getUpperY() > region.getUpperY()) {
+		delta.y = region.getUpperY() - brushRegion.getUpperY();
+	}
+	if (brushRegion.getUpperZ() > region.getUpperZ()) {
+		delta.z = region.getUpperZ() - brushRegion.getUpperZ();
+	}
+
+	return cursor + delta;
+}
+
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
 	if (Brush *brush = activeBrush()) {
 		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
+		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 		_brushContext.cursorVoxel = voxel;
-		// TODO: change the cursor position if the brush region is outside the volume
-		// this allows us to keep all voxels inside the volume boundaries even on the
-		// +x, +y and +z sides where the voxels are currently flowing out of the volume
-		//
-		// this should be a global brush option
-		// also see https://github.com/vengi-voxel/vengi/issues/444
+		if (brush->brushClamping()) {
+			_brushContext.cursorPosition = updateCursor(node.region(), brush->calcRegion(_brushContext), prevCursorPos);
+		}
 		brush->execute(sceneGraph, wrapper, _brushContext);
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
 			voxel::logRegion("Dirty region", modifiedRegion);
 			callback(modifiedRegion, _modifierType, true);
 		}
+		_brushContext.cursorPosition = prevCursorPos;
 		_brushContext.cursorVoxel = prevVoxel;
 		return true;
 	}

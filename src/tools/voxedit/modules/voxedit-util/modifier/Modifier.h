@@ -67,6 +67,9 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
+	/**
+	 * @brief Execute the brush operation on the given node volume
+	 */
 	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});

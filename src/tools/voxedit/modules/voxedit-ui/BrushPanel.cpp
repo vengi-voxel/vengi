@@ -129,6 +129,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		command::executeCommands("togglestampbrushcontinuous", &listener);
 	}
 	ImGui::TooltipCommand("togglestampbrushcontinuous");
+	addBrushClampingOption(brush);
 
 	if (_stampPaletteIndex >= 0 && _stampPaletteIndex < palette.colorCount()) {
 		const float size = 20;
@@ -263,6 +264,14 @@ void BrushPanel::aabbBrushModeOptions(AABBBrush &brush) {
 	}
 }
 
+void BrushPanel::addBrushClampingOption(Brush &brush) {
+	bool clamping = brush.brushClamping();
+	if (ImGui::Checkbox(_("Clamping"), &clamping)) {
+		brush.setBrushClamping(clamping);
+	}
+	ImGui::TooltipTextUnformatted(_("Clamp the brush to the volume"));
+}
+
 void BrushPanel::updateShapeBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	ShapeBrush &brush = modifier.shapeBrush();
@@ -308,6 +317,8 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	ImGui::SameLine();
 	veui::AxisButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the z axis"));
+
+	addBrushClampingOption(brush);
 
 	if (ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly)) {
 		brush.markDirty();

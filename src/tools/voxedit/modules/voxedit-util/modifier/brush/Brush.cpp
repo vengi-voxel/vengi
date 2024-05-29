@@ -13,6 +13,14 @@ void Brush::reset() {
 void Brush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
+void Brush::setBrushClamping(bool brushClamping) {
+	_brushClamping = brushClamping;
+}
+
+bool Brush::brushClamping() const {
+	return _brushClamping;
+}
+
 ModifierType Brush::modifierType(ModifierType type) const {
 	ModifierType newType = type & _supportedModifiers;
 	if (newType == ModifierType::None) {

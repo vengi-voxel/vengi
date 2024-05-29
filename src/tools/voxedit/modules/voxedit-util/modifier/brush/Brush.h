@@ -51,6 +51,9 @@ protected:
 	const ModifierType _defaultModifier;
 	const ModifierType _supportedModifiers;
 
+	// change the cursor position if the brush region is outside the volume
+	bool _brushClamping = false;
+
 	Brush(BrushType brushType, ModifierType defaultModifier = ModifierType::Place,
 		  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override))
 		: _brushType(brushType), _defaultModifier(defaultModifier), _supportedModifiers(supportedModifiers) {
@@ -91,6 +94,9 @@ public:
 	 * @return the supported modifier type
 	 */
 	ModifierType modifierType(ModifierType type = ModifierType::None) const;
+
+	void setBrushClamping(bool brushClamping);
+	bool brushClamping() const;
 
 	/**
 	 * @brief Determine whether the brush should get rendered

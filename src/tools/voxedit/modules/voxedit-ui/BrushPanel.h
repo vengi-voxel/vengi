@@ -18,6 +18,7 @@ namespace voxedit {
 class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class AABBBrush;
+class Brush;
 
 class BrushPanel : public ui::Panel {
 private:
@@ -41,6 +42,7 @@ private:
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
 	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 
+	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
 	void aabbBrushModeOptions(AABBBrush &brush);
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
