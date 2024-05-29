@@ -20,11 +20,11 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 		return;
 	}
 	if (archive->exists(file)) {
-		Log::error("Use cached file at %s", file.c_str());
+		Log::debug("Use cached file at %s", file.c_str());
 		_readStream = archive->readStream(file);
 		return;
 	}
-	Log::error("try to download %s", file.c_str());
+	Log::debug("try to download %s", file.c_str());
 	io::BufferedReadWriteStream bufStream(1024 * 1024);
 	int statusCode = 0;
 	if (http::download(url, bufStream, &statusCode)) {
@@ -56,7 +56,7 @@ void HttpCacheStream::write(const io::ArchivePtr &archive, const core::String &f
 		delete ws;
 		_readStream = archive->readStream(file);
 		_newInCache = true;
-		Log::error("Wrote %s", file.c_str());
+		Log::debug("Wrote %s", file.c_str());
 	} else {
 		Log::error("Failed to write %s", file.c_str());
 	}
