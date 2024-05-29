@@ -320,7 +320,7 @@ void hollow(voxel::RawVolumeWrapper &in) {
 }
 
 void clear(voxel::RawVolumeWrapper &in) {
-	fill(in, voxel::createVoxel(voxel::VoxelType::Air, 0));
+	in.clear();
 }
 
 using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;

@@ -85,6 +85,11 @@ public:
 		return _volume;
 	}
 
+	void clear() {
+		_dirtyRegion = _volume->region();
+		_volume->clear();
+	}
+
 	inline void setVolume(RawVolume* v) {
 		if (_volume == v) {
 			return;
