@@ -8,7 +8,6 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -40,8 +39,7 @@ protected:
 };
 
 TEST_F(PaintBrushTest, testExecuteSingle) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	PaintBrush brush(&mgr);
+	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setSingleMode();
 
@@ -69,8 +67,7 @@ TEST_F(PaintBrushTest, testExecuteSingle) {
 }
 
 TEST_F(PaintBrushTest, testExecuteSingleRadius) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	PaintBrush brush(&mgr);
+	PaintBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setSingleMode();
 	brush.setRadius(1);

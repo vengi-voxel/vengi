@@ -7,14 +7,13 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "io/File.h"
-#include "io/FileStream.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Clipboard.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -30,6 +29,7 @@
 namespace voxedit {
 
 void StampBrush::construct() {
+	Super::construct();
 	command::Command::registerCommand("togglestampbrushcenter", [this](const command::CmdArgs &args) {
 		_center ^= true;
 	}).setHelp(_("Toggle center at cursor"));
@@ -110,20 +110,37 @@ voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
 	return voxel::Region(mins, maxs);
 }
 
-bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context) {
+void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+						 const BrushContext &context, const voxel::Region &region) {
 	if (!_volume) {
 		wrapper.setVoxel(context.cursorPosition.x, context.cursorPosition.y, context.cursorPosition.z, context.cursorVoxel);
-		return true;
+		return;
 	}
 
 	// TODO: context.lockedAxis support
-	const voxel::Region &region = calcRegion(context);
 	const glm::ivec3 &offset = region.getLowerCorner();
 	voxelutil::visitVolume(*_volume, [&](int x, int y, int z, const voxel::Voxel &v) {
 		wrapper.setVoxel(offset.x + x, offset.y + y, offset.z + z, v);
 	});
+}
 
+bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+						 const BrushContext &context) {
+	voxel::Region region = calcRegion(context);
+	glm::ivec3 minsMirror = region.getLowerCorner();
+	glm::ivec3 maxsMirror = region.getUpperCorner();
+	if (!getMirrorAABB(minsMirror, maxsMirror)) {
+		generate(sceneGraph, wrapper, context, region);
+	} else {
+		Log::debug("Execute mirror action");
+		const voxel::Region second(minsMirror, maxsMirror);
+		if (voxel::intersects(region, second)) {
+			generate(sceneGraph, wrapper, context, voxel::Region(region.getLowerCorner(), maxsMirror));
+		} else {
+			generate(sceneGraph, wrapper, context, region);
+			generate(sceneGraph, wrapper, context, second);
+		}
+	}
 	return true;
 }
 

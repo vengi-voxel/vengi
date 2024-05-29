@@ -17,6 +17,7 @@
 #include "modifier/ModifierFacade.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
 #include "voxedit-util/Clipboard.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
@@ -249,6 +250,7 @@ public:
 	voxel::RawVolume *volume(int nodeId);
 	const voxel::RawVolume *volume(int nodeId) const;
 	palette::Palette &activePalette() const;
+
 	bool setActivePalette(const palette::Palette &palette, bool searchBestColors = false);
 
 	/**

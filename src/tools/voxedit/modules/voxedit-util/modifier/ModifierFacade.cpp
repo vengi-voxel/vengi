@@ -5,6 +5,7 @@
 #include "ModifierFacade.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
@@ -102,11 +103,14 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
 	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
-	AABBBrush *aabbBrush = activeAABBBrush();
-	if (aabbBrush) {
-		_modifierRenderer->updateMirrorPlane(aabbBrush->mirrorAxis(), aabbBrush->mirrorPos(), _sceneMgr->sceneGraph().region());
-	} else {
-		_modifierRenderer->updateMirrorPlane(math::Axis::None, glm::ivec3(0), _sceneMgr->sceneGraph().region());
+	Brush *brush = activeBrush();
+	if (brush) {
+		int activeNode = _sceneMgr->sceneGraph().activeNode();
+		if (activeNode != InvalidNodeId) {
+			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+				_modifierRenderer->updateMirrorPlane(brush->mirrorAxis(), brush->mirrorPos(), node->region());
+			}
+		}
 	}
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);
@@ -133,7 +137,6 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		return;
 	}
 
-	Brush *brush = activeBrush();
 	if (brush && brush->active()) {
 		if (brush->dirty()) {
 			updateBrushVolumePreview(activePalette);

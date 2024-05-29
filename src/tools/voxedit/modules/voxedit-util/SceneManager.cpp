@@ -15,7 +15,6 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
-#include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/File.h"

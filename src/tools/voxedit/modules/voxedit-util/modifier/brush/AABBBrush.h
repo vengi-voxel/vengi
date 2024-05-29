@@ -30,7 +30,6 @@ enum BrushFlags : uint32_t {
 class AABBBrush : public Brush {
 private:
 	using Super = Brush;
-	SceneManager *_sceneMgr; // TODO: get rid of this
 
 protected:
 	/**
@@ -61,8 +60,6 @@ protected:
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
-	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
-										int &depth) const;
 	virtual bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
@@ -76,8 +73,9 @@ protected:
 	 * @note This allows us to disable the AABB behaviour in some cases, e.g. when single mode is activated
 	 */
 	virtual bool wantAABB() const;
+
 public:
-	AABBBrush(SceneManager *sceneMgr, BrushType type, ModifierType defaultModifier = ModifierType::Place,
+	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
 			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
 	virtual ~AABBBrush() = default;
 	void construct() override;

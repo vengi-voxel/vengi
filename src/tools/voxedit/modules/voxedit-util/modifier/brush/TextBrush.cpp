@@ -14,6 +14,7 @@
 namespace voxedit {
 
 void TextBrush::construct() {
+	Super::construct();
 	command::Command::registerCommand("textbrushaxis", [this](const command::CmdArgs &args) {
 		if (args.size() < 1) {
 			Log::info("Usage: textbrushaxis <x|y|z>");

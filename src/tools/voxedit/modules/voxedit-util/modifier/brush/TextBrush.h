@@ -10,14 +10,11 @@
 
 namespace voxedit {
 
-class SceneManager;
-
 class TextBrush : public Brush {
 private:
 	using Super = Brush;
 
 protected:
-	SceneManager *_sceneMgr;
 	core::String _font = "font.ttf";
 	core::String _input = "text";
 	glm::ivec3 _lastCursorPosition{0};
@@ -28,7 +25,7 @@ protected:
 	math::Axis _axis = math::Axis::X;
 
 public:
-	TextBrush(SceneManager *sceneMgr) : Super(BrushType::Text), _sceneMgr(sceneMgr) {
+	TextBrush() : Super(BrushType::Text) {
 	}
 	virtual ~TextBrush() = default;
 	void construct() override;
@@ -41,7 +38,10 @@ public:
 	voxel::Region calcRegion(const BrushContext &context) const override;
 
 	core::String &font();
+	void setFont(const core::String &font);
+
 	core::String &input();
+	void setInput(const core::String &input);
 
 	void setSize(int size);
 	int size() const;
@@ -57,8 +57,16 @@ inline core::String &TextBrush::font() {
 	return _font;
 }
 
+inline void TextBrush::setFont(const core::String &font) {
+	_font = font;
+}
+
 inline core::String &TextBrush::input() {
 	return _input;
+}
+
+inline void TextBrush::setInput(const core::String &input) {
+	_input = input;
 }
 
 inline int TextBrush::size() const {

@@ -42,6 +42,7 @@ bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 }
 
 void PathBrush::update(const BrushContext &ctx, double nowSeconds) {
+	Super::update(ctx, nowSeconds);
 	if (_state != ctx) {
 		_state = ctx;
 		markDirty();

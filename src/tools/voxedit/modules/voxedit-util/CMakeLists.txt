@@ -49,8 +49,11 @@ set(TEST_SRCS
 	tests/SceneRendererTest.cpp
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
+	tests/TextBrushTest.cpp
 )
-
+set(TEST_FILES
+	shared/font.ttf
+)
 gtest_suite_sources(tests
 	${TEST_SRCS}
 )

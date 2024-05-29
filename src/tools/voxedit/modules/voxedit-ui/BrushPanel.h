@@ -31,8 +31,8 @@ private:
 	void brushSettings(command::CommandExecutionListener &listener);
 
 	void addShapes(command::CommandExecutionListener &listener);
-	void addMirrorPlanes(command::CommandExecutionListener &listener, AABBBrush &brush);
-	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener, AABBBrush &brush);
+	void addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush);
+	bool mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener, Brush &brush);
 
 	void stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
 								   command::CommandExecutionListener &listener);

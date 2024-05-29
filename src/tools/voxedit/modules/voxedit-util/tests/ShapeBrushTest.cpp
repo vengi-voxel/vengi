@@ -4,10 +4,7 @@
 
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "app/tests/AbstractTest.h"
-#include "core/SharedPtr.h"
-#include "core/TimeProvider.h"
 #include "scenegraph/SceneGraph.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/tests/AbstractBrushTest.h"
@@ -32,8 +29,7 @@ protected:
 	}
 
 	void testMirror(math::Axis axis, const glm::ivec3 &expectedMins, const glm::ivec3 &expectedMaxs) {
-		SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-		ShapeBrush brush(&mgr);
+		ShapeBrush brush;
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
 		const glm::ivec3 regMins(-2);
@@ -58,8 +54,7 @@ protected:
 };
 
 TEST_F(ShapeBrushTest, testCenterPositive) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	ShapeBrush brush(&mgr);
+	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -74,8 +69,7 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 }
 
 TEST_F(ShapeBrushTest, testCenterNegative) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	ShapeBrush brush(&mgr);
+	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
@@ -87,8 +81,7 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 }
 
 TEST_F(ShapeBrushTest, testModifierStartStop) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	ShapeBrush brush(&mgr);
+	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	EXPECT_TRUE(brush.start(brushContext));
@@ -99,8 +92,7 @@ TEST_F(ShapeBrushTest, testModifierStartStop) {
 }
 
 TEST_F(ShapeBrushTest, testModifierDim) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	ShapeBrush brush(&mgr);
+	ShapeBrush brush;
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	prepare(brush, brushContext, glm::ivec3(-1), glm::ivec3(1));
@@ -123,9 +115,7 @@ TEST_F(ShapeBrushTest, testModifierActionMirrorAxisZ) {
 }
 
 TEST_P(BrushTestParamTest, testShapeBrush) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
-					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
-	ShapeBrush brush(&mgr);
+	ShapeBrush brush;
 	testPlaceAndOverride(brush);
 }
 

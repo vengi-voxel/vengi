@@ -25,6 +25,9 @@ protected:
 	bool _continuous = false;
 	SceneManager *_sceneMgr;
 
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+				  const voxel::Region &region);
+
 public:
 	static constexpr int MaxSize = 32;
 	StampBrush(SceneManager *sceneMgr) : Super(BrushType::Stamp), _sceneMgr(sceneMgr) {

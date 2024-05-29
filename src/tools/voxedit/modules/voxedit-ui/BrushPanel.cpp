@@ -57,7 +57,7 @@ void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
 }
 
 bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, command::CommandExecutionListener &listener,
-									   AABBBrush &brush) {
+									   Brush &brush) {
 	core::String cmd = "mirroraxis" + brush.name().toLower() +
 					   "brush"; // mirroraxisshapebrushx, mirroraxisshapebrushy, mirroraxisshapebrushz
 	cmd += math::getCharForAxis(type);
@@ -76,7 +76,7 @@ bool BrushPanel::mirrorAxisRadioButton(const char *title, math::Axis type, comma
 	return false;
 }
 
-void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, AABBBrush &brush) {
+void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, Brush &brush) {
 	ImGui::PushID("##mirrorplanes");
 	mirrorAxisRadioButton(_("Disable mirror"), math::Axis::None, listener, brush);
 	ImGui::SameLine();
@@ -102,6 +102,8 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 								   command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	StampBrush &brush = modifier.stampBrush();
+	addMirrorPlanes(listener, brush);
+	ImGui::Separator();
 	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel or scene graph panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
@@ -229,6 +231,7 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 	} else {
 		stampBrushOptions(node, palette, listener);
 	}
+
 	stampBrushUseSelection(node, palette, listener);
 	if (ImGui::Button(_("Convert palette"))) {
 		modifier.stampBrush().convertToPalette(palette);
@@ -237,7 +240,6 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 
 void BrushPanel::aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush) {
 	addMirrorPlanes(listener, brush);
-
 	ImGui::Separator();
 
 	const bool aabb = brush.aabbMode();

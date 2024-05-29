@@ -22,7 +22,7 @@ public:
 	virtual ~LineBrush() = default;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
-	voxel::Region calcRegion(const BrushContext &context) const;
+	voxel::Region calcRegion(const BrushContext &context) const override;
 };
 
 } // namespace voxedit

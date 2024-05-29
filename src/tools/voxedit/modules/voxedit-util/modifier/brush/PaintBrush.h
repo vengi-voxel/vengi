@@ -56,7 +56,7 @@ protected:
 				  const voxel::Region &region) override;
 
 public:
-	PaintBrush(SceneManager *sceneMgr) : Super(sceneMgr, BrushType::Paint, ModifierType::Paint, ModifierType::Paint) {
+	PaintBrush() : Super(BrushType::Paint, ModifierType::Paint, ModifierType::Paint) {
 	}
 	virtual ~PaintBrush() = default;
 

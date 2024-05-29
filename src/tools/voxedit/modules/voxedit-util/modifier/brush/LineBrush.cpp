@@ -22,6 +22,7 @@ bool LineBrush::execute(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper
 }
 
 void LineBrush::update(const BrushContext &ctx, double nowSeconds) {
+	Super::update(ctx, nowSeconds);
 	if (_state != ctx) {
 		_state = ctx;
 		markDirty();

@@ -146,6 +146,7 @@ public:
 	ShapeBrush &shapeBrush();
 	TextBrush &textBrush();
 	StampBrush &stampBrush();
+	PlaneBrush &planeBrush();
 	PathBrush &pathBrush();
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
@@ -214,6 +215,10 @@ inline ShapeBrush &Modifier::shapeBrush() {
 
 inline StampBrush &Modifier::stampBrush() {
 	return _stampBrush;
+}
+
+inline PlaneBrush &Modifier::planeBrush() {
+	return _planeBrush;
 }
 
 inline PathBrush &Modifier::pathBrush() {

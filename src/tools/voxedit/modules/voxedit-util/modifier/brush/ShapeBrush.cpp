@@ -32,6 +32,37 @@ void ShapeBrush::setShapeType(ShapeType type) {
 	markDirty();
 }
 
+math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,
+											   int &height, int &depth) const {
+	core_assert(face != voxel::FaceNames::Max);
+	switch (face) {
+	case voxel::FaceNames::PositiveX:
+	case voxel::FaceNames::NegativeX:
+		width = dimensions.y;
+		depth = dimensions.z;
+		height = dimensions.x;
+		return math::Axis::X;
+	case voxel::FaceNames::PositiveY:
+	case voxel::FaceNames::NegativeY:
+		width = dimensions.x;
+		depth = dimensions.z;
+		height = dimensions.y;
+		return math::Axis::Y;
+	case voxel::FaceNames::PositiveZ:
+	case voxel::FaceNames::NegativeZ:
+		width = dimensions.x;
+		depth = dimensions.y;
+		height = dimensions.z;
+		return math::Axis::Z;
+	default:
+		break;
+	}
+	width = 0;
+	height = 0;
+	depth = 0;
+	return math::Axis::None;
+}
+
 bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();

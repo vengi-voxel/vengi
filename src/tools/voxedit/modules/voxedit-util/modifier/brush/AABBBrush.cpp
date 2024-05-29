@@ -6,7 +6,6 @@
 #include "command/Command.h"
 #include "core/Log.h"
 #include "app/I18N.h"
-#include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/SceneManager.h" // TODO: get rid of this include the reference position is in the BrushContext
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
@@ -15,31 +14,13 @@
 
 namespace voxedit {
 
-AABBBrush::AABBBrush(SceneManager *sceneMgr, BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
-	: Super(type, defaultModifier, supportedModifiers), _sceneMgr(sceneMgr) {
+AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
+	: Super(type, defaultModifier, supportedModifiers) {
 }
 
 void AABBBrush::construct() {
-	// mirroraxisshapebrush, setshapebrushcenter, setshapebrushsingle, setshapebrushaabb
-	// mirroraxispaintbrush, setpaintbrushcenter, setpaintbrushsingle, setpaintbrushaabb
-
+	Super::construct();
 	const core::String &cmdName = name().toLower() + "brush";
-	command::Command::registerCommand("mirroraxis" + cmdName + "x", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::X, _sceneMgr->referencePosition());
-	}).setHelp(_("Mirror along the x axis at the reference position"));
-
-	command::Command::registerCommand("mirroraxis" + cmdName + "y", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Y, _sceneMgr->referencePosition());
-	}).setHelp(_("Mirror along the y axis at the reference position"));
-
-	command::Command::registerCommand("mirroraxis" + cmdName + "z", [&](const command::CmdArgs &args) {
-		toggleMirrorAxis(math::Axis::Z, _sceneMgr->referencePosition());
-	}).setHelp(_("Mirror along the z axis at the reference position"));
-
-	command::Command::registerCommand("mirroraxis" + cmdName + "none", [&](const command::CmdArgs &args) {
-		setMirrorAxis(math::Axis::None, _sceneMgr->referencePosition());
-	}).setHelp(_("Disable mirror axis"));
-
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
 		setMode(BRUSH_MODE_CENTER);
 	}).setHelp(_("Set center plane building"));
@@ -53,37 +34,6 @@ void AABBBrush::construct() {
 	}).setHelp(_("Set single voxel building mode - continue setting voxels until you release the action button"));
 }
 
-math::Axis AABBBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,
-											   int &height, int &depth) const {
-	core_assert(face != voxel::FaceNames::Max);
-	switch (face) {
-	case voxel::FaceNames::PositiveX:
-	case voxel::FaceNames::NegativeX:
-		width = dimensions.y;
-		depth = dimensions.z;
-		height = dimensions.x;
-		return math::Axis::X;
-	case voxel::FaceNames::PositiveY:
-	case voxel::FaceNames::NegativeY:
-		width = dimensions.x;
-		depth = dimensions.z;
-		height = dimensions.y;
-		return math::Axis::Y;
-	case voxel::FaceNames::PositiveZ:
-	case voxel::FaceNames::NegativeZ:
-		width = dimensions.x;
-		depth = dimensions.y;
-		height = dimensions.z;
-		return math::Axis::Z;
-	default:
-		break;
-	}
-	width = 0;
-	height = 0;
-	depth = 0;
-	return math::Axis::None;
-}
-
 void AABBBrush::reset() {
 	Super::reset();
 	_secondPosValid = false;
@@ -92,8 +42,6 @@ void AABBBrush::reset() {
 	_aabbFace = voxel::FaceNames::Max;
 	_aabbFirstPos = glm::ivec3(0);
 	_aabbSecondPos = glm::ivec3(0);
-	_mirrorAxis = math::Axis::None;
-	_mirrorPos = glm::ivec3(0);
 }
 
 glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, int resolution) const {

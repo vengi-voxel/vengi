@@ -57,6 +57,8 @@ protected:
 	const ModifierType _defaultModifier;
 	const ModifierType _supportedModifiers;
 
+	glm::ivec3 _referencePosition{0};
+
 	/**
 	 * The mirror position is based on the reference position whenever the mirror axis is set
 	 */
@@ -115,6 +117,8 @@ public:
 	 * @brief Determine whether the brush should get rendered
 	 */
 	virtual bool active() const;
+
+	void construct() override;
 	bool init() override;
 	void shutdown() override;
 

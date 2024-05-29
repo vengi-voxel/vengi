@@ -45,7 +45,8 @@ TEST_F(PlaneBrushTest, testExtrude) {
 		brushContext.cursorPosition = glm::ivec3(1, 1, z);
 		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
 		EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for z: " << z;
-		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
+		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
+			<< "for z: " << z << " " << wrapper.dirtyRegion().toString();
 	}
 
 	brush.shutdown();
