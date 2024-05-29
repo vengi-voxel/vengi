@@ -42,6 +42,13 @@ static FileMode convertMode(const core::String &path, FileMode mode) {
 			return FileMode::SysWrite;
 		}
 		core_assert_msg(false, "mode not supported: %d", (int)mode);
+	} else {
+		if (mode == FileMode::SysRead) {
+			return FileMode::Read;
+		}
+		if (mode == FileMode::SysWrite) {
+			return FileMode::Write;
+		}
 	}
 	return mode;
 }
