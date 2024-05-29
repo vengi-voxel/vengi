@@ -39,7 +39,7 @@ public:
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
-	voxel::Region calcRegion(const BrushContext &context) const;
+	voxel::Region calcRegion(const BrushContext &context) const override;
 
 	void setCenterMode(bool center);
 	bool centerMode() const;

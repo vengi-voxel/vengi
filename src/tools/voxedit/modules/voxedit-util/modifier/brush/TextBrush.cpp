@@ -24,7 +24,7 @@ void TextBrush::construct() {
 	}).setHelp(_("Change the text brush axis"));
 }
 
-voxel::Region TextBrush::calcRegion(const BrushContext &context) {
+voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 	if (!_voxelFont.init(_font.c_str())) {
 		Log::error("Failed to initialize voxel font with %s", _font.c_str());
 		return voxel::Region::InvalidRegion;

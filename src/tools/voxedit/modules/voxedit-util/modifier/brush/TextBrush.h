@@ -24,7 +24,7 @@ protected:
 	int _size = 16;
 	int _spacing = 1;
 	int _thickness = 1;
-	voxelfont::VoxelFont _voxelFont;
+	mutable voxelfont::VoxelFont _voxelFont;
 	math::Axis _axis = math::Axis::X;
 
 public:
@@ -38,7 +38,7 @@ public:
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 	void shutdown() override;
-	voxel::Region calcRegion(const BrushContext &context);
+	voxel::Region calcRegion(const BrushContext &context) const override;
 
 	core::String &font();
 	core::String &input();

@@ -101,7 +101,7 @@ public:
 	 */
 	glm::ivec3 currentCursorPosition(const BrushContext &brushContext) const;
 
-	voxel::Region calcRegion(const BrushContext &context) const;
+	voxel::Region calcRegion(const BrushContext &context) const override;
 	/**
 	 * @brief Will set the first position of the aabb
 	 * @note This is used in input methods or @c ActionButton implementations

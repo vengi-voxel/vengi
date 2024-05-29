@@ -10,6 +10,7 @@
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
+#include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
 namespace scenegraph {
@@ -80,6 +81,10 @@ public:
 	 * @sa name()
 	 */
 	BrushType type() const;
+
+	virtual voxel::Region calcRegion(const BrushContext &context) const {
+		return voxel::Region::InvalidRegion;
+	}
 
 	/**
 	 * @brief allow to change the modifier type if the brush doesn't support the given mode
