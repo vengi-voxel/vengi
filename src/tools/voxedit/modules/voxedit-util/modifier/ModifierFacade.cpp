@@ -111,14 +111,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 			}
 			break;
 		}
-		case BrushType::Path: {
-			createOrClearPreviewVolume(_volume, v->region());
-			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-			dummyNode.setVolume(_volume, false);
-			executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-			_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			break;
-		}
+		case BrushType::Path:
 		case BrushType::Text: {
 			createOrClearPreviewVolume(_volume, v->region());
 			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
