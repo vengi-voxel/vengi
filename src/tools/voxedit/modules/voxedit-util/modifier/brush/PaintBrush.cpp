@@ -51,11 +51,11 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	return voxel::createVoxel(_palette, index, old.getFlags());
 }
 
-bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
 	VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor, _variationThreshold);
 	if (plane()) {
-		voxelutil::paintPlane(wrapper, context.cursorPosition, context.cursorFace, context.hitCursorVoxel,
+		voxelutil::paintPlane(wrapper, region.getLowerCorner(), context.cursorFace, context.hitCursorVoxel,
 							  voxelColor.evaluate(context.hitCursorVoxel));
 	} else {
 		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
@@ -63,8 +63,6 @@ bool PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		};
 		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
 	}
-
-	return true;
 }
 
 bool PaintBrush::wantAABB() const {

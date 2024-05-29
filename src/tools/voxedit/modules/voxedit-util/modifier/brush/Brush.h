@@ -1,5 +1,9 @@
 /**
  * @file
+ * @defgroup Brushes Brushes
+ * @{
+ * Editor brushes.
+ * @}
  */
 
 #pragma once
@@ -49,6 +53,7 @@ struct BrushContext {
 
 /**
  * @brief Base class for all brushes
+ * @ingroup Brushes
  * @sa ModifierVolumeWrapper
  */
 class Brush : public core::IComponent, public core::DirtyState {
@@ -74,13 +79,31 @@ protected:
 		: _brushType(brushType), _defaultModifier(defaultModifier), _supportedModifiers(supportedModifiers) {
 	}
 
+	/**
+	 * @brief Generate the voxels here
+	 *
+	 * @sa execute() - this method is called by execute() but if mirroring is supported, the regions might differ for each call
+	 *
+	 * @param[in] sceneGraph The scene graph to operate on
+	 * @param[in] wrapper The volume wrapper to operate on
+	 * @param[in] ctx The brush context
+	 * @param[in] region The region might be invalid and depends on the calcRegion() implementation of the brush
+	 *
+	 * @note In case of mirroring the region might be adjusted
+	 */
+	virtual void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region) = 0;
+
 public:
 	/**
-	 * @brief Execute the brush action on the given volume
+	 * @brief Execute the brush action on the given volume and also handles mirroring
+	 * @param[in] sceneGraph The scene graph to operate on
+	 * @param[in] wrapper The volume wrapper to operate on
+	 * @param[in] ctx The brush context
 	 * @return @c true if the brush action was successful
 	 */
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &ctx) = 0;
+						 const BrushContext &ctx);
 	/**
 	 * @brief Reset the brush state and force a re-creating of the preview volume
 	 */
@@ -100,9 +123,10 @@ public:
 	 */
 	BrushType type() const;
 
-	virtual voxel::Region calcRegion(const BrushContext &context) const {
-		return voxel::Region::InvalidRegion;
-	}
+	/**
+	 * @brief The region that this brush is modifying (without mirroring or anything like that)
+	 */
+	virtual voxel::Region calcRegion(const BrushContext &context) const = 0;
 
 	/**
 	 * @brief allow to change the modifier type if the brush doesn't support the given mode

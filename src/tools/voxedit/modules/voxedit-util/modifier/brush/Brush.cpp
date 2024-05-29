@@ -3,9 +3,11 @@
  */
 
 #include "Brush.h"
-#include "command/Command.h"
-#include "voxedit-util/AxisUtil.h"
 #include "app/I18N.h"
+#include "command/Command.h"
+#include "core/Log.h"
+#include "voxedit-util/AxisUtil.h"
+#include "voxel/Region.h"
 
 namespace voxedit {
 
@@ -48,6 +50,25 @@ bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	_mirrorPos = mirrorPos;
 	_mirrorAxis = axis;
 	markDirty();
+	return true;
+}
+
+bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	voxel::Region region = calcRegion(ctx);
+	glm::ivec3 minsMirror = region.getLowerCorner();
+	glm::ivec3 maxsMirror = region.getUpperCorner();
+	if (!getMirrorAABB(minsMirror, maxsMirror)) {
+		generate(sceneGraph, wrapper, ctx, region);
+	} else {
+		Log::debug("Execute mirror action");
+		const voxel::Region second(minsMirror, maxsMirror);
+		if (voxel::intersects(region, second)) {
+			generate(sceneGraph, wrapper, ctx, voxel::Region(region.getLowerCorner(), maxsMirror));
+		} else {
+			generate(sceneGraph, wrapper, ctx, region);
+			generate(sceneGraph, wrapper, ctx, second);
+		}
+	}
 	return true;
 }
 

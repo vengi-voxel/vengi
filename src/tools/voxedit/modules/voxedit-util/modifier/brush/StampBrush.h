@@ -13,6 +13,12 @@ namespace voxedit {
 
 class SceneManager;
 
+/**
+ * @brief A brush that places other volumes as stamps into the target volume.
+ * @ingroup Brushes
+ *
+ * You first have to load a volume into the brush - otherwise you can only place one voxel at a time.
+ */
 class StampBrush : public Brush {
 private:
 	using Super = Brush;
@@ -26,7 +32,7 @@ protected:
 	SceneManager *_sceneMgr;
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
-				  const voxel::Region &region);
+				  const voxel::Region &region) override;
 
 public:
 	static constexpr int MaxSize = 32;
@@ -34,8 +40,6 @@ public:
 	}
 	virtual ~StampBrush() = default;
 	void construct() override;
-	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-				 const BrushContext &context) override;
 	void setVolume(const voxel::RawVolume &volume, const palette::Palette &palette);
 	voxel::RawVolume *volume() const;
 	bool active() const override;

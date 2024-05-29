@@ -320,6 +320,8 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	veui::AxisButton(math::Axis::Z, _("Z"), "textbrushaxis z", ICON_LC_REPEAT, nullptr, buttonWidth, &listener);
 	ImGui::TooltipTextUnformatted(_("Print text along the z axis"));
 
+	addMirrorPlanes(listener, modifier.textBrush());
+	ImGui::Separator();
 	addBrushClampingOption(brush);
 
 	if (ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly)) {

@@ -3,9 +3,9 @@
  */
 
 #include "TextBrush.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include "app/I18N.h"
 #include "core/UTF8.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -46,6 +46,23 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 	return voxel::Region(mins, maxs);
 }
 
+void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+						 const BrushContext &context, const voxel::Region &region) {
+	if (!_voxelFont.init(_font.c_str())) {
+		Log::error("Failed to initialize voxel font with %s", _font.c_str());
+		return;
+	}
+	const char *t = _input.c_str();
+	const char **s = &t;
+	glm::ivec3 pos = region.getLowerCorner();
+	const int widthIndex = math::getIndexForAxis(_axis);
+
+	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
+		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, context.cursorVoxel, _axis);
+		pos[widthIndex] += _spacing;
+	}
+}
+
 void TextBrush::setSize(int size) {
 	_size = glm::clamp(size, 6, 255);
 	markDirty();
@@ -54,25 +71,6 @@ void TextBrush::setSize(int size) {
 void TextBrush::setThickness(int thickness) {
 	_thickness = glm::clamp(thickness, 1, 255);
 	markDirty();
-}
-
-bool TextBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						const BrushContext &context) {
-	if (!_voxelFont.init(_font.c_str())) {
-		Log::error("Failed to initialize voxel font with %s", _font.c_str());
-		return false;
-	}
-	const char *t = _input.c_str();
-	const char **s = &t;
-	glm::ivec3 pos = context.cursorPosition;
-	const int widthIndex = math::getIndexForAxis(_axis);
-
-	for (int c = core::utf8::next(s); c != -1; c = core::utf8::next(s)) {
-		pos[widthIndex] += _voxelFont.renderCharacter(c, _size, _thickness, pos, wrapper, context.cursorVoxel, _axis);
-		pos[widthIndex] += _spacing;
-	}
-
-	return true;
 }
 
 void TextBrush::reset() {

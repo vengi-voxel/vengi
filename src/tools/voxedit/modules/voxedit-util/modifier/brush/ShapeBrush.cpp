@@ -63,7 +63,7 @@ math::Axis ShapeBrush::getShapeDimensionForAxis(voxel::FaceNames face, const glm
 	return math::Axis::None;
 }
 
-bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
@@ -109,9 +109,7 @@ bool ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		break;
 	case ShapeType::Max:
 		Log::warn("Invalid shape type selected - can't perform action");
-		return false;
 	}
-	return true;
 }
 
 void ShapeBrush::reset() {

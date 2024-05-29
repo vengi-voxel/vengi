@@ -12,6 +12,13 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 General:
 
+   - Fixed invalid log levels
+
+VoxEdit:
+
+   - Improved brush support
+   - Fixed loading voxel collection assets
+
 ## 0.0.32 (2024-05-29)
 
 General:

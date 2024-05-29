@@ -17,7 +17,6 @@
 #include "modifier/ModifierFacade.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "util/Movement.h"
 #include "voxedit-util/Clipboard.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"

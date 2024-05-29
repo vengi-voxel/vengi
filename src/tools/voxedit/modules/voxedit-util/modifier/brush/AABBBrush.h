@@ -26,6 +26,7 @@ enum BrushFlags : uint32_t {
 
 /**
  * @brief A brush that operates on an axis aligned bounding box
+ * @ingroup Brushes
  */
 class AABBBrush : public Brush {
 private:
@@ -60,8 +61,6 @@ protected:
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
-	virtual bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
 	voxel::Region extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion, const BrushContext &context) const;
 

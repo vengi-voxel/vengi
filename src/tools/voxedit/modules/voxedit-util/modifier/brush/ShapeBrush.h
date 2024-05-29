@@ -9,6 +9,11 @@
 
 namespace voxedit {
 
+/**
+ * @brief A brush that can generate several different shapes
+ * @sa ShapeType enum
+ * @ingroup Brushes
+ */
 class ShapeBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
@@ -16,7 +21,7 @@ protected:
 	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
 										int &depth) const;
 	ShapeType _shapeType = ShapeType::AABB;
-	bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
 	void setShapeType(ShapeType type);
 

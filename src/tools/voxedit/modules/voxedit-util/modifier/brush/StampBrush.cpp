@@ -112,36 +112,16 @@ voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
 
 void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &context, const voxel::Region &region) {
+	const glm::ivec3 &offset = region.isValid() ? region.getLowerCorner() : context.cursorPosition;
 	if (!_volume) {
-		wrapper.setVoxel(context.cursorPosition.x, context.cursorPosition.y, context.cursorPosition.z, context.cursorVoxel);
+		wrapper.setVoxel(offset.x, offset.y, offset.z, context.cursorVoxel);
 		return;
 	}
 
 	// TODO: context.lockedAxis support
-	const glm::ivec3 &offset = region.getLowerCorner();
 	voxelutil::visitVolume(*_volume, [&](int x, int y, int z, const voxel::Voxel &v) {
 		wrapper.setVoxel(offset.x + x, offset.y + y, offset.z + z, v);
 	});
-}
-
-bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context) {
-	voxel::Region region = calcRegion(context);
-	glm::ivec3 minsMirror = region.getLowerCorner();
-	glm::ivec3 maxsMirror = region.getUpperCorner();
-	if (!getMirrorAABB(minsMirror, maxsMirror)) {
-		generate(sceneGraph, wrapper, context, region);
-	} else {
-		Log::debug("Execute mirror action");
-		const voxel::Region second(minsMirror, maxsMirror);
-		if (voxel::intersects(region, second)) {
-			generate(sceneGraph, wrapper, context, voxel::Region(region.getLowerCorner(), maxsMirror));
-		} else {
-			generate(sceneGraph, wrapper, context, region);
-			generate(sceneGraph, wrapper, context, second);
-		}
-	}
-	return true;
 }
 
 void StampBrush::reset() {

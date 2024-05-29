@@ -15,6 +15,7 @@ namespace voxedit {
 
 /**
  * @brief Changes the color of existing voxels
+ * @ingroup Brushes
  */
 class PaintBrush : public AABBBrush {
 public:
@@ -52,7 +53,7 @@ protected:
 		voxel::Voxel evaluate(const voxel::Voxel &old);
 	};
 
-	bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
+	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
 
 public:

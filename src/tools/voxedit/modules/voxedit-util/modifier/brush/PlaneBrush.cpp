@@ -8,19 +8,23 @@
 
 namespace voxedit {
 
-bool PlaneBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
-						 const BrushContext &context) {
+voxel::Region PlaneBrush::calcRegion(const BrushContext &context) const {
+	return voxel::Region::InvalidRegion;
+}
+
+void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+						  const BrushContext &context, const voxel::Region &region) {
 	voxel::Voxel hitVoxel = context.hitCursorVoxel;
 	// TODO: context.gridResolution
 	// TODO: context.lockedAxis support
+	const glm::ivec3 &mins = context.cursorPosition;
 	if (wrapper.modifierType() == ModifierType::Place) {
-		voxelutil::extrudePlane(wrapper, context.cursorPosition, context.cursorFace, hitVoxel, context.cursorVoxel);
+		voxelutil::extrudePlane(wrapper, mins, context.cursorFace, hitVoxel, context.cursorVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Erase) {
-		voxelutil::erasePlane(wrapper, context.cursorPosition, context.cursorFace, hitVoxel);
+		voxelutil::erasePlane(wrapper, mins, context.cursorFace, hitVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Override) {
-		voxelutil::overridePlane(wrapper, context.cursorPosition, context.cursorFace, context.cursorVoxel);
+		voxelutil::overridePlane(wrapper, mins, context.cursorFace, context.cursorVoxel);
 	}
-	return true;
 }
 
 } // namespace voxedit

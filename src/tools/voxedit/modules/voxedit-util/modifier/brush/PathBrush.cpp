@@ -4,16 +4,21 @@
 
 #include "PathBrush.h"
 #include "core/collection/List.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/AStarPathfinder.h"
 #include "voxelutil/VoxelUtil.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace voxedit {
 
-bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context) {
+voxel::Region PathBrush::calcRegion(const BrushContext &context) const {
+	return voxel::Region::InvalidRegion;
+}
+
+void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+						 const BrushContext &context, const voxel::Region &region) {
 	core::List<glm::ivec3> listResult(4096);
 	const glm::ivec3 &start = context.referencePos;
 	const glm::ivec3 &end = context.cursorPosition;
@@ -33,12 +38,11 @@ bool PathBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	voxelutil::AStarPathfinder pathfinder(params);
 	if (!pathfinder.execute()) {
 		Log::debug("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
-		return false;
+		return;
 	}
 	for (const glm::ivec3 &p : listResult) {
 		wrapper.setVoxel(p.x, p.y, p.z, context.cursorVoxel);
 	}
-	return true;
 }
 
 void PathBrush::update(const BrushContext &ctx, double nowSeconds) {

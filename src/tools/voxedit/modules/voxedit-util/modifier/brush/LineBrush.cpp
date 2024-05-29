@@ -4,13 +4,14 @@
 
 #include "LineBrush.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "voxel/Region.h"
 #include "voxelutil/Raycast.h"
 
 namespace voxedit {
 
-bool LineBrush::execute(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &context) {
+void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &context, const voxel::Region &region) {
 	const glm::ivec3 &start = context.referencePos;
-	const glm::ivec3 &end = context.cursorPosition;
+	const glm::ivec3 &end = region.getLowerCorner();
 	voxel::Voxel voxel = context.cursorVoxel;
 	voxelutil::raycastWithEndpoints(&wrapper, start, end, [&](auto &sampler) {
 		const glm::ivec3 &pos = sampler.position();
@@ -18,7 +19,6 @@ bool LineBrush::execute(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper
 		return true;
 	});
 	wrapper.setVoxel(end.x, end.y, end.z, voxel);
-	return true;
 }
 
 void LineBrush::update(const BrushContext &ctx, double nowSeconds) {
