@@ -33,15 +33,15 @@ voxel::Region TextBrush::calcRegion(const BrushContext &context) const {
 	int dimX = 0;
 	int dimY = 0;
 	_voxelFont.dimensions(_input.c_str(), _size, dimX, dimY);
-	const int w = l * _spacing + dimX;
+	const int w = core_max(0, (l - 1)) * _spacing + dimX;
 	const int h = dimY;
 	const int d = _thickness;
 	const glm::ivec3 &mins = context.cursorPosition;
 	glm::ivec3 maxs = mins;
 	const int widthIndex = math::getIndexForAxis(_axis);
-	maxs[(widthIndex + 0) % 3] += w;
-	maxs[(widthIndex + 1) % 3] += h;
-	maxs[(widthIndex + 2) % 3] += d;
+	maxs[(widthIndex + 0) % 3] += (w - 1);
+	maxs[(widthIndex + 1) % 3] += (h - 1);
+	maxs[(widthIndex + 2) % 3] += (d - 1);
 	return voxel::Region(mins, maxs);
 }
 
