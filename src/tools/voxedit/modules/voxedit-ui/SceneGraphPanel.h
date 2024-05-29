@@ -37,6 +37,10 @@ private:
 	int _lastActivedNodeId = InvalidNodeId;
 	SceneManagerPtr _sceneMgr;
 
+	core::String _filterName;
+	int _filterType = 0;
+	bool isFiltered(const scenegraph::SceneGraphNode &node) const;
+
 	void registerPopups();
 	void detailView(scenegraph::SceneGraphNode &node);
 	void recursiveAddNodes(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
