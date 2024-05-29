@@ -34,19 +34,16 @@ void ModifierFacade::shutdown() {
 	_modifierRenderer->shutdown();
 }
 
-static voxel::RawVolume *createPreviewVolume(const voxel::RawVolume *existingVolume, const voxel::Region &region) {
+static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &region) {
 	if (existingVolume == nullptr) {
-		return new voxel::RawVolume(region);
+		if (volume == nullptr || volume->region() != region) {
+			volume = new voxel::RawVolume(region);
+			return;
+		}
+		volume->clear();
+	} else {
+		volume = new voxel::RawVolume(*existingVolume, region);
 	}
-	return new voxel::RawVolume(*existingVolume, region);
-}
-
-static void createOrClearPreviewVolume(core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &region) {
-	if (volume == nullptr || volume->region() != region) {
-		volume = new voxel::RawVolume(region);
-		return;
-	}
-	volume->clear();
 }
 
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
@@ -64,65 +61,36 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	Log::debug("regenerate preview volume");
 
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	voxel::RawVolume *activeVolume = _sceneMgr->volume(sceneGraph.activeNode());
+	if (activeVolume == nullptr) {
+		return;
+	}
+
+	// operate on existing voxels
 	voxel::RawVolume *existingVolume = nullptr;
 	if (_modifierType == ModifierType::Paint) {
-		existingVolume = _sceneMgr->volume(sceneGraph.activeNode());
+		existingVolume = activeVolume;
 	}
-	const AABBBrush *aabbBrush = activeAABBBrush();
-	if (aabbBrush) {
-		const voxel::Region &region = aabbBrush->calcRegion(_brushContext);
+
+	_brushContext.targetVolumeRegion = activeVolume->region();
+	if (const Brush *brush = activeBrush()) {
+		preExecuteBrush(activeVolume->region());
+		const voxel::Region &region = brush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
-		if (aabbBrush->getMirrorAABB(minsMirror, maxsMirror)) {
-			_mirrorVolume = createPreviewVolume(existingVolume, voxel::Region(minsMirror, maxsMirror));
+		if (brush->getMirrorAABB(minsMirror, maxsMirror)) {
+			createOrClearPreviewVolume(existingVolume, _mirrorVolume, voxel::Region(minsMirror, maxsMirror));
 			scenegraph::SceneGraphNode mirrorDummyNode(scenegraph::SceneGraphNodeType::Model);
 			mirrorDummyNode.setVolume(_mirrorVolume, false);
 			executeBrush(sceneGraph, mirrorDummyNode, modifierType, voxel);
 			_modifierRenderer->updateBrushVolume(1, _mirrorVolume, &activePalette);
 		}
-		_volume = createPreviewVolume(existingVolume, region);
+		createOrClearPreviewVolume(existingVolume, _volume, region);
 		scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 		dummyNode.setVolume(_volume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 		_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-	} else if (voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode())) {
-		switch (_brushType) {
-		case BrushType::Stamp: {
-			if (_stampBrush.active()) {
-				const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
-				createOrClearPreviewVolume(_volume, region);
-				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				// TODO: support mirror axis
-				// TODO: use _stampBrush palette?
-				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			}
-			break;
-		}
-		case BrushType::Line: {
-			const voxel::Region region = _lineBrush.calcRegion(_brushContext);
-			if (region.isValid()) {
-				createOrClearPreviewVolume(_volume, region);
-				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			}
-			break;
-		}
-		case BrushType::Path:
-		case BrushType::Text: {
-			createOrClearPreviewVolume(_volume, v->region());
-			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-			dummyNode.setVolume(_volume, false);
-			executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-			_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			break;
-		}
-		default:
-			break;
-		}
+		postExecuteBrush();
 	}
 }
 

@@ -67,6 +67,9 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
+	void preExecuteBrush(const voxel::Region &targetVolumeRegion);
+	void postExecuteBrush();
+
 	/**
 	 * @brief Execute the brush operation on the given node volume
 	 */

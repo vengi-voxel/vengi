@@ -333,7 +333,9 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		return true;
 	}
 
+	preExecuteBrush(volume->region());
 	executeBrush(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
+	postExecuteBrush();
 
 	return true;
 }
@@ -363,19 +365,50 @@ static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region 
 		delta.z = region.getUpperZ() - brushRegion.getUpperZ();
 	}
 
+	if (brushRegion.getLowerX() < region.getLowerX()) {
+		delta.x = glm::abs(region.getLowerX() - brushRegion.getUpperX());
+	}
+	if (brushRegion.getLowerY() < region.getLowerY()) {
+		delta.y = glm::abs(region.getLowerY() - brushRegion.getLowerY());
+	}
+	if (brushRegion.getLowerZ() < region.getLowerZ()) {
+		delta.z = glm::abs(region.getLowerZ() - brushRegion.getLowerZ());
+	}
+
 	return cursor + delta;
 }
 
+void Modifier::preExecuteBrush(const voxel::Region &targetVolumeRegion) {
+	if (Brush *brush = activeBrush()) {
+		_brushContext.targetVolumeRegion = targetVolumeRegion;
+		_brushContext.prevCursorPosition = _brushContext.cursorPosition;
+		if (brush->brushClamping()) {
+			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
+			_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
+		}
+	}
+}
+
+void Modifier::postExecuteBrush() {
+	if (Brush *brush = activeBrush()) {
+		if (brush->brushClamping()) {
+			_brushContext.cursorPosition = _brushContext.prevCursorPosition;
+		}
+	}
+}
+
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
+							ModifierType modifierType, const voxel::Voxel &voxel,
+							const Callback &callback) {
 	if (Brush *brush = activeBrush()) {
 		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
-		_brushContext.cursorVoxel = voxel;
 		if (brush->brushClamping()) {
-			_brushContext.cursorPosition = updateCursor(node.region(), brush->calcRegion(_brushContext), prevCursorPos);
+			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
+			_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
 		}
+		_brushContext.cursorVoxel = voxel;
 		brush->execute(sceneGraph, wrapper, _brushContext);
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {

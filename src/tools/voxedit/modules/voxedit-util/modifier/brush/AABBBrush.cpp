@@ -96,28 +96,6 @@ void AABBBrush::reset() {
 	_mirrorPos = glm::ivec3(0);
 }
 
-void AABBBrush::toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
-	if (_mirrorAxis == axis) {
-		setMirrorAxis(math::Axis::None, mirrorPos);
-	} else {
-		setMirrorAxis(axis, mirrorPos);
-	}
-}
-
-bool AABBBrush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
-	if (_mirrorAxis == axis) {
-		if (_mirrorPos != mirrorPos) {
-			_mirrorPos = mirrorPos;
-			return true;
-		}
-		return false;
-	}
-	_mirrorPos = mirrorPos;
-	_mirrorAxis = axis;
-	markDirty();
-	return true;
-}
-
 glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, int resolution) const {
 	glm::ivec3 pos = inPos;
 	if (pos.x % resolution != 0) {
@@ -130,20 +108,6 @@ glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, int resolutio
 		pos.z = (pos.z / resolution) * resolution;
 	}
 	return pos;
-}
-
-bool AABBBrush::getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const {
-	math::Axis mirrorAxis = _mirrorAxis;
-	if (mirrorAxis == math::Axis::None) {
-		return false;
-	}
-	const int index = getIndexForMirrorAxis(mirrorAxis);
-	int deltaMaxs = _mirrorPos[index] - maxs[index] - 1;
-	deltaMaxs *= 2;
-	deltaMaxs += (maxs[index] - mins[index] + 1);
-	mins[index] += deltaMaxs;
-	maxs[index] += deltaMaxs;
-	return true;
 }
 
 bool AABBBrush::needsFurtherAction(const BrushContext &context) const {

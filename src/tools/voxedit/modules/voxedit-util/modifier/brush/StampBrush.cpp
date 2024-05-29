@@ -84,6 +84,9 @@ void StampBrush::construct() {
 }
 
 voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
+	if (_volume == nullptr) {
+		return voxel::Region::InvalidRegion;
+	}
 	glm::ivec3 mins = context.cursorPosition;
 	const glm::ivec3 &dim = _volume->region().getDimensionsInVoxels();
 	if (_center) {
@@ -110,7 +113,8 @@ voxel::Region StampBrush::calcRegion(const BrushContext &context) const {
 bool StampBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &context) {
 	if (!_volume) {
-		return false;
+		wrapper.setVoxel(context.cursorPosition.x, context.cursorPosition.y, context.cursorPosition.z, context.cursorVoxel);
+		return true;
 	}
 
 	// TODO: context.lockedAxis support

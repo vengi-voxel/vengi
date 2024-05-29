@@ -42,7 +42,6 @@ protected:
 	 * can still be changed as long as @c step() is called.
 	 */
 	bool _secondPosValid = false;
-	math::Axis _mirrorAxis = math::Axis::None;
 	/**
 	 * if the current modifier type allows or needs a second action to span the
 	 * volume to operate in, this is the direction into which the second action
@@ -62,17 +61,11 @@ protected:
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
-	/**
-	 * The mirror position is based on the reference position whenever the mirror axis is set
-	 */
-	glm::ivec3 _mirrorPos{0};
-
 	math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
 										int &depth) const;
 	virtual bool generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) = 0;
 	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, int resolution) const;
-	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 	voxel::Region extendRegionInOrthoMode(const voxel::Region &brushRegion, const voxel::Region &volumeRegion, const BrushContext &context) const;
 
 	bool isMode(uint32_t flag) const;
@@ -91,7 +84,6 @@ public:
 	void reset() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
-	bool getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 				 const BrushContext &context) override;
 	/**
@@ -144,10 +136,6 @@ public:
 	void setAABBMode();
 	bool aabbMode() const;
 
-	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
-	math::Axis mirrorAxis() const;
-	const glm::ivec3 &mirrorPos() const;
-
 	int radius() const;
 	void setRadius(int radius);
 };
@@ -157,14 +145,6 @@ inline int AABBBrush::radius() const {
 		return 0;
 	}
 	return _radius;
-}
-
-inline const glm::ivec3 &AABBBrush::mirrorPos() const {
-	return _mirrorPos;
-}
-
-inline math::Axis AABBBrush::mirrorAxis() const {
-	return _mirrorAxis;
 }
 
 inline bool AABBBrush::centerMode() const {

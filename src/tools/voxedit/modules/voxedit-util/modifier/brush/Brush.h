@@ -39,6 +39,12 @@ struct BrushContext {
 	// chance to really span the aabb by given the mins and maxs.
 	bool fixedOrthoSideView = false;
 	int gridResolution = 1;
+
+	// used for clamping the brush region to the volume region
+	voxel::Region targetVolumeRegion;
+
+	// only used internally
+	glm::ivec3 prevCursorPosition{0};
 };
 
 /**
@@ -50,6 +56,13 @@ protected:
 	const BrushType _brushType;
 	const ModifierType _defaultModifier;
 	const ModifierType _supportedModifiers;
+
+	/**
+	 * The mirror position is based on the reference position whenever the mirror axis is set
+	 */
+	glm::ivec3 _mirrorPos{0};
+	math::Axis _mirrorAxis = math::Axis::None;
+	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
 
 	// change the cursor position if the brush region is outside the volume
 	bool _brushClamping = false;
@@ -104,7 +117,20 @@ public:
 	virtual bool active() const;
 	bool init() override;
 	void shutdown() override;
+
+	bool getMirrorAABB(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
+	math::Axis mirrorAxis() const;
+	const glm::ivec3 &mirrorPos() const;
 };
+
+inline const glm::ivec3 &Brush::mirrorPos() const {
+	return _mirrorPos;
+}
+
+inline math::Axis Brush::mirrorAxis() const {
+	return _mirrorAxis;
+}
 
 inline BrushType Brush::type() const {
 	return _brushType;
