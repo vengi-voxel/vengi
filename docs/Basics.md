@@ -59,8 +59,8 @@ detail message line 2
 | app              | Basic application classes                                                  |
 | command          | Bind c++ functionality to console commands                                 |
 | commonlua        | Basic [lua](LUAScript.md) bindings and helper                              |
-| console          | Base classes for different kind of consoles                                |
 | core             | String, collections and other foundation classes                           |
+| http             | Http download module                                                       |
 | image            | Image loading and writing                                                  |
 | io               | Stream and file handling                                                   |
 | math             | Based on glm                                                               |
@@ -68,13 +68,16 @@ detail message line 2
 | noise            | Different noise implementations                                            |
 | palette          | Palette formats and helper                                                 |
 | render           | General renderer implementations and helpers                               |
+| scenegraph       | Scene graph and scene graph node implementation                            |
 | testcore         | Visual test helpers                                                        |
 | ui               | DearImgui based ui code                                                    |
 | util             |                                                                            |
 | video            | [Window and renderer](ShaderTool.md) module                                |
 | voxel            | The voxel engine code based on PolyVox                                     |
+| voxelcollection  | Browse online and local voxel collections                                  |
 | voxelfont        | TTF font to voxel                                                          |
 | voxelformat      | Several volume and mesh based file formats to load or generate voxels      |
 | voxelgenerator   | LUA generator, space colonization, tree- and shape generators              |
+| voxelpathtracer  | Path tracer                                                                |
 | voxelrender      | Voxel renderer                                                             |
 | voxelutil        | Pathfinding, raycasting, image and general util functions                  |
