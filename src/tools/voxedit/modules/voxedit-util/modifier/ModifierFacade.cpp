@@ -41,6 +41,14 @@ static voxel::RawVolume *createPreviewVolume(const voxel::RawVolume *existingVol
 	return new voxel::RawVolume(*existingVolume, region);
 }
 
+static void createOrClearPreviewVolume(core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &region) {
+	if (volume == nullptr || volume->region() != region) {
+		volume = new voxel::RawVolume(region);
+		return;
+	}
+	volume->clear();
+}
+
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _modifierType;
@@ -77,12 +85,12 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		dummyNode.setVolume(_volume, false);
 		executeBrush(sceneGraph, dummyNode, modifierType, voxel);
 		_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-	} else {
+	} else if (voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode())) {
 		switch (_brushType) {
 		case BrushType::Stamp: {
 			if (_stampBrush.active()) {
 				const voxel::Region &region = _stampBrush.calcRegion(_brushContext);
-				_volume = createPreviewVolume(nullptr, region);
+				createOrClearPreviewVolume(_volume, region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
 				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
@@ -95,7 +103,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		case BrushType::Line: {
 			const voxel::Region region = _lineBrush.calcRegion(_brushContext);
 			if (region.isValid()) {
-				_volume = createPreviewVolume(nullptr, region);
+				createOrClearPreviewVolume(_volume, region);
 				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
 				dummyNode.setVolume(_volume, false);
 				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
@@ -104,24 +112,19 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 			break;
 		}
 		case BrushType::Path: {
-			if (voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNode())) {
-				_volume = createPreviewVolume(nullptr, v->region());
-				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			}
+			createOrClearPreviewVolume(_volume, v->region());
+			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+			dummyNode.setVolume(_volume, false);
+			executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+			_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
 			break;
 		}
 		case BrushType::Text: {
-			const voxel::Region region = _textBrush.calcRegion(_brushContext);
-			if (region.isValid()) {
-				_volume = createPreviewVolume(nullptr, region);
-				scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-				dummyNode.setVolume(_volume, false);
-				executeBrush(sceneGraph, dummyNode, modifierType, voxel);
-				_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
-			}
+			createOrClearPreviewVolume(_volume, v->region());
+			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
+			dummyNode.setVolume(_volume, false);
+			executeBrush(sceneGraph, dummyNode, modifierType, voxel);
+			_modifierRenderer->updateBrushVolume(0, _volume, &activePalette);
 			break;
 		}
 		default:
