@@ -27,7 +27,8 @@ TEST_F(TextBrushTest, testExecute) {
 
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << wrapper.dirtyRegion().toString();
+	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
+		<< wrapper.dirtyRegion().toString();
 
 	brush.shutdown();
 }

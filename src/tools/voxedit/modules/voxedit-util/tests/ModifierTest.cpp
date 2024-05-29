@@ -4,11 +4,10 @@
 
 #include "../modifier/Modifier.h"
 #include "app/tests/AbstractTest.h"
-#include "core/ArrayLength.h"
 #include "scenegraph/SceneGraph.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
@@ -24,14 +23,15 @@ namespace voxedit {
 
 class ModifierTest : public app::AbstractTest {
 protected:
-	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType, BrushType brushType) {
+	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,
+				 BrushType brushType) {
 		modifier.setBrushType(brushType);
 		modifier.setModifierType(modifierType);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setGridResolution(1);
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX); // mins for aabb
 		EXPECT_TRUE(modifier.start());
-		if (modifierType != ModifierType::Select && modifierType != ModifierType::ColorPicker) {
+		if (brushType == BrushType::Shape) {
 			if (modifier.shapeBrush().singleMode()) {
 				EXPECT_FALSE(modifier.shapeBrush().active())
 					<< "ShapeBrush is active in single mode for modifierType " << (int)modifierType;
@@ -62,7 +62,8 @@ protected:
 };
 
 TEST_F(ModifierTest, testModifierAction) {
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
@@ -85,7 +86,8 @@ TEST_F(ModifierTest, testModifierSelection) {
 	const voxel::Region region(-10, 10);
 	voxel::RawVolume volume(region);
 
-	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(), core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
@@ -102,6 +104,48 @@ TEST_F(ModifierTest, testModifierSelection) {
 		}));
 	EXPECT_EQ(1, modifierExecuted);
 	modifier.shutdown();
+}
+
+TEST_F(ModifierTest, testClamp) {
+	scenegraph::SceneGraph sceneGraph;
+	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
+	Modifier modifier(&mgr);
+	ASSERT_TRUE(modifier.init());
+
+	voxel::RawVolume volume(voxel::Region(0, 0, 0, 10, 20, 4));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(&volume, false);
+
+	TextBrush &brush = modifier.textBrush();
+	brush.setInput("ABC");
+	brush.setFont("font.ttf");
+
+	modifier.setBrushType(BrushType::Text);
+	modifier.setModifierType(ModifierType::Place);
+	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	modifier.setGridResolution(1);
+	modifier.setCursorPosition(volume.region().getLowerCenter(), voxel::FaceNames::PositiveX); // mins for aabb
+
+	{
+		brush.setBrushClamping(false);
+		voxel::Region dirtyRegion;
+		EXPECT_TRUE(modifier.execute(
+			sceneGraph, node,
+			[&dirtyRegion](const voxel::Region &region, ModifierType type, bool markUndo) { dirtyRegion = region; }));
+		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(6, 9, 1));
+	}
+	volume.clear();
+	{
+		brush.setBrushClamping(true);
+		voxel::Region dirtyRegion;
+		EXPECT_TRUE(modifier.execute(
+			sceneGraph, node,
+			[&dirtyRegion](const voxel::Region &region, ModifierType type, bool markUndo) { dirtyRegion = region; }));
+		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(10, 9, 1));
+	}
+
+	brush.shutdown();
 }
 
 } // namespace voxedit
