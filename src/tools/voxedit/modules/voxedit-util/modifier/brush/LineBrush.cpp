@@ -11,7 +11,7 @@ namespace voxedit {
 
 void LineBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &context, const voxel::Region &region) {
 	const glm::ivec3 &start = context.referencePos;
-	const glm::ivec3 &end = region.getLowerCorner();
+	const glm::ivec3 &end = context.cursorPosition;
 	voxel::Voxel voxel = context.cursorVoxel;
 	voxelutil::raycastWithEndpoints(&wrapper, start, end, [&](auto &sampler) {
 		const glm::ivec3 &pos = sampler.position();
