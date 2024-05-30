@@ -177,7 +177,11 @@ static void DrawTestLog(ImGuiTestEngine* e, ImGuiTest* test)
                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32_WHITE);
                 break;
             }
+#if IMGUI_VERSION_NUM >= 19072
+            ImGui::DebugTextUnformattedWithLocateItem(line_start, line_end);
+#else
             ImGui::TextUnformatted(line_start, line_end);
+#endif
             ImGui::PopStyleColor();
 
             ImGui::PushID(line_no);

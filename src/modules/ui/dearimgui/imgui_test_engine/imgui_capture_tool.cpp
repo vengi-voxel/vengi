@@ -371,7 +371,7 @@ ImGuiCaptureStatus ImGuiCaptureContext::CaptureUpdate(ImGuiCaptureArgs* args)
             // FIXME-CAPTURE: Window width change may affect vertical content size if window contains text that wraps. To accurately position mouse cursor for capture we avoid horizontal resize.
             // Instead window width should be set manually before capture, as it is simple to do and most of the time we already have a window of desired width.
             //full_size.x = ImMax(window->SizeFull.x, window->ContentSize.x + (window->WindowPadding.x + window->WindowBorderSize) * 2);
-            full_size.y = ImMax(window->SizeFull.y, window->ContentSize.y + (window->WindowPadding.y + window->WindowBorderSize) * 2 + window->TitleBarHeight() + window->MenuBarHeight());
+            full_size.y = ImMax(window->SizeFull.y, window->ContentSize.y + (window->WindowPadding.y + window->WindowBorderSize) * 2 + window->DecoOuterSizeY1);
             ImGui::SetWindowSize(window, full_size);
             _HoveredWindow = g.HoveredWindow;
         }
