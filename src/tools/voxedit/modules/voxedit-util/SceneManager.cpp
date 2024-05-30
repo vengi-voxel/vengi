@@ -755,7 +755,6 @@ const voxel::RawVolume* SceneManager::volume(int nodeId) const {
 }
 
 int SceneManager::activeNode() const {
-	// This must return a model node that has a volume attached
 	return _sceneGraph.activeNode();
 }
 
@@ -3339,6 +3338,8 @@ bool SceneManager::nodeActivate(int nodeId) {
 		video::Camera nodeCamera = voxelrender::toCamera(camera->size(), cameraNode);
 		camera->lerp(nodeCamera);
 	}
+	// a node switch will disable the locked axis as the positions might have changed anyway
+	modifier().setLockedAxis(math::Axis::X | math::Axis::Y | math::Axis::Z, true);
 	_sceneGraph.setActiveNode(nodeId);
 	const palette::Palette &palette = node.palette();
 	for (int i = 0; i < palette.colorCount(); ++i) {

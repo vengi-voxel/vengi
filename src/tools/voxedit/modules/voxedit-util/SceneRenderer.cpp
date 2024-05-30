@@ -155,8 +155,17 @@ void SceneRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, co
 		return;
 	}
 
+	const int activeNode = sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
+	if (!node.isModelNode()) {
+		if (meshIndex != -1) {
+			_shapeRenderer.deleteMesh(meshIndex);
+			meshIndex = -1;
+		}
+		return;
+	}
 	const glm::vec4 colors[] = {core::Color::LightRed(), core::Color::LightGreen(), core::Color::LightBlue()};
-	updateShapeBuilderForPlane(_shapeBuilder, sceneGraph.region(), false, cursorPosition, axis,
+	updateShapeBuilderForPlane(_shapeBuilder, node.region(), false, cursorPosition, axis,
 							   core::Color::alpha(colors[index], 0.4f));
 	_shapeRenderer.createOrUpdate(meshIndex, _shapeBuilder);
 }
