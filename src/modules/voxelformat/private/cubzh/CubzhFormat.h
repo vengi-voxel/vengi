@@ -320,7 +320,7 @@ protected:
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
 	bool loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
-	bool loadSubChunkHeader(io::ReadStream &stream, Chunk &chunk) const;
+	bool loadSubChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
 	bool loadHeader(io::SeekableReadStream &stream, Header &header) const;
 	bool loadSkipChunk(const Header &header, const Chunk &chunk, io::ReadStream &stream) const;
 	bool loadSkipSubChunk(const Chunk &chunk, io::ReadStream &stream) const;

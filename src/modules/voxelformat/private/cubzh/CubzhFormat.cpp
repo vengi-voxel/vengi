@@ -252,7 +252,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 	int64_t startPos = stream.pos();
 	while (stream.pos() < startPos + chunk.chunkSize - 5) {
 		Chunk subChunk;
-		wrapBool(loadSubChunkHeader(stream, subChunk))
+		wrapBool(loadSubChunkHeader(header, stream, subChunk))
 		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
 		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_SIZE_V5:
@@ -406,15 +406,8 @@ bool CubzhFormat::loadPCubes(const core::String &filename, const Header &header,
 }
 
 bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const {
-	wrap(stream.readUInt8(chunk.chunkId))
-	if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_SHAPE_NAME_V6) {
-		uint8_t chunkSize;
-		wrap(stream.readUInt8(chunkSize))
-		chunk.chunkSize = chunkSize;
-	} else {
-		wrap(stream.readUInt32(chunk.chunkSize))
-	}
-	Log::debug("Chunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
+	wrapBool(loadSubChunkHeader(header, stream, chunk))
+	Log::debug("Mainchunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
 	if (header.version == 6u && chunk.supportsCompression()) {
 		wrap(stream.readUInt8(chunk.compressed))
 		wrap(stream.readUInt32(chunk.uncompressedSize))
@@ -424,10 +417,16 @@ bool CubzhFormat::loadChunkHeader(const Header &header, io::ReadStream &stream, 
 	return true;
 }
 
-bool CubzhFormat::loadSubChunkHeader(io::ReadStream &stream, Chunk &chunk) const {
+bool CubzhFormat::loadSubChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const {
 	wrap(stream.readUInt8(chunk.chunkId))
-	wrap(stream.readUInt32(chunk.chunkSize))
-	Log::debug("Subchunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
+	if (header.version == 6 && chunk.chunkId == priv::CHUNK_ID_SHAPE_NAME_V6) {
+		uint8_t chunkSize;
+		wrap(stream.readUInt8(chunkSize))
+		chunk.chunkSize = chunkSize;
+	} else {
+		wrap(stream.readUInt32(chunk.chunkSize))
+	}
+	Log::debug("Chunk id %u with size %u", chunk.chunkId, chunk.chunkSize);
 	return true;
 }
 
@@ -447,10 +446,16 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	bool hasPivot = false;
 	bool sizeChunkFound = false;
 	bool paletteFound = false;
+	bool nameFound = false;
 	while (!stream.eos()) {
+		if (stream.remaining() == 4 && nameFound) {
+			// there is a bug in the calculation of the uncompressed size in cubzh that writes a few bytes
+			// too much for the size of the name chunk
+			break;
+		}
 		Log::debug("Remaining sub stream data: %d", (int)stream.remaining());
 		Chunk subChunk;
-		wrapBool(loadSubChunkHeader(stream, subChunk))
+		wrapBool(loadSubChunkHeader(header, stream, subChunk))
 		core::DynamicArray<uint8_t> volumeBuffer; // used in case the size chunk is late
 		switch (subChunk.chunkId) {
 		case priv::CHUNK_ID_SHAPE_ID_V6:
@@ -463,7 +468,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			Log::debug("Load parent id %u", parentShapeId);
 			break;
 		case priv::CHUNK_ID_SHAPE_TRANSFORM_V6: {
-			Log::debug("Load transform");
+			Log::debug("Load local transform");
 			wrap(stream.readFloat(pos.x))
 			wrap(stream.readFloat(pos.y))
 			wrap(stream.readFloat(pos.z))
@@ -508,10 +513,11 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_SHAPE_NAME_V6: {
 			core::String name;
-			stream.readString(subChunk.chunkSize, name);
+			wrapBool(stream.readString(subChunk.chunkSize, name));
 			if (!name.empty()) {
 				node.setName(name);
 			}
+			nameFound = true;
 			Log::debug("Load node name: %s", name.c_str());
 			break;
 		}
