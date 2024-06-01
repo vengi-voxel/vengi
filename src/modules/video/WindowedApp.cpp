@@ -331,9 +331,12 @@ app::AppState WindowedApp::onInit() {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
 	SDL_Rect displayBounds;
-	if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
-		Log::error("Failed to query usable display bounds: %s", SDL_GetError());
-		displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
+	displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
+	if (_fullScreenApplication) {
+		if (SDL_GetDisplayUsableBounds(displayIndex, &displayBounds) < 0) {
+			Log::error("Failed to query usable display bounds: %s", SDL_GetError());
+			displayBounds.h = displayBounds.w = displayBounds.x = displayBounds.y = 0;
+		}
 	}
 	const core::VarPtr& highDPI = core::Var::getSafe(cfg::ClientWindowHighDPI);
 	if (highDPI->boolVal()) {
@@ -351,8 +354,8 @@ app::AppState WindowedApp::onInit() {
 	Log::debug("driver: %s", SDL_GetCurrentVideoDriver());
 	Log::debug("found %i displays (use %i at %i:%i)", numDisplays, displayIndex, displayBounds.x, displayBounds.y);
 
-	const int width = core_max(1024, displayBounds.w);
-	const int height = core_max(768, displayBounds.h);
+	const int width = core_max(_windowWidth, displayBounds.w);
+	const int height = core_max(_windowHeight, displayBounds.h);
 	_window = createWindow(width, height, displayIndex, flags);
 	if (!_window) {
 		Log::warn("Failed to get multisampled window - try to disable it");
@@ -365,7 +368,9 @@ app::AppState WindowedApp::onInit() {
 		}
 	}
 
-	SDL_MaximizeWindow(_window);
+	if (_fullScreenApplication) {
+		SDL_MaximizeWindow(_window);
+	}
 
 	if (displayIndex != SDL_GetWindowDisplayIndex(_window)) {
 		Log::error("Failed to create window at display %i", displayIndex);

@@ -51,6 +51,10 @@ protected:
 	 */
 	bool _powerSaveMode = true;
 
+	bool _fullScreenApplication = true;
+	int _windowWidth = 1024;
+	int _windowHeight = 768;
+
 	/**
 	 * Bump this if commands have changed that would make old keybindings invalid
 	 */
