@@ -742,7 +742,7 @@ void MainWindow::popupModelNodeSettings() {
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			ImGui::CloseCurrentPopup();
-			scenegraph::SceneGraphNode newNode;
+			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
 			newNode.setVolume(v, true);
 			newNode.setName(_modelNodeSettings.name.c_str());

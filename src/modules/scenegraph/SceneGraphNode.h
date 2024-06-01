@@ -32,6 +32,7 @@ enum class SceneGraphNodeType : uint8_t {
 	ModelReference,
 	Group,
 	Camera,
+	Point, // a point in space with a transform and a name
 	Unknown,
 
 	Max,
@@ -48,6 +49,7 @@ static constexpr const char* SceneGraphNodeTypeStr[] {
 	"ModelReference",
 	"Group",
 	"Camera",
+	"Point",
 	"Unknown"
 };
 static_assert((int)(scenegraph::SceneGraphNodeType::Max) == lengthof(SceneGraphNodeTypeStr), "Array sizes don't match Max");

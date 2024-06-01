@@ -325,6 +325,10 @@ protected:
 	bool loadSkipChunk(const Header &header, const Chunk &chunk, io::ReadStream &stream) const;
 	bool loadSkipSubChunk(const Chunk &chunk, io::ReadStream &stream) const;
 
+	bool saveModelNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+					   io::SeekableWriteStream *stream) const;
+	bool savePointNodes(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+						io::SeekableWriteStream &stream) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 

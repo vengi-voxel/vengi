@@ -72,6 +72,11 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 			scenegraph::SceneGraphNodeCamera cameraNode = voxelrender::toCameraNode(camera);
 			_sceneMgr->moveNodeToSceneGraph(cameraNode);
 		}
+		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new point"))) {
+			scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
+			pointNode.setName("new point");
+			_sceneMgr->moveNodeToSceneGraph(pointNode, nodeId);
+		}
 		ImGui::EndPopup();
 	}
 }
@@ -159,6 +164,9 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 				break;
 			case scenegraph::SceneGraphNodeType::Model:
 				icon = ICON_LC_BOXES;
+				break;
+			case scenegraph::SceneGraphNodeType::Point:
+				icon = ICON_LC_POINTER;
 				break;
 			case scenegraph::SceneGraphNodeType::Root:
 			case scenegraph::SceneGraphNodeType::Group:

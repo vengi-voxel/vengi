@@ -11,6 +11,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 
 namespace voxelformat {
 
@@ -593,24 +594,45 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_POINT_V6: {
-			Log::debug("Load shape point");
-			core::String name;
-			wrapBool(stream.readPascalStringUInt8(name))
-			float f3x, f3y, f3z;
-			wrap(stream.readFloat(f3x))
-			wrap(stream.readFloat(f3y))
-			wrap(stream.readFloat(f3z))
-			node.setProperty(name, core::string::format("%f:%f:%f", f3x, f3y, f3z));
-			break;
-		}
-		case priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6: {
-			Log::debug("Load shape point rotation");
+			Log::debug("Load shape point position");
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
 			glm::vec3 poiPos;
 			wrap(stream.readFloat(poiPos.x))
 			wrap(stream.readFloat(poiPos.y))
 			wrap(stream.readFloat(poiPos.z))
+			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
+				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
+				transform.setLocalTranslation(poiPos);
+			} else {
+				scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
+				pointNode.setName(name);
+				scenegraph::SceneGraphTransform transform;
+				transform.setLocalTranslation(poiPos);
+				pointNode.setTransform(0, transform);
+				sceneGraph.emplace(core::move(pointNode), node.id());
+			}
+			break;
+		}
+		case priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6: {
+			Log::debug("Load shape point rotation");
+			core::String name;
+			wrapBool(stream.readPascalStringUInt8(name))
+			glm::vec3 poiAngles;
+			wrap(stream.readFloat(poiAngles.x))
+			wrap(stream.readFloat(poiAngles.y))
+			wrap(stream.readFloat(poiAngles.z))
+			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
+				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
+				transform.setLocalOrientation(glm::quat(poiAngles));
+			} else {
+				scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
+				pointNode.setName(name);
+				scenegraph::SceneGraphTransform transform;
+				transform.setLocalTranslation(poiAngles);
+				pointNode.setTransform(0, transform);
+				sceneGraph.emplace(core::move(pointNode), node.id());
+			}
 			break;
 		}
 		case priv::CHUNK_ID_SHAPE_BAKED_LIGHTING_V6:
@@ -802,6 +824,136 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, const 
 		return false;                                                                                                  \
 	}
 
+bool CubzhFormat::savePointNodes(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								io::SeekableWriteStream &ws) const {
+	for (auto childId : node.children()) {
+		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
+		if (child.type() != scenegraph::SceneGraphNodeType::Point) {
+			continue;
+		}
+		{
+			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_V6, ws);
+			core::String name = child.name();
+			glm::vec3 pos = child.transform(0).localTranslation();
+			wrapBool(sub.writePascalStringUInt8(name))
+			wrapBool(sub.writeFloat(pos.x))
+			wrapBool(sub.writeFloat(pos.y))
+			wrapBool(sub.writeFloat(pos.z))
+		}
+#if 0
+		{
+			core::String name = "TODO";
+			glm::vec3 poiPos;
+			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6))
+			wrapBool(ws.writePascalStringUInt8(name))
+			wrapBool(ws.writeFloat(poiPos.x))
+			wrapBool(ws.writeFloat(poiPos.y))
+			wrapBool(ws.writeFloat(poiPos.z))
+		}
+#endif
+	}
+	return true;
+}
+
+bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+								io::SeekableWriteStream *stream) const {
+	WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, *stream);
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_ID_V6, ws);
+		wrapBool(sub.writeUInt16(node.id()))
+	}
+	if (node.parent() != sceneGraph.root().id()) {
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PARENT_ID_V6, ws);
+		wrapBool(sub.writeUInt16(node.parent()))
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_TRANSFORM_V6, ws);
+		scenegraph::KeyFrameIndex keyFrameIdx = 0;
+		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
+		const glm::vec3 pos = transform.localTranslation();
+		const glm::vec3 eulerAngles = glm::eulerAngles(transform.localOrientation());
+		const glm::vec3 scale = transform.localScale();
+		wrapBool(sub.writeFloat(pos.x))
+		wrapBool(sub.writeFloat(pos.y))
+		wrapBool(sub.writeFloat(pos.z))
+		wrapBool(sub.writeFloat(eulerAngles.x))
+		wrapBool(sub.writeFloat(eulerAngles.y))
+		wrapBool(sub.writeFloat(eulerAngles.z))
+		wrapBool(sub.writeFloat(scale.x))
+		wrapBool(sub.writeFloat(scale.y))
+		wrapBool(sub.writeFloat(scale.z))
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
+		const glm::vec3 &pivot = node.worldPivot();
+		wrapBool(sub.writeFloat(pivot.x))
+		wrapBool(sub.writeFloat(pivot.y))
+		wrapBool(sub.writeFloat(pivot.z))
+	}
+	if (node.palette().colorCount() > 0) {
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PALETTE_V6, ws);
+		const palette::Palette &palette = node.palette();
+		const uint8_t colorCount = palette.colorCount();
+		sub.writeUInt8(colorCount);
+		for (uint8_t i = 0; i < colorCount; ++i) {
+			const core::RGBA rgba = palette.color(i);
+			wrapBool(sub.writeUInt8(rgba.r))
+			wrapBool(sub.writeUInt8(rgba.g))
+			wrapBool(sub.writeUInt8(rgba.b))
+			wrapBool(sub.writeUInt8(rgba.a))
+		}
+		for (uint8_t i = 0; i < colorCount; ++i) {
+			wrapBool(sub.writeBool(palette.hasEmit(i)))
+		}
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6, ws);
+		const voxel::Region &region = node.region();
+		const glm::ivec3 mins = region.getLowerCorner();
+		const glm::ivec3 maxs = region.getUpperCorner() + 1;
+		wrapBool(sub.writeFloat(mins.x))
+		wrapBool(sub.writeFloat(mins.y))
+		wrapBool(sub.writeFloat(mins.z))
+		wrapBool(sub.writeFloat(maxs.x))
+		wrapBool(sub.writeFloat(maxs.y))
+		wrapBool(sub.writeFloat(maxs.z))
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6, ws);
+		sub.writeBool(!node.visible());
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
+		const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
+		wrapBool(sub.writeUInt16(dimensions.x))
+		wrapBool(sub.writeUInt16(dimensions.y))
+		wrapBool(sub.writeUInt16(dimensions.z))
+	}
+	{
+		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_BLOCKS_V6, ws);
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		const voxel::Region &region = volume->region();
+		const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
+		for (int x = region.getUpperX(); x >= region.getLowerX(); x--) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); y++) {
+				for (int z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
+					const voxel::Voxel &voxel = volume->voxel(x, y, z);
+					if (voxel::isAir(voxel.getMaterial())) {
+						wrapBool(sub.writeUInt8(emptyColorIndex))
+					} else {
+						wrapBool(sub.writeUInt8(voxel.getColor()))
+					}
+				}
+			}
+		}
+	}
+	if (!node.name().empty()) {
+		ws.writeUInt8(priv::CHUNK_ID_SHAPE_NAME_V6);
+		ws.writePascalStringUInt8(node.name());
+	}
+	return savePointNodes(sceneGraph, node, ws);
+}
+
 bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -842,125 +994,8 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	}
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
-		if (!node.isAnyModelNode()) {
-			continue;
-		}
-		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, *stream);
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_ID_V6, ws);
-			wrapBool(sub.writeUInt16(node.id()))
-		}
-		if (node.parent() != sceneGraph.root().id()) {
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PARENT_ID_V6, ws);
-			wrapBool(sub.writeUInt16(node.parent()))
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_TRANSFORM_V6, ws);
-			scenegraph::KeyFrameIndex keyFrameIdx = 0;
-			const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-			const glm::vec3 pos = transform.localTranslation();
-			const glm::vec3 eulerAngles = glm::eulerAngles(transform.localOrientation());
-			const glm::vec3 scale = transform.localScale();
-			wrapBool(sub.writeFloat(pos.x))
-			wrapBool(sub.writeFloat(pos.y))
-			wrapBool(sub.writeFloat(pos.z))
-			wrapBool(sub.writeFloat(eulerAngles.x))
-			wrapBool(sub.writeFloat(eulerAngles.y))
-			wrapBool(sub.writeFloat(eulerAngles.z))
-			wrapBool(sub.writeFloat(scale.x))
-			wrapBool(sub.writeFloat(scale.y))
-			wrapBool(sub.writeFloat(scale.z))
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
-			const glm::vec3 &pivot = node.worldPivot();
-			wrapBool(sub.writeFloat(pivot.x))
-			wrapBool(sub.writeFloat(pivot.y))
-			wrapBool(sub.writeFloat(pivot.z))
-		}
-		if (node.palette().colorCount() > 0) {
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PALETTE_V6, ws);
-			const palette::Palette &palette = node.palette();
-			const uint8_t colorCount = palette.colorCount();
-			sub.writeUInt8(colorCount);
-			for (uint8_t i = 0; i < colorCount; ++i) {
-				const core::RGBA rgba = palette.color(i);
-				wrapBool(sub.writeUInt8(rgba.r))
-				wrapBool(sub.writeUInt8(rgba.g))
-				wrapBool(sub.writeUInt8(rgba.b))
-				wrapBool(sub.writeUInt8(rgba.a))
-			}
-			for (uint8_t i = 0; i < colorCount; ++i) {
-				wrapBool(sub.writeBool(palette.hasEmit(i)))
-			}
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6, ws);
-			const voxel::Region &region = node.region();
-			const glm::ivec3 mins = region.getLowerCorner();
-			const glm::ivec3 maxs = region.getUpperCorner() + 1;
-			wrapBool(sub.writeFloat(mins.x))
-			wrapBool(sub.writeFloat(mins.y))
-			wrapBool(sub.writeFloat(mins.z))
-			wrapBool(sub.writeFloat(maxs.x))
-			wrapBool(sub.writeFloat(maxs.y))
-			wrapBool(sub.writeFloat(maxs.z))
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_IS_HIDDEN_V6, ws);
-			sub.writeBool(!node.visible());
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
-			const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
-			wrapBool(sub.writeUInt16(dimensions.x))
-			wrapBool(sub.writeUInt16(dimensions.y))
-			wrapBool(sub.writeUInt16(dimensions.z))
-		}
-		{
-			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_BLOCKS_V6, ws);
-			const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
-			const voxel::Region &region = volume->region();
-			const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
-			for (int x = region.getUpperX(); x >= region.getLowerX(); x--) {
-				for (int y = region.getLowerY(); y <= region.getUpperY(); y++) {
-					for (int z = region.getLowerZ(); z <= region.getUpperZ(); z++) {
-						const voxel::Voxel &voxel = volume->voxel(x, y, z);
-						if (voxel::isAir(voxel.getMaterial())) {
-							wrapBool(sub.writeUInt8(emptyColorIndex))
-						} else {
-							wrapBool(sub.writeUInt8(voxel.getColor()))
-						}
-					}
-				}
-			}
-		}
-#if 0
-		{
-			core::String name = "TODO";
-			glm::vec3 pos;
-			core::string::parseVec3(node.property(name), &pos[0]);
-			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_V6))
-			wrapBool(ws.writePascalStringUInt8(name))
-			wrapBool(ws.writeFloat(pos.x))
-			wrapBool(ws.writeFloat(pos.y))
-			wrapBool(ws.writeFloat(pos.z))
-		}
-#endif
-#if 0
-		{
-			core::String name = "TODO";
-			glm::vec3 poiPos;
-			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6))
-			wrapBool(ws.writePascalStringUInt8(name))
-			wrapBool(ws.writeFloat(poiPos.x))
-			wrapBool(ws.writeFloat(poiPos.y))
-			wrapBool(ws.writeFloat(poiPos.z))
-		}
-#endif
-		if (!node.name().empty()) {
-			ws.writeUInt8(priv::CHUNK_ID_SHAPE_NAME_V6);
-			ws.writePascalStringUInt8(node.name());
+		if (node.isAnyModelNode()) {
+			wrapBool(saveModelNode(sceneGraph, node, stream))
 		}
 	}
 
