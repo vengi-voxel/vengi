@@ -13,6 +13,8 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed invalid log levels
+   - Added a new node type for named points
+   - Improved `3zh` format support
 
 VoxEdit:
 
