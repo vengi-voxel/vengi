@@ -2,7 +2,7 @@
 
 ## Voxel formats
 
-> The `vengi` format is the best supported format. Saving into any other format might lose several details from your scene. This depends on the capabilities of the format and the completeness of the implementation for supporting that particular format.
+> The [vengi](FormatSpec.md) format is the best supported format. Saving into any other format might lose several details from your scene. This depends on the capabilities of the format and the completeness of the implementation for supporting that particular format.
 
 | Name                       | Extension   | Loading | Saving | Thumbnails | Palette | Animations |
 | :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- |
