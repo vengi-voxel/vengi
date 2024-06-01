@@ -33,26 +33,6 @@ bool FilesystemArchive::add(const core::String &path, const core::String &filter
 	return ret;
 }
 
-static FileMode convertMode(const core::String &path, FileMode mode) {
-	if (core::string::isAbsolutePath(path)) {
-		if (mode == FileMode::Read || mode == FileMode::SysRead) {
-			return FileMode::SysRead;
-		}
-		if (mode == FileMode::Write || mode == FileMode::SysWrite) {
-			return FileMode::SysWrite;
-		}
-		core_assert_msg(false, "mode not supported: %d", (int)mode);
-	} else {
-		if (mode == FileMode::SysRead) {
-			return FileMode::Read;
-		}
-		if (mode == FileMode::SysWrite) {
-			return FileMode::Write;
-		}
-	}
-	return mode;
-}
-
 io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) const {
 	Log::debug("searching for %s in %i files", path.c_str(), (int)_files.size());
 	for (const auto &e : _files) {
@@ -68,7 +48,7 @@ io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) con
 		Log::trace("%s doesn't match %s", e.fullPath.c_str(), path.c_str());
 	}
 	if (_files.empty()) {
-		const io::FilePtr &file = _filesytem->open(path, convertMode(path, mode));
+		const io::FilePtr &file = _filesytem->open(path, mode);
 		if (file->validHandle()) {
 			return file;
 		}
@@ -108,7 +88,8 @@ SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) 
 }
 
 SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
-	io::FileStream *stream = new io::FileStream(open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write));
+	io::FilePtr file = open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write);
+	io::FileStream *stream = new io::FileStream(file);
 	if (!stream->valid()) {
 		delete stream;
 		return nullptr;
