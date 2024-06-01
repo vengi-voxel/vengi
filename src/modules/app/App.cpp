@@ -35,6 +35,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <backward.h>
 
 // osx delayed loading of a NSDocument derived file type
 static core::String g_loadingDocument;
@@ -67,6 +68,7 @@ void App::runFrameEmscripten() {
 }
 #endif
 
+#ifdef OWN_SIGNAL_HANDLER
 #ifdef _WIN32
 static LONG WINAPI app_crash_handler(LPEXCEPTION_POINTERS) {
 	core_write_stacktrace();
@@ -77,6 +79,7 @@ static void app_crash_handler(int signal) {
 	core_write_stacktrace();
 	_exit(1);
 }
+#endif
 #endif
 
 static void app_graceful_shutdown(int signo) {
@@ -141,6 +144,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 
 	core_assert_init(nullptr);
 
+#ifdef OWN_SIGNAL_HANDLER
 #ifdef _WIN32
 	SetUnhandledExceptionFilter(&app_crash_handler);
 #else
@@ -158,6 +162,9 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	sigaction(SIGTRAP, &action, nullptr); // Trace/breakpoint trap
 	sigaction(SIGXCPU, &action, nullptr); // CPU time limit exceeded (4.2BSD)
 	sigaction(SIGXFSZ, &action, nullptr); // File size limit exceeded (4.2BSD)
+#endif
+#else
+	backward::SignalHandling sh;
 #endif
 
 	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
