@@ -6,6 +6,11 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "io/Stream.h"
+
+namespace io {
+class WriteStream;
+}
 
 namespace core {
 
@@ -14,10 +19,10 @@ public:
 	/**
 	 * @return 0 for success, anything else is an error
 	 * @note stdout is catched in the output buffer if given
-	 * @param[out] output The output buffer for stdout/stderr of the process. @c bufSize must also be @c >0 to capture the output.
-	 * @param[in] bufSize The buffer size in bytes for the output buffer
+	 * @param[out] stream The output buffer for stdout/stderr of the process.
 	 */
-	static int exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory = nullptr, char *output = nullptr, size_t bufSize = 0);
+	static int exec(const core::String &command, const core::DynamicArray<core::String> &arguments,
+					const char *workingDirectory = nullptr, io::WriteStream *stream = nullptr);
 };
 
-}
+} // namespace core

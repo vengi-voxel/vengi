@@ -39,7 +39,7 @@ uint8_t* BufferedReadWriteStream::release() {
 }
 
 void BufferedReadWriteStream::resizeBuffer(int64_t size) {
-	if (size == 0u) {
+	if (size <= 0u) {
 		return;
 	}
 	if (_capacity >= size) {

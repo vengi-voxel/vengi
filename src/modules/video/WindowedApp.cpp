@@ -12,6 +12,7 @@
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "app/I18N.h"
+#include "io/BufferedReadWriteStream.h"
 #include "video/Trace.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
@@ -170,15 +171,18 @@ bool WindowedApp::isDarkMode() const {
 #ifdef __MACOSX__
 	return isOSXDarkMode();
 #elif __LINUX__
-	core::Process process;
 	core::DynamicArray<core::String> arguments;
 	arguments.push_back("get");
 	arguments.push_back("org.gnome.desktop.interface");
 	arguments.push_back("gtk-theme");
-	char outputBuf[4096] = "";
-	const int exitCode = process.exec("/usr/bin/gsettings", arguments, nullptr, outputBuf, sizeof(outputBuf));
+	io::BufferedReadWriteStream stream(4096);
+	const int exitCode = core::Process::exec("/usr/bin/gsettings", arguments, nullptr, &stream);
 	if (exitCode == 0) {
-		return core::string::icontains(outputBuf, "dark");
+		stream.seek(0);
+		core::String output;
+		stream.readString(stream.size(), output);
+		Log::error("%s", output.c_str());
+		return core::string::icontains(output, "dark");
 	}
 	return true;
 #elif __WINDOWS__

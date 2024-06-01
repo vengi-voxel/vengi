@@ -10,6 +10,7 @@
 #include "core/Process.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "util/IncludeUtil.h"
 #include "video/Shader.h"
@@ -56,13 +57,14 @@ void ShaderTool::validate(const core::String &name) {
 	args.push_back(writePath + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
 			   args[0].c_str());
-	char output[4096] = "";
-	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, output, sizeof(output));
+	io::BufferedReadWriteStream stream(4096);
+	int exitCode = core::Process::exec(_glslangValidatorBin, args, nullptr, &stream);
 	if (exitCode != 0) {
 		Log::error("Failed to validate shader '%s'. Exitcode: %i", name.c_str(), exitCode);
-		if (output[0] != '\0') {
-			Log::error("%s", output);
-		}
+		stream.seek(0);
+		core::String output;
+		stream.readString(stream.size(), output);
+		Log::error("%s", output.c_str());
 		Log::debug("%s %s%s", _glslangValidatorBin.c_str(), writePath.c_str(), name.c_str());
 		_exitCode = exitCode;
 	}

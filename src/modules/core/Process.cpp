@@ -6,6 +6,7 @@
 #include <SDL_platform.h>
 #include <SDL_assert.h>
 #include "core/Log.h"
+#include "io/Stream.h"
 
 #include <fcntl.h>
 #include <string.h>
@@ -39,7 +40,7 @@
 
 namespace core {
 
-int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, char *output, size_t bufSize) {
+int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, io::WriteStream *stream) {
 #if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
@@ -81,16 +82,16 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	}
 
 	close(link[1]);
-	if (bufSize > 0) {
+	if (stream != nullptr) {
+		char output[1024];
 		char* p = output;
-		size_t size = bufSize;
 		for (;;) {
-			const int n = (int)::read(link[0], p, size);
+			const int n = (int)::read(link[0], p, sizeof(output));
 			if (n <= 0) {
 				break;
 			}
 			p += n;
-			size -= n;
+			stream->write(output, n);
 		}
 	}
 	// we are the parent and are blocking until the child stopped
