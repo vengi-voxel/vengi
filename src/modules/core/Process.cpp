@@ -3,6 +3,7 @@
  */
 
 #include "Process.h"
+#include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "io/Stream.h"
 #include <SDL_assert.h>
@@ -43,31 +44,73 @@ namespace core {
 int Process::exec(const core::String &command, const core::DynamicArray<core::String> &arguments,
 				  const char *workingDirectory, io::WriteStream *stream) {
 #if defined(__LINUX__) || defined(__MACOSX__)
-	int link[2];
-	if (::pipe(link) < 0) {
+	int stdoutfd[2];
+	if (::pipe(stdoutfd) < 0) {
 		Log::error("pipe failed: %s", strerror(errno));
 		return -1;
 	}
+
+	int stderrfd[2] = {0, 0};
+	if (pipe(stderrfd)) {
+		close(stdoutfd[STDIN_FILENO]);
+		close(stdoutfd[STDOUT_FILENO]);
+		Log::error("pipe failed: %s", strerror(errno));
+		return -1;
+	}
+
+	sigset_t blockMask, origMask;
+	sigemptyset(&blockMask);
+	sigaddset(&blockMask, SIGCHLD);
+	// TODO: probably (usually) need to use pthread_sigmask() instead
+	sigprocmask(SIG_BLOCK, &blockMask, &origMask);
+
+	struct sigaction saIgnore, saOrigQuit, saOrigInt, saDefault;
+	saIgnore.sa_handler = SIG_IGN;
+	saIgnore.sa_flags = 0;
+	sigemptyset(&saIgnore.sa_mask);
+	sigaction(SIGINT, &saIgnore, &saOrigInt);
+	sigaction(SIGQUIT, &saIgnore, &saOrigQuit);
+
 	const pid_t childPid = ::fork();
 	if (childPid < 0) {
+		sigprocmask(SIG_SETMASK, &origMask, NULL);
+		sigaction(SIGINT, &saOrigInt, NULL);
+		sigaction(SIGQUIT, &saOrigQuit, NULL);
 		Log::error("fork failed: %s", strerror(errno));
 		return -1;
 	}
 
 	if (childPid == 0) {
-		const char *argv[64];
+		const char *argv[512];
 		int argc = 0;
 		argv[argc++] = command.c_str();
 		for (const core::String &arg : arguments) {
 			argv[argc++] = arg.c_str();
-			if (argc >= 63) {
+			if (argc >= lengthof(argv) - 1) {
 				break;
 			}
 		}
 		argv[argc] = nullptr;
-		::dup2(link[1], STDOUT_FILENO);
-		::close(link[0]);
-		::close(link[1]);
+
+		saDefault.sa_handler = SIG_DFL;
+		saDefault.sa_flags = 0;
+		sigemptyset(&saDefault.sa_mask);
+
+		if (saOrigInt.sa_handler != SIG_IGN)
+			sigaction(SIGINT, &saDefault, NULL);
+		if (saOrigQuit.sa_handler != SIG_IGN)
+			sigaction(SIGQUIT, &saDefault, NULL);
+
+		sigprocmask(SIG_SETMASK, &origMask, NULL);
+
+		// the child process isn't reading anything, so close
+		// stdin and the read end of the pipes
+		::close(STDIN_FILENO);
+		::close(stdoutfd[STDIN_FILENO]);
+		// dup stdout and stderr to the write end of the pipes,
+		// so the parent process can read them
+		::dup2(stdoutfd[STDOUT_FILENO], STDOUT_FILENO);
+		::dup2(stderrfd[STDOUT_FILENO], STDERR_FILENO);
 		if (workingDirectory != nullptr) {
 			const int retVal = ::chdir(workingDirectory);
 			if (retVal == -1) {
@@ -80,19 +123,27 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 		// this should never get called
 		Log::error("failed to run '%s' with %i parameters: %s (%i)", command.c_str(), (int)arguments.size(),
 				   strerror(errno), errno);
-		::exit(-1);
+		::exit(errno);
 	}
 
-	close(link[1]);
+	// the parent isn't writing anything to the child, so close the write
+	// end of the pipes
+	close(stdoutfd[STDOUT_FILENO]);
+	close(stderrfd[STDOUT_FILENO]);
 	if (stream != nullptr) {
 		char output[1024];
-		char *p = output;
 		for (;;) {
-			const int n = (int)::read(link[0], p, sizeof(output));
+			const int n = (int)::read(stdoutfd[STDIN_FILENO], output, sizeof(output));
 			if (n <= 0) {
 				break;
 			}
-			p += n;
+			stream->write(output, n);
+		}
+		for (;;) {
+			const int n = (int)::read(stderrfd[STDIN_FILENO], output, sizeof(output));
+			if (n <= 0) {
+				break;
+			}
 			stream->write(output, n);
 		}
 	}
@@ -115,6 +166,10 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 	if (WEXITSTATUS(status) != 0) {
 		return -1;
 	}
+
+	sigprocmask(SIG_SETMASK, &origMask, NULL);
+	sigaction(SIGINT, &saOrigInt, NULL);
+	sigaction(SIGQUIT, &saOrigQuit, NULL);
 
 	// success
 	return 0;
