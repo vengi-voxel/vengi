@@ -35,7 +35,11 @@
 #else
 #include <unistd.h>
 #endif
+#ifdef HAVE_BACKWARD
 #include <backward.h>
+#else
+#define OWN_SIGNAL_HANDLER
+#endif
 
 // osx delayed loading of a NSDocument derived file type
 static core::String g_loadingDocument;
