@@ -26,10 +26,14 @@ VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::Time
 	_fullScreenApplication = false;
 	_showConsole = false;
 	_windowWidth = 1024;
-	_windowHeight = 768;
+	_windowHeight = 820;
 }
 
-void VoxConvertUI::genericOptions(const core::String &targetFile, const io::FormatDescription *desc) const {
+void VoxConvertUI::genericOptions(const io::FormatDescription *desc) {
+	if (_targetFileExists) {
+		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
+		ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
+	}
 	if (desc == nullptr) {
 		return;
 	}
@@ -146,6 +150,10 @@ void VoxConvertUI::sourceOptions(const io::FormatDescription *desc) const {
 app::AppState VoxConvertUI::onConstruct() {
 	app::AppState state = Super::onConstruct();
 	voxelformat::FormatConfig::init();
+
+	_lastTarget = core::Var::get("ui_lasttarget", "0", "Last selected target format");
+	_lastSource = core::Var::get("ui_lastsource", "0", "Last selected target format");
+
 	return state;
 }
 
@@ -158,6 +166,12 @@ app::AppState VoxConvertUI::onInit() {
 			_filterEntries.push_back(*desc);
 		}
 		_filterEntries.sort(core::Greater<io::FormatDescription>());
+	}
+	if (_lastTarget->intVal() < 0 || _lastTarget->intVal() >= (int)_filterEntries.size()) {
+		_lastTarget->setVal(0);
+	}
+	if (_lastSource->intVal() < 0 || _lastSource->intVal() >= (int)_filterEntries.size()) {
+		_lastSource->setVal(0);
 	}
 	return state;
 }
@@ -207,7 +221,7 @@ void VoxConvertUI::onRenderUI() {
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
 				if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
-					ImGui::OpenPopup(POPUP_TITLE_ABOUT);
+					ImGui::OpenPopup(POPUP_TITLE_ABOUT); // FIXME
 				}
 				ImGui::EndMenu();
 			}
@@ -215,20 +229,20 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndMenuBar();
 		}
 
-		io::FormatDescription entries[] = {_filterEntries[_currentSourceFilterFormatEntry], {"", {}, {}, 0u}};
+		io::FormatDescription entries[] = {_filterEntries[_lastSource->intVal()], {"", {}, {}, 0u}};
 		if (ImGui::InputFile(_("Source"), &_source, entries)) {
 			_dirtyTargetFile = true;
 		}
 
 		ImGui::PushItemWidth(_filterFormatTextWidth);
-		const core::String sourceStr = io::convertToFilePattern(_filterEntries[_currentSourceFilterFormatEntry]);
+		const core::String sourceStr = io::convertToFilePattern(_filterEntries[_lastSource->intVal()]);
 		if (ImGui::BeginCombo(_("Source format"), sourceStr.c_str(), ImGuiComboFlags_HeightLargest)) {
 			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-				const bool selected = i == _currentSourceFilterFormatEntry;
+				const bool selected = i == _lastSource->intVal();
 				const io::FormatDescription &format = _filterEntries[i];
 				const core::String &text = io::convertToFilePattern(format);
 				if (ImGui::Selectable(text.c_str(), selected)) {
-					_currentSourceFilterFormatEntry = i;
+					_lastSource->setVal(i);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -237,14 +251,14 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndCombo();
 		}
 
-		const core::String targetStr = io::convertToFilePattern(_filterEntries[_currentTargetFilterFormatEntry]);
+		const core::String targetStr = io::convertToFilePattern(_filterEntries[_lastTarget->intVal()]);
 		if (ImGui::BeginCombo(_("Target format"), targetStr.c_str(), ImGuiComboFlags_HeightLargest)) {
 			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
-				const bool selected = i == _currentTargetFilterFormatEntry;
+				const bool selected = i == _lastTarget->intVal();
 				const io::FormatDescription &format = _filterEntries[i];
 				const core::String &text = io::convertToFilePattern(format);
 				if (ImGui::Selectable(text.c_str(), selected)) {
-					_currentTargetFilterFormatEntry = i;
+					_lastTarget->setVal(i);
 					_dirtyTargetFile = true;
 				}
 				if (selected) {
@@ -256,22 +270,22 @@ void VoxConvertUI::onRenderUI() {
 		ImGui::PopItemWidth();
 
 		if (_dirtyTargetFile) {
-			_targetFile = core::string::replaceExtension(
-				_source, _filterEntries[_currentTargetFilterFormatEntry].mainExtension());
+			_targetFile =
+				core::string::replaceExtension(_source, _filterEntries[_lastTarget->intVal()].mainExtension());
 			_targetFileExists = _filesystem->exists(_targetFile);
 			_dirtyTargetFile = false;
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			genericOptions(_targetFile, &_filterEntries[_currentSourceFilterFormatEntry]);
+			genericOptions(&_filterEntries[_lastSource->intVal()]);
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			sourceOptions(&_filterEntries[_currentSourceFilterFormatEntry]);
+			sourceOptions(&_filterEntries[_lastSource->intVal()]);
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			targetOptions(&_filterEntries[_currentTargetFilterFormatEntry]);
+			targetOptions(&_filterEntries[_lastTarget->intVal()]);
 		}
 
 		if (ImGui::Button(_("Convert"))) {
@@ -280,6 +294,7 @@ void VoxConvertUI::onRenderUI() {
 			} else {
 				io::BufferedReadWriteStream stream;
 				core::DynamicArray<core::String> arguments{"--input", _source, "--output", _targetFile};
+				// only dirty and non-default variables are set for the voxconvert call
 				core::Var::visit([&](const core::VarPtr &var) {
 					if (var->isDirty()) {
 						arguments.push_back("-set");
@@ -287,6 +302,9 @@ void VoxConvertUI::onRenderUI() {
 						arguments.push_back(var->strVal());
 					}
 				});
+				if (_overwriteTargetFile) {
+					arguments.push_back("-f");
+				}
 				const int exitCode = core::Process::exec(_voxconvertBinary, arguments, nullptr, &stream);
 				stream.seek(0);
 				stream.readString(stream.size(), _output);

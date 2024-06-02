@@ -19,12 +19,14 @@ private:
 	core::String _voxconvertBinary = "vengi-voxconvert";
 	core::String _targetFile;
 	bool _targetFileExists = false;
+	bool _overwriteTargetFile = false;
 	bool _dirtyTargetFile = false;
 	float _filterFormatTextWidth = -1.0f;
-	int _currentTargetFilterFormatEntry = 0;
-	int _currentSourceFilterFormatEntry = 0;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
-	void genericOptions(const core::String &targetFile, const io::FormatDescription *desc) const;
+	core::VarPtr _lastTarget;
+	core::VarPtr _lastSource;
+
+	void genericOptions(const io::FormatDescription *desc);
 	void sourceOptions(const io::FormatDescription *desc) const;
 	void targetOptions(const io::FormatDescription *desc) const;
 
