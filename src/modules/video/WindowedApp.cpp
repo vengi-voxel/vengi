@@ -181,7 +181,6 @@ bool WindowedApp::isDarkMode() const {
 		stream.seek(0);
 		core::String output;
 		stream.readString(stream.size(), output);
-		Log::error("%s", output.c_str());
 		return core::string::icontains(output, "dark");
 	}
 	return true;
