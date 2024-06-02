@@ -315,6 +315,7 @@ char* append(char* buf, size_t bufsize, const char* string);
 int count(const char *buf, char chr);
 
 core::String eraseAllChars(const core::String& str, char chr);
+core::String removeAnsiColors(const char* message);
 core::String urlEncode(const core::String &inBuf);
 /**
  * @sa urlEncode()

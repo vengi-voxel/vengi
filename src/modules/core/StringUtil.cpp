@@ -122,6 +122,23 @@ core::String eraseAllChars(const core::String &str, char chr) {
 	return tmp;
 }
 
+core::String removeAnsiColors(const char* message) {
+	core::String out(SDL_strlen(message) + 1, '\0');
+	int i = 0;
+	for (const char *c = message; *c != '\0'; ++c) {
+		// https://en.wikipedia.org/wiki/ANSI_escape_code
+		if (*c >= 030 && *c < 037 && *(c + 1) == '[') {
+			c += 2;
+			while (*c != 'm' && *c != '\0') {
+				++c;
+			}
+			continue;
+		}
+		out[i++] = *c;
+	}
+	return out;
+}
+
 char *getBeforeToken(char **buffer, const char *token, size_t bufferSize) {
 	if (bufferSize <= 0) {
 		return nullptr;
