@@ -118,6 +118,42 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	return true;
 }
 
+core::String Filesystem::findBinary(const core::String &binaryName) const {
+	core::String binaryWithExtension = binaryName;
+#ifdef _WIN32
+	binaryWithExtension += ".exe";
+#endif
+	// Check current working directory
+	if (fs_exists(binaryWithExtension.c_str())) {
+		return absolutePath(binaryWithExtension);
+	}
+
+	// Check the directory of the current binary
+	core::String binaryPath = core::string::path(_basePath, binaryWithExtension);
+	if (fs_exists(binaryPath.c_str())) {
+		return absolutePath(binaryPath);
+	}
+
+	// Check PATH environment variable
+	if (const char *path = SDL_getenv("PATH")) {
+		const char *pathSep =
+#ifdef _WIN32
+			";";
+#else
+			":";
+#endif
+		core::DynamicArray<core::String> paths;
+		core::string::splitString(path, paths, pathSep);
+		for (const auto &path : paths) {
+			const core::String p = core::string::path(path, binaryWithExtension);
+			if (fs_exists(p.c_str())) {
+				return p;
+			}
+		}
+	}
+	return "";
+}
+
 const core::DynamicArray<core::String> Filesystem::otherPaths() const {
 	return _state._other;
 }
@@ -212,7 +248,6 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 					continue;
 				}
 			}
-
 		}
 		if (!fs_stat(entry.fullPath.c_str(), entry)) {
 			Log::debug("Could not stat file %s", entry.fullPath.c_str());
@@ -254,7 +289,7 @@ void Filesystem::shutdown() {
 #endif
 }
 
-core::String Filesystem::absolutePath(const core::String &path) {
+core::String Filesystem::absolutePath(const core::String &path) const {
 	core::String abspath = fs_realpath(path.c_str());
 	if (abspath.empty()) {
 		for (const core::String &p : paths()) {
@@ -431,7 +466,7 @@ core::String Filesystem::writePath(const core::String &name) const {
 	return core::string::path(_homePath, name);
 }
 
-long Filesystem::write(const core::String& filename, io::ReadStream &stream) {
+long Filesystem::write(const core::String &filename, io::ReadStream &stream) {
 	const core::String &fullPath = core::string::path(_homePath, filename);
 	const core::String path(core::string::extractPath(fullPath.c_str()));
 	createDir(path, true);
@@ -464,7 +499,7 @@ bool Filesystem::syswrite(const core::String &filename, const uint8_t *content, 
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-long Filesystem::syswrite(const core::String& filename, io::ReadStream &stream) const {
+long Filesystem::syswrite(const core::String &filename, io::ReadStream &stream) const {
 	io::File f(filename, FileMode::SysWrite);
 	if (!createDir(f.path())) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
@@ -479,7 +514,7 @@ bool Filesystem::syswrite(const core::String &filename, const core::String &stri
 	return syswrite(filename, buf, string.size());
 }
 
-core::String searchPathFor(const FilesystemPtr& filesystem, const core::String &path, const core::String &filename) {
+core::String searchPathFor(const FilesystemPtr &filesystem, const core::String &path, const core::String &filename) {
 	if (filename.empty()) {
 		Log::warn("No filename given to perform lookup in '%s'", path.c_str());
 		return "";

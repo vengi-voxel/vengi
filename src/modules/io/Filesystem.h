@@ -68,6 +68,8 @@ public:
 
 	const Paths& paths() const;
 
+	core::String findBinary(const core::String &binaryName) const;
+
 	/**
 	 * @param[in] path If this is a relative path the filesystem will append this relative path to all
 	 * known search paths when trying to find a file.
@@ -111,7 +113,7 @@ public:
 	static bool isReadableDir(const core::String& name);
 	static bool isRelativePath(const core::String& name);
 
-	core::String absolutePath(const core::String& path);
+	core::String absolutePath(const core::String& path) const;
 
 	/**
 	 * @brief Changes the current working directory
