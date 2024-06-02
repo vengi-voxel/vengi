@@ -7,6 +7,7 @@
 #include "IconsLucide.h"
 #include "PopupAbout.h"
 #include "app/App.h"
+#include "command/CommandHandler.h"
 #include "core/Process.h"
 #include "core/StringUtil.h"
 #include "imgui.h"
@@ -236,13 +237,15 @@ void VoxConvertUI::onRenderUI() {
 
 		ImGui::PushItemWidth(_filterFormatTextWidth);
 		const core::String sourceStr = io::convertToFilePattern(_filterEntries[_lastSource->intVal()]);
-		if (ImGui::BeginCombo(_("Source format"), sourceStr.c_str(), ImGuiComboFlags_HeightLargest)) {
+		if (ImGui::BeginCombo(_("Source format"), sourceStr.c_str())) {
 			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
 				const bool selected = i == _lastSource->intVal();
 				const io::FormatDescription &format = _filterEntries[i];
 				const core::String &text = io::convertToFilePattern(format);
 				if (ImGui::Selectable(text.c_str(), selected)) {
 					_lastSource->setVal(i);
+					_source = "";
+					_dirtyTargetFile = true;
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -252,7 +255,7 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		const core::String targetStr = io::convertToFilePattern(_filterEntries[_lastTarget->intVal()]);
-		if (ImGui::BeginCombo(_("Target format"), targetStr.c_str(), ImGuiComboFlags_HeightLargest)) {
+		if (ImGui::BeginCombo(_("Target format"), targetStr.c_str())) {
 			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
 				const bool selected = i == _lastTarget->intVal();
 				const io::FormatDescription &format = _filterEntries[i];
@@ -270,9 +273,14 @@ void VoxConvertUI::onRenderUI() {
 		ImGui::PopItemWidth();
 
 		if (_dirtyTargetFile) {
-			_targetFile =
-				core::string::replaceExtension(_source, _filterEntries[_lastTarget->intVal()].mainExtension());
-			_targetFileExists = _filesystem->exists(_targetFile);
+			if (_source.empty()) {
+				_targetFile = "";
+				_targetFileExists = false;
+			} else {
+				_targetFile =
+					core::string::replaceExtension(_source, _filterEntries[_lastTarget->intVal()].mainExtension());
+				_targetFileExists = _filesystem->exists(_targetFile);
+			}
 			_dirtyTargetFile = false;
 		}
 
@@ -313,10 +321,17 @@ void VoxConvertUI::onRenderUI() {
 					Log::error("Failed to convert: %s", _output.c_str());
 				} else {
 					Log::info("Converted successfully");
+					_targetFileExists = _filesystem->exists(_targetFile);
 				}
 			}
 		}
 		ImGui::TooltipText(_("Found vengi-voxconvert at %s"), _voxconvertBinary.c_str());
+		if (_targetFileExists) {
+			ImGui::SameLine();
+			if (ImGui::Button(_("Open target file"))) {
+				command::executeCommands("url \"file://" + _targetFile + "\"");
+			}
+		}
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		ImGui::InputTextMultiline("##output", &_output, ImVec2(0, 0), ImGuiInputTextFlags_ReadOnly);
 	}
