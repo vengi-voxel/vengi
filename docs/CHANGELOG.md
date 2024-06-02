@@ -16,6 +16,10 @@ General:
    - Added a new node type for named points
    - Improved `3zh` format support
 
+VoxConvert:
+
+   - Added a basic UI for voxconvert
+
 VoxEdit:
 
    - Improved brush support

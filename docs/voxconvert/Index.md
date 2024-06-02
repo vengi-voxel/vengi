@@ -1,6 +1,6 @@
 # About
 
-Command line tool to convert voxel volume, image or polygon formats between each other.
+Command line tool (and UI variant) to convert voxel volume, image or polygon formats between each other.
 
 Modifying the voxels is also supported - rotating, transferring, create lod, extract palette, execute lua scripts and a lot more.
 
