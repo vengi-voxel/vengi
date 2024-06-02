@@ -6,6 +6,13 @@ set(SRCS
 engine_add_executable(TARGET ${PROJECT_NAME} SRCS ${SRCS} DESCRIPTION "Command line voxel tool")
 engine_target_link_libraries(TARGET ${PROJECT_NAME} DEPENDENCIES app voxelformat voxelgenerator)
 
+set(UI_SRCS
+	VoxConvertUI.h VoxConvertUI.cpp
+)
+
+engine_add_executable(TARGET ${PROJECT_NAME}-ui SRCS ${UI_SRCS} DESCRIPTION "UI voxel tool")
+engine_target_link_libraries(TARGET ${PROJECT_NAME}-ui DEPENDENCIES ui voxelformat)
+
 enable_testing()
 configure_file(tests/tests.sh.in ${PROJECT_NAME}-tests.sh @ONLY)
 configure_file(tests/tests.bat.in ${PROJECT_NAME}-tests.bat @ONLY)
