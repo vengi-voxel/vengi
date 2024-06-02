@@ -18,12 +18,12 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#include <windows.h>
 #include <conio.h>
 #include <direct.h>
 #include <io.h>
 #include <shellapi.h>
 #include <shlobj.h>
-#include <windows.h>
 #elif defined(__LINUX__) or defined(__MACOSX__)
 #include <dirent.h>
 #include <dlfcn.h>
