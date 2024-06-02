@@ -72,6 +72,8 @@ protected:
 	bool _persistUISettings = true;
 	bool _imguiBackendInitialized = false;
 
+	bool _showConsole = true;
+
 	/**
 	 * If anything in the ui has changed that makes the saved ini file invalid, you can
 	 * just bump this version to reset to default instead of leaving the user with a broken

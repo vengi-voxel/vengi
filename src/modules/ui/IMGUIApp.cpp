@@ -610,7 +610,9 @@ app::AppState IMGUIApp::onRunning() {
 	if (renderUI) {
 		core_trace_scoped(IMGUIAppOnRenderUI);
 		onRenderUI();
-		_console.render(_lastExecutedCommand);
+		if (_showConsole) {
+			_console.render(_lastExecutedCommand);
+		}
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 		if (_showWindow) {
