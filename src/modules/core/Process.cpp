@@ -3,10 +3,10 @@
  */
 
 #include "Process.h"
-#include <SDL_platform.h>
-#include <SDL_assert.h>
 #include "core/Log.h"
 #include "io/Stream.h"
+#include <SDL_assert.h>
+#include <SDL_platform.h>
 
 #include <fcntl.h>
 #include <string.h>
@@ -17,30 +17,31 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <windows.h>
-#include <shlobj.h>
-#include <shellapi.h>
+#include <conio.h>
 #include <direct.h>
 #include <io.h>
-#include <conio.h>
+#include <shellapi.h>
+#include <shlobj.h>
+#include <windows.h>
 #elif defined(__LINUX__) or defined(__MACOSX__)
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <sys/time.h>
 #include <dirent.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pwd.h>
 #include <dlfcn.h>
-#include <locale.h>
-#include <signal.h>
 #include <errno.h>
+#include <locale.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #endif
 
 namespace core {
 
-int Process::exec(const core::String& command, const core::DynamicArray<core::String>& arguments, const char* workingDirectory, io::WriteStream *stream) {
+int Process::exec(const core::String &command, const core::DynamicArray<core::String> &arguments,
+				  const char *workingDirectory, io::WriteStream *stream) {
 #if defined(__LINUX__) || defined(__MACOSX__)
 	int link[2];
 	if (::pipe(link) < 0) {
@@ -54,10 +55,10 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	}
 
 	if (childPid == 0) {
-		const char* argv[64];
+		const char *argv[64];
 		int argc = 0;
 		argv[argc++] = command.c_str();
-		for (const core::String& arg : arguments) {
+		for (const core::String &arg : arguments) {
 			argv[argc++] = arg.c_str();
 			if (argc >= 63) {
 				break;
@@ -74,17 +75,18 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 			}
 		}
 		// we are the child
-		::execv(command.c_str(), const_cast<char* const*>(argv));
+		::execv(command.c_str(), const_cast<char *const *>(argv));
 
 		// this should never get called
-		Log::error("failed to run '%s' with %i parameters: %s (%i)", command.c_str(), (int)arguments.size(), strerror(errno), errno);
+		Log::error("failed to run '%s' with %i parameters: %s (%i)", command.c_str(), (int)arguments.size(),
+				   strerror(errno), errno);
 		::exit(-1);
 	}
 
 	close(link[1]);
 	if (stream != nullptr) {
 		char output[1024];
-		char* p = output;
+		char *p = output;
 		for (;;) {
 			const int n = (int)::read(link[0], p, sizeof(output));
 			if (n <= 0) {
@@ -121,7 +123,7 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	if (!arguments.empty()) {
 		cmd.append(" ");
 	}
-	for (const core::String& argument : arguments) {
+	for (const core::String &argument : arguments) {
 		cmd.append(argument);
 		cmd.append(" ");
 	}
@@ -140,9 +142,9 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	secattr.bInheritHandle = TRUE;
 	secattr.lpSecurityDescriptor = NULL;
 
-	char* commandPtr = SDL_strdup(cmd.c_str());
+	char *commandPtr = SDL_strdup(cmd.c_str());
 	if (!CreateProcess(nullptr, (LPSTR)commandPtr, &secattr, &secattr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr,
-			&startupInfo, &processInfo)) {
+					   &startupInfo, &processInfo)) {
 		DWORD errnum = ::GetLastError();
 		LPTSTR errmsg = nullptr;
 		::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -169,5 +171,4 @@ int Process::exec(const core::String& command, const core::DynamicArray<core::St
 	return 1;
 #endif
 }
-
-}
+} // namespace core
