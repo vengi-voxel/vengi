@@ -5,12 +5,13 @@
 
 #pragma once
 
+#include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "core/Common.h"
 #include "core/Var.h"
 #include "dearimgui/imgui.h"
+#include "video/FileDialogOptions.h"
 #include "video/Types.h"
-#include "app/I18N.h"
 #include <glm/fwd.hpp>
 
 namespace io {
@@ -46,16 +47,18 @@ IMGUI_API bool InputVarInt(const char *label, const char *varName, int step = 1,
 IMGUI_API bool CheckboxVar(const char *label, const core::VarPtr &var);
 IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &var);
 IMGUI_API bool CheckboxVar(const char *label, const char *varName);
-IMGUI_API bool IconCheckboxVar(const char *icon, const char* label, const char* varName);
+IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const char *varName);
 IMGUI_API bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value);
 IMGUI_API bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderVarFloat(const char* label, const char* varName, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool ColorEdit3Var(const char* label, const char* varName);
+IMGUI_API bool SliderVarFloat(const char *label, const core::VarPtr &var, float v_min, float v_max,
+							  const char *format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderVarFloat(const char *label, const char *varName, float v_min, float v_max,
+							  const char *format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool ColorEdit3Var(const char *label, const char *varName);
 IMGUI_API bool MenuItemCmd(const char *label, const char *command);
 IMGUI_API void IconDialog(const char *icon, const char *text);
 IMGUI_API bool Fullscreen(const char *title = "##main", ImGuiWindowFlags additionalFlags = ImGuiWindowFlags_None);
@@ -63,11 +66,12 @@ IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_r
 									  const ImVec4 &main_color = ImVec4(0.0f, 0.0f, 1.0f, 1.0f),
 									  const ImVec4 &backdrop_color = ImVec4(0.0f, 0.0f, 0.5f, 1.0f),
 									  const int circle_count = 13, const float speed = 1.0f);
-IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions, ImGuiInputTextFlags flags = 0u);
+IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions,
+						 ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
 
-template <class Collection>
+template<class Collection>
 bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	const char *previewValue = nullptr;
 	const int itemCount = (int)items.size();
@@ -92,8 +96,8 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	return false;
 }
 
-template <class Collection>
-bool ComboVar(const char* label, const char* varName, const Collection &items) {
+template<class Collection>
+bool ComboVar(const char *label, const char *varName, const Collection &items) {
 	const core::VarPtr &var = core::Var::getSafe(varName);
 	int currentItem = var->intVal();
 	const bool retVal = ComboItems(label, &currentItem, items);
@@ -108,9 +112,9 @@ IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_
 IMGUI_API void TextCentered(const char *text, bool reset = false);
 IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);
-IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
-IMGUI_API bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2& size = ImVec2(0, 0));
-IMGUI_API void TextWrappedUnformatted(const char* text);
+IMGUI_API bool DisabledButton(const char *text, bool disabled, const ImVec2 &size = ImVec2(0, 0));
+IMGUI_API bool DisabledIconButton(const char *icon, const char *text, bool disabled, const ImVec2 &size = ImVec2(0, 0));
+IMGUI_API void TextWrappedUnformatted(const char *text);
 IMGUI_API bool TooltipTextUnformatted(const char *text);
 IMGUI_API bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags = 0,
 						 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
@@ -120,28 +124,35 @@ IMGUI_API bool InputTextMultiline(const char *label, core::String *str, const Im
 IMGUI_API bool InputTextWithHint(const char *label, const char *hint, core::String *str, ImGuiInputTextFlags flags = 0,
 								 ImGuiInputTextCallback callback = nullptr, void *userData = nullptr);
 IMGUI_API const char *CommandButton(const char *title, const char *command, const char *tooltip = nullptr,
-									const ImVec2 &size = ImVec2(0.0f, 0.0f), command::CommandExecutionListener *listener = nullptr);
-IMGUI_API const char *CommandButton(const char *title, const char *command, command::CommandExecutionListener &listener);
-IMGUI_API const char *CommandIconButton(const char *icon, const char *title, const char *command, command::CommandExecutionListener &listener);
+									const ImVec2 &size = ImVec2(0.0f, 0.0f),
+									command::CommandExecutionListener *listener = nullptr);
+IMGUI_API const char *CommandButton(const char *title, const char *command,
+									command::CommandExecutionListener &listener);
+IMGUI_API const char *CommandIconButton(const char *icon, const char *title, const char *command,
+										command::CommandExecutionListener &listener);
 IMGUI_API bool IconCheckbox(const char *icon, const char *text, bool *v);
-IMGUI_API bool BeginIconCombo(const char *icon, const char* text, const char* preview_value, ImGuiComboFlags flags = 0);
+IMGUI_API bool BeginIconCombo(const char *icon, const char *text, const char *preview_value, ImGuiComboFlags flags = 0);
 IMGUI_API bool BeginIconMenu(const char *icon, const char *text, bool enabled = true);
-IMGUI_API bool IconMenuItem(const char *icon, const char* text, const char* shortcut = NULL, bool selected = false, bool enabled = true);
-IMGUI_API bool IconButton(const char *icon, const char *text, const ImVec2& size = ImVec2(0, 0));
+IMGUI_API bool IconMenuItem(const char *icon, const char *text, const char *shortcut = NULL, bool selected = false,
+							bool enabled = true);
+IMGUI_API bool IconButton(const char *icon, const char *text, const ImVec2 &size = ImVec2(0, 0));
 IMGUI_API bool URLButton(const char *title, const char *url);
 IMGUI_API bool URLIconButton(const char *icon, const char *title, const char *url);
-IMGUI_API bool CommandRadioButton(const char *title, const core::String &command, bool enabled, command::CommandExecutionListener* listener = nullptr);
+IMGUI_API bool CommandRadioButton(const char *title, const core::String &command, bool enabled,
+								  command::CommandExecutionListener *listener = nullptr);
 IMGUI_API const char *CommandMenuItem(const char *title, const char *command, bool enabled = true,
 									  command::CommandExecutionListener *listener = nullptr);
 IMGUI_API const char *CommandIconMenuItem(const char *icon, const char *title, const char *command, bool enabled = true,
 										  command::CommandExecutionListener *listener = nullptr);
-IMGUI_API bool IconSelectable(const char *icon, const char *title, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0));
+IMGUI_API bool IconSelectable(const char *icon, const char *title, bool selected = false,
+							  ImGuiSelectableFlags flags = 0, const ImVec2 &size = ImVec2(0, 0));
 IMGUI_API void URLIconItem(const char *icon, const char *title, const char *url, float width = 0.0f);
 IMGUI_API void URLItem(const char *title, const char *url, float width = 0.0f);
 IMGUI_API bool ButtonFullWidth(const char *title);
-IMGUI_API bool IconTreeNodeEx(const char *icon, const char* label, ImGuiTreeNodeFlags flags = 0);
+IMGUI_API bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
 
 IMGUI_API void TooltipCommand(const char *command);
-IMGUI_API void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix, const float gridSize);
+IMGUI_API void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix,
+						const float gridSize);
 
 } // namespace ImGui
