@@ -26,6 +26,7 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats");
 	registerArg("--plist").setDescription("Generate the plist file for voxel formats");
 	registerArg("--wix").setDescription("Generate the wix file for msi installers");
+	registerArg("--magic").setDescription("Generate the magic file");
 	return Super::onConstruct();
 }
 
@@ -98,6 +99,8 @@ app::AppState FormatPrinter::onRunning() {
 		printMimeInfo();
 	} else if (hasArg("--markdown")) {
 		printMarkdownTables();
+	} else if (hasArg("--magic")) {
+		printMagic();
 	} else if (hasArg("--manpage")) {
 		printManPageLoadSaveFormats();
 	} else if (hasArg("--plist")) {
@@ -174,6 +177,33 @@ void FormatPrinter::printManPageLoadSaveFormats() {
 		Log::printf(")\n");
 	}
 	Log::printf("\n");
+}
+
+void FormatPrinter::printMagic() {
+	core::DynamicArray<io::FormatDescription> formatDescriptions;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		formatDescriptions.push_back(*desc);
+	}
+	formatDescriptions.sort(core::Greater<io::FormatDescription>());
+
+	for (const io::FormatDescription &desc : formatDescriptions) {
+		if (desc.magics.empty()) {
+			continue;
+		}
+		Log::printf("# %s\n", desc.name.c_str());
+		const core::String &m = uniqueMimetype(desc);
+		for (const core::String &magic : desc.magics) {
+			if (SDL_isprint(magic.first())) {
+				Log::printf("50 string 0 \"%s\"", magic.c_str());
+			} else {
+				Log::printf("50 byte 0 ");
+				for (size_t i = 0; i < magic.size(); ++i) {
+					Log::printf("%02X", (uint8_t)magic[i]);
+				}
+			}
+			Log::printf(" %s\n", m.c_str());
+		}
+	}
 }
 
 void FormatPrinter::printMarkdownTables() {

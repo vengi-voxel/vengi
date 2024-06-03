@@ -19,6 +19,7 @@ private:
 	void printManPageLoadSaveFormats();
 	void printApplicationPlist();
 	void printApplicationWix();
+	void printMagic();
 
 	core::StringSet _uniqueMimetypes;
 	core::String uniqueMimetype(const io::FormatDescription &desc);
