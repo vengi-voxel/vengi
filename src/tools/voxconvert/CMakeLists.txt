@@ -10,7 +10,7 @@ set(UI_SRCS
 	VoxConvertUI.h VoxConvertUI.cpp
 )
 
-engine_add_executable(TARGET ${PROJECT_NAME}-ui SRCS ${UI_SRCS} DESCRIPTION "UI voxel tool")
+engine_add_executable(TARGET ${PROJECT_NAME}-ui SRCS ${UI_SRCS} WINDOWED DESCRIPTION "UI voxel tool")
 engine_target_link_libraries(TARGET ${PROJECT_NAME}-ui DEPENDENCIES ui voxelformat)
 
 enable_testing()
