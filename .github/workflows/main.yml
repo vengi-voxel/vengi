@@ -243,6 +243,13 @@ jobs:
             cmake --install . --component voxbrowser --prefix voxbrowser-install
             cpack
 
+        - name: Upload the cpack logs
+          uses: actions/upload-artifact@v4
+          if: ${{ failure() }}
+          with:
+            name: nsis-error-logs
+            path: build/_CPack_Packages/Windows/NSIS/NSISOutput.log
+
         - name: Upload the vengi msi
           uses: actions/upload-artifact@v4
           with:
