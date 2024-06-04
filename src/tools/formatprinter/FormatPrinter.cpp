@@ -106,7 +106,7 @@ app::AppState FormatPrinter::onRunning() {
 	} else if (hasArg("--plist")) {
 		printApplicationPlist();
 	} else if (hasArg("--wix")) {
-		printApplicationWix();
+		printInstallerWix();
 	} else {
 		const bool palette = hasArg("--palette");
 		const bool image = hasArg("--image");
@@ -282,7 +282,7 @@ void FormatPrinter::printMarkdownTables() {
 
 #define REG_PATH_THUMBEXT "ShellEx\\{E357FCCD-A995-4576-B01F-234630154E96}"
 #define VOXTHUMB_CLSID "{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}"
-void FormatPrinter::printApplicationWix() {
+void FormatPrinter::printInstallerWix() {
 	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	Log::printf("<!--\n");
 	Log::printf("	using the formatprinter and capturing the stdout to write it into this file can add BOMs under windows\n");

@@ -18,7 +18,7 @@ private:
 	void printMarkdownTables();
 	void printManPageLoadSaveFormats();
 	void printApplicationPlist();
-	void printApplicationWix();
+	void printInstallerWix();
 	void printMagic();
 
 	core::StringSet _uniqueMimetypes;
