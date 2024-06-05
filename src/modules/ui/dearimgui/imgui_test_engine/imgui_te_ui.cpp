@@ -767,22 +767,34 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
         "- Cinematic: Run tests with pauses between actions (for e.g. tutorials)."
     );
     ImGui::SameLine();
-    //ImGui::Checkbox("Fast", &engine->IO.ConfigRunFast);
-    //ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
+
+    // (Would be good if we exposed horizontal layout mode..)
     ImGui::Checkbox("Stop", &engine->IO.ConfigStopOnError);
-    ImGui::SetItemTooltip("Stop running tests when hitting an error.");
+    ImGui::SetItemTooltip("When hitting an error:\n- Stop running other tests.");
     ImGui::SameLine();
     ImGui::Checkbox("DbgBrk", &engine->IO.ConfigBreakOnError);
-    ImGui::SetItemTooltip("Break in debugger when hitting an error.");
+    ImGui::SetItemTooltip("When hitting an error:\n- Break in debugger.");
     ImGui::SameLine();
-    ImGui::Checkbox("KeepGUI", &engine->IO.ConfigKeepGuiFunc);
-    ImGui::SetItemTooltip("Keep GUI function running after a test fails, or when a single queued test is finished.\nHold ESC to abort a running GUI function.");
-    ImGui::SameLine();
-    ImGui::Checkbox("Refocus", &engine->IO.ConfigRestoreFocusAfterTests);
-    ImGui::SetItemTooltip("Restore focus back after running tests.");
+    ImGui::Checkbox("Capture", &engine->IO.ConfigCaptureOnError);
+    ImGui::SetItemTooltip("When hitting an error:\n- Capture screen to PNG. Right-click filename in Test Log to open.");
     ImGui::SameLine();
     ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
     ImGui::SameLine();
+
+    ImGui::Checkbox("KeepGUI", &engine->IO.ConfigKeepGuiFunc);
+    ImGui::SetItemTooltip("After running single test or hitting an error:\n- Keep GUI function visible and interactive.\n- Hold ESC to abort a running GUI function.");
+    ImGui::SameLine();
+    bool keep_focus = !engine->IO.ConfigRestoreFocusAfterTests;
+    if (ImGui::Checkbox("KeepFocus", &keep_focus))
+        engine->IO.ConfigRestoreFocusAfterTests = !keep_focus;
+    ImGui::SetItemTooltip("After running tests:\n- Keep GUI current focus, instead of restoring focus to this window.");
+
+    ImGui::SameLine();
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+    ImGui::SameLine();
+
     ImGui::SetNextItemWidth(70 * dpi_scale);
     if (ImGui::BeginCombo("##Verbose", ImGuiTestEngine_GetVerboseLevelName(engine->IO.ConfigVerboseLevel), ImGuiComboFlags_None))
     {
@@ -792,6 +804,7 @@ static void ImGuiTestEngine_ShowTestTool(ImGuiTestEngine* engine, bool* p_open)
         ImGui::EndCombo();
     }
     ImGui::SetItemTooltip("Verbose level.");
+
     //ImGui::PopStyleVar();
     ImGui::Separator();
 

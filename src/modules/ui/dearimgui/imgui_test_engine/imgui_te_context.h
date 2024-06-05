@@ -179,6 +179,7 @@ struct IMGUI_API ImGuiTestGenericVars
     int                     Count;
     ImGuiID                 DockId;
     ImGuiID                 OwnerId;
+    ImVec2                  WindowSize;
     ImGuiWindowFlags        WindowFlags;
     ImGuiTableFlags         TableFlags;
     ImGuiPopupFlags         PopupFlags;
@@ -188,8 +189,8 @@ struct IMGUI_API ImGuiTestGenericVars
     bool                    UseViewports;
     float                   Width;
     ImVec2                  Pos;
-    ImVec2                  Size;
     ImVec2                  Pivot;
+    ImVec2                  ItemSize;
     ImVec4                  Color1, Color2;
 
     // Generic unnamed storage
