@@ -1316,10 +1316,15 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
 
 	const size_t nodesAdded = _sceneGraph.size();
 	if (nodesAdded == 0) {
-		Log::warn("Failed to load any model volumes");
-		const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
-		newScene(true, "", region);
-		return false;
+		if (_sceneGraph.empty(scenegraph::SceneGraphNodeType::Point)) {
+			Log::warn("Failed to load any model volumes");
+			const voxel::Region region(glm::ivec3(0), glm::ivec3(size() - 1));
+			newScene(true, "", region);
+			return false;
+		} else {
+			// only found points, let's create a new model node to please the editor
+			addModelChild("", size(), size(), size());
+		}
 	}
 	resetSceneState();
 	return true;

@@ -23,10 +23,9 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Mesh.h"
-#include "voxel/RawVolume.h"
 #include "voxel/VoxelVertex.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
 #include <glm/ext/matrix_transform.hpp>
@@ -1609,7 +1608,31 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			Log::warn("Failed to load vertices");
 			continue;
 		}
-		if (primitive.indices == -1) {
+		if (primitive.mode == TINYGLTF_MODE_POINTS) {
+			int nodeId = InvalidNodeId;
+			if (vertices.size() == 1) {
+				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
+				node.setName(gltfNode.name.c_str());
+				scenegraph::SceneGraphTransform transform;
+				transform.setLocalTranslation(vertices[0].pos);
+				node.setTransform(0, transform);
+				nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
+			} else {
+				Log::warn("Point clouds not yet supported for gltf");
+				return false;
+			}
+			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+			if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
+				Log::debug("No animation found or loaded for node %s", node.name().c_str());
+				scenegraph::SceneGraphTransform transform = loadTransform(gltfNode);
+				scenegraph::KeyFrameIndex keyFrameIdx = 0;
+				node.setTransform(keyFrameIdx, transform);
+			}
+
+			for (int childId : gltfNode.children) {
+				loadNode_r(filename, sceneGraph, textures, gltfModel, childId, nodeId);
+			}
+		} else if (primitive.indices == -1) {
 			if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
 				const size_t indicedEnd = vertices.size();
 				for (size_t i = 0; i < indicedEnd; ++i) {
@@ -1623,13 +1646,14 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 			Log::warn("Failed to load indices");
 			return false;
 		}
+		// skip empty meshes
 		if (indices.empty() || vertices.empty()) {
-			Log::error("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
+			Log::debug("No indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
 					gltfNode.mesh);
 			for (int childId : gltfNode.children) {
 				loadNode_r(filename, sceneGraph, textures, gltfModel, childId, parentNodeId);
 			}
-			return false;
+			return true;
 		}
 		Log::debug("Indices (%i) or vertices (%i) found for mesh %i", (int)indices.size(), (int)vertices.size(),
 				gltfNode.mesh);

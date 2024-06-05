@@ -16,6 +16,7 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/rooms/ThingFormat.h"
@@ -589,15 +590,15 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 				   filename.c_str());
 		return false;
 	}
-	if (newSceneGraph.empty()) {
+	const int models = (int)newSceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+	const int points = (int)newSceneGraph.size(scenegraph::SceneGraphNodeType::Point);
+	if (models == 0 && points == 0) {
 		Log::error("Failed to load model file %s. Scene graph "
-				   "doesn't contain models.",
-				   filename.c_str());
+				"doesn't contain models.",
+				filename.c_str());
 		return false;
 	}
-	// newSceneGraph.node(newSceneGraph.root().id()).setProperty("Type",
-	// desc->name);
-	Log::info("Load file %s with %i model nodes", filename.c_str(), (int)newSceneGraph.size());
+	Log::info("Load file %s with %i model nodes and %i point nodes", filename.c_str(), models, points);
 	const core::String &ext = core::string::extractExtension(filename);
 	if (!ext.empty()) {
 		metric::count("load", 1, {{"type", ext}});
