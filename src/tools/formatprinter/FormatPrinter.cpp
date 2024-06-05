@@ -211,7 +211,7 @@ void FormatPrinter::printMarkdownTables() {
 	Log::printf("\n");
 	Log::printf("## Voxel formats\n");
 	Log::printf("\n");
-	Log::printf("> The `vengi` format is the best supported format. Saving into any other format might lose several details "
+	Log::printf("> The [vengi](FormatSpec.md) format is the best supported format. Saving into any other format might lose several details "
 		   "from your scene. This depends on the capabilities of the format and the completeness of the implementation "
 		   "for supporting that particular format.\n");
 	Log::printf("\n");
@@ -249,6 +249,7 @@ void FormatPrinter::printMarkdownTables() {
 		Log::printf("| %-26s | %-9s | %-7s | %-9s | %-10s |\n", desc.name.c_str(), desc.mainExtension().c_str(), "X",
 			   save ? "X" : " ", animation ? "X" : " ");
 	}
+	Log::printf("\nPoint cloud support for `ply` and `gtlf` is implemented, too.\n");
 	Log::printf("\n");
 	Log::printf("## Palettes\n");
 	Log::printf("\n");

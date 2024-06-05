@@ -56,6 +56,8 @@
 | UFO:Alien Invasion         | bsp       | X       |           |            |
 | Wavefront Object           | obj       | X       | X         |            |
 
+Point cloud support for `ply` and `gtlf` is implemented, too.
+
 ## Palettes
 
 | Name                            | Extension | Loading | Saving |
