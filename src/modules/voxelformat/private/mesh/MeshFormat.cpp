@@ -616,7 +616,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		meshIdxNodeMap.put(iter->nodeId, (int)nonEmptyMeshes.size() - 1);
 	}
 	bool state;
-	if (nonEmptyMeshes.empty()) {
+	if (nonEmptyMeshes.empty() && sceneGraph.empty(scenegraph::SceneGraphNodeType::Point)) {
 		Log::warn("Empty scene can't get saved as mesh");
 		state = false;
 	} else {

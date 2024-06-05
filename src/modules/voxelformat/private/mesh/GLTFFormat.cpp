@@ -174,11 +174,54 @@ static bool validateCamera(const tinygltf::Camera &camera) {
 
 } // namespace _priv
 
+void GLTFFormat::createPointMesh(tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node) const {
+	tinygltf::Mesh gltfMesh;
+	gltfMesh.name = node.name().c_str();
+	const glm::vec3 position = node.transform().localTranslation();
+	// create a mesh with a single point at the node origin
+	tinygltf::Primitive gltfPrimitive;
+	gltfPrimitive.mode = TINYGLTF_MODE_POINTS;
+	gltfPrimitive.attributes["POSITION"] = (int)gltfModel.accessors.size();
+	gltfMesh.primitives.emplace_back(core::move(gltfPrimitive));
+
+	tinygltf::Accessor gltfAccessor;
+	gltfAccessor.count = 1;
+	gltfAccessor.type = TINYGLTF_TYPE_VEC3;
+	gltfAccessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+	gltfAccessor.minValues = {position.x, position.y, position.z};
+	gltfAccessor.maxValues = {position.x, position.y, position.z};
+	gltfAccessor.bufferView = (int)gltfModel.bufferViews.size();
+	gltfModel.accessors.emplace_back(gltfAccessor);
+
+	io::BufferedReadWriteStream os;
+	os.writeFloat(position.x);
+	os.writeFloat(position.y);
+	os.writeFloat(position.z);
+
+	tinygltf::BufferView gltfVerticesBufferView;
+	gltfVerticesBufferView.buffer = (int)gltfModel.buffers.size();
+	gltfVerticesBufferView.byteOffset = 0;
+	gltfVerticesBufferView.byteLength = os.size();
+	gltfVerticesBufferView.byteStride = 0;
+	gltfVerticesBufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+
+	gltfModel.bufferViews.emplace_back(core::move(gltfVerticesBufferView));
+
+	tinygltf::Buffer gltfBuffer;
+	gltfBuffer.data.insert(gltfBuffer.data.end(), os.getBuffer(), os.getBuffer() + os.size());
+	gltfModel.buffers.emplace_back(core::move(gltfBuffer));
+	gltfModel.meshes.emplace_back(core::move(gltfMesh));
+}
+
 void GLTFFormat::saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
 							  const scenegraph::SceneGraphNode &node, Stack &stack,
 							  const scenegraph::SceneGraph &sceneGraph, const glm::vec3 &scale, bool exportAnimations) {
 	tinygltf::Node gltfNode;
 	if (node.isAnyModelNode()) {
+		gltfNode.mesh = (int)gltfModel.meshes.size();
+	}
+	if (node.type() == scenegraph::SceneGraphNodeType::Point) {
+		createPointMesh(gltfModel, node);
 		gltfNode.mesh = (int)gltfModel.meshes.size();
 	}
 	gltfNode.name = node.name().c_str();
@@ -707,10 +750,6 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 		palette::Palette palette = node.palette();
 
-		int texcoordIndex = 0;
-		if (node.isAnyModelNode()) {
-			generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
-		}
 
 		if (meshIdxNodeMap.find(nodeId) == meshIdxNodeMap.end()) {
 			saveGltfNode(nodeMapping, gltfModel, gltfScene, node, stack, sceneGraph, scale, false);
@@ -720,6 +759,17 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		int meshExtIdx = 0;
 		core_assert_always(meshIdxNodeMap.get(nodeId, meshExtIdx));
 		const MeshExt &meshExt = meshes[meshExtIdx];
+
+		int texcoordIndex = 0;
+		if (node.isAnyModelNode()) {
+			for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
+				const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
+				if (mesh->isEmpty()) {
+					continue;
+				}
+				generateMaterials(withTexCoords, gltfModel, paletteMaterialIndices, node, palette, texcoordIndex);
+			}
+		}
 
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh *mesh = &meshExt.mesh->mesh[i];
@@ -749,7 +799,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			const glm::vec3 pivotOffset = offset - meshExt.pivot * meshExt.size;
 
 			tinygltf::Mesh gltfMesh;
-			gltfMesh.name = std::string(objectName);
+			gltfMesh.name = objectName;
 			for (int i = 0; i < palette.colorCount(); ++i) {
 				if (palette.color(i).a == 0) {
 					continue;

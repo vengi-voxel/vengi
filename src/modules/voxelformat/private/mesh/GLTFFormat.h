@@ -79,6 +79,7 @@ private:
 		glm::vec3 maxVertex{0.0f};
 		glm::vec3 minVertex{0.0f};
 	};
+	void createPointMesh(tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node) const;
 	using Stack = core::DynamicArray<core::Pair<int, int>>;
 	using MaterialMap = core::Map<uint64_t, core::Array<int, palette::PaletteMaxColors>>;
 	void saveGltfNode(core::Map<int, int> &nodeMapping, tinygltf::Model &gltfModel, tinygltf::Scene &gltfScene,
