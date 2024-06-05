@@ -266,11 +266,10 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 	bookmarks->setVal(newBookmarks);
 }
 
-void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks) {
+void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks, int height) {
 	ScopedStyle style;
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
-	const float height = 25.0f * ImGui::GetFontSize();
-	const float width = 17.0f * ImGui::GetFontSize();
+	const float width = ImGui::CalcTextSize("#").x * 20.0f;
 	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
@@ -368,10 +367,9 @@ static const char *iconForType(io::FilesystemEntry::Type type) {
 	return "";
 }
 
-bool FileDialog::entitiesPanel(video::OpenFileMode type) {
-	const float height = 25 * ImGui::GetFontSize();
+bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
-	ImGui::BeginChild(_("Files"), childSize, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("files", childSize, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClickedFile = false;
 	bool doubleClickedDir = false;
@@ -652,7 +650,8 @@ const char *FileDialog::popupTitle(video::OpenFileMode type) {
 
 bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
-	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
+	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
+	ImGui::SetNextWindowSize(ImVec2(width, 25 * itemHeight), ImGuiCond_FirstUseEver);
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
@@ -663,9 +662,9 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			ImGui::CloseCurrentPopup();
 		}
 		currentPathPanel(type);
-		quickAccessPanel(type, _bookmarks->strVal());
+		quickAccessPanel(type, _bookmarks->strVal(), 20 * itemHeight);
 		ImGui::SameLine();
-		bool doubleClickedFile = entitiesPanel(type);
+		bool doubleClickedFile = entitiesPanel(type, 20 * itemHeight);
 		if (type != video::OpenFileMode::Open) {
 			if (ImGui::Button(_("New folder"))) {
 				ImGui::OpenPopup(NEW_FOLDER_POPUP);
