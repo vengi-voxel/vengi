@@ -445,36 +445,13 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 			return false;
 		}
 	}
-
-	glm::vec3 mins{std::numeric_limits<float>::max()};
-	glm::vec3 maxs{std::numeric_limits<float>::min()};
-	const glm::vec3 scale = getInputScale();
-	for (Vertex &v : vertices) {
-		v.position *= scale;
-		mins = glm::min(mins, v.position);
-		maxs = glm::max(maxs, v.position);
+	core::DynamicArray<PointCloudVertex> pointCloud;
+	pointCloud.resize(vertices.size());
+	for (int i = 0; i < (int)vertices.size(); ++i) {
+		pointCloud[i].position = vertices[i].position;
+		pointCloud[i].color = vertices[i].color;
 	}
-
-	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
-	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
-	voxel::RawVolume *v = new voxel::RawVolume(region);
-	const palette::Palette &palette = voxel::getPalette();
-	for (const Vertex &vertex : vertices) {
-		const glm::ivec3 pos = glm::round(vertex.position);
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(vertex.color));
-		for (int x = 0; x < pointSize; ++x) {
-			for (int y = 0; y < pointSize; ++y) {
-				for (int z = 0; z < pointSize; ++z) {
-					v->setVoxel(pos + glm::ivec3(x, y, z), voxel);
-				}
-			}
-		}
-	}
-
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v, true);
-	node.setName(filename);
-	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+	return voxelizePointCloud(filename, sceneGraph, pointCloud);
 }
 
 void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &vertices,

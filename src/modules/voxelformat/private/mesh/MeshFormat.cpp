@@ -480,6 +480,38 @@ bool MeshFormat::loadGroups(const core::String &filename, const io::ArchivePtr &
 	return retVal;
 }
 
+bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const core::DynamicArray<PointCloudVertex> &vertices) const {
+	glm::vec3 mins{std::numeric_limits<float>::max()};
+	glm::vec3 maxs{std::numeric_limits<float>::min()};
+	const glm::vec3 scale = getInputScale();
+	for (PointCloudVertex &v : vertices) {
+		v.position *= scale;
+		mins = glm::min(mins, v.position);
+		maxs = glm::max(maxs, v.position);
+	}
+
+	const int pointSize = core_max(1, core::Var::getSafe(cfg::VoxformatPointCloudSize)->intVal());
+	const voxel::Region region(glm::floor(mins), glm::ceil(maxs) + glm::vec3((float)(pointSize - 1)));
+	voxel::RawVolume *v = new voxel::RawVolume(region);
+	const palette::Palette &palette = voxel::getPalette();
+	for (const PointCloudVertex &vertex : vertices) {
+		const glm::ivec3 pos = glm::round(vertex.position);
+		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(vertex.color));
+		for (int x = 0; x < pointSize; ++x) {
+			for (int y = 0; y < pointSize; ++y) {
+				for (int z = 0; z < pointSize; ++z) {
+					v->setVoxel(pos + glm::ivec3(x, y, z), voxel);
+				}
+			}
+		}
+	}
+
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(v, true);
+	node.setName(filename);
+	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
+}
+
 bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &, scenegraph::SceneGraph &,
 								const LoadContext &) {
 	Log::debug("Mesh %s can't get voxelized yet", filename.c_str());

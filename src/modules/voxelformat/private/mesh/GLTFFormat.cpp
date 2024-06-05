@@ -1618,8 +1618,13 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 				node.setTransform(0, transform);
 				nodeId = sceneGraph.emplace(core::move(node), parentNodeId);
 			} else {
-				Log::warn("Point clouds not yet supported for gltf");
-				return false;
+				core::DynamicArray<PointCloudVertex> pointCloud;
+				pointCloud.resize(vertices.size());
+				for (int i = 0; i < (int)vertices.size(); ++i) {
+					pointCloud[i].position = vertices[i].pos;
+					pointCloud[i].color = vertices[i].color;
+				}
+				voxelizePointCloud(filename, sceneGraph, pointCloud);
 			}
 			scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 			if (!loadAnimations(sceneGraph, gltfModel, gltfNodeIdx, node)) {
