@@ -29,9 +29,9 @@ bool MenuBar::update() {
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
-				ImGui::CheckboxVar(_("Outlines"), cfg::RenderOutline);
+				ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
 				ImGui::EndDisabled();
-				ImGui::CheckboxVar(_("Bloom"), cfg::ClientBloom);
+				ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
 				ui::metricOption();
 				_app->languageOption();
 				ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);
