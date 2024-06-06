@@ -51,6 +51,7 @@ void MenuBar::viewportOptions() {
 	ImGui::EndDisabled();
 	ImGui::IconCheckboxVar(ICON_LC_SUNSET, _("Shadow"), cfg::VoxEditRendershadow);
 	ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
+	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, _("Tone mapping"), cfg::ToneMapping, 0, 3);
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {

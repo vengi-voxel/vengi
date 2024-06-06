@@ -32,6 +32,7 @@ bool MenuBar::update() {
 				ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
 				ImGui::EndDisabled();
 				ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
+				ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, _("Tone mapping"), cfg::ToneMapping, 0, 3);
 				ui::metricOption();
 				_app->languageOption();
 				ImGui::CheckboxVar(_("Allow multi monitor"), cfg::UIMultiMonitor);

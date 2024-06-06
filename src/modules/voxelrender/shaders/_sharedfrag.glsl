@@ -80,7 +80,7 @@ vec3 shadow(in vec4 lightspacepos, in float bias, vec3 color, in vec3 diffuse, i
 	return vec3(shadow);
 #else // cl_debug_shadow
 	vec3 lightvalue = ambient + (diffuse * shadow);
-	return clamp(color * lightvalue, 0.0, 1.0);
+	return color * lightvalue;
 #endif // cl_debug_shadow
 }
 
@@ -91,11 +91,11 @@ vec3 shadow(in float bias, vec3 color, in vec3 diffuse, in vec3 ambient) {
 #else // cl_shadowmap == 1
 
 vec3 shadow(in vec4 lightspacepos, in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return clamp(color * (ambient + diffuse), 0.0, 1.0);
+	return color * (ambient + diffuse);
 }
 
 vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
-	return clamp(color * (ambient + diffuse), 0.0, 1.0);
+	return color * (ambient + diffuse);
 }
 
 #endif // cl_shadowmap == 1

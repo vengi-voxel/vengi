@@ -5,6 +5,7 @@ $in float v_ambientocclusion;
 flat $in uint v_flags;
 #include "_shared.glsl"
 #include "_sharedfrag.glsl"
+#include "_tonemapping.glsl"
 
 vec4 calcColor(void) {
 	vec3 fdx = dFdx(v_pos.xyz);
@@ -17,7 +18,7 @@ vec4 calcColor(void) {
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));
 	float bias = max(0.05 * (1.0 - ndotl1), 0.005);
 	vec3 shadowColor = shadow(bias, v_color.rgb, diffuse, u_ambient_color);
-	return vec4(shadowColor * v_ambientocclusion, v_color.a);
+	return vec4(tonemapping(shadowColor * v_ambientocclusion), v_color.a);
 }
 
 void main(void) {
