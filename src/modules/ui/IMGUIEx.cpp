@@ -205,6 +205,18 @@ bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlag
 	return CollapsingHeader(labelWithIcon.c_str(), flags);
 }
 
+bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &var, int v_min, int v_max,
+					  const char *format, ImGuiSliderFlags flags) {
+	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
+	return SliderVarInt(labelWithIcon.c_str(), var, v_min, v_max, format, flags);
+}
+
+bool IconSliderVarInt(const char *icon, const char *label, const char* varName, int v_min, int v_max,
+					  const char *format, ImGuiSliderFlags flags) {
+	core::VarPtr var = core::Var::getSafe(varName);
+	return IconSliderVarInt(icon, label, var, v_min, v_max, format, flags);
+}
+
 bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_max, const char* format, ImGuiSliderFlags flags) {
 	int val = var->intVal();
 	if (SliderInt(label, &val, v_min, v_max, format, flags)) {

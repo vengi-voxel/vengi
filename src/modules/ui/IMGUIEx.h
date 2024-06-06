@@ -50,6 +50,10 @@ IMGUI_API bool CheckboxVar(const char *label, const char *varName);
 IMGUI_API bool IconCheckboxVar(const char *icon, const char *label, const char *varName);
 IMGUI_API bool IconCheckboxFlags(const char *icon, const char *label, int *flags, int flags_value);
 IMGUI_API bool IconCollapsingHeader(const char *icon, const char *label, ImGuiTreeNodeFlags flags = 0);
+IMGUI_API bool IconSliderVarInt(const char *icon, const char *label, const core::VarPtr &var, int v_min, int v_max,
+								const char *format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool IconSliderVarInt(const char *icon, const char *label, const char *varName, int v_min, int v_max,
+								const char *format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const core::VarPtr &var, int v_min, int v_max, const char *format = "%d",
 							ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderVarInt(const char *label, const char *varName, int v_min, int v_max, const char *format = "%d",
