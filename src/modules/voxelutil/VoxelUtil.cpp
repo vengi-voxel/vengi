@@ -324,12 +324,14 @@ void clear(voxel::RawVolumeWrapper &in) {
 }
 
 using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
-using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
+using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &, const glm::ivec3 &,
+					   const glm::ivec3 &)>;
 using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
 static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const voxel::Region &region,
 					   const WalkCheckCallback &check, const WalkExecCallback &exec, const glm::ivec3 &position,
-					   const glm::ivec3 &checkOffset, voxel::FaceNames face) {
+					   const glm::ivec3 &checkOffset, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset, voxel::FaceNames face) {
 	const glm::ivec3 checkPosition = position + checkOffset;
 	if (visited.has(checkPosition)) {
 		return 0;
@@ -338,7 +340,7 @@ static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const vox
 	if (!region.containsPoint(position)) {
 		return 0;
 	}
-	if (!check(in, checkPosition)) {
+	if (!check(in, checkPosition, checkAboveOffset, checkBelowOffset)) {
 		return 0;
 	}
 	if (!exec(in, position)) {
@@ -347,27 +349,27 @@ static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const vox
 	int n = 1;
 	if (region.containsPoint(position.x + 1, position.y, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	if (region.containsPoint(position.x - 1, position.y, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y + 1, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y - 1, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z + 1)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z - 1)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
-						 checkOffset, face);
+						 checkOffset, checkAboveOffset, checkBelowOffset, face);
 	}
 	return n;
 }
@@ -390,36 +392,50 @@ static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, vo
 	glm::ivec3 mins = region.getLowerCorner();
 	glm::ivec3 maxs = region.getUpperCorner();
 	glm::ivec3 checkOffsetV(0);
+	glm::ivec3 checkAbove(0);
+	glm::ivec3 checkBelow(0);
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
 		mins.x = position.x;
 		maxs.x = position.x;
 		checkOffsetV.x = checkOffset;
+		checkAbove.x = +1;
+		checkBelow.x = -1;
 		break;
 	case voxel::FaceNames::NegativeX:
 		mins.x = position.x;
 		maxs.x = position.x;
 		checkOffsetV.x = -checkOffset;
+		checkAbove.x = -1;
+		checkBelow.x = +1;
 		break;
 	case voxel::FaceNames::PositiveY:
 		mins.y = position.y;
 		maxs.y = position.y;
 		checkOffsetV.y = checkOffset;
+		checkAbove.y = +1;
+		checkBelow.y = -1;
 		break;
 	case voxel::FaceNames::NegativeY:
 		mins.y = position.y;
 		maxs.y = position.y;
 		checkOffsetV.y = -checkOffset;
+		checkAbove.y = -1;
+		checkBelow.y = +1;
 		break;
 	case voxel::FaceNames::PositiveZ:
 		mins.z = position.z;
 		maxs.z = position.z;
 		checkOffsetV.z = checkOffset;
+		checkAbove.z = +1;
+		checkBelow.z = -1;
 		break;
 	case voxel::FaceNames::NegativeZ:
 		mins.z = position.z;
 		maxs.z = position.z;
 		checkOffsetV.z = -checkOffset;
+		checkAbove.z = -1;
+		checkBelow.z = +1;
 		break;
 	case voxel::FaceNames::Max:
 		return -1;
@@ -432,7 +448,7 @@ static int walkPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &position, vo
 	const int maxSize = dim.x * dim.y * dim.z;
 	core_assert_msg(maxSize > 0, "max size is 0 even though the region was valid");
 	IVec3Set visited(maxSize);
-	return walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face);
+	return walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, checkAbove, checkBelow, face);
 }
 
 static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxel::FaceNames face) {
@@ -457,7 +473,8 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
 				  const voxel::Voxel &replaceVoxel) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset) {
 		const voxel::Voxel &v = volume.voxel(p);
 		if (firstVoxel) {
 			firstVoxelIsAir = voxel::isAir(v.getMaterial());
@@ -476,7 +493,8 @@ int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::Fac
 
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset) {
 		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(searchVoxel);
 	};
@@ -488,9 +506,15 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset) {
 		const voxel::Voxel &v = volume.voxel(p);
-		return v.isSame(groundVoxel);
+		if (v.isSame(groundVoxel)) {
+			const glm::ivec3 &abovePos = p + checkAboveOffset;
+			const voxel::Voxel &aboveVoxel = volume.voxel(abovePos);
+			return voxel::isAir(aboveVoxel.getMaterial());
+		}
+		return false;
 	};
 	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		return in.setVoxel(pos, voxel::Voxel());
@@ -500,7 +524,8 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset) {
 		const voxel::Voxel &v = volume.voxel(p);
 		return v.isSame(groundVoxel);
 	};
@@ -516,7 +541,8 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
 
 	const voxel::Region &region = in.region();
 
-	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, const glm::ivec3 &checkAboveOffset,
+					   const glm::ivec3 &checkBelowOffset) {
 		if (voxel::isAir(searchedVoxel.getMaterial())) {
 			return true;
 		}
