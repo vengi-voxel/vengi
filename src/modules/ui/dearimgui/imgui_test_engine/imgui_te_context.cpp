@@ -1104,6 +1104,8 @@ ImGuiTestItemInfo ImGuiTestContext::ItemInfoOpenFullPath(ImGuiTestRef ref, ImGui
 //   - Other fields correspond to the title-bar/tab item of a window, so likely not what you want (same as using IsItemXXX after Begin)
 //   - If you want other fields simply get them via the window-> pointer.
 // - Likely you may want to feed the return value into SetRef(): e.g. 'ctx->SetRef(item->ID)' or 'ctx->SetRef(WindowInfo("//Window/Child")->ID);'
+// Supported values for ImGuiTestOpFlags:
+// - ImGuiTestOpFlags_NoError
 // Todos:
 // - FIXME: Missing support for wildcards.
 ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlags flags)
@@ -1112,7 +1114,6 @@ ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlag
         return ItemInfoNull();
 
     IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
-    ImGuiTestVerboseLevel log_level = (flags & ImGuiTestOpFlags_NoError) ? ImGuiTestVerboseLevel_Info : ImGuiTestVerboseLevel_Error;
 
     // Query by ID (not very useful but supported)
     if (ref.ID != 0)
@@ -1122,10 +1123,11 @@ ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlag
         ImGuiWindow* window = GetWindowByRef(ref);
         if (window == NULL)
         {
-            LogEx(log_level, 0, "WindowInfo: error: cannot find window by ID!"); // FIXME: What if we want to query a not-yet-existing window by ID?
+            if ((flags & ImGuiTestOpFlags_NoError) == 0)
+                LogError("WindowInfo: cannot find window by ID!"); // FIXME: What if we want to query a not-yet-existing window by ID?
             return ItemInfoNull();
         }
-        return ItemInfo(window->ID);
+        return ItemInfo(window->ID, flags & ImGuiTestOpFlags_NoError);
     }
 
     // Query by Path: this is where the meat of our work is.
@@ -1215,7 +1217,8 @@ ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlag
         // FIXME: What if we want to query a not-yet-existing window by ID?
         if (window == NULL)
         {
-            LogEx(log_level, 0, "WindowInfo: error: element \"%s\" doesn't seem to exist.", part_name.c_str());
+            if ((flags & ImGuiTestOpFlags_NoError) == 0)
+                LogError("WindowInfo: element \"%s\" doesn't seem to exist.", part_name.c_str());
             return ItemInfoNull();
         }
     }
@@ -1226,11 +1229,12 @@ ImGuiTestItemInfo ImGuiTestContext::WindowInfo(ImGuiTestRef ref, ImGuiTestOpFlag
     // Stopped on "window/node/"
     if (window_idstack_back != 0 && window_idstack_back != window->ID)
     {
-        LogEx(log_level, 0, "WindowInfo: error: element doesn't seem to exist or isn't a window.");
+        if ((flags & ImGuiTestOpFlags_NoError) == 0)
+            LogError("WindowInfo: element doesn't seem to exist or isn't a window.");
         return ItemInfoNull();
     }
 
-    return ItemInfo(window->ID);
+    return ItemInfo(window->ID, flags & ImGuiTestOpFlags_NoError);
 }
 
 void    ImGuiTestContext::ScrollToTop(ImGuiTestRef ref)
