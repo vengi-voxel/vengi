@@ -24,6 +24,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1844 ), k_eControllerType_PS3Controller, NULL },	// From SDL
 	{ MAKE_CONTROLLER_ID( 0x044f, 0xb315 ), k_eControllerType_PS3Controller, NULL },	// Firestorm Dual Analog 3
 	{ MAKE_CONTROLLER_ID( 0x044f, 0xd007 ), k_eControllerType_PS3Controller, NULL },	// Thrustmaster wireless 3-1
+	{ MAKE_CONTROLLER_ID( 0x046d, 0xcad1 ), k_eControllerType_PS3Controller, NULL },	// Logitech Chillstream
 	//{ MAKE_CONTROLLER_ID( 0x046d, 0xc24f ), k_eControllerType_PS3Controller, NULL },	// Logitech G29 (PS3)
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0268 ), k_eControllerType_PS3Controller, NULL },	// Sony PS3 Controller
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller, NULL },	// From SDL
@@ -157,6 +158,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0184 ), k_eControllerType_PS5Controller, NULL },	// Hori Fighting Stick α
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1012 ), k_eControllerType_PS5Controller, NULL },	// Razer Kitsune
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS
