@@ -33,8 +33,10 @@ private:
 
 	enum PaintFlags : uint32_t {
 		// paint connected voxels with the same color as the cursor voxel
-		BRUSH_MODE_PLANE = BRUSH_MODE_CUSTOM
+		BRUSH_MODE_PLANE = BRUSH_MODE_CUSTOM,
+		BRUSH_MODE_GRADIENT = BRUSH_MODE_CUSTOM + 1
 	};
+
 protected:
 	class VoxelColor {
 	private:
@@ -69,6 +71,9 @@ public:
 	void setPlane();
 	bool plane() const;
 
+	void setGradient();
+	bool gradient() const;
+
 	void setVariationThreshold(int variationThreshold);
 	int variationThreshold() const;
 
@@ -99,6 +104,14 @@ inline bool PaintBrush::plane() const {
 
 inline void PaintBrush::setPlane() {
 	setMode(BRUSH_MODE_PLANE);
+}
+
+inline bool PaintBrush::gradient() const {
+	return isMode(BRUSH_MODE_GRADIENT);
+}
+
+inline void PaintBrush::setGradient() {
+	setMode(BRUSH_MODE_GRADIENT);
 }
 
 } // namespace voxedit

@@ -367,6 +367,11 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 		brush.setPlane();
 	}
 	ImGui::TooltipTextUnformatted(_("Paint the selected plane"));
+
+	if (ImGui::RadioButton(_("Gradient"), brush.gradient())) {
+		brush.setGradient();
+	}
+
 	aabbBrushModeOptions(brush);
 }
 

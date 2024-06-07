@@ -24,6 +24,7 @@ VoxEdit:
 
    - Improved brush support
    - Fixed loading voxel collection assets
+   - Gradient paint brush mode
 
 ## 0.0.32 (2024-05-29)
 

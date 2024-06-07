@@ -51,17 +51,40 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	return voxel::createVoxel(_palette, index, old.getFlags());
 }
 
+static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to, float factor) {
+	const palette::Palette &palette = wrapper.node().palette();
+	const glm::vec4 colorA = palette.color4(from.getColor());
+	const glm::vec4 colorB = palette.color4(to.getColor());
+	const glm::vec4 newColor = glm::mix(colorA, colorB, factor);
+	const int index = palette.getClosestMatch(core::Color::getRGBA(newColor), from.getColor());
+	if (index == palette::PaletteColorNotFound) {
+		return from;
+	}
+	return voxel::createVoxel(palette, index);
+}
+
 void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
 	VoxelColor voxelColor(wrapper.node().palette(), context.cursorVoxel, _paintMode, _factor, _variationThreshold);
 	if (plane()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), context.cursorFace, context.hitCursorVoxel,
 							  voxelColor.evaluate(context.hitCursorVoxel));
+	} else if (gradient()) {
+		const glm::ivec3 start = context.cursorPosition;
+		const glm::ivec3 size = region.getDimensionsInVoxels();
+		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const float factor = glm::distance(glm::vec3(x, y, z), glm::vec3(start)) / glm::length(glm::vec3(size));
+			const voxel::Voxel evalVoxel = voxelColor.evaluate(voxel);
+			const voxel::Voxel newVoxel = mix(wrapper, context.hitCursorVoxel, evalVoxel, factor);
+			wrapper.setVoxel(x, y, z, newVoxel);
+		};
+		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
 	} else {
 		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
 		voxelutil::visitVolume(wrapper, region, visitor, voxelutil::SkipEmpty());
+
 	}
 }
 
