@@ -19,7 +19,7 @@ void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	// TODO: context.lockedAxis support
 	const glm::ivec3 &mins = context.cursorPosition;
 	if (wrapper.modifierType() == ModifierType::Place) {
-		voxelutil::extrudePlane(wrapper, mins, context.cursorFace, hitVoxel, context.cursorVoxel);
+		voxelutil::extrudePlane(wrapper, mins, context.cursorFace, hitVoxel, context.cursorVoxel, _thickness);
 	} else if (wrapper.modifierType() == ModifierType::Erase) {
 		voxelutil::erasePlane(wrapper, mins, context.cursorFace, hitVoxel);
 	} else if (wrapper.modifierType() == ModifierType::Override) {

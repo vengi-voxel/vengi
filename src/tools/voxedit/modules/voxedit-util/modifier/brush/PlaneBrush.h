@@ -15,6 +15,7 @@ namespace voxedit {
 class PlaneBrush : public Brush {
 private:
 	using Super = Brush;
+	int _thickness = 1;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
@@ -25,6 +26,21 @@ public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}
 	virtual ~PlaneBrush() = default;
+
+	void setThickness(int thickness);
+	int thickness() const;
 };
+
+inline void PlaneBrush::setThickness(int thickness) {
+	_thickness = thickness;
+	if (_thickness < 1)
+		_thickness = 1;
+
+	markDirty();
+}
+
+inline int PlaneBrush::thickness() const {
+	return _thickness;
+}
 
 } // namespace voxedit

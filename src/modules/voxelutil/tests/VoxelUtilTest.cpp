@@ -75,7 +75,7 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	v.setVoxel(1, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
-	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel));
+	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, 1));
 	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
@@ -116,7 +116,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlaneNegativeX) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(), fillVoxel));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(), fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
@@ -125,7 +125,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveY) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(), fillVoxel));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(), fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
@@ -134,7 +134,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(), fillVoxel));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(), fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
