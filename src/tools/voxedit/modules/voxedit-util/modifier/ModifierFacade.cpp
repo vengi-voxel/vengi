@@ -75,7 +75,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 
 	_brushContext.targetVolumeRegion = activeVolume->region();
 	if (const Brush *brush = activeBrush()) {
-		preExecuteBrush(activeVolume->region());
+		preExecuteBrush(activeVolume);
 		const voxel::Region &region = brush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();

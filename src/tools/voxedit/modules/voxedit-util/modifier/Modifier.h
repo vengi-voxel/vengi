@@ -67,7 +67,7 @@ protected:
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
 
-	void preExecuteBrush(const voxel::Region &targetVolumeRegion);
+	void preExecuteBrush(const voxel::RawVolume *volume);
 	void postExecuteBrush();
 
 	/**

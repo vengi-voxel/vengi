@@ -14,6 +14,7 @@
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
@@ -104,6 +105,12 @@ public:
 	 */
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						 const BrushContext &ctx);
+
+	virtual void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
+	}
+	virtual void postExecute(const BrushContext &ctx) {
+	}
+
 	/**
 	 * @brief Reset the brush state and force a re-creating of the preview volume
 	 */

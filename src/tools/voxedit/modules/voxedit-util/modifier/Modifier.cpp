@@ -332,7 +332,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		return true;
 	}
 
-	preExecuteBrush(volume->region());
+	preExecuteBrush(volume);
 	executeBrush(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
 	postExecuteBrush();
 
@@ -377,14 +377,15 @@ static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region 
 	return cursor + delta;
 }
 
-void Modifier::preExecuteBrush(const voxel::Region &targetVolumeRegion) {
+void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 	if (Brush *brush = activeBrush()) {
-		_brushContext.targetVolumeRegion = targetVolumeRegion;
+		_brushContext.targetVolumeRegion = volume->region();
 		_brushContext.prevCursorPosition = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {
 			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
 			_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 		}
+		brush->preExecute(_brushContext, volume);
 	}
 }
 
@@ -393,6 +394,7 @@ void Modifier::postExecuteBrush() {
 		if (brush->brushClamping()) {
 			_brushContext.cursorPosition = _brushContext.prevCursorPosition;
 		}
+		brush->postExecute(_brushContext);
 	}
 }
 
