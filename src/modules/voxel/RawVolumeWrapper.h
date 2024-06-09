@@ -41,12 +41,12 @@ public:
 
 		bool setVoxel(const Voxel& voxel) override {
 			if (Super::setVoxel(voxel)) {
-				voxel::Region &placeholder = _rawVolumeWrapper->_dirtyRegion;
+				voxel::Region &dirtyRegion = _rawVolumeWrapper->_dirtyRegion;
 				const glm::ivec3 &pos = position();
-				if (placeholder.isValid()) {
-					placeholder.accumulate(pos);
+				if (dirtyRegion.isValid()) {
+					dirtyRegion.accumulate(pos);
 				} else {
-					placeholder = Region(pos, pos);
+					dirtyRegion = Region(pos, pos);
 				}
 				return true;
 			}
