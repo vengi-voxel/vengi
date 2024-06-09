@@ -35,8 +35,9 @@ Each chunk in the file is identified by a 4-byte FourCC code, followed by its da
 
 - **Magic Number**: `0x56454E47` (`'VENG'`)
 - **Version**: 4-byte unsigned integer (current version: `3` - already part of the compressed data)
+- **Root node**: The scene graph root node
 
-#### Scene Graph Nodes
+### Scene Graph Nodes
 
 Each node chunk begins with the `NODE` FourCC and includes the following information:
 
@@ -48,6 +49,11 @@ Each node chunk begins with the `NODE` FourCC and includes the following informa
 6. **Lock State**: 1-byte boolean
 7. **Color**: 4-byte RGBA value
 8. **Pivot**: Three 4-byte floats (x, y, z)
+9. **Properties**: Properties chunk
+10. **Palette**: Palette chunk
+11. **Data**: Data chunk
+12. **Animations**: n-Animation chunks
+13. **Child nodes**: Node chunk
 
 Node types are:
 
@@ -57,6 +63,8 @@ Node types are:
 * `Group`
 * `Camera`
 * `Point`
+
+Each node has the FourCC `ENDN` at its end
 
 #### Node Properties
 
