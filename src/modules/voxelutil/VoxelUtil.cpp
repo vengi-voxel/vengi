@@ -327,8 +327,9 @@ using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
 using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &, voxel::FaceNames)>;
 using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
-static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const voxel::Region &region,
-					   const WalkCheckCallback &check, const WalkExecCallback &exec, const glm::ivec3 &position,
+template<class CHECK, class EXEC, class Volume>
+static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &region,
+					   CHECK &&check, EXEC &&exec, const glm::ivec3 &position,
 					   const glm::ivec3 &checkOffset, voxel::FaceNames face) {
 	const glm::ivec3 checkPosition = position + checkOffset;
 	if (visited.has(checkPosition)) {
@@ -384,8 +385,9 @@ static int walkPlane_r(IVec3Set &visited, voxel::RawVolumeWrapper &in, const vox
  * @param exec The callback function to use for executing operations on the voxels. Only executed if @c check returned
  * @c true
  */
-static int walkPlane(voxel::RawVolumeWrapper &in, glm::ivec3 position, voxel::FaceNames face, int checkOffset,
-					 const WalkCheckCallback &check, const WalkExecCallback &exec, int amount) {
+template<class CHECK, class EXEC, class Volume>
+static int walkPlane(Volume &in, glm::ivec3 position, voxel::FaceNames face, int checkOffset,
+					 CHECK&& check, EXEC &&exec, int amount) {
 	const voxel::Region &region = in.region();
 	glm::ivec3 mins = region.getLowerCorner();
 	glm::ivec3 maxs = region.getUpperCorner();
@@ -437,7 +439,6 @@ static int walkPlane(voxel::RawVolumeWrapper &in, glm::ivec3 position, voxel::Fa
 		}
 		const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
 		const int maxSize = dim.x * dim.y * dim.z;
-		core_assert_msg(maxSize > 0, "max size is 0 even though the region was valid");
 		IVec3Set visited(maxSize);
 		const int n0 = walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face);
 		if (n0 == 0) {
@@ -523,21 +524,26 @@ int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec, 1);
 }
 
+template<class Volume>
+static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos,
+							 voxel::FaceNames direction, const glm::ivec3 &initialCursorPos,
+							 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel) {
+	const voxel::Voxel &v = volume.voxel(callbackPos);
+	const math::Axis axis = voxel::faceToAxis(direction);
+	const int idx = math::getIndexForAxis(axis);
+	const int offset = voxel::isNegativeFace(direction) ? -1 : 1;
+	if (callbackPos[idx] + offset == initialCursorPos[idx]) {
+		return v.isSame(groundVoxel);
+	}
+	return v.isSame(newPlaneVoxel);
+}
+
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
 	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames direction) {
-		const voxel::Voxel &v = volume.voxel(p);
-		const math::Axis axis = voxel::faceToAxis(direction);
-		const int idx = math::getIndexForAxis(axis);
-		const int offset = voxel::isNegativeFace(direction) ? -1 : 1;
-		if (p[idx] + offset == pos[idx]) {
-			return v.isSame(groundVoxel);
-		}
-		return v.isSame(newPlaneVoxel);
+		return checkExtrudeFunc(volume, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		return in.setVoxel(pos, newPlaneVoxel);
-	};
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, newPlaneVoxel); };
 	return voxelutil::walkPlane(in, pos, face, -1, check, exec, thickness);
 }
 
