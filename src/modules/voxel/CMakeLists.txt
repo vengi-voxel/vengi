@@ -10,6 +10,7 @@ set(SRCS
 	MaterialColor.h MaterialColor.cpp
 	Mesh.h Mesh.cpp
 	MeshState.h MeshState.cpp
+	ModificationRecorder.h
 	RawVolume.h RawVolume.cpp
 	RawVolumeWrapper.h
 	RawVolumeMoveWrapper.h
@@ -28,6 +29,7 @@ set(TEST_SRCS
 	tests/FaceTest.cpp
 	tests/MeshTests.cpp
 	tests/MeshStateTest.cpp
+	tests/ModificationRecorderTest.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RegionTest.cpp

@@ -124,6 +124,12 @@ public:
 	 */
 	[[nodiscard]] const Voxel &voxel(const glm::ivec3 &pos) const;
 
+	[[nodiscard]] bool hasVoxel(int x, int y, int z) const {
+		return hasVoxel({x, y, z});
+	}
+
+	[[nodiscard]] bool hasVoxel(const glm::ivec3 &pos) const;
+
 	[[nodiscard]] inline bool empty() const {
 		return size() == 0;
 	}

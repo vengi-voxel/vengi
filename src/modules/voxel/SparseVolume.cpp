@@ -29,6 +29,10 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 	return _emptyVoxel;
 }
 
+bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
+	return  _map.find(pos) != _map.end();
+}
+
 SparseVolume::Sampler::Sampler(const SparseVolume *volume) : _volume(const_cast<SparseVolume *>(volume)) {
 }
 
