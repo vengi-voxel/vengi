@@ -429,7 +429,7 @@ static int walkPlane(voxel::RawVolumeWrapper &in, glm::ivec3 position, voxel::Fa
 	const int idx = math::getIndexForAxis(axis);
 	const int offset = voxel::isNegativeFace(face) ? -1 : 1;
 
-	bool success = false;
+	int n = 0;
 	for (int i = 0; i < amount; ++i) {
 		const voxel::Region walkRegion(mins, maxs);
 		if (!walkRegion.isValid()) {
@@ -439,16 +439,16 @@ static int walkPlane(voxel::RawVolumeWrapper &in, glm::ivec3 position, voxel::Fa
 		const int maxSize = dim.x * dim.y * dim.z;
 		core_assert_msg(maxSize > 0, "max size is 0 even though the region was valid");
 		IVec3Set visited(maxSize);
-		if (walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face)) {
-			success = true;
-			mins[idx] += offset;
-			maxs[idx] += offset;
-			position[idx] += offset;
-		} else {
+		const int n0 = walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face);
+		if (n0 == 0) {
 			break;
 		}
+		mins[idx] += offset;
+		maxs[idx] += offset;
+		position[idx] += offset;
+		n += n0;
 	}
-	return success;
+	return n;
 }
 
 static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxel::FaceNames face) {
