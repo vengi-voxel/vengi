@@ -13,7 +13,7 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
-	if (isAir(voxel.getMaterial())) {
+	if (!_storeEmptyVoxels && isAir(voxel.getMaterial())) {
 		_map.remove(pos);
 		return true;
 	}

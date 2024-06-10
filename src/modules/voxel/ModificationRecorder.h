@@ -4,6 +4,7 @@
 
 #include "RawVolume.h"
 #include "voxel/SparseVolume.h"
+#include "voxel/Voxel.h"
 
 namespace voxel {
 
@@ -17,6 +18,7 @@ private:
 
 public:
 	ModificationRecorder(const RawVolume &volume) : _volume(volume) {
+		_modifications.setStoreEmptyVoxels(true);
 	}
 
 public:
@@ -37,8 +39,8 @@ public:
 	}
 
 	inline const Voxel &voxel(const glm::ivec3 &pos) const {
-		if (_modifications.hasVoxel(pos.x, pos.y, pos.z)) {
-			return _modifications.voxel(pos.x, pos.y, pos.z);
+		if (_modifications.hasVoxel(pos)) {
+			return _modifications.voxel(pos);
 		}
 		return _volume.voxel(pos.x, pos.y, pos.z);
 	}
@@ -51,7 +53,7 @@ public:
 	}
 
 	inline bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
-		return _modifications.setVoxel(pos.x, pos.y, pos.z, voxel);
+		return _modifications.setVoxel(pos, voxel);
 	}
 
 	voxel::Region dirtyRegion() const {

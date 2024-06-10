@@ -21,6 +21,7 @@ private:
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0};
 	const voxel::Region _region;
 	const bool _isRegionValid;
+	bool _storeEmptyVoxels = false;
 
 public:
 	class Sampler {
@@ -97,7 +98,12 @@ public:
 		uint8_t _currentPositionInvalid = 0u;
 	};
 
-	SparseVolume(const voxel::Region &region = voxel::Region::InvalidRegion);
+	// invalid region means unlimited size
+	SparseVolume(const voxel::Region &limitRegion = voxel::Region::InvalidRegion);
+
+	void setStoreEmptyVoxels(bool storeEmptyVoxels) {
+		_storeEmptyVoxels = storeEmptyVoxels;
+	}
 
 	[[nodiscard]] inline const voxel::Region &region() const {
 		return _region;
