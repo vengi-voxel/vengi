@@ -26,6 +26,7 @@ VoxEdit:
    - Fixed loading voxel collection assets
    - Gradient paint brush mode
    - Fixed invalid voxel erasing in plane brush
+   - Extrude with preview (plane brush)
 
 ## 0.0.32 (2024-05-29)
 

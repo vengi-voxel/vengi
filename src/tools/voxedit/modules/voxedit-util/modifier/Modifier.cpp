@@ -133,7 +133,7 @@ void Modifier::shutdown() {
 }
 
 void Modifier::update(double nowSeconds) {
-	AABBBrush *brush = activeAABBBrush();
+	AABBBrush *brush = currentAABBBrush();
 	if (brush) {
 		if (brush->singleMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
@@ -149,7 +149,7 @@ void Modifier::update(double nowSeconds) {
 			}
 		}
 	}
-	if (Brush *brush = activeBrush()) {
+	if (Brush *brush = currentBrush()) {
 		brush->update(_brushContext, nowSeconds);
 	}
 }
@@ -176,7 +176,7 @@ bool Modifier::start() {
 		return true;
 	}
 
-	if (AABBBrush *brush = activeAABBBrush()) {
+	if (AABBBrush *brush = currentAABBBrush()) {
 		return brush->start(_brushContext);
 	}
 	return false;
@@ -186,7 +186,7 @@ void Modifier::executeAdditionalAction() {
 	if (isMode(ModifierType::Select) || isMode(ModifierType::ColorPicker)) {
 		return;
 	}
-	if (AABBBrush *brush = activeAABBBrush()) {
+	if (AABBBrush *brush = currentAABBBrush()) {
 		brush->step(_brushContext);
 	}
 }
@@ -246,21 +246,21 @@ bool Modifier::needsFurtherAction() {
 	if (isMode(ModifierType::Select)) {
 		return false;
 	}
-	if (const AABBBrush *brush = activeAABBBrush()) {
+	if (const AABBBrush *brush = currentAABBBrush()) {
 		return brush->needsFurtherAction(_brushContext);
 	}
 	return false;
 }
 
 glm::ivec3 Modifier::currentCursorPosition() {
-	if (AABBBrush *brush = activeAABBBrush()) {
+	if (AABBBrush *brush = currentAABBBrush()) {
 		return brush->currentCursorPosition(_brushContext);
 	}
 	return _brushContext.cursorPosition;
 }
 
 voxel::Region Modifier::calcBrushRegion() {
-	AABBBrush *brush = activeAABBBrush();
+	AABBBrush *brush = currentAABBBrush();
 	if (brush) {
 		return brush->calcRegion(_brushContext);
 	}
@@ -378,7 +378,7 @@ static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region 
 }
 
 void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
-	if (Brush *brush = activeBrush()) {
+	if (Brush *brush = currentBrush()) {
 		_brushContext.targetVolumeRegion = volume->region();
 		_brushContext.prevCursorPosition = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {
@@ -390,7 +390,7 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 }
 
 void Modifier::postExecuteBrush() {
-	if (Brush *brush = activeBrush()) {
+	if (Brush *brush = currentBrush()) {
 		if (brush->brushClamping()) {
 			_brushContext.cursorPosition = _brushContext.prevCursorPosition;
 		}
@@ -401,7 +401,7 @@ void Modifier::postExecuteBrush() {
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const Callback &callback) {
-	if (Brush *brush = activeBrush()) {
+	if (Brush *brush = currentBrush()) {
 		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
@@ -423,7 +423,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 	return false;
 }
 
-Brush *Modifier::activeBrush() {
+Brush *Modifier::currentBrush() {
 	for (Brush *b : _brushes) {
 		if (b->type() == _brushType) {
 			return b;
@@ -432,7 +432,7 @@ Brush *Modifier::activeBrush() {
 	return nullptr;
 }
 
-AABBBrush *Modifier::activeAABBBrush() {
+AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
 	}
@@ -463,7 +463,7 @@ void Modifier::stop() {
 		_selectStartPositionValid = false;
 		return;
 	}
-	if (AABBBrush *brush = activeAABBBrush()) {
+	if (AABBBrush *brush = currentAABBBrush()) {
 		brush->stop(_brushContext);
 	}
 }
@@ -475,7 +475,7 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 BrushType Modifier::setBrushType(BrushType type) {
 	_brushType = type;
 	if (_brushType != BrushType::None) {
-		_modifierType = activeBrush()->modifierType(_modifierType);
+		_modifierType = currentBrush()->modifierType(_modifierType);
 	}
 	return _brushType;
 }
@@ -486,7 +486,7 @@ void Modifier::setGridResolution(int gridSize) {
 
 ModifierType Modifier::setModifierType(ModifierType type) {
 	if (_brushType != BrushType::None) {
-		_modifierType = activeBrush()->modifierType(type);
+		_modifierType = currentBrush()->modifierType(type);
 	} else {
 		_modifierType = type;
 	}

@@ -74,7 +74,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	}
 
 	_brushContext.targetVolumeRegion = activeVolume->region();
-	if (const Brush *brush = activeBrush()) {
+	if (const Brush *brush = currentBrush()) {
 		preExecuteBrush(activeVolume);
 		const voxel::Region &region = brush->calcRegion(_brushContext);
 		glm::ivec3 minsMirror = region.getLowerCorner();
@@ -103,7 +103,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	const glm::mat4 &scale = glm::scale(translate, glm::vec3((float)_brushContext.gridResolution));
 	const bool flip = voxel::isAir(_brushContext.voxelAtCursor.getMaterial());
 	_modifierRenderer->updateCursor(_brushContext.cursorVoxel, _brushContext.cursorFace, flip);
-	Brush *brush = activeBrush();
+	Brush *brush = currentBrush();
 	if (brush) {
 		int activeNode = _sceneMgr->sceneGraph().activeNode();
 		if (activeNode != InvalidNodeId) {

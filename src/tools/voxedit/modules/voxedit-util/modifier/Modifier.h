@@ -138,9 +138,9 @@ public:
 	BrushType setBrushType(BrushType type);
 	BrushType brushType() const;
 
-	Brush *activeBrush();
+	Brush *currentBrush();
 	const AABBBrush *activeAABBBrush() const;
-	AABBBrush *activeAABBBrush();
+	AABBBrush *currentAABBBrush();
 	voxel::Region calcBrushRegion();
 
 	ShapeBrush &shapeBrush();
