@@ -4,15 +4,15 @@
 
 #include "voxelutil/VoxelUtil.h"
 #include "app/tests/AbstractTest.h"
-#include "voxel/Face.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelutil {
 
@@ -21,13 +21,13 @@ class VoxelUtilTest : public app::AbstractTest {};
 TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  1);
+	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxelutil::visitVolume(
 		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
 		VisitAll());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
 	voxelutil::fillHollow(wrapper, fillVoxel);
 	EXPECT_EQ(2, v.voxel(region.getCenter()).getColor());
@@ -36,13 +36,13 @@ TEST_F(VoxelUtilTest, testFillHollow3x3Center) {
 TEST_F(VoxelUtilTest, testFillHollow5x5CenterNegativeOrigin) {
 	voxel::Region region(-2, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  1);
+	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxelutil::visitVolume(
 		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
 		VisitAll());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
 	voxelutil::fillHollow(wrapper, fillVoxel);
 	EXPECT_EQ(2, v.voxel(region.getCenter()).getColor());
@@ -51,14 +51,14 @@ TEST_F(VoxelUtilTest, testFillHollow5x5CenterNegativeOrigin) {
 TEST_F(VoxelUtilTest, testFillHollowLeak) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  1);
+	const voxel::Voxel borderVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxelutil::visitVolume(
 		v, [&](int x, int y, int z, const voxel::Voxel &) { EXPECT_TRUE(v.setVoxel(x, y, z, borderVoxel)); },
 		VisitAll());
 	EXPECT_TRUE(v.setVoxel(region.getCenter(), voxel::Voxel()));
 	EXPECT_TRUE(v.setVoxel(1, 1, 0, voxel::Voxel())); // produce leak
 
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
 	voxelutil::fillHollow(wrapper, fillVoxel);
 	EXPECT_EQ(0, v.voxel(region.getCenter()).getColor());
@@ -67,23 +67,24 @@ TEST_F(VoxelUtilTest, testFillHollowLeak) {
 TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
-	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  3);
+	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 	voxel::RawVolumeWrapper wrapper(&v);
 	// build an L
 	v.setVoxel(0, 0, 0, groundVoxel);
 	v.setVoxel(1, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
-	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, 1));
+	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel,
+										 newPlaneVoxel, 1));
 	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
 	voxel::Region region(0, 7);
 	voxel::RawVolume v(region);
-	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
-	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  3);
+	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 	voxel::RawVolumeWrapper wrapper(&v);
 	// build an L
 	v.setVoxel(0, 0, 0, groundVoxel);
@@ -91,7 +92,8 @@ TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
 	const int thickness = 5;
-	const voxel::Region extrudeRegion = voxelutil::extrudePlaneRegion(*wrapper.volume(), glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, thickness);
+	const voxel::Region extrudeRegion = voxelutil::extrudePlaneRegion(
+		*wrapper.volume(), glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, thickness);
 	EXPECT_EQ(thickness, extrudeRegion.getDimensionsInVoxels().y)
 		<< extrudeRegion.getDimensionsInVoxels().x << ":" << extrudeRegion.getDimensionsInVoxels().y << ":"
 		<< extrudeRegion.getDimensionsInVoxels().z;
@@ -108,15 +110,16 @@ TEST_F(VoxelUtilTest, testExtrudeEraseRegion) {
 	v.setVoxel(1, 0, 0, fillVoxel1); // first group and selected for the erase call
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
-	const voxel::Region extrudeRegion = voxelutil::erasePlaneRegion(*wrapper.volume(), glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1);
+	const voxel::Region extrudeRegion =
+		voxelutil::erasePlaneRegion(*wrapper.volume(), glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1);
 	EXPECT_EQ(1, extrudeRegion.getDimensionsInVoxels().y);
 }
 
 TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel fillVoxel1 = voxel::createVoxel(voxel::VoxelType::Generic,  2);
-	const voxel::Voxel fillVoxel2 = voxel::createVoxel(voxel::VoxelType::Generic,  3);
+	const voxel::Voxel fillVoxel1 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel fillVoxel2 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 	voxel::RawVolumeWrapper wrapper(&v);
 	// build an L
 	v.setVoxel(0, 0, 0, fillVoxel1); // first group
@@ -132,8 +135,8 @@ TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 TEST_F(VoxelUtilTest, testErasePlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel fillVoxel1 = voxel::createVoxel(voxel::VoxelType::Generic,  2);
-	const voxel::Voxel fillVoxel2 = voxel::createVoxel(voxel::VoxelType::Generic,  3);
+	const voxel::Voxel fillVoxel1 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel fillVoxel2 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 	voxel::RawVolumeWrapper wrapper(&v);
 	// build an L
 	v.setVoxel(0, 0, 0, fillVoxel1); // first group
@@ -147,34 +150,37 @@ TEST_F(VoxelUtilTest, testErasePlanePositiveY) {
 TEST_F(VoxelUtilTest, testFillEmptyPlaneNegativeX) {
 	voxel::Region region(-2, 0);
 	voxel::RawVolume v(region);
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(), fillVoxel, 1));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(),
+										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(), fillVoxel, 1));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(),
+										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
-	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(), fillVoxel, 1));
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(),
+										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
 TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	palette::PaletteLookup palLookup;
 
-	const image::ImagePtr& img = image::loadImage("test-fillplane.png");
+	const image::ImagePtr &img = image::loadImage("test-fillplane.png");
 
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	EXPECT_EQ(10, img->width());
@@ -185,7 +191,8 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	EXPECT_EQ(region.getWidthInVoxels(), img->width());
 	voxel::RawVolume v(region);
 	voxel::RawVolumeWrapper wrapper(&v);
-	const int plane1Voxels = voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveZ);
+	const int plane1Voxels =
+		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveZ);
 	EXPECT_EQ(img->width() * img->height(), plane1Voxels);
 
 	for (int x = 0; x < img->width(); ++x) {
@@ -197,7 +204,8 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 			<< ") at " << x << "\n" << v;
 	}
 
-	const int plane2Voxels = voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 1), voxel::FaceNames::PositiveZ);
+	const int plane2Voxels =
+		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 1), voxel::FaceNames::PositiveZ);
 	EXPECT_EQ(img->width() * img->height(), plane2Voxels);
 
 	for (int x = 0; x < img->width(); ++x) {

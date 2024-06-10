@@ -164,6 +164,10 @@ public:
 	 */
 	bool needsFurtherAction();
 
+	/**
+	 * @brief Some modifier operate on already existing voxels
+	 * @note This has an influence on what the cursor voxel is - either an empty voxel - or an existing one
+	 */
 	bool modifierTypeRequiresExistingVoxel() const;
 
 	/**
