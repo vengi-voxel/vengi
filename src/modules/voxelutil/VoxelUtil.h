@@ -87,6 +87,8 @@ int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const v
  */
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel,
 			const voxel::Voxel &newPlaneVoxel, int thickness);
+voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+								 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness);
 
 /**
  * @brief Erases a plane in a voxel volume.

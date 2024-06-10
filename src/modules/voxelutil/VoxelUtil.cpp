@@ -13,6 +13,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/Face.h"
+#include "voxel/ModificationRecorder.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
@@ -536,6 +537,21 @@ static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos,
 		return v.isSame(groundVoxel);
 	}
 	return v.isSame(newPlaneVoxel);
+}
+
+voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
+	auto check = [&](const voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames direction) {
+		return checkExtrudeFunc(volume, p, direction, pos, groundVoxel, newPlaneVoxel);
+	};
+
+	auto exec = [&](voxel::ModificationRecorder &in, const glm::ivec3 &pos) {
+		in.setVoxel(pos, newPlaneVoxel);
+		return true;
+	};
+	voxel::ModificationRecorder recorder(volume);
+	voxelutil::walkPlane(recorder, pos, face, -1, check, exec, thickness);
+	return recorder.dirtyRegion();
 }
 
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,

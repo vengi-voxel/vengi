@@ -79,6 +79,24 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
+TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
+	voxel::Region region(0, 7);
+	voxel::RawVolume v(region);
+	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  2);
+	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic,  3);
+	voxel::RawVolumeWrapper wrapper(&v);
+	// build an L
+	v.setVoxel(0, 0, 0, groundVoxel);
+	v.setVoxel(1, 0, 0, groundVoxel);
+	v.setVoxel(2, 0, 0, groundVoxel);
+	v.setVoxel(2, 0, 1, groundVoxel);
+	const int thickness = 5;
+	const voxel::Region extrudeRegion = voxelutil::extrudePlaneRegion(*wrapper.volume(), glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, thickness);
+	EXPECT_EQ(thickness, extrudeRegion.getDimensionsInVoxels().y)
+		<< extrudeRegion.getDimensionsInVoxels().x << ":" << extrudeRegion.getDimensionsInVoxels().y << ":"
+		<< extrudeRegion.getDimensionsInVoxels().z;
+}
+
 TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
