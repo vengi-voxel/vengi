@@ -39,6 +39,7 @@ private:
 	const uint32_t _redColor;
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
+	uint32_t _copyIndex = -1;
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
 	core::String _lospecID;

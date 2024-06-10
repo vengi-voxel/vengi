@@ -192,6 +192,17 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 	if (!_colorHovered && ImGui::IsItemHovered()) {
 		_colorHovered = true;
 		drawList->AddRect(v1, v2, _redColor, 0.0f, 0, 2.0f);
+
+		if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_C)) {
+			_copyIndex = uiIdx;
+		} else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
+			if (_copyIndex != -1) {
+				palette.setColor(uiIdx, palette.color(_copyIndex));
+				palette.setMaterial(uiIdx, palette.material(_copyIndex));
+				palette.markSave();
+				_sceneMgr->mementoHandler().markPaletteChange(node);
+			}
+		}
 	} else if (palIdx == currentSceneColor()) {
 		if (palette.color(palIdx).a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
