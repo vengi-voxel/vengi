@@ -158,6 +158,7 @@ public:
 	/**
 	 * @note Only for ui purposes - changes the color slots
 	 */
+	void exchangeSlots(uint8_t idx1, uint8_t idx2);
 	void exchange(uint8_t idx1, uint8_t idx2);
 
 	const Material &material(uint8_t idx) const;

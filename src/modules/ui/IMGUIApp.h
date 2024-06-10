@@ -69,9 +69,9 @@ protected:
 	bool _showCvarDialog = false;
 	bool _closeModalPopup = false;
 	bool _showFileDialog = false;
-	bool _persistUISettings = true;
 	bool _imguiBackendInitialized = false;
 
+	bool _persistUISettings = true;
 	bool _showConsole = true;
 
 	/**

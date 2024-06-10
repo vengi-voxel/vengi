@@ -153,11 +153,28 @@ void Palette::duplicateColor(uint8_t idx) {
 	}
 }
 
-void Palette::exchange(uint8_t idx1, uint8_t idx2) {
+void Palette::exchangeSlots(uint8_t idx1, uint8_t idx2) {
 	if (idx1 == idx2) {
 		return;
 	}
 	core::exchange(_indices[idx1], _indices[idx2]);
+	markDirty();
+	markSave();
+}
+
+void Palette::exchange(uint8_t idx1, uint8_t idx2) {
+	if (idx1 == idx2) {
+		return;
+	}
+	const core::RGBA lhs = color(idx1);
+	const palette::Material lhsM = material(idx1);
+	const core::RGBA rhs = color(idx2);
+	const palette::Material rhsM = material(idx2);
+	setColor(idx1, rhs);
+	setMaterial(idx1, rhsM);
+	setColor(idx2, lhs);
+	setMaterial(idx2, lhsM);
+	markSave();
 	markDirty();
 }
 

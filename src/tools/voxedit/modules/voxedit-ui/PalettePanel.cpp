@@ -111,13 +111,9 @@ void PalettePanel::handleDragAndDrop(uint8_t palIdx, uint8_t uiIdx, scenegraph::
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t *)payload->Data;
 			if (dragAndDropSortColors()) {
-				palette.exchange(palIdx, dragPalIdx);
+				palette.exchangeSlots(palIdx, dragPalIdx);
 			} else {
-				core::RGBA lhs = palette.color(palIdx);
-				core::RGBA rhs = palette.color(dragPalIdx);
-				palette.setColor(palIdx, rhs);
-				palette.setColor(dragPalIdx, lhs);
-				palette.markSave();
+				palette.exchange(palIdx, dragPalIdx);
 			}
 			_sceneMgr->mementoHandler().markPaletteChange(node);
 		}
