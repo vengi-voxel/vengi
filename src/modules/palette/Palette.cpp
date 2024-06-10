@@ -178,6 +178,16 @@ void Palette::exchange(uint8_t idx1, uint8_t idx2) {
 	markDirty();
 }
 
+void Palette::copy(uint8_t from, uint8_t to) {
+	if (from == to) {
+		return;
+	}
+	_colors[to] = _colors[from];
+	_materials[to] = _materials[from];
+	markDirty();
+	markSave();
+}
+
 bool Palette::removeColor(uint8_t idx) {
 	if (idx < _colorCount && _colorCount > 1) {
 		for (int i = idx; i < _colorCount - 1; ++i) {

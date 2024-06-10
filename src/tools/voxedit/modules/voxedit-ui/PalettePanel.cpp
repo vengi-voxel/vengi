@@ -197,9 +197,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 			_copyIndex = uiIdx;
 		} else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
 			if (_copyIndex != -1) {
-				palette.setColor(uiIdx, palette.color(_copyIndex));
-				palette.setMaterial(uiIdx, palette.material(_copyIndex));
-				palette.markSave();
+				palette.copy(_copyIndex, uiIdx);
 				_sceneMgr->mementoHandler().markPaletteChange(node);
 			}
 		}

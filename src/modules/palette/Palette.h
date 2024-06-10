@@ -160,6 +160,7 @@ public:
 	 */
 	void exchangeSlots(uint8_t idx1, uint8_t idx2);
 	void exchange(uint8_t idx1, uint8_t idx2);
+	void copy(uint8_t from, uint8_t to);
 
 	const Material &material(uint8_t idx) const;
 	core::RGBA color(uint8_t idx) const;
