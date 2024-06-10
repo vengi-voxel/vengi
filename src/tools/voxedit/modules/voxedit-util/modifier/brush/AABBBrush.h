@@ -97,7 +97,7 @@ public:
 	 * @sa step()
 	 * @sa stop()
 	 */
-	bool start(const BrushContext &context);
+	virtual bool start(const BrushContext &context);
 	/**
 	 * @brief Will set the second position of the aabb (only after @c start() was called, and not if @c setRegion() was
 	 * used).
