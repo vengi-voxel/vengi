@@ -504,25 +504,42 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec, 1);
 }
 
+template<class Volume>
+static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Voxel &groundVoxel, voxel::FaceNames face) {
+	const voxel::Voxel &v = volume.voxel(p);
+	if (v.isSame(groundVoxel)) {
+		const math::Axis axis = voxel::faceToAxis(face);
+		const int idx = math::getIndexForAxis(axis);
+		const int offset = voxel::isNegativeFace(face) ? -1 : 1;
+		glm::ivec3 abovePos = p;
+		abovePos[idx] += offset;
+		const voxel::Voxel &aboveVoxel = volume.voxel(abovePos);
+		return voxel::isAir(aboveVoxel.getMaterial());
+	}
+	return false;
+}
+
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel) {
 	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		const voxel::Voxel &v = volume.voxel(p);
-		if (v.isSame(groundVoxel)) {
-			const math::Axis axis = voxel::faceToAxis(face);
-			const int idx = math::getIndexForAxis(axis);
-			const int offset = voxel::isNegativeFace(face) ? -1 : 1;
-			glm::ivec3 abovePos = p;
-			abovePos[idx] += offset;
-			const voxel::Voxel &aboveVoxel = volume.voxel(abovePos);
-			return voxel::isAir(aboveVoxel.getMaterial());
-		}
-		return false;
+		return checkEraseFunc(volume, p, groundVoxel, face);
 	};
 	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
 		return in.setVoxel(pos, voxel::Voxel());
 	};
 	return voxelutil::walkPlane(in, pos, face, 0, check, exec, 1);
+}
+
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel) {
+	auto check = [&](const voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkEraseFunc(volume, p, groundVoxel, face);
+	};
+	auto exec = [](voxel::ModificationRecorder &in, const glm::ivec3 &pos) {
+		return in.setVoxel(pos, voxel::Voxel());
+	};
+	voxel::ModificationRecorder recorder(volume);
+	voxelutil::walkPlane(recorder, pos, face, 0, check, exec, 1);
+	return recorder.dirtyRegion();
 }
 
 template<class Volume>

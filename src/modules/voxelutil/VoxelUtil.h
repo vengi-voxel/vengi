@@ -103,6 +103,7 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
  * @return The number of voxels that were erased.
  */
 int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel);
 
 /**
  * @brief Paints a plane of existing voxels in a voxel volume with a specified voxel.

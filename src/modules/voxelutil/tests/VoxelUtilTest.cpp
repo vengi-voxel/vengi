@@ -97,6 +97,21 @@ TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
 		<< extrudeRegion.getDimensionsInVoxels().z;
 }
 
+TEST_F(VoxelUtilTest, testExtrudeEraseRegion) {
+	voxel::Region region(0, 2);
+	voxel::RawVolume v(region);
+	const voxel::Voxel fillVoxel1 = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel fillVoxel2 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
+	voxel::RawVolumeWrapper wrapper(&v);
+	// build an L
+	v.setVoxel(0, 0, 0, fillVoxel1); // first group
+	v.setVoxel(1, 0, 0, fillVoxel1); // first group and selected for the erase call
+	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
+	v.setVoxel(2, 0, 1, fillVoxel1); // second group
+	const voxel::Region extrudeRegion = voxelutil::erasePlaneRegion(*wrapper.volume(), glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1);
+	EXPECT_EQ(1, extrudeRegion.getDimensionsInVoxels().y);
+}
+
 TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	voxel::Region region(0, 2);
 	voxel::RawVolume v(region);
