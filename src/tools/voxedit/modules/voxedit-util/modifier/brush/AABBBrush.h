@@ -57,7 +57,8 @@ protected:
 	 */
 	glm::ivec3 _aabbFirstPos{0};
 	/**
-	 * The second position of the aabb
+	 * The second position of the aabb - the cursor position can now be used to span the 3rd dimension of the aabb.
+	 * The first and second position only define 2 dimensions.
 	 */
 	glm::ivec3 _aabbSecondPos{0};
 
