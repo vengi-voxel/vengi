@@ -383,17 +383,19 @@ void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
-	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_BRUSHPANEL, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_NODE_INSPECTOR, dockId);
 }
 
 void MainWindow::leftWidget() {
 	const bool editMode = isAnyEditMode();
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	if (editMode) {
 		_brushPanel.update(TITLE_BRUSHPANEL, listener);
+		_nodeInspectorPanel.update(TITLE_VOLUME_INSPECTOR, _lastSceneMode, listener);
+	} else {
+		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
 	}
 }
 

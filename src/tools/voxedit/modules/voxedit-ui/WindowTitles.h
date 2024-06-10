@@ -9,6 +9,7 @@
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE ICON_LC_PALETTE " Palette###palettepanel"
 #define TITLE_NODE_INSPECTOR ICON_LC_LOCATE " Node Inspector###nodeinspectorpanel"
+#define TITLE_VOLUME_INSPECTOR ICON_LC_LOCATE " Volume Inspector###nodeinspectorpanel"
 #define TITLE_ANIMATION_TIMELINE ICON_LC_TABLE " Animation###animationtimeline"
 #define TITLE_TOOLS ICON_LC_WRENCH " Tools###toolspanel"
 #define TITLE_MEMENTO ICON_LC_BOOK_OPEN " History###mementopanel"
