@@ -132,6 +132,8 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
  */
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel);
+voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+				  const voxel::Voxel &replaceVoxel);
 
 /**
  * @brief Fills the hollow spaces in a voxel volume.

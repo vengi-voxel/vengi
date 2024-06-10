@@ -471,25 +471,42 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 	}
 }
 
+template<class Volume>
+static bool checkOverrideFunc(Volume &volume, const glm::ivec3 &pos, const voxel::Voxel &replaceVoxel,
+									voxel::FaceNames face, bool &firstVoxelIsAir, bool &firstVoxel) {
+	const voxel::Voxel &v = volume.voxel(pos);
+	if (firstVoxel) {
+		firstVoxelIsAir = voxel::isAir(v.getMaterial());
+		firstVoxel = false;
+	}
+	if (firstVoxelIsAir) {
+		return voxel::isAir(v.getMaterial());
+	}
+	return v.isSame(replaceVoxel);
+}
+
 int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
 	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		const voxel::Voxel &v = volume.voxel(p);
-		if (firstVoxel) {
-			firstVoxelIsAir = voxel::isAir(v.getMaterial());
-		}
-		firstVoxel = false;
-		if (firstVoxelIsAir) {
-			return voxel::isAir(v.getMaterial());
-		}
-		return voxel::isBlocked(v.getMaterial());
+		return checkOverrideFunc(volume, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		return in.setVoxel(pos, replaceVoxel);
-	};
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
 	return voxelutil::walkPlane(in, pos, face, -1, check, exec, 1);
+}
+
+voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+								  const voxel::Voxel &replaceVoxel) {
+	bool firstVoxelIsAir = false;
+	bool firstVoxel = true;
+	auto check = [&](const voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkOverrideFunc(volume, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
+	};
+	auto exec = [=](voxel::ModificationRecorder &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
+	voxel::ModificationRecorder recorder(volume);
+	voxelutil::walkPlane(recorder, pos, face, -1, check, exec, 1);
+	return recorder.dirtyRegion();
 }
 
 int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
