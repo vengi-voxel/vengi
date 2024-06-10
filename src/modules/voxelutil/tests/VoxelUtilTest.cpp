@@ -80,6 +80,23 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	EXPECT_EQ(8, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &) {}));
 }
 
+TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
+	voxel::Region region(0, 2);
+	voxel::RawVolume v(region);
+	const voxel::Voxel groundVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	const voxel::Voxel newPlaneVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 3);
+	voxel::RawVolumeWrapper wrapper(&v);
+	// build an L
+	v.setVoxel(0, 0, 0, groundVoxel);
+	v.setVoxel(1, 0, 0, groundVoxel);
+	v.setVoxel(2, 0, 0, groundVoxel);
+	v.setVoxel(2, 0, 1, groundVoxel);
+	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
+	int n = 0;
+	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &v) { n += v.getColor() == 3; }));
+	EXPECT_EQ(9, n);
+}
+
 TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
 	voxel::Region region(0, 7);
 	voxel::RawVolume v(region);
