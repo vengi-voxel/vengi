@@ -189,14 +189,6 @@ void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listen
 	} else if (modifier.isMode(ModifierType::Override)) {
 		ImGui::TextWrappedUnformatted(_("Override voxels"));
 	}
-
-	if (modifier.isMode(ModifierType::Place)) {
-		PlaneBrush &brush = modifier.planeBrush();
-		int factor = brush.thickness();
-		if (ImGui::InputInt(_("Thickness"), &factor)) {
-			brush.setThickness(factor);
-		}
-	}
 }
 
 void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {

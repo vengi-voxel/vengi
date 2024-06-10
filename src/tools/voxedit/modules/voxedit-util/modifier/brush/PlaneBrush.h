@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "Brush.h"
+#include "AABBBrush.h"
 
 namespace voxedit {
 
@@ -12,35 +12,24 @@ namespace voxedit {
  * @brief A brush that generates voxels on a whole plane or extrudes on existing voxels
  * @ingroup Brushes
  */
-class PlaneBrush : public Brush {
+class PlaneBrush : public AABBBrush {
 private:
-	using Super = Brush;
-	int _thickness = 1;
+	using Super = AABBBrush;
+	voxel::Voxel _hitVoxel;
+	voxel::Region _region;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
-	voxel::Region calcRegion(const BrushContext &context) const override;
-
+	int calculateThickness(const BrushContext &context) const;
 public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}
 	virtual ~PlaneBrush() = default;
 
-	void setThickness(int thickness);
-	int thickness() const;
+	bool start(const BrushContext &context) override;
+	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
+	voxel::Region calcRegion(const BrushContext &context) const override;
 };
-
-inline void PlaneBrush::setThickness(int thickness) {
-	_thickness = thickness;
-	if (_thickness < 1)
-		_thickness = 1;
-
-	markDirty();
-}
-
-inline int PlaneBrush::thickness() const {
-	return _thickness;
-}
 
 } // namespace voxedit

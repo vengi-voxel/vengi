@@ -439,6 +439,9 @@ AABBBrush *Modifier::activeAABBBrush() {
 	if (_brushType == BrushType::Paint) {
 		return &_paintBrush;
 	}
+	if (_brushType == BrushType::Plane) {
+		return &_planeBrush;
+	}
 	return nullptr;
 }
 
@@ -448,6 +451,9 @@ const AABBBrush *Modifier::activeAABBBrush() const {
 	}
 	if (_brushType == BrushType::Paint) {
 		return &_paintBrush;
+	}
+	if (_brushType == BrushType::Plane) {
+		return &_planeBrush;
 	}
 	return nullptr;
 }

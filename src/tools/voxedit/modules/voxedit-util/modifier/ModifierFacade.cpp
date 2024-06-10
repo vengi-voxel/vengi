@@ -69,7 +69,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 
 	// operate on existing voxels
 	voxel::RawVolume *existingVolume = nullptr;
-	if (_modifierType == ModifierType::Paint) {
+	if (_modifierType == ModifierType::Paint || (_brushType == BrushType::Plane && _modifierType == ModifierType::Place)) {
 		existingVolume = activeVolume;
 	}
 
