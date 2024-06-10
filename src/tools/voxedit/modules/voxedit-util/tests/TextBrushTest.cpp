@@ -26,7 +26,9 @@ TEST_F(TextBrushTest, testExecute) {
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
+	brush.preExecute(brushContext, wrapper.volume());
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	brush.postExecute(brushContext);
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
 		<< wrapper.dirtyRegion().toString();
 

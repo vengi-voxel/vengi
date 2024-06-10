@@ -52,7 +52,9 @@ TEST_F(PlaneBrushTest, testExtrude) {
 	for (int z = 1; z <= maxZ; ++z) {
 		prepare(brush, voxel, brushContext, glm::ivec3(1, 1, z), glm::ivec3(1, 1, z));
 		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
+		brush.preExecute(brushContext, &volume);
 		EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for z: " << z;
+		brush.postExecute(brushContext);
 		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
 			<< "for z: " << z << " " << wrapper.dirtyRegion().toString();
 		brush.stop(brushContext);

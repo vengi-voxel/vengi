@@ -42,7 +42,9 @@ protected:
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
 		ModifierVolumeWrapper wrapper(node, ModifierType::Place, {});
+		brush.preExecute(brushContext, wrapper.volume());
 		brush.execute(sceneGraph, wrapper, brushContext);
+		brush.postExecute(brushContext);
 		const voxel::Region dirtyRegion = wrapper.dirtyRegion();
 		EXPECT_TRUE(dirtyRegion.isValid());
 		EXPECT_NE(voxel::Voxel(), brushContext.cursorVoxel);
