@@ -3,7 +3,6 @@
  */
 
 #include "PlaneBrush.h"
-#include "core/Log.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -36,6 +35,9 @@ int PlaneBrush::calculateThickness(const BrushContext &context) const {
 template<class Volume>
 static void generateForModifier(Volume &volume, ModifierType type, const BrushContext &context, const glm::ivec3 &pos,
 								voxel::FaceNames face, const voxel::Voxel &initialPosVoxel, int thickness) {
+	if (face == voxel::FaceNames::Max) {
+		face = context.cursorFace;
+	}
 	if (type == ModifierType::Place) {
 		voxelutil::extrudePlane(volume, pos, face, initialPosVoxel, context.cursorVoxel, thickness);
 	} else if (type == ModifierType::Erase) {
@@ -48,13 +50,17 @@ static void generateForModifier(Volume &volume, ModifierType type, const BrushCo
 void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume *volume) {
 	const int thickness = calculateThickness(context);
 	ModifierType type = ModifierType::Place;
+	voxel::FaceNames face = _aabbFace;
+	if (face == voxel::FaceNames::Max) {
+		face = context.cursorFace;
+	}
 	if (type == ModifierType::Place) {
 		_region =
-			voxelutil::extrudePlaneRegion(*volume, _aabbFirstPos, _aabbFace, _hitVoxel, context.cursorVoxel, thickness);
+			voxelutil::extrudePlaneRegion(*volume, _aabbFirstPos, face, _hitVoxel, context.cursorVoxel, thickness);
 	} else if (type == ModifierType::Erase) {
-		_region = voxelutil::erasePlaneRegion(*volume, _aabbFirstPos, _aabbFace, _hitVoxel);
+		_region = voxelutil::erasePlaneRegion(*volume, _aabbFirstPos, face, _hitVoxel);
 	} else if (type == ModifierType::Override) {
-		_region = voxelutil::overridePlaneRegion(*volume, _aabbFirstPos, _aabbFace, context.cursorVoxel);
+		_region = voxelutil::overridePlaneRegion(*volume, _aabbFirstPos, face, context.cursorVoxel);
 	}
 	_region.grow(1);
 }

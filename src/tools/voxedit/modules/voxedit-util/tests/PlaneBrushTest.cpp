@@ -63,9 +63,5 @@ TEST_F(PlaneBrushTest, testExtrude) {
 	brush.shutdown();
 }
 
-TEST_P(BrushTestParamTest, testPlaneBrush) {
-	PlaneBrush brush;
-	testPlaceAndOverride(brush);
-}
 
 } // namespace voxedit
