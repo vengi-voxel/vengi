@@ -33,6 +33,12 @@ int PlaneBrush::calculateThickness(const BrushContext &context) const {
 	return core_max(1, region.getDimensionsInVoxels()[idx]);
 }
 
+void PlaneBrush::reset() {
+	Super::reset();
+	_hitVoxel = voxel::Voxel();
+	_region = voxel::Region::InvalidRegion;
+}
+
 template<class Volume>
 static int generateForModifier(Volume &volume, ModifierType type, const BrushContext &context, const glm::ivec3 &pos,
 								voxel::FaceNames face, const voxel::Voxel &initialPosVoxel, int thickness) {

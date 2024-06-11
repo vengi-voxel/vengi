@@ -27,6 +27,7 @@ public:
 	}
 	virtual ~PlaneBrush() = default;
 
+	void reset() override;
 	bool start(const BrushContext &context) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	voxel::Region calcRegion(const BrushContext &context) const override;
