@@ -153,7 +153,7 @@ public:
 	const BrushContext &brushContext() const;
 
 	/**
-	 * @sa needsFurtherAction()
+	 * @sa needsAdditionalAction()
 	 */
 	void executeAdditionalAction();
 	/**
@@ -162,7 +162,7 @@ public:
 	 * it's detected axis
 	 * @sa executeAdditionalAction()
 	 */
-	bool needsFurtherAction();
+	bool needsAdditionalAction();
 
 	/**
 	 * @brief Some modifier operate on already existing voxels

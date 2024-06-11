@@ -86,7 +86,7 @@ public:
 				 const BrushContext &context) override;
 	/**
 	 * @return the current position in a multi action execution
-	 * @sa needsFurtherAction()
+	 * @sa needsAdditionalAction()
 	 * @sa executeAdditionalAction()
 	 */
 	glm::ivec3 currentCursorPosition(const BrushContext &brushContext) const;
@@ -117,7 +117,7 @@ public:
 	 * @return @c true if the aabb has the size of 1 in one direction. This means that the second position can still be
 	 * modified.
 	 */
-	bool needsFurtherAction(const BrushContext &context) const;
+	bool needsAdditionalAction(const BrushContext &context) const;
 
 	/**
 	 * @brief The modifier can build the aabb from the center of the current

@@ -242,12 +242,12 @@ void Modifier::setReferencePosition(const glm::ivec3 &pos) {
 	_brushContext.referencePos = pos;
 }
 
-bool Modifier::needsFurtherAction() {
+bool Modifier::needsAdditionalAction() {
 	if (isMode(ModifierType::Select)) {
 		return false;
 	}
 	if (const AABBBrush *brush = currentAABBBrush()) {
-		return brush->needsFurtherAction(_brushContext);
+		return brush->needsAdditionalAction(_brushContext);
 	}
 	return false;
 }

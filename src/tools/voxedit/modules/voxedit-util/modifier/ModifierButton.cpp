@@ -43,7 +43,7 @@ bool ModifierButton::handleUp(int32_t key, double releasedMillis) {
 	}
 	if (allUp) {
 		Modifier &modifier = _sceneMgr->modifier();
-		_furtherAction = modifier.needsFurtherAction();
+		_furtherAction = modifier.needsAdditionalAction();
 		if (_furtherAction) {
 			modifier.executeAdditionalAction();
 			return allUp;

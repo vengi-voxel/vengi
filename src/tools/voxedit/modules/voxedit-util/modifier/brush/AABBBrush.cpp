@@ -57,7 +57,7 @@ glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, int resolutio
 	return pos;
 }
 
-bool AABBBrush::needsFurtherAction(const BrushContext &context) const {
+bool AABBBrush::needsAdditionalAction(const BrushContext &context) const {
 	if (radius() > 0 || context.lockedAxis != math::Axis::None) {
 		return false;
 	}
