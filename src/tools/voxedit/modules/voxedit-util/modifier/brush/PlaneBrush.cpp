@@ -33,18 +33,20 @@ int PlaneBrush::calculateThickness(const BrushContext &context) const {
 }
 
 template<class Volume>
-static void generateForModifier(Volume &volume, ModifierType type, const BrushContext &context, const glm::ivec3 &pos,
+static int generateForModifier(Volume &volume, ModifierType type, const BrushContext &context, const glm::ivec3 &pos,
 								voxel::FaceNames face, const voxel::Voxel &initialPosVoxel, int thickness) {
 	if (face == voxel::FaceNames::Max) {
 		face = context.cursorFace;
 	}
+	int n = 0;
 	if (type == ModifierType::Place) {
-		voxelutil::extrudePlane(volume, pos, face, initialPosVoxel, context.cursorVoxel, thickness);
+		n = voxelutil::extrudePlane(volume, pos, face, initialPosVoxel, context.cursorVoxel, thickness);
 	} else if (type == ModifierType::Erase) {
-		voxelutil::erasePlane(volume, pos, face, initialPosVoxel);
+		n = voxelutil::erasePlane(volume, pos, face, initialPosVoxel);
 	} else if (type == ModifierType::Override) {
-		voxelutil::overridePlane(volume, pos, face, context.cursorVoxel);
+		n = voxelutil::overridePlane(volume, pos, face, context.cursorVoxel);
 	}
+	return n;
 }
 
 void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume *volume) {

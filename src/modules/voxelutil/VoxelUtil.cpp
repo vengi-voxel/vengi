@@ -388,13 +388,13 @@ static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &regio
  * @c true
  */
 template<class CHECK, class EXEC, class Volume>
-static int walkPlane(Volume &in, glm::ivec3 position, voxel::FaceNames face, int checkOffset,
+static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face, int checkOffset,
 					 CHECK&& checkCallback, EXEC &&execCallback, int amount) {
 	const math::Axis axis = voxel::faceToAxis(face);
 	if (axis == math::Axis::None) {
 		return -1;
 	}
-	const voxel::Region &region = in.region();
+	const voxel::Region &region = volume.region();
 	const int idx = math::getIndexForAxis(axis);
 	const bool negativeFace = voxel::isNegativeFace(face);
 
@@ -422,7 +422,7 @@ static int walkPlane(Volume &in, glm::ivec3 position, voxel::FaceNames face, int
 		const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
 		const int maxSize = dim.x * dim.y * dim.z;
 		IVec3Set visited(maxSize);
-		const int n0 = walkPlane_r(visited, in, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
+		const int n0 = walkPlane_r(visited, volume, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
 		if (n0 == 0) {
 			break;
 		}
