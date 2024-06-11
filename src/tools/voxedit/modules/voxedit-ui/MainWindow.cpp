@@ -388,14 +388,13 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 }
 
 void MainWindow::leftWidget() {
-	const bool editMode = isAnyEditMode();
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	if (editMode) {
-		_brushPanel.update(TITLE_BRUSHPANEL, listener);
-		_nodeInspectorPanel.update(TITLE_VOLUME_INSPECTOR, _lastSceneMode, listener);
+	if (_lastSceneMode) {
+		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, true, listener);
 	} else {
-		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, _lastSceneMode, listener);
+		_brushPanel.update(TITLE_BRUSHPANEL, listener);
+		_nodeInspectorPanel.update(TITLE_VOLUME_INSPECTOR, false, listener);
 	}
 }
 
