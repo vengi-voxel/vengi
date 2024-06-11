@@ -331,8 +331,8 @@ using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm
 template<class CHECK, class EXEC, class Volume>
 static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &region,
 					   CHECK &&check, EXEC &&exec, const glm::ivec3 &position,
-					   const glm::ivec3 &checkOffset, voxel::FaceNames face) {
-	const glm::ivec3 checkPosition = position + checkOffset;
+					   const glm::ivec3 &offsetForCheckCallback, voxel::FaceNames face) {
+	const glm::ivec3 checkPosition = position + offsetForCheckCallback;
 	if (visited.has(checkPosition)) {
 		return 0;
 	}
@@ -349,27 +349,27 @@ static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &regio
 	int n = 1;
 	if (region.containsPoint(position.x + 1, position.y, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x - 1, position.y, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y + 1, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y - 1, position.z)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z + 1)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z - 1)) {
 		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
-						 checkOffset, face);
+						 offsetForCheckCallback, face);
 	}
 	return n;
 }
@@ -380,57 +380,38 @@ static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &regio
  * @param in The voxel volume to walk the plane in.
  * @param position The position in the voxel volume to start the walk from.
  * @param face The direction of the face to walk the plane in.
- * @param checkOffset The offset for checking voxel positions.
- * @param check The callback function to use for checking voxel conditions - if @c true is returned, it's a valid
+ * @param checkOffset The offset for checking voxel positions. This offset it applied to the check callback in the
+ * correct direction e.g. one above or below (according to the face)
+ * @param checkCallback The callback function to use for checking voxel conditions - if @c true is returned, it's a valid
  * position to check the neighbor for the next steps.
- * @param exec The callback function to use for executing operations on the voxels. Only executed if @c check returned
+ * @param execCallback The callback function to use for executing operations on the voxels. Only executed if @c check returned
  * @c true
  */
 template<class CHECK, class EXEC, class Volume>
 static int walkPlane(Volume &in, glm::ivec3 position, voxel::FaceNames face, int checkOffset,
-					 CHECK&& check, EXEC &&exec, int amount) {
-	const voxel::Region &region = in.region();
-	glm::ivec3 mins = region.getLowerCorner();
-	glm::ivec3 maxs = region.getUpperCorner();
-	glm::ivec3 checkOffsetV(0);
-	switch (face) {
-	case voxel::FaceNames::PositiveX:
-		mins.x = position.x;
-		maxs.x = position.x;
-		checkOffsetV.x = checkOffset;
-		break;
-	case voxel::FaceNames::NegativeX:
-		mins.x = position.x;
-		maxs.x = position.x;
-		checkOffsetV.x = -checkOffset;
-		break;
-	case voxel::FaceNames::PositiveY:
-		mins.y = position.y;
-		maxs.y = position.y;
-		checkOffsetV.y = checkOffset;
-		break;
-	case voxel::FaceNames::NegativeY:
-		mins.y = position.y;
-		maxs.y = position.y;
-		checkOffsetV.y = -checkOffset;
-		break;
-	case voxel::FaceNames::PositiveZ:
-		mins.z = position.z;
-		maxs.z = position.z;
-		checkOffsetV.z = checkOffset;
-		break;
-	case voxel::FaceNames::NegativeZ:
-		mins.z = position.z;
-		maxs.z = position.z;
-		checkOffsetV.z = -checkOffset;
-		break;
-	case voxel::FaceNames::Max:
+					 CHECK&& checkCallback, EXEC &&execCallback, int amount) {
+	const math::Axis axis = voxel::faceToAxis(face);
+	if (axis == math::Axis::None) {
 		return -1;
 	}
-
-	const math::Axis axis = voxel::faceToAxis(face);
+	const voxel::Region &region = in.region();
 	const int idx = math::getIndexForAxis(axis);
-	const int offset = voxel::isNegativeFace(face) ? -1 : 1;
+	const bool negativeFace = voxel::isNegativeFace(face);
+
+	glm::ivec3 mins = region.getLowerCorner();
+	glm::ivec3 maxs = region.getUpperCorner();
+	mins[idx] = position[idx];
+	maxs[idx] = position[idx];
+
+	// which voxel should we check on
+	glm::ivec3 offsetForCheckCallback(0);
+	if (negativeFace) {
+		offsetForCheckCallback[idx] = -checkOffset;
+	} else {
+		offsetForCheckCallback[idx] = checkOffset;
+	}
+
+	const int walkOffset = negativeFace ? -1 : 1;
 
 	int n = 0;
 	for (int i = 0; i < amount; ++i) {
@@ -441,13 +422,13 @@ static int walkPlane(Volume &in, glm::ivec3 position, voxel::FaceNames face, int
 		const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
 		const int maxSize = dim.x * dim.y * dim.z;
 		IVec3Set visited(maxSize);
-		const int n0 = walkPlane_r(visited, in, walkRegion, check, exec, position, checkOffsetV, face);
+		const int n0 = walkPlane_r(visited, in, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
 		if (n0 == 0) {
 			break;
 		}
-		mins[idx] += offset;
-		maxs[idx] += offset;
-		position[idx] += offset;
+		mins[idx] += walkOffset;
+		maxs[idx] += walkOffset;
+		position[idx] += walkOffset;
 		n += n0;
 	}
 	return n;

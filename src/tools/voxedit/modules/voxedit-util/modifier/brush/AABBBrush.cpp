@@ -138,24 +138,11 @@ glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &brushContext) co
 		if (radius() > 0) {
 			return _aabbSecondPos;
 		}
-		switch (_aabbFace) {
-		case voxel::FaceNames::PositiveX:
-		case voxel::FaceNames::NegativeX:
-			pos.y = _aabbSecondPos.y;
-			pos.z = _aabbSecondPos.z;
-			break;
-		case voxel::FaceNames::PositiveY:
-		case voxel::FaceNames::NegativeY:
-			pos.x = _aabbSecondPos.x;
-			pos.z = _aabbSecondPos.z;
-			break;
-		case voxel::FaceNames::PositiveZ:
-		case voxel::FaceNames::NegativeZ:
-			pos.x = _aabbSecondPos.x;
-			pos.y = _aabbSecondPos.y;
-			break;
-		default:
-			break;
+		const math::Axis axis = voxel::faceToAxis(_aabbFace);
+		if (axis != math::Axis::None) {
+			const int idx = math::getIndexForAxis(axis);
+			pos[(idx + 1) % 3] = _aabbSecondPos[(idx + 1) % 3];
+			pos[(idx + 2) % 3] = _aabbSecondPos[(idx + 2) % 3];
 		}
 	}
 	return pos;
