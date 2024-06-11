@@ -3,6 +3,7 @@
  */
 
 #include "PlaneBrush.h"
+#include "core/Log.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
@@ -70,6 +71,10 @@ void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume 
 void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
 	const int thickness = calculateThickness(context);
+	Log::debug("PlaneBrush thickness: %d", thickness);
+	Log::debug("PlaneBrush 1st pos: %d:%d:%d", _aabbFirstPos.x, _aabbFirstPos.y, _aabbFirstPos.z);
+	Log::debug("PlaneBrush 2nd pos: %d:%d:%d", _aabbSecondPos.x, _aabbSecondPos.y, _aabbSecondPos.z);
+	Log::debug("PlaneBrush cursor pos: %d:%d:%d", context.cursorPosition.x, context.cursorPosition.y, context.cursorPosition.z);
 	generateForModifier(wrapper, wrapper.modifierType(), context, _aabbFirstPos, _aabbFace, _hitVoxel, thickness);
 }
 
