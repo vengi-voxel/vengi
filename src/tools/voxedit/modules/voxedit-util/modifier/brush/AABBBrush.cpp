@@ -191,6 +191,7 @@ void AABBBrush::step(const BrushContext &context) {
 		return;
 	}
 	_aabbSecondPos = currentCursorPosition(context);
+	// TODO: why is this set again?
 	_aabbFirstPos = applyGridResolution(_aabbFirstPos, context.gridResolution);
 	_secondPosValid = true;
 	markDirty();

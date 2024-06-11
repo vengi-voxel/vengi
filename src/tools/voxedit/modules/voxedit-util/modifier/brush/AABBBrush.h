@@ -100,8 +100,7 @@ public:
 	 */
 	virtual bool start(const BrushContext &context);
 	/**
-	 * @brief Will set the second position of the aabb (only after @c start() was called, and not if @c setRegion() was
-	 * used).
+	 * @brief Will set the second position of the aabb (only after @c start() was called).
 	 * @note This is used in input methods or @c ActionButton implementations
 	 * @sa start()
 	 * @sa stop()
