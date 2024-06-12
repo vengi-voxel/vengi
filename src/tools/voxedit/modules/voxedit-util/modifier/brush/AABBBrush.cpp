@@ -72,6 +72,9 @@ bool AABBBrush::needsAdditionalAction(const BrushContext &context) const {
 			++equal;
 		}
 	}
+	// if two dimensions are spanning the plane already but one is not,
+	// we need to span the third dimension by allowing the cursor to
+	// still move
 	return greater == 2 && equal == 1;
 }
 
