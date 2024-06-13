@@ -19,6 +19,7 @@ AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType 
 
 void AABBBrush::construct() {
 	Super::construct();
+	// TODO: some aabb brushes don't support center or single mode (e.g. the plane brush)
 	const core::String &cmdName = name().toLower() + "brush";
 	command::Command::registerCommand("set" + cmdName + "center", [this](const command::CmdArgs &args) {
 		setMode(BRUSH_MODE_CENTER);
