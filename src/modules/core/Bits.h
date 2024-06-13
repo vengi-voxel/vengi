@@ -26,4 +26,13 @@ core::String toBitString(TYPE val) {
 	return str;
 }
 
+inline int countSetBits(uint32_t number) {
+	int count = 0;
+	while (number) {
+		count += number & 1;
+		number >>= 1;
+	}
+	return count;
+}
+
 } // namespace core
