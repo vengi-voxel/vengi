@@ -52,25 +52,6 @@ void PlaneBrush::reset() {
 	_initialPlanePos = glm::ivec3(0);
 }
 
-template<class Volume>
-static int generateForModifier(Volume &volume, const BrushContext &context, const glm::ivec3 &pos,
-								voxel::FaceNames face, const voxel::Voxel &initialPosVoxel, int thickness) {
-	if (face == voxel::FaceNames::Max) {
-		face = context.cursorFace;
-	}
-	int n = 0;
-	if (context.modifierType == ModifierType::Place) {
-		n = voxelutil::extrudePlane(volume, pos, face, initialPosVoxel, context.cursorVoxel, thickness);
-	} else if (context.modifierType == ModifierType::Erase) {
-		// TODO: support erasing more than one voxel - support thickness
-		n = voxelutil::erasePlane(volume, pos, face, initialPosVoxel);
-	} else if (context.modifierType == ModifierType::Override) {
-		// TODO: support overriding more than one voxel - support thickness
-		n = voxelutil::overridePlane(volume, pos, face, initialPosVoxel);
-	}
-	return n;
-}
-
 void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume *volume) {
 	Super::preExecute(context, volume);
 	if (!_aabbMode) {
@@ -111,7 +92,22 @@ void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	if (thickness <= 0) {
 		return;
 	}
-	generateForModifier(wrapper, context, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
+	if (_aabbFace == voxel::FaceNames::Max) {
+		_aabbFace = context.cursorFace;
+	}
+	int n = 0;
+	if (context.modifierType == ModifierType::Place) {
+		n = voxelutil::extrudePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel, context.cursorVoxel, thickness);
+	} else if (context.modifierType == ModifierType::Erase) {
+		// TODO: support erasing more than one voxel - support thickness
+		n = voxelutil::erasePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
+	} else if (context.modifierType == ModifierType::Override) {
+		// TODO: support overriding more than one voxel - support thickness
+		n = voxelutil::overridePlane(wrapper, _initialPlanePos, _aabbFace, _hitVoxel);
+	}
+	if (n == 0) {
+		Log::error("No voxels generated");
+	}
 }
 
 } // namespace voxedit

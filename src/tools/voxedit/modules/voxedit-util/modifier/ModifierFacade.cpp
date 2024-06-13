@@ -35,7 +35,7 @@ void ModifierFacade::shutdown() {
 	_modifierRenderer->shutdown();
 }
 
-static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &region) {
+static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::ScopedPtr<voxel::RawVolume> &volume, voxel::Region region) {
 	if (existingVolume == nullptr) {
 		if (volume == nullptr || volume->region() != region) {
 			volume = new voxel::RawVolume(region);
@@ -43,6 +43,7 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 		}
 		volume->clear();
 	} else {
+		region.grow(1);
 		volume = new voxel::RawVolume(*existingVolume, region);
 	}
 }

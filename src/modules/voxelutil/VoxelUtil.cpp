@@ -566,20 +566,7 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
 	};
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, face, -1, check, exec, thickness);
-	voxel::Region region = recorder.dirtyRegion();
-	const math::Axis axis = voxel::faceToAxis(face);
-	const int idx = math::getIndexForAxis(axis);
-	// TODO: doesn't yet work for the negative face
-	if (voxel::isNegativeFace(face)) {
-		glm::ivec3 maxs = region.getUpperCorner();
-		maxs[idx] += 1;
-		region.setUpperCorner(maxs);
-	} else {
-		glm::ivec3 mins = region.getLowerCorner();
-		mins[idx] -= 1;
-		region.setLowerCorner(mins);
-	}
-	return region;
+	return recorder.dirtyRegion();
 }
 
 int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
