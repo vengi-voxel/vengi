@@ -17,6 +17,13 @@ namespace voxedit {
 
 class PlaneBrushTest : public app::AbstractTest {
 protected:
+	PlaneBrush _brush;
+	BrushContext _brushContext;
+	voxel::RawVolume _volume{voxel::Region(0, 3)};
+	scenegraph::SceneGraphNode _node{scenegraph::SceneGraphNodeType::Model};
+	scenegraph::SceneGraph _sceneGraph;
+	voxel::Voxel _voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+
 	void prepare(PlaneBrush &brush, const voxel::Voxel &voxel, BrushContext &brushContext, voxel::FaceNames face,
 				 const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		brushContext.cursorVoxel = voxel;
@@ -28,62 +35,58 @@ protected:
 		EXPECT_TRUE(brush.active());
 		brushContext.cursorPosition = maxs;
 	}
+
+	void SetUp() override {
+		app::AbstractTest::SetUp();
+		_brush.reset();
+		ASSERT_TRUE(_brush.init());
+		_node.setVolume(&_volume, false);
+	}
+
+	void TearDown() override {
+		_brush.shutdown();
+		_volume.clear();
+		_sceneGraph.clear();
+		_brushContext = {};
+		app::AbstractTest::TearDown();
+	}
 };
 
 TEST_F(PlaneBrushTest, testExtrude) {
-	PlaneBrush brush;
-	BrushContext brushContext;
-	ASSERT_TRUE(brush.init());
-	voxel::RawVolume volume(voxel::Region(0, 3));
-
-	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	for (int x = 0; x < 3; ++x) {
 		for (int y = 0; y < 3; ++y) {
-			volume.setVoxel(x, y, 0, voxel);
+			_volume.setVoxel(x, y, 0, _voxel);
 		}
 	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
-	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
 	const int maxZ = 3;
 	for (int z = 1; z <= maxZ; ++z) {
-		prepare(brush, voxel, brushContext, voxel::FaceNames::PositiveZ, glm::ivec3(1, 1, z), glm::ivec3(1, 1, z));
-		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial())) << "for z: " << z;
-		brush.preExecute(brushContext, &volume);
-		EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for z: " << z;
-		brush.postExecute(brushContext);
-		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()))
+		ModifierVolumeWrapper wrapper(_node, _brush.modifierType());
+		prepare(_brush, _voxel, _brushContext, voxel::FaceNames::PositiveZ, glm::ivec3(1, 1, z), glm::ivec3(1, 1, z));
+		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(_brushContext.cursorPosition).getMaterial())) << "for z: " << z;
+		_brush.preExecute(_brushContext, &_volume);
+		EXPECT_TRUE(_brush.execute(_sceneGraph, wrapper, _brushContext)) << "for z: " << z;
+		_brush.postExecute(_brushContext);
+		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(_brushContext.cursorPosition).getMaterial()))
 			<< "for z: " << z << " " << wrapper.dirtyRegion().toString();
-		brush.stop(brushContext);
+		_brush.stop(_brushContext);
 	}
-
-	brush.shutdown();
 }
 
 TEST_F(PlaneBrushTest, testExtrudeThickness) {
-	PlaneBrush brush;
-	BrushContext brushContext;
-	ASSERT_TRUE(brush.init());
-	voxel::RawVolume volume(voxel::Region(0, 3));
-
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	for (int x = 0; x < 3; ++x) {
 		for (int z = 0; z < 3; ++z) {
-			volume.setVoxel(x, 0, z, voxel);
+			_volume.setVoxel(x, 0, z, voxel);
 		}
 	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(&volume, false);
-	scenegraph::SceneGraph sceneGraph;
-	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 
-	prepare(brush, voxel, brushContext, voxel::FaceNames::PositiveY, glm::ivec3(1, 1, 1), glm::ivec3(3, 2, 3));
-	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(brushContext.cursorPosition).getMaterial()));
-	brush.preExecute(brushContext, &volume);
-	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
-	brush.postExecute(brushContext);
+	ModifierVolumeWrapper wrapper(_node, _brush.modifierType());
+	prepare(_brush, voxel, _brushContext, voxel::FaceNames::PositiveY, glm::ivec3(1, 1, 1), glm::ivec3(3, 2, 3));
+	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(_brushContext.cursorPosition).getMaterial()));
+	_brush.preExecute(_brushContext, &_volume);
+	EXPECT_TRUE(_brush.execute(_sceneGraph, wrapper, _brushContext));
+	_brush.postExecute(_brushContext);
 	const glm::ivec3 dirtyDim = wrapper.dirtyRegion().getDimensionsInVoxels();
 	EXPECT_EQ(3, dirtyDim.x);
 	EXPECT_EQ(2, dirtyDim.y);
@@ -92,9 +95,7 @@ TEST_F(PlaneBrushTest, testExtrudeThickness) {
 		EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(glm::ivec3(1, y, 1)).getMaterial())) << "for y: " << y;
 		EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(glm::ivec3(3, y, 3)).getMaterial())) << "for y: " << y;
 	}
-	brush.stop(brushContext);
-
-	brush.shutdown();
+	_brush.stop(_brushContext);
 }
 
 } // namespace voxedit
