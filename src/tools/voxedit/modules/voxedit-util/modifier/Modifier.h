@@ -112,6 +112,8 @@ public:
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
+	// get the mask of supported modifier types for the current active brush
+	ModifierType checkModifierType();
 
 	bool isMode(ModifierType modifierType) const;
 

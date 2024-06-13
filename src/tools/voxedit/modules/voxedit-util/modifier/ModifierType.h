@@ -14,6 +14,8 @@ enum class ModifierType {
 	Erase = (1 << 2),
 	Override = (1 << 4),
 
+	Mask = (Paint | Place | Erase | Override),
+
 	Select = (1 << 5),
 	ColorPicker = (1 << 6)
 };

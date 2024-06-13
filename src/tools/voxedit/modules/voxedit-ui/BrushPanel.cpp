@@ -8,11 +8,14 @@
 #include "Toolbar.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
+#include "core/Bits.h"
+#include "core/Enum.h"
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/Util.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
@@ -425,18 +428,25 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 	toolbarBrush.end();
 
-	if (brushType == BrushType::Paint) {
-		return;
-	}
-
-	ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
-	if (brushType == BrushType::None) {
-		toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
-		toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
-	} else {
-		toolbarModifiers.button(ICON_LC_BOX, "actionplace", !modifier.isMode(ModifierType::Place));
-		toolbarModifiers.button(ICON_LC_ERASER, "actionerase", !modifier.isMode(ModifierType::Erase));
-		toolbarModifiers.button(ICON_LC_SQUARE_PEN, "actionoverride", !modifier.isMode(ModifierType::Override));
+	ModifierType supported = modifier.checkModifierType();
+	const int n = core::countSetBits(core::enumVal(supported));
+	if (n > 1) {
+		ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
+		if ((supported & ModifierType::Select) != ModifierType::None) {
+			toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
+		}
+		if ((supported & ModifierType::ColorPicker) != ModifierType::None) {
+			toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));
+		}
+		if ((supported & ModifierType::Place) != ModifierType::None) {
+			toolbarModifiers.button(ICON_LC_BOX, "actionplace", !modifier.isMode(ModifierType::Place));
+		}
+		if ((supported & ModifierType::Erase) != ModifierType::None) {
+			toolbarModifiers.button(ICON_LC_ERASER, "actionerase", !modifier.isMode(ModifierType::Erase));
+		}
+		if ((supported & ModifierType::Override) != ModifierType::None) {
+			toolbarModifiers.button(ICON_LC_SQUARE_PEN, "actionoverride", !modifier.isMode(ModifierType::Override));
+		}
 	}
 }
 

@@ -494,4 +494,11 @@ ModifierType Modifier::setModifierType(ModifierType type) {
 	return _brushContext.modifierType;
 }
 
+ModifierType Modifier::checkModifierType() {
+	if (_brushType == BrushType::None) {
+		return ModifierType::ColorPicker | ModifierType::Select;
+	}
+	return currentBrush()->modifierType(ModifierType::Mask);
+}
+
 } // namespace voxedit

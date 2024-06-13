@@ -74,6 +74,8 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		existingVolume = activeVolume;
 	}
 
+	// TODO: for erase we have to use the existing volume
+	// and hide the real volume to show the modification only.
 	if (const Brush *brush = currentBrush()) {
 		preExecuteBrush(activeVolume);
 		const voxel::Region &region = brush->calcRegion(_brushContext);
