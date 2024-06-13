@@ -21,7 +21,7 @@ private:
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
-	int calculateThickness(const BrushContext &context, ModifierType type) const;
+	int calculateThickness(const BrushContext &context) const;
 public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}

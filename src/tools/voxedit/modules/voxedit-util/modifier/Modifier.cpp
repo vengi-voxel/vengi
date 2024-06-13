@@ -160,7 +160,7 @@ void Modifier::reset() {
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
 
-	_modifierType = ModifierType::Place;
+	_brushContext.modifierType = ModifierType::Place;
 	for (Brush *b : _brushes) {
 		b->reset();
 	}
@@ -316,7 +316,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		select(mins, maxs);
 		if (_selectionValid) {
-			callback(accumulate(_selections), _modifierType, false);
+			callback(accumulate(_selections), _brushContext.modifierType, false);
 		}
 		return true;
 	}
@@ -333,7 +333,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	}
 
 	preExecuteBrush(volume);
-	executeBrush(sceneGraph, node, _modifierType, _brushContext.cursorVoxel, callback);
+	executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
 	postExecuteBrush();
 
 	return true;
@@ -414,7 +414,7 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
 			voxel::logRegion("Dirty region", modifiedRegion);
-			callback(modifiedRegion, _modifierType, true);
+			callback(modifiedRegion, _brushContext.modifierType, true);
 		}
 		_brushContext.cursorPosition = prevCursorPos;
 		_brushContext.cursorVoxel = prevVoxel;
@@ -475,7 +475,8 @@ bool Modifier::modifierTypeRequiresExistingVoxel() const {
 BrushType Modifier::setBrushType(BrushType type) {
 	_brushType = type;
 	if (_brushType != BrushType::None) {
-		_modifierType = currentBrush()->modifierType(_modifierType);
+		// ensure the modifier type is compatible with the brush
+		setModifierType(currentBrush()->modifierType(_brushContext.modifierType));
 	}
 	return _brushType;
 }
@@ -486,11 +487,11 @@ void Modifier::setGridResolution(int gridSize) {
 
 ModifierType Modifier::setModifierType(ModifierType type) {
 	if (_brushType != BrushType::None) {
-		_modifierType = currentBrush()->modifierType(type);
+		_brushContext.modifierType = currentBrush()->modifierType(type);
 	} else {
-		_modifierType = type;
+		_brushContext.modifierType = type;
 	}
-	return _modifierType;
+	return _brushContext.modifierType;
 }
 
 } // namespace voxedit

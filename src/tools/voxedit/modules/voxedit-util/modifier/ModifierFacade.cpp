@@ -49,7 +49,7 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// even in erase mode we want the preview to create the models, not wipe them
-	ModifierType modifierType = _modifierType;
+	ModifierType modifierType = _brushContext.modifierType;
 	if (modifierType == ModifierType::Erase) {
 		modifierType = ModifierType::Place;
 	}
@@ -69,7 +69,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 
 	// operate on existing voxels
 	voxel::RawVolume *existingVolume = nullptr;
-	if (_modifierType == ModifierType::Paint || (_brushType == BrushType::Plane && _modifierType == ModifierType::Place)) {
+	if (isMode(ModifierType::Paint) || (_brushType == BrushType::Plane && isMode(ModifierType::Place))) {
 		existingVolume = activeVolume;
 	}
 

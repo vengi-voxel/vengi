@@ -23,11 +23,11 @@ bool PlaneBrush::start(const BrushContext &context) {
 	return true;
 }
 
-int PlaneBrush::calculateThickness(const BrushContext &context, ModifierType type) const {
+int PlaneBrush::calculateThickness(const BrushContext &context) const {
 	const math::Axis axis = voxel::faceToAxis(_aabbFace);
 	const int idx = math::getIndexForAxis(axis);
 	const voxel::Region region = Super::calcRegion(context);
-	if (type == ModifierType::Place) {
+	if (context.modifierType == ModifierType::Place) {
 		// don't allow negative direction - only allow growth into the face direction
 		if (voxel::isNegativeFace(_aabbFace)) {
 			if (_initialPlanePos[idx] < context.cursorPosition[idx]) {
@@ -53,18 +53,18 @@ void PlaneBrush::reset() {
 }
 
 template<class Volume>
-static int generateForModifier(Volume &volume, ModifierType type, const BrushContext &context, const glm::ivec3 &pos,
+static int generateForModifier(Volume &volume, const BrushContext &context, const glm::ivec3 &pos,
 								voxel::FaceNames face, const voxel::Voxel &initialPosVoxel, int thickness) {
 	if (face == voxel::FaceNames::Max) {
 		face = context.cursorFace;
 	}
 	int n = 0;
-	if (type == ModifierType::Place) {
+	if (context.modifierType == ModifierType::Place) {
 		n = voxelutil::extrudePlane(volume, pos, face, initialPosVoxel, context.cursorVoxel, thickness);
-	} else if (type == ModifierType::Erase) {
+	} else if (context.modifierType == ModifierType::Erase) {
 		// TODO: support erasing more than one voxel - support thickness
 		n = voxelutil::erasePlane(volume, pos, face, initialPosVoxel);
-	} else if (type == ModifierType::Override) {
+	} else if (context.modifierType == ModifierType::Override) {
 		// TODO: support overriding more than one voxel - support thickness
 		n = voxelutil::overridePlane(volume, pos, face, initialPosVoxel);
 	}
@@ -90,16 +90,12 @@ void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume 
 	// voxel might be different for the region mins or maxs - or
 	// might even be air
 
-	// TODO: allow to specify the modifier type
-	ModifierType type = ModifierType::Place;
-
 	voxel::Region region;
-	if (type == ModifierType::Place) {
-		region =
-			voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel, context.cursorVoxel, 1);
-	} else if (type == ModifierType::Erase) {
+	if (context.modifierType == ModifierType::Place) {
+		region = voxelutil::extrudePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel, context.cursorVoxel, 1);
+	} else if (context.modifierType == ModifierType::Erase) {
 		region = voxelutil::erasePlaneRegion(*volume, _initialPlanePos, _aabbFace, _hitVoxel);
-	} else if (type == ModifierType::Override) {
+	} else if (context.modifierType == ModifierType::Override) {
 		region = voxelutil::overridePlaneRegion(*volume, _initialPlanePos, _aabbFace, context.cursorVoxel);
 	}
 	_aabbFirstPos = region.getLowerCorner();
@@ -111,11 +107,11 @@ void PlaneBrush::preExecute(const BrushContext &context, const voxel::RawVolume 
 
 void PlaneBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						  const BrushContext &context, const voxel::Region &region) {
-	const int thickness = calculateThickness(context, wrapper.modifierType());
+	const int thickness = calculateThickness(context);
 	if (thickness <= 0) {
 		return;
 	}
-	generateForModifier(wrapper, wrapper.modifierType(), context, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
+	generateForModifier(wrapper, context, _initialPlanePos, _aabbFace, _hitVoxel, thickness);
 }
 
 } // namespace voxedit

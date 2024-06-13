@@ -51,6 +51,8 @@ struct BrushContext {
 
 	// only used internally
 	glm::ivec3 prevCursorPosition{0};
+
+	ModifierType modifierType = ModifierType::Place;
 };
 
 /**

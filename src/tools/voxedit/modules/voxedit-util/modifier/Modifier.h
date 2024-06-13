@@ -50,7 +50,7 @@ protected:
 	 * modifier triggered
 	 */
 	double _nextSingleExecution = 0;
-	ModifierType _modifierType = ModifierType::Place;
+
 	glm::ivec3 _selectStartPosition{0};
 
 	core::Buffer<Brush *> _brushes;
@@ -246,11 +246,11 @@ inline const glm::ivec3 &Modifier::referencePosition() const {
 }
 
 inline ModifierType Modifier::modifierType() const {
-	return _modifierType;
+	return _brushContext.modifierType;
 }
 
 inline bool Modifier::isMode(ModifierType modifierType) const {
-	return (_modifierType & modifierType) == modifierType;
+	return (_brushContext.modifierType & modifierType) == modifierType;
 }
 
 inline bool Modifier::aborted() const {
