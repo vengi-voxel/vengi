@@ -9,6 +9,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
+#include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/RawVolume.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -48,6 +49,16 @@ static void createOrClearPreviewVolume(voxel::RawVolume *existingVolume, core::S
 	}
 }
 
+bool ModifierFacade::previewNeedsExistingVolume() const {
+	if (isMode(ModifierType::Paint)) {
+		return true;
+	}
+	if (_brushType == BrushType::Plane) {
+		return isMode(ModifierType::Place);
+	}
+	return false;
+}
+
 void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	// even in erase mode we want the preview to create the models, not wipe them
 	ModifierType modifierType = _brushContext.modifierType;
@@ -70,7 +81,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 
 	// operate on existing voxels
 	voxel::RawVolume *existingVolume = nullptr;
-	if (isMode(ModifierType::Paint) || (_brushType == BrushType::Plane && isMode(ModifierType::Place))) {
+	if (previewNeedsExistingVolume()) {
 		existingVolume = activeVolume;
 	}
 

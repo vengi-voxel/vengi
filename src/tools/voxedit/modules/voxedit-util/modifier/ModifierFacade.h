@@ -18,6 +18,7 @@ private:
 	core::ScopedPtr<voxel::RawVolume> _volume;
 	SceneManager *_sceneMgr;
 
+	bool previewNeedsExistingVolume() const;
 	void updateBrushVolumePreview(palette::Palette &activePalette);
 
 public:

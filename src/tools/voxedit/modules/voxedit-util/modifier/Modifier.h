@@ -141,7 +141,7 @@ public:
 	BrushType brushType() const;
 
 	Brush *currentBrush();
-	const AABBBrush *activeAABBBrush() const;
+	const AABBBrush *currentAABBBrush() const;
 	AABBBrush *currentAABBBrush();
 	voxel::Region calcBrushRegion();
 
@@ -259,7 +259,7 @@ inline bool Modifier::aborted() const {
 	if (isMode(ModifierType::Select)) {
 		return false;
 	}
-	if (const AABBBrush *brush = activeAABBBrush()) {
+	if (const AABBBrush *brush = currentAABBBrush()) {
 		return brush->aborted(_brushContext);
 	}
 	return false;

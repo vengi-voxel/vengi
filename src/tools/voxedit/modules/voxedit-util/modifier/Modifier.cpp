@@ -260,12 +260,9 @@ glm::ivec3 Modifier::currentCursorPosition() {
 }
 
 voxel::Region Modifier::calcBrushRegion() {
-	AABBBrush *brush = currentAABBBrush();
+	Brush *brush = currentBrush();
 	if (brush) {
 		return brush->calcRegion(_brushContext);
-	}
-	if (_brushType == BrushType::Stamp) {
-		return _stampBrush.calcRegion(_brushContext);
 	}
 	return voxel::Region::InvalidRegion;
 }
@@ -445,7 +442,7 @@ AABBBrush *Modifier::currentAABBBrush() {
 	return nullptr;
 }
 
-const AABBBrush *Modifier::activeAABBBrush() const {
+const AABBBrush *Modifier::currentAABBBrush() const {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;
 	}
