@@ -428,9 +428,8 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 	toolbarBrush.end();
 
-	ModifierType supported = modifier.checkModifierType();
-	const int n = core::countSetBits(core::enumVal(supported));
-	if (n > 1) {
+	const ModifierType supported = modifier.checkModifierType();
+	if (core::countSetBits(core::enumVal(supported)) > 1) {
 		ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
 		if ((supported & ModifierType::Select) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
