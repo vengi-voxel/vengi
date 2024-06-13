@@ -73,7 +73,6 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 		existingVolume = activeVolume;
 	}
 
-	_brushContext.targetVolumeRegion = activeVolume->region();
 	if (const Brush *brush = currentBrush()) {
 		preExecuteBrush(activeVolume);
 		const voxel::Region &region = brush->calcRegion(_brushContext);

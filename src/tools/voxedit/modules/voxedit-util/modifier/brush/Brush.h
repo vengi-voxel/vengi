@@ -11,6 +11,7 @@
 #include "BrushType.h"
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
+#include "core/Log.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
@@ -96,6 +97,10 @@ protected:
 						  const voxel::Region &region) = 0;
 
 public:
+	void markDirty() override {
+		core::DirtyState::markDirty();
+	}
+
 	/**
 	 * @brief Execute the brush action on the given volume and also handles mirroring
 	 * @param[in] sceneGraph The scene graph to operate on

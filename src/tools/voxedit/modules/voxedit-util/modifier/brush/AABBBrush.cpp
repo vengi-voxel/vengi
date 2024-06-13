@@ -131,7 +131,6 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 			generate(sceneGraph, wrapper, context, second);
 		}
 	}
-	markDirty();
 	return true;
 }
 
@@ -162,22 +161,23 @@ bool AABBBrush::start(const BrushContext &context) {
 
 	// the order here matters - don't change _aabbMode earlier here
 	_aabbFirstPos = applyGridResolution(context.cursorPosition, context.gridResolution);
+	_lastCursorPos = context.cursorPosition;
 	_secondPosValid = false;
 	_aabbMode = wantAABB();
 	_aabbFace = context.cursorFace;
-	markDirty();
 	return true;
 }
 
 void AABBBrush::update(const BrushContext &ctx, double nowSeconds) {
 	Super::update(ctx, nowSeconds);
 
-	// in single mode we want to update the preview each time we move the cursor
-	if (radius() > 0 && ctx.cursorPosition != _aabbFirstPos) {
-		markDirty();
-	}
-	if (_aabbMode && ctx.cursorPosition != _aabbSecondPos) {
-		markDirty();
+	if (ctx.cursorPosition != _lastCursorPos) {
+		_lastCursorPos = ctx.cursorPosition;
+		// we have to update the preview each time we move the cursor if the brush
+		// is either spanning an aabb or has a radius set in single mode
+		if (_aabbMode || radius() > 0) {
+			markDirty();
+		}
 	}
 }
 
@@ -193,18 +193,18 @@ void AABBBrush::step(const BrushContext &context) {
 	if (!_aabbMode || radius() > 0 || context.lockedAxis != math::Axis::None) {
 		return;
 	}
-	_aabbSecondPos = currentCursorPosition(context);
-	// TODO: why is this set again?
-	_aabbFirstPos = applyGridResolution(_aabbFirstPos, context.gridResolution);
+	glm::ivec3 pos = currentCursorPosition(context);
+	_aabbSecondPos = pos;
+	if (!_secondPosValid || pos != _aabbSecondPos) {
+		markDirty();
+	}
 	_secondPosValid = true;
-	markDirty();
 }
 
 void AABBBrush::stop(const BrushContext &context) {
 	_secondPosValid = false;
 	_aabbMode = false;
 	_aabbFace = voxel::FaceNames::Max;
-	markDirty();
 }
 
 bool AABBBrush::isMode(uint32_t mode) const {
@@ -221,6 +221,7 @@ void AABBBrush::setRadius(int radius) {
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &context) const {
+	// TODO: locked axis support
 	const glm::ivec3 &pos = currentCursorPosition(context);
 	if (!singleMode() && centerMode()) {
 		const glm::ivec3 &first = applyGridResolution(_aabbFirstPos, context.gridResolution);

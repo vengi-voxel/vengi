@@ -32,6 +32,8 @@ class AABBBrush : public Brush {
 private:
 	using Super = Brush;
 
+	glm::ivec3 _lastCursorPos{-100000};
+
 protected:
 	/**
 	 * @c true if the current action spans an aabb. This first position of the aabb is set now.

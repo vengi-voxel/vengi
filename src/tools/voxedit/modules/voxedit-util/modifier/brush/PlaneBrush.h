@@ -16,12 +16,12 @@ class PlaneBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 	voxel::Voxel _hitVoxel;
-	voxel::Region _region;
+	glm::ivec3 _initialPlanePos;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
-	int calculateThickness(const BrushContext &context) const;
+	int calculateThickness(const BrushContext &context, ModifierType type) const;
 public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}
@@ -30,7 +30,6 @@ public:
 	void reset() override;
 	bool start(const BrushContext &context) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
-	voxel::Region calcRegion(const BrushContext &context) const override;
 };
 
 } // namespace voxedit
