@@ -633,16 +633,12 @@ void SceneManager::scaleDown(int nodeId) {
 
 void SceneManager::splitObjects() {
 	const int nodeId = activeNode();
-	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
-	voxel::RawVolume* v = node->volume();
-	if (v == nullptr) {
-		return;
-	}
 	core::DynamicArray<voxel::RawVolume *> volumes;
-	voxelutil::splitObjects(v, volumes);
+	voxelutil::splitObjects(node->volume(), volumes);
 	if (volumes.empty()) {
 		return;
 	}
@@ -658,15 +654,11 @@ void SceneManager::splitObjects() {
 
 void SceneManager::crop() {
 	const int nodeId = activeNode();
-	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
+	scenegraph::SceneGraphNode* node = sceneGraphModelNode(nodeId);
 	if (node == nullptr) {
 		return;
 	}
-	voxel::RawVolume* v = node->volume();
-	if (v == nullptr) {
-		return;
-	}
-	voxel::RawVolume* newVolume = voxelutil::cropVolume(v);
+	voxel::RawVolume* newVolume = voxelutil::cropVolume(node->volume());
 	if (newVolume == nullptr) {
 		return;
 	}
@@ -691,11 +683,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	if (!region.isValid()) {
 		return;
 	}
-	scenegraph::SceneGraphNode* node = sceneGraphNode(nodeId);
-	if (node == nullptr) {
-		return;
-	}
-	voxel::RawVolume* v = _sceneGraph.resolveVolume(*node);
+	voxel::RawVolume* v = volume(nodeId);
 	if (v == nullptr) {
 		Log::error("Failed to lookup volume for node %i", nodeId);
 		return;
