@@ -546,6 +546,7 @@ void SceneManager::setMousePos(int x, int y) {
 	_mouseCursor.x = x;
 	_mouseCursor.y = y;
 	// moving the mouse would trigger mouse tracing again
+	// TODO: maybe only do this if a mouse button was pressed?
 	_traceViaMouse = true;
 }
 
