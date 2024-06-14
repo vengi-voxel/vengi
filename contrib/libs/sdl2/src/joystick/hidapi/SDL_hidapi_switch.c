@@ -762,6 +762,14 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
         #if 0
         input_mode = k_eSwitchInputReportIDs_FullControllerState;
         #endif
+
+        /* However, Joy-Con controllers switch their thumbsticks into D-pad mode in simple mode,
+         * so let's enable full controller state for them.
+         */
+        if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
+            ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+            input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        }
     }
     return input_mode;
 }
@@ -1295,6 +1303,27 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case k_eSwitchDeviceInfoControllerType_Unknown:
         /* We couldn't read the device info for this controller, might not be fully compliant */
+        if (device->vendor_id == USB_VENDOR_NINTENDO) {
+            switch (device->product_id) {
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConLeft;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (L)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_LEFT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_JoyConRight;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Joy-Con (R)");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT;
+                break;
+            case USB_PRODUCT_NINTENDO_SWITCH_PRO:
+                ctx->m_eControllerType = k_eSwitchDeviceInfoControllerType_ProController;
+                HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+                device->type = SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO;
+                break;
+            default:
+                break;
+            }
+        }
         return;
     default:
         device->type = SDL_CONTROLLER_TYPE_UNKNOWN;
@@ -2211,6 +2240,10 @@ static SDL_bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         ctx->m_unLastInput = now;
 
         if (!joystick) {
+            continue;
+        }
+
+        if (ctx->m_rgucReadBuffer[0] == k_eSwitchInputReportIDs_SubcommandReply) {
             continue;
         }
 
