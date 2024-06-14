@@ -45,12 +45,4 @@ void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	}
 }
 
-void PathBrush::update(const BrushContext &ctx, double nowSeconds) {
-	Super::update(ctx, nowSeconds);
-	if (_state != ctx) {
-		_state = ctx;
-		markDirty();
-	}
-}
-
 } // namespace voxedit

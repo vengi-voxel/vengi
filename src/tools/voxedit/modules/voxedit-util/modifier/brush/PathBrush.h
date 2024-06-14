@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Brush.h"
-#include "LineState.h"
+#include "voxedit-util/modifier/ModifierType.h"
 #include "voxelutil/Connectivity.h"
 
 namespace voxedit {
@@ -19,17 +19,15 @@ private:
 	using Super = Brush;
 
 protected:
-	LineState _state;
 	voxelutil::Connectivity _connectivity = voxelutil::Connectivity::EighteenConnected;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
 	voxel::Region calcRegion(const BrushContext &context) const override;
 
 public:
-	PathBrush() : Super(BrushType::Path) {
+	PathBrush() : Super(BrushType::Path, ModifierType::Place, ModifierType::Place) {
 	}
 	virtual ~PathBrush() = default;
-	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	void setConnectivity(voxelutil::Connectivity connectivity);
 	voxelutil::Connectivity connectivity() const;
@@ -37,7 +35,6 @@ public:
 
 inline void PathBrush::setConnectivity(voxelutil::Connectivity connectivity) {
 	_connectivity = connectivity;
-	markDirty();
 }
 
 inline voxelutil::Connectivity PathBrush::connectivity() const {
