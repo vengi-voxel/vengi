@@ -158,6 +158,8 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		video::polygonOffset(glm::vec3(-0.1f));
 		_modifierRenderer->renderBrushVolume(camera);
 		video::polygonOffset(glm::vec3(0.0f));
+	} else {
+		_modifierRenderer->clearBrushMeshes();
 	}
 }
 
