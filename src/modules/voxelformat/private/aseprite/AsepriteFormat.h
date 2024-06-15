@@ -12,6 +12,7 @@ namespace voxelformat {
  * @brief Aseprite format
  *
  * https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
+ * https://libresprite.github.io
  *
  * @ingroup Formats
  */
