@@ -121,12 +121,14 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			ImGui::TableNextColumn();
 			const core::String &visibleId = core::string::format("##visible-node-%i", nodeId);
 			bool visible = node.visible();
-			ui::ScopedStyle style;
-			if (_hideInactive->boolVal()) {
-				style.disableItem();
-			}
-			if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-				_sceneMgr->nodeSetVisible(nodeId, visible);
+			{
+				ui::ScopedStyle style;
+				if (_hideInactive->boolVal()) {
+					style.disableItem();
+				}
+				if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
+					_sceneMgr->nodeSetVisible(nodeId, visible);
+				}
 			}
 			if (_hideInactive->boolVal()) {
 				ImGui::TooltipTextUnformatted(_("Disabled because inactive nodes are hidden and the active node is always visible"));
