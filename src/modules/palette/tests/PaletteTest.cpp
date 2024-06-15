@@ -225,6 +225,8 @@ TEST_F(PaletteTest, testMaterialPropertyByName) {
 	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 0.0f);
 	palette.setMaterialProperty(0, "emit", 1.0f);
 	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 1.0f);
+	palette.setMaterialValue(0, MaterialProperty::MaterialEmit, 0.5f);
+	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 0.5f);
 }
 
 } // namespace voxel
