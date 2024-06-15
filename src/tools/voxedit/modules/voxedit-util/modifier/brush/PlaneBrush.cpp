@@ -38,10 +38,6 @@ int PlaneBrush::calculateThickness(const BrushContext &context) const {
 				return 0;
 			}
 		}
-		// extrude is taking the voxel at the cursor position into account and thus we get
-		// a region of the thickness of 2 - we have to reduce this again to make the aabb
-		// brush span the 3rd dimension correctly.
-		return core_max(1, region.getDimensionsInVoxels()[idx] - 1);
 	}
 	return core_max(1, region.getDimensionsInVoxels()[idx]);
 }
