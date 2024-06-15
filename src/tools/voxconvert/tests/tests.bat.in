@@ -20,7 +20,7 @@ echo
 echo "split objects %SPLITFILE%"
 xcopy /Y "%SPLITFILE%" "@CMAKE_BINARY_DIR@"
 "%BINARY%" -f --input "%SPLITFILE%" --script splitobjects --output "%SPLITTARGETFILE%"
-"%BINARY%" -f --input "%SPLITTARGETFILE%" --dump
+"%BINARY%" -f --input "%SPLITTARGETFILE%" --json
 echo "check if %SPLITTARGETFILE% exists"
 IF NOT EXIST "%SPLITTARGETFILE%" EXIT 127
 echo

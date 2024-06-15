@@ -189,9 +189,11 @@ Or by just checking whether a property is set - no matter which value:
 
 So every model node that has the node property `propertyName` set will get exported into `outfile.vox`.
 
-You can find all node properties by using `--dump`:
+You can find all node properties by using `--json`:
 
-`./vengi-voxconvert --dump --input infile.vox`
+`./vengi-voxconvert --json --input infile.vox`
+
+If you want the vertex details per node and for the whole scene, you should use `--json full`.
 
 ## Convert to mesh
 

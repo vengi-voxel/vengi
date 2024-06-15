@@ -35,10 +35,10 @@ function convert() {
   diff ${src_file} ${final_file}
   if [ $? -ne 0 ]; then
     echo "Error: files shouldn't be different"
-    echo "src file ($BINARY --input ${src_file} --dump)"
-    $BINARY --input ${src_file} --dump
-    echo "final file ($BINARY --input ${final_file} --dump)"
-    $BINARY --input ${final_file} --dump
+    echo "src file ($BINARY --input ${src_file} --json)"
+    $BINARY --input ${src_file} --json
+    echo "final file ($BINARY --input ${final_file} --json)"
+    $BINARY --input ${final_file} --json
     exit 1
   fi
   set -e
@@ -74,5 +74,5 @@ $BINARY -f --input "$SPLITFILE" --script splitobjects --output "$SPLITTARGETFILE
 echo "check if $SPLITTARGETFILE exists"
 test -f "$SPLITTARGETFILE"
 echo "check that $SPLITTARGETFILE has 4 models"
-$BINARY  --input "$SPLITTARGETFILE" --dump 2>&1 | grep "4 model nodes"
+$BINARY --input "$SPLITTARGETFILE" --json | jq | grep "\"type\": \"Model\"" | wc -l | grep 4
 echo

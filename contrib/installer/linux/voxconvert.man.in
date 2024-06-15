@@ -28,12 +28,8 @@ Use the alpha channel of the heightmap as height and the rgb data as surface col
 Reduces the volume sizes to their voxel boundaries.
 
 .TP
-\fB\--dump\fR
-Dump the scene graph of the input file.
-
-.TP
-\fB\--dump-mesh\fR
-Dump the mesh details of the input file. Useful for getting an idea of many vertices are produced.
+\fB\--json\fR
+Dump the scene graph of the input file. Use \fBfull\fR as parameter to also print mesh details
 
 .TP
 \fB\--export-palette\fR
@@ -46,8 +42,8 @@ properly to get reasonable file names.
 
 .TP
 \fB\--filter <filter>\fR
-Will filter out models not mentioned in the expression. E.g. 1-2,4 will handle model
-1, 2 and 4. It is the same as 1,2,4. The first model is 0.
+Will filter out models not mentioned in the expression. E.g. \fB1-2,4\fR will handle model
+1, 2 and 4. It is the same as \fB1,2,4\fR. The first model is 0.
 
 .TP
 \fB\--force|-f\fR
@@ -313,7 +309,7 @@ Wavefront Object (*.obj)
 
 Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each
 model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel
-file, you should load it once in voxedit and check the model panel or use --dump to get a list.
+file, you should load it once in voxedit and check the model panel or use \fB--json\fR to get a list.
 
 Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for
 voxconvert.

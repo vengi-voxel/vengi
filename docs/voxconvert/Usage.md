@@ -74,6 +74,6 @@ source <(vengi-voxconvert --completion bash)
 
 ## Models
 
-Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the model panel or use `--dump` to get a list.
+Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel file, you should load it once in [voxedit](../voxedit/Index.md) and check the model panel or use `--json` to get a list.
 
 Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for `voxconvert`. See [this issue](https://github.com/vengi-voxel/vengi/issues/68) for a few more details.
