@@ -266,6 +266,9 @@ void FormatPrinter::printMarkdownTables() {
 		Log::printf("| %-31s | %-9s | X       | %c      |\n", desc.name.c_str(), desc.mainExtension().c_str(),
 			   save ? 'X' : ' ');
 	}
+
+	Log::printf("\n> The `gpl` format also supports the [Aseprite extension](https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md) for alpha values\n");
+
 	Log::printf("\n");
 	Log::printf("## Images/textures\n");
 	Log::printf("\n");

@@ -9,7 +9,7 @@
 namespace palette {
 
 /**
- * Gimp format with ASESprite extension for alpha channels
+ * Gimp format with Aseprite extension for alpha channels
  *
  * @ingroup Formats
  */

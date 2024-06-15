@@ -13,7 +13,6 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "io/FileStream.h"
 #include "io/FormatDescription.h"
 
 namespace palette {

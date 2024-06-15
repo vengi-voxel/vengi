@@ -4,7 +4,6 @@
 
 #include "PNGPalette.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "image/Image.h"
 #include "palette/Palette.h"
 

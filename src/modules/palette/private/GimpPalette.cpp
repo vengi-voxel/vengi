@@ -4,7 +4,6 @@
 
 #include "GimpPalette.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "engine-config.h"
 
 namespace palette {
@@ -39,7 +38,7 @@ bool GimpPalette::load(const core::String &filename, io::SeekableReadStream &str
 		if (strcmp("GIMP Palette", line) == 0) {
 			continue;
 		}
-		// asesprite extension: https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md
+		// aseprite extension: https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md
 		if (strcmp("Channels: RGBA", line) == 0) {
 			alpha = true;
 		}

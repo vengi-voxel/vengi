@@ -70,6 +70,8 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | Qubicle Palette                 | qsm       | X       |        |
 | RGB Palette                     | pal       | X       | X      |
 
+> The `gpl` format also supports the [Aseprite extension](https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md) for alpha values
+
 ## Images/textures
 
 | Name                        | Extension |
