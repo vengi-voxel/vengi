@@ -42,6 +42,7 @@
 | Voxel3D                    | v3a         | X       | X      |            |         |            |
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
 | VoxelMax                   | vmax.zip    | X       |        | X          | X       |            |
+| aseprite                   | aseprite    | X       |        |            | X       |            |
 
 ## Mesh formats
 

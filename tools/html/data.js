@@ -169,6 +169,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "aseprite",
+      "extensions": [
+        "aseprite",
+        "ase"
+      ],
+      "magics": [],
+      "mimetype": "application/x-aseprite",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Qubicle Binary",
       "extensions": [
         "qb"

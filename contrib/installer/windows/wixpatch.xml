@@ -16,6 +16,12 @@
 		<RegistryKey Root="HKCR" Key=".vengi">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".aseprite">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".ase">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".qb">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -192,6 +198,24 @@
 		<RegistryValue Root="HKCR" Key=".vengi\OpenWithProgids" Name="vengi-voxedit.vengi" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vengi" Description="Vengi" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vengi" ContentType="application/x-vengi">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".aseprite" Value="vengi-voxedit.aseprite" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".aseprite" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".aseprite\OpenWithProgids" Name="vengi-voxedit.aseprite" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.aseprite" Description="aseprite" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="aseprite" ContentType="application/x-aseprite">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ase" Value="vengi-voxedit.ase" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ase" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".ase\OpenWithProgids" Name="vengi-voxedit.ase" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.ase" Description="aseprite" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ase" ContentType="application/x-aseprite-aseprite">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

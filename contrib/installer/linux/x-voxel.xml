@@ -7,6 +7,11 @@
 			<match type="string" offset="0" value="VENG"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-aseprite">
+		<comment>aseprite</comment>
+		<glob pattern="*.aseprite"/>
+		<glob pattern="*.ase"/>
+	</mime-type>
 	<mime-type type="application/x-qubicle-binary">
 		<comment>Qubicle Binary</comment>
 		<glob pattern="*.qb"/>

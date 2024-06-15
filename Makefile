@@ -389,6 +389,10 @@ update-ufbx:
 	$(call UPDATE_GIT,ufbx,https://github.com/bqqbarbhg/ufbx.git)
 	cp $(UPDATEDIR)/ufbx.sync/ufbx.h $(UPDATEDIR)/ufbx.sync/ufbx.c src/modules/voxelformat/external
 
+update-cute:
+	$(call UPDATE_GIT,cute_headers,https://github.com/RandyGaul/cute_headers)
+	cp $(UPDATEDIR)/cute_headers.sync/cute_aseprite.h src/modules/voxelformat/external
+
 update-icons:
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
 	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsLucide.h src/modules/ui/

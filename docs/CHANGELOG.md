@@ -15,6 +15,7 @@ General:
    - Fixed invalid log levels
    - Added a new node type for named points
    - Improved `3zh` format support
+   - Added support for `ase` and `aseprite` format
 
 VoxConvert:
 

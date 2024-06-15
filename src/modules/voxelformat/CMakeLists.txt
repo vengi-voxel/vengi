@@ -13,6 +13,7 @@ set(SRCS
 
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
+	private/aseprite/AsepriteFormat.h        private/aseprite/AsepriteFormat.cpp
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
 	private/commandconquer/HVAFormat.h       private/commandconquer/HVAFormat.cpp
