@@ -311,7 +311,8 @@ msgid "Language"
 msgstr "Sprache"
 
 msgid "To change the language everywhere restart the application"
-msgstr "Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
+msgstr ""
+"Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -396,9 +397,8 @@ msgstr "Aktivieren des Schattenrenderings"
 msgid "Activate bloom post processing"
 msgstr ""
 
-#, fuzzy
 msgid "Activate shadow debug rendering"
-msgstr "Die Drehoperation aktivieren"
+msgstr ""
 
 msgid "Activate cascade shadow map debug rendering"
 msgstr ""
@@ -408,6 +408,9 @@ msgstr "Gammakorrektur"
 
 msgid "Render voxel outline"
 msgstr ""
+
+msgid "Activate tone mapping"
+msgstr "Tone mapping aktivieren"
 
 msgid "Limit the framerate to the monitor refresh rate"
 msgstr ""
@@ -481,6 +484,9 @@ msgstr "Umrisslinien"
 msgid "Bloom"
 msgstr "Bloom"
 
+msgid "Tone mapping"
+msgstr ""
+
 msgid "Allow multi monitor"
 msgstr "Mehrere Monitore zulassen"
 
@@ -510,6 +516,139 @@ msgstr "Layout zurücksetzen"
 
 msgid "About"
 msgstr "Über"
+
+msgid "File already exists"
+msgstr "Datei existiert bereits"
+
+msgid "Overwrite existing target file"
+msgstr "Überschreibe existierende Zieldatei"
+
+msgid "Uniform scale"
+msgstr "Gleichmäßige Skalierung"
+
+msgid "X axis scale"
+msgstr "X-Achsen-Skalierung"
+
+msgid "Y axis scale"
+msgstr "Y-Achsen-Skalierung"
+
+msgid "Z axis scale"
+msgstr "Z-Achsen-Skalierung"
+
+msgid "Merge quads"
+msgstr "Quads zusammenführen"
+
+msgid "Reuse vertices"
+msgstr "Vertices wiederverwenden"
+
+msgid "Ambient occlusion"
+msgstr "Ambient occlusion"
+
+msgid "Apply transformations"
+msgstr "Transformationen anwenden"
+
+msgid "Apply optimizations"
+msgstr "Optimierungen anwenden"
+
+msgid "Exports quads"
+msgstr "Quads exportieren"
+
+msgid "Vertex colors"
+msgstr "Vertexfarben"
+
+msgid "Normals"
+msgstr "Normalen"
+
+msgid "Vertex colors as float"
+msgstr "Vertexfarben als Fließkommazahlen"
+
+msgid "Texture coordinates"
+msgstr "Texturkoordinaten"
+
+msgid "Export materials"
+msgstr "Materialien exportieren"
+
+msgid "Single object"
+msgstr "Einzelnes Objekt"
+
+msgid "Save visible only"
+msgstr "Nur sichtbares speichern"
+
+msgid "Palette mode"
+msgstr "Palettenmodus"
+
+msgid "Merge compounds"
+msgstr "Verbindungen zusammenführen"
+
+msgid "Create groups"
+msgstr "Gruppen erstellen"
+
+msgid "Create layers"
+msgstr "Ebenen erstellen"
+
+msgid "Left handed"
+msgstr "Linkshändig"
+
+msgid "Compressed"
+msgstr "Komprimiert"
+
+msgid "Red Alert"
+msgstr "Red Alert"
+
+msgid "Tiberian Sun"
+msgstr "Tiberian Sun"
+
+msgid "Normal type"
+msgstr "Normaltyp"
+
+msgid "Fill hollow"
+msgstr "Hohlraum füllen"
+
+msgid "Point cloud size"
+msgstr "Punktwolkengröße"
+
+msgid "faster and less memory"
+msgstr "schneller und weniger Speicher"
+
+msgid "high quality"
+msgstr "hohe Qualität"
+
+msgid "Voxelization mode"
+msgstr "Voxelisierungsmodus"
+
+msgid "RGB flatten factor"
+msgstr "RGB-Abflachfaktor"
+
+msgid "RGB weighted average"
+msgstr "RGB gewichteter Durchschnitt"
+
+msgid "Create palette"
+msgstr "Palette erstellen"
+
+msgid "Source"
+msgstr "Quelle"
+
+msgid "Source format"
+msgstr "Quellformat"
+
+msgid "Target format"
+msgstr "Zielformat"
+
+msgid "Source options"
+msgstr "Quelloptionen"
+
+msgid "Target options"
+msgstr "Zieloptionen"
+
+msgid "Convert"
+msgstr "Konvertieren"
+
+#, c-format
+msgid "Found vengi-voxconvert at %s"
+msgstr "vengi-voxconvert unter %s gefunden"
+
+msgid "Open target file"
+msgstr "Öffne Zieldatei"
 
 msgid "Use the color wheel in the palette color editing"
 msgstr ""
@@ -544,7 +683,7 @@ msgid ""
 msgstr ""
 
 msgid "The size of the voxel grid"
-msgstr ""
+msgstr "Die Größe des Voxelgitters"
 
 msgid "Render the inactive nodes in gray scale mode"
 msgstr "Die inaktiven Knoten in grau darstellen"
@@ -555,9 +694,8 @@ msgstr "Alle inaktiven Knoten ausblenden"
 msgid "Show the axis"
 msgstr "Achsen anzeigen"
 
-#, fuzzy
 msgid "Print cursor details in edit mode"
-msgstr "Aktuelle Millisekunden auf der Konsole ausgeben"
+msgstr "Zeige Details am Cursor im Editiermodus"
 
 msgid "Set auto keyframe"
 msgstr "Automatischer Keyframe"
@@ -565,9 +703,8 @@ msgstr "Automatischer Keyframe"
 msgid "Bitmask of gizmo operations in scene mode"
 msgstr ""
 
-#, fuzzy
 msgid "Activate the pivot mode for the gizmo in scene mode"
-msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
+msgstr ""
 
 msgid "Flip axis or stay along the positive world/local axis"
 msgstr ""
@@ -582,7 +719,7 @@ msgid "The amount of viewports (not in simple ui mode)"
 msgstr ""
 
 msgid "Hide some panels to simplify the ui"
-msgstr ""
+msgstr "Verstecke einige Komponenten für eine vereinfachte Darstellung"
 
 msgid "Show the tip of the day on startup"
 msgstr ""
@@ -797,6 +934,33 @@ msgid "Use a radius around the current voxel - 0 for spanning a region"
 msgstr ""
 "Verwende einen Radius um den aktuellen Voxel - 0 um eine Region zu umspannen"
 
+msgid "Clamping"
+msgstr ""
+
+msgid "Clamp the brush to the volume"
+msgstr ""
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Horizontal spacing"
+msgstr "Horizontaler Abstand"
+
+msgid "Thickness"
+msgstr "Dicke"
+
+msgid "Print text along the x axis"
+msgstr ""
+
+msgid "Print text along the y axis"
+msgstr ""
+
+msgid "Print text along the z axis"
+msgstr ""
+
+msgid "Font"
+msgstr "Schriftart"
+
 msgid "Mode"
 msgstr "Modus"
 
@@ -811,6 +975,9 @@ msgstr "Ebene"
 
 msgid "Paint the selected plane"
 msgstr "Die ausgewählte Ebene bemalen"
+
+msgid "Gradient"
+msgstr ""
 
 msgid "Brush settings"
 msgstr "Pinsel-Einstellungen"
@@ -844,105 +1011,6 @@ msgstr "Seitenverhältnis"
 
 msgid "Add new camera"
 msgstr "Neue Kamera hinzufügen"
-
-msgid "Uniform scale"
-msgstr "Gleichmäßige Skalierung"
-
-msgid "X axis scale"
-msgstr "X-Achsen-Skalierung"
-
-msgid "Y axis scale"
-msgstr "Y-Achsen-Skalierung"
-
-msgid "Z axis scale"
-msgstr "Z-Achsen-Skalierung"
-
-msgid "Merge quads"
-msgstr "Quads zusammenführen"
-
-msgid "Reuse vertices"
-msgstr "Vertices wiederverwenden"
-
-msgid "Ambient occlusion"
-msgstr "Ambient occlusion"
-
-msgid "Apply transformations"
-msgstr "Transformationen anwenden"
-
-msgid "Exports quads"
-msgstr "Quads exportieren"
-
-msgid "Vertex colors"
-msgstr "Vertexfarben"
-
-msgid "Normals"
-msgstr "Normalen"
-
-msgid "Vertex colors as float"
-msgstr "Vertexfarben als Fließkommazahlen"
-
-msgid "Texture coordinates"
-msgstr "Texturkoordinaten"
-
-msgid "Export materials"
-msgstr "Materialien exportieren"
-
-msgid "Fill hollow"
-msgstr "Hohlraum füllen"
-
-msgid "Point cloud size"
-msgstr "Punktwolkengröße"
-
-msgid "faster and less memory"
-msgstr "schneller und weniger Speicher"
-
-msgid "high quality"
-msgstr "hohe Qualität"
-
-msgid "Voxelization mode"
-msgstr "Voxelisierungsmodus"
-
-msgid "Single object"
-msgstr "Einzelnes Objekt"
-
-msgid "Save visible only"
-msgstr "Nur sichtbares speichern"
-
-msgid "Palette mode"
-msgstr "Palettenmodus"
-
-msgid "Merge compounds"
-msgstr "Verbindungen zusammenführen"
-
-msgid "Create groups"
-msgstr "Gruppen erstellen"
-
-msgid "Create layers"
-msgstr "Ebenen erstellen"
-
-msgid "Left handed"
-msgstr "Linkshändig"
-
-msgid "Compressed"
-msgstr "Komprimiert"
-
-msgid "Red Alert"
-msgstr "Red Alert"
-
-msgid "Tiberian Sun"
-msgstr "Tiberian Sun"
-
-msgid "Normal type"
-msgstr "Normaltyp"
-
-msgid "RGB flatten factor"
-msgstr "RGB-Abflachfaktor"
-
-msgid "RGB weighted average"
-msgstr "RGB gewichteter Durchschnitt"
-
-msgid "Create palette"
-msgstr "Palette erstellen"
 
 msgid "Axiom"
 msgstr "Axiom"
@@ -1011,8 +1079,8 @@ msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "
 "<cmd:togglescene> key."
 msgstr ""
-"Zwischen Szenen- und Bearbeitungsmodus wechseln (nicht im einfachen UI Modus), indem Sie die <cmd:"
-"togglescene>-Taste drücken."
+"Zwischen Szenen- und Bearbeitungsmodus wechseln (nicht im einfachen UI "
+"Modus), indem Sie die <cmd:togglescene>-Taste drücken."
 
 msgid "Use the file dialog options for format specific options."
 msgstr "Verwenden Sie die Dateidialogoptionen für formatabhängige Optionen."
@@ -1302,9 +1370,8 @@ msgstr "Einfügen an Cursorposition"
 msgid "Paste as new node"
 msgstr ""
 
-#, fuzzy
 msgid "Paste as stamp"
-msgstr "Stempel verwenden"
+msgstr "Als Stempel einfügen"
 
 msgid "Color picker"
 msgstr "Farbauswahl"
@@ -1385,6 +1452,15 @@ msgstr "Automatischer Keyframe"
 msgid "Automatically create keyframes when changing transforms"
 msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
 
+msgid "Mirror X"
+msgstr ""
+
+msgid "Mirror XZ"
+msgstr ""
+
+msgid "Mirror XYZ"
+msgstr ""
+
 msgid "Transform"
 msgstr "Transformation"
 
@@ -1412,9 +1488,8 @@ msgstr ""
 msgid "Delete this node property"
 msgstr "Diese Knoteneigenschaft löschen"
 
-#, fuzzy
 msgid "Add a new node property"
-msgstr "Neuen Modellknoten hinzufügen"
+msgstr "Neue Knoteneigenschaft hinzufügen"
 
 msgid "Model from color"
 msgstr "Modell aus Farbe"
@@ -1434,9 +1509,8 @@ msgstr ""
 msgid "Press CTRL to re-order"
 msgstr ""
 
-#, fuzzy
 msgid "Empty color slot"
-msgstr "Vertexfarben als Fließkommazahlen"
+msgstr ""
 
 msgid "Select the palette"
 msgstr "Palette auswählen"
@@ -1579,9 +1653,8 @@ msgstr ""
 msgid " apply a linear filter to the image pixels"
 msgstr ""
 
-#, fuzzy
 msgid "High Quality BVH"
-msgstr "hohe Qualität"
+msgstr ""
 
 msgid "High quality bounding volume hierarchy"
 msgstr ""
@@ -1589,9 +1662,8 @@ msgstr ""
 msgid "Denoise"
 msgstr "Rauschunterdrückung"
 
-#, fuzzy
 msgid "High quality"
-msgstr "hohe Qualität"
+msgstr "Hohe Qualität"
 
 msgid "Geometry preview"
 msgstr ""
@@ -1626,9 +1698,8 @@ msgstr "Referenz erstellen"
 msgid "Merge"
 msgstr "Zusammenführen"
 
-#, fuzzy
 msgid "Use as stamp"
-msgstr "Stempel verwenden"
+msgstr "Als Stempel verwenden"
 
 msgid "Merge all"
 msgstr "Alle zusammenführen"
@@ -1654,6 +1725,9 @@ msgstr "Alle speichern"
 msgid "Add new group"
 msgstr "Neue Gruppe hinzufügen"
 
+msgid "Add new point"
+msgstr "Neuen Punkt hinzufügen"
+
 msgid ""
 "Disabled because inactive nodes are hidden and the active node is always "
 "visible"
@@ -1677,16 +1751,23 @@ msgstr "Dieses Modell löschen"
 msgid "Add a new model node"
 msgstr "Neuen Modellknoten hinzufügen"
 
-#, fuzzy
 msgid "Add a new group"
 msgstr "Neue Gruppe hinzufügen"
 
 msgid "Remove the active node with all its children"
 msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
 
-#, fuzzy
+msgid "Cameras"
+msgstr "Kameras"
+
+msgid "Groups"
+msgstr ""
+
+msgid "References"
+msgstr "Referenzknoten"
+
 msgid "Merge onto"
-msgstr "%s auf %s zusammenführen"
+msgstr ""
 
 #, c-format
 msgid "Merge %s onto %s"
@@ -1767,21 +1848,6 @@ msgstr "Cursor"
 
 msgid "Cursor details"
 msgstr "Cursor-Details"
-
-msgid "Text"
-msgstr "Text"
-
-msgid "Horizontal spacing"
-msgstr "Horizontaler Abstand"
-
-msgid "Thickness"
-msgstr "Dicke"
-
-msgid "Font"
-msgstr "Schriftart"
-
-msgid "Execute"
-msgstr ""
 
 msgid "Gizmo settings"
 msgstr "Gizmo-Einstellungen"
@@ -2048,9 +2114,6 @@ msgstr ""
 "Ermöglicht das Ausrichten aller Knoten nebeneinander auf dem Boden, ohne "
 "sich zu überlappen"
 
-msgid "Render characters at the reference position"
-msgstr "Zeichen an der Referenzposition rendern"
-
 msgid "Save all model nodes into filenames represented by their node names"
 msgstr ""
 "Alle Modellknoten in Dateinamen speichern, die durch ihre Knotennamen "
@@ -2315,18 +2378,6 @@ msgstr ""
 "Schaltet den gesperrten Modus für die Z-Achse an der aktuellen "
 "Cursorposition um"
 
-msgid "Mirror along the x axis at the reference position"
-msgstr "Spiegelt entlang der X-Achse an der Referenzposition"
-
-msgid "Mirror along the y axis at the reference position"
-msgstr "Spiegelt entlang der Y-Achse an der Referenzposition"
-
-msgid "Mirror along the z axis at the reference position"
-msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
-
-msgid "Disable mirror axis"
-msgstr "Deaktiviert die Spiegelachse"
-
 msgid "Set center plane building"
 msgstr "Setzt den Bau des Zentrumsplans"
 
@@ -2339,6 +2390,18 @@ msgid ""
 msgstr ""
 "Setzt den Einzel-Voxel-Bau-Modus - setzen Sie Voxel fort, bis Sie die "
 "Aktionstaste loslassen"
+
+msgid "Mirror along the x axis at the reference position"
+msgstr "Spiegelt entlang der X-Achse an der Referenzposition"
+
+msgid "Mirror along the y axis at the reference position"
+msgstr "Spiegelt entlang der Y-Achse an der Referenzposition"
+
+msgid "Mirror along the z axis at the reference position"
+msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
+
+msgid "Disable mirror axis"
+msgstr "Deaktiviert die Spiegelachse"
 
 msgid "Change the modifier shape type"
 msgstr "Ändert den Modifier-Formtyp"
@@ -2360,3 +2423,6 @@ msgstr "Den aktuellen Knoten als neuen Stempel verwenden"
 
 msgid "Paste the current clipboard content as stamp"
 msgstr "Die Zwischenablage als neuen Stempel verwenden"
+
+msgid "Change the text brush axis"
+msgstr ""

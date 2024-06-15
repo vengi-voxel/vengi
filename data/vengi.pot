@@ -382,6 +382,9 @@ msgstr ""
 msgid "Render voxel outline"
 msgstr ""
 
+msgid "Activate tone mapping"
+msgstr ""
+
 msgid "Limit the framerate to the monitor refresh rate"
 msgstr ""
 
@@ -454,6 +457,9 @@ msgstr ""
 msgid "Bloom"
 msgstr ""
 
+msgid "Tone mapping"
+msgstr ""
+
 msgid "Allow multi monitor"
 msgstr ""
 
@@ -482,6 +488,139 @@ msgid "Reset layout"
 msgstr ""
 
 msgid "About"
+msgstr ""
+
+msgid "File already exists"
+msgstr ""
+
+msgid "Overwrite existing target file"
+msgstr ""
+
+msgid "Uniform scale"
+msgstr ""
+
+msgid "X axis scale"
+msgstr ""
+
+msgid "Y axis scale"
+msgstr ""
+
+msgid "Z axis scale"
+msgstr ""
+
+msgid "Merge quads"
+msgstr ""
+
+msgid "Reuse vertices"
+msgstr ""
+
+msgid "Ambient occlusion"
+msgstr ""
+
+msgid "Apply transformations"
+msgstr ""
+
+msgid "Apply optimizations"
+msgstr ""
+
+msgid "Exports quads"
+msgstr ""
+
+msgid "Vertex colors"
+msgstr ""
+
+msgid "Normals"
+msgstr ""
+
+msgid "Vertex colors as float"
+msgstr ""
+
+msgid "Texture coordinates"
+msgstr ""
+
+msgid "Export materials"
+msgstr ""
+
+msgid "Single object"
+msgstr ""
+
+msgid "Save visible only"
+msgstr ""
+
+msgid "Palette mode"
+msgstr ""
+
+msgid "Merge compounds"
+msgstr ""
+
+msgid "Create groups"
+msgstr ""
+
+msgid "Create layers"
+msgstr ""
+
+msgid "Left handed"
+msgstr ""
+
+msgid "Compressed"
+msgstr ""
+
+msgid "Red Alert"
+msgstr ""
+
+msgid "Tiberian Sun"
+msgstr ""
+
+msgid "Normal type"
+msgstr ""
+
+msgid "Fill hollow"
+msgstr ""
+
+msgid "Point cloud size"
+msgstr ""
+
+msgid "faster and less memory"
+msgstr ""
+
+msgid "high quality"
+msgstr ""
+
+msgid "Voxelization mode"
+msgstr ""
+
+msgid "RGB flatten factor"
+msgstr ""
+
+msgid "RGB weighted average"
+msgstr ""
+
+msgid "Create palette"
+msgstr ""
+
+msgid "Source"
+msgstr ""
+
+msgid "Source format"
+msgstr ""
+
+msgid "Target format"
+msgstr ""
+
+msgid "Source options"
+msgstr ""
+
+msgid "Target options"
+msgstr ""
+
+msgid "Convert"
+msgstr ""
+
+#, c-format
+msgid "Found vengi-voxconvert at %s"
+msgstr ""
+
+msgid "Open target file"
 msgstr ""
 
 msgid "Use the color wheel in the palette color editing"
@@ -762,6 +901,33 @@ msgstr ""
 msgid "Use a radius around the current voxel - 0 for spanning a region"
 msgstr ""
 
+msgid "Clamping"
+msgstr ""
+
+msgid "Clamp the brush to the volume"
+msgstr ""
+
+msgid "Text"
+msgstr ""
+
+msgid "Horizontal spacing"
+msgstr ""
+
+msgid "Thickness"
+msgstr ""
+
+msgid "Print text along the x axis"
+msgstr ""
+
+msgid "Print text along the y axis"
+msgstr ""
+
+msgid "Print text along the z axis"
+msgstr ""
+
+msgid "Font"
+msgstr ""
+
 msgid "Mode"
 msgstr ""
 
@@ -775,6 +941,9 @@ msgid "Plane"
 msgstr ""
 
 msgid "Paint the selected plane"
+msgstr ""
+
+msgid "Gradient"
 msgstr ""
 
 msgid "Brush settings"
@@ -808,105 +977,6 @@ msgid "Aspect"
 msgstr ""
 
 msgid "Add new camera"
-msgstr ""
-
-msgid "Uniform scale"
-msgstr ""
-
-msgid "X axis scale"
-msgstr ""
-
-msgid "Y axis scale"
-msgstr ""
-
-msgid "Z axis scale"
-msgstr ""
-
-msgid "Merge quads"
-msgstr ""
-
-msgid "Reuse vertices"
-msgstr ""
-
-msgid "Ambient occlusion"
-msgstr ""
-
-msgid "Apply transformations"
-msgstr ""
-
-msgid "Exports quads"
-msgstr ""
-
-msgid "Vertex colors"
-msgstr ""
-
-msgid "Normals"
-msgstr ""
-
-msgid "Vertex colors as float"
-msgstr ""
-
-msgid "Texture coordinates"
-msgstr ""
-
-msgid "Export materials"
-msgstr ""
-
-msgid "Fill hollow"
-msgstr ""
-
-msgid "Point cloud size"
-msgstr ""
-
-msgid "faster and less memory"
-msgstr ""
-
-msgid "high quality"
-msgstr ""
-
-msgid "Voxelization mode"
-msgstr ""
-
-msgid "Single object"
-msgstr ""
-
-msgid "Save visible only"
-msgstr ""
-
-msgid "Palette mode"
-msgstr ""
-
-msgid "Merge compounds"
-msgstr ""
-
-msgid "Create groups"
-msgstr ""
-
-msgid "Create layers"
-msgstr ""
-
-msgid "Left handed"
-msgstr ""
-
-msgid "Compressed"
-msgstr ""
-
-msgid "Red Alert"
-msgstr ""
-
-msgid "Tiberian Sun"
-msgstr ""
-
-msgid "Normal type"
-msgstr ""
-
-msgid "RGB flatten factor"
-msgstr ""
-
-msgid "RGB weighted average"
-msgstr ""
-
-msgid "Create palette"
 msgstr ""
 
 msgid "Axiom"
@@ -1301,6 +1371,15 @@ msgstr ""
 msgid "Automatically create keyframes when changing transforms"
 msgstr ""
 
+msgid "Mirror X"
+msgstr ""
+
+msgid "Mirror XZ"
+msgstr ""
+
+msgid "Mirror XYZ"
+msgstr ""
+
 msgid "Transform"
 msgstr ""
 
@@ -1557,6 +1636,9 @@ msgstr ""
 msgid "Add new group"
 msgstr ""
 
+msgid "Add new point"
+msgstr ""
+
 msgid ""
 "Disabled because inactive nodes are hidden and the active node is always "
 "visible"
@@ -1582,6 +1664,15 @@ msgid "Add a new group"
 msgstr ""
 
 msgid "Remove the active node with all its children"
+msgstr ""
+
+msgid "Cameras"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "References"
 msgstr ""
 
 msgid "Merge onto"
@@ -1664,21 +1755,6 @@ msgid "Cursor"
 msgstr ""
 
 msgid "Cursor details"
-msgstr ""
-
-msgid "Text"
-msgstr ""
-
-msgid "Horizontal spacing"
-msgstr ""
-
-msgid "Thickness"
-msgstr ""
-
-msgid "Font"
-msgstr ""
-
-msgid "Execute"
 msgstr ""
 
 msgid "Gizmo settings"
@@ -1935,9 +2011,6 @@ msgid ""
 "Allow to align all nodes on the floor next to each other without overlapping"
 msgstr ""
 
-msgid "Render characters at the reference position"
-msgstr ""
-
 msgid "Save all model nodes into filenames represented by their node names"
 msgstr ""
 
@@ -2160,6 +2233,17 @@ msgstr ""
 msgid "Toggle locked mode for the z axis at the current cursor position"
 msgstr ""
 
+msgid "Set center plane building"
+msgstr ""
+
+msgid "Set default aabb voxel building mode"
+msgstr ""
+
+msgid ""
+"Set single voxel building mode - continue setting voxels until you release "
+"the action button"
+msgstr ""
+
 msgid "Mirror along the x axis at the reference position"
 msgstr ""
 
@@ -2170,17 +2254,6 @@ msgid "Mirror along the z axis at the reference position"
 msgstr ""
 
 msgid "Disable mirror axis"
-msgstr ""
-
-msgid "Set center plane building"
-msgstr ""
-
-msgid "Set default aabb voxel building mode"
-msgstr ""
-
-msgid ""
-"Set single voxel building mode - continue setting voxels until you release "
-"the action button"
 msgstr ""
 
 msgid "Change the modifier shape type"
@@ -2202,4 +2275,7 @@ msgid "Use the current selected node volume as new stamp"
 msgstr ""
 
 msgid "Paste the current clipboard content as stamp"
+msgstr ""
+
+msgid "Change the text brush axis"
 msgstr ""
