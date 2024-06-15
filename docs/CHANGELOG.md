@@ -19,6 +19,7 @@ General:
 VoxConvert:
 
    - Added a basic UI for voxconvert
+   - Removed `--dump` and added `--json <full>` to generate a scene graph structure
 
 VoxEdit:
 

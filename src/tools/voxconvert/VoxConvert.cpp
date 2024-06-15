@@ -62,8 +62,8 @@ VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProv
 app::AppState VoxConvert::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--crop").setDescription("Reduce the models to their real voxel sizes");
-	registerArg("--dump").setDescription("Dump the scene graph of the input file");
-	registerArg("--dump-mesh").setDescription("Dump the mesh details of the input file");
+	registerArg("--json").setDescription(
+		"Print the scene graph of the input file. Give full as argument to also get mesh details");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
 	registerArg("--export-palette").setDescription("Export the used palette data into an image");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
@@ -332,8 +332,7 @@ app::AppState VoxConvert::onInit() {
 	_cropModels = hasArg("--crop");
 	_surfaceOnly = hasArg("--surface-only");
 	_splitModels = hasArg("--split");
-	_dumpSceneGraph = hasArg("--dump");
-	_dumpMeshDetails = hasArg("--dump-mesh");
+	_printSceneGraph = hasArg("--json");
 	_resizeModels = hasArg("--resize");
 
 	Log::info("Options");
@@ -365,8 +364,7 @@ app::AppState VoxConvert::onInit() {
 		}
 		Log::info("* script:            - %s", scriptParameters.c_str());
 	}
-	Log::info("* dump scene graph:  - %s", (_dumpSceneGraph ? "true" : "false"));
-	Log::info("* dump mesh details: - %s", (_dumpMeshDetails ? "true" : "false"));
+	Log::info("* show scene graph:  - %s", (_printSceneGraph ? "true" : "false"));
 	Log::info("* merge models:      - %s", (_mergeModels ? "true" : "false"));
 	Log::info("* scale models:      - %s", (_scaleModels ? "true" : "false"));
 	Log::info("* crop models:       - %s", (_cropModels ? "true" : "false"));
@@ -411,7 +409,7 @@ app::AppState VoxConvert::onInit() {
 				}
 			}
 		}
-	} else if (!_exportModels && !_exportPalette && !_dumpSceneGraph && !_dumpMeshDetails) {
+	} else if (!_exportModels && !_exportPalette && !_printSceneGraph) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -728,10 +726,8 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 			parent = sceneGraph.emplace(core::move(groupNode), parent);
 		}
 		scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
-		if (_dumpMeshDetails) {
-			dumpMeshDetails(sceneGraph);
-		} else if (_dumpSceneGraph) {
-			dump(sceneGraph);
+		if (_printSceneGraph) {
+			sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
 		}
 
 		if (_exportPalette) {
@@ -807,60 +803,136 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 	}
 }
 
-VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, int indent,
-											 bool meshDetails) {
+VoxConvert::NodeStats VoxConvert::sceneGraphJsonNode_r(const scenegraph::SceneGraph &sceneGraph, int nodeId, bool printMeshDetails) const {
 	const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
 
 	const scenegraph::SceneGraphNodeType type = node.type();
 
-	Log::info("%*sNode: %i (parent %i)", indent, " ", nodeId, node.parent());
-	Log::info("%*s  |- name: %s", indent, " ", node.name().c_str());
-	Log::info("%*s  |- type: %s", indent, " ", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
+	Log::printf("{");
+	Log::printf("\"id\": %i,", nodeId);
+	Log::printf("\"parent\": %i,", node.parent());
+	Log::printf("\"name\": \"%s\",", node.name().c_str());
+	Log::printf("\"type\": \"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
 	const glm::vec3 &pivot = node.pivot();
-	Log::info("%*s  |- pivot %f:%f:%f", indent, " ", pivot.x, pivot.y, pivot.z);
+	Log::printf("\"pivot\": \"%f:%f:%f\"", pivot.x, pivot.y, pivot.z);
 	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
-		Log::info("%*s  |- volume: %s", indent, " ", v != nullptr ? v->region().toString().c_str() : "no volume");
+		Log::printf(",\"volume\": {");
+		Log::printf("\"region\": {");
+		Log::printf("\"mins\": \"%i:%i:%i\",", v->region().getLowerX(), v->region().getLowerY(),
+				  v->region().getLowerZ());
+		Log::printf("\"maxs\": \"%i:%i:%i\",", v->region().getUpperX(), v->region().getUpperY(),
+				  v->region().getUpperZ());
+		Log::printf("\"size\": \"%i:%i:%i\"", v->region().getWidthInVoxels(), v->region().getHeightInVoxels(),
+				  v->region().getDepthInVoxels());
+		Log::printf("},");
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++stats.voxels; });
 		}
-		Log::info("%*s  |- voxels: %i", indent, " ", stats.voxels);
+		Log::printf("\"voxels\": %i", stats.voxels);
+		Log::printf("}");
 	} else if (type == scenegraph::SceneGraphNodeType::Camera) {
 		const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
-		Log::info("%*s  |- field of view: %i", indent, " ", cameraNode.fieldOfView());
-		Log::info("%*s  |- nearplane: %f", indent, " ", cameraNode.nearPlane());
-		Log::info("%*s  |- farplane: %f", indent, " ", cameraNode.farPlane());
-		Log::info("%*s  |- mode: %s", indent, " ", cameraNode.isOrthographic() ? "ortho" : "perspective");
+		Log::printf(",\"camera\": {");
+		Log::printf("\"field_of_view\": %i,", cameraNode.fieldOfView());
+		Log::printf("\"nearplane\": %f,", cameraNode.nearPlane());
+		Log::printf("\"farplane\": %f,", cameraNode.farPlane());
+		Log::printf("\"mode\": \"%s\"", cameraNode.isOrthographic() ? "ortho" : "perspective");
+		Log::printf("}");
 	}
-	for (const auto &entry : node.properties()) {
-		Log::info("%*s  |- %s: %s", indent, " ", entry->key.c_str(), entry->value.c_str());
+	if (!node.properties().empty()) {
+		Log::printf(",\"properties\": {");
+		auto piter = node.properties().begin();
+		for (size_t i = 0; i < node.properties().size(); ++i) {
+			const auto &entry = *piter;
+			Log::printf("\"%s\": \"%s\"", entry->key.c_str(), entry->value.c_str());
+			if (i + 1 < node.properties().size()) {
+				Log::printf(",");
+			}
+			++piter;
+		}
+		Log::printf("}");
 	}
-	for (const scenegraph::SceneGraphKeyFrame &kf : node.keyFrames()) {
-		Log::info("%*s  |- keyframe: %i", indent, " ", kf.frameIdx);
-		Log::info("%*s    |- long rotation: %s", indent, " ", kf.longRotation ? "true" : "false");
-		Log::info("%*s    |- interpolation: %s", indent, " ",
-				  scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
-		Log::info("%*s    |- transform", indent, " ");
-		const scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &tr = transform.worldTranslation();
-		Log::info("%*s      |- translation %f:%f:%f", indent, " ", tr.x, tr.y, tr.z);
-		const glm::vec3 &ltr = transform.localTranslation();
-		Log::info("%*s      |- local translation %f:%f:%f", indent, " ", ltr.x, ltr.y, ltr.z);
-		const glm::quat &rt = transform.worldOrientation();
-		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
-		Log::info("%*s      |- orientation %f:%f:%f:%f", indent, " ", rt.x, rt.y, rt.z, rt.w);
-		Log::info("%*s        |- euler %f:%f:%f", indent, " ", rtEuler.x, rtEuler.y, rtEuler.z);
-		const glm::quat &lrt = transform.localOrientation();
-		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
-		Log::info("%*s      |- local orientation %f:%f:%f:%f", indent, " ", lrt.x, lrt.y, lrt.z, lrt.w);
-		Log::info("%*s        |- euler %f:%f:%f", indent, " ", lrtEuler.x, lrtEuler.y, lrtEuler.z);
-		const glm::vec3 &sc = transform.worldScale();
-		Log::info("%*s      |- scale %f:%f:%f", indent, " ", sc.x, sc.y, sc.z);
-		const glm::vec3 &lsc = transform.localScale();
-		Log::info("%*s      |- local scale %f:%f:%f", indent, " ", lsc.x, lsc.y, lsc.z);
+	Log::printf(",\"animations\": [");
+	for (size_t a = 0; a < sceneGraph.animations().size(); ++a) {
+		Log::printf("{");
+		Log::printf("\"name\": \"%s\",", sceneGraph.animations()[a].c_str());
+		Log::printf("\"keyframes\": [");
+		for (size_t i = 0; i < node.keyFrames().size(); ++i) {
+			const scenegraph::SceneGraphKeyFrame &kf = node.keyFrames()[i];
+			Log::printf("{");
+			Log::printf("\"id\": %i,", kf.frameIdx);
+			Log::printf("\"long_rotation\": %s,", kf.longRotation ? "true" : "false");
+			Log::printf("\"interpolation\": \"%s\",",
+					scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
+			Log::printf("\"transform\": {");
+			const scenegraph::SceneGraphTransform &transform = kf.transform();
+			const glm::vec3 &tr = transform.worldTranslation();
+			Log::printf("\"world_translation\": {");
+			Log::printf("\"x\": %f,", tr.x);
+			Log::printf("\"y\": %f,", tr.y);
+			Log::printf("\"z\": %f", tr.z);
+			Log::printf("},");
+			const glm::vec3 &ltr = transform.localTranslation();
+			Log::printf("\"local_translation\": {");
+			Log::printf("\"x\": %f,", ltr.x);
+			Log::printf("\"y\": %f,", ltr.y);
+			Log::printf("\"z\": %f", ltr.z);
+			Log::printf("},");
+			const glm::quat &rt = transform.worldOrientation();
+			const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
+			Log::printf("\"world_orientation\": {");
+			Log::printf("\"x\": %f,", rt.x);
+			Log::printf("\"y\": %f,", rt.y);
+			Log::printf("\"z\": %f,", rt.z);
+			Log::printf("\"w\": %f", rt.w);
+			Log::printf("},");
+			Log::printf("\"world_euler\": {");
+			Log::printf("\"x\": %f,", rtEuler.x);
+			Log::printf("\"y\": %f,", rtEuler.y);
+			Log::printf("\"z\": %f", rtEuler.z);
+			Log::printf("},");
+			const glm::quat &lrt = transform.localOrientation();
+			const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
+			Log::printf("\"local_orientation\": {");
+			Log::printf("\"x\": %f,", lrt.x);
+			Log::printf("\"y\": %f,", lrt.y);
+			Log::printf("\"z\": %f,", lrt.z);
+			Log::printf("\"w\": %f", lrt.w);
+			Log::printf("},");
+			Log::printf("\"local_euler\": {");
+			Log::printf("\"x\": %f,", lrtEuler.x);
+			Log::printf("\"y\": %f,", lrtEuler.y);
+			Log::printf("\"z\": %f", lrtEuler.z);
+			Log::printf("},");
+			const glm::vec3 &sc = transform.worldScale();
+			Log::printf("\"world_scale\": {");
+			Log::printf("\"x\": %f,", sc.x);
+			Log::printf("\"y\": %f,", sc.y);
+			Log::printf("\"z\": %f", sc.z);
+			Log::printf("},");
+			const glm::vec3 &lsc = transform.localScale();
+			Log::printf("\"local_scale\": {");
+			Log::printf("\"x\": %f,", lsc.x);
+			Log::printf("\"y\": %f,", lsc.y);
+			Log::printf("\"z\": %f", lsc.z);
+			Log::printf("}");
+			Log::printf("}"); // transform
+			Log::printf("}"); // keyframe
+			if (i + 1 < node.keyFrames().size()) {
+				Log::printf(",");
+			}
+		}
+		Log::printf("]"); // keyframes
+		Log::printf("}"); // animation
+		if (a + 1 < sceneGraph.animations().size()) {
+			Log::printf(",");
+		}
 	}
-	if (meshDetails && node.isModelNode()) {
+	Log::printf("]"); // animations
+
+	if (printMeshDetails && node.isModelNode()) {
 		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
@@ -874,29 +946,41 @@ VoxConvert::NodeStats VoxConvert::dumpNode_r(const scenegraph::SceneGraph &scene
 		voxel::extractSurface(ctx);
 		const size_t vertices = mesh.mesh[0].getNoOfVertices() + mesh.mesh[1].getNoOfVertices();
 		const size_t indices = mesh.mesh[0].getNoOfIndices() + mesh.mesh[1].getNoOfIndices();
-		Log::info("%*s  |- mesh", indent, " ");
-		Log::info("%*s    |- vertices: %i", indent, " ", (int)vertices);
-		Log::info("%*s    |- indices: %i", indent, " ", (int)indices);
+		Log::printf(",\"mesh\": {");
+		Log::printf("\"vertices\": %i,", (int)vertices);
+		Log::printf("\"indices\": %i", (int)indices);
+		Log::printf("}");
 		stats.vertices += (int)vertices;
 		stats.indices += (int)indices;
 	}
-	Log::info("%*s  |- children: %i", indent, " ", (int)node.children().size());
-	for (int children : node.children()) {
-		stats += dumpNode_r(sceneGraph, children, indent + 2, meshDetails);
+	if (!node.children().empty()) {
+		Log::printf(",\"children\": [");
+		for (size_t i = 0; i < node.children().size(); ++i) {
+			const int children = node.children()[i];
+			stats += sceneGraphJsonNode_r(sceneGraph, children, printMeshDetails);
+			if (i + 1 < node.children().size()) {
+				Log::printf(",");
+			}
+		}
+		Log::printf("]");
 	}
+	Log::printf("}");
 	return stats;
 }
 
-void VoxConvert::dumpMeshDetails(const scenegraph::SceneGraph &sceneGraph) {
-	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, true);
-	Log::info("Voxel count: %i", stats.voxels);
-	Log::info("Vertex count: %i", stats.vertices);
-	Log::info("Index count: %i", stats.indices);
-}
-
-void VoxConvert::dump(const scenegraph::SceneGraph &sceneGraph) {
-	NodeStats stats = dumpNode_r(sceneGraph, sceneGraph.root().id(), 0, false);
-	Log::info("Voxel count: %i", stats.voxels);
+void VoxConvert::sceneGraphJson(const scenegraph::SceneGraph &sceneGraph, bool printMeshDetails) const {
+	Log::printf("{");
+	Log::printf("\"root\": ");
+	NodeStats stats = sceneGraphJsonNode_r(sceneGraph, sceneGraph.root().id(), printMeshDetails);
+	Log::printf(",");
+	Log::printf("\"stats\": {");
+	Log::printf("\"voxel_count\": %i", stats.voxels);
+	if (printMeshDetails) {
+		Log::printf(",\"vertex_count\": %i,", stats.vertices);
+		Log::printf("\"index_count\": %i", stats.indices);
+	}
+	Log::printf("}"); // stats
+	Log::printf("}");
 }
 
 void VoxConvert::crop(scenegraph::SceneGraph &sceneGraph) {

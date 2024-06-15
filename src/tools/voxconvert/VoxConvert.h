@@ -37,8 +37,7 @@ private:
 	bool _cropModels = false;
 	bool _surfaceOnly = false;
 	bool _splitModels = false;
-	bool _dumpSceneGraph = false;
-	bool _dumpMeshDetails = false;
+	bool _printSceneGraph = false;
 	bool _resizeModels = false;
 
 	struct NodeStats {
@@ -79,9 +78,8 @@ protected:
 	void translate(const glm::ivec3& pos, scenegraph::SceneGraph& sceneGraph);
 	void crop(scenegraph::SceneGraph& sceneGraph);
 	void removeNonSurfaceVoxels(scenegraph::SceneGraph& sceneGraph);
-	NodeStats dumpNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, int indent, bool meshDetails);
-	void dump(const scenegraph::SceneGraph& sceneGraph);
-	void dumpMeshDetails(const scenegraph::SceneGraph& sceneGraph);
+	NodeStats sceneGraphJsonNode_r(const scenegraph::SceneGraph& sceneGraph, int nodeId, bool printMeshDetails) const;
+	void sceneGraphJson(const scenegraph::SceneGraph& sceneGraph, bool printMeshDetails) const;
 	void filterModels(scenegraph::SceneGraph& sceneGraph);
 	void filterModelsByProperty(scenegraph::SceneGraph& sceneGraph, const core::String &property, const core::String &value);
 	void exportModelsIntoSingleObjects(scenegraph::SceneGraph& sceneGraph, const core::String &inputfile, const core::String &ext);
