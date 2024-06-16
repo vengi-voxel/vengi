@@ -37,7 +37,7 @@ static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modi
 		IM_CHECK_RETV(modifier.brushType() == BrushType::None, false);
 		ctx->ItemClick("modifiers/###button1");
 	} else {
-		Brush *brush = modifier.activeBrush();
+		Brush *brush = modifier.currentBrush();
 		IM_CHECK_RETV(brush != nullptr, false);
 		IM_CHECK_RETV(brush->modifierType(type) == type, false);
 		if (type == ModifierType::Place) {
