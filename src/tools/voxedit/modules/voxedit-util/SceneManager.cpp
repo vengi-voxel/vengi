@@ -1676,6 +1676,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("align", [this] (const command::CmdArgs& args) {
 		_sceneGraph.align();
+		_sceneRenderer->clear();
 		for (const auto &entry : _sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isModelNode()) {
