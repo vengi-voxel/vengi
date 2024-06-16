@@ -85,10 +85,6 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		}
 		int x = event.wheel.x;
 		int y = event.wheel.y;
-		if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED) {
-			x *= -1;
-			y *= -1;
-		}
 		x = glm::clamp(x, -1, 1);
 		y = glm::clamp(y, -1, 1);
 		mouseWheel(x, y);
