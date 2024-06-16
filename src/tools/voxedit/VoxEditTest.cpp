@@ -1,7 +1,6 @@
 #include "VoxEdit.h"
 #include "voxedit-util/SceneRenderer.h"
 #include "voxedit-util/modifier/ModifierRenderer.h"
-#include "voxedit-ui/MainWindow.h"
 
 class VoxEditTest : public VoxEdit {
 private:
@@ -13,18 +12,6 @@ public:
 				const video::TexturePoolPtr &texturePool)
 		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool) {
 		_showWindow = false;
-	}
-
-	app::AppState onInit() override {
-		app::AppState state = Super::onInit();
-		if (state != app::AppState::Running) {
-			return state;
-		}
-
-		// register the ui tests late - as we need the main window
-		_mainWindow->registerUITests(_imguiTestEngine, "###app");
-
-		return state;
 	}
 };
 
