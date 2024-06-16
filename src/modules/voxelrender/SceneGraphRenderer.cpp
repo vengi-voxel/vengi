@@ -172,7 +172,6 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	const scenegraph::FrameIndex frame = renderContext.frame;
 	const bool hideInactive = renderContext.hideInactive;
 	const bool grayInactive = renderContext.grayInactive;
-	const bool sceneMode = renderContext.sceneMode;
 	// remove those volumes that are no longer part of the scene graph
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
@@ -214,7 +213,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		if (v != node.volume()) {
 			_volumeRenderer.scheduleRegionExtraction(id, region);
 		}
-		if (sceneMode) {
+		if (renderContext.sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const int negative = (int)std::signbit(transform.scale.x) + (int)std::signbit(transform.scale.y) +
 								 (int)std::signbit(transform.scale.z);
@@ -246,7 +245,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 
 	meshState->resetReferences();
-	if (sceneMode) {
+	if (renderContext.sceneMode) {
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReference()) {
