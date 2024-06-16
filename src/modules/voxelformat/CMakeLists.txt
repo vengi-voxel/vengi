@@ -75,6 +75,7 @@ set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
 	tests/AnimaToonFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
+	tests/AsepriteFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/ConvertTest.cpp
 	tests/FormatPaletteTest.cpp
@@ -264,6 +265,14 @@ set(TEST_FILES
 	tests/chr_knight.qbcl
 	tests/chr_knight.gox
 	tests/chr_knight.fbx
+
+	tests/sylvie/02.ase
+	tests/sylvie/404.ase
+	tests/sylvie/46.ase
+	tests/sylvie/line.ase
+	tests/sylvie/mapmenu.ase
+	tests/libresprite.ase
+	tests/libresprite.aseprite
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
