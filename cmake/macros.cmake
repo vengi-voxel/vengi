@@ -365,7 +365,7 @@ function(engine_add_executable)
 		COMMAND $<TARGET_FILE:${_EXE_TARGET}>
 		USES_TERMINAL
 		DEPENDS ${_EXE_TARGET}
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${_EXE_TARGET}"
+		WORKING_DIRECTORY $<TARGET_FILE_DIR:${_EXE_TARGET}>
 	)
 	engine_add_debuggger(${_EXE_TARGET})
 	engine_add_valgrind(${_EXE_TARGET})
