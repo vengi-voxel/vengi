@@ -28,6 +28,13 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 			ctx->ItemDragAndDrop(srcRef.c_str(), id.c_str());
 		}
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "load remote collection")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(focusWindow(ctx, title));
+		ctx->ItemClick("##assetpaneltabs/Models");
+		ctx->SetRef(ctx->WindowInfo("##collectionpanel").ID);
+		// /Voxel Files_4427E88C/Voxel Files/Vengi
+	};
 }
 
 } // namespace voxedit
