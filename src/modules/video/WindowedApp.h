@@ -25,9 +25,9 @@ namespace video {
  * @brief An application with the usual lifecycle, but with a window attached to it.
  * @ingroup Video
  *
- * This application also receives input events (and others) from @c io::IEventObserver
+ * This application also receives input events (and others) from @c video::IEventObserver
  */
-class WindowedApp: public app::App, public io::IEventObserver {
+class WindowedApp: public app::App, public video::IEventObserver {
 private:
 	using Super = app::App;
 protected:

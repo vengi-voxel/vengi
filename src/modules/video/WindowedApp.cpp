@@ -92,7 +92,7 @@ bool WindowedApp::handleSDLEvent(SDL_Event& event) {
 		// fallthrough
 	default: {
 		core_trace_scoped(WindowedAppEventHandler);
-		const bool running = core::Singleton<io::EventHandler>::getInstance().handleEvent(event);
+		const bool running = core::Singleton<video::EventHandler>::getInstance().handleEvent(event);
 		if (!running) {
 			return true;
 		}
@@ -273,7 +273,7 @@ app::AppState WindowedApp::onInit() {
 		Log::debug("Failed to load the keybindings");
 	}
 
-	core::Singleton<io::EventHandler>::getInstance().registerObserver(this);
+	core::Singleton<video::EventHandler>::getInstance().registerObserver(this);
 
 	Log::debug("CPU count: %d", SDL_GetCPUCount());
 	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
@@ -454,7 +454,7 @@ app::AppState WindowedApp::onConstruct() {
 }
 
 app::AppState WindowedApp::onCleanup() {
-	core::Singleton<io::EventHandler>::getInstance().removeObserver(this);
+	core::Singleton<video::EventHandler>::getInstance().removeObserver(this);
 	video::destroyContext(_rendererContext);
 	if (_window != nullptr) {
 		SDL_DestroyWindow(_window);

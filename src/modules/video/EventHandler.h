@@ -10,7 +10,7 @@
 
 union SDL_Event;
 
-namespace io {
+namespace video {
 
 class IEventObserver;
 

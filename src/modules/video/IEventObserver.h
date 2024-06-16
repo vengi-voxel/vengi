@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include <inttypes.h>
 
-namespace io {
+namespace video {
 
 /**
  * @brief Register implementations at the EventHandler class to get notifications on the events

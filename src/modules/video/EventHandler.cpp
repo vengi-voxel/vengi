@@ -9,7 +9,7 @@
 #include <glm/common.hpp>
 #include <SDL.h>
 
-namespace io {
+namespace video {
 
 EventHandler::EventHandler() :
 		_multiGesture(false) {
