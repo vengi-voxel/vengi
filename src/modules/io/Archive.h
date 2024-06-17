@@ -58,6 +58,8 @@ public:
 	 * @sa core::ScopedPtr
 	 */
 	virtual SeekableWriteStream *writeStream(const core::String &filePath);
+
+	virtual bool write(const core::String &filePath, io::ReadStream &stream);
 };
 
 inline const ArchiveFiles &Archive::files() const {

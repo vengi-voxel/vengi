@@ -4,6 +4,7 @@
 
 #include "Archive.h"
 #include "core/Algorithm.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
@@ -42,6 +43,14 @@ void Archive::list(const core::String &filter, ArchiveFiles &out) const {
 
 SeekableWriteStream *Archive::writeStream(const core::String &filePath) {
 	return nullptr;
+}
+
+bool Archive::write(const core::String &filePath, io::ReadStream &stream) {
+	core::ScopedPtr<io::SeekableWriteStream> wstream(writeStream(filePath));
+	if (!wstream) {
+		return false;
+	}
+	return wstream->writeStream(stream);
 }
 
 bool isSupportedArchive(const core::String &filename) {
