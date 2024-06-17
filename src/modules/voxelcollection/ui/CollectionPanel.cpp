@@ -96,61 +96,58 @@ int CollectionPanel::update(CollectionManager &collectionMgr,
 							const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
 	int cnt = 0;
 	const VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
-	if (ImGui::BeginChild("##collectionpanel")) {
-		updateFilters();
+	updateFilters();
 
-		const int columns = _thumbnails ? 3 : 2;
-		if (ImGui::BeginTable("##voxelfiles", columns,
-							  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-								  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
-			ImGui::TableSetupScrollFreeze(0, 1);
-			if (_thumbnails) {
-				ImGui::TableSetupColumn(_("Thumbnail"));
-			}
-			ImGui::TableSetupColumn(_("Name"));
-			ImGui::TableSetupColumn(_("License"));
-			ImGui::TableHeadersRow();
-			for (const auto &source : collectionMgr.sources()) {
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-											   ImGuiTreeNodeFlags_SpanAvailWidth;
-				auto iter = voxelFilesMap.find(source.name);
-				if (iter != voxelFilesMap.end()) {
-					if (isFilterActive()) {
-						treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-					}
-					const VoxelCollection &collection = iter->second;
-					const int n = (int)collection.files.size();
-					const core::String &label = core::string::format("%s (%i)", source.name.c_str(), n);
-					ImGui::BeginDisabled(!collection.sorted);
-					if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-						const VoxelFiles &voxelFiles = collection.files;
-						cnt += buildVoxelTree(voxelFiles, contextMenu);
-						ImGui::TreePop();
-					}
-					ImGui::EndDisabled();
-				} else {
-					if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
-						if (collectionMgr.resolved(source)) {
-							ImGui::TextUnformatted(_("Loading..."));
-						} else {
-							if (ImGui::Button(_("Load"))) {
-								if (source.name == "local") {
-									collectionMgr.local();
-								} else {
-									collectionMgr.resolve(source);
-								}
+	const int columns = _thumbnails ? 3 : 2;
+	if (ImGui::BeginTable("##voxelfiles", columns,
+							ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
+								ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
+		ImGui::TableSetupScrollFreeze(0, 1);
+		if (_thumbnails) {
+			ImGui::TableSetupColumn(_("Thumbnail"));
+		}
+		ImGui::TableSetupColumn(_("Name"));
+		ImGui::TableSetupColumn(_("License"));
+		ImGui::TableHeadersRow();
+		for (const auto &source : collectionMgr.sources()) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
+											ImGuiTreeNodeFlags_SpanAvailWidth;
+			auto iter = voxelFilesMap.find(source.name);
+			if (iter != voxelFilesMap.end()) {
+				if (isFilterActive()) {
+					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+				}
+				const VoxelCollection &collection = iter->second;
+				const int n = (int)collection.files.size();
+				const core::String &label = core::string::format("%s (%i)", source.name.c_str(), n);
+				ImGui::BeginDisabled(!collection.sorted);
+				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
+					const VoxelFiles &voxelFiles = collection.files;
+					cnt += buildVoxelTree(voxelFiles, contextMenu);
+					ImGui::TreePop();
+				}
+				ImGui::EndDisabled();
+			} else {
+				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
+					if (collectionMgr.resolved(source)) {
+						ImGui::TextUnformatted(_("Loading..."));
+					} else {
+						if (ImGui::Button(_("Load"))) {
+							if (source.name == "local") {
+								collectionMgr.local();
+							} else {
+								collectionMgr.resolve(source);
 							}
 						}
-						ImGui::TreePop();
 					}
+					ImGui::TreePop();
 				}
 			}
-			ImGui::EndTable();
 		}
+		ImGui::EndTable();
 	}
-	ImGui::EndChild();
 	return cnt;
 }
 
