@@ -428,14 +428,23 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 
 image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 										   const LoadContext &ctx) {
-	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(thumbnailPath));
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
-		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
+		Log::error("Could not load file %s", filename.c_str());
 		return image::ImagePtr();
 	}
 
-	return image::loadImage(core::string::extractFilenameWithExtension(thumbnailPath), *stream);
+	io::ArchivePtr zipArchive = io::openZipArchive(stream);
+	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
+	core::ScopedPtr<io::SeekableReadStream> thumbnailStream(zipArchive->readStream(thumbnailPath));
+	if (!thumbnailStream) {
+		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
+		return image::ImagePtr();
+	}
+	Log::debug("Found thumbnail %s in archive %s", thumbnailPath.c_str(), filename.c_str());
+
+	const core::String &name = core::string::extractFilenameWithExtension(thumbnailPath);
+	return image::loadImage(name, *thumbnailStream);
 }
 
 bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const core::String &paletteName,
@@ -466,9 +475,14 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	//      materials->array
 	//            dict
 	//      name->string
-
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 	const core::String &paletteName = "palette.png";
-	if (!loadPaletteFromArchive(archive, paletteName, palette, ctx)) {
+	if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx)) {
 		return 0u;
 	}
 	return palette.colorCount();
