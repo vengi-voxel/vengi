@@ -405,15 +405,19 @@ core::String Image::pngBase64() const {
 	return io::Base64::encode(s);
 }
 
-core::String print(const image::ImagePtr &image) {
+core::String print(const image::ImagePtr &image, bool limited) {
 	core::String str = core::string::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->depth());
-	str.reserve(40 * image->width() * image->height());
-	for (int y = 0; y < image->height(); ++y) {
-		for (int x = 0; x < image->width(); ++x) {
+	const int maxWidth = limited ? 64 : image->width();
+	const int maxHeight = limited ? 64 : image->height();
+	const int width = glm::min(image->width(), maxWidth);
+	const int height = glm::min(image->height(), maxHeight);
+	str.reserve(40 * width * height);
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
 			const core::RGBA color = image->colorAt(x, y);
-			str += core::Color::print(color, false);
+			str.append(core::Color::print(color, false));
 		}
-		str += "\n";
+		str.append("\n");
 	}
 	return str;
 }
