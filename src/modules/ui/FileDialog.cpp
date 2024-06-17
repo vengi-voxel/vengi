@@ -377,7 +377,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
 	const ImVec2 outerSize = ImGui::GetContentRegionAvail();
-	if (ImGui::BeginTable(_("Files"), 4, TableFlags, outerSize)) {
+	if (ImGui::BeginTable("##files", 4, TableFlags, outerSize)) {
 		ImGui::TableSetupColumn(_("File"), ImGuiTableColumnFlags_WidthStretch, 0.7f, (int)FileDialogColumnId::File);
 		ImGui::TableSetupColumn(_("Size"), ImGuiTableColumnFlags_WidthStretch, 0.09f, (int)FileDialogColumnId::Size);
 		ImGui::TableSetupColumn(_("Type"), ImGuiTableColumnFlags_WidthStretch, 0.07f, (int)FileDialogColumnId::Type);
