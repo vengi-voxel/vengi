@@ -56,9 +56,9 @@ void HttpCacheStream::write(const io::ArchivePtr &archive, const core::String &f
 		delete ws;
 		_readStream = archive->readStream(file);
 		_newInCache = true;
-		Log::debug("Wrote %s", file.c_str());
+		Log::debug("Wrote %s to http cache", file.c_str());
 	} else {
-		Log::error("Failed to write %s", file.c_str());
+		Log::error("Failed to write %s into http cache", file.c_str());
 	}
 }
 
