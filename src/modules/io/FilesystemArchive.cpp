@@ -40,14 +40,14 @@ io::FilePtr FilesystemArchive::open(const core::String &path, FileMode mode) con
 		if (core::string::endsWith(e.fullPath, path)) {
 			const io::FilePtr &file = _filesytem->open(e.fullPath, mode);
 			if (!file->validHandle()) {
-				Log::debug("Could not open %s", e.fullPath.c_str());
+				Log::debug("Could not open file from archiv %s", e.fullPath.c_str());
 				continue;
 			}
 			return file;
 		}
 		Log::trace("%s doesn't match %s", e.fullPath.c_str(), path.c_str());
 	}
-	if (_files.empty()) {
+	if (_files.empty() || mode == FileMode::SysRead || mode == FileMode::SysWrite) {
 		const io::FilePtr &file = _filesytem->open(path, mode);
 		if (file->validHandle()) {
 			return file;

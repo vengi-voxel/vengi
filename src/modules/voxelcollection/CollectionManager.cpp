@@ -25,33 +25,60 @@ bool CollectionManager::init() {
 	VoxelSource local;
 	local.name = "local";
 	_sources.push_back(local);
+	setLocalDir("");
 	return true;
 }
 
-void CollectionManager::shutdown() {
-	_shouldQuit = true;
+inline bool CollectionManager::setLocalDir(const core::String &dir) {
+	core::String newLocalDir = dir;
+	if (newLocalDir.empty()) {
+		newLocalDir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+	}
+	if (_localDir.empty() || newLocalDir != _localDir) {
+		_localDir = newLocalDir;
+		// TODO: clear all local resolved files
+		return true;
+	}
+	return false;
+}
+
+void CollectionManager::waitLocal() {
 	if (_local.valid()) {
 		Log::debug("Wait for local sources to finish");
 		_local.wait();
 	}
+}
+
+void CollectionManager::waitOnline() {
 	if (_onlineSources.valid()) {
 		Log::debug("Wait for online sources to finish");
 		_onlineSources.wait();
 	}
 }
 
-void CollectionManager::local() {
+void CollectionManager::shutdown() {
+	_shouldQuit = true;
+	waitLocal();
+	waitOnline();
+}
+
+bool CollectionManager::local() {
 	if (_local.valid()) {
-		return;
+		Log::debug("Local already queued");
+		return false;
+	}
+	if (_localDir.empty()) {
+		Log::debug("No local dir set");
+		return false;
 	}
 	_local = app::async([&]() {
 		if (_shouldQuit) {
 			return;
 		}
 		core::DynamicArray<io::FilesystemEntry> entities;
-		const core::String docs = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
-		Log::info("Local document scanning (%s)...", docs.c_str());
-		_filesystem->list(docs, entities, "", 2);
+		Log::info("Local document scanning (%s)...", _localDir.c_str());
+		_filesystem->list(_localDir, entities, "", 2);
+		Log::debug("Found %i entries in %s", (int)entities.size(), _localDir.c_str());
 
 		for (const io::FilesystemEntry &entry : entities) {
 			if (_shouldQuit) {
@@ -61,7 +88,7 @@ void CollectionManager::local() {
 				continue;
 			}
 			VoxelFile voxelFile;
-			voxelFile.name = entry.fullPath.substr(docs.size());
+			voxelFile.name = entry.fullPath.substr(_localDir.size());
 			voxelFile.fullPath = entry.fullPath;
 			voxelFile.url = "file://" + entry.fullPath;
 			voxelFile.source = "local";
@@ -72,16 +99,18 @@ void CollectionManager::local() {
 			_newVoxelFiles.push(voxelFile);
 		}
 	});
+	return true;
 }
 
-void CollectionManager::online(bool resolve) {
+bool CollectionManager::online(bool resolve) {
 	if (_onlineSources.valid()) {
-		return;
+		return false;
 	}
 	_onlineSources = app::async([&]() {
 		Downloader downloader;
 		return downloader.sources();
 	});
+	return true;
 }
 
 void CollectionManager::thumbnailAll() {
@@ -120,7 +149,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(archive, voxelFile.targetFile() + ".png", voxelFile.thumbnailUrl);
+			http::HttpCacheStream stream(archive, targetImageFile, voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
 		});
 	} else {
@@ -130,7 +159,6 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			}
 			http::HttpCacheStream stream(archive, voxelFile.fullPath, voxelFile.url);
 			voxelformat::LoadContext loadCtx;
-			const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, archive, loadCtx);
 			if (!thumbnailImage || !thumbnailImage->isLoaded()) {
 				Log::debug("Failed to load given input file: %s", voxelFile.fullPath.c_str());

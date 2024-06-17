@@ -69,8 +69,14 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						if (!file.downloaded) {
 							_collectionMgr->download(file);
 						}
-						if (brush.load(file.targetFile())) {
-							modifier.setBrushType(BrushType::Stamp);
+						if (file.downloaded) {
+							if (brush.load(file.targetFile())) {
+								modifier.setBrushType(BrushType::Stamp);
+							} else {
+								Log::error("Failed to load stamp brush");
+							}
+						} else {
+							Log::error("Failed to download stamp brush");
 						}
 					}
 					ImGui::TooltipTextUnformatted(_("This is only possible if the model doesn't exceed the max allowed stamp size"));
@@ -78,7 +84,11 @@ void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecu
 						if (!file.downloaded) {
 							_collectionMgr->download(file);
 						}
-						_sceneMgr->import(file.targetFile());
+						if (file.downloaded) {
+							_sceneMgr->import(file.targetFile());
+						} else {
+							Log::error("Failed to download model");
+						}
 					}
 				};
 

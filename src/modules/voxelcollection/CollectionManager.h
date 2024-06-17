@@ -30,6 +30,7 @@ private:
 	int _count = 0;
 
 	std::future<void> _local;
+	core::String _localDir;
 
 	core::StringSet _onlineResolvedSources;
 	std::future<VoxelFiles> _onlineResolve;
@@ -47,8 +48,20 @@ public:
 	void update(double nowSeconds, int n = 100);
 	void shutdown() override;
 
-	void local();
-	void online(bool resolve = true);
+	bool setLocalDir(const core::String &dir);
+
+	bool local();
+	bool online(bool resolve = true);
+	/**
+	 * @brief Blocks until all local files are loaded.
+	 * @sa local()
+	 */
+	void waitLocal();
+	/**
+	 * @brief Blocks until all queued online sources are loaded.
+	 * @sa online()
+	 */
+	void waitOnline();
 	void resolve(const VoxelSource &source);
 	bool resolved(const VoxelSource &source) const;
 

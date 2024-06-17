@@ -94,6 +94,8 @@ void CollectionPanel::updateFilters() {
 
 int CollectionPanel::update(CollectionManager &collectionMgr,
 							const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
+	_newSelected = false;
+
 	int cnt = 0;
 	const VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
 	updateFilters();
@@ -169,7 +171,6 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 	ImGuiListClipper clipper;
 	clipper.Begin((int)f.size());
 
-	_newSelected = false;
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
 			VoxelFile *voxelFile = f[row];
