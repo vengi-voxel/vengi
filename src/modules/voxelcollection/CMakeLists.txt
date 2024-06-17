@@ -12,6 +12,7 @@ set(DEPENDENCIES http json voxelformat ui)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
+	tests/CollectionManagerTest.cpp
 	tests/DownloaderTest.cpp
 	tests/GithubAPITest.cpp
 	tests/GitlabAPITest.cpp
