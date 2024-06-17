@@ -22,6 +22,7 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 	if (archive->exists(file)) {
 		Log::debug("Use cached file at %s", file.c_str());
 		_readStream = archive->readStream(file);
+		core_assert(_readStream != nullptr);
 		return;
 	}
 	Log::debug("try to download %s", file.c_str());

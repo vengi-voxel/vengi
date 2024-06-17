@@ -5,7 +5,6 @@
 #pragma once
 
 #include "io/Archive.h"
-#include "io/File.h"
 #include "io/Filesystem.h"
 
 namespace io {
@@ -20,8 +19,6 @@ private:
 protected:
 	io::FilesystemPtr _filesytem;
 	bool _sysmode;
-
-	io::FilePtr open(const core::String &path, FileMode mode) const;
 
 public:
 	FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode = true);
