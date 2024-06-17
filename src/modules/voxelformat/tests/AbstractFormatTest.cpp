@@ -180,10 +180,10 @@ void AbstractFormatTest::testLoadScreenshot(const core::String &filename, int wi
 	SCOPED_TRACE(filename.c_str());
 	const image::ImagePtr &image = voxelformat::loadScreenshot(filename, helper_filesystemarchive(), testLoadCtx);
 	ASSERT_TRUE(image);
-	EXPECT_EQ(image->width(), width) << image::print(image);
-	EXPECT_EQ(image->height(), height) << image::print(image);
+	ASSERT_EQ(image->width(), width) << image::print(image);
+	ASSERT_EQ(image->height(), height) << image::print(image);
 	const core::RGBA color = image->colorAt(expectedX, expectedY);
-	EXPECT_EQ(color, expectedColor) << "expected " << core::Color::print(expectedColor) << " but got "
+	ASSERT_EQ(color, expectedColor) << "expected " << core::Color::print(expectedColor) << " but got "
 									<< core::Color::print(color) << "at " << expectedX << ":" << expectedY << "\n"
 									<< image::print(image);
 }

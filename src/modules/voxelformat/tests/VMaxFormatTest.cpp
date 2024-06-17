@@ -25,4 +25,9 @@ TEST_F(VMaxFormatTest, testLoad5) {
 	testLoad("5voxel.vmax.zip");
 }
 
+TEST_F(VMaxFormatTest, testLoad5Screenshot) {
+	core::RGBA color(251, 251, 251, 255);
+	testLoadScreenshot("5voxel.vmax.zip", 1280, 1280, color, 1, 1);
+}
+
 } // namespace voxelformat

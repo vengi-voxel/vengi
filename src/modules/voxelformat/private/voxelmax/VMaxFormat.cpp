@@ -14,17 +14,17 @@
 #include "io/StdStreamBuf.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Morton.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
-#include <json.hpp>
 #include <glm/common.hpp>
+#include <json.hpp>
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -434,9 +434,15 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 		return image::ImagePtr();
 	}
 
-	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 	const core::String &thumbnailPath = core::string::path("QuickLook", "Thumbnail.png");
-	core::ScopedPtr<io::SeekableReadStream> thumbnailStream(zipArchive->readStream(thumbnailPath));
+	core::ScopedPtr<io::SeekableReadStream> thumbnailStream;
+	const io::ArchivePtr &zipArchive = io::openZipArchive(stream);
+	if (zipArchive) {
+		thumbnailStream = zipArchive->readStream(thumbnailPath);
+	} else {
+		const core::String fullPath = core::string::path(core::string::extractPath(filename), thumbnailPath);
+		thumbnailStream = archive->readStream(fullPath);
+	}
 	if (!thumbnailStream) {
 		Log::error("Failed to load %s from %s", thumbnailPath.c_str(), filename.c_str());
 		return image::ImagePtr();
@@ -482,8 +488,15 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	}
 	io::ArchivePtr zipArchive = io::openZipArchive(stream);
 	const core::String &paletteName = "palette.png";
-	if (!loadPaletteFromArchive(zipArchive, paletteName, palette, ctx)) {
-		return 0u;
+	if (zipArchive) {
+		if (!loadPaletteFromArchive(zipArchive ? zipArchive : archive, paletteName, palette, ctx)) {
+			return 0u;
+		}
+	} else {
+		const core::String fullPath = core::string::path(core::string::extractPath(filename), paletteName);
+		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx)) {
+			return 0u;
+		}
 	}
 	return palette.colorCount();
 }
