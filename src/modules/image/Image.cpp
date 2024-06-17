@@ -105,6 +105,19 @@ core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wr
 	return colorAt(pc.x, pc.y);
 }
 
+bool writeImage(const image::Image &image, io::SeekableWriteStream& stream) {
+	if (!image.isLoaded()) {
+		return false;
+	}
+	return image.writePng(stream);
+}
+
+bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream& stream) {
+	if (!image)
+		return false;
+	return writeImage(*image.get(), stream);
+}
+
 bool writeImage(const image::Image &image, const core::String &filename) {
 	if (!image.isLoaded()) {
 		return false;

@@ -118,6 +118,8 @@ ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int
  */
 ImagePtr loadImage(const core::String& filename);
 
+bool writeImage(const image::Image &image, io::SeekableWriteStream& stream);
+bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream& stream);
 bool writeImage(const image::Image &image, const core::String& filename);
 bool writeImage(const image::ImagePtr &image, const core::String& filename);
 core::String print(const image::ImagePtr &image);
