@@ -280,7 +280,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	newSceneGraph.emplace(core::move(newNode));
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	if (voxelformat::saveFormat(newSceneGraph, file, &_lastFilename.desc, archive, saveCtx)) {
 		Log::info("Saved node %i to %s", nodeId, file.c_str());
 		return true;
@@ -407,7 +407,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 	}
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	if (voxelformat::saveFormat(_sceneGraph, file.name, &file.desc, archive, saveCtx)) {
 		if (!autosave) {
 			_dirty = false;
@@ -1016,7 +1016,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
-	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	for (const Selection &selection : selections) {
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::SceneGraphNode newNode;
