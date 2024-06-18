@@ -56,7 +56,7 @@ public:
 	bool setLocalDir(const core::String &dir);
 
 	bool local();
-	bool online(bool resolve = true);
+	bool online();
 	/**
 	 * @brief Blocks until all local files are loaded.
 	 * @sa local()

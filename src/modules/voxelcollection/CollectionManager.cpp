@@ -109,7 +109,7 @@ bool CollectionManager::local() {
 	return true;
 }
 
-bool CollectionManager::online(bool resolve) {
+bool CollectionManager::online() {
 	if (_onlineSources.valid()) {
 		return false;
 	}

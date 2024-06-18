@@ -53,7 +53,7 @@ bool AssetPanel::init() {
 	});
 
 	_collectionPanel.setThumbnails(false);
-	_collectionMgr->online(false);
+	_collectionMgr->online();
 	return true;
 }
 
