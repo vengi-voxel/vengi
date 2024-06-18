@@ -9,7 +9,7 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "io/Filesystem.h"
+#include "io/Archive.h"
 
 namespace voxelcollection {
 namespace gitlab {
@@ -20,7 +20,7 @@ struct TreeEntry {
 };
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path);
-core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem, const core::String &projectId,
+core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &projectId,
 											const core::String &branch, const core::String &path = "");
 
 } // namespace gitlab

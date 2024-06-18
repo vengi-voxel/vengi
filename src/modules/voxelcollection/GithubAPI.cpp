@@ -7,8 +7,6 @@
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "http/HttpCacheStream.h"
-#include "io/Filesystem.h"
-#include "io/FilesystemArchive.h"
 #include <json.hpp>
 
 namespace voxelcollection {
@@ -18,13 +16,12 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
-core::DynamicArray<TreeEntry> reposGitTrees(const io::FilesystemPtr &filesystem, const core::String &repository,
+core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
 											const core::String &branch, const core::String &path) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	core::String file = "github-" + repository + "-" + branch + ".json";
 	core::string::replaceAllChars(file, '/', '-');
-	const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem);
 	http::HttpCacheStream stream(archive, file, url);
 	core::DynamicArray<TreeEntry> entries;
 	if (!stream.valid()) {

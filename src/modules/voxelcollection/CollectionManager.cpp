@@ -5,17 +5,20 @@
 #include "CollectionManager.h"
 #include "app/Async.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
+#include "core/ScopedPtr.h"
 #include "http/HttpCacheStream.h"
 #include "io/Archive.h"
 #include "io/FilesystemArchive.h"
+#include "io/Stream.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxelcollection {
 
 CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool)
-	: _filesystem(filesystem), _texturePool(texturePool) {
+	: _texturePool(texturePool) {
+	_archive = io::openFilesystemArchive(filesystem, "", false);
+	_localDir = filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 }
 
 CollectionManager::~CollectionManager() {
@@ -25,17 +28,15 @@ bool CollectionManager::init() {
 	VoxelSource local;
 	local.name = "local";
 	_sources.push_back(local);
-	setLocalDir("");
 	return true;
 }
 
-inline bool CollectionManager::setLocalDir(const core::String &dir) {
-	core::String newLocalDir = dir;
-	if (newLocalDir.empty()) {
-		newLocalDir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+bool CollectionManager::setLocalDir(const core::String &dir) {
+	if (dir.empty()) {
+		return false;
 	}
-	if (_localDir.empty() || newLocalDir != _localDir) {
-		_localDir = newLocalDir;
+	if (_localDir.empty() || dir != _localDir) {
+		_localDir = dir;
 		// TODO: clear all local resolved files
 		return true;
 	}
@@ -60,6 +61,12 @@ void CollectionManager::shutdown() {
 	_shouldQuit = true;
 	waitLocal();
 	waitOnline();
+	for (std::future<void> &f : _futures) {
+		if (f.valid()) {
+			f.wait();
+		}
+	}
+	_futures.clear();
 }
 
 bool CollectionManager::local() {
@@ -77,7 +84,7 @@ bool CollectionManager::local() {
 		}
 		core::DynamicArray<io::FilesystemEntry> entities;
 		Log::info("Local document scanning (%s)...", _localDir.c_str());
-		_filesystem->list(_localDir, entities, "", 2);
+		_archive->list(_localDir, entities, "");
 		Log::debug("Found %i entries in %s", (int)entities.size(), _localDir.c_str());
 
 		for (const io::FilesystemEntry &entry : entities) {
@@ -125,35 +132,35 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 	if (_texturePool->has(voxelFile.name)) {
 		return;
 	}
-	const core::String &targetImageFile = _filesystem->writePath(voxelFile.targetFile() + ".png");
-	if (_filesystem->exists(targetImageFile)) {
-		app::async([this, voxelFile, targetImageFile]() {
+	if (_shouldQuit) {
+		return;
+	}
+	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
+	io::ArchivePtr archive = _archive;
+	if (_archive->exists(targetImageFile)) {
+		_futures.emplace_back(app::async([this, voxelFile, targetImageFile, archive]() {
 			if (_shouldQuit) {
 				return;
 			}
-			image::ImagePtr image = image::loadImage(targetImageFile);
+			core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(targetImageFile));
+			image::ImagePtr image = image::loadImage(targetImageFile, *stream);
 			if (image) {
 				image->setName(voxelFile.name);
 				_imageQueue.push(image);
 			}
-		});
+		}));
 		return;
 	}
-	if (!_filesystem->createDir(core::string::extractPath(targetImageFile))) {
-		Log::warn("Failed to create directory for thumbnails at: %s", voxelFile.targetDir().c_str());
-		return;
-	}
-	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	if (!voxelFile.thumbnailUrl.empty()) {
-		app::async([=]() {
+		_futures.emplace_back(app::async([=]() {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(archive, targetImageFile, voxelFile.thumbnailUrl);
+			http::HttpCacheStream stream(_archive, targetImageFile, voxelFile.thumbnailUrl);
 			this->_imageQueue.push(image::loadImage(voxelFile.name, stream));
-		});
+		}));
 	} else {
-		app::async([=]() {
+		_futures.emplace_back(app::async([this, archive, voxelFile, targetImageFile]() {
 			if (_shouldQuit) {
 				return;
 			}
@@ -165,28 +172,35 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 				return;
 			}
 			thumbnailImage->setName(voxelFile.name);
-			if (!image::writeImage(thumbnailImage, targetImageFile)) {
+			core::ScopedPtr<io::SeekableWriteStream> imageStream(archive->writeStream(targetImageFile));
+			if (!image::writeImage(thumbnailImage, *imageStream)) {
 				Log::warn("Failed to save thumbnail for %s to %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			} else {
 				Log::debug("Created thumbnail for %s at %s", voxelFile.name.c_str(), targetImageFile.c_str());
 			}
 			this->_imageQueue.push(thumbnailImage);
-		});
+		}));
 	}
 }
 
-void CollectionManager::resolve(const VoxelSource &source) {
+void CollectionManager::resolve(const VoxelSource &source, bool async) {
 	if (!_onlineResolvedSources.insert(source.name)) {
 		return;
 	}
-	app::async([&]() {
+	io::ArchivePtr archive = _archive;
+	auto func = [&, archive]() {
 		Downloader downloader;
 		if (_shouldQuit) {
 			return;
 		}
-		const VoxelFiles &files = downloader.resolve(_filesystem, source, _shouldQuit);
+		const VoxelFiles &files = downloader.resolve(archive, source, _shouldQuit);
 		_newVoxelFiles.push(files.begin(), files.end());
-	});
+	};
+	if (async) {
+		_futures.emplace_back(app::async(func));
+	} else {
+		func();
+	}
 }
 
 bool CollectionManager::resolved(const VoxelSource &source) const {
@@ -244,7 +258,8 @@ void CollectionManager::update(double nowSeconds, int n) {
 }
 
 void CollectionManager::downloadAll() {
-	app::async([this, voxelFilesMap = _voxelFilesMap]() {
+	const io::ArchivePtr archive = _archive;
+	app::async([this, voxelFilesMap = _voxelFilesMap, archive]() {
 		int all = 0;
 		for (const auto &e : voxelFilesMap) {
 			all += (int)e->value.files.size();
@@ -260,7 +275,7 @@ void CollectionManager::downloadAll() {
 				if (voxelFile.downloaded) {
 					continue;
 				}
-				download(voxelFile);
+				download(archive, voxelFile);
 				const float p = ((float)current / (float)all * 100.0f);
 				_downloadProgress = (int)p;
 			}
@@ -269,13 +284,17 @@ void CollectionManager::downloadAll() {
 	});
 }
 
-bool CollectionManager::download(VoxelFile &voxelFile) {
+bool CollectionManager::download(const io::ArchivePtr &archive, VoxelFile &voxelFile) {
 	Downloader downloader;
-	if (downloader.download(_filesystem, voxelFile)) {
+	if (downloader.download(archive, voxelFile)) {
 		voxelFile.downloaded = true;
 		return true;
 	}
 	return false;
+}
+
+bool CollectionManager::download(VoxelFile &voxelFile) {
+	return download(_archive, voxelFile);
 }
 
 const VoxelFileMap &CollectionManager::voxelFilesMap() const {

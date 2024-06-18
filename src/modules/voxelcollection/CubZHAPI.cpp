@@ -5,12 +5,13 @@
 #include "CubZHAPI.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "http/Http.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/FileStream.h"
+#include "io/Stream.h"
 #include <json.hpp>
 
 namespace voxelcollection {
@@ -20,13 +21,12 @@ core::String downloadUrl(const core::String &repo, const core::String &name) {
 	return "https://api.cu.bzh/items/" + repo + "/" + name + "/model";
 }
 
-static nlohmann::json request(const io::FilesystemPtr &filesystem, const core::String &tk, const core::String &usrId, int page) {
+static nlohmann::json request(const io::ArchivePtr &archive, const core::String &tk, const core::String &usrId, int page) {
 	const core::String filename = core::string::format("itemdrafts_%i.json", page);
-	if (filesystem->exists(filename)) {
-		io::FileStream stream(filesystem->open(filename, io::FileMode::Read));
-		if (stream.valid()) {
-			core::String json;
-			stream.readString((int)stream.size(), json);
+	if (archive->exists(filename)) {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+		core::String json;
+		if (stream->readString((int)stream->size(), json)) {
 			auto j = nlohmann::json::parse(json, nullptr, false, true);
 			if (j.contains("results")) {
 				Log::debug("Use page %i from cache", page);
@@ -52,7 +52,7 @@ static nlohmann::json request(const io::FilesystemPtr &filesystem, const core::S
 	core::String json;
 	stream.readString((int)stream.size(), json);
 	stream.seek(0);
-	filesystem->write(filename, stream);
+	archive->write(filename, stream);
 	auto j = nlohmann::json::parse(json, nullptr, false, true);
 	if (!j.contains("results")) {
 		Log::error("Unexpected json results data: '%s' with status %i", json.c_str(), status);
@@ -60,10 +60,10 @@ static nlohmann::json request(const io::FilesystemPtr &filesystem, const core::S
 	return j;
 }
 
-core::DynamicArray<TreeEntry> repoList(const io::FilesystemPtr &filesystem, const core::String &tk,
+core::DynamicArray<TreeEntry> repoList(const io::ArchivePtr &archive, const core::String &tk,
 									   const core::String &usrId) {
 	core_trace_scoped(RepoList);
-	const auto &firstPage = request(filesystem, tk, usrId, 1);
+	const auto &firstPage = request(archive, tk, usrId, 1);
 	if (!firstPage.contains("results")) {
 		return {};
 	}
@@ -76,7 +76,7 @@ core::DynamicArray<TreeEntry> repoList(const io::FilesystemPtr &filesystem, cons
 			break;
 		}
 		Log::debug("Fetching page %i of %i", page, totalPages);
-		const auto &jsonResponse = request(filesystem, tk, usrId, page);
+		const auto &jsonResponse = request(archive, tk, usrId, page);
 		if (!jsonResponse.contains("results")) {
 			return entries;
 		}

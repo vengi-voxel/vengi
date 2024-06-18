@@ -6,8 +6,10 @@
 
 #include "core/IComponent.h"
 #include "core/collection/ConcurrentQueue.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
 #include "core/concurrent/Atomic.h"
+#include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "video/Texture.h"
 #include "video/TexturePool.h"
@@ -18,7 +20,8 @@ namespace voxelcollection {
 
 class CollectionManager : public core::IComponent {
 private:
-	io::FilesystemPtr _filesystem;
+	io::ArchivePtr _archive;
+
 	core::ConcurrentQueue<VoxelFile> _newVoxelFiles;
 	VoxelFileMap _voxelFilesMap;
 
@@ -36,6 +39,8 @@ private:
 	std::future<VoxelFiles> _onlineResolve;
 	VoxelSources _sources;
 	std::future<VoxelSources> _onlineSources;
+	core::DynamicArray<std::future<void>> _futures;
+	bool download(const io::ArchivePtr &archive, VoxelFile &voxelFile);
 
 public:
 	CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool);
@@ -62,7 +67,7 @@ public:
 	 * @sa online()
 	 */
 	void waitOnline();
-	void resolve(const VoxelSource &source);
+	void resolve(const VoxelSource &source, bool async = true);
 	bool resolved(const VoxelSource &source) const;
 
 	void loadThumbnail(const VoxelFile &voxelFile);

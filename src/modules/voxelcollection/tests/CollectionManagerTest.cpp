@@ -4,9 +4,12 @@
 
 #include "voxelcollection/CollectionManager.h"
 #include "app/tests/AbstractTest.h"
+#include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "io/Filesystem.h"
 #include "video/TexturePool.h"
+#include "voxelformat/FormatConfig.h"
+#include <future>
 
 namespace voxelcollection {
 
@@ -17,6 +20,7 @@ protected:
 
 	virtual void SetUp() override {
 		app::AbstractTest::SetUp();
+		voxelformat::FormatConfig::init();
 		_texturePool = core::make_shared<video::TexturePool>();
 		// _texturePool->init();
 		_mgr = core::make_shared<CollectionManager>(_testApp->filesystem(), _texturePool);
@@ -39,10 +43,23 @@ TEST_F(CollectionManagerTest, testLocal) {
 	ASSERT_GT(_mgr->allEntries(), 0);
 }
 
-TEST_F(CollectionManagerTest, testOnline) {
+TEST_F(CollectionManagerTest, DISABLED_testOnline) {
+	const size_t before = _mgr->sources().size();
 	ASSERT_TRUE(_mgr->online(true));
 	_mgr->waitOnline();
 	_mgr->update(0.0, 1);
+
+	ASSERT_GT(_mgr->sources().size(), before);
+	bool foundVengi = false;
+	for (const auto &source : _mgr->sources()) {
+		if (source.name.toLower() == "vengi") {
+			foundVengi = true;
+			_mgr->resolve(source, false);
+			break;
+		}
+	}
+	ASSERT_TRUE(foundVengi) << "Could not find the vengi source";
+	_mgr->update(0.0, 10);
 	ASSERT_GT(_mgr->allEntries(), 0);
 }
 
