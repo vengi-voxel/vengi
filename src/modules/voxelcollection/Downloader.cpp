@@ -26,11 +26,11 @@
 namespace voxelcollection {
 
 core::String VoxelFile::targetFile() const {
-	return core::string::path(core::string::cleanPath(source), name);
+	return core::string::path(core::string::cleanPath(source), fullPath);
 }
 
 core::String VoxelFile::targetDir() const {
-	return core::string::path(core::string::cleanPath(source), core::string::extractPath(name));
+	return core::string::path(core::string::cleanPath(source), core::string::extractPath(fullPath));
 }
 
 core::DynamicArray<VoxelSource> Downloader::sources() {

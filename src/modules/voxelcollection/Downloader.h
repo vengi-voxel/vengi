@@ -44,7 +44,9 @@ struct VoxelSource {
 
 struct VoxelFile {
 	core::String source;
+	// the name of the fill - including extension, without directory
 	core::String name;
+	// the full path relative to the voxel source including any directory
 	core::String fullPath;
 	core::String license;
 	core::String licenseUrl;

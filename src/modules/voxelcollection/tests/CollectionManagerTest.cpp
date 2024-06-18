@@ -8,6 +8,7 @@
 #include "core/SharedPtr.h"
 #include "io/Filesystem.h"
 #include "video/TexturePool.h"
+#include "voxelcollection/Downloader.h"
 #include "voxelformat/FormatConfig.h"
 #include <future>
 
@@ -52,7 +53,7 @@ TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	ASSERT_GT(_mgr->sources().size(), before);
 	bool foundVengi = false;
 	for (const auto &source : _mgr->sources()) {
-		if (source.name.toLower() == "vengi") {
+		if (source.name == "Vengi") {
 			foundVengi = true;
 			_mgr->resolve(source, false);
 			break;
@@ -61,6 +62,12 @@ TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	ASSERT_TRUE(foundVengi) << "Could not find the vengi source";
 	_mgr->update(0.0, 10);
 	ASSERT_GT(_mgr->allEntries(), 0);
+
+	auto iter = _mgr->voxelFilesMap().find("Vengi");
+	ASSERT_TRUE(iter != _mgr->voxelFilesMap().end());
+	VoxelFile voxelFile = iter->value.files.front();
+	ASSERT_TRUE(_mgr->download(voxelFile));
+	ASSERT_TRUE(voxelFile.downloaded);
 }
 
 } // namespace voxelcollection
