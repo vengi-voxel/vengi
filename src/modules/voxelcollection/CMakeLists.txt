@@ -18,7 +18,9 @@ set(TEST_SRCS
 	tests/GitlabAPITest.cpp
 	tests/CubZHAPITest.cpp
 )
-
+set(TEST_FILES
+	tests/ambient-occlusion.vengi
+)
 gtest_suite_sources(tests
 	${TEST_SRCS}
 )

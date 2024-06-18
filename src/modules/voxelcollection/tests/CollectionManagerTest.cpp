@@ -4,13 +4,11 @@
 
 #include "voxelcollection/CollectionManager.h"
 #include "app/tests/AbstractTest.h"
-#include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "io/Filesystem.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/FormatConfig.h"
-#include <future>
 
 namespace voxelcollection {
 
