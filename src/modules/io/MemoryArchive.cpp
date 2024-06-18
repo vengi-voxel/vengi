@@ -50,7 +50,7 @@ SeekableWriteStream *MemoryArchive::writeStream(const core::String &filePath) {
 		_entries.put(filePath, s);
 		return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream*)s);
 	}
-	return iter->second;
+	return new SeekableReadWriteStreamWrapper((io::SeekableWriteStream*)iter->second);
 }
 
 SeekableReadStream *MemoryArchive::readStream(const core::String &filePath) {
