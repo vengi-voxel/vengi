@@ -30,7 +30,8 @@ core::String VoxelFile::targetFile() const {
 }
 
 core::String VoxelFile::targetDir() const {
-	return core::string::path(core::string::cleanPath(source), core::string::extractPath(fullPath));
+	return core::string::sanitizeDirPath(
+		core::string::path(core::string::cleanPath(source), core::string::extractPath(fullPath)));
 }
 
 core::DynamicArray<VoxelSource> Downloader::sources() {
@@ -145,25 +146,29 @@ void Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 			}
 			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(subFile.fullPath));
 			if (!rs) {
-				Log::error("Failed to read file %s from archive %s", subFile.fullPath.c_str(), archiveFile.fullPath.c_str());
+				Log::error("Failed to read file %s from archive %s", subFile.fullPath.c_str(),
+						   archiveFile.fullPath.c_str());
 				continue;
 			}
 			if (archive->write(subFile.fullPath, *rs)) {
 				files.push_back(subFile);
 			} else {
-				Log::error("Failed to write file %s from archive %s", subFile.name.c_str(), archiveFile.fullPath.c_str());
+				Log::error("Failed to write file %s from archive %s", subFile.name.c_str(),
+						   archiveFile.fullPath.c_str());
 			}
 		} else if (io::isSupportedArchive(subFile.name)) {
 			// save file and call handleArchive again
 			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(subFile.fullPath));
 			if (!rs) {
-				Log::error("Failed to read file %s from archive %s", subFile.fullPath.c_str(), archiveFile.fullPath.c_str());
+				Log::error("Failed to read file %s from archive %s", subFile.fullPath.c_str(),
+						   archiveFile.fullPath.c_str());
 				continue;
 			}
 			if (archive->write(subFile.fullPath, *rs)) {
 				handleArchive(archive, subFile, files, shouldQuit);
 			} else {
-				Log::error("Failed to write file %s from archive %s", subFile.fullPath.c_str(), archiveFile.fullPath.c_str());
+				Log::error("Failed to write file %s from archive %s", subFile.fullPath.c_str(),
+						   archiveFile.fullPath.c_str());
 			}
 		}
 	}

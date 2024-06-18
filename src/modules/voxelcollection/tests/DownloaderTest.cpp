@@ -4,6 +4,8 @@
 
 #include "voxelcollection/Downloader.h"
 #include "app/tests/AbstractTest.h"
+#include "io/Archive.h"
+#include "io/MemoryArchive.h"
 
 namespace voxelcollection {
 
@@ -59,6 +61,57 @@ TEST_F(DownloaderTest, DISABLED_testDownloadJsonAndParse) {
 	Downloader downloader;
 	const core::DynamicArray<VoxelSource> &sources = downloader.sources();
 	ASSERT_FALSE(sources.empty());
+}
+
+// disabled because it requires network access
+TEST_F(DownloaderTest, DISABLED_testResolve) {
+	const io::ArchivePtr &archive = io::openMemoryArchive();
+	Downloader downloader;
+	VoxelSource source;
+	source.name = "Vengi";
+	source.provider = "github";
+	source.github.repo = "vengi-voxel/vengi";
+	source.github.commit = "master";
+	source.github.path = "data";
+	source.github.license = "https://raw.githubusercontent.com/vengi-voxel/vengi/master/LICENSE";
+	core::AtomicBool shouldQuit{false};
+	const VoxelFiles &collection = downloader.resolve(archive, source, shouldQuit);
+	ASSERT_FALSE(collection.empty());
+	const VoxelFile &voxelFile = collection.front();
+	ASSERT_EQ(voxelFile.source, "Vengi");
+	ASSERT_EQ(voxelFile.licenseUrl, source.github.license);
+}
+
+TEST_F(DownloaderTest, testTargetFile) {
+	VoxelFile file;
+	file.source = "Vengi";
+	file.name = "test.vox";
+	file.fullPath = "test.vox";
+	ASSERT_EQ("vengi/test.vox", file.targetFile());
+}
+
+TEST_F(DownloaderTest, testTargetFileWithPath) {
+	VoxelFile file;
+	file.source = "Vengi";
+	file.name = "test.vox";
+	file.fullPath = "data/test.vox";
+	ASSERT_EQ("vengi/data/test.vox", file.targetFile());
+}
+
+TEST_F(DownloaderTest, testTargetDir) {
+	VoxelFile file;
+	file.source = "Vengi";
+	file.name = "test.vox";
+	file.fullPath = "test.vox";
+	ASSERT_EQ("vengi/", file.targetDir());
+}
+
+TEST_F(DownloaderTest, testTargetDirWithPath) {
+	VoxelFile file;
+	file.source = "Vengi";
+	file.name = "test.vox";
+	file.fullPath = "data/test.vox";
+	ASSERT_EQ("vengi/data/", file.targetDir());
 }
 
 } // namespace voxelcollection
