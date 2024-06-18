@@ -44,7 +44,8 @@ struct VoxelSource {
 	VoxelSourceSingle single;
 };
 
-struct VoxelFile {
+class VoxelFile {
+public:
 	core::String source;
 	// the name of the fill - including extension, without directory
 	core::String name;
@@ -56,7 +57,10 @@ struct VoxelFile {
 	core::String url;
 	bool downloaded = false;
 
+	// return the target file path relative to the voxel source with the source and directory name
 	core::String targetFile() const;
+	// return the target directory relative to the voxel source with the source and directory name - but without the
+	// filename
 	core::String targetDir() const;
 
 	inline bool operator<(const VoxelFile &other) const {
@@ -92,10 +96,12 @@ private:
 												 const VoxelSource &source, const io::ArchivePtr &archive,
 												 core::AtomicBool &shouldQuit) const;
 
+	void handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files, VoxelFile &file,
+					bool enableMeshes) const;
+
 public:
 	VoxelSources sources();
 	VoxelSources sources(const core::String &json);
-
 	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source, core::AtomicBool &shouldQuit) const;
 
 	bool download(const io::ArchivePtr &archive, const VoxelFile &file) const;

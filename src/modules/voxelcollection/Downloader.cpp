@@ -26,12 +26,14 @@
 namespace voxelcollection {
 
 core::String VoxelFile::targetFile() const {
-	return core::string::path(core::string::cleanPath(source), fullPath);
+	const core::String cleanSource = core::string::cleanPath(source);
+	return core::string::path(cleanSource, fullPath);
 }
 
 core::String VoxelFile::targetDir() const {
-	return core::string::sanitizeDirPath(
-		core::string::path(core::string::cleanPath(source), core::string::extractPath(fullPath)));
+	const core::String cleanSource = core::string::cleanPath(source);
+	const core::String path = core::string::path(cleanSource, core::string::extractPath(fullPath));
+	return core::string::sanitizeDirPath(path);
 }
 
 core::DynamicArray<VoxelSource> Downloader::sources() {
@@ -183,6 +185,18 @@ bool Downloader::download(const io::ArchivePtr &archive, const VoxelFile &file) 
 	return stream.valid();
 }
 
+void Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files,
+							VoxelFile &file, bool enableMeshes) const {
+	if (supportedFileExtension(file.name)) {
+		if (!enableMeshes || voxelformat::isMeshFormat(file.name, false)) {
+			return;
+		}
+		files.push_back(file);
+	} else if (io::isSupportedArchive(file.name)) {
+		handleArchive(archive, file, files, shouldQuit);
+	}
+}
+
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
 														 const VoxelSource &source, const io::ArchivePtr &archive,
 														 core::AtomicBool &shouldQuit) const {
@@ -203,16 +217,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
 		file.url = entry.url;
 		file.fullPath = file.targetFile();
-
-		if (supportedFileExtension(entry.path)) {
-			// TODO: allow to enable mesh formats?
-			if (voxelformat::isMeshFormat(entry.path, false)) {
-				continue;
-			}
-			files.push_back(file);
-		} else if (io::isSupportedArchive(file.name)) {
-			handleArchive(archive, file, files, shouldQuit);
-		}
+		handleFile(archive, shouldQuit, files, file, false);
 	}
 	return files;
 }
@@ -257,16 +262,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
 		file.url = entry.url;
 		file.fullPath = file.targetFile();
-
-		if (supportedFileExtension(entry.path)) {
-			// TODO: allow to enable mesh formats?
-			if (voxelformat::isMeshFormat(entry.path, false)) {
-				continue;
-			}
-			files.push_back(file);
-		} else if (io::isSupportedArchive(file.name)) {
-			handleArchive(archive, file, files, shouldQuit);
-		}
+		handleFile(archive, shouldQuit, files, file, false);
 	}
 	return files;
 }
@@ -297,11 +293,7 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		file.url = source.single.url;
 		file.fullPath = file.targetFile();
 		Log::info("Found single source with name %s and url %s", file.name.c_str(), file.url.c_str());
-		if (supportedFileExtension(file.name)) {
-			files.push_back(file);
-		} else if (io::isSupportedArchive(file.name)) {
-			handleArchive(archive, file, files, shouldQuit);
-		}
+		handleFile(archive, shouldQuit, files, file, true);
 		return files;
 	}
 	Log::error("Unknown source provider %s", source.provider.c_str());
