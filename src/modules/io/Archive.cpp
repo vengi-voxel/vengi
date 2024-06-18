@@ -58,12 +58,4 @@ bool isSupportedArchive(const core::String &filename) {
 	return ext == "zip" || ext == "pk3";
 }
 
-ArchivePtr openArchive(const io::FilesystemPtr &fs, const core::String &path, io::SeekableReadStream *stream) {
-	const core::String &ext = core::string::extractExtension(path);
-	if (ext == "zip" || ext == "pk3" || ext == "thing") {
-		return openZipArchive(stream);
-	}
-	return openFilesystemArchive(fs, path);
-}
-
 } // namespace io
