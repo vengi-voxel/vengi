@@ -223,13 +223,9 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 }
 
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
-														 const VoxelSource &source, const io::ArchivePtr &archive,
-														 core::AtomicBool &shouldQuit) const {
+														 const VoxelSource &source) const {
 	core::DynamicArray<VoxelFile> files;
 	for (const auto &entry : entries) {
-		if (shouldQuit) {
-			return {};
-		}
 		VoxelFile file;
 		file.source = source.name;
 		file.name = entry.repo + "-" + entry.name + ".3zh";
@@ -275,7 +271,7 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		const core::String &tk = core::Var::get("voxelcollection_cubzh_tk", "")->strVal();
 		const core::String &usrId = core::Var::get("voxelcollection_cubzh_usrid", "")->strVal();
 		const core::DynamicArray<cubzh::TreeEntry> &entries = cubzh::repoList(archive, tk, usrId);
-		return processEntries(entries, source, archive, shouldQuit);
+		return processEntries(entries, source);
 	} else if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path);

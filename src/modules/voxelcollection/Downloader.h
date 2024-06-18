@@ -104,8 +104,7 @@ public:
 												 const VoxelSource &source, const io::ArchivePtr &archive,
 												 core::AtomicBool &shouldQuit) const;
 	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
+												 const VoxelSource &source) const;
 };
 
 } // namespace voxelcollection

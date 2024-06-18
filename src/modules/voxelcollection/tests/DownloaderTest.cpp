@@ -186,9 +186,6 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileCubzh) {
 	source.name = "cubzh";
 	source.provider = "cubzh";
 
-	io::ArchivePtr archive = io::openMemoryArchive();
-	core::AtomicBool shouldQuit{false};
-
 	core::DynamicArray<cubzh::TreeEntry> entries;
 	cubzh::TreeEntry entry1{.id = "some-uuid-1",
 							.repo = "author",
@@ -210,7 +207,7 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileCubzh) {
 	entries.push_back(entry1);
 	entries.push_back(entry2);
 
-	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source);
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
 	ASSERT_EQ(voxelFile.source, source.name);
