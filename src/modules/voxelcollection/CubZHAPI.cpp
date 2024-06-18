@@ -85,6 +85,9 @@ core::DynamicArray<TreeEntry> repoList(const io::ArchivePtr &archive, const core
 			treeEntry.repo = r.value("repo", "").c_str();
 			treeEntry.name = r.value("name", "").c_str();
 			treeEntry.id = r.value("id", "").c_str();
+			treeEntry.category = r.value("category", "").c_str();
+			treeEntry.created = r.value("created", "").c_str();
+			treeEntry.updated = r.value("updated", "").c_str();
 			treeEntry.likes = r.value("likes", 0);
 			treeEntry.url = downloadUrl(treeEntry.repo, treeEntry.name);
 			entries.push_back(treeEntry);

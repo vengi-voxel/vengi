@@ -6,6 +6,8 @@
 #include "app/tests/AbstractTest.h"
 #include "io/Archive.h"
 #include "io/MemoryArchive.h"
+#include "voxelcollection/CubZHAPI.h"
+#include "voxelcollection/GithubAPI.h"
 
 namespace voxelcollection {
 
@@ -43,14 +45,17 @@ TEST_F(DownloaderTest, testParseSources) {
 	ASSERT_EQ(2u, sources.size());
 	ASSERT_EQ("Vengi voxelized", sources[0].name);
 	ASSERT_EQ("custom", sources[0].license);
-	ASSERT_EQ("https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png", sources[0].thumbnail);
+	ASSERT_EQ("https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			  sources[0].thumbnail);
 	ASSERT_EQ("github", sources[0].provider);
 	ASSERT_EQ("vengi-voxel/voxelized", sources[0].github.repo);
 	ASSERT_EQ("main", sources[0].github.commit);
-	ASSERT_EQ("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md", sources[0].github.license);
+	ASSERT_EQ("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md",
+			  sources[0].github.license);
 	ASSERT_EQ("Vengi", sources[1].name);
 	ASSERT_EQ("custom", sources[1].license);
-	ASSERT_EQ("https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png", sources[1].thumbnail);
+	ASSERT_EQ("https://raw.githubusercontent.com/vengi-voxel/voxelized/main/sponza-scale-0.3.png",
+			  sources[1].thumbnail);
 	ASSERT_EQ("github", sources[1].provider);
 	ASSERT_EQ("vengi-voxel/vengi", sources[1].github.repo);
 	ASSERT_EQ("master", sources[1].github.commit);
@@ -112,6 +117,107 @@ TEST_F(DownloaderTest, testTargetDirWithPath) {
 	file.name = "test.vox";
 	file.fullPath = "data/test.vox";
 	ASSERT_EQ("vengi/data/", file.targetDir());
+}
+
+TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
+	Downloader downloader;
+
+	VoxelSource source;
+	source.name = "Vengi";
+	source.provider = "github";
+	source.github.repo = "vengi-voxel/vengi";
+	source.github.commit = "master";
+	source.github.path = "data";
+	source.github.license = "LICENSE";
+
+	io::ArchivePtr archive = io::openMemoryArchive();
+	core::AtomicBool shouldQuit{false};
+
+	core::DynamicArray<github::TreeEntry> entries;
+	github::TreeEntry entry1{.path = "data/test.vox",
+							 .url = github::downloadUrl(source.github.repo, source.github.commit, "data/test.vox")};
+
+	entries.push_back(entry1);
+
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	ASSERT_FALSE(collection.empty());
+	const VoxelFile &voxelFile = collection.front();
+	ASSERT_EQ(voxelFile.source, source.name);
+	ASSERT_EQ(voxelFile.name, "test.vox");
+	ASSERT_EQ(voxelFile.fullPath, "data/test.vox");
+	ASSERT_EQ(voxelFile.url, entry1.url);
+	ASSERT_EQ(voxelFile.licenseUrl, "https://raw.githubusercontent.com/vengi-voxel/vengi/master/LICENSE");
+}
+
+TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
+	Downloader downloader;
+
+	VoxelSource source;
+	source.name = "Vengi";
+	source.provider = "gitlab";
+	source.gitlab.repo = "vengi-voxel/vengi";
+	source.gitlab.commit = "master";
+	source.gitlab.path = "data";
+	source.gitlab.license = "LICENSE";
+
+	io::ArchivePtr archive = io::openMemoryArchive();
+	core::AtomicBool shouldQuit{false};
+
+	core::DynamicArray<gitlab::TreeEntry> entries;
+	gitlab::TreeEntry entry1{.path = "data/test.vox",
+							 .url = gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, "data/test.vox")};
+
+	entries.push_back(entry1);
+
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	ASSERT_FALSE(collection.empty());
+	const VoxelFile &voxelFile = collection.front();
+	ASSERT_EQ(voxelFile.source, source.name);
+	ASSERT_EQ(voxelFile.name, "test.vox");
+	ASSERT_EQ(voxelFile.fullPath, "data/test.vox");
+	ASSERT_EQ(voxelFile.url, entry1.url);
+	ASSERT_EQ(voxelFile.licenseUrl, "https://gitlab.com/veloren/veloren/-/raw/master/LICENSE");
+}
+
+TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileCubzh) {
+	Downloader downloader;
+
+	VoxelSource source;
+	source.name = "cubzh";
+	source.provider = "cubzh";
+
+	io::ArchivePtr archive = io::openMemoryArchive();
+	core::AtomicBool shouldQuit{false};
+
+	core::DynamicArray<cubzh::TreeEntry> entries;
+	cubzh::TreeEntry entry1{.id = "some-uuid-1",
+							.repo = "author",
+							.name = "model1",
+							.likes = 1,
+							.created = "2024-02-08T07:16:42.696Z",
+							.updated = "2024-02-08T07:16:52.707Z",
+							.category = "",
+							.url = cubzh::downloadUrl("author", "model1")};
+	cubzh::TreeEntry entry2{.id = "some-uuid-2",
+							.repo = "author",
+							.name = "model2",
+							.likes = 1,
+							.created = "2024-02-08T07:15:55.055Z",
+							.updated = "2024-02-08T07:16:16.657Z",
+							.category = "",
+							.url = cubzh::downloadUrl("author", "model2")};
+
+	entries.push_back(entry1);
+	entries.push_back(entry2);
+
+	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source, archive, shouldQuit);
+	ASSERT_FALSE(collection.empty());
+	const VoxelFile &voxelFile = collection.front();
+	ASSERT_EQ(voxelFile.source, source.name);
+	ASSERT_EQ(voxelFile.name, "author-model1.3zh");
+	ASSERT_EQ(voxelFile.fullPath, "author-model1.3zh");
+	ASSERT_EQ(voxelFile.url, entry1.url);
+	ASSERT_EQ(voxelFile.licenseUrl, "");
 }
 
 } // namespace voxelcollection

@@ -12,14 +12,14 @@ namespace voxelcollection {
 namespace cubzh {
 
 struct TreeEntry {
+	core::String id;
 	core::String repo;
 	core::String name;
-	core::String description;
-	core::String updated;
-	core::String created;
-	core::String id;
-	core::String url;
 	int likes;
+	core::String created;
+	core::String updated;
+	core::String category;
+	core::String url;
 };
 
 core::String downloadUrl(const core::String &repo, const core::String &name);

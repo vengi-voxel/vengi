@@ -83,18 +83,9 @@ using VoxelFileMap = core::DynamicStringMap<VoxelCollection>;
 using VoxelSources = core::DynamicArray<VoxelSource>;
 
 class Downloader {
-private:
+protected:
 	void handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files,
 					   core::AtomicBool &shouldQuit) const;
-	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<github::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
-	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
-	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
-												 const VoxelSource &source, const io::ArchivePtr &archive,
-												 core::AtomicBool &shouldQuit) const;
 
 	void handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files, VoxelFile &file,
 					bool enableMeshes) const;
@@ -105,6 +96,16 @@ public:
 	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source, core::AtomicBool &shouldQuit) const;
 
 	bool download(const io::ArchivePtr &archive, const VoxelFile &file) const;
+
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<github::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
 };
 
 } // namespace voxelcollection
