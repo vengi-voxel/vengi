@@ -395,7 +395,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
-	} else if (mode == FileMode::SysRead) {
+	} else if (mode == FileMode::SysRead && fs_exists(filename.c_str())) {
 		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::Write) {
 		if (!isRelativePath(filename)) {
