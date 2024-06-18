@@ -596,7 +596,7 @@ app::AppState VoxConvert::onInit() {
 		} else {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
-			const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+			const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
 			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, archive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());
 				return app::AppState::InitFailure;
@@ -771,7 +771,7 @@ void VoxConvert::exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGrap
 		scenegraph::copyNode(node, newNode, false);
 		newSceneGraph.emplace(core::move(newNode));
 		const core::String &filename = getFilenameForModelName(inputfile, node.name(), ext, id, uniqueNames);
-		const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+		const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
 		if (voxelformat::saveFormat(newSceneGraph, filename, nullptr, archive, saveCtx)) {
 			Log::info(" .. %s", filename.c_str());
 		} else {
