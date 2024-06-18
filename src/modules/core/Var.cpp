@@ -202,9 +202,12 @@ VarPtr Var::get(const core::String& name, const char* value, int32_t flags, cons
 }
 
 Var::Var(const core::String& name, const core::String& value, const core::String &defaultValue, unsigned int flags, const char *help, ValidatorFunc validatorFunc) :
-		_name(name), _help(help), _flags(flags), _validator(validatorFunc) {
+		_name(name), _help(help), _flags(flags), _defaultValue(defaultValue), _validator(validatorFunc) {
 	addValueToHistory(value);
 	core_assert(_currentHistoryPos == 0);
+	if (_defaultValue.empty()) {
+		_defaultValue = value;
+	}
 }
 
 Var::~Var() {

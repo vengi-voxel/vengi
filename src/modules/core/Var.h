@@ -80,7 +80,7 @@ protected:
 		core::String _value;
 	};
 
-	const core::String _defaultValue;
+	core::String _defaultValue;
 	core::DynamicArray<Value> _history;
 	uint32_t _currentHistoryPos = 0;
 	bool _dirty = false;
