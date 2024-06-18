@@ -3,9 +3,9 @@
  */
 
 #include "Downloader.h"
+#include "CubZHAPI.h"
 #include "GithubAPI.h"
 #include "GitlabAPI.h"
-#include "CubZHAPI.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -178,88 +178,112 @@ bool Downloader::download(const io::ArchivePtr &archive, const VoxelFile &file) 
 	return stream.valid();
 }
 
+core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
+														 const VoxelSource &source, const io::ArchivePtr &archive,
+														 core::AtomicBool &shouldQuit) const {
+	core::DynamicArray<VoxelFile> files;
+	const core::String &licenseDownloadUrl =
+		gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, source.gitlab.license);
+	for (const auto &entry : entries) {
+		if (shouldQuit) {
+			return {};
+		}
+		VoxelFile file;
+		file.source = source.name;
+		file.name = entry.path;
+		file.license = source.license;
+		if (!source.gitlab.license.empty()) {
+			file.licenseUrl = licenseDownloadUrl;
+		}
+		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
+		file.url = entry.url;
+		file.fullPath = file.targetFile();
+
+		if (supportedFileExtension(entry.path)) {
+			// TODO: allow to enable mesh formats?
+			if (voxelformat::isMeshFormat(entry.path, false)) {
+				continue;
+			}
+			files.push_back(file);
+		} else if (io::isSupportedArchive(file.name)) {
+			handleArchive(archive, file, files, shouldQuit);
+		}
+	}
+	return files;
+}
+
+core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
+														 const VoxelSource &source, const io::ArchivePtr &archive,
+														 core::AtomicBool &shouldQuit) const {
+	core::DynamicArray<VoxelFile> files;
+	for (const auto &entry : entries) {
+		if (shouldQuit) {
+			return {};
+		}
+		VoxelFile file;
+		file.source = source.name;
+		file.name = entry.repo + "-" + entry.name + ".3zh";
+		file.license = source.license;
+		file.thumbnailUrl = cubzh::downloadUrl(entry.repo, entry.name);
+		file.url = entry.url;
+		file.fullPath = file.targetFile();
+		files.push_back(file);
+	}
+	return files;
+}
+
+core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<github::TreeEntry> &entries,
+														 const VoxelSource &source, const io::ArchivePtr &archive,
+														 core::AtomicBool &shouldQuit) const {
+	core::DynamicArray<VoxelFile> files;
+	const core::String &licenseDownloadUrl =
+		github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
+	for (const auto &entry : entries) {
+		if (shouldQuit) {
+			return {};
+		}
+		VoxelFile file;
+		file.source = source.name;
+		file.name = entry.path;
+		file.license = source.license;
+		if (!source.github.license.empty()) {
+			file.licenseUrl = licenseDownloadUrl;
+		}
+		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
+		file.url = entry.url;
+		file.fullPath = file.targetFile();
+
+		if (supportedFileExtension(entry.path)) {
+			// TODO: allow to enable mesh formats?
+			if (voxelformat::isMeshFormat(entry.path, false)) {
+				continue;
+			}
+			files.push_back(file);
+		} else if (io::isSupportedArchive(file.name)) {
+			handleArchive(archive, file, files, shouldQuit);
+		}
+	}
+	return files;
+}
+
 VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source,
 							   core::AtomicBool &shouldQuit) const {
-	VoxelFiles files;
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "cubzh") {
 		const core::String &tk = core::Var::get("voxelcollection_cubzh_tk", "")->strVal();
 		const core::String &usrId = core::Var::get("voxelcollection_cubzh_usrid", "")->strVal();
 		const core::DynamicArray<cubzh::TreeEntry> &entries = cubzh::repoList(archive, tk, usrId);
-		for (const auto &entry : entries) {
-			if (shouldQuit) {
-				return {};
-			}
-			VoxelFile file;
-			file.source = source.name;
-			file.name = entry.repo + "-" + entry.name + ".3zh";
-			file.license = source.license;
-			file.thumbnailUrl = cubzh::downloadUrl(entry.repo, entry.name);
-			file.url = entry.url;
-			file.fullPath = file.targetFile();
-			files.push_back(file);
-		}
+		return processEntries(entries, source, archive, shouldQuit);
 	} else if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path);
-		const core::String &licenseDownloadUrl =
-			github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
-		for (const auto &entry : entries) {
-			if (shouldQuit) {
-				return {};
-			}
-			VoxelFile file;
-			file.source = source.name;
-			file.name = entry.path;
-			file.license = source.license;
-			if (!source.github.license.empty()) {
-				file.licenseUrl = licenseDownloadUrl;
-			}
-			file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
-			file.url = entry.url;
-			file.fullPath = file.targetFile();
-
-			if (supportedFileExtension(entry.path)) {
-				// TODO: allow to enable mesh formats?
-				if (voxelformat::isMeshFormat(entry.path, false)) {
-					continue;
-				}
-				files.push_back(file);
-			} else if (io::isSupportedArchive(file.name)) {
-				handleArchive(archive, file, files, shouldQuit);
-			}
-		}
+		return processEntries(entries, source, archive, shouldQuit);
 	} else if (source.provider == "gitlab") {
 		const core::DynamicArray<gitlab::TreeEntry> &entries =
 			gitlab::reposGitTrees(archive, source.gitlab.repo, source.gitlab.commit, source.gitlab.path);
-		const core::String &licenseDownloadUrl =
-			gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, source.gitlab.license);
-		for (const auto &entry : entries) {
-			if (shouldQuit) {
-				return {};
-			}
-			VoxelFile file;
-			file.source = source.name;
-			file.name = entry.path;
-			file.license = source.license;
-			if (!source.gitlab.license.empty()) {
-				file.licenseUrl = licenseDownloadUrl;
-			}
-			file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
-			file.url = entry.url;
-			file.fullPath = file.targetFile();
-
-			if (supportedFileExtension(entry.path)) {
-				// TODO: allow to enable mesh formats?
-				if (voxelformat::isMeshFormat(entry.path, false)) {
-					continue;
-				}
-				files.push_back(file);
-			} else if (io::isSupportedArchive(file.name)) {
-				handleArchive(archive, file, files, shouldQuit);
-			}
-		}
+		return processEntries(entries, source, archive, shouldQuit);
 	} else if (source.provider == "single") {
+		VoxelFiles files;
 		VoxelFile file;
 		file.source = source.name;
 		file.name = core::string::extractFilenameWithExtension(source.single.url);
@@ -273,9 +297,10 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		} else if (io::isSupportedArchive(file.name)) {
 			handleArchive(archive, file, files, shouldQuit);
 		}
+		return files;
 	}
-
-	return files;
+	Log::error("Unknown source provider %s", source.provider.c_str());
+	return {};
 }
 
 }; // namespace voxelcollection

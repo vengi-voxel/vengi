@@ -4,11 +4,13 @@
 
 #pragma once
 
+#include "CubZHAPI.h"
+#include "GithubAPI.h"
+#include "GitlabAPI.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
 #include "io/Archive.h"
-#include "io/Filesystem.h"
 
 namespace voxelcollection {
 
@@ -78,8 +80,17 @@ using VoxelSources = core::DynamicArray<VoxelSource>;
 
 class Downloader {
 private:
-	void handleArchive(const io::ArchivePtr &archive, const VoxelFile &file,
-					  VoxelFiles &files, core::AtomicBool &shouldQuit) const;
+	void handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files,
+					   core::AtomicBool &shouldQuit) const;
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<github::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
+	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
+												 const VoxelSource &source, const io::ArchivePtr &archive,
+												 core::AtomicBool &shouldQuit) const;
 
 public:
 	VoxelSources sources();
