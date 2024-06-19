@@ -41,15 +41,14 @@ bool CollectionPanel::isFilterActive() const {
 }
 
 void CollectionPanel::updateFilters() {
+	const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 	{
-		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 		ImGui::PushItemWidth(itemWidth.x);
 		ImGui::InputText(_("Name"), &_currentFilterName);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
 	{
-		const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
 		ImGui::PushItemWidth(itemWidth.x);
 		ImGui::InputText(_("License"), &_currentFilterLicense);
 		ImGui::PopItemWidth();
@@ -67,6 +66,7 @@ void CollectionPanel::updateFilters() {
 			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
 			// must be the first entry - see applyFilter()
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
+			_filterFormatTextWidth = core_min(itemWidth.x * 2, _filterFormatTextWidth);
 		}
 
 		const char *formatFilterLabel = _("Format");
@@ -188,19 +188,20 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 				}
 				core::String id = core::string::format("%i", row);
 				if (ImGui::ImageButton(id.c_str(), handle, ImVec2(64, 64))) {
-					_selected = *voxelFile;
-					_newSelected = true;
-				}
-
-				ImGui::TableNextColumn();
-				ImGui::TextUnformatted(voxelFile->name.c_str());
-			} else {
-				if (ImGui::Selectable(voxelFile->name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						_selected = *voxelFile;
 						_newSelected = true;
 					}
 				}
+				ImGui::TableNextColumn();
+			}
+			if (ImGui::Selectable(voxelFile->name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+					_selected = *voxelFile;
+					_newSelected = true;
+				}
+			}
+			if (!_thumbnails) {
 				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 					if (ImGui::BeginItemTooltip()) {
 						const video::Id handle = texture->handle();
