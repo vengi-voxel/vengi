@@ -5,6 +5,7 @@ set(SRCS
 	AnimationPanel.h AnimationPanel.cpp
 	AssetPanel.h AssetPanel.cpp
 	CameraPanel.h CameraPanel.cpp
+	CollectionPanel.h CollectionPanel.cpp
 	DragAndDropPayload.h
 	FileDialogOptions.h FileDialogOptions.cpp
 	Gizmo.h
@@ -33,6 +34,7 @@ if (USE_IMGUITESTENGINE)
 		tests/AnimationTimelineTest.cpp
 		tests/AssetPanelTest.cpp
 		tests/CameraPanelTest.cpp
+		tests/CollectionPanelTest.cpp
 		tests/NodeInspectorPanelTest.cpp
 		tests/LSystemPanelTest.cpp
 		tests/MainWindowTest.cpp

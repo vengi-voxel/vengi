@@ -6,11 +6,10 @@
 #include "core/StringUtil.h"
 #include "imgui.h"
 #include "ui/IMGUIEx.h"
-#include "voxelcollection/CollectionManager.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
-namespace voxelcollection {
+namespace voxedit {
 
 CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
 	: Super(app, "collection"), _texturePool(texturePool) {
@@ -19,7 +18,7 @@ CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr 
 CollectionPanel::~CollectionPanel() {
 }
 
-bool CollectionPanel::filtered(const VoxelFile &voxelFile) const {
+bool CollectionPanel::filtered(const voxelcollection::VoxelFile &voxelFile) const {
 	if (!_currentFilterName.empty() && !core::string::icontains(voxelFile.name, _currentFilterName)) {
 		return true;
 	}
@@ -92,18 +91,18 @@ void CollectionPanel::updateFilters() {
 	}
 }
 
-int CollectionPanel::update(CollectionManager &collectionMgr,
-							const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
+int CollectionPanel::update(voxelcollection::CollectionManager &collectionMgr,
+							const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu) {
 	_newSelected = false;
 
 	int cnt = 0;
-	const VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
+	const voxelcollection::VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
 	updateFilters();
 
 	const int columns = _thumbnails ? 3 : 2;
 	if (ImGui::BeginTable("##voxelfiles", columns,
-							ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
-								ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
+						  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
+							  ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY)) {
 		ImGui::TableSetupScrollFreeze(0, 1);
 		if (_thumbnails) {
 			ImGui::TableSetupColumn(_("Thumbnail"));
@@ -115,18 +114,18 @@ int CollectionPanel::update(CollectionManager &collectionMgr,
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-											ImGuiTreeNodeFlags_SpanAvailWidth;
+										   ImGuiTreeNodeFlags_SpanAvailWidth;
 			auto iter = voxelFilesMap.find(source.name);
 			if (iter != voxelFilesMap.end()) {
 				if (isFilterActive()) {
 					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 				}
-				const VoxelCollection &collection = iter->second;
+				const voxelcollection::VoxelCollection &collection = iter->second;
 				const int n = (int)collection.files.size();
 				const core::String &label = core::string::format("%s (%i)", source.name.c_str(), n);
 				ImGui::BeginDisabled(!collection.sorted);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const VoxelFiles &voxelFiles = collection.files;
+					const voxelcollection::VoxelFiles &voxelFiles = collection.files;
 					cnt += buildVoxelTree(voxelFiles, contextMenu);
 					ImGui::TreePop();
 				}
@@ -153,12 +152,12 @@ int CollectionPanel::update(CollectionManager &collectionMgr,
 	return cnt;
 }
 
-int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
-									const std::function<void(VoxelFile &voxelFile)> &contextMenu) {
-	core::DynamicArray<VoxelFile *> f;
+int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
+									const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu) {
+	core::DynamicArray<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
-	for (VoxelFile &voxelFile : voxelFiles) {
+	for (voxelcollection::VoxelFile &voxelFile : voxelFiles) {
 		if (filtered(voxelFile)) {
 			continue;
 		}
@@ -173,7 +172,7 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 
 	while (clipper.Step()) {
 		for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; row++) {
-			VoxelFile *voxelFile = f[row];
+			voxelcollection::VoxelFile *voxelFile = f[row];
 
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
@@ -195,7 +194,8 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 				}
 				ImGui::TableNextColumn();
 			}
-			if (ImGui::Selectable(voxelFile->name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
+			if (ImGui::Selectable(voxelFile->name.c_str(), selected,
+								  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
 				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					_selected = *voxelFile;
 					_newSelected = true;
@@ -228,7 +228,7 @@ int CollectionPanel::buildVoxelTree(const VoxelFiles &voxelFiles,
 	return (int)f.size();
 }
 
-video::TexturePtr CollectionPanel::thumbnailLookup(const VoxelFile &voxelFile) {
+video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
 	if (_texturePool->has(voxelFile.name)) {
 		return _texturePool->get(voxelFile.name);
@@ -244,8 +244,8 @@ bool CollectionPanel::init() {
 	return true;
 }
 
-VoxelFile &CollectionPanel::selected() {
+voxelcollection::VoxelFile &CollectionPanel::selected() {
 	return _selected;
 }
 
-} // namespace voxelcollection
+} // namespace voxedit

@@ -9,7 +9,7 @@
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
 #include "voxelcollection/CollectionManager.h"
-#include "voxelcollection/ui/CollectionPanel.h"
+#include "CollectionPanel.h"
 
 namespace voxedit {
 
@@ -24,7 +24,7 @@ private:
 	io::FilesystemPtr _filesystem;
 	SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
-	voxelcollection::CollectionPanel _collectionPanel;
+	CollectionPanel _collectionPanel;
 	core::ConcurrentQueue<image::ImagePtr> _images;
 	std::future<void> _future;
 

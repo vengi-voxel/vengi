@@ -4,11 +4,10 @@ set(SRCS
 	GithubAPI.h GithubAPI.cpp
 	GitlabAPI.h GitlabAPI.cpp
 	CollectionManager.h CollectionManager.cpp
-	ui/CollectionPanel.h ui/CollectionPanel.cpp
 )
 
 set(LIB voxelcollection)
-set(DEPENDENCIES http json voxelformat ui)
+set(DEPENDENCIES http json voxelformat video)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS

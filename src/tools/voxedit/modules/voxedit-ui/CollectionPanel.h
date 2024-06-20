@@ -11,7 +11,7 @@
 
 #define TITLE_ASSET_LIST "Assets##list"
 
-namespace voxelcollection {
+namespace voxedit {
 
 class CollectionPanel : public ui::Panel {
 private:
@@ -28,7 +28,7 @@ private:
 	video::TexturePoolPtr _texturePool;
 
 	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
-					   const std::function<void(VoxelFile &voxelFile)> &contextMenu);
+					   const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu);
 
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
 	void updateFilters();
@@ -39,8 +39,7 @@ public:
 	virtual ~CollectionPanel();
 
 	bool init();
-	int update(CollectionManager &collectionMgr,
-			   const std::function<void(VoxelFile &voxelFile)> &contextMenu = {});
+	int update(voxelcollection::CollectionManager &collectionMgr, const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu = {});
 	void shutdown();
 
 	void setThumbnails(bool state);
@@ -49,6 +48,9 @@ public:
 
 	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 	voxelcollection::VoxelFile &selected();
+#ifdef IMGUI_ENABLE_TEST_ENGINE
+	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+#endif
 };
 
 inline bool CollectionPanel::newSelected() const {
@@ -59,4 +61,4 @@ inline void CollectionPanel::setThumbnails(bool state) {
 	_thumbnails = state;
 }
 
-} // namespace voxelcollection
+} // namespace voxedit
