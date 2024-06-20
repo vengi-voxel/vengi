@@ -145,7 +145,6 @@ jobs:
             cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
             cmake --build .
             cmake --install . --component voxedit --prefix install-voxedit/usr
-            cmake --install . --component voxbrowser --prefix install-voxbrowser/usr
 
         - name: Test
           run: |
@@ -162,19 +161,12 @@ jobs:
             curl https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage --output linuxdeploy-x86_64.AppImage --silent -L -f
             chmod +x linuxdeploy-x86_64.AppImage
             ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxedit
-            ./linuxdeploy-x86_64.AppImage --output=appimage --appdir build/install-voxbrowser
 
         - name: Upload voxedit AppImage artifacts
           uses: actions/upload-artifact@v4
           with:
             name: linux-appimage-voxedit
             path: "voxedit*.AppImage"
-
-        - name: Upload voxbrowser AppImage artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: linux-appimage-voxbrowser
-            path: "voxbrowser*.AppImage"
 
     emscripten:
         timeout-minutes: 60
@@ -240,7 +232,6 @@ jobs:
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component thumbnailer --prefix thumbnailer-install
             cmake --install . --component voxconvert --prefix voxconvert-install
-            cmake --install . --component voxbrowser --prefix voxbrowser-install
             cpack
 
         - name: Upload the cpack logs
@@ -275,12 +266,6 @@ jobs:
             name: win-voxconvert
             path: build/voxconvert-install/
 
-        - name: Upload the voxbrowser artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxbrowser
-            path: build/voxbrowser-install/
-
         - name: Upload the thumbnailer artifacts
           uses: actions/upload-artifact@v4
           with:
@@ -306,7 +291,6 @@ jobs:
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component voxconvert --prefix voxconvert-install
-            cmake --install . --component voxbrowser --prefix voxbrowser-install
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
@@ -319,12 +303,6 @@ jobs:
           with:
             name: win-voxconvert-debug
             path: build/voxconvert-install/
-
-        - name: Upload the voxbrowser artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: win-voxbrowser-debug
-            path: build/voxedit-install/
 
     windows-msys:
         timeout-minutes: 45

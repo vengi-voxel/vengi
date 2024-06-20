@@ -22,6 +22,10 @@ VoxConvert:
    - Added a basic UI for voxconvert
    - Removed `--dump` and added `--json <full>` to generate a scene graph structure
 
+VoxBrowser:
+
+   - Removed standalone application - it's integrated in voxedit now
+
 VoxEdit:
 
    - Improved brush support

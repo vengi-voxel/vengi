@@ -108,7 +108,7 @@ deb: deb-changelog deb-bash-completion
 tests:
 	$(Q)ctest --test-dir $(BUILDDIR) $(CTEST_FLAGS)
 
-package: voxedit voxbrowser thumbnailer voxconvert $(BUILDDIR)/CMakeCache.txt
+package: voxedit thumbnailer voxconvert $(BUILDDIR)/CMakeCache.txt
 ifeq ($(OS),Windows_NT)
 	$(Q)cd $(BUILDDIR) & cpack
 else
@@ -125,7 +125,6 @@ mac-app-password:
 	$(Q)xcrun notarytool store-credentials "KC_PROFILE" --apple-id martin.gerhardy@gmail.com --team-id "Apple Distribution"
 
 mac-verify-signatures-app:
-	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxbrowser)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxedit)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,thumbnailer)
 	$(Q)codesign --verify --verbose=2 $(call APP_PATH,voxconvert) # doesn't work
@@ -168,7 +167,7 @@ release-%:
 shelltests: all
 	$(Q)cd $(BUILDDIR) && ctest -V -C $(BUILDTYPE) -R shelltests-
 
-formatprinter voxbrowser thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
+formatprinter thumbnailer voxedit voxconvert update-videobindings codegen: $(BUILDDIR)/CMakeCache.txt
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target $@
 	$(Q)$(CMAKE) --install $(BUILDDIR) --component $@ --prefix $(INSTALL_DIR)/install-$@/usr
 ifneq ($(OS),Windows_NT)
