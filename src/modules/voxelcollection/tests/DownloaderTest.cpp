@@ -187,22 +187,22 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileCubzh) {
 	source.provider = "cubzh";
 
 	core::DynamicArray<cubzh::TreeEntry> entries;
-	cubzh::TreeEntry entry1{.id = "some-uuid-1",
-							.repo = "author",
-							.name = "model1",
-							.likes = 1,
-							.created = "2024-02-08T07:16:42.696Z",
-							.updated = "2024-02-08T07:16:52.707Z",
-							.category = "",
-							.url = cubzh::downloadUrl("author", "model1")};
-	cubzh::TreeEntry entry2{.id = "some-uuid-2",
-							.repo = "author",
-							.name = "model2",
-							.likes = 1,
-							.created = "2024-02-08T07:15:55.055Z",
-							.updated = "2024-02-08T07:16:16.657Z",
-							.category = "",
-							.url = cubzh::downloadUrl("author", "model2")};
+	cubzh::TreeEntry entry1{"some-uuid-1",
+							"author",
+							"model1",
+							1,
+							"2024-02-08T07:16:42.696Z",
+							"2024-02-08T07:16:52.707Z",
+							"",
+							cubzh::downloadUrl("author", "model1")};
+	cubzh::TreeEntry entry2{"some-uuid-2",
+							"author",
+							"model2",
+							1,
+							"2024-02-08T07:15:55.055Z",
+							"2024-02-08T07:16:16.657Z",
+							"",
+							cubzh::downloadUrl("author", "model2")};
 
 	entries.push_back(entry1);
 	entries.push_back(entry2);
