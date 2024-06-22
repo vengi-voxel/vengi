@@ -93,6 +93,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    | true/false   |
 | `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    | true/false   |
 | `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. | true/false   |
+| `voxformat_emptypaletteindex` | By default this is `-1` which means that no color is skipped. Pick 0-255 to remove that palette index from the final saved file. **NOTE**: this only works for formats that don't force the empty voxel to be `0` or `255` (or any other index) already |
 | `voxformat_fillhollow`        | Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script. | true/false   |
 | `voxformat_gltf_khr_materials_pbrspecularglossiness` | Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files | true/false   |
 | `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files       | true/false   |

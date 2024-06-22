@@ -6,6 +6,7 @@
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
 
@@ -73,6 +74,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	if (mode == video::OpenFileMode::Save) {
 		if (forceApplyOptions || !meshFormat) {
 			ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
+			ImGui::SliderVarInt(_("Empty palette index"), cfg::VoxformatEmptyPaletteIndex, -1, palette::PaletteMaxColors);
 		}
 		ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
 		if (forceApplyOptions || *desc == voxelformat::qubicleBinaryTree()) {

@@ -75,6 +75,7 @@ constexpr const char *VoxformatRGBWeightedAverage = "voxformat_rgbweightedaverag
 constexpr const char *VoxformatScale = "voxformat_scale";
 constexpr const char *VoxformatSaveVisibleOnly = "voxformat_savevisibleonly";
 constexpr const char *VoxformatMerge = "voxformat_merge";
+constexpr const char *VoxformatEmptyPaletteIndex = "voxformat_emptypaletteindex";
 constexpr const char *VoxformatScaleX = "voxformat_scale_x";
 constexpr const char *VoxformatScaleY = "voxformat_scale_y";
 constexpr const char *VoxformatScaleZ = "voxformat_scale_z";

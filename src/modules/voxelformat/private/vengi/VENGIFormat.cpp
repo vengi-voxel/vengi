@@ -5,8 +5,10 @@
 #include "VENGIFormat.h"
 #include "core/ArrayLength.h"
 #include "core/FourCC.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
@@ -90,11 +92,21 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	wrapBool(stream.writeInt32(region.getUpperX()))
 	wrapBool(stream.writeInt32(region.getUpperY()))
 	wrapBool(stream.writeInt32(region.getUpperZ()))
-	auto visitor = [&stream](int, int, int, const voxel::Voxel &voxel) {
+	const int replaceIndex = core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+	int replacement = -1;
+	if (replaceIndex != -1) {
+		replacement = node.palette().findReplacement(replaceIndex);
+		Log::debug("Looking for a similar color in the palette: %d", replacement);
+	}
+	auto visitor = [&stream, replacement, replaceIndex](int, int, int, const voxel::Voxel &voxel) {
 		const bool air = isAir(voxel.getMaterial());
 		stream.writeBool(air);
 		if (!air) {
-			stream.writeUInt8(voxel.getColor());
+			if (voxel.getColor() == replaceIndex) {
+				stream.writeUInt8(replacement);
+			} else {
+				stream.writeUInt8(voxel.getColor());
+			}
 		}
 	};
 	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);

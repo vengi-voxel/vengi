@@ -7,6 +7,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
+#include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -202,11 +203,18 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 	return true;
 }
 
+int PaletteFormat::emptyPaletteIndex() const {
+	// this is only taken into account if the format doesn't force a
+	// particular empty index by overriding this method.
+	return core::Var::getSafe(cfg::VoxformatEmptyPaletteIndex)->intVal();
+}
+
 bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						 const io::ArchivePtr &archive, const SaveContext &ctx) {
+	int emptyIndex = this->emptyPaletteIndex();
 	if (onlyOnePalette() && sceneGraph.hasMoreThanOnePalette()) {
 		Log::debug("Need to merge palettes before saving");
-		const palette::Palette &palette = sceneGraph.mergePalettes(true, emptyPaletteIndex());
+		const palette::Palette &palette = sceneGraph.mergePalettes(true, emptyIndex);
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 		for (auto iter = newSceneGraph.beginAllModels(); iter != newSceneGraph.end(); ++iter) {
@@ -215,39 +223,39 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 			node.setPalette(palette);
 		}
 		return Format::save(newSceneGraph, filename, archive, ctx);
-	} else if (emptyPaletteIndex() >= 0 && emptyPaletteIndex() < palette::PaletteMaxColors) {
-		Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyPaletteIndex());
+	} else if (emptyIndex >= 0 && emptyIndex < palette::PaletteMaxColors) {
+		Log::debug("Need to convert voxels to a palette that has %i as an empty slot", emptyIndex);
 		scenegraph::SceneGraph newSceneGraph;
 		scenegraph::copySceneGraph(newSceneGraph, sceneGraph);
 		for (auto iter = newSceneGraph.beginModel(); iter != newSceneGraph.end(); ++iter) {
 			scenegraph::SceneGraphNode &node = *iter;
 			palette::Palette palette = node.palette();
-			if (palette.color(emptyPaletteIndex()).a > 0) {
-				Log::debug("Need to replace %i", emptyPaletteIndex());
+			if (palette.color(emptyIndex).a > 0) {
+				Log::debug("Need to replace %i", emptyIndex);
 				if (palette.colorCount() < palette::PaletteMaxColors) {
-					Log::debug("Shift colors in palettes to make slot %i empty", emptyPaletteIndex());
-					for (int i = palette.colorCount(); i >= emptyPaletteIndex(); --i) {
+					Log::debug("Shift colors in palettes to make slot %i empty", emptyIndex);
+					for (int i = palette.colorCount(); i >= emptyIndex; --i) {
 						palette.setColor(i, palette.color(i - 1));
 						palette.setMaterial(i, palette.material(i - 1));
 					}
-					if (emptyPaletteIndex() <= palette.colorCount()) {
+					if (emptyIndex <= palette.colorCount()) {
 						palette.changeSize(1);
 					}
 					voxel::RawVolume *v = node.volume();
 					voxelutil::visitVolume(
-						*v, [v, skip = emptyPaletteIndex(), pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
+						*v, [v, skip = emptyIndex, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 							if (voxel.getColor() >= skip) {
 								v->setVoxel(x, y, z, voxel::createVoxel(pal, voxel.getColor() + 1));
 							}
 						});
 				} else {
-					uint8_t replacement = palette.findReplacement(emptyPaletteIndex());
+					uint8_t replacement = palette.findReplacement(emptyIndex);
 					Log::debug("Looking for a similar color in the palette: %d", replacement);
-					if (replacement != emptyPaletteIndex()) {
-						Log::debug("Replace %i with %i", emptyPaletteIndex(), replacement);
+					if (replacement != emptyIndex) {
+						Log::debug("Replace %i with %i", emptyIndex, replacement);
 						voxel::RawVolume *v = node.volume();
 						voxelutil::visitVolume(
-							*v, [v, replaceFrom = emptyPaletteIndex(), replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
+							*v, [v, replaceFrom = emptyIndex, replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 								if (voxel.getColor() == replaceFrom) {
 									v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
 								}
@@ -256,7 +264,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 				}
 				node.setPalette(palette);
 			} else {
-				node.remapToPalette(node.palette(), emptyPaletteIndex());
+				node.remapToPalette(node.palette(), emptyIndex);
 			}
 		}
 		return Format::save(newSceneGraph, filename, archive, ctx);

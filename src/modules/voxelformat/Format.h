@@ -209,9 +209,7 @@ protected:
 	 * A few formats are using a palette index to indicate an empty voxel.
 	 * @return A palette index of @c -1 means that the format doesn't support this feature. Otherwise an index between @c [0,palette::PaletteMaxColors] must be used
 	 */
-	virtual int emptyPaletteIndex() const {
-		return -1;
-	}
+	virtual int emptyPaletteIndex() const;
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override final;
 

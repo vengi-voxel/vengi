@@ -77,6 +77,11 @@ bool FormatConfig::init() {
 				   "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)");
 	core::Var::get(cfg::VoxformatMerge, "false", core::CV_NOPERSIST, "Merge all objects into one",
 				   core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatEmptyPaletteIndex, "-1", core::CV_NOPERSIST,
+				   "The index of the empty color in the palette", [](const core::String &var) {
+					   const int type = var.toInt();
+					   return type >= -1 && type <= 255;
+				   });
 	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST, "Merge compounds on load",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST, "Merge compounds on load",
