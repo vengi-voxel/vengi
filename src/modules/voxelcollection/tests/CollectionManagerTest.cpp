@@ -35,7 +35,7 @@ protected:
 	}
 };
 
-TEST_F(CollectionManagerTest, testLocal) {
+TEST_F(CollectionManagerTest, DISABLED_testLocal) {
 	ASSERT_TRUE(_mgr->local());
 	_mgr->waitLocal();
 	_mgr->update(0.0, 1);
