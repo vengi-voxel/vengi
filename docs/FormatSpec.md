@@ -92,6 +92,15 @@ Voxel data is stored in the `DATA` chunk.
   - **Air**: 1-byte boolean (true if air, false if solid)
   - **Color**: 1-byte unsigned integer (only if not air)
 
+The voxel data is stored with like this:
+
+```c
+for(x = mins.x; x <= maxs.x; ++x)
+ for(y = mins.y; y <= maxs.y; ++y)
+  for(z = mins.z; z <= maxs.z; ++z)
+   writeVoxelInformation(x, y, z)
+```
+
 #### Palette Colors
 
 Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
