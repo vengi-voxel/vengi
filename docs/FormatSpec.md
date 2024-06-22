@@ -20,14 +20,15 @@ A VENGI file consists of the following main sections:
 Each chunk in the file is identified by a 4-byte FourCC code, followed by its data. The main chunk types are:
 
 * `NODE`: Indicates the beginning of a scene graph node.
-* `PROP`: Contains properties of a node.
-* `DATA`: Contains voxel data of a node.
-* `PALC`: Contains palette colors.
-* `PALI`: Contains a palette identifier.
-* `ANIM`: Contains animation data for a node.
-* `KEYF`: Contains keyframe data for an animation.
-* `ENDA`: Marks the end of an animation chunk.
-* `ENDN`: Marks the end of a node chunk.
+    * `PROP`: Contains properties of a node.
+    * `DATA`: Contains voxel data of a node (only if type is `Model`).
+    * `PALC`: Contains palette colors.
+    * `PALI`: Contains a palette identifier.
+    * `ANIM`: Contains animation data for a node.
+        * `KEYF`: Contains keyframe data for an animation.
+        * `ENDA`: Marks the end of an animation chunk.
+    * `NODE[]`: child nodes
+    * `ENDN`: Marks the end of a node chunk.
 
 ## Detailed Format Description
 
