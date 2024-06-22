@@ -11,7 +11,7 @@ The VENGI format is designed to store scene graph data including node properties
 A VENGI file consists of the following main sections:
 
 1. **Magic Number**: A 4-byte identifier `VENG`.
-2. **Zip data**
+2. **Zip data**: zlib header (0x78, 0xDA)
     * **Version**: A 4-byte version number. The current supported version is `3`.
     * **Scene Graph Data**: Contains information about the scene graph nodes.
 
@@ -48,7 +48,7 @@ Each node chunk begins with the `NODE` FourCC and includes the following informa
 * **Reference Node ID**: 4-byte signed integer (for referenced nodes - `-1` if no node is referenced)
 * **Visibility**: 1-byte boolean
 * **Lock State**: 1-byte boolean
-* **Color**: 4-byte RGBA value
+* **Color**: 4-byte ABGR value
 * **Pivot**: Three 4-byte floats (x, y, z)
 * **Properties**: Properties chunk - optional if the node doesn't have any properties
 * **Palette**: Palette chunk
@@ -109,9 +109,9 @@ Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
 * **FourCC**: `PALC`
 * **Color Count**: 4-byte unsigned integer
 * **Colors**: For each color:
-    * **RGBA**: 4-byte unsigned integer
+    * **ABGR**: 4-byte unsigned integer
 * **Emit Colors**: For each color (deprecated):
-    * **RGBA**: 4-byte unsigned integer (always 0)
+    * **ABGR**: 4-byte unsigned integer (always 0)
 * **Indices**: For each color:
     * **Index**: 1-byte unsigned integer
 * **Material Count**: 4-byte unsigned integer
