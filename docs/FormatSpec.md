@@ -92,7 +92,7 @@ Voxel data is stored in the `DATA` chunk.
   - **Air**: 1-byte boolean (true if air, false if solid)
   - **Color**: 1-byte unsigned integer (only if not air)
 
-The voxel data is stored with like this:
+The voxel data is stored like this:
 
 ```c
 for(x = mins.x; x <= maxs.x; ++x)
