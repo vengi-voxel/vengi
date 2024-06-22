@@ -66,11 +66,13 @@ Node types are:
 
 Each node has the FourCC `ENDN` at its end
 
+> You should not rely on the order of chunks when loading a `vengi` file.
+
 #### Node Properties
 
 Node properties are stored in the `PROP` chunk.
 
-Note: This chunk is only available if the node has properties.
+> Note: This chunk is only available if the node has properties.
 
 - **FourCC**: `PROP`
 - **Property Count**: 4-byte unsigned integer
@@ -82,7 +84,7 @@ Note: This chunk is only available if the node has properties.
 
 Voxel data is stored in the `DATA` chunk.
 
-Note: This chunk is only available if the node is a model node.
+> Note: This chunk is only available if the node is a model node.
 
 - **FourCC**: `DATA`
 - **Region**: Six 4-byte signed integers (lowerX, lowerY, lowerZ, upperX, upperY, upperZ)
@@ -92,7 +94,7 @@ Note: This chunk is only available if the node is a model node.
 
 #### Palette Colors
 
-Palette colors are stored in the `PALC` chunk:
+Palette colors are stored in the `PALC` chunk (or in `PALI` - see below):
 
 - **FourCC**: `PALC`
 - **Color Count**: 4-byte unsigned integer
@@ -112,7 +114,9 @@ Palette colors are stored in the `PALC` chunk:
 
 #### Palette Identifier
 
-Palette identifier is stored in the `PALI` chunk:
+Palette identifier is stored in the `PALI` chunk.
+
+> Note: This is only used if the palette is a built-in vengi [palette] (Palette.md) - otherwise the `PALC` chunk is used.
 
 - **FourCC**: `PALI`
 - **Palette Name**: String (16-bit length prefix, followed by UTF-8 encoded string)
