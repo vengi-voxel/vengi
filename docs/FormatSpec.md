@@ -68,7 +68,9 @@ Each node has the FourCC `ENDN` at its end
 
 #### Node Properties
 
-Node properties are stored in the `PROP` chunk:
+Node properties are stored in the `PROP` chunk.
+
+Note: This chunk is only available if the node has properties.
 
 - **FourCC**: `PROP`
 - **Property Count**: 4-byte unsigned integer
@@ -78,7 +80,9 @@ Node properties are stored in the `PROP` chunk:
 
 #### Voxel Data
 
-Voxel data is stored in the `DATA` chunk:
+Voxel data is stored in the `DATA` chunk.
+
+Note: This chunk is only available if the node is a model node.
 
 - **FourCC**: `DATA`
 - **Region**: Six 4-byte signed integers (lowerX, lowerY, lowerZ, upperX, upperY, upperZ)
