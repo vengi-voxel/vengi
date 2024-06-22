@@ -98,7 +98,8 @@ Palette colors are stored in the `PALC` chunk:
   - **RGBA**: 4-byte unsigned integer (always 0)
 - **Indices**: For each color:
   - **Index**: 1-byte unsigned integer
-- **Materials**: For each color:
+- **Material Count**: 4-byte unsigned integer
+- **Materials**: For each material:
   - **Type**: 4-byte unsigned integer
   - **Property Count**: 1-byte unsigned integer
   - **Properties**: For each property:
