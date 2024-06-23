@@ -67,6 +67,6 @@ inline const ArchiveFiles &Archive::files() const {
 }
 
 using ArchivePtr = core::SharedPtr<Archive>;
-bool isSupportedArchive(const core::String &filename);
+bool isZipArchive(const core::String &filename);
 
 } // namespace io

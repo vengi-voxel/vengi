@@ -158,7 +158,7 @@ void Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 				Log::error("Failed to write file %s from archive %s", subFile.name.c_str(),
 						   archiveFile.fullPath.c_str());
 			}
-		} else if (io::isSupportedArchive(subFile.name)) {
+		} else if (io::isZipArchive(subFile.name)) {
 			// save file and call handleArchive again
 			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(f.fullPath));
 			if (!rs) {
@@ -192,7 +192,7 @@ void Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &sho
 			return;
 		}
 		files.push_back(file);
-	} else if (io::isSupportedArchive(file.name)) {
+	} else if (io::isZipArchive(file.name)) {
 		handleArchive(archive, file, files, shouldQuit);
 	}
 }

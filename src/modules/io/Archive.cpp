@@ -53,7 +53,7 @@ bool Archive::write(const core::String &filePath, io::ReadStream &stream) {
 	return wstream->writeStream(stream);
 }
 
-bool isSupportedArchive(const core::String &filename) {
+bool isZipArchive(const core::String &filename) {
 	const core::String &ext = core::string::extractExtension(filename);
 	return ext == "zip" || ext == "pk3";
 }
