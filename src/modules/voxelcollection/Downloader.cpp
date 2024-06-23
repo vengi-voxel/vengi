@@ -119,18 +119,18 @@ static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries, c
 	return "";
 }
 
-void Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &archiveFile,
+bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &archiveFile,
 							   core::DynamicArray<VoxelFile> &files, core::AtomicBool &shouldQuit) const {
 	http::HttpCacheStream stream(archive, archiveFile.targetFile(), archiveFile.url);
 	io::ArchivePtr zipArchive = io::openZipArchive(&stream);
 	if (!zipArchive) {
 		Log::error("Failed to open zip archive %s", archiveFile.targetFile().c_str());
-		return;
+		return false;
 	}
 	Log::debug("Found %i files in zip archive %s", (int)zipArchive->files().size(), archiveFile.name.c_str());
 	for (const io::FilesystemEntry &f : zipArchive->files()) {
 		if (shouldQuit) {
-			return;
+			return true;
 		}
 		VoxelFile subFile;
 		subFile.source = archiveFile.source;
@@ -174,6 +174,7 @@ void Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 			}
 		}
 	}
+	return true;
 }
 
 bool Downloader::download(const io::ArchivePtr &archive, const VoxelFile &file) const {
@@ -185,16 +186,18 @@ bool Downloader::download(const io::ArchivePtr &archive, const VoxelFile &file) 
 	return stream.valid();
 }
 
-void Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files,
+bool Downloader::handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files,
 							VoxelFile &file, bool enableMeshes) const {
 	if (supportedFileExtension(file.name)) {
 		if (!enableMeshes && voxelformat::isMeshFormat(file.name, false)) {
-			return;
+			return false;
 		}
 		files.push_back(file);
+		return true;
 	} else if (io::isZipArchive(file.name)) {
-		handleArchive(archive, file, files, shouldQuit);
+		return handleArchive(archive, file, files, shouldQuit);
 	}
+	return false;
 }
 
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
@@ -290,7 +293,9 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		file.url = source.single.url;
 		file.fullPath = file.name;
 		Log::info("Found single source with name %s and url %s", file.name.c_str(), file.url.c_str());
-		handleFile(archive, shouldQuit, files, file, true);
+		if (!handleFile(archive, shouldQuit, files, file, true)) {
+			files.push_back(file);
+		}
 		return files;
 	}
 	Log::error("Unknown source provider %s", source.provider.c_str());

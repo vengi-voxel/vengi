@@ -84,10 +84,10 @@ using VoxelSources = core::DynamicArray<VoxelSource>;
 
 class Downloader {
 protected:
-	void handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files,
+	bool handleArchive(const io::ArchivePtr &archive, const VoxelFile &file, VoxelFiles &files,
 					   core::AtomicBool &shouldQuit) const;
 
-	void handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files, VoxelFile &file,
+	bool handleFile(const io::ArchivePtr &archive, core::AtomicBool &shouldQuit, VoxelFiles &files, VoxelFile &file,
 					bool enableMeshes) const;
 
 public:
