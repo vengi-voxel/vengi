@@ -215,8 +215,9 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		}
 		if (renderContext.sceneMode) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
-			const int negative = (int)std::signbit(transform.scale.x) + (int)std::signbit(transform.scale.y) +
-								 (int)std::signbit(transform.scale.z);
+			const glm::vec3 scale = transform.scale();
+			const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) +
+								 (int)std::signbit(scale.z);
 			if (negative == 1 || negative == 3) {
 				meshState->setCullFace(id, video::Face::Front);
 			} else {
@@ -225,7 +226,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::mat4 worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
-			const glm::vec3 pivot = transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
+			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
 			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 		} else {
 			meshState->setCullFace(id, video::Face::Back);
@@ -262,8 +263,8 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::mat4 worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
-			const glm::vec3 pivot =
-				transform.scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
+			const glm::vec3 scale = transform.scale();
+			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
 			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
 			if (hideInactive) {
 				meshState->hide(id, id != activeNode);

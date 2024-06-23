@@ -267,6 +267,7 @@ public:
 	 * @note Only use this accessor if you know that the given key frame index exists
 	 */
 	SceneGraphKeyFrame &keyFrame(KeyFrameIndex keyFrameIdx);
+	const SceneGraphKeyFrame *keyFrame(KeyFrameIndex keyFrameIdx) const;
 };
 
 /**

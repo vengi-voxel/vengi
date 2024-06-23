@@ -498,23 +498,35 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	{
 		const SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(parentNode1, 20);
-		EXPECT_FLOAT_EQ(transform.translation.x, 100.0f);
-		EXPECT_FLOAT_EQ(transform.translation.x, 100.0f);
-		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.orientation).x, glm::radians(90.0f));
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(translation.x, 100.0f);
+		EXPECT_FLOAT_EQ(translation.x, 100.0f);
+		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(90.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
-		EXPECT_FLOAT_EQ(transform.translation.x, 100.0f)
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(translation.x, 100.0f)
 			<< "The child node should also get the world translation of the parent";
-		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.orientation).x, glm::radians(90.0f));
+		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(90.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 10);
-		EXPECT_FLOAT_EQ(transform.translation.x, 50.0f)
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(translation.x, 50.0f)
 			<< "The child node should also get the world translation of the parent";
-		EXPECT_FLOAT_EQ(glm::eulerAngles(transform.orientation).x, glm::radians(45.0f));
+		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(45.0f));
 	}
 }
 
@@ -542,12 +554,20 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 1);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
 	}
 }
 
@@ -577,12 +597,20 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(180.0f));
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(transform.orientation).x), glm::radians(90.0f));
+		glm::vec3 scale;
+		glm::quat orientation;
+		glm::vec3 translation;
+		transform.decompose(scale, orientation, translation);
+		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(90.0f));
 	}
 }
 

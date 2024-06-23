@@ -23,17 +23,15 @@ using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
 
 struct FrameTransform {
-	glm::mat4 worldMatrix() const;
-	glm::quat orientation;
-	glm::vec3 translation;
-	glm::vec3 scale;
-};
+	glm::mat4 matrix;
 
-struct AnimState {
-	FrameTransform transform;
-	FrameIndex frameIdx = 0;
-	InterpolationType interpolation = InterpolationType::Linear;
-	bool longRotation = false;
+	inline const glm::mat4 &worldMatrix() const {
+		return matrix;
+	}
+
+	glm::vec3 translation() const;
+	glm::vec3 scale() const;
+	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
 };
 
 /**
@@ -52,10 +50,6 @@ protected:
 	mutable FrameIndex _cachedMaxFrame = -1;
 
 	void updateTransforms_r(SceneGraphNode &node);
-	AnimState transformFrameSource_r(const SceneGraphNode &node, const core::String &animation,
-									 FrameIndex frameIdx) const;
-	AnimState transformFrameTarget_r(const SceneGraphNode &node, const core::String &animation,
-									 FrameIndex frameIdx) const;
 
 public:
 	SceneGraph(int nodes = 262144);

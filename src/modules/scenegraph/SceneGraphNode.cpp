@@ -423,6 +423,14 @@ SceneGraphKeyFrame &SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) {
 	return (*kfs)[keyFrameIdx];
 }
 
+const SceneGraphKeyFrame *SceneGraphNode::keyFrame(KeyFrameIndex keyFrameIdx) const {
+	const SceneGraphKeyFrames &kfs = keyFrames();
+	if ((int)kfs.size() <= keyFrameIdx) {
+		return nullptr;
+	}
+	return &kfs[keyFrameIdx];
+}
+
 bool SceneGraphNode::keyFramesValidate() const {
 	const SceneGraphKeyFrames &kfs = keyFrames();
 	if (kfs.empty()) {

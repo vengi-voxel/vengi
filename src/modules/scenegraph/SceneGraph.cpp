@@ -11,6 +11,7 @@
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
@@ -21,15 +22,31 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/matrix_access.hpp>
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_ASSERT core_assert
 #include "external/stb_rect_pack.h"
 
 namespace scenegraph {
 
-glm::mat4 FrameTransform::worldMatrix() const {
-	return glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
+glm::vec3 FrameTransform::scale() const {
+	glm::vec3 sc;
+	glm::quat orientation;
+	glm::vec3 translation;
+	decompose(sc, orientation, translation);
+	return sc;
+}
+
+glm::vec3 FrameTransform::translation() const {
+	return glm::column(matrix, 3);
+}
+
+void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const {
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 }
 
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
@@ -286,91 +303,6 @@ int SceneGraph::nextModelNode(int nodeId) const {
 	return InvalidNodeId;
 }
 
-AnimState SceneGraph::transformFrameSource_r(const SceneGraphNode &node, const core::String &animation,
-											 FrameIndex frameIdx) const {
-	const SceneGraphKeyFrames &keyFrames = node.keyFrames(animation);
-	const SceneGraphKeyFrame *match = nullptr;
-	AnimState state;
-	core_assert(frameIdx >= 0);
-	core_assert(node.keyFramesValidate());
-	for (const SceneGraphKeyFrame &kf : keyFrames) {
-		if (kf.frameIdx == frameIdx) {
-			match = &kf;
-			break;
-		}
-	}
-	if (match != nullptr) {
-		const SceneGraphTransform &transform = match->transform();
-		state.transform.orientation = transform.worldOrientation();
-		state.transform.translation = transform.worldTranslation();
-		state.transform.scale = transform.worldScale();
-		state.frameIdx = match->frameIdx;
-		state.interpolation = match->interpolation;
-		state.longRotation = match->longRotation;
-		return state;
-	}
-	const KeyFrameIndex bestFit = node.keyFrameForFrame(frameIdx);
-	const SceneGraphKeyFrame &kf = keyFrames[bestFit];
-	const SceneGraphTransform &transform = kf.transform();
-	if (node.parent() == InvalidNodeId) {
-		state.transform.orientation = transform.worldOrientation();
-		state.transform.translation = transform.worldTranslation();
-		state.transform.scale = transform.worldScale();
-		state.frameIdx = kf.frameIdx;
-		state.interpolation = kf.interpolation;
-		state.longRotation = kf.longRotation;
-		return state;
-	}
-	state = transformFrameSource_r(this->node(node.parent()), animation, frameIdx);
-	state.transform.orientation *= transform.localOrientation();
-	state.transform.translation += transform.localTranslation();
-	state.transform.scale *= transform.localScale();
-	return state;
-}
-
-AnimState SceneGraph::transformFrameTarget_r(const SceneGraphNode &node, const core::String &animation,
-											 FrameIndex frameIdx) const {
-	const SceneGraphKeyFrames &keyFrames = node.keyFrames(animation);
-	const SceneGraphKeyFrame *last = nullptr;
-	AnimState state;
-	core_assert(frameIdx >= 0);
-	core_assert(node.keyFramesValidate());
-	for (const SceneGraphKeyFrame &kf : keyFrames) {
-		if (kf.frameIdx <= frameIdx) {
-			last = &kf;
-			continue;
-		}
-		const SceneGraphTransform &transform = kf.transform();
-		state.transform.orientation = transform.worldOrientation();
-		state.transform.translation = transform.worldTranslation();
-		state.transform.scale = transform.worldScale();
-		state.frameIdx = kf.frameIdx;
-		state.interpolation = kf.interpolation;
-		state.longRotation = kf.longRotation;
-		return state;
-	}
-	if (node.parent() == InvalidNodeId) {
-		const KeyFrameIndex bestFit = node.nextKeyFrameForFrame(frameIdx);
-		const SceneGraphKeyFrame &kf = keyFrames[bestFit];
-		const SceneGraphTransform &transform = kf.transform();
-		state.transform.orientation = transform.worldOrientation();
-		state.transform.translation = transform.worldTranslation();
-		state.transform.scale = transform.worldScale();
-		state.frameIdx = kf.frameIdx;
-		state.interpolation = kf.interpolation;
-		state.longRotation = kf.longRotation;
-		return state;
-	}
-	core_assert(last != nullptr);
-	const SceneGraphNode &parentNode = this->node(node.parent());
-	const SceneGraphTransform &transform = last->transform();
-	state = transformFrameTarget_r(parentNode, animation, frameIdx);
-	state.transform.orientation *= transform.localOrientation();
-	state.transform.translation += transform.localTranslation();
-	state.transform.scale *= transform.localScale();
-	return state;
-}
-
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	return transformForFrame(node, _activeAnimation, frameIdx);
 }
@@ -381,19 +313,41 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const c
 	// and https://github.com/vengi-voxel/vengi/issues/265
 	// TODO: solve flipping of child transforms if parent has rotation applied - see
 	// https://github.com/vengi-voxel/vengi/issues/420
-	const AnimState source = transformFrameSource_r(node, animation, frameIdx);
-	const AnimState target = transformFrameTarget_r(node, animation, frameIdx);
-	const FrameIndex startFrameIdx = source.frameIdx;
-	const InterpolationType interpolationType = source.interpolation;
-	const FrameIndex endFrameIdx = target.frameIdx;
-	const double deltaFrameSeconds =
-		scenegraph::interpolate(interpolationType, (double)frameIdx, (double)startFrameIdx, (double)endFrameIdx);
-	const float factor = glm::clamp((float)(deltaFrameSeconds - (double)startFrameIdx), 0.0f, 1.0f);
+	FrameTransform parentTransform;
+	if (node.parent() == InvalidNodeId) {
+		parentTransform.matrix = glm::mat4(1.0f);
+	} else {
+		parentTransform = transformForFrame(this->node(node.parent()), animation, frameIdx);
+	}
 
 	FrameTransform transform;
-	transform.translation = glm::mix(source.transform.translation, target.transform.translation, factor);
-	transform.orientation = glm::slerp(source.transform.orientation, target.transform.orientation, factor);
-	transform.scale = glm::mix(source.transform.scale, target.transform.scale, factor);
+	KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
+	if (node.keyFrames().size() == 1) {
+		const SceneGraphKeyFrame *kf = node.keyFrame(0);
+		transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+	} else if (node.hasKeyFrameForFrame(frameIdx, &keyFrameIdx)) {
+		const SceneGraphKeyFrame *kf = node.keyFrame(keyFrameIdx);
+		transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+	} else {
+		const KeyFrameIndex start = node.previousKeyFrameForFrame(frameIdx);
+		const KeyFrameIndex end = node.nextKeyFrameForFrame(frameIdx);
+		if (start == end) {
+			const SceneGraphKeyFrame *kf = node.keyFrame(start);
+			transform.matrix = parentTransform.matrix * kf->transform().localMatrix();
+		} else {
+			const SceneGraphKeyFrame *source = node.keyFrame(start);
+			const SceneGraphKeyFrame *target = node.keyFrame(end);
+			core_assert_always(source && target);
+			const InterpolationType interpolationType = source->interpolation;
+			const double deltaFrame = scenegraph::interpolate(interpolationType, (double)frameIdx, (double)source->frameIdx, (double)target->frameIdx);
+			const float lerpFactor = glm::clamp((float)(deltaFrame - (double)source->frameIdx), 0.0f, 1.0f);
+
+			const glm::vec3 translation = glm::mix(source->transform().localTranslation(), target->transform().localTranslation(), lerpFactor);
+			const glm::quat orientation = glm::slerp(source->transform().localOrientation(), target->transform().localOrientation(), lerpFactor);
+			const glm::vec3 scale = glm::mix(source->transform().localScale(), target->transform().localScale(), lerpFactor);
+			transform.matrix = parentTransform.matrix * (glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale));
+		}
+	}
 	return transform;
 }
 
@@ -605,16 +559,10 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 	}
 	n.setParent(newParentId);
 	if (updateTransform) {
-		const SceneGraphNode &parentNode = node(newParentId);
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
 				SceneGraphTransform &transform = keyframe.transform();
-				const FrameTransform &parentFrameTransform =
-					transformForFrame(parentNode, animation, keyframe.frameIdx);
-				const glm::vec3 &tdelta = transform.worldTranslation() - parentFrameTransform.translation;
-				const glm::quat &tquat = transform.worldOrientation() - parentFrameTransform.orientation;
-				transform.setLocalTranslation(tdelta);
-				transform.setLocalOrientation(tquat);
+				transform.markDirty();
 			}
 		}
 		updateTransforms();
