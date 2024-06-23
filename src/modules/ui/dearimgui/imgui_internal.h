@@ -1,4 +1,4 @@
-// dear imgui, v1.90.8
+// dear imgui, v1.90.9 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend Dear ImGui features but we don't provide any guarantee of forward compatibility.
@@ -360,6 +360,7 @@ namespace ImStb
 // - Helper: ImPool<>
 // - Helper: ImChunkStream<>
 // - Helper: ImGuiTextIndex
+// - Helper: ImGuiStorage
 //-----------------------------------------------------------------------------
 
 // Helpers: Hashing
@@ -734,7 +735,7 @@ struct ImChunkStream
     void    swap(ImChunkStream<T>& rhs) { rhs.Buf.swap(Buf); }
 };
 
-// Helper: ImGuiTextIndex<>
+// Helper: ImGuiTextIndex
 // Maintain a line index for a text buffer. This is a strong candidate to be moved into the public API.
 struct ImGuiTextIndex
 {
@@ -748,6 +749,8 @@ struct ImGuiTextIndex
     void            append(const char* base, int old_size, int new_size);
 };
 
+// Helper: ImGuiStorage
+IMGUI_API ImGuiStoragePair* ImLowerBound(ImGuiStoragePair* in_begin, ImGuiStoragePair* in_end, ImGuiID key);
 //-----------------------------------------------------------------------------
 // [SECTION] ImDrawList support
 //-----------------------------------------------------------------------------
@@ -1861,11 +1864,13 @@ struct IMGUI_API ImGuiDockNode
 enum ImGuiWindowDockStyleCol
 {
     ImGuiWindowDockStyleCol_Text,
-    ImGuiWindowDockStyleCol_Tab,
     ImGuiWindowDockStyleCol_TabHovered,
-    ImGuiWindowDockStyleCol_TabActive,
-    ImGuiWindowDockStyleCol_TabUnfocused,
-    ImGuiWindowDockStyleCol_TabUnfocusedActive,
+    ImGuiWindowDockStyleCol_TabFocused,
+    ImGuiWindowDockStyleCol_TabSelected,
+    ImGuiWindowDockStyleCol_TabSelectedOverline,
+    ImGuiWindowDockStyleCol_TabDimmed,
+    ImGuiWindowDockStyleCol_TabDimmedSelected,
+    ImGuiWindowDockStyleCol_TabDimmedSelectedOverline,
     ImGuiWindowDockStyleCol_COUNT
 };
 
@@ -2130,6 +2135,7 @@ struct ImGuiContext
     bool                    GcCompactAll;                       // Request full GC
     bool                    TestEngineHookItems;                // Will call test engine hooks: ImGuiTestEngineHook_ItemAdd(), ImGuiTestEngineHook_ItemInfo(), ImGuiTestEngineHook_Log()
     void*                   TestEngine;                         // Test engine user data
+    char                    ContextName[16];                    // Storage for a context name (to facilitate debugging multi-context setups)
 
     // Inputs
     ImVector<ImGuiInputEvent> InputEventsQueue;                 // Input events which will be trickled/written into IO structure.
@@ -2149,6 +2155,7 @@ struct ImGuiContext
     ImGuiWindow*            CurrentWindow;                      // Window being drawn into
     ImGuiWindow*            HoveredWindow;                      // Window the mouse is hovering. Will typically catch mouse inputs.
     ImGuiWindow*            HoveredWindowUnderMovingWindow;     // Hovered window ignoring MovingWindow. Only set if MovingWindow is set.
+    ImGuiWindow*            HoveredWindowBeforeClear;           // Window the mouse is hovering. Filled even with _NoMouse. This is currently useful for multi-context compositors.
     ImGuiWindow*            MovingWindow;                       // Track the window we clicked on (in order to preserve focus). The actual window that is moved is generally MovingWindow->RootWindowDockTree.
     ImGuiWindow*            WheelingWindow;                     // Track the window we started mouse-wheeling on. Until a timer elapse or mouse has moved, generally keep scrolling the same window even if during the course of scrolling the mouse ends up hovering a child window.
     ImVec2                  WheelingWindowRefMousePos;
@@ -2165,7 +2172,7 @@ struct ImGuiContext
     float                   HoveredIdTimer;                     // Measure contiguous hovering time
     float                   HoveredIdNotActiveTimer;            // Measure contiguous hovering time where the item has not been active
     bool                    HoveredIdAllowOverlap;
-    bool                    HoveredIdDisabled;                  // At least one widget passed the rect test, but has been discarded by disabled flag or popup inhibit. May be true even if HoveredId == 0.
+    bool                    HoveredIdIsDisabled;                // At least one widget passed the rect test, but has been discarded by disabled flag or popup inhibit. May be true even if HoveredId == 0.
     bool                    ItemUnclipByLog;                    // Disable ItemAdd() clipping, essentially a memory-locality friendly copy of LogEnabled
     ImGuiID                 ActiveId;                           // Active widget
     ImGuiID                 ActiveIdIsAlive;                    // Active widget has been seen this frame (we can't use a bool as the ActiveId may change within the frame)
@@ -2474,6 +2481,7 @@ struct ImGuiContext
         GcCompactAll = false;
         TestEngineHookItems = false;
         TestEngine = NULL;
+        memset(ContextName, 0, sizeof(ContextName));
 
         InputEventsNextMouseSource = ImGuiMouseSource_Mouse;
         InputEventsNextEventId = 1;
@@ -2482,6 +2490,7 @@ struct ImGuiContext
         CurrentWindow = NULL;
         HoveredWindow = NULL;
         HoveredWindowUnderMovingWindow = NULL;
+        HoveredWindowBeforeClear = NULL;
         MovingWindow = NULL;
         WheelingWindow = NULL;
         WheelingWindowStartFrame = WheelingWindowScrolledFrame = -1;
@@ -2490,7 +2499,7 @@ struct ImGuiContext
         DebugHookIdInfo = 0;
         HoveredId = HoveredIdPreviousFrame = 0;
         HoveredIdAllowOverlap = false;
-        HoveredIdDisabled = false;
+        HoveredIdIsDisabled = false;
         HoveredIdTimer = HoveredIdNotActiveTimer = 0.0f;
         ItemUnclipByLog = false;
         ActiveId = 0;
@@ -3394,22 +3403,26 @@ namespace ImGui
     IMGUI_API void          LogRenderedText(const ImVec2* ref_pos, const char* text, const char* text_end = NULL);
     IMGUI_API void          LogSetNextTextDecoration(const char* prefix, const char* suffix);
 
-    // Popups, Modals, Tooltips
+    // Childs
     IMGUI_API bool          BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, ImGuiChildFlags child_flags, ImGuiWindowFlags window_flags);
+
+    // Popups, Modals
+    IMGUI_API bool          BeginPopupEx(ImGuiID id, ImGuiWindowFlags extra_window_flags);
     IMGUI_API void          OpenPopupEx(ImGuiID id, ImGuiPopupFlags popup_flags = ImGuiPopupFlags_None);
     IMGUI_API void          ClosePopupToLevel(int remaining, bool restore_focus_to_window_under_popup);
     IMGUI_API void          ClosePopupsOverWindow(ImGuiWindow* ref_window, bool restore_focus_to_window_under_popup);
     IMGUI_API void          ClosePopupsExceptModals();
     IMGUI_API bool          IsPopupOpen(ImGuiID id, ImGuiPopupFlags popup_flags);
-    IMGUI_API bool          BeginPopupEx(ImGuiID id, ImGuiWindowFlags extra_flags);
-    IMGUI_API bool          BeginTooltipEx(ImGuiTooltipFlags tooltip_flags, ImGuiWindowFlags extra_window_flags);
-    IMGUI_API bool          BeginTooltipHidden();
     IMGUI_API ImRect        GetPopupAllowedExtentRect(ImGuiWindow* window);
     IMGUI_API ImGuiWindow*  GetTopMostPopupModal();
     IMGUI_API ImGuiWindow*  GetTopMostAndVisiblePopupModal();
     IMGUI_API ImGuiWindow*  FindBlockingModal(ImGuiWindow* window);
     IMGUI_API ImVec2        FindBestWindowPosForPopup(ImGuiWindow* window);
     IMGUI_API ImVec2        FindBestWindowPosForPopupEx(const ImVec2& ref_pos, const ImVec2& size, ImGuiDir* last_dir, const ImRect& r_outer, const ImRect& r_avoid, ImGuiPopupPositionPolicy policy);
+
+    // Tooltips
+    IMGUI_API bool          BeginTooltipEx(ImGuiTooltipFlags tooltip_flags, ImGuiWindowFlags extra_window_flags);
+    IMGUI_API bool          BeginTooltipHidden();
 
     // Menus
     IMGUI_API bool          BeginViewportSideBar(const char* name, ImGuiViewport* viewport, ImGuiDir dir, float size, ImGuiWindowFlags window_flags);

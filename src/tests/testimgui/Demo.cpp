@@ -1,4 +1,4 @@
-// dear imgui, v1.90.8
+// dear imgui, v1.90.9 WIP
 // (demo code)
 
 // Help:
@@ -479,19 +479,25 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::CheckboxFlags("io.ConfigFlags: NavEnableSetMousePos", &io.ConfigFlags, ImGuiConfigFlags_NavEnableSetMousePos);
             ImGui::SameLine(); HelpMarker("Instruct navigation to move the mouse cursor. See comment for ImGuiConfigFlags_NavEnableSetMousePos.");
             ImGui::CheckboxFlags("io.ConfigFlags: NoMouse",              &io.ConfigFlags, ImGuiConfigFlags_NoMouse);
+            ImGui::SameLine(); HelpMarker("Instruct dear imgui to disable mouse inputs and interactions.");
+
+            // The "NoMouse" option can get us stuck with a disabled mouse! Let's provide an alternative way to fix it:
             if (io.ConfigFlags & ImGuiConfigFlags_NoMouse)
             {
-                // The "NoMouse" option can get us stuck with a disabled mouse! Let's provide an alternative way to fix it:
                 if (fmodf((float)ImGui::GetTime(), 0.40f) < 0.20f)
                 {
                     ImGui::SameLine();
                     ImGui::Text("<<PRESS SPACE TO DISABLE>>");
                 }
-                if (ImGui::IsKeyPressed(ImGuiKey_Space))
+                // Prevent both being checked
+                if (ImGui::IsKeyPressed(ImGuiKey_Space) || (io.ConfigFlags & ImGuiConfigFlags_NoKeyboard))
                     io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
             }
-            ImGui::CheckboxFlags("io.ConfigFlags: NoMouseCursorChange", &io.ConfigFlags, ImGuiConfigFlags_NoMouseCursorChange);
+
+            ImGui::CheckboxFlags("io.ConfigFlags: NoMouseCursorChange",  &io.ConfigFlags, ImGuiConfigFlags_NoMouseCursorChange);
             ImGui::SameLine(); HelpMarker("Instruct backend to not alter mouse cursor shape and visibility.");
+            ImGui::CheckboxFlags("io.ConfigFlags: NoKeyboard", &io.ConfigFlags, ImGuiConfigFlags_NoKeyboard);
+            ImGui::SameLine(); HelpMarker("Instruct dear imgui to disable keyboard inputs and interactions.");
 
             ImGui::Checkbox("io.ConfigInputTrickleEventQueue", &io.ConfigInputTrickleEventQueue);
             ImGui::SameLine(); HelpMarker("Enable input queue trickling: some types of events submitted during the same frame (e.g. button down + up) will be spread over multiple frames, improving interactions with low framerates.");
@@ -1791,6 +1797,7 @@ static void ShowDemoWindowWidgets()
             ImGui::CheckboxFlags("ImGuiTabBarFlags_AutoSelectNewTabs", &tab_bar_flags, ImGuiTabBarFlags_AutoSelectNewTabs);
             ImGui::CheckboxFlags("ImGuiTabBarFlags_TabListPopupButton", &tab_bar_flags, ImGuiTabBarFlags_TabListPopupButton);
             ImGui::CheckboxFlags("ImGuiTabBarFlags_NoCloseWithMiddleMouseButton", &tab_bar_flags, ImGuiTabBarFlags_NoCloseWithMiddleMouseButton);
+            ImGui::CheckboxFlags("ImGuiTabBarFlags_DrawSelectedOverline", &tab_bar_flags, ImGuiTabBarFlags_DrawSelectedOverline);
             if ((tab_bar_flags & ImGuiTabBarFlags_FittingPolicyMask_) == 0)
                 tab_bar_flags |= ImGuiTabBarFlags_FittingPolicyDefault_;
             if (ImGui::CheckboxFlags("ImGuiTabBarFlags_FittingPolicyResizeDown", &tab_bar_flags, ImGuiTabBarFlags_FittingPolicyResizeDown))
@@ -1799,11 +1806,13 @@ static void ShowDemoWindowWidgets()
                 tab_bar_flags &= ~(ImGuiTabBarFlags_FittingPolicyMask_ ^ ImGuiTabBarFlags_FittingPolicyScroll);
 
             // Tab Bar
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Opened:");
             const char* names[4] = { "Artichoke", "Beetroot", "Celery", "Daikon" };
             static bool opened[4] = { true, true, true, true }; // Persistent user state
             for (int n = 0; n < IM_ARRAYSIZE(opened); n++)
             {
-                if (n > 0) { ImGui::SameLine(); }
+                ImGui::SameLine();
                 ImGui::Checkbox(names[n], &opened[n]);
             }
 
@@ -6941,7 +6950,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
                 "Right-click to open edit options menu.");
 
             ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 10), ImVec2(FLT_MAX, FLT_MAX));
-            ImGui::BeginChild("##colors", ImVec2(0, 0), ImGuiChildFlags_Border, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+            ImGui::BeginChild("##colors", ImVec2(0, 0), ImGuiChildFlags_Border | ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
             ImGui::PushItemWidth(ImGui::GetFontSize() * -12);
             for (int i = 0; i < ImGuiCol_COUNT; i++)
             {
@@ -7341,7 +7350,7 @@ struct ExampleAppConsole
 
         // Reserve enough left-over height for 1 separator + 1 input text
         const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NavFlattened))
+        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar))
         {
             if (ImGui::BeginPopupContextWindow())
             {
@@ -8869,6 +8878,7 @@ void ShowExampleAppDocuments(bool* p_open)
     if (opt_target == Target_Tab)
     {
         ImGuiTabBarFlags tab_bar_flags = (opt_fitting_flags) | (opt_reorderable ? ImGuiTabBarFlags_Reorderable : 0);
+        tab_bar_flags |= ImGuiTabBarFlags_DrawSelectedOverline;
         if (ImGui::BeginTabBar("##tabs", tab_bar_flags))
         {
             if (opt_reorderable)
