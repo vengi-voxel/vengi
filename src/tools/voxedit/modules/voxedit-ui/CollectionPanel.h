@@ -30,6 +30,7 @@ private:
 	voxelcollection::VoxelFile _selected;
 	video::TexturePoolPtr _texturePool;
 
+	bool import(voxelcollection::VoxelFile *voxelFile);
 	void contextMenu(voxelcollection::VoxelFile *voxelFile);
 	void handleDoubleClick(voxelcollection::VoxelFile *voxelFile);
 	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);

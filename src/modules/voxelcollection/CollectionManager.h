@@ -27,6 +27,7 @@ private:
 
 	core::ConcurrentQueue<image::ImagePtr> _imageQueue;
 	video::TexturePoolPtr _texturePool;
+	io::FilesystemPtr _filesystem;
 
 	core::AtomicInt _downloadProgress = 0; // 0-100
 	core::AtomicBool _shouldQuit = false;
@@ -79,6 +80,8 @@ public:
 	const VoxelSources &sources() const;
 	int downloadProgress() const;
 	int allEntries() const;
+
+	core::String absolutePath(const VoxelFile &voxelFile) const;
 };
 
 inline const VoxelSources &CollectionManager::sources() const {

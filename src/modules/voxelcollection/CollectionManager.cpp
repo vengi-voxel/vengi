@@ -16,7 +16,7 @@
 namespace voxelcollection {
 
 CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool)
-	: _texturePool(texturePool) {
+	: _texturePool(texturePool), _filesystem(filesystem) {
 	_archive = io::openFilesystemArchive(filesystem, "", false);
 	_localDir = filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 }
@@ -29,6 +29,11 @@ bool CollectionManager::init() {
 	local.name = "local";
 	_sources.push_back(local);
 	return true;
+}
+
+core::String CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
+	// this has to match with the http cache stream
+	return _filesystem->writePath(voxelFile.targetFile());
 }
 
 bool CollectionManager::setLocalDir(const core::String &dir) {

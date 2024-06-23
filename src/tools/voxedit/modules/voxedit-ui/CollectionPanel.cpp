@@ -3,8 +3,8 @@
  */
 
 #include "CollectionPanel.h"
+#include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "imgui.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -155,50 +155,65 @@ int CollectionPanel::update() {
 
 void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::BeginPopupContextItem()) {
+		if (!voxelFile->downloaded) {
+			_collectionMgr->download(*voxelFile);
+		}
+
 		if (ImGui::MenuItem(_("Use stamp"))) {
 			Modifier &modifier = _sceneMgr->modifier();
 			StampBrush &brush = modifier.stampBrush();
-			if (!voxelFile->downloaded) {
-				_collectionMgr->download(*voxelFile);
-			}
-			if (voxelFile->downloaded) {
-				if (brush.load(voxelFile->targetFile())) {
-					modifier.setBrushType(BrushType::Stamp);
-				} else {
-					Log::error("Failed to load stamp brush");
-				}
+			if (brush.load(voxelFile->targetFile())) {
+				modifier.setBrushType(BrushType::Stamp);
 			} else {
-				Log::error("Failed to download stamp brush");
+				Log::error("Failed to load stamp brush");
 			}
 		}
 		ImGui::TooltipTextUnformatted(
 			_("This is only possible if the model doesn't exceed the max allowed stamp size"));
 
 		if (ImGui::MenuItem(_("Add to scene"))) {
-			if (!voxelFile->downloaded) {
-				_collectionMgr->download(*voxelFile);
+			import(voxelFile);
+		}
+
+		if (_thumbnails) {
+			if (ImGui::MenuItem(_("Hide thumbnails"))) {
+				_thumbnails = false;
 			}
-			if (voxelFile->downloaded) {
-				_sceneMgr->import(voxelFile->targetFile());
-			} else {
-				Log::error("Failed to download model");
+		} else {
+			if (ImGui::MenuItem(_("Show thumbnails"))) {
+				_thumbnails = true;
 			}
 		}
 
-		// TODO: if the file format is not supported, but still shown, we should offer
-		// the option to open it in the os file browser
+		if (!io::isA(voxelFile->name, voxelformat::voxelLoad())) {
+			if (ImGui::MenuItem(_("Open target file"))) {
+				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
+				command::executeCommands("url \"file://" + absPath + "\"");
+			}
+			if (ImGui::MenuItem(_("Open target dir"))) {
+				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
+				command::executeCommands("url \"file://" + core::string::extractPath(absPath) + "\"");
+			}
+		}
 
 		ImGui::EndPopup();
 	}
 }
 
+bool CollectionPanel::import(voxelcollection::VoxelFile *voxelFile) {
+	if (!voxelFile->downloaded) {
+		_collectionMgr->download(*voxelFile);
+	}
+	if (!voxelFile->downloaded) {
+		return false;
+	}
+	return _sceneMgr->import(voxelFile->targetFile());
+}
+
 void CollectionPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
 	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+		import(voxelFile);
 		_selected = *voxelFile;
-		if (!_selected.downloaded) {
-			_collectionMgr->download(_selected);
-		}
-		_sceneMgr->import(_selected.targetFile());
 	}
 }
 
