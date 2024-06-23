@@ -114,7 +114,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				viewportOptions();
-				ImGui::IconCheckboxVar(ICON_LC_TV_2, _("Allow multi monitor"), cfg::UIMultiMonitor);
+				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, _("Allow multi monitor"), cfg::UIMultiMonitor);
 				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar(_("Simplified UI"), cfg::VoxEditSimplifiedView);

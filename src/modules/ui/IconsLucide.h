@@ -8,8 +8,8 @@
 #define FONT_ICON_FILE_NAME_LC "lucide.ttf"
 
 #define ICON_MIN_LC 0xe038
-#define ICON_MAX_16_LC 0xe5e3
-#define ICON_MAX_LC 0xe5e3
+#define ICON_MAX_16_LC 0xe5f3
+#define ICON_MAX_LC 0xe5f3
 
 #define ICON_LC_A_ARROW_DOWN "\xee\x96\x89"	// U+e589
 #define ICON_LC_A_ARROW_UP "\xee\x96\x8a"	// U+e58a
@@ -178,6 +178,7 @@
 #define ICON_LC_BETWEEN_HORIZONTAL_START "\xee\x96\x96"	// U+e596
 #define ICON_LC_BETWEEN_VERTICAL_END "\xee\x96\x97"	// U+e597
 #define ICON_LC_BETWEEN_VERTICAL_START "\xee\x96\x98"	// U+e598
+#define ICON_LC_BICEPS_FLEXED "\xee\x97\xaf"	// U+e5ef
 #define ICON_LC_BIKE "\xee\x87\x90"	// U+e1d0
 #define ICON_LC_BINARY "\xee\x87\xb0"	// U+e1f0
 #define ICON_LC_BIOHAZARD "\xee\x91\x85"	// U+e445
@@ -225,6 +226,7 @@
 #define ICON_LC_BOOKMARK "\xee\x81\xa6"	// U+e066
 #define ICON_LC_BOOM_BOX "\xee\x93\xb2"	// U+e4f2
 #define ICON_LC_BOT_MESSAGE_SQUARE "\xee\x97\x92"	// U+e5d2
+#define ICON_LC_BOT_OFF "\xee\x97\xa4"	// U+e5e4
 #define ICON_LC_BOT "\xee\x86\xb9"	// U+e1b9
 #define ICON_LC_BOX_SELECT "\xee\x86\xba"	// U+e1ba
 #define ICON_LC_BOX "\xee\x81\xa7"	// U+e067
@@ -255,6 +257,7 @@
 #define ICON_LC_CALENDAR_CHECK_2 "\xee\x8a\xb7"	// U+e2b7
 #define ICON_LC_CALENDAR_CHECK "\xee\x8a\xb6"	// U+e2b6
 #define ICON_LC_CALENDAR_CLOCK "\xee\x8c\x83"	// U+e303
+#define ICON_LC_CALENDAR_COG "\xee\x97\xb1"	// U+e5f1
 #define ICON_LC_CALENDAR_DAYS "\xee\x8a\xb8"	// U+e2b8
 #define ICON_LC_CALENDAR_FOLD "\xee\x96\xb8"	// U+e5b8
 #define ICON_LC_CALENDAR_HEART "\xee\x8c\x84"	// U+e304
@@ -457,7 +460,9 @@
 #define ICON_LC_DELETE "\xee\x82\xaf"	// U+e0af
 #define ICON_LC_DESSERT "\xee\x92\xbf"	// U+e4bf
 #define ICON_LC_DIAMETER "\xee\x94\xaa"	// U+e52a
+#define ICON_LC_DIAMOND_MINUS "\xee\x97\xa5"	// U+e5e5
 #define ICON_LC_DIAMOND_PERCENT "\xee\x94\x9f"	// U+e51f
+#define ICON_LC_DIAMOND_PLUS "\xee\x97\xa6"	// U+e5e6
 #define ICON_LC_DIAMOND "\xee\x8b\x91"	// U+e2d1
 #define ICON_LC_DICE_1 "\xee\x8a\x86"	// U+e286
 #define ICON_LC_DICE_2 "\xee\x8a\x87"	// U+e287
@@ -680,6 +685,8 @@
 #define ICON_LC_GRAB "\xee\x87\xa4"	// U+e1e4
 #define ICON_LC_GRADUATION_CAP "\xee\x88\xb3"	// U+e233
 #define ICON_LC_GRAPE "\xee\x8d\x95"	// U+e355
+#define ICON_LC_GRID_2X2_CHECK "\xee\x97\xa8"	// U+e5e8
+#define ICON_LC_GRID_2X2_X "\xee\x97\xa9"	// U+e5e9
 #define ICON_LC_GRID_2X2 "\xee\x94\x83"	// U+e503
 #define ICON_LC_GRID_3X3 "\xee\x83\xa9"	// U+e0e9
 #define ICON_LC_GRIP_HORIZONTAL "\xee\x83\xaa"	// U+e0ea
@@ -783,6 +790,7 @@
 #define ICON_LC_LAYOUT_TEMPLATE "\xee\x88\x85"	// U+e205
 #define ICON_LC_LEAF "\xee\x8b\x9d"	// U+e2dd
 #define ICON_LC_LEAFY_GREEN "\xee\x91\xb3"	// U+e473
+#define ICON_LC_LECTERN "\xee\x97\xad"	// U+e5ed
 #define ICON_LC_LIBRARY_BIG "\xee\x95\x92"	// U+e552
 #define ICON_LC_LIBRARY "\xee\x84\x83"	// U+e103
 #define ICON_LC_LIFE_BUOY "\xee\x84\x84"	// U+e104
@@ -810,6 +818,7 @@
 #define ICON_LC_LIST_X "\xee\x88\xbf"	// U+e23f
 #define ICON_LC_LIST "\xee\x84\x89"	// U+e109
 #define ICON_LC_LOADER_CIRCLE "\xee\x84\x8b"	// U+e10b
+#define ICON_LC_LOADER_PINWHEEL "\xee\x97\xaa"	// U+e5ea
 #define ICON_LC_LOADER "\xee\x84\x8a"	// U+e10a
 #define ICON_LC_LOCATE_FIXED "\xee\x87\x99"	// U+e1d9
 #define ICON_LC_LOCATE_OFF "\xee\x8a\x81"	// U+e281
@@ -904,6 +913,7 @@
 #define ICON_LC_MOUNTAIN "\xee\x88\xb0"	// U+e230
 #define ICON_LC_MOUSE_OFF "\xee\x97\x9f"	// U+e5df
 #define ICON_LC_MOUSE_POINTER_2 "\xee\x87\x82"	// U+e1c2
+#define ICON_LC_MOUSE_POINTER_BAN "\xee\x97\xab"	// U+e5eb
 #define ICON_LC_MOUSE_POINTER_CLICK "\xee\x84\xa1"	// U+e121
 #define ICON_LC_MOUSE_POINTER "\xee\x84\xa0"	// U+e120
 #define ICON_LC_MOUSE "\xee\x8a\x8d"	// U+e28d
@@ -946,6 +956,7 @@
 #define ICON_LC_OCTAGON "\xee\x84\xa7"	// U+e127
 #define ICON_LC_OPTION "\xee\x87\xb6"	// U+e1f6
 #define ICON_LC_ORBIT "\xee\x8f\xaa"	// U+e3ea
+#define ICON_LC_ORIGAMI "\xee\x97\xa7"	// U+e5e7
 #define ICON_LC_PACKAGE_2 "\xee\x8d\x83"	// U+e343
 #define ICON_LC_PACKAGE_CHECK "\xee\x89\xa5"	// U+e265
 #define ICON_LC_PACKAGE_MINUS "\xee\x89\xa6"	// U+e266
@@ -956,7 +967,7 @@
 #define ICON_LC_PACKAGE "\xee\x84\xaa"	// U+e12a
 #define ICON_LC_PAINT_BUCKET "\xee\x8b\xa5"	// U+e2e5
 #define ICON_LC_PAINT_ROLLER "\xee\x96\xa2"	// U+e5a2
-#define ICON_LC_PAINTBRUSH_2 "\xee\x8b\xa7"	// U+e2e7
+#define ICON_LC_PAINTBRUSH_VERTICAL "\xee\x8b\xa7"	// U+e2e7
 #define ICON_LC_PAINTBRUSH "\xee\x8b\xa6"	// U+e2e6
 #define ICON_LC_PALETTE "\xee\x87\x9b"	// U+e1db
 #define ICON_LC_PANEL_BOTTOM_CLOSE "\xee\x90\xb1"	// U+e431
@@ -986,9 +997,11 @@
 #define ICON_LC_PAW_PRINT "\xee\x93\xb9"	// U+e4f9
 #define ICON_LC_PC_CASE "\xee\x91\x8a"	// U+e44a
 #define ICON_LC_PEN_LINE "\xee\x84\xb1"	// U+e131
+#define ICON_LC_PEN_OFF "\xee\x97\xb2"	// U+e5f2
 #define ICON_LC_PEN_TOOL "\xee\x84\xb2"	// U+e132
 #define ICON_LC_PEN "\xee\x84\xb0"	// U+e130
 #define ICON_LC_PENCIL_LINE "\xee\x93\xb4"	// U+e4f4
+#define ICON_LC_PENCIL_OFF "\xee\x97\xb3"	// U+e5f3
 #define ICON_LC_PENCIL_RULER "\xee\x93\xb5"	// U+e4f5
 #define ICON_LC_PENCIL "\xee\x87\xb7"	// U+e1f7
 #define ICON_LC_PENTAGON "\xee\x94\xaf"	// U+e52f
@@ -1011,6 +1024,7 @@
 #define ICON_LC_PILCROW_LEFT "\xee\x97\xa0"	// U+e5e0
 #define ICON_LC_PILCROW_RIGHT "\xee\x97\xa1"	// U+e5e1
 #define ICON_LC_PILCROW "\xee\x8e\xa6"	// U+e3a6
+#define ICON_LC_PILL_BOTTLE "\xee\x97\xae"	// U+e5ee
 #define ICON_LC_PILL "\xee\x8f\x80"	// U+e3c0
 #define ICON_LC_PIN_OFF "\xee\x8a\xb5"	// U+e2b5
 #define ICON_LC_PIN "\xee\x89\x98"	// U+e258
@@ -1134,6 +1148,7 @@
 #define ICON_LC_SEARCH_SLASH "\xee\x92\xb0"	// U+e4b0
 #define ICON_LC_SEARCH_X "\xee\x92\xb1"	// U+e4b1
 #define ICON_LC_SEARCH "\xee\x85\x93"	// U+e153
+#define ICON_LC_SECTION "\xee\x97\xac"	// U+e5ec
 #define ICON_LC_SEND_HORIZONTAL "\xee\x93\xb6"	// U+e4f6
 #define ICON_LC_SEND_TO_BACK "\xee\x93\xb7"	// U+e4f7
 #define ICON_LC_SEND "\xee\x85\x94"	// U+e154
@@ -1375,7 +1390,8 @@
 #define ICON_LC_TROPHY "\xee\x8d\xb6"	// U+e376
 #define ICON_LC_TRUCK "\xee\x86\x92"	// U+e192
 #define ICON_LC_TURTLE "\xee\x93\xbd"	// U+e4fd
-#define ICON_LC_TV_2 "\xee\x88\x81"	// U+e201
+#define ICON_LC_TV_MINIMAL_PLAY "\xee\x97\xb0"	// U+e5f0
+#define ICON_LC_TV_MINIMAL "\xee\x88\x81"	// U+e201
 #define ICON_LC_TV "\xee\x86\x93"	// U+e193
 #define ICON_LC_TWITCH "\xee\x86\x94"	// U+e194
 #define ICON_LC_TWITTER "\xee\x86\x95"	// U+e195
