@@ -288,7 +288,7 @@ VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource 
 		file.license = source.license;
 		file.thumbnailUrl = source.thumbnail;
 		file.url = source.single.url;
-		file.fullPath = file.targetFile();
+		file.fullPath = file.name;
 		Log::info("Found single source with name %s and url %s", file.name.c_str(), file.url.c_str());
 		handleFile(archive, shouldQuit, files, file, true);
 		return files;
