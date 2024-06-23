@@ -134,8 +134,8 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
 	core::AtomicBool shouldQuit{false};
 
 	core::DynamicArray<github::TreeEntry> entries;
-	github::TreeEntry entry1{.path = "data/test.vox",
-							 .url = github::downloadUrl(source.github.repo, source.github.commit, "data/test.vox")};
+	github::TreeEntry entry1{"data/test.vox",
+							 github::downloadUrl(source.github.repo, source.github.commit, "data/test.vox")};
 
 	entries.push_back(entry1);
 
@@ -164,8 +164,8 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
 	core::AtomicBool shouldQuit{false};
 
 	core::DynamicArray<gitlab::TreeEntry> entries;
-	gitlab::TreeEntry entry1{.path = "data/test.vox",
-							 .url = gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, "data/test.vox")};
+	gitlab::TreeEntry entry1{"data/test.vox",
+							 gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, "data/test.vox")};
 
 	entries.push_back(entry1);
 
