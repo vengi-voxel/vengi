@@ -156,7 +156,7 @@ app::AppState IMGUIApp::onConstruct() {
 	_console.construct();
 	_fileDialog.construct();
 	_lastDirectory = core::Var::getSafe(cfg::UILastDirectory);
-
+	_languageVar = core::Var::getSafe(cfg::CoreLanguage);
 	core::String uiStyleDefaultValue = core::string::toString(ImGui::StyleCorporateGrey);
 	if (!isDarkMode()) {
 		uiStyleDefaultValue = core::string::toString(ImGui::StyleLight);
@@ -197,7 +197,27 @@ void IMGUIApp::loadFonts() {
 	ImGuiIO &io = ImGui::GetIO();
 	io.Fonts->Clear();
 
-	const ImWchar *rangesBasic = io.Fonts->GetGlyphRangesDefault();
+	ImFontGlyphRangesBuilder builder;
+	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+	const app::Language &lang = app::Language::fromName(_languageVar->strVal());
+	if (lang.getCountry() == "uk" || lang.getCountry() == "ru") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
+	} else if (lang.getCountry() == "zh") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
+	} else if (lang.getCountry() == "jp") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+	} else if (lang.getCountry() == "ko") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
+	} else if (lang.getCountry() == "th") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesThai());
+	} else if (lang.getCountry() == "vi") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
+	} else if (lang.getCountry() == "el") {
+		builder.AddRanges(io.Fonts->GetGlyphRangesGreek());
+	}
+
+	ImVector<ImWchar> glyphRanges;
+	builder.BuildRanges(&glyphRanges);
 
 	const float fontSize = _uiFontSize->floatVal();
 
@@ -223,18 +243,18 @@ void IMGUIApp::loadFonts() {
 	static const ImWchar rangesLCIcons[] = {ICON_MIN_LC, ICON_MAX_LC, 0};
 
 	_defaultFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-															fontSize, nullptr, rangesBasic);
+															fontSize, nullptr, glyphRanges.Data);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
 											 &fontIconCfg, rangesLCIcons);
 
 	_bigFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														fontSize * 2.0f, nullptr, rangesBasic);
+														fontSize * 2.0f, nullptr, glyphRanges.Data);
 
 	_bigIconFont = io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size,
 															fontSize * 1.5f, &bigFontIconCfg, rangesLCIcons);
 
 	_smallFont = io.Fonts->AddFontFromMemoryCompressedTTF(ArimoRegular_compressed_data, ArimoRegular_compressed_size,
-														  fontSize * 0.8f, nullptr, rangesBasic);
+														  fontSize * 0.8f, nullptr, glyphRanges.Data);
 	io.Fonts->AddFontFromMemoryCompressedTTF(FontLucide_compressed_data, FontLucide_compressed_size, fontSize,
 											 &fontIconCfg, rangesLCIcons);
 
@@ -586,10 +606,11 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 	const float dpiScale = core_max(0.1f, ImGui::GetMainViewport()->DpiScale);
-	if (_uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
+	if (_languageVar->isDirty() || _uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
 		_dpiScale = dpiScale;
 		loadFonts();
 		_uiFontSize->markClean();
+		_languageVar->markClean();
 	}
 
 	if (_uistyle->isDirty()) {
@@ -724,15 +745,14 @@ void IMGUIApp::loadKeymap(int keymap) {
 }
 
 void IMGUIApp::languageOption() {
-	const core::VarPtr &languageVar = core::Var::getSafe(cfg::CoreLanguage);
-	core::String currentLanguage = languageVar->strVal();
-	if (ImGui::BeginCombo(_("Language"), languageVar->strVal().c_str())) {
+	core::String currentLanguage = _languageVar->strVal();
+	if (ImGui::BeginCombo(_("Language"), _languageVar->strVal().c_str())) {
 		const core::DynamicArray<app::Language> &languages = _dictManager.getLanguages();
 		app::Language currentLang = app::Language::fromEnv(currentLanguage);
 		for (const auto &lang : languages) {
 			bool isSelected = lang == currentLang;
 			if (ImGui::Selectable(lang.str().c_str(), isSelected)) {
-				languageVar->setVal(lang.str());
+				_languageVar->setVal(lang.str());
 				setLanguage(lang.str());
 			}
 			if (isSelected) {

@@ -40,6 +40,7 @@ protected:
 	core::String _writePathLog;
 	core::VarPtr _lastDirectory;
 	core::VarPtr _uistyle;
+	core::VarPtr _languageVar;
 
 	/**
 	 * The current keymap as index to the registered keymaps from the
