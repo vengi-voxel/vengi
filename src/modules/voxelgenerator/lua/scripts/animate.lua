@@ -5,54 +5,54 @@ local function addOrGetKeyFrame(node, frame)
 	return node:addKeyFrame(frame)
 end
 
-local function animate(node, frame, maxKeyFrames)
+local function isRight(name, id)
+	return name == id .. "right" or name == id .. "r" or name == "right" .. id or name == "r" .. id or name == id .. "_right" or name == id .. "_r" or name == "right_" .. id or name == "r_" .. id
+end
+
+local function isLeft(name, id)
+	return name == id .. "left" or name == id .. "l" or name == "left" .. id or name == "l" .. id or name == id .. "_left" or name == id .. "_l" or name == "left_" .. id or name == "l_" .. id
+end
+
+local function animate(node, keyframe, maxKeyFrames)
+	local frame = keyframe * 20
 	local runTimeFactor = 12.0
 	local shoulderScale = 1.1
 	local timeFactor = runTimeFactor
-	local animTime = frame / 10.0
+	local animTime = keyframe / maxKeyFrames
 	local scaledTime = animTime * timeFactor
 	local sine = math.sin(scaledTime)
 	local cosine = math.cos(scaledTime)
-	local movement = 0.35 * sine
+	local movement = 0.05 * sine
 	local animTimeCos = math.cos(animTime)
 	local headLookX = math.rad(5.0) + 0.05 * animTimeCos
 	local headLookY = 0.1 * sine
 	local rotateYMovement = g_quat.rotateY(movement)
 	local handAngle = 0.2 * sine
 	local footAngle = 1.5 * cosine
-	if node:name() == "belt" then
+	local lowername = string.lower(node:name());
+
+	if lowername == "belt" then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(rotateYMovement)
-	end
-
-	if node:name() == "foot_right" then
-		local kf = addOrGetKeyFrame(node, frame)
-		kf:setLocalOrientation(g_quat.rotateZ(footAngle))
-	end
-	if node:name() == "foot_left" then
-		local kf = addOrGetKeyFrame(node, frame)
-		kf:setLocalOrientation(g_quat.rotateZ(-footAngle))
-	end
-
-	if node:name() == "head" then
+	elseif lowername == "head" then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(g_quat.rotateXY(headLookX, headLookY))
-	end
-
-	if node:name() == "shoulder_right" then
+	elseif isRight(lowername, "foot") then
+		local kf = addOrGetKeyFrame(node, frame)
+		kf:setLocalOrientation(g_quat.rotateZ(footAngle))
+	elseif isLeft(lowername, "foot") then
+		local kf = addOrGetKeyFrame(node, frame)
+		kf:setLocalOrientation(g_quat.rotateZ(-footAngle))
+	elseif isRight(lowername, "shoulder") then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalScale(shoulderScale)
-	end
-	if node:name() == "hand_right" then
+	elseif isLeft(lowername, "shoulder") then
+		local kf = addOrGetKeyFrame(node, frame)
+		kf:setLocalScale(shoulderScale)
+	elseif isRight(lowername, "hand") then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(g_quat.rotateZ(handAngle))
-	end
-
-	if node:name() == "shoulder_left" then
-		local kf = addOrGetKeyFrame(node, frame)
-		kf:setLocalScale(shoulderScale)
-	end
-	if node:name() == "hand_left" then
+	elseif isLeft(lowername, "hand") then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(g_quat.rotateZ(-handAngle))
 	end
@@ -63,9 +63,9 @@ function main(_, _, _)
 	for _, nodeId in ipairs(allNodeIds) do
 		local node = g_scenegraph.get(nodeId)
 		if node:isModel() or node:isReference() then
-			local maxKeyFrames = 3
+			local maxKeyFrames = 6
 			for i = 0, maxKeyFrames do
-				animate(node, i * 20, maxKeyFrames)
+				animate(node, i, maxKeyFrames)
 			end
 		end
 	end
