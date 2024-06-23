@@ -13,6 +13,16 @@ After you've created a new `po` file, copy them into any of the [search paths](C
 
 If you create a new translation it would be nice if you would contribute it to the project.
 
-## Updating the pot file
+## Developers
+
+> Translators don't have to do this
+
+### Updating the pot file
+
+After new string were added in the code, you have to update the `pot` file to make those strings available to the translators.
 
 There is a `Makefile` target called `pot` - so if you have gnu make installed, just run `make pot` in the root of the project. Otherwise use the tool `xgettext` to extract the strings from the source code.
+
+### Mark strings as being translatable
+
+use the `_` macro to mark a string as being translatable. E.g. `_("my string")`
