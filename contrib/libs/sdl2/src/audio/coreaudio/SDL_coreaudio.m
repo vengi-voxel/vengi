@@ -806,8 +806,8 @@ static int assign_device_to_audioqueue(_THIS)
     result = AudioObjectGetPropertyData(this->hidden->deviceID, &prop, 0, NULL, &devuidsize, &devuid);
     CHECK_RESULT("AudioObjectGetPropertyData (kAudioDevicePropertyDeviceUID)");
     result = AudioQueueSetProperty(this->hidden->audioQueue, kAudioQueueProperty_CurrentDevice, &devuid, devuidsize);
+    CFRelease(devuid);  /* Release devuid; we're done with it and AudioQueueSetProperty should have retained if it wants to keep it. */
     CHECK_RESULT("AudioQueueSetProperty (kAudioQueueProperty_CurrentDevice)");
-
     return 1;
 }
 #endif
