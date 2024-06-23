@@ -23,8 +23,8 @@ TEST_F(CubZHAPITest, DISABLED_testRepoList) {
 		file.source = "cubzh";
 		file.name = entry.repo + "-" + entry.name + ".3zh";
 		file.url = entry.url;
-		file.fullPath = file.targetFile();
-		http::HttpCacheStream stream(archive, file.fullPath, file.url);
+		file.fullPath = file.name;
+		http::HttpCacheStream stream(archive, file.targetFile(), file.url);
 		if (stream.isNewInCache()) {
 			Log::debug("Downloaded: %s", file.url.c_str());
 		}
