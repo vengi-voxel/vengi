@@ -13,38 +13,41 @@
 
 namespace voxedit {
 
+class SceneManager;
+typedef core::SharedPtr<SceneManager> SceneManagerPtr;
+
 class CollectionPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	core::DynamicArray<io::FormatDescription> _filterEntries;
-
+	SceneManagerPtr _sceneMgr;
+	voxelcollection::CollectionManagerPtr _collectionMgr;
 	float _filterFormatTextWidth = -1.0f;
 	int _currentFilterFormatEntry = -1;
-	bool _newSelected = false;
 	bool _thumbnails = true;
 	core::String _currentFilterName;
 	core::String _currentFilterLicense;
 	voxelcollection::VoxelFile _selected;
 	video::TexturePoolPtr _texturePool;
 
-	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
-					   const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu);
+	void contextMenu(voxelcollection::VoxelFile *voxelFile);
+	void handleDoubleClick(voxelcollection::VoxelFile *voxelFile);
+	int buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles);
 
 	bool filtered(const voxelcollection::VoxelFile &voxelFile) const;
 	void updateFilters();
 	bool isFilterActive() const;
 
 public:
-	CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool);
+	CollectionPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
+			   const voxelcollection::CollectionManagerPtr &collectionMgr, const video::TexturePoolPtr &texturePool);
 	virtual ~CollectionPanel();
 
 	bool init();
-	int update(voxelcollection::CollectionManager &collectionMgr, const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu = {});
+	int update();
 	void shutdown();
 
 	void setThumbnails(bool state);
-
-	bool newSelected() const;
 
 	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 	voxelcollection::VoxelFile &selected();
@@ -52,10 +55,6 @@ public:
 	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
 #endif
 };
-
-inline bool CollectionPanel::newSelected() const {
-	return _newSelected;
-}
 
 inline void CollectionPanel::setThumbnails(bool state) {
 	_thumbnails = state;

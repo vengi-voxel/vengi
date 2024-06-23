@@ -6,13 +6,17 @@
 #include "core/StringUtil.h"
 #include "imgui.h"
 #include "ui/IMGUIEx.h"
+#include "voxedit-util/SceneManager.h"
+#include "voxedit-util/modifier/Modifier.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 
 namespace voxedit {
 
-CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const video::TexturePoolPtr &texturePool)
-	: Super(app, "collection"), _texturePool(texturePool) {
+CollectionPanel::CollectionPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
+								 const voxelcollection::CollectionManagerPtr &collectionMgr,
+								 const video::TexturePoolPtr &texturePool)
+	: Super(app, "collection"), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr), _texturePool(texturePool) {
 }
 
 CollectionPanel::~CollectionPanel() {
@@ -91,12 +95,9 @@ void CollectionPanel::updateFilters() {
 	}
 }
 
-int CollectionPanel::update(voxelcollection::CollectionManager &collectionMgr,
-							const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu) {
-	_newSelected = false;
-
+int CollectionPanel::update() {
 	int cnt = 0;
-	const voxelcollection::VoxelFileMap &voxelFilesMap = collectionMgr.voxelFilesMap();
+	const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
 	updateFilters();
 
 	const int columns = _thumbnails ? 3 : 2;
@@ -110,7 +111,7 @@ int CollectionPanel::update(voxelcollection::CollectionManager &collectionMgr,
 		ImGui::TableSetupColumn(_("Name"));
 		ImGui::TableSetupColumn(_("License"));
 		ImGui::TableHeadersRow();
-		for (const auto &source : collectionMgr.sources()) {
+		for (const auto &source : _collectionMgr->sources()) {
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
@@ -126,20 +127,20 @@ int CollectionPanel::update(voxelcollection::CollectionManager &collectionMgr,
 				ImGui::BeginDisabled(!collection.sorted);
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
 					const voxelcollection::VoxelFiles &voxelFiles = collection.files;
-					cnt += buildVoxelTree(voxelFiles, contextMenu);
+					cnt += buildVoxelTree(voxelFiles);
 					ImGui::TreePop();
 				}
 				ImGui::EndDisabled();
 			} else {
 				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
-					if (collectionMgr.resolved(source)) {
+					if (_collectionMgr->resolved(source)) {
 						ImGui::TextUnformatted(_("Loading..."));
 					} else {
 						if (ImGui::Button(_("Load"))) {
 							if (source.name == "local") {
-								collectionMgr.local();
+								_collectionMgr->local();
 							} else {
-								collectionMgr.resolve(source);
+								_collectionMgr->resolve(source);
 							}
 						}
 					}
@@ -152,8 +153,56 @@ int CollectionPanel::update(voxelcollection::CollectionManager &collectionMgr,
 	return cnt;
 }
 
-int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles,
-									const std::function<void(voxelcollection::VoxelFile &voxelFile)> &contextMenu) {
+void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
+	if (ImGui::BeginPopupContextItem()) {
+		if (ImGui::MenuItem(_("Use stamp"))) {
+			Modifier &modifier = _sceneMgr->modifier();
+			StampBrush &brush = modifier.stampBrush();
+			if (!voxelFile->downloaded) {
+				_collectionMgr->download(*voxelFile);
+			}
+			if (voxelFile->downloaded) {
+				if (brush.load(voxelFile->targetFile())) {
+					modifier.setBrushType(BrushType::Stamp);
+				} else {
+					Log::error("Failed to load stamp brush");
+				}
+			} else {
+				Log::error("Failed to download stamp brush");
+			}
+		}
+		ImGui::TooltipTextUnformatted(
+			_("This is only possible if the model doesn't exceed the max allowed stamp size"));
+
+		if (ImGui::MenuItem(_("Add to scene"))) {
+			if (!voxelFile->downloaded) {
+				_collectionMgr->download(*voxelFile);
+			}
+			if (voxelFile->downloaded) {
+				_sceneMgr->import(voxelFile->targetFile());
+			} else {
+				Log::error("Failed to download model");
+			}
+		}
+
+		// TODO: if the file format is not supported, but still shown, we should offer
+		// the option to open it in the os file browser
+
+		ImGui::EndPopup();
+	}
+}
+
+void CollectionPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
+	if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+		_selected = *voxelFile;
+		if (!_selected.downloaded) {
+			_collectionMgr->download(_selected);
+		}
+		_sceneMgr->import(_selected.targetFile());
+	}
+}
+
+int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
 	core::DynamicArray<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
 
@@ -186,25 +235,21 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 					handle = video::InvalidId;
 				}
 				core::String id = core::string::format("%i", row);
+				// TODO: dpi awareness
 				if (ImGui::ImageButton(id.c_str(), handle, ImVec2(64, 64))) {
-					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-						_selected = *voxelFile;
-						_newSelected = true;
-					}
+					handleDoubleClick(voxelFile);
 				}
 				ImGui::TableNextColumn();
 			}
 			if (ImGui::Selectable(voxelFile->name.c_str(), selected,
 								  ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowDoubleClick)) {
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-					_selected = *voxelFile;
-					_newSelected = true;
-				}
+				handleDoubleClick(voxelFile);
 			}
 			if (!_thumbnails) {
 				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 					if (ImGui::BeginItemTooltip()) {
 						const video::Id handle = texture->handle();
+						// TODO: dpi awareness
 						ImGui::Image(handle, ImVec2(128, 128));
 						ImGui::EndTooltip();
 					}
@@ -214,12 +259,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				ImGui::SetItemDefaultFocus();
 			}
 
-			if (contextMenu) {
-				if (ImGui::BeginPopupContextItem()) {
-					contextMenu(*voxelFile);
-					ImGui::EndPopup();
-				}
-			}
+			contextMenu(voxelFile);
 			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(voxelFile->license.c_str());
 		}
