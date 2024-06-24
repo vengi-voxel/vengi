@@ -231,7 +231,9 @@ jobs:
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
             cmake --install . --component thumbnailer --prefix thumbnailer-install
+            cmake --install . --component voxelthumb --prefix thumbnailer-install
             cmake --install . --component voxconvert --prefix voxconvert-install
+            cmake --install . --component voxconvertui --prefix voxconvert-install
             cpack
 
         - name: Upload the cpack logs
@@ -290,7 +292,10 @@ jobs:
           run: |
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component thumbnailer --prefix thumbnailer-install
+            cmake --install . --component voxelthumb --prefix thumbnailer-install
             cmake --install . --component voxconvert --prefix voxconvert-install
+            cmake --install . --component voxconvertui --prefix voxconvert-install
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
@@ -338,7 +343,10 @@ jobs:
           run: |
             cd build
             cmake --install . --component voxedit --prefix voxedit-install
+            cmake --install . --component thumbnailer --prefix thumbnailer-install
+            cmake --install . --component voxelthumb --prefix thumbnailer-install
             cmake --install . --component voxconvert --prefix voxconvert-install
+            cmake --install . --component voxconvertui --prefix voxconvert-install
 
         - name: Upload the voxedit artifacts
           uses: actions/upload-artifact@v4
