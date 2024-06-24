@@ -36,6 +36,6 @@ public:
 
 	void onRenderUI() override;
 
-	bool onMouseWheel(int32_t x, int32_t y) override;
+	bool onMouseWheel(float x, float y) override;
 	bool onKeyPress(int32_t key, int16_t modifier) override;
 };

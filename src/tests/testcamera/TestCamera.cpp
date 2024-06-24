@@ -147,7 +147,7 @@ app::AppState TestCamera::onCleanup() {
 	return Super::onCleanup();
 }
 
-bool TestCamera::onMouseWheel(int32_t x, int32_t y) {
+bool TestCamera::onMouseWheel(float x, float y) {
 	const SDL_Keymod mods = SDL_GetModState();
 	if (mods & KMOD_SHIFT) {
 		video::Camera& c = _renderCamera[_targetCamera];

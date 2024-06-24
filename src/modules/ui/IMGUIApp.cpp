@@ -71,16 +71,16 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-bool IMGUIApp::onMouseWheel(int32_t x, int32_t y) {
+bool IMGUIApp::onMouseWheel(float x, float y) {
 	if (!Super::onMouseWheel(x, y)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
 #if SDL_VERSION_ATLEAST(2, 0, 18)
-		ev.wheel.preciseX = (float)x;
-		ev.wheel.preciseY = (float)y;
+		ev.wheel.preciseX = x;
+		ev.wheel.preciseY = y;
 #endif
-		ev.wheel.x = x;
-		ev.wheel.y = y;
+		ev.wheel.x = (int)x;
+		ev.wheel.y = (int)y;
 		ImGui_ImplSDL2_ProcessEvent(&ev);
 	}
 	return true;
