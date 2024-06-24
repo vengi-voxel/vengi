@@ -80,22 +80,22 @@ void RenderPanel::updateSettings(const char *title, const scenegraph::SceneGraph
 		changed += ImGui::InputInt(_("Dimensions"), &params.resolution, 0, 0, ImGuiInputTextFlags_ReadOnly);
 		changed += ImGui::ComboItems(_("Tracer"), (int *)&params.sampler, yocto::trace_sampler_names);
 		changed += ImGui::InputInt(_("Samples"), &params.samples, 16, 4096);
-		ImGui::TooltipTextUnformatted(_(" the number of per-pixel samples used while rendering and is the only "
+		ImGui::TooltipTextUnformatted(_("The number of per-pixel samples used while rendering and is the only "
 										"parameter used to control the tradeoff between noise and speed."));
 		changed += ImGui::SliderInt(_("Bounces"), &params.bounces, 1, 128);
-		ImGui::TooltipTextUnformatted(_("the maximum number of bounces and should be high for scenes with glass and "
+		ImGui::TooltipTextUnformatted(_("The maximum number of bounces and should be high for scenes with glass and "
 										"volumes, but otherwise a low number would suffice."));
 		changed += ImGui::SliderFloat(_("Clamp"), &params.clamp, 10, 1000);
-		ImGui::TooltipTextUnformatted(_("remove high-energy fireflies"));
+		ImGui::TooltipTextUnformatted(_("Remove high-energy fireflies"));
 		changed += ImGui::SliderInt(_("Preview ratio"), &params.pratio, 1, 64);
 		changed += ImGui::SliderInt(_("Batch"), &params.batch, 1, 16);
 
 		changed += ImGui::Checkbox(_("No caustics"), &params.nocaustics);
-		ImGui::TooltipTextUnformatted(_("removes certain path that cause caustics"));
+		ImGui::TooltipTextUnformatted(_("Removes certain path that cause caustics"));
 		changed += ImGui::Checkbox(_("Hide environment"), &params.envhidden);
-		ImGui::TooltipTextUnformatted(_("removes the environment map from the camera rays."));
+		ImGui::TooltipTextUnformatted(_("Removes the environment map from the camera rays."));
 		changed += ImGui::Checkbox(_("Filter"), &params.tentfilter);
-		ImGui::TooltipTextUnformatted(_(" apply a linear filter to the image pixels"));
+		ImGui::TooltipTextUnformatted(_("Apply a linear filter to the image pixels"));
 		changed += ImGui::Checkbox(_("High Quality BVH"), &params.highqualitybvh);
 		ImGui::TooltipTextUnformatted(_("High quality bounding volume hierarchy"));
 		changed += ImGui::Checkbox(_("Denoise"), &params.denoise);

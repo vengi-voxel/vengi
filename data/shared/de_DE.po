@@ -1591,7 +1591,7 @@ msgid "Samples"
 msgstr "Samples"
 
 msgid ""
-" the number of per-pixel samples used while rendering and is the only "
+"The number of per-pixel samples used while rendering and is the only "
 "parameter used to control the tradeoff between noise and speed."
 msgstr ""
 
@@ -1599,14 +1599,14 @@ msgid "Bounces"
 msgstr "Bounces"
 
 msgid ""
-"the maximum number of bounces and should be high for scenes with glass and "
+"The maximum number of bounces and should be high for scenes with glass and "
 "volumes, but otherwise a low number would suffice."
 msgstr ""
 
 msgid "Clamp"
 msgstr "Clamp"
 
-msgid "remove high-energy fireflies"
+msgid "Remove high-energy fireflies"
 msgstr ""
 
 msgid "Preview ratio"
@@ -1618,16 +1618,16 @@ msgstr "Stapel"
 msgid "No caustics"
 msgstr ""
 
-msgid "removes certain path that cause caustics"
+msgid "Removes certain path that cause caustics"
 msgstr ""
 
 msgid "Hide environment"
 msgstr "Umgebung ausblenden"
 
-msgid "removes the environment map from the camera rays."
+msgid "Removes the environment map from the camera rays."
 msgstr ""
 
-msgid " apply a linear filter to the image pixels"
+msgid "Apply a linear filter to the image pixels"
 msgstr ""
 
 msgid "High Quality BVH"
