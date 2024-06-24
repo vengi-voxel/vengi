@@ -13,8 +13,7 @@ if (UNIX)
 	set_tests_properties(shelltests-${PROJECT_NAME} PROPERTIES DEPENDS ${PROJECT_NAME})
 endif()
 
-## TODO: fix this for mingw
-if (MSVC)
+if (WIN32)
 	set(WIN_SRCS
 		windows/ThumbnailerDLL.cpp
 		windows/ThumbnailerDLL.def
