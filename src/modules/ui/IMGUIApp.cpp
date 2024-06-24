@@ -200,19 +200,19 @@ void IMGUIApp::loadFonts() {
 	ImFontGlyphRangesBuilder builder;
 	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 	const app::Language &lang = app::Language::fromName(_languageVar->strVal());
-	if (lang.getCountry() == "uk" || lang.getCountry() == "ru") {
+	if (lang.getLanguage() == "uk" || lang.getLanguage() == "ru") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
-	} else if (lang.getCountry() == "zh") {
+	} else if (lang.getLanguage() == "zh") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
-	} else if (lang.getCountry() == "jp") {
+	} else if (lang.getLanguage() == "jp") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
-	} else if (lang.getCountry() == "ko") {
+	} else if (lang.getLanguage() == "ko") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
-	} else if (lang.getCountry() == "th") {
+	} else if (lang.getLanguage() == "th") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesThai());
-	} else if (lang.getCountry() == "vi") {
+	} else if (lang.getLanguage() == "vi") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
-	} else if (lang.getCountry() == "el") {
+	} else if (lang.getLanguage() == "el") {
 		builder.AddRanges(io.Fonts->GetGlyphRangesGreek());
 	}
 
