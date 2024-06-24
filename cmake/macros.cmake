@@ -206,10 +206,8 @@ function(engine_add_executable)
 
 	if (_EXE_NOINSTALL)
 		set(INSTALL_DATA False)
-		set(CPACK_${_EXE_TARGET}_COMPONENT_INSTALL OFF)
 	else()
 		set(INSTALL_DATA True)
-		set(CPACK_${_EXE_TARGET}_COMPONENT_INSTALL ON)
 	endif()
 
 	if (APPLE)
