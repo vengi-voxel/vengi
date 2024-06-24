@@ -186,7 +186,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		_mainWindow->save(args[0], nullptr);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene as a volume to the given file"));
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 
 	command::Command::registerCommand("saveas", [this](const command::CmdArgs &args) {
 		if (_mainWindow == nullptr) {
@@ -194,7 +194,7 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		const core::String &filename = getSuggestedFilename("vengi");
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene as a volume to the given file"));
+	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 
 	command::Command::registerCommand("exportselection", [&] (const command::CmdArgs& args) {
 		static auto func = [this] (const core::String &file, const io::FormatDescription *desc) {

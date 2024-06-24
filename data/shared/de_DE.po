@@ -667,7 +667,7 @@ msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"
 msgid "Toggle scene mode on/off"
 msgstr "Szenenmodus ein-/ausschalten"
 
-msgid "Save the current scene as a volume to the given file"
+msgid "Save the current scene to the given file"
 msgstr "Die aktuelle Szene als Volumen in die angegebene Datei speichern"
 
 msgid "Save the selection from the current active model node"
