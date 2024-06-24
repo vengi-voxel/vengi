@@ -144,7 +144,9 @@ bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
 
 bool IMGUIApp::handleSDLEvent(SDL_Event &event) {
 	const bool state = Super::handleSDLEvent(event);
-	if (event.type == SDL_WINDOWEVENT) {
+	if (event.type != SDL_MOUSEMOTION && event.type != SDL_MOUSEWHEEL && event.type != SDL_MOUSEBUTTONUP &&
+		event.type != SDL_MOUSEBUTTONDOWN && event.type != SDL_TEXTINPUT && event.type != SDL_KEYUP &&
+		event.type != SDL_KEYDOWN) {
 		ImGui_ImplSDL2_ProcessEvent(&event);
 	}
 	return state;
