@@ -8,13 +8,13 @@ Make sure to check out the [configuration](Configuration.md) section to see cvar
 
 Generate a lod scaled by 50% from the input model.
 
-`./vengi-voxconvert -s --input infile.vox --output output.vox`
+`./vengi-voxconvert --scale --input infile.vox --output output.vox`
 
 ## Convert to multiple different formats
 
 Convert the model into multiple different formats in the same run
 
-`./vengi-voxconvert -s --input infile.vox --output output.gox --output output.cub`
+`./vengi-voxconvert --input infile.vox --output output.gox --output output.cub`
 
 ## Import 2d image as volume
 
