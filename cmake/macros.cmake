@@ -100,9 +100,6 @@ function(engine_add_sharedlibrary)
 		set(INSTALL_LIB_DIR ".")
 	endif()
 	install(TARGETS ${_LIB_TARGET} DESTINATION ${INSTALL_LIB_DIR} COMPONENT ${_LIB_TARGET})
-
-	list(APPEND CPACK_COMPONENTS_ALL "{_LIB_TARGET}")
-	set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} PARENT_SCOPE)
 endfunction()
 
 #
@@ -327,8 +324,6 @@ function(engine_add_executable)
 	if (INSTALL_DATA)
 		message(STATUS "Installation for ${_EXE_TARGET} with ${COMMANDLINE} and ${DESCRIPTION}")
 		cpack_add_component(${_EXE_TARGET} DISPLAY_NAME "${COMMANDLINE}" DESCRIPTION "${DESCRIPTION}")
-		list(APPEND CPACK_COMPONENTS_ALL "{_EXE_TARGET}")
-		set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} PARENT_SCOPE)
 	endif()
 
 	set_property(GLOBAL PROPERTY ${_EXE_TARGET}_EXECUTABLE True)
