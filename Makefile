@@ -80,6 +80,7 @@ pot:
 	$(Q)git grep -l -w "_(" src/ > $(BUILDDIR)/POTFILES
 	$(Q)xgettext --directory=. --output=data/vengi.pot --omit-header --package-name=vengi --no-location --sort-by-file --keyword=_ --files-from=$(BUILDDIR)/POTFILES
 	$(Q)msgmerge --update data/shared/de_DE.po data/vengi.pot
+	$(Q)msgmerge --update data/shared/uk.po data/vengi.pot
 
 doc-images:
 	$(Q)pngquant -f --ext .png docs/img/*.png

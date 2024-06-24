@@ -145,9 +145,6 @@ msgstr "Lesezeichen"
 msgid "Remove bookmark"
 msgstr "Lesezeichen entfernen"
 
-msgid "Files"
-msgstr "Dateien"
-
 msgid "File"
 msgstr "Datei"
 
@@ -421,102 +418,6 @@ msgstr ""
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
 
-msgid "License"
-msgstr "Lizenz"
-
-msgid "Format"
-msgstr "Format"
-
-msgid "Voxel Files"
-msgstr "Voxel-Dateien"
-
-msgid "Thumbnail"
-msgstr "Miniaturansicht"
-
-msgid "Loading..."
-msgstr "Laden..."
-
-msgid "Load"
-msgstr "Öffnen"
-
-msgid "Download all missing files"
-msgstr "Alle fehlenden Dateien herunterladen"
-
-msgid "Download missing thumbnails"
-msgstr "Fehlende Miniaturansichten herunterladen"
-
-msgid "Nothing selected"
-msgstr "Nichts ausgewählt"
-
-msgid "No thumbnail available"
-msgstr "Miniaturansicht nicht verfügbar"
-
-#, c-format
-msgid "Name: %s"
-msgstr "Name: %s"
-
-#, c-format
-msgid "Source: %s"
-msgstr "Quelle: %s"
-
-#, c-format
-msgid "License: %s"
-msgstr "Lizenz: %s"
-
-msgid "URL"
-msgstr "URL"
-
-msgid "Create thumbnail"
-msgstr "Miniaturansicht erzeugen"
-
-msgid "Download missing files"
-msgstr "Fehlende Dateien herunterladen"
-
-msgid "Quit"
-msgstr "Beenden"
-
-msgid "Edit"
-msgstr "Bearbeiten"
-
-msgid "Outlines"
-msgstr "Umrisslinien"
-
-msgid "Bloom"
-msgstr "Bloom"
-
-msgid "Tone mapping"
-msgstr ""
-
-msgid "Allow multi monitor"
-msgstr "Mehrere Monitore zulassen"
-
-msgid "Font size"
-msgstr "Schriftgröße"
-
-msgid "CorporateGrey"
-msgstr "Corporate Grey"
-
-msgid "Dark"
-msgstr "Dunkel"
-
-msgid "Light"
-msgstr "Hell"
-
-msgid "Classic"
-msgstr "Klassisch"
-
-msgid "Color theme"
-msgstr "Farbthema"
-
-msgid "Notifications"
-msgstr "Benachrichtigungen"
-
-msgid "Reset layout"
-msgstr "Layout zurücksetzen"
-
-msgid "About"
-msgstr "Über"
-
 msgid "File already exists"
 msgstr "Datei existiert bereits"
 
@@ -624,6 +525,39 @@ msgstr "RGB gewichteter Durchschnitt"
 
 msgid "Create palette"
 msgstr "Palette erstellen"
+
+msgid "Quit"
+msgstr "Beenden"
+
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgid "Allow multi monitor"
+msgstr "Mehrere Monitore zulassen"
+
+msgid "Font size"
+msgstr "Schriftgröße"
+
+msgid "CorporateGrey"
+msgstr "Corporate Grey"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Classic"
+msgstr "Klassisch"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Color theme"
+msgstr "Farbthema"
+
+msgid "Notifications"
+msgstr "Benachrichtigungen"
+
+msgid "About"
+msgstr "Über"
 
 msgid "Source"
 msgstr "Quelle"
@@ -824,18 +758,6 @@ msgstr "%i Keyframes löschen"
 msgid "Models"
 msgstr "Modelle"
 
-msgid "Use stamp"
-msgstr "Stempel verwenden"
-
-msgid ""
-"This is only possible if the model doesn't exceed the max allowed stamp size"
-msgstr ""
-"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
-"nicht überschreitet"
-
-msgid "Add to scene"
-msgstr "Zur Szene hinzufügen"
-
 msgid "Images"
 msgstr "Bilder"
 
@@ -1011,6 +933,49 @@ msgstr "Seitenverhältnis"
 
 msgid "Add new camera"
 msgstr "Neue Kamera hinzufügen"
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Thumbnail"
+msgstr "Miniaturansicht"
+
+msgid "Loading..."
+msgstr "Laden..."
+
+msgid "Load"
+msgstr "Öffnen"
+
+msgid "Use stamp"
+msgstr "Stempel verwenden"
+
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
+"nicht überschreitet"
+
+msgid "Add to scene"
+msgstr "Zur Szene hinzufügen"
+
+#, fuzzy
+msgid "Hide thumbnails"
+msgstr "Miniaturansicht erzeugen"
+
+#, fuzzy
+msgid "Show thumbnails"
+msgstr "Achsen anzeigen"
+
+#, fuzzy
+msgid "Open target dir"
+msgstr "Öffne Zieldatei"
+
+#, fuzzy
+msgid "Empty palette index"
+msgstr "Leere Szene"
 
 msgid "Axiom"
 msgstr "Axiom"
@@ -1319,8 +1284,17 @@ msgstr "Begrenzungsrahmen"
 msgid "Bones"
 msgstr "Bones"
 
+msgid "Outlines"
+msgstr "Umrisslinien"
+
 msgid "Shadow"
 msgstr "Schatten"
+
+msgid "Bloom"
+msgstr "Bloom"
+
+msgid "Tone mapping"
+msgstr ""
 
 msgid "New"
 msgstr "Neu"
@@ -1408,6 +1382,9 @@ msgstr "Zoom-Geschwindigkeit"
 
 msgid "View distance"
 msgstr ""
+
+msgid "Reset layout"
+msgstr "Layout zurücksetzen"
 
 msgid "Select"
 msgstr "Auswählen"
@@ -2426,3 +2403,39 @@ msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
 msgid "Change the text brush axis"
 msgstr ""
+
+#~ msgid "Files"
+#~ msgstr "Dateien"
+
+#~ msgid "Voxel Files"
+#~ msgstr "Voxel-Dateien"
+
+#~ msgid "Download all missing files"
+#~ msgstr "Alle fehlenden Dateien herunterladen"
+
+#~ msgid "Download missing thumbnails"
+#~ msgstr "Fehlende Miniaturansichten herunterladen"
+
+#~ msgid "Nothing selected"
+#~ msgstr "Nichts ausgewählt"
+
+#~ msgid "No thumbnail available"
+#~ msgstr "Miniaturansicht nicht verfügbar"
+
+#, c-format
+#~ msgid "Name: %s"
+#~ msgstr "Name: %s"
+
+#, c-format
+#~ msgid "Source: %s"
+#~ msgstr "Quelle: %s"
+
+#, c-format
+#~ msgid "License: %s"
+#~ msgstr "Lizenz: %s"
+
+#~ msgid "URL"
+#~ msgstr "URL"
+
+#~ msgid "Download missing files"
+#~ msgstr "Fehlende Dateien herunterladen"

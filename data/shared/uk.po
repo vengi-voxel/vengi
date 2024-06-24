@@ -1,311 +1,330 @@
-msgid "The language to use - empty means system default"
+msgid ""
 msgstr ""
+"Project-Id-Version: vengi\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.4.4\n"
+
+msgid "The language to use - empty means system default"
+msgstr "Мова для використання - порожньо означає системний стандарт"
 
 msgid "Log to the system log"
-msgstr ""
+msgstr "Записувати до системного журналу"
 
 msgid ""
 "The lower the value, the more you see. 1 is the highest log level, 5 is just "
 "fatal errors."
 msgstr ""
+"Чим нижче значення, тим більше ви бачите. 1 - найвищий рівень журналу, 5 - "
+"тільки фатальні помилки."
 
 msgid "Print the version and quit"
-msgstr ""
+msgstr "Друкувати версію та вийти"
 
 msgid "Print this help and quit"
-msgstr ""
+msgstr "Друкувати цю довідку та вийти"
 
 msgid "Generate completion for bash"
-msgstr ""
+msgstr "Генерувати завершення для bash"
 
 msgid "Change log level from 1 (trace) to 6 (only critical)"
-msgstr ""
+msgstr "Змінити рівень журналу з 1 (слідування) до 6 (лише критичні)"
 
 msgid "Set a variable value"
-msgstr ""
+msgstr "Встановити значення змінної"
 
 msgid "Quit the application"
-msgstr ""
+msgstr "Вийти з програми"
 
 msgid "Trigger an assert"
-msgstr ""
+msgstr "Запустити assert"
 
 msgid "Clear the value history of a variable"
-msgstr ""
+msgstr "Очистити історію значень змінної"
 
 msgid "Just a no-operation command"
-msgstr ""
+msgstr "Просто команда без операцій"
 
 msgid "Open the given url in a browser"
-msgstr ""
+msgstr "Відкрити вказану URL-адресу в браузері"
 
 msgid "Print the given arguments to the console (info log level)"
-msgstr ""
+msgstr "Друкувати вказані аргументи в консоль (рівень інформаційного журналу)"
 
 msgid "Execute a file with script commands"
-msgstr ""
+msgstr "Виконати файл із командами скрипта"
 
 msgid "Toggle between true/false for a variable"
-msgstr ""
+msgstr "Перемикання між true/false для змінної"
 
 msgid "Increase a cvar value by the given value (default: 1)"
-msgstr ""
+msgstr "Збільшити значення cvar на вказане значення (за замовчуванням: 1)"
 
 msgid "Decrease a cvar value by the given value (default: 1)"
-msgstr ""
+msgstr "Зменшити значення cvar на вказане значення (за замовчуванням: 1)"
 
 msgid "Show the value of a variable"
-msgstr ""
+msgstr "Показати значення змінної"
 
 msgid "Print current milliseconds to console"
-msgstr ""
+msgstr "Друкувати поточні мілісекунди в консоль"
 
 msgid "Log given message as error"
-msgstr ""
+msgstr "Записати вказане повідомлення як помилку"
 
 msgid "Log given message as info"
-msgstr ""
+msgstr "Записати вказане повідомлення як інформацію"
 
 msgid "Log given message as debug"
-msgstr ""
+msgstr "Записати вказане повідомлення як відлагодження"
 
 msgid "Log given message as warn"
-msgstr ""
+msgstr "Записати вказане повідомлення як попередження"
 
 msgid "Show the list of known variables (wildcards supported)"
-msgstr ""
+msgstr "Показати список відомих змінних (підтримуються підстановочні символи)"
 
 msgid "Show the list of known commands (wildcards supported)"
-msgstr ""
+msgstr "Показати список відомих команд (підтримуються підстановочні символи)"
 
 msgid "Camera free look on toggle"
-msgstr ""
+msgstr "Вільний огляд камери при перемиканні"
 
 msgid "Toggle relative mouse rotation mode"
-msgstr ""
+msgstr "Перемикання режиму відносного обертання миші"
 
 msgid "Show all commands"
-msgstr ""
+msgstr "Показати всі команди"
 
 msgid "Show all cvars"
-msgstr ""
+msgstr "Показати всі cvars"
 
 msgid "Cloud"
-msgstr ""
+msgstr "Хмара"
 
 msgid "Desktop"
-msgstr ""
+msgstr "Робочий стіл"
 
 msgid "Documents"
-msgstr ""
+msgstr "Документи"
 
 msgid "Download"
-msgstr ""
+msgstr "Завантажити"
 
 msgid "Pictures"
-msgstr ""
+msgstr "Зображення"
 
 msgid "Public"
-msgstr ""
+msgstr "Загальний доступ"
 
 msgid "Recent"
-msgstr ""
+msgstr "Нещодавні"
 
 msgid "Quick Access"
-msgstr ""
+msgstr "Швидкий доступ"
 
 msgid "This PC"
-msgstr ""
+msgstr "Цей ПК"
 
 msgid "Bookmarks"
-msgstr ""
+msgstr "Закладки"
 
 msgid "Remove bookmark"
-msgstr ""
+msgstr "Видалити закладку"
 
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 msgid "Size"
-msgstr ""
+msgstr "Розмір"
 
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
 msgid "Date"
-msgstr ""
+msgstr "Дата"
 
 msgid "directory"
-msgstr ""
+msgstr "каталог"
 
 msgid "Add a bookmark for the current active folder"
-msgstr ""
+msgstr "Додати закладку для поточної активної папки"
 
 msgid "Show hidden file system entities"
-msgstr ""
+msgstr "Показати приховані об'єкти файлової системи"
 
 msgid "The last selected file type filter in the file dialog"
-msgstr ""
+msgstr "Останній вибраний фільтр типу файлу в діалоговому вікні файлів"
 
 msgid "Enter a name for the new folder"
-msgstr ""
+msgstr "Введіть ім'я для нової папки"
 
 msgid "Create"
-msgstr ""
+msgstr "Створити"
 
 msgid "Folder name can't be empty"
-msgstr ""
+msgstr "Ім'я папки не може бути порожнім"
 
 msgid "Cancel"
-msgstr ""
+msgstr "Скасувати"
 
 #, c-format
 msgid ""
 "%s already exist.\n"
 "Do you want to overwrite the file?"
 msgstr ""
+"%s вже існує.\n"
+"Бажаєте перезаписати файл?"
 
 msgid "Yes"
-msgstr ""
+msgstr "Так"
 
 msgid "No"
-msgstr ""
+msgstr "Ні"
 
 msgid "Filter"
-msgstr ""
+msgstr "Фільтр"
 
 msgid "Save file"
-msgstr ""
+msgstr "Зберегти файл"
 
 msgid "Select a directory"
-msgstr ""
+msgstr "Вибрати каталог"
 
 msgid "Select a file"
-msgstr ""
+msgstr "Вибрати файл"
 
 msgid "New folder"
-msgstr ""
+msgstr "Нова папка"
 
 msgid "Filename"
-msgstr ""
+msgstr "Ім'я файлу"
 
 msgid "Show hidden"
-msgstr ""
+msgstr "Показати приховані"
 
 msgid "Options"
-msgstr ""
+msgstr "Параметри"
 
 msgid "Choose"
-msgstr ""
+msgstr "Вибрати"
 
 msgid "Open"
-msgstr ""
+msgstr "Відкрити"
 
 msgid "Save"
-msgstr ""
+msgstr "Зберегти"
 
 msgid "Error: You must select a folder!"
-msgstr ""
+msgstr "Помилка: Ви повинні вибрати папку!"
 
 msgid "Error: You must select a file!"
-msgstr ""
+msgstr "Помилка: Ви повинні вибрати файл!"
 
 msgid "Change the ui colors - [0-3]"
-msgstr ""
+msgstr "Змінити кольори інтерфейсу - [0-3]"
 
 msgid "Timeout for notifications in millis"
-msgstr ""
+msgstr "Тайм-аут для сповіщень у мілісекундах"
 
 msgid "Allow multi monitor setups - requires a restart"
-msgstr ""
+msgstr "Дозволити налаштування з кількома моніторами - потребує перезапуску"
 
 msgid "Render the ui"
-msgstr ""
+msgstr "Відображати інтерфейс користувача"
 
 msgid "Show metric and debug window"
-msgstr ""
+msgstr "Показати вікно метрики та відлагодження"
 
 msgid "Allow to change the ui font size"
-msgstr ""
+msgstr "Дозволити змінювати розмір шрифту інтерфейсу користувача"
 
 msgid "Which keybinding to use"
-msgstr ""
+msgstr "Яку прив'язку клавіш використовувати"
 
 msgid "Bindings"
-msgstr ""
+msgstr "Прив'язки"
 
 msgid "Keys"
-msgstr ""
+msgstr "Клавіші"
 
 msgid "Command"
-msgstr ""
+msgstr "Команда"
 
 msgid "Context"
-msgstr ""
+msgstr "Контекст"
 
 msgid "Description"
-msgstr ""
+msgstr "Опис"
 
 #, c-format
 msgid "Failed to get command for %s"
-msgstr ""
+msgstr "Не вдалося отримати команду для %s"
 
 msgid "Keymap"
-msgstr ""
+msgstr "Клавіатурна розкладка"
 
 msgid "Reset to default"
-msgstr ""
+msgstr "Скинути до стандартних налаштувань"
 
 msgid "Configuration variables"
-msgstr ""
+msgstr "Конфігураційні змінні"
 
 msgid "Name"
-msgstr ""
+msgstr "Ім'я"
 
 msgid "Value"
-msgstr ""
+msgstr "Значення"
 
 msgid "Reset"
-msgstr ""
+msgstr "Скинути"
 
 msgid "Reset to default value"
-msgstr ""
+msgstr "Скинути до стандартного значення"
 
 msgid "Close"
-msgstr ""
+msgstr "Закрити"
 
 msgid "Commands"
-msgstr ""
+msgstr "Команди"
 
 msgid "Textures"
-msgstr ""
+msgstr "Текстури"
 
 msgid "Language"
-msgstr ""
+msgstr "Мова"
 
 msgid "To change the language everywhere restart the application"
-msgstr ""
+msgstr "Щоб змінити мову всюди, перезапустіть програму"
 
 msgid "Clear"
-msgstr ""
+msgstr "Очистити"
 
 msgid "Copy to clipboard"
-msgstr ""
+msgstr "Скопіювати в буфер обміну"
 
 msgid "Debug"
-msgstr ""
+msgstr "Відлагодження"
 
 msgid "Enable debug logging for the console"
-msgstr ""
+msgstr "Увімкнути ведення журналу відлагодження для консолі"
 
 msgid "Auto scrolling"
-msgstr ""
+msgstr "Автоматична прокрутка"
 
 #, c-format
 msgid ""
 "Open in browser\n"
 "%s"
 msgstr ""
+"Відкрити в браузері\n"
+"%s"
 
 msgid "Enable sending anonymous metrics"
 msgstr ""
@@ -2252,3 +2271,6 @@ msgstr ""
 
 msgid "Change the text brush axis"
 msgstr ""
+
+#~ msgid "Files"
+#~ msgstr "Файли"
