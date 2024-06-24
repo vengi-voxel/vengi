@@ -23,6 +23,25 @@ Panel::~Panel() {
 	_app->removePanel(this);
 }
 
+core::String Panel::makeTitle(const char *icon, const char *title, const char *id) {
+	core::String str;
+	if (icon != nullptr) {
+		str.append(icon);
+		str.append(" ");
+	}
+	if (title != nullptr) {
+		str.append(title);
+	}
+	if (id != nullptr) {
+		str.append(id);
+	}
+	return str;
+}
+
+core::String Panel::makeTitle(const char *title, const char *id) {
+	return makeTitle(nullptr, title, id);
+}
+
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 void Panel::registerUITests(ImGuiTestEngine *, const char *) {
 	Log::warn("No tests registered for panel %s", _title.c_str());
