@@ -1794,7 +1794,7 @@ msgid "Cameras"
 msgstr "Kameras"
 
 msgid "Groups"
-msgstr ""
+msgstr "Gruppen"
 
 msgid "References"
 msgstr "Referenzknoten"
@@ -1820,10 +1820,10 @@ msgstr ""
 "Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
 
 msgid "Script parameters"
-msgstr ""
+msgstr "Skriptparameter"
 
 msgid "Scripts"
-msgstr ""
+msgstr "Skripte"
 
 msgid "Create a new lua script"
 msgstr "Ein neues LUA-Skript erstellen"
@@ -1835,7 +1835,7 @@ msgid "Scripting manual"
 msgstr "Skripting-Handbuch"
 
 msgid "Script Editor"
-msgstr ""
+msgstr "Skripteditor"
 
 msgid "Apply and execute"
 msgstr "Anwenden und ausführen"
@@ -1943,7 +1943,7 @@ msgid "SpaceColonization"
 msgstr ""
 
 msgid "Trees"
-msgstr ""
+msgstr "Bäume"
 
 msgid "Seed"
 msgstr "Seed"
