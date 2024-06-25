@@ -970,21 +970,17 @@ msgstr ""
 msgid "Add to scene"
 msgstr "Zur Szene hinzufügen"
 
-#, fuzzy
 msgid "Hide thumbnails"
-msgstr "Miniaturansicht erzeugen"
+msgstr "Miniaturansicht verstecken"
 
-#, fuzzy
 msgid "Show thumbnails"
-msgstr "Achsen anzeigen"
+msgstr "Miniaturansicht anzeigen"
 
-#, fuzzy
 msgid "Open target dir"
-msgstr "Öffne Zieldatei"
+msgstr "Öffne Zielverzeichnis"
 
-#, fuzzy
 msgid "Empty palette index"
-msgstr "Leere Szene"
+msgstr ""
 
 msgid "L-System"
 msgstr ""
@@ -1173,9 +1169,8 @@ msgstr "Erneut anzeigen"
 msgid "Next"
 msgstr "Weiter"
 
-#, fuzzy
 msgid "Welcome"
-msgstr "Willkommensbildschirm"
+msgstr "Willkommen"
 
 msgid "Welcome to VoxEdit!"
 msgstr "Willkommen bei VoxEdit!"
@@ -1198,9 +1193,8 @@ msgstr ""
 msgid "Simple mode"
 msgstr "Einfacher Modus"
 
-#, fuzzy
 msgid "Unreference Model"
-msgstr "Referenzknoten"
+msgstr ""
 
 msgid ""
 "You can't edit a model reference.\n"
@@ -1226,9 +1220,8 @@ msgstr "Höhe"
 msgid "Depth"
 msgstr "Tiefe"
 
-#, fuzzy
 msgid "Failed to save"
-msgstr "Fehler beim Speichern des Modells!"
+msgstr "Fehler beim Speichern"
 
 msgid "Failed to save the model!"
 msgstr "Fehler beim Speichern des Modells!"
@@ -1239,9 +1232,8 @@ msgstr ""
 msgid "Unsaved changes - are you sure to quit?"
 msgstr "Ungespeicherte Änderungen - Möchten Sie wirklich beenden?"
 
-#, fuzzy
 msgid "Unsaved Modifications"
-msgstr "Benachrichtigungen"
+msgstr "Nicht gespeicherte Änderungen"
 
 msgid ""
 "There are unsaved modifications.\n"
@@ -1262,9 +1254,8 @@ msgstr "Umgebungslichtfarbe"
 msgid "Done"
 msgstr "Fertig"
 
-#, fuzzy
 msgid "Volume split"
-msgstr "Volumen"
+msgstr "Volumen teilen"
 
 msgid ""
 "Some model volumes are too big for optimal performance.\n"
@@ -1275,13 +1266,11 @@ msgstr ""
 "Es wird empfohlen, sie in kleinere Volumen aufzuteilen.\n"
 "Möchten Sie sie jetzt aufteilen?"
 
-#, fuzzy
 msgid "Model settings"
-msgstr "Szene-Einstellungen"
+msgstr "Modell-Einstellungen"
 
-#, fuzzy
 msgid "Rename node"
-msgstr "Umbenennen"
+msgstr "Knoten Umbenennen"
 
 msgid "Node names should be unique"
 msgstr ""
@@ -1304,9 +1293,8 @@ msgstr "Voxel speichern"
 msgid "Palettes"
 msgstr "Paletten"
 
-#, fuzzy
 msgid "History"
-msgstr "Verzeichnis"
+msgstr ""
 
 #, c-format
 msgid "Current state: %i / %i"
@@ -1521,9 +1509,8 @@ msgstr "Neue Knoteneigenschaft hinzufügen"
 msgid "Node Inspector"
 msgstr ""
 
-#, fuzzy
 msgid "Volume Inspector"
-msgstr "Volumen"
+msgstr ""
 
 msgid "Model from color"
 msgstr "Modell aus Farbe"
@@ -1546,12 +1533,11 @@ msgstr ""
 msgid "Empty color slot"
 msgstr ""
 
-#, fuzzy
 msgid "Select Palette"
 msgstr "Palette auswählen"
 
 msgid "Select the palette"
-msgstr "Palette auswählen"
+msgstr "Wähle die Palette aus"
 
 msgid ""
 "To add your own palettes here, put a palette-name.png into one of\n"
@@ -1622,9 +1608,8 @@ msgstr ""
 "Wählen Sie eine Farbe aus, um die nächstgelegene Übereinstimmung in der "
 "aktuellen geladenen Palette zu finden"
 
-#, fuzzy
 msgid "Palette"
-msgstr "Paletten"
+msgstr "Palette"
 
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
@@ -1646,13 +1631,11 @@ msgstr "Beispiel %i / %i"
 msgid "Start path tracer"
 msgstr "Pfadverfolgung starten"
 
-#, fuzzy
 msgid "Render"
-msgstr "Rendermodus"
+msgstr "Render"
 
-#, fuzzy
 msgid "Render Settings"
-msgstr "Szene-Einstellungen"
+msgstr "Rendereinstellungen"
 
 msgid "Dimensions"
 msgstr "Dimensionen"
@@ -1795,9 +1778,8 @@ msgstr "Zielknoten der Referenz"
 msgid "Delete this model"
 msgstr "Dieses Modell löschen"
 
-#, fuzzy
 msgid "Scene"
-msgstr "Szenenmodus"
+msgstr "Szene"
 
 msgid "Add a new model node"
 msgstr "Neuen Modellknoten hinzufügen"
@@ -2486,39 +2468,3 @@ msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
 msgid "Change the text brush axis"
 msgstr ""
-
-#~ msgid "Files"
-#~ msgstr "Dateien"
-
-#~ msgid "Voxel Files"
-#~ msgstr "Voxel-Dateien"
-
-#~ msgid "Download all missing files"
-#~ msgstr "Alle fehlenden Dateien herunterladen"
-
-#~ msgid "Download missing thumbnails"
-#~ msgstr "Fehlende Miniaturansichten herunterladen"
-
-#~ msgid "Nothing selected"
-#~ msgstr "Nichts ausgewählt"
-
-#~ msgid "No thumbnail available"
-#~ msgstr "Miniaturansicht nicht verfügbar"
-
-#, c-format
-#~ msgid "Name: %s"
-#~ msgstr "Name: %s"
-
-#, c-format
-#~ msgid "Source: %s"
-#~ msgstr "Quelle: %s"
-
-#, c-format
-#~ msgid "License: %s"
-#~ msgstr "Lizenz: %s"
-
-#~ msgid "URL"
-#~ msgstr "URL"
-
-#~ msgid "Download missing files"
-#~ msgstr "Fehlende Dateien herunterladen"
