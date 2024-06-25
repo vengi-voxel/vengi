@@ -133,11 +133,11 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditViewports, "2", _("The amount of viewports (not in simple ui mode)"), core::Var::minMaxValidator<2, cfg::MaxViewports>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", _("Hide some panels to simplify the ui"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", _("Trigger opening of popup"));
-	core::Var::get(cfg::VoxEditPopupWelcome, "false", _("Trigger opening of popup"));
-	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", _("Trigger opening of popup"));
-	core::Var::get(cfg::VoxEditPopupAbout, "false", _("Trigger opening of popup"));
-	core::Var::get(cfg::VoxEditPopupRenameNode, "false", _("Trigger opening of popup"));
+	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupWelcome, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupAbout, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupRenameNode, "false", _("Trigger opening of popup"), core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();
 
