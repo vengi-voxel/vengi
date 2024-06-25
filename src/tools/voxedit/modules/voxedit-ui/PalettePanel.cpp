@@ -232,7 +232,8 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		_popupSwitchPalette = false;
 	}
 
-	if (ImGui::BeginPopupModal(POPUP_TITLE_LOAD_PALETTE, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	const core::String title = makeTitle(_("Select Palette"), POPUP_TITLE_LOAD_PALETTE);
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(_("Select the palette"));
 		ImGui::Separator();
 		if (ImGui::BeginCombo("##type", _currentSelectedPalette.c_str(), 0)) {
@@ -342,7 +343,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 	}
 }
 
-void PalettePanel::update(const char *title, command::CommandExecutionListener &listener) {
+void PalettePanel::update(const char *id, command::CommandExecutionListener &listener) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
@@ -352,7 +353,8 @@ void PalettePanel::update(const char *title, command::CommandExecutionListener &
 	const int currentSelectedPalIdx = currentPaletteIndex();
 	_hasFocus = false;
 	_importPalette.clear();
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_MenuBar)) {
+	const core::String title = makeTitle(ICON_LC_PALETTE, _("Palette"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		_colorHovered = false;
 

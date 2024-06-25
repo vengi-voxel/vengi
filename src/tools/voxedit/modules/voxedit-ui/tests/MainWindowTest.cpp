@@ -11,7 +11,7 @@
 
 namespace voxedit {
 
-void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 #if ENABLE_RENDER_PANEL
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
 #endif
@@ -34,7 +34,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	IM_REGISTER_TEST(engine, testCategory(), "new scene unsaved changes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->markDirty();
 		ImGuiContext& g = *ctx->UiContext;
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
 		IM_CHECK_EQ(g.OpenPopupStack.Size, 1);
@@ -48,7 +48,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
@@ -58,7 +58,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *title) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {
 		_sceneMgr->newScene(true, "", new voxel::RawVolume({0, 1}));
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("###File/###New");
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);

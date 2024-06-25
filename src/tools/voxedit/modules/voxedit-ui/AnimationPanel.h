@@ -31,9 +31,9 @@ private:
 public:
 	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "animationpanel"), _sceneMgr(sceneMgr) {
 	}
-	void update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
+	void update(const char *id, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

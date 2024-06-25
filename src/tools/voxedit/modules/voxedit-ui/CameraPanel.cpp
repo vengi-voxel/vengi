@@ -4,7 +4,7 @@
 
 #include "CameraPanel.h"
 #include "../voxedit-util/SceneManager.h"
-#include "IconsLucide.h"
+#include "ui/IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "app/I18N.h"
 #include "ui/IMGUIEx.h"
@@ -13,8 +13,9 @@
 
 namespace voxedit {
 
-void CameraPanel::update(const char *title, video::Camera &camera, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void CameraPanel::update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		glm::vec3 pos = camera.worldPosition();
 		if (ImGui::InputFloat3(_("Position"), &pos.x)) {
 			camera.setWorldPosition(pos);

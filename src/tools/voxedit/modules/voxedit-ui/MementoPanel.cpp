@@ -3,6 +3,7 @@
  */
 
 #include "MementoPanel.h"
+#include "ui/IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "core/collection/DynamicArray.h"
 #include "ui/IMGUIEx.h"
@@ -15,8 +16,9 @@ static inline core::String toString(const MementoState &state, int n) {
 	return core::string::format("%s: node %i, parent %i, keyframe: %u, name: %s##%i", MementoHandler::typeToString(state.type), state.nodeId, state.parentId, state.keyFrameIdx, state.name.c_str(), n);
 }
 
-void MementoPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void MementoPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_BOOK_OPEN, _("History"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		const int currentStatePos = mementoHandler.statePosition();
 		ImGui::Text(_("Current state: %i / %i"), currentStatePos, (int)mementoHandler.stateSize());

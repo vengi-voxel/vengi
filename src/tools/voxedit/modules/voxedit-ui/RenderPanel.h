@@ -31,12 +31,12 @@ private:
 public:
 	RenderPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "render"), _sceneMgr(sceneMgr) {
 	}
-	void updateSettings(const char *title, const scenegraph::SceneGraph &sceneGraph);
-	void update(const char *title, const scenegraph::SceneGraph &sceneGraph);
+	void updateSettings(const char *id, const scenegraph::SceneGraph &sceneGraph);
+	void update(const char *id, const scenegraph::SceneGraph &sceneGraph);
 	bool init();
 	void shutdown();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

@@ -33,10 +33,10 @@ public:
 	LSystemPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "lsystem"), _sceneMgr(sceneMgr) {
 	}
 	bool init();
-	void update(const char *title);
+	void update(const char *id);
 	void shutdown();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

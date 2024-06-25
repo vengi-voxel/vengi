@@ -4,8 +4,8 @@
 
 #include "RenderPanel.h"
 #include "IMGUIApp.h"
+#include "ui/IconsLucide.h"
 #include "core/SharedPtr.h"
-#include "imgui.h"
 #include "scenegraph/SceneGraph.h"
 #include "ui/IMGUIEx.h"
 #include "video/Texture.h"
@@ -51,8 +51,9 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 	}
 }
 
-void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneGraph) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
+void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
+	const core::String title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (_pathTracer.started()) {
 			voxelpathtracer::PathTracerState &state = _pathTracer.state();
 			yocto::trace_params &params = state.params;
@@ -72,8 +73,9 @@ void RenderPanel::update(const char *title, const scenegraph::SceneGraph &sceneG
 	ImGui::End();
 }
 
-void RenderPanel::updateSettings(const char *title, const scenegraph::SceneGraph &sceneGraph) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void RenderPanel::updateSettings(const char *id, const scenegraph::SceneGraph &sceneGraph) {
+	const core::String title = makeTitle(ICON_LC_IMAGE, _("Render Settings"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		voxelpathtracer::PathTracerState &state = _pathTracer.state();
 		yocto::trace_params &params = state.params;
 		int changed = 0;

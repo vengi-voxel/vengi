@@ -8,9 +8,9 @@
 
 namespace voxedit {
 
-void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "toolbar")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		bool editMode = ctx->ItemInfo("edittools/###button0", ImGuiTestOpFlags_NoError).ID != 0;
 		bool sceneMode = false;
 		if (!editMode)

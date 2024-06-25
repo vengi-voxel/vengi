@@ -21,9 +21,9 @@ static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext
 	ctx->MenuClick(clickId.c_str());
 }
 
-void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "context menu")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		IM_CHECK(_sceneMgr->newScene(true, "scenegraphtest", voxel::Region(0, 31)));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -39,7 +39,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 		IM_CHECK(focusWindow(ctx, POPUP_TITLE_RENAME_NODE));
 		ctx->ItemInputValue("Name", "automated ui test rename");
 		ctx->Yield();
-		IM_CHECK(focusWindow(ctx, title)); // back to the scene graph panel
+		IM_CHECK(focusWindow(ctx, id)); // back to the scene graph panel
 
 		// create reference
 		const int beforeReference = sceneGraph.size(scenegraph::SceneGraphNodeType::ModelReference);
@@ -63,7 +63,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ImGuiContext& g = *ctx->UiContext;
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
@@ -82,7 +82,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *title
 
 	IM_REGISTER_TEST(engine, testCategory(), "group node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		ImGuiContext& g = *ctx->UiContext;
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 

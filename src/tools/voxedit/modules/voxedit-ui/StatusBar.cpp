@@ -10,7 +10,7 @@
 
 namespace voxedit {
 
-void StatusBar::update(const char *title, float height, const core::String &lastExecutedCommand) {
+void StatusBar::update(const char *id, float height, const core::String &lastExecutedCommand) {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowViewport(viewport->ID);
 	const ImVec2 &size = viewport->WorkSize;
@@ -19,7 +19,7 @@ void StatusBar::update(const char *title, float height, const core::String &last
 	statusBarPos.y += size.y - height;
 	ImGui::SetNextWindowPos(statusBarPos);
 	const uint32_t statusBarFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus;
-	if (ImGui::Begin(title, nullptr, statusBarFlags)) {
+	if (ImGui::Begin(id, nullptr, statusBarFlags)) {
 		ui::ScopedStyle scopedStyle;
 		scopedStyle.setItemSpacing(ImVec2(20, 0));
 		ImGui::CheckboxVar(_("Grayscale"), cfg::VoxEditGrayInactive);

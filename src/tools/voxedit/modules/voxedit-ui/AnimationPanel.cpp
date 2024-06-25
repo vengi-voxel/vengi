@@ -12,10 +12,11 @@
 
 namespace voxedit {
 
-void AnimationPanel::update(const char *title, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
+void AnimationPanel::update(const char *id, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
+	const core::String title = makeTitle(ICON_LC_LAYOUT_LIST, _("Animation"), id);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add"))) {

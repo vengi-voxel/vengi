@@ -3,7 +3,7 @@
  */
 
 #include "TreePanel.h"
-#include "IconsLucide.h"
+#include "ui/IconsLucide.h"
 #include "ui/IMGUIEx.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -73,8 +73,9 @@ const char *TreePanel::treeTypeName(int i) const {
 	return treeTypes[i];
 }
 
-void TreePanel::update(const char *title) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void TreePanel::update(const char *id) {
+	const core::String title = makeTitle(ICON_LC_TREE_PINE, _("Trees"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);
 		if (ImGui::BeginIconCombo(ICON_LC_TREES, _("Type"), treeTypeName(core::enumVal(_treeGeneratorContext.cfg.type)), 0)) {
 			for (int i = 0; i < (int)voxelgenerator::TreeType::Max; ++i) {

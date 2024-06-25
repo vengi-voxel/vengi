@@ -167,8 +167,9 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 	return validScriptIndex;
 }
 
-void ScriptPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void ScriptPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_CODE, _("Scripts"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 		if (_scripts.empty()) {
 			_scripts = luaApi.listScripts();
@@ -201,11 +202,12 @@ void ScriptPanel::update(const char *title, command::CommandExecutionListener &l
 	ImGui::End();
 }
 
-bool ScriptPanel::updateEditor(const char *title) {
+bool ScriptPanel::updateEditor(const char *id) {
 	if (!_scriptEditor) {
 		return false;
 	}
-	if (ImGui::Begin(title, &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
+	const core::String title = makeTitle(ICON_LC_CODE, _("Script Editor"), id);
+	if (ImGui::Begin(title.c_str(), &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute"))) {
@@ -280,7 +282,7 @@ bool ScriptPanel::updateEditor(const char *title) {
 			ImGui::EndMenuBar();
 		}
 
-		_textEditor.Render(title);
+		_textEditor.Render(id);
 	}
 	ImGui::End();
 	return true;

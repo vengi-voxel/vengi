@@ -7,7 +7,7 @@
 
 namespace ui {
 
-void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void FileDialog::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "bookmarks")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, "###app"));
 		ctx->MenuClick("###File/###Load");

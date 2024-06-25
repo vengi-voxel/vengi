@@ -8,11 +8,11 @@
 
 namespace voxedit {
 
-void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "switch built-in")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		for (int i = lengthof(palette::Palette::builtIn) - 1; i >= 0; --i) {
-			ctx->SetRef(title);
+			ctx->SetRef(id);
 			ctx->MenuClick("###File/###Switch");
 			ctx->SetRef(POPUP_TITLE_LOAD_PALETTE);
 			ctx->ItemClick("##type");
@@ -28,8 +28,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "lospec")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
-		ctx->SetRef(title);
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
 		ctx->MenuClick("###File/###Lospec/ID");
 		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
 		ctx->ItemClick("//$FOCUSED/OK");
@@ -42,8 +42,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
-		ctx->SetRef(title);
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		const core::RGBA slot0 = activePalette.color(0);
 		const core::RGBA slot1 = activePalette.color(1);
@@ -54,8 +54,8 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag and drop color ctrl")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
-		ctx->SetRef(title);
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->SetRef(id);
 		const palette::Palette& activePalette = _sceneMgr->activePalette();
 		const core::RGBA slot0 = activePalette.color(0);
 		const core::RGBA slot1 = activePalette.color(1);

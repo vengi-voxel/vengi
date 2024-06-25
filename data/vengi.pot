@@ -678,10 +678,10 @@ msgstr ""
 msgid "Reset cameras in viewports"
 msgstr ""
 
-msgid "Add"
+msgid "Animation"
 msgstr ""
 
-msgid "Animation"
+msgid "Add"
 msgstr ""
 
 msgid "Delete"
@@ -724,6 +724,9 @@ msgstr ""
 
 #, c-format
 msgid "Delete %i keyframes"
+msgstr ""
+
+msgid "Assets"
 msgstr ""
 
 msgid "Models"
@@ -879,6 +882,12 @@ msgstr ""
 msgid "Select areas of voxels"
 msgstr ""
 
+msgid "Brush"
+msgstr ""
+
+msgid "Camera"
+msgstr ""
+
 msgid "Position"
 msgstr ""
 
@@ -938,6 +947,9 @@ msgid "Open target dir"
 msgstr ""
 
 msgid "Empty palette index"
+msgstr ""
+
+msgid "L-System"
 msgstr ""
 
 msgid "Axiom"
@@ -1083,10 +1095,16 @@ msgid ""
 "mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
 
+msgid "Tip of the day"
+msgstr ""
+
 msgid "Show again"
 msgstr ""
 
 msgid "Next"
+msgstr ""
+
+msgid "Welcome"
 msgstr ""
 
 msgid "Welcome to VoxEdit!"
@@ -1105,10 +1123,16 @@ msgstr ""
 msgid "Simple mode"
 msgstr ""
 
+msgid "Unreference Model"
+msgstr ""
+
 msgid ""
 "You can't edit a model reference.\n"
 "\n"
 "Do you want to convert the reference into a model?"
+msgstr ""
+
+msgid "New Scene"
 msgstr ""
 
 msgid "Templates"
@@ -1123,10 +1147,19 @@ msgstr ""
 msgid "Depth"
 msgstr ""
 
+msgid "Failed to save"
+msgstr ""
+
 msgid "Failed to save the model!"
 msgstr ""
 
+msgid "Unsaved Changes"
+msgstr ""
+
 msgid "Unsaved changes - are you sure to quit?"
+msgstr ""
+
+msgid "Unsaved Modifications"
 msgstr ""
 
 msgid ""
@@ -1146,10 +1179,19 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+msgid "Volume split"
+msgstr ""
+
 msgid ""
 "Some model volumes are too big for optimal performance.\n"
 "It's encouraged to split them into smaller volumes.\n"
 "Do you wish to split them now?"
+msgstr ""
+
+msgid "Model settings"
+msgstr ""
+
+msgid "Rename node"
 msgstr ""
 
 msgid "Node names should be unique"
@@ -1171,6 +1213,9 @@ msgid "Voxel save"
 msgstr ""
 
 msgid "Palettes"
+msgstr ""
+
+msgid "History"
 msgstr ""
 
 #, c-format
@@ -1270,9 +1315,6 @@ msgid "Color wheel"
 msgstr ""
 
 msgid "Simplified UI"
-msgstr ""
-
-msgid "Tip of the day"
 msgstr ""
 
 msgid "Cubes"
@@ -1383,6 +1425,12 @@ msgstr ""
 msgid "Add a new node property"
 msgstr ""
 
+msgid "Node Inspector"
+msgstr ""
+
+msgid "Volume Inspector"
+msgstr ""
+
 msgid "Model from color"
 msgstr ""
 
@@ -1402,6 +1450,9 @@ msgid "Press CTRL to re-order"
 msgstr ""
 
 msgid "Empty color slot"
+msgstr ""
+
+msgid "Select Palette"
 msgstr ""
 
 msgid "Select the palette"
@@ -1468,6 +1519,9 @@ msgstr ""
 msgid "Select a color to find the closest match in the current loaded palette"
 msgstr ""
 
+msgid "Palette"
+msgstr ""
+
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr ""
@@ -1486,6 +1540,12 @@ msgid "Sample %i / %i"
 msgstr ""
 
 msgid "Start path tracer"
+msgstr ""
+
+msgid "Render"
+msgstr ""
+
+msgid "Render Settings"
 msgstr ""
 
 msgid "Dimensions"
@@ -1550,9 +1610,6 @@ msgid "High quality"
 msgstr ""
 
 msgid "Geometry preview"
-msgstr ""
-
-msgid "Camera"
 msgstr ""
 
 msgid "Rename"
@@ -1630,6 +1687,9 @@ msgstr ""
 msgid "Delete this model"
 msgstr ""
 
+msgid "Scene"
+msgstr ""
+
 msgid "Add a new model node"
 msgstr ""
 
@@ -1670,6 +1730,9 @@ msgstr ""
 msgid "Script parameters"
 msgstr ""
 
+msgid "Scripts"
+msgstr ""
+
 msgid "Create a new lua script"
 msgstr ""
 
@@ -1677,6 +1740,9 @@ msgid "Edit the selected lua script"
 msgstr ""
 
 msgid "Scripting manual"
+msgstr ""
+
+msgid "Script Editor"
 msgstr ""
 
 msgid "Apply and execute"
@@ -1782,6 +1848,9 @@ msgid "Palm"
 msgstr ""
 
 msgid "SpaceColonization"
+msgstr ""
+
+msgid "Trees"
 msgstr ""
 
 msgid "Seed"

@@ -3,9 +3,9 @@
  */
 
 #include "LSystemPanel.h"
-#include "IconsLucide.h"
-#include "voxedit-util/SceneManager.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
+#include "voxedit-util/SceneManager.h"
 
 namespace voxedit {
 
@@ -14,8 +14,9 @@ bool LSystemPanel::init() {
 	return true;
 }
 
-void LSystemPanel::update(const char *title) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void LSystemPanel::update(const char *id) {
+	const core::String title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(LSystemPanel);
 		ImGui::InputText(_("Axiom"), &_lsystemData.axiom);
 		ImGui::InputTextMultiline(_("Rules"), &_lsystemData.rulesStr);
@@ -29,8 +30,9 @@ void LSystemPanel::update(const char *title) {
 		if (ImGui::IconButton(ICON_LC_PLAY, _("OK"))) {
 			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr, rules)) {
-				_sceneMgr->lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle,
-					_lsystemData.length, _lsystemData.width, _lsystemData.widthIncrement, _lsystemData.iterations, _lsystemData.leavesRadius);
+				_sceneMgr->lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle, _lsystemData.length,
+								   _lsystemData.width, _lsystemData.widthIncrement, _lsystemData.iterations,
+								   _lsystemData.leavesRadius);
 			}
 		}
 
@@ -41,7 +43,11 @@ void LSystemPanel::update(const char *title) {
 			ImGui::TableSetupColumn(_("Description"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
-			#define ROWENTRY(C, D) ImGui::TableNextColumn(); ImGui::TextUnformatted(C); ImGui::TableNextColumn(); ImGui::TextUnformatted(D)
+#define ROWENTRY(C, D)                                                                                                 \
+	ImGui::TableNextColumn();                                                                                          \
+	ImGui::TextUnformatted(C);                                                                                         \
+	ImGui::TableNextColumn();                                                                                          \
+	ImGui::TextUnformatted(D)
 			ROWENTRY("F", _("Draw line forwards"));
 			ROWENTRY("(", _("Set voxel type"));
 			ROWENTRY("b", _("Move backwards (no drawing)"));
@@ -54,7 +60,7 @@ void LSystemPanel::update(const char *title) {
 			ROWENTRY("!", _("Decrement width"));
 			ROWENTRY("[", _("Push"));
 			ROWENTRY("]", _("Pop"));
-			#undef ROWENTRY
+#undef ROWENTRY
 			ImGui::EndTable();
 		}
 	}
@@ -65,4 +71,4 @@ void LSystemPanel::shutdown() {
 	// TODO: persist the lsystem settings
 }
 
-}
+} // namespace voxedit

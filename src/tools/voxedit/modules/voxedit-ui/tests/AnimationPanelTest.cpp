@@ -7,9 +7,9 @@
 
 namespace voxedit {
 
-void AnimationPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void AnimationPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create, select and delete animation")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		const size_t animations = _sceneMgr->sceneGraph().animations().size();
 		ctx->ItemInputValue("##nameanimationpanel", "Automated ui test animation");
 		ctx->ItemClick("###Add");

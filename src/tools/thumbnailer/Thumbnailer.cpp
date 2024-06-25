@@ -63,7 +63,10 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDefaultValue("0:0:0")
 		.setDescription("Set the camera angles (pitch:yaw:roll))");
 	registerArg("--position").setShort("-p").setDefaultValue("0:0:0").setDescription("Set the camera position");
-	Argument& cameraMode = registerArg("--camera-mode").setDefaultValue("free").setDescription("Allow to change the camera positioning for rendering");
+	Argument &cameraMode =
+		registerArg("--camera-mode")
+			.setDefaultValue(voxelrender::SceneCameraModeStr[(int)voxelrender::SceneCameraMode::Free])
+			.setDescription("Allow to change the camera positioning for rendering");
 	for (int i = 0; i < (int)voxelrender::SceneCameraMode::Max; ++i) {
 		cameraMode.addValidValue(voxelrender::SceneCameraModeStr[i]);
 	}

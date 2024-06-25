@@ -268,12 +268,13 @@ bool SceneGraphPanel::init() {
 	return true;
 }
 
-void SceneGraphPanel::update(video::Camera& camera, const char *title, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
+void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_WORKFLOW, _("Scene"), id);
 	_hasFocus = false;
 
 	// TODO handle dragdrop::ModelPayload with the correct parent node
 
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		_hasFocus = ImGui::IsWindowHovered();
 		const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
 		core_trace_scoped(SceneGraphPanel);

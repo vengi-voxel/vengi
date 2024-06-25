@@ -53,7 +53,7 @@ public:
 	video::TexturePtr thumbnailLookup(const voxelcollection::VoxelFile &voxelFile);
 	voxelcollection::VoxelFile &selected();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

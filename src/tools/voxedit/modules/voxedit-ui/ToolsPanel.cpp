@@ -176,8 +176,9 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 	}
 }
 
-void ToolsPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_WRENCH, _("Tools"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			updateSceneMode(listener);
 		} else {

@@ -31,12 +31,12 @@ protected:
 	 * @param[in] title Translated title
 	 * @param[in] id The imgui id @c ###someid
 	 */
-	core::String makeTitle(const char *icon, const char *title, const char *id);
+	static core::String makeTitle(const char *icon, const char *title, const char *id);
 	/**
 	 * @param[in] title Translated title
 	 * @param[in] id The imgui id @c ###someid
 	 */
-	core::String makeTitle(const char *title, const char *id);
+	static core::String makeTitle(const char *title, const char *id);
 
 public:
 	virtual ~Panel();

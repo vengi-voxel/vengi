@@ -11,14 +11,14 @@
 
 namespace voxedit {
 
-static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *title, const SceneManagerPtr &sceneMgr, BrushType type) {
+static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
 	IM_CHECK_RETV(sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)), false);
 
 	const int viewportId = viewportEditMode(ctx, panel->app());
 	IM_CHECK_SILENT_RETV(viewportId != -1, false);
 
 	// now we can focus the brush panel
-	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, title), false);
+	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, id), false);
 
 	const core::String buttonId = core::String::format("brushes/###button%d", (int)type);
 	ctx->ItemClick(buttonId.c_str());
@@ -56,8 +56,8 @@ static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modi
 	return true;
 }
 
-static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const char *title, const SceneManagerPtr &sceneMgr, BrushType type) {
-	IM_CHECK_RETV(activeBrush(panel, ctx, title, sceneMgr, type), false);
+static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
+	IM_CHECK_RETV(activeBrush(panel, ctx, id, sceneMgr, type), false);
 	voxedit::ModifierFacade &modifier = sceneMgr->modifier();
 
 	setModifierType(ctx, modifier, ModifierType::Place);
@@ -80,12 +80,12 @@ static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const ch
 	return true;
 }
 
-void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
 		viewportEditMode(ctx, _app);
 
 		// now we can focus the brush panel
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 
 		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 		for (int i = 0; i < (int)BrushType::Max; ++i) {
@@ -98,7 +98,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, title, _sceneMgr, BrushType::None));
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::None));
 		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
 		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Select));
 
@@ -117,28 +117,28 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(runBrushModifiers(this, ctx, title, _sceneMgr, BrushType::Shape));
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Shape));
 	};
 
 #if 0
 	// https://github.com/vengi-voxel/vengi/issues/457
 	IM_REGISTER_TEST(engine, testCategory(), "plane brush")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(runBrushModifiers(this, ctx, title, _sceneMgr, BrushType::Plane));
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Plane));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "line brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// TODO: not all created volumes are overridden and removed on click... check why
-		IM_CHECK(runBrushModifiers(this, ctx, title, _sceneMgr, BrushType::Line));
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Line));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "path brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// TODO: load or create a volume first, path needs existing volumes
-		IM_CHECK(runBrushModifiers(this, ctx, title, _sceneMgr, BrushType::Path));
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Path));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "paint brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// TODO: load or create a volume first, paint needs existing volumes
-		IM_CHECK(runBrushModifiers(this, ctx, title, _sceneMgr, BrushType::Paint));
+		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Paint));
 	};
 #endif
 

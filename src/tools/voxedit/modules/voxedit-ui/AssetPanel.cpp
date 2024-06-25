@@ -4,10 +4,10 @@
 
 #include "AssetPanel.h"
 #include "DragAndDropPayload.h"
+#include "ui/IconsLucide.h"
 #include "app/Async.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
-#include "imgui.h"
 #include "io/File.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -55,8 +55,9 @@ bool AssetPanel::init() {
 	return true;
 }
 
-void AssetPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void AssetPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_LIST, _("Assets"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AssetPanel);
 		if (ImGui::BeginTabBar("##assetpaneltabs", ImGuiTabBarFlags_FittingPolicyResizeDown | ImGuiTabBarFlags_FittingPolicyScroll)) {
 			if (ImGui::BeginTabItem(_("Models"))) {

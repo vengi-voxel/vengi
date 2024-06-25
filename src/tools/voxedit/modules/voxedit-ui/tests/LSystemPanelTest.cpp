@@ -9,12 +9,12 @@
 
 namespace voxedit {
 
-void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "default rule")->TestFunc = [=](ImGuiTestContext *ctx) {
 		if (core::Var::getSafe(cfg::VoxEditSimplifiedView)->boolVal()) {
 			return;
 		}
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		IM_CHECK(_sceneMgr->newScene(true, "lsystem", voxel::Region(0, 31)));
 		const int activeNode = _sceneMgr->sceneGraph().activeNode();
 		const voxel::RawVolume *volume = _sceneMgr->volume(activeNode);

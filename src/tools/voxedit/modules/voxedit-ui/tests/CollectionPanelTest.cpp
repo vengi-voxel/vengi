@@ -7,10 +7,10 @@
 
 namespace voxedit {
 
-void CollectionPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void CollectionPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 #if 0
 	IM_REGISTER_TEST(engine, testCategory(), "none")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 	};
 #endif
 }

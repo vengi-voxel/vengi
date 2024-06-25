@@ -8,10 +8,10 @@
 
 namespace voxedit {
 
-void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void CameraPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create camera node")->TestFunc = [=](ImGuiTestContext *ctx) {
 		const size_t beforeCamera = _sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Camera);
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("Position/$$0", 0.0f);
 		ctx->ItemInputValue("Position/$$1", 1.0f);
 		ctx->ItemInputValue("Position/$$2", 2.0f);

@@ -28,9 +28,9 @@ private:
 public:
 	CameraPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "camera"), _sceneMgr(sceneMgr) {
 	}
-	void update(const char *title, video::Camera &camera, command::CommandExecutionListener &listener);
+	void update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

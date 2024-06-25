@@ -48,10 +48,10 @@ public:
 				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
 	bool init();
-	bool update(const char *sequencerTitle, double deltaFrameSeconds);
+	bool update(const char *id, double deltaFrameSeconds);
 	void resetFrames();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

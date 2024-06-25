@@ -3,7 +3,7 @@
  */
 
 #include "AnimationTimeline.h"
-#include "IconsLucide.h"
+#include "ui/IconsLucide.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
@@ -173,7 +173,8 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	}
 }
 
-bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeconds) {
+bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
+	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames(sceneGraph.activeAnimation());
@@ -191,7 +192,7 @@ bool AnimationTimeline::update(const char *sequencerTitle, double deltaFrameSeco
 			_sceneMgr->setCurrentFrame(currentFrame);
 		}
 	}
-	if (ImGui::Begin(sequencerTitle)) {
+	if (ImGui::Begin(title.c_str())) {
 		header(currentFrame, maxFrame);
 		sequencer(currentFrame);
 	}

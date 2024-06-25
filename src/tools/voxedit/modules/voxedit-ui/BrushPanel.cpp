@@ -449,8 +449,9 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 }
 
-void BrushPanel::update(const char *title, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void BrushPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brush"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addModifiers(listener);
 		brushSettings(listener);
 	}

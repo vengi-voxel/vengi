@@ -8,9 +8,9 @@
 
 namespace voxedit {
 
-void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void StatusBar::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "toggle settings")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		const struct {
 			const char *cvarName;
 			const char *label;

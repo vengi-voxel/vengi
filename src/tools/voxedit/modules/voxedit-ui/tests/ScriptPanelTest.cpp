@@ -8,9 +8,9 @@
 
 namespace voxedit {
 
-void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *title) {
+void ScriptPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create and save")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(focusWindow(ctx, title));
+		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("New");
 		ctx->Yield();
 

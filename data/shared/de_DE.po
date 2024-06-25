@@ -707,11 +707,11 @@ msgstr "Eine neue Szene mit UI-Interaktion erstellen"
 msgid "Reset cameras in viewports"
 msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
 
-msgid "Add"
-msgstr "Hinzufügen"
-
 msgid "Animation"
 msgstr "Animation"
+
+msgid "Add"
+msgstr "Hinzufügen"
 
 msgid "Delete"
 msgstr "Löschen"
@@ -754,6 +754,9 @@ msgstr "Keyframes löschen"
 #, c-format
 msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
+
+msgid "Assets"
+msgstr ""
 
 msgid "Models"
 msgstr "Modelle"
@@ -910,6 +913,12 @@ msgstr "Klicken Sie auf einen Voxel, um die Farbe auszuwählen"
 msgid "Select areas of voxels"
 msgstr "Bereiche von Voxeln auswählen"
 
+msgid "Brush"
+msgstr ""
+
+msgid "Camera"
+msgstr "Kamera"
+
 msgid "Position"
 msgstr "Position"
 
@@ -976,6 +985,9 @@ msgstr "Öffne Zieldatei"
 #, fuzzy
 msgid "Empty palette index"
 msgstr "Leere Szene"
+
+msgid "L-System"
+msgstr ""
 
 msgid "Axiom"
 msgstr "Axiom"
@@ -1152,11 +1164,18 @@ msgstr ""
 "Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
 "<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
 
+msgid "Tip of the day"
+msgstr "Tipp des Tages"
+
 msgid "Show again"
 msgstr "Erneut anzeigen"
 
 msgid "Next"
 msgstr "Weiter"
+
+#, fuzzy
+msgid "Welcome"
+msgstr "Willkommensbildschirm"
 
 msgid "Welcome to VoxEdit!"
 msgstr "Willkommen bei VoxEdit!"
@@ -1179,6 +1198,10 @@ msgstr ""
 msgid "Simple mode"
 msgstr "Einfacher Modus"
 
+#, fuzzy
+msgid "Unreference Model"
+msgstr "Referenzknoten"
+
 msgid ""
 "You can't edit a model reference.\n"
 "\n"
@@ -1187,6 +1210,9 @@ msgstr ""
 "Sie können eine Modellreferenz nicht bearbeiten.\n"
 "\n"
 "Möchten Sie die Referenz in ein Modell umwandeln?"
+
+msgid "New Scene"
+msgstr ""
 
 msgid "Templates"
 msgstr "Vorlagen"
@@ -1200,11 +1226,22 @@ msgstr "Höhe"
 msgid "Depth"
 msgstr "Tiefe"
 
+#, fuzzy
+msgid "Failed to save"
+msgstr "Fehler beim Speichern des Modells!"
+
 msgid "Failed to save the model!"
 msgstr "Fehler beim Speichern des Modells!"
 
+msgid "Unsaved Changes"
+msgstr ""
+
 msgid "Unsaved changes - are you sure to quit?"
 msgstr "Ungespeicherte Änderungen - Möchten Sie wirklich beenden?"
+
+#, fuzzy
+msgid "Unsaved Modifications"
+msgstr "Benachrichtigungen"
 
 msgid ""
 "There are unsaved modifications.\n"
@@ -1225,6 +1262,10 @@ msgstr "Umgebungslichtfarbe"
 msgid "Done"
 msgstr "Fertig"
 
+#, fuzzy
+msgid "Volume split"
+msgstr "Volumen"
+
 msgid ""
 "Some model volumes are too big for optimal performance.\n"
 "It's encouraged to split them into smaller volumes.\n"
@@ -1233,6 +1274,14 @@ msgstr ""
 "Einige Modellvolumen sind für eine optimale Leistung zu groß.\n"
 "Es wird empfohlen, sie in kleinere Volumen aufzuteilen.\n"
 "Möchten Sie sie jetzt aufteilen?"
+
+#, fuzzy
+msgid "Model settings"
+msgstr "Szene-Einstellungen"
+
+#, fuzzy
+msgid "Rename node"
+msgstr "Umbenennen"
 
 msgid "Node names should be unique"
 msgstr ""
@@ -1254,6 +1303,10 @@ msgstr "Voxel speichern"
 
 msgid "Palettes"
 msgstr "Paletten"
+
+#, fuzzy
+msgid "History"
+msgstr "Verzeichnis"
 
 #, c-format
 msgid "Current state: %i / %i"
@@ -1355,9 +1408,6 @@ msgstr "Farbrad"
 
 msgid "Simplified UI"
 msgstr "Vereinfachte Benutzeroberfläche"
-
-msgid "Tip of the day"
-msgstr "Tipp des Tages"
 
 msgid "Cubes"
 msgstr ""
@@ -1468,6 +1518,13 @@ msgstr "Diese Knoteneigenschaft löschen"
 msgid "Add a new node property"
 msgstr "Neue Knoteneigenschaft hinzufügen"
 
+msgid "Node Inspector"
+msgstr ""
+
+#, fuzzy
+msgid "Volume Inspector"
+msgstr "Volumen"
+
 msgid "Model from color"
 msgstr "Modell aus Farbe"
 
@@ -1488,6 +1545,10 @@ msgstr ""
 
 msgid "Empty color slot"
 msgstr ""
+
+#, fuzzy
+msgid "Select Palette"
+msgstr "Palette auswählen"
 
 msgid "Select the palette"
 msgstr "Palette auswählen"
@@ -1561,6 +1622,10 @@ msgstr ""
 "Wählen Sie eine Farbe aus, um die nächstgelegene Übereinstimmung in der "
 "aktuellen geladenen Palette zu finden"
 
+#, fuzzy
+msgid "Palette"
+msgstr "Paletten"
+
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
@@ -1580,6 +1645,14 @@ msgstr "Beispiel %i / %i"
 
 msgid "Start path tracer"
 msgstr "Pfadverfolgung starten"
+
+#, fuzzy
+msgid "Render"
+msgstr "Rendermodus"
+
+#, fuzzy
+msgid "Render Settings"
+msgstr "Szene-Einstellungen"
 
 msgid "Dimensions"
 msgstr "Dimensionen"
@@ -1644,9 +1717,6 @@ msgstr "Hohe Qualität"
 
 msgid "Geometry preview"
 msgstr ""
-
-msgid "Camera"
-msgstr "Kamera"
 
 msgid "Rename"
 msgstr "Umbenennen"
@@ -1725,6 +1795,10 @@ msgstr "Zielknoten der Referenz"
 msgid "Delete this model"
 msgstr "Dieses Modell löschen"
 
+#, fuzzy
+msgid "Scene"
+msgstr "Szenenmodus"
+
 msgid "Add a new model node"
 msgstr "Neuen Modellknoten hinzufügen"
 
@@ -1766,6 +1840,9 @@ msgstr ""
 msgid "Script parameters"
 msgstr ""
 
+msgid "Scripts"
+msgstr ""
+
 msgid "Create a new lua script"
 msgstr "Ein neues LUA-Skript erstellen"
 
@@ -1774,6 +1851,9 @@ msgstr "Das ausgewählte LUA-Skript bearbeiten"
 
 msgid "Scripting manual"
 msgstr "Skripting-Handbuch"
+
+msgid "Script Editor"
+msgstr ""
 
 msgid "Apply and execute"
 msgstr "Anwenden und ausführen"
@@ -1878,6 +1958,9 @@ msgid "Palm"
 msgstr "Palme"
 
 msgid "SpaceColonization"
+msgstr ""
+
+msgid "Trees"
 msgstr ""
 
 msgid "Seed"

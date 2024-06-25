@@ -42,11 +42,11 @@ private:
 public:
 	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {
 	}
-	void update(const char *title, command::CommandExecutionListener &listener);
+	void update(const char *id, command::CommandExecutionListener &listener);
 
-	bool updateEditor(const char *title);
+	bool updateEditor(const char *id);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 

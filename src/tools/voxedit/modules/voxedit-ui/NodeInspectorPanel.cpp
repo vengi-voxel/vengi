@@ -406,8 +406,9 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 	return true;
 }
 
-void NodeInspectorPanel::update(const char *title, bool sceneMode, command::CommandExecutionListener &listener) {
-	if (ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
+	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {
 			sceneView(listener);
 		} else {

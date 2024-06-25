@@ -52,11 +52,11 @@ public:
 	}
 	bool _popupNewModelNode = false;
 	bool init();
-	void update(video::Camera &camera, const char *title, ModelNodeSettings *modelNodeSettings,
+	void update(video::Camera &camera, const char *id, ModelNodeSettings *modelNodeSettings,
 				command::CommandExecutionListener &listener);
 	bool hasFocus() const;
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	void registerUITests(ImGuiTestEngine *engine, const char *title) override;
+	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif
 };
 
