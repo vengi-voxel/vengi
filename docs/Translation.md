@@ -7,7 +7,7 @@ The applications are directly reading `po` files.
 
 To create a new translation you should use the `pot` file located in `data/shared` in the repository.
 
-After you've created a new `po` file, copy them into any of the [search paths](Configuration.md) and give it the name as specified [here](https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html).
+After you've created a new `po` file, copy them into any of the [search paths](Configuration.md) (either directly, or in a folder named `po`) and give it the name as specified [here](https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html).
 
 > **Example:** Name it after the pattern `ll_CC` where `ll` is an ISO-639 two-letter language code, and `CC` is an ISO-3166 two-letter country code.
 
