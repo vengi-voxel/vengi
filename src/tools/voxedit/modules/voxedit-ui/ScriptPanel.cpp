@@ -161,7 +161,9 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 			case voxelgenerator::LUAParameterType::Max:
 				return validScriptIndex;
 			}
-			ImGui::TooltipText("%s", p.description.c_str());
+			if (!p.description.empty()) {
+				ImGui::TooltipText("%s", p.description.c_str());
+			}
 		}
 	}
 	return validScriptIndex;
