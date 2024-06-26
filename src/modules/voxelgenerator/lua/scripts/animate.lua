@@ -15,26 +15,26 @@ end
 
 local function animate(node, keyframe, maxKeyFrames)
 	local frame = keyframe * 20
-	local runTimeFactor = 12.0
-	local shoulderScale = 1.1
-	local timeFactor = runTimeFactor
+	local timeFactor = 12.0
 	local animTime = keyframe / maxKeyFrames
 	local scaledTime = animTime * timeFactor
 	local sine = math.sin(scaledTime)
 	local cosine = math.cos(scaledTime)
-	local movement = 0.05 * sine
-	local animTimeCos = math.cos(animTime)
-	local headLookX = math.rad(5.0) + 0.05 * animTimeCos
-	local headLookY = 0.1 * sine
-	local rotateYMovement = g_quat.rotateY(movement)
+
+	local shoulderScale = 1.1
 	local handAngle = 0.2 * sine
 	local footAngle = 1.5 * cosine
-	local lowername = string.lower(node:name());
 
+	local lowername = string.lower(node:name());
 	if lowername == "belt" then
+		local movement = 0.05 * sine
+		local rotateYMovement = g_quat.rotateY(movement)
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(rotateYMovement)
 	elseif lowername == "head" then
+		local animTimeCos = math.cos(animTime)
+		local headLookX = math.rad(5.0) + 0.05 * animTimeCos
+		local headLookY = 0.1 * sine
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(g_quat.rotateXY(headLookX, headLookY))
 	elseif isRight(lowername, "foot") then
