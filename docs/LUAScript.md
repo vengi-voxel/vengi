@@ -556,6 +556,12 @@ To use the built-in logging facilities use `g_log` with `info`, `debug`, `warn` 
 
 ## Available scripts
 
+### animate.lua
+
+Add animations to an existing model if you name the nodes properly.
+
+`xs animate.lua`
+
 ### cover.lua
 
 Generates a new voxel on top of others with the current selected color and the specified height.
