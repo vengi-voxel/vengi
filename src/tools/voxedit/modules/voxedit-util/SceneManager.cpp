@@ -9,6 +9,7 @@
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
+#include "core/Common.h"
 #include "core/GLM.h"
 #include "app/I18N.h"
 #include "core/Log.h"
@@ -30,6 +31,7 @@
 #include "metric/MetricFacade.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "video/Camera.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"
@@ -1460,6 +1462,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 }
 
 void SceneManager::rotate(math::Axis axis) {
+	// TODO: ScopedMementoGroup mementoGroup(_mementoHandler);
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 		if (node == nullptr) {
@@ -1473,10 +1476,23 @@ void SceneManager::rotate(math::Axis axis) {
 		if (newVolume == nullptr) {
 			return;
 		}
+		glm::vec3 pivot = node->pivot();
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
 		setSceneGraphNodeVolume(*node, newVolume);
 		modified(nodeId, r);
+		for (const auto &kfAnim : node->allKeyFrames()) {
+			for (auto &kf : kfAnim->second) {
+				scenegraph::SceneGraphTransform &transform = kf.transform();
+				transform.rotate(axis);
+			}
+		}
+		sceneGraph().updateTransforms();
+		const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
+		const int idx2 = (idx1 + 1) % 3;
+		core::exchange(pivot[idx1], pivot[idx2]);
+		node->setPivot(pivot);
+		_mementoHandler.markKeyFramesChange(*node);
 	});
 }
 

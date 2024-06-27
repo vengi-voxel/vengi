@@ -5,6 +5,7 @@
 #pragma once
 
 #include "SceneGraphAnimation.h"
+#include "math/Axis.h"
 #include <glm/gtc/quaternion.hpp>
 
 namespace scenegraph {
@@ -77,6 +78,7 @@ public:
 	void mirrorX();
 	void mirrorXYZ();
 	void mirrorXZ();
+	void rotate(math::Axis axis);
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 

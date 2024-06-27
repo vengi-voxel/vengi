@@ -4,6 +4,9 @@
 --
 -- e.g. belt, belt_left, belt_right, left_belt, right_belt, belt_l, belt_r, l_belt, r_belt
 --
+-- Model should use a right-handed system - this basically means it should look into the negative
+-- z direction (and right shoulder should be along the positive x axis, y is up).
+--
 
 function arguments()
 	return {

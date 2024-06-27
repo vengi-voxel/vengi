@@ -3,6 +3,8 @@
  */
 
 #include "SceneGraphTransform.h"
+#include "core/Common.h"
+#include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "core/Assert.h"
 #include "core/Log.h"
@@ -133,6 +135,17 @@ void SceneGraphTransform::mirrorXZ() {
 		_localTranslation.z = -_localTranslation.z;
 		_localScale.x = -_localScale.x;
 		_localScale.z = -_localScale.z;
+		_dirty |= DIRTY_LOCALVALUES;
+	}
+}
+
+void SceneGraphTransform::rotate(math::Axis axis) {
+	const int idx1 = (math::getIndexForAxis(axis) + 1) % 3;
+	const int idx2 = (idx1 + 1) % 3;
+	if (_dirty & DIRTY_WORLDVALUES) {
+		core::exchange(_worldTranslation[idx1], _worldTranslation[idx2]);
+	} else {
+		core::exchange(_localTranslation[idx1], _localTranslation[idx2]);
 		_dirty |= DIRTY_LOCALVALUES;
 	}
 }
