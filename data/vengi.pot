@@ -1976,6 +1976,27 @@ msgstr ""
 msgid "Perspective"
 msgstr ""
 
+msgid "Back"
+msgstr ""
+
+msgid "Bottom"
+msgstr ""
+
+msgid "Free"
+msgstr ""
+
+msgid "Front"
+msgstr ""
+
+msgid "Left"
+msgstr ""
+
+msgid "Right"
+msgstr ""
+
+msgid "Top"
+msgstr ""
+
 msgid "View"
 msgstr ""
 

@@ -252,15 +252,22 @@ void Viewport::menuBarCameraProjection() {
 	}
 }
 
+static const char *sceneCameraMode(int mode) {
+	// See voxelrender::SceneCameraModeStr
+	const char *Modes[] = {_("Free"), _("Top"), _("Bottom"), _("Left"), _("Right"), _("Front"), _("Back")};
+	static_assert(lengthof(Modes) == (int)voxelrender::SceneCameraMode::Max, "Array size doesn't match enum values");
+	return Modes[mode];
+}
+
 void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
-	const float modeMaxWidth = ImGui::CalcComboWidth(voxelrender::SceneCameraModeStr[currentMode]);
+	const char *currentSelection = sceneCameraMode(currentMode);
+	const float modeMaxWidth = ImGui::CalcComboWidth(currentSelection);
 	ImGui::SetNextItemWidth(modeMaxWidth);
-	// TODO: I18N: These are not translated
-	if (ImGui::BeginCombo("###cameramode", voxelrender::SceneCameraModeStr[currentMode])) {
-		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
+	if (ImGui::BeginCombo("###cameramode", currentSelection)) {
+		for (int n = 0; n < (int)voxelrender::SceneCameraMode::Max; n++) {
 			const bool isSelected = (currentMode == n);
-			if (ImGui::Selectable(voxelrender::SceneCameraModeStr[n], isSelected)) {
+			if (ImGui::Selectable(sceneCameraMode(n), isSelected)) {
 				_camMode = (voxelrender::SceneCameraMode)n;
 				resetCamera();
 			}
@@ -403,8 +410,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	core::String name;
 	if (_detailedTitle) {
-		// TODO: I18N: camera mode is not translated
-		name = core::string::format("%s %s%s", voxelrender::SceneCameraModeStr[(int)_camMode], modeStr, _uiId.c_str());
+		name = core::string::format("%s %s%s", sceneCameraMode((int)_camMode), modeStr, _uiId.c_str());
 	} else {
 		name = core::string::format("%s%s", modeStr, _uiId.c_str());
 	}

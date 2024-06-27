@@ -2075,6 +2075,27 @@ msgstr "Orthogonal"
 msgid "Perspective"
 msgstr "Perspektive"
 
+msgid "Back"
+msgstr "Rückseite"
+
+msgid "Bottom"
+msgstr "Unten"
+
+msgid "Free"
+msgstr "Frei"
+
+msgid "Front"
+msgstr "Front"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "Top"
+msgstr "Oben"
+
 msgid "View"
 msgstr "Ansicht"
 
