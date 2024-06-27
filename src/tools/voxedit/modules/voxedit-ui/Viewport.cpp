@@ -256,6 +256,7 @@ void Viewport::menuBarCameraMode() {
 	const int currentMode = (int)_camMode;
 	const float modeMaxWidth = ImGui::CalcComboWidth(voxelrender::SceneCameraModeStr[currentMode]);
 	ImGui::SetNextItemWidth(modeMaxWidth);
+	// TODO: I18N: These are not translated
 	if (ImGui::BeginCombo("###cameramode", voxelrender::SceneCameraModeStr[currentMode])) {
 		for (int n = 0; n < lengthof(voxelrender::SceneCameraModeStr); n++) {
 			const bool isSelected = (currentMode == n);
@@ -402,6 +403,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 
 	core::String name;
 	if (_detailedTitle) {
+		// TODO: I18N: camera mode is not translated
 		name = core::string::format("%s %s%s", voxelrender::SceneCameraModeStr[(int)_camMode], modeStr, _uiId.c_str());
 	} else {
 		name = core::string::format("%s%s", modeStr, _uiId.c_str());
