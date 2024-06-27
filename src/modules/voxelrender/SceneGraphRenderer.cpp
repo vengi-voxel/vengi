@@ -48,6 +48,9 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	camera.setTarget(center);
 	camera.setTargetDistance(distance);
 	camera.setFarPlane(farPlane);
+	// Note: this is not the front and right definition of the opengl coordinate system that we are using elsewhere,
+	// but it still feels correct here from the volume centric view perspective. Top and bottom as well as left and
+	// right would normally be swapped here.
 	if (mode == SceneCameraMode::Free) {
 		camera.setWorldPosition(glm::vec3(center.x - distance, (float)sceneRegion.getUpperY(), center.z - distance));
 	} else if (mode == SceneCameraMode::Top) {
