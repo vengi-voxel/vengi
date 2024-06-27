@@ -38,6 +38,7 @@ private:
 	bool updateScriptExecutionPanel(command::CommandExecutionListener &listener);
 	void updateScriptPanel(command::CommandExecutionListener &listener);
 	void reloadScriptParameters(const core::String &script);
+	void reloadScript();
 
 public:
 	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {

@@ -106,6 +106,7 @@ public:
 
 	void grow();
 
+	// helper method to visualize the attraction points
 	template<class Volume>
 	void generateAttractionPoints(Volume& volume, const voxel::Voxel& voxel) const {
 		if (_root) {

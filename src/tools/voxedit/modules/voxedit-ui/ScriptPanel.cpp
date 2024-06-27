@@ -37,17 +37,21 @@ void ScriptPanel::reloadScriptParameters(const core::String &script) {
 	}
 }
 
+void ScriptPanel::reloadScript() {
+	voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
+	const core::String &scriptName = _scripts[_currentScript].filename;
+	_activeScript = luaApi.load(scriptName);
+	reloadScriptParameters(_activeScript);
+}
+
 bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &listener) {
 	if (_scripts.empty()) {
 		return false;
 	}
 
-	voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
-			const core::String &scriptName = _scripts[_currentScript].filename;
-			_activeScript = luaApi.load(scriptName);
-			reloadScriptParameters(_activeScript);
+			reloadScript();
 		}
 	}
 	ImGui::TooltipTextUnformatted(_("LUA scripts for manipulating the voxel volumes"));
