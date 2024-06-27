@@ -76,11 +76,11 @@ static core::String assemblePath(const core::String &dir, const io::FilesystemEn
 }
 
 void FileDialog::applyFilter(video::OpenFileMode type) {
-	_files.clear();
-	_files.reserve(_entities.size());
+	_filteredEntities.clear();
+	_filteredEntities.reserve(_entities.size());
 	for (size_t i = 0; i < _entities.size(); ++i) {
 		if (_entities[i].type == io::FilesystemEntry::Type::dir) {
-			_files.push_back(&_entities[i]);
+			_filteredEntities.push_back(&_entities[i]);
 			continue;
 		} else if (type == video::OpenFileMode::Directory) {
 			continue;
@@ -96,7 +96,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 				continue;
 			}
 		}
-		_files.push_back(&_entities[i]);
+		_filteredEntities.push_back(&_entities[i]);
 	}
 }
 
@@ -387,13 +387,13 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 
 		// Sort files
 		if (ImGuiTableSortSpecs *specs = ImGui::TableGetSortSpecs()) {
-			if (specs->SpecsDirty && _files.size() > 1U) {
+			if (specs->SpecsDirty && _filteredEntities.size() > 1U) {
 				for (int n = 0; n < specs->SpecsCount; n++) {
 					const ImGuiTableColumnSortSpecs &spec = specs->Specs[n];
 					if (spec.SortDirection == ImGuiSortDirection_Ascending) {
-						_files.sort(fileDialogSorter[spec.ColumnUserID].asc);
+						_filteredEntities.sort(fileDialogSorter[spec.ColumnUserID].asc);
 					} else {
-						_files.sort(fileDialogSorter[spec.ColumnUserID].desc);
+						_filteredEntities.sort(fileDialogSorter[spec.ColumnUserID].desc);
 					}
 				}
 				specs->SpecsDirty = false;
@@ -402,29 +402,35 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 
 		const ImVec2 size(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0);
 
-		// add parent directory
-		if (!core::string::isRootPath(_currentPath)) {
-			ImGui::TableNextColumn();
-			if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
-				if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-					setCurrentPath(type, io::filesystem()->absolutePath(core::string::path(_currentPath, "..")));
-				}
-			}
-			ImGui::TableNextColumn();
-			ImGui::TableNextColumn();
-			ImGui::TableNextColumn();
-		}
+		const bool isRootPath = core::string::isRootPath(_currentPath);
+		int clipperOffset = isRootPath ? 0 : 1;
 
 		// add filtered and sorted directory entries
 		ImGuiListClipper clipper;
-		clipper.Begin((int)_files.size(), ImGui::GetTextLineHeightWithSpacing());
+		clipper.Begin((int)_filteredEntities.size() + clipperOffset);
+		int n = 0;
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-				const io::FilesystemEntry entry = *_files[i];
+				++n;
+
+				// add parent directory
+				if (n == 1 && !isRootPath) {
+					ImGui::TableNextColumn();
+					if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+							setCurrentPath(type, io::filesystem()->absolutePath(core::string::path(_currentPath, "..")));
+						}
+					}
+					ImGui::TableNextColumn();
+					ImGui::TableNextColumn();
+					ImGui::TableNextColumn();
+					continue;
+				}
+				const io::FilesystemEntry entry = *_filteredEntities[i - clipperOffset];
 				ImGui::TableNextColumn();
 				const bool selected = i == (int)_entryIndex;
 				if (selected) {
-					_selectedEntry = *_files[i];
+					_selectedEntry = *_filteredEntities[i];
 				}
 				const char *icon = iconForType(entry.type);
 				const float x = ImGui::GetCursorPosX();
@@ -434,7 +440,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 					resetState();
 					_entryIndex = i;
-					_selectedEntry = *_files[i];
+					_selectedEntry = *_filteredEntities[i];
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						if (entry.isDirectory()) {
 							doubleClickedDir = true;

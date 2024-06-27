@@ -30,7 +30,7 @@ private:
 	// cached file system content of the current directory
 	core::DynamicArray<io::FilesystemEntry> _entities;
 	// sorted and filtered pointers to the cached file system entities
-	core::DynamicArray<const io::FilesystemEntry*> _files;
+	core::DynamicArray<const io::FilesystemEntry*> _filteredEntities;
 
 	using TimedError = core::TimedValue<core::String>;
 	TimedError _error;
