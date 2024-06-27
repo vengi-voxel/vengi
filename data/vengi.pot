@@ -147,6 +147,9 @@ msgstr ""
 msgid "The last selected file type filter in the file dialog"
 msgstr ""
 
+msgid "Create folder"
+msgstr ""
+
 msgid "Enter a name for the new folder"
 msgstr ""
 
@@ -157,6 +160,9 @@ msgid "Folder name can't be empty"
 msgstr ""
 
 msgid "Cancel"
+msgstr ""
+
+msgid "File already exists"
 msgstr ""
 
 #, c-format
@@ -389,9 +395,6 @@ msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
 msgstr ""
 
 msgid "Minimize the window"
-msgstr ""
-
-msgid "File already exists"
 msgstr ""
 
 msgid "Overwrite existing target file"

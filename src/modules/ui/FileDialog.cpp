@@ -27,9 +27,8 @@
 
 namespace ui {
 
-// TODO: I18N
-static const char *FILE_ALREADY_EXISTS_POPUP = "File already exists###fileoverwritepopup";
-static const char *NEW_FOLDER_POPUP = "Create folder###newfolderpopup";
+static const char *FILE_ALREADY_EXISTS_POPUP = "###fileoverwritepopup";
+static const char *NEW_FOLDER_POPUP = "###newfolderpopup";
 static const char *FILEDIALOGBOOKMARKDND = "filedialog-dir";
 
 enum class FileDialogColumnId {
@@ -552,7 +551,8 @@ void FileDialog::popupNewFolder() {
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	if (ImGui::BeginPopupModal(NEW_FOLDER_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	const core::String title = makeTitle(NEW_FOLDER_POPUP, _("Create folder"));
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(_("Enter a name for the new folder"));
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
 		if (ImGui::Button(_("Create"))) {
@@ -578,7 +578,8 @@ void FileDialog::popupNewFolder() {
 }
 
 bool FileDialog::popupAlreadyExists() {
-	if (ImGui::BeginPopupModal(FILE_ALREADY_EXISTS_POPUP, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	const core::String title = makeTitle(FILE_ALREADY_EXISTS_POPUP, _("File already exists"));
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(imguiApp()->bigFont());
 		ImGui::TextUnformatted(ICON_LC_TRIANGLE_ALERT);

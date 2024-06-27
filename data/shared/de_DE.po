@@ -169,6 +169,9 @@ msgstr "Versteckte Dateisystem-Entitäten anzeigen"
 msgid "The last selected file type filter in the file dialog"
 msgstr "Der zuletzt ausgewählte Dateitypfilter im Dateidialog"
 
+msgid "Create folder"
+msgstr "Ordner erstellen"
+
 msgid "Enter a name for the new folder"
 msgstr "Geben Sie einen Namen für den neuen Ordner ein"
 
@@ -180,6 +183,9 @@ msgstr "Der Ordnername darf nicht leer sein"
 
 msgid "Cancel"
 msgstr "Abbrechen"
+
+msgid "File already exists"
+msgstr "Datei existiert bereits"
 
 #, c-format
 msgid ""
@@ -417,9 +423,6 @@ msgstr ""
 
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
-
-msgid "File already exists"
-msgstr "Datei existiert bereits"
 
 msgid "Overwrite existing target file"
 msgstr "Überschreibe existierende Zieldatei"
