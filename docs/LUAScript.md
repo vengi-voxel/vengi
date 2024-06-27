@@ -546,6 +546,10 @@ g_cmd.execute("echo test")
 
 > To get a full list of commands use the console command `cmdlist`.
 
+## Logging
+
+To use the built-in logging facilities use `g_log` with `info`, `debug`, `warn` and `error`
+
 ## Other useful information
 
 * `y` going upwards - see [basics](Basics.md) for further details.
