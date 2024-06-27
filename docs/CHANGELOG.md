@@ -17,6 +17,7 @@ General:
    - Improved `3zh` format support
    - Added support for `ase` and `aseprite` format
    - Added cvar `voxformat_emptypaletteindex`
+   - Create *walk* and *jump* animations with the new `animate.lua` script
 
 VoxConvert:
 
