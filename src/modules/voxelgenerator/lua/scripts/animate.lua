@@ -55,6 +55,8 @@ local function animate(node, keyframe, maxKeyFrames)
 	elseif isLeft(lowername, "hand") then
 		local kf = addOrGetKeyFrame(node, frame)
 		kf:setLocalOrientation(g_quat.rotateZ(-handAngle))
+	else
+		g_log.info("No animation for " .. node:name())
 	end
 end
 

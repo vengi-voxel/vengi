@@ -350,7 +350,7 @@ void clua_logregister(lua_State* s) {
 		{"trace", clua_logtrace},
 		{nullptr, nullptr}
 	};
-	clua_registerfuncsglobal(s, funcs, "_metalog", "log");
+	clua_registerfuncsglobal(s, funcs, "_metalog", "g_log");
 }
 
 int clua_ioloader(lua_State *s) {

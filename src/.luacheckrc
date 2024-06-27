@@ -16,6 +16,7 @@ globals = {
 
 	"g_cmd",
 	"g_http",
+	"g_log",
 	"g_import",
 	"g_noise",
 	"g_palette",
