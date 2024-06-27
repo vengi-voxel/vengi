@@ -195,12 +195,16 @@ void ScriptPanel::update(const char *id, command::CommandExecutionListener &list
 		ImGui::TooltipTextUnformatted(_("Create a new lua script"));
 		if (validScriptIndex) {
 			ImGui::SameLine();
-			if (ImGui::Button(_("Edit"))) {
+			if (ImGui::Button(_("Edit script"))) {
 				_scriptEditor = true;
 				_activeScriptFilename = _scripts[_currentScript].filename;
 				_textEditor.SetText(_activeScript.c_str());
 			}
 			ImGui::TooltipTextUnformatted(_("Edit the selected lua script"));
+			ImGui::SameLine();
+			if (ImGui::IconButton(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
+				reloadScript();
+			}
 		}
 
 		ImGui::URLIconButton(ICON_LC_BOOK, _("Scripting manual"), "https://vengi-voxel.github.io/vengi/LUAScript/");
@@ -219,6 +223,9 @@ bool ScriptPanel::updateEditor(const char *id) {
 				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply and execute"))) {
 					_activeScript = _textEditor.GetText();
 					reloadScriptParameters(_activeScript);
+				}
+				if (ImGui::IconMenuItem(ICON_LC_LOADER_CIRCLE, _("Reload"))) {
+					reloadScript();
 				}
 				if (!_activeScriptFilename.empty()) {
 					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save"))) {

@@ -1736,7 +1736,13 @@ msgstr ""
 msgid "Create a new lua script"
 msgstr ""
 
+msgid "Edit script"
+msgstr ""
+
 msgid "Edit the selected lua script"
+msgstr ""
+
+msgid "Reload"
 msgstr ""
 
 msgid "Scripting manual"

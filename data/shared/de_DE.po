@@ -1828,8 +1828,14 @@ msgstr "Skripte"
 msgid "Create a new lua script"
 msgstr "Ein neues LUA-Skript erstellen"
 
+msgid "Edit script"
+msgstr "Skript bearbeiten"
+
 msgid "Edit the selected lua script"
 msgstr "Das ausgewählte LUA-Skript bearbeiten"
+
+msgid "Reload"
+msgstr "Neu laden"
 
 msgid "Scripting manual"
 msgstr "Skripting-Handbuch"
