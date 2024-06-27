@@ -18,7 +18,7 @@ msgstr ""
 "X-Generator: Poedit 3.4.2\n"
 
 msgid "The language to use - empty means system default"
-msgstr ""
+msgstr "Die zu verwendende Sprache - leer bedeutet Systemstandard"
 
 msgid "Log to the system log"
 msgstr "In das Systemprotokoll schreiben"
@@ -156,6 +156,9 @@ msgstr "Typ"
 
 msgid "Date"
 msgstr "Datum"
+
+msgid ".."
+msgstr ""
 
 msgid "directory"
 msgstr "Verzeichnis"
@@ -424,6 +427,27 @@ msgstr ""
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
 
+msgid "Back"
+msgstr "Rückseite"
+
+msgid "Bottom"
+msgstr "Unten"
+
+msgid "Free"
+msgstr "Frei"
+
+msgid "Front"
+msgstr "Front"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "Top"
+msgstr "Oben"
+
 msgid "Overwrite existing target file"
 msgstr "Überschreibe existierende Zieldatei"
 
@@ -588,16 +612,18 @@ msgid "Open target file"
 msgstr "Öffne Zieldatei"
 
 msgid "Use the color wheel in the palette color editing"
-msgstr ""
+msgstr "Verwenden Sie das Farbrad zur Bearbeitung der Farben in der Palette"
 
 msgid "Always show the color picker below the palette"
-msgstr ""
+msgstr "Den Farbwähler immer unterhalb der Palette anzeigen"
 
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
+"Millisekunden, in denen eine Region in bestimmten Situationen hervorgehoben "
+"werden sollte"
 
 msgid "Show fixed region sizes in the positions panel"
-msgstr ""
+msgstr "Feste Regionengrößen im Positions-Panel anzeigen"
 
 msgid "Show the grid"
 msgstr "Gitter anzeigen"
@@ -606,18 +632,23 @@ msgid "Show the currently locked axis"
 msgstr "Aktuell gesperrte Achse anzeigen"
 
 msgid "Show the axis aligned bounding box"
-msgstr ""
+msgstr "Achsenorientierte Begrenzungsbox anzeigen"
 
 msgid "Show the bones in scene mode"
-msgstr ""
+msgstr "Knochen im Szenenmodus anzeigen"
 
 msgid "Render with shadows - make sure to set the scene lighting up properly"
 msgstr ""
+"Mit Schatten rendern - stellen Sie sicher, dass die Szenenbeleuchtung "
+"richtig eingestellt ist"
 
 msgid ""
 "Millisecond delay between frames hide/unhide when using the scene graph "
 "panel play button to animate the models in the scene"
 msgstr ""
+"Millisekunden Verzögerung zwischen dem Ein- und Ausblenden von Frames beim "
+"Verwenden der Wiedergabetaste im Szenengraphen-Panel, um die Modelle in der "
+"Szene zu animieren"
 
 msgid "The size of the voxel grid"
 msgstr "Die Größe des Voxelgitters"
@@ -638,31 +669,31 @@ msgid "Set auto keyframe"
 msgstr "Automatischer Keyframe"
 
 msgid "Bitmask of gizmo operations in scene mode"
-msgstr ""
+msgstr "Bitmaske der Gizmo-Operationen im Szenenmodus"
 
 msgid "Activate the pivot mode for the gizmo in scene mode"
-msgstr ""
+msgstr "Aktiviere den Pivot-Modus für das Gizmo im Szenenmodus"
 
 msgid "Flip axis or stay along the positive world/local axis"
-msgstr ""
+msgstr "Achse umkehren oder entlang der positiven Welt-/Lokalachse bleiben"
 
 msgid "Use the grid size for snap"
-msgstr ""
+msgstr "Verwende die Rastergröße für das Einrasten"
 
 msgid "Show the gizmo to also translate the region"
-msgstr ""
+msgstr "Zeige das Gizmo, um auch die Region zu verschieben"
 
 msgid "The amount of viewports (not in simple ui mode)"
-msgstr ""
+msgstr "Die Anzahl der Ansichtsbereiche (nicht im einfachen UI-Modus)"
 
 msgid "Hide some panels to simplify the ui"
 msgstr "Verstecke einige Komponenten für eine vereinfachte Darstellung"
 
 msgid "Show the tip of the day on startup"
-msgstr ""
+msgstr "Zeige den Tipp des Tages beim Start"
 
 msgid "Trigger opening of popup"
-msgstr ""
+msgstr "Öffnen des Popups auslösen"
 
 msgid "Save the current viewport as screenshot"
 msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"
@@ -759,7 +790,7 @@ msgid "Delete %i keyframes"
 msgstr "%i Keyframes löschen"
 
 msgid "Assets"
-msgstr ""
+msgstr "Ressourcen"
 
 msgid "Models"
 msgstr "Modelle"
@@ -768,7 +799,7 @@ msgid "Images"
 msgstr "Bilder"
 
 msgid "Shape"
-msgstr ""
+msgstr "Form"
 
 msgid "Disable mirror"
 msgstr "Spiegelung deaktivieren"
@@ -795,10 +826,10 @@ msgid "Center"
 msgstr "Zentriert"
 
 msgid "Continuous"
-msgstr ""
+msgstr "Kontinuierlich"
 
 msgid "Replace"
-msgstr ""
+msgstr "Ersetzen"
 
 msgid "Replace all voxels in the stamp with the selected color"
 msgstr "Alle Voxel im Stempel mit der ausgewählten Farbe ersetzen"
@@ -832,13 +863,13 @@ msgstr ""
 "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
 
 msgid "18-connected"
-msgstr ""
+msgstr "18-verbunden"
 
 msgid "26-connected"
-msgstr ""
+msgstr "26-verbunden"
 
 msgid "6-connected"
-msgstr ""
+msgstr "6-verbunden"
 
 msgid "Connectivity"
 msgstr "Konnektivität"
@@ -863,10 +894,10 @@ msgstr ""
 "Verwende einen Radius um den aktuellen Voxel - 0 um eine Region zu umspannen"
 
 msgid "Clamping"
-msgstr ""
+msgstr "Begrenzung"
 
 msgid "Clamp the brush to the volume"
-msgstr ""
+msgstr "Den Pinsel auf das Volumen begrenzen"
 
 msgid "Text"
 msgstr "Text"
@@ -878,13 +909,13 @@ msgid "Thickness"
 msgstr "Dicke"
 
 msgid "Print text along the x axis"
-msgstr ""
+msgstr "Text entlang der x-Achse drucken"
 
 msgid "Print text along the y axis"
-msgstr ""
+msgstr "Text entlang der y-Achse drucken"
 
 msgid "Print text along the z axis"
-msgstr ""
+msgstr "Text entlang der z-Achse drucken"
 
 msgid "Font"
 msgstr "Schriftart"
@@ -905,7 +936,7 @@ msgid "Paint the selected plane"
 msgstr "Die ausgewählte Ebene bemalen"
 
 msgid "Gradient"
-msgstr ""
+msgstr "Verlauf"
 
 msgid "Brush settings"
 msgstr "Pinsel-Einstellungen"
@@ -917,7 +948,7 @@ msgid "Select areas of voxels"
 msgstr "Bereiche von Voxeln auswählen"
 
 msgid "Brush"
-msgstr ""
+msgstr "Pinsel"
 
 msgid "Camera"
 msgstr "Kamera"
@@ -983,10 +1014,10 @@ msgid "Open target dir"
 msgstr "Öffne Zielverzeichnis"
 
 msgid "Empty palette index"
-msgstr ""
+msgstr "Leerer Paletteneintrag"
 
 msgid "L-System"
-msgstr ""
+msgstr "L-System"
 
 msgid "Axiom"
 msgstr "Axiom"
@@ -1209,7 +1240,7 @@ msgstr ""
 "Möchten Sie die Referenz in ein Modell umwandeln?"
 
 msgid "New Scene"
-msgstr ""
+msgstr "Neue Szene"
 
 msgid "Templates"
 msgstr "Vorlagen"
@@ -1230,7 +1261,7 @@ msgid "Failed to save the model!"
 msgstr "Fehler beim Speichern des Modells!"
 
 msgid "Unsaved Changes"
-msgstr ""
+msgstr "Ungespeicherte Änderungen"
 
 msgid "Unsaved changes - are you sure to quit?"
 msgstr "Ungespeicherte Änderungen - Möchten Sie wirklich beenden?"
@@ -1276,7 +1307,7 @@ msgid "Rename node"
 msgstr "Knoten Umbenennen"
 
 msgid "Node names should be unique"
-msgstr ""
+msgstr "Knotennamen sollten eindeutig sein"
 
 msgid "Apply"
 msgstr "Anwenden"
@@ -1297,7 +1328,7 @@ msgid "Palettes"
 msgstr "Paletten"
 
 msgid "History"
-msgstr ""
+msgstr "Verlauf"
 
 #, c-format
 msgid "Current state: %i / %i"
@@ -1338,7 +1369,7 @@ msgid "Bloom"
 msgstr "Bloom"
 
 msgid "Tone mapping"
-msgstr ""
+msgstr "Tonemapping"
 
 msgid "New"
 msgstr "Neu"
@@ -1359,10 +1390,10 @@ msgid "Add directory to scene"
 msgstr "Verzeichnis zur Szene hinzufügen"
 
 msgid "Heightmap"
-msgstr ""
+msgstr "Höhenkarte"
 
 msgid "Colored heightmap"
-msgstr ""
+msgstr "Farbige Höhenkarte"
 
 msgid "Image as plane"
 msgstr "Bild als Ebene"
@@ -1386,7 +1417,7 @@ msgid "Paste at cursor"
 msgstr "Einfügen an Cursorposition"
 
 msgid "Paste as new node"
-msgstr ""
+msgstr "Als neuen Knoten einfügen"
 
 msgid "Paste as stamp"
 msgstr "Als Stempel einfügen"
@@ -1401,7 +1432,7 @@ msgid "Simplified UI"
 msgstr "Vereinfachte Benutzeroberfläche"
 
 msgid "Cubes"
-msgstr ""
+msgstr "Würfel"
 
 msgid "Marching cubes"
 msgstr "Marching Cubes"
@@ -1413,7 +1444,7 @@ msgid "Model animation speed"
 msgstr "Modellanimationsgeschwindigkeit"
 
 msgid "Autosave delay in seconds"
-msgstr ""
+msgstr "Automatische Speicherverzögerung in Sekunden"
 
 msgid "Viewports"
 msgstr "Ansichten"
@@ -1422,7 +1453,7 @@ msgid "Zoom speed"
 msgstr "Zoom-Geschwindigkeit"
 
 msgid "View distance"
-msgstr ""
+msgstr "Sichtweite"
 
 msgid "Reset layout"
 msgstr "Layout zurücksetzen"
@@ -1471,13 +1502,13 @@ msgid "Automatically create keyframes when changing transforms"
 msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
 
 msgid "Mirror X"
-msgstr ""
+msgstr "Spiegelung X"
 
 msgid "Mirror XZ"
-msgstr ""
+msgstr "Spiegelung XZ"
 
 msgid "Mirror XYZ"
-msgstr ""
+msgstr "Spiegelung XYZ"
 
 msgid "Transform"
 msgstr "Transformation"
@@ -1486,7 +1517,7 @@ msgid "Local transforms"
 msgstr "Lokale Transformationen"
 
 msgid "Update children"
-msgstr ""
+msgstr "Kinder aktualisieren"
 
 msgid "Tr"
 msgstr "Tr"
@@ -1501,7 +1532,7 @@ msgid "Pv"
 msgstr "Pv"
 
 msgid "Properties"
-msgstr ""
+msgstr "Eigenschaften"
 
 msgid "Delete this node property"
 msgstr "Diese Knoteneigenschaft löschen"
@@ -1510,10 +1541,10 @@ msgid "Add a new node property"
 msgstr "Neue Knoteneigenschaft hinzufügen"
 
 msgid "Node Inspector"
-msgstr ""
+msgstr "Knoteninspektor"
 
 msgid "Volume Inspector"
-msgstr ""
+msgstr "Volumeninspektor"
 
 msgid "Model from color"
 msgstr "Modell aus Farbe"
@@ -1528,13 +1559,13 @@ msgid "Remove color"
 msgstr "Farbe entfernen"
 
 msgid "Release CTRL to change the voxel color"
-msgstr ""
+msgstr "Lassen Sie die STRG-Taste los, um die Voxel-Farbe zu ändern"
 
 msgid "Press CTRL to re-order"
-msgstr ""
+msgstr "Drücken Sie STRG, um die Reihenfolge zu ändern"
 
 msgid "Empty color slot"
-msgstr ""
+msgstr "Leerer Farbslot"
 
 msgid "Select Palette"
 msgstr "Palette auswählen"
@@ -1653,6 +1684,9 @@ msgid ""
 "The number of per-pixel samples used while rendering and is the only "
 "parameter used to control the tradeoff between noise and speed."
 msgstr ""
+"Die Anzahl der pro Pixel verwendeten Samples während des Renderings und ist "
+"der einzige Parameter, der den Kompromiss zwischen Rauschen und "
+"Geschwindigkeit steuert."
 
 msgid "Bounces"
 msgstr "Bounces"
@@ -1661,12 +1695,14 @@ msgid ""
 "The maximum number of bounces and should be high for scenes with glass and "
 "volumes, but otherwise a low number would suffice."
 msgstr ""
+"Die maximale Anzahl der Bounces sollte hoch sein für Szenen mit Glas und "
+"Volumen, aber ansonsten reicht eine niedrige Zahl aus."
 
 msgid "Clamp"
 msgstr "Clamp"
 
 msgid "Remove high-energy fireflies"
-msgstr ""
+msgstr "Hochenergetische Glühwürmchen entfernen"
 
 msgid "Preview ratio"
 msgstr "Vorschauverhältnis"
@@ -1684,13 +1720,13 @@ msgid "Hide environment"
 msgstr "Umgebung ausblenden"
 
 msgid "Removes the environment map from the camera rays."
-msgstr ""
+msgstr "Entfernt die Umgebungskarte von den Kamerarays."
 
 msgid "Apply a linear filter to the image pixels"
-msgstr ""
+msgstr "Wendet einen linearen Filter auf die Bildpixel an"
 
 msgid "High Quality BVH"
-msgstr ""
+msgstr "Hochwertige BVH (Bounding Volume Hierarchy)"
 
 msgid "High quality bounding volume hierarchy"
 msgstr ""
@@ -1702,7 +1738,7 @@ msgid "High quality"
 msgstr "Hohe Qualität"
 
 msgid "Geometry preview"
-msgstr ""
+msgstr "Geometrie-Vorschau"
 
 msgid "Rename"
 msgstr "Umbenennen"
@@ -1803,7 +1839,7 @@ msgid "References"
 msgstr "Referenzknoten"
 
 msgid "Merge onto"
-msgstr ""
+msgstr "Zusammenführen auf"
 
 #, c-format
 msgid "Merge %s onto %s"
@@ -1919,37 +1955,37 @@ msgid "Flip axis"
 msgstr "Achse umkehren"
 
 msgid "Pine"
-msgstr ""
+msgstr "Kiefer"
 
 msgid "Dome"
-msgstr ""
+msgstr "Kuppel"
 
 msgid "Dome Hanging Leaves"
-msgstr ""
+msgstr "Kuppel Hängende Blätter"
 
 msgid "Cone"
-msgstr ""
+msgstr "Kegel"
 
 msgid "Fir"
 msgstr "Tanne"
 
 msgid "Branches Ellipsis"
-msgstr ""
+msgstr "Äste Ellipse"
 
 msgid "Ellipsis"
-msgstr ""
+msgstr "Ellipse"
 
 msgid "Cube"
-msgstr ""
+msgstr "Würfel"
 
 msgid "Cube Sides"
-msgstr ""
+msgstr "Würfel Seiten"
 
 msgid "Palm"
 msgstr "Palme"
 
 msgid "SpaceColonization"
-msgstr ""
+msgstr "SpaceColonization"
 
 msgid "Trees"
 msgstr "Bäume"
@@ -2074,27 +2110,6 @@ msgstr "Orthogonal"
 
 msgid "Perspective"
 msgstr "Perspektive"
-
-msgid "Back"
-msgstr "Rückseite"
-
-msgid "Bottom"
-msgstr "Unten"
-
-msgid "Free"
-msgstr "Frei"
-
-msgid "Front"
-msgstr "Front"
-
-msgid "Left"
-msgstr "Links"
-
-msgid "Right"
-msgstr "Rechts"
-
-msgid "Top"
-msgstr "Oben"
 
 msgid "View"
 msgstr "Ansicht"
@@ -2497,4 +2512,4 @@ msgid "Paste the current clipboard content as stamp"
 msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
 msgid "Change the text brush axis"
-msgstr ""
+msgstr "Ändere die Achse des Textpinsels"

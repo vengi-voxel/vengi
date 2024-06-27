@@ -419,6 +419,11 @@ const char *App::translate(const char *msgid) const {
 	return _dict->translate(msgid);
 }
 
+const char *App::translateCtxt(const char *msgctxt, const char *msgid) const {
+	core_assert(_dict != nullptr);
+	return _dict->translateCtxt(msgctxt, msgid);
+}
+
 bool App::setLanguage(const core::String &language) {
 	if (language.empty()) {
 		_dictManager.setLanguage(_systemLanguage);

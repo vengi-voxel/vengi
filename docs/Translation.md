@@ -26,3 +26,7 @@ There is a `Makefile` target called `pot` - so if you have gnu make installed, j
 ### Mark strings as being translatable
 
 use the `_` macro to mark a string as being translatable. E.g. `_("my string")`
+
+For only extracting them, but not translating them, you can use `N_("my string")`. Now `my string` appears in the `pot` file, but the location where the string is stored, is still the english string `my string` - not anything translated.
+
+By adding a context to the translators you could make things clearer, e.g. use `C_("Some string that describes the translatable string", "my string")` to add a `msgctxt` line to the pot file. And there is also a `NC_` version that works like the above mentioned `N_`.

@@ -415,7 +415,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				// add parent directory
 				if (n == 1 && !isRootPath) {
 					ImGui::TableNextColumn();
-					if (ImGui::Selectable("..", false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+					if (ImGui::Selectable(_(".."), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 							setCurrentPath(type, io::filesystem()->absolutePath(core::string::path(_currentPath, "..")));
 						}

@@ -135,6 +135,9 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+msgid ".."
+msgstr ""
+
 msgid "directory"
 msgstr ""
 
@@ -395,6 +398,27 @@ msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
 msgstr ""
 
 msgid "Minimize the window"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Bottom"
+msgstr ""
+
+msgid "Free"
+msgstr ""
+
+msgid "Front"
+msgstr ""
+
+msgid "Left"
+msgstr ""
+
+msgid "Right"
+msgstr ""
+
+msgid "Top"
 msgstr ""
 
 msgid "Overwrite existing target file"
@@ -1974,27 +1998,6 @@ msgid "Orthogonal"
 msgstr ""
 
 msgid "Perspective"
-msgstr ""
-
-msgid "Back"
-msgstr ""
-
-msgid "Bottom"
-msgstr ""
-
-msgid "Free"
-msgstr ""
-
-msgid "Front"
-msgstr ""
-
-msgid "Left"
-msgstr ""
-
-msgid "Right"
-msgstr ""
-
-msgid "Top"
 msgstr ""
 
 msgid "View"

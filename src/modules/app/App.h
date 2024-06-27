@@ -316,6 +316,7 @@ public:
 	static App* getInstance();
 
 	const char *translate(const char *msgid) const;
+	const char *translateCtxt(const char *msgctxt, const char *msgid) const;
 private:
 	core::DynamicArray<Argument> _arguments;
 };

@@ -150,6 +150,9 @@ msgstr "Тип"
 msgid "Date"
 msgstr "Дата"
 
+msgid ".."
+msgstr ""
+
 msgid "directory"
 msgstr "каталог"
 
@@ -162,6 +165,9 @@ msgstr "Показати приховані об'єкти файлової си�
 msgid "The last selected file type filter in the file dialog"
 msgstr "Останній вибраний фільтр типу файлу в діалоговому вікні файлів"
 
+msgid "Create folder"
+msgstr "Створити папку"
+
 msgid "Enter a name for the new folder"
 msgstr "Введіть ім'я для нової папки"
 
@@ -173,6 +179,9 @@ msgstr "Ім'я папки не може бути порожнім"
 
 msgid "Cancel"
 msgstr "Скасувати"
+
+msgid "File already exists"
+msgstr "Файл вже існує"
 
 #, c-format
 msgid ""
@@ -327,1571 +336,1738 @@ msgstr ""
 "%s"
 
 msgid "Enable sending anonymous metrics"
-msgstr ""
+msgstr "Увімкнути надсилання анонімних метрик"
 
 msgid "Send anonymous usage statistics"
-msgstr ""
+msgstr "Надсилати анонімну статистику використання"
 
 msgid "This is a beta release!"
-msgstr ""
+msgstr "Це бета-версія!"
 
 msgid "A new version is available!"
-msgstr ""
+msgstr "Доступна нова версія!"
 
 msgid "You are using the latest version."
-msgstr ""
+msgstr "Ви використовуєте останню версію."
 
 msgid "Bug reports"
-msgstr ""
+msgstr "Звіти про помилки"
 
 msgid "Help"
-msgstr ""
+msgstr "Довідка"
 
 msgid "Twitter"
-msgstr ""
+msgstr "Twitter"
 
 msgid "Mastodon"
-msgstr ""
+msgstr "Mastodon"
 
 msgid "Discord"
-msgstr ""
+msgstr "Discord"
 
 msgid "Credits"
-msgstr ""
+msgstr "Автори"
 
 msgid "Paths"
-msgstr ""
+msgstr "Шляхи"
 
 msgid "Clear the text from the built-in console"
-msgstr ""
+msgstr "Очистити текст з вбудованої консолі"
 
 msgid "Print the command history"
-msgstr ""
+msgstr "Вивести історію команд"
 
 msgid "Show all known key bindings"
-msgstr ""
+msgstr "Показати всі відомі прив'язки клавіш"
 
 msgid "Bind a command to a key"
-msgstr ""
+msgstr "Прив'язати команду до клавіші"
 
 msgid "Unbind a key"
-msgstr ""
+msgstr "Відв'язати клавішу"
 
 msgid "Show all images in the texture pool"
-msgstr ""
+msgstr "Показати всі зображення в текстурному пулі"
 
 msgid "Activate shadow map"
-msgstr ""
+msgstr "Активувати тіньову карту"
 
 msgid "Activate bloom post processing"
-msgstr ""
+msgstr "Активувати пост-процес блиску"
 
 msgid "Activate shadow debug rendering"
-msgstr ""
+msgstr "Активувати відлагодження тіней"
 
 msgid "Activate cascade shadow map debug rendering"
-msgstr ""
+msgstr "Активувати відлагодження каскадних тіней"
 
 msgid "Gamma correction"
-msgstr ""
+msgstr "Гамма-корекція"
 
 msgid "Render voxel outline"
-msgstr ""
+msgstr "Відображати контур вокселя"
 
 msgid "Activate tone mapping"
-msgstr ""
+msgstr "Активувати тонове відображення"
 
 msgid "Limit the framerate to the monitor refresh rate"
-msgstr ""
+msgstr "Обмежити частоту кадрів частотою оновлення монітора"
 
 msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
 msgstr ""
+"0 вимикає його, 1 тільки найвищий рівень серйозності, 2 середній рівень "
+"серйозності, 3 все"
 
 msgid "Minimize the window"
-msgstr ""
+msgstr "Згорнути вікно"
 
-msgid "File already exists"
-msgstr ""
+msgid "Back"
+msgstr "Назад"
+
+msgid "Bottom"
+msgstr "Вниз"
+
+msgid "Free"
+msgstr "Вільний"
+
+msgid "Front"
+msgstr "Вперед"
+
+msgid "Left"
+msgstr "Ліворуч"
+
+msgid "Right"
+msgstr "Праворуч"
+
+msgid "Top"
+msgstr "Вгору"
 
 msgid "Overwrite existing target file"
-msgstr ""
+msgstr "Перезаписати існуючий файл-ціль"
 
 msgid "Uniform scale"
-msgstr ""
+msgstr "Рівномірне масштабування"
 
 msgid "X axis scale"
-msgstr ""
+msgstr "Масштаб по осі X"
 
 msgid "Y axis scale"
-msgstr ""
+msgstr "Масштаб по осі Y"
 
 msgid "Z axis scale"
-msgstr ""
+msgstr "Масштаб по осі Z"
 
 msgid "Merge quads"
-msgstr ""
+msgstr "Об'єднати квадрати"
 
 msgid "Reuse vertices"
-msgstr ""
+msgstr "Використовувати вершини повторно"
 
 msgid "Ambient occlusion"
-msgstr ""
+msgstr "Приглушення освітлення"
 
 msgid "Apply transformations"
-msgstr ""
+msgstr "Застосувати перетворення"
 
 msgid "Apply optimizations"
-msgstr ""
+msgstr "Застосувати оптимізації"
 
 msgid "Exports quads"
-msgstr ""
+msgstr "Експортувати квадрати"
 
 msgid "Vertex colors"
-msgstr ""
+msgstr "Кольори вершин"
 
 msgid "Normals"
-msgstr ""
+msgstr "Нормалі"
 
 msgid "Vertex colors as float"
-msgstr ""
+msgstr "Кольори вершин як дійсні числа"
 
 msgid "Texture coordinates"
-msgstr ""
+msgstr "Координати текстури"
 
 msgid "Export materials"
-msgstr ""
+msgstr "Експортувати матеріали"
 
 msgid "Single object"
-msgstr ""
+msgstr "Один об'єкт"
 
 msgid "Save visible only"
-msgstr ""
+msgstr "Зберегти тільки видиме"
 
 msgid "Palette mode"
-msgstr ""
+msgstr "Режим палітри"
 
 msgid "Merge compounds"
-msgstr ""
+msgstr "Об'єднати сполуки"
 
 msgid "Create groups"
-msgstr ""
+msgstr "Створити групи"
 
 msgid "Create layers"
-msgstr ""
+msgstr "Створити шари"
 
 msgid "Left handed"
-msgstr ""
+msgstr "Ліворучна"
 
 msgid "Compressed"
-msgstr ""
+msgstr "Стиснута"
 
 msgid "Red Alert"
-msgstr ""
+msgstr "Червона тривога"
 
 msgid "Tiberian Sun"
-msgstr ""
+msgstr "Тіберіан Сан"
 
 msgid "Normal type"
-msgstr ""
+msgstr "Звичайний тип"
 
 msgid "Fill hollow"
-msgstr ""
+msgstr "Заповнити порожнину"
 
 msgid "Point cloud size"
-msgstr ""
+msgstr "Розмір хмари точок"
 
 msgid "faster and less memory"
-msgstr ""
+msgstr "швидше і менше пам'яті"
 
 msgid "high quality"
-msgstr ""
+msgstr "висока якість"
 
 msgid "Voxelization mode"
-msgstr ""
+msgstr "Режим вокселізації"
 
 msgid "RGB flatten factor"
-msgstr ""
+msgstr "Коефіцієнт згладжування RGB"
 
 msgid "RGB weighted average"
-msgstr ""
+msgstr "Зважений середній RGB"
 
 msgid "Create palette"
-msgstr ""
+msgstr "Створити палітру"
 
 msgid "Quit"
-msgstr ""
+msgstr "Вийти"
 
 msgid "Edit"
-msgstr ""
+msgstr "Редагувати"
 
 msgid "Allow multi monitor"
-msgstr ""
+msgstr "Дозволити кілька моніторів"
 
 msgid "Font size"
-msgstr ""
+msgstr "Розмір шрифту"
 
 msgid "CorporateGrey"
-msgstr ""
+msgstr "CorporateGrey"
 
 msgid "Dark"
-msgstr ""
+msgstr "Темний"
 
 msgid "Classic"
-msgstr ""
+msgstr "Класичний"
 
 msgid "Light"
-msgstr ""
+msgstr "Світлий"
 
 msgid "Color theme"
-msgstr ""
+msgstr "Кольорова тема"
 
 msgid "Notifications"
-msgstr ""
+msgstr "Сповіщення"
 
 msgid "About"
-msgstr ""
+msgstr "Про програму"
 
 msgid "Source"
-msgstr ""
+msgstr "Джерело"
 
 msgid "Source format"
-msgstr ""
+msgstr "Формат джерела"
 
 msgid "Target format"
-msgstr ""
+msgstr "Формат цілі"
 
 msgid "Source options"
-msgstr ""
+msgstr "Параметри джерела"
 
 msgid "Target options"
-msgstr ""
+msgstr "Параметри цілі"
 
 msgid "Convert"
-msgstr ""
+msgstr "Конвертувати"
 
 #, c-format
 msgid "Found vengi-voxconvert at %s"
-msgstr ""
+msgstr "Знайдено vengi-voxconvert за адресою %s"
 
 msgid "Open target file"
-msgstr ""
+msgstr "Відкрити файл-ціль"
 
 msgid "Use the color wheel in the palette color editing"
-msgstr ""
+msgstr "Використовувати колірне колесо при редагуванні кольору палітри"
 
 msgid "Always show the color picker below the palette"
-msgstr ""
+msgstr "Завжди показувати вибір кольору під палітрою"
 
 msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
+"Мілісекунди, протягом яких регіон повинен виділятися в деяких ситуаціях"
 
 msgid "Show fixed region sizes in the positions panel"
-msgstr ""
+msgstr "Показувати фіксовані розміри регіонів у панелі позицій"
 
 msgid "Show the grid"
-msgstr ""
+msgstr "Показувати сітку"
 
 msgid "Show the currently locked axis"
-msgstr ""
+msgstr "Показувати поточну заблоковану вісь"
 
 msgid "Show the axis aligned bounding box"
-msgstr ""
+msgstr "Показувати орієнтовану прямокутну оболонку"
 
 msgid "Show the bones in scene mode"
-msgstr ""
+msgstr "Показувати кістки в режимі сцени"
 
 msgid "Render with shadows - make sure to set the scene lighting up properly"
 msgstr ""
+"Відображати з тінями - переконайтеся, що освітлення сцени налаштовано "
+"належним чином"
 
 msgid ""
 "Millisecond delay between frames hide/unhide when using the scene graph "
 "panel play button to animate the models in the scene"
 msgstr ""
+"Затримка в мілісекундах між кадрами при приховуванні/показуванні, коли "
+"використовується кнопка відтворення панелі графа сцени для анімації моделей "
+"у сцені"
 
 msgid "The size of the voxel grid"
-msgstr ""
+msgstr "Розмір сітки вокселів"
 
 msgid "Render the inactive nodes in gray scale mode"
-msgstr ""
+msgstr "Відображати неактивні вузли у режимі сірої шкали"
 
 msgid "Hide the inactive nodes"
-msgstr ""
+msgstr "Приховати неактивні вузли"
 
 msgid "Show the axis"
-msgstr ""
+msgstr "Показувати вісь"
 
 msgid "Print cursor details in edit mode"
-msgstr ""
+msgstr "Виводити деталі курсора в режимі редагування"
 
 msgid "Set auto keyframe"
-msgstr ""
+msgstr "Встановити автоматичний ключовий кадр"
 
 msgid "Bitmask of gizmo operations in scene mode"
-msgstr ""
+msgstr "Бітова маска операцій гізмо в режимі сцени"
 
 msgid "Activate the pivot mode for the gizmo in scene mode"
-msgstr ""
+msgstr "Активувати режим повороту для гізмо в режимі сцени"
 
 msgid "Flip axis or stay along the positive world/local axis"
 msgstr ""
+"Перевернути вісь або залишитися вздовж позитивної світової/локальної вісі"
 
 msgid "Use the grid size for snap"
-msgstr ""
+msgstr "Використовувати розмір сітки для прив'язки"
 
 msgid "Show the gizmo to also translate the region"
-msgstr ""
+msgstr "Показувати гізмо для також переміщення регіону"
 
 msgid "The amount of viewports (not in simple ui mode)"
-msgstr ""
+msgstr "Кількість вікон перегляду (не в режимі простого інтерфейсу)"
 
 msgid "Hide some panels to simplify the ui"
-msgstr ""
+msgstr "Приховати деякі панелі, щоб спростити інтерфейс"
 
 msgid "Show the tip of the day on startup"
-msgstr ""
+msgstr "Показувати пораду дня при запуску"
 
 msgid "Trigger opening of popup"
-msgstr ""
+msgstr "Виклик відкриття спливаючого вікна"
 
 msgid "Save the current viewport as screenshot"
-msgstr ""
+msgstr "Зберегти поточний вигляд як знімок екрана"
 
 msgid "Toggle scene mode on/off"
-msgstr ""
+msgstr "Увімкнути/вимкнути режим сцени"
 
 msgid "Save the current scene to the given file"
-msgstr ""
+msgstr "Зберегти поточну сцену у вказаний файл"
 
 msgid "Save the selection from the current active model node"
-msgstr ""
+msgstr "Зберегти вибір з поточного активного вузла моделі"
 
 msgid "Load a scene from the given volume file"
-msgstr ""
+msgstr "Завантажити сцену з вказаного файлу об'єму"
 
 msgid "Add a volume to the existing scene from the given file"
-msgstr ""
+msgstr "Додати об'єм до існуючої сцени з вказаного файлу"
 
 msgid "Import all files from a given directory"
-msgstr ""
+msgstr "Імпортувати всі файли з вказаного каталогу"
 
 msgid "Import a 2d heightmap image into the current active node"
-msgstr ""
+msgstr "Імпортувати 2D зображення карти висот у поточний активний вузол"
 
 msgid ""
 "Import a 2d heightmap image into the current active node. The height is "
 "encoded in the alpha channel with this method."
 msgstr ""
+"Імпортувати 2D зображення карти висот у поточний активний вузол. Висота "
+"кодується в альфа-каналі за допомогою цього методу."
 
 msgid "Import an image as a plane into a new node"
-msgstr ""
+msgstr "Імпортувати зображення як площину в новий вузол"
 
 msgid "Import an image as a volume into a new node"
-msgstr ""
+msgstr "Імпортувати зображення як об'єм в новий вузол"
 
 msgid "Import an image as a palette"
-msgstr ""
+msgstr "Імпортувати зображення як палітру"
 
 msgid "Create a new scene with ui interaction"
-msgstr ""
+msgstr "Створити нову сцену з взаємодією з інтерфейсом"
 
 msgid "Reset cameras in viewports"
-msgstr ""
-
-msgid "Add"
-msgstr ""
+msgstr "Скинути камери вікон перегляду"
 
 msgid "Animation"
-msgstr ""
+msgstr "Анімація"
+
+msgid "Add"
+msgstr "Додати"
 
 msgid "Delete"
-msgstr ""
+msgstr "Видалити"
 
 msgid "Add a new keyframe to the current active node"
-msgstr ""
+msgstr "Додати новий ключовий кадр до поточного активного вузла"
 
 msgid "Add all"
-msgstr ""
+msgstr "Додати всі"
 
 msgid "Add a new keyframe to all model nodes"
-msgstr ""
+msgstr "Додати новий ключовий кадр до всіх вузлів моделі"
 
 msgid "Delete the current keyframe of the active nodes"
-msgstr ""
+msgstr "Видалити поточний ключовий кадр активних вузлів"
 
 msgid "Crop frames"
-msgstr ""
+msgstr "Обрізати кадри"
 
 #, c-format
 msgid "Max frames for this animation: %i"
-msgstr ""
+msgstr "Максимальна кількість кадрів для цієї анімації: %i"
 
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
-msgstr ""
+msgstr "Ключовий кадр %i, Інтерполяція: %s"
 
 msgid "Copy"
-msgstr ""
+msgstr "Копіювати"
 
 msgid "Paste"
-msgstr ""
+msgstr "Вставити"
 
 msgid "Duplicate keyframe"
-msgstr ""
+msgstr "Дублювати ключовий кадр"
 
 msgid "Delete keyframes"
-msgstr ""
+msgstr "Видалити ключові кадри"
 
 #, c-format
 msgid "Delete %i keyframes"
-msgstr ""
+msgstr "Видалити %i ключові кадри"
+
+msgid "Assets"
+msgstr "Активи"
 
 msgid "Models"
-msgstr ""
+msgstr "Моделі"
 
 msgid "Images"
-msgstr ""
+msgstr "Зображення"
 
 msgid "Shape"
-msgstr ""
+msgstr "Форма"
 
 msgid "Disable mirror"
-msgstr ""
+msgstr "Вимкнути дзеркало"
 
 msgid "X"
-msgstr ""
+msgstr "X"
 
 msgid "Y"
-msgstr ""
+msgstr "Y"
 
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 msgid "Use selection"
-msgstr ""
+msgstr "Використовувати вибір"
 
 msgid "Model"
-msgstr ""
+msgstr "Модель"
 
 msgid "Select a model from the asset panel or scene graph panel"
-msgstr ""
+msgstr "Виберіть модель з панелі активів або панелі графіку сцени"
 
 msgid "Center"
-msgstr ""
+msgstr "Центр"
 
 msgid "Continuous"
-msgstr ""
+msgstr "Постійний"
 
 msgid "Replace"
-msgstr ""
+msgstr "Замінити"
 
 msgid "Replace all voxels in the stamp with the selected color"
-msgstr ""
+msgstr "Замінити всі вокселі в штампі вибраним кольором"
 
 msgid "Rotate on axis"
-msgstr ""
+msgstr "Повернути на вісь"
 
 msgid "Rotate by 90 degree on the x axis"
-msgstr ""
+msgstr "Повернути на 90 градусів по осі x"
 
 msgid "Rotate by 90 degree on the y axis"
-msgstr ""
+msgstr "Повернути на 90 градусів по осі y"
 
 msgid "Rotate by 90 degree on the z axis"
-msgstr ""
+msgstr "Повернути на 90 градусів по осі z"
 
 msgid "Reduce size"
-msgstr ""
+msgstr "Зменшити розмір"
 
 msgid "Extrude voxels"
-msgstr ""
+msgstr "Витягнути вокселі"
 
 msgid "Erase voxels"
-msgstr ""
+msgstr "Видалити вокселі"
 
 msgid "Override voxels"
-msgstr ""
+msgstr "Перезаписати вокселі"
 
 msgid "Draws a line from the reference position to the current cursor position"
-msgstr ""
+msgstr "Малює лінію від початкового положення до поточного положення курсора"
 
 msgid "18-connected"
-msgstr ""
+msgstr "18-з'єднаний"
 
 msgid "26-connected"
-msgstr ""
+msgstr "26-з'єднаний"
 
 msgid "6-connected"
-msgstr ""
+msgstr "6-з'єднаний"
 
 msgid "Connectivity"
-msgstr ""
+msgstr "З'єднаність"
 
 msgid "Draws a path over existing voxels"
-msgstr ""
+msgstr "Малює шлях над існуючими вокселями"
 
 msgid "Convert palette"
-msgstr ""
+msgstr "Конвертувати палітру"
 
 msgid "Default"
-msgstr ""
+msgstr "За замовчуванням"
 
 msgid "Single"
-msgstr ""
+msgstr "Одиночний"
 
 msgid "Radius"
-msgstr ""
+msgstr "Радіус"
 
 msgid "Use a radius around the current voxel - 0 for spanning a region"
 msgstr ""
+"Використовуйте радіус навколо поточного вокселя - 0 для охоплення регіону"
 
 msgid "Clamping"
-msgstr ""
+msgstr "Затиснення"
 
 msgid "Clamp the brush to the volume"
-msgstr ""
+msgstr "Затиснути пензлик до об'єму"
 
 msgid "Text"
-msgstr ""
+msgstr "Текст"
 
 msgid "Horizontal spacing"
-msgstr ""
+msgstr "Горизонтальний інтервал"
 
 msgid "Thickness"
-msgstr ""
+msgstr "Товщина"
 
 msgid "Print text along the x axis"
-msgstr ""
+msgstr "Друкувати текст вздовж осі x"
 
 msgid "Print text along the y axis"
-msgstr ""
+msgstr "Друкувати текст вздовж осі y"
 
 msgid "Print text along the z axis"
-msgstr ""
+msgstr "Друкувати текст вздовж осі z"
 
 msgid "Font"
-msgstr ""
+msgstr "Шрифт"
 
 msgid "Mode"
-msgstr ""
+msgstr "Режим"
 
 msgid "Factor"
-msgstr ""
+msgstr "Фактор"
 
 msgid "Variation threshold"
-msgstr ""
+msgstr "Поріг варіацій"
 
 msgid "Plane"
-msgstr ""
+msgstr "Площина"
 
 msgid "Paint the selected plane"
-msgstr ""
+msgstr "Намалювати вибрану площину"
 
 msgid "Gradient"
-msgstr ""
+msgstr "Градієнт"
 
 msgid "Brush settings"
-msgstr ""
+msgstr "Налаштування пензлика"
 
 msgid "Click on a voxel to pick the color"
-msgstr ""
+msgstr "Клацніть по вокселю, щоб вибрати колір"
 
 msgid "Select areas of voxels"
-msgstr ""
+msgstr "Вибрати області вокселів"
+
+msgid "Brush"
+msgstr "Пензлик"
+
+msgid "Camera"
+msgstr "Камера"
 
 msgid "Position"
-msgstr ""
+msgstr "Положення"
 
 msgid "Farplane"
-msgstr ""
+msgstr "Дальній план"
 
 msgid "Nearplane"
-msgstr ""
+msgstr "Ближній план"
 
 msgid "FOV"
-msgstr ""
+msgstr "FOV"
 
 msgid "Target"
-msgstr ""
+msgstr "Ціль"
 
 msgid "Target distance"
-msgstr ""
+msgstr "Відстань до цілі"
 
 msgid "Aspect"
-msgstr ""
+msgstr "Співвідношення сторін"
 
 msgid "Add new camera"
-msgstr ""
+msgstr "Додати нову камеру"
 
 msgid "License"
-msgstr ""
+msgstr "Ліцензія"
 
 msgid "Format"
-msgstr ""
+msgstr "Формат"
 
 msgid "Thumbnail"
-msgstr ""
+msgstr "Мініатюра"
 
 msgid "Loading..."
-msgstr ""
+msgstr "Завантаження..."
 
 msgid "Load"
-msgstr ""
+msgstr "Завантажити"
 
 msgid "Use stamp"
-msgstr ""
+msgstr "Використовувати штамп"
 
 msgid ""
 "This is only possible if the model doesn't exceed the max allowed stamp size"
 msgstr ""
+"Це можливо лише якщо модель не перевищує максимальний дозволений розмір "
+"штампа"
 
 msgid "Add to scene"
-msgstr ""
+msgstr "Додати до сцени"
 
 msgid "Hide thumbnails"
-msgstr ""
+msgstr "Приховати мініатюри"
 
 msgid "Show thumbnails"
-msgstr ""
+msgstr "Показати мініатюри"
 
 msgid "Open target dir"
-msgstr ""
+msgstr "Відкрити цільовий каталог"
 
 msgid "Empty palette index"
-msgstr ""
+msgstr "Порожній індекс палітри"
+
+msgid "L-System"
+msgstr "L-система"
 
 msgid "Axiom"
-msgstr ""
+msgstr "Аксіома"
 
 msgid "Rules"
-msgstr ""
+msgstr "Правила"
 
 msgid "Angle"
-msgstr ""
+msgstr "Кут"
 
 msgid "Length"
-msgstr ""
+msgstr "Довжина"
 
 msgid "Width"
-msgstr ""
+msgstr "Ширина"
 
 msgid "Width increment"
-msgstr ""
+msgstr "Приріст ширини"
 
 msgid "Iterations"
-msgstr ""
+msgstr "Ітерації"
 
 msgid "Leaves radius"
-msgstr ""
+msgstr "Радіус листя"
 
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 msgid "Draw line forwards"
-msgstr ""
+msgstr "Малювати лінію вперед"
 
 msgid "Set voxel type"
-msgstr ""
+msgstr "Встановити тип вокселя"
 
 msgid "Move backwards (no drawing)"
-msgstr ""
+msgstr "Рухатися назад (без малювання)"
 
 msgid "Leaf"
-msgstr ""
+msgstr "Листок"
 
 msgid "Rotate right"
-msgstr ""
+msgstr "Повернути вправо"
 
 msgid "Rotate left"
-msgstr ""
+msgstr "Повернути вліво"
 
 msgid "Rotate forward"
-msgstr ""
+msgstr "Повернути вперед"
 
 msgid "Rotate back"
-msgstr ""
+msgstr "Повернути назад"
 
 msgid "Increment width"
-msgstr ""
+msgstr "Збільшити ширину"
 
 msgid "Decrement width"
-msgstr ""
+msgstr "Зменшити ширину"
 
 msgid "Push"
-msgstr ""
+msgstr "Товкти"
 
 msgid "Pop"
-msgstr ""
+msgstr "Витягти"
 
 msgid ""
 "Switch between scene and edit mode (not in simple UI mode) by pressing the "
 "<cmd:togglescene> key."
 msgstr ""
+"Переключайтеся між режимами сцени та редагування (не в простому режимі "
+"користувача) натисканням клавіші <cmd:togglescene>."
 
 msgid "Use the file dialog options for format specific options."
 msgstr ""
+"Використовуйте параметри діалогового вікна файлів для специфічних параметрів "
+"формату."
 
 msgid ""
 "You can record a video of your rotating model in the viewport by using the "
 "'View' menu and the 'Video' option. Make sure to set the camera rotation "
 "speed to e.g. 1."
 msgstr ""
+"Ви можете записати відео обертання вашої моделі в області перегляду, "
+"використовуючи меню 'Вид' та опцію 'Відео'. Переконайтеся, що швидкість "
+"обертання камери встановлена, наприклад, 1."
 
 msgid ""
 "When saving to a foreign format you might lose scene details if the format "
 "doesn't support particular features. Make sure to use the vengi format for "
 "highest compatibility."
 msgstr ""
+"При збереженні у зовнішній формат ви можете втратити деталі сцени, якщо "
+"формат не підтримує певні функції. Переконайтеся, що використовуєте формат "
+"vengi для найвищої сумісності."
 
 msgid ""
 "Change the color reduction mode to improve the quality of the palette "
 "especially for importing RGBA or mesh based formats."
 msgstr ""
+"Змініть режим зменшення кольору, щоб покращити якість палітри, особливо при "
+"імпорті форматів на основі RGBA або мешів."
 
 msgid "Drag a model from the assets panel to the stamp brush to use it."
 msgstr ""
+"Перетягніть модель з панелі активів на пензлик штампу, щоб використовувати "
+"її."
 
 msgid "You can reset the camera simply by pressing <cmd:resetcamera>."
-msgstr ""
+msgstr "Ви можете скинути камеру, просто натиснувши <cmd:resetcamera>."
 
 msgid ""
 "The editor shows the last executed console command in the status bar. You "
 "can use these commands and bind them to keys."
 msgstr ""
+"Редактор показує останню виконану команду консолі на панелі стану. Ви можете "
+"використовувати ці команди та прив'язувати їх до клавіш."
 
 msgid ""
 "You can use wasd style scene movement by switching the 'Camera movement' to "
 "'Eye' in the 'View' menu of the viewport."
 msgstr ""
+"Ви можете використовувати рух сцени у стилі wasd, перемикаючи 'Рух камери' "
+"на 'Око' в меню 'Вид' області перегляду."
 
 msgid ""
 "In order to use the path modifier, you have to place the reference position "
 "on top of another voxel and place the end of the path on another existing "
 "and connected voxel."
 msgstr ""
+"Для використання модифікатора шляху потрібно розмістити початкове положення "
+"на верхньому вокселі та розмістити кінець шляху на іншому існуючому та "
+"підключеному вокселі."
 
 msgid ""
 "When importing meshes, you can switch between different voxelization methods "
 "in the options menu."
 msgstr ""
+"При імпорті мешів ви можете перемикатися між різними методами вокселізації в "
+"меню параметрів."
 
 msgid ""
 "Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
 "using the erase modifier."
 msgstr ""
+"Видаліть вокселі в режимі редагування, натиснувши <cmd:+actionexecutedelete> "
+"або використовуючи модифікатор видалення."
 
 msgid "Switch between different color themes in the options menu."
-msgstr ""
+msgstr "Переключайтеся між різними кольоровими темами в меню параметрів."
 
 msgid ""
 "Please activate anonymous usage metrics in the options or the about dialog."
 msgstr ""
+"Будь ласка, активуйте анонімну метрику використання в параметрах або в "
+"діалоговому вікні 'Про програму'."
 
 msgid ""
 "You can change your default key bindings to Magicavoxel, Blender, Qubicle or "
 "Vengi own style. Check the bindings window in the options menu."
 msgstr ""
+"Ви можете змінити ваші типові прив'язки клавіш на стиль Magicavoxel, "
+"Blender, Qubicle або Vengi. Перевірте вікно прив'язок в меню параметрів."
 
 msgid "You can save your viewport as AVI video or as screenshot."
 msgstr ""
+"Ви можете зберегти вашу область перегляду як відео AVI або як знімок екрану."
 
 msgid "Press <cmd:pickcolor> to pick a color from the scene."
-msgstr ""
+msgstr "Натисніть <cmd:pickcolor>, щоб вибрати колір з сцени."
 
 msgid ""
 "Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:"
 "mirroraxisshapebrushz> to mirror the current selection."
 msgstr ""
+"Натисніть <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> або <cmd:"
+"mirroraxisshapebrushz>, щоб відобразити поточний вибір."
+
+msgid "Tip of the day"
+msgstr "Порада дня"
 
 msgid "Show again"
-msgstr ""
+msgstr "Показати знову"
 
 msgid "Next"
-msgstr ""
+msgstr "Далі"
+
+msgid "Welcome"
+msgstr "Ласкаво просимо"
 
 msgid "Welcome to VoxEdit!"
-msgstr ""
+msgstr "Ласкаво просимо до VoxEdit!"
 
 msgid ""
 "The mission: Create a free, open-source and multi-platform voxel editor with "
 "animation support for artists and developers."
 msgstr ""
+"Місія: Створити безкоштовний, відкритий та багатоплатформний редактор "
+"вокселів з підтримкою анімації для художників та розробників."
 
 msgid ""
 "We would like to enable anonymous usage metrics to improve the editor. "
 "Please consider enabling it."
 msgstr ""
+"Ми хотіли б активувати анонімну метрику використання для покращення "
+"редактора. Будь ласка, розгляньте можливість його активації."
 
 msgid "Simple mode"
-msgstr ""
+msgstr "Простий режим"
+
+msgid "Unreference Model"
+msgstr "Відсилання на модель"
 
 msgid ""
 "You can't edit a model reference.\n"
 "\n"
 "Do you want to convert the reference into a model?"
 msgstr ""
+"Ви не можете редагувати посилання на модель.\n"
+"\n"
+"Ви хочете перетворити посилання на модель?"
+
+msgid "New Scene"
+msgstr "Нова сцена"
 
 msgid "Templates"
-msgstr ""
+msgstr "Шаблони"
 
 msgid "Empty scene"
-msgstr ""
+msgstr "Порожня сцена"
 
 msgid "Height"
-msgstr ""
+msgstr "Висота"
 
 msgid "Depth"
-msgstr ""
+msgstr "Глибина"
+
+msgid "Failed to save"
+msgstr "Не вдалося зберегти"
 
 msgid "Failed to save the model!"
-msgstr ""
+msgstr "Не вдалося зберегти модель!"
+
+msgid "Unsaved Changes"
+msgstr "Незбережені зміни"
 
 msgid "Unsaved changes - are you sure to quit?"
-msgstr ""
+msgstr "Незбережені зміни - ви впевнені, що хочете вийти?"
+
+msgid "Unsaved Modifications"
+msgstr "Незбережені зміни"
 
 msgid ""
 "There are unsaved modifications.\n"
 "Do you wish to discard them?"
-msgstr ""
+msgstr "Є незбережені зміни.\n"
 
+#, fuzzy
 msgid "Scene settings"
-msgstr ""
+msgstr "Налаштування рендеру"
 
+#, fuzzy
 msgid "Diffuse color"
-msgstr ""
+msgstr "Дублювати колір"
 
+#, fuzzy
 msgid "Ambient color"
-msgstr ""
+msgstr "Приглушення освітлення"
 
 msgid "Done"
 msgstr ""
+
+#, fuzzy
+msgid "Volume split"
+msgstr "Об'єми"
 
 msgid ""
 "Some model volumes are too big for optimal performance.\n"
 "It's encouraged to split them into smaller volumes.\n"
 "Do you wish to split them now?"
 msgstr ""
+"Деякі об'єми моделей занадто великі для оптимальної продуктивності.\n"
+"Рекомендується розбити їх на менші об'єми.\n"
+"Ви хочете розбити їх зараз?"
+
+msgid "Model settings"
+msgstr "Налаштування моделі"
+
+msgid "Rename node"
+msgstr "Перейменувати вузол"
 
 msgid "Node names should be unique"
-msgstr ""
+msgstr "Назви вузлів повинні бути унікальними"
 
 msgid "Apply"
-msgstr ""
+msgstr "Застосувати"
 
 msgid "Formats"
-msgstr ""
+msgstr "Формати"
 
 msgid "Voxel load"
-msgstr ""
+msgstr "Завантаження вокселів"
 
 msgid "Extension"
-msgstr ""
+msgstr "Розширення"
 
 msgid "Voxel save"
-msgstr ""
+msgstr "Збереження вокселів"
 
 msgid "Palettes"
-msgstr ""
+msgstr "Палітри"
+
+msgid "History"
+msgstr "Історія"
 
 #, c-format
 msgid "Current state: %i / %i"
-msgstr ""
+msgstr "Поточний стан: %i / %i"
 
 msgid "Color reduction"
-msgstr ""
+msgstr "Зменшення кольору"
 
 msgid ""
 "The color reduction algorithm that is used when importing RGBA colors from "
 "images or rgba formats"
 msgstr ""
+"Алгоритм зменшення кольору, який використовується при імпорті кольорів RGBA "
+"з зображень або форматів rgba"
 
 msgid "Grid"
-msgstr ""
+msgstr "Сітка"
 
 msgid "Show gizmo"
-msgstr ""
+msgstr "Показати гізмо"
 
 msgid "Show locked axis"
-msgstr ""
+msgstr "Показати заблоковану вісь"
 
 msgid "Bounding box"
-msgstr ""
+msgstr "Межова рамка"
 
 msgid "Bones"
-msgstr ""
+msgstr "Кістки"
 
 msgid "Outlines"
-msgstr ""
+msgstr "Контур"
 
 msgid "Shadow"
-msgstr ""
+msgstr "Тінь"
 
 msgid "Bloom"
-msgstr ""
+msgstr "Світіння"
 
 msgid "Tone mapping"
-msgstr ""
+msgstr "Тонове відображення"
 
 msgid "New"
-msgstr ""
+msgstr "Новий"
 
 msgid "Recently opened"
-msgstr ""
+msgstr "Нещодавно відкриті"
 
 msgid "Save as"
-msgstr ""
+msgstr "Зберегти як"
 
 msgid "Save selection"
-msgstr ""
+msgstr "Зберегти вибір"
 
 msgid "Add file to scene"
-msgstr ""
+msgstr "Додати файл до сцени"
 
 msgid "Add directory to scene"
-msgstr ""
+msgstr "Додати каталог до сцени"
 
 msgid "Heightmap"
-msgstr ""
+msgstr "Карта висот"
 
 msgid "Colored heightmap"
-msgstr ""
+msgstr "Кольорова карта висот"
 
 msgid "Image as plane"
-msgstr ""
+msgstr "Зображення як площина"
 
 msgid "Image as volume"
-msgstr ""
+msgstr "Зображення як об'єм"
 
 msgid "Undo"
-msgstr ""
+msgstr "Скасувати"
 
 msgid "Redo"
-msgstr ""
+msgstr "Повторити"
 
 msgid "Cut"
-msgstr ""
+msgstr "Вирізати"
 
 msgid "Paste at reference"
-msgstr ""
+msgstr "Вставити за посиланням"
 
 msgid "Paste at cursor"
-msgstr ""
+msgstr "Вставити за курсором"
 
 msgid "Paste as new node"
-msgstr ""
+msgstr "Вставити як новий вузол"
 
 msgid "Paste as stamp"
-msgstr ""
+msgstr "Вставити як штамп"
 
 msgid "Color picker"
-msgstr ""
+msgstr "Вибір кольору"
 
 msgid "Color wheel"
-msgstr ""
+msgstr "Колірне колесо"
 
 msgid "Simplified UI"
-msgstr ""
-
-msgid "Tip of the day"
-msgstr ""
+msgstr "Спрощений інтерфейс"
 
 msgid "Cubes"
-msgstr ""
+msgstr "Кубики"
 
 msgid "Marching cubes"
-msgstr ""
+msgstr "Маршрутні кубики"
 
 msgid "Mesh mode"
-msgstr ""
+msgstr "Режим мережі"
 
 msgid "Model animation speed"
-msgstr ""
+msgstr "Швидкість анімації моделі"
 
 msgid "Autosave delay in seconds"
-msgstr ""
+msgstr "Затримка автозбереження в секундах"
 
 msgid "Viewports"
-msgstr ""
+msgstr "Вікна перегляду"
 
 msgid "Zoom speed"
-msgstr ""
+msgstr "Швидкість масштабування"
 
 msgid "View distance"
-msgstr ""
+msgstr "Відстань перегляду"
 
 msgid "Reset layout"
-msgstr ""
+msgstr "Скинути розташування"
 
 msgid "Select"
-msgstr ""
+msgstr "Вибрати"
 
 msgid "None"
-msgstr ""
+msgstr "Немає"
 
 msgid "Invert"
-msgstr ""
+msgstr "Інвертувати"
 
 msgid "All"
-msgstr ""
+msgstr "Всі"
 
 msgid "Welcome screen"
-msgstr ""
+msgstr "Екран вітання"
 
 msgid "Region"
-msgstr ""
+msgstr "Регіон"
 
 msgid "pos"
-msgstr ""
+msgstr "поз"
 
 msgid "To transform"
-msgstr ""
+msgstr "До перетворення"
 
 msgid "Convert the region offset into the keyframe transforms"
-msgstr ""
+msgstr "Перетворити зміщення регіону в перетворення ключових кадрів"
 
 msgid "Interpolation"
-msgstr ""
+msgstr "Інтерполяція"
 
 msgid "Interpolation details"
-msgstr ""
+msgstr "Деталі інтерполяції"
 
 msgid "Reset all"
-msgstr ""
+msgstr "Скинути все"
 
 msgid "Auto Keyframe"
-msgstr ""
+msgstr "Автоматичний ключовий кадр"
 
 msgid "Automatically create keyframes when changing transforms"
-msgstr ""
+msgstr "Автоматично створювати ключові кадри при зміні перетворень"
 
 msgid "Mirror X"
-msgstr ""
+msgstr "Відобразити по X"
 
 msgid "Mirror XZ"
-msgstr ""
+msgstr "Відобразити по XZ"
 
 msgid "Mirror XYZ"
-msgstr ""
+msgstr "Відобразити по XYZ"
 
 msgid "Transform"
-msgstr ""
+msgstr "Перетворення"
 
 msgid "Local transforms"
-msgstr ""
+msgstr "Локальні перетворення"
 
 msgid "Update children"
-msgstr ""
+msgstr "Оновити дітей"
 
 msgid "Tr"
-msgstr ""
+msgstr "Tr"
 
 msgid "Rt"
-msgstr ""
+msgstr "Rt"
 
 msgid "Sc"
-msgstr ""
+msgstr "Sc"
 
 msgid "Pv"
-msgstr ""
+msgstr "Pv"
 
 msgid "Properties"
-msgstr ""
+msgstr "Властивості"
 
 msgid "Delete this node property"
-msgstr ""
+msgstr "Видалити цю властивість вузла"
 
 msgid "Add a new node property"
-msgstr ""
+msgstr "Додати нову властивість вузла"
+
+msgid "Node Inspector"
+msgstr "Інспектор вузла"
+
+msgid "Volume Inspector"
+msgstr "Інспектор об'єму"
 
 msgid "Model from color"
-msgstr ""
+msgstr "Модель з кольору"
 
 msgid "Remove alpha"
-msgstr ""
+msgstr "Видалити альфа"
 
 msgid "Duplicate color"
-msgstr ""
+msgstr "Дублювати колір"
 
 msgid "Remove color"
-msgstr ""
+msgstr "Видалити колір"
 
 msgid "Release CTRL to change the voxel color"
-msgstr ""
+msgstr "Відпустіть CTRL, щоб змінити колір вокселя"
 
 msgid "Press CTRL to re-order"
-msgstr ""
+msgstr "Натисніть CTRL, щоб змінити порядок"
 
 msgid "Empty color slot"
-msgstr ""
+msgstr "Порожній слот кольору"
+
+msgid "Select Palette"
+msgstr "Вибрати палітру"
 
 msgid "Select the palette"
-msgstr ""
+msgstr "Виберіть палітру"
 
 msgid ""
 "To add your own palettes here, put a palette-name.png into one of\n"
 "the search directories or load it into any node to appear here."
 msgstr ""
+"Щоб додати власні палітри сюди, помістіть palette-name.png в одну з\n"
+"пошукових директорій або завантажте її в будь-який вузол, щоб вона з'явилася "
+"тут."
 
 msgid "Color match"
-msgstr ""
+msgstr "Відповідність кольору"
 
 msgid ""
 "Adopt the current voxels to the best fitting colors of\n"
 "the new palette."
 msgstr ""
+"Адаптувати поточні вокселі до найкращих відповідних кольорів\n"
+"нової палітри."
 
 msgid "Switch"
-msgstr ""
+msgstr "Перемкнути"
 
 msgid "Export"
-msgstr ""
+msgstr "Експорт"
 
 msgid "Lospec"
-msgstr ""
+msgstr "Lospec"
 
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 msgid "Export the palette"
-msgstr ""
+msgstr "Експортувати палітру"
 
 msgid "Sort"
-msgstr ""
+msgstr "Сортувати"
 
 msgid "Original"
-msgstr ""
+msgstr "Оригінал"
 
 msgid "Hue"
-msgstr ""
+msgstr "Відтінок"
 
 msgid "Saturation"
-msgstr ""
+msgstr "Насиченість"
 
 msgid "Brightness"
-msgstr ""
+msgstr "Яскравість"
 
 msgid "CIELab"
-msgstr ""
+msgstr "CIELab"
 
 msgid "Tools"
-msgstr ""
+msgstr "Інструменти"
 
 msgid "Remove unused color"
-msgstr ""
+msgstr "Видалити не використовуваний колір"
 
 msgid "Remove and re-create palette"
-msgstr ""
+msgstr "Видалити та створити палітру знову"
 
 msgid "Color closest match"
-msgstr ""
+msgstr "Найближчий колір"
 
 msgid "Select a color to find the closest match in the current loaded palette"
 msgstr ""
+"Виберіть колір, щоб знайти найближчий колір у поточній завантаженій палітрі"
+
+msgid "Palette"
+msgstr "Палітра"
 
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
-msgstr ""
+msgstr "Індекс палітри: %i (індекс вокселя сцени %i)"
 
 msgid "Color"
-msgstr ""
+msgstr "Колір"
 
 msgid "Save image"
-msgstr ""
+msgstr "Зберегти зображення"
 
 msgid "Stop path tracer"
-msgstr ""
+msgstr "Зупинити трасування шляху"
 
 #, c-format
 msgid "Sample %i / %i"
-msgstr ""
+msgstr "Зразок %i / %i"
 
 msgid "Start path tracer"
-msgstr ""
+msgstr "Запустити трасування шляху"
+
+msgid "Render"
+msgstr "Рендер"
+
+msgid "Render Settings"
+msgstr "Налаштування рендеру"
 
 msgid "Dimensions"
-msgstr ""
+msgstr "Розміри"
 
 msgid "Tracer"
-msgstr ""
+msgstr "Трасування"
 
 msgid "Samples"
-msgstr ""
+msgstr "Зразки"
 
 msgid ""
 "The number of per-pixel samples used while rendering and is the only "
 "parameter used to control the tradeoff between noise and speed."
 msgstr ""
+"Кількість зразків на піксель, що використовуються під час рендерингу і є "
+"єдиним параметром, що використовується для контролю компромісу між шумом і "
+"швидкістю."
 
 msgid "Bounces"
-msgstr ""
+msgstr "Відскоки"
 
 msgid ""
 "The maximum number of bounces and should be high for scenes with glass and "
 "volumes, but otherwise a low number would suffice."
 msgstr ""
+"Максимальна кількість відскоків, яка повинна бути великою для сцен зі склом "
+"і об'ємами, але в інших випадках достатньо низького числа."
 
 msgid "Clamp"
-msgstr ""
+msgstr "Обмежити"
 
 msgid "Remove high-energy fireflies"
-msgstr ""
+msgstr "Видалити яскраві вогнівки"
 
 msgid "Preview ratio"
-msgstr ""
+msgstr "Співвідношення попереднього перегляду"
 
 msgid "Batch"
-msgstr ""
+msgstr "Пакет"
 
 msgid "No caustics"
-msgstr ""
+msgstr "Без каустиків"
 
 msgid "Removes certain path that cause caustics"
-msgstr ""
+msgstr "Видаляє певні шляхи, які викликають каустичні ефекти"
 
 msgid "Hide environment"
-msgstr ""
+msgstr "Приховати оточення"
 
 msgid "Removes the environment map from the camera rays."
-msgstr ""
+msgstr "Видаляє карту оточення з променів камери."
 
 msgid "Apply a linear filter to the image pixels"
-msgstr ""
+msgstr "Застосувати лінійний фільтр до пікселів зображення"
 
 msgid "High Quality BVH"
-msgstr ""
+msgstr "Висока якість BVH"
 
 msgid "High quality bounding volume hierarchy"
-msgstr ""
+msgstr "Високоякісна ієрархія обмежувальних об'ємів"
 
 msgid "Denoise"
-msgstr ""
+msgstr "Зменшити шум"
 
 msgid "High quality"
-msgstr ""
+msgstr "Висока якість"
 
 msgid "Geometry preview"
-msgstr ""
-
-msgid "Camera"
-msgstr ""
+msgstr "Попередній перегляд геометрії"
 
 msgid "Rename"
-msgstr ""
+msgstr "Перейменувати"
 
 msgid "Show all"
-msgstr ""
+msgstr "Показати все"
 
 msgid "Hide all"
-msgstr ""
+msgstr "Приховати все"
 
 msgid "Hide others"
-msgstr ""
+msgstr "Приховати інші"
 
 msgid "Lock all"
-msgstr ""
+msgstr "Заблокувати все"
 
 msgid "Unlock all"
-msgstr ""
+msgstr "Розблокувати все"
 
 msgid "Duplicate"
-msgstr ""
+msgstr "Дублювати"
 
 msgid "Create reference"
-msgstr ""
+msgstr "Створити посилання"
 
 msgid "Merge"
-msgstr ""
+msgstr "Об'єднати"
 
 msgid "Use as stamp"
-msgstr ""
+msgstr "Використовувати як штамп"
 
 msgid "Merge all"
-msgstr ""
+msgstr "Об'єднати все"
 
 msgid "Merge visible"
-msgstr ""
+msgstr "Об'єднати видиме"
 
 msgid "Merge locked"
-msgstr ""
+msgstr "Об'єднати заблоковане"
 
 msgid "Center origin"
-msgstr ""
+msgstr "Центрувати початок"
 
 msgid "Center reference"
-msgstr ""
+msgstr "Центрувати посилання"
 
 msgid "Convert to model"
-msgstr ""
+msgstr "Перетворити на модель"
 
 msgid "Save all"
-msgstr ""
+msgstr "Зберегти все"
 
 msgid "Add new group"
-msgstr ""
+msgstr "Додати нову групу"
 
 msgid "Add new point"
-msgstr ""
+msgstr "Додати нову точку"
 
 msgid ""
 "Disabled because inactive nodes are hidden and the active node is always "
 "visible"
 msgstr ""
+"Вимкнено, оскільки неактивні вузли приховані, а активний вузол завжди видимий"
 
 #, c-format
 msgid "Color##node-%i"
-msgstr ""
+msgstr "Колір##вузол-%i"
 
 msgid "Reference Node"
-msgstr ""
+msgstr "Посилання на вузол"
 
 msgid "Reference Target Node"
-msgstr ""
+msgstr "Цільовий вузол посилання"
 
 msgid "Delete this model"
-msgstr ""
+msgstr "Видалити цю модель"
+
+msgid "Scene"
+msgstr "Сцена"
 
 msgid "Add a new model node"
-msgstr ""
+msgstr "Додати новий вузол моделі"
 
 msgid "Add a new group"
-msgstr ""
+msgstr "Додати нову групу"
 
 msgid "Remove the active node with all its children"
-msgstr ""
+msgstr "Видалити активний вузол з усіма його дітьми"
 
 msgid "Cameras"
-msgstr ""
+msgstr "Камери"
 
 msgid "Groups"
-msgstr ""
+msgstr "Групи"
 
 msgid "References"
-msgstr ""
+msgstr "Посилання"
 
 msgid "Merge onto"
-msgstr ""
+msgstr "Об'єднати з"
 
 #, c-format
 msgid "Merge %s onto %s"
-msgstr ""
+msgstr "Об'єднати %s з %s"
 
 msgid "Move below"
-msgstr ""
+msgstr "Перемістити нижче"
 
 msgid "LUA scripts for manipulating the voxel volumes"
-msgstr ""
+msgstr "LUA-скрипти для роботи з воксельними об'ємами"
 
 msgid "Run"
-msgstr ""
+msgstr "Виконати"
 
 msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr ""
+msgstr "Виконати вибраний скрипт для поточно завантажених воксельних об'ємів"
 
 msgid "Script parameters"
-msgstr ""
+msgstr "Параметри скрипту"
+
+msgid "Scripts"
+msgstr "Скрипти"
 
 msgid "Create a new lua script"
-msgstr ""
+msgstr "Створити новий lua-скрипт"
+
+msgid "Edit script"
+msgstr "Редагувати скрипт"
 
 msgid "Edit the selected lua script"
-msgstr ""
+msgstr "Редагувати вибраний lua-скрипт"
+
+msgid "Reload"
+msgstr "Перезавантажити"
 
 msgid "Scripting manual"
-msgstr ""
+msgstr "Посібник зі скриптування"
+
+msgid "Script Editor"
+msgstr "Редактор скриптів"
 
 msgid "Apply and execute"
-msgstr ""
+msgstr "Застосувати та виконати"
 
 #, c-format
 msgid "Overwrite scripts/%s"
-msgstr ""
+msgstr "Перезаписати скрипти/%s"
 
 msgid "Select all"
-msgstr ""
+msgstr "Вибрати все"
 
 msgid "Grayscale"
-msgstr ""
+msgstr "Відтінки сірого"
 
 msgid "Only active"
-msgstr ""
+msgstr "Тільки активний"
 
 msgid "Grid size"
-msgstr ""
+msgstr "Розмір сітки"
 
 msgid "Command: -"
-msgstr ""
+msgstr "Команда: -"
 
 #, c-format
 msgid "Command: %s"
-msgstr ""
+msgstr "Команда: %s"
 
 #, c-format
 msgid "Command: %s (%s)"
-msgstr ""
+msgstr "Команда: %s (%s)"
 
 msgid "Action"
-msgstr ""
+msgstr "Дія"
 
 msgid "Flip on axis"
-msgstr ""
+msgstr "Перевернути по вісі"
 
 msgid "Translate"
-msgstr ""
+msgstr "Перемістити"
 
 msgid "Volumes"
-msgstr ""
+msgstr "Об'єми"
 
 msgid "Voxels"
-msgstr ""
+msgstr "Вокселі"
 
 msgid "Cursor"
-msgstr ""
+msgstr "Курсор"
 
 msgid "Cursor details"
-msgstr ""
+msgstr "Деталі курсора"
 
 msgid "Gizmo settings"
-msgstr ""
+msgstr "Налаштування гізмо"
 
 msgid "Rotate"
-msgstr ""
+msgstr "Повернути"
 
 msgid "Activate the rotate operation"
-msgstr ""
+msgstr "Активувати операцію повороту"
 
 msgid "Activate the translate operation"
-msgstr ""
+msgstr "Активувати операцію переміщення"
 
 msgid "Pivot"
-msgstr ""
+msgstr "Ось"
 
 msgid "Snap to grid"
-msgstr ""
+msgstr "Прив'язати до сітки"
 
 msgid "Flip axis"
-msgstr ""
+msgstr "Перевернути вісь"
 
 msgid "Pine"
-msgstr ""
+msgstr "Сосна"
 
 msgid "Dome"
-msgstr ""
+msgstr "Купол"
 
 msgid "Dome Hanging Leaves"
-msgstr ""
+msgstr "Купол з висячими листям"
 
 msgid "Cone"
-msgstr ""
+msgstr "Конус"
 
 msgid "Fir"
-msgstr ""
+msgstr "Ялина"
 
 msgid "Branches Ellipsis"
-msgstr ""
+msgstr "Еліпс гілок"
 
 msgid "Ellipsis"
-msgstr ""
+msgstr "Еліпс"
 
 msgid "Cube"
-msgstr ""
+msgstr "Куб"
 
 msgid "Cube Sides"
-msgstr ""
+msgstr "Боки куба"
 
 msgid "Palm"
-msgstr ""
+msgstr "Пальма"
 
 msgid "SpaceColonization"
-msgstr ""
+msgstr "Колонізація простору"
+
+msgid "Trees"
+msgstr "Дерева"
 
 msgid "Seed"
-msgstr ""
+msgstr "Початкове значення"
 
 msgid "Trunk strength"
-msgstr ""
+msgstr "Сила стовбура"
 
 msgid "Trunk height"
-msgstr ""
+msgstr "Висота стовбура"
 
 msgid "Leaves width"
-msgstr ""
+msgstr "Ширина листя"
 
 msgid "Leaves height"
-msgstr ""
+msgstr "Висота листя"
 
 msgid "Leaves depth"
-msgstr ""
+msgstr "Глибина листя"
 
 msgid "Branch length"
-msgstr ""
+msgstr "Довжина гілки"
 
 msgid "Branch height"
-msgstr ""
+msgstr "Висота гілки"
 
 msgid "Branch size"
-msgstr ""
+msgstr "Розмір гілки"
 
 msgid "Trunk width"
-msgstr ""
+msgstr "Ширина стовбура"
 
 msgid "Trunk depth"
-msgstr ""
+msgstr "Глибина стовбура"
 
 msgid "Branch reduction"
-msgstr ""
+msgstr "Зменшення гілки"
 
 msgid "Trunk reduction"
-msgstr ""
+msgstr "Зменшення стовбура"
 
 msgid "Leaves"
-msgstr ""
+msgstr "Листя"
 
 msgid "Bezier leaf"
-msgstr ""
+msgstr "Без'є листя"
 
 msgid "Bezier trunk"
-msgstr ""
+msgstr "Без'є стовбур"
 
 msgid "Leaves h-offset"
-msgstr ""
+msgstr "Горизонтальний зсув листя"
 
 msgid "Branches"
-msgstr ""
+msgstr "Гілки"
 
 msgid "W"
-msgstr ""
+msgstr "W"
 
 msgid "Amount"
-msgstr ""
+msgstr "Кількість"
 
 msgid "Branch position factor"
-msgstr ""
+msgstr "Фактор позиції гілки"
 
 msgid "Branch strength"
-msgstr ""
+msgstr "Сила гілки"
 
 msgid "Branch downward offset"
-msgstr ""
+msgstr "Вертикальний зсув гілки"
 
 msgid "Start width"
-msgstr ""
+msgstr "Початкова ширина"
 
 msgid "Start depth"
-msgstr ""
+msgstr "Початкова глибина"
 
 msgid "Leaf height"
-msgstr ""
+msgstr "Висота листя"
 
 msgid "Step delta"
-msgstr ""
+msgstr "Крок дельта"
 
 msgid "Leaves min length"
-msgstr ""
+msgstr "Мінімальна довжина листя"
 
 msgid "Leaves max length"
-msgstr ""
+msgstr "Максимальна довжина листя"
 
 msgid "Leaves thickness"
-msgstr ""
+msgstr "Товщина листя"
 
 #, c-format
 msgid ""
@@ -1899,6 +2075,9 @@ msgid ""
 "size: %i:%i:%i\n"
 "absolute: %i:%i:%i"
 msgstr ""
+"позиція: %i:%i:%i\n"
+"розмір: %i:%i:%i\n"
+"абсолютна: %i:%i:%i"
 
 #, c-format
 msgid ""
@@ -1907,370 +2086,391 @@ msgid ""
 "absolute: %i:%i:%i\n"
 "relative: %i:%i:%i"
 msgstr ""
+"позиція: %i:%i:%i\n"
+"розмір: %i:%i:%i\n"
+"абсолютна: %i:%i:%i\n"
+"відносна: %i:%i:%i"
 
 msgid "Loading"
-msgstr ""
+msgstr "Завантаження"
 
 msgid "Orthogonal"
-msgstr ""
+msgstr "Ортогональна"
 
 msgid "Perspective"
-msgstr ""
+msgstr "Перспективна"
 
 msgid "View"
-msgstr ""
+msgstr "Вигляд"
 
 msgid "Reset camera"
-msgstr ""
+msgstr "Скинути камеру"
 
 msgid "Camera rotation"
-msgstr ""
+msgstr "Поворот камери"
 
 msgid "Screenshot"
-msgstr ""
+msgstr "Знімок екрану"
 
 msgid "Video"
-msgstr ""
+msgstr "Відео"
 
 msgid "Stop recording"
-msgstr ""
+msgstr "Зупинити запис"
 
 #, c-format
 msgid "Pending frames: %u"
-msgstr ""
+msgstr "Очікування кадрів: %u"
 
 #, c-format
 msgid ""
 "You can control the fps of the video with the cvar %s\n"
 "Pending frames: %u"
 msgstr ""
+"Ви можете контролювати fps відео за допомогою cvar %s\n"
+"Очікування кадрів: %u"
 
 msgid "Eye"
-msgstr ""
+msgstr "Око"
 
 msgid "Reference Point"
-msgstr ""
+msgstr "Точка посилання"
 
 msgid "Camera movement"
-msgstr ""
+msgstr "Рух камери"
 
 msgid "Lines"
-msgstr ""
+msgstr "Лінії"
 
 msgid "Points"
-msgstr ""
+msgstr "Точки"
 
 msgid "Solid"
-msgstr ""
+msgstr "Суцільний"
 
 msgid "Render mode"
-msgstr ""
+msgstr "Режим відображення"
 
 msgid "Scene Mode"
-msgstr ""
+msgstr "Режим сцени"
 
 msgid "EditMode"
-msgstr ""
+msgstr "Режим редагування"
 
 msgid "SceneMode"
-msgstr ""
+msgstr "Режим сцени"
 
 msgid "Create a reference node"
-msgstr ""
+msgstr "Створити вузол посилання"
 
 msgid "Resize the volume to the current selection"
-msgstr ""
+msgstr "Змінити розмір об'єму на поточний вибір"
 
 msgid "Executes a lua script"
-msgstr ""
+msgstr "Виконує lua-скрипт"
 
 msgid "Change intensity by scaling the rgb values of the palette"
-msgstr ""
+msgstr "Змінити інтенсивність шляхом масштабування значень RGB палітри"
 
 msgid "Remove unused colors from palette"
-msgstr ""
+msgstr "Видалити невикористані кольори з палітри"
 
 msgid "Switch active node to hovered from scene graph mode"
-msgstr ""
+msgstr "Переключити активний вузол на наведений в режимі графа сцени"
 
 msgid "Select all nothing or invert"
-msgstr ""
+msgstr "Вибрати все, нічого або інвертувати"
 
 msgid "Cycle through all scene objects"
-msgstr ""
+msgstr "Прокрутити всі об'єкти сцени"
 
 msgid ""
 "Allow to align all nodes on the floor next to each other without overlapping"
 msgstr ""
+"Дозволяє розташовувати всі вузли на підлозі поруч один з одним без перекриття"
 
 msgid "Save all model nodes into filenames represented by their node names"
-msgstr ""
+msgstr "Зберегти всі вузли моделі в файли, представлені їх назвами вузлів"
 
 msgid "Save a single node to the given path with their node names"
-msgstr ""
+msgstr "Зберегти окремий вузол за вказаним шляхом з їх назвами вузлів"
 
 msgid ""
 "Create a new scene (with a given name and width, height, depth - all "
 "optional)"
 msgstr ""
+"Створити нову сцену (з вказаним ім'ям та шириною, висотою, глибиною - все "
+"необов'язково)"
 
 msgid "Crop the current active node to the voxel boundaries"
-msgstr ""
+msgstr "Обрізати поточний активний вузол до границь вокселів"
 
 msgid "Split the current active node into multiple nodes"
-msgstr ""
+msgstr "Розділити поточний активний вузол на кілька вузлів"
 
 msgid "Scale the current active node or the given node down"
-msgstr ""
+msgstr "Зменшити масштаб поточного активного вузла або вказаного вузла"
 
 msgid "Scale the current active node or the given node up"
-msgstr ""
+msgstr "Збільшити масштаб поточного активного вузла або вказаного вузла"
 
 msgid ""
 "Move the voxels of the current selected palette index or the given index "
 "into a new node"
 msgstr ""
+"Перемістити вокселі поточного вибраного індексу палітри або вказаного "
+"індексу в новий вузол"
 
 msgid "Aborts the current modifier action"
-msgstr ""
+msgstr "Перериває поточну дію модифікатора"
 
 msgid "Fill the inner parts of closed models"
-msgstr ""
+msgstr "Заповнити внутрішні частини закритих моделей"
 
 msgid "Remove non visible voxels"
-msgstr ""
+msgstr "Видалити невидимі вокселі"
 
 msgid "Fill voxels in the current selection"
-msgstr ""
+msgstr "Заповнити вокселі в поточному виборі"
 
 msgid "Remove all voxels in the current selection"
-msgstr ""
+msgstr "Видалити всі вокселі в поточному виборі"
 
 msgid "Set the reference position to the specified position"
-msgstr ""
+msgstr "Встановити позицію посилання на вказану позицію"
 
 msgid "Move the cursor by the specified offsets"
-msgstr ""
+msgstr "Перемістити курсор за вказаними зсувами"
 
 msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"
 msgstr ""
+"Завантажити палітру за назвою. Наприклад, 'built-in:nippon' або 'lospec:id'"
 
 msgid "Set the cursor to the specified position"
-msgstr ""
+msgstr "Встановити курсор на вказану позицію"
 
 msgid "Set the reference position to the current cursor position"
-msgstr ""
+msgstr "Встановити позицію посилання на поточну позицію курсора"
 
 msgid "Resize your volume about given x, y and z size"
-msgstr ""
+msgstr "Змінити розмір об'єму за вказаними розмірами x, y та z"
 
 msgid "Resize your current model node about given x, y and z size"
-msgstr ""
+msgstr "Змінити розмір поточного вузла моделі за вказаними розмірами x, y та z"
 
 msgid "Shift the volume by the given values"
-msgstr ""
+msgstr "Зсув об'єму на задані значення"
 
 msgid "Center the current active nodes at the reference position"
-msgstr ""
+msgstr "Центрувати поточні активні вузли на позиції посилання"
 
 msgid "Center the current active nodes at the origin"
-msgstr ""
+msgstr "Центрувати поточні активні вузли в початковій точці"
 
 msgid ""
 "Move the voxels inside the volume by the given values without changing the "
 "volume bounds"
 msgstr ""
+"Перемістити вокселі всередині об'єму на задані значення, не змінюючи межі "
+"об'єму"
 
 msgid "Copy selection"
-msgstr ""
+msgstr "Копіювати вибір"
 
 msgid "Paste clipboard to current selection or reference position"
-msgstr ""
+msgstr "Вставити буфер обміну в поточний вибір або позицію посилання"
 
 msgid "Paste clipboard to current cursor position"
-msgstr ""
+msgstr "Вставити буфер обміну в поточну позицію курсора"
 
 msgid "Paste clipboard as a new node"
-msgstr ""
+msgstr "Вставити буфер обміну як новий вузол"
 
 msgid "Cut selection"
-msgstr ""
+msgstr "Вирізати вибір"
 
 msgid "Undo your last step"
-msgstr ""
+msgstr "Скасувати останній крок"
 
 msgid "Redo your last step"
-msgstr ""
+msgstr "Повторити останній крок"
 
 msgid "Rotate active nodes around the given axis"
-msgstr ""
+msgstr "Повернути активні вузли навколо заданої осі"
 
 msgid "Merge two given nodes or active model node with the next one"
-msgstr ""
+msgstr "Об'єднати два задані вузли або активний вузол моделі з наступним"
 
 msgid "Merge all nodes"
-msgstr ""
+msgstr "Об'єднати всі вузли"
 
 msgid "Merge all visible nodes"
-msgstr ""
+msgstr "Об'єднати всі видимі вузли"
 
 msgid "Merge all locked nodes"
-msgstr ""
+msgstr "Об'єднати всі заблоковані вузли"
 
 msgid "Animate all nodes with the given delay in millis between the frames"
-msgstr ""
+msgstr "Анімувати всі вузли з заданою затримкою в мілісекундах між кадрами"
 
 msgid "Use the given index to select the color from the current palette"
-msgstr ""
+msgstr "Використовуйте заданий індекс для вибору кольору з поточної палітри"
 
 msgid ""
 "Set the current selected color by finding the closest rgb match in the "
 "palette"
 msgstr ""
+"Встановити поточний вибраний колір, знаходячи найближче відповідність RGB в "
+"палітрі"
 
 msgid "Pick the current selected color from current cursor voxel"
-msgstr ""
+msgstr "Вибрати поточний вибраний колір з поточного вокселя курсора"
 
 msgid "Flip the selected nodes around the given axis"
-msgstr ""
+msgstr "Перевернути вибрані вузли навколо заданої осі"
 
 msgid ""
 "Add a new model node (with a given name and width, height, depth - all "
 "optional)"
 msgstr ""
+"Додати новий вузол моделі (з заданим ім'ям та шириною, висотою, глибиною - "
+"все необов'язково)"
 
 msgid "Delete a particular node by id - or the current active one"
-msgstr ""
+msgstr "Видалити певний вузол за ідентифікатором - або поточний активний"
 
 msgid "Lock a particular node by id - or the current active one"
-msgstr ""
+msgstr "Заблокувати певний вузол за ідентифікатором - або поточний активний"
 
 msgid ""
 "Toggle the lock state of a particular node by id - or the current active one"
 msgstr ""
+"Перемикання стану блокування певного вузла за ідентифікатором - або "
+"поточного активного"
 
 msgid "Unlock a particular node by id - or the current active one"
-msgstr ""
+msgstr "Розблокувати певний вузол за ідентифікатором - або поточний активний"
 
 msgid "Set or print the current active node"
-msgstr ""
+msgstr "Встановити або надрукувати поточний активний вузол"
 
 msgid "Toggle the visible state of a node"
-msgstr ""
+msgstr "Перемикнути видимий стан вузла"
 
 msgid "Show all nodes"
-msgstr ""
+msgstr "Показати всі вузли"
 
 msgid "Hide all nodes"
-msgstr ""
+msgstr "Сховати всі вузли"
 
 msgid "Show all children nodes"
-msgstr ""
+msgstr "Показати всі дочірні вузли"
 
 msgid "Hide all children nodes"
-msgstr ""
+msgstr "Сховати всі дочірні вузли"
 
 msgid "Hide all model nodes except the active one"
-msgstr ""
+msgstr "Сховати всі вузли моделі, крім активного"
 
 msgid "Lock all nodes"
-msgstr ""
+msgstr "Заблокувати всі вузли"
 
 msgid "Unlock all nodes"
-msgstr ""
+msgstr "Розблокувати всі вузли"
 
 msgid "Rename the current node or the given node id"
-msgstr ""
+msgstr "Перейменувати поточний вузол або заданий ідентифікатор вузла"
 
 msgid "Duplicates the current node or the given node id"
-msgstr ""
+msgstr "Дублює поточний вузол або заданий ідентифікатор вузла"
 
 msgid "Create a node reference for the given node id"
-msgstr ""
+msgstr "Створити посилання на вузол за заданим ідентифікатором вузла"
 
 msgid "Unreference from model and allow to edit the voxels for this node"
 msgstr ""
+"Видалити посилання з моделі та дозволити редагування вокселів для цього вузла"
 
 msgid "Change the modifier type to 'select'"
-msgstr ""
+msgstr "Змінити тип модифікатора на 'вибір'"
 
 msgid "Change the modifier type to 'color picker'"
-msgstr ""
+msgstr "Змінити тип модифікатора на 'вибір кольору'"
 
 msgid "Change the modifier type to 'erase'"
-msgstr ""
+msgstr "Змінити тип модифікатора на 'видалення'"
 
 msgid "Change the modifier type to 'place'"
-msgstr ""
+msgstr "Змінити тип модифікатора на 'розміщення'"
 
 msgid "Change the modifier type to 'override'"
-msgstr ""
+msgstr "Змінити тип модифікатора на 'перезапис'"
 
 #, c-format
 msgid "Change the brush type to '%s'"
-msgstr ""
+msgstr "Змінити тип пензля на '%s'"
 
 msgid "Change the brush type to 'none'"
-msgstr ""
+msgstr "Змінити тип пензля на 'немає'"
 
 msgid "Toggle locked mode for the given axis at the current cursor position"
 msgstr ""
+"Перемикнути заблокований режим для заданої осі в поточній позиції курсора"
 
 msgid "Toggle locked mode for the x axis at the current cursor position"
-msgstr ""
+msgstr "Перемикнути заблокований режим для осі x в поточній позиції курсора"
 
 msgid "Toggle locked mode for the y axis at the current cursor position"
-msgstr ""
+msgstr "Перемикнути заблокований режим для осі y в поточній позиції курсора"
 
 msgid "Toggle locked mode for the z axis at the current cursor position"
-msgstr ""
+msgstr "Перемикнути заблокований режим для осі z в поточній позиції курсора"
 
 msgid "Set center plane building"
-msgstr ""
+msgstr "Встановити побудову площини центру"
 
 msgid "Set default aabb voxel building mode"
-msgstr ""
+msgstr "Встановити режим побудови вокселів за замовчуванням"
 
 msgid ""
 "Set single voxel building mode - continue setting voxels until you release "
 "the action button"
 msgstr ""
+"Встановити режим побудови одного вокселя - продовжуйте встановлювати "
+"вокселі, поки не відпустите кнопку дії"
 
 msgid "Mirror along the x axis at the reference position"
-msgstr ""
+msgstr "Відобразити вздовж осі x в позиції посилання"
 
 msgid "Mirror along the y axis at the reference position"
-msgstr ""
+msgstr "Відобразити вздовж осі y в позиції посилання"
 
 msgid "Mirror along the z axis at the reference position"
-msgstr ""
+msgstr "Відобразити вздовж осі z в позиції посилання"
 
 msgid "Disable mirror axis"
-msgstr ""
+msgstr "Вимкнути ось дзеркала"
 
 msgid "Change the modifier shape type"
-msgstr ""
+msgstr "Змінити тип форми модифікатора"
 
 msgid "Toggle center at cursor"
-msgstr ""
+msgstr "Перемикнути центр на курсор"
 
 msgid "Toggle continuously placing the stamp voxels"
-msgstr ""
+msgstr "Перемикнути безперервне розміщення вокселів штампу"
 
 msgid "Rotate stamp volume around the given axis"
-msgstr ""
+msgstr "Повернути об'єм штампу навколо заданої осі"
 
 msgid "Use the current selection as new stamp"
-msgstr ""
+msgstr "Використовувати поточний вибір як новий штамп"
 
 msgid "Use the current selected node volume as new stamp"
-msgstr ""
+msgstr "Використовувати поточний об'єм вибраного вузла як новий штамп"
 
 msgid "Paste the current clipboard content as stamp"
-msgstr ""
+msgstr "Вставити поточний вміст буфера обміну як штамп"
 
 msgid "Change the text brush axis"
-msgstr ""
-
-#~ msgid "Files"
-#~ msgstr "Файли"
+msgstr "Змінити ось текстового пензля"
