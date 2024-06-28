@@ -332,8 +332,13 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		Log::debug("id: %i, parent: %i", hinge.id, hinge.parent);
 	}
 
+	int n = 0;
 	for (voxel::RawVolume *v : volumes) {
+		const priv::KFAHinge &hinge = kfa.hinge[n];
+		const glm::vec3 pivot(hinge.p[0].x, hinge.p[0].y, hinge.p[0].z);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setPivot(pivot);
+
 		scenegraph::SceneGraphTransform transform;
 		const uint32_t fps = 20; // TODO fps?
 		const uint32_t div = 1000 / fps;
@@ -347,6 +352,15 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 			// TODO: implement keyframe loading
 			(void)transform;
+#if 0
+			// rotation
+			if (kfa.hinge[n].type == 0) {
+				const glm::vec3 axis(hinge.v[0].x, hinge.v[0].y, hinge.v[0].z);
+				const float angle = hinge.vmin * glm::two_pi<float>() / 65536.0f;
+				const glm::quat rotation = glm::angleAxis(angle, axis);
+				transform.setLocalOrientation(rotation);
+			}
+#endif
 		}
 		node.setVolume(v, true);
 		node.setName(filename);
@@ -357,6 +371,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 			Log::error("Failed to add node to scene graph");
 			return false;
 		}
+		++n;
 	}
 
 	return true;
