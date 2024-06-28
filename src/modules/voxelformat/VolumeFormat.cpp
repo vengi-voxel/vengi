@@ -485,7 +485,7 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<V3AFormat>();
 		} else if (ext == particubes().mainExtension()) {
 			return core::make_shared<PCubesFormat>();
-		} else if (ext == particubes().mainExtension() || ext == cubzh().mainExtension()) {
+		} else if (ext == cubzh().mainExtension()) {
 			return core::make_shared<CubzhFormat>();
 		} else if (ext == cubzhB64().mainExtension()) {
 			return core::make_shared<CubzhB64Format>();
