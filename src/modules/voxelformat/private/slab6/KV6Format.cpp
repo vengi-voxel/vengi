@@ -81,8 +81,8 @@ struct KFASeqTyp {
 
 struct KFAData {
 	core::Buffer<KFAHinge> hinge; //[numhinge]
-	// These are the hinge angles. 0 is 0 degrees, 16384 is 90 degrees, -16384 is -90 degrees
-	core::Buffer<core::Buffer<int16_t>> frmval; //[numfrm][numhin]
+	// These are the hinge euler angles.
+	core::Buffer<core::Buffer<float>> frmval; //[numfrm][numhin]
 	core::Buffer<KFASeqTyp> seq;				//[seqnum]
 };
 
@@ -290,9 +290,10 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		kfa.frmval[i].reserve(numHinge);
 		for (uint32_t j = 0; j < numHinge; ++j) {
+			// 0 is 0 degrees, 16384 is 90 degrees, -16384 is -90 degrees
 			int16_t angle;
 			wrap(stream->readInt16(angle))
-			kfa.frmval[i].push_back(angle);
+			kfa.frmval[i].push_back((float)angle / 65536.0f);
 		}
 	}
 	uint32_t numSequences;
