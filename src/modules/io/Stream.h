@@ -143,6 +143,8 @@ public:
 	 */
 	bool readFormat(const char *fmt, ...);
 
+	virtual bool readLine(core::String &str);
+
 	bool readPascalStringUInt8(core::String &str);
 	bool readPascalStringUInt16LE(core::String &str);
 	bool readPascalStringUInt16BE(core::String &str);
@@ -210,7 +212,7 @@ public:
 	 * @param strbuff The target buffer
 	 */
 	bool readLine(int length, char *strbuff);
-	bool readLine(core::String &str);
+	bool readLine(core::String &str) override;
 
 	/**
 	 * @return The amount of bytes left in the stream to read

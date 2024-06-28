@@ -343,6 +343,28 @@ bool ReadStream::readFormat(const char *fmt, ...) {
 	return true;
 }
 
+bool ReadStream::readLine(core::String &str) {
+	str.clear();
+	for (;;) {
+		uint8_t chr;
+		if (readUInt8(chr) != 0) {
+			return false;
+		}
+		if (chr == '\r') {
+			if (read(&chr, sizeof(chr)) != sizeof(chr)) {
+				if (chr != '\n') {
+					return false;
+				}
+			}
+			return true;
+		} else if (chr == '\n' || chr == '\0') {
+			return true;
+		}
+		str += (char)chr;
+	}
+	return true;
+}
+
 bool ReadStream::readString(int length, char *strbuff, bool terminated) {
 	for (int i = 0; i < length; ++i) {
 		uint8_t chr;
