@@ -44,15 +44,15 @@ bool CollectionPanel::isFilterActive() const {
 }
 
 void CollectionPanel::updateFilters() {
-	const ImVec2 itemWidth = ImGui::CalcTextSize("#########");
+	const float itemWidth = ImGui::CalcTextSize("#").x * 9.0;
 	{
-		ImGui::PushItemWidth(itemWidth.x);
+		ImGui::PushItemWidth(itemWidth);
 		ImGui::InputText(_("Name"), &_currentFilterName);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 	}
 	{
-		ImGui::PushItemWidth(itemWidth.x);
+		ImGui::PushItemWidth(itemWidth);
 		ImGui::InputText(_("License"), &_currentFilterLicense);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
@@ -69,7 +69,7 @@ void CollectionPanel::updateFilters() {
 			io::createGroupPatterns(voxelformat::voxelLoad(), _filterEntries);
 			// must be the first entry - see applyFilter()
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
-			_filterFormatTextWidth = core_min(itemWidth.x * 2, _filterFormatTextWidth);
+			_filterFormatTextWidth = core_min(itemWidth * 2.0f, _filterFormatTextWidth);
 		}
 
 		const char *formatFilterLabel = _("Format");
