@@ -1665,7 +1665,6 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     // An easy to reproduce this bug is to run "docking_dockspace_tab_amend" with Test Engine UI over top-left corner, covering the Tools menu.
 
     // Check visibility and scroll if necessary
-    if (item.NavLayer == ImGuiNavLayer_Main)
     {
         ImRect window_r = window->InnerClipRect;
         window_r.Expand(ImVec2(-g.WindowsHoverPadding.x, -g.WindowsHoverPadding.y));
@@ -1680,27 +1679,29 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
         // Bias toward reducing amount of horizontal scroll.
         float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
         float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
-        if (visibility_ratio_x < 0.70f)
-            ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
-        if (visibility_ratio_y < 0.90f)
-            ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
-    }
-    else
-    {
-        // Menu layer is not scrollable: attempt to resize window.
-        // FIXME-TESTS: ImGuiItemStatusFlags_Visible is currently not usable for test engine as it relies on ITEM_INFO hook, need moving in ItemAdd().
-        //if ((item->StatusFlags & ImGuiItemStatusFlags_Visible) == 0)
+
+        if (item.NavLayer == ImGuiNavLayer_Main)
         {
-            // FIXME-TESTS: We designed RectClipped as being within RectFull which is not what we want here. Approximate using window's Max.x
-            ImRect window_r = window->Rect();
-            if (item.RectFull.Min.x > window_r.Max.x)
+            if (visibility_ratio_x < 0.70f)
+                ScrollToItem(ref, ImGuiAxis_X, ImGuiTestOpFlags_NoFocusWindow);
+            if (visibility_ratio_y < 0.90f)
+                ScrollToItem(ref, ImGuiAxis_Y, ImGuiTestOpFlags_NoFocusWindow);
+        }
+        // FIXME: Scroll parent window
+    }
+
+    // Menu layer is not scrollable: attempt to resize window.
+    if (item.NavLayer == ImGuiNavLayer_Menu)
+    {
+        // FIXME-TESTS: We designed RectClipped as being within RectFull which is not what we want here. Approximate using window's Max.x
+        ImRect window_r = window->Rect();
+        if (item.RectFull.Min.x > window_r.Max.x)
+        {
+            float extra_width_desired = item.RectFull.Max.x - window_r.Max.x; // item->RectClipped.Max.x;
+            if (extra_width_desired > 0.0f && (flags & ImGuiTestOpFlags_IsSecondAttempt) == 0)
             {
-                float extra_width_desired = item.RectFull.Max.x - window_r.Max.x; // item->RectClipped.Max.x;
-                if (extra_width_desired > 0.0f && (flags & ImGuiTestOpFlags_IsSecondAttempt) == 0)
-                {
-                    LogDebug("Will attempt to resize window to make item in menu layer visible.");
-                    WindowResize(window->ID, window->Size + ImVec2(extra_width_desired, 0.0f));
-                }
+                LogDebug("Will attempt to resize window to make item in menu layer visible.");
+                WindowResize(window->ID, window->Size + ImVec2(extra_width_desired, 0.0f));
             }
         }
     }
@@ -1807,6 +1808,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
             // Update item
             item = ItemInfo(item.ID);
 
+            // Log message
             ImVec2 pos_old = item_initial_state.RectFull.Min;
             ImVec2 pos_new = item.RectFull.Min;
             ImVec2 size_old = item_initial_state.RectFull.GetSize();
@@ -1815,13 +1817,13 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
                 "Unable to Hover %s:\n"
                 "- Expected item 0x%08X in window '%s', targeted position: (%.1f,%.1f)'\n"
                 "- Hovered id was 0x%08X in '%s'.\n"
-                "- Item Pos:  Before mouse move (%6.1f,%6.1f) vs Now (%6.1f,%6.1f) (%s)\n"
-                "- Item Size: Before mouse move (%6.1f,%6.1f) vs Now (%6.1f,%6.1f) (%s)",
+                "- Before mouse move: Item Pos (%6.1f,%6.1f) Size (%6.1f,%6.1f)\n"
+                "- After  mouse move: Item Pos (%6.1f,%6.1f) Size (%6.1f,%6.1f)",
                 desc.c_str(),
                 item.ID, item.Window ? item.Window->Name : "<NULL>", pos.x, pos.y,
                 hovered_id, g.HoveredWindow ? g.HoveredWindow->Name : "",
-                pos_old.x, pos_old.y, pos_new.x, pos_new.y, (pos_old.x == pos_new.x && pos_old.y == pos_new.y) ? "Same" : "CHANGED",
-                size_old.x, size_old.y, size_new.x, size_new.y, (size_old.x == size_new.x && size_old.y == size_new.y) ? "Same" : "CHANGED");
+                pos_old.x, pos_old.y, size_old.x, size_old.y,
+                pos_new.x, pos_new.y, size_new.x, size_new.y);
             IM_ERRORF_NOHDR("%s", error_message.c_str());
         }
     }
