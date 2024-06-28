@@ -2,7 +2,7 @@
 	"sources": [
 		{
 			"name": "Duke3D Voxel Pack for EDuke32",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"thumbnail": "https://i.imgur.com/WSQIXnS.png",
 			"github": {
 				"repo": "NightFright2k19/duke3d_voxelpack",
@@ -57,14 +57,21 @@
 			}
 		},
 		{
-			"name": "Voxel Doom (KVX)",
+			"name": "Voxel Doom (KVX full set)",
 			"license": "unknown",
 			"single": {
 				"url": "http://www.teamhellspawn.com/kvx_voxels.zip"
 			}
 		},
 		{
-			"name": "Voxel Doom (VOX)",
+			"name": "Voxel Doom (V3B limited set)",
+			"license": "unknown",
+			"single": {
+				"url": "http://www.teamhellspawn.com/v3b_voxels.zip"
+			}
+		},
+		{
+			"name": "Voxel Doom (VOX limited set)",
 			"license": "unknown",
 			"single": {
 				"url": "http://www.teamhellspawn.com/vox_voxels.zip"
@@ -93,7 +100,7 @@
 		},
 		{
 			"name": "BLOOD voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"thumbnail": "https://repository-images.githubusercontent.com/208063900/7d4b1280-836c-11ea-9221-3ae509326ea2",
 			"github": {
 				"repo": "fgsfds/Blood-Voxel-Pack",
@@ -103,7 +110,7 @@
 		},
 		{
 			"name": "Ion Fury voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"thumbnail": "https://imgur.com/z6NI021.png",
 			"github": {
 				"repo": "Dzierzan/IonFury-Voxel-Pack",
@@ -113,7 +120,7 @@
 		},
 		{
 			"name": "Dark-Forces voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"thumbnail": "https://imgur.com/2gOgKfy.png",
 			"github": {
 				"repo": "Dzierzan/Dark-Forces-Voxel-Pack",
@@ -123,7 +130,7 @@
 		},
 		{
 			"name": "Outlaws voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"github": {
 				"repo": "Dzierzan/Outlaws-Voxel-Pack",
 				"commit": "main",
@@ -132,7 +139,7 @@
 		},
 		{
 			"name": "Powerslave voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"github": {
 				"repo": "fgsfds/Powerslave-Voxel-Pack",
 				"commit": "master",
@@ -141,7 +148,7 @@
 		},
 		{
 			"name": "Shadow Warrior voxel pack",
-			"license": "custom",
+			"license": "Voxel Pack Art License",
 			"github": {
 				"repo": "fgsfds/Shadow-Warrior-Voxel-Pack",
 				"commit": "master",

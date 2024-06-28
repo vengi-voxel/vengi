@@ -672,7 +672,8 @@ const jsonData = {
     {
       "name": "Voxel3D",
       "extensions": [
-        "v3a"
+        "v3a",
+        "v3b"
       ],
       "magics": [],
       "mimetype": "application/x-voxel3d",
