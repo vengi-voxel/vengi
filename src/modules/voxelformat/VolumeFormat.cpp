@@ -321,7 +321,7 @@ static const io::FormatDescription &buildKVX() {
 }
 
 static const io::FormatDescription &voxel3D() {
-	static io::FormatDescription f{"Voxel3D", {"v3a"}, {}, FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Voxel3D", {"v3a", "v3b"}, {}, FORMAT_FLAG_SAVE};
 	return f;
 }
 

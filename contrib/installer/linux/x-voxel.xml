@@ -252,6 +252,7 @@
 	<mime-type type="application/x-voxel3d">
 		<comment>Voxel3D</comment>
 		<glob pattern="*.v3a"/>
+		<glob pattern="*.v3b"/>
 	</mime-type>
 	<mime-type type="application/x-rooms-xyz-thing">
 		<comment>Rooms.xyz Thing</comment>

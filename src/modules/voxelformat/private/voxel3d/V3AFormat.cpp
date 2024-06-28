@@ -6,6 +6,8 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -35,9 +37,20 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
+	if (core::string::toLower(filename.last()) == 'b') {
+		io::ZipReadStream zipStream(*stream);
+		return loadFromStream(filename, &zipStream, sceneGraph, palette, ctx);
+	}
+	return loadFromStream(filename, stream, sceneGraph, palette, ctx);
+}
+
+bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *stream,
+							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+							   const LoadContext &ctx) {
 	core::String line;
 	int width, depth, height;
 	width = depth = height = 0;
+	scenegraph::SceneGraphNode node;
 	while (!stream->eos()) {
 		wrapBool(stream->readLine(line));
 		if (core::string::startsWith(line, "VERSION")) {
@@ -46,6 +59,7 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 				Log::error("Unsupported VERSION: %s", line.c_str());
 				return false;
 			}
+			node.setProperty("version", line);
 			continue;
 		}
 		if (core::string::startsWith(line, "TYPE")) {
@@ -87,7 +101,6 @@ bool V3AFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	palette::PaletteLookup palLookup(palette);
 	voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 
 	core::DynamicArray<core::String> tokens;

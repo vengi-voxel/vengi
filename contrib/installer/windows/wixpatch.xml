@@ -148,6 +148,9 @@
 		<RegistryKey Root="HKCR" Key=".v3a">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".v3b">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".thing">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -594,6 +597,15 @@
 		<RegistryValue Root="HKCR" Key=".v3a\OpenWithProgids" Name="vengi-voxedit.v3a" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.v3a" Description="Voxel3D" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="v3a" ContentType="application/x-voxel3d">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".v3b" Value="vengi-voxedit.v3b" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".v3b" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".v3b\OpenWithProgids" Name="vengi-voxedit.v3b" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.v3b" Description="Voxel3D" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="v3b" ContentType="application/x-voxel3d-v3a">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>
