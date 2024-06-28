@@ -6,7 +6,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
