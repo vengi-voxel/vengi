@@ -16,6 +16,16 @@ BufferedReadWriteStream::BufferedReadWriteStream(io::ReadStream &stream, int64_t
 	_size = n;
 }
 
+BufferedReadWriteStream::BufferedReadWriteStream(io::ReadStream &stream) {
+	resizeBuffer(10000);
+	uint8_t buffer[1024];
+	int64_t size = 0;
+	while ((size = stream.read(buffer, sizeof(buffer))) > 0) {
+		write(buffer, size);
+	}
+	seek(0);
+}
+
 BufferedReadWriteStream::BufferedReadWriteStream(int64_t size) {
 	resizeBuffer(size);
 }

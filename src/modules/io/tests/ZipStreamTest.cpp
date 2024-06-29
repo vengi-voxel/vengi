@@ -104,4 +104,34 @@ TEST_F(ZipStreamTest, testZipStreamNoSize) {
 	}
 }
 
+TEST_F(ZipStreamTest, testZipStreamBufSize) {
+	const int n = 64;
+	const int size = n * 4 * sizeof(uint32_t);
+	BufferedReadWriteStream stream(size);
+	{
+		ZipWriteStream w(stream);
+		ASSERT_TRUE(w.writeInt32(0));
+	}
+	stream.seek(0);
+	ZipReadStream r(stream);
+	uint8_t buf[16];
+	EXPECT_EQ(4, r.read(buf, sizeof(buf)));
+	EXPECT_EQ(0, r.read(buf, sizeof(buf)));
+}
+
+TEST_F(ZipStreamTest, testZipStreamParentFailure) {
+	const int n = 64;
+	const int size = n * 4 * sizeof(uint32_t);
+	BufferedReadWriteStream stream(size);
+	{
+		ZipWriteStream w(stream);
+		ASSERT_TRUE(w.writeInt32(0));
+	}
+	stream.seek(0);
+	ZipReadStream r(stream);
+	stream.seek(0, SEEK_END);
+	uint8_t buf[16];
+	EXPECT_EQ(-1, r.read(buf, sizeof(buf)));
+}
+
 } // namespace io

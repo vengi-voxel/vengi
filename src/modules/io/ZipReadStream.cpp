@@ -67,9 +67,13 @@ int64_t ZipReadStream::skip(int64_t delta) {
 }
 
 int ZipReadStream::read(void *buf, size_t size) {
+	if (_eos) {
+		return 0;
+	}
 	uint8_t *targetPtr = (uint8_t *)buf;
 	const size_t originalSize = size;
 	z_stream* stream = (z_stream*)_stream;
+	size_t readCnt = 0;
 	while (size > 0) {
 		if (stream->avail_in == 0) {
 			int64_t remainingSize = remaining();
@@ -104,13 +108,11 @@ int ZipReadStream::read(void *buf, size_t size) {
 		targetPtr += outputSize;
 		core_assert(size >= outputSize);
 		size -= outputSize;
+		readCnt += outputSize;
 
 		if (retval == Z_STREAM_END) {
 			_eos = true;
-			if (size > 0) {
-				Log::debug("attempting to read past the end of the stream");
-				return -1;
-			}
+			return readCnt;
 		}
 	}
 	return (int)originalSize;
