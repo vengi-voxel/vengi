@@ -57,6 +57,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 #ifdef USE_CURL
 					ImGui::Text("libCURL");
 #endif
+					ImGui::URLItem("cute_aseprite", "https://github.com/RandyGaul/cute_headers", w);
 					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
 					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", w);
