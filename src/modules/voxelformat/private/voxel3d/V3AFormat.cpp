@@ -100,7 +100,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 	}
 
 	palette::PaletteLookup palLookup(palette);
-	voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
+	voxel::Region region(0, 0, 0, width, height, depth);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
 
@@ -115,14 +115,14 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 			}
 			y = 0;
 			++x;
-			if (x >= width) {
+			if (x > width) {
 				Log::error("Max width exceeded at line %i: x: %i, y: %i, width: %i, height: %i", lineCnt, x, y, width,
 						   height);
 				return false;
 			}
 		}
 
-		if (y >= height) {
+		if (y > height) {
 			Log::error("Max depth exceeded at line %i: x: %i, y: %i, width: %i, height: %i", lineCnt, x, y, width,
 					   height);
 			return false;
