@@ -18,6 +18,7 @@ General:
    - Added support for `ase` and `aseprite` format
    - Added cvar `voxformat_emptypaletteindex`
    - Create *walk* and *jump* animations with the new `animate.lua` script
+   - Added `v3b` format support (compressed `v3a` file)
 
 VoxConvert:
 
