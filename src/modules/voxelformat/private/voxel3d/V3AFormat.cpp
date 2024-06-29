@@ -7,6 +7,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -172,6 +173,15 @@ bool V3AFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
+	if (core::string::toLower(filename.last()) == 'b') {
+		io::ZipWriteStream zipStream(*stream);
+		return saveToStream(sceneGraph, &zipStream, ctx);
+	}
+	return saveToStream(sceneGraph, stream, ctx);
+}
+
+bool V3AFormat::saveToStream(const scenegraph::SceneGraph &sceneGraph, io::WriteStream *stream,
+							 const SaveContext &ctx) {
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	core_assert(node);
 
