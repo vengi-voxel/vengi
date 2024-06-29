@@ -47,11 +47,13 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	core::String line;
+	int lineCnt = 0;
 	int width, depth, height;
 	width = depth = height = 0;
 	scenegraph::SceneGraphNode node;
 	while (!stream->eos()) {
 		wrapBool(stream->readLine(line));
+		++lineCnt;
 		if (core::string::startsWith(line, "VERSION")) {
 			line = line.substr(8);
 			if (line != "1.0") {
@@ -107,25 +109,28 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 	int y = 0;
 	do {
 		if (line.empty()) {
+			++lineCnt;
 			if (!stream->readLine(line)) {
 				break;
 			}
 			y = 0;
 			++x;
 			if (x >= width) {
-				Log::error("Max width exceeded");
+				Log::error("Max width exceeded at line %i: x: %i, y: %i, width: %i, height: %i", lineCnt, x, y, width,
+						   height);
 				return false;
 			}
 		}
 
 		if (y >= height) {
-			Log::error("Max depth exceeded");
+			Log::error("Max depth exceeded at line %i: x: %i, y: %i, width: %i, height: %i", lineCnt, x, y, width,
+					   height);
 			return false;
 		}
 		tokens.clear();
 		core::string::splitString(line, tokens);
 		if (tokens.size() % 4 != 0) {
-			Log::error("Invalid data line: %s", line.c_str());
+			Log::error("Invalid data line %i: %s", lineCnt, line.c_str());
 			return false;
 		}
 		for (size_t i = 0; i < tokens.size(); i += 4) {
@@ -143,6 +148,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 			volume->setVoxel(x, y, (int)i / 4, voxel);
 		}
 		++y;
+		++lineCnt;
 	} while (stream->readLine(line));
 	node.setName(filename);
 	node.setPalette(palLookup.palette());
