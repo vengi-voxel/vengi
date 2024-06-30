@@ -192,6 +192,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 			_shapeBuilder.setColor(style::color(style::ColorInactiveNode));
 		}
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		core_assert_msg(region.isValid(), "Region for node %s of type %i is invalid", node.name().c_str(), (int)node.type());
 		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);

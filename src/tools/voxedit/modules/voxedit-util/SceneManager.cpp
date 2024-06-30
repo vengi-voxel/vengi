@@ -1274,6 +1274,7 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 }
 
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
+	// TODO: MEMENTO ScopedMementoGroup loadGroup(_mementoHandler);
 	core_trace_scoped(LoadSceneGraph);
 	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
 	if (createDiff) {
@@ -1462,7 +1463,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 }
 
 void SceneManager::rotate(math::Axis axis) {
-	// TODO: ScopedMementoGroup mementoGroup(_mementoHandler);
+	// TODO: MEMENTO ScopedMementoGroup mementoGroup(_mementoHandler);
 	_sceneGraph.foreachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 		if (node == nullptr) {

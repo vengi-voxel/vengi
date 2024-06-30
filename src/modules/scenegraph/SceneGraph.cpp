@@ -743,6 +743,7 @@ voxel::Region SceneGraph::resolveRegion(const SceneGraphNode &n) const {
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolveRegion(node(n.reference()));
 	}
+	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve region for node of type %i", (int)n.type());
 	return n.region();
 }
 
@@ -750,6 +751,7 @@ const voxel::RawVolume *SceneGraph::resolveVolume(const SceneGraphNode &n) const
 	if (n.type() == SceneGraphNodeType::ModelReference) {
 		return resolveVolume(node(n.reference()));
 	}
+	core_assert_msg(n.type() == SceneGraphNodeType::Model, "Trying to resolve region for node of type %i", (int)n.type());
 	return n.volume();
 }
 

@@ -61,6 +61,7 @@ RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &cop
 	initialise(_region);
 
 	for (Region copyRegion : copyRegions) {
+		core_assert(copyRegion.isValid());
 		copyRegion.cropTo(_region);
 		RawVolume::Sampler destSampler(*this);
 		RawVolume::Sampler srcSampler(src);
@@ -79,6 +80,7 @@ RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &cop
 }
 
 RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
+	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
 	_data = (Voxel *)core_malloc(size);
