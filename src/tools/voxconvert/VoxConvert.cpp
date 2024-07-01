@@ -100,7 +100,7 @@ app::AppState VoxConvert::onConstruct() {
 		.setDescription("Apply the given lua script to the output volume");
 	registerArg("--scriptcolor")
 		.setDefaultValue("1")
-		.setDescription("Set the palette index that is given to the script parameters");
+		.setDescription("Set the palette index that is given to the color script parameters of the main function");
 	registerArg("--split").setDescription("Slices the models into pieces of the given size <x:y:z>");
 	registerArg("--surface-only")
 		.setDescription("Remove any non surface voxel. If you are meshing with this, you get also faces on the inner "
