@@ -619,6 +619,7 @@ template<> inline void ImGuiTestEngineUtil_appendf_auto(ImGuiTextBuffer* buf, Im
 
 // Floating point compares
 #define IM_CHECK_FLOAT_EQ_EPS(_LHS, _RHS)           IM_CHECK_LE(ImFabs(_LHS - (_RHS)), FLT_EPSILON)   // Float Equal
+#define IM_CHECK_FLOAT_NE_EPS(_LHS, _RHS)           IM_CHECK_GT(ImFabs(_LHS - (_RHS)), FLT_EPSILON)   // Float Not Equal
 #define IM_CHECK_FLOAT_NEAR(_LHS, _RHS, _EPS)       IM_CHECK_LE(ImFabs(_LHS - (_RHS)), _EPS)
 #define IM_CHECK_FLOAT_NEAR_NO_RET(_LHS, _RHS, _E)  IM_CHECK_LE_NO_RET(ImFabs(_LHS - (_RHS)), _E)
 
