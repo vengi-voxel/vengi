@@ -1,5 +1,8 @@
 --
 -- build grass on surfaces (a surface is a voxel that doesn't have a voxel above it)
+-- Select the color of the surface to build the grass on - all other voxel colors are
+-- ignored. This allows you to e.g. place grass on the green voxels, but not on the
+-- gray voxels that reprensent rocks or the street.
 --
 
 local vol = require "modules.volume"
