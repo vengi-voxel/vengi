@@ -1,3 +1,6 @@
+// Based on emscripten-browser-file package by Armchair Software, licensed under MIT
+// https://github.com/Armchair-Software/emscripten-browser-file
+
 #ifndef EMSCRIPTEN_UPLOAD_FILE_H_INCLUDED
 #define EMSCRIPTEN_UPLOAD_FILE_H_INCLUDED
 

@@ -218,6 +218,10 @@ tracy:
 	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
 	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
 
+update-emscripten-browser-file:
+	$(call UPDATE_GIT,emscripten-browser-file,https://github.com/Armchair-Software/emscripten-browser-file.git)
+	cp $(UPDATEDIR)/emscripten-browser-file.sync/emscripten_browser_file.h src/modules/io/system/emscripten_browser_file.h
+
 update-stb:
 	$(call UPDATE_GIT,SOIL2,https://github.com/SpartanJ/SOIL2.git)
 	cp $(UPDATEDIR)/SOIL2.sync/src/SOIL2/* contrib/libs/stb_image
