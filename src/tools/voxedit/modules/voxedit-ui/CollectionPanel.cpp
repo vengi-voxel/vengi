@@ -133,16 +133,11 @@ int CollectionPanel::update() {
 				ImGui::EndDisabled();
 			} else {
 				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
+					// if resolved already but no files are available, we are still loading...
 					if (_collectionMgr->resolved(source)) {
 						ImGui::TextUnformatted(_("Loading..."));
 					} else {
-						if (ImGui::Button(_("Load"))) {
-							if (source.name == "local") {
-								_collectionMgr->local();
-							} else {
-								_collectionMgr->resolve(source);
-							}
-						}
+						_collectionMgr->resolve(source);
 					}
 					ImGui::TreePop();
 				}

@@ -189,6 +189,10 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 }
 
 void CollectionManager::resolve(const VoxelSource &source, bool async) {
+	if (source.name == "local") {
+		local();
+		return;
+	}
 	if (!_onlineResolvedSources.insert(source.name)) {
 		return;
 	}
