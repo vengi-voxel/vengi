@@ -7,7 +7,7 @@ set(SRCS
 )
 
 set(LIB voxelcollection)
-set(DEPENDENCIES http json voxelformat video)
+set(DEPENDENCIES http json voxelformat voxelrender)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS

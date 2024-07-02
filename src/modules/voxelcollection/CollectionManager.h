@@ -71,7 +71,13 @@ public:
 	void resolve(const VoxelSource &source, bool async = true);
 	bool resolved(const VoxelSource &source) const;
 
+	/**
+	 * @brief Load existing thumbnails - either from png files or from the voxel format file itself (if supported)
+	 * @note This does NOT create thumbnails from vengi render shots
+	 */
 	void loadThumbnail(const VoxelFile &voxelFile);
+	bool createThumbnail(const VoxelFile &voxelFile);
+
 	void thumbnailAll();
 	void downloadAll();
 	bool download(VoxelFile &voxelFile);

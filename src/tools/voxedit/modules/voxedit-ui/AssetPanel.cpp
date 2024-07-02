@@ -24,7 +24,6 @@ AssetPanel::AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
 					   const video::TexturePoolPtr &texturePool, const io::FilesystemPtr &filesystem)
 	: Super(app, "asset"), _texturePool(texturePool), _filesystem(filesystem), _sceneMgr(sceneMgr), _collectionMgr(collectionMgr),
 	  _collectionPanel(app, sceneMgr, collectionMgr, texturePool) {
-	_collectionPanel.setThumbnails(false);
 }
 
 void AssetPanel::shutdown() {

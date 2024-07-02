@@ -3,9 +3,12 @@
  */
 
 #include "CollectionPanel.h"
+#include "ScopedStyle.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
+#include "imgui.h"
 #include "ui/IMGUIEx.h"
+#include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxelcollection/Downloader.h"
@@ -198,6 +201,10 @@ void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
 				command::executeCommands("url \"file://" + core::string::extractPath(absPath) + "\"");
 			}
+		} else if (!thumbnailLookup(*voxelFile)) {
+			if (ImGui::MenuItem(_("Create thumbnail"))) {
+				_collectionMgr->createThumbnail(*voxelFile);
+			}
 		}
 
 		ImGui::EndPopup();
@@ -221,6 +228,16 @@ void CollectionPanel::handleDoubleClick(voxelcollection::VoxelFile *voxelFile) {
 	}
 }
 
+void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
+	if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
+		if (ImGui::BeginItemTooltip()) {
+			const video::Id handle = texture->handle();
+			// TODO: dpi awareness
+			ImGui::Image(handle, ImVec2(256, 256));
+			ImGui::EndTooltip();
+		}
+	}
+}
 int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFiles) {
 	core::DynamicArray<voxelcollection::VoxelFile *> f;
 	f.reserve(voxelFiles.size());
@@ -256,7 +273,17 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				core::String id = core::string::format("%i", row);
 				// TODO: dpi awareness
 				if (ImGui::ImageButton(id.c_str(), handle, ImVec2(64, 64))) {
-					handleDoubleClick(voxelFile);
+					if (!voxelFile->downloaded) {
+						_collectionMgr->download(*voxelFile);
+					}
+					if (handle == video::InvalidId) {
+						_collectionMgr->createThumbnail(*voxelFile);
+					}
+				}
+				if (handle == video::InvalidId) {
+					ImGui::TooltipTextUnformatted(_("Double click to create thumbnail"));
+				} else {
+					thumbnailTooltip(voxelFile);
 				}
 				ImGui::TableNextColumn();
 			}
@@ -265,14 +292,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				handleDoubleClick(voxelFile);
 			}
 			if (!_thumbnails) {
-				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
-					if (ImGui::BeginItemTooltip()) {
-						const video::Id handle = texture->handle();
-						// TODO: dpi awareness
-						ImGui::Image(handle, ImVec2(128, 128));
-						ImGui::EndTooltip();
-					}
-				}
+				thumbnailTooltip(voxelFile);
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();

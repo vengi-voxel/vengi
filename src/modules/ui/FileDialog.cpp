@@ -658,7 +658,7 @@ const char *FileDialog::popupTitle(video::OpenFileMode type) {
 bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
-	ImGui::SetNextWindowSize(ImVec2(width, 25 * itemHeight), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
@@ -701,7 +701,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			return true;
 		}
 		showError(_error);
-		if (options && ImGui::CollapsingHeader(_("Options"))) {
+		if (options && ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			options(type, _currentFilterFormat);
 		}
 		ImGui::EndPopup();
