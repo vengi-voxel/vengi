@@ -951,7 +951,7 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-msgid "Load"
+msgid "Double click to load"
 msgstr ""
 
 msgid "Use stamp"
@@ -971,6 +971,15 @@ msgid "Show thumbnails"
 msgstr ""
 
 msgid "Open target dir"
+msgstr ""
+
+msgid "Create thumbnail"
+msgstr ""
+
+msgid "Double click to create thumbnail"
+msgstr ""
+
+msgid "No match found"
 msgstr ""
 
 msgid "Empty palette index"
@@ -1285,6 +1294,9 @@ msgid "Tone mapping"
 msgstr ""
 
 msgid "New"
+msgstr ""
+
+msgid "Load"
 msgstr ""
 
 msgid "Recently opened"

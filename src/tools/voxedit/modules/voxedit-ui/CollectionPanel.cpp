@@ -304,6 +304,9 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 		}
 	}
 
+	if (f.empty() && isFilterActive()) {
+		ImGui::TextUnformatted(_("No match for filter found"));
+	}
 	return (int)f.size();
 }
 

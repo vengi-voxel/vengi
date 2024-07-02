@@ -982,8 +982,8 @@ msgstr "Мініатюра"
 msgid "Loading..."
 msgstr "Завантаження..."
 
-msgid "Load"
-msgstr "Завантажити"
+msgid "Double click to load"
+msgstr ""
 
 msgid "Use stamp"
 msgstr "Використовувати штамп"
@@ -1005,6 +1005,15 @@ msgstr "Показати мініатюри"
 
 msgid "Open target dir"
 msgstr "Відкрити цільовий каталог"
+
+msgid "Create thumbnail"
+msgstr ""
+
+msgid "Double click to create thumbnail"
+msgstr ""
+
+msgid "No match found"
+msgstr ""
 
 msgid "Empty palette index"
 msgstr "Порожній індекс палітри"
@@ -1266,24 +1275,20 @@ msgid ""
 "Do you wish to discard them?"
 msgstr "Є незбережені зміни.\n"
 
-#, fuzzy
 msgid "Scene settings"
-msgstr "Налаштування рендеру"
+msgstr ""
 
-#, fuzzy
 msgid "Diffuse color"
-msgstr "Дублювати колір"
+msgstr ""
 
-#, fuzzy
 msgid "Ambient color"
-msgstr "Приглушення освітлення"
+msgstr ""
 
 msgid "Done"
 msgstr ""
 
-#, fuzzy
 msgid "Volume split"
-msgstr "Об'єми"
+msgstr ""
 
 msgid ""
 "Some model volumes are too big for optimal performance.\n"
@@ -1367,6 +1372,9 @@ msgstr "Тонове відображення"
 
 msgid "New"
 msgstr "Новий"
+
+msgid "Load"
+msgstr "Завантажити"
 
 msgid "Recently opened"
 msgstr "Нещодавно відкриті"

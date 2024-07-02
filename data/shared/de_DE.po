@@ -989,8 +989,8 @@ msgstr "Miniaturansicht"
 msgid "Loading..."
 msgstr "Laden..."
 
-msgid "Load"
-msgstr "Öffnen"
+msgid "Double click to load"
+msgstr ""
 
 msgid "Use stamp"
 msgstr "Stempel verwenden"
@@ -1012,6 +1012,15 @@ msgstr "Miniaturansicht anzeigen"
 
 msgid "Open target dir"
 msgstr "Öffne Zielverzeichnis"
+
+msgid "Create thumbnail"
+msgstr "Miniaturansicht erzeugen"
+
+msgid "Double click to create thumbnail"
+msgstr ""
+
+msgid "No match found"
+msgstr ""
 
 msgid "Empty palette index"
 msgstr "Leerer Paletteneintrag"
@@ -1373,6 +1382,9 @@ msgstr "Tonemapping"
 
 msgid "New"
 msgstr "Neu"
+
+msgid "Load"
+msgstr "Öffnen"
 
 msgid "Recently opened"
 msgstr "Zuletzt geöffnet"
