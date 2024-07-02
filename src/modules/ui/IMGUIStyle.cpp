@@ -51,7 +51,7 @@ void StyleColorsCorporateGrey() {
 	colors[ImGuiCol_TabHovered] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
 	colors[ImGuiCol_Tab] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 	colors[ImGuiCol_TabSelected] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-	colors[ImGuiCol_TabSelectedOverline]    = colors[ImGuiCol_HeaderActive];
+	colors[ImGuiCol_TabSelectedOverline] = colors[ImGuiCol_HeaderActive];
 	colors[ImGuiCol_TabDimmed] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 	colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
 	colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);

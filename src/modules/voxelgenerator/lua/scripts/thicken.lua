@@ -1,5 +1,6 @@
 --
 -- thickens existing voxels
+-- The region must be big enough to hold the thickened voxels
 --
 
 local vol = require "modules.volume"
