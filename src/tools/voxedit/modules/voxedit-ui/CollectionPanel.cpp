@@ -115,23 +115,30 @@ int CollectionPanel::update() {
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-										   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+										   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed;
 			auto iter = voxelFilesMap.find(source.name);
 			if (iter != voxelFilesMap.end()) {
+				const voxelcollection::VoxelCollection &collection = iter->second;
 				if (isFilterActive() && _collectionMgr->resolved(source)) {
 					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+				} else if (!collection.sorted) {
+					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
 				}
-				const voxelcollection::VoxelCollection &collection = iter->second;
 				const int n = (int)collection.files.size();
-				const core::String &label = core::string::format("%s (%i)", source.name.c_str(), n);
-				ImGui::BeginDisabled(!collection.sorted);
+				const core::String &label = core::string::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
 				if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
-					const voxelcollection::VoxelFiles &voxelFiles = collection.files;
-					cnt += buildVoxelTree(voxelFiles);
+					if (!collection.sorted) {
+						ImGui::TextUnformatted(_("Loading..."));
+					} else {
+						const voxelcollection::VoxelFiles &voxelFiles = collection.files;
+						cnt += buildVoxelTree(voxelFiles);
+					}
 					ImGui::TreePop();
 				}
-				ImGui::EndDisabled();
 			} else {
+				if (!_collectionMgr->resolved(source)) {
+					treeFlags |= ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Bullet;
+				}
 				if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
 					// if resolved already but no files are available, we are still loading...
 					if (_collectionMgr->resolved(source)) {
@@ -140,6 +147,8 @@ int CollectionPanel::update() {
 						_collectionMgr->resolve(source);
 					}
 					ImGui::TreePop();
+				} else {
+					ImGui::TooltipTextUnformatted(_("Double click to load"));
 				}
 			}
 		}
