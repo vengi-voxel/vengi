@@ -1,5 +1,12 @@
 local module = {}
 
+--
+-- visit all voxels of a volume in the given region
+-- and call the visitor function for each voxel if the
+-- condition function returns true
+--
+-- the order of visit is first y axis, then x axis, then z axis
+--
 function module.conditionYXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
