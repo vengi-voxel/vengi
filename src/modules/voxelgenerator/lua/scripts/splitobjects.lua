@@ -22,7 +22,7 @@ local function connectedVisitor(volume, x, y, z)
 	volume:setVoxel(x, y, z, -1)
 end
 
-function main(node, region, color)
+function main(node, region, _)
 	palette = node:palette()
 	vol.visitYXZ(node:volume(), region, function (loopVolume, x, y, z)
 		if loopVolume:voxel(x, y, z) ~= -1 then

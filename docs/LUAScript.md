@@ -638,6 +638,7 @@ function main(node, region, color, emptycnt, octaves, lacunarity, gain, threshol
 	end
 
 	local condition = function (volume, x, y, z)
+		-- add your checks here
 		return true
 	end
 	vol.conditionYXZ(node:volume(), region, visitor, condition)
