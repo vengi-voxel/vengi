@@ -615,3 +615,31 @@ Thickens the voxel - take 1 voxel and convert to 8 voxels (creates a new node fo
 ### others
 
 There are other scripts available [in the repository](https://github.com/vengi-voxel/vengi/blob/master/src/modules/voxelgenerator/lua/scripts/).
+
+## Available modules
+
+### volume.lua
+
+This module is here to ease the process of visiting all the voxels in a volume
+
+> Keep in mind the `-1` is an empty voxel
+
+```lua
+local vol = require "modules.volume"
+
+function main(node, region, color, emptycnt, octaves, lacunarity, gain, threshold)
+	local visitor = function (volume, x, y, z)
+		local color = volume:voxel(x, y, z)
+		if color == -1 then
+			-- empty voxel
+		else
+			-- solid voxel
+		end
+	end
+
+	local condition = function (volume, x, y, z)
+		return true
+	end
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
+end
+```
