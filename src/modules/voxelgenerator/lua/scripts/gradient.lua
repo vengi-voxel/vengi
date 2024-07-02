@@ -8,7 +8,7 @@ function arguments()
 	}
 end
 
-function main(node, region, color, minheight)
+function main(node, region, _, minheight)
 	local center = region:center()
 	local width = region:width()
 	local height = region:height()

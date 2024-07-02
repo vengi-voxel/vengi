@@ -13,7 +13,6 @@ function arguments()
 end
 
 function main(node, region, color, amount, thickencolor)
-	local volume = node:volume()
 	local newName = node:name() .. "_thickened"
 	local newLayer = g_scenegraph.new(newName, region)
 	local newVolume = newLayer:volume()
@@ -42,5 +41,5 @@ function main(node, region, color, amount, thickencolor)
 		end
 		return false
 	end
-	vol.conditionYXZ(volume, region, visitor, condition)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 end

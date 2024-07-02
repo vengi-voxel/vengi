@@ -12,7 +12,6 @@ function arguments()
 end
 
 function main(node, region, color, density, colors)
-	local volume = node:volume()
 	local cnt = 0
 
 	local newindices = node:palette():similar(color, colors)
@@ -38,5 +37,5 @@ function main(node, region, color, density, colors)
 		end
 		return false
 	end
-	vol.conditionYXZ(volume, region, visitor, condition)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 end

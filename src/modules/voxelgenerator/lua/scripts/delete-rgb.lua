@@ -13,7 +13,6 @@ function arguments()
 end
 
 function main(node, region, color, r, g, b)
-	local volume = node:volume()
 	local newcolor = node:palette():match(r, g, b)
 
 	local visitor = function (volume, x, y, z)
@@ -27,5 +26,5 @@ function main(node, region, color, r, g, b)
 		end
 		return false
 	end
-	vol.conditionYXZ(volume, region, visitor, condition)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 end

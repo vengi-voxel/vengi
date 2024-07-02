@@ -5,8 +5,6 @@
 local vol = require "modules.volume"
 
 function main(node, region, color)
-	local volume = node:volume()
-
 	local newLayer = g_scenegraph.new('split', region)
 	local newVolume = newLayer:volume()
 	newLayer:setPalette(node:palette())
@@ -23,6 +21,6 @@ function main(node, region, color)
 		end
 		return false
 	end
-	vol.conditionYXZ(volume, region, visitor, condition)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 	newVolume:crop()
 end

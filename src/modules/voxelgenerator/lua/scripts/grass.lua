@@ -18,7 +18,6 @@ function arguments()
 end
 
 function main(node, region, color, grasscolor, height, density, similarcolors, upwards)
-	local volume = node:volume()
 	if grasscolor == -1 then
 		grasscolor = node:palette():match(0, 255, 0)
 	end
@@ -52,5 +51,5 @@ function main(node, region, color, grasscolor, height, density, similarcolors, u
 		end
 		return false
 	end
-	vol.conditionYXZDown(volume, region, visitor, condition)
+	vol.conditionYXZDown(node:volume(), region, visitor, condition)
 end

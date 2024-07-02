@@ -11,7 +11,6 @@ function arguments()
 end
 
 function main(node, region, color, newcolor)
-	local volume = node:volume()
 	local visitor = function (volume, x, y, z)
 		volume:setVoxel(x, y, z, newcolor)
 	end
@@ -23,5 +22,5 @@ function main(node, region, color, newcolor)
 		end
 		return false
 	end
-	vol.conditionYXZ(volume, region, visitor, condition)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 end
