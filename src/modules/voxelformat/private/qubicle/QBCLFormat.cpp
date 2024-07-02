@@ -36,11 +36,10 @@ const int NODE_TYPE_COMPOUND = 2;
 
 class ScopedQBCLHeader {
 private:
-	io::SeekableWriteStream &_stream;
 	bool _success = true;
 
 public:
-	ScopedQBCLHeader(io::SeekableWriteStream &stream, uint32_t nodeType) : _stream(stream) {
+	ScopedQBCLHeader(io::SeekableWriteStream &stream, uint32_t nodeType) {
 		Log::debug("Write node type %u", nodeType);
 		if (!stream.writeUInt32(nodeType)) {
 			Log::error("Failed to write the node type %u", nodeType);
@@ -48,7 +47,7 @@ public:
 		}
 	}
 
-	ScopedQBCLHeader(io::SeekableWriteStream &stream, scenegraph::SceneGraphNodeType type) : _stream(stream) {
+	ScopedQBCLHeader(io::SeekableWriteStream &stream, scenegraph::SceneGraphNodeType type) {
 		uint32_t nodeType = 0;
 		switch (type) {
 		case scenegraph::SceneGraphNodeType::Group:

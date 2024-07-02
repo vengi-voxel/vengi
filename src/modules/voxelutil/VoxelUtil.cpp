@@ -377,7 +377,7 @@ static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &regio
 /**
  * @brief Walks a plane in a voxel volume based on the given position and face direction.
  *
- * @param in The voxel volume to walk the plane in.
+ * @param volume The voxel volume to walk the plane in.
  * @param position The position in the voxel volume to start the walk from.
  * @param face The direction of the face to walk the plane in.
  * @param checkOffset The offset for checking voxel positions. This offset it applied to the check callback in the
