@@ -115,10 +115,10 @@ int CollectionPanel::update() {
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_SpanAllColumns |
-										   ImGuiTreeNodeFlags_SpanAvailWidth;
+										   ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 			auto iter = voxelFilesMap.find(source.name);
 			if (iter != voxelFilesMap.end()) {
-				if (isFilterActive()) {
+				if (isFilterActive() && _collectionMgr->resolved(source)) {
 					treeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
 				}
 				const voxelcollection::VoxelCollection &collection = iter->second;
