@@ -141,7 +141,7 @@ private:
 	PaletteColorArray _colors {};
 	MaterialArray _materials {};
 	int _colorCount = 0;
-	PaletteIndicesArray _indices;
+	PaletteIndicesArray _uiIndices;
 
 	int findInsignificant(int skipSlotIndex) const;
 
@@ -152,13 +152,13 @@ public:
 	/**
 	 * In case the palette indices are changed, this gives you access to the real texture index
 	 */
-	uint8_t index(uint8_t idx) const;
-	const PaletteIndicesArray &indices() const;
-	PaletteIndicesArray &indices();
+	uint8_t uiIndex(uint8_t idx) const;
+	const PaletteIndicesArray &uiIndices() const;
+	PaletteIndicesArray &uiIndices();
 	/**
 	 * @note Only for ui purposes - changes the color slots
 	 */
-	void exchangeSlots(uint8_t idx1, uint8_t idx2);
+	void exchangeUIIndices(uint8_t idx1, uint8_t idx2);
 	void exchange(uint8_t idx1, uint8_t idx2);
 	void copy(uint8_t from, uint8_t to);
 
@@ -262,7 +262,7 @@ public:
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
 	int getClosestMatch(core::RGBA rgba, int skip = -1) const;
-	uint8_t findReplacement(uint8_t index) const;
+	uint8_t findReplacement(uint8_t idx) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to match the color to another already existing color in the palette.
@@ -312,16 +312,16 @@ inline void Palette::markSaved() {
 	_needsSave = false;
 }
 
-inline const PaletteIndicesArray &Palette::indices() const {
-	return _indices;
+inline const PaletteIndicesArray &Palette::uiIndices() const {
+	return _uiIndices;
 }
 
-inline PaletteIndicesArray &Palette::indices(){
-	return _indices;
+inline PaletteIndicesArray &Palette::uiIndices(){
+	return _uiIndices;
 }
 
-inline uint8_t Palette::index(uint8_t idx) const {
-	return _indices[idx];
+inline uint8_t Palette::uiIndex(uint8_t idx) const {
+	return _uiIndices[idx];
 }
 
 inline core::RGBA Palette::color(uint8_t idx) const {

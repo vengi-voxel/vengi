@@ -153,11 +153,11 @@ void Palette::duplicateColor(uint8_t idx) {
 	}
 }
 
-void Palette::exchangeSlots(uint8_t idx1, uint8_t idx2) {
+void Palette::exchangeUIIndices(uint8_t idx1, uint8_t idx2) {
 	if (idx1 == idx2) {
 		return;
 	}
-	core::exchange(_indices[idx1], _indices[idx2]);
+	core::exchange(_uiIndices[idx1], _uiIndices[idx2]);
 	markDirty();
 	markSave();
 }
@@ -191,7 +191,7 @@ void Palette::copy(uint8_t from, uint8_t to) {
 bool Palette::removeColor(uint8_t idx) {
 	if (idx < _colorCount && _colorCount > 1) {
 		for (int i = idx; i < _colorCount - 1; ++i) {
-			_indices[i] = _indices[i + 1];
+			_uiIndices[i] = _uiIndices[i + 1];
 		}
 		_colors[idx] = core::RGBA(0, 0, 0, 0);
 		--_colorCount;
@@ -399,12 +399,12 @@ int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
 	return minIndex;
 }
 
-uint8_t Palette::findReplacement(uint8_t index) const {
+uint8_t Palette::findReplacement(uint8_t idx) const {
 	if (size() == 0) {
-		return index;
+		return idx;
 	}
-	const core::RGBA rgba = color(index);
-	const int skip = index;
+	const core::RGBA rgba = color(idx);
+	const int skip = idx;
 	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
 			continue;
@@ -420,11 +420,11 @@ uint8_t Palette::findReplacement(uint8_t index) const {
 				return i;
 			}
 		}
-		return index;
+		return idx;
 	}
 
 	float minDistance = FLT_MAX;
-	int minIndex = index;
+	int minIndex = idx;
 
 	float hue;
 	float saturation;
@@ -461,13 +461,13 @@ void Palette::changeIntensity(float scale) {
 
 void Palette::sortOriginal() {
 	for (int i = 0; i < PaletteMaxColors; ++i) {
-		_indices[i] = i;
+		_uiIndices[i] = i;
 	}
 	markDirty();
 }
 
 void Palette::sortHue() {
-	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+	core::sort(_uiIndices, &_uiIndices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
@@ -486,7 +486,7 @@ void Palette::sortHue() {
 }
 
 void Palette::sortSaturation() {
-	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+	core::sort(_uiIndices, &_uiIndices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
@@ -505,7 +505,7 @@ void Palette::sortSaturation() {
 }
 
 void Palette::sortBrightness() {
-	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+	core::sort(_uiIndices, &_uiIndices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
 		float lhhue = 0.0f;
 		float lhsaturation = 0.0f;
 		float lhbrightness = 0.0f;
@@ -524,7 +524,7 @@ void Palette::sortBrightness() {
 }
 
 void Palette::sortCIELab() {
-	core::sort(_indices, &_indices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
+	core::sort(_uiIndices, &_uiIndices[_colorCount], [this] (uint8_t lhs, uint8_t rhs) {
 		float lhL = 0.0f;
 		float lha = 0.0f;
 		float lhb = 0.0f;
