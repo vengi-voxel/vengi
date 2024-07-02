@@ -1,6 +1,9 @@
 --
 -- fill hollows in a model
 --
+-- This script iterates over the voxel volume and identifies hollows that are totally enclosed by existing voxels.
+-- It then fills these hollow spaces with a specified fillvoxel.
+--
 
 function arguments()
 	return {
