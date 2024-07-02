@@ -201,11 +201,11 @@ void PalettePanel::addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, s
 				_sceneMgr->mementoHandler().markPaletteChange(node);
 			}
 		}
-	} else if (palIdx == currentSceneColor()) {
+	} else if (uiIdx == currentSceneColor()) {
 		if (palette.color(palIdx).a > 0) {
 			drawList->AddRect(v1, v2, _yellowColor, 0.0f, 0, 2.0f);
 		}
-	} else if (palIdx == currentPaletteIndex()) {
+	} else if (uiIdx == currentPaletteIndex()) {
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 	globalCursorPos.x += colorButtonSize.x;
