@@ -705,7 +705,6 @@ static int s_inflate(const void* in, int in_bytes, void* out, int out_bytes, voi
 	s->out_end = s->out + out_bytes;
 	s->begin = (char*)out;
 
-	int count = 0;
 	uint32_t bfinal;
 	do
 	{
@@ -719,8 +718,6 @@ static int s_inflate(const void* in, int in_bytes, void* out, int out_bytes, voi
 		case 2: s_dynamic(s); CUTE_ASEPRITE_CALL(s_block(s)); break;
 		case 3: CUTE_ASEPRITE_CHECK(0, "Detected unknown block type within input stream.");
 		}
-
-		++count;
 	}
 	while (!bfinal);
 
