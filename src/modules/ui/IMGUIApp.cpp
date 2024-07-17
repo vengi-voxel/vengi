@@ -613,6 +613,7 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 	if (_languageVar->isDirty()) {
+		// IMPORTANT: ###xxx suffixes must be same in ALL languages to allow for automation.
 		localizeRegisterEntry(ImGuiLocKey_TableSizeOne, _("Size column to fit###SizeOne"));
 		localizeRegisterEntry(ImGuiLocKey_TableSizeAllFit, _("Size all columns to fit###SizeAll"));
 		localizeRegisterEntry(ImGuiLocKey_TableSizeAllDefault, _("Size all columns to default###SizeAll"));
