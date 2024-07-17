@@ -435,8 +435,13 @@ static bool RenderMultiSelectFilter(ImGuiPerfTool* perf, const char* filter_hint
         ImGui::SetTooltip("Hold CTRL to invert other items.\nHold SHIFT to close popup instantly.");
 
     // Keep popup open for multiple actions if SHIFT is pressed.
+#if IMGUI_VERSION_NUM >= 19094
+    if (!io.KeyShift)
+        ImGui::PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
+#else
     if (!io.KeyShift)
         ImGui::PushItemFlag(ImGuiItemFlags_SelectableDontClosePopup, true);
+#endif
 
     if (ImGui::MenuItem("Show All"))
     {

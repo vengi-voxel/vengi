@@ -514,9 +514,9 @@ struct IMGUI_API ImGuiTestContext
     ImGuiID     GetIDByPtr(void* p);                                    // Prefer using "$$(ptr)0xFFFFFFFF"
     ImGuiID     GetIDByPtr(void* p, ImGuiTestRef seed_ref);
     // Obsoleted 2022/09/26
-    void        KeyModDown(ImGuiModFlags mods)  { KeyDown(mods); }
-    void        KeyModUp(ImGuiModFlags mods)    { KeyUp(mods); }
-    void        KeyModPress(ImGuiModFlags mods) { KeyPress(mods); }
+    //void      KeyModDown(ImGuiModFlags mods)  { KeyDown(mods); }
+    //void      KeyModUp(ImGuiModFlags mods)    { KeyUp(mods); }
+    //void      KeyModPress(ImGuiModFlags mods) { KeyPress(mods); }
 #endif
 
     // [Internal]
