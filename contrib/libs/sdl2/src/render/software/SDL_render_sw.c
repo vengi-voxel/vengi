@@ -987,20 +987,30 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
         SDL_DestroyWindowSurface(window);
     }
     SDL_free(data);
+    SDL_free(renderer);
 }
 
-int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface)
+SDL_Renderer *SW_CreateRendererForSurface(SDL_Surface *surface)
 {
+    SDL_Renderer *renderer;
     SW_RenderData *data;
 
     if (!surface) {
-        return SDL_InvalidParamError("surface");
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
     }
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
         SW_DestroyRenderer(renderer);
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        return NULL;
     }
     data->surface = surface;
     data->window = surface;
@@ -1029,10 +1039,10 @@ int SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface)
     renderer->info = SW_RenderDriver.info;
     renderer->driverdata = data;
 
-    return 0;
+    return renderer;
 }
 
-static int SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+static SDL_Renderer *SW_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
     const char *hint;
     SDL_Surface *surface;
@@ -1058,9 +1068,9 @@ static int SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 
     }
 
     if (!surface) {
-        return -1;
+        return NULL;
     }
-    return SW_CreateRendererForSurface(renderer, surface);
+    return SW_CreateRendererForSurface(surface);
 }
 
 SDL_RenderDriver SW_RenderDriver = {

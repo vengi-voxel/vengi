@@ -304,6 +304,7 @@ static void D3D11_DestroyRenderer(SDL_Renderer *renderer)
     if (data) {
         SDL_free(data);
     }
+    SDL_free(renderer);
 }
 
 static D3D11_BLEND GetBlendFunc(SDL_BlendFactor factor)
@@ -812,12 +813,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
 #if defined(__WIN32__) || defined(__WINGDK__)
         SDL_SysWMinfo windowinfo;
         SDL_VERSION(&windowinfo.version);
-        if (!SDL_GetWindowWMInfo(renderer->window, &windowinfo) ||
-            windowinfo.subsystem != SDL_SYSWM_WINDOWS) {
-            SDL_SetError("Couldn't get window handle");
-            result = E_FAIL;
-            goto done;
-        }
+        SDL_GetWindowWMInfo(renderer->window, &windowinfo);
 
         result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
                                                       (IUnknown *)data->d3dDevice,
@@ -2312,13 +2308,22 @@ static int D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 }
 #endif
 
-int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D11_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
+    SDL_Renderer *renderer;
     D3D11_RenderData *data;
+
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     data = (D3D11_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        SDL_free(renderer);
+        SDL_OutOfMemory();
+        return NULL;
     }
 
     data->identity = MatrixIdentity();
@@ -2380,14 +2385,14 @@ int D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flag
     /* Initialize Direct3D resources */
     if (FAILED(D3D11_CreateDeviceResources(renderer))) {
         D3D11_DestroyRenderer(renderer);
-        return -1;
+        return NULL;
     }
     if (FAILED(D3D11_CreateWindowSizeDependentResources(renderer))) {
         D3D11_DestroyRenderer(renderer);
-        return -1;
+        return NULL;
     }
 
-    return 0;
+    return renderer;
 }
 
 SDL_RenderDriver D3D11_RenderDriver = {

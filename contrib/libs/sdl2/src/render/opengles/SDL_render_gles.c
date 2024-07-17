@@ -997,6 +997,7 @@ static void GLES_DestroyRenderer(SDL_Renderer *renderer)
         }
         SDL_free(data);
     }
+    SDL_free(renderer);
 }
 
 static int GLES_BindTexture(SDL_Renderer *renderer, SDL_Texture *texture, float *texw, float *texh)
@@ -1053,9 +1054,10 @@ static int GLES_SetVSync(SDL_Renderer *renderer, const int vsync)
     return retval;
 }
 
-static int GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+static SDL_Renderer *GLES_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
-    GLES_RenderData *data = NULL;
+    SDL_Renderer *renderer;
+    GLES_RenderData *data;
     GLint value;
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
@@ -1077,6 +1079,12 @@ static int GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint3
         if (SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL) < 0) {
             goto error;
         }
+    }
+
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        goto error;
     }
 
     data = (GLES_RenderData *)SDL_calloc(1, sizeof(*data));
@@ -1184,7 +1192,7 @@ static int GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint3
     data->drawstate.color = 0xFFFFFFFF;
     data->drawstate.clear_color = 0xFFFFFFFF;
 
-    return 0;
+    return renderer;
 
 error:
     if (changed_window) {
@@ -1194,7 +1202,7 @@ error:
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
         SDL_RecreateWindow(window, window_flags);
     }
-    return -1;
+    return NULL;
 }
 
 SDL_RenderDriver GLES_RenderDriver = {

@@ -118,13 +118,9 @@ static int StartBeLooper()
         } while ((!be_app) || be_app->IsLaunching());
     }
 
-     /* If started from the GUI, change working directory to that of executable.
-      * This matches behavior on other platforms and may be needed by some SDL software.
-      * Don't do it when started from terminal (TERM environment variable is set), because in that
-      * case, the current directory may be important, and after this there will be no way to know
-      * what it was. */
+     /* Change working directory to that of executable */
     app_info info;
-    if (NULL == getenv("TERM") && B_OK == be_app->GetAppInfo(&info)) {
+    if (B_OK == be_app->GetAppInfo(&info)) {
         entry_ref ref = info.ref;
         BEntry entry;
         if (B_OK == entry.SetTo(&ref)) {

@@ -1406,6 +1406,7 @@ static void GLES2_DestroyRenderer(SDL_Renderer *renderer)
 
         SDL_free(data);
     }
+    SDL_free(renderer);
 }
 
 static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -2029,9 +2030,10 @@ static int GLES2_UnbindTexture(SDL_Renderer *renderer, SDL_Texture *texture)
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
-static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+static SDL_Renderer *GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
-    GLES2_RenderData *data = NULL;
+    SDL_Renderer *renderer;
+    GLES2_RenderData *data;
     Uint32 window_flags = 0; /* -Wconditional-uninitialized */
     GLint window_framebuffer;
     GLint value;
@@ -2064,8 +2066,16 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint
         }
     }
 
+    /* Create the renderer struct */
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(SDL_Renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        goto error;
+    }
+
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
     if (!data) {
+        SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;
     }
@@ -2077,20 +2087,28 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint
     /* Create an OpenGL ES 2.0 context */
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
         SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
     if (GLES2_LoadFunctions(data) < 0) {
         SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
     if (GLES2_CacheShaders(data) < 0) {
         SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
@@ -2201,10 +2219,9 @@ static int GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint
 
     GL_CheckError("", renderer);
 
-    return 0;
+    return renderer;
 
 error:
-    SDL_free(data);
     if (changed_window) {
         /* Uh oh, better try to put it back... */
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
@@ -2212,7 +2229,7 @@ error:
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
         SDL_RecreateWindow(window, window_flags);
     }
-    return -1;
+    return NULL;
 }
 
 SDL_RenderDriver GLES2_RenderDriver = {

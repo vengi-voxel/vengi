@@ -556,6 +556,7 @@ static void D3D12_DestroyRenderer(SDL_Renderer *renderer)
     if (data) {
         SDL_free(data);
     }
+    SDL_free(renderer);
 }
 
 static int D3D12_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
@@ -3013,13 +3014,22 @@ static int D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+SDL_Renderer *D3D12_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
+    SDL_Renderer *renderer;
     D3D12_RenderData *data;
+
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     data = (D3D12_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        SDL_free(renderer);
+        SDL_OutOfMemory();
+        return NULL;
     }
 
     data->identity = MatrixIdentity();
@@ -3064,14 +3074,14 @@ int D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flag
     /* Initialize Direct3D resources */
     if (FAILED(D3D12_CreateDeviceResources(renderer))) {
         D3D12_DestroyRenderer(renderer);
-        return -1;
+        return NULL;
     }
     if (FAILED(D3D12_CreateWindowSizeDependentResources(renderer))) {
         D3D12_DestroyRenderer(renderer);
-        return -1;
+        return NULL;
     }
 
-    return 0;
+    return renderer;
 }
 
 SDL_RenderDriver D3D12_RenderDriver = {

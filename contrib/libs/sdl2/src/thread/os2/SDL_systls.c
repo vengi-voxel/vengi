@@ -34,22 +34,45 @@
 
 SDL_TLSData **ppSDLTLSData = NULL;
 
-void SDL_SYS_InitTLSData(void)
+static ULONG  cTLSAlloc = 0;
+
+/* SDL_OS2TLSAlloc() called from SDL_InitSubSystem() */
+void SDL_OS2TLSAlloc(void)
 {
     ULONG ulRC;
 
-    if (!ppSDLTLSData) {
-        /* Allocate the thread local memory (1 DWORD) */
+    if (cTLSAlloc == 0 || !ppSDLTLSData) {
+        /* First call - allocate the thread local memory (1 DWORD) */
         ulRC = DosAllocThreadLocalMemory(1, (PULONG *)&ppSDLTLSData);
         if (ulRC != NO_ERROR) {
             debug_os2("DosAllocThreadLocalMemory() failed, rc = %u", ulRC);
+        }
+    }
+    cTLSAlloc++;
+}
+
+/* SDL_OS2TLSFree() called from SDL_QuitSubSystem() */
+void SDL_OS2TLSFree(void)
+{
+    ULONG ulRC;
+
+    if (cTLSAlloc != 0)
+        cTLSAlloc--;
+
+    if (cTLSAlloc == 0 && ppSDLTLSData) {
+        /* Last call - free the thread local memory */
+        ulRC = DosFreeThreadLocalMemory((PULONG)ppSDLTLSData);
+        if (ulRC != NO_ERROR) {
+            debug_os2("DosFreeThreadLocalMemory() failed, rc = %u", ulRC);
+        } else {
+            ppSDLTLSData = NULL;
         }
     }
 }
 
 SDL_TLSData *SDL_SYS_GetTLSData(void)
 {
-    return ppSDLTLSData ? *ppSDLTLSData : NULL;
+    return (!ppSDLTLSData)? NULL : *ppSDLTLSData;
 }
 
 int SDL_SYS_SetTLSData(SDL_TLSData *data)
@@ -59,21 +82,6 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
 
     *ppSDLTLSData = data;
     return 0;
-}
-
-void SDL_SYS_QuitTLSData(void)
-{
-    ULONG ulRC;
-
-    if (ppSDLTLSData) {
-        /* Free the thread local memory */
-        ulRC = DosFreeThreadLocalMemory((PULONG)ppSDLTLSData);
-        if (ulRC != NO_ERROR) {
-            debug_os2("DosFreeThreadLocalMemory() failed, rc = %u", ulRC);
-        } else {
-            ppSDLTLSData = NULL;
-        }
-    }
 }
 
 #endif /* SDL_THREAD_OS2 */

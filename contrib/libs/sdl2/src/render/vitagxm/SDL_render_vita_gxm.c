@@ -44,7 +44,7 @@
 #include <psp2/sysmodule.h>
 #endif
 
-static int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags);
+static SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags);
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event);
 
@@ -211,13 +211,22 @@ static int VITA_GXM_SetVSync(SDL_Renderer *renderer, const int vsync)
     return 0;
 }
 
-int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 flags)
+SDL_Renderer *VITA_GXM_CreateRenderer(SDL_Window *window, Uint32 flags)
 {
+    SDL_Renderer *renderer;
     VITA_GXM_RenderData *data;
+
+    renderer = (SDL_Renderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
 
     data = (VITA_GXM_RenderData *)SDL_calloc(1, sizeof(VITA_GXM_RenderData));
     if (!data) {
-        return SDL_OutOfMemory();
+        SDL_free(renderer);
+        SDL_OutOfMemory();
+        return NULL;
     }
 
     renderer->WindowEvent = VITA_GXM_WindowEvent;
@@ -264,10 +273,11 @@ int VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32 f
 
     if (gxm_init(renderer) != 0) {
         SDL_free(data);
-        return -1;
+        SDL_free(renderer);
+        return NULL;
     }
 
-    return 0;
+    return renderer;
 }
 
 static void VITA_GXM_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -1212,6 +1222,7 @@ static void VITA_GXM_DestroyRenderer(SDL_Renderer *renderer)
         data->drawing = SDL_FALSE;
         SDL_free(data);
     }
+    SDL_free(renderer);
 }
 
 #endif /* SDL_VIDEO_RENDER_VITA_GXM */
