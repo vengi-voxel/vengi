@@ -8,11 +8,15 @@ namespace io {
 
 class EndianStreamReadWrapper {
 private:
-	SeekableReadStream &_stream;
+	ReadStream &_stream;
 	const bool _bigEndian;
 
 public:
-	EndianStreamReadWrapper(SeekableReadStream &stream, bool bigEndian) : _stream(stream), _bigEndian(bigEndian) {
+	EndianStreamReadWrapper(ReadStream &stream, bool bigEndian) : _stream(stream), _bigEndian(bigEndian) {
+	}
+
+	int64_t skipDelta(int64_t delta) {
+		return _stream.skipDelta(delta);
 	}
 
 	bool readBool() {

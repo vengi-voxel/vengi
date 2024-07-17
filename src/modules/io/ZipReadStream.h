@@ -20,6 +20,7 @@ private:
 	const int _size;
 	int _remaining;
 	bool _eos = false;
+	bool _err = false;
 
 public:
 	/**
@@ -40,6 +41,10 @@ public:
 	 * @return @c true if the end of the compressed stream was found
 	 */
 	bool eos() const override;
+
+	bool err() const {
+		return _err;
+	}
 
 	/**
 	 * @brief Advances the position in the stream without reading the bytes.

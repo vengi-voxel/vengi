@@ -26,15 +26,23 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	((z_stream*)_stream)->zalloc = Z_NULL;
 	((z_stream*)_stream)->zfree = Z_NULL;
 	uint8_t gzipHeader[2];
-	readStream.readUInt8(gzipHeader[0]);
-	readStream.readUInt8(gzipHeader[1]);
+	if (readStream.readUInt8(gzipHeader[0]) == -1) {
+		_err = true;
+	}
+	if (readStream.readUInt8(gzipHeader[1]) == -1) {
+		_err = true;
+	}
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
 		readStream.skip(8); // gzip header is 10 bytes
-		inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS);
+		if (inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS) != MZ_OK) {
+			Log::error("Failed to initialize gzip stream");
+			_err = true;
+		}
 	} else {
 		readStream.seek(-2, SEEK_CUR);
 		if (inflateInit(((z_stream*)_stream)) != Z_OK) {
 			Log::error("Failed to initialize zip stream");
+			_err = true;
 		}
 	}
 }
