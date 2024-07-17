@@ -306,6 +306,39 @@ msgstr "Команди"
 msgid "Textures"
 msgstr "Текстури"
 
+msgid "Size column to fit###SizeOne"
+msgstr ""
+
+msgid "Size all columns to fit###SizeAll"
+msgstr ""
+
+msgid "Size all columns to default###SizeAll"
+msgstr ""
+
+msgid "Reset order###ResetOrder"
+msgstr ""
+
+msgid "(Main menu bar)"
+msgstr ""
+
+msgid "(Popup)"
+msgstr ""
+
+msgid "(Untitled)"
+msgstr ""
+
+msgid "Copy Link###CopyLink"
+msgstr ""
+
+msgid "Hide tab bar###HideTabBar"
+msgstr ""
+
+msgid "Hold SHIFT to enable Docking window."
+msgstr ""
+
+msgid "Click and drag to move or undock whole node."
+msgstr ""
+
 msgid "Language"
 msgstr "Мова"
 
@@ -1012,7 +1045,7 @@ msgstr ""
 msgid "Double click to create thumbnail"
 msgstr ""
 
-msgid "No match found"
+msgid "No match for filter found"
 msgstr ""
 
 msgid "Empty palette index"
