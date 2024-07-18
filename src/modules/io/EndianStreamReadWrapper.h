@@ -106,6 +106,31 @@ public:
 		}
 		return _stream.readDouble(val);
 	}
+	bool readString(int length, char *strbuff, bool terminated = false) {
+		return _stream.readString(length, strbuff, terminated);
+	}
+	bool readString(int length, core::String &strbuff, bool terminated = false) {
+		return _stream.readString(length, strbuff, terminated);
+	}
+	bool readLine(core::String &str) {
+		return _stream.readLine(str);
+	}
+	bool readPascalStringUInt8(core::String &str) {
+		return _stream.readPascalStringUInt8(str);
+	}
+	bool readPascalStringUInt16(core::String &str) {
+		if (_bigEndian) {
+			return _stream.readPascalStringUInt16BE(str);
+		}
+		return _stream.readPascalStringUInt16LE(str);
+	}
+
+	bool readPascalStringUInt32(core::String &str) {
+		if (_bigEndian) {
+			return _stream.readPascalStringUInt32BE(str);
+		}
+		return _stream.readPascalStringUInt32LE(str);
+	}
 };
 
 } // namespace io

@@ -20,6 +20,7 @@
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aseprite/AsepriteFormat.h"
+#include "voxelformat/private/mesh/BlendFormat.h"
 #include "voxelformat/private/rooms/ThingFormat.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
@@ -109,6 +110,14 @@ static const io::FormatDescription &aseprite() {
 								   {"aseprite", "ase"},
 								   {},
 								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	return f;
+}
+
+static const io::FormatDescription &blender() {
+	static io::FormatDescription f{"Blender",
+								   {"blend"},
+								   {},
+								   VOX_FORMAT_FLAG_MESH};
 	return f;
 }
 
@@ -345,6 +354,7 @@ const io::FormatDescription *voxelLoad() {
 	// have importers implemented
 	static const io::FormatDescription desc[] = {vengi(),
 													aseprite(),
+													blender(),
 												 qubicleBinary(),
 												 magicaVoxel(),
 												 qubicleBinaryTree(),
@@ -421,6 +431,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<QBTFormat>();
 		} else if (ext == buildKVX().mainExtension()) {
 			return core::make_shared<KVXFormat>();
+		} else if (ext == blender().mainExtension()) {
+			return core::make_shared<BlendFormat>();
 		} else if (ext == aceOfSpadesKV6().mainExtension()) {
 			return core::make_shared<KV6Format>();
 		} else if (ext == sproxelCSV().mainExtension()) {

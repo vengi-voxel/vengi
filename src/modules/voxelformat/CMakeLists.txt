@@ -28,6 +28,7 @@ set(SRCS
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
+	private/mesh/BlendFormat.h               private/mesh/BlendFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
@@ -77,6 +78,7 @@ set(TEST_SRCS
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
+	tests/BlendFormatTest.cpp
 	tests/ConvertTest.cpp
 	tests/FormatPaletteTest.cpp
 	tests/CSMFormatTest.cpp
@@ -137,6 +139,7 @@ set(TEST_FILES
 	tests/qubicle.qbcl
 	tests/testload.qef
 	tests/aceofspades.vxl
+	tests/blender-tests-data-cubes-hierarchy.blend
 	tests/chronovox-studio.csm
 	tests/cc.vxl
 	tests/cc.hva
