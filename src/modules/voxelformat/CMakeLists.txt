@@ -29,6 +29,7 @@ set(SRCS
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
 	private/mesh/BlendFormat.h               private/mesh/BlendFormat.cpp
+	private/mesh/BlendShared.h               private/mesh/BlendShared.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp

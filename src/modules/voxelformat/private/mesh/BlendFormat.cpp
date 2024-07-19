@@ -3,6 +3,7 @@
  */
 
 #include "BlendFormat.h"
+#include "BlendShared.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -14,18 +15,8 @@
 
 namespace voxelformat {
 
-struct DNAChunk {
-	uint32_t identifier;	   // File-block identifier
-	uint32_t length;		   // Total length of the data after the file-block-header
-	uint64_t oldMemoryAddress; // Memory address the structure was located when written to disk
-	uint32_t indexSDNA;		   // Index of the SDNA structure
-	uint32_t count;			   // Number of structure located in this file-block
-};
-
-struct Type {
-	int16_t size;
-	core::String name;
-};
+// prevent endless reading on malformed files
+static constexpr int MaxStringLength = 1000;
 
 static bool readChunk(DNAChunk &chunk, io::EndianStreamReadWrapper &stream, bool is64Bit) {
 	if (stream.readUInt32(chunk.identifier) != 0) {
@@ -85,7 +76,7 @@ static bool readChunkDNA1Names(core::DynamicArray<core::String> &names, io::Endi
 	uint32_t bytes = 0;
 	for (uint32_t n = 0; n < namesCount; ++n) {
 		core::String name;
-		if (!stream.readString(1000, name, true)) {
+		if (!stream.readString(MaxStringLength, name, true)) {
 			Log::error("Could not read name from DNA1");
 			return false;
 		}
@@ -93,12 +84,8 @@ static bool readChunkDNA1Names(core::DynamicArray<core::String> &names, io::Endi
 		bytes += name.size() + 1;
 	}
 	// alignment
-	Log::error("read %i bytes", (int)bytes);
-	if (bytes & 0x3) {
-		int64_t skip = 4 - (bytes & 0x3);
-		Log::error("Skip %i bytes", (int)skip);
-		stream.skipDelta(skip);
-	}
+	Log::debug("read %i bytes from %i names", (int)bytes, (int)namesCount);
+	stream.skipDelta(bytes & 0x3);
 
 	return true;
 }
@@ -123,7 +110,7 @@ static bool readChunkDNA1Types(core::DynamicArray<Type> &types, io::EndianStream
 	uint32_t bytes = 0;
 	for (uint32_t n = 0; n < typesCount; ++n) {
 		Type type;
-		if (!stream.readString(1000, type.name, true)) {
+		if (!stream.readString(MaxStringLength, type.name, true)) {
 			Log::error("Could not read type name from DNA1");
 			return false;
 		}
@@ -131,9 +118,7 @@ static bool readChunkDNA1Types(core::DynamicArray<Type> &types, io::EndianStream
 		bytes += type.name.size() + 1;
 	}
 	// alignment
-	if (bytes & 0x3) {
-		stream.skipDelta(4 - (bytes & 0x3));
-	}
+	stream.skipDelta(bytes & 0x3);
 
 	uint32_t typeLenChunkId;
 	if (stream.readUInt32(typeLenChunkId) != 0) {
@@ -154,13 +139,73 @@ static bool readChunkDNA1Types(core::DynamicArray<Type> &types, io::EndianStream
 		bytes += 2;
 	}
 	// alignment
-	if (bytes & 0x3) {
-		stream.skipDelta(4 - (bytes & 0x3));
+	stream.skipDelta(bytes & 0x3);
+	return true;
+}
+
+static bool readChunkDNA1Structures(core::DynamicArray<Structure> &structures, const core::DynamicArray<Type> &types,
+									const core::DynamicArray<core::String> &names, io::EndianStreamReadWrapper &stream,
+									bool is64Bit) {
+	uint32_t structureChunkId;
+	if (stream.readUInt32(structureChunkId) != 0) {
+		Log::error("Could not read structure chunk id from DNA1");
+		return false;
+	}
+	if (structureChunkId != FourCC('S', 'T', 'R', 'C')) {
+		Log::error("Invalid chunk id in DNA1 - expected STRC");
+		return false;
+	}
+	uint32_t structureCount;
+	if (stream.readUInt32(structureCount) != 0) {
+		Log::error("Could not read structure chunk length from DNA1");
+		return false;
+	}
+
+	Log::debug("Structure count %i", (int)structureCount);
+	structures.reserve(structureCount);
+	for (uint32_t n = 0; n < structureCount; ++n) {
+		Structure structure;
+		if (stream.readUInt16(structure.type) != 0) {
+			Log::error("Could not read structure type from DNA1");
+			return false;
+		}
+		structure.name = types[structure.type].name;
+		uint16_t fieldCount;
+		if (stream.readUInt16(fieldCount) != 0) {
+			Log::error("Could not read structure field count from DNA1");
+			return false;
+		}
+		Log::debug("Field count %i", (int)fieldCount);
+		structure.fields.reserve(fieldCount);
+		for (uint16_t f = 0; f < fieldCount; ++f) {
+			Field field;
+			uint16_t typeIdx;
+			if (stream.readUInt16(typeIdx) != 0) {
+				Log::error("Could not read field type from DNA1");
+				return false;
+			}
+			uint16_t nameIdx;
+			if (stream.readUInt16(nameIdx) != 0) {
+				Log::error("Could not read field name from DNA1");
+				return false;
+			}
+			field.type = types[typeIdx].name;
+			field.name = names[nameIdx];
+			calcSize(field, types[typeIdx], is64Bit);
+			Log::debug("field name %s type %s size %i", field.name.c_str(), field.type.c_str(), (int)field.size);
+			structure.fields.push_back(field);
+		}
+		structures.push_back(structure);
 	}
 	return true;
 }
 
-static bool readChunkDNA1(DNAChunk &chunk, io::EndianStreamReadWrapper &stream) {
+static bool dna_Object(const Structure &structure) {
+	Log::debug("Object %s", structure.name.c_str());
+	return false; // TODO:
+}
+
+static bool readChunkDNA1(DNAChunk &chunk, io::EndianStreamReadWrapper &stream, bool is64Bit) {
 	uint32_t chunkId;
 	if (stream.readUInt32(chunkId) != 0) {
 		Log::error("Could not read chunk id from DNA1");
@@ -181,7 +226,32 @@ static bool readChunkDNA1(DNAChunk &chunk, io::EndianStreamReadWrapper &stream) 
 		return false;
 	}
 
-	return false;
+	core::DynamicArray<Structure> structures;
+	if (!readChunkDNA1Structures(structures, types, names, stream, is64Bit)) {
+		return false;
+	}
+
+	const struct Handler {
+		const char *name;
+		bool (*handler)(const Structure &structure);
+	} DNAHandlers[] {
+		{"Object", dna_Object}
+	};
+	for (const Structure &structure : structures) {
+		for (const Handler &handler : DNAHandlers) {
+			if (structure.name != handler.name) {
+				continue;
+			}
+			core_assert(handler.handler);
+			if (!handler.handler(structure)) {
+				Log::error("Failed to load structure '%s'", structure.name.c_str());
+				return false;
+			}
+			Log::debug("Successfully loaded structure '%s'", structure.name.c_str());
+		}
+	}
+
+	return true;
 }
 
 bool BlendFormat::loadBlend(const core::String &filename, const io::ArchivePtr &archive,
@@ -224,7 +294,7 @@ bool BlendFormat::loadBlend(const core::String &filename, const io::ArchivePtr &
 			break;
 		}
 		case FourCC('D', 'N', 'A', '1'): {
-			if (!readChunkDNA1(chunk, endianStream)) {
+			if (!readChunkDNA1(chunk, endianStream, is64Bit)) {
 				return false;
 			}
 			break;
