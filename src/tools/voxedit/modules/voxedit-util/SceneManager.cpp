@@ -162,10 +162,11 @@ bool SceneManager::importPalette(const core::String& file) {
 	return setActivePalette(palette);
 }
 
-bool SceneManager::importAsVolume(const core::String &file, int maxDepth, bool bothSides) {
+bool SceneManager::importAsVolume(const core::String &file, const core::String &dmFile, int maxDepth, bool bothSides) {
 	const image::ImagePtr& img = image::loadImage(file);
 	const palette::Palette &palette = activePalette();
-	voxel::RawVolume *v = voxelutil::importAsVolume(img, palette, maxDepth, bothSides);
+	const image::ImagePtr &depthMap = image::loadImage(dmFile);
+	voxel::RawVolume *v = voxelutil::importAsVolume(img, depthMap, palette, maxDepth, bothSides);
 	if (v == nullptr) {
 		return false;
 	}

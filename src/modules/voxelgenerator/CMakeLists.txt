@@ -12,6 +12,7 @@ set(LUA_SRCS
 	scripts/gradient.lua
 	scripts/grass.lua
 	scripts/grid.lua
+	scripts/imageasvolume.lua
 	scripts/maze.lua
 	scripts/move.lua
 	scripts/noise.lua
@@ -52,6 +53,8 @@ set(TEST_FILES
 	testvoxelgenerator/cylinder.qb
 	testvoxelgenerator/dome.qb
 	testvoxelgenerator/ellipse.qb
+	tests/test-heightmap-dm.png
+	tests/test-heightmap.png
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

@@ -32,6 +32,7 @@ enum class LUAParameterType {
 	Boolean,
 	ColorIndex,
 	Enum,
+	File,
 
 	Max
 };

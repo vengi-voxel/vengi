@@ -3,21 +3,22 @@
  */
 
 #include "ImageUtils.h"
-#include "core/StringUtil.h"
-#include "io/FileStream.h"
-#include "io/FormatDescription.h"
-#include "voxel/MaterialColor.h"
-#include "voxel/Region.h"
-#include "voxel/Voxel.h"
-#include "palette/Palette.h"
-#include "voxel/RawVolume.h"
 #include "core/Assert.h"
 #include "core/Color.h"
-#include "core/Log.h"
 #include "core/GLM.h"
-#include "voxelformat/VolumeFormat.h"
+#include "core/Log.h"
+#include "core/StringUtil.h"
+#include "image/Image.h"
+#include "io/FileStream.h"
+#include "io/FormatDescription.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "voxel/MaterialColor.h"
+#include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/Region.h"
+#include "voxel/Voxel.h"
+#include "voxelformat/VolumeFormat.h"
 
 namespace voxelutil {
 
@@ -49,14 +50,15 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alpha) {
 	return maxHeight;
 }
 
-void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLookup &palLookup, const image::ImagePtr& image, const voxel::Voxel &underground) {
+void importColoredHeightmap(voxel::RawVolumeWrapper &volume, palette::PaletteLookup &palLookup,
+							const image::ImagePtr &image, const voxel::Voxel &underground) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	const voxel::Region& region = volume.region();
+	const voxel::Region &region = volume.region();
 	const int volumeHeight = region.getHeightInVoxels();
 	const int volumeWidth = region.getWidthInVoxels();
 	const int volumeDepth = region.getDepthInVoxels();
-	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3 &mins = region.getLowerCorner();
 	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
 	const float scaleHeight = (float)volumeHeight / (float)255.0f;
@@ -73,7 +75,8 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLoo
 				if (!region.containsPoint(regionPos)) {
 					continue;
 				}
-				const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+				const uint8_t palidx =
+					palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
 				const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), palidx);
 				volume.setVoxel(regionPos, voxel);
 			} else {
@@ -87,7 +90,8 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLoo
 					if (y < heightValue - 1) {
 						voxel = underground;
 					} else {
-						const uint8_t palidx = palLookup.findClosestIndex(core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
+						const uint8_t palidx = palLookup.findClosestIndex(
+							core::RGBA(heightmapPixel.r, heightmapPixel.g, heightmapPixel.b));
 						voxel = voxel::createVoxel(palLookup.palette(), palidx);
 					}
 					volume.setVoxel(regionPos, voxel);
@@ -97,14 +101,15 @@ void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLoo
 	}
 }
 
-void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface) {
+void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &underground,
+					 const voxel::Voxel &surface) {
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
-	const voxel::Region& region = volume.region();
+	const voxel::Region &region = volume.region();
 	const int volumeHeight = region.getHeightInVoxels();
 	const int volumeWidth = region.getWidthInVoxels();
 	const int volumeDepth = region.getDepthInVoxels();
-	const glm::ivec3& mins = region.getLowerCorner();
+	const glm::ivec3 &mins = region.getLowerCorner();
 	const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 	const float stepWidthX = (float)imageWidth / (float)volumeWidth;
 	Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
@@ -145,21 +150,20 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
 	}
 }
 
-voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness) {
+voxel::RawVolume *importAsPlane(const image::ImagePtr &image, uint8_t thickness) {
 	return importAsPlane(image.get(), thickness);
 }
 
-voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness) {
+voxel::RawVolume *importAsPlane(const image::Image *image, uint8_t thickness) {
 	const palette::Palette &palette = voxel::getPalette();
 	return importAsPlane(image, palette, thickness);
 }
 
-
-voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness) {
+voxel::RawVolume *importAsPlane(const image::ImagePtr &image, const palette::Palette &palette, uint8_t thickness) {
 	return importAsPlane(image.get(), palette, thickness);
 }
 
-voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness) {
+voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness) {
 	if (thickness <= 0) {
 		Log::error("Thickness can't be 0");
 		return nullptr;
@@ -175,12 +179,13 @@ voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palett
 	const int imageWidth = image->width();
 	const int imageHeight = image->height();
 	if (imageWidth * imageHeight * thickness > 1024 * 1024 * 256) {
-		Log::warn("Did not import plane - max volume size of 1024x1024 (thickness 256) exceeded (%i:%i:%i)", imageWidth, imageHeight, thickness);
+		Log::warn("Did not import plane - max volume size of 1024x1024 (thickness 256) exceeded (%i:%i:%i)", imageWidth,
+				  imageHeight, thickness);
 		return nullptr;
 	}
 	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
-	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
 			const core::RGBA data = image->colorAt(x, y);
@@ -197,11 +202,21 @@ voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palett
 	return volume;
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides) {
+voxel::RawVolume *importAsVolume(const image::ImagePtr &image, uint8_t maxDepth, bool bothSides) {
 	return importAsVolume(image, voxel::getPalette(), maxDepth, bothSides);
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides) {
+core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix) {
+	const core::String &extinfile = core::string::extractExtension(imageName);
+	core::String dmFile = core::string::stripExtension(imageName);
+	dmFile.append(postfix);
+	dmFile.append(".");
+	dmFile.append(extinfile);
+	return dmFile;
+}
+
+voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const palette::Palette &palette, uint8_t maxDepth,
+								 bool bothSides) {
 	if (maxDepth <= 0) {
 		Log::error("Max height can't be 0");
 		return nullptr;
@@ -210,21 +225,30 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Pa
 		Log::error("No color image given");
 		return nullptr;
 	}
-	const core::String &extinfile = core::string::extractExtension(image->name());
-	core::String heightmapFile = core::string::stripExtension(image->name());
-	heightmapFile.append("-dm.");
-	heightmapFile.append(extinfile);
-	const image::ImagePtr& heightmap = image::loadImage(heightmapFile);
-	if (!heightmap || !heightmap->isLoaded()) {
-		Log::error("Couldn't load heightmap %s", heightmapFile.c_str());
+	const core::String &dmFile = getDefaultDepthMapFile(image->name());
+	const image::ImagePtr &depthMap = image::loadImage(dmFile);
+	if (!depthMap || !depthMap->isLoaded()) {
+		Log::error("Couldn't load depthmap %s", dmFile.c_str());
 		return nullptr;
 	}
-	return importAsVolume(image, heightmap, palette, maxDepth, bothSides);
+	return importAsVolume(image, depthMap, palette, maxDepth, bothSides);
 }
 
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& heightmap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides) {
-	if (heightmap->width() != image->width() || heightmap->height() != image->height()) {
-		Log::error("Image dimensions differ for color and heightmap");
+voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::ImagePtr &depthmap,
+								 const palette::Palette &palette, uint8_t maxDepth, bool bothSides) {
+	core_assert(image);
+	core_assert(depthmap);
+	if (!image->isLoaded()) {
+		Log::error("Image '%s' is not loaded", image->name().c_str());
+		return nullptr;
+	}
+	if (!depthmap->isLoaded()) {
+		Log::error("Depthmap '%s' is not loaded", image->name().c_str());
+		return nullptr;
+	}
+
+	if (depthmap->width() != image->width() || depthmap->height() != image->height()) {
+		Log::error("Image dimensions differ for color and depthmap");
 		return nullptr;
 	}
 	const int imageWidth = image->width();
@@ -235,13 +259,14 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::Imag
 		volumeDepth++;
 	}
 	if (imageWidth * imageHeight * volumeDepth > 1024 * 1024 * 256) {
-		Log::warn("Did not import plane - max volume size of 1024x1024 (depth 256) exceeded (%i:%i:%i)", imageWidth, imageHeight, volumeDepth);
+		Log::warn("Did not import plane - max volume size of 1024x1024 (depth 256) exceeded (%i:%i:%i)", imageWidth,
+				  imageHeight, volumeDepth);
 		return nullptr;
 	}
 	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	palette::PaletteLookup palLookup(palette);
-	voxel::RawVolume* volume = new voxel::RawVolume(region);
+	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	voxel::RawVolumeWrapper wrapper(volume);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
@@ -249,15 +274,15 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::Imag
 			if (data.a == 0) {
 				continue;
 			}
-			const glm::vec4& color = core::Color::fromRGBA(data);
+			const glm::vec4 &color = core::Color::fromRGBA(data);
 			const uint8_t index = palLookup.findClosestIndex(color);
 			const voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), index);
-			const core::RGBA heightdata = heightmap->colorAt(x, y);
+			const core::RGBA heightdata = depthmap->colorAt(x, y);
 			const float thickness = (float)heightdata.r;
 			const float maxthickness = maxDepth;
 			const float height = thickness * maxthickness / 255.0f;
 			if (bothSides) {
-				const int heighti = (int)glm::ceil(height/ 2.0f);
+				const int heighti = (int)glm::ceil(height / 2.0f);
 				const int minZ = maxDepth - heighti;
 				const int maxZ = maxDepth + heighti;
 				for (int z = minZ; z <= maxZ; ++z) {
@@ -274,4 +299,4 @@ voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::Imag
 	return volume;
 }
 
-}
+} // namespace voxelutil

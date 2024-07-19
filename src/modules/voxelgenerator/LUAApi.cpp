@@ -207,6 +207,11 @@ static int luaVoxel_pushscenegraphnode(lua_State* s, scenegraph::SceneGraphNode&
 	return clua_pushudata(s, wrapper, luaVoxel_metascenegraphnode());
 }
 
+static bool luaVoxel_ispalette(lua_State *s, int n) {
+	return luaL_testudata(s, n, luaVoxel_metapalette()) != nullptr ||
+		   luaL_testudata(s, n, luaVoxel_metapalette_gc()) != nullptr;
+}
+
 static palette::Palette* luaVoxel_toPalette(lua_State* s, int n) {
 	palette::Palette** palette = (palette::Palette**)luaL_testudata(s, n, luaVoxel_metapalette_gc());
 	if (palette != nullptr) {
@@ -347,6 +352,27 @@ static int luaVoxel_volumewrapper_fillhollow(lua_State *s) {
 static int luaVoxel_volumewrapper_hollow(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	voxelutil::hollow(*volume);
+	return 0;
+}
+
+static int luaVoxel_volumewrapper_importimageasvolume(lua_State *s) {
+	int idx = 1;
+	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, idx++);
+	const core::String nameTexture = luaL_checkstring(s, idx++);
+	const core::String nameDepthMap =
+		lua_isstring(s, idx) ? luaL_checkstring(s, idx++) : voxelutil::getDefaultDepthMapFile(nameTexture);
+	const image::ImagePtr imageTexture = image::loadImage(nameTexture);
+	const image::ImagePtr imageDepthMap = image::loadImage(nameDepthMap);
+	const bool hasPalette = luaVoxel_ispalette(s, idx);
+	const palette::Palette *palette = hasPalette ? luaVoxel_toPalette(s, idx++) : &voxel::getPalette();
+	const uint8_t thickness = (int)luaL_optinteger(s, idx++, 8);
+	const bool bothSides = (int)clua_optboolean(s, idx++, false);
+	voxel::RawVolume *v = voxelutil::importAsVolume(imageTexture, imageDepthMap, *palette, thickness, bothSides);
+	if (v == nullptr) {
+		return clua_error(s, "Failed to import image as volume from image %s", nameTexture.c_str());
+	}
+	volume->setVolume(v);
+	volume->update();
 	return 0;
 }
 
@@ -1435,6 +1461,7 @@ static void prepareState(lua_State* s) {
 		{"hollow", luaVoxel_volumewrapper_hollow},
 		{"importHeightmap", luaVoxel_volumewrapper_importheightmap},
 		{"importColoredHeightmap", luaVoxel_volumewrapper_importcoloredheightmap},
+		{"importImageAsVolume", luaVoxel_volumewrapper_importimageasvolume},
 		{"mirrorAxis", luaVoxel_volumewrapper_mirroraxis},
 		{"rotateAxis", luaVoxel_volumewrapper_rotateaxis},
 		{"setVoxel", luaVoxel_volumewrapper_setvoxel},
@@ -1737,6 +1764,8 @@ bool LUAApi::argumentInfo(const core::String& luaScript, core::DynamicArray<LUAP
 					}
 				} else if (!SDL_strncmp(value, "str", 3)) {
 					type = LUAParameterType::String;
+				} else if (!SDL_strncmp(value, "file", 4)) {
+					type = LUAParameterType::File;
 				} else if (!SDL_strncmp(value, "enum", 4)) {
 					type = LUAParameterType::Enum;
 				} else if (!SDL_strncmp(value, "bool", 4)) {
@@ -1779,6 +1808,7 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 		switch (d.type) {
 		case LUAParameterType::Enum:
 		case LUAParameterType::String:
+		case LUAParameterType::File:
 			lua_pushstring(s, arg.c_str());
 			break;
 		case LUAParameterType::Boolean: {

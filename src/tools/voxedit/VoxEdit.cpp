@@ -26,6 +26,7 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "engine-git.h"
+#include "voxelutil/ImageUtils.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
 				 const voxedit::SceneManagerPtr &sceneMgr, const voxelcollection::CollectionManagerPtr &collectionMgr,
@@ -277,12 +278,16 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importAsVolume(file, 8, true); }, fileDialogOptions, io::format::images());
+			openDialog([this] (const core::String &file, const io::FormatDescription *desc) {
+				const core::String &dmFile = voxelutil::getDefaultDepthMapFile(file);
+				_sceneMgr->importAsVolume(file, dmFile, 8, true);
+			}, fileDialogOptions, io::format::images());
 			return;
 		}
-		const int maxDepth = args.size() >= 2 ? core::string::toInt(args[1]) : 8;
-		const bool bothSides = args.size() >= 3 ? core::string::toBool(args[2]) : true;
-		if (!_sceneMgr->importAsVolume(args[0], maxDepth, bothSides)) {
+		const int maxDepth = args.size() >= 3 ? core::string::toInt(args[1]) : 8;
+		const bool bothSides = args.size() >= 4 ? core::string::toBool(args[2]) : true;
+		const core::String &dmFile = voxelutil::getDefaultDepthMapFile(args[0]);
+		if (!_sceneMgr->importAsVolume(args[0], dmFile, maxDepth, bothSides)) {
 			Log::error("Failed to execute 'importvolume' for file '%s'", args[0].c_str());
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import an image as a volume into a new node"));

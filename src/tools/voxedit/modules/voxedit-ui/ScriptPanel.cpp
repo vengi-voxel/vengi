@@ -143,6 +143,11 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 				ImGui::InputText(p.name.c_str(), &str);
 				break;
 			}
+			case voxelgenerator::LUAParameterType::File: {
+				core::String &str = _scriptParameters[i];
+				ImGui::InputFile(p.name.c_str(), &str, nullptr);
+				break;
+			}
 			case voxelgenerator::LUAParameterType::Enum: {
 				core::String &str = _scriptParameters[i];
 				core::DynamicArray<core::String> tokens;

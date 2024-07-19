@@ -361,6 +361,8 @@ local myregion = g_region.new(0, 0, 0, 0, 0, 0) -- creates a region with 1 voxel
 
 * `importColoredHeightmap(filename, [underground])`: Imports the given image as heightmap into the current volume. Use the `underground` voxel colors for this and determine the surface colors from the RGB channel of the given image. Other than with `importHeightmap` the height is encoded in the alpha channel with this method.
 
+* `importImageAsVolume(filename, [filename_depthmap], [palette], [depth], [bothsides])`: Imports the given image as volume with the depth values read from the given depth map image file. If no `filename_depthmap` is given we are looking for the the same filename as given via `filename` but with a `-dm` as postfix. Example: `filename` is `foo.png` - then the default `filename_depthmap` is `foo-dm.png`.
+
 * `crop()`: Crop the volume and remove empty spaces.
 
 * `mirrorAxis([axis])`: Mirror along the given axis - `y` is default.

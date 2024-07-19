@@ -332,4 +332,15 @@ TEST_F(LUAApiTest, testScriptAlign) {
 	runFile(sceneGraph, "align.lua");
 }
 
+TEST_F(LUAApiTest, testScriptImageAsVolume) {
+	{
+		scenegraph::SceneGraph sceneGraph;
+		runFile(sceneGraph, "imageasvolume.lua", {"test-heightmap.png"});
+	}
+	{
+		scenegraph::SceneGraph sceneGraph;
+		runFile(sceneGraph, "imageasvolume.lua", {"test-heightmap.png", "test-heightmap-dm.png"});
+	}
+}
+
 } // namespace voxelgenerator
