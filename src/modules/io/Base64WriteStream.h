@@ -7,6 +7,9 @@
 
 namespace io {
 
+/**
+ * @ingroup IO
+ */
 class Base64WriteStream : public io::WriteStream, public Base64Stream {
 protected:
 	io::WriteStream &_stream;

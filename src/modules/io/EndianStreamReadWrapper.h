@@ -6,6 +6,10 @@
 
 namespace io {
 
+/**
+ * @ingroup IO
+ * @see ReadStream
+ */
 class EndianStreamReadWrapper {
 private:
 	ReadStream &_stream;

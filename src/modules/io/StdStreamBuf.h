@@ -16,6 +16,7 @@ namespace io {
  * StdOStreamBuf buf(stream);
  * std::ostream stream(&buf);
  * @endcode
+ * @ingroup IO
  */
 class StdOStreamBuf : public std::streambuf {
 private:

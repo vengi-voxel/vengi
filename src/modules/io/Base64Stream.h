@@ -10,6 +10,9 @@
 
 namespace io {
 
+/**
+ * @ingroup IO
+ */
 class Base64Stream {
 protected:
 	/**

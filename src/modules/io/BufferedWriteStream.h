@@ -9,6 +9,7 @@ namespace io {
 
 /**
  * @note This buffer must be flushed
+ * @ingroup IO
  */
 class BufferedWriteStream : public WriteStream {
 private:
