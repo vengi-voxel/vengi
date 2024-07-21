@@ -141,7 +141,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 		const ImVec2 v1 = ImGui::GetCursorScreenPos();
 		const ImVec2 v2(v1.x + size, v1.y + size);
 		ImDrawList *drawList = ImGui::GetWindowDrawList();
-		drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.color(_stampPaletteIndex)));
+		drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.color(palette.uiIndex(_stampPaletteIndex))));
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size);
 	}
 	ImGui::InputInt("##colorstampbrush", &_stampPaletteIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);

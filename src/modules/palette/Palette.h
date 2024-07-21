@@ -150,22 +150,22 @@ public:
 	Palette();
 
 	/**
-	 * In case the palette indices are changed, this gives you access to the real texture index
+	 * In case the palette indices are changed, this gives you access to the real color index
 	 */
-	uint8_t uiIndex(uint8_t idx) const;
+	uint8_t uiIndex(uint8_t palettePanelIdx) const;
 	const PaletteIndicesArray &uiIndices() const;
 	PaletteIndicesArray &uiIndices();
 	/**
 	 * @note Only for ui purposes - changes the color slots
 	 */
 	void exchangeUIIndices(uint8_t idx1, uint8_t idx2);
-	void exchange(uint8_t idx1, uint8_t idx2);
-	void copy(uint8_t from, uint8_t to);
+	void exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2);
+	void copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx);
 
-	const Material &material(uint8_t idx) const;
-	core::RGBA color(uint8_t idx) const;
-	glm::vec4 color4(uint8_t idx) const;
-	void setColor(uint8_t idx, const core::RGBA &rgba);
+	const Material &material(uint8_t paletteColorIdx) const;
+	core::RGBA color(uint8_t paletteColorIdx) const;
+	glm::vec4 color4(uint8_t paletteColorIdx) const;
+	void setColor(uint8_t paletteColorIdx, const core::RGBA &rgba);
 	void setMaterial(uint8_t i, const Material &material);
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
@@ -173,41 +173,41 @@ public:
 	 */
 	void toVec4f(core::DynamicArray<glm::vec4> &rgba) const;
 
-	core::RGBA emitColor(uint8_t idx) const;
+	core::RGBA emitColor(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Convert the RGBA color values in the range [0-255] to float color values in the range [0.0-1.0]
 	 * @note The collection will have 256 entries - even if the palette has less entries
 	 */
 	void emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const;
 
-	bool hasAlpha(uint8_t idx) const;
-	bool hasEmit(uint8_t idx) const;
-	void setMaterialType(uint8_t idx, MaterialType type);
-	bool setMaterialProperty(uint8_t idx, const core::String &name, float value);
-	float materialProperty(uint8_t idx, const core::String &name) const;
+	bool hasAlpha(uint8_t paletteColorIdx) const;
+	bool hasEmit(uint8_t paletteColorIdx) const;
+	void setMaterialType(uint8_t paletteColorIdx, MaterialType type);
+	bool setMaterialProperty(uint8_t paletteColorIdx, const core::String &name, float value);
+	float materialProperty(uint8_t paletteColorIdx, const core::String &name) const;
 
-	void setMaterialValue(uint8_t idx, MaterialProperty property, float factor = 1.0f);
-	void setEmit(uint8_t idx, float factor = 1.0f);
-	void setMetal(uint8_t idx, float factor = 1.0f);
-	void setRoughness(uint8_t idx, float factor = 1.0f);
-	void setSpecular(uint8_t idx, float factor = 1.0f);
-	void setIndexOfRefraction(uint8_t idx, float factor = 1.0f);
-	void setAttenuation(uint8_t idx, float factor = 1.0f);
-	void setFlux(uint8_t idx, float factor = 1.0f);
-	void setAlpha(uint8_t idx, float factor = 1.0f);
-	void setDensity(uint8_t idx, float factor = 1.0f);
-	void setSp(uint8_t idx, float factor = 1.0f);
-	void setGlossiness(uint8_t idx, float factor = 1.0f);
-	void setMedia(uint8_t idx, float factor = 1.0f);
-	void setLowDynamicRange(uint8_t idx, float factor = 1.0f);
+	void setMaterialValue(uint8_t paletteColorIdx, MaterialProperty property, float factor = 1.0f);
+	void setEmit(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setMetal(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setRoughness(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setSpecular(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setIndexOfRefraction(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setAttenuation(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setFlux(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setAlpha(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setDensity(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setSp(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setGlossiness(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setMedia(uint8_t paletteColorIdx, float factor = 1.0f);
+	void setLowDynamicRange(uint8_t paletteColorIdx, float factor = 1.0f);
 
 	bool hasFreeSlot() const;
-	void duplicateColor(uint8_t idx);
+	void duplicateColor(uint8_t paletteColorIdx);
 	/**
 	 * @brief Tries to remove the given color from the palette
 	 * @note Always keeps at least one color in the palette
 	 */
-	bool removeColor(uint8_t idx);
+	bool removeColor(uint8_t paletteColorIdx);
 	void changeIntensity(float scale);
 	void reduce(uint8_t targetColors);
 
@@ -258,19 +258,19 @@ public:
 
 	/**
 	 * @param rgba Normalized color value [0.0-1.0]
-	 * @param skip One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
+	 * @param skipPaletteColorIdx One particular palette color index that is not taken into account. This can be used to e.g. search for replacements
 	 * @return int The index to the palette color or @c PaletteColorNotFound if no match was found
 	 */
-	int getClosestMatch(core::RGBA rgba, int skip = -1) const;
-	uint8_t findReplacement(uint8_t idx) const;
+	int getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx = -1) const;
+	uint8_t findReplacement(uint8_t paletteColorIdx) const;
 	/**
 	 * @brief Will add the given color to the palette - and if the max colors are reached it will try
 	 * to match the color to another already existing color in the palette.
 	 * @note Only use this for single colors - not for a lot of them. This method is quite slow
-	 * @param[in] skipSlotIndex This slot is not filled with any color value - if it's @c -1 every slot is filled
+	 * @param[in] skipPaletteColorIdx This slot is not filled with any color value - if it's @c -1 every slot is filled
 	 */
 	bool tryAdd(core::RGBA rgba, bool skipSimilar = true, uint8_t *index = nullptr, bool replaceSimilar = true,
-				int skipSlotIndex = -1);
+				int skipPaletteColorIdx = -1);
 	bool hasColor(core::RGBA rgba);
 	void quantize(const core::RGBA *inputColors, const size_t inputColorCount);
 
@@ -320,23 +320,23 @@ inline PaletteIndicesArray &Palette::uiIndices(){
 	return _uiIndices;
 }
 
-inline uint8_t Palette::uiIndex(uint8_t idx) const {
-	return _uiIndices[idx];
+inline uint8_t Palette::uiIndex(uint8_t palettePanelIdx) const {
+	return _uiIndices[palettePanelIdx];
 }
 
-inline core::RGBA Palette::color(uint8_t idx) const {
-	return _colors[idx];
+inline core::RGBA Palette::color(uint8_t paletteColorIdx) const {
+	return _colors[paletteColorIdx];
 }
 
-inline core::RGBA Palette::emitColor(uint8_t idx) const {
-	if (hasEmit(idx)) {
-		return _colors[idx];
+inline core::RGBA Palette::emitColor(uint8_t paletteColorIdx) const {
+	if (hasEmit(paletteColorIdx)) {
+		return _colors[paletteColorIdx];
 	}
 	return core::RGBA{};
 }
 
-inline const Material &Palette::material(uint8_t idx) const {
-	return _materials[idx];
+inline const Material &Palette::material(uint8_t paletteColorIdx) const {
+	return _materials[paletteColorIdx];
 }
 
 } // namespace voxel

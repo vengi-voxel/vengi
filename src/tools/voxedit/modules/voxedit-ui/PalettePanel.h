@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "core/SharedPtr.h"
-#include "ui/Panel.h"
 #include "command/CommandHandler.h"
+#include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "ui/Panel.h"
 #include <glm/vec4.hpp>
 
 namespace scenegraph {
@@ -29,7 +29,7 @@ private:
 	using Super = ui::Panel;
 
 	float _intensityChange = 0.0f;
-	int _closestMatch = -1;
+	int _closestMatchPaletteColorIdx = -1;
 	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
 	bool _colorHovered = false; // caching the hover state per frame
 	bool _hasFocus = false;
@@ -39,7 +39,7 @@ private:
 	const uint32_t _redColor;
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
-	uint32_t _copyIndex = -1;
+	uint32_t _copyPaletteColorIdx = -1;
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
 	core::String _lospecID;
@@ -50,16 +50,18 @@ private:
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void createPopups(scenegraph::SceneGraphNode &node);
 
-	void handleContextMenu(uint8_t uiIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener,
-				   palette::Palette &palette);
-	void handleDragAndDrop(uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);
-	void addColor(float startingPosX, uint8_t palIdx, uint8_t uiIdx, scenegraph::SceneGraphNode &node,
+	void handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
+						   command::CommandExecutionListener &listener, palette::Palette &palette);
+	void handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);
+	void addColor(float startingPosX, uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 				  command::CommandExecutionListener &listener);
-	bool showColorPicker(uint8_t palIdx, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	bool showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
+						 command::CommandExecutionListener &listener);
 	void reloadAvailablePalettes();
 
 	uint8_t currentSceneColor() const;
-	uint8_t currentPaletteIndex() const;
+	uint8_t currentPaletteColorIndex() const;
+
 public:
 	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
 	void update(const char *id, command::CommandExecutionListener &listener);
@@ -69,4 +71,4 @@ public:
 #endif
 };
 
-}
+} // namespace voxedit

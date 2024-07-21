@@ -139,61 +139,61 @@ bool Palette::hasColor(core::RGBA rgba) {
 	return false;
 }
 
-void Palette::duplicateColor(uint8_t idx) {
+void Palette::duplicateColor(uint8_t paletteColorIdx) {
 	if (_colorCount < PaletteMaxColors) {
-		setColor(_colorCount + 1, color(idx));
+		setColor(_colorCount + 1, color(paletteColorIdx));
 	} else {
 		// search a free slot
 		for (int i = 0; i < PaletteMaxColors; ++i) {
 			if (!hasAlpha(i)) {
-				setColor(i, color(idx));
+				setColor(i, color(paletteColorIdx));
 				return;
 			}
 		}
 	}
 }
 
-void Palette::exchangeUIIndices(uint8_t idx1, uint8_t idx2) {
-	if (idx1 == idx2) {
+void Palette::exchangeUIIndices(uint8_t palettePanelIdx1, uint8_t palettePanelIdx2) {
+	if (palettePanelIdx1 == palettePanelIdx2) {
 		return;
 	}
-	core::exchange(_uiIndices[idx1], _uiIndices[idx2]);
+	core::exchange(_uiIndices[palettePanelIdx1], _uiIndices[palettePanelIdx2]);
 	markDirty();
 	markSave();
 }
 
-void Palette::exchange(uint8_t idx1, uint8_t idx2) {
-	if (idx1 == idx2) {
+void Palette::exchange(uint8_t paletteColorIdx1, uint8_t paletteColorIdx2) {
+	if (paletteColorIdx1 == paletteColorIdx2) {
 		return;
 	}
-	const core::RGBA lhs = color(idx1);
-	const palette::Material lhsM = material(idx1);
-	const core::RGBA rhs = color(idx2);
-	const palette::Material rhsM = material(idx2);
-	setColor(idx1, rhs);
-	setMaterial(idx1, rhsM);
-	setColor(idx2, lhs);
-	setMaterial(idx2, lhsM);
+	const core::RGBA lhs = color(paletteColorIdx1);
+	const palette::Material lhsM = material(paletteColorIdx1);
+	const core::RGBA rhs = color(paletteColorIdx2);
+	const palette::Material rhsM = material(paletteColorIdx2);
+	setColor(paletteColorIdx1, rhs);
+	setMaterial(paletteColorIdx1, rhsM);
+	setColor(paletteColorIdx2, lhs);
+	setMaterial(paletteColorIdx2, lhsM);
 	markSave();
 	markDirty();
 }
 
-void Palette::copy(uint8_t from, uint8_t to) {
-	if (from == to) {
+void Palette::copy(uint8_t fromPaletteColorIdx, uint8_t toPaletteColorIdx) {
+	if (fromPaletteColorIdx == toPaletteColorIdx) {
 		return;
 	}
-	_colors[to] = _colors[from];
-	_materials[to] = _materials[from];
+	_colors[toPaletteColorIdx] = _colors[fromPaletteColorIdx];
+	_materials[toPaletteColorIdx] = _materials[fromPaletteColorIdx];
 	markDirty();
 	markSave();
 }
 
-bool Palette::removeColor(uint8_t idx) {
-	if (idx < _colorCount && _colorCount > 1) {
-		for (int i = idx; i < _colorCount - 1; ++i) {
+bool Palette::removeColor(uint8_t paletteColorIdx) {
+	if (paletteColorIdx < _colorCount && _colorCount > 1) {
+		for (int i = paletteColorIdx; i < _colorCount - 1; ++i) {
 			_uiIndices[i] = _uiIndices[i + 1];
 		}
-		_colors[idx] = core::RGBA(0, 0, 0, 0);
+		_colors[paletteColorIdx] = core::RGBA(0, 0, 0, 0);
 		--_colorCount;
 		markDirty();
 		return true;
@@ -267,7 +267,7 @@ int Palette::findInsignificant(int skipSlotIndex) const {
 	return bestIndex;
 }
 
-bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipSlotIndex) {
+bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool replaceSimilar, int skipPaletteColorIdx) {
 	for (int i = 0; i < _colorCount; ++i) {
 		if (_colors[i] == rgba) {
 			if (index) {
@@ -292,7 +292,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 		}
 	}
 
-	if (_colorCount == skipSlotIndex && _colorCount < PaletteMaxColors) {
+	if (_colorCount == skipPaletteColorIdx && _colorCount < PaletteMaxColors) {
 		if (rgba.a != 0) {
 			++_colorCount;
 		}
@@ -320,7 +320,7 @@ bool Palette::tryAdd(core::RGBA rgba, bool skipSimilar, uint8_t *index, bool rep
 		// now we are looking for the color in the existing palette entries that is most similar
 		// to other entries in the palette. If this entry is than above a certain threshold, we
 		// will replace that color with the new rgba value
-		int bestIndex = findInsignificant(skipSlotIndex);
+		int bestIndex = findInsignificant(skipPaletteColorIdx);
 		if (bestIndex != PaletteColorNotFound) {
 			const float dist = core::Color::getDistance(_colors[bestIndex], rgba, core::Color::Distance::HSB);
 			if (dist > MaxHSBThreshold) {
@@ -358,12 +358,12 @@ core::String Palette::print(const Palette &palette, bool colorAsHex) {
 	return palStr;
 }
 
-int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
+int Palette::getClosestMatch(core::RGBA rgba, int skipPaletteColorIdx) const {
 	if (size() == 0) {
 		return PaletteColorNotFound;
 	}
 	for (int i = 0; i < _colorCount; ++i) {
-		if (i == skip) {
+		if (i == skipPaletteColorIdx) {
 			continue;
 		}
 		if (_colors[i] == rgba) {
@@ -384,7 +384,7 @@ int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
 	int minIndex = PaletteColorNotFound;
 
 	for (int i = 0; i < _colorCount; ++i) {
-		if (i == skip) {
+		if (i == skipPaletteColorIdx) {
 			continue;
 		}
 		if (_colors[i].a == 0) {
@@ -399,12 +399,12 @@ int Palette::getClosestMatch(core::RGBA rgba, int skip) const {
 	return minIndex;
 }
 
-uint8_t Palette::findReplacement(uint8_t idx) const {
+uint8_t Palette::findReplacement(uint8_t paletteColorIdx) const {
 	if (size() == 0) {
-		return idx;
+		return paletteColorIdx;
 	}
-	const core::RGBA rgba = color(idx);
-	const int skip = idx;
+	const core::RGBA rgba = color(paletteColorIdx);
+	const int skip = paletteColorIdx;
 	for (int i = 0; i < _colorCount; ++i) {
 		if (i == skip) {
 			continue;
@@ -420,11 +420,11 @@ uint8_t Palette::findReplacement(uint8_t idx) const {
 				return i;
 			}
 		}
-		return idx;
+		return paletteColorIdx;
 	}
 
 	float minDistance = FLT_MAX;
-	int minIndex = idx;
+	int minIndex = paletteColorIdx;
 
 	float hue;
 	float saturation;
@@ -955,13 +955,13 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 	return true;
 }
 
-void Palette::setMaterialType(uint8_t idx, MaterialType type) {
-	_materials[idx].type = type;
+void Palette::setMaterialType(uint8_t paletteColorIdx, MaterialType type) {
+	_materials[paletteColorIdx].type = type;
 	markDirty();
 }
 
-bool Palette::setMaterialProperty(uint8_t idx, const core::String &name, float value) {
-	Material &mat = _materials[idx];
+bool Palette::setMaterialProperty(uint8_t paletteColorIdx, const core::String &name, float value) {
+	Material &mat = _materials[paletteColorIdx];
 	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
 		if (MaterialPropertyNames[i] == name) {
 			mat.setValue((MaterialProperty)(i + 1), value);
@@ -972,8 +972,8 @@ bool Palette::setMaterialProperty(uint8_t idx, const core::String &name, float v
 	return false;
 }
 
-float Palette::materialProperty(uint8_t idx, const core::String &name) const {
-	const Material &mat = _materials[idx];
+float Palette::materialProperty(uint8_t paletteColorIdx, const core::String &name) const {
+	const Material &mat = _materials[paletteColorIdx];
 	for (uint32_t i = 0; i < MaterialProperty::MaterialMax - 1; ++i) {
 		if (MaterialPropertyNames[i] == name) {
 			return mat.value((MaterialProperty)(i + 1));
@@ -982,70 +982,70 @@ float Palette::materialProperty(uint8_t idx, const core::String &name) const {
 	return 0.0f;
 }
 
-bool Palette::hasAlpha(uint8_t idx) const {
-	return _colors[idx].a < 255;
+bool Palette::hasAlpha(uint8_t paletteColorIdx) const {
+	return _colors[paletteColorIdx].a < 255;
 }
 
-bool Palette::hasEmit(uint8_t idx) const {
-	return _materials[idx].mask & MaterialEmit;
+bool Palette::hasEmit(uint8_t paletteColorIdx) const {
+	return _materials[paletteColorIdx].mask & MaterialEmit;
 }
 
-void Palette::setMaterialValue(uint8_t idx, MaterialProperty property, float factor) {
-	_materials[idx].setValue(property, factor);
+void Palette::setMaterialValue(uint8_t paletteColorIdx, MaterialProperty property, float factor) {
+	_materials[paletteColorIdx].setValue(property, factor);
 	markDirty();
 }
 
-void Palette::setEmit(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialEmit, factor);
+void Palette::setEmit(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialEmit, factor);
 }
 
-void Palette::setMetal(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialMetal, factor);
+void Palette::setMetal(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialMetal, factor);
 }
 
-void Palette::setRoughness(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialRoughness, factor);
+void Palette::setRoughness(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialRoughness, factor);
 }
 
-void Palette::setSpecular(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialSpecular, factor);
+void Palette::setSpecular(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialSpecular, factor);
 }
 
-void Palette::setIndexOfRefraction(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialIndexOfRefraction, factor);
+void Palette::setIndexOfRefraction(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, factor);
 }
 
-void Palette::setAttenuation(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialAttenuation, factor);
+void Palette::setAttenuation(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialAttenuation, factor);
 }
 
-void Palette::setFlux(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialFlux, factor);
+void Palette::setFlux(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialFlux, factor);
 }
 
-void Palette::setAlpha(uint8_t idx, float factor) {
-	_colors[idx].a = (float)_colors[idx].a * factor;
+void Palette::setAlpha(uint8_t paletteColorIdx, float factor) {
+	_colors[paletteColorIdx].a = (float)_colors[paletteColorIdx].a * factor;
 	markDirty();
 }
 
-void Palette::setDensity(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialDensity, factor);
+void Palette::setDensity(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialDensity, factor);
 }
 
-void Palette::setSp(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialSp, factor);
+void Palette::setSp(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialSp, factor);
 }
 
-void Palette::setGlossiness(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialGlossiness, factor);
+void Palette::setGlossiness(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialGlossiness, factor);
 }
 
-void Palette::setMedia(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialMedia, factor);
+void Palette::setMedia(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialMedia, factor);
 }
 
-void Palette::setLowDynamicRange(uint8_t idx, float factor) {
-	setMaterialValue(idx, MaterialLowDynamicRange, factor);
+void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
+	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
 }
 
 void Palette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
