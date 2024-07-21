@@ -236,24 +236,30 @@ struct MementoState {
 	}
 };
 
-using MementoStates = core::RingBuffer<MementoState, 64u>;
+struct MementoStateGroup {
+	core::String name;
+	core::DynamicArray<MementoState> states;
+};
+
+using MementoStates = core::RingBuffer<MementoStateGroup, 64u>;
 /**
  * @brief Class that manages the undo and redo steps for the scene
+ *
+ * @note For the volumes only the dirty regions are stored in a compressed form.
  */
 class MementoHandler : public core::IComponent {
 private:
-	MementoStates _states;
-	core::Optional<MementoState> _groupState;
-	uint8_t _statePosition = 0u;
+	MementoStates _groups;
+	int _groupState = 0;
+	uint8_t _groupStatePosition = 0u;
 	int _locked = 0;
 
 	void addState(MementoState &&state);
 	bool markUndoPreamble(int nodeId);
 
-	/**
-	 * In group mode, we have to merge the states together
-	 */
-	bool mergeStates(MementoState &state, MementoState &merge) const;
+	inline MementoState& first(MementoStateGroup &group) const {
+		return group.states[0];
+	}
 
 	MementoState undoRename(const MementoState &s);
 	MementoState undoMove(const MementoState &s);
@@ -281,7 +287,7 @@ public:
 	 */
 	void unlock();
 
-	void beginGroup();
+	void beginGroup(const core::String &name);
 	void endGroup();
 
 	void print() const;
@@ -334,15 +340,15 @@ public:
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
 	 */
-	MementoState undo();
+	MementoStateGroup undo();
 	/**
 	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
 	 */
-	MementoState redo();
+	MementoStateGroup redo();
 	bool canUndo() const;
 	bool canRedo() const;
 
-	const MementoState& state() const;
+	const MementoStateGroup& stateGroup() const;
 	const MementoStates& states() const;
 
 	size_t stateSize() const;
@@ -354,8 +360,8 @@ private:
 	MementoHandler &_handler;
 
 public:
-	ScopedMementoGroup(MementoHandler &handler) : _handler(handler) {
-		_handler.beginGroup();
+	ScopedMementoGroup(MementoHandler &handler, const core::String &name) : _handler(handler) {
+		_handler.beginGroup(name);
 	}
 	~ScopedMementoGroup() {
 		_handler.endGroup();
@@ -379,20 +385,20 @@ public:
 	}
 };
 
-inline const MementoState& MementoHandler::state() const {
-	return _states[_statePosition];
+inline const MementoStateGroup& MementoHandler::stateGroup() const {
+	return _groups[_groupStatePosition];
 }
 
 inline const MementoStates& MementoHandler::states() const {
-	return _states;
+	return _groups;
 }
 
 inline uint8_t MementoHandler::statePosition() const {
-	return _statePosition;
+	return _groupStatePosition;
 }
 
 inline size_t MementoHandler::stateSize() const {
-	return _states.size();
+	return _groups.size();
 }
 
 inline bool MementoHandler::canUndo() const {
@@ -402,7 +408,7 @@ inline bool MementoHandler::canUndo() const {
 	if (stateSize() <= 1) {
 		return false;
 	}
-	return _statePosition > 0;
+	return _groupStatePosition > 0;
 }
 
 inline bool MementoHandler::canRedo() const {
@@ -412,7 +418,7 @@ inline bool MementoHandler::canRedo() const {
 	if (stateSize() <= 1) {
 		return false;
 	}
-	return _statePosition <= stateSize() - 2;
+	return _groupStatePosition <= stateSize() - 2;
 }
 
 }

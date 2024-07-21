@@ -476,7 +476,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 
-	ScopedMementoGroup mementoGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler, "importdirectory");
 	bool state = false;
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(directory));
@@ -992,8 +992,17 @@ bool SceneManager::doUndo() {
 		return false;
 	}
 
-	const MementoState& s = _mementoHandler.undo();
-	return mementoStateExecute(s, false);
+	const MementoStateGroup& group = _mementoHandler.undo();
+	if (group.states.empty()) {
+		Log::debug("Nothing to undo");
+		return false;
+	}
+	for (const MementoState& s : group.states) {
+		if (!mementoStateExecute(s, false)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool SceneManager::doRedo() {
@@ -1002,8 +1011,13 @@ bool SceneManager::doRedo() {
 		return false;
 	}
 
-	const MementoState& s = _mementoHandler.redo();
-	return mementoStateExecute(s, true);
+	const MementoStateGroup& group = _mementoHandler.redo();
+	for (const MementoState& s : group.states) {
+		if (!mementoStateExecute(s, true)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
@@ -1219,6 +1233,7 @@ void SceneManager::resetSceneState() {
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
+	ScopedMementoGroup mementoGroup(_mementoHandler, "loadscene");
 	Log::debug("New volume for node %i", node.id());
 	for (const auto &n : _sceneGraph.nodes()) {
 		if (!n->second.isAnyModelNode()) {
@@ -1277,7 +1292,6 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 }
 
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
-	ScopedMementoGroup mementoGroup(_mementoHandler);
 	core_trace_scoped(LoadSceneGraph);
 	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
 	if (createDiff) {
@@ -2287,7 +2301,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		});
 		pal.markDirty();
 		pal.markSave();
-		ScopedMementoGroup mementoGroup(_mementoHandler);
+		ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
 		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
 	} else {
@@ -3139,7 +3153,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 			removeReferenceNodes.push_back((*iter).id());
 		}
 	}
-	ScopedMementoGroup mementoGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler, "noderemove");
 	for (int nodeId : removeReferenceNodes) {
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
@@ -3327,7 +3341,7 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &co
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
-	ScopedMementoGroup mementoGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler, "group");
 	_sceneGraph.foreachGroup(f);
 }
 

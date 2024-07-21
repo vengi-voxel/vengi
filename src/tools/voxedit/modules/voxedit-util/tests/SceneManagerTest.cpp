@@ -172,17 +172,18 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 
 	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	for (int i = 0; i < 3; ++i) {
-		EXPECT_TRUE(mementoHandler.canUndo());
+		ASSERT_TRUE(mementoHandler.canUndo());
 		EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
 		EXPECT_TRUE(_sceneMgr->undo());
 		// EXPECT_FALSE(dirty()); see todo at undo() and activate me
-		EXPECT_FALSE(mementoHandler.canUndo());
+		ASSERT_FALSE(mementoHandler.canUndo());
 		EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()));
 
+		ASSERT_TRUE(mementoHandler.canRedo());
 		EXPECT_TRUE(_sceneMgr->redo());
 		EXPECT_TRUE(_sceneMgr->dirty());
-		EXPECT_TRUE(mementoHandler.canUndo());
-		EXPECT_FALSE(mementoHandler.canRedo());
+		ASSERT_TRUE(mementoHandler.canUndo());
+		ASSERT_FALSE(mementoHandler.canRedo());
 		EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
 	}
 }
@@ -190,6 +191,7 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 	EXPECT_NE(-1, _sceneMgr->addModelChild("second node", 1, 1, 1));
 	EXPECT_NE(-1, _sceneMgr->addModelChild("third node", 1, 1, 1));
+	EXPECT_EQ(3u, _sceneMgr->mementoHandler().stateSize());
 
 	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	EXPECT_TRUE(mementoHandler.canUndo());
@@ -197,28 +199,32 @@ TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 	EXPECT_EQ(3u, _sceneMgr->sceneGraph().size());
 
 	for (int i = 0; i < 3; ++i) {
+		SCOPED_TRACE(i);
 		{
+			EXPECT_EQ(2u, mementoHandler.statePosition());
+			ASSERT_TRUE(mementoHandler.canUndo());
 			EXPECT_TRUE(_sceneMgr->undo());
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
+			EXPECT_EQ(1u, mementoHandler.statePosition());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
 			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size());
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->undo());
-			EXPECT_FALSE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
+			ASSERT_FALSE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
 			EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->redo());
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
 			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size());
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->redo());
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_FALSE(mementoHandler.canRedo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_FALSE(mementoHandler.canRedo());
 			EXPECT_EQ(3u, _sceneMgr->sceneGraph().size());
 		}
 	}
@@ -251,15 +257,15 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 		EXPECT_EQ(3, testVolume()->voxel(0, 0, 0).getColor());
 		{
 			// undo modification in second volume
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(_sceneMgr->undo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(_sceneMgr->undo());
 			EXPECT_EQ(2, testVolume()->voxel(0, 0, 0).getColor());
 			EXPECT_EQ(nodeId, _sceneMgr->sceneGraph().activeNode());
 		}
 		{
 			// undo modification in second volume
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(_sceneMgr->undo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(_sceneMgr->undo());
 			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
 				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 			EXPECT_EQ(nodeId, _sceneMgr->sceneGraph().activeNode());
@@ -267,49 +273,49 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 		{
 			// undo adding a new node
 			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size());
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(_sceneMgr->undo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(_sceneMgr->undo());
 			EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
 			EXPECT_NE(nodeId, _sceneMgr->sceneGraph().activeNode());
 		}
 		{
 			// undo modification in first volume
-			EXPECT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canUndo());
 			EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
-			EXPECT_TRUE(_sceneMgr->undo());
+			ASSERT_TRUE(_sceneMgr->undo());
 			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
 				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 		}
 		{
 			// redo modification in first volume
-			EXPECT_FALSE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
-			EXPECT_TRUE(_sceneMgr->redo());
+			ASSERT_FALSE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
+			ASSERT_TRUE(_sceneMgr->redo());
 			EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
 		}
 		{
 			// redo add new node
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
-			EXPECT_TRUE(_sceneMgr->redo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
+			ASSERT_TRUE(_sceneMgr->redo());
 			EXPECT_TRUE(voxel::isAir(testVolume()->voxel(0, 0, 0).getMaterial()))
 				<< "color is " << (int)testVolume()->voxel(0, 0, 0).getColor();
 		}
 		{
 			// redo modification in second volume
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
 			EXPECT_TRUE(_sceneMgr->redo());
 			EXPECT_EQ(2, testVolume()->voxel(0, 0, 0).getColor());
 		}
 		{
 			// redo modification in second volume
-			EXPECT_TRUE(mementoHandler.canUndo());
-			EXPECT_TRUE(mementoHandler.canRedo());
+			ASSERT_TRUE(mementoHandler.canUndo());
+			ASSERT_TRUE(mementoHandler.canRedo());
 			EXPECT_TRUE(_sceneMgr->redo());
 			EXPECT_EQ(3, testVolume()->voxel(0, 0, 0).getColor());
 		}
-		EXPECT_FALSE(mementoHandler.canRedo());
+		ASSERT_FALSE(mementoHandler.canRedo());
 	}
 }
 

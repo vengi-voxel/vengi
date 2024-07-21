@@ -25,18 +25,7 @@
 
 namespace voxedit {
 
-static const MementoState InvalidMementoState{MementoType::Max,
-											  MementoData(),
-											  InvalidNodeId,
-											  InvalidNodeId,
-											  InvalidNodeId,
-											  {},
-											  scenegraph::SceneGraphNodeType::Max,
-											  voxel::Region::InvalidRegion,
-											  {},
-											  {},
-											  0,
-											  {}};
+static const MementoStateGroup InvalidMementoGroup{};
 
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
 	: _compressedSize(bufSize), _region(region) {
@@ -187,16 +176,35 @@ void MementoHandler::unlock() {
 	--_locked;
 }
 
-void MementoHandler::beginGroup() {
-	Log::debug("Begin memento group");
-	_groupState.setValue(MementoState{});
+void MementoHandler::beginGroup(const core::String &name) {
+	if (_locked > 0) {
+		Log::debug("Don't add undo group state - we are currently in locked mode");
+		return;
+	}
+
+	Log::debug("Begin memento group: %i (%s)", _groupState, name.c_str());
+	if (_groupState <= 0) {
+		_groups.emplace_back(MementoStateGroup{name, {}});
+		_groupStatePosition = stateSize() - 1;
+	}
+	++_groupState;
 }
 
 void MementoHandler::endGroup() {
-	Log::debug("End memento group");
-	core_assert(_groupState.hasValue());
-	addState(core::move(*_groupState.value()));
-	_groupState.setValue(nullptr);
+	if (_locked > 0) {
+		core_assert(_groupState <= 0);
+		Log::debug("Don't add undo group state - we are currently in locked mode");
+		return;
+	}
+	Log::debug("End memento group: %i", _groupState);
+	core_assert(_groupState > 0);
+	--_groupState;
+	if (_groupState <= 0) {
+		core_assert(!_groups.empty());
+		if (_groups.back().states.empty()) {
+			removeLast();
+		}
+	}
 }
 
 const char *MementoHandler::typeToString(MementoType type) {
@@ -279,10 +287,12 @@ void MementoHandler::printState(const MementoState &state) const {
 }
 
 void MementoHandler::print() const {
-	Log::info("Current memento state index: %i", _statePosition);
+	Log::info("Current memento state index: %i", _groupStatePosition);
 
-	for (const MementoState& state : _states) {
-		printState(state);
+	for (const MementoStateGroup& group : _groups) {
+		for (const MementoState& state : group.states) {
+			printState(state);
+		}
 	}
 }
 
@@ -293,161 +303,186 @@ void MementoHandler::construct() {
 }
 
 void MementoHandler::clearStates() {
-	_states.clear();
-	_statePosition = 0u;
+	core_assert_msg(_groupState <= 0, "You should not clear the states while you are recording a group state");
+	_groups.clear();
+	_groupStatePosition = 0u;
 }
 
 MementoState MementoHandler::undoModification(const MementoState &s) {
 	core_assert(s.hasVolumeData());
-	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.nodeId != s.nodeId) {
-			continue;
-		}
-		if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
-			core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
-			voxel::logRegion("Undo current", s.region);
-			voxel::logRegion("Undo previous", prevS.region);
-			voxel::logRegion("Undo current data", s.data.region());
-			voxel::logRegion("Undo previous data", prevS.data.region());
-			// use the region from the current state - but the volume and palette from the previous state of this node
-			return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   prevS.referenceId, s.name,
-								prevS.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.nodeId != s.nodeId) {
+				continue;
+			}
+			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
+				core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
+				voxel::logRegion("Undo current", s.region);
+				voxel::logRegion("Undo previous", prevS.region);
+				voxel::logRegion("Undo current data", s.data.region());
+				voxel::logRegion("Undo previous data", prevS.data.region());
+				// use the region from the current state - but the volume and palette from the previous state of this node
+				return MementoState{s.type,		prevS.data, s.parentId, s.nodeId,	   prevS.referenceId, s.name,
+									prevS.nodeType, s.region,	s.pivot,	s.worldMatrix, s.keyFrameIdx, s.palette};
+			}
 		}
 	}
 
 	core_assert_msg(
-		_states[0].type == MementoType::Modification ||
-			(_states[0].referenceId != InvalidNodeId && _states[0].type == MementoType::SceneNodeAdded),
+		first(_groups[0]).type == MementoType::Modification ||
+			(first(_groups[0]).referenceId != InvalidNodeId && first(_groups[0]).type == MementoType::SceneNodeAdded),
 		"Expected to have a modification or scene node added with a reference state at the beginning, but got %i",
-		(int)_states[0].type);
-	return _states[0];
+		(int)first(_groups[0]).type);
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoTransform(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.nodeId != s.nodeId) {
-			continue;
-		}
-		if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::Modification) &&
-			prevS.keyFrameIdx == s.keyFrameIdx) {
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,			 s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  prevS.worldMatrix, s.keyFrameIdx, s.palette};
-		}
-		if (prevS.type == MementoType::SceneNodeAdded && prevS.keyFrames.hasValue()) {
-			for (const auto &e : *prevS.keyFrames.value()) {
-				for (const auto &f : e->second) {
-					if (f.frameIdx == s.keyFrameIdx) {
-						return MementoState{
-							s.type,		   s.data,	   s.parentId, s.nodeId, s.referenceId,
-							s.name,		   s.nodeType, s.region,   s.pivot,	 f.transform().worldMatrix(),
-							s.keyFrameIdx, s.palette};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.nodeId != s.nodeId) {
+				continue;
+			}
+			if ((prevS.type == MementoType::SceneNodeTransform || prevS.type == MementoType::Modification) &&
+				prevS.keyFrameIdx == s.keyFrameIdx) {
+				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,			 s.referenceId, s.name,
+									s.nodeType, s.region, s.pivot,	  prevS.worldMatrix, s.keyFrameIdx, s.palette};
+			}
+			if (prevS.type == MementoType::SceneNodeAdded && prevS.keyFrames.hasValue()) {
+				for (const auto &e : *prevS.keyFrames.value()) {
+					for (const auto &f : e->second) {
+						if (f.frameIdx == s.keyFrameIdx) {
+							return MementoState{
+								s.type,		   s.data,	   s.parentId, s.nodeId, s.referenceId,
+								s.name,		   s.nodeType, s.region,   s.pivot,	 f.transform().worldMatrix(),
+								s.keyFrameIdx, s.palette};
+						}
 					}
 				}
 			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoPaletteChange(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.palette.hasValue() && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		 s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  s.worldMatrix, s.keyFrameIdx, prevS.palette};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.palette.hasValue() && prevS.nodeId == s.nodeId) {
+				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		 s.referenceId, s.name,
+									s.nodeType, s.region, s.pivot,	  s.worldMatrix, s.keyFrameIdx, prevS.palette};
+			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoNodeProperties(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.properties.hasValue() && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,	   s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  s.keyFrames, s.palette,	  prevS.properties};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.properties.hasValue() && prevS.nodeId == s.nodeId) {
+				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,	   s.referenceId, s.name,
+									s.nodeType, s.region, s.pivot,	  s.keyFrames, s.palette,	  prevS.properties};
+			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.keyFrames.hasValue() && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  s.parentId,  s.nodeId,		s.referenceId, s.name,
-								s.nodeType, s.region, prevS.pivot, prevS.keyFrames, s.palette,	   s.properties};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.keyFrames.hasValue() && prevS.nodeId == s.nodeId) {
+				return MementoState{s.type,		s.data,	  s.parentId,  s.nodeId,		s.referenceId, s.name,
+									s.nodeType, s.region, prevS.pivot, prevS.keyFrames, s.palette,	   s.properties};
+			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoRename(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (!prevS.name.empty() && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		 s.referenceId, prevS.name,
-								s.nodeType, s.region, s.pivot,	  s.worldMatrix, s.keyFrameIdx, s.palette};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (!prevS.name.empty() && prevS.nodeId == s.nodeId) {
+				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		 s.referenceId, prevS.name,
+									s.nodeType, s.region, s.pivot,	  s.worldMatrix, s.keyFrameIdx, s.palette};
+			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
 MementoState MementoHandler::undoMove(const MementoState &s) {
-	for (int i = _statePosition; i >= 0; --i) {
-		MementoState &prevS = _states[i];
-		if (prevS.parentId != InvalidNodeId && prevS.nodeId == s.nodeId) {
-			return MementoState{s.type,		s.data,	  prevS.parentId, s.nodeId,		 s.referenceId, prevS.name,
-								s.nodeType, s.region, s.pivot,		  s.worldMatrix, s.keyFrameIdx, s.palette};
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.parentId != InvalidNodeId && prevS.nodeId == s.nodeId) {
+				return MementoState{s.type,		s.data,	  prevS.parentId, s.nodeId,		 s.referenceId, prevS.name,
+									s.nodeType, s.region, s.pivot,		  s.worldMatrix, s.keyFrameIdx, s.palette};
+			}
 		}
 	}
-	return _states[0];
+	return first(_groups[0]);
 }
 
-MementoState MementoHandler::undo() {
+MementoStateGroup MementoHandler::undo() {
 	if (!canUndo()) {
-		return InvalidMementoState;
+		return InvalidMementoGroup;
 	}
-	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
-	const MementoState& s = state();
-	--_statePosition;
-	if (s.type == MementoType::Modification) {
-		return undoModification(s);
-	} else if (s.type == MementoType::SceneNodeTransform) {
-		return undoTransform(s);
-	} else if (s.type == MementoType::SceneNodePaletteChanged) {
-		return undoPaletteChange(s);
-	} else if (s.type == MementoType::SceneNodeProperties) {
-		return undoNodeProperties(s);
-	} else if (s.type == MementoType::SceneNodeKeyFrames) {
-		return undoKeyFrames(s);
-	} else if (s.type == MementoType::SceneNodeRenamed) {
-		return undoRename(s);
-	} else if (s.type == MementoType::SceneNodeMove) {
-		return undoMove(s);
+	Log::debug("Available states: %i, current index: %i", (int)_groups.size(), _groupStatePosition);
+	const MementoStateGroup& group = stateGroup();
+	core_assert(!group.states.empty());
+	--_groupStatePosition;
+	MementoStateGroup targetGroup;
+	targetGroup.states.reserve(group.states.size());
+	Log::debug("Undo group states: %i", (int)group.states.size());
+	for (const MementoState &s : group.states) {
+		if (s.type == MementoType::Modification) {
+			targetGroup.states.emplace_back(undoModification(s));
+		} else if (s.type == MementoType::SceneNodeTransform) {
+			targetGroup.states.emplace_back(undoTransform(s));
+		} else if (s.type == MementoType::SceneNodePaletteChanged) {
+			targetGroup.states.emplace_back(undoPaletteChange(s));
+		} else if (s.type == MementoType::SceneNodeProperties) {
+			targetGroup.states.emplace_back(undoNodeProperties(s));
+		} else if (s.type == MementoType::SceneNodeKeyFrames) {
+			targetGroup.states.emplace_back(undoKeyFrames(s));
+		} else if (s.type == MementoType::SceneNodeRenamed) {
+			targetGroup.states.emplace_back(undoRename(s));
+		} else if (s.type == MementoType::SceneNodeMove) {
+			targetGroup.states.emplace_back(undoMove(s));
+		} else {
+			targetGroup.states.emplace_back(s);
+		}
 	}
-	return s;
+	core_assert(!targetGroup.states.empty());
+	return targetGroup;
 }
 
-MementoState MementoHandler::redo() {
+MementoStateGroup MementoHandler::redo() {
 	if (!canRedo()) {
-		return InvalidMementoState;
+		return InvalidMementoGroup;
 	}
-	++_statePosition;
-	Log::debug("Available states: %i, current index: %i", (int)_states.size(), _statePosition);
-	return state();
+	++_groupStatePosition;
+	Log::debug("Available states: %i, current index: %i", (int)_groups.size(), _groupStatePosition);
+	return stateGroup();
 }
 
 void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
-	for (MementoState& state : _states) {
-		if (state.nodeId == nodeId) {
-			state.nodeId = newNodeId;
-		}
-		if (state.parentId == nodeId) {
-			state.parentId = newNodeId;
+	for (MementoStateGroup& group : _groups) {
+		for (MementoState& state : group.states) {
+			if (state.nodeId == nodeId) {
+				state.nodeId = newNodeId;
+			}
+			if (state.parentId == nodeId) {
+				state.parentId = newNodeId;
+			}
 		}
 	}
 }
@@ -459,7 +494,7 @@ void MementoHandler::markNodePropertyChange(const scenegraph::SceneGraphNode &no
 	}
 	const int parentId = node.parent();
 	const core::String &name = node.name();
-	Log::debug("New node property undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
+	Log::debug("New node property undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_groups.size());
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
 	properties.setValue(node.properties());
 	MementoState state(MementoType::SceneNodeProperties, {}, parentId, nodeId, node.reference(), name, node.type(),
@@ -515,7 +550,7 @@ void MementoHandler::markModification(const scenegraph::SceneGraphNode &node, co
 	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
 	core::Optional<palette::Palette> palette;
-	if (_states.empty()) {
+	if (_groups.empty()) {
 		palette.setValue(node.palette());
 		Log::debug("palette modification hash: %" PRIu64, node.palette().hash());
 	}
@@ -581,12 +616,12 @@ bool MementoHandler::markUndoPreamble(int nodeId) {
 		return false;
 	}
 	core_assert(nodeId >= 0);
-	if (!_states.empty()) {
+	if (!_groups.empty()) {
 		// if we mark something as new undo state, we can throw away
 		// every other state that follows the new one (everything after
 		// the current state position)
-		const size_t n = _states.size() - (_statePosition + 1);
-		_states.erase_back(n);
+		const size_t n = _groups.size() - (_groupStatePosition + 1);
+		_groups.erase_back(n);
 	}
 	return true;
 }
@@ -597,7 +632,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const c
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}
-	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
+	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_groups.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData &data = MementoData::fromVolume(volume, region);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, region, pivot, worldMatrix,
@@ -606,10 +641,13 @@ void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const c
 }
 
 bool MementoHandler::removeLast() {
-	if (_states.empty()) {
+	if (_groups.empty()) {
 		return false;
 	}
-	_states.erase_back(1);
+	if (_groupStatePosition == stateSize() - 1) {
+		--_groupStatePosition;
+	}
+	_groups.erase_back(1);
 	return true;
 }
 
@@ -621,7 +659,7 @@ void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId
 	if (!markUndoPreamble(nodeId)) {
 		return;
 	}
-	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_states.size());
+	Log::debug("New undo state for node %i with name %s (memento state index: %i)", nodeId, name.c_str(), (int)_groups.size());
 	voxel::logRegion("MarkUndo", region);
 	const MementoData& data = MementoData::fromVolume(volume, region);
 	core::Optional<scenegraph::SceneGraphKeyFramesMap> kf;
@@ -631,90 +669,17 @@ void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId
 	addState(core::move(state));
 }
 
-bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const {
-	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
-	if (state.type == MementoType::Max) {
-		state = core::move(merge);
-		Log::debug("Initial memento group state is %i", (int)state.type);
-		return true;
-	}
-	if (state.nodeId != merge.nodeId) {
-		Log::debug("Merge of %i into %i with different nodes is not possible or not implemented yet", (int)merge.type, (int)state.type);
-		return false;
-	}
-	if (merge.type == MementoType::Modification) {
-		if (state.type == MementoType::PaletteChanged || state.type == MementoType::SceneNodePaletteChanged) {
-			Log::debug("Merge memento state of type %i into %i", (int)merge.type, (int)state.type);
-			state.type = merge.type;
-			state.data = core::move(merge.data);
-		} else {
-			Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
-			return false;
-		}
-		core_assert(state.hasVolumeData());
-	} else if (state.type != MementoType::Modification) {
-		Log::debug("Merge of %i into %i is not possible or not implemented yet", (int)merge.type, (int)state.type);
-		return false;
-	}
-
-	if (state.parentId == InvalidNodeId) {
-		state.parentId = merge.parentId;
-		Log::debug("Merged parent id");
-	}
-	if (state.nodeId == InvalidNodeId) {
-		state.nodeId = merge.nodeId;
-		Log::debug("Merged node id");
-	}
-	if (state.referenceId == InvalidNodeId) {
-		state.referenceId = merge.referenceId;
-		Log::debug("Merged reference id");
-	}
-	if (state.nodeType == scenegraph::SceneGraphNodeType::Max) {
-		state.nodeType = merge.nodeType;
-		Log::debug("Merged node type");
-	}
-	if (state.keyFrameIdx == InvalidKeyFrame) {
-		state.keyFrameIdx = merge.keyFrameIdx;
-		Log::debug("Merged key frame index");
-	}
-	if (!state.region.isValid()) {
-		state.region = merge.region;
-		Log::debug("Merged region");
-	}
-	if (merge.palette.hasValue() && !state.palette.hasValue()) {
-		state.palette = merge.palette;
-		Log::debug("Merged palette");
-	}
-	if (merge.properties.hasValue() && !state.properties.hasValue()) {
-		state.properties = merge.properties;
-		Log::debug("Merged properties");
-	}
-	if (merge.keyFrames.hasValue() && !state.keyFrames.hasValue()) {
-		state.keyFrames = merge.keyFrames;
-		Log::debug("Merged key frames");
-	}
-	if (!merge.name.empty() && state.name.empty()) {
-		state.name = merge.name;
-		Log::debug("Merged name");
-	}
-	if (!merge.pivot.hasValue() && state.pivot.hasValue()) {
-		state.pivot = merge.pivot;
-		Log::debug("Merged pivot");
-	}
-	if (!merge.worldMatrix.hasValue() && state.worldMatrix.hasValue()) {
-		state.worldMatrix = merge.worldMatrix;
-		Log::debug("Merged world matrix");
-	}
-	return true;
-}
-
 void MementoHandler::addState(MementoState &&state) {
-	if (_groupState.hasValue() && mergeStates(*_groupState.value(), state)) {
-		Log::debug("Merged memento state into group");
+	if (_groupState > 0) {
+		Log::debug("add group state: %i", _groupState);
+		_groups.back().states.emplace_back(state);
 		return;
 	}
-	_states.emplace_back(state);
-	_statePosition = stateSize() - 1;
+	MementoStateGroup group;
+	group.name = "single";
+	group.states.emplace_back(state);
+	_groups.emplace_back(core::move(group));
+	_groupStatePosition = stateSize() - 1;
 }
 
 }
