@@ -500,7 +500,8 @@ bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNodeFlags flag
 		return false;
 
 	core::String labelWithIcon = core::string::format("%s %s", icon, label);
-	return TreeNodeBehavior(window->GetID(label), flags, labelWithIcon.c_str(), nullptr);
+	ImGuiID id = window->GetID(label);
+	return TreeNodeBehavior(id, id, flags, labelWithIcon.c_str(), nullptr);
 }
 
 bool Fullscreen(const char *label, ImGuiWindowFlags additionalFlags) {

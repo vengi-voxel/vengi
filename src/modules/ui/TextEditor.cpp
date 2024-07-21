@@ -205,7 +205,7 @@ void TextEditor::AddUndo(UndoRecord &aValue) {
 	// aValue.mAfter.mCursorPosition.mColumn
 	//	);
 
-	_undoBuffer.resize((size_t)(_undoIndex + 1));
+	_undoBuffer.resize((size_t)_undoIndex + 1);
 	_undoBuffer.back() = aValue;
 	++_undoIndex;
 }
@@ -1051,7 +1051,7 @@ void TextEditor::Render(const char *id, const ImVec2 &aSize, bool aBorder) {
 
 	if (_handleKeyboardInputs) {
 		HandleKeyboardInputs();
-		ImGui::PushTabStop(true);
+		ImGui::PushItemFlag(ImGuiItemFlags_NoTabStop, false);
 	}
 
 	if (_handleMouseInputs)
@@ -1061,7 +1061,7 @@ void TextEditor::Render(const char *id, const ImVec2 &aSize, bool aBorder) {
 	Render();
 
 	if (_handleKeyboardInputs)
-		ImGui::PopTabStop();
+		ImGui::PopItemFlag();
 
 	if (!_ignoreImGuiChild)
 		ImGui::EndChild();
