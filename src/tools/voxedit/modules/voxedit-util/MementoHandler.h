@@ -323,6 +323,7 @@ public:
 	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
 	void markPaletteChange(const scenegraph::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);
+	void markAddedAnimation(const core::String &animation);
 
 	/**
 	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.

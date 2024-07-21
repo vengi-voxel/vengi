@@ -476,7 +476,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 
-	// TODO: MEMENTO ScopedMementoGroup mementoGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler);
 	bool state = false;
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(directory));
@@ -1277,7 +1277,7 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 }
 
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph) {
-	// TODO: MEMENTO ScopedMementoGroup loadGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler);
 	core_trace_scoped(LoadSceneGraph);
 	bool createDiff = core::Var::get("ve_diff", "false")->boolVal();
 	if (createDiff) {
@@ -1378,8 +1378,7 @@ bool SceneManager::setAnimation(const core::String &animation) {
 
 bool SceneManager::addAnimation(const core::String &animation) {
 	if (_sceneGraph.addAnimation(animation)) {
-		// TODO: MEMENTO
-		//_mementoHandler.markAddedAnimation(animation);
+		_mementoHandler.markAddedAnimation(animation);
 		return true;
 	}
 	return false;
@@ -1387,7 +1386,7 @@ bool SceneManager::addAnimation(const core::String &animation) {
 
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
-		// TODO: MEMENTO
+		// TODO: MEMENTO: record all keyframes from all nodes
 		// _mementoHandler.markAddedAnimation(animation);
 		return true;
 	}
@@ -1396,7 +1395,7 @@ bool SceneManager::duplicateAnimation(const core::String &animation, const core:
 
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
-		// TODO: memento
+		// TODO: MEMENTO: record all keyframes from all nodes
 		//_mementoHandler.markRemovedAnimation(animation);
 		return true;
 	}
@@ -2288,8 +2287,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		});
 		pal.markDirty();
 		pal.markSave();
-		// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
-		// ScopedMementoGroup scopedMementoGroup(_mementoHandler);
+		ScopedMementoGroup mementoGroup(_mementoHandler);
 		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
 	} else {
@@ -3141,6 +3139,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 			removeReferenceNodes.push_back((*iter).id());
 		}
 	}
+	ScopedMementoGroup mementoGroup(_mementoHandler);
 	for (int nodeId : removeReferenceNodes) {
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
@@ -3328,7 +3327,7 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &co
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
-	// TODO: MEMENTO voxedit::ScopedMementoGroup mementoGroup(_mementoHandler);
+	ScopedMementoGroup mementoGroup(_mementoHandler);
 	_sceneGraph.foreachGroup(f);
 }
 

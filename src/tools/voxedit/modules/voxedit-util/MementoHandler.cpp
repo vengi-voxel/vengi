@@ -571,6 +571,10 @@ void MementoHandler::markNodeTransform(const scenegraph::SceneGraphNode &node, s
 			 voxel::Region::InvalidRegion, node.pivot(), worldMatrix, keyFrameIdx);
 }
 
+void MementoHandler::markAddedAnimation(const core::String &animation) {
+	// TODO: MEMENTO: implement me
+}
+
 bool MementoHandler::markUndoPreamble(int nodeId) {
 	if (_locked > 0) {
 		Log::debug("Don't add undo state - we are currently in locked mode");
@@ -628,12 +632,16 @@ void MementoHandler::markUndoKeyFrames(int parentId, int nodeId, int referenceId
 }
 
 bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const {
+	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	if (state.type == MementoType::Max) {
 		state = core::move(merge);
 		Log::debug("Initial memento group state is %i", (int)state.type);
 		return true;
 	}
-
+	if (state.nodeId != merge.nodeId) {
+		Log::debug("Merge of %i into %i with different nodes is not possible or not implemented yet", (int)merge.type, (int)state.type);
+		return false;
+	}
 	if (merge.type == MementoType::Modification) {
 		if (state.type == MementoType::PaletteChanged || state.type == MementoType::SceneNodePaletteChanged) {
 			Log::debug("Merge memento state of type %i into %i", (int)merge.type, (int)state.type);
@@ -697,7 +705,6 @@ bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const
 		state.worldMatrix = merge.worldMatrix;
 		Log::debug("Merged world matrix");
 	}
-	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	return true;
 }
 

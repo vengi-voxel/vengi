@@ -576,7 +576,7 @@ TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 	ASSERT_NE(nullptr, node);
 	_mementoHandler.markInitialNodeState(*node);
 	{
-		ScopedMementoGroup group(_mementoHandler);
+		ScopedMementoGroup mementoGroup(_mementoHandler);
 		node->volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		_mementoHandler.markModification(*node, voxel::Region(0, 0, 0, 0, 0, 0));
 		node->setName("Name after");
