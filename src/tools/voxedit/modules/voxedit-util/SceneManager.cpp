@@ -293,7 +293,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 }
 
 void SceneManager::fillHollow() {
-	_sceneGraph.foreachGroup([&] (int nodeId) {
+	nodeForeachGroup([&] (int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node == nullptr) {
 			return;
@@ -309,7 +309,7 @@ void SceneManager::fillHollow() {
 }
 
 void SceneManager::fill() {
-	_sceneGraph.foreachGroup([&](int nodeId) {
+	nodeForeachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node == nullptr) {
 			return;
@@ -325,7 +325,7 @@ void SceneManager::fill() {
 }
 
 void SceneManager::clear() {
-	_sceneGraph.foreachGroup([&](int nodeId) {
+	nodeForeachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node == nullptr) {
 			return;
@@ -341,7 +341,7 @@ void SceneManager::clear() {
 }
 
 void SceneManager::hollow() {
-	_sceneGraph.foreachGroup([&](int nodeId) {
+	nodeForeachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 		if (node == nullptr) {
 			return;
@@ -724,7 +724,7 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 }
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
-	_sceneGraph.foreachGroup([&] (int nodeId) {
+	nodeForeachGroup([&] (int nodeId) {
 		nodeResize(nodeId, size);
 	});
 }
@@ -1466,8 +1466,7 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 }
 
 void SceneManager::rotate(math::Axis axis) {
-	// TODO: MEMENTO ScopedMementoGroup mementoGroup(_mementoHandler);
-	_sceneGraph.foreachGroup([&](int nodeId) {
+	nodeForeachGroup([&](int nodeId) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 		if (node == nullptr) {
 			return;
@@ -1513,7 +1512,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_sceneGraph.foreachGroup([&] (int nodeId) {
+	nodeForeachGroup([&] (int nodeId) {
 		nodeMoveVoxels(nodeId, v);
 	});
 }
@@ -1535,7 +1534,7 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::shift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	_sceneGraph.foreachGroup([&] (int nodeId) {
+	nodeForeachGroup([&] (int nodeId) {
 		nodeShift(nodeId, v);
 	});
 }
@@ -1901,7 +1900,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
-		_sceneGraph.foreachGroup([&](int nodeId) {
+		nodeForeachGroup([&](int nodeId) {
 			const voxel::RawVolume *v = volume(nodeId);
 			if (v == nullptr) {
 				return;
@@ -1914,7 +1913,7 @@ void SceneManager::construct() {
 	}).setHelp(_("Center the current active nodes at the reference position"));
 
 	command::Command::registerCommand("center_origin", [&](const command::CmdArgs &args) {
-		_sceneGraph.foreachGroup([&](int nodeId) {
+		nodeForeachGroup([&](int nodeId) {
 			const voxel::RawVolume *v = volume(nodeId);
 			if (v == nullptr) {
 				return;
@@ -2320,7 +2319,7 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 }
 
 void SceneManager::flip(math::Axis axis) {
-	_sceneGraph.foreachGroup([&](int nodeId) {
+	nodeForeachGroup([&](int nodeId) {
 		voxel::RawVolume *v = volume(nodeId);
 		if (v == nullptr) {
 			return;
@@ -3329,6 +3328,7 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &co
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
+	// TODO: MEMENTO voxedit::ScopedMementoGroup mementoGroup(_mementoHandler);
 	_sceneGraph.foreachGroup(f);
 }
 
