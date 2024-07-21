@@ -475,6 +475,8 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		Log::info("Could not find any model in %s", directory.c_str());
 		return false;
 	}
+
+	// TODO: MEMENTO ScopedMementoGroup mementoGroup(_mementoHandler);
 	bool state = false;
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(directory));
@@ -1376,7 +1378,7 @@ bool SceneManager::setAnimation(const core::String &animation) {
 
 bool SceneManager::addAnimation(const core::String &animation) {
 	if (_sceneGraph.addAnimation(animation)) {
-		// TODO: memento
+		// TODO: MEMENTO
 		//_mementoHandler.markAddedAnimation(animation);
 		return true;
 	}
@@ -1385,8 +1387,8 @@ bool SceneManager::addAnimation(const core::String &animation) {
 
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
-		// TODO: memento
-		//_mementoHandler.markAddedAnimation(animation);
+		// TODO: MEMENTO
+		// _mementoHandler.markAddedAnimation(animation);
 		return true;
 	}
 	return false;
@@ -2287,7 +2289,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		});
 		pal.markDirty();
 		pal.markSave();
-		// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
+		// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 		// ScopedMementoGroup scopedMementoGroup(_mementoHandler);
 		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
@@ -3132,7 +3134,7 @@ void SceneManager::markDirty() {
 
 bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) {
 	const int nodeId = node.id();
-	const core::String name = node.name();
+	core::String name = node.name();
 	Log::debug("Delete node %i with name %s", nodeId, name.c_str());
 	core::Buffer<int> removeReferenceNodes;
 	for (auto iter = _sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != _sceneGraph.end(); ++iter) {
@@ -3143,13 +3145,14 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	for (int nodeId : removeReferenceNodes) {
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
-	// TODO: memento and recursive... - we only record the one node in the memento state - not the children
+	// TODO: MEMENTO memento and recursive... - we only record the one node in the memento state - not the children
 	_mementoHandler.markNodeRemoved(node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);
 		_mementoHandler.removeLast();
 		return false;
 	}
+	// TODO: the children are not removed from the renderer state
 	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));

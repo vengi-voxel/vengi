@@ -299,7 +299,7 @@ void MementoHandler::clearStates() {
 
 MementoState MementoHandler::undoModification(const MementoState &s) {
 	core_assert(s.hasVolumeData());
-	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
+	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	for (int i = _statePosition; i >= 0; --i) {
 		MementoState &prevS = _states[i];
 		if (prevS.nodeId != s.nodeId) {
@@ -697,7 +697,7 @@ bool MementoHandler::mergeStates(MementoState &state, MementoState &merge) const
 		state.worldMatrix = merge.worldMatrix;
 		Log::debug("Merged world matrix");
 	}
-	// TODO: memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
+	// TODO: MEMENTO memento group - finish implementation see https://github.com/vengi-voxel/vengi/issues/376
 	return true;
 }
 
