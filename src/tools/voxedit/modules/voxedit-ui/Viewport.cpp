@@ -370,7 +370,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginMenuBar()) {
-		const MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), listener);
 		ImGui::Dummy(ImVec2(20, 0));
@@ -497,7 +497,7 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 		return;
 	}
 	Log::debug("Unlock memento state");
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	mementoHandler.unlock();
 	_sceneMgr->modifier().unlock();
 	if (keyFrameIdx == InvalidKeyFrame) {
@@ -515,7 +515,7 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 		return;
 	}
 	Log::debug("Lock memento state");
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	if (keyFrameIdx != InvalidKeyFrame) {
 		mementoHandler.markNodeTransform(node, keyFrameIdx);
 	}

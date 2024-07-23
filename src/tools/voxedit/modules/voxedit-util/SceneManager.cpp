@@ -62,7 +62,6 @@
 #include "voxelutil/ImageUtils.h"
 
 #include "Config.h"
-#include "MementoHandler.h"
 #include "SceneUtil.h"
 #include "Clipboard.h"
 
@@ -476,7 +475,7 @@ bool SceneManager::importDirectory(const core::String& directory, const io::Form
 		return false;
 	}
 
-	ScopedMementoGroup mementoGroup(_mementoHandler, "importdirectory");
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "importdirectory");
 	bool state = false;
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(directory));
@@ -793,12 +792,12 @@ voxel::RawVolume* SceneManager::activeVolume() {
 	return volume(nodeId);
 }
 
-bool SceneManager::mementoRename(const MementoState& s) {
+bool SceneManager::mementoRename(const memento::MementoState& s) {
 	Log::debug("Memento: rename of node %i (%s)", s.nodeId, s.name.c_str());
 	return nodeRename(s.nodeId, s.name);
 }
 
-bool SceneManager::mementoProperties(const MementoState& s) {
+bool SceneManager::mementoProperties(const memento::MementoState& s) {
 	Log::debug("Memento: properties of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->properties().clear();
@@ -809,7 +808,7 @@ bool SceneManager::mementoProperties(const MementoState& s) {
 	return false;
 }
 
-bool SceneManager::mementoKeyFrames(const MementoState& s) {
+bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
@@ -822,7 +821,7 @@ bool SceneManager::mementoKeyFrames(const MementoState& s) {
 	return false;
 }
 
-bool SceneManager::mementoPaletteChange(const MementoState& s) {
+bool SceneManager::mementoPaletteChange(const memento::MementoState& s) {
 	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
 		node->setPalette(*s.palette.value());
@@ -835,7 +834,7 @@ bool SceneManager::mementoPaletteChange(const MementoState& s) {
 	return false;
 }
 
-bool SceneManager::mementoTransform(const MementoState& s) {
+bool SceneManager::mementoTransform(const memento::MementoState& s) {
 	Log::debug("Memento: transform of node %i", s.nodeId);
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		if (s.pivot.hasValue()) {
@@ -851,7 +850,7 @@ bool SceneManager::mementoTransform(const MementoState& s) {
 	return false;
 }
 
-bool SceneManager::mementoModification(const MementoState& s) {
+bool SceneManager::mementoModification(const memento::MementoState& s) {
 	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		if (node->type() == scenegraph::SceneGraphNodeType::Model && s.nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
@@ -866,7 +865,7 @@ bool SceneManager::mementoModification(const MementoState& s) {
 					delete v;
 				}
 			}
-			MementoData::toVolume(node->volume(), s.data);
+			memento::MementoData::toVolume(node->volume(), s.data);
 		}
 		node->setName(s.name);
 		if (s.pivot.hasValue()) {
@@ -882,7 +881,7 @@ bool SceneManager::mementoModification(const MementoState& s) {
 	return false;
 }
 
-bool SceneManager::mementoStateToNode(const MementoState &s) {
+bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	scenegraph::SceneGraphNodeType type = s.nodeType;
 	if (type == scenegraph::SceneGraphNodeType::Max) {
 		if (!s.hasVolumeData()) {
@@ -894,7 +893,7 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	scenegraph::SceneGraphNode newNode(type);
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
-		MementoData::toVolume(newNode.volume(), s.data);
+		memento::MementoData::toVolume(newNode.volume(), s.data);
 	}
 	if (s.palette.hasValue()) {
 		newNode.setPalette(*s.palette.value());
@@ -919,46 +918,46 @@ bool SceneManager::mementoStateToNode(const MementoState &s) {
 	return newNodeId != InvalidNodeId;
 }
 
-bool SceneManager::mementoStateExecute(const MementoState &s, bool isRedo) {
+bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRedo) {
 	core_assert(s.valid());
-	ScopedMementoHandlerLock lock(_mementoHandler);
-	if (s.type == MementoType::SceneNodeRenamed) {
+	memento::ScopedMementoHandlerLock lock(_mementoHandler);
+	if (s.type == memento::MementoType::SceneNodeRenamed) {
 		return mementoRename(s);
 	}
-	if (s.type == MementoType::SceneNodeKeyFrames) {
+	if (s.type == memento::MementoType::SceneNodeKeyFrames) {
 		return mementoKeyFrames(s);
 	}
-	if (s.type == MementoType::SceneNodeProperties) {
+	if (s.type == memento::MementoType::SceneNodeProperties) {
 		return mementoProperties(s);
 	}
-	if (s.type == MementoType::SceneNodePaletteChanged) {
+	if (s.type == memento::MementoType::SceneNodePaletteChanged) {
 		return mementoPaletteChange(s);
 	}
-	if (s.type == MementoType::SceneNodeMove) {
+	if (s.type == memento::MementoType::SceneNodeMove) {
 		Log::debug("Memento: move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
 	}
-	if (s.type == MementoType::SceneNodeTransform) {
+	if (s.type == memento::MementoType::SceneNodeTransform) {
 		return mementoTransform(s);
 	}
-	if (s.type == MementoType::Modification) {
+	if (s.type == memento::MementoType::Modification) {
 		return mementoModification(s);
 	}
 	if (isRedo) {
-		if (s.type == MementoType::SceneNodeRemoved) {
+		if (s.type == memento::MementoType::SceneNodeRemoved) {
 			Log::debug("Memento: remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
 			return nodeRemove(s.nodeId, true);
 		}
-		if (s.type == MementoType::SceneNodeAdded) {
+		if (s.type == memento::MementoType::SceneNodeAdded) {
 			Log::debug("Memento: add node (%s) to parent %i", s.name.c_str(), s.parentId);
 			return mementoStateToNode(s);
 		}
 	} else {
-		if (s.type == MementoType::SceneNodeRemoved) {
+		if (s.type == memento::MementoType::SceneNodeRemoved) {
 			Log::debug("Memento: remove of node (%s) from parent %i", s.name.c_str(), s.parentId);
 			return mementoStateToNode(s);
 		}
-		if (s.type == MementoType::SceneNodeAdded) {
+		if (s.type == memento::MementoType::SceneNodeAdded) {
 			Log::debug("Memento: add node (%s) to parent %i", s.name.c_str(), s.parentId);
 			return nodeRemove(s.nodeId, true);
 		}
@@ -992,12 +991,12 @@ bool SceneManager::doUndo() {
 		return false;
 	}
 
-	const MementoStateGroup& group = _mementoHandler.undo();
+	const memento::MementoStateGroup& group = _mementoHandler.undo();
 	if (group.states.empty()) {
 		Log::debug("Nothing to undo");
 		return false;
 	}
-	for (const MementoState& s : group.states) {
+	for (const memento::MementoState& s : group.states) {
 		if (!mementoStateExecute(s, false)) {
 			return false;
 		}
@@ -1011,8 +1010,8 @@ bool SceneManager::doRedo() {
 		return false;
 	}
 
-	const MementoStateGroup& group = _mementoHandler.redo();
-	for (const MementoState& s : group.states) {
+	const memento::MementoStateGroup& group = _mementoHandler.redo();
+	for (const memento::MementoState& s : group.states) {
 		if (!mementoStateExecute(s, true)) {
 			return false;
 		}
@@ -1233,7 +1232,7 @@ void SceneManager::resetSceneState() {
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
-	ScopedMementoGroup mementoGroup(_mementoHandler, "loadscene");
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "loadscene");
 	Log::debug("New volume for node %i", node.id());
 	for (const auto &n : _sceneGraph.nodes()) {
 		if (!n->second.isAnyModelNode()) {
@@ -2301,7 +2300,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		});
 		pal.markDirty();
 		pal.markSave();
-		ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
+		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
 		_mementoHandler.markPaletteChange(node);
 		modified(nodeId, v->region());
 	} else {
@@ -3153,7 +3152,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 			removeReferenceNodes.push_back((*iter).id());
 		}
 	}
-	ScopedMementoGroup mementoGroup(_mementoHandler, "noderemove");
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "noderemove");
 	for (int nodeId : removeReferenceNodes) {
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
@@ -3341,7 +3340,7 @@ bool SceneManager::nodeSetColor(int nodeId, uint8_t palIdx, const core::RGBA &co
 }
 
 void SceneManager::nodeForeachGroup(const std::function<void(int)>& f) {
-	ScopedMementoGroup mementoGroup(_mementoHandler, "group");
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "group");
 	_sceneGraph.foreachGroup(f);
 }
 

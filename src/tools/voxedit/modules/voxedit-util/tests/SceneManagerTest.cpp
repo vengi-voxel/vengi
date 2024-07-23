@@ -96,7 +96,7 @@ protected:
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(ModifierType::Place);
-		MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+		memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		EXPECT_FALSE(mementoHandler.canUndo());
 		EXPECT_FALSE(mementoHandler.canRedo());
 	}
@@ -170,7 +170,7 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 	ASSERT_TRUE(testSetVoxel(testMins()));
 	EXPECT_TRUE(_sceneMgr->dirty());
 
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	for (int i = 0; i < 3; ++i) {
 		ASSERT_TRUE(mementoHandler.canUndo());
 		EXPECT_TRUE(voxel::isBlocked(testVolume()->voxel(0, 0, 0).getMaterial()));
@@ -193,7 +193,7 @@ TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 	EXPECT_NE(-1, _sceneMgr->addModelChild("third node", 1, 1, 1));
 	EXPECT_EQ(3u, _sceneMgr->mementoHandler().stateSize());
 
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	EXPECT_TRUE(mementoHandler.canUndo());
 	EXPECT_FALSE(mementoHandler.canRedo());
 	EXPECT_EQ(3u, _sceneMgr->sceneGraph().size());
@@ -231,7 +231,7 @@ TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 }
 
 TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	EXPECT_EQ(1u, mementoHandler.stateSize());
 	// modification
 	ASSERT_TRUE(testSetVoxel(testMins(), 1));
@@ -320,7 +320,7 @@ TEST_F(SceneManagerTest, testUndoRedoModificationMultipleNodes) {
 }
 
 TEST_F(SceneManagerTest, testRenameUndoRedo) {
-	MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 	EXPECT_EQ(1u, mementoHandler.stateSize());
 	EXPECT_TRUE(_sceneMgr->nodeRename(_sceneMgr->sceneGraph().activeNode(), "newname"));
 	EXPECT_EQ(2u, mementoHandler.stateSize());

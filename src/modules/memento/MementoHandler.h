@@ -6,20 +6,20 @@
 
 #include "core/IComponent.h"
 #include "core/Optional.h"
+#include "core/String.h"
+#include "core/collection/RingBuffer.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "core/collection/RingBuffer.h"
-#include "core/String.h"
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 namespace voxel {
 class RawVolume;
 }
 
-namespace voxedit {
+namespace memento {
 
 enum class MementoType {
 	/**
@@ -48,6 +48,7 @@ enum class MementoType {
 class MementoData {
 	friend struct MementoState;
 	friend class MementoHandler;
+
 private:
 	/**
 	 * @brief How big is the buffer with the compressed volume data
@@ -56,26 +57,30 @@ private:
 	/**
 	 * @brief The compressed volume data
 	 */
-	uint8_t* _buffer = nullptr;
+	uint8_t *_buffer = nullptr;
 	/**
 	 * The region the given volume data is for
 	 */
-	voxel::Region _region {};
+	voxel::Region _region{};
 
-	MementoData(const uint8_t* buf, size_t bufSize, const voxel::Region& region);
-	MementoData(uint8_t* buf, size_t bufSize, const voxel::Region& region);
+	MementoData(const uint8_t *buf, size_t bufSize, const voxel::Region &region);
+	MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region);
+
 public:
-	MementoData() {}
-	MementoData(MementoData&& o) noexcept;
-	MementoData(const MementoData& o);
+	MementoData() {
+	}
+	MementoData(MementoData &&o) noexcept;
+	MementoData(const MementoData &o);
 	~MementoData();
 
-	inline size_t size() const { return _compressedSize; }
+	inline size_t size() const {
+		return _compressedSize;
+	}
 
-	MementoData& operator=(MementoData &&o) noexcept;
-	MementoData& operator=(const MementoData &o) noexcept;
+	MementoData &operator=(MementoData &&o) noexcept;
+	MementoData &operator=(const MementoData &o) noexcept;
 
-	inline const voxel::Region& region() const {
+	inline const voxel::Region &region() const {
 		return _region;
 	}
 
@@ -83,14 +88,14 @@ public:
 	 * @brief Converts the given @c mementoData back into a voxels
 	 * @note Inserts the voxels from the memento data into the given volume at the given region.
 	 */
-	static bool toVolume(voxel::RawVolume* volume, const MementoData& mementoData);
+	static bool toVolume(voxel::RawVolume *volume, const MementoData &mementoData);
 	/**
 	 * @brief Converts the given volume into a @c MementoData structure (and perform the compression)
 	 * @param[in] volume The volume to create the memento state for. This might be @c null.
 	 * @param[in] region The region of the volume to create the memento data for - if this is not a valid region,
 	 * the whole volume is going to added to the memento data.
 	 */
-	static MementoData fromVolume(const voxel::RawVolume* volume, const voxel::Region &region);
+	static MementoData fromVolume(const voxel::RawVolume *volume, const voxel::Region &region);
 };
 
 struct MementoState {
@@ -106,21 +111,23 @@ struct MementoState {
 	core::String name;
 	core::Optional<glm::mat4x4> worldMatrix;
 	/**
-	 * @note This region might be different from the region given in the @c MementoData. In case of an @c MementoHandler::undo()
-	 * call, we have to make sure that the region of the previous state is re-extracted.
+	 * @note This region might be different from the region given in the @c MementoData. In case of an @c
+	 * MementoHandler::undo() call, we have to make sure that the region of the previous state is re-extracted.
 	 */
 	voxel::Region region;
 	core::Optional<glm::vec3> pivot;
 	core::Optional<palette::Palette> palette;
 
-	MementoState() :
-			type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max), keyFrameIdx(0) {
+	MementoState()
+		: type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max),
+		  keyFrameIdx(0) {
 	}
 
-	MementoState(const MementoState &other) :
-			type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId), referenceId(other.referenceId),
-			nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), keyFrameIdx(other.keyFrameIdx),
-			name(other.name), worldMatrix(other.worldMatrix), region(other.region), pivot(other.pivot), palette(other.palette) {
+	MementoState(const MementoState &other)
+		: type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
+		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
+		  properties(other.properties), keyFrameIdx(other.keyFrameIdx), name(other.name),
+		  worldMatrix(other.worldMatrix), region(other.region), pivot(other.pivot), palette(other.palette) {
 	}
 
 	MementoState(MementoState &&other) noexcept {
@@ -140,7 +147,7 @@ struct MementoState {
 		palette = core::move(other.palette);
 	}
 
-	MementoState& operator=(MementoState &&other) noexcept {
+	MementoState &operator=(MementoState &&other) noexcept {
 		if (&other == this) {
 			return *this;
 		}
@@ -161,7 +168,7 @@ struct MementoState {
 		return *this;
 	}
 
-	MementoState& operator=(const MementoState& other) {
+	MementoState &operator=(const MementoState &other) {
 		if (&other == this) {
 			return *this;
 		}
@@ -184,30 +191,31 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
-				 const core::Optional<palette::Palette> &_palette)
+				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_worldMatrix,
+				 scenegraph::KeyFrameIndex _keyFrameIdx, const core::Optional<palette::Palette> &_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
-		  palette(_palette) {
+		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region),
+		  pivot(_pivot), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
 				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
-				 core::Optional<glm::vec3> &&_pivot, core::Optional<glm::mat4x4> &&_worldMatrix, scenegraph::KeyFrameIndex _keyFrameIdx,
-				 core::Optional<palette::Palette> &&_palette)
+				 core::Optional<glm::vec3> &&_pivot, core::Optional<glm::mat4x4> &&_worldMatrix,
+				 scenegraph::KeyFrameIndex _keyFrameIdx, core::Optional<palette::Palette> &&_palette)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region), pivot(_pivot),
-		  palette(_palette) {
+		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), worldMatrix(_worldMatrix), region(_region),
+		  pivot(_pivot), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const core::Optional<glm::vec3> &_pivot, const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
+				 const core::Optional<glm::vec3> &_pivot,
+				 const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
 				 const core::Optional<palette::Palette> &_palette,
 				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), pivot(_pivot),
-		  palette(_palette) {
+		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region),
+		  pivot(_pivot), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
@@ -216,8 +224,8 @@ struct MementoState {
 				 core::Optional<palette::Palette> &&_palette,
 				 core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region), pivot(_pivot),
-		  palette(_palette) {
+		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), region(_region),
+		  pivot(_pivot), palette(_palette) {
 	}
 
 	inline bool valid() const {
@@ -231,7 +239,7 @@ struct MementoState {
 		return data._buffer != nullptr;
 	}
 
-	inline const voxel::Region& dataRegion() const {
+	inline const voxel::Region &dataRegion() const {
 		return data._region;
 	}
 };
@@ -257,7 +265,7 @@ private:
 	void addState(MementoState &&state);
 	bool markUndoPreamble(int nodeId);
 
-	inline MementoState& first(MementoStateGroup &group) const {
+	inline MementoState &first(MementoStateGroup &group) const {
 		return group.states[0];
 	}
 
@@ -268,6 +276,7 @@ private:
 	MementoState undoKeyFrames(const MementoState &s);
 	MementoState undoTransform(const MementoState &s);
 	MementoState undoModification(const MementoState &s);
+
 public:
 	MementoHandler();
 	~MementoHandler();
@@ -310,11 +319,12 @@ public:
 	 */
 	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::vec3 &pivot, const glm::mat4 &transformMatrix, scenegraph::KeyFrameIndex keyFrameIdx,
-				  const core::Optional<palette::Palette> &palette = {});
+				  const voxel::Region &region, const glm::vec3 &pivot, const glm::mat4 &transformMatrix,
+				  scenegraph::KeyFrameIndex keyFrameIdx, const core::Optional<palette::Palette> &palette = {});
 	void markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name,
 						   scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-						   const voxel::Region &region, const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &keyFrames,
+						   const voxel::Region &region, const glm::vec3 &pivot,
+						   const scenegraph::SceneGraphKeyFramesMap &keyFrames,
 						   const core::Optional<palette::Palette> &palette = {},
 						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
 	bool removeLast();
@@ -324,32 +334,27 @@ public:
 	void markNodeRemoved(const scenegraph::SceneGraphNode &node);
 	void markNodeAdded(const scenegraph::SceneGraphNode &node);
 	void markNodeTransform(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
-	void markModification(const scenegraph::SceneGraphNode &node, const voxel::Region& modifiedRegion);
+	void markModification(const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
 	void markInitialNodeState(const scenegraph::SceneGraphNode &node);
 	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
 	void markNodeMoved(int targetId, int sourceId);
-	void markPaletteChange(const scenegraph::SceneGraphNode &node, const voxel::Region& modifiedRegion = voxel::Region::InvalidRegion);
+	void markPaletteChange(const scenegraph::SceneGraphNode &node,
+						   const voxel::Region &modifiedRegion = voxel::Region::InvalidRegion);
 	void markAddedAnimation(const core::String &animation);
 
 	/**
-	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each new node.
-	 * This method will update the references for the old node id to the new one
+	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each
+	 * new node. This method will update the references for the old node id to the new one
 	 */
 	void updateNodeId(int nodeId, int newNodeId);
 
-	/**
-	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
-	 */
 	MementoStateGroup undo();
-	/**
-	 * @note Keep in mind that the returned state contains memory for the voxel::RawVolume that you take ownership for
-	 */
 	MementoStateGroup redo();
 	bool canUndo() const;
 	bool canRedo() const;
 
-	const MementoStateGroup& stateGroup() const;
-	const MementoStates& states() const;
+	const MementoStateGroup &stateGroup() const;
+	const MementoStates &states() const;
 
 	size_t stateSize() const;
 	uint8_t statePosition() const;
@@ -375,9 +380,10 @@ public:
  */
 class ScopedMementoHandlerLock {
 private:
-	MementoHandler& _handler;
+	MementoHandler &_handler;
+
 public:
-	ScopedMementoHandlerLock(MementoHandler& handler) : _handler(handler) {
+	ScopedMementoHandlerLock(MementoHandler &handler) : _handler(handler) {
 		_handler.lock();
 	}
 	~ScopedMementoHandlerLock() {
@@ -385,11 +391,11 @@ public:
 	}
 };
 
-inline const MementoStateGroup& MementoHandler::stateGroup() const {
+inline const MementoStateGroup &MementoHandler::stateGroup() const {
 	return _groups[_groupStatePosition];
 }
 
-inline const MementoStates& MementoHandler::states() const {
+inline const MementoStates &MementoHandler::states() const {
 	return _groups;
 }
 
@@ -421,4 +427,4 @@ inline bool MementoHandler::canRedo() const {
 	return _groupStatePosition <= stateSize() - 2;
 }
 
-}
+} // namespace memento

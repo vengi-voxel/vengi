@@ -1,5 +1,4 @@
 set(SRCS
-	MementoHandler.h MementoHandler.cpp
 	SceneManager.h SceneManager.cpp
 	AxisUtil.h AxisUtil.cpp
 	Config.h
@@ -34,13 +33,12 @@ set(SRCS
 )
 
 set(LIB voxedit-util)
-set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator voxelfont)
+set(DEPENDENCIES ui voxelrender voxelformat voxelgenerator voxelfont memento)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${DEPENDENCIES})
 
 set(TEST_SRCS
 	tests/AbstractBrushTest.cpp tests/AbstractBrushTest.h
 	tests/LineBrushTest.cpp
-	tests/MementoHandlerTest.cpp
 	tests/ModifierTest.cpp
 	tests/PaintBrushTest.cpp
 	tests/PathBrushTest.cpp

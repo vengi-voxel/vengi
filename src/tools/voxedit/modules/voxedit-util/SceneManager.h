@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ISceneRenderer.h"
-#include "MementoHandler.h"
+#include "memento/MementoHandler.h"
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
 #include "core/Enum.h"
@@ -58,7 +58,7 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 class SceneManager : public core::DeltaFrameSeconds {
 private:
 	scenegraph::SceneGraph _sceneGraph;
-	MementoHandler _mementoHandler;
+	memento::MementoHandler _mementoHandler;
 	util::Movement _movement;
 	voxel::VoxelData _copy;
 	std::future<scenegraph::SceneGraph> _loadingFuture;
@@ -183,14 +183,14 @@ protected:
 
 	void flip(math::Axis axis);
 
-	bool mementoStateExecute(const MementoState &s, bool isRedo);
-	bool mementoStateToNode(const MementoState &s);
-	bool mementoRename(const MementoState &s);
-	bool mementoKeyFrames(const MementoState &s);
-	bool mementoProperties(const MementoState &s);
-	bool mementoPaletteChange(const MementoState &s);
-	bool mementoModification(const MementoState &s);
-	bool mementoTransform(const MementoState &s);
+	bool mementoStateExecute(const memento::MementoState &s, bool isRedo);
+	bool mementoStateToNode(const memento::MementoState &s);
+	bool mementoRename(const memento::MementoState &s);
+	bool mementoKeyFrames(const memento::MementoState &s);
+	bool mementoProperties(const memento::MementoState &s);
+	bool mementoPaletteChange(const memento::MementoState &s);
+	bool mementoModification(const memento::MementoState &s);
+	bool mementoTransform(const memento::MementoState &s);
 
 	/**
 	 * @brief Sets the cursor to the given position in the volume
@@ -400,8 +400,8 @@ public:
 	// component access
 	const ModifierFacade &modifier() const;
 	ModifierFacade &modifier();
-	const MementoHandler &mementoHandler() const;
-	MementoHandler &mementoHandler();
+	const memento::MementoHandler &mementoHandler() const;
+	memento::MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
 	scenegraph::SceneGraph &sceneGraph();
 	voxelgenerator::LUAApi &luaApi();
@@ -530,11 +530,11 @@ inline video::Camera *SceneManager::activeCamera() const {
 	return _camera;
 }
 
-inline const MementoHandler &SceneManager::mementoHandler() const {
+inline const memento::MementoHandler &SceneManager::mementoHandler() const {
 	return _mementoHandler;
 }
 
-inline MementoHandler &SceneManager::mementoHandler() {
+inline memento::MementoHandler &SceneManager::mementoHandler() {
 	return _mementoHandler;
 }
 

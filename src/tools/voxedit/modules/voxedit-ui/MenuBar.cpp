@@ -95,7 +95,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Edit"))) {
-			const MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
+			const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
