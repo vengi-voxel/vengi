@@ -44,39 +44,92 @@ static const struct FileDialogSorter {
 	bool (*asc)(const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs);
 	bool (*desc)(const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs);
 } fileDialogSorter[(int)FileDialogColumnId::Max] = {
-	{
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->name < rhs->name; },
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->name > rhs->name; }
-	},
-	{
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->size < rhs->size; },
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->size > rhs->size; }
-	},
-	{
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
-			const core::String &aext = core::string::extractExtension(lhs->name);
-			const core::String &bext = core::string::extractExtension(rhs->name);
-			return aext < bext;
-		},
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
-			const core::String &aext = core::string::extractExtension(lhs->name);
-			const core::String &bext = core::string::extractExtension(rhs->name);
-			return aext > bext;
+	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
 		}
-	},
-	{
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->mtime < rhs->mtime; },
-		[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) { return lhs->mtime > rhs->mtime; }
-	}
-};
+		return lhs->name < rhs->name;
+	 },
+	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		return lhs->name > rhs->name;
+	 }},
+	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		return lhs->size < rhs->size;
+	 },
+	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		return lhs->size > rhs->size;
+	 }},
+	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		const core::String &aext = core::string::extractExtension(lhs->name);
+		const core::String &bext = core::string::extractExtension(rhs->name);
+		return aext < bext;
+	 },
+	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		const core::String &aext = core::string::extractExtension(lhs->name);
+		const core::String &bext = core::string::extractExtension(rhs->name);
+		return aext > bext;
+	 }},
+	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		return lhs->mtime < rhs->mtime;
+	 },
+	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
+		if (lhs->name == "..") {
+			return false;
+		} else if (rhs->name == "..") {
+			return true;
+		}
+		return lhs->mtime > rhs->mtime;
+	 }}};
 
 static core::String assemblePath(const core::String &dir, const io::FilesystemEntry &ent) {
+	if (ent.isDirectory() && ent.name == "..") {
+		return ent.fullPath;
+	}
 	return core::string::path(dir, ent.name);
 }
 
 void FileDialog::applyFilter(video::OpenFileMode type) {
 	_filteredEntities.clear();
-	_filteredEntities.reserve(_entities.size());
+	_filteredEntities.reserve(_entities.size() + 1);
+	const bool isRootPath = core::string::isRootPath(_currentPath);
+	if (!isRootPath) {
+		_parentDir.name = "..";
+		_parentDir.type = io::FilesystemEntry::Type::dir;
+		_parentDir.fullPath = io::filesystem()->absolutePath(core::string::path(_currentPath, ".."));
+	}
+	_filteredEntities.push_back(&_parentDir);
 	for (size_t i = 0; i < _entities.size(); ++i) {
 		if (_entities[i].type == io::FilesystemEntry::Type::dir) {
 			_filteredEntities.push_back(&_entities[i]);
@@ -400,36 +453,16 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 		}
 
 		const ImVec2 size(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0);
-
-		const bool isRootPath = core::string::isRootPath(_currentPath);
-		int clipperOffset = isRootPath ? 0 : 1;
-
 		// add filtered and sorted directory entries
 		ImGuiListClipper clipper;
-		clipper.Begin((int)_filteredEntities.size() + clipperOffset);
-		int n = 0;
+		clipper.Begin((int)_filteredEntities.size());
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-				++n;
-
-				// add parent directory
-				if (n == 1 && !isRootPath) {
-					ImGui::TableNextColumn();
-					if (ImGui::Selectable(_(".."), false, ImGuiSelectableFlags_AllowDoubleClick, size)) {
-						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-							setCurrentPath(type, io::filesystem()->absolutePath(core::string::path(_currentPath, "..")));
-						}
-					}
-					ImGui::TableNextColumn();
-					ImGui::TableNextColumn();
-					ImGui::TableNextColumn();
-					continue;
-				}
-				const io::FilesystemEntry entry = *_filteredEntities[i - clipperOffset];
+				const io::FilesystemEntry entry = *_filteredEntities[i];
 				ImGui::TableNextColumn();
 				const bool selected = i == (int)_entryIndex;
 				if (selected) {
-					_selectedEntry = *_filteredEntities[i];
+					_selectedEntry = entry;
 				}
 				const char *icon = iconForType(entry.type);
 				const float x = ImGui::GetCursorPosX();
@@ -439,7 +472,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
 					resetState();
 					_entryIndex = i;
-					_selectedEntry = *_filteredEntities[i];
+					_selectedEntry = entry;
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						if (entry.isDirectory()) {
 							doubleClickedDir = true;
