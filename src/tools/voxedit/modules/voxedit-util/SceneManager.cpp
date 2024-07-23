@@ -240,20 +240,18 @@ void SceneManager::autosave() {
 	if (delay <= 0 || _lastAutoSave + (double)delay > _timeProvider->tickSeconds()) {
 		return;
 	}
+	// autosaves go into the write path directory (which is usually the home directory of the user)
 	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename.set("autosave-noname." + voxelformat::vengi().mainExtension());
+		autoSaveFilename.set(_filesystem->writePath("autosave-noname." + voxelformat::vengi().mainExtension()));
 	} else {
-		if (core::string::startsWith(_lastFilename.c_str(), "autosave-")) {
-			autoSaveFilename = _lastFilename;
-		} else {
-			const io::FilePtr file = _filesystem->open(_lastFilename.name);
-			const core::String& p = file->path();
-			const core::String& f = file->fileName();
-			const core::String& e = file->extension();
-			autoSaveFilename.set(core::string::format("%sautosave-%s.%s",
-					p.c_str(), f.c_str(), e.c_str()), &_lastFilename.desc);
-		}
+		const io::FilePtr &file = _filesystem->open(_lastFilename.name);
+		const core::String &filename = file->fileName();
+		const core::String &prefix = core::string::startsWith(filename, "autosave-") ? "" : "autosave-";
+		const core::String &ext = file->extension();
+		const core::String &autosaveFilename =
+			core::string::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
+		autoSaveFilename.set(_filesystem->writePath(autosaveFilename), &_lastFilename.desc);
 	}
 	if (save(autoSaveFilename, true)) {
 		Log::info("Autosave file %s", autoSaveFilename.c_str());
