@@ -346,9 +346,13 @@ bool Filesystem::registerPath(const core::String &path) {
 		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
 		return false;
 	}
-	_paths.push_back(path);
-	Log::debug("Registered data path: '%s'", path.c_str());
-	return true;
+	if (fs_exists(path.c_str())) {
+		_paths.push_back(path);
+		Log::debug("Registered data path: '%s'", path.c_str());
+		return true;
+	}
+	Log::warn("Failed to register non-existing data path: '%s'", path.c_str());
+	return false;
 }
 
 core::String Filesystem::currentDir() const {
@@ -388,6 +392,7 @@ bool Filesystem::pushDir(const core::String &directory) {
 
 // TODO: case insensitive search should be possible - see searchPathFor()
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
+	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
 	if (isReadableDir(filename)) {
 		Log::debug("%s is a directory - skip this", filename.c_str());
 		return core::make_shared<io::File>("", mode);
