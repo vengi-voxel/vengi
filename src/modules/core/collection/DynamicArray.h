@@ -205,6 +205,10 @@ public:
 		new ((void *)&_buffer[_size++]) TYPE(core::forward<_Args>(args)...);
 	}
 
+	void push_front(const TYPE& val) {
+		insert(begin(), val);
+	}
+
 	void push_back(const TYPE& val) {
 		checkBufferSize(_size + 1u);
 		new ((void *)&_buffer[_size++]) TYPE(val);
