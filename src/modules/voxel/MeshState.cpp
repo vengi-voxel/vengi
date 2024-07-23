@@ -254,7 +254,8 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 	const int s = _meshSize->intVal();
 	const glm::ivec3 meshSize(s);
 	const glm::ivec3 meshSizeMinusOne(s - 1);
-	const voxel::Region &completeRegion = v->region();
+	voxel::Region completeRegion = v->region();
+	completeRegion.shiftUpperCorner(1, 1, 1);
 
 	// convert to step coordinates that are needed to extract
 	// the given region mesh size ranges

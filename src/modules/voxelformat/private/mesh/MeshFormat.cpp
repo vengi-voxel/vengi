@@ -610,8 +610,11 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const scenegraph::SceneGraphNode &node = *iter;
 		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {
 			voxel::ChunkMesh *mesh = new voxel::ChunkMesh();
+			voxel::Region regionExt = region;
+			// we are increasing the region by one voxel to ensure the inclusion of the boundary voxels in this mesh
+			regionExt.shiftUpperCorner(1, 1, 1);
 			voxel::SurfaceExtractionContext ctx =
-				voxel::createContext(type, volume, region, node.palette(), *mesh, {0, 0, 0}, mergeQuads,
+				voxel::createContext(type, volume, regionExt, node.palette(), *mesh, {0, 0, 0}, mergeQuads,
 									 reuseVertices, ambientOcclusion);
 			voxel::extractSurface(ctx);
 			if (withNormals) {

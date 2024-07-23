@@ -126,6 +126,7 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
 
 	voxel::ChunkMesh mesh;
 
+	region.shiftUpperCorner(1, 1, 1);
 	SurfaceExtractionContext ctx =
 		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);

@@ -26,13 +26,9 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 
 void extractSurface(SurfaceExtractionContext &ctx) {
 	if (ctx.type == SurfaceExtractionType::MarchingCubes) {
-		voxel::Region extractRegion = ctx.region;
-		extractRegion.shrink(-1);
-		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, extractRegion, &ctx.mesh, ctx.optimize);
+		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh, ctx.optimize);
 	} else {
-		voxel::Region extractRegion = ctx.region;
-		extractRegion.shiftUpperCorner(1, 1, 1);
-		voxel::extractCubicMesh(ctx.volume, extractRegion, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
+		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
 								ctx.ambientOcclusion, ctx.optimize);
 	}
 }
