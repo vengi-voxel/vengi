@@ -28,8 +28,7 @@ protected:
 
 	virtual bool onInitApp() {
 		app::AbstractTest::onInitApp();
-		_testApp->filesystem()->registerPath("scripts/");
-		return true;
+		return _testApp->filesystem()->registerPath("scripts/");
 	}
 
 	void runFile(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
