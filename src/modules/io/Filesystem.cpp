@@ -346,13 +346,9 @@ bool Filesystem::registerPath(const core::String &path) {
 		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
 		return false;
 	}
-	if (fs_exists(path.c_str())) {
-		_paths.push_back(path);
-		Log::debug("Registered data path: '%s'", path.c_str());
-		return true;
-	}
-	Log::warn("Failed to register non-existing data path: '%s'", path.c_str());
-	return false;
+	_paths.push_back(path);
+	Log::debug("Registered data path: '%s'", path.c_str());
+	return true;
 }
 
 core::String Filesystem::currentDir() const {
