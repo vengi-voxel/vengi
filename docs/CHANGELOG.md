@@ -18,7 +18,10 @@ General:
    - Added support for `ase` and `aseprite` format
    - Added cvar `voxformat_emptypaletteindex`
    - Create *walk* and *jump* animations with the new `animate.lua` script
+   - New lua script and bindings (`imageasvolume.lua`) for importing 2d images with depth
    - Added `v3b` format support (compressed `v3a` file)
+   - Translation improvements
+   - Fixed mesh extraction at chunk borders in some situations
 
 VoxConvert:
 
@@ -36,6 +39,7 @@ VoxEdit:
    - Gradient paint brush mode
    - Fixed invalid voxel erasing in plane brush
    - Extrude with preview (plane brush)
+   - Fixed a few palette panel issues when re-ordering colors
 
 ## 0.0.32 (2024-05-29)
 
