@@ -584,7 +584,8 @@ void FileDialog::popupNewFolder() {
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
 	const ImVec2 center(windowPos.x + windowSize.x * 0.5f, windowPos.y + windowSize.y * 0.5f);
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	const core::String title = makeTitle(NEW_FOLDER_POPUP, _("Create folder"));
+	const core::String title = makeTitle(_("Create folder"), NEW_FOLDER_POPUP);
+
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextUnformatted(_("Enter a name for the new folder"));
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
@@ -611,7 +612,7 @@ void FileDialog::popupNewFolder() {
 }
 
 bool FileDialog::popupAlreadyExists() {
-	const core::String title = makeTitle(FILE_ALREADY_EXISTS_POPUP, _("File already exists"));
+	const core::String title = makeTitle(_("File already exists"), FILE_ALREADY_EXISTS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::AlignTextToFramePadding();
 		ImGui::PushFont(imguiApp()->bigFont());
