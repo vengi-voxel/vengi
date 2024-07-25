@@ -310,11 +310,11 @@ bool TooltipText(const char* msg, ...) {
 }
 
 void TextCentered(const char *label, bool reset) {
-	const ImVec2& size = ImGui::CalcTextSize(label);
-	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
 	const ImVec2 restore = ImGui::GetCursorPos();
-	ImGui::SetCursorPosX((maxs.x - size.x) * 0.5f);
-	ImGui::SetCursorPosY((maxs.y - size.y) * 0.5f);
+	ImVec2 windowSize = ImGui::GetWindowSize();
+	ImVec2 textSize = ImGui::CalcTextSize(label);
+	ImGui::SetCursorPosX((windowSize.x - textSize.x) * 0.5f);
+	ImGui::SetCursorPosY((windowSize.y - textSize.y) * 0.5f);
 	ImGui::TextUnformatted(label);
 	if (reset) {
 		ImGui::SetCursorPos(restore);
@@ -521,9 +521,9 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 		return;
 	}
 
-	const ImVec2& center = ImGui::GetWindowViewport()->GetWorkCenter();
-	ImGui::SetCursorPosX(center.x - indicator_radius);
-	ImGui::SetCursorPosY(center.y - indicator_radius);
+	ImVec2 windowSize = ImGui::GetWindowSize();
+	ImGui::SetCursorPosX((windowSize.x - indicator_radius * 2.0f) * 0.5f);
+	ImGui::SetCursorPosY((windowSize.y - indicator_radius * 2.0f) * 0.5f);
 
 	ImGuiContext &g = *GImGui;
 	const ImGuiID id = window->GetID(label);
