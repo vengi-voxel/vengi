@@ -706,7 +706,9 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 						keyFrameIdx = newKeyFrameIdx;
 					}
 				}
-				_sceneMgr->nodeUpdateTransform(activeNode, matrix, keyFrameIdx, false);
+				// gizmoMatrix() always returns the world matrix - that why local is always false here
+				const bool local = false;
+				_sceneMgr->nodeUpdateTransform(activeNode, matrix, keyFrameIdx, local);
 			}
 		} else {
 			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();
