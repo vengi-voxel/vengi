@@ -54,6 +54,12 @@ $(BUILDDIR)/CMakeCache.txt:
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
 
+tests-voxedit:
+	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR)-$@ $(CMAKE_OPTIONS) -DUSE_IMGUITESTENGINE=On
+	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target codegen
+	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target $@
+	$(Q)cd $(BUILDDIR)-$@ && ctest -V -R '^$@$$'
+
 clean:
 	$(Q)git clean -fdx $(BUILDDIR)
 
