@@ -321,7 +321,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks, int height) {
 	ScopedStyle style;
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
-	const float width = ImGui::CalcTextSize("#").x * 20.0f;
+	const float width = ImGui::Size(20.0f);
 	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
 	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
 
