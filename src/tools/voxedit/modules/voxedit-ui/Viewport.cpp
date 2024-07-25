@@ -528,11 +528,12 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 								 const glm::mat4 &matrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
-		glm::vec3 translate;
-		glm::vec3 rotation;
 		glm::vec3 scale;
-		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(matrix), glm::value_ptr(translate),
-											  glm::value_ptr(rotation), glm::value_ptr(scale));
+		glm::vec3 translation;
+		glm::quat orientation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
 			_bounds.maxs = _boundsNode.maxs * scale;
 		}
