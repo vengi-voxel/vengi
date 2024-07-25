@@ -748,8 +748,9 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	}
 	ImVec2 position = ImGui::GetWindowPos();
 	const ImVec2 size = ImVec2(128, 128);
-	const ImVec2 maxSize = ImGui::GetWindowContentRegionMax();
-	position.x += maxSize.x - size.x;
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
+	position.x += contentRegionWidth - size.x;
 	position.y += headerSize;
 	const ImU32 backgroundColor = 0;
 	const float length = camera.targetDistance();

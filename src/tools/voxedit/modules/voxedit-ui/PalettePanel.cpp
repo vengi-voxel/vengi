@@ -140,8 +140,8 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
 	const ImDrawListFlags backupFlags = drawList->Flags;
 	drawList->Flags &= ~ImDrawListFlags_AntiAliasedLines;
-
-	const float windowWidth = ImGui::GetWindowContentRegionMax().x;
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
 	const ImVec2 colorButtonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 	ImVec2 globalCursorPos = ImGui::GetCursorScreenPos();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
@@ -219,7 +219,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 		drawList->AddRect(v1, v2, _darkRedColor, 0.0f, 0, 2.0f);
 	}
 	globalCursorPos.x += colorButtonSize.x;
-	if (globalCursorPos.x > windowPos.x + windowWidth - colorButtonSize.x) {
+	if (globalCursorPos.x > windowPos.x + contentRegionWidth - colorButtonSize.x) {
 		globalCursorPos.x = startingPosX;
 		globalCursorPos.y += colorButtonSize.y;
 	}
@@ -361,7 +361,9 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), ImGui::GetContentRegionMax().y);
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionHeight = available.y + ImGui::GetCursorPosY();
+	const ImVec2 windowSize(10.0f * ImGui::GetFrameHeight(), contentRegionHeight);
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
 	const int sceneHoveredPaletteColorIdx = currentSceneColor();
 	const int selectedPaletteColorIdx = currentPaletteColorIndex();
