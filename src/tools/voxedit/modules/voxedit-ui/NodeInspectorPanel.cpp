@@ -226,29 +226,35 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
 			change |= ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f",
 										ImGuiInputTextFlags_EnterReturnsTrue);
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_LC_X "##resettr")) {
-				matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
-				change = true;
+			if (_localSpace) {
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_X "##resettr")) {
+					matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
+					change = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Reset"));
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
 
 			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 			change |= ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_LC_X "##resetrt")) {
-				matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
-				change = true;
+			if (_localSpace) {
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_X "##resetrt")) {
+					matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
+					change = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Reset"));
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
 
 			change |= ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_LC_X "##resetsc")) {
-				matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
-				change = true;
+			if (_localSpace) {
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_X "##resetsc")) {
+					matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
+					change = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Reset"));
 			}
-			ImGui::TooltipTextUnformatted(_("Reset"));
 
 			glm::vec3 pivot = node.pivot();
 			bool pivotChanged =
