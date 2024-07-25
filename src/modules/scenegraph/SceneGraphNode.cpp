@@ -210,7 +210,7 @@ void SceneGraphNode::translate(const glm::vec3 &translation) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
-			const glm::vec3 &t = transform.localTranslation() + translation;
+			const glm::vec3 &t = transform.localTranslation() + glm::conjugate(transform.localOrientation()) * translation;
 			transform.setLocalTranslation(t);
 		}
 	}

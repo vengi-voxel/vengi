@@ -2830,7 +2830,7 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 		Log::debug("deltaPivot: %f:%f:%f", deltaPivot.x, deltaPivot.y, deltaPivot.z);
 		Log::debug("size: %f:%f:%f", size.x, size.y, size.z);
 		Log::debug("t: %f:%f:%f", t.x, t.y, t.z);
-		node.translate(-t);
+		node.translate(t);
 		sceneGraph().updateTransforms();
 		markDirty();
 		_mementoHandler.markKeyFramesChange(node);
