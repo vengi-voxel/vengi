@@ -159,4 +159,8 @@ IMGUI_API void TooltipCommand(const char *command);
 IMGUI_API void DrawGrid(ImDrawList *drawList, const video::Camera &camera, const glm::mat4 &matrix,
 						const float gridSize);
 
+inline float Size(float size) {
+	return ImGui::CalcTextSize("#").x * size;
+}
+
 } // namespace ImGui
