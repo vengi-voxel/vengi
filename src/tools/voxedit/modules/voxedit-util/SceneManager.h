@@ -414,6 +414,8 @@ private:
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
 	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles, const glm::vec3 &scale,
+							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
@@ -448,8 +450,9 @@ private:
 	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
 
 public:
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
+	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, scenegraph::InterpolationType interpolation);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);

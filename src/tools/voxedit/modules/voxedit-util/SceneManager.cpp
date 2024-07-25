@@ -2895,6 +2895,22 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 	return false;
 }
 
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+	if (nodeId == InvalidNodeId) {
+		nodeForeachGroup([&] (int nodeId) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+				nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
+			}
+		});
+		return true;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
+	}
+	return false;
+}
+
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
@@ -3019,6 +3035,29 @@ bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
 		return nodeShiftAllKeyframes(*node, shift);
 	}
 	return false;
+}
+
+bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles,
+									   const glm::vec3 &scale, const glm::vec3 &translation,
+									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+	const glm::quat rot = glm::quat(glm::radians(angles));
+	if (local) {
+		transform.setLocalOrientation(rot);
+		transform.setLocalScale(scale);
+		transform.setLocalTranslation(translation);
+	} else {
+		transform.setWorldOrientation(rot);
+		transform.setWorldScale(scale);
+		transform.setWorldTranslation(translation);
+	}
+	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
+
+	_mementoHandler.markNodeTransform(node, keyFrameIdx);
+	markDirty();
+
+	return true;
 }
 
 bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
