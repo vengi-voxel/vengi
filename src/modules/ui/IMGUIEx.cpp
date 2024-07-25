@@ -521,9 +521,9 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 		return;
 	}
 
-	const ImVec2& maxs = ImGui::GetWindowContentRegionMax();
-	ImGui::SetCursorPosX(maxs.x / 2.0f - indicator_radius);
-	ImGui::SetCursorPosY(maxs.y / 2.0f - indicator_radius);
+	const ImVec2& center = ImGui::GetWindowViewport()->GetWorkCenter();
+	ImGui::SetCursorPosX(center.x - indicator_radius);
+	ImGui::SetCursorPosY(center.y - indicator_radius);
 
 	ImGuiContext &g = *GImGui;
 	const ImGuiID id = window->GetID(label);
