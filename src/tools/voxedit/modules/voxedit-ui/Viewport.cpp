@@ -672,12 +672,12 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	}
 
 	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
-	glm::mat4 matrix = gizmoMatrix(node, keyFrameIdx);
+	glm::mat4 worldMatrix = gizmoMatrix(node, keyFrameIdx);
 	glm::mat4 deltaMatrix(1.0f);
 	const float *boundsPtr = gizmoBounds(node);
 	const uint32_t operation = gizmoOperation(node);
-	const bool manipulated = gizmoManipulate(camera, boundsPtr, matrix, deltaMatrix, operation);
-	updateGizmoValues(node, keyFrameIdx, matrix);
+	const bool manipulated = gizmoManipulate(camera, boundsPtr, worldMatrix, deltaMatrix, operation);
+	updateGizmoValues(node, keyFrameIdx, worldMatrix);
 	// check to create a reference before we update the node transform
 	// otherwise the new reference node will not get the correct transform
 	if (createReference(node)) {
@@ -693,7 +693,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 			if (_pivotMode->boolVal()) {
 				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 				const glm::vec3 size = node.region().getDimensionsInVoxels();
-				const glm::vec3 pivot = (glm::vec3(matrix[3]) - transform.worldTranslation()) / size;
+				const glm::vec3 pivot = (glm::vec3(worldMatrix[3]) - transform.worldTranslation()) / size;
 				_sceneMgr->nodeUpdatePivot(activeNode, pivot);
 			} else {
 				const bool autoKeyFrame = _autoKeyFrame->boolVal();
@@ -709,10 +709,10 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				}
 				// gizmoMatrix() always returns the world matrix - that why local is always false here
 				const bool local = false;
-				_sceneMgr->nodeUpdateTransform(activeNode, matrix, keyFrameIdx, local);
+				_sceneMgr->nodeUpdateTransform(activeNode, worldMatrix, keyFrameIdx, local);
 			}
 		} else {
-			const glm::ivec3 shift = glm::vec3(matrix[3]) - node.region().getLowerCornerf();
+			const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
 			_sceneMgr->nodeShift(activeNode, shift);
 			// only true in edit mode
 			return true;
