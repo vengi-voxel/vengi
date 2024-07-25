@@ -17,7 +17,9 @@ Toolbar::~Toolbar() {
 }
 
 float Toolbar::windowWidth() const {
-	return ImGui::GetWindowContentRegionMax().x;
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
+	return contentRegionWidth;
 }
 
 void Toolbar::setCursor() {
