@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "scenegraph/SceneGraphNode.h" // InvalidNodeId
 #include "ui/IMGUIApp.h"
 
