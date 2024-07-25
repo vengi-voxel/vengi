@@ -714,7 +714,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 				const glm::vec3 deltaTranslation = glm::vec3(deltaMatrix[3]);
 				// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?
 				const glm::vec3 deltaPivot = deltaTranslation / size;
-				const glm::vec3 pivot = node.pivot() + deltaPivot;
+				const glm::vec3 pivot = glm::clamp(node.pivot() + deltaPivot, glm::vec3(-5.0f), glm::vec3(5.0f));
 				_sceneMgr->nodeUpdatePivot(activeNode, pivot);
 			} else {
 				const bool autoKeyFrame = _autoKeyFrame->boolVal();
