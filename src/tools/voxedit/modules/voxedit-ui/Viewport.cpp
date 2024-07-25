@@ -6,6 +6,7 @@
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "ui/IconsLucide.h"
 #include "app/App.h"
 #include "core/ArrayLength.h"
@@ -656,13 +657,18 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 													  scenegraph::KeyFrameIndex keyFrameIdx) {
 	const int parentId = node.parent();
-	if (parentId == InvalidNodeId) {
+	if (parentId == InvalidNodeId || keyFrameIdx == InvalidKeyFrame) {
 		return glm::mat4(1.0f);
 	}
-	const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
-	const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode.keyFrameForFrame(keyFrameIdx);
-	const glm::mat4 &parentWorldMatrix = parentNode.transform(parentKeyFrameIdx).worldMatrix();
-	return parentWorldMatrix;
+	if (const scenegraph::SceneGraphKeyFrame *keyFrame = node.keyFrame(keyFrameIdx)) {
+		const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
+		const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode.keyFrameForFrame(keyFrame->frameIdx);
+		if (parentKeyFrameIdx == InvalidKeyFrame) {
+			return glm::mat4(1.0f);
+		}
+		return parentNode.transform(parentKeyFrameIdx).worldMatrix();
+	}
+	return glm::mat4(1.0f);
 }
 
 bool Viewport::runGizmo(const video::Camera &camera) {
