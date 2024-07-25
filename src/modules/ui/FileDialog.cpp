@@ -450,8 +450,6 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				specs->SpecsDirty = false;
 			}
 		}
-
-		const ImVec2 size(ImGui::GetWindowContentRegionMax().x - ImGui::GetWindowContentRegionMin().x, 0);
 		// add filtered and sorted directory entries
 		ImGuiListClipper clipper;
 		clipper.Begin((int)_filteredEntities.size());
@@ -468,7 +466,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				ImGui::TextUnformatted(icon);
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
-				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick, size)) {
+				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
 					resetState();
 					_entryIndex = i;
 					_selectedEntry = entry;
