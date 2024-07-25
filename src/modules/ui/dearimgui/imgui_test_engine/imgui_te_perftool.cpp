@@ -1055,8 +1055,6 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     if (ImGui::IsWindowAppearing() && Empty())
         LoadCSV();
 
-    ImGuiStyle& style = ImGui::GetStyle();
-
     // -----------------------------------------------------------------------------------------------------------------
     // Render utility buttons
     // -----------------------------------------------------------------------------------------------------------------
@@ -1162,10 +1160,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
         ImGui::SetTooltip("Generate a report and open it in the browser.");
 
     // Align help button to the right.
-    float help_pos = ImGui::GetWindowContentRegionMax().x - style.FramePadding.x * 2 - ImGui::CalcTextSize("(?)").x;
-    if (help_pos > ImGui::GetCursorPosX())
-        ImGui::SetCursorPosX(help_pos);
-
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImMax(0.0f, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("(?)").x));
     ImGui::TextDisabled("(?)");
     if (ImGui::IsItemHovered())
     {
@@ -1268,6 +1263,7 @@ void ImGuiPerfTool::ShowPerfToolWindow(ImGuiTestEngine* engine, bool* p_open)
     {
 #if IMGUI_TEST_ENGINE_ENABLE_IMPLOT
         // Splitter between two following child windows is rendered first.
+        ImGuiStyle& style = ImGui::GetStyle();
         float plot_height = 0.0f;
         float& table_height = _InfoTableHeight;
         ImGui::Splitter("splitter", &plot_height, &table_height, ImGuiAxis_Y, +1);

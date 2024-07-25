@@ -375,7 +375,7 @@ ImGuiTestStatus ImGuiTestContext::RunChildTest(const char* child_test_name, ImGu
         TestOutput->Status = ImGuiTestStatus_Error;
 
     // Return child status
-    LogWarning("(returning to parent test)");
+    LogDebug("(returning to parent test)");
     return child_status;
 }
 

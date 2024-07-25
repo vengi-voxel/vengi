@@ -1565,7 +1565,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
     else
     {
         ctx->LogWarning("Child Test: '%s' '%s'..", test->Category, test->Name);
-        ctx->LogWarning("(ShareVars=%d ShareTestContext=%d)", (run_flags & ImGuiTestRunFlags_ShareVars) ? 1 : 0, (run_flags & ImGuiTestRunFlags_ShareTestContext) ? 1 : 0);
+        ctx->LogDebug("(ShareVars=%d ShareTestContext=%d)", (run_flags & ImGuiTestRunFlags_ShareVars) ? 1 : 0, (run_flags & ImGuiTestRunFlags_ShareTestContext) ? 1 : 0);
     }
 
     // Clear ImGui inputs to avoid key/mouse leaks from one test to another

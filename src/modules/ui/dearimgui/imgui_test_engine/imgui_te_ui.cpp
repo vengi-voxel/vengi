@@ -327,7 +327,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
 
     ImGui::SameLine();
     const char* perflog_label = "Perf Tool";
-    float filter_width = ImGui::GetWindowContentRegionMax().x - ImGui::GetCursorPos().x;
+    float filter_width = ImGui::GetContentRegionAvail().x;
     float perf_stress_factor_width = (30 * dpi_scale);
     if (group == ImGuiTestGroup_Perfs)
     {
@@ -336,6 +336,9 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
     }
     filter_width -= ImGui::CalcTextSize("(?)").x + style.ItemSpacing.x;
     ImGui::SetNextItemWidth(ImMax(20.0f, filter_width));
+#if IMGUI_VERSION_NUM >= 19066
+    ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip | ImGuiInputFlags_RouteFromRootWindow);
+#endif
     ImGui::InputText("##filter", filter);
     ImGui::SameLine();
     ImGui::TextDisabled("(?)");
