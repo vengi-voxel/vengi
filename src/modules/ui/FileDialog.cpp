@@ -323,7 +323,8 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
 	const float width = ImGui::Size(20.0f);
 	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
-	const float contentRegionWidth = ImGui::GetWindowContentRegionMax().x;
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
 
 	const char *folderNames[] = {_("Download"), _("Desktop"), _("Documents"), _("Pictures"), _("Public"), _("Recent"), _("Cloud")};
 	static const char *folderIcons[] = {ICON_LC_DOWNLOAD, ICON_LC_MONITOR_DOT, ICON_LC_FILE, ICON_LC_IMAGE, ICON_LC_FOLDER, ICON_LC_FOLDER, ICON_LC_CLOUD};
@@ -641,7 +642,9 @@ void FileDialog::filter(video::OpenFileMode type) {
 		ImGui::SameLine();
 		const char *label = _("Filter");
 		const ImVec2 &size = ImGui::CalcTextSize(label);
-		ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
+		const ImVec2 available = ImGui::GetContentRegionAvail();
+		const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
+		ImGui::SetCursorPosX(contentRegionWidth - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
 		ImGui::PushItemWidth(_filterTextWidth);
 		int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
 		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
@@ -750,7 +753,9 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 
 	const ImVec2 cancelTextSize = ImGui::CalcTextSize(_("Cancel"));
 	const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
-	ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - cancelTextSize.x - chooseTextSize.x - 40.0f);
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
+	ImGui::SetCursorPosX(contentRegionWidth - cancelTextSize.x - chooseTextSize.x - 40.0f);
 	if (ImGui::Button(_("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 		resetState();
 		return true;

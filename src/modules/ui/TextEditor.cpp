@@ -789,7 +789,9 @@ void TextEditor::Render() {
 
 	core_assert(_lineBuffer.empty());
 
-	const ImVec2 &contentSize = ImGui::GetWindowContentRegionMax();
+	const ImVec2 available = ImGui::GetContentRegionAvail();
+	const ImVec2 cursorPos = ImGui::GetCursorPos();
+	const ImVec2 contentSize(available.x + cursorPos.x, available.y + cursorPos.y);
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
 	float longest(_textStart);
 
