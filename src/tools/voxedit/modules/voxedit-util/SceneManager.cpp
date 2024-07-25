@@ -810,7 +810,9 @@ bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
+		core_assert(s.pivot.hasValue());
 		if (s.pivot.hasValue()) {
+			Log::debug("Memento: pivot of node %i (%s): %f:%f:%f", s.nodeId, s.name.c_str(), s.pivot.value()->x, s.pivot.value()->y, s.pivot.value()->z);
 			node->setPivot(*s.pivot.value());
 		}
 		_sceneGraph.updateTransforms();
@@ -996,6 +998,7 @@ bool SceneManager::doUndo() {
 	}
 	for (const memento::MementoState& s : group.states) {
 		if (!mementoStateExecute(s, false)) {
+			Log::error("Failed to undo memento state %i", (int)s.type);
 			return false;
 		}
 	}
@@ -1011,6 +1014,7 @@ bool SceneManager::doRedo() {
 	const memento::MementoStateGroup& group = _mementoHandler.redo();
 	for (const memento::MementoState& s : group.states) {
 		if (!mementoStateExecute(s, true)) {
+			Log::error("Failed to redo memento state %i", (int)s.type);
 			return false;
 		}
 	}
@@ -3056,11 +3060,13 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 		transform.setWorldScale(scale);
 		transform.setWorldTranslation(translation);
 	}
-	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
+	if (transform.dirty()) {
+		Log::error("dirty transform");
+		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
 
-	_mementoHandler.markNodeTransform(node, keyFrameIdx);
-	markDirty();
-
+		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		markDirty();
+	}
 	return true;
 }
 
@@ -3073,15 +3079,18 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	} else {
 		transform.setWorldMatrix(matrix);
 	}
-	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
+	if (transform.dirty()) {
+		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
 
-	_mementoHandler.markNodeTransform(node, keyFrameIdx);
-	markDirty();
+		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		markDirty();
+	}
 
 	return true;
 }
 
 void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+	// no memento states in here - this is just a helper
 	const glm::vec3 oldPivot = node.pivot();
 	if (node.setPivot(pivot)) {
 		const glm::vec3 deltaPivot = pivot - oldPivot;

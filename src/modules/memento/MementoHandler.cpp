@@ -429,6 +429,7 @@ MementoStateGroup MementoHandler::undo() {
 	targetGroup.states.reserve(group.states.size());
 	Log::debug("Undo group states: %i", (int)group.states.size());
 	for (const MementoState &s : group.states) {
+		Log::debug("Undo memento type %s", typeToString(s.type));
 		if (s.type == MementoType::Modification) {
 			targetGroup.states.emplace_back(undoModification(s));
 		} else if (s.type == MementoType::SceneNodeTransform) {
