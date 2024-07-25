@@ -115,6 +115,42 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    linux-ui-tests:
+        timeout-minutes: 60
+        runs-on: ubuntu-22.04
+
+        steps:
+        - uses: actions/checkout@v4
+
+        - name: Setup
+          run: |
+            sudo apt-get update
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: |
+              ~/.ccache
+            key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+
+        - name: Linux
+          env:
+            CC: gcc-12
+            CXX: g++-12
+          run: |
+            mkdir build
+            cd build
+            cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja -DUSE_SANITIZERS=OFF -DUSE_LINK_TIME_OPTIMIZATION=OFF -DCMAKE_UNITY_BUILD=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_IMGUITESTENGINE=On
+            cmake --build . --target codegen
+            cmake --build . --target tests-voxedit
+
+        - name: Test
+          run: |
+            cd build
+            ctest -V -R '^tests-voxedit$'
+
     linux:
         timeout-minutes: 60
         runs-on: ubuntu-22.04
