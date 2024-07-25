@@ -653,6 +653,18 @@ bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsP
 	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
 }
 
+static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+													  scenegraph::KeyFrameIndex keyFrameIdx) {
+	const int parentId = node.parent();
+	if (parentId == InvalidNodeId) {
+		return glm::mat4(1.0f);
+	}
+	const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parentId);
+	const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode.keyFrameForFrame(keyFrameIdx);
+	const glm::mat4 &parentWorldMatrix = parentNode.transform(parentKeyFrameIdx).worldMatrix();
+	return parentWorldMatrix;
+}
+
 bool Viewport::runGizmo(const video::Camera &camera) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	int activeNode = sceneGraph.activeNode();
@@ -707,9 +719,9 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 						keyFrameIdx = newKeyFrameIdx;
 					}
 				}
-				// gizmoMatrix() always returns the world matrix - that why local is always false here
-				const bool local = false;
-				_sceneMgr->nodeUpdateTransform(activeNode, worldMatrix, keyFrameIdx, local);
+				const glm::mat4 &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
+				const glm::mat4 &newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
+				_sceneMgr->nodeUpdateTransform(activeNode, newLocalMatrix, keyFrameIdx, true);
 			}
 		} else {
 			const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
