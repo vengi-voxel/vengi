@@ -189,8 +189,7 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 											   scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx,
 											   scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (ImGui::Button(_("Reset all"))) {
-		node.setPivot({0.0f, 0.0f, 0.0f});
-		_sceneMgr->nodeUpdateTransform(node.id(), glm::mat4(1.0f), keyFrameIdx, _localSpace);
+		_sceneMgr->nodeResetTransform(node.id(), keyFrameIdx);
 	}
 	ImGui::SameLine();
 	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);

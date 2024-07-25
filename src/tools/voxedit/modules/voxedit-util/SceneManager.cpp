@@ -2820,21 +2820,10 @@ bool SceneManager::mouseRayTrace(bool force) {
 }
 
 bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
-	const glm::vec3 oldPivot = node.pivot();
-	if (node.setPivot(pivot)) {
-		const glm::vec3 deltaPivot = pivot - oldPivot;
-		const glm::vec3 size = node.region().getDimensionsInVoxels();
-		const glm::vec3 t = deltaPivot * size;
-		Log::debug("oldPivot: %f:%f:%f", oldPivot.x, oldPivot.y, oldPivot.z);
-		Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
-		Log::debug("deltaPivot: %f:%f:%f", deltaPivot.x, deltaPivot.y, deltaPivot.z);
-		Log::debug("size: %f:%f:%f", size.x, size.y, size.z);
-		Log::debug("t: %f:%f:%f", t.x, t.y, t.z);
-		node.translate(t);
-		sceneGraph().updateTransforms();
-		markDirty();
-		_mementoHandler.markKeyFramesChange(node);
-	}
+	nodeSetPivot(node, pivot);
+	sceneGraph().updateTransforms();
+	markDirty();
+	_mementoHandler.markKeyFramesChange(node);
 	return true;
 }
 
@@ -2923,6 +2912,21 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 	}
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
+	}
+	return false;
+}
+
+bool SceneManager::nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
+	if (nodeId == InvalidNodeId) {
+		nodeForeachGroup([&] (int nodeId) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+				nodeResetTransform(*node, keyFrameIdx);
+			}
+		});
+		return true;
+	}
+	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		return nodeResetTransform(*node, keyFrameIdx);
 	}
 	return false;
 }
@@ -3074,6 +3078,26 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	_mementoHandler.markNodeTransform(node, keyFrameIdx);
 	markDirty();
 
+	return true;
+}
+
+void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+	const glm::vec3 oldPivot = node.pivot();
+	if (node.setPivot(pivot)) {
+		const glm::vec3 deltaPivot = pivot - oldPivot;
+		const glm::vec3 size = node.region().getDimensionsInVoxels();
+		node.translate(deltaPivot * size);
+	}
+}
+
+bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
+	nodeSetPivot(node, {0.0f, 0.0f, 0.0f});
+	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
+	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+	transform.setLocalMatrix(glm::mat4(1.0f));
+	sceneGraph().updateTransforms();
+	markDirty();
+	_mementoHandler.markKeyFramesChange(node);
 	return true;
 }
 
