@@ -3061,7 +3061,6 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 		transform.setWorldTranslation(translation);
 	}
 	if (transform.dirty()) {
-		Log::error("dirty transform");
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
 
 		_mementoHandler.markNodeTransform(node, keyFrameIdx);
