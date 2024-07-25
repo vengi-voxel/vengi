@@ -46,6 +46,7 @@ core::DynamicArray<VoxelSource> Downloader::sources() {
 	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
+	// TODO: add new cvars - voxelbrowser does no longer exist
 	request.setConnectTimeoutSecond(core::Var::get("vb_connect_timeout", 10));
 	request.setTimeoutSecond(core::Var::get("vb_timeout", 10));
 	core::String json;
