@@ -321,7 +321,7 @@ void FileDialog::removeBookmark(const core::String &bookmark) {
 void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &bookmarks, int height) {
 	ScopedStyle style;
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
-	const float width = ImGui::Size(20.0f);
+	const float width = ImGui::Size(30.0f);
 	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
@@ -736,7 +736,9 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		showError(_error);
 		if (options && ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
+			ImGui::BeginChild("filedialogoptions");
 			options(type, _currentFilterFormat);
+			ImGui::EndChild();
 		}
 		ImGui::EndPopup();
 	}
