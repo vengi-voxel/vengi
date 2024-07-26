@@ -171,6 +171,7 @@ bool SceneGraphRenderer::isVisible(int nodeId) const {
 }
 
 void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
+	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	const scenegraph::FrameIndex frame = renderContext.frame;
@@ -286,6 +287,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 
 void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow,
 								bool waitPending) {
+	core_trace_scoped(SceneGraphRenderer);
 	prepare(renderContext);
 	if (waitPending) {
 		_volumeRenderer.meshState()->extractAllPending();

@@ -99,6 +99,7 @@ void CollectionPanel::updateFilters() {
 }
 
 int CollectionPanel::update() {
+	core_trace_scoped(CollectionPanel);
 	int cnt = 0;
 	const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
 	updateFilters();

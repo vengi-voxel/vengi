@@ -177,6 +177,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 }
 
 void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+	core_trace_scoped(ToolsPanel);
 	const core::String title = makeTitle(ICON_LC_WRENCH, _("Tools"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {

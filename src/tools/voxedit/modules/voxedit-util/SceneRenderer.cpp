@@ -111,7 +111,7 @@ static scenegraph::SceneGraphNode *sceneGraphModelNode(const scenegraph::SceneGr
 }
 
 bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
-	core_trace_scoped(SceneManagerExtract);
+	core_trace_scoped(ExtractVolume);
 	const size_t n = _extractRegions.size();
 	if (n <= 0) {
 		return false;
@@ -175,6 +175,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	if (!sceneMode|| !_showAABB->boolVal()) {
 		return;
 	}
+	core_trace_scoped(UpdateAABBMesh);
 	_shapeBuilder.clear();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
@@ -222,6 +223,7 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	if (!_showBones->boolVal()) {
 		return;
 	}
+	core_trace_scoped(UpdateBoneMesh);
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(style::color(style::ColorBone));
 
@@ -284,6 +286,7 @@ void SceneRenderer::update() {
 }
 
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
+	core_trace_scoped(RenderScene);
 	if (renderContext.sceneGraph == nullptr) {
 		Log::error("No scenegraph given to render");
 		return;

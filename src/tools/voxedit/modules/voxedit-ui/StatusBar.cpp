@@ -11,6 +11,7 @@
 namespace voxedit {
 
 void StatusBar::update(const char *id, float height, const core::String &lastExecutedCommand) {
+	core_trace_scoped(StatusBar);
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowViewport(viewport->ID);
 	const ImVec2 &size = viewport->WorkSize;

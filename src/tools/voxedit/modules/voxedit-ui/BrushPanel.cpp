@@ -450,6 +450,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 }
 
 void BrushPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	core_trace_scoped(BrushPanel);
 	const core::String title = makeTitle(ICON_LC_BRUSH, _("Brush"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addModifiers(listener);

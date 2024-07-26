@@ -52,6 +52,7 @@ void RenderPanel::renderMenuBar(const scenegraph::SceneGraph &sceneGraph) {
 }
 
 void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGraph) {
+	core_trace_scoped(RenderPanel);
 	const core::String title = makeTitle(ICON_LC_IMAGE, _("Render"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		if (_pathTracer.started()) {

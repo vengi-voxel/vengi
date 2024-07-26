@@ -85,6 +85,7 @@ void NodeInspectorPanel::shutdown() {
 }
 
 void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) {
+	core_trace_scoped(ModelView);
 	if (ImGui::IconCollapsingHeader(ICON_LC_RULER, _("Region"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		const core::String &sizes = _regionSizes->strVal();
@@ -209,6 +210,7 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 }
 
 void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) {
+	core_trace_scoped(SceneView);
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Transform"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		const int activeNode = sceneGraph.activeNode();
@@ -406,6 +408,7 @@ bool NodeInspectorPanel::handleCameraProperty(scenegraph::SceneGraphNodeCamera &
 }
 
 void NodeInspectorPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+	core_trace_scoped(NodeInspectorPanel);
 	const core::String title = makeTitle(ICON_LC_LOCATE, sceneMode ? _("Node Inspector") : _("Volume Inspector"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		if (sceneMode) {

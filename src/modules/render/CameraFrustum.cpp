@@ -3,6 +3,7 @@
  */
 
 #include "CameraFrustum.h"
+#include "core/Trace.h"
 #include "video/Renderer.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
@@ -30,6 +31,7 @@ void CameraFrustum::shutdown() {
 }
 
 void CameraFrustum::render(const video::Camera& camera, const video::Camera& frustumCamera) {
+	core_trace_scoped(CameraFrustumRender);
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(_color);
 	_shapeBuilder.frustum(frustumCamera, _splitFrustum);

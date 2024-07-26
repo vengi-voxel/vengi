@@ -14,6 +14,7 @@
 namespace voxedit {
 
 void CameraPanel::update(const char *id, video::Camera &camera, command::CommandExecutionListener &listener) {
+	core_trace_scoped(CameraPanel);
 	const core::String title = makeTitle(ICON_LC_CAMERA, _("Camera"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		glm::vec3 pos = camera.worldPosition();

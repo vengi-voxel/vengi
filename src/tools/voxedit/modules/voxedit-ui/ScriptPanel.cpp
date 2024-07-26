@@ -179,6 +179,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 }
 
 void ScriptPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	core_trace_scoped(ScriptPanel);
 	const core::String title = makeTitle(ICON_LC_CODE, _("Scripts"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		voxelgenerator::LUAApi &luaApi = _sceneMgr->luaApi();
@@ -221,6 +222,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 	if (!_scriptEditor) {
 		return false;
 	}
+	core_trace_scoped(ScriptEditor);
 	const core::String title = makeTitle(ICON_LC_CODE, _("Script Editor"), id);
 	if (ImGui::Begin(title.c_str(), &_scriptEditor, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar)) {
 		if (ImGui::BeginMenuBar()) {

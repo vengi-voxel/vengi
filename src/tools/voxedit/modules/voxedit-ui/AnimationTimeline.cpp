@@ -174,6 +174,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 }
 
 bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
+	core_trace_scoped(AnimationTimeline);
 	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();

@@ -19,6 +19,7 @@ static inline core::String toString(const memento::MementoState &state, const co
 }
 
 void MementoPanel::update(const char *id, command::CommandExecutionListener &listener) {
+	core_trace_scoped(MementoPanel);
 	const core::String title = makeTitle(ICON_LC_BOOK_OPEN, _("History"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();

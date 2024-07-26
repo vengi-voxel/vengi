@@ -13,6 +13,7 @@
 namespace voxedit {
 
 void AnimationPanel::update(const char *id, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline) {
+	core_trace_scoped(AnimationPanel);
 	const core::String title = makeTitle(ICON_LC_LAYOUT_LIST, _("Animation"), id);
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();

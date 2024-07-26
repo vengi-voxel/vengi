@@ -358,6 +358,7 @@ void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::Comma
 }
 
 void PalettePanel::update(const char *id, command::CommandExecutionListener &listener) {
+	core_trace_scoped(PalettePanel);
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int nodeId = sceneGraph.activeNode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);

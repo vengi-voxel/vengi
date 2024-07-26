@@ -162,6 +162,7 @@ void Viewport::dragAndDrop(float headerSize) {
 }
 
 void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
+	core_trace_scoped(ViewportImage);
 	// use the uv coords here to take a potential fb flip into account
 	const glm::vec4 &uv = _renderContext.frameBuffer.uv();
 	const glm::vec2 uva(uv.x, uv.y);
@@ -370,6 +371,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 }
 
 void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
+	core_trace_scoped(Menubar);
 	if (ImGui::BeginMenuBar()) {
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
@@ -387,6 +389,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 }
 
 void Viewport::update(command::CommandExecutionListener *listener) {
+	core_trace_scoped(ViewportPanel);
 	_camera.setFarPlane(_viewDistance->floatVal());
 
 	_hovered = false;
@@ -786,6 +789,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	if (!_showAxisVar->boolVal()) {
 		return false;
 	}
+	core_trace_scoped(RenderGizmo);
 
 	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
 
@@ -803,7 +807,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 }
 
 void Viewport::renderToFrameBuffer() {
-	core_trace_scoped(EditorSceneRenderFramebuffer);
+	core_trace_scoped(RenderFramebuffer);
 	video::clearColor(core::Color::Clear());
 	_sceneMgr->render(_renderContext, camera());
 }

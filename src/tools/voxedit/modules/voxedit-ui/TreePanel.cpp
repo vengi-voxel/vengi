@@ -74,6 +74,7 @@ const char *TreePanel::treeTypeName(int i) const {
 }
 
 void TreePanel::update(const char *id) {
+	core_trace_scoped(TreePanel);
 	const core::String title = makeTitle(ICON_LC_TREE_PINE, _("Trees"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(TreePanel);

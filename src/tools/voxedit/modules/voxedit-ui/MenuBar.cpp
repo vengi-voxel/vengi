@@ -55,6 +55,7 @@ void MenuBar::viewportOptions() {
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
+	core_trace_scoped(MenuBar);
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);

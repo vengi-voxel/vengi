@@ -15,6 +15,7 @@ bool LSystemPanel::init() {
 }
 
 void LSystemPanel::update(const char *id) {
+	core_trace_scoped(LSystemPanel);
 	const core::String title = makeTitle(ICON_LC_LEAF, _("L-System"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(LSystemPanel);

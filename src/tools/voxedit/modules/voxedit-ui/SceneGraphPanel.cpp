@@ -269,6 +269,7 @@ bool SceneGraphPanel::init() {
 }
 
 void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSettings* modelNodeSettings, command::CommandExecutionListener &listener) {
+	core_trace_scoped(SceneGraphPanel);
 	const core::String title = makeTitle(ICON_LC_WORKFLOW, _("Scene"), id);
 	_hasFocus = false;
 
