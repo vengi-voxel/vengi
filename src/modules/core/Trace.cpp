@@ -21,6 +21,7 @@ static thread_local const char* _threadName = "Unknown";
 }
 
 #ifdef TRACY_ENABLE
+#if 0 // TODO: doesn't yet work properly
 static SDL_malloc_func malloc_func;
 static SDL_calloc_func calloc_func;
 static SDL_realloc_func realloc_func;
@@ -49,14 +50,16 @@ static void wrap_free_func(void *mem) {
 	TracyFree(mem);
 	free_func(mem);
 }
-
+#endif
 #endif
 
 Trace::Trace() {
 #ifdef TRACY_ENABLE
+#if 0 // TODO: doesn't yet work properly
 	//core_assert(SDL_GetNumAllocations() == 0);
 	SDL_GetMemoryFunctions(&malloc_func, &calloc_func, &realloc_func, &free_func);
 	SDL_SetMemoryFunctions(wrap_malloc_func, wrap_calloc_func, wrap_realloc_func, wrap_free_func);
+#endif
 #endif
 #ifdef USE_EMTRACE
 	emscripten_trace_configure("http://localhost:17000/", "Engine");
@@ -69,7 +72,9 @@ Trace::~Trace() {
 	emscripten_trace_close();
 #endif
 #ifdef TRACY_ENABLE
+#if 0
 	SDL_SetMemoryFunctions(malloc_func, calloc_func, realloc_func, free_func);
+#endif
 #endif
 }
 
