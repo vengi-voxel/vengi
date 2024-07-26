@@ -34,7 +34,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 #ifdef TRACY_ENABLE
-#include "core/tracy/TracyOpenGL.hpp"
+#include "core/tracy/public/tracy/TracyOpenGL.hpp"
 #endif
 
 namespace video {

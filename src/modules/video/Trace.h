@@ -7,7 +7,7 @@
 #include "core/Trace.h"
 #ifdef TRACY_ENABLE
 #include "video/gl/GLRenderer.h"
-#include "core/tracy/TracyOpenGL.hpp"
+#include "core/tracy/public/tracy/TracyOpenGL.hpp"
 #endif
 
 namespace video {

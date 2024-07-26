@@ -8,6 +8,7 @@
 #include "core/GLM.h"
 #include "core/Assert.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/concurrent/Lock.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -17,7 +18,7 @@ namespace core {
 
 Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
-Lock Var::_lock;
+core_trace_mutex_static(Lock, Var, _lock);
 
 VarPtr Var::get(const core::String& name, int value, int32_t flags) {
 	char buf[64];

@@ -44,7 +44,7 @@ static void *wrap_realloc_func(void *mem, size_t size) {
 }
 
 static void wrap_free_func(void *mem) {
-	TracyFree(mem)
+	TracyFree(mem);
 	free_func(mem);
 }
 

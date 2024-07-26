@@ -7,7 +7,7 @@
 #include "core/concurrent/Concurrency.h"
 
 #ifdef TRACY_ENABLE
-#include "core/tracy/Tracy.hpp"
+#include "core/tracy/public/tracy/Tracy.hpp"
 #endif
 
 struct SDL_mutex;

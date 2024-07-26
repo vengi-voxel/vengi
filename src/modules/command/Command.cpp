@@ -7,11 +7,12 @@
 #include "core/ArrayLength.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 
 namespace command {
 
 Command::CommandMap Command::_cmds;
-core::Lock Command::_lock;
+core_trace_mutex_static(core::Lock, Command, _lock);
 core::DynamicArray<core::String> Command::_delayedTokens;
 double Command::_delaySeconds = 0.0;
 size_t  Command::_sortedCommandListSize = 0u;

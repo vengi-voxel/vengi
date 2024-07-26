@@ -68,8 +68,8 @@ set(SRCS
 	Var.cpp Var.h
 )
 
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
-	list(APPEND SRCS tracy/TracyClient.cpp)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
+	list(APPEND SRCS tracy/public/TracyClient.cpp)
 	message(STATUS "Building with tracy enabled")
 else()
 	message(STATUS "Building with tracy disabled")
@@ -84,7 +84,7 @@ if (USE_STACKTRACES)
 endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/TracyClient.cpp)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
 	target_compile_definitions(${LIB} PUBLIC TRACY_ENABLE TRACY_ON_DEMAND)
 endif()
 target_compile_definitions(${LIB} PRIVATE MINIZ_NO_STDIO)

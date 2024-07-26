@@ -4,6 +4,7 @@
 
 #include "MaterialColor.h"
 #include "core/Optional.h"
+#include "core/Trace.h"
 #include "core/Var.h"
 #include "core/concurrent/Lock.h"
 #include "palette/Palette.h"
@@ -12,7 +13,7 @@ namespace voxel {
 
 namespace _priv {
 core::Optional<palette::Palette> globalPalette;
-core::Lock _lock;
+core_trace_mutex(core::Lock, _lock, "MaterialColor");
 } // namespace _priv
 
 static bool hasPalette() {

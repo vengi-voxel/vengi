@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #ifdef TRACY_ENABLE
-#include "tracy/Tracy.hpp"
+#include "tracy/public/tracy/Tracy.hpp"
 #endif
 
 namespace core {
@@ -46,13 +46,13 @@ public:
 #define core_trace_shutdown() core::traceShutdown()
 #define core_trace_msg(message) TracyMessageL(message)
 #define core_trace_thread(name) tracy::SetThreadName(name)
-#define core_trace_mutex(type, varname, name) type varname { tracy::SourceLocationData{ nullptr, name, __FILE__, __LINE__, 0 } }
-
+#define core_trace_mutex(type, varname, name) type varname { tracy::SourceLocationData{ name, nullptr, __FILE__, __LINE__, 0 } }
 #define core_trace_begin_frame(name)
 #define core_trace_end_frame(name) FrameMark
 #define core_trace_begin(name)
 #define core_trace_end()
 #define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
+#define core_trace_mutex_static(type, classname, name) type classname::name { tracy::SourceLocationData{ #name, nullptr, __FILE__, __LINE__, 0 } }
 #elif USE_EMTRACE
 #define core_trace_value_scoped(name, x)
 #define core_trace_plot(name, x)
@@ -67,7 +67,8 @@ public:
 #define core_trace_begin(name) core::traceBegin(#name)
 #define core_trace_end() core::traceEnd()
 #define core_trace_scoped(name) core::TraceScoped __trace__##name(#name)
-#else
+#define core_trace_mutex_static(type, classname, name) type classname::varname;
+#else // USE_EMTRACE
 
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
 	this condition isn't constant. And looks like an owl's face! */
@@ -89,6 +90,7 @@ public:
 #define core_trace_begin(name) do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
 #define core_trace_end() do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
 #define core_trace_scoped(name) do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
+#define core_trace_mutex_static(type, classname, name) type classname::varname;
 #endif
 
 }

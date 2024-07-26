@@ -221,8 +221,9 @@ endef
 
 tracy:
 	$(Q)git submodule update --init --recursive
-	$(Q)$(MAKE) -C src/modules/core/tracy/profiler/build/unix release
-	$(Q)src/modules/core/tracy/profiler/build/unix/Tracy-release
+	$(Q)cmake -Hsrc/modules/core/tracy/profiler -Bsrc/modules/core/tracy/profiler/build -DLEGACY=ON -G$(GENERATOR) -DCMAKE_BUILD_TYPE=Release
+	$(Q)cmake --build src/modules/core/tracy/profiler/build --config Release --parallel
+	$(Q)src/modules/core/tracy/profiler/build/tracy-profiler
 
 update-emscripten-browser-file:
 	$(call UPDATE_GIT,emscripten-browser-file,https://github.com/Armchair-Software/emscripten-browser-file.git)
@@ -414,6 +415,9 @@ update-icons:
 update-fonts:
 	curl -o $(UPDATEDIR)/arimo.zip https://fonts.google.com/download?family=Arimo
 	unzip -jo $(UPDATEDIR)/arimo.zip static/Arimo-Regular.ttf -d data/ui
+
+update-tracy:
+	git submodule update --remote --merge src/modules/core/tracy
 
 appimage: voxedit
 	$(Q)cd $(BUILDDIR) && cmake --install . --component voxedit --prefix install-voxedit/usr

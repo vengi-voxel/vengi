@@ -5,7 +5,7 @@
 #pragma once
 
 #ifdef TRACY_ENABLE
-#include "core/tracy/TracyLua.hpp"
+#include "core/tracy/public/tracy/TracyLua.hpp"
 #endif
 
 namespace lua {
