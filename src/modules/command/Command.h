@@ -6,7 +6,6 @@
 
 #include "core/String.h"
 #include "core/Common.h"
-#include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"

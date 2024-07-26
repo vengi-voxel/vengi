@@ -6,6 +6,7 @@
 #include "IMGUIEx.h"
 #include "core/Color.h"
 #include "command/Command.h"
+#include "core/StringUtil.h"
 #include "video/ScopedPolygonMode.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"

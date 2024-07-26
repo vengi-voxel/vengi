@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
+#include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
