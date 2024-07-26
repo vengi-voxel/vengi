@@ -9,10 +9,6 @@
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include <SDL.h>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
@@ -99,8 +95,8 @@ void TestOctree::handleDirtyState() {
 		const math::AABB<int>& aabb = node.aabb();
 		const int depth = node.depth();
 		_itemVector.push_back(aabb);
-		Log::info("aabb for depth %i: %s",
-				depth, glm::to_string(aabb.getWidth()).c_str());
+		Log::info("aabb for depth %i: %i:%i:%i",
+				depth, aabb.getWidth().x, aabb.getWidth().y, aabb.getWidth().z);
 	});
 
 	// build AABBs
