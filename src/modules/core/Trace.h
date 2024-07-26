@@ -67,7 +67,7 @@ public:
 #define core_trace_begin(name) core::traceBegin(#name)
 #define core_trace_end() core::traceEnd()
 #define core_trace_scoped(name) core::TraceScoped __trace__##name(#name)
-#define core_trace_mutex_static(type, classname, name) type classname::varname;
+#define core_trace_mutex_static(type, classname, name) type classname::name
 #else // USE_EMTRACE
 
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
@@ -90,7 +90,7 @@ public:
 #define core_trace_begin(name) do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
 #define core_trace_end() do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
 #define core_trace_scoped(name) do { } while (TRACE_NULL_WHILE_LOOP_CONDITION)
-#define core_trace_mutex_static(type, classname, name) type classname::varname;
+#define core_trace_mutex_static(type, classname, name) type classname::name
 #endif
 
 }
