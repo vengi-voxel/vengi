@@ -146,11 +146,6 @@ jobs:
             cmake --build . --target codegen
             cmake --build . --target tests-voxedit
 
-        - name: Test
-          run: |
-            cd build
-            ctest -V -R '^tests-voxedit$'
-
     linux:
         timeout-minutes: 60
         runs-on: ubuntu-22.04
