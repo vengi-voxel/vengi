@@ -39,7 +39,9 @@ static void *wrap_calloc_func(size_t nmemb, size_t size) {
 }
 
 static void *wrap_realloc_func(void *mem, size_t size) {
+	TracyFree(mem);
 	void *newmem = realloc_func(mem, size);
+	TracyAlloc(mem, size);
 	return newmem;
 }
 
