@@ -11,10 +11,6 @@
 #include "core/String.h"
 #include <stdint.h>
 
-namespace math {
-class Random;
-}
-
 namespace voxel {
 
 /**
@@ -85,8 +81,6 @@ public:
 
 	glm::vec3 getLowerCornerf() const;
 	glm::vec3 getUpperCornerf() const;
-
-	glm::ivec3 getRandomPosition(math::Random& random) const;
 
 	/** Gets the width of the region measured in voxels. */
 	int32_t getWidthInVoxels() const;

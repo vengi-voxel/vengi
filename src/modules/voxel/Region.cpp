@@ -7,16 +7,9 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include <glm/vector_relational.hpp>
-#include "math/AABB.h"
-#include "math/Math.h"
-#include "math/Rect.h"
-#include "math/Random.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
+#include <glm/mat4x4.hpp>
 #include <stdint.h>
-#include <limits>
+#include <limits.h>
 
 namespace voxel {
 
@@ -31,20 +24,16 @@ void Region::update() {
 
 core::String Region::toString(bool center) const {
 	core::String regionStr("region[");
-	std::string s;
 	if (center) {
-		s = glm::to_string(getCenter());
 		regionStr += "center(";
-		regionStr += s.c_str();
+		regionStr += core::String::format("%i:%i:%i", _center.x, _center.y, _center.z);
 		regionStr += "), ";
 	}
-	s = glm::to_string(getLowerCorner());
 	regionStr += "mins(";
-	regionStr += s.c_str();
+	regionStr += core::String::format("%i:%i:%i", _mins.x, _mins.y, _mins.z);
 	regionStr += "), ";
-	s = glm::to_string(getUpperCorner());
 	regionStr += "maxs(";
-	regionStr += s.c_str();
+	regionStr += core::String::format("%i:%i:%i", _maxs.x, _maxs.y, _maxs.z);
 	regionStr += ")]";
 	return regionStr;
 }
@@ -70,13 +59,6 @@ void logRegion(const char *ctx, const voxel::Region& region) {
 
 int Region::voxels() const {
 	return getWidthInVoxels() * getHeightInVoxels() * getDepthInVoxels();
-}
-
-glm::ivec3 Region::getRandomPosition(math::Random& random) const {
-	const int x = random.random(_mins.x, _maxs.x);
-	const int y = random.random(_mins.y, _maxs.y);
-	const int z = random.random(_mins.z, _maxs.z);
-	return glm::ivec3(x, y, z);
 }
 
 /**
