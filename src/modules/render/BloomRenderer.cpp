@@ -8,6 +8,7 @@
 #include "TextureShader.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"
+#include "core/Trace.h"
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
 #include "video/ScopedBlendMode.h"
@@ -155,6 +156,7 @@ void BloomRenderer::apply(video::FrameBuffer *sources, video::FrameBuffer *dests
 }
 
 void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::TexturePtr& glowTexture) {
+	core_trace_scoped(BloomRender);
 	video::ScopedState depthTest(video::State::DepthTest, false);
 	video::ScopedState scissor(video::State::Scissor, false);
 	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::OneMinusSourceAlpha);

@@ -108,6 +108,8 @@ protected:
 	 * @sa extract()
 	 */
 	bool updateBufferForVolume(int idx);
+	void renderOpaque(const video::Camera &camera, bool normals);
+	void renderTransparency(RenderContext &renderContext, const video::Camera &camera, bool normals);
 public:
 	RawVolumeRenderer();
 	RawVolumeRenderer(const voxel::MeshStatePtr &meshState);

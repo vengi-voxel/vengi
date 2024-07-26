@@ -435,6 +435,110 @@ bool RawVolumeRenderer::isVisible(int idx) const {
 	return true;
 }
 
+void RawVolumeRenderer::renderOpaque(const video::Camera &camera, bool normals) {
+	core_trace_scoped(RenderOpaque);
+	const video::PolygonMode mode = camera.polygonMode();
+	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		if (!isVisible(idx)) {
+			continue;
+		}
+		const int bufferIndex = _meshState->resolveIdx(idx);
+		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+		if (indices == 0u) {
+			if (_meshState->volume(bufferIndex)) {
+				Log::debug("No indices but volume for idx %d: %d", idx, bufferIndex);
+			}
+			continue;
+		}
+
+		updatePalette(bufferIndex);
+		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+		_voxelShaderVertData.model = _meshState->model(idx);
+		_voxelShaderVertData.pivot = _meshState->pivot(idx);
+		_voxelShaderVertData.gray = _meshState->grayed(idx);
+		core_assert_always(_voxelData.update(_voxelShaderVertData));
+
+		video::ScopedPolygonMode polygonMode(mode);
+		video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
+		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+		if (normals) {
+			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
+			if (_shadowMap->boolVal()) {
+				_voxelNormShader.setShadowmap(video::TextureUnit::One);
+			}
+		} else {
+			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+			if (_shadowMap->boolVal()) {
+				_voxelShader.setShadowmap(video::TextureUnit::One);
+			}
+		}
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+	}
+}
+
+void RawVolumeRenderer::renderTransparency(RenderContext &renderContext, const video::Camera &camera, bool normals) {
+	core_trace_scoped(RenderTransparency);
+	const video::PolygonMode mode = camera.polygonMode();
+	core::DynamicArray<int> sorted;
+	{
+		core_trace_scoped(Sort);
+		sorted.reserve(voxel::MAX_VOLUMES);
+		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+			if (!isVisible(idx)) {
+				continue;
+			}
+			const int bufferIndex = _meshState->resolveIdx(idx);
+			const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+			if (indices == 0u) {
+				continue;
+			}
+
+			sorted.push_back(idx);
+		}
+
+		const glm::vec3 &camPos = camera.worldPosition();
+		core::sort(sorted.begin(), sorted.end(), [this, &camPos](int a, int b) {
+			const glm::vec3 &posA = _meshState->centerPos(a);
+			const glm::vec3 &posB = _meshState->centerPos(b);
+			const float d1 = glm::distance2(camPos, posA);
+			const float d2 = glm::distance2(camPos, posB);
+			return d1 > d2;
+		});
+	}
+
+	video::ScopedState scopedBlendTrans(video::State::Blend, true);
+	for (int idx : sorted) {
+		const int bufferIndex = _meshState->resolveIdx(idx);
+		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
+		updatePalette(idx);
+		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
+		_voxelShaderVertData.model = _meshState->model(idx);
+		_voxelShaderVertData.pivot = _meshState->pivot(idx);
+		_voxelShaderVertData.gray = _meshState->grayed(idx);
+		core_assert_always(_voxelData.update(_voxelShaderVertData));
+
+		video::ScopedPolygonMode polygonMode(mode);
+		video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
+		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
+		if (normals) {
+			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
+			if (_shadowMap->boolVal()) {
+				_voxelNormShader.setShadowmap(video::TextureUnit::One);
+			}
+		} else {
+			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+			if (_shadowMap->boolVal()) {
+				_voxelShader.setShadowmap(video::TextureUnit::One);
+			}
+		}
+		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+	}
+}
+
 void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow) {
 	core_trace_scoped(RawVolumeRendererRender);
 
@@ -542,102 +646,12 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	}
 
 	_paletteHash = 0;
+
 	// --- opaque pass
-	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		if (!isVisible(idx)) {
-			continue;
-		}
-		const int bufferIndex = _meshState->resolveIdx(idx);
-		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
-		if (indices == 0u) {
-			if (_meshState->volume(bufferIndex)) {
-				Log::debug("No indices but volume for idx %d: %d", idx, bufferIndex);
-			}
-			continue;
-		}
-
-		updatePalette(bufferIndex);
-		_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-		_voxelShaderVertData.model = _meshState->model(idx);
-		_voxelShaderVertData.pivot = _meshState->pivot(idx);
-		_voxelShaderVertData.gray = _meshState->grayed(idx);
-		core_assert_always(_voxelData.update(_voxelShaderVertData));
-
-		video::ScopedPolygonMode polygonMode(mode);
-		video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
-		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
-		if (normals) {
-			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelNormShader.setShadowmap(video::TextureUnit::One);
-			}
-		} else {
-			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
-			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-			if (_shadowMap->boolVal()) {
-				_voxelShader.setShadowmap(video::TextureUnit::One);
-			}
-		}
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-	}
+	renderOpaque(camera, normals);
 
 	// --- transparency pass
-	{
-		core::DynamicArray<int> sorted;
-		sorted.reserve(voxel::MAX_VOLUMES);
-		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-			if (!isVisible(idx)) {
-				continue;
-			}
-			const int bufferIndex = _meshState->resolveIdx(idx);
-			const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
-			if (indices == 0u) {
-				continue;
-			}
-
-			sorted.push_back(idx);
-		}
-
-		const glm::vec3 &camPos = camera.worldPosition();
-		core::sort(sorted.begin(), sorted.end(), [this, &camPos](int a, int b) {
-			const glm::vec3 &posA = _meshState->centerPos(a);
-			const glm::vec3 &posB = _meshState->centerPos(b);
-			const float d1 = glm::distance2(camPos, posA);
-			const float d2 = glm::distance2(camPos, posB);
-			return d1 > d2;
-		});
-
-		video::ScopedState scopedBlendTrans(video::State::Blend, true);
-		for (int idx : sorted) {
-			const int bufferIndex = _meshState->resolveIdx(idx);
-			const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Transparency);
-			updatePalette(idx);
-			_voxelShaderVertData.viewprojection = camera.viewProjectionMatrix();
-			_voxelShaderVertData.model = _meshState->model(idx);
-			_voxelShaderVertData.pivot = _meshState->pivot(idx);
-			_voxelShaderVertData.gray = _meshState->grayed(idx);
-			core_assert_always(_voxelData.update(_voxelShaderVertData));
-
-			video::ScopedPolygonMode polygonMode(mode);
-			video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
-			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Transparency]);
-			if (normals) {
-				core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
-				core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-				if (_shadowMap->boolVal()) {
-					_voxelNormShader.setShadowmap(video::TextureUnit::One);
-				}
-			} else {
-				core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
-				core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
-				if (_shadowMap->boolVal()) {
-					_voxelShader.setShadowmap(video::TextureUnit::One);
-				}
-			}
-			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-		}
-	}
+	renderTransparency(renderContext, camera, normals);
 
 	if (mode == video::PolygonMode::Points) {
 		video::disable(video::State::PolygonOffsetPoint);
