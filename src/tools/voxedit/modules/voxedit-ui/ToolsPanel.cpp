@@ -46,6 +46,7 @@ bool ToolsPanel::init() {
 	_gizmoOperations = core::Var::getSafe(cfg::VoxEditGizmoOperations);
 	_showGizmoScene = core::Var::getSafe(cfg::VoxEditShowaxis);
 	_showGizmoModel = core::Var::getSafe(cfg::VoxEditModelGizmo);
+	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	return true;
 }
 
@@ -222,6 +223,7 @@ void ToolsPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 			}
 			ImGui::IconCheckboxVar(ICON_LC_MAGNET, _("Snap to grid"), cfg::VoxEditGizmoSnap);
 			ImGui::IconCheckboxVar(ICON_LC_FLIP_HORIZONTAL_2, _("Flip axis"), cfg::VoxEditGizmoAllowAxisFlip);
+			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
 
 			if (!gizmoVar->boolVal())
 				ImGui::EndDisabled();
