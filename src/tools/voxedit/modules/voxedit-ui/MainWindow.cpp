@@ -538,7 +538,7 @@ void MainWindow::popupTipOfTheDay() {
 	const core::String title = makeTitle(_("Tip of the day"), POPUP_TITLE_TIPOFTHEDAY);
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		const char *tip = getTip();
-		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip);
+		ImGui::IconDialog(ICON_LC_LIGHTBULB, tip, true);
 		float height = (ImGui::GetFontSize() * 8.0f) - ImGui::GetCursorPosY();
 		if (height > 0.0f) {
 			ImGui::Dummy(ImVec2(0, height));
@@ -583,7 +583,7 @@ void MainWindow::popupModelUnreference() {
 	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
 	const core::String title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
 	if (ImGui::BeginPopupModal(title.c_str())) {
-		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"));
+		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			command::Command::execute("modelunref");
 			ImGui::CloseCurrentPopup();
@@ -713,11 +713,11 @@ void MainWindow::popupSceneSettings() {
 }
 
 void MainWindow::popupVolumeSplit() {
-	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 30, 0));
+	ImGui::SetNextWindowSize(ImVec2(ImGui::GetFontSize() * 50, 0));
 	const core::String title = makeTitle(_("Volume split"), POPUP_TITLE_VOLUME_SPLIT);
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
-								 "them into smaller volumes.\nDo you wish to split them now?"));
+								 "them into smaller volumes.\nDo you wish to split them now?"), true);
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();
 			_sceneMgr->splitVolumes();
