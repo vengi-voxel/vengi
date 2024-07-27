@@ -150,9 +150,6 @@ msgstr "Тип"
 msgid "Date"
 msgstr "Дата"
 
-msgid ".."
-msgstr ""
-
 msgid "directory"
 msgstr "каталог"
 
@@ -650,6 +647,9 @@ msgstr ""
 
 msgid "Show fixed region sizes in the positions panel"
 msgstr "Показувати фіксовані розміри регіонів у панелі позицій"
+
+msgid "Use local space for transforms"
+msgstr ""
 
 msgid "Show the grid"
 msgstr "Показувати сітку"

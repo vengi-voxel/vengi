@@ -157,9 +157,6 @@ msgstr "Typ"
 msgid "Date"
 msgstr "Datum"
 
-msgid ".."
-msgstr ""
-
 msgid "directory"
 msgstr "Verzeichnis"
 
@@ -657,6 +654,9 @@ msgstr ""
 
 msgid "Show fixed region sizes in the positions panel"
 msgstr "Feste Regionengrößen im Positions-Panel anzeigen"
+
+msgid "Use local space for transforms"
+msgstr ""
 
 msgid "Show the grid"
 msgstr "Gitter anzeigen"

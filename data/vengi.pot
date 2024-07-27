@@ -135,9 +135,6 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-msgid ".."
-msgstr ""
-
 msgid "directory"
 msgstr ""
 
@@ -627,6 +624,9 @@ msgid "Milliseconds that a region should get highlighted in a few situations"
 msgstr ""
 
 msgid "Show fixed region sizes in the positions panel"
+msgstr ""
+
+msgid "Use local space for transforms"
 msgstr ""
 
 msgid "Show the grid"
