@@ -674,7 +674,7 @@ void MainWindow::popupUnsavedChanges() {
 
 void MainWindow::popupUnsavedDiscard() {
 	const core::String title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
-	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+	if (ImGui::BeginPopupModal(title.c_str())) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("There are unsaved modifications.\nDo you wish to discard them?"));
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
 			ImGui::CloseCurrentPopup();

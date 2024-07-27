@@ -613,7 +613,7 @@ void IconDialog(const char *icon, const char *label) {
 	ImGui::SameLine();
 	ImGui::Spacing();
 	ImGui::SameLine();
-	ImGui::TextWrapped("%s", label);
+	ImGui::TextUnformatted(label);
 	ImGui::Spacing();
 	ImGui::Separator();
 }
