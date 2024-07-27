@@ -516,6 +516,8 @@ void IMGUIApp::renderCvarDialog() {
 				ImGui::TableNextColumn();
 				ImGui::TextUnformatted(var->name().c_str());
 				ImGui::TableNextColumn();
+				const bool readOnly = var->getFlags() & core::CV_READONLY;
+				ImGui::BeginDisabled(readOnly);
 				const core::String type = "##" + var->name();
 				if (var->typeIsBool()) {
 					bool value = var->boolVal();
@@ -523,16 +525,24 @@ void IMGUIApp::renderCvarDialog() {
 						var->setVal(value);
 					}
 				} else {
+					int flags = 0;
+					const bool secret = var->getFlags() & core::CV_SECRET;
+					if (secret) {
+						flags |= ImGuiInputTextFlags_Password;
+					}
 					core::String value = var->strVal();
-					if (ImGui::InputText(type.c_str(), &value)) {
+					if (ImGui::InputText(type.c_str(), &value, flags)) {
 						var->setVal(value);
 					}
 				}
+				ImGui::EndDisabled();
 				ImGui::TableNextColumn();
-				if (ImGui::Button(_("Reset"))) {
-					var->reset();
+				if (!readOnly) {
+					if (ImGui::Button(_("Reset"))) {
+						var->reset();
+					}
+					ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				}
-				ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				ImGui::TableNextColumn();
 				ImGui::Text("%s", var->help() ? var->help() : "");
 			});
