@@ -508,7 +508,7 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
 	const glm::vec3 clocalTranslationVec = glm::vec3(10.0f);
-	const glm::vec3 cworldTranslationFinal = glm::vec3(8.0f);
+	const glm::vec3 cworldTranslationFinal = glm::vec3(12.0f);
 	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
 	const glm::mat4 ctranslationMat = glm::translate(clocalTranslationVec);
 	scenegraph::SceneGraphNode *cnode = _sceneMgr->sceneGraphNode(cnodeId);
