@@ -73,6 +73,7 @@ bool Viewport::init() {
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame);
+	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -621,7 +622,7 @@ glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegra
 }
 
 uint32_t Viewport::gizmoMode() const {
-	return ImGuizmo::MODE::WORLD;
+	return _localSpace->boolVal() ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
 }
 
 void Viewport::updateBounds(const scenegraph::SceneGraphNode &node) {

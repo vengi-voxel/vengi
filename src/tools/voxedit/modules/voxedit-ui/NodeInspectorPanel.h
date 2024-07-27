@@ -17,7 +17,7 @@ typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 class NodeInspectorPanel : public ui::Panel {
 private:
 	using Super = ui ::Panel;
-	bool _localSpace = false;
+	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
 	SceneManagerPtr _sceneMgr;
 	core::String _propertyKey;

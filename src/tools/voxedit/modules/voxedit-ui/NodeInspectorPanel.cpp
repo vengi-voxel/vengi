@@ -78,6 +78,7 @@ static bool xyzValues(const char *title, glm::ivec3 &v) {
 
 bool NodeInspectorPanel::init() {
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
+	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
 	return true;
 }
 
@@ -220,15 +221,15 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 			scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
 			scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-			glm::vec3 matrixTranslation = _localSpace ? transform.localTranslation() : transform.worldTranslation();
-			glm::vec3 matrixScale = _localSpace ? transform.localScale() : transform.worldScale();
-			glm::quat matrixOrientation = _localSpace ? transform.localOrientation() : transform.worldOrientation();
+			glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
+			glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
+			glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
 			bool change = false;
-			ImGui::Checkbox(_("Local transforms"), &_localSpace);
+			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
 			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
 			change |= ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f",
 										ImGuiInputTextFlags_EnterReturnsTrue);
-			if (_localSpace) {
+			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resettr")) {
 					matrixTranslation[0] = matrixTranslation[1] = matrixTranslation[2] = 0.0f;
@@ -239,7 +240,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 
 			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 			change |= ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
-			if (_localSpace) {
+			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetrt")) {
 					matrixRotation[0] = matrixRotation[1] = matrixRotation[2] = 0.0f;
@@ -249,7 +250,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			}
 
 			change |= ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
-			if (_localSpace) {
+			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetsc")) {
 					matrixScale[0] = matrixScale[1] = matrixScale[2] = 1.0f;
@@ -289,7 +290,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {
 					_sceneMgr->nodeUpdateTransform(node.id(), matrixRotation, matrixScale, matrixTranslation,
-												   keyFrameIdx, _localSpace);
+												   keyFrameIdx, _localSpace->boolVal());
 				}
 			}
 		}
