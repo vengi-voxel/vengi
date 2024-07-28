@@ -110,7 +110,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
 	core::Var::get(cfg::VoxEditModificationDismissMillis, "1500", _("Milliseconds that a region should get highlighted in a few situations"));
 	core::Var::get(cfg::VoxEditRegionSizes, "", _("Show fixed region sizes in the positions panel"), core::Var::ivec3ListValidator<1, 256>);
-	core::Var::get(cfg::VoxEditLocalSpace, "false", _("Use local space for transforms"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditLocalSpace, "true", _("Use local space for transforms"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowgrid, "true", _("Show the grid"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowlockedaxis, "true", _("Show the currently locked axis"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditShowaabb, "true", _("Show the axis aligned bounding box"), core::Var::boolValidator);
