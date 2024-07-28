@@ -595,8 +595,7 @@ AppState App::onConstruct() {
 #endif
 	}
 
-	const io::FilesystemPtr &fs = io::filesystem();
-	const core::String &logfilePath = fs->writePath("log.txt");
+	const core::String &logfilePath = _filesystem->writePath("log.txt");
 	Log::init(logfilePath.c_str());
 
 	return AppState::Init;
