@@ -23,6 +23,7 @@ enum FilesystemDirectories {
 	FS_Dir_Documents,
 	FS_Dir_Pictures,
 	FS_Dir_Public,
+	FS_Dir_Fonts,
 	FS_Dir_Recent,
 	FS_Dir_Cloud,
 
