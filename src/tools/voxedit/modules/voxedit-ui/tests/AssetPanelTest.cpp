@@ -32,8 +32,8 @@ void AssetPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "load remote collection")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemClick("##assetpaneltabs/Models");
-		ctx->SetRef(ctx->WindowInfo("##collectionpanel").ID);
-		// /Voxel Files_4427E88C/Voxel Files/Vengi
+		ctx->Yield();
+		ctx->ItemDoubleClick("**/Oasis");
 	};
 }
 
