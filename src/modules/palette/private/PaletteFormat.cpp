@@ -81,6 +81,10 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 			return false;
 		}
 	}
+	if (ext.empty()) {
+		Log::error("No extension found for %s - can't determine the palette format", filename.c_str());
+		return false;
+	}
 	for (desc = io::format::palettes(); desc->valid(); ++desc) {
 		if (!desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			continue;
@@ -94,6 +98,7 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 			return false;
 		}
 	}
+	Log::error("Failed to found a matching palette format for %s", filename.c_str());
 	return false;
 }
 

@@ -552,6 +552,11 @@ bool Palette::save(const char *name) const {
 		}
 		name = _name.c_str();
 	}
+	const core::String ext = core::string::extractExtension(name);
+	if (ext.empty()) {
+		Log::error("No extension found for %s - can't determine the palette format", name);
+		return false;
+	}
 	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
 	io::FileStream stream(file);
 	return palette::savePalette(*this, name, stream);
@@ -658,7 +663,7 @@ bool Palette::load(const char *paletteName) {
 		}
 	}
 	io::FileStream stream(paletteFile);
-	if (!palette::loadPalette(paletteName, stream, *this)) {
+	if (!palette::loadPalette(paletteFile->name(), stream, *this)) {
 		const image::ImagePtr &img = image::loadImage(paletteFile);
 		if (!img->isLoaded()) {
 			Log::error("Failed to load image %s", paletteFile->name().c_str());
@@ -1071,6 +1076,10 @@ void Palette::emitToVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 
 bool Palette::convertImageToPalettePng(const image::ImagePtr &image, const char *paletteFile) {
 	if (!image || !image->isLoaded() || paletteFile == nullptr) {
+		return false;
+	}
+	if (!core::string::endsWith(paletteFile, ".png")) {
+		Log::error("Failed to save palette as png - invalid file extension");
 		return false;
 	}
 	Palette palette;
