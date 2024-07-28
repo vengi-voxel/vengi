@@ -54,6 +54,12 @@ public:
 	void setDiffuseColor(const glm::vec3 &color);
 
 	void nodeRemove(int nodeId);
+	/**
+	 * @brief Checks whether the given model node is visible
+	 * @param[in] nodeId The node id
+	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
+	 * @return @c true if the node is visible, @c false otherwise
+	 */
 	bool isVisible(int nodeId, bool hideEmpty = true) const;
 
 	void scheduleRegionExtraction(scenegraph::SceneGraphNode &node, const voxel::Region &region);

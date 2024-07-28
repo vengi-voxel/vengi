@@ -117,6 +117,12 @@ public:
 
 	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
 	void clear();
+	/**
+	 * @brief Checks whether the given volume @c idx is visible
+	 * @param[in] idx The volume index
+	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
+	 * @return @c true if the volume is visible, @c false otherwise
+	 */
 	bool isVisible(int idx, bool hideEmpty = true) const;
 
 	void scheduleRegionExtraction(int idx, const voxel::Region& region);
