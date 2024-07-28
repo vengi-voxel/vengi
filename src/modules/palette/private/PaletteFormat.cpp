@@ -66,7 +66,7 @@ bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, p
 
 bool savePalette(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream,
 				 const io::FormatDescription *desc) {
-	Log::info("Save palette to %s", filename.c_str());
+	Log::info("Save palette to '%s'", filename.c_str());
 	const core::String &ext = core::string::extractExtension(filename);
 	if (desc && !desc->matchesExtension(ext)) {
 		desc = nullptr;
@@ -77,12 +77,12 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
 			}
-			Log::error("Failed to save %s file", desc->name.c_str());
+			Log::error("Failed to save '%s' file", desc->name.c_str());
 			return false;
 		}
 	}
 	if (ext.empty()) {
-		Log::error("No extension found for %s - can't determine the palette format", filename.c_str());
+		Log::error("No extension found for '%s' - can't determine the palette format", filename.c_str());
 		return false;
 	}
 	for (desc = io::format::palettes(); desc->valid(); ++desc) {
@@ -94,11 +94,11 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
 				return true;
 			}
-			Log::error("Failed to save %s file", desc->name.c_str());
+			Log::error("Failed to save '%s' file", desc->name.c_str());
 			return false;
 		}
 	}
-	Log::error("Failed to found a matching palette format for %s", filename.c_str());
+	Log::error("Failed to find a matching palette format for '%s'", filename.c_str());
 	return false;
 }
 
