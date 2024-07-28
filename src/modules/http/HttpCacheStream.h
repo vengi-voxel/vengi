@@ -24,8 +24,6 @@ namespace http {
  */
 class HttpCacheStream : public io::SeekableReadStream {
 private:
-	const core::String _file;
-	const core::String _url;
 	io::SeekableReadStream *_readStream = nullptr;
 	bool _newInCache = false;
 	void write(const io::ArchivePtr &archive, const core::String &file, io::BufferedReadWriteStream &bufStream);

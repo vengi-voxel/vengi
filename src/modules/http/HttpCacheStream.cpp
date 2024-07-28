@@ -13,8 +13,7 @@
 
 namespace http {
 
-HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url)
-	: _file(file), _url(url) {
+HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
 	if (core::string::startsWith(url, "file://")) {
 		_readStream = archive->readStream(url.substr(7));
 		return;
