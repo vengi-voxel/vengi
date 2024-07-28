@@ -172,9 +172,9 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 			if (_shouldQuit) {
 				return;
 			}
-			http::HttpCacheStream stream(archive, voxelFile.fullPath, voxelFile.url);
+			http::HttpCacheStream stream(archive, voxelFile.targetFile(), voxelFile.url);
 			voxelformat::LoadContext loadCtx;
-			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.fullPath, archive, loadCtx);
+			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.targetFile(), archive, loadCtx);
 			if (!thumbnailImage || !thumbnailImage->isLoaded()) {
 				Log::debug("Failed to load given input file: %s", voxelFile.fullPath.c_str());
 				return;

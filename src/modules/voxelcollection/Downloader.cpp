@@ -139,6 +139,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 		subFile.licenseUrl = archiveFile.licenseUrl;
 		subFile.thumbnailUrl = archiveFile.thumbnailUrl;
 		subFile.fullPath = core::string::path(core::string::extractPath(archiveFile.fullPath), f.fullPath);
+		subFile.downloaded = true;
 
 		if (supportedFileExtension(subFile.name)) {
 			Log::debug("Found %s in archive %s", subFile.name.c_str(), archiveFile.targetFile().c_str());
@@ -152,7 +153,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
-			if (archive->write(subFile.fullPath, *rs)) {
+			if (archive->write(subFile.targetFile(), *rs)) {
 				files.push_back(subFile);
 			} else {
 				Log::error("Failed to write file %s from archive %s", subFile.name.c_str(),
@@ -166,7 +167,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 						   archiveFile.fullPath.c_str());
 				continue;
 			}
-			if (archive->write(subFile.fullPath, *rs)) {
+			if (archive->write(subFile.targetFile(), *rs)) {
 				handleArchive(archive, subFile, files, shouldQuit);
 			} else {
 				Log::error("Failed to write file %s from archive %s", subFile.fullPath.c_str(),
