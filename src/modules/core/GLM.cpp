@@ -3,6 +3,8 @@
  */
 
 #include "GLM.h"
+#include <glm/gtc/epsilon.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/matrix_access.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -336,6 +338,17 @@ mat3x4 operator*(const mat3x4 &lhs, const mat3x4 &o) {
 	glm::vec4 c3 = (o[0] * lhs[2].x + o[1] * lhs[2].y + o[2] * lhs[2].z);
 	c3.w += lhs[2].w;
 	return mat3x4(c1, c2, c3);
+}
+
+bool equal(const mat4 &lhs, const mat4 &rhs, float epsilon) {
+	const float *l = glm::value_ptr(lhs);
+	const float *r = glm::value_ptr(rhs);
+	for (int i = 0; i < 16; ++i) {
+		if (!glm::epsilonEqual(l[i], r[i], epsilon)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 } // namespace glm

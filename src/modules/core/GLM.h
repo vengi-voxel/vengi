@@ -65,6 +65,8 @@ vec3 rotate(const mat4& mat, const vec3& v);
 
 vec3 project(const mat4& m, const vec3& p);
 
+bool equal(const mat4 &lhs, const mat4 &rhs, float epsilon = 0.0001f);
+
 glm::mat3x4 invert(const glm::mat3x4& o);
 
 mat3x4 operator*(const mat3x4& lhs, const mat3x4 &o);
