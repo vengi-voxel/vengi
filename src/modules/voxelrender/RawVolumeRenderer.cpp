@@ -405,6 +405,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 		return;
 	}
 	_state[idx]._culled = false;
+	_state[idx]._empty = false;
 	// check a potentially referenced mesh here
 	const int bufferIndex = _meshState->resolveIdx(idx);
 	if (!_state[bufferIndex].hasData()) {
@@ -413,7 +414,7 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 			Log::trace("No data, but volume: %i", bufferIndex);
 		}
 #endif
-		_state[idx]._culled = true;
+		_state[idx]._empty = true;
 		return;
 	}
 	const glm::ivec3 &mins = _meshState->mins(idx);
@@ -425,11 +426,14 @@ void RawVolumeRenderer::updateCulling(int idx, const video::Camera &camera) {
 	}
 }
 
-bool RawVolumeRenderer::isVisible(int idx) const {
+bool RawVolumeRenderer::isVisible(int idx, bool hideEmpty) const {
 	if (_meshState->hidden(idx)) {
 		return false;
 	}
 	if (_state[idx]._culled) {
+		return false;
+	}
+	if (hideEmpty && _state[idx]._empty) {
 		return false;
 	}
 	return true;

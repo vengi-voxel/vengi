@@ -162,12 +162,12 @@ void SceneGraphRenderer::nodeRemove(int nodeId) {
 	_volumeRenderer.resetVolume(id);
 }
 
-bool SceneGraphRenderer::isVisible(int nodeId) const {
+bool SceneGraphRenderer::isVisible(int nodeId, bool hideEmpty) const {
 	const int id = getVolumeId(nodeId);
 	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return false;
 	}
-	return _volumeRenderer.isVisible(id);
+	return _volumeRenderer.isVisible(id, hideEmpty);
 }
 
 void SceneGraphRenderer::prepare(const RenderContext &renderContext) {

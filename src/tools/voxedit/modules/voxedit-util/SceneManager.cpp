@@ -2683,7 +2683,7 @@ int SceneManager::traceScene() {
 		if (!node.visible()) {
 			continue;
 		}
-		if (!_sceneRenderer->isVisible(node.id())) {
+		if (!_sceneRenderer->isVisible(node.id(), false)) {
 			continue;
 		}
 		float distance = 0.0f;
@@ -2698,7 +2698,7 @@ int SceneManager::traceScene() {
 			}
 		}
 	}
-	Log::trace("Hovered node: %i", nodeId);
+	Log::error("Hovered node: %i", nodeId);
 	return nodeId;
 }
 

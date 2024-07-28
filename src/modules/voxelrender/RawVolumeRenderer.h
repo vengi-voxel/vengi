@@ -62,6 +62,7 @@ class RawVolumeRenderer : public core::NonCopyable {
 protected:
 	struct State {
 		bool _culled = false;
+		bool _empty = false; // this is only updated for non hidden nodes
 		int32_t _vertexBufferIndex[voxel::MeshType_Max]{-1, -1};
 		int32_t _normalBufferIndex[voxel::MeshType_Max]{-1, -1};
 		int32_t _indexBufferIndex[voxel::MeshType_Max]{-1, -1};
@@ -116,7 +117,7 @@ public:
 
 	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
 	void clear();
-	bool isVisible(int idx) const;
+	bool isVisible(int idx, bool hideEmpty = true) const;
 
 	void scheduleRegionExtraction(int idx, const voxel::Region& region);
 
