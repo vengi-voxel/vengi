@@ -134,9 +134,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 		const core::String filename = core::string::extractFilename(palette.name());
 		const core::String &paletteFilename = core::string::format("palette-%s.png", filename.c_str());
 		const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
-		if (!palette.save(pngFile->name().c_str())) {
-			Log::warn("Failed to write palette image: %s", paletteFilename.c_str());
-		}
+		palette.save(pngFile->name().c_str());
 	}
 
 	return true;
@@ -154,8 +152,6 @@ bool SceneManager::importPalette(const core::String& file) {
 	const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
 	if (palette.save(pngFile->name().c_str())) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
-	} else {
-		Log::warn("Failed to write palette image");
 	}
 
 	return setActivePalette(palette);

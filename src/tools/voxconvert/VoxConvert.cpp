@@ -394,7 +394,6 @@ app::AppState VoxConvert::onInit() {
 				Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfiles.front().c_str());
 				return state;
 			}
-			Log::error("Failed to write %s", outfiles.front().c_str());
 			return app::AppState::InitFailure;
 		}
 	}
@@ -732,8 +731,9 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 
 		if (_exportPalette) {
 			const core::String &paletteFile = core::string::replaceExtension(infile, "png");
-			sceneGraph.firstPalette().save(paletteFile.c_str());
-			Log::info("Wrote palette %s", paletteFile.c_str());
+			if (sceneGraph.firstPalette().save(paletteFile.c_str())) {
+				Log::info("Wrote palette %s", paletteFile.c_str());
+			}
 		}
 	}
 
