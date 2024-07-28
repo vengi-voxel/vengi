@@ -84,6 +84,10 @@ public:
 		return _region;
 	}
 
+	inline bool hasVolume() const {
+		return _buffer != nullptr;
+	}
+
 	/**
 	 * @brief Converts the given @c mementoData back into a voxels
 	 * @note Inserts the voxels from the memento data into the given volume at the given region.
