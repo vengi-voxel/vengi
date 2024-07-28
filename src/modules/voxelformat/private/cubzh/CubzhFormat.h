@@ -332,6 +332,9 @@ protected:
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
+	bool saveAnimations(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+					const io::ArchivePtr &archive, const SaveContext &ctx) const;
+
 	bool loadVersion6(const core::String &filename, const Header &header, io::SeekableReadStream &stream,
 					  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) const;
 	bool loadShape6(const core::String &filename, const Header &header, const Chunk &chunk, CubzhReadStream &stream,

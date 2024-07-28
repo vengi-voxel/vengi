@@ -10,6 +10,8 @@
 #include "io/ZipReadStream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 
@@ -746,12 +748,19 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 	wrapBool(loadHeader(*stream, header))
 	Log::debug("Found version %d", header.version);
 	if (header.legacy) {
-		return loadPCubes(filename, header, *stream, sceneGraph, palette, ctx);
+		if (!loadPCubes(filename, header, *stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
+	} else if (header.version == 5) {
+		if (!loadVersion5(filename, header, *stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
+	} else {
+		if (!loadVersion6(filename, header, *stream, sceneGraph, palette, ctx)) {
+			return false;
+		}
 	}
-	if (header.version == 5) {
-		return loadVersion5(filename, header, *stream, sceneGraph, palette, ctx);
-	}
-	return loadVersion6(filename, header, *stream, sceneGraph, palette, ctx);
+	return true;
 }
 
 size_t CubzhFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -1006,8 +1015,109 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	}
 	wrapBool(stream->writeUInt32(totalSize))
 	stream->seek(0, SEEK_END);
+
+	return saveAnimations(sceneGraph, filename, archive, ctx);
+}
+
+static scenegraph::InterpolationType toInterpolationType(const std::string &type) {
+	for (int i = 0; i < lengthof(scenegraph::InterpolationTypeStr); ++i) {
+		if (type == scenegraph::InterpolationTypeStr[i]) {
+			return (scenegraph::InterpolationType)i;
+		}
+	}
+	return scenegraph::InterpolationType::Max;
+}
+
+bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
+				const io::ArchivePtr &archive, const SaveContext &ctx) const {
+	if (!sceneGraph.hasAnimations()) {
+		return true;
+	}
+	const core::String animationFilename = filename + ".json";
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(animationFilename));
+	if (!stream) {
+		Log::error("Could not open file %s", animationFilename.c_str());
+		return false;
+	}
+	const core::String basename = core::string::extractFilename(filename);
+	 // TODO
+	int fps = 12;
+	int loopStart = 0;
+	int loopEnd = 0;
+	int maxTime = 35;
+	const core::String shapeName = "author." + basename;
+
+	if (!stream->writeString("{\n", false)) {
+		Log::error("Failed to write to file '%s'", animationFilename.c_str());
+		return false;
+	}
+	stream->writeString("\t\"animations\": {\n", false);
+
+	for (const core::String &animation : sceneGraph.animations()) {
+		stream->writeStringFormat(false, "\t\t\"%s\": {\n", animation.c_str());
+		stream->writeStringFormat(false, "\t\t\t\"playSpeed\": %i,\n", fps);
+		stream->writeStringFormat(false, "\t\t\t\"loopStart\": %i,\n", loopStart);
+		stream->writeStringFormat(false, "\t\t\t\"loopEnd\": %i,\n", loopEnd);
+		stream->writeStringFormat(false, "\t\t\t\"maxTime\": %i,\n", maxTime);
+		stream->writeString("\t\t\t\"shapes\": {\n", false);
+		bool firstNode = true;
+		for (const auto &entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->second;
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
+			if (firstNode) {
+				firstNode = false;
+			} else {
+				stream->writeString(",\n", false);
+			}
+			stream->writeStringFormat(false, "\t\t\t\t\"%s\": {\n", node.name().c_str());
+			stream->writeStringFormat(false, "\t\t\t\t\t\"name\": \"%s\",\n", node.name().c_str());
+			stream->writeString("\t\t\t\t\t\"frames\": {\n", false);
+			bool firstKeyFrame = true;
+			for (const scenegraph::SceneGraphKeyFrame &keyframe : node.keyFrames(animation)) {
+				const scenegraph::SceneGraphTransform &transform = keyframe.transform();
+				const glm::vec3 &translation = transform.localTranslation();
+				const glm::vec3 &eulerAngles = glm::eulerAngles(transform.localOrientation());
+				const glm::quat &rotation = transform.localOrientation();
+				if (firstKeyFrame) {
+					firstKeyFrame = false;
+				} else {
+					stream->writeString(",\n", false);
+				}
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\"%i_\": {\n", keyframe.frameIdx);
+				stream->writeString("\t\t\t\t\t\t\t\"position\": {\n", false);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", translation.x);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", translation.y);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f\n", translation.z);
+				stream->writeString("\t\t\t\t\t\t\t},\n", false);
+				stream->writeString("\t\t\t\t\t\t\t\"rotation\": {\n", false);
+					stream->writeString("\t\t\t\t\t\t\t\t\"_edirty\": false,\n", false);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ex\": %f,\n", eulerAngles.x);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ey\": %f,\n", eulerAngles.y);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ez\": %f,\n", eulerAngles.z);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", rotation.x);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", rotation.y);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f,\n", rotation.z);
+					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_w\": %f\n", rotation.w);
+				stream->writeString("\t\t\t\t\t\t\t},\n", false);
+
+				core::String interpolation = scenegraph::InterpolationTypeStr[(int)keyframe.interpolation];
+				interpolation = interpolation.toLower();
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\"interpolation\": \"%s\"\n", interpolation.c_str());
+				stream->writeString("\t\t\t\t\t\t}", false);
+			}
+			stream->writeString("\n\t\t\t\t\t}\n\t\t\t\t}", false);
+		}
+		stream->writeString("\n", false);
+	}
+	stream->writeString("\t\t\t}\n\t\t}\n\t},\n", false);
+	stream->writeStringFormat(false, "\t\"shape\": \"%s\",\n", shapeName.c_str());
+	stream->writeString("\t\"shapeType\": \"shape\"\n", false);
+	stream->writeString("}\n", false);
 	return true;
 }
+
 
 #undef wrapBool
 
