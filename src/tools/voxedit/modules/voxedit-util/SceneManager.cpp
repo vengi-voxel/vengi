@@ -2875,9 +2875,11 @@ bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegr
 	} else {
 		return false;
 	}
-	transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-	_mementoHandler.markNodeTransform(node, keyFrameIdx);
-	markDirty();
+	if (transform.dirty()) {
+		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
+		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		markDirty();
+	}
 	return true;
 }
 
@@ -3062,7 +3064,6 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-
 		_mementoHandler.markNodeTransform(node, keyFrameIdx);
 		markDirty();
 	}
@@ -3080,7 +3081,6 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-
 		_mementoHandler.markNodeTransform(node, keyFrameIdx);
 		markDirty();
 	}
