@@ -509,9 +509,11 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 		// there is no valid key frame idx given in edit mode
 		mementoHandler.markModification(node, node.region());
 	} else {
-		// TODO: check that it was modified
-		// we have a valid key frame idx in scene mode
-		mementoHandler.markNodeTransform(node, keyFrameIdx);
+		if (!glm::equal(_transformLocalMatrix, node.transform(keyFrameIdx).localMatrix())) {
+			// we have a valid key frame idx in scene mode
+			mementoHandler.markNodeTransform(node, keyFrameIdx);
+			_transformLocalMatrix = glm::mat4(1.0f);
+		}
 	}
 	_transformMementoLocked = false;
 }
@@ -525,6 +527,7 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	mementoHandler.lock();
 	_sceneMgr->modifier().lock();
 	_transformMementoLocked = true;
+	_transformLocalMatrix = node.transform(keyFrameIdx).localMatrix();
 }
 
 void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,

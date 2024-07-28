@@ -39,6 +39,7 @@ private:
 	 * @sa reset()
 	 */
 	bool _transformMementoLocked = false;
+	glm::mat4x4 _transformLocalMatrix{1.0f};
 
 	voxelrender::SceneCameraMode _camMode = voxelrender::SceneCameraMode::Free;
 	image::CaptureTool _captureTool;
