@@ -841,8 +841,8 @@ bool SceneManager::mementoTransform(const memento::MementoState& s) {
 			node->setPivot(*s.pivot.value());
 		}
 		scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
-		if (s.worldMatrix.hasValue()) {
-			transform.setWorldMatrix(*s.worldMatrix.value());
+		if (s.localMatrix.hasValue()) {
+			transform.setLocalMatrix(*s.localMatrix.value());
 			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
 			return true;
 		}

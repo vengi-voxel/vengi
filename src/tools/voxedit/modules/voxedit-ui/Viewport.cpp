@@ -509,6 +509,7 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 		// there is no valid key frame idx given in edit mode
 		mementoHandler.markModification(node, node.region());
 	} else {
+		// TODO: check that it was modified
 		// we have a valid key frame idx in scene mode
 		mementoHandler.markNodeTransform(node, keyFrameIdx);
 	}
@@ -521,9 +522,6 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	}
 	Log::debug("Lock memento state");
 	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
-	if (keyFrameIdx != InvalidKeyFrame) {
-		mementoHandler.markNodeTransform(node, keyFrameIdx);
-	}
 	mementoHandler.lock();
 	_sceneMgr->modifier().lock();
 	_transformMementoLocked = true;

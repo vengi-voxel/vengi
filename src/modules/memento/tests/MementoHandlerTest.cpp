@@ -702,7 +702,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 	glm::vec3 mirrored;
 	{
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(initial);
+		transform.setLocalTranslation(initial);
 		transform.update(_sceneGraph, *node, 0, false);
 		node->setTransform(0, transform);
 	}
@@ -712,7 +712,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		scenegraph::SceneGraphTransform &transform = node->transform(0);
 		transform.mirrorX();
 		transform.update(_sceneGraph, *node, 0, false);
-		mirrored = transform.worldTranslation();
+		mirrored = transform.localTranslation();
 		node->setTransform(0, transform);
 	}
 	_mementoHandler.markNodeTransform(*node, 0);
@@ -721,26 +721,26 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 	MementoState stateUndo = firstState(_mementoHandler.undo());
 	EXPECT_EQ(MementoType::SceneNodeTransform, stateUndo.type);
 	EXPECT_EQ(0, stateUndo.keyFrameIdx);
-	ASSERT_TRUE(stateUndo.worldMatrix.hasValue());
+	ASSERT_TRUE(stateUndo.localMatrix.hasValue());
 
 	{
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldMatrix(*stateUndo.worldMatrix.value());
+		transform.setLocalMatrix(*stateUndo.localMatrix.value());
 		transform.update(_sceneGraph, *node, 0, true);
-		EXPECT_VEC3_NEAR(transform.worldTranslation(), initial, 0.0001f);
+		EXPECT_VEC3_NEAR(transform.localTranslation(), initial, 0.0001f);
 	}
 
 	EXPECT_TRUE(_mementoHandler.canRedo());
 	MementoState stateRedo = firstState(_mementoHandler.redo());
 	EXPECT_EQ(0, stateRedo.keyFrameIdx);
 	EXPECT_EQ(MementoType::SceneNodeTransform, stateRedo.type);
-	ASSERT_TRUE(stateRedo.worldMatrix.hasValue());
+	ASSERT_TRUE(stateRedo.localMatrix.hasValue());
 
 	{
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldMatrix(*stateRedo.worldMatrix.value());
+		transform.setLocalMatrix(*stateRedo.localMatrix.value());
 		transform.update(_sceneGraph, *node, 0, true);
-		EXPECT_VEC3_NEAR(transform.worldTranslation(), mirrored, 0.0001f);
+		EXPECT_VEC3_NEAR(transform.localTranslation(), mirrored, 0.0001f);
 	}
 }
 
