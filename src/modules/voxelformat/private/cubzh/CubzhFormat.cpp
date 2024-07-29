@@ -246,9 +246,9 @@ bool CubzhFormat::loadPalette6(io::ReadStream &stream, palette::Palette &palette
 	return true;
 }
 
-bool CubzhFormat::loadShape5(const core::String &filename, const Header &header, const Chunk &chunk, io::SeekableReadStream &stream,
-							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-							 const LoadContext &ctx) const {
+bool CubzhFormat::loadShape5(const core::String &filename, const Header &header, const Chunk &chunk,
+							 io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+							 const palette::Palette &palette, const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
 
@@ -433,9 +433,9 @@ bool CubzhFormat::loadSubChunkHeader(const Header &header, io::ReadStream &strea
 	return true;
 }
 
-bool CubzhFormat::loadShape6(const core::String &filename, const Header &header, const Chunk &chunk, CubzhReadStream &stream,
-							 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-							 const LoadContext &ctx) const {
+bool CubzhFormat::loadShape6(const core::String &filename, const Header &header, const Chunk &chunk,
+							 CubzhReadStream &stream, scenegraph::SceneGraph &sceneGraph,
+							 const palette::Palette &palette, const LoadContext &ctx) const {
 	uint16_t width = 0, depth = 0, height = 0;
 	scenegraph::SceneGraphNode node;
 	node.setName(core::string::extractFilename(filename));
@@ -668,7 +668,8 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	node.setPalette(nodePalette);
 	int parent = 0;
 	if (parentShapeId != 0) {
-		if (scenegraph::SceneGraphNode *parentNode = sceneGraph.findNodeByPropertyValue("shapeId", core::string::format("%d", parentShapeId))) {
+		if (scenegraph::SceneGraphNode *parentNode =
+				sceneGraph.findNodeByPropertyValue("shapeId", core::string::format("%d", parentShapeId))) {
 			parent = parentNode->id();
 			if (!paletteFound) {
 				node.setPalette(parentNode->palette());
@@ -834,7 +835,7 @@ image::ImagePtr CubzhFormat::loadScreenshot(const core::String &filename, const 
 	}
 
 bool CubzhFormat::savePointNodes(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-								io::SeekableWriteStream &ws) const {
+								 io::SeekableWriteStream &ws) const {
 	for (auto childId : node.children()) {
 		const scenegraph::SceneGraphNode &child = sceneGraph.node(childId);
 		if (child.type() != scenegraph::SceneGraphNodeType::Point) {
@@ -972,7 +973,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	}
 	stream->write("CUBZH!", 6);
 	wrapBool(stream->writeUInt32(6)) // version
-	wrapBool(stream->writeUInt8(1))	// zip compression
+	wrapBool(stream->writeUInt8(1))	 // zip compression
 	const int64_t totalSizePos = stream->pos();
 	wrapBool(stream->writeUInt32(0)) // total size is written at the end
 	const int64_t afterHeaderPos = stream->pos();
@@ -1029,7 +1030,7 @@ static scenegraph::InterpolationType toInterpolationType(const std::string &type
 }
 
 bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-				const io::ArchivePtr &archive, const SaveContext &ctx) const {
+								 const io::ArchivePtr &archive, const SaveContext &ctx) const {
 	if (!sceneGraph.hasAnimations()) {
 		return true;
 	}
@@ -1040,7 +1041,7 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 		return false;
 	}
 	const core::String basename = core::string::extractFilename(filename);
-	 // TODO
+	// TODO
 	int fps = 12;
 	int loopStart = 0;
 	int loopEnd = 0;
@@ -1087,19 +1088,19 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 				}
 				stream->writeStringFormat(false, "\t\t\t\t\t\t\"%i_\": {\n", keyframe.frameIdx);
 				stream->writeString("\t\t\t\t\t\t\t\"position\": {\n", false);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", translation.x);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", translation.y);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f\n", translation.z);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", translation.x);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", translation.y);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f\n", translation.z);
 				stream->writeString("\t\t\t\t\t\t\t},\n", false);
 				stream->writeString("\t\t\t\t\t\t\t\"rotation\": {\n", false);
-					stream->writeString("\t\t\t\t\t\t\t\t\"_edirty\": false,\n", false);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ex\": %f,\n", eulerAngles.x);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ey\": %f,\n", eulerAngles.y);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ez\": %f,\n", eulerAngles.z);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", rotation.x);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", rotation.y);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f,\n", rotation.z);
-					stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_w\": %f\n", rotation.w);
+				stream->writeString("\t\t\t\t\t\t\t\t\"_edirty\": false,\n", false);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ex\": %f,\n", eulerAngles.x);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ey\": %f,\n", eulerAngles.y);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_ez\": %f,\n", eulerAngles.z);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_x\": %f,\n", rotation.x);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_y\": %f,\n", rotation.y);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_z\": %f,\n", rotation.z);
+				stream->writeStringFormat(false, "\t\t\t\t\t\t\t\t\"_w\": %f\n", rotation.w);
 				stream->writeString("\t\t\t\t\t\t\t},\n", false);
 
 				core::String interpolation = scenegraph::InterpolationTypeStr[(int)keyframe.interpolation];
