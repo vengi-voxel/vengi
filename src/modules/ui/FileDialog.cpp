@@ -127,7 +127,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 	if (!isRootPath) {
 		_parentDir.name = "..";
 		_parentDir.type = io::FilesystemEntry::Type::dir;
-		_parentDir.fullPath = io::filesystem()->absolutePath(core::string::path(_currentPath, ".."));
+		_parentDir.fullPath = _app->filesystem()->absolutePath(core::string::path(_currentPath, ".."));
 	}
 	_filteredEntities.push_back(&_parentDir);
 	for (size_t i = 0; i < _entities.size(); ++i) {
@@ -183,7 +183,7 @@ void FileDialog::uploadHandler(std::string const& filename, std::string const& m
 	io::MemoryReadStream stream(buffer.data(), buffer.size());
 	const core::String *path = (const core::String*)userdata;
 	FileDialog *fileDialog = (FileDialog*)userdata;
-	io::filesystem()->write(filename.c_str(), stream);
+	_app->filesystem()->write(filename.c_str(), stream);
 	fileDialog->readDir(video::OpenFileMode::Open);
 }
 #endif
@@ -228,12 +228,12 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	}
 
 	const core::String &filePath = core::string::extractPath(filename);
-	if (filePath.empty() || !io::filesystem()->exists(filePath)) {
+	if (filePath.empty() || !_app->filesystem()->exists(filePath)) {
 		const core::String &lastDir = _lastDirVar->strVal();
-		if (io::filesystem()->exists(lastDir)) {
+		if (_app->filesystem()->exists(lastDir)) {
 			_currentPath = lastDir;
 		} else {
-			_currentPath = io::filesystem()->homePath();
+			_currentPath = _app->filesystem()->homePath();
 		}
 	} else {
 		_currentPath = filePath;
@@ -241,8 +241,8 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), filename, io::FilesystemEntry::Type::file, 0, 0};
 	_entryIndex = -1;
 
-	if (!io::filesystem()->exists(_currentPath)) {
-		_currentPath = io::filesystem()->homePath();
+	if (!_app->filesystem()->exists(_currentPath)) {
+		_currentPath = _app->filesystem()->homePath();
 		_lastDirVar->setVal(_currentPath);
 	}
 
@@ -258,7 +258,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 bool FileDialog::readDir(video::OpenFileMode type) {
 	_type = type;
 	_entities.clear();
-	if (!io::filesystem()->list(_currentPath, _entities)) {
+	if (!_app->filesystem()->list(_currentPath, _entities)) {
 		Log::warn("Failed to list dir %s", _currentPath.c_str());
 		return false;
 	}
@@ -333,24 +333,24 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 
 	if (ImGui::TreeNode(_("Quick Access"))) {
 		for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
-			const core::String& dir = io::filesystem()->specialDir((io::FilesystemDirectories)n);
+			const core::String& dir = _app->filesystem()->specialDir((io::FilesystemDirectories)n);
 			if (dir.empty()) {
 				continue;
 			}
 			quickAccessEntry(n, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
 		int i = 0;
-		for (const core::String &path : io::filesystem()->otherPaths()) {
+		for (const core::String &path : _app->filesystem()->otherPaths()) {
 			quickAccessEntry(i++, type, path, contentRegionWidth);
 		}
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode(_("This PC"))) {
-		const io::Paths& paths = io::filesystem()->paths();
+		const io::Paths& paths = _app->filesystem()->paths();
 		int i = 0;
 		for (const core::String& path : paths) {
-			const core::String& absPath = io::filesystem()->absolutePath(path);
+			const core::String& absPath = _app->filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				continue;
 			}
@@ -371,7 +371,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		core::string::splitString(bookmarks, bm, ";");
 		int i = 0;
 		for (const core::String& path : bm) {
-			const core::String& absPath = io::filesystem()->absolutePath(path);
+			const core::String& absPath = _app->filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				removeBookmark(path);
 				continue;
@@ -566,7 +566,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 void FileDialog::construct() {
 	_bookmarks = core::Var::get(cfg::UIBookmarks, "");
 	_showHidden = core::Var::get(cfg::UIFileDialogShowHidden, "false", _("Show hidden file system entities"));
-	_lastDirVar = core::Var::get(cfg::UILastDirectory, io::filesystem()->homePath().c_str());
+	_lastDirVar = core::Var::get(cfg::UILastDirectory, _app->filesystem()->homePath().c_str());
 	_lastFilterSave = core::Var::get(cfg::UILastFilterSave, "0", _("The last selected file type filter in the file dialog"));
 	_lastFilterOpen = core::Var::get(cfg::UILastFilterOpen, "0", _("The last selected file type filter in the file dialog"));
 }
@@ -589,11 +589,11 @@ void FileDialog::popupNewFolder() {
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
 		if (ImGui::Button(_("Create"))) {
 			if (_newFolderName.name.empty()) {
-				const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+				const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 				_newFolderError = TimedError(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				io::filesystem()->createDir(newFilePath);
+				_app->filesystem()->createDir(newFilePath);
 				ImGui::CloseCurrentPopup();
 			}
 		}
@@ -668,7 +668,7 @@ void FileDialog::filter(video::OpenFileMode type) {
 }
 
 void FileDialog::showError(const TimedError &error) const {
-	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 	if (error.isValid(timeProvider->tickNow())) {
 		ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", error.value().c_str());
 	} else {
@@ -763,7 +763,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 		return true;
 	}
 	ImGui::SameLine();
-	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
+	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
 		if (type == video::OpenFileMode::Directory) {
 			if (_selectedEntry.name.empty()) {
@@ -778,7 +778,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 				_error = TimedError(_("Error: You must select a file!"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &fullPath = assemblePath(_currentPath, _selectedEntry);
-				if (type == video::OpenFileMode::Save && io::filesystem()->exists(fullPath)) {
+				if (type == video::OpenFileMode::Save && _app->filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 				} else {
 					entityPath = fullPath;
