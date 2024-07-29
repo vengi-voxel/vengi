@@ -319,6 +319,8 @@ protected:
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
+	bool loadAnimations(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) const;
 	bool loadChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
 	bool loadSubChunkHeader(const Header &header, io::ReadStream &stream, Chunk &chunk) const;
 	bool loadHeader(io::SeekableReadStream &stream, Header &header) const;

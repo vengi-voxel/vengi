@@ -4,6 +4,7 @@
 
 #include "CubzhFormat.h"
 #include "CubzhShared.h"
+#include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/Archive.h"
@@ -14,6 +15,11 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#define GLM_ENABLE_EXPERIMENTAL
+#endif
+#include <glm/gtx/quaternion.hpp>
+#include <json.hpp>
 
 namespace voxelformat {
 
@@ -761,7 +767,7 @@ bool CubzhFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 			return false;
 		}
 	}
-	return true;
+	return loadAnimations(filename, archive, sceneGraph, ctx);
 }
 
 size_t CubzhFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -1119,6 +1125,87 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 	return true;
 }
 
+bool CubzhFormat::loadAnimations(const core::String &filename, const io::ArchivePtr &archive,
+								 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) const {
+	const core::String animationFilename = filename + ".json";
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(animationFilename));
+	if (!stream) {
+		Log::error("Could not open file '%s'", animationFilename.c_str());
+		return false;
+	}
+
+	core::String jsonStr;
+	if (!stream->readString(stream->size(), jsonStr)) {
+		Log::error("Failed to read file '%s'", animationFilename.c_str());
+		return false;
+	}
+
+	nlohmann::json j = nlohmann::json::parse(jsonStr, nullptr, false, true);
+
+	if (j.contains("animations")) {
+		const auto &animations = j.at("animations");
+		for (const auto &animation : animations.items()) {
+			const auto &key = animation.key();
+			sceneGraph.addAnimation(key.c_str());
+			sceneGraph.setAnimation(key.c_str());
+			const auto &animationObject = animation.value();
+			if (!animationObject.contains("shapes")) {
+				continue;
+			}
+			const auto &shapes = animationObject.at("shapes");
+			for (const auto &shape : shapes.items()) {
+				const core::String name = shape.key().c_str();
+				if (scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(name.c_str())) {
+					const auto &shapeObject = shape.value();
+					if (!shapeObject.contains("frames")) {
+						continue;
+					}
+					const auto &frames = shapeObject.at("frames");
+					for (const auto &frame : frames.items()) {
+						const scenegraph::FrameIndex frameIdx = core::string::toInt(frame.key().c_str());
+						scenegraph::KeyFrameIndex keyFrameIdx = node->addKeyFrame(frameIdx);
+						if (keyFrameIdx == InvalidKeyFrame) {
+							keyFrameIdx = node->keyFrameForFrame(frameIdx);
+						}
+						if (keyFrameIdx == InvalidKeyFrame) {
+							Log::error("Failed to add key frame %d to node %s", frameIdx, name.c_str());
+							return false;
+						}
+						scenegraph::SceneGraphKeyFrame &keyFrame = node->keyFrame(keyFrameIdx);
+
+						glm::vec3 localTranslation{0.0f};
+						glm::quat localOrientation = glm::quat_identity<float, glm::defaultp>();
+						const auto &frameObject = frame.value();
+						if (frameObject.contains("position")) {
+							const auto &position = frameObject.at("position");
+							localTranslation.x = position.at("_x").get<float>();
+							localTranslation.y = position.at("_y").get<float>();
+							localTranslation.z = position.at("_z").get<float>();
+						}
+						if (frameObject.contains("rotation")) {
+							const auto &rotation = frameObject.at("rotation");
+							localOrientation.x = rotation.at("_x").get<float>();
+							localOrientation.y = rotation.at("_y").get<float>();
+							localOrientation.z = rotation.at("_z").get<float>();
+							localOrientation.w = rotation.at("_w").get<float>();
+						}
+						if (frameObject.contains("interpolation")) {
+							keyFrame.interpolation = toInterpolationType(frameObject.at("interpolation"));
+							if (keyFrame.interpolation == scenegraph::InterpolationType::Max) {
+								Log::error("Invalid interpolation type");
+								keyFrame.interpolation = scenegraph::InterpolationType::Linear;
+							}
+						}
+						scenegraph::SceneGraphTransform &transform = keyFrame.transform();
+						transform.setLocalTranslation(localTranslation);
+						transform.setLocalOrientation(localOrientation);
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
 
 #undef wrapBool
 
