@@ -6,10 +6,7 @@
 #include "core/Algorithm.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "io/Filesystem.h"
-#include "io/FilesystemArchive.h"
 #include "io/Stream.h"
-#include "io/ZipArchive.h"
 
 namespace io {
 

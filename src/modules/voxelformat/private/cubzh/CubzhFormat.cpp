@@ -1128,6 +1128,9 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 bool CubzhFormat::loadAnimations(const core::String &filename, const io::ArchivePtr &archive,
 								 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) const {
 	const core::String animationFilename = filename + ".json";
+	if (!archive->exists(animationFilename)) {
+		return true;
+	}
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(animationFilename));
 	if (!stream) {
 		Log::error("Could not open file '%s'", animationFilename.c_str());
