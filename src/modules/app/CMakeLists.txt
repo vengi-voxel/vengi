@@ -28,6 +28,10 @@ if (APPLE)
 	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation -framework AppKit")
 endif()
 
+if (USE_STACKTRACES)
+	target_compile_definitions(${LIB} PRIVATE HAVE_BACKWARD)
+endif()
+
 set(TEST_MODULE_SRCS
 	tests/AbstractTest.cpp
 	tests/AbstractTest.h
