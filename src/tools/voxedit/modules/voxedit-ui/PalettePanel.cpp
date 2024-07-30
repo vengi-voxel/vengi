@@ -404,7 +404,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	ImGui::End();
 
 	if (!_importPalette.empty()) {
-		_sceneMgr->importPalette(_importPalette);
+		_sceneMgr->importPalette(_importPalette, false);
 	}
 }
 

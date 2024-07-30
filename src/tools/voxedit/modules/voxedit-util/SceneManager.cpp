@@ -28,6 +28,7 @@
 #include "math/Axis.h"
 #include "math/Random.h"
 #include "math/Ray.h"
+#include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -140,7 +141,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 	return true;
 }
 
-bool SceneManager::importPalette(const core::String& file) {
+bool SceneManager::importPalette(const core::String& file, bool searchBestColors) {
 	palette::Palette palette;
 	if (!voxelformat::importPalette(file, palette)) {
 		Log::warn("Failed to import a palette from file '%s'", file.c_str());
@@ -153,7 +154,7 @@ bool SceneManager::importPalette(const core::String& file) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	}
 
-	return setActivePalette(palette);
+	return setActivePalette(palette, searchBestColors);
 }
 
 bool SceneManager::importAsVolume(const core::String &file, const core::String &dmFile, int maxDepth, bool bothSides) {
@@ -763,6 +764,7 @@ bool SceneManager::setActivePalette(const palette::Palette &palette, bool search
 		Log::warn("Failed to set the active palette - node with id %i is no model node", nodeId);
 		return false;
 	}
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "palette");
 	if (searchBestColors) {
 		const voxel::Region dirtyRegion = node.remapToPalette(palette);
 		if (!dirtyRegion.isValid()) {

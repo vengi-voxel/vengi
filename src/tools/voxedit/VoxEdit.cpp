@@ -70,7 +70,7 @@ void VoxEdit::onDropFile(const core::String& file) {
 		return;
 	}
 	if (_mainWindow->isPaletteWidgetDropTarget()) {
-		if (_sceneMgr->importPalette(file)) {
+		if (_sceneMgr->importPalette(file, false)) {
 			return;
 		}
 	}
@@ -295,10 +295,10 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importPalette(file); }, fileDialogOptions, &_paletteFormats[0]);
+			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importPalette(file, false); }, fileDialogOptions, &_paletteFormats[0]);
 			return;
 		}
-		if (!_sceneMgr->importPalette(args[0])) {
+		if (!_sceneMgr->importPalette(args[0], false)) {
 			Log::error("Failed to execute 'importpalette' for file '%s'", args[0].c_str());
 		}
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
