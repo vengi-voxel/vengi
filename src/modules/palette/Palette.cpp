@@ -559,6 +559,10 @@ bool Palette::save(const char *name) const {
 	}
 	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
 	io::FileStream stream(file);
+	if (!stream.valid()) {
+		Log::error("Failed to open file %s for writing", name);
+		return false;
+	}
 	return palette::savePalette(*this, name, stream);
 }
 
