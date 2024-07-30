@@ -1,4 +1,4 @@
-// dear imgui, v1.91.0 WIP
+// dear imgui, v1.91.0
 // (main code and documentation)
 
 // Help:
@@ -438,14 +438,16 @@ CODE
                           - likewise io.MousePos and GetMousePos() will use OS coordinates.
                             If you query mouse positions to interact with non-imgui coordinates you will need to offset them, e.g. subtract GetWindowViewport()->Pos.
 
- - 2024/07/25 (1.91.0) - obsoleted GetContentRegionMax(), GetWindowContentRegionMin() and GetWindowContentRegionMax().
+ - 2024/07/25 (1.91.0) - obsoleted GetContentRegionMax(), GetWindowContentRegionMin() and GetWindowContentRegionMax(). (see #7838 on GitHub for more info)
                          you should never need those functions. you can do everything with GetCursorScreenPos() and GetContentRegionAvail() in a more simple way.
                             - instead of:  GetWindowContentRegionMax().x - GetCursorPos().x
                             - you can use: GetContentRegionAvail().x
                             - instead of:  GetWindowContentRegionMax().x + GetWindowPos().x
-                            - you can use: GetCursorScreenPos().x + GetContentRegionAvail().x (from left edge of window)
+                            - you can use: GetCursorScreenPos().x + GetContentRegionAvail().x // when called from left edge of window
                             - instead of:  GetContentRegionMax()
-                            - you cna use: GetContentRegionAvail() + GetCursorScreenPos() - GetWindowPos() // right edge in weird local coordinates
+                            - you can use: GetContentRegionAvail() + GetCursorScreenPos() - GetWindowPos() // right edge in local coordinates
+                            - instead of:  GetWindowContentRegionMax().x - GetWindowContentRegionMin().x
+                            - you can use: GetContentRegionAvail() // when called from left edge of window
  - 2024/07/15 (1.91.0) - renamed ImGuiSelectableFlags_DontClosePopups to ImGuiSelectableFlags_NoAutoClosePopups. (#1379, #1468, #2200, #4936, #5216, #7302, #7573)
                          (internals: also renamed ImGuiItemFlags_SelectableDontClosePopup into ImGuiItemFlags_AutoClosePopups with inverted behaviors)
  - 2024/07/15 (1.91.0) - obsoleted PushButtonRepeat()/PopButtonRepeat() in favor of using new PushItemFlag(ImGuiItemFlags_ButtonRepeat, ...)/PopItemFlag().
@@ -1409,6 +1411,7 @@ ImGuiIO::ImGuiIO()
 #else
     ConfigMacOSXBehaviors = false;
 #endif
+    ConfigNavSwapGamepadButtons = false;
     ConfigInputTrickleEventQueue = true;
     ConfigInputTextCursorBlink = true;
     ConfigInputTextEnterKeepActive = false;
@@ -2643,12 +2646,11 @@ void ImGuiStorage::BuildSortByKey()
 {
     ImQsort(Data.Data, (size_t)Data.Size, sizeof(ImGuiStoragePair), PairComparerByID);
 }
-IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 int ImGuiStorage::GetInt(ImGuiID key, int default_val) const
 {
     ImGuiStoragePair* it = ImLowerBound(const_cast<ImGuiStoragePair*>(Data.Data), const_cast<ImGuiStoragePair*>(Data.Data + Data.Size), key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         return default_val;
     return it->val_i;
 }
@@ -2661,7 +2663,7 @@ bool ImGuiStorage::GetBool(ImGuiID key, bool default_val) const
 float ImGuiStorage::GetFloat(ImGuiID key, float default_val) const
 {
     ImGuiStoragePair* it = ImLowerBound(const_cast<ImGuiStoragePair*>(Data.Data), const_cast<ImGuiStoragePair*>(Data.Data + Data.Size), key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         return default_val;
     return it->val_f;
 }
@@ -2669,7 +2671,7 @@ float ImGuiStorage::GetFloat(ImGuiID key, float default_val) const
 void* ImGuiStorage::GetVoidPtr(ImGuiID key) const
 {
     ImGuiStoragePair* it = ImLowerBound(const_cast<ImGuiStoragePair*>(Data.Data), const_cast<ImGuiStoragePair*>(Data.Data + Data.Size), key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         return NULL;
     return it->val_p;
 }
@@ -2678,7 +2680,7 @@ void* ImGuiStorage::GetVoidPtr(ImGuiID key) const
 int* ImGuiStorage::GetIntRef(ImGuiID key, int default_val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         it = Data.insert(it, ImGuiStoragePair(key, default_val));
     return &it->val_i;
 }
@@ -2691,7 +2693,7 @@ bool* ImGuiStorage::GetBoolRef(ImGuiID key, bool default_val)
 float* ImGuiStorage::GetFloatRef(ImGuiID key, float default_val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         it = Data.insert(it, ImGuiStoragePair(key, default_val));
     return &it->val_f;
 }
@@ -2699,7 +2701,7 @@ float* ImGuiStorage::GetFloatRef(ImGuiID key, float default_val)
 void** ImGuiStorage::GetVoidPtrRef(ImGuiID key, void* default_val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         it = Data.insert(it, ImGuiStoragePair(key, default_val));
     return &it->val_p;
 }
@@ -2708,7 +2710,7 @@ void** ImGuiStorage::GetVoidPtrRef(ImGuiID key, void* default_val)
 void ImGuiStorage::SetInt(ImGuiID key, int val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         Data.insert(it, ImGuiStoragePair(key, val));
     else
         it->val_i = val;
@@ -2722,7 +2724,7 @@ void ImGuiStorage::SetBool(ImGuiID key, bool val)
 void ImGuiStorage::SetFloat(ImGuiID key, float val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         Data.insert(it, ImGuiStoragePair(key, val));
     else
         it->val_f = val;
@@ -2731,7 +2733,7 @@ void ImGuiStorage::SetFloat(ImGuiID key, float val)
 void ImGuiStorage::SetVoidPtr(ImGuiID key, void* val)
 {
     ImGuiStoragePair* it = ImLowerBound(Data.Data, Data.Data + Data.Size, key);
-    if (it == Data.end() || it->key != key)
+    if (it == Data.Data + Data.Size || it->key != key)
         Data.insert(it, ImGuiStoragePair(key, val));
     else
         it->val_p = val;
@@ -2742,6 +2744,7 @@ void ImGuiStorage::SetAllInt(int v)
     for (int i = 0; i < Data.Size; i++)
         Data[i].val_i = v;
 }
+IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 //-----------------------------------------------------------------------------
 // [SECTION] ImGuiTextFilter
@@ -2809,15 +2812,15 @@ void ImGuiTextFilter::Build()
 
 bool ImGuiTextFilter::PassFilter(const char* text, const char* text_end) const
 {
-    if (Filters.empty())
+    if (Filters.Size == 0)
         return true;
 
     if (text == NULL)
-        text = "";
+        text = text_end = "";
 
     for (const ImGuiTextRange& f : Filters)
     {
-        if (f.empty())
+        if (f.b == f.e)
             continue;
         if (f.b[0] == '-')
         {
@@ -3120,7 +3123,8 @@ static bool ImGuiListClipper_StepInternal(ImGuiListClipper* clipper)
         bool affected_by_floating_point_precision = ImIsFloatAboveGuaranteedIntegerPrecision(clipper->StartPosY) || ImIsFloatAboveGuaranteedIntegerPrecision(window->DC.CursorPos.y);
         if (affected_by_floating_point_precision)
             clipper->ItemsHeight = window->DC.PrevLineSize.y + g.Style.ItemSpacing.y; // FIXME: Technically wouldn't allow multi-line entries.
-
+        if (clipper->ItemsHeight == 0.0f && clipper->ItemsCount == INT_MAX) // Accept that no item have been submitted if in indeterminate mode.
+            return false;
         IM_ASSERT(clipper->ItemsHeight > 0.0f && "Unable to calculate item height! First item hasn't moved the cursor vertically!");
         calc_clipping = true;   // If item height had to be calculated, calculate clipping afterwards.
     }
@@ -8867,6 +8871,7 @@ bool ImGui::IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max)
 
 // This is one of the very rare legacy case where we use ImGuiWindow methods,
 // it should ideally be flattened at some point but it's been used a lots by widgets.
+IM_MSVC_RUNTIME_CHECKS_OFF
 ImGuiID ImGuiWindow::GetID(const char* str, const char* str_end)
 {
     ImGuiID seed = IDStack.back();
@@ -9005,6 +9010,13 @@ ImGuiID ImGui::GetID(const void* ptr_id)
     ImGuiWindow* window = GImGui->CurrentWindow;
     return window->GetID(ptr_id);
 }
+
+ImGuiID ImGui::GetID(int int_id)
+{
+    ImGuiWindow* window = GImGui->CurrentWindow;
+    return window->GetID(int_id);
+}
+IM_MSVC_RUNTIME_CHECKS_RESTORE
 
 //-----------------------------------------------------------------------------
 // [SECTION] INPUTS
@@ -20784,7 +20796,12 @@ void ImGui::ShowMetricsWindow(bool* p_open)
         for (int n = buf_size - 1; n >= 0; n--)
         {
             ImGuiDebugAllocEntry* entry = &info->LastEntriesBuf[(info->LastEntriesIdx - n + buf_size) % buf_size];
-            BulletText("Frame %06d: %+3d ( %2d malloc, %2d free )%s", entry->FrameCount, entry->AllocCount - entry->FreeCount, entry->AllocCount, entry->FreeCount, (n == 0) ? " (most recent)" : "");
+            BulletText("Frame %06d: %+3d ( %2d alloc, %2d free )", entry->FrameCount, entry->AllocCount - entry->FreeCount, entry->AllocCount, entry->FreeCount);
+            if (n == 0)
+            {
+                SameLine();
+                Text("<- %d frames ago", g.FrameCount - entry->FrameCount);
+            }
         }
         TreePop();
     }
