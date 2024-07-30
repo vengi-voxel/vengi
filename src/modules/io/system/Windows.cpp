@@ -180,7 +180,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 		entry.size = s.st_size;
 		return true;
 	}
-	Log::error("Failed to stat %s: %s", path, strerror(errno));
+	Log::debug("Failed to stat %s: %s", path, strerror(errno));
 	return false;
 }
 
