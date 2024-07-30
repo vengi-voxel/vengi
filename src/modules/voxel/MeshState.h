@@ -41,7 +41,7 @@ public:
 
 private:
 	struct VolumeData {
-		voxel::RawVolume *_rawVolume;
+		voxel::RawVolume *_rawVolume = nullptr;
 		core::Optional<palette::Palette> _palette;
 		bool _hidden = false;
 		bool _gray = false;

@@ -818,14 +818,15 @@ VoxConvert::NodeStats VoxConvert::sceneGraphJsonNode_r(const scenegraph::SceneGr
 	NodeStats stats;
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
+		const voxel::Region &region = node.region();
 		Log::printf(",\"volume\": {");
 		Log::printf("\"region\": {");
-		Log::printf("\"mins\": \"%i:%i:%i\",", v->region().getLowerX(), v->region().getLowerY(),
-				  v->region().getLowerZ());
-		Log::printf("\"maxs\": \"%i:%i:%i\",", v->region().getUpperX(), v->region().getUpperY(),
-				  v->region().getUpperZ());
-		Log::printf("\"size\": \"%i:%i:%i\"", v->region().getWidthInVoxels(), v->region().getHeightInVoxels(),
-				  v->region().getDepthInVoxels());
+		Log::printf("\"mins\": \"%i:%i:%i\",", region.getLowerX(), region.getLowerY(),
+				  region.getLowerZ());
+		Log::printf("\"maxs\": \"%i:%i:%i\",", region.getUpperX(), region.getUpperY(),
+				  region.getUpperZ());
+		Log::printf("\"size\": \"%i:%i:%i\"", region.getWidthInVoxels(), region.getHeightInVoxels(),
+				  region.getDepthInVoxels());
 		Log::printf("},");
 		if (v) {
 			voxelutil::visitVolume(*v, [&](int, int, int, const voxel::Voxel &) { ++stats.voxels; });

@@ -31,7 +31,7 @@ static bool readString(io::SeekableReadStream &stream, core::String &str, bool r
 	if (readStringAsInt) {
 		uint32_t length;
 		wrap(stream.readUInt32(length))
-		if (length > 4096) {
+		if (length >= 4096) {
 			// sanity check
 			return false;
 		}
