@@ -421,7 +421,7 @@ static int quantizeNeuQuant(RGBA *targetBuf, size_t maxTargetBufColors, const RG
 	const int alpharadbshift = (alphabiasshift + radbiasshift);
 	const int alpharadbias = (((int)1) << alpharadbshift);
 
-	sample = sample < 1 ? 1 : sample > 30 ? 30 : sample;
+	sample = glm::clamp(sample, 1, 30);
 	int network[256][3];
 	int bias[256] = {}, freq[256];
 	for (int i = 0; i < numColors; ++i) {
