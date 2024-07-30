@@ -527,7 +527,11 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	mementoHandler.lock();
 	_sceneMgr->modifier().lock();
 	_transformMementoLocked = true;
-	_transformLocalMatrix = node.transform(keyFrameIdx).localMatrix();
+	if (keyFrameIdx == InvalidKeyFrame) {
+		_transformLocalMatrix = glm::mat4(1.0f);
+	} else {
+		_transformLocalMatrix = node.transform(keyFrameIdx).localMatrix();
+	}
 }
 
 void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
