@@ -284,8 +284,6 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 						keyFrameIdx = newKeyFrameIdx;
 					}
 				}
-				glm::mat4 matrix;
-
 				if (pivotChanged) {
 					_sceneMgr->nodeUpdatePivot(node.id(), pivot);
 				} else {

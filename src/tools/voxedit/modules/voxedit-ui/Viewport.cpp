@@ -714,7 +714,6 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	if (manipulated) {
 		if (sceneMode) {
 			if (_pivotMode->boolVal()) {
-				const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
 				const glm::vec3 size = node.region().getDimensionsInVoxels();
 				const glm::vec3 deltaTranslation = glm::vec3(deltaMatrix[3]);
 				// TODO: doesn't yet work for rotated keyframes - unrotate the delta translation here?

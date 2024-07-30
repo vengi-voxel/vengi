@@ -18,7 +18,7 @@ TEST_F(MemoryArchiveTest, testMemoryArchiveAdd) {
 	ASSERT_FALSE(a.add("test", buf, sizeof(buf))) << "a file with the same name should already exists";
 	core::ScopedPtr<io::SeekableReadStream> stream(a.readStream("test"));
 	ASSERT_TRUE(stream);
-	EXPECT_EQ(stream->size(), sizeof(buf));
+	EXPECT_EQ((size_t)stream->size(), sizeof(buf));
 }
 
 TEST_F(MemoryArchiveTest, testMemoryArchiveAddViaWrite) {
@@ -29,7 +29,7 @@ TEST_F(MemoryArchiveTest, testMemoryArchiveAddViaWrite) {
 	ASSERT_FALSE(a.add("test", buf, sizeof(buf))) << "a file with the same name should already exists";
 	core::ScopedPtr<io::SeekableReadStream> stream(a.readStream("test"));
 	ASSERT_TRUE(stream);
-	EXPECT_EQ(stream->size(), sizeof(buf));
+	EXPECT_EQ((size_t)stream->size(), sizeof(buf));
 }
 
 } // namespace io
