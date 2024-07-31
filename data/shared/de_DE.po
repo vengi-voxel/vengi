@@ -124,6 +124,9 @@ msgstr "Dokumente"
 msgid "Download"
 msgstr "Herunterladen"
 
+msgid "Fonts"
+msgstr "Schriftarten"
+
 msgid "Pictures"
 msgstr "Bilder"
 
@@ -239,6 +242,9 @@ msgstr "Fehler: Sie müssen einen Ordner auswählen!"
 
 msgid "Error: You must select a file!"
 msgstr "Fehler: Sie müssen eine Datei auswählen!"
+
+msgid "Error: You must select a file type!"
+msgstr "Fehler: Sie müssen einen Dateitypen auswählen!"
 
 msgid "Change the ui colors - [0-3]"
 msgstr ""
@@ -1636,6 +1642,9 @@ msgid ""
 msgstr ""
 "Passen Sie die aktuellen Voxel an die am besten passenden Farben der\n"
 "neuen Palette an."
+
+msgid "Import"
+msgstr "Importieren"
 
 msgid "Switch"
 msgstr "Wechseln"

@@ -102,6 +102,9 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
+msgid "Fonts"
+msgstr ""
+
 msgid "Pictures"
 msgstr ""
 
@@ -214,6 +217,9 @@ msgid "Error: You must select a folder!"
 msgstr ""
 
 msgid "Error: You must select a file!"
+msgstr ""
+
+msgid "Error: You must select a file type!"
 msgstr ""
 
 msgid "Change the ui colors - [0-3]"
@@ -1541,6 +1547,9 @@ msgstr ""
 msgid ""
 "Adopt the current voxels to the best fitting colors of\n"
 "the new palette."
+msgstr ""
+
+msgid "Import"
 msgstr ""
 
 msgid "Switch"

@@ -117,6 +117,9 @@ msgstr "Документи"
 msgid "Download"
 msgstr "Завантажити"
 
+msgid "Fonts"
+msgstr ""
+
 msgid "Pictures"
 msgstr "Зображення"
 
@@ -232,6 +235,9 @@ msgstr "Помилка: Ви повинні вибрати папку!"
 
 msgid "Error: You must select a file!"
 msgstr "Помилка: Ви повинні вибрати файл!"
+
+msgid "Error: You must select a file type!"
+msgstr ""
 
 msgid "Change the ui colors - [0-3]"
 msgstr "Змінити кольори інтерфейсу - [0-3]"
@@ -1624,6 +1630,9 @@ msgid ""
 msgstr ""
 "Адаптувати поточні вокселі до найкращих відповідних кольорів\n"
 "нової палітри."
+
+msgid "Import"
+msgstr ""
 
 msgid "Switch"
 msgstr "Перемкнути"

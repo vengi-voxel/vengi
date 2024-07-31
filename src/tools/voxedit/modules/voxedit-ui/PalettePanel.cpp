@@ -288,7 +288,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, _("File"))) {
-			ImGui::CommandIconMenuItem(ICON_LC_PALETTE, _("Load"), "importpalette", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PALETTE, _("Import"), "importpalette", true, &listener);
 			if (ImGui::IconMenuItem(ICON_LC_PAINTBRUSH, _("Switch"))) {
 				reloadAvailablePalettes();
 				_popupSwitchPalette = true;
