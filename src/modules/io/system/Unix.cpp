@@ -254,7 +254,7 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 	struct stat s;
 	const int ret = stat(path, &s);
 	if (ret != 0) {
-		Log::error("Failed to stat %s: %s", path, strerror(errno));
+		Log::debug("Failed to stat %s: %s", path, strerror(errno));
 		return false;
 	}
 
