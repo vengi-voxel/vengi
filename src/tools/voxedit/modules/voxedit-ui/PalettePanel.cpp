@@ -280,6 +280,11 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 	}
 }
 
+void PalettePanel::onNewPaletteImport() {
+	reloadAvailablePalettes();
+	_popupSwitchPalette = true;
+}
+
 void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
@@ -404,7 +409,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	ImGui::End();
 
 	if (!_importPalette.empty()) {
-		_sceneMgr->importPalette(_importPalette, false);
+		_sceneMgr->importPalette(_importPalette, true, true);
 	}
 }
 

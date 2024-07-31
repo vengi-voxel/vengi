@@ -336,6 +336,10 @@ void MainWindow::onNewScene() {
 	checkPossibleVolumeSplit();
 }
 
+void MainWindow::onNewPaletteImport() {
+	_palettePanel.onNewPaletteImport();
+}
+
 void MainWindow::afterLoad(const core::String &file) {
 	_lastOpenedFile->setVal(file);
 	resetCamera();

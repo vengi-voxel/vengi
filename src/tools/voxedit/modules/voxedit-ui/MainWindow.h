@@ -165,6 +165,7 @@ public:
 	 * @sa afterLoad()
 	 */
 	void onNewScene();
+	void onNewPaletteImport();
 	void update();
 	QuitDisallowReason allowToQuit();
 	Viewport* hoveredScene();

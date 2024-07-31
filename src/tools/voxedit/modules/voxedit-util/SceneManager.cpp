@@ -141,7 +141,7 @@ bool SceneManager::loadPalette(const core::String& paletteName, bool searchBestC
 	return true;
 }
 
-bool SceneManager::importPalette(const core::String& file, bool searchBestColors) {
+bool SceneManager::importPalette(const core::String& file, bool setActive, bool searchBestColors) {
 	palette::Palette palette;
 	if (!voxelformat::importPalette(file, palette)) {
 		Log::warn("Failed to import a palette from file '%s'", file.c_str());
@@ -154,6 +154,9 @@ bool SceneManager::importPalette(const core::String& file, bool searchBestColors
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	}
 
+	if (!setActive) {
+		return true;
+	}
 	return setActivePalette(palette, searchBestColors);
 }
 

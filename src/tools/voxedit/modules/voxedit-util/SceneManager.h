@@ -274,7 +274,7 @@ public:
 	 * @note The amount of colors in the image may not exceed 256
 	 * @param[in] file The image file path
 	 */
-	bool importPalette(const core::String &file, bool searchBestColors);
+	bool importPalette(const core::String &file, bool setActive, bool searchBestColors);
 	/**
 	 * @param[in] paletteName The name of the palette - or a filename
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]

@@ -45,6 +45,8 @@ protected:
 	};
 
 	void loadKeymap(int keymap) override;
+	void importPalette(const core::String &file);
+
 protected:
 	void printUsageHeader() const override;
 

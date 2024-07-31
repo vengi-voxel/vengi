@@ -70,7 +70,7 @@ void VoxEdit::onDropFile(const core::String& file) {
 		return;
 	}
 	if (_mainWindow->isPaletteWidgetDropTarget()) {
-		if (_sceneMgr->importPalette(file, false)) {
+		if (_sceneMgr->importPalette(file, true, true)) {
 			return;
 		}
 	}
@@ -295,12 +295,10 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importPalette(file, false); }, fileDialogOptions, &_paletteFormats[0]);
+			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { importPalette(file); }, fileDialogOptions, &_paletteFormats[0]);
 			return;
 		}
-		if (!_sceneMgr->importPalette(args[0], false)) {
-			Log::error("Failed to execute 'importpalette' for file '%s'", args[0].c_str());
-		}
+		importPalette(args[0]);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory, &_paletteFormats[0])).setHelp(_("Import an image as a palette"));
 
 	command::Command::registerCommand("new", [this] (const command::CmdArgs& args) {
@@ -318,6 +316,14 @@ app::AppState VoxEdit::onConstruct() {
 	}).setHelp(_("Reset cameras in viewports"));
 
 	return state;
+}
+
+void VoxEdit::importPalette(const core::String &file) {
+	if (_sceneMgr->importPalette(file, false, false)) {
+		_mainWindow->onNewPaletteImport();
+	} else {
+		Log::error("Failed to execute 'importpalette' for file '%s'", file.c_str());
+	}
 }
 
 void VoxEdit::loadKeymap(int keymap) {
