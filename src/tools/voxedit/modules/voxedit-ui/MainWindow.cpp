@@ -336,8 +336,8 @@ void MainWindow::onNewScene() {
 	checkPossibleVolumeSplit();
 }
 
-void MainWindow::onNewPaletteImport() {
-	_palettePanel.onNewPaletteImport();
+void MainWindow::onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors) {
+	_palettePanel.onNewPaletteImport(paletteName, setActive, searchBestColors);
 }
 
 void MainWindow::afterLoad(const core::String &file) {

@@ -71,6 +71,8 @@ void VoxEdit::onDropFile(const core::String& file) {
 	}
 	if (_mainWindow->isPaletteWidgetDropTarget()) {
 		if (_sceneMgr->importPalette(file, true, true)) {
+			core::String paletteName(core::string::extractFilename(file));
+			_mainWindow->onNewPaletteImport(paletteName, true, true);
 			return;
 		}
 	}
@@ -320,7 +322,8 @@ app::AppState VoxEdit::onConstruct() {
 
 void VoxEdit::importPalette(const core::String &file) {
 	if (_sceneMgr->importPalette(file, false, false)) {
-		_mainWindow->onNewPaletteImport();
+		core::String paletteName(core::string::extractFilename(file));
+		_mainWindow->onNewPaletteImport(paletteName, false, false);
 	} else {
 		Log::error("Failed to execute 'importpalette' for file '%s'", file.c_str());
 	}

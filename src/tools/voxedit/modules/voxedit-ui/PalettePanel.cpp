@@ -279,9 +279,12 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 	}
 }
 
-void PalettePanel::onNewPaletteImport() {
-	reloadAvailablePalettes();
-	_popupSwitchPalette = true;
+void PalettePanel::onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors) {
+	if (!setActive) {
+		reloadAvailablePalettes();
+		_popupSwitchPalette = true;
+		_currentSelectedPalette = paletteName;
+	}
 }
 
 void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
@@ -408,7 +411,10 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 	ImGui::End();
 
 	if (!_importPalette.empty()) {
-		_sceneMgr->importPalette(_importPalette, true, true);
+		if (_sceneMgr->importPalette(_importPalette, true, true)) {
+			core::String paletteName(core::string::extractFilename(_importPalette));
+			onNewPaletteImport(paletteName, false, false);
+		}
 	}
 }
 

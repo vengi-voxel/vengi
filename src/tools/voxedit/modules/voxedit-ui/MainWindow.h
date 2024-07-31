@@ -165,7 +165,7 @@ public:
 	 * @sa afterLoad()
 	 */
 	void onNewScene();
-	void onNewPaletteImport();
+	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
 	void update();
 	QuitDisallowReason allowToQuit();
 	Viewport* hoveredScene();
