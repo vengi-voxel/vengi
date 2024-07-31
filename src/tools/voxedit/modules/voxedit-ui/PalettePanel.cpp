@@ -268,7 +268,6 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
 			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
-			_sceneMgr->mementoHandler().markPaletteChange(node);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
