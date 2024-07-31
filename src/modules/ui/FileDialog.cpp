@@ -574,6 +574,11 @@ void FileDialog::construct() {
 
 void FileDialog::resetState() {
 	_entryIndex = 0;
+	const bool isRootPath = core::string::isRootPath(_currentPath);
+	if (!isRootPath) {
+		++_entryIndex;
+	}
+
 	_selectedEntry = io::FilesystemEntry();
 	_error = TimedError();
 }
