@@ -112,7 +112,8 @@ public:
 	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
 
 	static bool isReadableDir(const core::String& name);
-	static bool isRelativePath(const core::String& name);
+	static bool isHidden(const core::String &name);
+	static bool isRelativePath(const core::String &name);
 
 	core::String absolutePath(const core::String& path) const;
 

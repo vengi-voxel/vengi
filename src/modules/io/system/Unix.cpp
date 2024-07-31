@@ -318,6 +318,13 @@ core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
 	return entries;
 }
 
+bool fs_hidden(const char *path) {
+	if (path == nullptr) {
+		return false;
+	}
+	return path[0] == '.';
+}
+
 } // namespace io
 
 #endif

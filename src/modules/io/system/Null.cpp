@@ -21,6 +21,10 @@ bool fs_rmdir(const char *path) {
 	return false;
 }
 
+bool fs_hidden(const char *path) {
+	return false;
+}
+
 bool fs_unlink(const char *path) {
 	return false;
 }

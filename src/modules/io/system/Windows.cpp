@@ -116,6 +116,21 @@ bool fs_rmdir(const char *path) {
 	return ret == 0;
 }
 
+bool fs_hidden(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
+
+	DWORD attributes = GetFileAttributesW(wpath);
+	SDL_free(wpath);
+
+	if (attributes == INVALID_FILE_ATTRIBUTES) {
+		Log::debug("Failed to get file attributes for %s: %s", path, strerror(errno));
+		return false;
+	}
+
+	return (attributes & FILE_ATTRIBUTE_HIDDEN) != 0;
+}
+
 bool fs_exists(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	priv::denormalizePath(wpath);

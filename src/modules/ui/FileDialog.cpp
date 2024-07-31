@@ -403,8 +403,7 @@ bool FileDialog::hide(const core::String &file) const {
 	if (_showHidden->boolVal()) {
 		return false;
 	}
-	// TODO: linux only...
-	return file[0] == '.';
+	return io::Filesystem::isHidden(file);
 }
 
 static const char *iconForType(io::FilesystemEntry::Type type) {

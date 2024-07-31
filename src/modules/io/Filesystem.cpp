@@ -27,6 +27,7 @@ extern bool fs_mkdir(const char *path);
 extern bool fs_rmdir(const char *path);
 extern bool fs_unlink(const char *path);
 extern bool fs_exists(const char *path);
+extern bool fs_hidden(const char *path);
 extern bool fs_chdir(const char *path);
 extern core::String fs_realpath(const char *path);
 extern bool fs_stat(const char *path, FilesystemEntry &entry);
@@ -305,6 +306,10 @@ core::String Filesystem::absolutePath(const core::String &path) const {
 	}
 	normalizePath(abspath);
 	return abspath;
+}
+
+bool Filesystem::isHidden(const core::String &name) {
+	return fs_hidden(name.c_str());
 }
 
 bool Filesystem::isReadableDir(const core::String &name) {
