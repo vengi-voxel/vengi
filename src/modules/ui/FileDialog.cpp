@@ -183,7 +183,7 @@ void FileDialog::uploadHandler(std::string const& filename, std::string const& m
 	io::MemoryReadStream stream(buffer.data(), buffer.size());
 	const core::String *path = (const core::String*)userdata;
 	FileDialog *fileDialog = (FileDialog*)userdata;
-	_app->filesystem()->write(filename.c_str(), stream);
+	io::filsystem()->write(filename.c_str(), stream);
 	fileDialog->readDir(video::OpenFileMode::Open);
 }
 #endif
