@@ -447,13 +447,6 @@ const char *CommandMenuItem(const char *label, const char *command, bool enabled
 	return nullptr;
 }
 
-static inline void AddUnderLine(ImColor color) {
-	ImVec2 min = ImGui::GetItemRectMin();
-	ImVec2 max = ImGui::GetItemRectMax();
-	min.y = max.y;
-	ImGui::GetWindowDrawList()->AddLine(min, max, color, 1.0f);
-}
-
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
 	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
 	return Selectable(labelWithIcon.c_str(), selected, flags, size);
@@ -478,18 +471,16 @@ void URLIconItem(const char *icon, const char *label, const char *url, float wid
 	URLItem(labelWithIcon.c_str(), url, width);
 }
 
-// https://gist.github.com/dougbinks/ef0962ef6ebe2cadae76c4e9f0586c69#file-imguiutils-h-L219
 void URLItem(const char *label, const char *url, float width) {
-	ImGui::TextUnformatted(label);
+	if (ImGui::TextLink(label)) {
+		const core::String &cmd = core::String::format("url \"%s\"", url);
+		command::executeCommands(cmd);
+	}
 	if (ImGui::IsItemHovered()) {
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-			const core::String &cmd = core::String::format("url \"%s\"", url);
-			command::executeCommands(cmd);
-		}
-		AddUnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
 		ImGui::SetTooltip(_("Open in browser\n%s"), url);
 	}
 }
+
 bool ButtonFullWidth(const char *label) {
 	return Button(label, ImVec2(ImGui::GetContentRegionAvail().x, 0));
 }
