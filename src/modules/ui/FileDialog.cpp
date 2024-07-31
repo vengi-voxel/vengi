@@ -778,7 +778,18 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 			if (_selectedEntry.name.empty() || !_selectedEntry.isFile()) {
 				_error = TimedError(_("Error: You must select a file!"), timeProvider->tickNow(), 1500UL);
 			} else {
-				const core::String &fullPath = assemblePath(_currentPath, _selectedEntry);
+				core::String fullPath = assemblePath(_currentPath, _selectedEntry);
+				if (type == video::OpenFileMode::Save) {
+					const core::String ext = core::string::extractExtension(fullPath);
+					if (ext.empty()) {
+						if (_currentFilterFormat == nullptr || _currentFilterFormat->mainExtension().empty()) {
+							// if we didn't provide an extension, and we can't add one, we can't save the file
+							_error = TimedError(_("Error: You must select a file type!"), timeProvider->tickNow(), 1500UL);
+							return false;
+						}
+						fullPath.append(_currentFilterFormat->mainExtension(true));
+					}
+				}
 				if (type == video::OpenFileMode::Save && _app->filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 				} else {
