@@ -427,6 +427,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 
 	bool doubleClickedFile = false;
 	bool doubleClickedDir = false;
+	io::FilesystemEntry doubleClickedDirEntry;
 	static const uint32_t TableFlags =
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
@@ -460,7 +461,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				const io::FilesystemEntry entry = *_filteredEntities[i];
 				ImGui::TableNextColumn();
 				const bool selected = i == (int)_entryIndex;
-				if (selected) {
+				if (selected && entry.name != _parentDir.name) {
 					_selectedEntry = entry;
 				}
 				const char *icon = iconForType(entry.type);
@@ -469,15 +470,20 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				ImGui::SameLine();
 				ImGui::SetCursorPosX(x + 1.5f * (float)imguiApp()->fontSize());
 				if (ImGui::Selectable(entry.name.c_str(), selected, ImGuiSelectableFlags_AllowDoubleClick)) {
-					resetState();
-					_entryIndex = i;
-					_selectedEntry = entry;
 					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 						if (entry.isDirectory()) {
 							doubleClickedDir = true;
+							doubleClickedDirEntry = entry;
 						} else {
 							doubleClickedFile = true;
+							resetState();
+							_entryIndex = i;
+							_selectedEntry = entry;
 						}
+					} else if (entry.name != _parentDir.name) {
+						resetState();
+						_entryIndex = i;
+						_selectedEntry = entry;
 					}
 				}
 				if (entry.type == io::FilesystemEntry::Type::dir) {
@@ -513,7 +519,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 	ImGui::EndChild();
 
 	if (doubleClickedDir) {
-		setCurrentPath(type, assemblePath(_currentPath, _selectedEntry));
+		setCurrentPath(type, assemblePath(_currentPath, doubleClickedDirEntry));
 	}
 
 	return doubleClickedFile;
