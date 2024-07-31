@@ -117,6 +117,7 @@ TEST_F(StringUtilTest, testExtractPath) {
 TEST_F(StringUtilTest, testExtractExtension) {
 	EXPECT_EQ("bar", core::string::extractExtension("/a/b/c/def/foo.bar"));
 	EXPECT_EQ("foo", core::string::extractExtension("/a/b/c/def/foo.bar.foo"));
+	EXPECT_EQ("", core::string::extractExtension("/a/b/.def/foobar"));
 }
 
 TEST_F(StringUtilTest, testSplit) {

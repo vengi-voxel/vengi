@@ -946,11 +946,12 @@ core::String replaceExtension(const core::String &filename, const core::String &
 }
 
 core::String extractExtension(const core::String &str) {
-	const size_t pos = str.rfind(".");
+	const core::String filename = extractFilenameWithExtension(str);
+	const size_t pos = filename.rfind(".");
 	if (pos == core::String::npos) {
 		return "";
 	}
-	return str.substr(pos + 1);
+	return filename.substr(pos + 1);
 }
 
 core::String extractAllExtensions(const core::String &str) {
