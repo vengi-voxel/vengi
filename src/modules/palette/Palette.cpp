@@ -619,6 +619,10 @@ bool Palette::load(const image::ImagePtr &img) {
 bool Palette::loadLospec(const core::String &lospecId, const core::String &gimpPalette) {
 	const core::String url = "https://lospec.com/palette-list/" + gimpPalette;
 	http::HttpCacheStream cacheStream(io::openFilesystemArchive(io::filesystem()), gimpPalette, url);
+	if (cacheStream.size() <= 0) {
+		Log::warn("Failed to load lospec palette %s", gimpPalette.c_str());
+		return false;
+	}
 	return palette::loadPalette(gimpPalette, cacheStream, *this);
 }
 
@@ -667,6 +671,11 @@ bool Palette::load(const char *paletteName) {
 		}
 	}
 	io::FileStream stream(paletteFile);
+	if (!stream.valid()) {
+		Log::error("Failed to load image %s", paletteFile->name().c_str());
+		return false;
+	}
+
 	if (!palette::loadPalette(paletteFile->name(), stream, *this)) {
 		const image::ImagePtr &img = image::loadImage(paletteFile);
 		if (!img->isLoaded()) {
