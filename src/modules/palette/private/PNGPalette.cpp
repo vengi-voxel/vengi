@@ -10,8 +10,15 @@
 namespace palette {
 
 bool PNGPalette::load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
+	if (stream.size() == 0) {
+		Log::warn("The palette file '%s' is empty", filename.c_str());
+		return false;
+	}
 	image::ImagePtr img = image::createEmptyImage(filename);
-	img->load(stream, stream.size());
+	if (!img->load(stream, stream.size())) {
+		Log::warn("Failed to load the palette image '%s'", filename.c_str());
+		return false;
+	}
 	return palette.load(img);
 }
 
