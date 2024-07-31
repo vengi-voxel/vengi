@@ -776,8 +776,8 @@ bool SceneManager::setActivePalette(const palette::Palette &palette, bool search
 		}
 		modified(nodeId, dirtyRegion);
 	}
-	_mementoHandler.markPaletteChange(node);
 	node.setPalette(palette);
+	_mementoHandler.markPaletteChange(node);
 	return true;
 }
 
