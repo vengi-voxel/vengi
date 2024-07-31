@@ -128,8 +128,8 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		_parentDir.name = "..";
 		_parentDir.type = io::FilesystemEntry::Type::dir;
 		_parentDir.fullPath = _app->filesystem()->absolutePath(core::string::path(_currentPath, ".."));
+		_filteredEntities.push_back(&_parentDir);
 	}
-	_filteredEntities.push_back(&_parentDir);
 	for (size_t i = 0; i < _entities.size(); ++i) {
 		if (_entities[i].type == io::FilesystemEntry::Type::dir) {
 			_filteredEntities.push_back(&_entities[i]);
