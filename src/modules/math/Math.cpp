@@ -3,7 +3,6 @@
  */
 
 #include "Math.h"
-#include "core/Log.h"
 #include <glm/mat4x4.hpp>
 
 namespace math {

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/GLM.h"
-#include "core/Pair.h"
 #include <float.h>
 #include <glm/mat3x3.hpp>
 #include <glm/vec3.hpp>
