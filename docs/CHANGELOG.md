@@ -22,6 +22,8 @@ General:
    - Added `v3b` format support (compressed `v3a` file)
    - Translation improvements
    - Fixed mesh extraction at chunk borders in some situations
+   - Added support libjpeg to speed up jpeg (and thus avi) save times
+   - Windows filesystem improvements
 
 VoxConvert:
 
@@ -40,6 +42,7 @@ VoxEdit:
    - Fixed invalid voxel erasing in plane brush
    - Extrude with preview (plane brush)
    - Fixed a few palette panel issues when re-ordering colors
+   - Improved the workflow to import a new palette
 
 ## 0.0.32 (2024-05-29)
 
