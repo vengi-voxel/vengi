@@ -65,6 +65,9 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
 					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
 					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
+#ifdef USE_LIBJPEG
+					ImGui::URLItem("libjpeg", "https://github.com/libjpeg-turbo/libjpeg-turbo", w);
+#endif
 					ImGui::URLItem("lua", "https://www.lua.org/", w);
 					ImGui::URLItem("lucide", "https://lucide.dev/", w);
 					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", w);

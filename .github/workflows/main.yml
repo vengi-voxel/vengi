@@ -25,7 +25,7 @@ jobs:
         - uses: actions/checkout@v4
 
         - name: Setup
-          run: brew install sdl2 python curl glslang ninja ccache pkg-config
+          run: brew install sdl2 jpeg-turbo python curl glslang ninja ccache pkg-config
 
         - name: ccache
           uses: actions/cache@v4
@@ -86,7 +86,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
+            sudo apt-get install make cmake debhelper devscripts build-essential lintian binutils-dev libunwind-dev libjpeg-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config python3 ccache python3-dateutil dh-cmake ninja-build
 
         - name: ccache
           uses: actions/cache@v4
@@ -125,7 +125,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check
+            sudo apt-get install binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev
 
         - name: ccache
           uses: actions/cache@v4
@@ -156,7 +156,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check
+            sudo apt-get install appstream libfuse2 binutils-dev libunwind-dev libfreetype-dev liblua5.4-dev libcurl4-gnutls-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache curl lua-check libjpeg-dev
 
         - name: ccache
           uses: actions/cache@v4
@@ -209,7 +209,7 @@ jobs:
         - name: Setup
           run: |
             sudo apt-get update
-            sudo apt-get install libfreetype-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
+            sudo apt-get install libfreetype-dev libjpeg-dev liblua5.4-dev libsdl2-dev wayland-protocols pkg-config ninja-build python3 ccache
 
         - uses: mymindstorm/setup-emsdk@v13
           with:

@@ -11,6 +11,13 @@ if (NOT MSVC)
 	target_compile_options(${LIB} PRIVATE -Wno-unused-function -Wno-missing-field-initializers)
 endif()
 
+find_package(JPEG)
+if (JPEG_FOUND)
+	target_compile_definitions(${LIB} PRIVATE -DUSE_LIBJPEG)
+	target_link_libraries(${LIB} PRIVATE JPEG::JPEG)
+endif()
+set(USE_LIBJPEG ${JPEG_FOUND} CACHE BOOL "Use libjpeg for jpeg saving" FORCE)
+
 set(TEST_SRCS
 	tests/ImageTest.cpp
 	tests/AVITest.cpp

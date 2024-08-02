@@ -33,6 +33,10 @@
 #define STBIW_REALLOC core_realloc
 #define STBIW_FREE core_free
 
+#ifdef USE_LIBJPEG
+#include <jpeglib.h>
+#endif
+
 #if __GNUC__
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough" // stb_image.h
 #endif
@@ -388,7 +392,50 @@ bool Image::writePng(io::SeekableWriteStream &stream) const {
 
 bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth,
 					  int quality) {
-	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, depth, (const void *)buffer, quality) != 0;
+#ifdef USE_LIBJPEG
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	unsigned char *outbuffer = nullptr;
+	unsigned long outsize = 0;
+
+	cinfo.err = jpeg_std_error(&jerr);
+	jpeg_create_compress(&cinfo);
+
+	jpeg_mem_dest(&cinfo, &outbuffer, &outsize);
+
+	cinfo.image_width = width;
+	cinfo.image_height = height;
+	cinfo.input_components = depth;
+	if (depth == 1) {
+		cinfo.in_color_space = JCS_GRAYSCALE;
+	} else if (depth == 3) {
+		cinfo.in_color_space = JCS_RGB;
+	} else {
+		cinfo.in_color_space = JCS_EXT_RGBA;
+	}
+
+	jpeg_set_defaults(&cinfo);
+	jpeg_set_quality(&cinfo, quality, TRUE);
+
+	jpeg_start_compress(&cinfo, TRUE);
+
+	JSAMPROW row_pointer[1];
+	while (cinfo.next_scanline < cinfo.image_height) {
+		row_pointer[0] = (JSAMPROW)&buffer[cinfo.next_scanline * width * depth];
+		jpeg_write_scanlines(&cinfo, row_pointer, 1);
+	}
+
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+
+	stream.write(outbuffer, outsize);
+	free(outbuffer);
+
+	return true;
+#else
+	// stbi fallback implementation
+	return stbi_write_jpg_to_func(stream_write_func, &stream, width, height, depth, buffer, quality) != 0;
+#endif
 }
 
 bool Image::writePng(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth) {
