@@ -2698,7 +2698,7 @@ int SceneManager::traceScene() {
 			}
 		}
 	}
-	Log::error("Hovered node: %i", nodeId);
+	Log::debug("Hovered node: %i", nodeId);
 	return nodeId;
 }
 
