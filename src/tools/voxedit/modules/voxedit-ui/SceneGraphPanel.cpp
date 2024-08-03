@@ -4,6 +4,7 @@
 
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
+#include "command/CommandHandler.h"
 #include "core/Algorithm.h"
 #include "core/Color.h"
 #include "core/Log.h"
@@ -127,7 +128,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 					style.disableItem();
 				}
 				if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
-					_sceneMgr->nodeSetVisible(nodeId, visible);
+					command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
 				}
 			}
 			if (_hideInactive->boolVal()) {
@@ -139,7 +140,7 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			const core::String &lockedId = core::string::format("##locked-node-%i", nodeId);
 			bool locked = node.locked();
 			if (ImGui::Checkbox(lockedId.c_str(), &locked)) {
-				_sceneMgr->nodeSetLocked(nodeId, locked);
+				command::executeCommands("nodetogglelock " + core::string::toString(nodeId), &listener);
 			}
 		}
 		{ // column 3

@@ -2152,7 +2152,7 @@ void SceneManager::construct() {
 	command::Command::registerCommand("nodetogglevisible", [&](const command::CmdArgs &args) {
 		const int nodeId = args.size() > 0 ? core::string::toInt(args[0]) : activeNode();
 		if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-			node->setVisible(!node->visible());
+			nodeSetVisible(nodeId, !node->visible());
 		}
 	}).setHelp(_("Toggle the visible state of a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
