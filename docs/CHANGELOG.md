@@ -22,8 +22,8 @@ General:
    - Added `v3b` format support (compressed `v3a` file)
    - Translation improvements
    - Fixed mesh extraction at chunk borders in some situations
-   - Added support libjpeg to speed up jpeg (and thus avi) save times
-   - Windows filesystem improvements
+   - Added support for libjpeg to speed up save times (and thus avi creation times)
+   - Improved Windows file attribute handling
 
 VoxConvert:
 
