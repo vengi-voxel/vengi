@@ -24,6 +24,7 @@ General:
    - Fixed mesh extraction at chunk borders in some situations
    - Added support for libjpeg to speed up save times (and thus avi creation times)
    - Improved Windows file attribute handling
+   - `writeString` lua stream binding has a new default value - check the docs
 
 VoxConvert:
 

@@ -484,7 +484,7 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 
 * `readDouble()`: Reads a 64-bit floating-point number from the stream.
 
-* `writeString(str, [0-terminated:true])`: Writes a string to the stream. If the optional parameter `0-terminated` is set to `true`, it writes a null character at the end of the string.
+* `writeString(str, [0-terminated:false])`: Writes a string to the stream. If the optional parameter `0-terminated` is set to `true`, it writes a null character at the end of the string.
 
 * `writeUInt8(value)`: Writes an unsigned 8-bit integer to the stream.
 

@@ -736,7 +736,7 @@ static int clua_stream_readdouble(lua_State *s) {
 static int clua_stream_writestring(lua_State *s) {
 	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
 	const char *str = luaL_checkstring(s, 2);
-	const bool terminate = clua_optboolean(s, 3, true);
+	const bool terminate = clua_optboolean(s, 3, false);
 	if (!stream->writeString(str, terminate)) {
 		return clua_error(s, "Failed to write string");
 	}
