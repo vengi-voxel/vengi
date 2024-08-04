@@ -147,6 +147,8 @@ end
 
 * `addKeyFrame(frame)`: Add a new key frame for frame number and return it. E.g. `addFrame(20)` will add a new key frame for the frame 20.
 
+* `hasKeyFrameForFrame(frame)`:
+
 * `id()`: Returns the id of the current node
 
 * `isCamera()`: Returns true if the node is a camera node
@@ -171,13 +173,17 @@ end
 
 * `parent()`: Returns the id of the parent node - or `-1` if no parent exists (root node)
 
+* `removeKeyFrameForFrame(frame)`: Remove the keyframe for the given frame. Throws an error if no key frame with the given frame exists.
+
+* `removeKeyFrame(keyFrameIdx)`: Remove the existing key frame at the given index. Throws an error if the index is invalid or the key frame doesn't exist.
+
 * `setAnimation(string)`: Activate the animation
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 
 * `setPivot(vec3)`, `setPivot(x, y, z)`:
 
-* `volume()`: Gives you access to the volume of the node.
+* `volume()`: Gives you access to the volume of a model node.
 
 Access these functions like this:
 
