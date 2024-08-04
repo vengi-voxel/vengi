@@ -7,18 +7,24 @@
 -- Model should use a right-handed system - this basically means it should look into the negative
 -- z direction (and right shoulder should be along the positive x axis, y is up).
 --
+-- The model should have the correct parent and child relationships (a hand or arm is a child of a
+-- shoulder, a foot is child of a leg, etc).
+--
+-- When adding new animations, check the NEW_ANIM comments and follow the instructions
+--
 
 function arguments()
 	return {
+		-- NEW_ANIM: add new animation ids to the enum values
+		-- if values are animation specific, please mark them as such by mentioning the animation name like this "(walk)"
 		{ name = 'animation', desc = 'The animation to create', type = 'enum', enum = 'walk,jump,all', default = 'walk'},
 		{ name = 'maxKeyFrames', desc = 'The maximum number of keyframes to create', type = 'int', default = 6, min = 1, max = 100},
 		{ name = 'frameDuration', desc = 'How many frames does each key frame last', type = 'int', default = 20, min = 1, max = 1000},
 		{ name = 'timeFactor', desc = 'How fast the animation should be', type = 'float', default = 12.0, min = 0.0, max = 100.0},
-		{ name = 'handAngleFactor', desc = 'How much the hand should be rotated (walk animation)', type = 'float', default = 0.2, min = 0.0, max = 100.0},
-		{ name = 'footAngleFactor', desc = 'How much the foot should be rotated (walk animation)', type = 'float', default = 1.5, min = 0.0, max = 100.0}
+		{ name = 'handAngleFactor', desc = 'How much the hand should be rotated (walk)', type = 'float', default = 0.2, min = 0.0, max = 100.0},
+		{ name = 'footAngleFactor', desc = 'How much the foot should be rotated (walk)', type = 'float', default = 1.5, min = 0.0, max = 100.0}
 	}
 end
-
 
 local function addOrGetKeyFrame(node, frame)
 	if node:hasKeyFrameForFrame(frame) then
@@ -42,10 +48,10 @@ local function isLeft(name, id)
 		name == "l_" .. id
 end
 
-local function jumpAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor)
-	local frame = keyframe * frameDuration
-	local animTime = keyframe / maxKeyFrames
-	local scaledTime = animTime * timeFactor
+local function jumpAnimation(node, keyframe, context)
+	local frame = keyframe * context.frameDuration
+	local animTime = keyframe / context.maxKeyFrames
+	local scaledTime = animTime * context.timeFactor
 	local sine = math.sin(scaledTime)
 	local sineSlow = math.sin(scaledTime / 2.0)
 	local sineStop = math.sin(math.min(animTime * 5.0, math.pi / 2))
@@ -98,15 +104,15 @@ local function jumpAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFa
 	return true
 end
 
-local function walkAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
-	local frame = keyframe * frameDuration
-	local animTime = keyframe / maxKeyFrames
-	local scaledTime = animTime * timeFactor
+local function walkAnimation(node, keyframe, context)
+	local frame = keyframe * context.frameDuration
+	local animTime = keyframe / context.maxKeyFrames
+	local scaledTime = animTime * context.timeFactor
 	local sine = math.sin(scaledTime)
 	local cosine = math.cos(scaledTime)
 
-	local handAngle = handAngleFactor * sine
-	local footAngle = footAngleFactor * cosine
+	local handAngle = context.handAngleFactor * sine
+	local footAngle = context.footAngleFactor * cosine
 
 	local lowername = string.lower(node:name())
 	if lowername == "belt" then
@@ -142,6 +148,14 @@ local function walkAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFa
 	return true
 end
 
+-- A wrapper around all the animation functions
+-- NEW_ANIM: When adding new animations, don't forget to register your animation function here
+local function allAnimation(node, context)
+	walkAnimation(node, context)
+	jumpAnimation(node, context)
+end
+
+-- Check if the animation is valid by checking if it is in the enum if the arguments
 local function isValidAnimation(animation)
 	local args = arguments()
 	for _, arg in ipairs(args) do
@@ -155,19 +169,20 @@ local function isValidAnimation(animation)
 	return false
 end
 
-local function createAnimation(node, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
-	local isWalkAnimation = animation == "walk" or animation == "all"
-	local isJumpAnimation = animation == "jump" or animation == "all"
-	for keyframe = 0, maxKeyFrames - 1 do
-		if isWalkAnimation then
-			if not walkAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor) then
-				break
-			end
-		end
-		if isJumpAnimation then
-			if not jumpAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor) then
-				break
-			end
+local function createAnimation(node, context)
+	-- NEW_ANIM: When adding new animations, don't forget to register your animation function here
+	local animationMapping = {
+		walk = walkAnimation,
+		jump = jumpAnimation,
+		all = allAnimation,
+	}
+	local animFunc = animationMapping[context.animation]
+	if animFunc == nil then
+		error("No animation callback registered for: " .. context.animation)
+	end
+	for keyframe = 0, context.maxKeyFrames - 1 do
+		if not animFunc(node, keyframe, context) then
+			break
 		end
 	end
 end
@@ -176,11 +191,21 @@ function main(_, _, _, animation, maxKeyFrames, frameDuration, timeFactor, handA
 	if not isValidAnimation(animation) then
 		error("Unknown animation: " .. animation)
 	end
+	-- NEW_ANIM: Add new context variables here if your animation needs them
+	context = {
+		animation = animation,
+		maxKeyFrames = maxKeyFrames,
+		frameDuration = frameDuration,
+		timeFactor = timeFactor,
+		handAngleFactor = handAngleFactor,
+		footAngleFactor = footAngleFactor,
+	}
+
 	local allNodeIds = g_scenegraph.nodeIds()
 	for _, nodeId in ipairs(allNodeIds) do
 		local node = g_scenegraph.get(nodeId)
 		if node:isModel() or node:isReference() then
-			createAnimation(node, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
+			createAnimation(node, context)
 		end
 	end
 	g_scenegraph.updateTransforms()
