@@ -1041,7 +1041,9 @@ static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
 
 	lua_newtable(s);
 	for (const auto &entry : sceneGraph->nodes()) {
-		if (!entry->second.isAnyModelNode()) {
+		if (!entry->second.isAnyModelNode() && entry->second.type() != scenegraph::SceneGraphNodeType::Point &&
+			entry->second.type() != scenegraph::SceneGraphNodeType::Group &&
+			entry->second.type() != scenegraph::SceneGraphNodeType::Camera) {
 			continue;
 		}
 		lua_pushinteger(s, entry->key);
@@ -1058,6 +1060,15 @@ static int luaVoxel_scenegraph_align(lua_State* s) {
 	return 0;
 }
 
+static scenegraph::SceneGraphNodeType toNodeType(const char *type) {
+	for (int i = 0; i < lengthof(scenegraph::SceneGraphNodeTypeStr); ++i) {
+		if (core::string::iequals(type, scenegraph::SceneGraphNodeTypeStr[i])) {
+			return (scenegraph::SceneGraphNodeType)i;
+		}
+	}
+	return scenegraph::SceneGraphNodeType::Group;
+}
+
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	const char *name = lua_tostring(s, 1);
 	voxel::RawVolume *v = nullptr;
@@ -1070,7 +1081,21 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 		type = scenegraph::SceneGraphNodeType::Model;
 	} else {
 		visible = clua_optboolean(s, 2, true);
-		type = scenegraph::SceneGraphNodeType::Group;
+		const char *nodeTypeStr = luaL_optstring(s, 3, scenegraph::SceneGraphNodeTypeStr[(int)scenegraph::SceneGraphNodeType::Group]);
+		type = toNodeType(nodeTypeStr);
+		if (type == scenegraph::SceneGraphNodeType::Root) {
+			return clua_error(s, "Root node can not be created");
+		}
+		if (type == scenegraph::SceneGraphNodeType::Model) {
+			return clua_error(s, "No region defined for model node");
+		}
+		if (type == scenegraph::SceneGraphNodeType::Unknown) {
+			return clua_error(s, "Unknown node type %s", nodeTypeStr);
+		}
+		if (type == scenegraph::SceneGraphNodeType::ModelReference) {
+			// TODO: not implemented yet
+			return clua_error(s, "Can't create this type of node");
+		}
 	}
 	scenegraph::SceneGraphNode node(type);
 	if (type == scenegraph::SceneGraphNodeType::Model) {
@@ -1116,6 +1141,24 @@ static int luaVoxel_scenegraphnode_palette(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	palette::Palette &palette = node->node->palette();
 	return luaVoxel_pushpalette(s, palette);
+}
+
+static int luaVoxel_scenegraphnode_is_point(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->type() == scenegraph::SceneGraphNodeType::Point ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_camera(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->type() == scenegraph::SceneGraphNodeType::Camera ? 1 : 0);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_is_group(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushboolean(s, node->node->type() == scenegraph::SceneGraphNodeType::Group ? 1 : 0);
+	return 1;
 }
 
 static int luaVoxel_scenegraphnode_is_model(lua_State* s) {
@@ -1531,6 +1574,9 @@ static void prepareState(lua_State* s) {
 		{"volume", luaVoxel_scenegraphnode_volume},
 		{"isModel", luaVoxel_scenegraphnode_is_model},
 		{"isReference", luaVoxel_scenegraphnode_is_modelref},
+		{"isPoint", luaVoxel_scenegraphnode_is_point},
+		{"isCamera", luaVoxel_scenegraphnode_is_camera},
+		{"isGroup", luaVoxel_scenegraphnode_is_group},
 		{"palette", luaVoxel_scenegraphnode_palette},
 		{"setName", luaVoxel_scenegraphnode_setname},
 		{"setPalette", luaVoxel_scenegraphnode_setpalette},

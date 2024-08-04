@@ -13,6 +13,9 @@
 -- When adding new animations, check the NEW_ANIM comments and follow the instructions
 --
 
+-- TODO: add tool or other attachment (via point nodes) support for this animation script
+-- TODO: use torso and make hierarchie clearer
+
 function arguments()
 	return {
 		-- NEW_ANIM: add new animation ids to the enum values
@@ -204,7 +207,7 @@ function main(_, _, _, animation, maxKeyFrames, frameDuration, timeFactor, handA
 	local allNodeIds = g_scenegraph.nodeIds()
 	for _, nodeId in ipairs(allNodeIds) do
 		local node = g_scenegraph.get(nodeId)
-		if node:isModel() or node:isReference() then
+		if node:isModel() or node:isReference() or node:isPoint() then
 			createAnimation(node, context)
 		end
 	end

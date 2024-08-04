@@ -126,7 +126,7 @@ The functions are:
 
 * `align()`: Allow to align all nodes on the floor next to each other without overlapping.
 
-* `new(name, [region], [visible])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter. If `region` is given a model is created - otherwise a group node.
+* `new(name, [region], [visible], [type=group])`: Creates a new node with the given `name`, the size and position according to the `region` and an optional `visible` parameter. If `region` is given a model is created - otherwise a group node. Valid values for `type` are `group`, `point` and `camera` (the default is `group`).
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 
@@ -149,7 +149,13 @@ end
 
 * `id()`: Returns the id of the current node
 
+* `isCamera()`: Returns true if the node is a camera node
+
+* `isGroup()`: Returns true if the node is a group node
+
 * `isModel()`: Returns true if the node is a model node (it has a volume attached)
+
+* `isPoint()`: Returns true if the node is a point node
 
 * `isReference()`: Returns true if the node is a model reference
 
