@@ -10,12 +10,12 @@
 
 function arguments()
 	return {
-		{ name = 'animation', desc = 'The animation to create', type = 'enum', enum = 'walk,jump', default = 'walk'},
+		{ name = 'animation', desc = 'The animation to create', type = 'enum', enum = 'walk,jump,all', default = 'walk'},
 		{ name = 'maxKeyFrames', desc = 'The maximum number of keyframes to create', type = 'int', default = 6, min = 1, max = 100},
 		{ name = 'frameDuration', desc = 'How many frames does each key frame last', type = 'int', default = 20, min = 1, max = 1000},
 		{ name = 'timeFactor', desc = 'How fast the animation should be', type = 'float', default = 12.0, min = 0.0, max = 100.0},
-		{ name = 'handAngleFactor', desc = 'How much the hand should be rotated', type = 'float', default = 0.2, min = 0.0, max = 100.0},
-		{ name = 'footAngleFactor', desc = 'How much the foot should be rotated', type = 'float', default = 1.5, min = 0.0, max = 100.0}
+		{ name = 'handAngleFactor', desc = 'How much the hand should be rotated (walk animation)', type = 'float', default = 0.2, min = 0.0, max = 100.0},
+		{ name = 'footAngleFactor', desc = 'How much the foot should be rotated (walk animation)', type = 'float', default = 1.5, min = 0.0, max = 100.0}
 	}
 end
 
@@ -155,6 +155,23 @@ local function isValidAnimation(animation)
 	return false
 end
 
+local function createAnimation(node, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
+	local isWalkAnimation = animation == "walk" or animation == "all"
+	local isJumpAnimation = animation == "jump" or animation == "all"
+	for keyframe = 0, maxKeyFrames - 1 do
+		if isWalkAnimation then
+			if not walkAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor) then
+				break
+			end
+		end
+		if isJumpAnimation then
+			if not jumpAnimation(node, keyframe, maxKeyFrames, frameDuration, timeFactor) then
+				break
+			end
+		end
+	end
+end
+
 function main(_, _, _, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
 	if not isValidAnimation(animation) then
 		error("Unknown animation: " .. animation)
@@ -163,17 +180,7 @@ function main(_, _, _, animation, maxKeyFrames, frameDuration, timeFactor, handA
 	for _, nodeId in ipairs(allNodeIds) do
 		local node = g_scenegraph.get(nodeId)
 		if node:isModel() or node:isReference() then
-			for i = 0, maxKeyFrames do
-				if animation == "walk" then
-					if not walkAnimation(node, i, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor) then
-						break
-					end
-				elseif animation == "jump" then
-					if not jumpAnimation(node, i, maxKeyFrames, frameDuration, timeFactor) then
-						break
-					end
-				end
-			end
+			createAnimation(node, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
 		end
 	end
 	g_scenegraph.updateTransforms()
