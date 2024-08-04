@@ -4,6 +4,22 @@
 
 Make sure to check out the [configuration](Configuration.md) section to see cvars that can influence the result.
 
+## Animate a character
+
+Animate a given scene if the nodes are named correctly.
+
+Valid names are `belt`, `head`, `foot`, `shoulder` or `hand` with either *left* or *right* indicators.
+
+e.g. `belt`, `belt_left`, `belt_right`, `left_belt`, `right_belt`, `belt_l`, `belt_r`, `l_belt`, `r_belt`
+
+Model should use a right-handed system - this basically means it should look into the negative z direction (and right shoulder should be along the positive x axis, y is up).
+
+The model should have the correct parent and child relationships (a hand or arm is a child of a shoulder, a foot is child of a leg, etc).
+
+`./vengi-voxconvert --script "animate all" --input character.vengi --output character_animated.vengi`
+
+> You can extend that script to transfer your own animations to all your characters.
+
 ## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
