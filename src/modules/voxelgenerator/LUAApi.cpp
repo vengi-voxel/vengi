@@ -1066,7 +1066,7 @@ static scenegraph::SceneGraphNodeType toNodeType(const char *type) {
 			return (scenegraph::SceneGraphNodeType)i;
 		}
 	}
-	return scenegraph::SceneGraphNodeType::Group;
+	return scenegraph::SceneGraphNodeType::Unknown;
 }
 
 static int luaVoxel_scenegraph_new_node(lua_State* s) {
@@ -1093,7 +1093,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 			return clua_error(s, "Unknown node type %s", nodeTypeStr);
 		}
 		if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-			// TODO: not implemented yet
+			// TODO: not implemented yet a reference node id is missing
 			return clua_error(s, "Can't create this type of node");
 		}
 	}
