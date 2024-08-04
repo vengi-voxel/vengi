@@ -6,6 +6,8 @@ Make sure to check out the [configuration](Configuration.md) section to see cvar
 
 ## Animate a character
 
+`animate` is a [lua script](../LUAScript.md).
+
 Animate a given scene if the nodes are named correctly.
 
 Valid names are `belt`, `head`, `foot`, `shoulder` or `hand` with either *left* or *right* indicators.
@@ -41,6 +43,8 @@ Imports a 2d image and applies depth to it.
 Import given input image as volume. Uses a depth map to make a volume out of the image. The depth map R channel is using values from 0 (black) to white (255) resulting in voxel heights from 1 to max-height (see `--image-as-volume-max-depth`).
 
 The `--input` with e.g. `infile.png` will pick the depth map next to the image path called `infile-dm.png` as depth map.
+
+> There is also a [lua script](../LUAScript.md) available called `imageasvolume` that can do the same.
 
 ## Slice a volume into png images
 
