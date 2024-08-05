@@ -72,6 +72,7 @@ IMGUI_API void LoadingIndicatorCircle(const char *label, const float indicator_r
 									  const int circle_count = 13, const float speed = 1.0f);
 IMGUI_API bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions,
 						 ImGuiInputTextFlags flags = 0u, const video::FileDialogOptions &options = {});
+IMGUI_API bool InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags = 0u);
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
 

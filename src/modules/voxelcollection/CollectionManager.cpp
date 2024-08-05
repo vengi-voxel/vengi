@@ -14,13 +14,13 @@
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/ImageGenerator.h"
+#include <chrono>
 
 namespace voxelcollection {
 
 CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const video::TexturePoolPtr &texturePool)
 	: _texturePool(texturePool), _filesystem(filesystem) {
 	_archive = io::openFilesystemArchive(filesystem, "", false);
-	_localDir = filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 }
 
 CollectionManager::~CollectionManager() {
@@ -30,11 +30,15 @@ bool CollectionManager::init() {
 	VoxelSource local;
 	local.name = "local";
 	_sources.push_back(local);
+	_localDir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 	return true;
 }
 
 core::String CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
 	// this has to match with the http cache stream
+	if (voxelFile.isLocal()) {
+		return voxelFile.targetFile();
+	}
 	return _filesystem->writePath(voxelFile.targetFile());
 }
 
@@ -42,9 +46,20 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 	if (dir.empty()) {
 		return false;
 	}
+	if (_local.valid()) {
+		if (_local.wait_for(std::chrono::milliseconds(10)) != std::future_status::ready) {
+			return false;
+		}
+		_local = {};
+	}
 	if (_localDir.empty() || dir != _localDir) {
+		Log::debug("change local dir to %s", dir.c_str());
 		_localDir = dir;
-		// TODO: clear all local resolved files
+		auto iter = _voxelFilesMap.find("local");
+		if (iter != _voxelFilesMap.end()) {
+			_voxelFilesMap.erase(iter);
+		}
+		local();
 		return true;
 	}
 	return false;
@@ -242,7 +257,7 @@ void CollectionManager::resolve(const VoxelSource &source, bool async) {
 }
 
 bool CollectionManager::resolved(const VoxelSource &source) const {
-	if (source.name == "local") {
+	if (source.isLocal()) {
 		return _local.valid();
 	}
 	return _onlineResolvedSources.has(source.name);

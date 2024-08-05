@@ -26,11 +26,17 @@
 namespace voxelcollection {
 
 core::String VoxelFile::targetFile() const {
+	if (isLocal()) {
+		return fullPath;
+	}
 	const core::String cleanSource = core::string::cleanPath(source);
 	return core::string::path(cleanSource, fullPath);
 }
 
 core::String VoxelFile::targetDir() const {
+	if (isLocal()) {
+		return core::string::sanitizeDirPath(core::string::extractPath(fullPath));
+	}
 	const core::String cleanSource = core::string::cleanPath(source);
 	const core::String path = core::string::path(cleanSource, core::string::extractPath(fullPath));
 	return core::string::sanitizeDirPath(path);

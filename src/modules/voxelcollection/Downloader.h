@@ -42,6 +42,10 @@ struct VoxelSource {
 	VoxelSourceGithub github;
 	VoxelSourceGitlab gitlab;
 	VoxelSourceSingle single;
+
+	inline bool isLocal() const {
+		return name == "local";
+	}
 };
 
 class VoxelFile {
@@ -50,6 +54,8 @@ public:
 	// the name of the fill - including extension, without directory
 	core::String name;
 	// the full path relative to the voxel source including any directory
+	// except for the local source - where is the full path to the file on
+	// the local filesystem
 	core::String fullPath;
 	core::String license;
 	core::String licenseUrl;
@@ -62,6 +68,10 @@ public:
 	// return the target directory relative to the voxel source with the source and directory name - but without the
 	// filename
 	core::String targetDir() const;
+
+	inline bool isLocal() const {
+		return source == "local";
+	}
 
 	inline bool operator<(const VoxelFile &other) const {
 		return name < other.name;

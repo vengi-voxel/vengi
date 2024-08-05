@@ -54,6 +54,7 @@ public:
 	void update(double nowSeconds, int n = 100);
 	void shutdown() override;
 
+	const core::String &localDir() const;
 	bool setLocalDir(const core::String &dir);
 
 	bool local();
@@ -89,6 +90,10 @@ public:
 
 	core::String absolutePath(const VoxelFile &voxelFile) const;
 };
+
+inline const core::String &CollectionManager::localDir() const {
+	return _localDir;
+}
 
 inline const VoxelSources &CollectionManager::sources() const {
 	return _sources;

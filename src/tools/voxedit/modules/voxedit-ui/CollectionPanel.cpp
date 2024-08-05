@@ -3,11 +3,11 @@
  */
 
 #include "CollectionPanel.h"
-#include "ScopedStyle.h"
+#include "IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
-#include "imgui.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IMGUIApp.h"
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -104,6 +104,12 @@ int CollectionPanel::update() {
 	const voxelcollection::VoxelFileMap &voxelFilesMap = _collectionMgr->voxelFilesMap();
 	updateFilters();
 
+	if (ImGui::IconButton(ICON_LC_FOLDER, _("Local directory"))) {
+		_app->directoryDialog([&] (const core::String &folderName, const io::FormatDescription *desc) {
+			_collectionMgr->setLocalDir(folderName);
+		}, {});
+	}
+
 	const int columns = _thumbnails ? 3 : 2;
 	if (ImGui::BeginTable("##voxelfiles", columns,
 						  ImGuiTableFlags_Resizable | ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders |
@@ -138,6 +144,9 @@ int CollectionPanel::update() {
 						cnt += buildVoxelTree(voxelFiles);
 					}
 					ImGui::TreePop();
+				}
+				if (source.isLocal()) {
+					ImGui::TooltipText("%s", _collectionMgr->localDir().c_str());
 				}
 			} else {
 				if (!_collectionMgr->resolved(source)) {
@@ -219,6 +228,7 @@ bool CollectionPanel::import(voxelcollection::VoxelFile *voxelFile) {
 	if (!voxelFile->downloaded) {
 		return false;
 	}
+	Log::debug("Try to import %s", voxelFile->targetFile().c_str());
 	return _sceneMgr->import(voxelFile->targetFile());
 }
 
@@ -233,8 +243,8 @@ void CollectionPanel::thumbnailTooltip(voxelcollection::VoxelFile *&voxelFile) {
 	if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 		if (ImGui::BeginItemTooltip()) {
 			const video::Id handle = texture->handle();
-			// TODO: dpi awareness
-			ImGui::Image(handle, ImVec2(256, 256));
+			ImGui::Image(handle, ImGui::Size(40.0f));
+			ImGui::Text("%s", voxelFile->fullPath.c_str());
 			ImGui::EndTooltip();
 		}
 	}
@@ -282,7 +292,11 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 					}
 				}
 				if (handle == video::InvalidId) {
-					ImGui::TooltipTextUnformatted(_("Double click to create thumbnail"));
+					if (ImGui::BeginItemTooltip()) {
+						ImGui::TextUnformatted(_("Double click to create thumbnail"));
+						ImGui::Text("%s", voxelFile->fullPath.c_str());
+						ImGui::EndTooltip();
+					}
 				} else {
 					thumbnailTooltip(voxelFile);
 				}
@@ -324,6 +338,7 @@ void CollectionPanel::shutdown() {
 }
 
 bool CollectionPanel::init() {
+	_localDir = _collectionMgr->localDir();
 	return true;
 }
 
