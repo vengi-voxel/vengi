@@ -4,8 +4,9 @@
 
 #include "Face.h"
 #include "core/Common.h"
-#include <glm/ext/scalar_constants.hpp>
+#include <math.h>
 
+#include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 #include <glm/common.hpp>
@@ -50,7 +51,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 
 	float tmin;
 	float tmax;
-	const float divx = glm::abs(rayDirection.x) <= glm::epsilon<float>() ? 1.0f : 1.0f / rayDirection.x;
+	const float divx = glm::abs(rayDirection.x) <= glm::epsilon<float>() ? (rayDirection.x < 0.0f ? -INFINITY : INFINITY) : 1.0f / rayDirection.x;
 	if (divx >= 0.0f) {
 		tmin = (mins.x - rayOrigin.x) * divx;
 		tmax = (maxs.x - rayOrigin.x) * divx;
@@ -61,7 +62,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 
 	float tymin;
 	float tymax;
-	const float divy = glm::abs(rayDirection.y) <= glm::epsilon<float>() ? 1.0f : 1.0f / rayDirection.y;
+	const float divy = glm::abs(rayDirection.y) <= glm::epsilon<float>() ? (rayDirection.y < 0.0f ? -INFINITY : INFINITY) : 1.0f / rayDirection.y;
 	if (divy >= 0.0f) {
 		tymin = (mins.y - rayOrigin.y) * divy;
 		tymax = (maxs.y - rayOrigin.y) * divy;
@@ -84,7 +85,7 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 
 	float tzmin;
 	float tzmax;
-	const float divz = glm::abs(rayDirection.z) <= glm::epsilon<float>() ? 1.0f : 1.0f / rayDirection.z;
+	const float divz = glm::abs(rayDirection.z) <= glm::epsilon<float>() ? (rayDirection.z < 0.0f ? -INFINITY : INFINITY) : 1.0f / rayDirection.z;
 	if (divz >= 0.0f) {
 		tzmin = (mins.z - rayOrigin.z) * divz;
 		tzmax = (maxs.z - rayOrigin.z) * divz;

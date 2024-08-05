@@ -21,6 +21,30 @@ inline ::std::ostream& operator<<(::std::ostream& os, const voxel::FaceBits& fac
 class FaceTest: public app::AbstractTest {
 };
 
+TEST_F(FaceTest, testNegativeXStraightOffsets) {
+	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
+	glm::vec3 hitPos { 14.0f, 0.0f, 0.0f };
+	const FaceNames name = raycastFaceDetection(rayOrigin, hitPos, 0.0f, 1.0f);
+	ASSERT_EQ(FaceNames::NegativeX, name)
+		<< "Ray did not hit the expected face. Face: " << (int) name;
+}
+
+TEST_F(FaceTest, testPositiveXStraight) {
+	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
+	glm::vec3 hitPos { -14.0f, 0.0f, 0.0f };
+	const FaceNames name = raycastFaceDetection(rayOrigin, hitPos);
+	ASSERT_EQ(FaceNames::PositiveX, name)
+		<< "Ray did not hit the expected face. Face: " << (int) name;
+}
+
+TEST_F(FaceTest, testNegativeXStraight) {
+	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
+	glm::vec3 hitPos { 14.0f, 0.0f, 0.0f };
+	const FaceNames name = raycastFaceDetection(rayOrigin, hitPos);
+	ASSERT_EQ(FaceNames::NegativeX, name)
+		<< "Ray did not hit the expected face. Face: " << (int) name;
+}
+
 TEST_F(FaceTest, testNegativeX) {
 	glm::vec3 rayOrigin { 0.0f };
 	glm::vec3 hitPos { 14.0f };
