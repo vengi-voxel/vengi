@@ -2759,12 +2759,8 @@ bool SceneManager::mouseRayTrace(bool force) {
 	_lastRaytraceX = _mouseCursor.x;
 	_lastRaytraceY = _mouseCursor.y;
 
-	_result.didHit = false;
-	_result.validPreviousPosition = false;
-	_result.firstInvalidPosition = false;
-	_result.firstValidPosition = false;
+	_result = {};
 	_result.direction = ray.direction;
-	_result.hitFace = voxel::FaceNames::Max;
 
 	const math::Axis lockedAxis = _modifierFacade.lockedAxis();
 	// TODO: we could optionally limit the raycast to the selection

@@ -285,6 +285,9 @@ public:
 	 */
 	void createTree(const voxelgenerator::TreeContext &ctx);
 
+	/**
+	 * @brief Add a new model node as children to the current active node
+	 */
 	int addModelChild(const core::String &name, int width, int height, int depth);
 
 	/**

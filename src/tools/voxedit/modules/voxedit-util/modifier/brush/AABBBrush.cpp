@@ -103,6 +103,8 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 			mins.z = volumeRegion.getLowerZ();
 			maxs.z = volumeRegion.getUpperZ();
 			break;
+		case voxel::FaceNames::Max:
+			return brushRegion;
 		default:
 			break;
 		}
