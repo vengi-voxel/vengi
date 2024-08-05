@@ -10,7 +10,6 @@
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/FilesystemArchive.h"
-#include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 #include "voxelcollection/Downloader.h"
 #include "voxelformat/VolumeFormat.h"

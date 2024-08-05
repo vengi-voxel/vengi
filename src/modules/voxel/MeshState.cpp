@@ -299,7 +299,6 @@ void MeshState::waitForPendingExtractions() {
 }
 
 void MeshState::clearPendingExtractions() {
-	Log::debug("Clear pending extractions");
 	_threadPool.abort();
 	while (_runningExtractorTasks > 0) {
 		SDL_Delay(1);
