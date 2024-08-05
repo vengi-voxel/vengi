@@ -48,7 +48,7 @@ void FilesystemArchive::list(const core::String &basePath, ArchiveFiles &out, co
 SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) {
 	const io::FilePtr &file = _filesytem->open(filePath, _sysmode ? FileMode::SysRead : FileMode::Read);
 	if (!file->validHandle()) {
-		Log::error("Could not open file %s for reading (file system archive)", file->name().c_str());
+		Log::error("Could not open file %s for reading: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;
 	}
 	io::FileStream *stream = new io::FileStream(file);
@@ -59,7 +59,7 @@ SeekableReadStream *FilesystemArchive::readStream(const core::String &filePath) 
 SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath) {
 	const io::FilePtr &file = _filesytem->open(filePath, _sysmode ? FileMode::SysWrite : FileMode::Write);
 	if (!file->validHandle()) {
-		Log::error("Could not open file %s for writing (file system archive)", file->name().c_str());
+		Log::error("Could not open file %s for writing: %s", file->name().c_str(), file->lastError().c_str());
 		return nullptr;
 	}
 	io::FileStream *stream = new io::FileStream(file);

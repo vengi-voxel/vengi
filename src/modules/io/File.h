@@ -43,6 +43,9 @@ protected:
 	SDL_RWops* _file;
 	core::String _rawPath;
 	FileMode _mode;
+	mutable core::String _error;
+
+	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
 public:
 	File(const core::String& rawPath, FileMode mode = FileMode::Read);
@@ -109,7 +112,13 @@ public:
 	 * @brief Load the file content as string
 	 */
 	core::String load();
+
+	const core::String &lastError() const;
 };
+
+inline const core::String &File::lastError() const {
+	return _error;
+}
 
 inline FileMode File::mode() const {
 	return _mode;

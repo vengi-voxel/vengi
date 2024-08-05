@@ -84,9 +84,23 @@ core::String File::load() {
 	return f;
 }
 
+void File::error(const char *msg, ...) const {
+	va_list ap;
+	constexpr size_t bufSize = 1024;
+	char text[bufSize];
+
+	va_start(ap, msg);
+	SDL_vsnprintf(text, bufSize, msg, ap);
+	text[sizeof(text) - 1] = '\0';
+	va_end(ap);
+
+	_error = text;
+	Log::debug("path: '%s' (mode: %i): %s", _rawPath.c_str(), (int)_mode, _error.c_str());
+}
+
 SDL_RWops* File::createRWops(FileMode mode) const {
 	if (_rawPath.empty()) {
-		Log::debug("Can't open file - no path given");
+		error("Can't open file - no path given");
 		return nullptr;
 	}
 	const char *fmode = "rb";
@@ -97,18 +111,18 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 	}
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
 	if (rwops == nullptr) {
-		Log::debug("Can't open file %s: %s", _rawPath.c_str(), SDL_GetError());
+		error("%s", SDL_GetError());
 	}
 	return rwops;
 }
 
 long File::write(io::ReadStream &stream) const {
 	if (_file == nullptr) {
-		Log::debug("Invalid file handle - can write stream (path: %s)", _rawPath.c_str());
+		error("Invalid file handle - can't write to file");
 		return -1L;
 	}
 	if (_mode != FileMode::Write && _mode != FileMode::SysWrite) {
-		Log::debug("Invalid file mode given - can write stream (path: %s)", _rawPath.c_str());
+		error("Invalid file mode given - can't write to file");
 		return -1L;
 	}
 	char buf[4096 * 10];
@@ -120,7 +134,7 @@ long File::write(io::ReadStream &stream) const {
 		}
 		const size_t written = SDL_RWwrite(_file, buf, 1, len);
 		if (written == 0) {
-			Log::debug("Error writing file - can write buffer of length %i (path: %s)", (int)len, _rawPath.c_str());
+			error("Error writing file - failed to write buffer of length %i", (int)len);
 			return -1L;
 		}
 		l += len;
