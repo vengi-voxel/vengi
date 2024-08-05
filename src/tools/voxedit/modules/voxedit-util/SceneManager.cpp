@@ -1245,7 +1245,7 @@ void SceneManager::resetSceneState() {
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	_modifierFacade.setCursorVoxel(voxel::createVoxel(node.palette(), 0));
-	setCursorPosition(cursorPosition(), true);
+	setCursorPosition(cursorPosition(), voxel::FaceNames::Max, true);
 	setReferencePosition(node.region().getCenter());
 	resetLastTrace();
 }
@@ -1443,7 +1443,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 
 	_dirty = false;
 	_result = voxelutil::PickResult();
-	setCursorPosition(cursorPosition(), true);
+	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
 	setReferencePosition(region.getLowerCenter());
 	resetLastTrace();
 	return true;
@@ -1558,7 +1558,7 @@ bool SceneManager::setGridResolution(int resolution) {
 		return false;
 	}
 	_modifierFacade.setGridResolution(resolution);
-	setCursorPosition(cursorPosition(), true);
+	setCursorPosition(cursorPosition(), _modifierFacade.cursorFace(), true);
 	return true;
 }
 
@@ -1860,7 +1860,7 @@ void SceneManager::construct() {
 		const int x = core::string::toInt(args[0]);
 		const int y = core::string::toInt(args[1]);
 		const int z = core::string::toInt(args[2]);
-		setCursorPosition(glm::ivec3(x, y, z), true);
+		setCursorPosition(glm::ivec3(x, y, z), _modifierFacade.cursorFace(), true);
 		_traceViaMouse = false;
 	}).setHelp(_("Set the cursor to the specified position"));
 
@@ -2588,7 +2588,7 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	p.x += x * res;
 	p.y += y * res;
 	p.z += z * res;
-	setCursorPosition(p, true);
+	setCursorPosition(p, _modifierFacade.cursorFace(), true);
 	_traceViaMouse = false;
 	if (const voxel::RawVolume *v = activeVolume()) {
 		const voxel::Voxel &voxel = v->voxel(cursorPosition());
@@ -2596,7 +2596,7 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	}
 }
 
-void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
+void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force) {
 	const voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
 		return;
@@ -2637,7 +2637,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, bool force) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
 	// TODO: multiple different viewports....
-	_modifierFacade.setCursorPosition(pos, _result.hitFace);
+	_modifierFacade.setCursorPosition(pos, hitFace);
 	if (oldCursorPos == pos) {
 		return;
 	}
@@ -2703,16 +2703,17 @@ int SceneManager::traceScene() {
 }
 
 void SceneManager::updateCursor() {
+	voxel::FaceNames hitFace = _result.hitFace;
 	if (_modifierFacade.modifierTypeRequiresExistingVoxel()) {
 		if (_result.didHit) {
-			setCursorPosition(_result.hitVoxel);
+			setCursorPosition(_result.hitVoxel, hitFace);
 		} else if (_result.validPreviousPosition) {
-			setCursorPosition(_result.previousPosition);
+			setCursorPosition(_result.previousPosition, hitFace);
 		}
 	} else if (_result.validPreviousPosition) {
-		setCursorPosition(_result.previousPosition);
+		setCursorPosition(_result.previousPosition, hitFace);
 	} else if (_result.didHit) {
-		setCursorPosition(_result.hitVoxel);
+		setCursorPosition(_result.hitVoxel, hitFace);
 	}
 
 	const voxel::RawVolume *v = activeVolume();
@@ -2742,7 +2743,12 @@ bool SceneManager::mouseRayTrace(bool force) {
 	if (camera == nullptr) {
 		return false;
 	}
-	const voxel::RawVolume* v = activeVolume();
+	const int nodeId = activeNode();
+	const scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	if (node == nullptr) {
+		return false;
+	}
+	const voxel::RawVolume* v = node->volume();
 	if (v == nullptr) {
 		return false;
 	}
@@ -3448,7 +3454,7 @@ bool SceneManager::nodeActivate(int nodeId) {
 		setReferencePosition(glm::ivec3(pivot));
 	}
 	if (!region.containsPoint(cursorPosition())) {
-		setCursorPosition(node.region().getCenter());
+		setCursorPosition(node.region().getCenter(), voxel::FaceNames::Max);
 	}
 	resetLastTrace();
 	return true;

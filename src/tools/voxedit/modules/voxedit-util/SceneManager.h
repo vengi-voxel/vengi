@@ -20,6 +20,7 @@
 #include "util/Movement.h"
 #include "voxedit-util/Clipboard.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
@@ -198,7 +199,7 @@ protected:
 	 * the final position of the cursor
 	 * @param[in] force If @c true it will ignore the locked axes and still set the position
 	 */
-	void setCursorPosition(glm::ivec3 pos, bool force = false);
+	void setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force = false);
 
 public:
 	SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
