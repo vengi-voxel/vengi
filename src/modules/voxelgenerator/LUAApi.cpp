@@ -62,6 +62,9 @@ struct LuaKeyFrame {
 	}
 };
 
+/**
+ * @brief This wrapper is able to replace the whole volume in the node if some action replaced the volume to operate on.
+ */
 class LuaRawVolumeWrapper : public voxel::RawVolumeWrapper {
 private:
 	using Super = voxel::RawVolumeWrapper;
