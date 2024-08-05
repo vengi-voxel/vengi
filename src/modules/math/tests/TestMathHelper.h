@@ -61,18 +61,6 @@ inline testing::AssertionResult CmpHelperVecNE(const char *lhs_expression, const
 	return AssertMsg(lhs_expression, rhs_expression, lhs_value, rhs_value);
 }
 
-inline testing::AssertionResult CmpHelperVec3EQ(const char *lhs_expression, const char *rhs_expression,
-												const char *max_distance_expression, const glm::vec3 &lhs_value,
-												const glm::vec3 &rhs_value, float max_distance) {
-	return CmpHelperVecEQ(lhs_expression, rhs_expression, max_distance_expression, lhs_value, rhs_value, max_distance);
-}
-
-inline testing::AssertionResult CmpHelperVec3NE(const char *lhs_expression, const char *rhs_expression,
-												const char *max_distance_expression, const glm::vec3 &lhs_value,
-												const glm::vec3 &rhs_value, float max_distance) {
-	return CmpHelperVecNE(lhs_expression, rhs_expression, max_distance_expression, lhs_value, rhs_value, max_distance);
-}
-
 } // namespace priv
 } // namespace glm
 
@@ -92,7 +80,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
 }
 
 
-#define EXPECT_VEC3_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVec3EQ, lhs, rhs, delta)
-#define ASSERT_VEC3_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVec3EQ, lhs, rhs, delta)
-#define EXPECT_VEC3_NOT_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVec3NE, lhs, rhs, delta)
-#define ASSERT_VEC3_NOT_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVec3NE, lhs, rhs, delta)
+#define EXPECT_VEC_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVecEQ, lhs, rhs, delta)
+#define ASSERT_VEC_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecEQ, lhs, rhs, delta)
+#define EXPECT_VEC_NOT_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)
+#define ASSERT_VEC_NOT_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)

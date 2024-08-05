@@ -727,7 +727,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		scenegraph::SceneGraphTransform transform;
 		transform.setLocalMatrix(*stateUndo.localMatrix.value());
 		transform.update(_sceneGraph, *node, 0, true);
-		EXPECT_VEC3_NEAR(transform.localTranslation(), initial, 0.0001f);
+		EXPECT_VEC_NEAR(transform.localTranslation(), initial, 0.0001f);
 	}
 
 	EXPECT_TRUE(_mementoHandler.canRedo());
@@ -740,7 +740,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		scenegraph::SceneGraphTransform transform;
 		transform.setLocalMatrix(*stateRedo.localMatrix.value());
 		transform.update(_sceneGraph, *node, 0, true);
-		EXPECT_VEC3_NEAR(transform.localTranslation(), mirrored, 0.0001f);
+		EXPECT_VEC_NEAR(transform.localTranslation(), mirrored, 0.0001f);
 	}
 }
 

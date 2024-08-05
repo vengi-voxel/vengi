@@ -4,6 +4,7 @@
 
 #include "app/tests/AbstractTest.h"
 #include "image/Image.h"
+#include "math/tests/TestMathHelper.h"
 #include "core/tests/TestColorHelper.h"
 #include "io/BufferedReadWriteStream.h"
 #include <glm/vec2.hpp>
@@ -112,9 +113,9 @@ TEST_F(ImageTest, testUVPixelConversion) {
 			const glm::vec2 &uv = img->uv(x, y);
 			const glm::ivec2 &pixels = img->pixels(uv);
 			ASSERT_EQ(x, pixels.x) << "Failed to convert " << x << ":" << y << " to uv and back to pixels (uv: " << uv
-								   << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
+								   << ", pixels: " << pixels << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
 			ASSERT_EQ(y, pixels.y) << "Failed to convert " << x << ":" << y << " to uv and back to pixels (uv: " << uv
-								   << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
+								   << ", pixels: " << pixels << ") image: (w: " << img->width() << ", h: " << img->height() << ")";
 		}
 	}
 }

@@ -523,23 +523,23 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 
 		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, keyFrameIndex, false));
 		cworldTranslation = ctransform.worldTranslation();
-		ASSERT_VEC3_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
-		ASSERT_VEC3_NEAR(cworldTranslation, clocalTranslationVec, 0.0001f);
+		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
+		ASSERT_VEC_NEAR(cworldTranslation, clocalTranslationVec, 0.0001f);
 		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(1.0f, 1.0f, 1.0f)));
-		ASSERT_VEC3_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
-		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
+		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
+		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
 	}
 	ASSERT_TRUE(_sceneMgr->undo());
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
-		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslation, 0.0001f);
-		ASSERT_VEC3_NEAR(node->pivot(), glm::vec3(0.0f), 0.0001f);
+		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslation, 0.0001f);
+		ASSERT_VEC_NEAR(node->pivot(), glm::vec3(0.0f), 0.0001f);
 	}
 	ASSERT_TRUE(_sceneMgr->redo());
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
-		ASSERT_VEC3_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
-		ASSERT_VEC3_NEAR(node->pivot(), glm::vec3(1.0f), 0.0001f);
+		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
+		ASSERT_VEC_NEAR(node->pivot(), glm::vec3(1.0f), 0.0001f);
 	}
 }
 

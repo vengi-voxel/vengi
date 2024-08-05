@@ -354,6 +354,13 @@ glm::vec2 Image::uv(int x, int y) const {
 	return uv(x, y, _width, _height);
 }
 
+// sampling the center of a pixel
+// width 2 and height 2
+// -----
+// | | | (pixel space 0/0 and 1/0), uv 0.25/0.75 and 0.75/0.75
+// -----
+// | | | (pixel space 0/1 and 1/1), uv 0.25/0.25 and 0.75/0.25
+// -----
 glm::vec2 Image::uv(int x, int y, int w, int h) {
 	// sample the upper left corner of the pixel
 	return glm::vec2((float)x / (float)w, 1.0f - ((float)y / (float)h));
