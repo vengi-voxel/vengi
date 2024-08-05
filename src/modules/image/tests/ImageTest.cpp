@@ -98,12 +98,17 @@ TEST_F(ImageTest, testGet) {
 	EXPECT_EQ(rgba, expected) << image::print(img);
 }
 
+TEST_F(ImageTest, testUV) {
+	EXPECT_VEC_NEAR(glm::vec2(0.001953f, 0.5f), image::Image::uv(0, 0, 256, 1), 0.000001f) << "lower left corner of the image";
+	EXPECT_VEC_NEAR(glm::vec2(0.75, 0.25f), image::Image::uv(1, 1, 2, 2), 0.000001f) << "lower left corner of the image";
+}
+
 TEST_F(ImageTest, testUVPixelBoundaries) {
 	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
-	EXPECT_EQ(glm::vec2(0.0f, 0.0f), img->uv(0, img->height())) << "lower left corner of the image";
-	EXPECT_EQ(glm::vec2(1.0f, 0.0f), img->uv(img->width(), img->height())) << "lower right corner of the image";
-	EXPECT_EQ(glm::vec2(1.0f, 1.0f), img->uv(img->width(), 0)) << "upper right corner of the image";
-	EXPECT_EQ(glm::vec2(0.0f, 1.0f), img->uv(0, 0)) << "upper left corner of the image";
+	EXPECT_VEC_NEAR(glm::vec2(0.0119048f, 0.0067568f), img->uv(0, img->height() - 1), 0.000001f) << "lower left corner of the image (w: " << img->width() << ", h: " << img->height() << ")";
+	EXPECT_VEC_NEAR(glm::vec2(0.9880952f, 0.0067568f), img->uv(img->width() - 1, img->height() - 1), 0.000001f) << "lower right corner of the image (w: " << img->width() << ", h: " << img->height() << ")";
+	EXPECT_VEC_NEAR(glm::vec2(0.9880952f, 0.9932432f), img->uv(img->width() - 1, 0), 0.000001f) << "upper right corner of the image (w: " << img->width() << ", h: " << img->height() << ")";
+	EXPECT_VEC_NEAR(glm::vec2(0.0119048f, 0.9932432f), img->uv(0, 0), 0.000001f) << "upper left corner of the image (w: " << img->width() << ", h: " << img->height() << ")";
 }
 
 TEST_F(ImageTest, testUVPixelConversion) {

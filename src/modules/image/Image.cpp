@@ -296,8 +296,8 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
 	const float w = (float)width();
 	const float h = (float)height();
-	int xint = (int)glm::roundEven(uv.x * w);
-	int yint = height() - (int)glm::roundEven(uv.y * h);
+	int xint = (int)glm::floor(uv.x * w);
+	int yint = height() - 1 - (int)glm::floor(uv.y * h);
 	switch (wrapS) {
 	case TextureWrap::Repeat: {
 		xint %= width();
@@ -362,8 +362,10 @@ glm::vec2 Image::uv(int x, int y) const {
 // | | | (pixel space 0/1 and 1/1), uv 0.25/0.25 and 0.75/0.25
 // -----
 glm::vec2 Image::uv(int x, int y, int w, int h) {
-	// sample the upper left corner of the pixel
-	return glm::vec2((float)x / (float)w, 1.0f - ((float)y / (float)h));
+	// Calculate the UV coordinates to sample the center of the pixel
+	float u = ((float)x + 0.5f) / (float)w;
+	float v = ((float)h - 1.0f - (float)y + 0.5f) / (float)h;
+	return glm::vec2(u, v);
 }
 
 bool Image::resize(int w, int h) {

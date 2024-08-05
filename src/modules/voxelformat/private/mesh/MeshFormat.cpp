@@ -136,8 +136,8 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	// 1 x 256 is the texture format that we are using for our palette
 	// sample the center of the palette pixels
 	// see https://github.com/vengi-voxel/vengi/issues/403
-	const float u = ((float)colorIndex + 0.4f) / (float)palette::PaletteMaxColors;
-	const float v = 0.6f;
+	const float u = (((float)colorIndex) + 0.5f) / (float)palette::PaletteMaxColors;
+	const float v = 0.5f;
 	return {u, v};
 }
 
