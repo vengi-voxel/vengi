@@ -984,6 +984,9 @@ msgstr ""
 msgid "Format"
 msgstr ""
 
+msgid "Local directory"
+msgstr ""
+
 msgid "Thumbnail"
 msgstr ""
 

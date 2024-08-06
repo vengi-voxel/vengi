@@ -1015,6 +1015,9 @@ msgstr "Ліцензія"
 msgid "Format"
 msgstr "Формат"
 
+msgid "Local directory"
+msgstr ""
+
 msgid "Thumbnail"
 msgstr "Мініатюра"
 

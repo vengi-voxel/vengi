@@ -1022,6 +1022,9 @@ msgstr "Lizenz"
 msgid "Format"
 msgstr "Format"
 
+msgid "Local directory"
+msgstr "Lokales Verzeichnis"
+
 msgid "Thumbnail"
 msgstr "Miniaturansicht"
 
