@@ -748,6 +748,7 @@ void deleteProgram(Id &id) {
 	core_assert(glDeleteProgram != nullptr);
 	core_assert_msg(glIsProgram((GLuint)id), "%u is no valid program object", (unsigned int)id);
 	glDeleteProgram((GLuint)id);
+	Log::debug("delete %u shader program", (unsigned int)id);
 	checkError();
 	if (glstate().programHandle == id) {
 		glstate().programHandle = InvalidId;
@@ -759,6 +760,7 @@ Id genProgram() {
 	checkError();
 	core_assert(glCreateProgram != nullptr);
 	Id id = (Id)glCreateProgram();
+	Log::debug("create %u shader program", (unsigned int)id);
 	checkError();
 	return id;
 }

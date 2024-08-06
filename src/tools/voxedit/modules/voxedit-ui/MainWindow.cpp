@@ -573,6 +573,8 @@ void MainWindow::popupWelcome() {
 						   "Please consider enabling it."));
 		ui::metricOption();
 		ImGui::Separator();
+		_app->keyMapOption();
+		ImGui::Separator();
 		_app->languageOption();
 		ImGui::Separator();
 		ImGui::CheckboxVar(_("Simple mode"), _simplifiedView);

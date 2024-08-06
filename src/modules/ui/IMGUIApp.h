@@ -152,6 +152,7 @@ public:
 	ImFont *smallFont();
 
 	void languageOption();
+	bool keyMapOption();
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	ImGuiTestEngine *imguiTestEngine() const {

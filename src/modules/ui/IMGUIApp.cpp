@@ -474,19 +474,7 @@ void IMGUIApp::renderBindingsDialog() {
 			ImGui::EndTable();
 		}
 		if (!_uiKeyMaps.empty()) {
-			const int currentKeyMap = _uiKeyMap->intVal();
-			if (ImGui::BeginCombo(_("Keymap"), _uiKeyMaps[(int)currentKeyMap].c_str(), ImGuiComboFlags_None)) {
-				for (int i = 0; i < (int)_uiKeyMaps.size(); ++i) {
-					const bool selected = i == currentKeyMap;
-					if (ImGui::Selectable(_uiKeyMaps[i].c_str(), selected)) {
-						_uiKeyMap->setVal(core::string::toString(i));
-					}
-					if (selected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
+			keyMapOption();
 		} else {
 			if (ImGui::Button(_("Reset to default"))) {
 				_resetKeybindings = true;
@@ -796,6 +784,26 @@ void IMGUIApp::languageOption() {
 		ImGui::EndCombo();
 	}
 	ImGui::TooltipTextUnformatted(_("To change the language everywhere restart the application"));
+}
+
+bool IMGUIApp::keyMapOption() {
+	if (_uiKeyMaps.empty()) {
+		return false;
+	}
+	const int currentKeyMap = _uiKeyMap->intVal();
+	if (ImGui::BeginCombo(_("Keymap"), _uiKeyMaps[(int)currentKeyMap].c_str(), ImGuiComboFlags_None)) {
+		for (int i = 0; i < (int)_uiKeyMaps.size(); ++i) {
+			const bool selected = i == currentKeyMap;
+			if (ImGui::Selectable(_uiKeyMaps[i].c_str(), selected)) {
+				_uiKeyMap->setVal(core::string::toString(i));
+			}
+			if (selected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return true;
 }
 
 app::AppState IMGUIApp::onCleanup() {
