@@ -3253,6 +3253,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 }
 
 void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node, int *newNodeId) {
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "nodeduplicate");
 	const int nodeId = scenegraph::copyNodeToSceneGraph(_sceneGraph, node, node.parent(), true);
 	onNewNodeAdded(nodeId, false);
 	if (newNodeId) {
@@ -3261,6 +3262,7 @@ void SceneManager::nodeDuplicate(const scenegraph::SceneGraphNode &node, int *ne
 }
 
 int SceneManager::nodeReference(const scenegraph::SceneGraphNode &node) {
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "nodereference");
 	const int newNodeId = scenegraph::createNodeReference(_sceneGraph, node);
 	onNewNodeAdded(newNodeId, false);
 	return newNodeId;
