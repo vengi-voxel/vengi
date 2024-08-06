@@ -29,7 +29,7 @@ CollectionManager::~CollectionManager() {
 
 bool CollectionManager::init() {
 	VoxelSource local;
-	local.name = "local";
+	local.name = LOCAL_SOURCE;
 	_sources.push_back(local);
 	core::String documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
 	if (documents.empty()) {
@@ -71,7 +71,7 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 	if (_localDir.empty() || dir != _localDir) {
 		Log::debug("change local dir to %s", dir.c_str());
 		_localDir = dir;
-		auto iter = _voxelFilesMap.find("local");
+		auto iter = _voxelFilesMap.find(LOCAL_SOURCE);
 		if (iter != _voxelFilesMap.end()) {
 			_voxelFilesMap.erase(iter);
 		}
@@ -137,7 +137,7 @@ bool CollectionManager::local() {
 			voxelFile.name = entry.fullPath.substr(localDir.size());
 			voxelFile.fullPath = entry.fullPath;
 			voxelFile.url = "file://" + entry.fullPath;
-			voxelFile.source = "local";
+			voxelFile.source = LOCAL_SOURCE;
 			voxelFile.license = "unknown";
 			// voxelFile.licenseUrl = "";
 			// voxelFile.thumbnailUrl = "";
@@ -250,7 +250,7 @@ bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 }
 
 void CollectionManager::resolve(const VoxelSource &source, bool async) {
-	if (source.name == "local") {
+	if (source.isLocal()) {
 		local();
 		return;
 	}
@@ -286,9 +286,9 @@ void CollectionManager::update(double nowSeconds, int n) {
 	}
 
 	if (_local.valid() && _local.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-		if (_voxelFilesMap.find("local") == _voxelFilesMap.end()) {
+		if (_voxelFilesMap.find(LOCAL_SOURCE) == _voxelFilesMap.end()) {
 			VoxelCollection collection{{}, nowSeconds, true};
-			_voxelFilesMap.put("local", collection);
+			_voxelFilesMap.put(LOCAL_SOURCE, collection);
 		}
 	}
 

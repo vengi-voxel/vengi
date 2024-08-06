@@ -34,6 +34,8 @@ struct VoxelSourceSingle {
 	core::String url;
 };
 
+#define LOCAL_SOURCE "local"
+
 struct VoxelSource {
 	core::String name;
 	core::String license;
@@ -44,7 +46,7 @@ struct VoxelSource {
 	VoxelSourceSingle single;
 
 	inline bool isLocal() const {
-		return name == "local";
+		return name == LOCAL_SOURCE;
 	}
 };
 
