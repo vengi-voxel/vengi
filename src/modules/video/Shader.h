@@ -91,6 +91,10 @@ protected:
 	 * @return @c false if no change is needed, @c true if we have to update the value
 	 */
 	bool checkUniformCache(int location, const void* value, int length) const;
+
+	// only called from setting the texture units
+	void setUniformi(int location, int value) const;
+
 public:
 	Shader();
 	virtual ~Shader();
@@ -210,7 +214,6 @@ public:
 	int getUniformLocation(const core::String& name) const;
 
 	void setUniform(int location, TextureUnit value) const;
-	void setUniformi(int location, int value) const;
 	void setVertexAttribute(const core::String& name, int size, DataType type, bool normalize, int stride, const void* buffer) const;
 	void setVertexAttributeInt(const core::String& name, int size, DataType type, int stride, const void* buffer) const;
 	void disableVertexAttribute(const core::String& name) const;
