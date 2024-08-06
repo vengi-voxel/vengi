@@ -25,7 +25,6 @@ private:
 	float _filterFormatTextWidth = -1.0f;
 	int _currentFilterFormatEntry = -1;
 	bool _thumbnails = true;
-	core::String _localDir;
 	core::String _currentFilterName;
 	core::String _currentFilterLicense;
 	voxelcollection::VoxelFile _selected;

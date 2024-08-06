@@ -14,6 +14,10 @@ General:
 
    - Fixed invalid uv coordinate handling when importing meshes to voxelize them
 
+VoxEdit:
+
+   - Allow to change the local directory for the asset panel
+
 ## 0.0.33 (2024-08-05)
 
 General:

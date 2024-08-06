@@ -109,6 +109,7 @@ int CollectionPanel::update() {
 			_collectionMgr->setLocalDir(folderName);
 		}, {});
 	}
+	ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
 
 	const int columns = _thumbnails ? 3 : 2;
 	if (ImGui::BeginTable("##voxelfiles", columns,
@@ -338,7 +339,6 @@ void CollectionPanel::shutdown() {
 }
 
 bool CollectionPanel::init() {
-	_localDir = _collectionMgr->localDir();
 	return true;
 }
 

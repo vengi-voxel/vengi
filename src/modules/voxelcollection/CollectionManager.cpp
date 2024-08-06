@@ -6,6 +6,7 @@
 #include "app/Async.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -30,7 +31,22 @@ bool CollectionManager::init() {
 	VoxelSource local;
 	local.name = "local";
 	_sources.push_back(local);
-	_localDir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+	core::String documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+	if (documents.empty()) {
+		documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Public);
+	}
+	if (documents.empty()) {
+		documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Download);
+	}
+	if (documents.empty()) {
+		documents = _filesystem->homePath();
+	}
+	core_assert(!documents.empty());
+	const core::VarPtr &var = core::Var::get(cfg::AssetPanelLocalDirectory, documents);
+	_localDir = var->strVal();
+	if (_localDir.empty()) {
+		var->setVal(documents);
+	}
 	return true;
 }
 
@@ -59,7 +75,7 @@ bool CollectionManager::setLocalDir(const core::String &dir) {
 		if (iter != _voxelFilesMap.end()) {
 			_voxelFilesMap.erase(iter);
 		}
-		local();
+		core::Var::getSafe(cfg::AssetPanelLocalDirectory)->setVal(_localDir);
 		return true;
 	}
 	return false;
@@ -96,18 +112,19 @@ bool CollectionManager::local() {
 		Log::debug("Local already queued");
 		return false;
 	}
-	if (_localDir.empty()) {
+	const core::String localDir = _localDir;
+	if (localDir.empty()) {
 		Log::debug("No local dir set");
 		return false;
 	}
-	_local = app::async([&]() {
+	_local = app::async([&, localDir]() {
 		if (_shouldQuit) {
 			return;
 		}
 		core::DynamicArray<io::FilesystemEntry> entities;
-		Log::info("Local document scanning (%s)...", _localDir.c_str());
-		_archive->list(_localDir, entities, "");
-		Log::debug("Found %i entries in %s", (int)entities.size(), _localDir.c_str());
+		Log::info("Local document scanning (%s)...", localDir.c_str());
+		_archive->list(localDir, entities, "");
+		Log::debug("Found %i entries in %s", (int)entities.size(), localDir.c_str());
 
 		for (const io::FilesystemEntry &entry : entities) {
 			if (_shouldQuit) {
@@ -117,7 +134,7 @@ bool CollectionManager::local() {
 				continue;
 			}
 			VoxelFile voxelFile;
-			voxelFile.name = entry.fullPath.substr(_localDir.size());
+			voxelFile.name = entry.fullPath.substr(localDir.size());
 			voxelFile.fullPath = entry.fullPath;
 			voxelFile.url = "file://" + entry.fullPath;
 			voxelFile.source = "local";
@@ -266,6 +283,13 @@ bool CollectionManager::resolved(const VoxelSource &source) const {
 void CollectionManager::update(double nowSeconds, int n) {
 	if (app::App::getInstance()->shouldQuit()) {
 		_shouldQuit = true;
+	}
+
+	if (_local.valid() && _local.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+		if (_voxelFilesMap.find("local") == _voxelFilesMap.end()) {
+			VoxelCollection collection{{}, nowSeconds, true};
+			_voxelFilesMap.put("local", collection);
+		}
 	}
 
 	if (_onlineSources.valid() && _onlineSources.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {

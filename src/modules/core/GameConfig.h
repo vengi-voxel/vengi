@@ -29,6 +29,8 @@ constexpr const char *UINotifyDismissMillis = "ui_notifydismiss";
 constexpr const char *UIMultiMonitor = "ui_multimonitor";
 constexpr const char *UIBookmarks = "ui_bookmarks";
 
+constexpr const char *AssetPanelLocalDirectory = "ui_assetlocaldirectory";
+
 constexpr const char *HttpConnectTimeout = "http_connecttimeout";
 constexpr const char *HttpTimeout = "http_timeout";
 
