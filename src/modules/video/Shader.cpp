@@ -365,9 +365,6 @@ int Shader::fetchAttributes() {
 	return video::fetchAttributes(_program, _attributes, _name);
 }
 
-/**
- * Some drivers don't support underscores in their defines...
- */
 core::String Shader::validPreprocessorName(const core::String& name) {
 	core_assert(!name.empty());
 	return core::string::replaceAll(name, "_", "");

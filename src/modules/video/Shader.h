@@ -92,13 +92,13 @@ protected:
 	 */
 	bool checkUniformCache(int location, const void* value, int length) const;
 
-	// only called from setting the texture units
-	void setUniformi(int location, int value) const;
-
 public:
 	Shader();
 	virtual ~Shader();
 
+	/**
+	 * Some drivers don't support underscores in their defines...
+	 */
 	static core::String validPreprocessorName(const core::String& name);
 
 	static int glslVersion;
@@ -224,6 +224,10 @@ public:
 
 	// particular renderer api must implement this
 
+private:
+	// only called from setting the texture units
+	void setUniformi(int location, int value) const;
+public:
 	int32_t getUniformBufferOffset(const char *name);
 	bool setUniformBuffer(const core::String& name, const UniformBuffer& buffer);
 	void setVertexAttribute(int location, int size, DataType type, bool normalize, int stride, const void* buffer) const;
