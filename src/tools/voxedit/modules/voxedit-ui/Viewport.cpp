@@ -708,6 +708,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	// check to create a reference before we update the node transform
 	// otherwise the new reference node will not get the correct transform
 	if (createReference(node)) {
+		// we have to record the creating of the new nodes here - thus we have to unlock the memento state
+		memento::ScopedMementoHandlerUnlock scopedUnlock(_sceneMgr->mementoHandler());
 		const int newNode = _sceneMgr->nodeReference(node.id());
 		// we need to activate the node - otherwise we end up in
 		// endlessly creating new reference nodes
