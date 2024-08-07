@@ -293,14 +293,14 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			}
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
-				voxel::logRegion("Undo current", s.region);
-				voxel::logRegion("Undo previous", prevS.region);
+				voxel::logRegion("Undo current", s.modifiedRegion);
+				voxel::logRegion("Undo previous", prevS.modifiedRegion);
 				voxel::logRegion("Undo current data", s.data.region());
 				voxel::logRegion("Undo previous data", prevS.data.region());
 				// use the region from the current state - but the volume and palette from the previous state of this
 				// node
 				return MementoState{s.type,	   prevS.data,	   s.parentId, s.nodeId, prevS.referenceId,
-									s.name,	   prevS.nodeType, s.region,   s.pivot,	 s.keyFrames,
+									s.name,	   prevS.nodeType, s.modifiedRegion,   s.pivot,	 s.keyFrames,
 									s.palette, s.properties};
 			}
 		}
@@ -555,23 +555,23 @@ bool MementoHandler::removeLast() {
 }
 
 void MementoHandler::markUndo(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
-							  const voxel::Region &region) {
-	markUndo(node.parent(), node.id(), node.reference(), node.name(), node.type(), volume, type, region, node.pivot(),
+							  const voxel::Region &modifiedRegion) {
+	markUndo(node.parent(), node.id(), node.reference(), node.name(), node.type(), volume, type, modifiedRegion, node.pivot(),
 			 node.allKeyFrames(), node.palette(), node.properties());
 }
 
 void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 							  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-							  const voxel::Region &region, const glm::vec3 &pivot,
+							  const voxel::Region &modifiedRegion, const glm::vec3 &pivot,
 							  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
 							  const scenegraph::SceneGraphNodeProperties &properties) {
 	if (!markUndoPreamble()) {
 		return;
 	}
 	Log::debug("New undo state for node %i with name %s", nodeId, name.c_str());
-	voxel::logRegion("MarkUndo", region);
-	const MementoData &data = MementoData::fromVolume(volume, region);
-	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, region, pivot, allKeyFrames, palette,
+	voxel::logRegion("MarkUndo", modifiedRegion);
+	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
+	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, modifiedRegion, pivot, allKeyFrames, palette,
 					   properties);
 	addState(core::move(state));
 }
