@@ -56,6 +56,9 @@ public:
 	void markDirty() {
 		_dirty = DIRTY_WORLDVALUES;
 	}
+	void markDirtyParent() {
+		_dirty = DIRTY_PARENT;
+	}
 
 	/**
 	 * @brief This method will set all values into the transform without the need to perform any

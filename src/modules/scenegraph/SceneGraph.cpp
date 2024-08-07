@@ -619,7 +619,7 @@ void SceneGraph::setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKe
 		auto &keyFrames = child.allKeyFrames();
 		for (const auto &entry : keyFrames) {
 			for (scenegraph::SceneGraphKeyFrame &frame : entry->value) {
-				frame.transform().markDirty();
+				frame.transform().markDirtyParent();
 			}
 		}
 	});
