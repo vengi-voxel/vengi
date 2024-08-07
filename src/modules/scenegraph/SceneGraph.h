@@ -12,6 +12,7 @@
 #include "core/DirtyState.h"
 #include "core/Pair.h"
 #include "core/collection/DynamicArray.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 
 namespace voxel {
 class RawVolume;
@@ -127,6 +128,8 @@ public:
 	 */
 	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
 	FrameTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
+
+	void setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKeyFramesMap &keyFrames);
 
 	/**
 	 * @brief Change the active animation for all nodes to the given animation

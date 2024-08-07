@@ -809,7 +809,7 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		node->setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
+		_sceneGraph.setAllKeyFramesForNode(*node, *s.keyFrames.value());
 		core_assert(s.pivot.hasValue());
 		if (s.pivot.hasValue()) {
 			Log::debug("Memento: pivot of node %i (%s): %f:%f:%f", s.nodeId, s.name.c_str(), s.pivot.value()->x, s.pivot.value()->y, s.pivot.value()->z);

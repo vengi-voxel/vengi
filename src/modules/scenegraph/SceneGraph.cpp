@@ -613,6 +613,18 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 	return state;
 }
 
+void SceneGraph::setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKeyFramesMap &keyFrames) {
+	node.setAllKeyFrames(keyFrames, _activeAnimation);
+	visitChildren(node.id(), true, [](SceneGraphNode &child) {
+		auto &keyFrames = child.allKeyFrames();
+		for (const auto &entry : keyFrames) {
+			for (scenegraph::SceneGraphKeyFrame &frame : entry->value) {
+				frame.transform().markDirty();
+			}
+		}
+	});
+}
+
 void SceneGraph::reserve(size_t size) {
 }
 
