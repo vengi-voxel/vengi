@@ -113,6 +113,10 @@ bool SceneGraphNode::setAnimation(const core::String &anim) {
 		iter = _keyFramesMap.find(anim);
 	}
 
+	if (_keyFrames == &iter->value) {
+		return true;
+	}
+
 	Log::debug("Switched animation for node %s (%i) to %s", _name.c_str(), _id, anim.c_str());
 	_keyFrames = &iter->value;
 	core_assert_msg(!_keyFrames->empty(), "Empty keyframes for anim %s", anim.c_str());
