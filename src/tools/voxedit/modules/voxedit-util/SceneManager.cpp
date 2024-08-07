@@ -841,10 +841,12 @@ bool SceneManager::mementoTransform(const memento::MementoState& s) {
 		if (s.pivot.hasValue()) {
 			node->setPivot(*s.pivot.value());
 		}
-		scenegraph::SceneGraphTransform &transform = node->keyFrame(s.keyFrameIdx).transform();
 		if (s.localMatrix.hasValue()) {
+			core_assert(s.keyFrameIdx != InvalidKeyFrame);
+			scenegraph::SceneGraphKeyFrame &keyFrame = node->keyFrame(s.keyFrameIdx);
+			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 			transform.setLocalMatrix(*s.localMatrix.value());
-			transform.update(_sceneGraph, *node, s.keyFrameIdx, true);
+			transform.update(_sceneGraph, *node, keyFrame.frameIdx, true);
 			return true;
 		}
 	}
