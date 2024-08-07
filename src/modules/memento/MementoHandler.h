@@ -395,6 +395,19 @@ public:
 	}
 };
 
+class ScopedMementoHandlerUnlock {
+private:
+	MementoHandler &_handler;
+
+public:
+	ScopedMementoHandlerUnlock(MementoHandler &handler) : _handler(handler) {
+		_handler.unlock();
+	}
+	~ScopedMementoHandlerUnlock() {
+		_handler.lock();
+	}
+};
+
 inline const MementoStateGroup &MementoHandler::stateGroup() const {
 	return _groups[_groupStatePosition];
 }
