@@ -53,7 +53,7 @@ public:
 		return _dirty != 0u;
 	}
 
-	void markDirty() {
+	void markDirtyWorld() {
 		_dirty = DIRTY_WORLDVALUES;
 	}
 	void markDirtyParent() {
