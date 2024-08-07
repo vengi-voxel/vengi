@@ -16,7 +16,7 @@ namespace scenegraph {
 
 static int addToGraph(SceneGraph &sceneGraph, SceneGraphNode &&node, int parent) {
 	if (parent > 0 && !sceneGraph.hasNode(parent)) {
-		Log::error("Can't find parent node %i", parent);
+		Log::error("Can't find parent node %i for %s", parent, node.name().c_str());
 		parent = sceneGraph.root().id();
 	}
 	int newNodeId = sceneGraph.emplace(core::move(node), parent);
