@@ -212,8 +212,6 @@ const char *MementoHandler::typeToString(MementoType type) {
 }
 
 void MementoHandler::printState(const MementoState &state) const {
-	const glm::ivec3 &mins = state.region.getLowerCorner();
-	const glm::ivec3 &maxs = state.region.getUpperCorner();
 	core::String palHash;
 	if (state.palette.hasValue()) {
 		palHash = core::string::toString(state.palette.value()->hash());
@@ -222,6 +220,8 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - parent: %i", state.parentId);
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
+	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
+	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
 	Log::info(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	Log::info(" - size: %ib", (int)state.data.size());
 	Log::info(" - palette: %s [hash: %s]", state.palette.hasValue() ? "true" : "false", palHash.c_str());

@@ -19,8 +19,8 @@ static inline core::String toString(const memento::MementoState &state, const co
 }
 
 static void stateTooltip(const memento::MementoState &state) {
-	const glm::ivec3 &mins = state.region.getLowerCorner();
-	const glm::ivec3 &maxs = state.region.getUpperCorner();
+	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
+	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
 	core::String palHash;
 	if (state.palette.hasValue()) {
 		palHash = core::string::toString(state.palette.value()->hash());
