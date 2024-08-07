@@ -999,7 +999,9 @@ bool SceneManager::doUndo() {
 		Log::debug("Nothing to undo");
 		return false;
 	}
-	for (const memento::MementoState& s : group.states) {
+	const int n = (int)group.states.size() - 1;
+	for (int i = n; i >= 0; --i) {
+		const memento::MementoState& s = group.states[i];
 		if (!mementoStateExecute(s, false)) {
 			Log::error("Failed to undo memento state %i", (int)s.type);
 			return false;
