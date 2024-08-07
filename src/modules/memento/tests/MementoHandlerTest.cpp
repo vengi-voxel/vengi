@@ -635,14 +635,15 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 	ASSERT_NE(nullptr, node);
 	_mementoHandler.markInitialNodeState(*node);
 	EXPECT_EQ("nippon", node->palette().name());
+	const int colorCount = node->palette().colorCount();
 	palette::Palette palette;
 	palette.commandAndConquer();
 	node->setPalette(palette);
 	_mementoHandler.markPaletteChange(*node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	MementoState state = firstState(_mementoHandler.undo());
-	ASSERT_TRUE(state.palette.hasValue());
-	EXPECT_EQ(state.palette.value()->name(), "nippon");
+	ASSERT_EQ(state.palette.colorCount(), colorCount);
+	EXPECT_EQ(state.palette.name(), "nippon");
 }
 
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
@@ -696,22 +697,22 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 
 	MementoState stateUndo = firstState(_mementoHandler.undo());
-	EXPECT_EQ(MementoType::SceneNodeTransform, stateUndo.type);
-	ASSERT_TRUE(stateUndo.keyFrames.hasValue());
+	EXPECT_EQ(MementoType::SceneNodeKeyFrames, stateUndo.type);
+	ASSERT_FALSE(stateUndo.keyFrames.empty());
 
 	{
-		_sceneGraph.setAllKeyFramesForNode(*node, *stateUndo.keyFrames.value());
+		_sceneGraph.setAllKeyFramesForNode(*node, stateUndo.keyFrames);
 		const scenegraph::SceneGraphTransform &transform = node->transform(0);
 		EXPECT_VEC_NEAR(transform.localTranslation(), initial, 0.0001f);
 	}
 
 	EXPECT_TRUE(_mementoHandler.canRedo());
 	MementoState stateRedo = firstState(_mementoHandler.redo());
-	EXPECT_EQ(MementoType::SceneNodeTransform, stateRedo.type);
-	ASSERT_TRUE(stateRedo.keyFrames.hasValue());
+	EXPECT_EQ(MementoType::SceneNodeKeyFrames, stateRedo.type);
+	ASSERT_FALSE(stateRedo.keyFrames.empty());
 
 	{
-		_sceneGraph.setAllKeyFramesForNode(*node, *stateRedo.keyFrames.value());
+		_sceneGraph.setAllKeyFramesForNode(*node, stateRedo.keyFrames);
 		const scenegraph::SceneGraphTransform &transform = node->transform(0);
 		EXPECT_VEC_NEAR(transform.localTranslation(), mirrored, 0.0001f);
 	}

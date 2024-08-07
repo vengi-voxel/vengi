@@ -191,7 +191,6 @@ protected:
 	bool mementoProperties(const memento::MementoState &s);
 	bool mementoPaletteChange(const memento::MementoState &s);
 	bool mementoModification(const memento::MementoState &s);
-	bool mementoTransform(const memento::MementoState &s);
 
 	/**
 	 * @brief Sets the cursor to the given position in the volume

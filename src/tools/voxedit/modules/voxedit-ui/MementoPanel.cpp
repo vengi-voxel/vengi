@@ -21,10 +21,7 @@ static inline core::String toString(const memento::MementoState &state, const co
 static void stateTooltip(const memento::MementoState &state) {
 	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
 	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
-	core::String palHash;
-	if (state.palette.hasValue()) {
-		palHash = core::string::toString(state.palette.value()->hash());
-	}
+	core::String palHash = core::string::toString(state.palette.hash());
 	if (ImGui::BeginItemTooltip()) {
 		ImGui::Text("%s: node id: %i", memento::MementoHandler::typeToString(state.type), state.nodeId);
 		ImGui::Text(" - parent: %i", state.parentId);
@@ -32,35 +29,27 @@ static void stateTooltip(const memento::MementoState &state) {
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
 		ImGui::Text(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		ImGui::Text(" - size: %ib", (int)state.data.size());
-		ImGui::Text(" - palette: %s [hash: %s]", state.palette.hasValue() ? "true" : "false", palHash.c_str());
-		if (state.pivot.hasValue()) {
-			ImGui::Text(" - pivot: %f:%f:%f", state.pivot->x, state.pivot->y, state.pivot->z);
-		} else {
-			ImGui::Text(" - pivot: none");
-		}
-		if (state.keyFrames.hasValue() && !state.keyFrames.value()->empty()) {
-			const scenegraph::SceneGraphKeyFramesMap &keyFrames = *state.keyFrames.value();
-			ImGui::Text(" - key frames");
-			for (const auto &e : keyFrames) {
-				ImGui::Text("   - animation: %s", e->first.c_str());
-				const scenegraph::SceneGraphKeyFrames &frames = e->second;
-				for (const auto &f : frames) {
-					ImGui::Text("     - frame: %i", f.frameIdx);
-					ImGui::Text("       - interpolation: %s", scenegraph::InterpolationTypeStr[(int)f.interpolation]);
-					ImGui::Text("       - long rotation: %s", f.longRotation ? "true" : "false");
-					ImGui::Text("       - transform");
-					const glm::mat4 &m = f.transform().worldMatrix();
-					ImGui::Text("         - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
-					ImGui::Text("         - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
-					ImGui::Text("         - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);
-					ImGui::Text("         - %f:%f:%f:%f", m[3][0], m[3][1], m[3][2], m[3][3]);
-				}
+		ImGui::Text(" - palette: %s", palHash.c_str());
+		ImGui::Text(" - pivot: %f:%f:%f", state.pivot.x, state.pivot.y, state.pivot.z);
+		const scenegraph::SceneGraphKeyFramesMap &keyFrames = state.keyFrames;
+		ImGui::Text(" - key frames");
+		for (const auto &e : keyFrames) {
+			ImGui::Text("   - animation: %s", e->first.c_str());
+			const scenegraph::SceneGraphKeyFrames &frames = e->second;
+			for (const auto &f : frames) {
+				ImGui::Text("     - frame: %i", f.frameIdx);
+				ImGui::Text("       - interpolation: %s", scenegraph::InterpolationTypeStr[(int)f.interpolation]);
+				ImGui::Text("       - long rotation: %s", f.longRotation ? "true" : "false");
+				ImGui::Text("       - transform");
+				const glm::mat4 &m = f.transform().worldMatrix();
+				ImGui::Text("         - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
+				ImGui::Text("         - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
+				ImGui::Text("         - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);
+				ImGui::Text("         - %f:%f:%f:%f", m[3][0], m[3][1], m[3][2], m[3][3]);
 			}
-		} else {
-			ImGui::Text(" - key frames: none");
 		}
-		if (state.properties.hasValue() && !state.properties.value()->empty()) {
-			const scenegraph::SceneGraphNodeProperties &props = *state.properties.value();
+		if (!state.properties.empty()) {
+			const scenegraph::SceneGraphNodeProperties &props = state.properties;
 			ImGui::Text(" - properties");
 			for (const auto &e : props) {
 				ImGui::Text("   - %s: %s", e->first.c_str(), e->second.c_str());

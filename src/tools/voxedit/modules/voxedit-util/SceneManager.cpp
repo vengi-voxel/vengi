@@ -799,8 +799,7 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 	Log::debug("Memento: properties of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
 		node->properties().clear();
-		core_assert(s.properties.hasValue());
-		node->addProperties(*s.properties.value());
+		node->addProperties(s.properties);
 		return true;
 	}
 	return false;
@@ -809,42 +808,19 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		core_assert(s.keyFrames.hasValue());
-		_sceneGraph.setAllKeyFramesForNode(*node, *s.keyFrames.value());
-		core_assert(s.pivot.hasValue());
-		if (s.pivot.hasValue()) {
-			Log::debug("Memento: pivot of node %i (%s): %f:%f:%f", s.nodeId, s.name.c_str(), s.pivot.value()->x, s.pivot.value()->y, s.pivot.value()->z);
-			node->setPivot(*s.pivot.value());
-		}
+		_sceneGraph.setAllKeyFramesForNode(*node, s.keyFrames);
+		node->setPivot(s.pivot);
 		_sceneGraph.updateTransforms();
 		return true;
 	}
 	return false;
 }
 
-bool SceneManager::mementoPaletteChange(const memento::MementoState& s) {
+bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
 	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
 	if (scenegraph::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
-		node->setPalette(*s.palette.value());
-		if (s.hasVolumeData()) {
-			mementoModification(s);
-		}
-		markDirty();
+		node->setPalette(s.palette);
 		return true;
-	}
-	return false;
-}
-
-bool SceneManager::mementoTransform(const memento::MementoState& s) {
-	Log::debug("Memento: transform of node %i", s.nodeId);
-	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
-		if (s.pivot.hasValue()) {
-			node->setPivot(*s.pivot.value());
-		}
-		if (s.keyFrames.hasValue()) {
-			_sceneGraph.setAllKeyFramesForNode(*node, *s.keyFrames.value());
-			return true;
-		}
 	}
 	return false;
 }
@@ -867,12 +843,7 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 			memento::MementoData::toVolume(node->volume(), s.data);
 		}
 		node->setName(s.name);
-		if (s.pivot.hasValue()) {
-			node->setPivot(*s.pivot.value());
-		}
-		if (s.palette.hasValue()) {
-			node->setPalette(*s.palette.value());
-		}
+		node->setPalette(s.palette);
 		modified(node->id(), s.data.region(), false);
 		return true;
 	}
@@ -894,22 +865,14 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		memento::MementoData::toVolume(newNode.volume(), s.data);
 	}
-	if (s.palette.hasValue()) {
-		newNode.setPalette(*s.palette.value());
-	}
+	newNode.setPalette(s.palette);
 	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
 		newNode.setReference(s.referenceId);
 	}
-	if (s.keyFrames.hasValue()) {
-		newNode.setAllKeyFrames(*s.keyFrames.value(), _sceneGraph.activeAnimation());
-	}
-	if (s.properties.hasValue()) {
-		newNode.properties().clear();
-		newNode.addProperties(*s.properties.value());
-	}
-	if (s.pivot.hasValue()) {
-		newNode.setPivot(*s.pivot.value());
-	}
+	_sceneGraph.setAllKeyFramesForNode(newNode, s.keyFrames);
+	newNode.properties().clear();
+	newNode.addProperties(s.properties);
+	newNode.setPivot(s.pivot);
 	newNode.setName(s.name);
 	const int newNodeId = moveNodeToSceneGraph(newNode, s.parentId);
 	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
@@ -935,9 +898,6 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 	if (s.type == memento::MementoType::SceneNodeMove) {
 		Log::debug("Memento: move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
 		return nodeMove(s.nodeId, s.parentId);
-	}
-	if (s.type == memento::MementoType::SceneNodeTransform) {
-		return mementoTransform(s);
 	}
 	if (s.type == memento::MementoType::Modification) {
 		return mementoModification(s);

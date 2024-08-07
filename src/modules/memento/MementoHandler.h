@@ -31,7 +31,6 @@ enum class MementoType {
 	SceneNodeAdded,
 	SceneNodeRemoved,
 	SceneNodeRenamed,
-	SceneNodeTransform,
 	SceneNodePaletteChanged,
 	SceneNodeKeyFrames,
 	SceneNodeProperties,
@@ -104,16 +103,17 @@ public:
 
 struct MementoState {
 	MementoType type;
+	// data is not always included in a state - as this is the volume and would consume a lot of memory
 	MementoData data;
 	int parentId = InvalidNodeId;
 	int nodeId = InvalidNodeId;
 	int referenceId = InvalidNodeId;
 	scenegraph::SceneGraphNodeType nodeType;
-	core::Optional<scenegraph::SceneGraphKeyFramesMap> keyFrames;
-	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
+	scenegraph::SceneGraphKeyFramesMap keyFrames;
+	scenegraph::SceneGraphNodeProperties properties;
 	core::String name;
-	core::Optional<glm::vec3> pivot;
-	core::Optional<palette::Palette> palette;
+	glm::vec3 pivot;
+	palette::Palette palette;
 
 	MementoState() : type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max) {
 	}
@@ -182,20 +182,20 @@ struct MementoState {
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
 				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
-				 const core::Optional<glm::vec3> &_pivot,
-				 const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
-				 const core::Optional<palette::Palette> &_palette,
-				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
+				 const glm::vec3 &_pivot,
+				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames,
+				 const palette::Palette &_palette,
+				 const scenegraph::SceneGraphNodeProperties &_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		  palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
-				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, core::Optional<glm::vec3> &&_pivot,
-				 core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
-				 core::Optional<palette::Palette> &&_palette,
-				 core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
+				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, glm::vec3 &&_pivot,
+				 scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
+				 palette::Palette &&_palette,
+				 scenegraph::SceneGraphNodeProperties &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		  palette(_palette) {
@@ -238,17 +238,12 @@ private:
 	void addState(MementoState &&state);
 	bool markUndoPreamble();
 
-	inline MementoState &first(MementoStateGroup &group) const {
-		return group.states[0];
-	}
-
-	MementoState undoRename(const MementoState &s);
-	MementoState undoMove(const MementoState &s);
-	MementoState undoPaletteChange(const MementoState &s);
-	MementoState undoNodeProperties(const MementoState &s);
-	MementoState undoKeyFrames(const MementoState &s);
-	MementoState undoTransform(const MementoState &s);
-	MementoState undoModification(const MementoState &s);
+	void undoRename(MementoState &s);
+	void undoMove(MementoState &s);
+	void undoPaletteChange(MementoState &s);
+	void undoNodeProperties(MementoState &s);
+	void undoKeyFrames(MementoState &s);
+	void undoModification(MementoState &s);
 
 public:
 	MementoHandler();
@@ -305,8 +300,7 @@ public:
 	void markInitialNodeState(const scenegraph::SceneGraphNode &node);
 	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
 	void markNodeMoved(const scenegraph::SceneGraphNode &node);
-	void markPaletteChange(const scenegraph::SceneGraphNode &node,
-						   const voxel::Region &modifiedRegion = voxel::Region::InvalidRegion);
+	void markPaletteChange(const scenegraph::SceneGraphNode &node);
 	void markAddedAnimation(const core::String &animation);
 
 	/**
