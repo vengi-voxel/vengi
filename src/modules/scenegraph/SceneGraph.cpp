@@ -562,7 +562,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
 				SceneGraphTransform &transform = keyframe.transform();
-				transform.markDirtyWorld();
+				transform.markDirtyParent();
 			}
 		}
 		updateTransforms();
