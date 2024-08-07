@@ -841,12 +841,8 @@ bool SceneManager::mementoTransform(const memento::MementoState& s) {
 		if (s.pivot.hasValue()) {
 			node->setPivot(*s.pivot.value());
 		}
-		if (s.localMatrix.hasValue()) {
-			core_assert(s.keyFrameIdx != InvalidKeyFrame);
-			scenegraph::SceneGraphKeyFrame &keyFrame = node->keyFrame(s.keyFrameIdx);
-			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-			transform.setLocalMatrix(*s.localMatrix.value());
-			transform.update(_sceneGraph, *node, keyFrame.frameIdx, true);
+		if (s.keyFrames.hasValue()) {
+			_sceneGraph.setAllKeyFramesForNode(*node, *s.keyFrames.value());
 			return true;
 		}
 	}
@@ -2884,7 +2880,7 @@ bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegr
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		_mementoHandler.markNodeTransform(node);
 		markDirty();
 	}
 	return true;
@@ -3071,7 +3067,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		_mementoHandler.markNodeTransform(node);
 		markDirty();
 	}
 	return true;
@@ -3088,7 +3084,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node, keyFrameIdx);
+		_mementoHandler.markNodeTransform(node);
 		markDirty();
 	}
 
@@ -3140,8 +3136,9 @@ bool SceneManager::nodeDuplicate(int nodeId, int *newNodeId) {
 
 bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
-		core_assert(sceneGraphNode(sourceNodeId) != nullptr);
-		_mementoHandler.markNodeMoved(targetNodeId, sourceNodeId);
+		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
+		core_assert(node != nullptr);
+		_mementoHandler.markNodeMoved(*node);
 		markDirty();
 		return true;
 	}

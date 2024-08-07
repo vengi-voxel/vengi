@@ -111,9 +111,7 @@ struct MementoState {
 	scenegraph::SceneGraphNodeType nodeType;
 	core::Optional<scenegraph::SceneGraphKeyFramesMap> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
-	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
 	core::String name;
-	core::Optional<glm::mat4x4> localMatrix;
 	/**
 	 * @note This region might be different from the region given in the @c MementoData. In case of an @c
 	 * MementoHandler::undo() call, we have to make sure that the region of the previous state is re-extracted.
@@ -122,16 +120,14 @@ struct MementoState {
 	core::Optional<glm::vec3> pivot;
 	core::Optional<palette::Palette> palette;
 
-	MementoState()
-		: type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max),
-		  keyFrameIdx(0) {
+	MementoState() : type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max) {
 	}
 
 	MementoState(const MementoState &other)
 		: type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
 		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
-		  properties(other.properties), keyFrameIdx(other.keyFrameIdx), name(other.name),
-		  localMatrix(other.localMatrix), region(other.region), pivot(other.pivot), palette(other.palette) {
+		  properties(other.properties), name(other.name), region(other.region), pivot(other.pivot),
+		  palette(other.palette) {
 	}
 
 	MementoState(MementoState &&other) noexcept {
@@ -143,9 +139,7 @@ struct MementoState {
 		nodeType = other.nodeType;
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
-		keyFrameIdx = other.keyFrameIdx;
 		name = core::move(other.name);
-		localMatrix = core::move(other.localMatrix);
 		region = other.region;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
@@ -163,9 +157,7 @@ struct MementoState {
 		nodeType = other.nodeType;
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
-		keyFrameIdx = other.keyFrameIdx;
 		name = core::move(other.name);
-		localMatrix = core::move(other.localMatrix);
 		region = other.region;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
@@ -184,31 +176,11 @@ struct MementoState {
 		nodeType = other.nodeType;
 		keyFrames = other.keyFrames;
 		properties = other.properties;
-		keyFrameIdx = other.keyFrameIdx;
 		name = other.name;
-		localMatrix = other.localMatrix;
 		region = other.region;
 		pivot = other.pivot;
 		palette = other.palette;
 		return *this;
-	}
-
-	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
-				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_region,
-				 const core::Optional<glm::vec3> &_pivot, const core::Optional<glm::mat4x4> &_localMatrix,
-				 scenegraph::KeyFrameIndex _keyFrameIdx, const core::Optional<palette::Palette> &_palette)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), localMatrix(_localMatrix), region(_region),
-		  pivot(_pivot), palette(_palette) {
-	}
-
-	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
-				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_region,
-				 core::Optional<glm::vec3> &&_pivot, core::Optional<glm::mat4x4> &&_localMatrix,
-				 scenegraph::KeyFrameIndex _keyFrameIdx, core::Optional<palette::Palette> &&_palette)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrameIdx(_keyFrameIdx), name(_name), localMatrix(_localMatrix), region(_region),
-		  pivot(_pivot), palette(_palette) {
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
@@ -267,7 +239,7 @@ private:
 	int _locked = 0;
 
 	void addState(MementoState &&state);
-	bool markUndoPreamble(int nodeId);
+	bool markUndoPreamble();
 
 	inline MementoState &first(MementoStateGroup &group) const {
 		return group.states[0];
@@ -315,33 +287,27 @@ public:
 	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
 	 * That is the reason why you always have to add the initial (maybe empty) state, too
 	 * @note Keep in mind, that there is a maximum of states that can get handled here.
-	 * @param[in] parentId The node's parentId that was modified
-	 * @param[in] nodeId The nodeId that was modified
-	 * @param[in] name The name of the nodeId
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
+	void markUndo(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
+				  const voxel::Region &region);
 	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
-				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region, const glm::vec3 &pivot, const glm::mat4 &localMatrix,
-				  scenegraph::KeyFrameIndex keyFrameIdx, const core::Optional<palette::Palette> &palette = {});
-	void markUndoKeyFrames(int parentId, int nodeId, int referenceId, const core::String &name,
-						   scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-						   const voxel::Region &region, const glm::vec3 &pivot,
-						   const scenegraph::SceneGraphKeyFramesMap &keyFrames,
-						   const core::Optional<palette::Palette> &palette = {},
-						   const core::Optional<scenegraph::SceneGraphNodeProperties> &properties = {});
+					scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
+					const voxel::Region &region, const glm::vec3 &pivot,
+					const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
+					const scenegraph::SceneGraphNodeProperties &properties);
 	bool removeLast();
 
 	void markNodePropertyChange(const scenegraph::SceneGraphNode &node);
 	void markKeyFramesChange(const scenegraph::SceneGraphNode &node);
 	void markNodeRemoved(const scenegraph::SceneGraphNode &node);
 	void markNodeAdded(const scenegraph::SceneGraphNode &node);
-	void markNodeTransform(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
+	void markNodeTransform(const scenegraph::SceneGraphNode &node);
 	void markModification(const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
 	void markInitialNodeState(const scenegraph::SceneGraphNode &node);
 	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
-	void markNodeMoved(int targetId, int sourceId);
+	void markNodeMoved(const scenegraph::SceneGraphNode &node);
 	void markPaletteChange(const scenegraph::SceneGraphNode &node,
 						   const voxel::Region &modifiedRegion = voxel::Region::InvalidRegion);
 	void markAddedAnimation(const core::String &animation);

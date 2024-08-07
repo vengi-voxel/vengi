@@ -23,6 +23,15 @@ protected:
 		return core::make_shared<voxel::RawVolume>(region);
 	}
 
+	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
+				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
+				  const voxel::Region &region = voxel::Region::InvalidRegion, const glm::vec3 &pivot = glm::vec3(0.0f),
+				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames = {}, const palette::Palette &palette = {},
+				  const scenegraph::SceneGraphNodeProperties &properties = {}) {
+		_mementoHandler.markUndo(parentId, nodeId, referenceId, name, nodeType, volume, type, region, pivot, allKeyFrames,
+								 palette, properties);
+	}
+
 	void SetUp() override {
 		ASSERT_TRUE(_mementoHandler.init());
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -49,9 +58,7 @@ TEST_F(MementoHandlerTest, testMarkUndo) {
 	EXPECT_FALSE(_mementoHandler.canRedo());
 	EXPECT_FALSE(_mementoHandler.canUndo());
 
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(), MementoType::Modification);
 	EXPECT_FALSE(_mementoHandler.canRedo())
 		<< "Without a second entry and without undoing something before, you can't redo anything";
 	EXPECT_FALSE(_mementoHandler.canUndo())
@@ -59,17 +66,13 @@ TEST_F(MementoHandlerTest, testMarkUndo) {
 	EXPECT_EQ(1, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(0, (int)_mementoHandler.statePosition());
 
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(), MementoType::Modification);
 	EXPECT_FALSE(_mementoHandler.canRedo());
 	EXPECT_TRUE(_mementoHandler.canUndo());
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(1, (int)_mementoHandler.statePosition());
 
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(), MementoType::Modification);
 	EXPECT_FALSE(_mementoHandler.canRedo());
 	EXPECT_TRUE(_mementoHandler.canUndo());
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
@@ -80,15 +83,9 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(), MementoType::Modification);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(), MementoType::Modification);
+	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(), MementoType::Modification);
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
@@ -131,15 +128,12 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Model, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Model, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), 0);
-	_mementoHandler.markUndo(0, 2, InvalidNodeId, "Node 2", scenegraph::SceneGraphNodeType::Model, third.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), 0);
+	markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Model, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Model, second.get(),
+			 MementoType::SceneNodeAdded);
+	markUndo(0, 2, InvalidNodeId, "Node 2", scenegraph::SceneGraphNodeType::Model, third.get(),
+			 MementoType::SceneNodeAdded);
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
 	EXPECT_TRUE(_mementoHandler.canUndo());
@@ -178,18 +172,15 @@ TEST_F(MementoHandlerTest, testCutStates) {
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	for (int i = 0; i < 4; ++i) {
 		auto v = create(1);
-		_mementoHandler.markUndo(0, i, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, v.get(),
-								 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-								 glm::mat4(1.0f), InvalidKeyFrame);
+		markUndo(0, i, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, v.get(), MementoType::Modification);
 	}
 	EXPECT_EQ(4, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(3, _mementoHandler.statePosition());
 	_mementoHandler.undo();
 	_mementoHandler.undo();
 	EXPECT_EQ(1, _mementoHandler.statePosition());
-	_mementoHandler.markUndo(0, 4, InvalidNodeId, "Node 4", scenegraph::SceneGraphNodeType::Model, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 4, InvalidNodeId, "Node 4", scenegraph::SceneGraphNodeType::Model, second.get(),
+			 MementoType::SceneNodeAdded);
 	EXPECT_EQ(2, _mementoHandler.statePosition());
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 }
@@ -198,15 +189,12 @@ TEST_F(MementoHandlerTest, testAddNewNode) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 0, InvalidNodeId, "Node 0 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::SceneNodeAdded);
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
 	EXPECT_TRUE(_mementoHandler.canUndo());
@@ -248,12 +236,10 @@ TEST_F(MementoHandlerTest, testAddNewNode) {
 TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::SceneNodeAdded);
 	MementoState state;
 
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
@@ -286,16 +272,13 @@ TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 
 TEST_F(MementoHandlerTest, testDeleteNode) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Deleted", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::SceneNodeAdded);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Deleted", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::SceneNodeRemoved);
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
@@ -326,15 +309,12 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 1 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 0, InvalidNodeId, "Node 0 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 1 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::SceneNodeAdded);
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
@@ -382,18 +362,14 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 1 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Deleted", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 0, InvalidNodeId, "Node 1 Modified", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::SceneNodeAdded);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Deleted", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::SceneNodeRemoved);
 
 	EXPECT_EQ(4, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(3, _mementoHandler.statePosition());
@@ -514,15 +490,12 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 1 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 2, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 0", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 1 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::SceneNodeAdded);
+	markUndo(0, 2, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::SceneNodeAdded);
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
@@ -573,15 +546,12 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	_mementoHandler.markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
-							 MementoType::SceneNodeAdded, voxel::Region::InvalidRegion, glm::vec3(0.0f),
-							 glm::mat4(1.0f), InvalidKeyFrame);
-	_mementoHandler.markUndo(0, 1, InvalidNodeId, "Node 2 Modified", scenegraph::SceneGraphNodeType::Max, third.get(),
-							 MementoType::Modification, voxel::Region::InvalidRegion, glm::vec3(0.0f), glm::mat4(1.0f),
-							 InvalidKeyFrame);
+	markUndo(0, 0, InvalidNodeId, "Node 1", scenegraph::SceneGraphNodeType::Max, first.get(),
+			 MementoType::Modification);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Added", scenegraph::SceneGraphNodeType::Max, second.get(),
+			 MementoType::SceneNodeAdded);
+	markUndo(0, 1, InvalidNodeId, "Node 2 Modified", scenegraph::SceneGraphNodeType::Max, third.get(),
+			 MementoType::Modification);
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());
@@ -682,8 +652,15 @@ TEST_F(MementoHandlerTest, testSceneNodeMove) {
 	_mementoHandler.markInitialNodeState(*node);
 	EXPECT_EQ(_mementoHandler.stateGroup().states[0].parentId, 0);
 
-	const int groupId = 2;
-	_mementoHandler.markNodeMoved(groupId, node->id());
+	int groupId;
+	{
+		scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
+		group.setName("Group");
+		groupId = _sceneGraph.emplace(core::move(group));
+		ASSERT_NE(groupId, InvalidNodeId);
+	}
+	ASSERT_TRUE(_sceneGraph.changeParent(node->id(), groupId));
+	_mementoHandler.markNodeMoved(*node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(_mementoHandler.stateGroup().states[0].parentId, groupId);
 
@@ -715,31 +692,27 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		mirrored = transform.localTranslation();
 		node->setTransform(0, transform);
 	}
-	_mementoHandler.markNodeTransform(*node, 0);
+	_mementoHandler.markNodeTransform(*node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 
 	MementoState stateUndo = firstState(_mementoHandler.undo());
 	EXPECT_EQ(MementoType::SceneNodeTransform, stateUndo.type);
-	EXPECT_EQ(0, stateUndo.keyFrameIdx);
-	ASSERT_TRUE(stateUndo.localMatrix.hasValue());
+	ASSERT_TRUE(stateUndo.keyFrames.hasValue());
 
 	{
-		scenegraph::SceneGraphTransform transform;
-		transform.setLocalMatrix(*stateUndo.localMatrix.value());
-		transform.update(_sceneGraph, *node, 0, true);
+		_sceneGraph.setAllKeyFramesForNode(*node, *stateUndo.keyFrames.value());
+		const scenegraph::SceneGraphTransform &transform = node->transform(0);
 		EXPECT_VEC_NEAR(transform.localTranslation(), initial, 0.0001f);
 	}
 
 	EXPECT_TRUE(_mementoHandler.canRedo());
 	MementoState stateRedo = firstState(_mementoHandler.redo());
-	EXPECT_EQ(0, stateRedo.keyFrameIdx);
 	EXPECT_EQ(MementoType::SceneNodeTransform, stateRedo.type);
-	ASSERT_TRUE(stateRedo.localMatrix.hasValue());
+	ASSERT_TRUE(stateRedo.keyFrames.hasValue());
 
 	{
-		scenegraph::SceneGraphTransform transform;
-		transform.setLocalMatrix(*stateRedo.localMatrix.value());
-		transform.update(_sceneGraph, *node, 0, true);
+		_sceneGraph.setAllKeyFramesForNode(*node, *stateRedo.keyFrames.value());
+		const scenegraph::SceneGraphTransform &transform = node->transform(0);
 		EXPECT_VEC_NEAR(transform.localTranslation(), mirrored, 0.0001f);
 	}
 }

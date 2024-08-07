@@ -511,7 +511,7 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 	} else {
 		if (!glm::equal(_transformLocalMatrix, node.transform(keyFrameIdx).localMatrix())) {
 			// we have a valid key frame idx in scene mode
-			mementoHandler.markNodeTransform(node, keyFrameIdx);
+			mementoHandler.markNodeTransform(node);
 			_transformLocalMatrix = glm::mat4(1.0f);
 		}
 	}
