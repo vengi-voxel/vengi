@@ -3094,6 +3094,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 }
 
 void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+	Log::debug("Set the pivot of node %i to %f:%f:%f", node.id(), pivot.x, pivot.y, pivot.z);
 	// no memento states in here - this is just a helper
 	const glm::vec3 oldPivot = node.pivot();
 	if (node.setPivot(pivot)) {

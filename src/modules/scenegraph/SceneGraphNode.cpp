@@ -207,6 +207,7 @@ glm::vec3 SceneGraphNode::worldPivot() const {
  * @brief Apply the given @c translation vector to all keyframe transform of this node
  */
 void SceneGraphNode::translate(const glm::vec3 &translation) {
+	Log::debug("Translate the node by %f %f %f", translation.x, translation.y, translation.z);
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();

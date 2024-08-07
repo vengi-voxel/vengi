@@ -321,6 +321,7 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			(first(_groups[0]).referenceId != InvalidNodeId && first(_groups[0]).type == MementoType::SceneNodeAdded),
 		"Expected to have a modification or scene node added with a reference state at the beginning, but got %i",
 		(int)first(_groups[0]).type);
+	Log::debug("No previous modification state found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -350,6 +351,7 @@ MementoState MementoHandler::undoTransform(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("No previous transform state found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -363,6 +365,7 @@ MementoState MementoHandler::undoPaletteChange(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("No previous palette found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -376,6 +379,7 @@ MementoState MementoHandler::undoNodeProperties(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("No previous node properties found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -389,6 +393,7 @@ MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("Could not find a suitable undo state for key frames - use the first entry");
 	return first(_groups[0]);
 }
 
@@ -402,6 +407,7 @@ MementoState MementoHandler::undoRename(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("No previous name found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -415,6 +421,7 @@ MementoState MementoHandler::undoMove(const MementoState &s) {
 			}
 		}
 	}
+	Log::debug("No previous parent found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
