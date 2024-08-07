@@ -112,11 +112,6 @@ struct MementoState {
 	core::Optional<scenegraph::SceneGraphKeyFramesMap> keyFrames;
 	core::Optional<scenegraph::SceneGraphNodeProperties> properties;
 	core::String name;
-	/**
-	 * @note This region might be different from the region given in the @c MementoData. In case of an @c
-	 * MementoHandler::undo() call, we have to make sure that the region of the previous state is re-extracted.
-	 */
-	voxel::Region modifiedRegion;
 	core::Optional<glm::vec3> pivot;
 	core::Optional<palette::Palette> palette;
 
@@ -126,15 +121,13 @@ struct MementoState {
 	MementoState(const MementoState &other)
 		: type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
 		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
-		  properties(other.properties), name(other.name), modifiedRegion(other.modifiedRegion), pivot(other.pivot),
-		  palette(other.palette) {
+		  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette) {
 	}
 
 	MementoState(MementoType type, const MementoState &other)
-		: type(type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
-		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
-		  properties(other.properties), name(other.name), modifiedRegion(other.modifiedRegion), pivot(other.pivot),
-		  palette(other.palette) {
+		: type(type), data(other.data), parentId(other.parentId), nodeId(other.nodeId), referenceId(other.referenceId),
+		  nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), name(other.name),
+		  pivot(other.pivot), palette(other.palette) {
 	}
 
 	MementoState(MementoState &&other) noexcept {
@@ -147,7 +140,6 @@ struct MementoState {
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
 		name = core::move(other.name);
-		modifiedRegion = other.modifiedRegion;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
 	}
@@ -165,7 +157,6 @@ struct MementoState {
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
 		name = core::move(other.name);
-		modifiedRegion = other.modifiedRegion;
 		pivot = core::move(other.pivot);
 		palette = core::move(other.palette);
 		return *this;
@@ -184,31 +175,30 @@ struct MementoState {
 		keyFrames = other.keyFrames;
 		properties = other.properties;
 		name = other.name;
-		modifiedRegion = other.modifiedRegion;
 		pivot = other.pivot;
 		palette = other.palette;
 		return *this;
 	}
 
 	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
-				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType, const voxel::Region &_modifiedRegion,
+				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
 				 const core::Optional<glm::vec3> &_pivot,
 				 const core::Optional<scenegraph::SceneGraphKeyFramesMap> &_keyFrames,
 				 const core::Optional<palette::Palette> &_palette,
 				 const core::Optional<scenegraph::SceneGraphNodeProperties> &_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), modifiedRegion(_modifiedRegion),
-		  pivot(_pivot), palette(_palette) {
+		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+		  palette(_palette) {
 	}
 
 	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
-				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, voxel::Region &&_modifiedRegion,
-				 core::Optional<glm::vec3> &&_pivot, core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
+				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, core::Optional<glm::vec3> &&_pivot,
+				 core::Optional<scenegraph::SceneGraphKeyFramesMap> &&_keyFrames,
 				 core::Optional<palette::Palette> &&_palette,
 				 core::Optional<scenegraph::SceneGraphNodeProperties> &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
-		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), modifiedRegion(_modifiedRegion),
-		  pivot(_pivot), palette(_palette) {
+		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+		  palette(_palette) {
 	}
 
 	inline bool valid() const {

@@ -293,15 +293,8 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			}
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
-				voxel::logRegion("Undo current", s.modifiedRegion);
-				voxel::logRegion("Undo previous", prevS.modifiedRegion);
-				voxel::logRegion("Undo current data", s.data.region());
-				voxel::logRegion("Undo previous data", prevS.data.region());
-				// use the region from the current state - but the volume and palette from the previous state of this
-				// node
-				return MementoState{s.type,	   prevS.data,	   s.parentId, s.nodeId, prevS.referenceId,
-									s.name,	   prevS.nodeType, s.modifiedRegion,   s.pivot,	 s.keyFrames,
-									s.palette, s.properties};
+				return MementoState{s.type,			prevS.data, s.parentId,	 s.nodeId,	prevS.referenceId, s.name,
+									prevS.nodeType, s.pivot,	s.keyFrames, s.palette, s.properties};
 			}
 		}
 	}
@@ -571,7 +564,7 @@ void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const c
 	Log::debug("New undo state for node %i with name %s", nodeId, name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
-	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, modifiedRegion, pivot, allKeyFrames, palette,
+	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,
 					   properties);
 	addState(core::move(state));
 }
