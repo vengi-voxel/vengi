@@ -130,6 +130,13 @@ struct MementoState {
 		  palette(other.palette) {
 	}
 
+	MementoState(MementoType type, const MementoState &other)
+		: type(type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
+		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
+		  properties(other.properties), name(other.name), region(other.region), pivot(other.pivot),
+		  palette(other.palette) {
+	}
+
 	MementoState(MementoState &&other) noexcept {
 		type = other.type;
 		data = core::move(other.data);

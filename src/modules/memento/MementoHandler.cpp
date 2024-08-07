@@ -311,7 +311,7 @@ MementoState MementoHandler::undoModification(const MementoState &s) {
 			(first(_groups[0]).referenceId != InvalidNodeId && first(_groups[0]).type == MementoType::SceneNodeAdded),
 		"Expected to have a modification or scene node added with a reference state at the beginning, but got %i",
 		(int)first(_groups[0]).type);
-	Log::debug("No previous modification state found for node %i", s.nodeId);
+	Log::warn("No previous modification state found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -322,11 +322,10 @@ MementoState MementoHandler::undoTransform(const MementoState &s) {
 			if (prevS.nodeId != s.nodeId) {
 				continue;
 			}
-			return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,		   s.referenceId, s.name,
-								s.nodeType, s.region, s.pivot,	  prevS.keyFrames, s.palette,	  s.properties};
+			return MementoState{s.type, prevS};
 		}
 	}
-	Log::debug("No previous transform state found for node %i", s.nodeId);
+	Log::warn("No previous transform state found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -335,12 +334,11 @@ MementoState MementoHandler::undoPaletteChange(const MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (prevS.palette.hasValue() && prevS.nodeId == s.nodeId) {
-				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,	   s.referenceId, s.name,
-									s.nodeType, s.region, s.pivot,	  s.keyFrames, prevS.palette, s.properties};
+				return MementoState{s.type, prevS};
 			}
 		}
 	}
-	Log::debug("No previous palette found for node %i", s.nodeId);
+	Log::warn("No previous palette found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -349,12 +347,11 @@ MementoState MementoHandler::undoNodeProperties(const MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (prevS.properties.hasValue() && prevS.nodeId == s.nodeId) {
-				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,	   s.referenceId, s.name,
-									s.nodeType, s.region, s.pivot,	  s.keyFrames, s.palette,	  prevS.properties};
+				return MementoState{s.type, prevS};
 			}
 		}
 	}
-	Log::debug("No previous node properties found for node %i", s.nodeId);
+	Log::warn("No previous node properties found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -363,12 +360,11 @@ MementoState MementoHandler::undoKeyFrames(const MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (prevS.keyFrames.hasValue() && prevS.nodeId == s.nodeId) {
-				return MementoState{s.type,		s.data,	  s.parentId,  s.nodeId,		s.referenceId, s.name,
-									s.nodeType, s.region, prevS.pivot, prevS.keyFrames, s.palette,	   s.properties};
+				return MementoState{s.type, prevS};
 			}
 		}
 	}
-	Log::debug("Could not find a suitable undo state for key frames - use the first entry");
+	Log::warn("No previous node keyframes found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -377,12 +373,11 @@ MementoState MementoHandler::undoRename(const MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (!prevS.name.empty() && prevS.nodeId == s.nodeId) {
-				return MementoState{s.type,		s.data,	  s.parentId, s.nodeId,	   s.referenceId, prevS.name,
-									s.nodeType, s.region, s.pivot,	  s.keyFrames, s.palette,	  s.properties};
+				return MementoState{s.type, prevS};
 			}
 		}
 	}
-	Log::debug("No previous name found for node %i", s.nodeId);
+	Log::warn("No previous name found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
@@ -391,12 +386,11 @@ MementoState MementoHandler::undoMove(const MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (prevS.parentId != InvalidNodeId && prevS.nodeId == s.nodeId) {
-				return MementoState{s.type,		s.data,	  prevS.parentId, s.nodeId,	   s.referenceId, s.name,
-									s.nodeType, s.region, s.pivot,		  s.keyFrames, s.palette,	  s.properties};
+				return MementoState{s.type, prevS};
 			}
 		}
 	}
-	Log::debug("No previous parent found for node %i", s.nodeId);
+	Log::warn("No previous parent found for node %i", s.nodeId);
 	return first(_groups[0]);
 }
 
