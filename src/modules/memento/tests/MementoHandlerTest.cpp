@@ -42,7 +42,7 @@ protected:
 
 	void SetUp() override {
 		ASSERT_TRUE(_mementoHandler.init());
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, "1");
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
 		node.setName("Node name");
 		_sceneGraph.emplace(core::move(node));

@@ -516,7 +516,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
 		mergeIfNeeded(newSceneGraph);
 		/**
-		 * @todo stuff that happens in MeshState::scheduleRegionExtraction() and
+		 * TODO: stuff that happens in MeshState::scheduleRegionExtraction() and
 		 * MeshState::runScheduledExtractions() should happen here
 		 */
 		return core::move(newSceneGraph);
