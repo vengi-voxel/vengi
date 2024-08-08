@@ -2304,13 +2304,13 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 	}
 }
 
-int SceneManager::addModelChild(const core::String& name, int width, int height, int depth) {
+int SceneManager::addModelChild(const core::String& name, int width, int height, int depth, const core::String &uuid) {
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	if (!region.isValid()) {
 		Log::warn("Invalid size provided (%i:%i:%i)", width, height, depth);
 		return InvalidNodeId;
 	}
-	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model, uuid);
 	newNode.setVolume(new voxel::RawVolume(region), true);
 	newNode.setName(name);
 	const int parentId = activeNode();

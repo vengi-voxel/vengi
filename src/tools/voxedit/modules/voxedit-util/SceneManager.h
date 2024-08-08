@@ -288,7 +288,7 @@ public:
 	/**
 	 * @brief Add a new model node as children to the current active node
 	 */
-	int addModelChild(const core::String &name, int width, int height, int depth);
+	int addModelChild(const core::String &name, int width, int height, int depth, const core::String &uuid = "");
 
 	/**
 	 * @brief Merge two nodes and extend the smaller one
