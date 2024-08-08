@@ -2,11 +2,10 @@
  * @file
  */
 
-#include "scenegraph/SceneGraph.h"
-#include "TestHelper.h"
 #include "app/tests/AbstractTest.h"
-#include "palette/Palette.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/tests/TestHelper.h"
+#include "palette/tests/TestHelper.h"
+#include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"

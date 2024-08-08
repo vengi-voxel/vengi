@@ -6,6 +6,8 @@
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/tests/TestHelper.h"
+#include "palette/tests/TestHelper.h"
+#include "math/tests/TestMathHelper.h"
 #include "core/TimeProvider.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
