@@ -504,6 +504,13 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 		node.release();
 		return InvalidNodeId;
 	}
+
+	if (findNodeByUUID(node.uuid()) != nullptr) {
+		Log::error("Node with UUID %s already exists in the scene graph", node.uuid().c_str());
+		node.release();
+		return InvalidNodeId;
+	}
+
 	if (parent >= 0) {
 		auto parentIter = _nodes.find(parent);
 		if (parentIter == _nodes.end()) {
