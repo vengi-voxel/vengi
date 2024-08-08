@@ -203,10 +203,9 @@ void MementoHandler::endGroup() {
 }
 
 const char *MementoHandler::typeToString(MementoType type) {
-	const char *states[] = {
-		"Modification",		   "SceneNodeMove",		 "SceneNodeAdded",			"SceneNodeRemoved",
-		"SceneNodeRenamed",	   "SceneNodePaletteChanged", "SceneNodeKeyFrames",
-		"SceneNodeProperties", "PaletteChanged"};
+	const char *states[] = {"Modification",		  "SceneNodeMove",		 "SceneNodeAdded",
+							"SceneNodeRemoved",	  "SceneNodeRenamed",	 "SceneNodePaletteChanged",
+							"SceneNodeKeyFrames", "SceneNodeProperties", "PaletteChanged"};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 	return states[(int)type];
 }
