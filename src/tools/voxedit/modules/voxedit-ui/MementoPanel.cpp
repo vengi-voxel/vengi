@@ -14,8 +14,8 @@ namespace voxedit {
 
 static inline core::String toString(const memento::MementoState &state, const core::String &name, int n) {
 	return core::string::format("%s (%s): node %s, parent %s, name: %s##%i",
-								memento::MementoHandler::typeToString(state.type), name.c_str(), state.nodeId.c_str(),
-								state.parentId.c_str(), state.name.c_str(), n);
+								memento::MementoHandler::typeToString(state.type), name.c_str(), state.nodeUUID.c_str(),
+								state.parentUUID.c_str(), state.name.c_str(), n);
 }
 
 static void stateTooltip(const memento::MementoState &state) {
@@ -23,8 +23,8 @@ static void stateTooltip(const memento::MementoState &state) {
 	const glm::ivec3 &maxs = state.dataRegion().getUpperCorner();
 	core::String palHash = core::string::toString(state.palette.hash());
 	if (ImGui::BeginItemTooltip()) {
-		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), state.nodeId.c_str());
-		ImGui::Text(" - parent: %s", state.parentId.c_str());
+		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), state.nodeUUID.c_str());
+		ImGui::Text(" - parent: %s", state.parentUUID.c_str());
 		ImGui::Text(" - name: %s", state.name.c_str());
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
 		ImGui::Text(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);

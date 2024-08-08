@@ -106,9 +106,12 @@ struct MementoState {
 	MementoType type;
 	// data is not always included in a state - as this is the volume and would consume a lot of memory
 	MementoData data;
-	core::String parentId;
-	core::String nodeId;
-	core::String referenceId;
+
+	// when re-adding nodes from a memento state, make sure to add them with the correct uuid
+	core::String parentUUID;
+	core::String nodeUUID;
+	core::String referenceUUID;
+
 	scenegraph::SceneGraphNodeType nodeType;
 	scenegraph::SceneGraphKeyFramesMap keyFrames;
 	scenegraph::SceneGraphNodeProperties properties;
@@ -120,13 +123,13 @@ struct MementoState {
 	}
 
 	MementoState(const MementoState &other)
-		: type(other.type), data(other.data), parentId(other.parentId), nodeId(other.nodeId),
-		  referenceId(other.referenceId), nodeType(other.nodeType), keyFrames(other.keyFrames),
+		: type(other.type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
+		  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
 		  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette) {
 	}
 
 	MementoState(MementoType type, const MementoState &other)
-		: type(type), data(other.data), parentId(other.parentId), nodeId(other.nodeId), referenceId(other.referenceId),
+		: type(type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID), referenceUUID(other.referenceUUID),
 		  nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), name(other.name),
 		  pivot(other.pivot), palette(other.palette) {
 	}
@@ -134,9 +137,9 @@ struct MementoState {
 	MementoState(MementoState &&other) noexcept {
 		type = other.type;
 		data = core::move(other.data);
-		parentId = other.parentId;
-		nodeId = other.nodeId;
-		referenceId = other.referenceId;
+		parentUUID = other.parentUUID;
+		nodeUUID = other.nodeUUID;
+		referenceUUID = other.referenceUUID;
 		nodeType = other.nodeType;
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
@@ -151,9 +154,9 @@ struct MementoState {
 		}
 		type = other.type;
 		data = core::move(other.data);
-		parentId = other.parentId;
-		nodeId = other.nodeId;
-		referenceId = other.referenceId;
+		parentUUID = other.parentUUID;
+		nodeUUID = other.nodeUUID;
+		referenceUUID = other.referenceUUID;
 		nodeType = other.nodeType;
 		keyFrames = core::move(other.keyFrames);
 		properties = core::move(other.properties);
@@ -169,9 +172,9 @@ struct MementoState {
 		}
 		type = other.type;
 		data = other.data;
-		parentId = other.parentId;
-		nodeId = other.nodeId;
-		referenceId = other.referenceId;
+		parentUUID = other.parentUUID;
+		nodeUUID = other.nodeUUID;
+		referenceUUID = other.referenceUUID;
 		nodeType = other.nodeType;
 		keyFrames = other.keyFrames;
 		properties = other.properties;
@@ -186,7 +189,7 @@ struct MementoState {
 				 scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
 				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
 				 const scenegraph::SceneGraphNodeProperties &_properties)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
+		: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		  palette(_palette) {
 	}
@@ -195,7 +198,7 @@ struct MementoState {
 				 core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
 				 scenegraph::SceneGraphNodeProperties &&_properties)
-		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
+		: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		  palette(_palette) {
 	}

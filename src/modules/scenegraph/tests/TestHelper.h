@@ -4,53 +4,11 @@
 
 #pragma once
 
-#include "palette/Palette.h"
 #include "math/Math.h"
-#include <gtest/gtest.h>
-
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
-
-namespace glm {
-inline ::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix) {
-	os << to_string(matrix);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix) {
-	os << to_string(matrix);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const mat4x3 &matrix) {
-	os << to_string(matrix);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	os << to_string(v);
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
-	os << to_string(v);
-	return os;
-}
-}
+#include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "math/tests/TestMathHelper.h"
 
 namespace palette {
 
@@ -69,5 +27,17 @@ inline ::std::ostream &operator<<(::std::ostream &os, const palette::Material &m
 	return os;
 }
 
+} // namespace palette
 
+namespace scenegraph {
+
+inline ::std::ostream &operator<<(::std::ostream &os, const scenegraph::SceneGraph &sceneGraph) {
+	os << "SceneGraph: " << sceneGraph.size() << " nodes\n";
+	for (const auto &entry : sceneGraph.nodes()) {
+		const SceneGraphNode &node = entry->second;
+		os << " - " << SceneGraphNodeTypeStr[(int)node.type()] << ": " << node.name().c_str() << " (" << node.uuid().c_str() << ")\n";
+	}
+	return os;
 }
+
+} // namespace scenegraph

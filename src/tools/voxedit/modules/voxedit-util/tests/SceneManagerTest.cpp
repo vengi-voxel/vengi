@@ -5,8 +5,8 @@
 #include "../SceneManager.h"
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
+#include "scenegraph/tests/TestHelper.h"
 #include "core/TimeProvider.h"
-#include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -18,14 +18,6 @@
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
-
-namespace palette {
-
-::std::ostream &operator<<(::std::ostream &os, const Palette &palette) {
-	return os << Palette::print(palette).c_str();
-}
-
-}
 
 namespace voxedit {
 
@@ -189,8 +181,8 @@ TEST_F(SceneManagerTest, testUndoRedoModification) {
 }
 
 TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
-	EXPECT_NE(-1, _sceneMgr->addModelChild("second node", 1, 1, 1));
-	EXPECT_NE(-1, _sceneMgr->addModelChild("third node", 1, 1, 1));
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelChild("second node", 1, 1, 1));
+	EXPECT_NE(InvalidNodeId, _sceneMgr->addModelChild("third node", 1, 1, 1));
 	EXPECT_EQ(3u, _sceneMgr->mementoHandler().stateSize());
 
 	memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
@@ -207,25 +199,25 @@ TEST_F(SceneManagerTest, testNodeAddUndoRedo) {
 			EXPECT_EQ(1u, mementoHandler.statePosition());
 			ASSERT_TRUE(mementoHandler.canUndo());
 			ASSERT_TRUE(mementoHandler.canRedo());
-			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size());
+			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->undo());
 			ASSERT_FALSE(mementoHandler.canUndo());
 			ASSERT_TRUE(mementoHandler.canRedo());
-			EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
+			EXPECT_EQ(1u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->redo());
 			ASSERT_TRUE(mementoHandler.canUndo());
 			ASSERT_TRUE(mementoHandler.canRedo());
-			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size());
+			EXPECT_EQ(2u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 		}
 		{
 			EXPECT_TRUE(_sceneMgr->redo());
 			ASSERT_TRUE(mementoHandler.canUndo());
 			ASSERT_FALSE(mementoHandler.canRedo());
-			EXPECT_EQ(3u, _sceneMgr->sceneGraph().size());
+			EXPECT_EQ(3u, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
 		}
 	}
 }

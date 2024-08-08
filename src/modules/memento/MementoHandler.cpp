@@ -212,8 +212,8 @@ const char *MementoHandler::typeToString(MementoType type) {
 
 void MementoHandler::printState(const MementoState &state) const {
 	core::String palHash = core::string::toString(state.palette.hash());
-	Log::info("%s: node id: %s", typeToString(state.type), state.nodeId.c_str());
-	Log::info(" - parent: %s", state.parentId.c_str());
+	Log::info("%s: node id: %s", typeToString(state.type), state.nodeUUID.c_str());
+	Log::info(" - parent: %s", state.parentUUID.c_str());
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
 	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
@@ -276,83 +276,83 @@ void MementoHandler::undoModification(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.nodeId != s.nodeId) {
+			if (prevS.nodeUUID != s.nodeUUID) {
 				continue;
 			}
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
-				core_assert(prevS.hasVolumeData() || !prevS.referenceId.empty());
+				core_assert(prevS.hasVolumeData() || !prevS.referenceUUID.empty());
 				s.data = prevS.data;
 				return;
 			}
 		}
 	}
 
-	Log::warn("No previous modification state found for node %s", s.nodeId.c_str());
+	Log::warn("No previous modification state found for node %s", s.nodeUUID.c_str());
 }
 
 void MementoHandler::undoPaletteChange(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.nodeId == s.nodeId) {
+			if (prevS.nodeUUID == s.nodeUUID) {
 				s.palette = prevS.palette;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous palette found for node %s", s.nodeId.c_str());
+	Log::warn("No previous palette found for node %s", s.nodeUUID.c_str());
 }
 
 void MementoHandler::undoNodeProperties(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.nodeId == s.nodeId) {
+			if (prevS.nodeUUID == s.nodeUUID) {
 				s.properties = prevS.properties;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous node properties found for node %s", s.nodeId.c_str());
+	Log::warn("No previous node properties found for node %s", s.nodeUUID.c_str());
 }
 
 void MementoHandler::undoKeyFrames(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.nodeId == s.nodeId) {
+			if (prevS.nodeUUID == s.nodeUUID) {
 				s.keyFrames = prevS.keyFrames;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous node keyframes found for node %s", s.nodeId.c_str());
+	Log::warn("No previous node keyframes found for node %s", s.nodeUUID.c_str());
 }
 
 void MementoHandler::undoRename(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.nodeId == s.nodeId) {
+			if (prevS.nodeUUID == s.nodeUUID) {
 				s.name = prevS.name;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous name found for node %s", s.nodeId.c_str());
+	Log::warn("No previous name found for node %s", s.nodeUUID.c_str());
 }
 
 void MementoHandler::undoMove(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
-			if (prevS.parentId != s.parentId && prevS.nodeId == s.nodeId) {
-				s.parentId = prevS.parentId;
+			if (prevS.parentUUID != s.parentUUID && prevS.nodeUUID == s.nodeUUID) {
+				s.parentUUID = prevS.parentUUID;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous parent found for node %s", s.nodeId.c_str());
+	Log::warn("No previous parent found for node %s", s.nodeUUID.c_str());
 }
 
 MementoStateGroup MementoHandler::undo() {
