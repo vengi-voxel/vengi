@@ -1333,6 +1333,10 @@ scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) {
 	return nullptr;
 }
 
+scenegraph::SceneGraphNode *SceneManager::sceneGraphNodeByUUID(const core::String &uuid) {
+	return _sceneGraph.findNodeByUUID(uuid);
+}
+
 const scenegraph::SceneGraphNode *SceneManager::sceneGraphNode(int nodeId) const {
 	if (_sceneGraph.hasNode(nodeId)) {
 		return &_sceneGraph.node(nodeId);

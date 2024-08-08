@@ -397,6 +397,7 @@ public:
 	scenegraph::SceneGraphNode *sceneGraphNode(int nodeId);
 	const scenegraph::SceneGraphNode *sceneGraphNode(int nodeId) const;
 	scenegraph::SceneGraphNode *sceneGraphModelNode(int nodeId);
+	scenegraph::SceneGraphNode *sceneGraphNodeByUUID(const core::String &uuid);
 
 	const voxel::VoxelData& clipBoardData() const;
 
