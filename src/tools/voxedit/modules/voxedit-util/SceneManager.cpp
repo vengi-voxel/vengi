@@ -2833,7 +2833,10 @@ bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
 bool SceneManager::nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node,
 												   scenegraph::KeyFrameIndex keyFrameIdx,
 												   scenegraph::InterpolationType interpolation) {
-	// TODO: check that keyframe already exists
+	if (node.keyFrames()->size() <= (size_t)keyFrameIdx) {
+		Log::warn("Keyframe %i does not exist", (int)keyFrameIdx);
+		return false;
+	}
 	node.keyFrame(keyFrameIdx).interpolation = interpolation;
 	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	markDirty();
