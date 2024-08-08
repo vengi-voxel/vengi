@@ -659,7 +659,9 @@ TEST_F(MementoHandlerTest, testSceneNodeMove) {
 	ASSERT_NE(nullptr, node);
 	const core::String oldParent = _sceneGraph.uuid(node->parent());
 	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
-	EXPECT_EQ(core::string::toInt(_mementoHandler.stateGroup().states[0].parentUUID), 0);
+	const auto *parentNode = _sceneGraph.findNodeByUUID(_mementoHandler.stateGroup().states[0].parentUUID);
+	ASSERT_TRUE(parentNode != nullptr);
+	EXPECT_EQ(parentNode->id(), 0);
 
 	int groupId;
 	{
