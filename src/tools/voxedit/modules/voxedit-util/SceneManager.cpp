@@ -2623,7 +2623,6 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 	if (!region.containsPoint(pos)) {
 		pos = region.moveInto(pos.x, pos.y, pos.z);
 	}
-	// TODO: multiple different viewports....
 	_modifierFacade.setCursorPosition(pos, hitFace);
 	if (oldCursorPos == pos) {
 		return;
