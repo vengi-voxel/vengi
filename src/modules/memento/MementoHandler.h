@@ -236,8 +236,14 @@ private:
 	int _locked = 0;
 
 	void addState(MementoState &&state);
+	/**
+	 * @return @c true if it's allowed to create an undo state
+	 */
 	bool markUndoPreamble();
 
+	// These undo methods search a valid state in the previous states and apply
+	// the changes to the current state
+	// The given MementoState is changed here
 	void undoRename(MementoState &s);
 	void undoMove(MementoState &s);
 	void undoPaletteChange(MementoState &s);
