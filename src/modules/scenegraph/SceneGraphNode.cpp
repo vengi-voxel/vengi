@@ -5,6 +5,7 @@
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
 #include "core/Color.h"
+#include "core/Hash.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "palette/Palette.h"
@@ -23,6 +24,8 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = InvalidNodeId;
+	_uuid = move._uuid;
+	move._uuid.clear();
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
@@ -53,6 +56,8 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_name = core::move(move._name);
 	_id = move._id;
 	move._id = InvalidNodeId;
+	_uuid = move._uuid;
+	move._uuid.clear();
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
@@ -70,7 +75,11 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	return *this;
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraphNodeType type) : _type(type), _flags(VolumeOwned | Visible), _properties(128) {
+SceneGraphNode::SceneGraphNode(SceneGraphNodeType type, const core::String &uuid)
+	: _type(type), _flags(VolumeOwned | Visible), _uuid(uuid), _properties(128) {
+	if (_uuid.empty()) {
+		_uuid = core::generateUUID();
+	}
 	// ensure that there is at least one animation with keyframes
 	setAnimation(DEFAULT_ANIMATION);
 }
@@ -674,7 +683,7 @@ FrameIndex SceneGraphNode::maxFrame(const core::String &animation) const {
 	return maxFrameIdx;
 }
 
-SceneGraphNodeCamera::SceneGraphNodeCamera() : Super(SceneGraphNodeType::Camera) {
+SceneGraphNodeCamera::SceneGraphNodeCamera(const core::String &uuid) : Super(SceneGraphNodeType::Camera, uuid) {
 }
 
 float SceneGraphNodeCamera::farPlane() const {

@@ -218,6 +218,14 @@ palette::Palette &SceneGraph::firstPalette() const {
 	return node->palette();
 }
 
+const core::String &SceneGraph::uuid(int nodeId) const {
+	auto iter = _nodes.find(nodeId);
+	if (iter == _nodes.end()) {
+		return _emptyUUID;
+	}
+	return iter->value.uuid();
+}
+
 SceneGraphNode &SceneGraph::node(int nodeId) const {
 	auto iter = _nodes.find(nodeId);
 	if (iter == _nodes.end()) {
@@ -443,6 +451,16 @@ SceneGraphNode *SceneGraph::findNodeByName(const core::String &name) {
 	for (const auto &entry : _nodes) {
 		Log::trace("node name: %s", entry->value.name().c_str());
 		if (entry->value.name() == name) {
+			return &entry->value;
+		}
+	}
+	return nullptr;
+}
+
+SceneGraphNode *SceneGraph::findNodeByUUID(const core::String &uuid) {
+	for (const auto &entry : _nodes) {
+		Log::trace("node uuid: %s", entry->value.uuid().c_str());
+		if (entry->value.uuid() == uuid) {
 			return &entry->value;
 		}
 	}

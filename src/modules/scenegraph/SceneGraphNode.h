@@ -67,7 +67,7 @@ using SceneGraphNodeProperties = core::StringMap<core::String>;
 class SceneGraphNode {
 	friend class SceneGraph;
 public:
-	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model);
+	SceneGraphNode(SceneGraphNodeType type = SceneGraphNodeType::Model, const core::String &uuid = "");
 	SceneGraphNode(SceneGraphNode &&move) noexcept;
 	SceneGraphNode &operator=(SceneGraphNode &&move) noexcept;
 
@@ -88,6 +88,7 @@ protected:
 	core::RGBA _color;
 	glm::vec3 _pivot {0.0f};
 
+	core::String _uuid;
 	core::String _name;
 	voxel::RawVolume *_volume = nullptr;
 	SceneGraphKeyFramesMap _keyFramesMap;
@@ -200,6 +201,7 @@ public:
 	// meta data
 
 	const core::String &name() const;
+	const core::String &uuid() const;
 	void setName(const core::String &name);
 	bool visible() const;
 	void setVisible(bool visible);
@@ -278,7 +280,7 @@ private:
 	using Super = SceneGraphNode;
 	// no members - just convenience methods
 public:
-	SceneGraphNodeCamera();
+	SceneGraphNodeCamera(const core::String &uuid = "");
 
 	static constexpr const char *Modes[] = {"orthographic", "perspective"};
 	static constexpr const char *PropMode = "cam_mode";
@@ -386,6 +388,10 @@ inline voxel::RawVolume *SceneGraphNode::volume() {
 
 inline const core::String &SceneGraphNode::name() const {
 	return _name;
+}
+
+inline const core::String &SceneGraphNode::uuid() const {
+	return _uuid;
 }
 
 inline void SceneGraphNode::setName(const core::String &name) {

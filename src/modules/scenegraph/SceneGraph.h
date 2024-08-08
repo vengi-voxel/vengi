@@ -49,6 +49,7 @@ protected:
 	SceneGraphAnimationIds _animations;
 	core::String _activeAnimation;
 	mutable FrameIndex _cachedMaxFrame = -1;
+	const core::String _emptyUUID;
 
 	void updateTransforms_r(SceneGraphNode &node);
 
@@ -107,6 +108,7 @@ public:
 	 * @sa sceneRegion()
 	 */
 	voxel::Region region() const;
+	const core::String &uuid(int nodeId) const;
 
 	/**
 	 * @brief The list of known animation ids
@@ -153,6 +155,7 @@ public:
 	int emplace(SceneGraphNode &&node, int parent = 0);
 
 	SceneGraphNode* findNodeByName(const core::String& name);
+	SceneGraphNode* findNodeByUUID(const core::String& uuid);
 	const SceneGraphNode* findNodeByName(const core::String& name) const;
 	SceneGraphNode* findNodeByPropertyValue(const core::String &key, const core::String &value) const;
 	SceneGraphNode* first();
