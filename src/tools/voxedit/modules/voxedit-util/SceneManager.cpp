@@ -1389,7 +1389,7 @@ bool SceneManager::addAnimation(const core::String &animation) {
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
 		// TODO: MEMENTO: record all keyframes from all nodes
-		// _mementoHandler.markAddedAnimation(animation);
+		// _mementoHandler.markAddedAnimation(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1398,7 +1398,7 @@ bool SceneManager::duplicateAnimation(const core::String &animation, const core:
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
 		// TODO: MEMENTO: record all keyframes from all nodes
-		//_mementoHandler.markRemovedAnimation(animation);
+		//_mementoHandler.markRemovedAnimation(_sceneGraph, animation);
 		return true;
 	}
 	return false;
