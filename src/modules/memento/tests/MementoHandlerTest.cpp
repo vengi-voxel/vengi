@@ -4,6 +4,7 @@
 
 #include "../MementoHandler.h"
 #include "app/tests/AbstractTest.h"
+#include "core/StringUtil.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -23,13 +24,20 @@ protected:
 		return core::make_shared<voxel::RawVolume>(region);
 	}
 
+	static core::String toFakeUUID(int id) {
+		if (id == InvalidNodeId) {
+			return "";
+		}
+		return core::string::toString(id);
+	}
+
 	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region = voxel::Region::InvalidRegion, const glm::vec3 &pivot = glm::vec3(0.0f),
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames = {}, const palette::Palette &palette = {},
 				  const scenegraph::SceneGraphNodeProperties &properties = {}) {
-		_mementoHandler.markUndo(parentId, nodeId, referenceId, name, nodeType, volume, type, region, pivot, allKeyFrames,
-								 palette, properties);
+		_mementoHandler.markUndo(toFakeUUID(parentId), toFakeUUID(nodeId), toFakeUUID(referenceId), name, nodeType,
+								 volume, type, region, pivot, allKeyFrames, palette, properties);
 	}
 
 	void SetUp() override {
@@ -143,7 +151,7 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	{
 		// undo of adding node 2
 		state = firstState(_mementoHandler.undo());
-		EXPECT_EQ(2, state.nodeId);
+		EXPECT_EQ(2, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -151,7 +159,7 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	{
 		// undo of adding node 1
 		state = firstState(_mementoHandler.undo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -161,7 +169,7 @@ TEST_F(MementoHandlerTest, testUndoRedoDifferentNodes) {
 	{
 		// redo adding node 1
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -205,14 +213,14 @@ TEST_F(MementoHandlerTest, testAddNewNode) {
 	{
 		// undo of adding node 1
 		state = firstState(_mementoHandler.undo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
 	}
 	{
 		// undo modification in node 0
 		state = firstState(_mementoHandler.undo());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(1, state.dataRegion().getWidthInVoxels());
 	}
@@ -220,14 +228,14 @@ TEST_F(MementoHandlerTest, testAddNewNode) {
 	{
 		// redo modification in node 0
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
 	}
 	{
 		// redo of adding node 1
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
 	}
@@ -249,7 +257,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 		// undo adding node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(0, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 1", state.name);
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -261,7 +269,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeSimple) {
 		// redo adding node 1
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -288,7 +296,7 @@ TEST_F(MementoHandlerTest, testDeleteNode) {
 	{
 		// undo adding node 1
 		state = firstState(_mementoHandler.undo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		EXPECT_EQ(MementoType::SceneNodeRemoved, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -297,7 +305,7 @@ TEST_F(MementoHandlerTest, testDeleteNode) {
 	{
 		// redo adding node 1
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		EXPECT_EQ(MementoType::SceneNodeRemoved, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -324,7 +332,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 	{
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		EXPECT_EQ("Node 1 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -334,7 +342,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 	{
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(0, _mementoHandler.statePosition());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::Modification, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(1, state.dataRegion().getWidthInVoxels());
@@ -342,7 +350,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 
 	{
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::Modification, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -350,7 +358,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeExt) {
 
 	{
 		state = firstState(_mementoHandler.redo());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 1 Added", state.name);
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -380,7 +388,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the deletion of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		EXPECT_EQ(MementoType::SceneNodeRemoved, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -392,7 +400,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the creation of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		EXPECT_EQ(MementoType::SceneNodeAdded, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
@@ -404,7 +412,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the modification of node 0
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(0, _mementoHandler.statePosition());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_EQ(MementoType::Modification, state.type);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(1, state.dataRegion().getWidthInVoxels());
@@ -415,7 +423,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// redo the modification of node 0
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(0, state.nodeId);
+		EXPECT_EQ(0, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 1 Modified", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -426,7 +434,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// redo the add of node 1
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -437,7 +445,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// redo the removal of node 1
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(3, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_FALSE(_mementoHandler.canRedo());
@@ -447,7 +455,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the removal of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -458,7 +466,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// redo the removal of node 1
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(3, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_FALSE(_mementoHandler.canRedo());
@@ -468,7 +476,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the removal of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Deleted", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -479,7 +487,7 @@ TEST_F(MementoHandlerTest, testDeleteNodeExt) {
 		// undo the creation of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_TRUE(_mementoHandler.canUndo());
@@ -506,7 +514,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 		// undo the creation of node 2
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(2, state.nodeId);
+		EXPECT_EQ(2, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_TRUE(_mementoHandler.canUndo());
@@ -515,7 +523,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 		// undo the creation of node 1
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(0, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 1 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_FALSE(_mementoHandler.canUndo());
@@ -524,7 +532,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 		// redo the creation of node 1
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 1 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -534,7 +542,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeMultiple) {
 		// redo the creation of node 2
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(2, state.nodeId);
+		EXPECT_EQ(2, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -561,7 +569,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	{
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Modified", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -570,7 +578,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	{
 		state = firstState(_mementoHandler.undo());
 		EXPECT_EQ(0, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_FALSE(_mementoHandler.canUndo());
@@ -578,7 +586,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	{
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(1, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Added", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(2, state.dataRegion().getWidthInVoxels());
@@ -587,7 +595,7 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 	{
 		state = firstState(_mementoHandler.redo());
 		EXPECT_EQ(2, _mementoHandler.statePosition());
-		EXPECT_EQ(1, state.nodeId);
+		EXPECT_EQ(1, core::string::toInt(state.nodeId));
 		EXPECT_EQ("Node 2 Modified", state.name);
 		ASSERT_TRUE(state.hasVolumeData());
 		EXPECT_EQ(3, state.dataRegion().getWidthInVoxels());
@@ -598,9 +606,9 @@ TEST_F(MementoHandlerTest, testAddNewNodeEdit) {
 TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	_mementoHandler.markInitialNodeState(*node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
 	node->setName("Name after");
-	_mementoHandler.markNodeRenamed(*node);
+	_mementoHandler.markNodeRenamed(_sceneGraph, *node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	EXPECT_TRUE(_mementoHandler.canUndo());
 	MementoState stateUndo = firstState(_mementoHandler.undo());
@@ -613,14 +621,14 @@ TEST_F(MementoHandlerTest, testSceneNodeRenamed) {
 TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	_mementoHandler.markInitialNodeState(*node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
 	ASSERT_EQ(1, (int)_mementoHandler.stateSize());
 	{
 		ScopedMementoGroup mementoGroup(_mementoHandler, "test");
 		node->volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		_mementoHandler.markModification(*node, voxel::Region(0, 0, 0, 0, 0, 0));
+		_mementoHandler.markModification(_sceneGraph, *node, voxel::Region(0, 0, 0, 0, 0, 0));
 		node->setName("Name after");
-		_mementoHandler.markNodeRenamed(*node);
+		_mementoHandler.markNodeRenamed(_sceneGraph, *node);
 	}
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	MementoState state = firstState(_mementoHandler.undo());
@@ -633,13 +641,13 @@ TEST_F(MementoHandlerTest, testMementoGroupModificationRename) {
 TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	_mementoHandler.markInitialNodeState(*node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
 	EXPECT_EQ("nippon", node->palette().name());
 	const int colorCount = node->palette().colorCount();
 	palette::Palette palette;
 	palette.commandAndConquer();
 	node->setPalette(palette);
-	_mementoHandler.markPaletteChange(*node);
+	_mementoHandler.markPaletteChange(_sceneGraph, *node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 	MementoState state = firstState(_mementoHandler.undo());
 	ASSERT_EQ(state.palette.colorCount(), colorCount);
@@ -649,9 +657,9 @@ TEST_F(MementoHandlerTest, testSceneNodePaletteChange) {
 TEST_F(MementoHandlerTest, testSceneNodeMove) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const int oldParent = node->parent();
-	_mementoHandler.markInitialNodeState(*node);
-	EXPECT_EQ(_mementoHandler.stateGroup().states[0].parentId, 0);
+	const core::String oldParent = _sceneGraph.uuid(node->parent());
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
+	EXPECT_EQ(core::string::toInt(_mementoHandler.stateGroup().states[0].parentId), 0);
 
 	int groupId;
 	{
@@ -661,16 +669,16 @@ TEST_F(MementoHandlerTest, testSceneNodeMove) {
 		ASSERT_NE(groupId, InvalidNodeId);
 	}
 	ASSERT_TRUE(_sceneGraph.changeParent(node->id(), groupId));
-	_mementoHandler.markNodeMoved(*node);
+	_mementoHandler.markNodeMoved(_sceneGraph, *node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
-	EXPECT_EQ(_mementoHandler.stateGroup().states[0].parentId, groupId);
+	EXPECT_EQ(_mementoHandler.stateGroup().states[0].parentId, _sceneGraph.node(groupId).uuid());
 
 	MementoState stateUndo = firstState(_mementoHandler.undo());
 	EXPECT_EQ(oldParent, stateUndo.parentId);
 
 	EXPECT_TRUE(_mementoHandler.canRedo());
 	MementoState stateRedo = firstState(_mementoHandler.redo());
-	EXPECT_EQ(groupId, stateRedo.parentId);
+	EXPECT_EQ(_sceneGraph.node(groupId).uuid(), stateRedo.parentId);
 }
 
 TEST_F(MementoHandlerTest, testSceneNodeTransform) {
@@ -684,7 +692,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		transform.update(_sceneGraph, *node, 0, false);
 		node->setTransform(0, transform);
 	}
-	_mementoHandler.markInitialNodeState(*node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
 	EXPECT_EQ(1, (int)_mementoHandler.stateSize());
 	{
 		scenegraph::SceneGraphTransform &transform = node->transform(0);
@@ -693,7 +701,7 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 		mirrored = transform.localTranslation();
 		node->setTransform(0, transform);
 	}
-	_mementoHandler.markNodeTransform(*node);
+	_mementoHandler.markNodeTransform(_sceneGraph, *node);
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 
 	MementoState stateUndo = firstState(_mementoHandler.undo());

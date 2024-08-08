@@ -67,7 +67,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
 			_colorPickerChange = false;
-			_sceneMgr->mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 
 		const bool usableColor = palette.color(paletteColorIdx).a > 0;
@@ -117,7 +117,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 			} else {
 				palette.exchange(paletteColorIdx, palette.uiIndex(dragPalIdx));
 			}
-			_sceneMgr->mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
@@ -208,7 +208,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 		} else if (ImGui::Shortcut(ImGuiMod_Ctrl | ImGuiKey_V)) {
 			if (_copyPaletteColorIdx != -1) {
 				palette.copy(_copyPaletteColorIdx, paletteColorIdx);
-				_sceneMgr->mementoHandler().markPaletteChange(node);
+				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 			}
 		}
 	} else if (paletteColorIdx == currentSceneColor()) {
@@ -404,7 +404,7 @@ void PalettePanel::update(const char *id, command::CommandExecutionListener &lis
 			_colorPickerChange = true;
 		} else if (_colorPickerChange) {
 			_colorPickerChange = false;
-			_sceneMgr->mementoHandler().markPaletteChange(node);
+			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 	}
 

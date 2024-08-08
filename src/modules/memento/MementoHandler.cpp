@@ -212,8 +212,8 @@ const char *MementoHandler::typeToString(MementoType type) {
 
 void MementoHandler::printState(const MementoState &state) const {
 	core::String palHash = core::string::toString(state.palette.hash());
-	Log::info("%s: node id: %i", typeToString(state.type), state.nodeId);
-	Log::info(" - parent: %i", state.parentId);
+	Log::info("%s: node id: %s", typeToString(state.type), state.nodeId.c_str());
+	Log::info(" - parent: %s", state.parentId.c_str());
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
 	const glm::ivec3 &mins = state.dataRegion().getLowerCorner();
@@ -280,14 +280,14 @@ void MementoHandler::undoModification(MementoState &s) {
 				continue;
 			}
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
-				core_assert(prevS.hasVolumeData() || prevS.referenceId != InvalidNodeId);
+				core_assert(prevS.hasVolumeData() || !prevS.referenceId.empty());
 				s.data = prevS.data;
 				return;
 			}
 		}
 	}
 
-	Log::warn("No previous modification state found for node %i", s.nodeId);
+	Log::warn("No previous modification state found for node %s", s.nodeId.c_str());
 }
 
 void MementoHandler::undoPaletteChange(MementoState &s) {
@@ -300,7 +300,7 @@ void MementoHandler::undoPaletteChange(MementoState &s) {
 			}
 		}
 	}
-	Log::warn("No previous palette found for node %i", s.nodeId);
+	Log::warn("No previous palette found for node %s", s.nodeId.c_str());
 }
 
 void MementoHandler::undoNodeProperties(MementoState &s) {
@@ -313,7 +313,7 @@ void MementoHandler::undoNodeProperties(MementoState &s) {
 			}
 		}
 	}
-	Log::warn("No previous node properties found for node %i", s.nodeId);
+	Log::warn("No previous node properties found for node %s", s.nodeId.c_str());
 }
 
 void MementoHandler::undoKeyFrames(MementoState &s) {
@@ -321,12 +321,12 @@ void MementoHandler::undoKeyFrames(MementoState &s) {
 		const MementoStateGroup &group = _groups[i];
 		for (const MementoState &prevS : group.states) {
 			if (prevS.nodeId == s.nodeId) {
-				s.keyFrames  = prevS.keyFrames;
+				s.keyFrames = prevS.keyFrames;
 				return;
 			}
 		}
 	}
-	Log::warn("No previous node keyframes found for node %i", s.nodeId);
+	Log::warn("No previous node keyframes found for node %s", s.nodeId.c_str());
 }
 
 void MementoHandler::undoRename(MementoState &s) {
@@ -339,7 +339,7 @@ void MementoHandler::undoRename(MementoState &s) {
 			}
 		}
 	}
-	Log::warn("No previous name found for node %i", s.nodeId);
+	Log::warn("No previous name found for node %s", s.nodeId.c_str());
 }
 
 void MementoHandler::undoMove(MementoState &s) {
@@ -352,7 +352,7 @@ void MementoHandler::undoMove(MementoState &s) {
 			}
 		}
 	}
-	Log::warn("No previous parent found for node %i", s.nodeId);
+	Log::warn("No previous parent found for node %s", s.nodeId.c_str());
 }
 
 MementoStateGroup MementoHandler::undo() {
@@ -392,87 +392,80 @@ MementoStateGroup MementoHandler::redo() {
 	return stateGroup();
 }
 
-void MementoHandler::updateNodeId(int nodeId, int newNodeId) {
-	for (MementoStateGroup &group : _groups) {
-		for (MementoState &state : group.states) {
-			if (state.nodeId == nodeId) {
-				state.nodeId = newNodeId;
-			}
-			if (state.parentId == nodeId) {
-				state.parentId = newNodeId;
-			}
-		}
-	}
-}
-
-void MementoHandler::markNodePropertyChange(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markNodePropertyChange(const scenegraph::SceneGraph &sceneGraph,
+											const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	Log::debug("New node property undo state for node %i with name %s", nodeId, name.c_str());
-	markUndo(node, nullptr, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, nullptr, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markKeyFramesChange(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph,
+										 const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = nullptr;
 	Log::debug("Mark node %i key frame changes (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::SceneNodeKeyFrames, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, volume, MementoType::SceneNodeKeyFrames, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markNodeRemoved(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markNodeRemoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as deleted (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, volume, MementoType::SceneNodeRemoved, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markNodeAdded(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markNodeAdded(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i as added (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markInitialNodeState(const scenegraph::SceneGraphNode &node) {
-	markNodeAdded(node);
+void MementoHandler::markInitialNodeState(const scenegraph::SceneGraph &sceneGraph,
+										  const scenegraph::SceneGraphNode &node) {
+	markNodeAdded(sceneGraph, node);
 }
 
-void MementoHandler::markModification(const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion) {
+void MementoHandler::markModification(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+									  const voxel::Region &modifiedRegion) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::Modification, modifiedRegion);
+	markUndo(sceneGraph, node, volume, MementoType::Modification, modifiedRegion);
 }
 
-void MementoHandler::markPaletteChange(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markPaletteChange(const scenegraph::SceneGraph &sceneGraph,
+									   const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = nullptr;
 	Log::debug("Mark node %i palette change (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::SceneNodePaletteChanged, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, volume, MementoType::SceneNodePaletteChanged, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markNodeRenamed(const scenegraph::SceneGraphNode &node) {
+void MementoHandler::markNodeRenamed(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
 	Log::debug("Mark node %i renamed (%s)", nodeId, name.c_str());
-	markUndo(node, volume, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion);
+	markUndo(sceneGraph, node, volume, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markNodeMoved(const scenegraph::SceneGraphNode &node) {
-	markUndo(node, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion);
+void MementoHandler::markNodeMoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+	markUndo(sceneGraph, node, nullptr, MementoType::SceneNodeMove, voxel::Region::InvalidRegion);
 }
 
-void MementoHandler::markNodeTransform(const scenegraph::SceneGraphNode &node) {
-	markKeyFramesChange(node);
+void MementoHandler::markNodeTransform(const scenegraph::SceneGraph &sceneGraph,
+									   const scenegraph::SceneGraphNode &node) {
+	markKeyFramesChange(sceneGraph, node);
 }
 
-void MementoHandler::markAddedAnimation(const core::String &animation) {
+void MementoHandler::markAddedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
 	// TODO: MEMENTO: implement me
 }
 
@@ -502,21 +495,23 @@ bool MementoHandler::removeLast() {
 	return true;
 }
 
-void MementoHandler::markUndo(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
-							  const voxel::Region &modifiedRegion) {
-	markUndo(node.parent(), node.id(), node.reference(), node.name(), node.type(), volume, type, modifiedRegion,
-			 node.pivot(), node.allKeyFrames(), node.palette(), node.properties());
+void MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion) {
+	const core::String &parentId = sceneGraph.uuid(node.parent());
+	const core::String &referenceId = sceneGraph.uuid(node.reference());
+	markUndo(parentId, node.uuid(), referenceId, node.name(), node.type(), volume, type, modifiedRegion, node.pivot(),
+			 node.allKeyFrames(), node.palette(), node.properties());
 }
 
-void MementoHandler::markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
-							  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-							  const voxel::Region &modifiedRegion, const glm::vec3 &pivot,
-							  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
-							  const scenegraph::SceneGraphNodeProperties &properties) {
+void MementoHandler::markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
+							  const core::String &name, scenegraph::SceneGraphNodeType nodeType,
+							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion,
+							  const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &allKeyFrames,
+							  const palette::Palette &palette, const scenegraph::SceneGraphNodeProperties &properties) {
 	if (!markUndoPreamble()) {
 		return;
 	}
-	Log::debug("New undo state for node %i with name %s", nodeId, name.c_str());
+	Log::debug("New undo state for node %s with name %s", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,

@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
@@ -105,9 +106,9 @@ struct MementoState {
 	MementoType type;
 	// data is not always included in a state - as this is the volume and would consume a lot of memory
 	MementoData data;
-	int parentId = InvalidNodeId;
-	int nodeId = InvalidNodeId;
-	int referenceId = InvalidNodeId;
+	core::String parentId;
+	core::String nodeId;
+	core::String referenceId;
 	scenegraph::SceneGraphNodeType nodeType;
 	scenegraph::SceneGraphKeyFramesMap keyFrames;
 	scenegraph::SceneGraphNodeProperties properties;
@@ -115,7 +116,7 @@ struct MementoState {
 	glm::vec3 pivot;
 	palette::Palette palette;
 
-	MementoState() : type(MementoType::Max), parentId(0), nodeId(0), nodeType(scenegraph::SceneGraphNodeType::Max) {
+	MementoState() : type(MementoType::Max), nodeType(scenegraph::SceneGraphNodeType::Max) {
 	}
 
 	MementoState(const MementoState &other)
@@ -180,21 +181,19 @@ struct MementoState {
 		return *this;
 	}
 
-	MementoState(MementoType _type, const MementoData &_data, int _parentId, int _nodeId, int _referenceId,
-				 const core::String &_name, scenegraph::SceneGraphNodeType _nodeType,
-				 const glm::vec3 &_pivot,
-				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames,
-				 const palette::Palette &_palette,
+	MementoState(MementoType _type, const MementoData &_data, const core::String &_parentId,
+				 const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
+				 scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
+				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
 				 const scenegraph::SceneGraphNodeProperties &_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		  palette(_palette) {
 	}
 
-	MementoState(MementoType _type, MementoData &&_data, int _parentId, int _nodeId, int _referenceId,
-				 core::String &&_name, scenegraph::SceneGraphNodeType _nodeType, glm::vec3 &&_pivot,
-				 scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
-				 palette::Palette &&_palette,
+	MementoState(MementoType _type, MementoData &&_data, core::String &&_parentId, core::String &&_nodeId,
+				 core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
 				 scenegraph::SceneGraphNodeProperties &&_properties)
 		: type(_type), data(_data), parentId(_parentId), nodeId(_nodeId), referenceId(_referenceId),
 		  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
@@ -288,32 +287,26 @@ public:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	void markUndo(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
+	void markUndo(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region);
-	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
-					scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
-					const voxel::Region &region, const glm::vec3 &pivot,
-					const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
-					const scenegraph::SceneGraphNodeProperties &properties);
+	void markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
+				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
+				  MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
+				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
+				  const scenegraph::SceneGraphNodeProperties &properties);
 	bool removeLast();
 
-	void markNodePropertyChange(const scenegraph::SceneGraphNode &node);
-	void markKeyFramesChange(const scenegraph::SceneGraphNode &node);
-	void markNodeRemoved(const scenegraph::SceneGraphNode &node);
-	void markNodeAdded(const scenegraph::SceneGraphNode &node);
-	void markNodeTransform(const scenegraph::SceneGraphNode &node);
-	void markModification(const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
-	void markInitialNodeState(const scenegraph::SceneGraphNode &node);
-	void markNodeRenamed(const scenegraph::SceneGraphNode &node);
-	void markNodeMoved(const scenegraph::SceneGraphNode &node);
-	void markPaletteChange(const scenegraph::SceneGraphNode &node);
-	void markAddedAnimation(const core::String &animation);
-
-	/**
-	 * @brief The scene graph is giving new nodes for each insert - thus while undo redo we get new node ids for each
-	 * new node. This method will update the references for the old node id to the new one
-	 */
-	void updateNodeId(int nodeId, int newNodeId);
+	void markNodePropertyChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markKeyFramesChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markNodeRemoved(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markNodeAdded(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markNodeTransform(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markModification(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
+	void markInitialNodeState(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markNodeRenamed(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markNodeMoved(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markPaletteChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	void markAddedAnimation(const scenegraph::SceneGraph& sceneGraph, const core::String &animation);
 
 	MementoStateGroup undo();
 	MementoStateGroup redo();

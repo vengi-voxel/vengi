@@ -562,7 +562,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 	voxel::logRegion("Modified", modifiedRegion);
 	if (markUndo) {
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-		_mementoHandler.markModification(node, modifiedRegion);
+		_mementoHandler.markModification(_sceneGraph, node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
@@ -777,7 +777,7 @@ bool SceneManager::setActivePalette(const palette::Palette &palette, bool search
 		modified(nodeId, dirtyRegion);
 	}
 	node.setPalette(palette);
-	_mementoHandler.markPaletteChange(node);
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
 	return true;
 }
 
@@ -791,13 +791,17 @@ voxel::RawVolume* SceneManager::activeVolume() {
 }
 
 bool SceneManager::mementoRename(const memento::MementoState& s) {
-	Log::debug("Memento: rename of node %i (%s)", s.nodeId, s.name.c_str());
-	return nodeRename(s.nodeId, s.name);
+	Log::debug("Memento: rename of node %s (%s)", s.nodeId.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
+		return nodeRename(*node, s.name);
+	}
+	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeId.c_str(), s.name.c_str());
+	return false;
 }
 
 bool SceneManager::mementoProperties(const memento::MementoState& s) {
-	Log::debug("Memento: properties of node %i (%s)", s.nodeId, s.name.c_str());
-	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	Log::debug("Memento: properties of node %s (%s)", s.nodeId.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
 		node->properties().clear();
 		node->addProperties(s.properties);
 		return true;
@@ -806,8 +810,8 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 }
 
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
-	Log::debug("Memento: keyframes of node %i (%s)", s.nodeId, s.name.c_str());
-	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	Log::debug("Memento: keyframes of node %s (%s)", s.nodeId.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
 		_sceneGraph.setAllKeyFramesForNode(*node, s.keyFrames);
 		node->setPivot(s.pivot);
 		_sceneGraph.updateTransforms();
@@ -817,8 +821,8 @@ bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 }
 
 bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
-	Log::debug("Memento: palette change of node %i to %s", s.nodeId, s.name.c_str());
-	if (scenegraph::SceneGraphNode* node = sceneGraphNode(s.nodeId)) {
+	Log::debug("Memento: palette change of node %s to %s", s.nodeId.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeId)) {
 		node->setPalette(s.palette);
 		return true;
 	}
@@ -826,10 +830,14 @@ bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
 }
 
 bool SceneManager::mementoModification(const memento::MementoState& s) {
-	Log::debug("Memento: modification in volume of node %i (%s)", s.nodeId, s.name.c_str());
-	if (scenegraph::SceneGraphNode *node = sceneGraphNode(s.nodeId)) {
+	Log::debug("Memento: modification in volume of node %s (%s)", s.nodeId.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
 		if (node->type() == scenegraph::SceneGraphNodeType::Model && s.nodeType == scenegraph::SceneGraphNodeType::ModelReference) {
-			node->setReference(s.referenceId, true);
+			if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceId)) {
+				node->setReference(referenceNode->id(), true);
+			} else {
+				Log::warn("Failed to handle memento state - reference node id %s not found", s.referenceId.c_str());
+			}
 		} else {
 			if (node->type() == scenegraph::SceneGraphNodeType::ModelReference && s.nodeType == scenegraph::SceneGraphNodeType::Model) {
 				node->unreferenceModelNode(_sceneGraph.node(node->reference()));
@@ -847,35 +855,35 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 		modified(node->id(), s.data.region(), false);
 		return true;
 	}
-	Log::warn("Failed to handle memento state - node id %i not found (%s)", s.nodeId, s.name.c_str());
+	Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeId.c_str(), s.name.c_str());
 	return false;
 }
 
 bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
-	scenegraph::SceneGraphNodeType type = s.nodeType;
-	if (type == scenegraph::SceneGraphNodeType::Max) {
-		if (!s.hasVolumeData()) {
-			type = scenegraph::SceneGraphNodeType::Group;
-		} else {
-			type = scenegraph::SceneGraphNodeType::Model;
-		}
-	}
-	scenegraph::SceneGraphNode newNode(type);
-	if (type == scenegraph::SceneGraphNodeType::Model) {
+	core_assert(s.nodeType != scenegraph::SceneGraphNodeType::Max);
+	scenegraph::SceneGraphNode newNode(s.nodeType, s.nodeId);
+	if (newNode.isModelNode()) {
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
 		memento::MementoData::toVolume(newNode.volume(), s.data);
 	}
 	newNode.setPalette(s.palette);
-	if (type == scenegraph::SceneGraphNodeType::ModelReference) {
-		newNode.setReference(s.referenceId);
+	if (newNode.isReference()) {
+		if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceId)) {
+			newNode.setReference(referenceNode->id());
+		} else {
+			Log::warn("Failed to handle memento state - reference node id %s not found", s.referenceId.c_str());
+		}
 	}
 	_sceneGraph.setAllKeyFramesForNode(newNode, s.keyFrames);
 	newNode.properties().clear();
 	newNode.addProperties(s.properties);
 	newNode.setPivot(s.pivot);
 	newNode.setName(s.name);
-	const int newNodeId = moveNodeToSceneGraph(newNode, s.parentId);
-	_mementoHandler.updateNodeId(s.nodeId, newNodeId);
+	int parentNodeId = 0;
+	if (scenegraph::SceneGraphNode* parentNode = sceneGraphNodeByUUID(s.parentId)) {
+		parentNodeId = parentNode->id();
+	}
+	const int newNodeId = moveNodeToSceneGraph(newNode, parentNodeId);
 	_sceneGraph.updateTransforms();
 	return newNodeId != InvalidNodeId;
 }
@@ -896,29 +904,42 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 		return mementoPaletteChange(s);
 	}
 	if (s.type == memento::MementoType::SceneNodeMove) {
-		Log::debug("Memento: move of node %i (%s) (new parent %i)", s.nodeId, s.name.c_str(), s.parentId);
-		return nodeMove(s.nodeId, s.parentId);
+		Log::debug("Memento: move of node %s (%s) (new parent %s)", s.nodeId.c_str(), s.name.c_str(), s.parentId.c_str());
+		scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId);
+		scenegraph::SceneGraphNode *nodeParent = sceneGraphNodeByUUID(s.parentId);
+		if (node && nodeParent) {
+			return nodeMove(node->id(), nodeParent->id());
+		}
+		Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeId.c_str(), s.name.c_str());
+		return false;
 	}
 	if (s.type == memento::MementoType::Modification) {
 		return mementoModification(s);
 	}
 	if (isRedo) {
 		if (s.type == memento::MementoType::SceneNodeRemoved) {
-			Log::debug("Memento: remove of node %i (%s) from parent %i", s.nodeId, s.name.c_str(), s.parentId);
-			return nodeRemove(s.nodeId, true);
+			Log::debug("Memento: remove of node %s (%s) from parent %s", s.nodeId.c_str(), s.name.c_str(), s.parentId.c_str());
+			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
+				return nodeRemove(*node, true);
+			}
+			Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeId.c_str(), s.name.c_str());
+			return false;
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
-			Log::debug("Memento: add node (%s) to parent %i", s.name.c_str(), s.parentId);
+			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), s.parentId.c_str());
 			return mementoStateToNode(s);
 		}
 	} else {
 		if (s.type == memento::MementoType::SceneNodeRemoved) {
-			Log::debug("Memento: remove of node (%s) from parent %i", s.name.c_str(), s.parentId);
+			Log::debug("Memento: remove of node (%s) from parent %s", s.name.c_str(), s.parentId.c_str());
 			return mementoStateToNode(s);
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
-			Log::debug("Memento: add node (%s) to parent %i", s.name.c_str(), s.parentId);
-			return nodeRemove(s.nodeId, true);
+			Log::debug("Memento: add node (%s) to parent %s", s.name.c_str(), s.parentId.c_str());
+			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeId)) {
+				return nodeRemove(*node, true);
+			}
+			Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeId.c_str(), s.name.c_str());
 		}
 	}
 	return true;
@@ -1201,7 +1222,7 @@ void SceneManager::resetSceneState() {
 		if (!n->second.isAnyModelNode()) {
 			continue;
 		}
-		_mementoHandler.markInitialNodeState(n->second);
+		_mementoHandler.markInitialNodeState(_sceneGraph, n->second);
 	}
 	_dirty = false;
 	_result = voxelutil::PickResult();
@@ -1225,7 +1246,7 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 		const scenegraph::SceneGraphNodeType type = node->type();
 		Log::debug("Adding node %i with name %s (type: %s)", newNodeId, name.c_str(), scenegraph::SceneGraphNodeTypeStr[(int)type]);
 
-		_mementoHandler.markNodeAdded(*node);
+		_mementoHandler.markNodeAdded(_sceneGraph, *node);
 
 		for (int childId : node->children()) {
 			onNewNodeAdded(childId, true);
@@ -1358,7 +1379,7 @@ bool SceneManager::setAnimation(const core::String &animation) {
 
 bool SceneManager::addAnimation(const core::String &animation) {
 	if (_sceneGraph.addAnimation(animation)) {
-		_mementoHandler.markAddedAnimation(animation);
+		_mementoHandler.markAddedAnimation(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1474,7 +1495,7 @@ void SceneManager::rotate(math::Axis axis) {
 		const int idx2 = (idx1 + 1) % 3;
 		core::exchange(pivot[idx1], pivot[idx2]);
 		node->setPivot(pivot);
-		_mementoHandler.markKeyFramesChange(*node);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, *node);
 	});
 }
 
@@ -1602,7 +1623,7 @@ void SceneManager::construct() {
 		scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 		palette::Palette &pal = node.palette();
 		pal.changeIntensity(scale);
-		_mementoHandler.markPaletteChange(node);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}).setHelp(_("Change intensity by scaling the rgb values of the palette"));
 
 	command::Command::registerCommand("palette_removeunused", [&] (const command::CmdArgs& args) {
@@ -1631,7 +1652,7 @@ void SceneManager::construct() {
 		} else if (type == "original") {
 			pal.sortOriginal();
 		}
-		_mementoHandler.markPaletteChange(node);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}).setHelp(_("Change intensity by scaling the rgb values of the palette")).
 		setArgumentCompleter(command::valueCompleter({"hue", "saturation", "brightness", "cielab", "original"}));
 
@@ -2268,7 +2289,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		pal.markDirty();
 		pal.markSave();
 		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
-		_mementoHandler.markPaletteChange(node);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
 		modified(nodeId, v->region());
 	} else {
 		for (size_t i = 0; i < pal.size(); ++i) {
@@ -2278,7 +2299,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 		}
 		pal.markDirty();
 		pal.markSave();
-		_mementoHandler.markPaletteChange(node);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}
 }
 
@@ -2794,7 +2815,7 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 	nodeSetPivot(node, pivot);
 	sceneGraph().updateTransforms();
 	markDirty();
-	_mementoHandler.markKeyFramesChange(node);
+	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;
 }
 
@@ -2813,7 +2834,7 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &n
 												   scenegraph::InterpolationType interpolation) {
 	// TODO: check that keyframe already exists
 	node.keyFrame(keyFrameIdx).interpolation = interpolation;
-	_mementoHandler.markKeyFramesChange(node);
+	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	markDirty();
 	return true;
 }
@@ -2844,7 +2865,7 @@ bool SceneManager::nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegr
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node);
+		_mementoHandler.markNodeTransform(_sceneGraph, node);
 		markDirty();
 	}
 	return true;
@@ -2922,7 +2943,7 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 		scenegraph::SceneGraphKeyFrame &copyToKeyFrame = node.keyFrame(newKeyFrameIdx);
 		copyToKeyFrame.setTransform(copyFromTransform);
 		core_assert_msg(copyToKeyFrame.frameIdx == frameIdx, "Expected frame idx %d, got %d", (int)frameIdx, (int)copyToKeyFrame.frameIdx);
-		_mementoHandler.markKeyFramesChange(node);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 		markDirty();
 		return true;
 	}
@@ -2976,7 +2997,7 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameInd
 
 bool SceneManager::nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx) {
 	if (node.removeKeyFrame(frameIdx)) {
-		_mementoHandler.markKeyFramesChange(node);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 		markDirty();
 		return true;
 	}
@@ -2985,7 +3006,7 @@ bool SceneManager::nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegra
 
 bool SceneManager::nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (node.removeKeyFrameByIndex(keyFrameIdx)) {
-		_mementoHandler.markKeyFramesChange(node);
+		_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 		markDirty();
 		return true;
 	}
@@ -3002,7 +3023,7 @@ bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const
 		transform.setLocalTranslation(newLocalTranslation);
 		transform.update(_sceneGraph, node, kf.frameIdx, false);
 	}
-	_mementoHandler.markKeyFramesChange(node);
+	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	markDirty();
 	return true;
 }
@@ -3031,7 +3052,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node);
+		_mementoHandler.markNodeTransform(_sceneGraph, node);
 		markDirty();
 	}
 	return true;
@@ -3048,7 +3069,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	}
 	if (transform.dirty()) {
 		transform.update(_sceneGraph, node, keyFrame.frameIdx, _transformUpdateChildren->boolVal());
-		_mementoHandler.markNodeTransform(node);
+		_mementoHandler.markNodeTransform(_sceneGraph, node);
 		markDirty();
 	}
 
@@ -3073,7 +3094,7 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 	transform.setLocalMatrix(glm::mat4(1.0f));
 	sceneGraph().updateTransforms();
 	markDirty();
-	_mementoHandler.markKeyFramesChange(node);
+	_mementoHandler.markKeyFramesChange(_sceneGraph, node);
 	return true;
 }
 
@@ -3102,7 +3123,7 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 	if (_sceneGraph.changeParent(sourceNodeId, targetNodeId)) {
 		scenegraph::SceneGraphNode *node = sceneGraphNode(sourceNodeId);
 		core_assert(node != nullptr);
-		_mementoHandler.markNodeMoved(*node);
+		_mementoHandler.markNodeMoved(_sceneGraph, *node);
 		markDirty();
 		return true;
 	}
@@ -3112,7 +3133,7 @@ bool SceneManager::nodeMove(int sourceNodeId, int targetNodeId) {
 bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const core::String &value) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->setProperty(key, value)) {
-			_mementoHandler.markNodePropertyChange(*node);
+			_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
 			return true;
 		}
 	}
@@ -3122,7 +3143,7 @@ bool SceneManager::nodeSetProperty(int nodeId, const core::String &key, const co
 bool SceneManager::nodeRemoveProperty(int nodeId, const core::String &key) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		if (node->properties().remove(key)) {
-			_mementoHandler.markNodePropertyChange(*node);
+			_mementoHandler.markNodePropertyChange(_sceneGraph, *node);
 			return true;
 		}
 	}
@@ -3141,7 +3162,7 @@ bool SceneManager::nodeRename(scenegraph::SceneGraphNode &node, const core::Stri
 		return true;
 	}
 	node.setName(name);
-	_mementoHandler.markNodeRenamed(node);
+	_mementoHandler.markNodeRenamed(_sceneGraph, node);
 	markDirty();
 	return true;
 }
@@ -3195,7 +3216,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
 	// TODO: MEMENTO memento and recursive... - we only record the one node in the memento state - not the children
-	_mementoHandler.markNodeRemoved(node);
+	_mementoHandler.markNodeRemoved(_sceneGraph, node);
 	if (!_sceneGraph.removeNode(nodeId, recursive)) {
 		Log::error("Failed to remove node with id %i", nodeId);
 		_mementoHandler.removeLast();
@@ -3285,7 +3306,7 @@ bool SceneManager::nodeRemoveColor(scenegraph::SceneGraphNode &node, uint8_t pal
 	if (replacement != palIdx && palette.removeColor(palIdx)) {
 		palette.markSave();
 		const voxel::Voxel replacementVoxel = voxel::createVoxel(palette, replacement);
-		_mementoHandler.markPaletteChange(node);
+		_mementoHandler.markPaletteChange(_sceneGraph, node);
 		voxelutil::visitVolume(
 			*v,
 			[v, replacementVoxel](int x, int y, int z, const voxel::Voxel &voxel) {
@@ -3309,7 +3330,7 @@ bool SceneManager::nodeDuplicateColor(scenegraph::SceneGraphNode &node, uint8_t 
 	palette::Palette &palette = node.palette();
 	palette.duplicateColor(palIdx);
 	palette.markSave();
-	_mementoHandler.markPaletteChange(node);
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
 	return true;
 }
 
@@ -3329,7 +3350,7 @@ bool SceneManager::nodeRemoveAlpha(scenegraph::SceneGraphNode &node, uint8_t pal
 	c.a = 255;
 	palette.setColor(palIdx, c);
 	palette.markSave();
-	_mementoHandler.markPaletteChange(node);
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
 	nodeUpdateVoxelType(node.id(), palIdx, voxel::VoxelType::Generic);
 	return true;
 }
@@ -3345,7 +3366,7 @@ bool SceneManager::nodeSetMaterial(scenegraph::SceneGraphNode &node, uint8_t pal
 	palette::Palette &palette = node.palette();
 	palette.setMaterialValue(palIdx, material, value);
 	palette.markSave();
-	_mementoHandler.markPaletteChange(node);
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
 	return true;
 }
 
@@ -3370,7 +3391,7 @@ bool SceneManager::nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx
 		}
 	}
 	palette.markSave();
-	_mementoHandler.markPaletteChange(node);
+	_mementoHandler.markPaletteChange(_sceneGraph, node);
 	return true;
 }
 

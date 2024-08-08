@@ -507,11 +507,11 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 	_sceneMgr->modifier().unlock();
 	if (keyFrameIdx == InvalidKeyFrame) {
 		// there is no valid key frame idx given in edit mode
-		mementoHandler.markModification(node, node.region());
+		mementoHandler.markModification(_sceneMgr->sceneGraph(), node, node.region());
 	} else {
 		if (!glm::equal(_transformLocalMatrix, node.transform(keyFrameIdx).localMatrix())) {
 			// we have a valid key frame idx in scene mode
-			mementoHandler.markNodeTransform(node);
+			mementoHandler.markNodeTransform(_sceneMgr->sceneGraph(), node);
 			_transformLocalMatrix = glm::mat4(1.0f);
 		}
 	}
