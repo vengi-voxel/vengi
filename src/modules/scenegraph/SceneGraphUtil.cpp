@@ -109,7 +109,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 }
 
 int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
-	SceneGraphNode newNode(node.type());
+	SceneGraphNode newNode(node.type(), node.uuid());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
 		core_assert(node.owns());
