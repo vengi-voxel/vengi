@@ -3218,14 +3218,21 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	for (int nodeId : removeReferenceNodes) {
 		nodeRemove(_sceneGraph.node(nodeId), recursive);
 	}
-	// TODO: MEMENTO memento and recursive... - we only record the one node in the memento state - not the children
+	if (recursive) {
+		// create a copy to prevent concurrent modification errors
+		scenegraph::SceneGraphNodeChildren childrenCopy = node.children();
+		for (int child : childrenCopy) {
+			if (!nodeRemove(child, recursive)) {
+				Log::error("Failed to remove child node %i", child);
+				return false;
+			}
+		}
+	}
 	_mementoHandler.markNodeRemoved(_sceneGraph, node);
-	if (!_sceneGraph.removeNode(nodeId, recursive)) {
+	if (!_sceneGraph.removeNode(nodeId, false)) {
 		Log::error("Failed to remove node with id %i", nodeId);
-		_mementoHandler.removeLast();
 		return false;
 	}
-	// TODO: the children are not removed from the renderer state
 	_sceneRenderer->removeNode(nodeId);
 	if (_sceneGraph.empty()) {
 		const voxel::Region region(glm::ivec3(0), glm::ivec3(31));
