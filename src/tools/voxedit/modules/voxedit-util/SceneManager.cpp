@@ -1245,7 +1245,8 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(newNodeId)) {
 		const core::String &name = node->name();
 		const scenegraph::SceneGraphNodeType type = node->type();
-		Log::debug("Adding node %i with name %s (type: %s)", newNodeId, name.c_str(), scenegraph::SceneGraphNodeTypeStr[(int)type]);
+		Log::debug("Adding node %i with name %s (type: %s, uuid: %s)", newNodeId, name.c_str(),
+				   scenegraph::SceneGraphNodeTypeStr[(int)type], node->uuid().c_str());
 
 		_mementoHandler.markNodeAdded(_sceneGraph, *node);
 

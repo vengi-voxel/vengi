@@ -514,7 +514,7 @@ void MementoHandler::markUndo(const core::String &parentId, const core::String &
 	if (!markUndoPreamble()) {
 		return;
 	}
-	Log::debug("New undo state for node %s with name %s", nodeId.c_str(), name.c_str());
+	Log::debug("New undo state for node %s with name '%s'", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,
