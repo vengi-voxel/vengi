@@ -911,7 +911,7 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 		if (node && nodeParent) {
 			return nodeMove(node->id(), nodeParent->id());
 		}
-		Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+		Log::warn("Failed to handle memento move state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
 		return false;
 	}
 	if (s.type == memento::MementoType::Modification) {
@@ -923,7 +923,7 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 				return nodeRemove(*node, true);
 			}
-			Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+			Log::warn("Failed to handle redo memento remove state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
 			return false;
 		}
 		if (s.type == memento::MementoType::SceneNodeAdded) {
@@ -940,7 +940,7 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 			if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
 				return nodeRemove(*node, true);
 			}
-			Log::warn("Failed to handle memento state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
+			Log::warn("Failed to handle undo memento add state - node id %s not found (%s)", s.nodeUUID.c_str(), s.name.c_str());
 		}
 	}
 	return true;
