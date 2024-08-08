@@ -234,7 +234,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 			}
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(symlink.c_str(), filter.c_str())) {
-					Log::debug("File %s doesn't match filter %s", symlink.c_str(), filter.c_str());
+					Log::trace("File %s doesn't match filter %s", symlink.c_str(), filter.c_str());
 					continue;
 				}
 			}
@@ -245,7 +245,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 		} else {
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
-					Log::debug("Entity %s doesn't match filter %s", entry.name.c_str(), filter.c_str());
+					Log::trace("Entity %s doesn't match filter %s", entry.name.c_str(), filter.c_str());
 					continue;
 				}
 			}
