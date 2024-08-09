@@ -328,6 +328,7 @@ void MementoHandler::undoKeyFrames(MementoState &s) {
 		for (const MementoState &prevS : group.states) {
 			if (prevS.nodeUUID == s.nodeUUID) {
 				s.keyFrames = prevS.keyFrames;
+				s.pivot = prevS.pivot;
 				return;
 			}
 		}
