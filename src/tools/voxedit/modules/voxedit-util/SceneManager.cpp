@@ -3284,8 +3284,6 @@ bool SceneManager::nodeUnreference(scenegraph::SceneGraphNode &node) {
 		return false;
 	}
 	if (scenegraph::SceneGraphNode* referencedNode = sceneGraphNode(node.reference())) {
-		// TODO: MEMENTO: hard to record as the node type changes - it would maybe be better to
-		// create a new node here
 		if (referencedNode->type() != scenegraph::SceneGraphNodeType::Model) {
 			Log::error("Referenced node is no model node - failed to unreference");
 			return false;

@@ -282,6 +282,12 @@ void MementoHandler::undoModification(MementoState &s) {
 			if (prevS.type == MementoType::Modification || prevS.type == MementoType::SceneNodeAdded) {
 				core_assert(prevS.hasVolumeData() || !prevS.referenceUUID.empty());
 				s.data = prevS.data;
+				// undo for un-reference node - so we have to make it a reference node again
+				if (s.nodeType != prevS.nodeType) {
+					core_assert(prevS.nodeType == scenegraph::SceneGraphNodeType::ModelReference);
+					s.nodeType = prevS.nodeType;
+					s.referenceUUID = prevS.referenceUUID;
+				}
 				return;
 			}
 		}
