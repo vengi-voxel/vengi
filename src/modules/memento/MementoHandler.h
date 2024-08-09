@@ -237,6 +237,7 @@ private:
 	uint8_t _groupStatePosition = 0u;
 	int _locked = 0;
 
+	void cutFromGroupStatePosition();
 	void addState(MementoState &&state);
 	/**
 	 * @return @c true if it's allowed to create an undo state

@@ -179,6 +179,7 @@ void MementoHandler::beginGroup(const core::String &name) {
 
 	Log::debug("Begin memento group: %i (%s)", _groupState, name.c_str());
 	if (_groupState <= 0) {
+		cutFromGroupStatePosition();
 		_groups.emplace_back(MementoStateGroup{name, {}});
 		_groupStatePosition = stateSize() - 1;
 	}
@@ -529,6 +530,12 @@ void MementoHandler::markUndo(const core::String &parentId, const core::String &
 	addState(core::move(state));
 }
 
+void MementoHandler::cutFromGroupStatePosition() {
+	const int cutOff = core_max(0, (int)(stateSize() - _groupStatePosition - 1));
+	Log::debug("Cut off %i states", cutOff);
+	_groups.erase_back(cutOff);
+}
+
 void MementoHandler::addState(MementoState &&state) {
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
@@ -538,6 +545,7 @@ void MementoHandler::addState(MementoState &&state) {
 	MementoStateGroup group;
 	group.name = "single";
 	group.states.emplace_back(state);
+	cutFromGroupStatePosition();
 	_groups.emplace_back(core::move(group));
 	_groupStatePosition = stateSize() - 1;
 }
