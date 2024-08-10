@@ -188,7 +188,7 @@ bool CheckboxVar(const char* label, const core::VarPtr& var) {
 		}
 	}
 	if (var->help()) {
-		TooltipText("%s", var->help());
+		TooltipTextUnformatted(var->help());
 	}
 	return false;
 }
