@@ -362,7 +362,7 @@ MESHOPTIMIZER_API size_t meshopt_simplify(unsigned int* destination, const unsig
  *
  * vertex_attributes should have attribute_count floats for each vertex
  * attribute_weights should have attribute_count floats in total; the weights determine relative priority of attributes between each other and wrt position. The recommended weight range is [1e-3..1e-1], assuming attribute data is in [0..1] range.
- * attribute_count must be <= 16
+ * attribute_count must be <= 32
  * vertex_lock can be NULL; when it's not NULL, it should have a value for each vertex; 1 denotes vertices that can't be moved
  * TODO target_error/result_error currently use combined distance+attribute error; this may change in the future
  */
@@ -471,6 +471,13 @@ struct meshopt_VertexFetchStatistics
  */
 MESHOPTIMIZER_API struct meshopt_VertexFetchStatistics meshopt_analyzeVertexFetch(const unsigned int* indices, size_t index_count, size_t vertex_count, size_t vertex_size);
 
+/**
+ * Meshlet is a small mesh cluster (subset) that consists of:
+ * - triangles, an 8-bit micro triangle (index) buffer, that for each triangle specifies three local vertices to use;
+ * - vertices, a 32-bit vertex indirection buffer, that for each local vertex specifies which mesh vertex to fetch vertex attributes from.
+ *
+ * For efficiency, meshlet triangles and vertices are packed into two large arrays; this structure contains offsets and counts to access the data.
+ */
 struct meshopt_Meshlet
 {
 	/* offsets within meshlet_vertices and meshlet_triangles arrays with meshlet data */
@@ -486,6 +493,7 @@ struct meshopt_Meshlet
  * Meshlet builder
  * Splits the mesh into a set of meshlets where each meshlet has a micro index buffer indexing into meshlet vertices that refer to the original vertex buffer
  * The resulting data can be used to render meshes using NVidia programmable mesh shading pipeline, or in other cluster-based renderers.
+ * When targeting mesh shading hardware, for maximum efficiency meshlets should be further optimized using meshopt_optimizeMeshlet.
  * When using buildMeshlets, vertex positions need to be provided to minimize the size of the resulting clusters.
  * When using buildMeshletsScan, for maximum efficiency the index buffer being converted has to be optimized for vertex cache first.
  *
@@ -729,8 +737,8 @@ public:
 	typedef StorageT<void> Storage;
 
 	meshopt_Allocator()
-		: blocks()
-		, count(0)
+	    : blocks()
+	    , count(0)
 	{
 	}
 
@@ -740,7 +748,8 @@ public:
 			Storage::deallocate(blocks[i - 1]);
 	}
 
-	template <typename T> T* allocate(size_t size)
+	template <typename T>
+	T* allocate(size_t size)
 	{
 		assert(count < sizeof(blocks) / sizeof(blocks[0]));
 		T* result = static_cast<T*>(Storage::allocate(size > size_t(-1) / sizeof(T) ? size_t(-1) : size * sizeof(T)));
@@ -761,8 +770,10 @@ private:
 };
 
 // This makes sure that allocate/deallocate are lazily generated in translation units that need them and are deduplicated by the linker
-template <typename T> void* (MESHOPTIMIZER_ALLOC_CALLCONV *meshopt_Allocator::StorageT<T>::allocate)(size_t) = operator new;
-template <typename T> void (MESHOPTIMIZER_ALLOC_CALLCONV *meshopt_Allocator::StorageT<T>::deallocate)(void*) = operator delete;
+template <typename T>
+void* (MESHOPTIMIZER_ALLOC_CALLCONV *meshopt_Allocator::StorageT<T>::allocate)(size_t) = operator new;
+template <typename T>
+void (MESHOPTIMIZER_ALLOC_CALLCONV *meshopt_Allocator::StorageT<T>::deallocate)(void*) = operator delete;
 #endif
 
 /* Inline implementation for C++ templated wrappers */
