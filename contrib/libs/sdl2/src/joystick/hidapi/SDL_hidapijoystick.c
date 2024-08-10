@@ -280,6 +280,7 @@ static SDL_GameControllerType SDL_GetJoystickGameControllerProtocol(const char *
             0x044f, /* Thrustmaster */
             0x045e, /* Microsoft */
             0x0738, /* Mad Catz */
+            0x0b05, /* ASUS */
             0x0e6f, /* PDP */
             0x0f0d, /* Hori */
             0x10f5, /* Turtle Beach */
@@ -1007,7 +1008,7 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
     }
 }
 
-static SDL_bool HIDAPI_CreateCombinedJoyCons()
+static SDL_bool HIDAPI_CreateCombinedJoyCons(void)
 {
     SDL_HIDAPI_Device *device, *combined;
     SDL_HIDAPI_Device *joycons[2] = { NULL, NULL };

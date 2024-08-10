@@ -97,7 +97,7 @@ static int get_driindex(void)
 
     SDL_strlcpy(device + kmsdrm_dri_pathsize, kmsdrm_dri_devname,
                 sizeof(device) - kmsdrm_dri_devnamesize);
-    while((res = readdir(folder)) != NULL) {
+    while((res = readdir(folder)) != NULL && available < 0) {
         if (SDL_memcmp(res->d_name, kmsdrm_dri_devname,
                        kmsdrm_dri_devnamesize) == 0) {
             SDL_strlcpy(device + kmsdrm_dri_pathsize + kmsdrm_dri_devnamesize,
@@ -123,7 +123,7 @@ static int get_driindex(void)
                             resources->count_encoders > 0 &&
                             resources->count_crtcs > 0) {
                             available = -ENOENT;
-                            for (i = 0; i < resources->count_connectors; i++) {
+                            for (i = 0; i < resources->count_connectors && available < 0; i++) {
                                 drmModeConnector *conn =
                                     KMSDRM_drmModeGetConnector(
                                         drm_fd, resources->connectors[i]);
@@ -134,20 +134,21 @@ static int get_driindex(void)
 
                                 if (conn->connection == DRM_MODE_CONNECTED &&
                                     conn->count_modes) {
+                                    SDL_bool access_denied = SDL_FALSE;
                                     if (SDL_GetHintBoolean(
                                             SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER,
                                             SDL_TRUE)) {
                                         /* Skip this device if we can't obtain
                                          * DRM master */
                                         KMSDRM_drmSetMaster(drm_fd);
-                                        if (KMSDRM_drmAuthMagic(drm_fd, 0) ==
-                                            -EACCES) {
-                                            continue;
+                                        if (KMSDRM_drmAuthMagic(drm_fd, 0) == -EACCES) {
+                                            access_denied = SDL_TRUE;
                                         }
                                     }
 
-                                    available = devindex;
-                                    break;
+                                    if (!access_denied) {
+                                        available = devindex;
+                                    }
                                 }
 
                                 KMSDRM_drmModeFreeConnector(conn);
@@ -158,11 +159,10 @@ static int get_driindex(void)
                     SDL_KMSDRM_UnloadSymbols();
                 }
                 close(drm_fd);
+            } else {
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+                             "Failed to open KMSDRM device %s, errno: %d\n", device, errno);
             }
-
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                         "Failed to open KMSDRM device %s, errno: %d\n", device,
-                         errno);
         }
     }
 
@@ -368,16 +368,29 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
     for (int i = 0; i < num_planes; i++) {
         strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
-        handles[i] = KMSDRM_gbm_bo_get_handle(bo).u32;
+        handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
         offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
         modifiers[i] = modifiers[0];
     }
 
-    if (modifiers[0]) {
+    if (modifiers[0] && modifiers[0] != DRM_FORMAT_MOD_INVALID) {
         flags = DRM_MODE_FB_MODIFIERS;
     }
 
     ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
+
+    if (ret) {
+        handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
+        strides[0] = KMSDRM_gbm_bo_get_stride(bo);
+        offsets[0] = 0;
+        for (int i = 1; i<4; i++) {
+            handles[i] = 0;
+            strides[i] = 0;
+            offsets[i] = 0;
+        }
+        ret = KMSDRM_drmModeAddFB2(viddata->drm_fd, w, h, format, handles, strides, offsets, &fb_info->fb_id, 0);
+    }
+
     if (ret) {
         SDL_free(fb_info);
         return NULL;
@@ -1464,6 +1477,12 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     /* Setup driver data for this window */
     windata->viddata = viddata;
     window->driverdata = windata;
+
+    /* Do we want a double buffering scheme to get low video lag? */
+    windata->double_buffer = SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
+        windata->double_buffer = SDL_TRUE;
+    }
 
     if (!is_vulkan && !vulkan_mode) { /* NON-Vulkan block. */
 

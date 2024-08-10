@@ -2213,6 +2213,7 @@ extern "C" {
  * Since it's driver-specific, it's only supported where possible and
  * implemented. Currently supported the following drivers:
  *
+ * - Wayland (wayland)
  * - KMSDRM (kmsdrm)
  * - Raspberry Pi (raspberrypi)
  */
@@ -3091,6 +3092,27 @@ extern "C" {
  * This hint is available since SDL 2.30.0.
  */
 #define SDL_HINT_SHUTDOWN_DBUS_ON_QUIT "SDL_SHUTDOWN_DBUS_ON_QUIT"
+
+/**
+ * Specify if SDL_RWFromFile should use the resource dir on Apple platforms.
+ *
+ * SDL2 has always done this on Apple platforms, but it can be surprising to
+ * try opening a path to discover that SDL adjusts the path to elsewhere, so
+ * this hint allows that behavior to be disabled.
+ *
+ * If running from a App Bundle, this will be MyApp.app/Contents/Resources. If
+ * running as a normal Unix-like process, this will be the directory where the
+ * running binary lives. Setting this hint to 0 avoids this and just uses the
+ * requested path as-is.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": SDL will not use the app resource directory.
+ * - "1": SDL will use the app's resource directory (default).
+ *
+ * This hint is available since SDL 2.32.0.
+ */
+#define SDL_HINT_APPLE_RWFROMFILE_USE_RESOURCES "SDL_APPLE_RWFROMFILE_USE_RESOURCES"
 
 
 /**
