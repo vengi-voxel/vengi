@@ -262,9 +262,6 @@ msgstr ""
 msgid "Failed to get command for %s"
 msgstr ""
 
-msgid "Keymap"
-msgstr ""
-
 msgid "Reset to default"
 msgstr ""
 
@@ -329,6 +326,9 @@ msgid "Language"
 msgstr ""
 
 msgid "To change the language everywhere restart the application"
+msgstr ""
+
+msgid "Keymap"
 msgstr ""
 
 msgid "Clear"
@@ -670,7 +670,7 @@ msgstr ""
 msgid "Print cursor details in edit mode"
 msgstr ""
 
-msgid "Set auto keyframe"
+msgid "Automatically create keyframes when changing transforms"
 msgstr ""
 
 msgid "Bitmask of gizmo operations in scene mode"
@@ -1461,12 +1461,6 @@ msgstr ""
 msgid "Reset all"
 msgstr ""
 
-msgid "Auto Keyframe"
-msgstr ""
-
-msgid "Automatically create keyframes when changing transforms"
-msgstr ""
-
 msgid "Mirror X"
 msgstr ""
 
@@ -1483,6 +1477,9 @@ msgid "Local transforms"
 msgstr ""
 
 msgid "Update children"
+msgstr ""
+
+msgid "Auto Keyframe"
 msgstr ""
 
 msgid "Tr"
@@ -2118,10 +2115,19 @@ msgstr ""
 msgid "Create a reference node"
 msgstr ""
 
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+
+msgid "Update the children of a node when the transform of the node changes"
+msgstr ""
+
 msgid "Resize the volume to the current selection"
 msgstr ""
 
 msgid "Executes a lua script"
+msgstr ""
+
+msgid "Move the cursor by keys, not but viewport mouse trace"
 msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"

@@ -279,9 +279,6 @@ msgstr "Опис"
 msgid "Failed to get command for %s"
 msgstr "Не вдалося отримати команду для %s"
 
-msgid "Keymap"
-msgstr "Клавіатурна розкладка"
-
 msgid "Reset to default"
 msgstr "Скинути до стандартних налаштувань"
 
@@ -347,6 +344,9 @@ msgstr "Мова"
 
 msgid "To change the language everywhere restart the application"
 msgstr "Щоб змінити мову всюди, перезапустіть програму"
+
+msgid "Keymap"
+msgstr "Клавіатурна розкладка"
 
 msgid "Clear"
 msgstr "Очистити"
@@ -697,8 +697,8 @@ msgstr "Показувати вісь"
 msgid "Print cursor details in edit mode"
 msgstr "Виводити деталі курсора в режимі редагування"
 
-msgid "Set auto keyframe"
-msgstr "Встановити автоматичний ключовий кадр"
+msgid "Automatically create keyframes when changing transforms"
+msgstr "Автоматично створювати ключові кадри при зміні перетворень"
 
 msgid "Bitmask of gizmo operations in scene mode"
 msgstr "Бітова маска операцій гізмо в режимі сцени"
@@ -1538,12 +1538,6 @@ msgstr "Деталі інтерполяції"
 msgid "Reset all"
 msgstr "Скинути все"
 
-msgid "Auto Keyframe"
-msgstr "Автоматичний ключовий кадр"
-
-msgid "Automatically create keyframes when changing transforms"
-msgstr "Автоматично створювати ключові кадри при зміні перетворень"
-
 msgid "Mirror X"
 msgstr "Відобразити по X"
 
@@ -1561,6 +1555,9 @@ msgstr "Локальні перетворення"
 
 msgid "Update children"
 msgstr "Оновити дітей"
+
+msgid "Auto Keyframe"
+msgstr "Автоматичний ключовий кадр"
 
 msgid "Tr"
 msgstr "Tr"
@@ -2216,11 +2213,20 @@ msgstr "Режим сцени"
 msgid "Create a reference node"
 msgstr "Створити вузол посилання"
 
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+
+msgid "Update the children of a node when the transform of the node changes"
+msgstr ""
+
 msgid "Resize the volume to the current selection"
 msgstr "Змінити розмір об'єму на поточний вибір"
 
 msgid "Executes a lua script"
 msgstr "Виконує lua-скрипт"
+
+msgid "Move the cursor by keys, not but viewport mouse trace"
+msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr "Змінити інтенсивність шляхом масштабування значень RGB палітри"
@@ -2527,3 +2533,6 @@ msgstr "Вставити поточний вміст буфера обміну �
 
 msgid "Change the text brush axis"
 msgstr "Змінити ось текстового пензля"
+
+#~ msgid "Set auto keyframe"
+#~ msgstr "Встановити автоматичний ключовий кадр"

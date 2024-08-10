@@ -286,9 +286,6 @@ msgstr "Beschreibung"
 msgid "Failed to get command for %s"
 msgstr "Fehler beim Abrufen des Befehls für %s"
 
-msgid "Keymap"
-msgstr "Tastaturbelegung"
-
 msgid "Reset to default"
 msgstr "Auf Standard zurücksetzen"
 
@@ -355,6 +352,9 @@ msgstr "Sprache"
 msgid "To change the language everywhere restart the application"
 msgstr ""
 "Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
+
+msgid "Keymap"
+msgstr "Tastaturbelegung"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -704,8 +704,8 @@ msgstr "Achsen anzeigen"
 msgid "Print cursor details in edit mode"
 msgstr "Zeige Details am Cursor im Editiermodus"
 
-msgid "Set auto keyframe"
-msgstr "Automatischer Keyframe"
+msgid "Automatically create keyframes when changing transforms"
+msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
 
 msgid "Bitmask of gizmo operations in scene mode"
 msgstr "Bitmaske der Gizmo-Operationen im Szenenmodus"
@@ -1549,12 +1549,6 @@ msgstr "Interpolationsdetails"
 msgid "Reset all"
 msgstr "Alles zurücksetzen"
 
-msgid "Auto Keyframe"
-msgstr "Automatischer Keyframe"
-
-msgid "Automatically create keyframes when changing transforms"
-msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
-
 msgid "Mirror X"
 msgstr "Spiegelung X"
 
@@ -1572,6 +1566,9 @@ msgstr "Lokale Transformationen"
 
 msgid "Update children"
 msgstr "Kinder aktualisieren"
+
+msgid "Auto Keyframe"
+msgstr "Automatischer Keyframe"
 
 msgid "Tr"
 msgstr "Tr"
@@ -2231,11 +2228,20 @@ msgstr "Szenenmodus"
 msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
 
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+
+msgid "Update the children of a node when the transform of the node changes"
+msgstr ""
+
 msgid "Resize the volume to the current selection"
 msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
 
 msgid "Executes a lua script"
 msgstr "Führt ein LUA-Skript aus"
+
+msgid "Move the cursor by keys, not but viewport mouse trace"
+msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
@@ -2570,3 +2576,6 @@ msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
 msgid "Change the text brush axis"
 msgstr "Ändere die Achse des Textpinsels"
+
+#~ msgid "Set auto keyframe"
+#~ msgstr "Automatischer Keyframe"
