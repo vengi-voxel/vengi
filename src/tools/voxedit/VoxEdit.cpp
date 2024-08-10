@@ -127,7 +127,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditViewdistance, "5000");
 	core::Var::get(cfg::VoxEditShowaxis, "true", _("Show the axis"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditCursorDetails, "1", _("Print cursor details in edit mode"), core::Var::minMaxValidator<0, 2>);
-	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", _("Set auto keyframe"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditAutoKeyFrame, "true", _("Automatically create keyframes when changing transforms"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoOperations, "3", _("Bitmask of gizmo operations in scene mode"));
 	core::Var::get(cfg::VoxEditGizmoPivot, "false", core::CV_NOPERSIST, _("Activate the pivot mode for the gizmo in scene mode"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditGizmoAllowAxisFlip, "true", _("Flip axis or stay along the positive world/local axis"), core::Var::boolValidator);
