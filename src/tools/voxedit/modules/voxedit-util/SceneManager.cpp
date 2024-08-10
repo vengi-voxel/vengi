@@ -1577,9 +1577,9 @@ void SceneManager::construct() {
 	_sceneRenderer->construct();
 	_movement.construct();
 
-	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, "Delay in second between autosaves - 0 disables autosaves");
+	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
-	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, "Update the children of a node when the transform of the node changes");
+	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
 		const voxel::Region &region = accumulate(modifier().selections());
@@ -1613,7 +1613,7 @@ void SceneManager::construct() {
 	for (int i = 0; i < lengthof(DIRECTIONS); ++i) {
 		command::Command::registerActionButton(
 				core::string::format("movecursor%s", DIRECTIONS[i].postfix),
-				_move[i], "Move the cursor by keys, not but viewport mouse trace");
+				_move[i], _("Move the cursor by keys, not but viewport mouse trace"));
 	}
 	command::Command::registerCommand("palette_changeintensity", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
