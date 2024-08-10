@@ -166,7 +166,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 		}
 		ImGui::EndCombo();
 	}
-	if (ImGui::IconCollapsingHeader(ICON_LC_LINE_CHART, _("Interpolation details"))) {
+	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_LINE, _("Interpolation details"))) {
 		core::Array<glm::dvec2, 20> data;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
