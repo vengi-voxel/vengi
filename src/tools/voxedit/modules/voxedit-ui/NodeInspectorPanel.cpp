@@ -193,9 +193,6 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 	if (ImGui::Button(_("Reset all"))) {
 		_sceneMgr->nodeResetTransform(node.id(), keyFrameIdx);
 	}
-	ImGui::SameLine();
-	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
-	ImGui::TooltipTextUnformatted(_("Automatically create keyframes when changing transforms"));
 
 	// TODO: icons and convert to commands
 	if (ImGui::Button(_("Mirror X"))) {
@@ -225,9 +222,12 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
 			glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
 			glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
-			bool change = false;
+
 			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
 			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
+			ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
+
+			bool change = false;
 			change |= ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f",
 										ImGuiInputTextFlags_EnterReturnsTrue);
 			if (_localSpace->boolVal()) {
