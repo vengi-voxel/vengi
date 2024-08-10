@@ -197,6 +197,7 @@ void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph 
 	ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
 	ImGui::TooltipTextUnformatted(_("Automatically create keyframes when changing transforms"));
 
+	// TODO: icons and convert to commands
 	if (ImGui::Button(_("Mirror X"))) {
 		_sceneMgr->nodeTransformMirror(node.id(), keyFrameIdx, math::Axis::X);
 	}
