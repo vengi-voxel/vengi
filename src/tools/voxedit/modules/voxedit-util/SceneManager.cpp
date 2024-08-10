@@ -1044,11 +1044,11 @@ bool SceneManager::copy() {
 		return false;
 	}
 	const int nodeId = activeNode();
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.volume() == nullptr) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
 		return false;
 	}
-	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
+	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
 	_copy = voxedit::tool::copy(voxelData, selections);
 	return _copy;
 }
@@ -1059,12 +1059,15 @@ bool SceneManager::pasteAsNewNode() {
 		return false;
 	}
 	const int nodeId = activeNode();
-	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
+		return false;
+	}
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
-	scenegraph::copyNode(node, newNode, false);
+	scenegraph::copyNode(*node, newNode, false);
 	newNode.setVolume(new voxel::RawVolume(*_copy.volume), true);
 	newNode.setPalette(*_copy.palette);
-	return moveNodeToSceneGraph(newNode, node.parent()) != InvalidNodeId;
+	return moveNodeToSceneGraph(newNode, node->parent()) != InvalidNodeId;
 }
 
 bool SceneManager::paste(const glm::ivec3& pos) {
@@ -1073,12 +1076,12 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 		return false;
 	}
 	const int nodeId = activeNode();
-	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	if (node.volume() == nullptr) {
+	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	if (node == nullptr) {
 		return false;
 	}
 	voxel::Region modifiedRegion;
-	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
+	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
 	voxedit::tool::paste(voxelData, _copy, pos, modifiedRegion);
 	if (!modifiedRegion.isValid()) {
 		Log::debug("Failed to paste");
