@@ -266,7 +266,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 14, 2)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 14, 3)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -2673,7 +2673,7 @@ UFBX_ENUM_TYPE(ufbx_texture_type, UFBX_TEXTURE_TYPE, UFBX_TEXTURE_SHADER);
 
 // Blend modes to combine layered textures with, compatible with common blend
 // mode definitions in many art programs. Simpler blend modes have equations
-// specified below where `src` is the layer to compososite over `dst`.
+// specified below where `src` is the layer to composite over `dst`.
 // See eg. https://www.w3.org/TR/2013/WD-compositing-1-20131010/#blendingseparable
 typedef enum ufbx_blend_mode UFBX_ENUM_REPR {
 	UFBX_BLEND_TRANSLUCENT,   // < `src` effects result alpha
