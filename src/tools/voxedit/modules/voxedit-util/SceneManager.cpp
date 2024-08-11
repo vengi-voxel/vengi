@@ -168,7 +168,7 @@ bool SceneManager::importAsVolume(const core::String &file, const core::String &
 	if (v == nullptr) {
 		return false;
 	}
-	scenegraph::SceneGraphNode newNode;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
 	newNode.setPalette(palette);
@@ -182,7 +182,7 @@ bool SceneManager::importAsPlane(const core::String& file) {
 	if (v == nullptr) {
 		return false;
 	}
-	scenegraph::SceneGraphNode newNode;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(v, true);
 	newNode.setName(core::string::extractFilename(img->name().c_str()));
 	newNode.setPalette(palette);
@@ -645,7 +645,7 @@ void SceneManager::splitObjects() {
 	}
 
 	for (voxel::RawVolume *newVolume : volumes) {
-		scenegraph::SceneGraphNode newNode;
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		newNode.setVolume(newVolume, true);
 		newNode.setName(node->name());
 		newNode.setPalette(node->palette());
@@ -1274,7 +1274,7 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 }
 
 int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int parent) {
-	const int newNodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, node, parent, false);
+	const int newNodeId = scenegraph::moveNodeToSceneGraph(_sceneGraph, node, parent);
 	onNewNodeAdded(newNodeId, false);
 	return newNodeId;
 }

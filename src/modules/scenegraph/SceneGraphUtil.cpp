@@ -108,7 +108,7 @@ int copyNodeToSceneGraph(SceneGraph &sceneGraph, const SceneGraphNode &node, int
 	return nodeId;
 }
 
-int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent, bool recursive) {
+int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int parent) {
 	SceneGraphNode newNode(node.type(), node.uuid());
 	copy(node, newNode);
 	if (newNode.type() == SceneGraphNodeType::Model) {
@@ -116,13 +116,7 @@ int moveNodeToSceneGraph(SceneGraph &sceneGraph, SceneGraphNode &node, int paren
 		newNode.setVolume(node.volume(), true);
 		node.releaseOwnership();
 	}
-	const int nodeId = addToGraph(sceneGraph, core::move(newNode), parent);
-	if (recursive) {
-		for (int childId : node.children()) {
-			moveNodeToSceneGraph(sceneGraph, sceneGraph.node(childId), nodeId, recursive);
-		}
-	}
-	return nodeId;
+	return addToGraph(sceneGraph, core::move(newNode), parent);
 }
 
 static int addSceneGraphNode_r(SceneGraph &target, const SceneGraph &source, SceneGraphNode &sourceNode, int parent) {
