@@ -2240,7 +2240,7 @@ msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
 msgid "Executes a lua script"
 msgstr "Führt ein LUA-Skript aus"
 
-msgid "Move the cursor by keys, not but viewport mouse trace"
+msgid "Move the cursor by keys, not by viewport mouse trace"
 msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"

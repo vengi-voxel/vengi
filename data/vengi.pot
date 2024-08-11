@@ -2127,7 +2127,7 @@ msgstr ""
 msgid "Executes a lua script"
 msgstr ""
 
-msgid "Move the cursor by keys, not but viewport mouse trace"
+msgid "Move the cursor by keys, not by viewport mouse trace"
 msgstr ""
 
 msgid "Change intensity by scaling the rgb values of the palette"
