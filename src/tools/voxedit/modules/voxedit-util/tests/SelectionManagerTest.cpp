@@ -7,12 +7,12 @@
 
 namespace voxedit {
 
-class SceneManagerTest : public app::AbstractTest {
+class SelectionManagerTest : public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
 };
 
-TEST_F(SceneManagerTest, test) {
+TEST_F(SelectionManagerTest, test) {
 	SelectionManager mgr;
 	EXPECT_FALSE(mgr.hasSelection());
 	// TODO: SELECTION: implement test
