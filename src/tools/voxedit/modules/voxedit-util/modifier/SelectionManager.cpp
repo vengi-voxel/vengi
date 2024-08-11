@@ -40,6 +40,17 @@ void SelectionManager::unselect() {
 	_selectionValid = false;
 }
 
+voxel::Region SelectionManager::region() const {
+	if (_selections.empty()) {
+		return voxel::Region::InvalidRegion;
+	}
+	voxel::Region r = _selections[0];
+	for (const Selection &selection : _selections) {
+		r.accumulate(selection);
+	}
+	return r;
+}
+
 bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	const Selection sel{mins, maxs};
 	if (!sel.isValid()) {

@@ -32,6 +32,7 @@ public:
 		}
 	}
 
+	voxel::Region region() const;
 	bool hasSelection() const;
 
 	// TODO: SELECTION: this maybe belongs into the modifier itself... let's see how the api evolves

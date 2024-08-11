@@ -242,7 +242,7 @@ voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volum
 		// TODO: SELECTION: this doesn't work anymore after the refactoring because
 		// the selection is no longer a region - and to be honest this doesn't even
 		// work now because if you have two regions selected... **BOOM**
-		voxel::Region srcRegion = accumulate(_selectionManager.selections());
+		voxel::Region srcRegion = _selectionManager.region();
 		srcRegion.cropTo(region);
 		return voxel::RawVolumeWrapper(volume, srcRegion);
 	}
@@ -286,7 +286,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		select(*volume, mins, maxs);
 		if (_selectionManager.hasSelection()) {
-			callback(accumulate(_selectionManager.selections()), _brushContext.modifierType, false);
+			callback(_selectionManager.region(), _brushContext.modifierType, false);
 		}
 		return true;
 	}

@@ -1588,7 +1588,7 @@ void SceneManager::construct() {
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
-		const voxel::Region &region = accumulate(modifier().selectionMgr().selections());
+		const voxel::Region &region = modifier().selectionMgr().region();
 		nodeResize(sceneGraph().activeNode(), region);
 	}).setHelp(_("Resize the volume to the current selection"));
 

@@ -30,6 +30,15 @@ private:
 	bool _paint;
 	bool _force;
 
+	static bool contains(const Selections &selections, int x, int y, int z) {
+		for (const Selection &sel : selections) {
+			if (sel.containsPoint(x, y, z)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	bool skip(int x, int y, int z) const {
 		if (!_region.containsPoint(x, y, z)) {
 			return true;
