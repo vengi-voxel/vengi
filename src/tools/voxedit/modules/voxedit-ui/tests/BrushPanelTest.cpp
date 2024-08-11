@@ -106,12 +106,12 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 
 		modifier.unselect();
-		IM_CHECK(modifier.selections().empty());
+		IM_CHECK(!modifier.selectionMgr().hasSelection());
 
 		command::executeCommands("+actionexecute 1 1");
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
 		command::executeCommands("-actionexecute 1 1");
-		IM_CHECK(!modifier.selections().empty());
+		IM_CHECK(modifier.selectionMgr().hasSelection());
 
 		modifier.unselect();
 	};
