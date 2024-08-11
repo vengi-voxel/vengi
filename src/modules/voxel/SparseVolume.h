@@ -117,6 +117,8 @@ public:
 
 	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
+	void clear();
+
 	/**
 	 * Gets a voxel at the position given by @c x,y,z coordinates
 	 */
