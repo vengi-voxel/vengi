@@ -1019,22 +1019,25 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 		Log::warn("Given node is no model node");
 		return false;
 	}
+
+	voxelformat::SaveContext saveCtx;
+	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
+
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
+
+	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*node);
+	scenegraph::SceneGraph newSceneGraph;
 	for (const Selection &selection : selections) {
-		scenegraph::SceneGraph newSceneGraph;
-		scenegraph::SceneGraphNode newNode;
+		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(*node, newNode, false);
-		newNode.setVolume(new voxel::RawVolume(_sceneGraph.resolveVolume(*node), selection), true);
+		newNode.setVolume(new voxel::RawVolume(volume, selection), true);
 		newSceneGraph.emplace(core::move(newNode));
-		voxelformat::SaveContext saveCtx;
-		saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
-		if (voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
-			Log::info("Saved node %i to %s", nodeId, file.name.c_str());
-		} else {
-			Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
-			return false;
-		}
 	}
+	if (!voxelformat::saveFormat(newSceneGraph, file.name, &file.desc, archive, saveCtx)) {
+		Log::warn("Failed to save node %i to %s", nodeId, file.name.c_str());
+		return false;
+	}
+	Log::info("Saved node %i to %s", nodeId, file.name.c_str());
 	return true;
 }
 
