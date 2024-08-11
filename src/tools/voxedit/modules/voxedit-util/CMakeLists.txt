@@ -22,6 +22,7 @@ set(SRCS
 	modifier/ModifierVolumeWrapper.h
 	modifier/Selection.h
 	modifier/ShapeType.h
+	modifier/SelectionManager.h modifier/SelectionManager.cpp
 
 	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp
@@ -45,6 +46,7 @@ set(TEST_SRCS
 	tests/PlaneBrushTest.cpp
 	tests/SceneManagerTest.cpp
 	tests/SceneRendererTest.cpp
+	tests/SelectionManagerTest.cpp
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp

@@ -59,6 +59,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	bool resetDockLayout = false;
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
+
+		const Modifier &modifier = _sceneMgr->modifier();
+		const bool hasSelection = modifier.selectionMgr().hasSelection();
+
 		if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE, _("New"), "new", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_FILE_INPUT, _("Load"), "load", true, &listener);
@@ -79,7 +83,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save"), "save", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save as"), "saveas", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", !_sceneMgr->modifier().selections().empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_FILE, _("Save selection"), "exportselection", hasSelection, &listener);
 			ImGui::Separator();
 
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add file to scene"), "import", true, &listener);
@@ -100,10 +104,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), &listener);
 			ImGui::Separator();
-			const Modifier &modifier = _sceneMgr->modifier();
-			const Selections &selections = modifier.selections();
-			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", !selections.empty(), &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", !selections.empty(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", hasSelection, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference"), "paste",
 								   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor"), "pastecursor",

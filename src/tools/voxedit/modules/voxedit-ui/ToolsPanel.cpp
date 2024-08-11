@@ -85,7 +85,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
 		ui::Toolbar toolbar("edittools", buttonSize, &listener);
 		toolbar.button(ICON_LC_CROP, "crop");
-		toolbar.button(ICON_LC_SCALING, "resizetoselection", _sceneMgr->modifier().selections().empty());
+		toolbar.button(ICON_LC_SCALING, "resizetoselection", !_sceneMgr->modifier().selectionMgr().hasSelection());
 		toolbar.button(ICON_LC_SPLIT, "splitobjects");
 		toolbar.button(ICON_LC_EXPAND, "modelsize");
 		toolbar.button(ICON_LC_UNGROUP, "colortomodel");

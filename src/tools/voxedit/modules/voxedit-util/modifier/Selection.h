@@ -36,4 +36,4 @@ inline voxel::Region accumulate(const Selections &selections) {
 	return r;
 }
 
-}
+} // namespace voxedit

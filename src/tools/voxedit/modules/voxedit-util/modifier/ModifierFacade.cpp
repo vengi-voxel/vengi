@@ -130,12 +130,13 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->updateReferencePosition(referencePosition());
 	_modifierRenderer->render(camera, scale);
 
-	if (isMode(ModifierType::Select) && _selectStartPositionValid) {
-		const voxel::Region &region = calcSelectionRegion();
-		Selections selections = _selections;
+	// TODO: SELECTION: let the SelectionManager render the SparseVolume
+	if (isMode(ModifierType::Select) && selectionMgr().active()) {
+		const voxel::Region &region = selectionMgr().calcSelectionRegion(_brushContext.cursorPosition);
+		Selections selections = selectionMgr().selections();
 		if (region.isValid()) {
 			selections.push_back(region);
-		} else if (!_selectionValid) {
+		} else if (!selectionMgr().hasSelection()) {
 			return;
 		}
 		_modifierRenderer->updateSelectionBuffers(selections);
@@ -143,8 +144,8 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		return;
 	}
 
-	if (_selectionValid) {
-		_modifierRenderer->updateSelectionBuffers(_selections);
+	if (selectionMgr().hasSelection()) {
+		_modifierRenderer->updateSelectionBuffers(selectionMgr().selections());
 		_modifierRenderer->renderSelection(camera);
 	}
 

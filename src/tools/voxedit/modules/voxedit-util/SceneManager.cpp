@@ -1005,8 +1005,7 @@ bool SceneManager::doRedo() {
 }
 
 bool SceneManager::saveSelection(const io::FileDescription& file) {
-	const Selections& selections = _modifierFacade.selections();
-	if (selections.empty()) {
+	if (!_modifierFacade.selectionMgr().hasSelection()) {
 		return false;
 	}
 	const int nodeId = activeNode();
@@ -1027,6 +1026,7 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 
 	const voxel::RawVolume *volume = _sceneGraph.resolveVolume(*node);
 	scenegraph::SceneGraph newSceneGraph;
+	const Selections& selections = _modifierFacade.selectionMgr().selections();
 	for (const Selection &selection : selections) {
 		scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::copyNode(*node, newNode, false);
@@ -1042,8 +1042,8 @@ bool SceneManager::saveSelection(const io::FileDescription& file) {
 }
 
 bool SceneManager::copy() {
-	const Selections& selections = _modifierFacade.selections();
-	if (selections.empty()) {
+	if (!_modifierFacade.selectionMgr().hasSelection()) {
+		Log::debug("Nothing selected yet - failed to copy");
 		return false;
 	}
 	const int nodeId = activeNode();
@@ -1052,6 +1052,7 @@ bool SceneManager::copy() {
 		return false;
 	}
 	voxel::VoxelData voxelData(node->volume(), node->palette(), false);
+	const Selections& selections = _modifierFacade.selectionMgr().selections();
 	_copy = voxedit::tool::copy(voxelData, selections);
 	return _copy;
 }
@@ -1096,8 +1097,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 }
 
 bool SceneManager::cut() {
-	const Selections& selections = _modifierFacade.selections();
-	if (selections.empty()) {
+	if (!_modifierFacade.selectionMgr().hasSelection()) {
 		Log::debug("Nothing selected - failed to cut");
 		return false;
 	}
@@ -1108,6 +1108,7 @@ bool SceneManager::cut() {
 	}
 	voxel::Region modifiedRegion;
 	voxel::VoxelData voxelData(node.volume(), node.palette(), false);
+	const Selections& selections = _modifierFacade.selectionMgr().selections();
 	_copy = voxedit::tool::cut(voxelData, selections, modifiedRegion);
 	if (!_copy) {
 		Log::debug("Failed to cut");
@@ -1588,7 +1589,7 @@ void SceneManager::construct() {
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
-		const voxel::Region &region = accumulate(modifier().selections());
+		const voxel::Region &region = accumulate(modifier().selectionMgr().selections());
 		nodeResize(sceneGraph().activeNode(), region);
 	}).setHelp(_("Resize the volume to the current selection"));
 
@@ -1684,15 +1685,15 @@ void SceneManager::construct() {
 		if (args[0] == "none") {
 			_modifierFacade.unselect();
 		} else if (args[0] == "all") {
-			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
 				const voxel::Region &region = node->region();
 				if (region.isValid()) {
-					_modifierFacade.select(region.getLowerCorner(), region.getUpperCorner());
+					_modifierFacade.select(*node->volume(), region.getLowerCorner(), region.getUpperCorner());
 				}
 			}
 		} else if (args[0] == "invert") {
-			if (const scenegraph::SceneGraphNode *node = sceneGraphNode(activeNode())) {
-				_modifierFacade.invert(node->region());
+			if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
+				_modifierFacade.invert(*node->volume());
 			}
 		}
 	}).setHelp(_("Select all nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
@@ -1950,13 +1951,8 @@ void SceneManager::construct() {
 	}).setHelp(_("Copy selection"));
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
-		const Selections& selections = _modifierFacade.selections();
-		if (!selections.empty()) {
-			voxel::Region r = selections[0];
-			for (const Selection &region : selections) {
-				r.accumulate(region);
-			}
-			paste(r.getLowerCorner());
+		if (_modifierFacade.selectionMgr().hasSelection()) {
+			paste(_modifierFacade.selectionMgr().selectionLowerCorner());
 		} else {
 			paste(referencePosition());
 		}

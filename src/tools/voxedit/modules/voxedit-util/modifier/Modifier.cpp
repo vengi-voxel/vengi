@@ -3,10 +3,10 @@
  */
 
 #include "Modifier.h"
+#include "app/I18N.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
-#include "app/I18N.h"
 #include "core/StringUtil.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
@@ -74,15 +74,15 @@ void Modifier::construct() {
 	}).setHelp(_("Change the brush type to 'none'"));
 
 	command::Command::registerCommand("lock",
-		[&](const command::CmdArgs &args) {
-			if (args.size() != 1) {
-				Log::info("Usage: lock <x|y|z>");
-				return;
-			}
-			const math::Axis axis = math::toAxis(args[0]);
-			const bool unlock = (_brushContext.lockedAxis & axis) == axis;
-			setLockedAxis(axis, unlock);
-		})
+									  [&](const command::CmdArgs &args) {
+										  if (args.size() != 1) {
+											  Log::info("Usage: lock <x|y|z>");
+											  return;
+										  }
+										  const math::Axis axis = math::toAxis(args[0]);
+										  const bool unlock = (_brushContext.lockedAxis & axis) == axis;
+										  setLockedAxis(axis, unlock);
+									  })
 		.setHelp(_("Toggle locked mode for the given axis at the current cursor position"))
 		.setArgumentCompleter(command::valueCompleter({"x", "y", "z"}));
 
@@ -170,10 +170,10 @@ void Modifier::reset() {
 	setModifierType(ModifierType::Place);
 }
 
-bool Modifier::start() {
+bool Modifier::start(/** TODO: SELECTION: region */) {
 	if (isMode(ModifierType::Select)) {
-		_selectStartPosition = _brushContext.cursorPosition;
-		_selectStartPositionValid = true;
+		// TODO: SELECTION: region
+		_selectionManager.start(voxel::Region::InvalidRegion, _brushContext.cursorPosition);
 		return true;
 	}
 
@@ -192,50 +192,19 @@ void Modifier::executeAdditionalAction() {
 	}
 }
 
-void Modifier::invert(const voxel::Region &region) {
-	if (!region.isValid()) {
-		return;
-	}
-	if (!_selectionValid) {
-		select(region.getLowerCorner(), region.getUpperCorner());
-	} else {
-		// TODO:
-	}
+void Modifier::invert(voxel::RawVolume &volume) {
+	_selectionManager.invert(volume);
 }
 
 void Modifier::unselect() {
-	_selections.clear();
-	_selectionValid = false;
+	_selectionManager.unselect();
 }
 
-bool Modifier::select(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+bool Modifier::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 	if (_locked) {
 		return false;
 	}
-	const Selection sel{mins, maxs};
-	if (!sel.isValid()) {
-		return false;
-	}
-	_selectionValid = true;
-	for (size_t i = 0; i < _selections.size(); ++i) {
-		const Selection &s = _selections[i];
-		if (s.containsRegion(sel)) {
-			return true;
-		}
-	}
-
-	for (size_t i = 0; i < _selections.size();) {
-		Selection &s = _selections[i];
-		if (sel.containsRegion(s)) {
-			_selections.erase(i);
-		} else if (voxel::intersects(sel, s)) {
-			// TODO: slice
-			++i;
-		} else {
-			++i;
-		}
-	}
-	_selections.push_back(sel);
+	_selectionManager.select(volume, mins, maxs);
 	return true;
 }
 
@@ -270,8 +239,11 @@ voxel::Region Modifier::calcBrushRegion() {
 
 voxel::RawVolumeWrapper Modifier::createRawVolumeWrapper(voxel::RawVolume *volume) const {
 	voxel::Region region = volume->region();
-	if (_selectionValid) {
-		voxel::Region srcRegion = accumulate(_selections);
+	if (_selectionManager.hasSelection()) {
+		// TODO: SELECTION: this doesn't work anymore after the refactoring because
+		// the selection is no longer a region - and to be honest this doesn't even
+		// work now because if you have two regions selected... **BOOM**
+		voxel::Region srcRegion = accumulate(_selectionManager.selections());
 		srcRegion.cropTo(region);
 		return voxel::RawVolumeWrapper(volume, srcRegion);
 	}
@@ -294,12 +266,6 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
-voxel::Region Modifier::calcSelectionRegion() const {
-	const glm::ivec3 &mins = glm::min(_selectStartPosition, _brushContext.cursorPosition);
-	const glm::ivec3 &maxs = glm::max(_selectStartPosition, _brushContext.cursorPosition);
-	return voxel::Region(mins, maxs);
-}
-
 bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback) {
 	if (_locked) {
 		return false;
@@ -307,21 +273,22 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	if (aborted()) {
 		return false;
 	}
-	if (isMode(ModifierType::Select)) {
-		const voxel::Region &region = calcSelectionRegion();
-		const glm::ivec3 &mins = region.getLowerCorner();
-		const glm::ivec3 &maxs = region.getUpperCorner();
-		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		select(mins, maxs);
-		if (_selectionValid) {
-			callback(accumulate(_selections), _brushContext.modifierType, false);
-		}
-		return true;
-	}
 
 	voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
 		Log::debug("No volume given - can't perform action");
+		return true;
+	}
+
+	if (isMode(ModifierType::Select)) {
+		const voxel::Region &region = _selectionManager.calcSelectionRegion(_brushContext.cursorPosition);
+		const glm::ivec3 &mins = region.getLowerCorner();
+		const glm::ivec3 &maxs = region.getUpperCorner();
+		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
+		select(*volume, mins, maxs);
+		if (_selectionManager.hasSelection()) {
+			callback(accumulate(_selectionManager.selections()), _brushContext.modifierType, false);
+		}
 		return true;
 	}
 
@@ -344,7 +311,8 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
  *
  * @todo: this should be a global brush option - also see https://github.com/vengi-voxel/vengi/issues/444
  */
-static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region &brushRegion, const glm::ivec3 &cursor) {
+static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region &brushRegion,
+							   const glm::ivec3 &cursor) {
 	if (!brushRegion.isValid()) {
 		return cursor;
 	}
@@ -381,7 +349,8 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 		_brushContext.prevCursorPosition = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {
 			const voxel::Region brushRegion = brush->calcRegion(_brushContext);
-			_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
+			_brushContext.cursorPosition =
+				updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 		}
 		brush->preExecute(_brushContext, volume);
 	}
@@ -397,10 +366,9 @@ void Modifier::postExecuteBrush() {
 }
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-							ModifierType modifierType, const voxel::Voxel &voxel,
-							const Callback &callback) {
+							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
 	if (Brush *brush = currentBrush()) {
-		ModifierVolumeWrapper wrapper(node, modifierType, _selections);
+		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager.selections());
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
 		glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
 		if (brush->brushClamping()) {
@@ -458,7 +426,7 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 
 void Modifier::stop() {
 	if (isMode(ModifierType::Select)) {
-		_selectStartPositionValid = false;
+		_selectionManager.stop();
 		return;
 	}
 	if (AABBBrush *brush = currentAABBBrush()) {

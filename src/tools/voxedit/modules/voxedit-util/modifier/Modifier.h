@@ -6,7 +6,7 @@
 
 #include "ModifierButton.h"
 #include "ModifierType.h"
-#include "Selection.h"
+#include "SelectionManager.h"
 #include "core/IComponent.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
@@ -41,17 +41,19 @@ public:
 	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
 
 protected:
-	Selections _selections;
-	bool _selectionValid = false;
-	bool _selectStartPositionValid = false;
+	// TODO: SELECTION: remove member but use the selection manager as a component that's handed in
+	SelectionManager _selectionManager;
+
+	// lock the modifier to not perform any modification
+	// this can be useful when the user is interaction with the ui elements
+	// and we don't want to modify the volume
 	bool _locked = false;
+
 	/**
 	 * timer value which indicates the next execution time in case you keep the
 	 * modifier triggered
 	 */
 	double _nextSingleExecution = 0;
-
-	glm::ivec3 _selectStartPosition{0};
 
 	core::Buffer<Brush *> _brushes;
 	BrushContext _brushContext;
@@ -76,8 +78,6 @@ protected:
 	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
 		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
-
-	voxel::Region calcSelectionRegion() const;
 
 public:
 	Modifier(SceneManager *sceneMgr);
@@ -105,10 +105,12 @@ public:
 
 	void shutdown() override;
 
-	virtual bool select(const glm::ivec3 &mins, const glm::ivec3 &maxs);
-	virtual void unselect();
-	virtual void invert(const voxel::Region &region);
-	const Selections &selections() const;
+	// TODO: move into SelectionManager
+	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
+	void unselect();
+	void invert(voxel::RawVolume &volume);
+
+	const SelectionManager &selectionMgr() const;
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -289,8 +291,8 @@ inline const glm::ivec3 &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
 }
 
-inline const Selections &Modifier::selections() const {
-	return _selections;
+inline const SelectionManager &Modifier::selectionMgr() const {
+	return _selectionManager;
 }
 
 } // namespace voxedit

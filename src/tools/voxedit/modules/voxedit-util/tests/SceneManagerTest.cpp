@@ -335,7 +335,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	Modifier &modifier = _sceneMgr->modifier();
 	testSetVoxel(testMins(), 1);
 	testSelect(testMins(), testMaxs());
-	EXPECT_FALSE(modifier.selections().empty());
+	EXPECT_TRUE(modifier.selectionMgr().hasSelection());
 	EXPECT_TRUE(_sceneMgr->copy());
 
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
