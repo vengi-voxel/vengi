@@ -66,6 +66,7 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | CSV Palette                     | csv       | X       | X      |
 | Gimp Palette                    | gpl       | X       | X      |
 | JASC Palette                    | pal       | X       | X      |
+| Paint.NET Palette               | txt       | X       | X      |
 | Photoshop Palette               | ase       | X       | X      |
 | Portable Network Graphics       | png       | X       | X      |
 | Qubicle Palette                 | qsm       | X       |        |

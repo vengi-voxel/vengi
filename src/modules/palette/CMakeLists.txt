@@ -5,6 +5,7 @@ set(SRCS
 	private/CSVPalette.cpp private/CSVPalette.h
 	private/GimpPalette.cpp private/GimpPalette.h
 	private/JASCPalette.cpp private/JASCPalette.h
+	private/PaintNetPalette.cpp private/PaintNetPalette.h
 	private/PNGPalette.cpp private/PNGPalette.h
 	private/QBCLPalette.cpp private/QBCLPalette.h
 	private/RGBPalette.cpp private/RGBPalette.h
@@ -20,6 +21,7 @@ set(TEST_SRCS
 
 set(TEST_FILES
 	tests/test-palette-in.png
+	tests/paint.net.txt
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

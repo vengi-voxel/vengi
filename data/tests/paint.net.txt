@@ -1,0 +1,7 @@
+;paint.net Palette File
+;Palette Name: Foobar
+;Colors: 3
+FF000000
+FF222034
+FF45283c
+

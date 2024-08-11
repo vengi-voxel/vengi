@@ -53,6 +53,13 @@ const jsonData = {
       "magics": []
     },
     {
+      "name": "Paint.NET Palette",
+      "extensions": [
+        "txt"
+      ],
+      "magics": []
+    },
+    {
       "name": "Portable Network Graphics",
       "extensions": [
         "png"

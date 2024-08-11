@@ -44,6 +44,12 @@ TEST_F(PaletteTest, testPNGPalette) {
 	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
+TEST_F(PaletteTest, testPaintNetPalette) {
+	Palette pal;
+	EXPECT_TRUE(pal.load("paint.net.txt"));
+	EXPECT_EQ(pal.colorCount(), 3);
+}
+
 TEST_F(PaletteTest, testASEPalette) {
 	Palette pal;
 	pal.nippon();

@@ -65,6 +65,7 @@ const FormatDescription *palettes() {
 		{"Photoshop Palette", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE},
 		{"RGB Palette", {"pal"}, {}, FORMAT_FLAG_SAVE},
 		{"CSV Palette", {"csv"}, {}, FORMAT_FLAG_SAVE},
+		{"Paint.NET Palette", {"txt"}, {}, FORMAT_FLAG_SAVE},
 		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE},
 		{"", {}, {}, 0u}
 	};

@@ -52,12 +52,12 @@ TEST(ColorTest, testRGBA) {
 }
 
 TEST(ColorTest, testHex) {
-	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("#ffffff"));
-	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffff"));
-	EXPECT_EQ(glm::vec4(1.0f), core::Color::fromHex("0xffffffff"));
-	EXPECT_EQ(glm::vec4(0.0f), core::Color::fromHex("0x00000000"));
-	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("0xff0000ff"));
-	EXPECT_EQ(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), core::Color::fromHex("#ff0000ff"));
+	EXPECT_EQ(core::RGBA(255, 255, 255, 255), core::Color::fromHex("#ffffff"));
+	EXPECT_EQ(core::RGBA(255, 255, 255, 255), core::Color::fromHex("0xffffff"));
+	EXPECT_EQ(core::RGBA(255, 255, 255, 255), core::Color::fromHex("0xffffffff"));
+	EXPECT_EQ(core::RGBA(0), core::Color::fromHex("0x00000000"));
+	EXPECT_EQ(core::RGBA(255, 0, 0, 255), core::Color::fromHex("0xff0000ff"));
+	EXPECT_EQ(core::RGBA(255, 0, 0, 255), core::Color::fromHex("#ff0000ff"));
 }
 
 TEST(ColorTest, testQuantize) {

@@ -62,7 +62,7 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 		const int x = core::string::toInt(tokens[0]);
 		const int y = core::string::toInt(tokens[1]);
 		const int z = core::string::toInt(tokens[2]);
-		const core::RGBA color = core::Color::getRGBA(core::Color::fromHex(tokens[3].c_str()));
+		const core::RGBA color = core::Color::fromHex(tokens[3].c_str());
 		const glm::ivec3 pos(x, y, z);
 		func(pos, color);
 	}

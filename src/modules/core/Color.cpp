@@ -745,7 +745,7 @@ core::String Color::toHex(const RGBA rgba, bool hashPrefix) {
 	return hex;
 }
 
-glm::vec4 Color::fromHex(const char *hex) {
+core::RGBA Color::fromHex(const char *hex) {
 	uint32_t r = 0x00;
 	uint32_t g = 0x00;
 	uint32_t b = 0x00;
@@ -758,7 +758,7 @@ glm::vec4 Color::fromHex(const char *hex) {
 	if (sscanf(hex, "%02x%02x%02x%02x", &r, &g, &b, &a) == 3) {
 		a = 0xff;
 	}
-	return fromRGBA(r, g, b, a);
+	return core::RGBA(r, g, b, a);
 }
 
 core::String Color::print(RGBA rgba, bool colorAsHex) {

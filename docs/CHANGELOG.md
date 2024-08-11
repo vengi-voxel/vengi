@@ -13,6 +13,7 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 General:
 
    - Fixed invalid uv coordinate handling when importing meshes to voxelize them
+   - Added support for paint.net palettes
 
 VoxEdit:
 

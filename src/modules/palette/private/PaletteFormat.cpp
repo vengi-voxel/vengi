@@ -8,6 +8,7 @@
 #include "GimpPalette.h"
 #include "JASCPalette.h"
 #include "PNGPalette.h"
+#include "PaintNetPalette.h"
 #include "QBCLPalette.h"
 #include "RGBPalette.h"
 #include "core/FourCC.h"
@@ -29,6 +30,8 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 			return core::make_shared<ASEPalette>();
 		} else if (ext == "csv") {
 			return core::make_shared<CSVPalette>();
+		} else if (ext == "txt") {
+			return core::make_shared<PaintNetPalette>();
 		} else if (ext == "png") {
 			return core::make_shared<PNGPalette>();
 		} else if (ext == "pal") {
