@@ -170,10 +170,9 @@ void Modifier::reset() {
 	setModifierType(ModifierType::Place);
 }
 
-bool Modifier::start(/** TODO: SELECTION: region */) {
+bool Modifier::start(const voxel::Region &region) {
 	if (isMode(ModifierType::Select)) {
-		// TODO: SELECTION: region
-		_selectionManager.start(voxel::Region::InvalidRegion, _brushContext.cursorPosition);
+		_selectionManager.start(region, _brushContext.cursorPosition);
 		return true;
 	}
 
@@ -277,7 +276,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	voxel::RawVolume *volume = node.volume();
 	if (volume == nullptr) {
 		Log::debug("No volume given - can't perform action");
-		return true;
+		return false;
 	}
 
 	if (isMode(ModifierType::Select)) {

@@ -30,7 +30,12 @@ bool ModifierButton::handleDown(int32_t key, double pressedMillis) {
 			modifier.setModifierType(_newType);
 			_sceneMgr->trace(false, true);
 		}
-		modifier.start();
+		int activeNode = _sceneMgr->sceneGraph().activeNode();
+		voxel::Region region = voxel::Region::InvalidRegion;
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+			region = node->region();
+		}
+		modifier.start(region);
 	}
 	return initialDown;
 }

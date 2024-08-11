@@ -125,7 +125,7 @@ public:
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
-	bool start();
+	bool start(const voxel::Region &region);
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.
 	 * @param[out,in] node The model node to modify

@@ -102,7 +102,7 @@ protected:
 		modifier.setModifierType(ModifierType::Override);
 		modifier.setCursorPosition(pos, voxel::FaceNames::NegativeX);
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, paletteColorIndex));
-		if (!modifier.start()) {
+		if (!modifier.start(voxel::Region::InvalidRegion)) {
 			return false;
 		}
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
@@ -130,11 +130,12 @@ protected:
 		modifier.setBrushType(BrushType::None);
 		modifier.setModifierType(ModifierType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);
-		EXPECT_TRUE(modifier.start());
+		EXPECT_TRUE(modifier.start({mins, maxs}));
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
 		modifier.executeAdditionalAction();
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume({mins, maxs}), true);
 		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, bool) {}));
 		modifier.setBrushType(BrushType::Shape);
 		modifier.setModifierType(ModifierType::Place);
