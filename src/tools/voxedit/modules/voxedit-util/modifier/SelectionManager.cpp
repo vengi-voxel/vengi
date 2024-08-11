@@ -27,6 +27,7 @@ void SelectionManager::invert(voxel::RawVolume &volume) {
 		return;
 	}
 	if (!_selectionValid) {
+		// TODO: SELECTION: use the volume region and remove _maxRegion member?
 		select(volume, _maxRegion.getLowerCorner(), _maxRegion.getUpperCorner());
 	} else {
 		// TODO: SELECTION
