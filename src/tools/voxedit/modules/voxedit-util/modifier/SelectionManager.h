@@ -24,6 +24,14 @@ private:
 public:
 	// TODO: SELECTION: reduce access to this as much as possible
 	const Selections &selections() const;
+
+	template <typename F>
+	void visitSelections(F &&f) const {
+		for (const auto &selection : _selections) {
+			f(selection);
+		}
+	}
+
 	bool hasSelection() const;
 
 	// TODO: SELECTION: this maybe belongs into the modifier itself... let's see how the api evolves
