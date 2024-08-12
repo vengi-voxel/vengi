@@ -3,7 +3,6 @@
  */
 
 #include "Downloader.h"
-#include "CubZHAPI.h"
 #include "GithubAPI.h"
 #include "GitlabAPI.h"
 #include "app/App.h"
@@ -233,22 +232,6 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 	return files;
 }
 
-core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
-														 const VoxelSource &source) const {
-	core::DynamicArray<VoxelFile> files;
-	for (const auto &entry : entries) {
-		VoxelFile file;
-		file.source = source.name;
-		file.name = entry.repo + "-" + entry.name + ".3zh";
-		file.license = source.license;
-		file.thumbnailUrl = cubzh::downloadUrl(entry.repo, entry.name);
-		file.url = entry.url;
-		file.fullPath = file.name;
-		files.push_back(file);
-	}
-	return files;
-}
-
 core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArray<github::TreeEntry> &entries,
 														 const VoxelSource &source, const io::ArchivePtr &archive,
 														 core::AtomicBool &shouldQuit) const {
@@ -278,12 +261,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source,
 							   core::AtomicBool &shouldQuit) const {
 	Log::info("... check source %s", source.name.c_str());
-	if (source.provider == "cubzh") {
-		const core::String &tk = core::Var::get("voxelcollection_cubzh_tk", "")->strVal();
-		const core::String &usrId = core::Var::get("voxelcollection_cubzh_usrid", "")->strVal();
-		const core::DynamicArray<cubzh::TreeEntry> &entries = cubzh::repoList(archive, tk, usrId);
-		return processEntries(entries, source);
-	} else if (source.provider == "github") {
+	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
 			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path);
 		return processEntries(entries, source, archive, shouldQuit);

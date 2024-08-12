@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "CubZHAPI.h"
 #include "GithubAPI.h"
 #include "GitlabAPI.h"
 #include "core/String.h"
@@ -115,8 +114,6 @@ public:
 	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<gitlab::TreeEntry> &entries,
 												 const VoxelSource &source, const io::ArchivePtr &archive,
 												 core::AtomicBool &shouldQuit) const;
-	core::DynamicArray<VoxelFile> processEntries(const core::DynamicArray<cubzh::TreeEntry> &entries,
-												 const VoxelSource &source) const;
 };
 
 } // namespace voxelcollection

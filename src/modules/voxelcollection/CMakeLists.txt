@@ -1,6 +1,5 @@
 set(SRCS
 	Downloader.h Downloader.cpp
-	CubZHAPI.h CubZHAPI.cpp
 	GithubAPI.h GithubAPI.cpp
 	GitlabAPI.h GitlabAPI.cpp
 	CollectionManager.h CollectionManager.cpp
@@ -15,7 +14,6 @@ set(TEST_SRCS
 	tests/DownloaderTest.cpp
 	tests/GithubAPITest.cpp
 	tests/GitlabAPITest.cpp
-	tests/CubZHAPITest.cpp
 )
 set(TEST_FILES
 	tests/ambient-occlusion.vengi

@@ -6,7 +6,6 @@
 #include "app/tests/AbstractTest.h"
 #include "io/Archive.h"
 #include "io/MemoryArchive.h"
-#include "voxelcollection/CubZHAPI.h"
 #include "voxelcollection/GithubAPI.h"
 
 namespace voxelcollection {
@@ -177,44 +176,6 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
 	ASSERT_EQ(voxelFile.fullPath, "data/test.vox");
 	ASSERT_EQ(voxelFile.url, entry1.url);
 	ASSERT_EQ(voxelFile.licenseUrl, "https://gitlab.com/veloren/veloren/-/raw/master/LICENSE");
-}
-
-TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileCubzh) {
-	Downloader downloader;
-
-	VoxelSource source;
-	source.name = "cubzh";
-	source.provider = "cubzh";
-
-	core::DynamicArray<cubzh::TreeEntry> entries;
-	cubzh::TreeEntry entry1{"some-uuid-1",
-							"author",
-							"model1",
-							1,
-							"2024-02-08T07:16:42.696Z",
-							"2024-02-08T07:16:52.707Z",
-							"",
-							cubzh::downloadUrl("author", "model1")};
-	cubzh::TreeEntry entry2{"some-uuid-2",
-							"author",
-							"model2",
-							1,
-							"2024-02-08T07:15:55.055Z",
-							"2024-02-08T07:16:16.657Z",
-							"",
-							cubzh::downloadUrl("author", "model2")};
-
-	entries.push_back(entry1);
-	entries.push_back(entry2);
-
-	const core::DynamicArray<VoxelFile> &collection = downloader.processEntries(entries, source);
-	ASSERT_FALSE(collection.empty());
-	const VoxelFile &voxelFile = collection.front();
-	ASSERT_EQ(voxelFile.source, source.name);
-	ASSERT_EQ(voxelFile.name, "author-model1.3zh");
-	ASSERT_EQ(voxelFile.fullPath, "author-model1.3zh");
-	ASSERT_EQ(voxelFile.url, entry1.url);
-	ASSERT_EQ(voxelFile.licenseUrl, "");
 }
 
 } // namespace voxelcollection
