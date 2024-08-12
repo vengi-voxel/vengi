@@ -688,19 +688,20 @@ glm::vec4 Color::fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 	return glm::aligned_vec4(r, g, b, a) / Color::magnitudef;
 }
 
-glm::vec4 Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
+core::RGBA Color::fromHSB(const float hue, const float saturation, const float brightness, const float alpha) {
 	if (0.00001f > brightness) {
-		return glm::vec4(0.f, 0.f, 0.f, alpha);
+		return core::RGBA(0, 0, 0, alpha * 255.0f);
 	}
 	if (0.00001f > saturation) {
-		return glm::vec4(brightness, brightness, brightness, alpha);
+		return core::RGBA(brightness * 255.0f, brightness * 255.0f, brightness * 255.0f, alpha * 255.0f);
 	}
-	glm::vec4 color(0.0f, 0.0f, 0.0f, alpha);
 	const float h = (hue - (float)SDL_floor(hue)) * 6.f;
 	const float f = h - (float)SDL_floor(h);
-	const float p = brightness * (1.f - saturation);
-	const float q = brightness * (1.f - saturation * f);
-	const float t = brightness * (1.f - (saturation * (1.f - f)));
+	const uint8_t p = (uint8_t)(brightness * (1.f - saturation) * 255.0f);
+	const uint8_t q = (uint8_t)(brightness * (1.f - saturation * f) * 255.0f);
+	const uint8_t t = (uint8_t)(brightness * (1.f - (saturation * (1.f - f))) * 255.0f);
+	core::RGBA color;
+	color.a = alpha * 255.0f;
 	switch (static_cast<int>(h)) {
 	case 0:
 		color.r = brightness;

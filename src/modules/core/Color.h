@@ -81,7 +81,7 @@ public:
 		return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 	}
 	static glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-	static glm::vec4 fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
+	static core::RGBA fromHSB(const float hue, const float saturation, const float brightness, const float alpha = 1.0f);
 	static core::RGBA fromHex(const char* hex);
 	static core::String toHex(const RGBA rgba, bool hashPrefix = true);
 
