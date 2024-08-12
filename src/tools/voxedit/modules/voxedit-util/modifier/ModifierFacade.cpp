@@ -131,8 +131,8 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->render(camera, scale);
 
 	// TODO: SELECTION: let the SelectionManager render the SparseVolume
-	if (isMode(ModifierType::Select) && selectionMgr().active()) {
-		const voxel::Region &region = selectionMgr().calcSelectionRegion(_brushContext.cursorPosition);
+	if (isMode(ModifierType::Select) && _selectBrush.active()) {
+		const voxel::Region &region = _selectBrush.calcSelectionRegion(_brushContext.cursorPosition);
 		Selections selections = selectionMgr().selections();
 		if (region.isValid()) {
 			selections.push_back(region);

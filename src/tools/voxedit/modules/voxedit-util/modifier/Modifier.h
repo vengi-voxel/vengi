@@ -17,6 +17,7 @@
 #include "voxedit-util/modifier/brush/PaintBrush.h"
 #include "voxedit-util/modifier/brush/PathBrush.h"
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
+#include "voxedit-util/modifier/brush/SelectBrush.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextBrush.h"
@@ -43,6 +44,8 @@ public:
 protected:
 	// TODO: SELECTION: remove member but use the selection manager as a component that's handed in
 	SelectionManager _selectionManager;
+
+	SelectBrush _selectBrush;
 
 	// lock the modifier to not perform any modification
 	// this can be useful when the user is interaction with the ui elements

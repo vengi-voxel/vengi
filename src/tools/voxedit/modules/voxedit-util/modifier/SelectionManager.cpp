@@ -12,20 +12,8 @@ const Selections &SelectionManager::selections() const {
 	return _selections;
 }
 
-void SelectionManager::start(const glm::ivec3 &startPos) {
-	_selectStartPosition = startPos;
-	_selectStartPositionValid = true;
-}
-
-void SelectionManager::stop() {
-	_selectStartPositionValid = false;
-}
-
 void SelectionManager::invert(voxel::RawVolume &volume) {
-	if (!_selectStartPositionValid) {
-		return;
-	}
-	if (!_selectionValid) {
+	if (!hasSelection()) {
 		select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
 	} else {
 		// TODO: SELECTION
@@ -33,14 +21,11 @@ void SelectionManager::invert(voxel::RawVolume &volume) {
 }
 
 void SelectionManager::unselect(voxel::RawVolume &volume) {
-	// _selectionVolume.clear();
-	_selections.clear();
-	_selectionValid = false;
+	reset();
 }
 
 void SelectionManager::reset() {
 	_selections.clear();
-	_selectionValid = false;
 }
 
 voxel::Region SelectionManager::region() const {
@@ -59,7 +44,6 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 	if (!sel.isValid()) {
 		return false;
 	}
-	_selectionValid = true;
 	for (size_t i = 0; i < _selections.size(); ++i) {
 		const Selection &s = _selections[i];
 		if (s.containsRegion(sel)) {
@@ -80,12 +64,6 @@ bool SelectionManager::select(voxel::RawVolume &volume, const glm::ivec3 &mins, 
 	}
 	_selections.push_back(sel);
 	return true;
-}
-
-voxel::Region SelectionManager::calcSelectionRegion(const glm::ivec3 &cursorPosition) const {
-	const glm::ivec3 &mins = glm::min(_selectStartPosition, cursorPosition);
-	const glm::ivec3 &maxs = glm::max(_selectStartPosition, cursorPosition);
-	return voxel::Region(mins, maxs);
 }
 
 } // namespace voxedit

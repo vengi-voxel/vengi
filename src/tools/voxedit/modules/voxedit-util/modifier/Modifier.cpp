@@ -172,7 +172,7 @@ void Modifier::reset() {
 
 bool Modifier::start() {
 	if (isMode(ModifierType::Select)) {
-		_selectionManager.start(_brushContext.cursorPosition);
+		_selectBrush.start(_brushContext.cursorPosition);
 		return true;
 	}
 
@@ -280,7 +280,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	}
 
 	if (isMode(ModifierType::Select)) {
-		const voxel::Region &region = _selectionManager.calcSelectionRegion(_brushContext.cursorPosition);
+		const voxel::Region &region = _selectBrush.calcSelectionRegion(_brushContext.cursorPosition);
 		const glm::ivec3 &mins = region.getLowerCorner();
 		const glm::ivec3 &maxs = region.getUpperCorner();
 		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
@@ -425,7 +425,7 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 
 void Modifier::stop() {
 	if (isMode(ModifierType::Select)) {
-		_selectionManager.stop();
+		_selectBrush.stop();
 		return;
 	}
 	if (AABBBrush *brush = currentAABBBrush()) {
