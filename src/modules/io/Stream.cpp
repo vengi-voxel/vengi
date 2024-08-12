@@ -441,7 +441,7 @@ bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
 	utf16str.reserve(characters);
 	for (uint32_t i = 0; i < characters; ++i) {
 		uint16_t c;
-		if (!readUInt16BE(c)) {
+		if (readUInt16BE(c) == -1) {
 			return false;
 		}
 		utf16str.push_back(c);
