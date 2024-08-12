@@ -105,9 +105,9 @@ public:
 
 	void shutdown() override;
 
-	// TODO: move into SelectionManager
+	// TODO: SELECTION: move into SelectionManager? or keep it here?
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
-	void unselect();
+	void unselect(voxel::RawVolume &volume);
 	void invert(voxel::RawVolume &volume);
 
 	const SelectionManager &selectionMgr() const;
@@ -125,7 +125,7 @@ public:
 	/**
 	 * @brief Pick the start position of the modifier execution bounding box
 	 */
-	bool start(const voxel::Region &region);
+	bool start();
 	/**
 	 * @brief End the current ModifierType execution and modify the given volume according to the type.
 	 * @param[out,in] node The model node to modify

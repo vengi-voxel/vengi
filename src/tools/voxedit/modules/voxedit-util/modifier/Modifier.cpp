@@ -156,7 +156,7 @@ void Modifier::update(double nowSeconds) {
 }
 
 void Modifier::reset() {
-	unselect();
+	_selectionManager.reset();
 	_brushContext.gridResolution = 1;
 	_brushContext.cursorPosition = glm::ivec3(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
@@ -170,9 +170,9 @@ void Modifier::reset() {
 	setModifierType(ModifierType::Place);
 }
 
-bool Modifier::start(const voxel::Region &region) {
+bool Modifier::start() {
 	if (isMode(ModifierType::Select)) {
-		_selectionManager.start(region, _brushContext.cursorPosition);
+		_selectionManager.start(_brushContext.cursorPosition);
 		return true;
 	}
 
@@ -195,8 +195,8 @@ void Modifier::invert(voxel::RawVolume &volume) {
 	_selectionManager.invert(volume);
 }
 
-void Modifier::unselect() {
-	_selectionManager.unselect();
+void Modifier::unselect(voxel::RawVolume &volume) {
+	_selectionManager.unselect(volume);
 }
 
 bool Modifier::select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs) {

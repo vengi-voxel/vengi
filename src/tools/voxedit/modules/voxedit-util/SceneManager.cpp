@@ -1681,20 +1681,15 @@ void SceneManager::construct() {
 			Log::info("Usage: select [all|none|invert]");
 			return;
 		}
-		if (args[0] == "none") {
-			_modifierFacade.unselect();
-		} else if (args[0] == "all") {
-			if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
-				const voxel::Region &region = node->region();
-				if (region.isValid()) {
-					_modifierFacade.select(*node->volume(), region.getLowerCorner(), region.getUpperCorner());
-				}
-			}
-		} else if (args[0] == "invert") {
-			if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(activeNode())) {
+			if (args[0] == "none") {
+				_modifierFacade.unselect(*node->volume());
+			} else if (args[0] == "all") {
+				_modifierFacade.select(*node->volume(), node->region().getLowerCorner(), node->region().getUpperCorner());
+			} else if (args[0] == "invert") {
 				_modifierFacade.invert(*node->volume());
 			}
-		}
+	}
 	}).setHelp(_("Select all nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
 	command::Command::registerCommand("presentation", [] (const command::CmdArgs& args) {

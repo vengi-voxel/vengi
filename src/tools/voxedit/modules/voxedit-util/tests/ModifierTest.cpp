@@ -30,7 +30,7 @@ protected:
 		modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		modifier.setGridResolution(1);
 		modifier.setCursorPosition(mins, voxel::FaceNames::PositiveX); // mins for aabb
-		EXPECT_TRUE(modifier.start({mins, maxs}));
+		EXPECT_TRUE(modifier.start());
 		if (brushType == BrushType::Shape) {
 			if (modifier.shapeBrush().singleMode()) {
 				EXPECT_FALSE(modifier.shapeBrush().active())

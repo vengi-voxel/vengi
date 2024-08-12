@@ -12,10 +12,9 @@ const Selections &SelectionManager::selections() const {
 	return _selections;
 }
 
-void SelectionManager::start(const voxel::Region &maxRegion, const glm::ivec3 &startPos) {
+void SelectionManager::start(const glm::ivec3 &startPos) {
 	_selectStartPosition = startPos;
 	_selectStartPositionValid = true;
-	_maxRegion = maxRegion;
 }
 
 void SelectionManager::stop() {
@@ -27,15 +26,19 @@ void SelectionManager::invert(voxel::RawVolume &volume) {
 		return;
 	}
 	if (!_selectionValid) {
-		// TODO: SELECTION: use the volume region and remove _maxRegion member?
-		select(volume, _maxRegion.getLowerCorner(), _maxRegion.getUpperCorner());
+		select(volume, volume.region().getLowerCorner(), volume.region().getUpperCorner());
 	} else {
 		// TODO: SELECTION
 	}
 }
 
-void SelectionManager::unselect() {
+void SelectionManager::unselect(voxel::RawVolume &volume) {
 	// _selectionVolume.clear();
+	_selections.clear();
+	_selectionValid = false;
+}
+
+void SelectionManager::reset() {
 	_selections.clear();
 	_selectionValid = false;
 }

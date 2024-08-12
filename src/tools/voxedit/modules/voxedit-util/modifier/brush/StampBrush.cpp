@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "app/I18N.h"
 #include "command/Command.h"
+#include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
@@ -59,7 +60,7 @@ void StampBrush::construct() {
 				setVolume(stampVolume, node->palette());
 				// we unselect here as it's not obvious for the user that the stamp also only operates in the selection
 				// this can sometimes lead to confusion if you e.g. created a stamp from a fully filled selected area
-				modifier.unselect();
+				command::executeCommands("select none");
 			}
 		}
 	}).setHelp(_("Use the current selection as new stamp"));
