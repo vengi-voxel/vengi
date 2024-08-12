@@ -436,6 +436,9 @@ bool ReadStream::readPascalStringUInt32BE(core::String &str) {
 }
 
 bool ReadStream::readUTF16BE(uint16_t characters, core::String &str) {
+	if (characters == 0u) {
+		return true;
+	}
 	str.clear();
 	core::DynamicArray<uint16_t> utf16str;
 	utf16str.reserve(characters);
