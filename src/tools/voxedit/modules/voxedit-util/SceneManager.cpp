@@ -1946,7 +1946,7 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("paste", [&] (const command::CmdArgs& args) {
 		if (_modifierFacade.selectionMgr().hasSelection()) {
-			paste(_modifierFacade.selectionMgr().selectionLowerCorner());
+			paste(_modifierFacade.selectionMgr().region().getLowerCorner());
 		} else {
 			paste(referencePosition());
 		}

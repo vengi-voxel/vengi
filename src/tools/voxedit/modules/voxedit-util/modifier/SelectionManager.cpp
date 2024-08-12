@@ -88,15 +88,4 @@ voxel::Region SelectionManager::calcSelectionRegion(const glm::ivec3 &cursorPosi
 	return voxel::Region(mins, maxs);
 }
 
-glm::ivec3 SelectionManager::selectionLowerCorner() const {
-	if (!hasSelection()) {
-		return glm::ivec3(0);
-	}
-	voxel::Region r = _selections[0];
-	for (const Selection &region : _selections) {
-		r.accumulate(region);
-	}
-	return r.getLowerCorner();
-}
-
 } // namespace voxedit

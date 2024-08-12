@@ -39,8 +39,6 @@ public:
 	bool active() const;
 	void stop();
 
-	glm::ivec3 selectionLowerCorner() const;
-
 	// TODO: SELECTION: the plan here is to move the selected voxels into the sparse volume to allow copy/cut/move operations
 	void invert(voxel::RawVolume &volume);
 	bool select(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs);
