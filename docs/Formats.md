@@ -63,11 +63,12 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 
 | Name                            | Extension | Loading | Saving |
 | :------------------------------ | --------- | ------- | ------ |
+| Adobe Swatch Exchange           | ase       | X       | X      |
 | CSV Palette                     | csv       | X       | X      |
 | Gimp Palette                    | gpl       | X       | X      |
 | JASC Palette                    | pal       | X       | X      |
 | Paint.NET Palette               | txt       | X       | X      |
-| Photoshop Palette               | ase       | X       | X      |
+| Photoshop Palette               | aco       | X       | X      |
 | Portable Network Graphics       | png       | X       | X      |
 | Qubicle Palette                 | qsm       | X       |        |
 | RGB Palette                     | pal       | X       | X      |

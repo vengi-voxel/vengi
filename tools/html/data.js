@@ -27,7 +27,7 @@ const jsonData = {
       ]
     },
     {
-      "name": "Photoshop Palette",
+      "name": "Adobe Swatch Exchange",
       "extensions": [
         "ase"
       ],
@@ -37,6 +37,14 @@ const jsonData = {
           "value": "ASEF"
         }
       ]
+    },
+    {
+      "name": "Photoshop Palette",
+      "extensions": [
+        "aco",
+        "8bco"
+      ],
+      "magics": []
     },
     {
       "name": "RGB Palette",

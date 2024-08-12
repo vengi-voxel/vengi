@@ -3,8 +3,8 @@
  */
 
 #include "palette/Palette.h"
-#include "core/ArrayLength.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ArrayLength.h"
 #include "core/GameConfig.h"
 #include "core/Var.h"
 #include "palette/PaletteLookup.h"
@@ -48,6 +48,26 @@ TEST_F(PaletteTest, testPaintNetPalette) {
 	Palette pal;
 	EXPECT_TRUE(pal.load("paint.net.txt"));
 	EXPECT_EQ(pal.colorCount(), 3);
+	const uint64_t hash1 = pal.hash();
+
+	ASSERT_TRUE(pal.save("paint.nettest.txt"));
+	EXPECT_TRUE(pal.load("paint.nettest.txt"));
+	EXPECT_EQ(pal.colorCount(), 3);
+	const uint64_t hash2 = pal.hash();
+	EXPECT_EQ(hash2, hash1);
+}
+
+TEST_F(PaletteTest, testPhotoshopPalette) {
+	Palette pal;
+	EXPECT_TRUE(pal.load("test.aco"));
+	EXPECT_EQ(pal.colorCount(), 5);
+	const uint64_t hash1 = pal.hash();
+
+	ASSERT_TRUE(pal.save("photoshoptest.aco"));
+	EXPECT_TRUE(pal.load("photoshoptest.aco"));
+	EXPECT_EQ(pal.colorCount(), 5);
+	const uint64_t hash2 = pal.hash();
+	EXPECT_EQ(hash2, hash1);
 }
 
 TEST_F(PaletteTest, testASEPalette) {
@@ -220,7 +240,7 @@ TEST_F(PaletteTest, testExtractPaletteName) {
 }
 
 TEST_F(PaletteTest, testCreateAndLoadPalette) {
-	const image::ImagePtr& img = image::loadImage("test-palette-in.png");
+	const image::ImagePtr &img = image::loadImage("test-palette-in.png");
 	ASSERT_TRUE(img->isLoaded()) << "Failed to load image: " << img->name();
 	palette::Palette palette;
 	EXPECT_TRUE(palette::Palette::createPalette(img, palette)) << "Failed to create palette image";
@@ -235,4 +255,4 @@ TEST_F(PaletteTest, testMaterialPropertyByName) {
 	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 0.5f);
 }
 
-} // namespace voxel
+} // namespace palette
