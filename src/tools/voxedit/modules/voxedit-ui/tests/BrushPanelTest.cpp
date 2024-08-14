@@ -102,15 +102,11 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
 		const voxedit::SelectionManager &selectionMgr = _sceneMgr->modifier().selectionMgr();
 
-		const int viewportId = viewportEditMode(ctx, _app);
-		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
-
 		command::executeCommands("select none");
 		IM_CHECK(!selectionMgr.hasSelection());
 
-		command::executeCommands("+actionexecute 1 1");
-		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
-		command::executeCommands("-actionexecute 1 1");
+		const int viewportId = viewportEditMode(ctx, _app);
+		IM_CHECK(executeViewportClickArea(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
 		IM_CHECK(selectionMgr.hasSelection());
 
 		command::executeCommands("select none");

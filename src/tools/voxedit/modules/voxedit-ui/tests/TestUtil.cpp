@@ -40,6 +40,14 @@ void executeViewportClick() {
 	command::executeCommands("+actionexecute 1 1;-actionexecute 1 1");
 }
 
+bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, const ImVec2 &offset) {
+	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportId, {0.0f, 0.0f}), false);
+	command::executeCommands("+actionexecute 1 1");
+	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportId, offset), false);
+	command::executeCommands("-actionexecute 1 1");
+	return true;
+}
+
 int viewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 	int viewportId = -1;
 	for (int i = 0; i < 8; ++i) {
