@@ -116,7 +116,9 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(core::Color::Yellow());
 	for (const Selection &selection : selections) {
-		core_assert(selection.isValid());
+		if (!selection.isValid()) {
+			continue;
+		}
 		_shapeBuilder.aabb(selection.getLowerCorner(), selection.getUpperCorner() + glm::one<glm::ivec3>());
 	}
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);

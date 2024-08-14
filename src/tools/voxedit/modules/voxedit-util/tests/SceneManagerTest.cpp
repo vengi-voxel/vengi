@@ -127,8 +127,7 @@ protected:
 	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.stop();
-		modifier.setBrushType(BrushType::None);
-		modifier.setModifierType(ModifierType::Select);
+		modifier.setBrushType(BrushType::Select);
 		modifier.setCursorPosition(mins, voxel::FaceNames::NegativeX);
 		EXPECT_TRUE(modifier.start());
 		modifier.setCursorPosition(maxs, voxel::FaceNames::NegativeX);
@@ -138,7 +137,6 @@ protected:
 		node.setVolume(new voxel::RawVolume({mins, maxs}), true);
 		EXPECT_TRUE(modifier.execute(sceneGraph, node, [&](const voxel::Region &, ModifierType, bool) {}));
 		modifier.setBrushType(BrushType::Shape);
-		modifier.setModifierType(ModifierType::Place);
 	}
 
 	voxel::RawVolume *testVolume() {

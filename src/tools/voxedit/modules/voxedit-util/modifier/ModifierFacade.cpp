@@ -131,23 +131,18 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 	_modifierRenderer->render(camera, scale);
 
 	// TODO: SELECTION: remove me - let the SelectionManager render the SparseVolume
-	if (isMode(ModifierType::Select) && _selectBrush.active()) {
-		const voxel::Region &region = _selectBrush.calcRegion(_brushContext);
-		Selections selections = selectionMgr().selections();
-		if (region.isValid()) {
+	if (_brushType == BrushType::Select && brush->active()) {
+		if (brush->dirty()) {
+			const voxel::Region &region = brush->calcRegion(_brushContext);
+			Selections selections = selectionMgr().selections();
 			selections.push_back(region);
-		} else if (!selectionMgr().hasSelection()) {
-			return;
+			_modifierRenderer->updateSelectionBuffers(selections);
+			brush->markClean();
 		}
-		_modifierRenderer->updateSelectionBuffers(selections);
-		_modifierRenderer->renderSelection(camera);
-		return;
-	}
-
-	if (selectionMgr().hasSelection()) {
+	} else {
 		_modifierRenderer->updateSelectionBuffers(selectionMgr().selections());
-		_modifierRenderer->renderSelection(camera);
 	}
+	_modifierRenderer->renderSelection(camera);
 
 	if (isMode(ModifierType::ColorPicker)) {
 		return;
