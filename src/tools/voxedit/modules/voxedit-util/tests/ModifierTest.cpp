@@ -45,19 +45,12 @@ protected:
 	}
 
 	void select(voxel::RawVolume &volume, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
-		prepare(modifier, mins, maxs, ModifierType::Select, BrushType::None);
-		int executed = 0;
+		prepare(modifier, mins, maxs, ModifierType::Select, BrushType::Select);
 		scenegraph::SceneGraph sceneGraph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(&volume, false);
-		EXPECT_TRUE(
-			modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType type, bool markUndo) {
-				EXPECT_EQ(ModifierType::Select, type) << (int)type;
-				EXPECT_EQ(voxel::Region(mins, maxs), region);
-				++executed;
-			}));
+		modifier.execute(sceneGraph, node);
 		modifier.stop();
-		EXPECT_EQ(1, executed);
 	}
 };
 
@@ -92,17 +85,23 @@ TEST_F(ModifierTest, testModifierSelection) {
 	ASSERT_TRUE(modifier.init());
 	select(volume, modifier, glm::ivec3(-1), glm::ivec3(1));
 
+	// now modify voxels - but only on the current selection
 	prepare(modifier, glm::ivec3(-3), glm::ivec3(3), ModifierType::Place, BrushType::Shape);
-	int modifierExecuted = 0;
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(&volume, false);
+	int modifierExecuted = 0;
 	EXPECT_TRUE(
 		modifier.execute(sceneGraph, node, [&](const voxel::Region &region, ModifierType modifierType, bool markUndo) {
 			++modifierExecuted;
 			EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
 		}));
 	EXPECT_EQ(1, modifierExecuted);
+	EXPECT_EQ(glm::ivec3(-1), modifier.selectionMgr().region().getLowerCorner());
+	EXPECT_EQ(glm::ivec3(1), modifier.selectionMgr().region().getUpperCorner());
+	EXPECT_FALSE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(-2, -2, -2).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(volume.voxel(2, 2, 2).getMaterial()));
 	modifier.shutdown();
 }
 

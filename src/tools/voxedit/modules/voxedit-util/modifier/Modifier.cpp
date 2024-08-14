@@ -262,7 +262,8 @@ void Modifier::unlock() {
 	_locked = false;
 }
 
-bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback) {
+bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+					   const ModifiedRegionCallback &callback) {
 	if (_locked) {
 		return false;
 	}
@@ -350,7 +351,8 @@ void Modifier::postExecuteBrush() {
 }
 
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-							ModifierType modifierType, const voxel::Voxel &voxel, const Callback &callback) {
+							ModifierType modifierType, const voxel::Voxel &voxel,
+							const ModifiedRegionCallback &callback) {
 	if (Brush *brush = currentBrush()) {
 		ModifierVolumeWrapper wrapper(node, modifierType, _selectionManager.selections());
 		voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
@@ -364,7 +366,9 @@ bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::Scen
 		const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
 		if (modifiedRegion.isValid()) {
 			voxel::logRegion("Dirty region", modifiedRegion);
-			callback(modifiedRegion, _brushContext.modifierType, true);
+			if (callback) {
+				callback(modifiedRegion, _brushContext.modifierType, true);
+			}
 		}
 		_brushContext.cursorPosition = prevCursorPos;
 		_brushContext.cursorVoxel = prevVoxel;

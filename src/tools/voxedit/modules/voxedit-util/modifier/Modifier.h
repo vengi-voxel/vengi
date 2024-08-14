@@ -39,7 +39,7 @@ class SceneManager;
  */
 class Modifier : public core::IComponent {
 public:
-	using Callback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
+	using ModifiedRegionCallback = std::function<void(const voxel::Region &region, ModifierType type, bool markUndo)>;
 
 protected:
 	// TODO: SELECTION: remove member but use the selection manager as a component that's handed in
@@ -79,7 +79,8 @@ protected:
 	 */
 	bool executeBrush(
 		scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, ModifierType modifierType,
-		const voxel::Voxel &voxel, const Callback &callback = [](const voxel::Region &, ModifierType, bool) {});
+		const voxel::Voxel &voxel,
+		const ModifiedRegionCallback &callback = {});
 
 public:
 	Modifier(SceneManager *sceneMgr);
@@ -134,7 +135,8 @@ public:
 	 * @param callback Called for every region that was modified for the current active modifier.
 	 * @note @c start() and @c stop() must be called before and after this method
 	 */
-	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, const Callback &callback);
+	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+				 const ModifiedRegionCallback &callback = {});
 	void stop();
 	/**
 	 * @brief Actions could get aborted by some external action like hitting esc
