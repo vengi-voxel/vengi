@@ -12,6 +12,7 @@ namespace voxedit {
 
 class SceneManager;
 
+// TODO: convert into AABBBrush?
 /**
  * @ingroup Brushes
  */
