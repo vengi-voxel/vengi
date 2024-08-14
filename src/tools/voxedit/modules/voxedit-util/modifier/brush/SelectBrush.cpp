@@ -19,9 +19,13 @@ void SelectBrush::stop() {
 	_selectStartPositionValid = false;
 }
 
-voxel::Region SelectBrush::calcSelectionRegion(const glm::ivec3 &cursorPosition) const {
-	const glm::ivec3 &mins = glm::min(_selectStartPosition, cursorPosition);
-	const glm::ivec3 &maxs = glm::max(_selectStartPosition, cursorPosition);
+void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						   const voxel::Region &region) {
+}
+
+voxel::Region SelectBrush::calcRegion(const BrushContext &context) const {
+	const glm::ivec3 &mins = glm::min(_selectStartPosition, context.cursorPosition);
+	const glm::ivec3 &maxs = glm::max(_selectStartPosition, context.cursorPosition);
 	return voxel::Region(mins, maxs);
 }
 

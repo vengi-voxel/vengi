@@ -28,14 +28,15 @@
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
+static constexpr const char *BrushTypeIcons[] = {ICON_LC_PIPETTE,
 												 ICON_LC_BOXES,
 												 ICON_LC_GROUP,
 												 ICON_LC_STAMP,
 												 ICON_LC_PEN_LINE,
 												 ICON_LC_FOOTPRINTS,
 												 ICON_LC_PAINTBRUSH,
-												 ICON_LC_TEXT};
+												 ICON_LC_TEXT,
+												 ICON_LC_SQUARE_DASHED_MOUSE_POINTER};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -196,6 +197,10 @@ void BrushPanel::updatePlaneBrushPanel(command::CommandExecutionListener &listen
 
 void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listener) {
 	ImGui::TextWrappedUnformatted(_("Draws a line from the reference position to the current cursor position"));
+}
+
+void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
+	ImGui::TextWrappedUnformatted(_("Select areas of voxels"));
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
@@ -396,14 +401,13 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updatePaintBrushPanel(listener);
 		} else if (brushType == BrushType::Text) {
 			updateTextBrushPanel(listener);
+		} else if (brushType == BrushType::Select) {
+			updateSelectBrushPanel(listener);
 		}
 	}
-	if (brushType == BrushType::None) {
-		if (modifier.isMode(ModifierType::ColorPicker)) {
-			ImGui::TextWrappedUnformatted(_("Click on a voxel to pick the color"));
-		} else if (modifier.isMode(ModifierType::Select)) {
-			ImGui::TextWrappedUnformatted(_("Select areas of voxels"));
-		}
+
+	if (modifier.isMode(ModifierType::ColorPicker)) {
+		ImGui::TextWrappedUnformatted(_("Click on a voxel to pick the color"));
 	}
 }
 
@@ -446,6 +450,8 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 		if ((supported & ModifierType::Override) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_SQUARE_PEN, "actionoverride", !modifier.isMode(ModifierType::Override));
 		}
+	} else {
+		modifier.setModifierType(supported);
 	}
 }
 

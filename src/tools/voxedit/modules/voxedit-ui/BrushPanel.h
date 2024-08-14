@@ -41,6 +41,7 @@ private:
 	void updatePlaneBrushPanel(command::CommandExecutionListener &listener);
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
 	void updatePathBrushPanel(command::CommandExecutionListener &listener);
+	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);

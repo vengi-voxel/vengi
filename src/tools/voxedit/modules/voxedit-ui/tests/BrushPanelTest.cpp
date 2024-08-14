@@ -7,6 +7,7 @@
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
+#include "voxedit-util/modifier/SelectionManager.h"
 #include "voxel/Voxel.h"
 
 namespace voxedit {
@@ -31,7 +32,7 @@ static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id
 
 static bool setModifierType(ImGuiTestContext *ctx, voxedit::ModifierFacade &modifier, ModifierType type) {
 	if (type == ModifierType::Select) {
-		IM_CHECK_RETV(modifier.brushType() == BrushType::None, false);
+		IM_CHECK_RETV(modifier.brushType() == BrushType::Select, false);
 		ctx->ItemClick("modifiers/###button0");
 	} else if (type == ModifierType::ColorPicker) {
 		IM_CHECK_RETV(modifier.brushType() == BrushType::None, false);
@@ -98,34 +99,33 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select")->TestFunc = [=](ImGuiTestContext *ctx) {
-		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::None));
-		voxedit::ModifierFacade &modifier = _sceneMgr->modifier();
-		IM_CHECK(setModifierType(ctx, modifier, ModifierType::Select));
+		IM_CHECK(activeBrush(this, ctx, id, _sceneMgr, BrushType::Select));
+		const voxedit::SelectionManager &selectionMgr = _sceneMgr->modifier().selectionMgr();
 
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId));
 
-		modifier.unselect();
-		IM_CHECK(!modifier.selectionMgr().hasSelection());
+		command::executeCommands("select none");
+		IM_CHECK(!selectionMgr.hasSelection());
 
 		command::executeCommands("+actionexecute 1 1");
 		IM_CHECK(centerOnViewport(ctx, _sceneMgr, viewportId, ImVec2(-100, -100)));
 		command::executeCommands("-actionexecute 1 1");
-		IM_CHECK(modifier.selectionMgr().hasSelection());
+		IM_CHECK(selectionMgr.hasSelection());
 
-		modifier.unselect();
+		command::executeCommands("select none");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shape brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Shape));
 	};
 
-#if 0
-	// https://github.com/vengi-voxel/vengi/issues/457
 	IM_REGISTER_TEST(engine, testCategory(), "plane brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Plane));
 	};
 
+#if 0
+	// https://github.com/vengi-voxel/vengi/issues/457
 	IM_REGISTER_TEST(engine, testCategory(), "line brush")->TestFunc = [=](ImGuiTestContext *ctx) {
 		// TODO: not all created volumes are overridden and removed on click... check why
 		IM_CHECK(runBrushModifiers(this, ctx, id, _sceneMgr, BrushType::Line));

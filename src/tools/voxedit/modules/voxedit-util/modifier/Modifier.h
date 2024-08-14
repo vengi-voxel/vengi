@@ -45,8 +45,6 @@ protected:
 	// TODO: SELECTION: remove member but use the selection manager as a component that's handed in
 	SelectionManager _selectionManager;
 
-	SelectBrush _selectBrush;
-
 	// lock the modifier to not perform any modification
 	// this can be useful when the user is interaction with the ui elements
 	// and we don't want to modify the volume
@@ -68,6 +66,7 @@ protected:
 	PathBrush _pathBrush;
 	PaintBrush _paintBrush;
 	TextBrush _textBrush;
+	SelectBrush _selectBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;

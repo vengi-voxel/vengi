@@ -34,6 +34,7 @@ Modifier::Modifier(SceneManager *sceneMgr)
 	_brushes.push_back(&_pathBrush);
 	_brushes.push_back(&_paintBrush);
 	_brushes.push_back(&_textBrush);
+	_brushes.push_back(&_selectBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -280,7 +281,7 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	}
 
 	if (isMode(ModifierType::Select)) {
-		const voxel::Region &region = _selectBrush.calcSelectionRegion(_brushContext.cursorPosition);
+		const voxel::Region &region = _selectBrush.calcRegion(_brushContext);
 		const glm::ivec3 &mins = region.getLowerCorner();
 		const glm::ivec3 &maxs = region.getUpperCorner();
 		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
@@ -461,7 +462,7 @@ ModifierType Modifier::setModifierType(ModifierType type) {
 
 ModifierType Modifier::checkModifierType() {
 	if (_brushType == BrushType::None) {
-		return ModifierType::ColorPicker | ModifierType::Select;
+		return ModifierType::ColorPicker;
 	}
 	return currentBrush()->modifierType(ModifierType::Mask);
 }
