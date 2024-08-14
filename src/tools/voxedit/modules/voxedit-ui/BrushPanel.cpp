@@ -200,7 +200,10 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 }
 
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
-	ImGui::TextWrappedUnformatted(_("Select areas of voxels"));
+	Modifier &modifier = _sceneMgr->modifier();
+	ShapeBrush &brush = modifier.shapeBrush();
+	aabbBrushOptions(listener, brush);
+	aabbBrushModeOptions(brush);
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {

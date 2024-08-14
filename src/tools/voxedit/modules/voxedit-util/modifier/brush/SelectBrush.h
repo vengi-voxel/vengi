@@ -4,34 +4,30 @@
 
 #pragma once
 
-#include "Brush.h"
+#include "AABBBrush.h"
 #include "voxel/Region.h"
 #include <glm/vec3.hpp>
 
 namespace voxedit {
 
 class SceneManager;
+class SelectionManager;
 
-// TODO: convert into AABBBrush?
 /**
  * @ingroup Brushes
  */
-class SelectBrush : public Brush {
+class SelectBrush : public AABBBrush {
 private:
-	using Super = Brush;
-	bool _selectStartPositionValid = false;
-	glm::ivec3 _selectStartPosition{0};
+	using Super = AABBBrush;
+	SelectionManager *_selectionManager;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override;
 
 public:
-	SelectBrush() : Super(BrushType::Select, ModifierType::Select, ModifierType::Select) {
+	SelectBrush(SelectionManager *selectionManager)
+		: Super(BrushType::Select, ModifierType::Select, ModifierType::Select), _selectionManager(selectionManager) {
 	}
 	virtual ~SelectBrush() = default;
-	void start(const glm::ivec3 &startPos);
-	bool active() const override;
-	void stop();
-	voxel::Region calcRegion(const BrushContext &context) const override;
 };
 
 } // namespace voxedit

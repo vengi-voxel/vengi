@@ -26,7 +26,8 @@
 namespace voxedit {
 
 Modifier::Modifier(SceneManager *sceneMgr)
-	: _stampBrush(sceneMgr), _actionExecuteButton(sceneMgr), _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
+	: _stampBrush(sceneMgr), _selectBrush(&_selectionManager), _actionExecuteButton(sceneMgr),
+	  _deleteExecuteButton(sceneMgr, ModifierType::Erase) {
 	_brushes.push_back(&_planeBrush);
 	_brushes.push_back(&_shapeBrush);
 	_brushes.push_back(&_stampBrush);
@@ -172,11 +173,6 @@ void Modifier::reset() {
 }
 
 bool Modifier::start() {
-	if (isMode(ModifierType::Select)) {
-		_selectBrush.start(_brushContext.cursorPosition);
-		return true;
-	}
-
 	if (AABBBrush *brush = currentAABBBrush()) {
 		return brush->start(_brushContext);
 	}
@@ -278,18 +274,6 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	if (volume == nullptr) {
 		Log::debug("No volume given - can't perform action");
 		return false;
-	}
-
-	if (isMode(ModifierType::Select)) {
-		const voxel::Region &region = _selectBrush.calcRegion(_brushContext);
-		const glm::ivec3 &mins = region.getLowerCorner();
-		const glm::ivec3 &maxs = region.getUpperCorner();
-		Log::debug("select mode mins: %i:%i:%i, maxs: %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
-		select(*volume, mins, maxs);
-		if (_selectionManager.hasSelection()) {
-			callback(_selectionManager.region(), _brushContext.modifierType, false);
-		}
-		return true;
 	}
 
 	if (isMode(ModifierType::ColorPicker)) {
@@ -405,6 +389,9 @@ AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Paint) {
 		return &_paintBrush;
 	}
+	if (_brushType == BrushType::Select) {
+		return &_selectBrush;
+	}
 	if (_brushType == BrushType::Plane) {
 		return &_planeBrush;
 	}
@@ -418,6 +405,9 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 	if (_brushType == BrushType::Paint) {
 		return &_paintBrush;
 	}
+	if (_brushType == BrushType::Select) {
+		return &_selectBrush;
+	}
 	if (_brushType == BrushType::Plane) {
 		return &_planeBrush;
 	}
@@ -425,10 +415,6 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 }
 
 void Modifier::stop() {
-	if (isMode(ModifierType::Select)) {
-		_selectBrush.stop();
-		return;
-	}
 	if (AABBBrush *brush = currentAABBBrush()) {
 		brush->stop(_brushContext);
 	}
