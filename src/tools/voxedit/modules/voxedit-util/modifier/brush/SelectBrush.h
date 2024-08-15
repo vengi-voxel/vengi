@@ -26,6 +26,7 @@ private:
 public:
 	SelectBrush(SelectionManager *selectionManager)
 		: Super(BrushType::Select, ModifierType::Select, ModifierType::Select), _selectionManager(selectionManager) {
+		setBrushClamping(true);
 	}
 	virtual ~SelectBrush() = default;
 };

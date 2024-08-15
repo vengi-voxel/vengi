@@ -11,7 +11,11 @@ namespace voxedit {
 void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &region) {
 	// TODO: this doesn't work for preview
-	_selectionManager->select(wrapper, region.getLowerCorner(), region.getUpperCorner());
+	voxel::Region selectionRegion = region;
+	if (_brushClamping) {
+		selectionRegion.cropTo(ctx.targetVolumeRegion);
+	}
+	_selectionManager->select(wrapper, selectionRegion.getLowerCorner(), selectionRegion.getUpperCorner());
 }
 
 } // namespace voxedit

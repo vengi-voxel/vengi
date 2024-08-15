@@ -201,7 +201,7 @@ void BrushPanel::updateLineBrushPanel(command::CommandExecutionListener &listene
 
 void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
-	ShapeBrush &brush = modifier.shapeBrush();
+	SelectBrush &brush = modifier.selectBrush();
 	aabbBrushOptions(listener, brush);
 	aabbBrushModeOptions(brush);
 }

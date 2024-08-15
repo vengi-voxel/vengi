@@ -158,6 +158,7 @@ public:
 	PathBrush &pathBrush();
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
+	SelectBrush &selectBrush();
 	const BrushContext &brushContext() const;
 
 	/**
@@ -239,6 +240,10 @@ inline PathBrush &Modifier::pathBrush() {
 
 inline PaintBrush &Modifier::paintBrush() {
 	return _paintBrush;
+}
+
+inline SelectBrush &Modifier::selectBrush() {
+	return _selectBrush;
 }
 
 inline int Modifier::gridResolution() const {
