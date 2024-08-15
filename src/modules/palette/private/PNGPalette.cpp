@@ -15,7 +15,7 @@ bool PNGPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		return false;
 	}
 	image::ImagePtr img = image::createEmptyImage(filename);
-	if (!img->load(stream, stream.size())) {
+	if (!img->load(stream, (int)stream.size())) {
 		Log::warn("Failed to load the palette image '%s'", filename.c_str());
 		return false;
 	}

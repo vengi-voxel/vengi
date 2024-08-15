@@ -878,8 +878,8 @@ void SceneGraph::align(int padding) {
 	int divisor = 16;
 	for (int i = 0; i < 5; ++i) {
 		core_memset(&context, 0, sizeof(context));
-		stbrp_init_target(&context, width / divisor, depth / divisor, stbNodes.data(), stbNodes.size());
-		if (stbrp_pack_rects(&context, stbRects.data(), stbRects.size()) == 1) {
+		stbrp_init_target(&context, width / divisor, depth / divisor, stbNodes.data(), (int)stbNodes.size());
+		if (stbrp_pack_rects(&context, stbRects.data(), (int)stbRects.size()) == 1) {
 			Log::debug("Used width: %i, depth: %i for packing", width / divisor, depth / divisor);
 			break;
 		}

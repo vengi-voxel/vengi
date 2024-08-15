@@ -217,7 +217,7 @@ bool Palette::hasFreeSlot() const {
 void Palette::setColor(uint8_t i, const core::RGBA &rgba) {
 	_colors[i] = rgba;
 	if (rgba.a != 0) {
-		setSize(core_max(size(), (size_t)(i + 1)));
+		setSize(core_max((int)size(), i + 1));
 	}
 	markDirty();
 }
@@ -953,7 +953,7 @@ bool Palette::createPalette(const image::ImagePtr &image, palette::Palette &pale
 		Log::error("Failed to convert image to palette - scale it down to max 512:512");
 		return false;
 	}
-	core::Set<core::RGBA> colorSet((size_t)(imageWidth * imageHeight));
+	core::Set<core::RGBA> colorSet(imageWidth * imageHeight);
 	Log::debug("Create palette for image: %s (%i:%i)", image->name().c_str(), imageWidth, imageHeight);
 	for (int x = 0; x < imageWidth; ++x) {
 		for (int y = 0; y < imageHeight; ++y) {
