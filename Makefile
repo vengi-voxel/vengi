@@ -2,6 +2,7 @@ Q              ?= @
 UPDATEDIR      := /tmp
 BUILDTYPE      ?= Debug
 BUILDDIR       ?= ./build
+LIBS_LOCAL     ?= 0
 INSTALL_DIR    ?= $(BUILDDIR)
 ifneq (,$(wildcard $(BUILDDIR)/vengi.xcodeproj))
 GENERATOR      ?= Xcode
@@ -18,7 +19,7 @@ EMSDK_DIR      ?= $(HOME)/dev/oss/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
-CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot
+CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot -DUSE_LIBS_FORCE_LOCAL=$(LIBS_LOCAL)
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
 else
