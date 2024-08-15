@@ -22,6 +22,7 @@ option(USE_IMGUITESTENGINE "Enable imgui test engine" OFF)
 option(USE_STACKTRACES "Enable stacktraces" ON)
 option(USE_SANITIZERS "Enable sanitizer" OFF)
 option(USE_GLSLANG_VALIDATOR "Enable the use of the standalone glslang validator" OFF)
+option(USE_LIBS_FORCE_LOCAL "Don't use systemwide installations" OFF)
 
 set(ROOT_PROJECT_MAJOR_VERSION 0)
 set(ROOT_PROJECT_MINOR_VERSION 0)
