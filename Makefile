@@ -19,7 +19,8 @@ EMSDK_DIR      ?= $(HOME)/dev/oss/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
-CMAKE_OPTIONS  ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot -DUSE_LIBS_FORCE_LOCAL=$(LIBS_LOCAL)
+CMAKE_INTERNAL_OPTIONS ?= -DUSE_GLSLANG_VALIDATOR=ON -DUSE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -G$(GENERATOR) --graphviz=$(BUILDDIR)/deps.dot -DUSE_LIBS_FORCE_LOCAL=$(LIBS_LOCAL)
+CMAKE_OPTIONS          ?=
 ifneq ($(Q),@)
 	CTEST_FLAGS ?= -V
 else
@@ -50,13 +51,13 @@ ifneq ($(OS),Windows_NT)
 endif
 
 $(BUILDDIR)/CMakeCache.txt:
-	$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
+	$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
 
 release:
 	$(Q)$(MAKE) BUILDTYPE=Release
 
 tests-voxedit:
-	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR)-$@ $(CMAKE_OPTIONS) -DUSE_IMGUITESTENGINE=On
+	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR)-$@ $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DUSE_IMGUITESTENGINE=On
 	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target codegen
 	$(Q)$(CMAKE) --build $(BUILDDIR)-$@ --target $@
 	$(Q)cd $(BUILDDIR)-$@ && ctest -V -R '^$@$$'
@@ -71,7 +72,7 @@ analysebuild:
 	$(Q)ccache -cC
 	$(Q)rm -rf $(BUILDDIR)/analyse
 	$(Q)mkdir $(BUILDDIR)/analyse
-	$(Q)CC=clang CXX=clang++ $(CMAKE) -H$(CURDIR) -B$(BUILDDIR)/analyse $(CMAKE_OPTIONS) -DUSE_SANITIZERS=OFF
+	$(Q)CC=clang CXX=clang++ $(CMAKE) -H$(CURDIR) -B$(BUILDDIR)/analyse $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DUSE_SANITIZERS=OFF
 	$(Q)ClangBuildAnalyzer --start $(BUILDDIR)/analyse
 	$(Q)$(CMAKE) --build $(BUILDDIR)/analyse --target $(ALLTARGET)
 	$(Q)ClangBuildAnalyzer --stop $(BUILDDIR)/analyse $(BUILDDIR)/analyse/capture_file
@@ -130,6 +131,9 @@ ifeq ($(OS),Darwin)
 endif
 
 ifeq ($(OS),Darwin)
+xcode-local:
+	$(Q)$(MAKE) LIBS_LOCAL=1 GENERATOR=Xcode
+
 # create an app password for notarization
 # https://appleid.apple.com/ - needed for the mac-notarize target
 mac-app-password:
@@ -166,7 +170,7 @@ endif
 
 .PHONY: cmake
 cmake:
-	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
+	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
 
 .PHONY: ccmake
 ccmake:
@@ -208,7 +212,7 @@ contrib/installer/osx/voxedit.plist.in: formatprinter
 formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md contrib/installer/windows/wixpatch.xml
 
 dependency-%:
-	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_OPTIONS)
+	$(Q)$(CMAKE) -H$(CURDIR) -B$(BUILDDIR) $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS)
 	$(Q)dot -Tsvg $(BUILDDIR)/deps.dot.$(subst dependency-,,$@) -o $(BUILDDIR)/deps.dot.$(subst dependency-,,$@).svg;
 	$(Q)xdg-open $(BUILDDIR)/deps.dot.$(subst dependency-,,$@).svg;
 
@@ -431,7 +435,7 @@ emscripten-%: $(BUILDDIR)/CMakeCache.txt
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten
-	$(Q)$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
+	$(Q)$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
 	$(Q)$(CMAKE) --build build/emscripten --target $(subst emscripten-,,$@)
 
 run-emscripten-%: emscripten-%

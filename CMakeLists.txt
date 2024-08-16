@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
+# if(CMAKE_GENERATOR STREQUAL "Xcode")
+# 	set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)" CACHE STRING "")
+# endif()
 include(CMakeLists.local OPTIONAL)
 
 if (NOT CMAKE_BUILD_TYPE)
