@@ -37,6 +37,7 @@ function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for compressed ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		engine_mark_as_generated(${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
@@ -61,6 +62,7 @@ function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 			COMMENT "Generate c header for ${INPUT_FILE} in ${OUTPUT_FILE}"
 			VERBATIM
 		)
+		engine_mark_as_generated(${OUTPUT_FILE})
 	elseif (NOT EXISTS ${OUTPUT_FILE})
 		message(FATAL_ERROR "Source code generation must be done by native toolchain")
 	endif()
