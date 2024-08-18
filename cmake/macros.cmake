@@ -25,8 +25,6 @@ function(engine_compressed_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
 		file(MAKE_DIRECTORY ${OUTPUT_DIR})
-		set(MD5_VAR "")
-		string(MD5 MD5_VAR ${OUTPUT_FILE})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
@@ -49,8 +47,6 @@ function(engine_file_to_header TARGET NAME INPUT_FILE OUTPUT_FILE)
 	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
 	if (NOT CMAKE_CROSSCOMPILING)
 		file(MAKE_DIRECTORY ${OUTPUT_DIR})
-		set(MD5_VAR "")
-		string(MD5 MD5_VAR ${OUTPUT_FILE})
 		add_custom_command(
 			OUTPUT ${OUTPUT_FILE}
 			COMMAND
