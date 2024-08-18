@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "io/Archive.h"
-#include "voxelformat/Format.h"
+#include "TexturedTri.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
-#include "TexturedTri.h"
+#include "io/Archive.h"
 #include "voxel/ChunkMesh.h"
+#include "voxelformat/Format.h"
 
 namespace voxelformat {
 
@@ -69,7 +69,8 @@ protected:
 	/**
 	 * @brief Voxelizes the input mesh
 	 *
-	 * Convert your input mesh into @c voxelformat::TexturedTri instances and use the methods of this class to help voxelizing those.
+	 * Convert your input mesh into @c voxelformat::TexturedTri instances and use the methods of this class to help
+	 * voxelizing those.
 	 * @see voxelizeNode()
 	 */
 	virtual bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
@@ -86,8 +87,12 @@ protected:
 	/**
 	 * @see voxelizeGroups()
 	 */
+	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
+					 const TriCollection &tris, int parent = 0, bool resetOrigin = true) const;
 	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
-					 int parent = 0, bool resetOrigin = true) const;
+					 int parent = 0, bool resetOrigin = true) const {
+		return voxelizeNode("", name, sceneGraph, tris, parent, resetOrigin);
+	}
 
 	/**
 	 * @brief Weighted color entry for a position for averaging the voxel color value over all positions that were found

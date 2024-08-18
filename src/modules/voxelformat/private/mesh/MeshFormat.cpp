@@ -258,7 +258,7 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::Textu
 	}
 }
 
-int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
+int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
 							 int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
@@ -292,7 +292,7 @@ int MeshFormat::voxelizeNode(const core::String &name, scenegraph::SceneGraph &s
 		Log::warn("Large meshes will take a lot of time and use a lot of memory. Consider scaling the mesh! (%i:%i:%i)",
 				  vdim.x, vdim.y, vdim.z);
 	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 
