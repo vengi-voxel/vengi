@@ -344,7 +344,7 @@ const io::FormatDescription *voxelLoad() {
 	// this is the list of supported voxel volume formats that are
 	// have importers implemented
 	static const io::FormatDescription desc[] = {vengi(),
-													aseprite(),
+												 aseprite(),
 												 qubicleBinary(),
 												 magicaVoxel(),
 												 qubicleBinaryTree(),
