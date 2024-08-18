@@ -147,6 +147,7 @@ voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ive
 void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel);
 void hollow(voxel::RawVolumeWrapper &in);
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
+bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette);
 void clear(voxel::RawVolumeWrapper &in);
 
 /**

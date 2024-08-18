@@ -295,6 +295,27 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 		VisitAll());
 }
 
+bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette) {
+	const int black = palette.getClosestMatch(core::RGBA(0, 0, 0, 255));
+	const int white = palette.getClosestMatch(core::RGBA(255, 255, 255, 255));
+	if (black == palette::PaletteColorNotFound || white == palette::PaletteColorNotFound) {
+		return false;
+	}
+
+	const uint8_t colors[2] = {(uint8_t)black, (uint8_t)white};
+	int currentColorIndex = 0;
+
+	visitVolume(
+		in, [&](int x, int y, int z, const voxel::Voxel &) {
+			const int idx = colors[currentColorIndex];
+			in.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
+			currentColorIndex = (currentColorIndex + 1) % 2;
+		},
+		VisitAll());
+
+	return true;
+}
+
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite) {
 	if (overwrite) {
 		visitVolume(
