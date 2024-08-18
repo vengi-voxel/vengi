@@ -5,6 +5,7 @@
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
 #include "core/Color.h"
+#include "core/GLM.h"
 #include "core/Hash.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -203,6 +204,7 @@ bool SceneGraphNode::validate() const {
 }
 
 bool SceneGraphNode::setPivot(const glm::vec3 &pivot) {
+	glm_assert_vec3(pivot);
 	_pivot = pivot;
 	return true;
 }
