@@ -38,6 +38,7 @@ protected:
 	RendererContext _ctx = nullptr;
 
 	void setShaderVars(const ShaderVarState& val) {
+		core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
 		core::Var::get(cfg::ClientShadowMap, "1", core::CV_SHADER)->setVal(val.clientShadowMap);
 		core::Var::get(cfg::ClientDebugShadow, "1", core::CV_SHADER)->setVal(val.clientDebugShadow);
 		core::Var::get(cfg::ClientShadowMapSize, "128", core::CV_SHADER);

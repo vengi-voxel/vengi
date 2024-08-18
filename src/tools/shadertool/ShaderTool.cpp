@@ -40,6 +40,7 @@ app::AppState ShaderTool::onConstruct() {
 	Log::trace("Set some shader config vars to let the validation work");
 	core::Var::get(cfg::ClientGamma, "1.0", core::CV_SHADER);
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
+	core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
 	core::Var::get(cfg::ToneMapping, "1", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
