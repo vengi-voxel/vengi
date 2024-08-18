@@ -103,15 +103,10 @@ vec3 shadow(in float bias, in vec3 color, in vec3 diffuse, in vec3 ambient) {
 #if r_checkerboard == 1
 
 // https://thebookofshaders.com
-float random (in vec2 st) {
-	return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-}
-
 float checker(in vec2 pos, float strength) {
 	vec2 c = floor(pos);
-	float variance = strength;// * random(c);
 	float checker = mod(c.x + c.y, 2.0);
-	return mix(0.95 + variance, 1.0 - variance, checker);
+	return mix(0.95 + strength, 1.0 - strength, checker);
 }
 
 vec3 checkerBoardColor(in vec3 normal, in vec3 pos, in vec3 color) {
