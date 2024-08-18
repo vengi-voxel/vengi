@@ -11,18 +11,17 @@
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
-#include "io/FilesystemArchive.h"
 #include "io/File.h"
+#include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
-#include "voxelformat/private/aseprite/AsepriteFormat.h"
-#include "voxelformat/private/rooms/ThingFormat.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
+#include "voxelformat/private/aseprite/AsepriteFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/chronovox/CSMFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
@@ -48,6 +47,7 @@
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/private/qubicle/QEFFormat.h"
+#include "voxelformat/private/rooms/ThingFormat.h"
 #include "voxelformat/private/sandbox/VXCFormat.h"
 #include "voxelformat/private/sandbox/VXMFormat.h"
 #include "voxelformat/private/sandbox/VXRFormat.h"
@@ -79,8 +79,7 @@ const io::FormatDescription &tiberianSun() {
 }
 
 const io::FormatDescription &qubicleBinary() {
-	static io::FormatDescription f{
-		"Qubicle Binary", {"qb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Qubicle Binary", {"qb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -97,26 +96,18 @@ const io::FormatDescription &qubicleBinaryTree() {
 }
 
 const io::FormatDescription &vengi() {
-	static io::FormatDescription f{"Vengi",
-								   {"vengi"},
-								   {"VENG"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{
+		"Vengi", {"vengi"}, {"VENG"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &aseprite() {
-	static io::FormatDescription f{"aseprite",
-								   {"aseprite", "ase"},
-								   {},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	static io::FormatDescription f{"aseprite", {"aseprite", "ase"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 
 static const io::FormatDescription &roomsThing() {
-	static io::FormatDescription f{"Rooms.xyz Thing",
-								   {"thing"},
-								   {},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	static io::FormatDescription f{"Rooms.xyz Thing", {"thing"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 
@@ -243,15 +234,13 @@ static const io::FormatDescription &particubes() {
 	static io::FormatDescription f{"Particubes",
 								   {"pcubes", "particubes"},
 								   {"PARTICUBES!"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | FORMAT_FLAG_SAVE};
+								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
+									   FORMAT_FLAG_SAVE};
 	return f;
 }
 
 static const io::FormatDescription &cubzhB64() {
-	static io::FormatDescription f{"Cubzh World",
-								   {"b64"},
-								   {},
-								   0u};
+	static io::FormatDescription f{"Cubzh World", {"b64"}, {}, 0u};
 	return f;
 }
 
@@ -277,7 +266,8 @@ static const io::FormatDescription &voxelMax() {
 }
 
 static const io::FormatDescription &starMade() {
-	static io::FormatDescription f{"StarMade Blueprint", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+	static io::FormatDescription f{
+		"StarMade Blueprint", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 	return f;
 }
 
@@ -304,8 +294,7 @@ static const io::FormatDescription &wavefrontObj() {
 }
 
 static const io::FormatDescription &standardTriangleLanguage() {
-	static io::FormatDescription f{
-		"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -315,8 +304,7 @@ static const io::FormatDescription &polygonFileFormat() {
 }
 
 static const io::FormatDescription &buildKVX() {
-	static io::FormatDescription f{
-		"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+	static io::FormatDescription f{"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
 }
 
@@ -606,8 +594,8 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 	const int points = (int)newSceneGraph.size(scenegraph::SceneGraphNodeType::Point);
 	if (models == 0 && points == 0) {
 		Log::error("Failed to load model file %s. Scene graph "
-				"doesn't contain models.",
-				filename.c_str());
+				   "doesn't contain models.",
+				   filename.c_str());
 		return false;
 	}
 	Log::info("Load file %s with %i model nodes and %i point nodes", filename.c_str(), models, points);
