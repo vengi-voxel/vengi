@@ -202,6 +202,10 @@ bool Image::load(const uint8_t *buffer, int length) {
 static int stream_read(void *user, char *data, int size) {
 	io::ReadStream *stream = (io::ReadStream *)user;
 	const int readSize = stream->read(data, size);
+	// prevent endless loops on errors
+	if (readSize < 0) {
+		return 0;
+	}
 	return readSize;
 }
 
