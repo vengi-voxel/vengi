@@ -158,6 +158,14 @@ ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int
 	return i;
 }
 
+ImagePtr loadImage(const core::String &name, io::ReadStream &stream, int length) {
+	const ImagePtr &i = createEmptyImage(name);
+	if (!i->load(stream, length)) {
+		Log::warn("Failed to load image %s", i->name().c_str());
+	}
+	return i;
+}
+
 ImagePtr loadImage(const core::String &filename) {
 	io::FilePtr file;
 	if (!core::string::extractExtension(filename).empty()) {
