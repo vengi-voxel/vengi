@@ -32,6 +32,7 @@
 #include "voxelformat/private/goxel/GoxFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
+#include "voxelformat/private/mesh/BlockbenchFormat.h"
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
@@ -137,6 +138,11 @@ static const io::FormatDescription &quake1Bsp() {
 
 static const io::FormatDescription &quakeMd2() {
 	static io::FormatDescription f{"Quake 2 Model", {"md2"}, {"IDP2"}, VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
+static const io::FormatDescription &blockbench() {
+	static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, 0u};
 	return f;
 }
 
@@ -340,6 +346,7 @@ const io::FormatDescription *voxelLoad() {
 												 sandboxTilemap(),
 												 sandboxCollection(),
 												 sandboxVXM(),
+												 blockbench(),
 												 sandboxVXR(),
 												 binvox(),
 												 goxel(),
@@ -435,6 +442,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<VXRFormat>();
 		} else if (ext == voxelMax().mainExtension()) {
 			return core::make_shared<VMaxFormat>();
+		} else if (ext == blockbench().mainExtension()) {
+			return core::make_shared<BlockbenchFormat>();
 		} else if (ext == sandboxCollection().mainExtension()) {
 			return core::make_shared<VXCFormat>();
 		} else if (ext == sandboxTilemap().mainExtension()) {

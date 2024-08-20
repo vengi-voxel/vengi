@@ -28,6 +28,7 @@ set(SRCS
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
+	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
@@ -77,6 +78,7 @@ set(TEST_SRCS
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
+	tests/BlockbenchFormatTest.cpp
 	tests/ConvertTest.cpp
 	tests/FormatPaletteTest.cpp
 	tests/CSMFormatTest.cpp
@@ -201,6 +203,7 @@ set(TEST_FILES
 	tests/slab6_vox_test.kv6
 	tests/slab6_vox_test.kvx
 	tests/slab6_vox_test.vox
+	tests/loy_s_goodies_female_template.bbmodel
 	tests/test.litematic
 	tests/vox_character.vox
 	tests/vox_glasses.vox
