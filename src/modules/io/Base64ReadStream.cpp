@@ -18,14 +18,14 @@ int Base64ReadStream::read(void *buf, size_t size) {
 	uint8_t *bytesPtr = (uint8_t *)buf;
 	size_t bytesWritten = 0;
 	while (bytesWritten < size) {
-		if (_stream.eos()) {
-			return bytesWritten;
-		}
 		// read from cache
 		if (_readBufSize > 0) {
 			bytesPtr[bytesWritten++] = _readBuf[_readBufPos++];
 			--_readBufSize;
 			continue;
+		}
+		if (_stream.eos()) {
+			return bytesWritten;
 		}
 
 		_readBufPos = 0;
