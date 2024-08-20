@@ -82,6 +82,10 @@
 			<match type="string" offset="0" value="VXM3"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-blockbench">
+		<comment>Blockbench</comment>
+		<glob pattern="*.bbmodel"/>
+	</mime-type>
 	<mime-type type="application/x-sandbox-voxedit-hierarchy">
 		<comment>Sandbox VoxEdit Hierarchy</comment>
 		<glob pattern="*.vxr"/>

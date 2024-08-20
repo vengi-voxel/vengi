@@ -48,6 +48,7 @@
 
 | Name                       | Extension | Loading | Saving    | Animations |
 | :------------------------- | --------- | ------- | --------- | ---------- |
+| Blockbench                 | bbmodel   | X       |           |            |
 | FBX                        | fbx       | X       | X         |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |
 | Polygon File Format        | ply       | X       | X         |            |

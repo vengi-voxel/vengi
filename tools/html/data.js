@@ -326,6 +326,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Blockbench",
+      "extensions": [
+        "bbmodel"
+      ],
+      "magics": [],
+      "mimetype": "application/x-blockbench",
+      "mesh": true,
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Sandbox VoxEdit Hierarchy",
       "extensions": [
         "vxr"

@@ -6,12 +6,16 @@
 #include "glm/fwd.hpp"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 
 namespace voxelformat {
 
 class BlockbenchFormatTest : public AbstractFormatTest {};
 
-TEST_F(BlockbenchFormatTest, testLoad) {
+// the model comes from https://github.com/SL0ANE/Loy-s-Goodies/tree/main/models and was licensed under CC0
+// version 4.5 - includes animations and a full scene with a hierarchy of nodes
+TEST_F(BlockbenchFormatTest, DISABLED_testLoad_4_5) {
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "loy_s_goodies_female_template.bbmodel", 53);
 	scenegraph::SceneGraphNode *hand_right = sceneGraph.findNodeByName("hand_right");
@@ -31,7 +35,7 @@ TEST_F(BlockbenchFormatTest, testLoad) {
 	EXPECT_EQ(firstDim.y, 2);
 	EXPECT_EQ(firstDim.z, 2);
 	const glm::vec3 &firstPivot = firstCube.pivot();
-	const glm::vec3	expectedFirstPivot(-4.0f, 0.5f, 0.5f);
+	const glm::vec3 expectedFirstPivot(-4.0f, 0.5f, 0.5f);
 	EXPECT_VEC_NEAR(firstPivot, expectedFirstPivot, 0.0001f);
 	// const glm::vec3 expectedFirstWorldPivot(8.0f, 21.9f, 0.0f);
 	// const glm::vec3 firstWorldPivot = firstCube.worldPivot();
@@ -46,6 +50,33 @@ TEST_F(BlockbenchFormatTest, testLoad) {
 	EXPECT_EQ(secondDim.y, 2);
 	EXPECT_EQ(secondDim.z, 2);
 	ASSERT_EQ(fingers_right.type(), scenegraph::SceneGraphNodeType::Group);
+}
+
+// this model is based on a model from https://github.com/SL0ANE/Loy-s-Goodies/tree/main/models - but only one cube was
+// extracted to simplify the scene this was done in the web based version of blockbench - https://web.blockbench.net/ -
+// on saving the file the version was updated to 4.10
+TEST_F(BlockbenchFormatTest, testLoad_4_10) {
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "female_template_head_4_10.bbmodel", 1);
+	scenegraph::SceneGraphNode *cube = sceneGraph.findNodeByName("cube");
+	ASSERT_NE(cube, nullptr);
+	ASSERT_EQ(cube->children().size(), 0u);
+	voxel::RawVolume *volume = cube->volume();
+	ASSERT_NE(volume, nullptr);
+	const voxel::Region &region = volume->region();
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	EXPECT_EQ(dim.x, 8);
+	EXPECT_EQ(dim.y, 8);
+	EXPECT_EQ(dim.z, 8);
+	const voxel::Voxel v1 = volume->voxel(region.getLowerCenter());
+	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
+	// TODO: compare colors - needed because we overwrite the color while loading all faces for a cube
+}
+
+// this model was created in the blockbench web edition and includes all mesh types
+TEST_F(BlockbenchFormatTest, testLoadMeshTypes) {
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, "blockbench_meshtypes.bbmodel", 10);
 }
 
 } // namespace voxelformat

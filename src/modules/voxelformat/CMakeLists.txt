@@ -37,7 +37,8 @@ set(SRCS
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
-	private/mesh/TexturedTri.cpp             private/mesh/TexturedTri.h
+	private/mesh/Polygon.h                   private/mesh/Polygon.cpp
+	private/mesh/TexturedTri.h               private/mesh/TexturedTri.cpp
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
 	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
@@ -203,6 +204,8 @@ set(TEST_FILES
 	tests/slab6_vox_test.kv6
 	tests/slab6_vox_test.kvx
 	tests/slab6_vox_test.vox
+	tests/blockbench_meshtypes.bbmodel
+	tests/female_template_head_4_10.bbmodel
 	tests/loy_s_goodies_female_template.bbmodel
 	tests/test.litematic
 	tests/vox_character.vox

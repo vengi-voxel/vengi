@@ -3,12 +3,10 @@
  */
 
 #include "BlockbenchFormat.h"
-#include "core/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "glm/geometric.hpp"
 #include "glm/trigonometric.hpp"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
@@ -21,8 +19,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
-#include "voxelformat/private/mesh/MeshFormat.h"
-#include "voxelformat/private/mesh/TexturedTri.h"
+#include "voxelformat/private/mesh/Polygon.h"
 #include "voxelutil/VoxelUtil.h"
 
 #include <json.hpp>
@@ -43,100 +40,193 @@ static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::
 	return glm::vec3(iter.value()[0], iter.value()[1], iter.value()[2]);
 }
 
+static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const char *key) {
+	const core::String &type = priv::toStr(json.value(key, ""));
+	if (type == "cube") {
+		return BlockbenchFormat::ElementType::Cube;
+	} else if (type == "mesh") {
+		return BlockbenchFormat::ElementType::Mesh;
+	}
+	Log::warn("Unsupported element type: %s", type.c_str());
+	return BlockbenchFormat::ElementType::Max;
+}
+
 } // namespace priv
 
-static bool parseElements(const core::String &filename, const nlohmann::json &elementsJson,
+static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementJson,
+					  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::Element &element) {
+	if (elementJson.find("vertices") == elementJson.end()) {
+		Log::error("Element is missing vertices in json file: %s", filename.c_str());
+		return false;
+	}
+
+	const nlohmann::json &vertices = elementJson["vertices"];
+	if (!vertices.is_object()) {
+		Log::error("Vertices is not an object in json file: %s", filename.c_str());
+		return false;
+	}
+
+	if (elementJson.find("faces") == elementJson.end()) {
+		Log::error("Element is missing faces in json file: %s", filename.c_str());
+		return false;
+	}
+
+	const nlohmann::json &faces = elementJson["faces"];
+	if (!faces.is_object()) {
+		Log::error("Faces is not an object in json file: %s", filename.c_str());
+		return false;
+	}
+
+	for (const auto &face : faces.items()) {
+		const core::String &faceName = face.key().c_str();
+		const nlohmann::json &faceData = face.value();
+		if (faceData.find("uv") == faceData.end()) {
+			Log::error("Face is missing uv in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const nlohmann::json &uv = faceData["uv"];
+		if (!uv.is_object()) {
+			Log::error("UV is not an object in json file: %s", filename.c_str());
+			return false;
+		}
+
+		if (faceData.find("vertices") == faceData.end()) {
+			Log::error("Face is missing vertices in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const nlohmann::json &faceVertices = faceData["vertices"];
+		if (!faceVertices.is_array()) {
+			Log::error("Vertices is not an array in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const int textureIdx = faceData.value("texture", -1);
+		const bool textureIdxValid = textureIdx >= 0 && textureIdx < (int)textureArray.size();
+		Polygon polygon;
+		if (textureIdxValid) {
+			polygon.setTexture(textureArray[textureIdx]);
+		}
+		for (const auto &vertex : faceVertices) {
+			const std::string &vertexName = vertex;
+			auto vertexIter = vertices.find(vertexName);
+			if (vertexIter == vertices.end() || !vertexIter->is_array() || vertexIter->size() != 3) {
+				Log::error("Vertex is not an array of size 3 in json file: %s", filename.c_str());
+				return false;
+			}
+			auto uvIter = uv.find(vertexName);
+			if (uvIter == uv.end() || !uvIter->is_array() || uvIter->size() != 2) {
+				Log::error("UV is not an array of size 2 in json file: %s", filename.c_str());
+				return false;
+			}
+			const glm::vec3 pos(vertexIter.value()[0], vertexIter.value()[1], vertexIter.value()[2]);
+			const glm::vec2 uv =
+				textureIdxValid ? textureArray[textureIdx]->uv(uvIter.value()[0], uvIter.value()[1]) : glm::vec2(0.0f);
+
+			polygon.addVertex(pos, uv);
+		}
+		polygon.toTris(element.mesh.tris);
+	}
+
+	return true;
+}
+
+static bool parseCube(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementJson,
+					  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::Element &element) {
+	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
+		Log::error("Element is missing from or to in json file: %s", filename.c_str());
+		return false;
+	}
+
+	const nlohmann::json &from = elementJson["from"];
+	const nlohmann::json &to = elementJson["to"];
+	if (!from.is_array() || from.size() != 3 || !to.is_array() || to.size() != 3) {
+		Log::error("From or to is not an array of size 3 in json file: %s", filename.c_str());
+		return false;
+	}
+
+	element.cube.from = scale * priv::toVec3(elementJson, "from");
+	element.cube.to = scale * priv::toVec3(elementJson, "to");
+
+	if (elementJson.find("faces") == elementJson.end()) {
+		Log::error("Element is missing faces in json file: %s", filename.c_str());
+		return false;
+	}
+
+	const nlohmann::json &faces = elementJson["faces"];
+	if (!faces.is_object()) {
+		Log::error("Faces is not an object in json file: %s", filename.c_str());
+		return false;
+	}
+
+	for (const auto &face : faces.items()) {
+		const core::String &faceName = face.key().c_str();
+		const nlohmann::json &faceData = face.value();
+		if (faceData.find("uv") == faceData.end()) {
+			Log::error("Face is missing uv in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const nlohmann::json &uv = faceData["uv"];
+		if (!uv.is_array() || uv.size() != 4) {
+			Log::error("UV is not an array of size 4 in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const int textureIdx = faceData.value("texture", -1);
+		if (textureIdx < 0 || textureIdx >= (int)textureArray.size()) {
+			Log::error("Invalid texture index: %d", textureIdx);
+			return false;
+		}
+
+		voxel::FaceNames faceType = voxel::FaceNames::Max;
+		if (faceName == "north") {
+			faceType = voxel::FaceNames::NegativeZ;
+		} else if (faceName == "east") {
+			faceType = voxel::FaceNames::PositiveX;
+		} else if (faceName == "south") {
+			faceType = voxel::FaceNames::PositiveZ;
+		} else if (faceName == "west") {
+			faceType = voxel::FaceNames::NegativeX;
+		} else if (faceName == "up") {
+			faceType = voxel::FaceNames::PositiveY;
+		} else if (faceName == "down") {
+			faceType = voxel::FaceNames::NegativeY;
+		} else {
+			Log::error("Unsupported face name: %s", faceName.c_str());
+			continue;
+		}
+		Log::debug("faceName: %s, textureIdx: %d", faceName.c_str(), textureIdx);
+		int uvs[4]{uv[0], uv[1], uv[2], uv[3]};
+		const glm::vec2 uv0 = textureArray[textureIdx]->uv(uvs[0], uvs[1]);
+		const glm::vec2 uv1 = textureArray[textureIdx]->uv(uvs[2] - 1, uvs[3] - 1);
+		element.cube.faces[(int)faceType].uvs[0] = uv0;
+		element.cube.faces[(int)faceType].uvs[1] = uv1;
+		element.cube.faces[(int)faceType].textureIndex = textureIdx;
+	}
+	return true;
+}
+
+static bool parseElements(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementsJson,
 						  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::ElementMap &elementMap,
 						  scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
-		const core::String &type = priv::toStr(elementJson.value("type", ""));
-		if (type != "cube") {
-			Log::warn("Unsupported element type: %s", type.c_str());
-			continue;
-		}
-
 		BlockbenchFormat::Element element;
 		element.uuid = priv::toStr(elementJson.value("uuid", ""));
-
-		if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
-			Log::error("Element is missing from or to in json file: %s", filename.c_str());
-			return false;
-		}
-
 		element.name = priv::toStr(elementJson.value("name", ""));
-
-		const nlohmann::json &from = elementJson["from"];
-		const nlohmann::json &to = elementJson["to"];
-		if (!from.is_array() || from.size() != 3 || !to.is_array() || to.size() != 3) {
-			Log::error("From or to is not an array of size 3 in json file: %s", filename.c_str());
-			return false;
-		}
-
-		element.from = priv::toVec3(elementJson, "from");
-		element.to = priv::toVec3(elementJson, "to");
-		element.origin = priv::toVec3(elementJson, "origin");
+		element.origin = scale * priv::toVec3(elementJson, "origin");
 		element.rotation = priv::toVec3(elementJson, "rotation");
+		element.type = priv::toType(elementJson, "type");
 
-		if (elementJson.find("faces") == elementJson.end()) {
-			Log::error("Element is missing faces in json file: %s", filename.c_str());
-			return false;
-		}
-
-		const nlohmann::json &faces = elementJson["faces"];
-		if (!faces.is_object()) {
-			Log::error("Faces is not an object in json file: %s", filename.c_str());
-			return false;
-		}
-
-		for (const auto &face : faces.items()) {
-			const core::String &faceName = face.key().c_str();
-			const nlohmann::json &faceData = face.value();
-			if (faceData.find("uv") == faceData.end()) {
-				Log::error("Face is missing uv in json file: %s", filename.c_str());
+		if (element.type == BlockbenchFormat::ElementType::Cube) {
+			if (!parseCube(scale, filename, elementJson, textureArray, element)) {
 				return false;
 			}
-
-			const nlohmann::json &uv = faceData["uv"];
-			if (!uv.is_array() || uv.size() != 4) {
-				Log::error("UV is not an array of size 4 in json file: %s", filename.c_str());
+		} else if (element.type == BlockbenchFormat::ElementType::Mesh) {
+			if (!parseMesh(scale, filename, elementJson, textureArray, element)) {
 				return false;
 			}
-
-			const int textureIdx = faceData.value("texture", -1);
-			if (textureIdx < 0 || textureIdx >= (int)textureArray.size()) {
-				Log::error("Invalid texture index: %d", textureIdx);
-				return false;
-			}
-
-			voxel::FaceNames faceType = voxel::FaceNames::Max;
-			if (faceName == "north") {
-				faceType = voxel::FaceNames::NegativeZ;
-			} else if (faceName == "east") {
-				faceType = voxel::FaceNames::PositiveX;
-			} else if (faceName == "south") {
-				faceType = voxel::FaceNames::PositiveZ;
-			} else if (faceName == "west") {
-				faceType = voxel::FaceNames::NegativeX;
-			} else if (faceName == "up") {
-				faceType = voxel::FaceNames::PositiveY;
-			} else if (faceName == "down") {
-				faceType = voxel::FaceNames::NegativeY;
-			} else {
-				Log::error("Unsupported face name: %s", faceName.c_str());
-				continue;
-			}
-			Log::debug("faceName: %s, textureIdx: %d", faceName.c_str(), textureIdx);
-			const float w = textureArray[textureIdx]->width();
-			const float h = textureArray[textureIdx]->height();
-			const glm::vec2 uv0 = glm::vec2(uv[0], uv[1]);
-			const glm::vec2 uv1 = glm::vec2(uv[2], uv[3]);
-			const glm::vec2 size(w, h);
-			const glm::vec2 fuv0 = uv0 / size;
-			const glm::vec2 fuv1 = uv1 / size;
-			Log::debug("final uv0: %f:%f, uv1: %f:%f", fuv0.x, fuv0.y, fuv1.x, fuv1.y);
-			element.cube.faces[(int)faceType].uvs[0] = fuv0;
-			element.cube.faces[(int)faceType].uvs[1] = fuv1;
-			element.cube.faces[(int)faceType].textureIndex = textureIdx;
 		}
 
 		elementMap.emplace(element.uuid, core::move(element));
@@ -144,12 +234,13 @@ static bool parseElements(const core::String &filename, const nlohmann::json &el
 	return true;
 }
 
-static bool parseOutliner(const core::String &filename, const nlohmann::json &entry, BlockbenchFormat::Node &node) {
+static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &entry,
+						  BlockbenchFormat::Node &node) {
 	node.name = priv::toStr(entry.value("name", ""));
 	node.uuid = priv::toStr(entry.value("uuid", ""));
 	node.locked = entry.value("locked", false);
 	node.visible = entry.value("visible", true);
-	node.origin = priv::toVec3(entry, "origin");
+	node.origin = scale * priv::toVec3(entry, "origin");
 	node.rotation = priv::toVec3(entry, "rotation");
 
 	Log::debug("Node name: %s (%i references)", node.name.c_str(), (int)node.referenced.size());
@@ -174,11 +265,11 @@ static bool parseOutliner(const core::String &filename, const nlohmann::json &en
 			continue;
 		}
 		if (!iter->is_object()) {
-			Log::error("Entry is not an object in json file: %s", filename.c_str());
+			Log::error("Child entry is not an object in json file: %s", filename.c_str());
 			return false;
 		}
 		BlockbenchFormat::Node childNode;
-		if (!parseOutliner(filename, *iter, childNode)) {
+		if (!parseOutliner(scale, filename, *iter, childNode)) {
 			return false;
 		}
 		node.children.emplace_back(core::move(childNode));
@@ -193,123 +284,65 @@ void BlockbenchFormat::fillFace(scenegraph::SceneGraphNode &node, voxel::FaceNam
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const math::Axis axis = faceToAxis(faceName);
-	const int axisIdx = math::getIndexForAxis(axis);
-	const int fixedAxisMins = mins[axisIdx];
+	const int axisIdx0 = math::getIndexForAxis(axis);
+	const int axisIdx1 = (axisIdx0 + 1) % 3;
+	const int axisIdx2 = (axisIdx0 + 2) % 3;
 	const glm::vec3 size = region.getDimensionsInVoxels();
 	const palette::Palette &palette = node.palette();
 
-	if (faceName == voxel::FaceNames::NegativeZ) {
-		// north, forward
-		int z = fixedAxisMins;
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			const float yFactor = (float)(y - mins.y) / size.y;
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				const float xFactor = (float)(x - mins.x) / size.x;
-				const float u = glm::mix(uv0.x, uv1.x, xFactor);
-				const float v = glm::mix(uv0.y, uv1.y, yFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
+	const int axisFixed = voxel::isNegativeFace(faceName) ? mins[axisIdx0] : maxs[axisIdx0];
+	const int axisMins1 = mins[axisIdx1];
+	const int axisMins2 = mins[axisIdx2];
+	const int axisMaxs1 = maxs[axisIdx1];
+	const int axisMaxs2 = maxs[axisIdx2];
+	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
+	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
+	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
+		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
+		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
+			const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
+			glm::vec2 uv;
+			uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
+			uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
+			const core::RGBA color = image->colorAt(uv);
+			int palIdx = palette.getClosestMatch(color);
+			if (palIdx == palette::PaletteColorNotFound) {
+				palIdx = 0;
 			}
-		}
-	} else if (faceName == voxel::FaceNames::PositiveZ) {
-		int z = maxs.z;
-		// south, backward
-		for (int y = mins.y; y <= maxs.y; ++y) {
-			const float yFactor = (float)(y - mins.y) / size.y;
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				const float xFactor = (float)(x - mins.x) / size.x;
-				const float u = glm::mix(uv0.x, uv1.x, xFactor);
-				const float v = glm::mix(uv0.y, uv1.y, yFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
-			}
-		}
-	} else if (faceName == voxel::FaceNames::NegativeX) {
-		int x = fixedAxisMins;
-		for (int z = mins.z + 1; z < maxs.z; ++z) {
-			const float zFactor = (float)(z - mins.z) / size.z;
-			for (int y = mins.y + 1; y < maxs.y; ++y) {
-				const float yFactor = (float)(y - mins.y) / size.y;
-				const float u = glm::mix(uv0.x, uv1.x, zFactor);
-				const float v = glm::mix(uv0.y, uv1.y, yFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
-			}
-		}
-	} else if (faceName == voxel::FaceNames::PositiveX) {
-		int x = maxs.x;
-		for (int z = mins.z + 1; z < maxs.z; ++z) {
-			const float zFactor = (float)(z - mins.z) / size.z;
-			for (int y = mins.y + 1; y < maxs.y; ++y) {
-				const float yFactor = (float)(y - mins.y) / size.y;
-				const float u = glm::mix(uv0.x, uv1.x, zFactor);
-				const float v = glm::mix(uv0.y, uv1.y, yFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
-			}
-		}
-	} else if (faceName == voxel::FaceNames::NegativeY) {
-		int y = fixedAxisMins;
-		// down
-		for (int z = mins.z + 1; z < maxs.z; ++z) {
-			const float zFactor = (float)(z - mins.z) / size.z;
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				const float xFactor = (float)(x - mins.x) / size.x;
-				const float u = glm::mix(uv0.x, uv1.x, xFactor);
-				const float v = glm::mix(uv0.y, uv1.y, zFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
-			}
-		}
-	} else if (faceName == voxel::FaceNames::PositiveY) {
-		int y = maxs.y;
-		// up
-		for (int z = mins.z + 1; z < maxs.z; ++z) {
-			const float zFactor = (float)(z - mins.z) / size.z;
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				const float xFactor = (float)(x - mins.x) / size.x;
-				const float u = glm::mix(uv0.x, uv1.x, xFactor);
-				const float v = glm::mix(uv0.y, uv1.y, zFactor);
-				const core::RGBA color = image->colorAt({u, v});
-				int palIdx = palette.getClosestMatch(color);
-				if (palIdx == palette::PaletteColorNotFound) {
-					palIdx = 0;
-				}
-				wrapper.setVoxel(x, y, z, voxel::createVoxel(palette, palIdx));
-			}
+			glm::ivec3 pos;
+			pos[axisIdx0] = axisFixed;
+			pos[axisIdx1] = axis1;
+			pos[axisIdx2] = axis2;
+			wrapper.setVoxel(pos.x, pos.y, pos.z, voxel::createVoxel(palette, palIdx));
 		}
 	}
 }
 
-bool BlockbenchFormat::generateVolumeFromElement(const Node &node, const Element &element, const Textures &textureArray,
-												 scenegraph::SceneGraph &sceneGraph, int parent) const {
+bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const Textures &textureArray,
+									scenegraph::SceneGraph &sceneGraph, int parent) const {
+	const Mesh &mesh = element.mesh;
+	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, mesh.tris, parent);
+	if (nodeIdx == InvalidNodeId) {
+		return false;
+	}
+	scenegraph::SceneGraphNode &model = sceneGraph.node(nodeIdx);
+	model.setLocked(node.locked);
+	model.setVisible(node.visible);
+	sceneGraph.updateTransforms();
+	model.setRotation(glm::quat(glm::radians(element.rotation)), true);
+	model.setTranslation(element.origin, true);
+	return true;
+}
+
+bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const Textures &textureArray,
+									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Cube &cube = element.cube;
-	glm::vec3 size = element.to - element.from;
+	glm::vec3 size = element.cube.to - element.cube.from;
 	// even a plane is one voxel for us
 	size.x = glm::clamp(size.x, 1.0f, 1.0f + size.x);
 	size.y = glm::clamp(size.y, 1.0f, 1.0f + size.y);
 	size.z = glm::clamp(size.z, 1.0f, 1.0f + size.z);
-	const glm::vec3 mins = glm::round(element.from);
+	const glm::vec3 mins = glm::round(element.cube.from);
 	const glm::vec3 maxs = mins + size - 1.0f;
 	voxel::Region region(mins, maxs);
 	if (!region.isValid()) {
@@ -322,17 +355,22 @@ bool BlockbenchFormat::generateVolumeFromElement(const Node &node, const Element
 	model.setName(element.name);
 	model.setLocked(node.locked);
 	model.setVisible(node.visible);
-	model.rotate(glm::quat(glm::radians(element.rotation)), true);
-	model.translate(element.from, true);
-	const glm::vec3 pivot = (element.origin - element.from) / size;
+	model.setRotation(glm::quat(glm::radians(element.rotation)), true);
+	// TODO: pivot or translation is still wrong and group rotations are not correctly applied yet
+	const glm::vec3 pivot = (element.origin - element.cube.from) / size;
 	model.setPivot(pivot);
-	for (int i = 0; i < (int)voxel::FaceNames::Max; ++i) {
-		const Face &face = cube.faces[i];
+	const glm::vec3 regionsize = region.getDimensionsInVoxels();
+	model.setTranslation(element.cube.from + pivot * regionsize, true);
+	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
+									  voxel::FaceNames::NegativeY, voxel::FaceNames::PositiveY,
+									  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
+	for (int i = 0; i < lengthof(order); ++i) {
+		const CubeFace &face = cube.faces[(int)order[i]];
 		if (face.textureIndex == -1) {
 			Log::error("No texture index for face: %i", i);
 			continue;
 		}
-		voxel::FaceNames faceName = (voxel::FaceNames)i;
+		const voxel::FaceNames faceName = order[i];
 		fillFace(model, faceName, textureArray[face.textureIndex], face.uvs[0], face.uvs[1]);
 	}
 	model.volume()->region().shift(-region.getLowerCorner());
@@ -349,15 +387,25 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			continue;
 		}
 		const Element &element = elementIter->value;
-		generateVolumeFromElement(node, element, textureArray, sceneGraph, parent);
+		if (element.type == ElementType::Cube) {
+			if (!generateCube(node, element, textureArray, sceneGraph, parent)) {
+				return false;
+			}
+		} else if (element.type == ElementType::Mesh) {
+			if (!generateMesh(node, element, textureArray, sceneGraph, parent)) {
+				return false;
+			}
+		} else {
+			Log::warn("Unsupported element type: %i", (int)element.type);
+		}
 	}
 	for (const Node &child : node.children) {
 		scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group, child.uuid);
 		group.setName(child.name);
 		group.setVisible(child.visible);
 		group.setLocked(child.locked);
-		group.rotate(glm::quat(glm::radians(child.rotation)), true);
-		group.translate(child.origin, true);
+		group.setRotation(glm::quat(glm::radians(child.rotation)), true);
+		group.setTranslation(child.origin, true);
 		int groupParent = sceneGraph.emplace(core::move(group), parent);
 		if (groupParent == InvalidNodeId) {
 			Log::error("Failed to add node: %s", child.name.c_str());
@@ -367,6 +415,30 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 			return false;
 		}
 	}
+	return true;
+}
+
+static bool parseAnimations(const core::String &filename, nlohmann::json &json, scenegraph::SceneGraph &sceneGraph) {
+	// no animations found
+	if (json.find("animations") == json.end()) {
+		return true;
+	}
+
+	const nlohmann::json &animationsJson = json["animations"];
+	if (!animationsJson.is_array()) {
+		Log::error("Animations is not an array in json file: %s", filename.c_str());
+		return false;
+	}
+
+	for (const auto &animationJson : animationsJson) {
+		const core::String animationName = priv::toStr(animationJson["name"]);
+		if (animationName.empty()) {
+			continue;
+		}
+		sceneGraph.addAnimation(animationName);
+		// TODO: load animations
+	}
+
 	return true;
 }
 
@@ -392,8 +464,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const core::String &formatVersion = priv::toStr(meta["format_version"]);
 	if (formatVersion != "4.5") {
-		Log::error("Unsupported format version: %s", formatVersion.c_str());
-		return false;
+		Log::warn("Unsupported format version: %s", formatVersion.c_str());
+		// return false;
 	}
 
 	const nlohmann::json &textures = json["textures"];
@@ -444,8 +516,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
+	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!parseElements(filename, elementsJson, textureArray, elementMap, sceneGraph)) {
+	if (!parseElements(scale, filename, elementsJson, textureArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -458,20 +531,29 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	Node root;
 	for (const auto &entry : outlinerJson) {
-		if (!entry.is_object()) {
-			Log::error("Entry is not an object in json file: %s", filename.c_str());
-			return false;
+		if (entry.is_object()) {
+			if (!parseOutliner(scale, filename, entry, root)) {
+				Log::error("Failed to parse outliner");
+				return false;
+			}
+		} else if (entry.is_string()) {
+			core::String uuid = priv::toStr(entry);
+			root.referenced.emplace_back(uuid);
 		}
-		if (!parseOutliner(filename, entry, root)) {
-			Log::error("Failed to parse outliner");
-			return false;
-		}
+	}
+
+	if (!parseAnimations(filename, json, sceneGraph)) {
+		Log::error("Failed to parse animations");
+		// don't abort because we can still load the model without animations
 	}
 
 	if (!addNode(root, elementMap, sceneGraph, textureArray, 0)) {
 		Log::error("Failed to add node");
 		return false;
 	}
+
+	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
+	rootNode.setProperty("version", formatVersion);
 
 	return true;
 }

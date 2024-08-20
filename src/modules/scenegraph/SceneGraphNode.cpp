@@ -218,30 +218,39 @@ glm::vec3 SceneGraphNode::worldPivot() const {
 	return r.getLowerCornerf() + _pivot * glm::vec3(r.getDimensionsInVoxels());
 }
 
-void SceneGraphNode::translate(const glm::vec3 &translation, bool world) {
+void SceneGraphNode::translate(const glm::vec3 &translation) {
 	Log::debug("Translate the node by %f %f %f", translation.x, translation.y, translation.z);
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
+			const glm::vec3 &t =
+				transform.localTranslation() + glm::conjugate(transform.localOrientation()) * translation;
+			transform.setLocalTranslation(t);
+		}
+	}
+}
+
+void SceneGraphNode::setTranslation(const glm::vec3 &translation, bool world) {
+	for (auto *keyFrames : _keyFramesMap) {
+		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
+			SceneGraphTransform &transform = keyFrame.transform();
 			if (world) {
-				const glm::vec3 &t = transform.worldTranslation() + glm::conjugate(transform.worldOrientation()) * translation;
-				transform.setWorldTranslation(t);
+				transform.setWorldTranslation(translation);
 			} else {
-				const glm::vec3 &t = transform.localTranslation() + glm::conjugate(transform.localOrientation()) * translation;
-				transform.setLocalTranslation(t);
+				transform.setLocalTranslation(translation);
 			}
 		}
 	}
 }
 
-void SceneGraphNode::rotate(const glm::quat &rotation, bool world) {
+void SceneGraphNode::setRotation(const glm::quat &rotation, bool world) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
 			if (world) {
-				transform.setWorldOrientation(glm::normalize(transform.worldOrientation() * rotation));
+				transform.setWorldOrientation(rotation);
 			} else {
-				transform.setLocalOrientation(glm::normalize(transform.localOrientation() * rotation));
+				transform.setLocalOrientation(rotation);
 			}
 		}
 	}

@@ -142,7 +142,7 @@ static const io::FormatDescription &quakeMd2() {
 }
 
 static const io::FormatDescription &blockbench() {
-	static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, 0u};
+	static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
 	return f;
 }
 

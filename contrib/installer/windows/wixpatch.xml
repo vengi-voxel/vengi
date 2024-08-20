@@ -43,6 +43,9 @@
 		<RegistryKey Root="HKCR" Key=".vxm">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".bbmodel">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vxr">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -282,6 +285,15 @@
 		<RegistryValue Root="HKCR" Key=".vxm\OpenWithProgids" Name="vengi-voxedit.vxm" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vxm" Description="Sandbox VoxEdit Model" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vxm" ContentType="application/x-sandbox-voxedit-model">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".bbmodel" Value="vengi-voxedit.bbmodel" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".bbmodel" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".bbmodel\OpenWithProgids" Name="vengi-voxedit.bbmodel" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.bbmodel" Description="Blockbench" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="bbmodel" ContentType="application/x-blockbench">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

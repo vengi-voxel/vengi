@@ -144,8 +144,15 @@ public:
 	/**
 	 * @brief Apply the given @c translation vector to all keyframe transform of this node
 	 */
-	void translate(const glm::vec3 &translation, bool world = false);
-	void rotate(const glm::quat &rotation, bool world = false);
+	void translate(const glm::vec3 &translation);
+	/**
+	 * @brief Set the given @c translation vector to all keyframe transform of this node
+	 */
+	void setTranslation(const glm::vec3 &translation, bool world = false);
+	/**
+	 * @brief Set the given @c rotation to all keyframe transform of this node
+	 */
+	void setRotation(const glm::quat &rotation, bool world = false);
 
 	SceneGraphNodeType type() const;
 
