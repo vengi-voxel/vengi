@@ -27,9 +27,13 @@
 namespace voxelformat {
 
 namespace priv {
-static core::String toStr(const std::string &in) {
-	core::String p(in.c_str());
+static inline core::String toStr(const std::string &str) {
+	core::String p(str.c_str());
 	return p;
+}
+
+static inline core::String toStr(const nlohmann::json &json, const char *key) {
+	return toStr(json.value(key, ""));
 }
 
 static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
@@ -41,7 +45,7 @@ static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::
 }
 
 static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const char *key) {
-	const core::String &type = priv::toStr(json.value(key, ""));
+	const core::String &type = priv::toStr(json, key);
 	if (type == "cube") {
 		return BlockbenchFormat::ElementType::Cube;
 	} else if (type == "mesh") {
@@ -50,8 +54,6 @@ static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const ch
 	Log::warn("Unsupported element type: %s", type.c_str());
 	return BlockbenchFormat::ElementType::Max;
 }
-
-} // namespace priv
 
 static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementJson,
 					  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::Element &element) {
@@ -213,8 +215,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 						  scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::Element element;
-		element.uuid = priv::toStr(elementJson.value("uuid", ""));
-		element.name = priv::toStr(elementJson.value("name", ""));
+		element.uuid = priv::toStr(elementJson, "uuid");
+		element.name = priv::toStr(elementJson, "name");
 		element.origin = scale * priv::toVec3(elementJson, "origin");
 		element.rotation = priv::toVec3(elementJson, "rotation");
 		element.type = priv::toType(elementJson, "type");
@@ -236,8 +238,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 
 static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &entry,
 						  BlockbenchFormat::Node &node) {
-	node.name = priv::toStr(entry.value("name", ""));
-	node.uuid = priv::toStr(entry.value("uuid", ""));
+	node.name = priv::toStr(entry, "name");
+	node.uuid = priv::toStr(entry, "uuid");
 	node.locked = entry.value("locked", false);
 	node.visible = entry.value("visible", true);
 	node.origin = scale * priv::toVec3(entry, "origin");
@@ -276,6 +278,8 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 	}
 	return true;
 }
+
+} // namespace priv
 
 void BlockbenchFormat::fillFace(scenegraph::SceneGraphNode &node, voxel::FaceNames faceName,
 								const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1) const {
@@ -431,12 +435,47 @@ static bool parseAnimations(const core::String &filename, nlohmann::json &json, 
 	}
 
 	for (const auto &animationJson : animationsJson) {
-		const core::String animationName = priv::toStr(animationJson["name"]);
+		const core::String animationName = priv::toStr(animationJson, "name");
 		if (animationName.empty()) {
 			continue;
 		}
 		sceneGraph.addAnimation(animationName);
+#if 0
+		// const core::String uuid = priv::toStr(animationJson, "uuid");
+		const core::String loop = priv::toStr(animationJson, "loop"); // "once"
+		const bool overrideVal = animationJson["override"];
+		const bool selected = animationJson["selected"];
+		const int length = animationJson["length"];
+		const int snapping = animationJson["snapping"];
 		// TODO: load animations
+		// "anim_time_update": "",
+		// "blend_weight": "",
+		// "start_delay": "",
+		// "loop_delay": "",
+		for (auto animatorsIter = animationJson.find("animators"); animatorsIter != animationJson.end();
+			 ++animatorsIter) {
+			const core::String uuid = priv::toStr(animatorsIter.key());
+			const auto &animatorsJson = animatorsIter.value();
+			const core::String animatorName = priv::toStr(animatorsJson, "name");
+			const core::String type = priv::toStr(animatorsJson, "type"); // "bone"
+			for (auto keyframesIter = animatorsJson.find("keyframes"); keyframesIter != animatorsJson.end();
+				 ++keyframesIter) {
+				const auto &keyframeJson = keyframesIter.value();
+				const core::String keyframeChannel = priv::toStr(keyframeJson, "channel"); // "rotation", "position"
+				const core::String keyframeInterpolation = priv::toStr(keyframeJson, "interpolation"); // "linear", "catmullrom"
+				const core::String keyframeUuid = priv::toStr(keyframeJson, "uuid");
+				const float keyframeTime = keyframeJson.value("time", 0.0f);
+				const int keyframeColor = keyframeJson.value("color", 0);
+				const bool keyframeBezierLinked = keyframeJson.value("bezier_linked", false);
+				const glm::vec3 keyframeBezierRightValue = priv::toVec3(keyframeJson, "bezier_right_value");
+				const glm::vec3 keyframeBezierRightTime = priv::toVec3(keyframeJson, "bezier_right_time");
+				const glm::vec3 keyframeBezierLeftValue = priv::toVec3(keyframeJson, "bezier_left_value");
+				const glm::vec3 keyframeBezierLeftTime = priv::toVec3(keyframeJson, "bezier_left_time");
+				// TODO: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
+				// "data_points": [{"x": "0","y": "0","z": 90}],
+			}
+		}
+#endif
 	}
 
 	return true;
@@ -460,13 +499,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
+	const core::String &formatVersion = priv::toStr(meta, "format_version");
 	// model_format: free bedrock_old java_block
-
-	const core::String &formatVersion = priv::toStr(meta["format_version"]);
-	if (formatVersion != "4.5") {
-		Log::warn("Unsupported format version: %s", formatVersion.c_str());
-		// return false;
-	}
+	const core::String &modelFormat = priv::toStr(meta, "model_format");
 
 	const nlohmann::json &textures = json["textures"];
 	if (!textures.is_array()) {
@@ -478,9 +513,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	textureArray.reserve(textures.size());
 
 	for (const auto &texture : textures) {
-		const core::String &name = priv::toStr(texture["name"]);
+		const core::String &name = priv::toStr(texture, "name");
 		// TODO: allow to load from "path" instead of "source"
-		const core::String &source = priv::toStr(texture["source"]);
+		const core::String &source = priv::toStr(texture, "source");
 		if (core::string::startsWith(source, "data:")) {
 			const size_t mimetypeEndPos = source.find(";");
 			if (mimetypeEndPos == core::String::npos) {
@@ -518,7 +553,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!parseElements(scale, filename, elementsJson, textureArray, elementMap, sceneGraph)) {
+	if (!priv::parseElements(scale, filename, elementsJson, textureArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -532,7 +567,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	Node root;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
-			if (!parseOutliner(scale, filename, entry, root)) {
+			if (!priv::parseOutliner(scale, filename, entry, root)) {
 				Log::error("Failed to parse outliner");
 				return false;
 			}
@@ -554,6 +589,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty("version", formatVersion);
+	rootNode.setProperty("model_format", modelFormat);
 
 	return true;
 }
