@@ -536,7 +536,10 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			wrap(stream.readUInt16(height))
 			wrap(stream.readUInt16(depth))
 			Log::debug("Found size chunk: %i:%i:%i", width, height, depth);
-			sizeChunkFound = true;
+			sizeChunkFound = width > 0 && height > 0 && depth > 0;
+			if (!sizeChunkFound) {
+				Log::warn("Invalid size chunk: %i:%i:%i", width, height, depth);
+			}
 
 			if (!volumeBuffer.empty()) {
 				const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
@@ -665,7 +668,10 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	transform.setLocalScale(scale);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
-	if (hasPivot) {
+	if (hasPivot && sizeChunkFound) {
+		core_assert(width != 0);
+		core_assert(height != 0);
+		core_assert(depth != 0);
 		pivot.x /= (float)width;
 		pivot.y /= (float)height;
 		pivot.z /= (float)depth;
