@@ -930,7 +930,7 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6, ws);
-		const voxel::Region &region = node.region();
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		const glm::ivec3 mins = region.getLowerCorner();
 		const glm::ivec3 maxs = region.getUpperCorner() + 1;
 		wrapBool(sub.writeFloat(mins.x))
@@ -946,7 +946,8 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
-		const glm::ivec3 &dimensions = node.region().getDimensionsInVoxels();
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 		wrapBool(sub.writeUInt16(dimensions.x))
 		wrapBool(sub.writeUInt16(dimensions.y))
 		wrapBool(sub.writeUInt16(dimensions.z))
