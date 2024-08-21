@@ -48,5 +48,5 @@ endfunction()
 
 function(engine_mark_as_generated)
 	set_source_files_properties(${ARGN} PROPERTIES GENERATED TRUE)
-	set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CXX)
+	#set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CXX)
 endfunction()
