@@ -200,7 +200,7 @@ bool WindowedApp::isDarkMode() const {
 #endif
 }
 
-bool WindowedApp::onKeyRelease(int32_t key, int16_t modifier) {
+bool WindowedApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 	return handleKeyRelease(key, modifier);
 }
 
@@ -214,7 +214,7 @@ bool WindowedApp::handleKeyPress(int32_t key, int16_t modifier, uint16_t count) 
 	return _keybindingHandler.execute(key, modifier, true, nowSeconds(), count);
 }
 
-bool WindowedApp::onMouseWheel(float x, float y) {
+bool WindowedApp::onMouseWheel(void *windowHandle, float x, float y) {
 	int32_t key;
 	if (y < 0.0f)
 		key = util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP;
@@ -233,15 +233,15 @@ bool WindowedApp::onMouseWheel(float x, float y) {
 	return false;
 }
 
-void WindowedApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+void WindowedApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	handleKeyPress(CUSTOM_SDL_KEYCODE(button), SDL_GetModState(), clicks);
 }
 
-void WindowedApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+void WindowedApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
 	handleKeyRelease(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
 }
 
-bool WindowedApp::onKeyPress(int32_t key, int16_t modifier) {
+bool WindowedApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	return handleKeyPress(key, modifier);
 }
 

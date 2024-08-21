@@ -65,7 +65,7 @@ app::AppState VoxEdit::onCleanup() {
 	return Super::onCleanup();
 }
 
-void VoxEdit::onDropFile(const core::String& file) {
+void VoxEdit::onDropFile(void *window, const core::String& file) {
 	if (_mainWindow == nullptr) {
 		return;
 	}

@@ -61,7 +61,7 @@ private:
 public:
 	TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider);
 
-	virtual bool onKeyPress(int32_t key, int16_t modifier) override;
+	virtual bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) override;
 
 	virtual app::AppState onInit() override;
 	virtual void onRenderUI() override;

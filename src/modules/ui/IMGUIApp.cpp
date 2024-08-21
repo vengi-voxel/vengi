@@ -71,8 +71,8 @@ void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t r
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-bool IMGUIApp::onMouseWheel(float x, float y) {
-	if (!Super::onMouseWheel(x, y)) {
+bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y) {
+	if (!Super::onMouseWheel(windowHandle, x, y)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
 #if SDL_VERSION_ATLEAST(2, 0, 18)
@@ -81,61 +81,68 @@ bool IMGUIApp::onMouseWheel(float x, float y) {
 #endif
 		ev.wheel.x = (int)x;
 		ev.wheel.y = (int)y;
+		ev.wheel.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
+
 		ImGui_ImplSDL2_ProcessEvent(&ev);
 	}
 	return true;
 }
 
-void IMGUIApp::onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
-	Super::onMouseButtonRelease(x, y, button);
+void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
+	Super::onMouseButtonRelease(windowHandle, x, y, button);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONUP;
 	ev.button.button = button;
 	ev.button.x = x;
 	ev.button.y = y;
+	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-void IMGUIApp::onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
-	Super::onMouseButtonPress(x, y, button, clicks);
+void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	Super::onMouseButtonPress(windowHandle, x, y, button, clicks);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONDOWN;
 	ev.button.button = button;
 	ev.button.clicks = clicks;
 	ev.button.x = x;
 	ev.button.y = y;
+	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-bool IMGUIApp::onTextInput(const core::String &text) {
+bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
+	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	core::string::strncpyz(text.c_str(), sizeof(ev.text.text), ev.text.text, sizeof(ev.text.text));
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 	return true;
 }
 
-bool IMGUIApp::onKeyPress(int32_t key, int16_t modifier) {
-	if (!Super::onKeyPress(key, modifier) ||
+bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
+	if (!Super::onKeyPress(windowHandle, key, modifier) ||
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYDOWN;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = (SDL_Keycode)key;
 		ev.key.keysym.mod = modifier;
+		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ImGui_ImplSDL2_ProcessEvent(&ev);
 		_keys.insert(key);
 	}
 	return true;
 }
 
-bool IMGUIApp::onKeyRelease(int32_t key, int16_t modifier) {
-	if (!Super::onKeyRelease(key, modifier) || _keys.has(key)) {
+bool IMGUIApp::onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
+	if (!Super::onKeyRelease(windowHandle, key, modifier) || _keys.has(key)) {
 		SDL_Event ev{};
 		ev.type = SDL_KEYUP;
 		ev.key.keysym.scancode = (SDL_Scancode)SDL_SCANCODE_UNKNOWN;
 		ev.key.keysym.sym = key;
 		ev.key.keysym.mod = modifier;
+		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 		ImGui_ImplSDL2_ProcessEvent(&ev);
 		_keys.remove(key);
 	}

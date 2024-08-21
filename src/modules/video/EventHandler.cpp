@@ -43,21 +43,21 @@ core::String EventHandler::getControllerButtonName(uint8_t button) {
 bool EventHandler::handleEvent(SDL_Event &event) {
 	switch (event.type) {
 	case SDL_DROPFILE:
-		dropFile(event.drop.file);
+		dropFile((void*)SDL_GetWindowFromID(event.drop.windowID), event.drop.file);
 		SDL_free(event.drop.file);
 		break;
 	case SDL_DROPTEXT:
-		dropText(event.drop.file);
+		dropText((void*)SDL_GetWindowFromID(event.drop.windowID), event.drop.file);
 		SDL_free(event.drop.file);
 		break;
 	case SDL_TEXTINPUT:
-		textInput(core::String(event.text.text));
+		textInput((void*)SDL_GetWindowFromID(event.text.windowID), core::String(event.text.text));
 		break;
 	case SDL_KEYUP:
-		keyRelease((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
+		keyRelease((void*)SDL_GetWindowFromID(event.key.windowID), (int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_KEYDOWN:
-		keyPress((int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
+		keyPress((void*)SDL_GetWindowFromID(event.key.windowID), (int32_t) event.key.keysym.sym, (int16_t) event.key.keysym.mod);
 		break;
 	case SDL_MOUSEMOTION: {
 		if (event.motion.which == SDL_TOUCH_MOUSEID) {
@@ -71,13 +71,13 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
 		}
-		mouseButtonPress(event.button.x, event.button.y, event.button.button, event.button.clicks);
+		mouseButtonPress((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.clicks);
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
 		}
-		mouseButtonRelease(event.button.x, event.button.y, event.button.button);
+		mouseButtonRelease((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button);
 		break;
 	case SDL_MOUSEWHEEL: {
 		if (event.wheel.which == SDL_TOUCH_MOUSEID) {
@@ -94,7 +94,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 #endif
 		x = glm::clamp(x, -1.0f, 1.0f);
 		y = glm::clamp(y, -1.0f, 1.0f);
-		mouseWheel(x, y);
+		mouseWheel((void*)SDL_GetWindowFromID(event.wheel.windowID), x, y);
 		break;
 	}
 	case SDL_CONTROLLERAXISMOTION:
@@ -130,13 +130,13 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		// ignore joystick events - use gamecontroller events
 		break;
 	case SDL_FINGERDOWN:
-		fingerPress(event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
+		fingerPress((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
 		break;
 	case SDL_FINGERUP:
-		fingerRelease(event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
+		fingerRelease((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y);
 		break;
 	case SDL_FINGERMOTION:
-		fingerMotion(event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.dx, event.tfinger.dy);
+		fingerMotion((void*)SDL_GetWindowFromID(event.key.windowID), event.tfinger.fingerId, event.tfinger.x, event.tfinger.y, event.tfinger.dx, event.tfinger.dy);
 		break;
 	case SDL_WINDOWEVENT: {
 		SDL_Window* window = SDL_GetWindowFromID(event.window.windowID);
@@ -260,9 +260,9 @@ void EventHandler::foreground() {
 	}
 }
 
-void EventHandler::mouseWheel(float x, float y) {
+void EventHandler::mouseWheel(void *windowHandle, float x, float y) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseWheel(x, y);
+		observer->onMouseWheel(windowHandle, x, y);
 	}
 }
 
@@ -302,67 +302,67 @@ void EventHandler::controllerButtonRelease(const core::String& button, uint32_t 
 	}
 }
 
-void EventHandler::mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+void EventHandler::mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseButtonPress(x, y, button, clicks);
+		observer->onMouseButtonPress(windowHandle, x, y, button, clicks);
 	}
 }
 
-void EventHandler::mouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+void EventHandler::mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseButtonRelease(x, y, button);
+		observer->onMouseButtonRelease(windowHandle, x, y, button);
 	}
 }
 
-void EventHandler::dropFile(const core::String& file) {
+void EventHandler::dropFile(void *windowHandle, const core::String& file) {
 	for (IEventObserver* observer : _observers) {
-		observer->onDropFile(file);
+		observer->onDropFile(windowHandle, file);
 	}
 }
 
-void EventHandler::dropText(const core::String& text) {
+void EventHandler::dropText(void *windowHandle, const core::String& text) {
 	for (IEventObserver* observer : _observers) {
-		observer->onDropText(text);
+		observer->onDropText(windowHandle, text);
 	}
 }
 
-void EventHandler::textInput(const core::String& text) {
+void EventHandler::textInput(void *windowHandle, const core::String& text) {
 	for (IEventObserver* observer : _observers) {
-		observer->onTextInput(text);
+		observer->onTextInput(windowHandle, text);
 	}
 }
 
-void EventHandler::keyRelease(int32_t key, int16_t modifier) {
+void EventHandler::keyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 	for (IEventObserver* observer : _observers) {
-		observer->onKeyRelease(key, modifier);
+		observer->onKeyRelease(windowHandle, key, modifier);
 	}
 }
 
-void EventHandler::keyPress(int32_t key, int16_t modifier) {
+void EventHandler::keyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	for (IEventObserver* observer : _observers) {
-		observer->onKeyPress(key, modifier);
+		observer->onKeyPress(windowHandle, key, modifier);
 	}
 }
 
-void EventHandler::fingerPress(int64_t finger, float x, float y) {
+void EventHandler::fingerPress(void *windowHandle, int64_t finger, float x, float y) {
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerPress(finger, x, y);
+		observer->onFingerPress(windowHandle, finger, x, y);
 	}
 }
 
-void EventHandler::fingerRelease(int64_t finger, float x, float y) {
+void EventHandler::fingerRelease(void *windowHandle, int64_t finger, float x, float y) {
 	_multiGesture = false;
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerRelease(finger, x, y);
+		observer->onFingerRelease(windowHandle, finger, x, y);
 	}
 }
 
-void EventHandler::fingerMotion(int64_t finger, float x, float y, float dx, float dy) {
+void EventHandler::fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
 	if (_multiGesture) {
 		return;
 	}
 	for (IEventObserver* observer : _observers) {
-		observer->onFingerMotion(finger, x, y, dx, dy);
+		observer->onFingerMotion(windowHandle, finger, x, y, dx, dy);
 	}
 }
 

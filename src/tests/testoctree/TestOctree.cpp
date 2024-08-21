@@ -17,8 +17,8 @@ TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProv
 	setRenderAxis(true);
 }
 
-bool TestOctree::onKeyPress(int32_t key, int16_t modifier) {
-	if (Super::onKeyPress(key, modifier)) {
+bool TestOctree::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
+	if (Super::onKeyPress(windowHandle, key, modifier)) {
 		return true;
 	}
 	const SDL_bool current = SDL_GetRelativeMouseMode();

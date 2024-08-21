@@ -44,17 +44,17 @@ public:
 	virtual void onForeground() {
 	}
 
-	virtual bool onMouseWheel(float x, float y) {
+	virtual bool onMouseWheel(void *windowHandle, float x, float y) {
 		return false;
 	}
 
 	virtual void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
 	}
 
-	virtual void onMouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	virtual void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
 	}
 
-	virtual void onMouseButtonRelease(int32_t x, int32_t y, uint8_t button) {
+	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
 	}
 
 	/**
@@ -77,35 +77,35 @@ public:
 	virtual void onControllerButtonRelease(const core::String& button, uint32_t id) {
 	}
 
-	virtual void onDropFile(const core::String& file) {
+	virtual void onDropFile(void *windowHandle, const core::String& file) {
 	}
 
-	virtual void onDropText(const core::String& text) {
+	virtual void onDropText(void *windowHandle, const core::String& text) {
 	}
 
-	virtual bool onTextInput(const core::String& text) {
+	virtual bool onTextInput(void *windowHandle, const core::String& text) {
 		return false;
 	}
 
 	// returns true if the key release was handled
-	virtual bool onKeyRelease(int32_t key, int16_t modifier) {
+	virtual bool onKeyRelease(void *windowHandle, int32_t key, int16_t modifier) {
 		return false;
 	}
 
 	// returns true if the key was handled
-	virtual bool onKeyPress(int32_t key, int16_t modifier) {
+	virtual bool onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 		return false;
 	}
 
-	virtual bool onFingerPress(int64_t finger, float x, float y) {
+	virtual bool onFingerPress(void *windowHandle, int64_t finger, float x, float y) {
 		return false;
 	}
 
-	virtual bool onFingerRelease(int64_t finger, float x, float y) {
+	virtual bool onFingerRelease(void *windowHandle, int64_t finger, float x, float y) {
 		return false;
 	}
 
-	virtual void onFingerMotion(int64_t finger, float x, float y, float dx, float dy) {
+	virtual void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy) {
 	}
 
 	virtual void onWindowResize(void *windowHandle, int windowWidth, int windowHeight) {

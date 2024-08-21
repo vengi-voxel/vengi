@@ -61,18 +61,18 @@ public:
 	 * @param[in] id game controller id
 	 */
 	void controllerMotion(uint8_t axis, int value, uint32_t id);
-	void mouseWheel(float x, float y);
+	void mouseWheel(void *windowHandle, float x, float y);
 	void mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY);
-	void mouseButtonPress(int32_t x, int32_t y, uint8_t button, uint8_t clicks);
-	void mouseButtonRelease(int32_t x, int32_t y, uint8_t button);
-	void dropFile(const core::String& file);
-	void dropText(const core::String& text);
-	void textInput(const core::String& text);
-	void keyRelease(int32_t key, int16_t modifier = 0);
-	void keyPress(int32_t key, int16_t modifier = 0);
-	void fingerPress(int64_t finger, float x, float y);
-	void fingerRelease(int64_t finger, float x, float y);
-	void fingerMotion(int64_t finger, float x, float y, float dx, float dy);
+	void mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks);
+	void mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button);
+	void dropFile(void *windowHandle, const core::String& file);
+	void dropText(void *windowHandle, const core::String& text);
+	void textInput(void *windowHandle, const core::String& text);
+	void keyRelease(void *windowHandle, int32_t key, int16_t modifier = 0);
+	void keyPress(void *windowHandle, int32_t key, int16_t modifier = 0);
+	void fingerPress(void *windowHandle, int64_t finger, float x, float y);
+	void fingerRelease(void *windowHandle, int64_t finger, float x, float y);
+	void fingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy);
 	void gestureRecord(int64_t gestureId);
 	void gesture(int64_t gestureId, float error, int32_t numFingers);
 	/**
