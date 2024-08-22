@@ -15,6 +15,8 @@ General:
    - Fixed invalid uv coordinate handling when importing meshes to voxelize them
    - Added support for paint.net palettes
    - Added support for Adobe Photoshop ACO palettes
+   - Added support for `bbmodel` Blockbench format
+   - Added support for `vxb` Sandbox Block format
 
 VoxEdit:
 

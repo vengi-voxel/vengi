@@ -53,6 +53,7 @@ set(SRCS
 	private/rooms/ThingFormat.h              private/rooms/ThingFormat.cpp
 	private/rooms/ThingNodeParser.h          private/rooms/ThingNodeParser.cpp
 	private/sandbox/VXAFormat.h              private/sandbox/VXAFormat.cpp
+	private/sandbox/VXBFormat.h              private/sandbox/VXBFormat.cpp
 	private/sandbox/VXCFormat.h              private/sandbox/VXCFormat.cpp
 	private/sandbox/VXMFormat.h              private/sandbox/VXMFormat.cpp
 	private/sandbox/VXRFormat.h              private/sandbox/VXRFormat.cpp
@@ -114,6 +115,7 @@ set(TEST_SRCS
 	tests/VBXFormatTest.cpp
 	tests/VolumeFormatTest.cpp
 	tests/VoxFormatTest.cpp
+	tests/VXBFormatTest.cpp
 	tests/VXLFormatTest.cpp
 	tests/VXRFormatTest.cpp
 	tests/VXMFormatTest.cpp
@@ -168,6 +170,7 @@ set(TEST_FILES
 	tests/1voxel.vmax.zip
 	tests/2voxel.vmax.zip
 	tests/5voxel.vmax.zip
+	tests/sandbox-block2.vxb
 	tests/test.vxm
 	tests/test2.vxm
 	tests/8ontop.vox

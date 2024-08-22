@@ -326,6 +326,21 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Sandbox VoxEdit Block",
+      "extensions": [
+        "vxb"
+      ],
+      "magics": [
+        {
+          "type": "string",
+          "value": "VXB1"
+        }
+      ],
+      "mimetype": "application/x-sandbox-voxedit-block",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Blockbench",
       "extensions": [
         "bbmodel"
