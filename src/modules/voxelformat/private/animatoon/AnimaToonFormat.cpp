@@ -41,7 +41,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(str);
+	nlohmann::json json = nlohmann::json::parse(str, nullptr, false, true);
 	core::String name = json.value("SceneName", "unknown").c_str();
 	Log::debug("Name: %s", name.c_str());
 
