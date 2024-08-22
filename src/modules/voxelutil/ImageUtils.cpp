@@ -21,7 +21,7 @@
 
 namespace voxelutil {
 
-bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames faceName, const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1) {
+bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames faceName, const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx) {
 	voxel::RawVolumeWrapper wrapper(&volume);
 	const voxel::Region &region = wrapper.region();
 	const glm::ivec3 &mins = region.getLowerCorner();
@@ -42,14 +42,17 @@ bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel
 	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
 		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
 		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
-			const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
-			glm::vec2 uv;
-			uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
-			uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
-			const core::RGBA color = image->colorAt(uv);
-			int palIdx = palette.getClosestMatch(color);
-			if (palIdx == palette::PaletteColorNotFound) {
-				palIdx = 0;
+			int palIdx = replacementPalIdx;
+			if (image) {
+				const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
+				glm::vec2 uv;
+				uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
+				uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
+				const core::RGBA color = image->colorAt(uv);
+				palIdx = palette.getClosestMatch(color);
+				if (palIdx == palette::PaletteColorNotFound) {
+					palIdx = replacementPalIdx;
+				}
 			}
 			glm::ivec3 pos;
 			pos[axisIdx0] = axisFixed;

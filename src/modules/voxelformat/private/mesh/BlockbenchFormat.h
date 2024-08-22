@@ -6,9 +6,9 @@
 
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
+#include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
-#include "voxelformat/private/mesh/TexturedTri.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -54,6 +54,8 @@ public:
 		glm::vec3 origin{0.0f};
 		bool locked = false;
 		bool visible = true;
+		bool mirror_uv = false;
+		int color = 0;
 		// group nodes
 		core::DynamicArray<Node> children;
 		// elements (volumes) by uuid
@@ -69,9 +71,26 @@ public:
 		glm::vec3 rotation{0.0f};
 		// in world coordinates
 		glm::vec3 origin{0.0f}; // pivot - not normalized
+		bool rescale = false;
+		bool locked = false;
+		bool box_uv = false;
+		int color = 0;
 		Cube cube;
 		Mesh mesh;
 		ElementType type = ElementType::Max;
+	};
+
+	struct Meta {
+		// 1654934558
+		uint64_t creationTimestamp = 0;
+		bool box_uv = false;
+		util::Version version{0, 0};
+		// model_format: free bedrock bedrock_old java_block animated_entity_model
+		core::String modelFormat;
+		core::String formatVersion;
+		core::String name;
+		core::String model_identifier;
+		glm::ivec2 resolution;
 	};
 
 	// map via uuid

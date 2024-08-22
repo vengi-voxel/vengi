@@ -5,6 +5,7 @@
 #include "BlockbenchFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
@@ -30,11 +31,12 @@ static inline core::String toStr(const std::string &str) {
 	return p;
 }
 
-static inline core::String toStr(const nlohmann::json &json, const char *key) {
-	return toStr(json.value(key, ""));
+static inline core::String toStr(const nlohmann::json &json, const char *key, const core::String &defaultValue = "") {
+	return toStr(json.value(key, defaultValue.c_str()));
 }
 
-static int toInt(const nlohmann::json &json, const char *key, int defaultValue = 0) {
+template<class T>
+static T toInt(const nlohmann::json &json, const char *key, T defaultValue) {
 	auto iter = json.find(key);
 	if (iter == json.end()) {
 		return defaultValue;
@@ -65,7 +67,7 @@ static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const ch
 	return BlockbenchFormat::ElementType::Max;
 }
 
-static bool parseMesh(const glm::vec3 &scale, const core::String &filename, util::Version version,
+static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
 					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("vertices") == elementJson.end()) {
@@ -145,7 +147,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, util
 	return true;
 }
 
-static bool parseCube(const glm::vec3 &scale, const core::String &filename, util::Version version,
+static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
 					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
@@ -176,24 +178,6 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, util
 
 	for (const auto &face : faces.items()) {
 		const core::String &faceName = face.key().c_str();
-		const nlohmann::json &faceData = face.value();
-		if (faceData.find("uv") == faceData.end()) {
-			Log::error("Face is missing uv in json file: %s", filename.c_str());
-			return false;
-		}
-
-		const nlohmann::json &uv = faceData["uv"];
-		if (!uv.is_array() || uv.size() != 4) {
-			Log::error("UV is not an array of size 4 in json file: %s", filename.c_str());
-			return false;
-		}
-
-		const int textureIdx = priv::toInt(faceData, "texture", -1);
-		if (textureIdx < 0 || textureIdx >= (int)textureArray.size()) {
-			Log::error("Invalid texture index: %d", textureIdx);
-			return false;
-		}
-
 		voxel::FaceNames faceType = voxel::FaceNames::Max;
 		if (faceName == "north") {
 			faceType = voxel::FaceNames::NegativeZ;
@@ -211,18 +195,42 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, util
 			Log::error("Unsupported face name: %s", faceName.c_str());
 			continue;
 		}
+
+		const nlohmann::json &faceData = face.value();
+		if (faceData.find("uv") == faceData.end()) {
+			Log::error("Face is missing uv in json file: %s", filename.c_str());
+			return false;
+		}
+
+		const nlohmann::json &uv = faceData["uv"];
+		if (!uv.is_array() || uv.size() != 4) {
+			Log::error("UV is not an array of size 4 in json file: %s", filename.c_str());
+			return false;
+		}
+
+		int textureIdx = -1;
+		if (!textureArray.empty()) {
+			textureIdx = priv::toInt(faceData, "texture", -1);
+			if (textureIdx >= (int)textureArray.size()) {
+				Log::error("Invalid texture index: %d", textureIdx);
+				return false;
+			}
+		}
+
 		Log::debug("faceName: %s, textureIdx: %d", faceName.c_str(), textureIdx);
 		int uvs[4]{uv[0], uv[1], uv[2], uv[3]};
-		const glm::vec2 uv0 = textureArray[textureIdx]->uv(uvs[0], uvs[1]);
-		const glm::vec2 uv1 = textureArray[textureIdx]->uv(uvs[2] - 1, uvs[3] - 1);
-		element.cube.faces[(int)faceType].uvs[0] = uv0;
-		element.cube.faces[(int)faceType].uvs[1] = uv1;
+		if (textureIdx >= 0) {
+			const glm::vec2 uv0 = textureArray[textureIdx]->uv(uvs[0], uvs[1]);
+			const glm::vec2 uv1 = textureArray[textureIdx]->uv(uvs[2] - 1, uvs[3] - 1);
+			element.cube.faces[(int)faceType].uvs[0] = uv0;
+			element.cube.faces[(int)faceType].uvs[1] = uv1;
+		}
 		element.cube.faces[(int)faceType].textureIndex = textureIdx;
 	}
 	return true;
 }
 
-static bool parseElements(const glm::vec3 &scale, const core::String &filename, util::Version version,
+static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
 						  const nlohmann::json &elementsJson, const BlockbenchFormat::Textures &textureArray,
 						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
@@ -231,17 +239,21 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		element.name = priv::toStr(elementJson, "name");
 		element.origin = scale * priv::toVec3(elementJson, "origin");
 		element.rotation = priv::toVec3(elementJson, "rotation");
+		element.rescale = elementJson.value("rescale", false);
+		element.locked = elementJson.value("locked", false);
+		element.box_uv = elementJson.value("box_uv", false);
+		element.color = priv::toInt(elementJson, "color", 0);
 		element.type = priv::toType(elementJson, "type");
 		if (element.type == BlockbenchFormat::ElementType::Max) {
 			element.type = BlockbenchFormat::ElementType::Cube;
 		}
 
 		if (element.type == BlockbenchFormat::ElementType::Cube) {
-			if (!parseCube(scale, filename, version, elementJson, textureArray, element)) {
+			if (!parseCube(scale, filename, meta, elementJson, textureArray, element)) {
 				return false;
 			}
 		} else if (element.type == BlockbenchFormat::ElementType::Mesh) {
-			if (!parseMesh(scale, filename, version, elementJson, textureArray, element)) {
+			if (!parseMesh(scale, filename, meta, elementJson, textureArray, element)) {
 				return false;
 			}
 		}
@@ -251,31 +263,33 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 	return true;
 }
 
-static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, util::Version version,
-						  const nlohmann::json &entry, BlockbenchFormat::Node &node) {
-	node.name = priv::toStr(entry, "name");
-	node.uuid = priv::toStr(entry, "uuid");
-	node.locked = entry.value("locked", false);
-	node.visible = entry.value("visible", true);
-	node.origin = scale * priv::toVec3(entry, "origin");
-	node.rotation = priv::toVec3(entry, "rotation");
+static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
+						  const nlohmann::json &entryJson, BlockbenchFormat::Node &node) {
+	node.name = priv::toStr(entryJson, "name");
+	node.uuid = priv::toStr(entryJson, "uuid");
+	node.locked = entryJson.value("locked", false);
+	node.visible = entryJson.value("visibility", true);
+	node.mirror_uv = entryJson.value("mirror_uv", false);
+	node.origin = scale * priv::toVec3(entryJson, "origin");
+	node.rotation = priv::toVec3(entryJson, "rotation");
+	node.color = priv::toInt(entryJson, "color", 0);
 
 	Log::debug("Node name: %s (%i references)", node.name.c_str(), (int)node.referenced.size());
 
-	auto childrenIter = entry.find("children");
-	if (childrenIter == entry.end()) {
+	auto childrenIter = entryJson.find("children");
+	if (childrenIter == entryJson.end()) {
 		return true;
 	}
-	const nlohmann::json &children = entry["children"];
-	if (children.empty()) {
+	const nlohmann::json &childrenJson = entryJson["children"];
+	if (childrenJson.empty()) {
 		return true;
 	}
-	if (!children.is_array()) {
+	if (!childrenJson.is_array()) {
 		Log::error("Children is not an array in json file: %s", filename.c_str());
 		return false;
 	}
 
-	for (auto iter = children.begin(); iter != children.end(); ++iter) {
+	for (auto iter = childrenJson.begin(); iter != childrenJson.end(); ++iter) {
 		if (iter->is_string()) {
 			core::String uuid = priv::toStr(*iter);
 			node.referenced.emplace_back(uuid);
@@ -286,7 +300,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 			return false;
 		}
 		BlockbenchFormat::Node childNode;
-		if (!parseOutliner(scale, filename, version, *iter, childNode)) {
+		if (!parseOutliner(scale, filename, meta, *iter, childNode)) {
 			return false;
 		}
 		node.children.emplace_back(core::move(childNode));
@@ -344,13 +358,13 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 									  voxel::FaceNames::NegativeZ, voxel::FaceNames::PositiveZ};
 	for (int i = 0; i < lengthof(order); ++i) {
 		const CubeFace &face = cube.faces[(int)order[i]];
-		if (face.textureIndex == -1) {
-			Log::error("No texture index for face: %i", i);
-			continue;
-		}
 		const voxel::FaceNames faceName = order[i];
-		voxelutil::importFace(*model.volume(), model.palette(), faceName, textureArray[face.textureIndex], face.uvs[0],
-							  face.uvs[1]);
+		image::ImagePtr image;
+		if (face.textureIndex >= 0) {
+			image = textureArray[face.textureIndex];
+		}
+		voxelutil::importFace(*model.volume(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
+							  element.color);
 	}
 	model.volume()->region().shift(-region.getLowerCorner());
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;
@@ -397,7 +411,7 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 	return true;
 }
 
-static bool parseAnimations(const core::String &filename, util::Version version, nlohmann::json &json,
+static bool parseAnimations(const core::String &filename, const BlockbenchFormat::Meta &meta, nlohmann::json &json,
 							scenegraph::SceneGraph &sceneGraph) {
 	// no animations found
 	if (json.find("animations") == json.end()) {
@@ -469,16 +483,29 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	stream->readString(stream->remaining(), jsonString);
 	nlohmann::json json = nlohmann::json::parse(jsonString);
 
-	const nlohmann::json &meta = json["meta"];
-	if (meta.find("format_version") == meta.end()) {
+	const nlohmann::json &metaJson = json["meta"];
+	if (metaJson.find("format_version") == metaJson.end()) {
 		Log::error("No format_version found in json file: %s", filename.c_str());
 		return false;
 	}
 
-	const core::String &formatVersion = priv::toStr(meta, "format_version");
-	util::Version version = util::parseVersion(formatVersion);
-	// model_format: free bedrock_old java_block
-	const core::String &modelFormat = priv::toStr(meta, "model_format");
+	Meta meta;
+	meta.formatVersion = priv::toStr(metaJson, "format_version");
+	meta.version = util::parseVersion(meta.formatVersion);
+	meta.modelFormat = priv::toStr(metaJson, "model_format");
+	meta.creationTimestamp = priv::toInt(metaJson, "creation_time", (uint64_t)0);
+	meta.box_uv = metaJson.value("box_uv", false);
+	meta.name = priv::toStr(json, "name", core::string::extractFilename(filename));
+	meta.model_identifier = priv::toStr(json, "model_identifier");
+
+	auto resolutionJsonIter = json.find("resolution");
+	if (resolutionJsonIter != json.end()) {
+		const nlohmann::json &resolutionJson = *resolutionJsonIter;
+		if (resolutionJson.is_object()) {
+			meta.resolution.x = priv::toInt(resolutionJson, "width", 0);
+			meta.resolution.y = priv::toInt(resolutionJson, "height", 0);
+		}
+	}
 
 	const nlohmann::json &textures = json["textures"];
 	if (!textures.is_array()) {
@@ -530,7 +557,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!priv::parseElements(scale, filename, version, elementsJson, textureArray, elementMap, sceneGraph)) {
+	if (!priv::parseElements(scale, filename, meta, elementsJson, textureArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -544,7 +571,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	Node root;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
-			if (!priv::parseOutliner(scale, filename, version, entry, root)) {
+			if (!priv::parseOutliner(scale, filename, meta, entry, root)) {
 				Log::error("Failed to parse outliner");
 				return false;
 			}
@@ -554,7 +581,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 	}
 
-	if (!parseAnimations(filename, version, json, sceneGraph)) {
+	if (!parseAnimations(filename, meta, json, sceneGraph)) {
 		Log::error("Failed to parse animations");
 		// don't abort because we can still load the model without animations
 	}
@@ -565,8 +592,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
-	rootNode.setProperty("version", formatVersion);
-	rootNode.setProperty("model_format", modelFormat);
+	rootNode.setProperty("version", meta.formatVersion);
+	rootNode.setProperty("model_format", meta.modelFormat);
 
 	return true;
 }
