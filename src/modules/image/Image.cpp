@@ -158,6 +158,14 @@ ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int
 	return i;
 }
 
+ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &stream, int w, int h) {
+	const ImagePtr &i = createEmptyImage(name);
+	if (!i->loadRGBA(stream, w, h)) {
+		Log::warn("Failed to load image %s", i->name().c_str());
+	}
+	return i;
+}
+
 ImagePtr loadImage(const core::String &name, io::ReadStream &stream, int length) {
 	const ImagePtr &i = createEmptyImage(name);
 	if (!i->load(stream, length)) {

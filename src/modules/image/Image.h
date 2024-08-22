@@ -113,6 +113,7 @@ uint8_t* createPng(const void *pixels, int width, int height, int depth, int *pn
 ImagePtr loadImage(const io::FilePtr& file);
 ImagePtr loadImage(const core::String &name, io::SeekableReadStream &stream, int length = -1);
 ImagePtr loadImage(const core::String &name, io::ReadStream &stream, int length);
+ImagePtr loadRGBAImageFromStream(const core::String &name, io::ReadStream &stream, int w, int h);
 
 /**
  * @brief If there is no extension given, all supported extensions are tried
