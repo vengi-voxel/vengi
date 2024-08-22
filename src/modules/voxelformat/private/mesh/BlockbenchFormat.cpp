@@ -12,6 +12,7 @@
 #include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/private/mesh/Polygon.h"
@@ -60,12 +61,13 @@ static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const ch
 	} else if (type == "mesh") {
 		return BlockbenchFormat::ElementType::Mesh;
 	}
-	Log::warn("Unsupported element type: %s", type.c_str());
+	Log::debug("Unsupported element type: %s", type.c_str());
 	return BlockbenchFormat::ElementType::Max;
 }
 
-static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementJson,
-					  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::Element &element) {
+static bool parseMesh(const glm::vec3 &scale, const core::String &filename, util::Version version,
+					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
+					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("vertices") == elementJson.end()) {
 		Log::error("Element is missing vertices in json file: %s", filename.c_str());
 		return false;
@@ -143,8 +145,9 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 	return true;
 }
 
-static bool parseCube(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementJson,
-					  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::Element &element) {
+static bool parseCube(const glm::vec3 &scale, const core::String &filename, util::Version version,
+					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
+					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
 		Log::error("Element is missing from or to in json file: %s", filename.c_str());
 		return false;
@@ -219,9 +222,9 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 	return true;
 }
 
-static bool parseElements(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &elementsJson,
-						  const BlockbenchFormat::Textures &textureArray, BlockbenchFormat::ElementMap &elementMap,
-						  scenegraph::SceneGraph &sceneGraph) {
+static bool parseElements(const glm::vec3 &scale, const core::String &filename, util::Version version,
+						  const nlohmann::json &elementsJson, const BlockbenchFormat::Textures &textureArray,
+						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::Element element;
 		element.uuid = priv::toStr(elementJson, "uuid");
@@ -229,13 +232,16 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		element.origin = scale * priv::toVec3(elementJson, "origin");
 		element.rotation = priv::toVec3(elementJson, "rotation");
 		element.type = priv::toType(elementJson, "type");
+		if (element.type == BlockbenchFormat::ElementType::Max) {
+			element.type = BlockbenchFormat::ElementType::Cube;
+		}
 
 		if (element.type == BlockbenchFormat::ElementType::Cube) {
-			if (!parseCube(scale, filename, elementJson, textureArray, element)) {
+			if (!parseCube(scale, filename, version, elementJson, textureArray, element)) {
 				return false;
 			}
 		} else if (element.type == BlockbenchFormat::ElementType::Mesh) {
-			if (!parseMesh(scale, filename, elementJson, textureArray, element)) {
+			if (!parseMesh(scale, filename, version, elementJson, textureArray, element)) {
 				return false;
 			}
 		}
@@ -245,8 +251,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 	return true;
 }
 
-static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const nlohmann::json &entry,
-						  BlockbenchFormat::Node &node) {
+static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, util::Version version,
+						  const nlohmann::json &entry, BlockbenchFormat::Node &node) {
 	node.name = priv::toStr(entry, "name");
 	node.uuid = priv::toStr(entry, "uuid");
 	node.locked = entry.value("locked", false);
@@ -280,7 +286,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 			return false;
 		}
 		BlockbenchFormat::Node childNode;
-		if (!parseOutliner(scale, filename, *iter, childNode)) {
+		if (!parseOutliner(scale, filename, version, *iter, childNode)) {
 			return false;
 		}
 		node.children.emplace_back(core::move(childNode));
@@ -391,7 +397,8 @@ bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, s
 	return true;
 }
 
-static bool parseAnimations(const core::String &filename, nlohmann::json &json, scenegraph::SceneGraph &sceneGraph) {
+static bool parseAnimations(const core::String &filename, util::Version version, nlohmann::json &json,
+							scenegraph::SceneGraph &sceneGraph) {
 	// no animations found
 	if (json.find("animations") == json.end()) {
 		return true;
@@ -469,6 +476,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	const core::String &formatVersion = priv::toStr(meta, "format_version");
+	util::Version version = util::parseVersion(formatVersion);
 	// model_format: free bedrock_old java_block
 	const core::String &modelFormat = priv::toStr(meta, "model_format");
 
@@ -522,7 +530,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!priv::parseElements(scale, filename, elementsJson, textureArray, elementMap, sceneGraph)) {
+	if (!priv::parseElements(scale, filename, version, elementsJson, textureArray, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -536,7 +544,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	Node root;
 	for (const auto &entry : outlinerJson) {
 		if (entry.is_object()) {
-			if (!priv::parseOutliner(scale, filename, entry, root)) {
+			if (!priv::parseOutliner(scale, filename, version, entry, root)) {
 				Log::error("Failed to parse outliner");
 				return false;
 			}
@@ -546,7 +554,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 	}
 
-	if (!parseAnimations(filename, json, sceneGraph)) {
+	if (!parseAnimations(filename, version, json, sceneGraph)) {
 		Log::error("Failed to parse animations");
 		// don't abort because we can still load the model without animations
 	}
