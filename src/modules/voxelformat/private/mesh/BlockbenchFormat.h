@@ -80,8 +80,6 @@ public:
 	using Textures = core::DynamicArray<image::ImagePtr>;
 
 private:
-	void fillFace(scenegraph::SceneGraphNode &node, voxel::FaceNames faceName, const image::ImagePtr &image,
-				  const glm::vec2 &uv0, const glm::vec2 &uv1) const;
 	bool addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
 				 const Textures &textureArray, int parent) const;
 	bool generateCube(const Node &node, const Element &element, const Textures &textureArray,

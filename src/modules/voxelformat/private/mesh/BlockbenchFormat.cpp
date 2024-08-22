@@ -7,21 +7,18 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "glm/trigonometric.hpp"
 #include "image/Image.h"
 #include "io/Base64ReadStream.h"
 #include "io/MemoryReadStream.h"
-#include "math/Axis.h"
-#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
-#include "voxel/Voxel.h"
 #include "voxelformat/private/mesh/Polygon.h"
+#include "voxelutil/ImageUtils.h"
 #include "voxelutil/VoxelUtil.h"
 
+#include <glm/trigonometric.hpp>
 #include <json.hpp>
 
 namespace voxelformat {
@@ -281,47 +278,6 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
-void BlockbenchFormat::fillFace(scenegraph::SceneGraphNode &node, voxel::FaceNames faceName,
-								const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1) const {
-	voxel::RawVolumeWrapper wrapper(node.volume());
-	const voxel::Region &region = wrapper.region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-	const math::Axis axis = faceToAxis(faceName);
-	const int axisIdx0 = math::getIndexForAxis(axis);
-	const int axisIdx1 = (axisIdx0 + 1) % 3;
-	const int axisIdx2 = (axisIdx0 + 2) % 3;
-	const glm::vec3 size = region.getDimensionsInVoxels();
-	const palette::Palette &palette = node.palette();
-
-	const int axisFixed = voxel::isNegativeFace(faceName) ? mins[axisIdx0] : maxs[axisIdx0];
-	const int axisMins1 = mins[axisIdx1];
-	const int axisMins2 = mins[axisIdx2];
-	const int axisMaxs1 = maxs[axisIdx1];
-	const int axisMaxs2 = maxs[axisIdx2];
-	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
-	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
-	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
-		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
-		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
-			const float axis2Factor = ((float)(axis2 - axisMins2) + 0.5f) / (float)size[axisIdx2];
-			glm::vec2 uv;
-			uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
-			uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
-			const core::RGBA color = image->colorAt(uv);
-			int palIdx = palette.getClosestMatch(color);
-			if (palIdx == palette::PaletteColorNotFound) {
-				palIdx = 0;
-			}
-			glm::ivec3 pos;
-			pos[axisIdx0] = axisFixed;
-			pos[axisIdx1] = axis1;
-			pos[axisIdx2] = axis2;
-			wrapper.setVoxel(pos.x, pos.y, pos.z, voxel::createVoxel(palette, palIdx));
-		}
-	}
-}
-
 bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const Textures &textureArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Mesh &mesh = element.mesh;
@@ -375,7 +331,8 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 			continue;
 		}
 		const voxel::FaceNames faceName = order[i];
-		fillFace(model, faceName, textureArray[face.textureIndex], face.uvs[0], face.uvs[1]);
+		voxelutil::importFace(*model.volume(), model.palette(), faceName, textureArray[face.textureIndex], face.uvs[0],
+							  face.uvs[1]);
 	}
 	model.volume()->region().shift(-region.getLowerCorner());
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;
