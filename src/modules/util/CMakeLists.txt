@@ -8,6 +8,7 @@ set(SRCS
 	Movement.cpp Movement.h
 	TextProcessor.cpp
 	VarUtil.h
+	Version.h Version.cpp
 	VersionCheck.h VersionCheck.cpp
 )
 set(LIB util)
@@ -22,6 +23,7 @@ set(TEST_SRCS
 	tests/KeybindingHandlerTest.cpp
 	tests/TextProcessorTest.cpp
 	tests/VersionCheckTest.cpp
+	tests/VersionTest.cpp
 )
 set(TEST_FILES
 	testutil/main.h
