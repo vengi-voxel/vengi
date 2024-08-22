@@ -1226,9 +1226,6 @@ void SceneManager::resetSceneState() {
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "loadscene");
 	Log::debug("New volume for node %i", node.id());
 	for (const auto &n : _sceneGraph.nodes()) {
-		if (!n->second.isAnyModelNode()) {
-			continue;
-		}
 		_mementoHandler.markInitialNodeState(_sceneGraph, n->second);
 	}
 	_dirty = false;

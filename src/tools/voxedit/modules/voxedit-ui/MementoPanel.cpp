@@ -6,6 +6,7 @@
 #include "command/CommandHandler.h"
 #include "core/collection/DynamicArray.h"
 #include "memento/MementoHandler.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/SceneManager.h"
@@ -26,6 +27,7 @@ static void stateTooltip(const memento::MementoState &state) {
 		ImGui::Text("%s: node id: %s", memento::MementoHandler::typeToString(state.type), state.nodeUUID.c_str());
 		ImGui::Text(" - parent: %s", state.parentUUID.c_str());
 		ImGui::Text(" - name: %s", state.name.c_str());
+		ImGui::Text(" - type: %s", scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]);
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
 		ImGui::Text(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		ImGui::Text(" - size: %ib", (int)state.data.size());
