@@ -12,7 +12,26 @@
 namespace voxel {
 
 enum class FaceNames : uint8_t {
-	PositiveX = 0, PositiveY = 1, PositiveZ = 2, NegativeX = 3, NegativeY = 4, NegativeZ = 5, Max
+	PositiveX = 0,
+	PositiveY = 1,
+	PositiveZ = 2,
+	NegativeX = 3,
+	NegativeY = 4,
+	NegativeZ = 5,
+	Max,
+
+	Down = NegativeY,
+	Up = PositiveY,
+
+	North = NegativeZ,
+	South = PositiveZ,
+	West = NegativeX,
+	East = PositiveX,
+
+	Front = NegativeZ,
+	Back = PositiveZ,
+	Left = NegativeX,
+	Right = PositiveX
 };
 
 math::Axis faceToAxis(FaceNames face);
