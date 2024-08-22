@@ -85,7 +85,7 @@ public:
 		uint64_t creationTimestamp = 0;
 		bool box_uv = false;
 		util::Version version{0, 0};
-		// model_format: free bedrock bedrock_old java_block animated_entity_model
+		// model_format: free bedrock bedrock_old java_block animated_entity_model skin
 		core::String modelFormat;
 		core::String formatVersion;
 		core::String name;

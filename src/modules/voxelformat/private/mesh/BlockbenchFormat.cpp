@@ -38,7 +38,7 @@ static inline core::String toStr(const nlohmann::json &json, const char *key, co
 template<class T>
 static T toInt(const nlohmann::json &json, const char *key, T defaultValue) {
 	auto iter = json.find(key);
-	if (iter == json.end()) {
+	if (iter == json.end() || iter->is_null()) {
 		return defaultValue;
 	}
 	if (!iter->is_number()) {
@@ -65,6 +65,10 @@ static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const ch
 	}
 	Log::debug("Unsupported element type: %s", type.c_str());
 	return BlockbenchFormat::ElementType::Max;
+}
+
+static bool isSupportModelFormat(const core::String &modelFormat) {
+	return modelFormat != "skin";
 }
 
 static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
@@ -329,16 +333,22 @@ bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, co
 bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const Textures &textureArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Cube &cube = element.cube;
-	glm::vec3 size = element.cube.to - element.cube.from;
+
+	// TODO: is this (from > to) used to flip the uv coordinates or for culling?
+	glm::vec3 mins = glm::min(element.cube.from, element.cube.to);
+	glm::vec3 maxs = glm::max(element.cube.from, element.cube.to);
+
+	glm::vec3 size = maxs - mins;
 	// even a plane is one voxel for us
 	size.x = glm::clamp(size.x, 1.0f, 1.0f + size.x);
 	size.y = glm::clamp(size.y, 1.0f, 1.0f + size.y);
 	size.z = glm::clamp(size.z, 1.0f, 1.0f + size.z);
-	const glm::vec3 mins = glm::round(element.cube.from);
-	const glm::vec3 maxs = mins + size - 1.0f;
+
+	mins = glm::round(mins);
+	maxs = mins + size - 1.0f;
 	voxel::Region region(mins, maxs);
 	if (!region.isValid()) {
-		Log::error("Invalid region for element: %s (node: %s)", element.name.c_str(), node.name.c_str());
+		Log::error("Invalid region for element: %s (node: %s): %f:%f:%f/%f:%f:%f", element.name.c_str(), node.name.c_str(), mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 		return false;
 	}
 	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, element.uuid);
@@ -481,7 +491,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	core::String jsonString;
 	stream->readString(stream->remaining(), jsonString);
-	nlohmann::json json = nlohmann::json::parse(jsonString);
+	nlohmann::json json = nlohmann::json::parse(jsonString, nullptr, false, true);
 
 	const nlohmann::json &metaJson = json["meta"];
 	if (metaJson.find("format_version") == metaJson.end()) {
@@ -493,6 +503,10 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	meta.formatVersion = priv::toStr(metaJson, "format_version");
 	meta.version = util::parseVersion(meta.formatVersion);
 	meta.modelFormat = priv::toStr(metaJson, "model_format");
+	if (!priv::isSupportModelFormat(meta.modelFormat)) {
+		Log::error("Unsupported model format: %s", meta.modelFormat.c_str());
+		return false;
+	}
 	meta.creationTimestamp = priv::toInt(metaJson, "creation_time", (uint64_t)0);
 	meta.box_uv = metaJson.value("box_uv", false);
 	meta.name = priv::toStr(json, "name", core::string::extractFilename(filename));
@@ -519,6 +533,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	for (const auto &texture : textures) {
 		const core::String &name = priv::toStr(texture, "name");
 		// TODO: allow to load from "path" instead of "source"
+		// relative_path
 		const core::String &source = priv::toStr(texture, "source");
 		if (core::string::startsWith(source, "data:")) {
 			const size_t mimetypeEndPos = source.find(";");
@@ -545,7 +560,10 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			Log::debug("Loading texture: %s with size: %d", name.c_str(), (int)data.size());
 			io::MemoryReadStream dataStream(data.c_str(), data.size());
 			io::Base64ReadStream base64Stream(dataStream);
-			textureArray.emplace_back(image::loadImage(name, base64Stream, data.size()));
+			const image::ImagePtr &image = image::loadImage(name, base64Stream, data.size());
+			if (image->isLoaded()) {
+				textureArray.emplace_back(image);
+			}
 		}
 	}
 
