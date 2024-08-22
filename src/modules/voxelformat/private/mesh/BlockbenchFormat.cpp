@@ -33,6 +33,18 @@ static inline core::String toStr(const nlohmann::json &json, const char *key) {
 	return toStr(json.value(key, ""));
 }
 
+static int toInt(const nlohmann::json &json, const char *key, int defaultValue = 0) {
+	auto iter = json.find(key);
+	if (iter == json.end()) {
+		return defaultValue;
+	}
+	if (!iter->is_number()) {
+		Log::warn("Value is not a number: %s", key);
+		return defaultValue;
+	}
+	return json[key];
+}
+
 static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
 	auto iter = json.find(key);
 	if (iter == json.end() || !iter->is_array() || iter->size() != 3) {
@@ -101,7 +113,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			return false;
 		}
 
-		const int textureIdx = faceData.value("texture", -1);
+		const int textureIdx = priv::toInt(faceData, "texture", -1);
 		const bool textureIdxValid = textureIdx >= 0 && textureIdx < (int)textureArray.size();
 		Polygon polygon;
 		if (textureIdxValid) {
@@ -173,7 +185,7 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 			return false;
 		}
 
-		const int textureIdx = faceData.value("texture", -1);
+		const int textureIdx = priv::toInt(faceData, "texture", -1);
 		if (textureIdx < 0 || textureIdx >= (int)textureArray.size()) {
 			Log::error("Invalid texture index: %d", textureIdx);
 			return false;
