@@ -81,6 +81,7 @@ core::DynamicArray<VoxelSource> Downloader::sources(const core::String &json) {
 			source.github.repo = githubNode.value("repo", "").c_str();
 			source.github.commit = githubNode.value("commit", "").c_str();
 			source.github.path = githubNode.value("path", "").c_str();
+			source.github.enableMeshes = githubNode.value("enableMeshes", false);
 			// the github license is a file in the repo, so we need to query the tree for it
 			// and download it
 			source.github.license = githubNode.value("license", "").c_str();
@@ -90,6 +91,7 @@ core::DynamicArray<VoxelSource> Downloader::sources(const core::String &json) {
 			source.gitlab.repo = gitlabNode.value("repo", "").c_str();
 			source.gitlab.commit = gitlabNode.value("commit", "").c_str();
 			source.gitlab.path = gitlabNode.value("path", "").c_str();
+			source.gitlab.enableMeshes = gitlabNode.value("enableMeshes", false);
 			// the gitlab license is a file in the repo, so we need to query the tree for it
 			// and download it
 			source.gitlab.license = gitlabNode.value("license", "").c_str();
@@ -253,7 +255,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
 		file.url = entry.url;
 		file.fullPath = entry.path;
-		handleFile(archive, shouldQuit, files, file, false);
+		handleFile(archive, shouldQuit, files, file, source.github.enableMeshes);
 	}
 	return files;
 }

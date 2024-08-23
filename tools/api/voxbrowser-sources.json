@@ -164,6 +164,37 @@
 				"commit": "master",
 				"license": "LICENSE"
 			}
+		},
+		{
+			"name": "Crock Pot Minecraft",
+			"license": "Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International",
+			"github": {
+				"repo": "SihenZhang/CrockPot",
+				"path": "models",
+				"commit": "1.20.x",
+				"license": "models/README.md",
+				"enableMeshes": true
+			}
+		},
+		{
+			"name": "mc-blockbench-models",
+			"license": "Creative Commons Attribution 4.0 International",
+			"github": {
+				"repo": "FrenchKrab/mc-blockbench-models",
+				"commit": "master",
+				"license": "LICENSE",
+				"enableMeshes": true
+			}
+		},
+		{
+			"name": "Detrimax-Creations",
+			"license": "CC0-1.0",
+			"github": {
+				"repo": "TheDimaX/TDX-Creations",
+				"commit": "main",
+				"license": "LICENSE",
+				"enableMeshes": true
+			}
 		}
 	]
 }

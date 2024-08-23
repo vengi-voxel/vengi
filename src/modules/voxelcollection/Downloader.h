@@ -19,6 +19,7 @@ struct VoxelSourceGithub {
 	// limit the repository to a specific path - or if empty, search the whole repository for supported files
 	core::String path;
 	core::String license;
+	bool enableMeshes = false;
 };
 
 struct VoxelSourceGitlab {
@@ -27,6 +28,7 @@ struct VoxelSourceGitlab {
 	// limit the repository to a specific path - or if empty, search the whole repository for supported files
 	core::String path;
 	core::String license;
+	bool enableMeshes = false;
 };
 
 struct VoxelSourceSingle {

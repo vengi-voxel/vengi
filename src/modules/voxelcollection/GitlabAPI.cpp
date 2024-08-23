@@ -63,12 +63,15 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		}
 		Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)jsonResponse.size());
 		for (const auto &entry : jsonResponse) {
-			if (entry.value("type", "") != "blob") {
+			const auto type = entry.value("type", "");
+			if (type != "blob") {
+				Log::debug("No blob entry, but %s", type.c_str());
 				continue;
 			}
 			TreeEntry treeEntry;
 			treeEntry.path = entry.value("path", "").c_str();
 			if (!path.empty() && !core::string::startsWith(treeEntry.path, path)) {
+				Log::debug("Ignore entry %s - not in path %s", treeEntry.path.c_str(), path.c_str());
 				continue;
 			}
 			treeEntry.url = downloadUrl(repository, branch, treeEntry.path);
