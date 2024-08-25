@@ -21,6 +21,8 @@ General:
 VoxEdit:
 
    - Allow to change the local directory for the asset panel
+   - Add more online sources to the asset panel
+   - Added support to apply a checkboard pattern to your voxels just for rendering
 
 ## 0.0.33 (2024-08-05)
 
