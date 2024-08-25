@@ -24,6 +24,7 @@ constexpr const char *VoxEditDiffuseColor = "ve_diffusecolor";
 constexpr const char *VoxEditLastPalette = "ve_lastpalette";
 constexpr const char *VoxEditSimplifiedView = "ve_simplifiedview";
 constexpr const char *VoxEditViewports = "ve_viewports";
+constexpr const char *VoxEditMaxSuggestedVolumeSize = "ve_maxsuggestedvolumesize";
 constexpr const char *VoxEditTipOftheDay = "ve_tipoftheday";
 constexpr const char *VoxEditPopupSceneSettings = "ve_popupscenesettings";
 constexpr const char *VoxEditPopupTipOfTheDay = "ve_popuptipoftheday";

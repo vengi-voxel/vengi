@@ -377,7 +377,7 @@ void SceneGraph::updateTransforms() {
 	core_assert_always(setAnimation(animId));
 }
 
-voxel::Region SceneGraph::region() const {
+voxel::Region SceneGraph::calcRegion() const {
 	voxel::Region r;
 	bool validVolume = false;
 	for (const auto &n : nodes()) {
@@ -393,6 +393,14 @@ voxel::Region SceneGraph::region() const {
 		validVolume = true;
 	}
 	return r;
+}
+
+const voxel::Region &SceneGraph::region() const {
+	if (_regionDirty) {
+		_region = calcRegion();
+		_regionDirty = false;
+	}
+	return _region;
 }
 
 voxel::Region SceneGraph::sceneRegion(KeyFrameIndex keyFrameIdx, bool onlyVisible) const {
@@ -485,13 +493,14 @@ SceneGraphNode *SceneGraph::first() {
 }
 
 int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
-	core_assert_msg((int)node.type() < (int)SceneGraphNodeType::Max, "%i", (int)node.type());
-	if (node.type() == SceneGraphNodeType::Root && _nextNodeId != 0) {
+	const SceneGraphNodeType type = node.type();
+	core_assert_msg((int)type < (int)SceneGraphNodeType::Max, "%i", (int)type);
+	if (type == SceneGraphNodeType::Root && _nextNodeId != 0) {
 		Log::error("No second root node is allowed in the scene graph");
 		node.release();
 		return InvalidNodeId;
 	}
-	if (node.type() == SceneGraphNodeType::Model) {
+	if (type == SceneGraphNodeType::Model) {
 		core_assert(node.volume() != nullptr);
 		core_assert(node.region().isValid());
 		if (node.volume() == nullptr) {
@@ -534,9 +543,12 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	}
 	node.setParent(parent);
 	node.setAnimation(_activeAnimation);
-	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)node.type(), node.id(),
+	Log::debug("Adding scene graph node of type %i with id %i and parent %i", (int)type, node.id(),
 			   node.parent());
 	_nodes.emplace(nodeId, core::forward<SceneGraphNode>(node));
+	if (type == SceneGraphNodeType::Model) {
+		_regionDirty = true;
+	}
 	markMaxFramesDirty();
 	return nodeId;
 }
@@ -601,7 +613,8 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		Log::debug("Could not remove node %i - not found", nodeId);
 		return false;
 	}
-	if (iter->value.type() == SceneGraphNodeType::Root) {
+	const SceneGraphNodeType type = iter->value.type();
+	if (type == SceneGraphNodeType::Root) {
 		core_assert(nodeId == 0);
 		clear();
 		return true;
@@ -634,6 +647,9 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 		} else {
 			_activeNodeId = root().id();
 		}
+	}
+	if (type == SceneGraphNodeType::Model) {
+		_regionDirty = true;
 	}
 	return state;
 }
@@ -691,6 +707,7 @@ void SceneGraph::clear() {
 	node.setId(0);
 	node.setParent(InvalidNodeId);
 	_nodes.emplace(0, core::move(node));
+	_region = voxel::Region::InvalidRegion;
 }
 
 bool SceneGraph::hasMoreThanOnePalette() const {

@@ -848,7 +848,9 @@ bool SceneManager::mementoModification(const memento::MementoState& s) {
 					delete v;
 				}
 			}
-			memento::MementoData::toVolume(node->volume(), s.data);
+			if (s.hasVolumeData()) {
+				memento::MementoData::toVolume(node->volume(), s.data);
+			}
 		}
 		node->setName(s.name);
 		node->setPalette(s.palette);
@@ -863,9 +865,10 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 	core_assert(s.nodeType != scenegraph::SceneGraphNodeType::Max);
 	scenegraph::SceneGraphNode newNode(s.nodeType, s.nodeUUID);
 	if (newNode.isModelNode()) {
-		core_assert_msg(s.hasVolumeData(), "Model not without volume data found");
 		newNode.setVolume(new voxel::RawVolume(s.dataRegion()), true);
-		memento::MementoData::toVolume(newNode.volume(), s.data);
+		if (s.hasVolumeData()) {
+			memento::MementoData::toVolume(newNode.volume(), s.data);
+		}
 	}
 	newNode.setPalette(s.palette);
 	if (newNode.isReference()) {
@@ -1392,8 +1395,7 @@ bool SceneManager::addAnimation(const core::String &animation) {
 
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
-		// TODO: MEMENTO: record all keyframes from all nodes
-		// _mementoHandler.markAddedAnimation(_sceneGraph, animation);
+		_mementoHandler.markAddedAnimation(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1401,8 +1403,7 @@ bool SceneManager::duplicateAnimation(const core::String &animation, const core:
 
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
-		// TODO: MEMENTO: record all keyframes from all nodes
-		//_mementoHandler.markRemovedAnimation(_sceneGraph, animation);
+		_mementoHandler.markRemovedAnimation(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1583,6 +1584,7 @@ void SceneManager::construct() {
 	_autoSaveSecondsDelay = core::Var::get(cfg::VoxEditAutoSaveSeconds, "180", -1, _("Delay in second between autosaves - 0 disables autosaves"));
 	_movementSpeed = core::Var::get(cfg::VoxEditMovementSpeed, "180.0f");
 	_transformUpdateChildren = core::Var::get(cfg::VoxEditTransformUpdateChildren, "true", -1, _("Update the children of a node when the transform of the node changes"));
+	_maxSuggestedVolumeSize = core::Var::getSafe(cfg::VoxEditMaxSuggestedVolumeSize);
 
 	command::Command::registerCommand("resizetoselection", [&](const command::CmdArgs &args) {
 		const voxel::Region &region = modifier().selectionMgr().region();
@@ -2364,6 +2366,9 @@ bool SceneManager::init() {
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_lastAutoSave = _timeProvider->tickSeconds();
 
+	voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
+	_mementoHandler.setMaxUndoRegion(maxUndoRegion);
+
 	_modifierFacade.setLockedAxis(math::Axis::None, true);
 	return true;
 }
@@ -2462,6 +2467,12 @@ bool SceneManager::update(double nowSeconds) {
 		}
 	}
 
+	if (_maxSuggestedVolumeSize->isDirty()) {
+		voxel::Region maxUndoRegion(0, _maxSuggestedVolumeSize->intVal() - 1);
+		_mementoHandler.setMaxUndoRegion(maxUndoRegion);
+		_maxSuggestedVolumeSize->markClean();
+	}
+
 	_movement.update(nowSeconds);
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
@@ -2474,8 +2485,7 @@ bool SceneManager::update(double nowSeconds) {
 		}
 	}
 
-	_modifierFacade.brushContext().fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
-	_modifierFacade.update(nowSeconds);
+	_modifierFacade.update(nowSeconds, camera);
 
 	updateDirtyRendererStates();
 
@@ -3192,9 +3202,19 @@ bool SceneManager::nodeRemove(int nodeId, bool recursive) {
 	return false;
 }
 
+bool SceneManager::exceedsMaxSuggestedVolumeSize() const {
+	const int maxDim = _maxSuggestedVolumeSize->intVal();
+	const int maxVoxels = maxDim * maxDim * maxDim;
+	const voxel::Region &region = _sceneGraph.region();
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	return dim.x * dim.y * dim.z > maxVoxels;
+}
+
 void SceneManager::markDirty() {
 	_sceneGraph.markMaxFramesDirty();
-	_needAutoSave = true;
+	// we only autosave if the volumes in the scene graph are not exceeding the
+	// max suggested voxel count
+	_needAutoSave = !exceedsMaxSuggestedVolumeSize();
 	_dirty = true;
 }
 

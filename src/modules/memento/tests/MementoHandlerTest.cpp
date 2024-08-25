@@ -31,13 +31,13 @@ protected:
 		return core::string::toString(id);
 	}
 
-	void markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
+	bool markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 				  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 				  const voxel::Region &region = voxel::Region::InvalidRegion, const glm::vec3 &pivot = glm::vec3(0.0f),
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames = {}, const palette::Palette &palette = {},
 				  const scenegraph::SceneGraphNodeProperties &properties = {}) {
-		_mementoHandler.markUndo(toFakeUUID(parentId), toFakeUUID(nodeId), toFakeUUID(referenceId), name, nodeType,
-								 volume, type, region, pivot, allKeyFrames, palette, properties);
+		return _mementoHandler.markUndo(toFakeUUID(parentId), toFakeUUID(nodeId), toFakeUUID(referenceId), name,
+										nodeType, volume, type, region, pivot, allKeyFrames, palette, properties);
 	}
 
 	void SetUp() override {
@@ -91,9 +91,12 @@ TEST_F(MementoHandlerTest, testUndoRedo) {
 	core::SharedPtr<voxel::RawVolume> first = create(1);
 	core::SharedPtr<voxel::RawVolume> second = create(2);
 	core::SharedPtr<voxel::RawVolume> third = create(3);
-	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(), MementoType::Modification);
-	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(), MementoType::Modification);
-	markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(), MementoType::Modification);
+	ASSERT_TRUE(
+		markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, first.get(), MementoType::Modification));
+	ASSERT_TRUE(markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, second.get(),
+						 MementoType::Modification));
+	ASSERT_TRUE(
+		markUndo(0, 0, InvalidNodeId, "", scenegraph::SceneGraphNodeType::Max, third.get(), MementoType::Modification));
 
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 	EXPECT_EQ(2, _mementoHandler.statePosition());

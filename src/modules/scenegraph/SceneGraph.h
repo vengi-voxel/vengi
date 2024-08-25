@@ -13,6 +13,7 @@
 #include "core/Pair.h"
 #include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
+#include "voxel/Region.h"
 
 namespace voxel {
 class RawVolume;
@@ -48,10 +49,13 @@ protected:
 	int _activeNodeId = InvalidNodeId;
 	SceneGraphAnimationIds _animations;
 	core::String _activeAnimation;
+	mutable voxel::Region _region;
+	mutable bool _regionDirty = true;
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::String _emptyUUID;
 
 	void updateTransforms_r(SceneGraphNode &node);
+	voxel::Region calcRegion() const;
 
 public:
 	SceneGraph(int nodes = 262144);
@@ -104,10 +108,10 @@ public:
 	bool hasMoreThanOnePalette() const;
 
 	/**
-	 * @return The full region of the whole scene
+	 * @return The full un-transformed region of the whole scene
 	 * @sa sceneRegion()
 	 */
-	voxel::Region region() const;
+	const voxel::Region &region() const;
 	const core::String &uuid(int nodeId) const;
 
 	/**

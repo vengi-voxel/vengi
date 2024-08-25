@@ -67,8 +67,9 @@ const char *AxisButton(math::Axis axis, const char *name, const char *command, c
 }
 
 bool InputAxisInt(math::Axis axis, const char *name, int* value, int step) {
-	ui::ScopedStyle style;
-	//AxisStyleText(style, axis);
+	// TODO: this is changing the + and - buttons and the input field color, not only the description
+	// ui::ScopedStyle style;
+	// AxisStyleText(style, axis);
 	ImGui::SetNextItemWidth(ImGui::GetFontSize() * 8);
 	return ImGui::InputInt(name, value, step);
 }

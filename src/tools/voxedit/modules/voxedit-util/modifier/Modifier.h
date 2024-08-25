@@ -26,6 +26,10 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 
+namespace video {
+class Camera;
+}
+
 namespace voxedit {
 
 class SceneManager;
@@ -92,7 +96,7 @@ public:
 
 	void construct() override;
 	bool init() override;
-	void update(double nowSeconds);
+	void update(double nowSeconds, const video::Camera *camera);
 
 	/**
 	 * Allow to lock the modifier to not perform any modification

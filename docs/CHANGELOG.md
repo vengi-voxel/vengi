@@ -23,6 +23,9 @@ VoxEdit:
    - Allow to change the local directory for the asset panel
    - Add more online sources to the asset panel
    - Added support to apply a checkboard pattern to your voxels just for rendering
+   - Improved handling for max allowed voxels
+   - Disable undo/redo for model changes if you exceed a max suggested model size
+   - Disable autosaves for model changes if you exceed a max suggested model size
 
 ## 0.0.33 (2024-08-05)
 

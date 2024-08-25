@@ -346,22 +346,7 @@ void MainWindow::afterLoad(const core::String &file) {
 }
 
 void MainWindow::checkPossibleVolumeSplit() {
-	const int maxDim = 128;
-	const int maxVoxels = maxDim * maxDim * maxDim;
-	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	for (const auto &entry : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &node = entry->second;
-		if (node.type() != scenegraph::SceneGraphNodeType::Model) {
-			continue;
-		}
-		const voxel::Region &region = node.region();
-		const glm::ivec3 &dim = region.getDimensionsInVoxels();
-		if (dim.x * dim.y * dim.z > maxVoxels) {
-			Log::debug("node: %s exceeds the max size with %i:%i:%i", node.name().c_str(), dim.x, dim.y, dim.z);
-			_popupVolumeSplit = true;
-			return;
-		}
-	}
+	_popupVolumeSplit = _sceneMgr->exceedsMaxSuggestedVolumeSize();
 }
 
 bool MainWindow::createNew(bool force) {
@@ -625,9 +610,13 @@ void MainWindow::popupNewScene() {
 
 			ImGui::TextUnformatted(_("Size"));
 			ImGui::Separator();
-			veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
-			veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
-			veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
+			bool sizeDirty = false;
+			sizeDirty |= veui::InputAxisInt(math::Axis::X, _("Width"), &_modelNodeSettings.size.x);
+			sizeDirty |= veui::InputAxisInt(math::Axis::Y, _("Height"), &_modelNodeSettings.size.y);
+			sizeDirty |= veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
+			if (sizeDirty) {
+				_modelNodeSettings.checkMaxVoxels();
+			}
 			ImGui::NewLine();
 		}
 

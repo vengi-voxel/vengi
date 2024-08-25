@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxel/RawVolume.h"
@@ -72,6 +73,7 @@ protected:
 		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
 		core::Var::get(cfg::VoxEditRendershadow, "true");
 		core::Var::get(cfg::VoxEditGridsize, "1");
+		core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128");
 		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic));
 		core::Var::get(cfg::VoxelMeshSize, "16", core::CV_READONLY);
 		core::Var::get(cfg::VoxEditShowaabb, "");
@@ -340,6 +342,17 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	EXPECT_NE(-1, _sceneMgr->addModelChild("paste target", 1, 1, 1));
 	EXPECT_TRUE(_sceneMgr->paste(testMins()));
 	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
+}
+
+TEST_F(SceneManagerTest, testExceedsMaxSuggestedVolumeSize) {
+	util::ScopedVarChange scoped(cfg::VoxEditMaxSuggestedVolumeSize, "16");
+	const voxel::Region region{0, 32};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", region));
+	ASSERT_TRUE(_sceneMgr->exceedsMaxSuggestedVolumeSize());
+
+	const voxel::Region regionSmall{0, 15};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "newscene", regionSmall));
+	ASSERT_FALSE(_sceneMgr->exceedsMaxSuggestedVolumeSize());
 }
 
 TEST_F(SceneManagerTest, testMergeSimple) {

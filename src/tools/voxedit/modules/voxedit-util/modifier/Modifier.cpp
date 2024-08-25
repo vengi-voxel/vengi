@@ -11,6 +11,7 @@
 #include "math/Axis.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "video/Camera.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/Selection.h"
@@ -135,7 +136,8 @@ void Modifier::shutdown() {
 	}
 }
 
-void Modifier::update(double nowSeconds) {
+void Modifier::update(double nowSeconds, const video::Camera *camera) {
+	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
 	AABBBrush *brush = currentAABBBrush();
 	if (brush) {
 		if (brush->singleMode()) {

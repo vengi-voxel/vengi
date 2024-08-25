@@ -20,7 +20,7 @@
 #include "core/Log.h"
 
 #include "voxedit-util/SceneManager.h"
-
+#include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/FileDialogOptions.h"
 #include "voxelformat/FormatConfig.h"
@@ -135,6 +135,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditModelGizmo, "false", _("Show the gizmo to also translate the region"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditLastPalette, palette::Palette::builtIn[0]);
 	core::Var::get(cfg::VoxEditViewports, "2", _("The amount of viewports (not in simple ui mode)"), core::Var::minMaxValidator<2, cfg::MaxViewports>);
+	core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128", _("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"), core::Var::minMaxValidator<32, voxedit::MaxVolumeSize>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", _("Hide some panels to simplify the ui"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", _("Trigger opening of popup"), core::Var::boolValidator);

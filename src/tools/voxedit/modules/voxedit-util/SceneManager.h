@@ -78,6 +78,7 @@ private:
 	core::VarPtr _gridSize;
 	core::VarPtr _movementSpeed;
 	core::VarPtr _transformUpdateChildren;
+	core::VarPtr _maxSuggestedVolumeSize;
 
 	bool _dirty = false;
 	// this is basically the same as the dirty state, but we stop
@@ -222,6 +223,8 @@ public:
 	 * @return @c true if the current node supports switching to edit mode
 	 */
 	bool supportsEditMode() const;
+
+	bool exceedsMaxSuggestedVolumeSize() const;
 
 	bool cameraRotate() const;
 	bool cameraPan() const;

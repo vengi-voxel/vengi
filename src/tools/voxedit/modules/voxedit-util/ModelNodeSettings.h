@@ -12,9 +12,8 @@
 
 namespace voxedit {
 
-namespace _priv {
+// you can import models with a bigger volume size - but you can't create them from within the editor
 static constexpr const int MaxVolumeSize = 256;
-}
 
 /**
  * @brief A struct that holds the information that are needed when creating new model nodes
@@ -36,19 +35,25 @@ struct ModelNodeSettings {
 		parent = 0;
 	}
 
+	void checkMaxVoxels() {
+		if (size[0] * size[1] * size[2] > MaxVolumeSize * MaxVolumeSize * MaxVolumeSize) {
+			for (int i = 0; i < 3; ++i) {
+				if (size[i] > MaxVolumeSize) {
+					size[i] = MaxVolumeSize;
+				}
+			}
+		}
+	}
+
 	inline voxel::Region region() {
+		checkMaxVoxels();
 		const voxel::Region region(position, position + size - 1);
 		if (!region.isValid()) {
 			reset();
-			return voxel::Region {position, position + size - 1};
-		}
-		const glm::ivec3& dim = region.getDimensionsInCells();
-		if (dim.x >= _priv::MaxVolumeSize || dim.y >= _priv::MaxVolumeSize || dim.z >= _priv::MaxVolumeSize) {
-			reset();
-			return voxel::Region {position, position + size - 1};
+			return voxel::Region{position, position + size - 1};
 		}
 		return region;
 	}
 };
 
-}
+} // namespace voxedit

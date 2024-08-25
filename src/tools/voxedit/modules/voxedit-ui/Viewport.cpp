@@ -377,6 +377,11 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CCW, _("Undo"), "undo", mementoHandler.canUndo(), listener);
 		ImGui::CommandIconMenuItem(ICON_LC_ROTATE_CW, _("Redo"), "redo", mementoHandler.canRedo(), listener);
+		const int activeNode = _sceneMgr->sceneGraph().activeNode();
+		if (!mementoHandler.recordVolumeStates(_sceneMgr->volume(activeNode))) {
+			ImGui::TextUnformatted(ICON_LC_TRIANGLE_ALERT);
+			ImGui::TooltipTextUnformatted(_("Undo disabled for this volume. Max volume size exceeded"));
+		}
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraProjection();
 		menuBarCameraMode();
