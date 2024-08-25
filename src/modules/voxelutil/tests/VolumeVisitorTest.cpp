@@ -5,6 +5,8 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
+#include "math/Axis.h"
+#include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 
 namespace voxelutil {
@@ -23,9 +25,43 @@ TEST_F(VolumeVisitorTest, testVisitSurface) {
 		}
 	}
 
-	int cnt = visitSurfaceVolume(
-		volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
+	int cnt = visitSurfaceVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
 	EXPECT_EQ(26, cnt);
+}
+
+TEST_F(VolumeVisitorTest, testVisitFaces) {
+	const voxel::Region region(0, 2);
+	voxel::RawVolume volume(region);
+	for (int i = 0; i < 6; ++i) {
+		voxel::FaceNames faceName = (voxel::FaceNames)i;
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, i);
+		math::Axis axis = voxel::faceToAxis(faceName);
+		int idx = math::getIndexForAxis(axis);
+		glm::ivec3 pos;
+		if (voxel::isNegativeFace(faceName)) {
+			pos[idx] = region.getLowerCorner()[idx];
+		} else {
+			pos[idx] = region.getUpperCorner()[idx];
+		}
+		for (int i = 0; i < 3; ++i) {
+			for (int j = 0; j < 3; ++j) {
+				pos[(idx + 1) % 3] = i;
+				pos[(idx + 2) % 3] = j;
+				volume.setVoxel(pos, voxel);
+			}
+		}
+	}
+	for (int i = 0; i < 6; ++i) {
+		voxel::FaceNames faceName = (voxel::FaceNames)i;
+		int expectedColorFound = 0;
+		int cnt = visitFace(volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if (voxel.getColor() == i) {
+				++expectedColorFound;
+			}
+		});
+		EXPECT_EQ(9, cnt);
+		EXPECT_GE(expectedColorFound, 1);
+	}
 }
 
 TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
@@ -42,8 +78,7 @@ TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
 	EXPECT_TRUE(volume.setVoxel(2, 0, 2, voxel));
 	EXPECT_TRUE(volume.setVoxel(2, 2, 0, voxel));
 
-	int cnt = visitSurfaceVolume(
-		volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
+	int cnt = visitSurfaceVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, VisitorOrder::XZY);
 	EXPECT_EQ(8, cnt);
 }
 
@@ -59,7 +94,8 @@ TEST_F(VolumeVisitorTest, testVisitVisibleSurface) {
 
 	int idx = 0;
 	int cnt = visitSurfaceVolume(
-		volume, [&](int, int, int, const voxel::Voxel &voxel) {
+		volume,
+		[&](int, int, int, const voxel::Voxel &voxel) {
 			if (idx == 0) {
 				EXPECT_EQ(1, voxel.getColor());
 			} else if (idx == 1) {
@@ -68,12 +104,14 @@ TEST_F(VolumeVisitorTest, testVisitVisibleSurface) {
 				EXPECT_EQ(3, voxel.getColor());
 			}
 			++idx;
-		}, VisitorOrder::XZY);
+		},
+		VisitorOrder::XZY);
 	EXPECT_EQ(3, cnt);
 
 	idx = 0;
 	cnt = visitSurfaceVolume(
-		volume, [&](int, int, int, const voxel::Voxel &voxel) {
+		volume,
+		[&](int, int, int, const voxel::Voxel &voxel) {
 			if (idx == 0) {
 				EXPECT_EQ(3, voxel.getColor());
 			} else if (idx == 1) {
@@ -82,14 +120,12 @@ TEST_F(VolumeVisitorTest, testVisitVisibleSurface) {
 				EXPECT_EQ(1, voxel.getColor());
 			}
 			++idx;
-		}, VisitorOrder::XZmY);
+		},
+		VisitorOrder::XZmY);
 	EXPECT_EQ(3, cnt);
 }
 
-class VolumeVisitorParamTest :
-		public app::AbstractTest,
-		public ::testing::WithParamInterface<VisitorOrder> {
-};
+class VolumeVisitorParamTest : public app::AbstractTest, public ::testing::WithParamInterface<VisitorOrder> {};
 
 class VolumeVisitorOrderTest : public VolumeVisitorParamTest {};
 
@@ -107,8 +143,7 @@ TEST_P(VolumeVisitorOrderTest, testVisitor) {
 	EXPECT_TRUE(volume.setVoxel(2, 0, 2, voxel));
 	EXPECT_TRUE(volume.setVoxel(2, 2, 0, voxel));
 
-	int cnt = visitVolume(
-		volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
+	int cnt = visitVolume(volume, [&](int, int, int, const voxel::Voxel &) {}, SkipEmpty(), GetParam());
 	EXPECT_EQ(8, cnt);
 }
 

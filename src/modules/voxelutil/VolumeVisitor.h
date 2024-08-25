@@ -415,7 +415,106 @@ int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder ord
 	return cnt;
 }
 
-template <class Volume, class Visitor>
+/**
+ * Visits the specified face of a volume and invokes the provided visitor function for each voxel on that face.
+ * @note This is taking the surface voxels of the given face, that means that we are visiting the voxels that are
+ *       visible from the outside when looking at the volume from the given face. If you don't want this behavior
+ *       and want to visit all voxels on the face, set @c searchSurface to @c false
+ *
+ * @return The number of voxels visited.
+ */
+template<class Volume, class Visitor>
+int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bool searchSurface = false) {
+	const voxel::Region &region = volume.region();
+	const glm::ivec3 mins = region.getLowerCorner();
+	const glm::ivec3 maxs = region.getUpperCorner();
+	int cnt = 0;
+	switch (face) {
+	case voxel::FaceNames::Front:
+		for (int x = mins.x; x <= maxs.x; ++x) {
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				for (int z = mins.z; z <= maxs.z; ++z) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Front) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Back:
+		for (int x = mins.x; x <= maxs.x; ++x) {
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				for (int z = maxs.z; z >= mins.z; --z) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Back) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Left:
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				for (int x = mins.x; x <= maxs.x; ++x) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Left) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Right:
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			for (int y = mins.y; y <= maxs.y; ++y) {
+				for (int x = maxs.x; x >= mins.x; --x) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Right) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Up:
+		for (int x = mins.x; x <= maxs.x; ++x) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				for (int y = maxs.y; y >= mins.y; --y) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Up) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Down:
+		for (int x = mins.x; x <= maxs.x; ++x) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
+				for (int y = mins.y; y <= maxs.y; ++y) {
+					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Down) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return cnt;
+}
+
+template<class Volume, class Visitor>
 int visitUndergroundVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
 	int cnt = 0;
 	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
