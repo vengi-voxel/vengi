@@ -20,6 +20,7 @@
 #define CUTE_ASEPRITE_MEMCPY core_memcpy
 #define CUTE_ASEPRITE_ALLOC(size, ctx) core_malloc(size)
 #define CUTE_ASEPRITE_FREE(mem, ctx) core_free(mem)
+#define CUTE_ASEPRITE_WARNING(msg) Log::warn("%s", msg)
 #include "voxelformat/external/cute_aseprite.h"
 
 namespace voxelformat {
