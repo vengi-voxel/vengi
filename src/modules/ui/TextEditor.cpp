@@ -1047,7 +1047,7 @@ void TextEditor::Render(const char *id, const ImVec2 &aSize, bool aBorder) {
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
 	if (!_ignoreImGuiChild)
-		ImGui::BeginChild(id, aSize, aBorder ? ImGuiChildFlags_Border : ImGuiChildFlags_None,
+		ImGui::BeginChild(id, aSize, aBorder ? ImGuiChildFlags_Borders : ImGuiChildFlags_None,
 						  ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar |
 							  ImGuiWindowFlags_NoMove);
 

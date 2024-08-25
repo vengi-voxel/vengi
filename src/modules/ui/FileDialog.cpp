@@ -322,7 +322,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	ScopedStyle style;
 	style.setItemSpacing(ImVec2(ImGui::GetFontSize(), ImGui::GetFontSize()));
 	const float width = ImGui::Size(30.0f);
-	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Border);
+	ImGui::BeginChild("bookmarks_child", ImVec2(width, height), ImGuiChildFlags_Borders);
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
 
@@ -422,7 +422,7 @@ static const char *iconForType(io::FilesystemEntry::Type type) {
 
 bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 	ImVec2 childSize(ImGui::GetContentRegionAvail().x, height);
-	ImGui::BeginChild("files", childSize, ImGuiChildFlags_Border, ImGuiWindowFlags_HorizontalScrollbar);
+	ImGui::BeginChild("files", childSize, ImGuiChildFlags_Borders, ImGuiWindowFlags_HorizontalScrollbar);
 
 	bool doubleClickedFile = false;
 	bool doubleClickedDir = false;

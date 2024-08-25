@@ -1420,6 +1420,9 @@ static void ImGuiTestEngine_UpdateHooks(ImGuiTestEngine* engine)
 struct ImGuiTestContextUiContextBackup
 {
     ImGuiIO             IO;
+#if IMGUI_VERSION_NUM >= 19103
+    ImGuiPlatformIO     PlatformIO;
+#endif
     ImGuiStyle          Style;
     ImGuiDebugLogFlags  DebugLogFlags;
     ImGuiKeyChord       ConfigNavWindowingKeyNext;
@@ -1428,6 +1431,9 @@ struct ImGuiTestContextUiContextBackup
     void Backup(ImGuiContext& g)
     {
         IO = g.IO;
+#if IMGUI_VERSION_NUM >= 19103
+        PlatformIO = g.PlatformIO;
+#endif
         Style = g.Style;
         DebugLogFlags = g.DebugLogFlags;
 #if IMGUI_VERSION_NUM >= 18837
@@ -1444,6 +1450,9 @@ struct ImGuiTestContextUiContextBackup
         IO.MetricsActiveAllocations = g.IO.MetricsActiveAllocations;
 #endif
         g.IO = IO;
+#if IMGUI_VERSION_NUM >= 19103
+        g.PlatformIO = PlatformIO;
+#endif
         g.Style = Style;
         g.DebugLogFlags = DebugLogFlags;
 #if IMGUI_VERSION_NUM >= 18837
@@ -1453,9 +1462,15 @@ struct ImGuiTestContextUiContextBackup
     }
     void RestoreClipboardFuncs(ImGuiContext& g)
     {
+#if IMGUI_VERSION_NUM >= 19103
+        g.PlatformIO.Platform_GetClipboardTextFn = PlatformIO.Platform_GetClipboardTextFn;
+        g.PlatformIO.Platform_SetClipboardTextFn = PlatformIO.Platform_SetClipboardTextFn;
+        g.PlatformIO.Platform_ClipboardUserData = PlatformIO.Platform_ClipboardUserData;
+#else
         g.IO.GetClipboardTextFn = IO.GetClipboardTextFn;
         g.IO.SetClipboardTextFn = IO.SetClipboardTextFn;
         g.IO.ClipboardUserData = IO.ClipboardUserData;
+#endif
     }
 };
 
@@ -1592,6 +1607,21 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
     // Setup IO: override clipboard
     if ((ctx->RunFlags & ImGuiTestRunFlags_GuiFuncOnly) == 0)
     {
+#if IMGUI_VERSION_NUM >= 19103
+        ImGuiPlatformIO& platform_io = ctx->UiContext->PlatformIO;
+        platform_io.Platform_GetClipboardTextFn = [](ImGuiContext* ui_ctx) -> const char*
+        {
+            ImGuiTestContext* ctx = (ImGuiTestContext*)ui_ctx->PlatformIO.Platform_ClipboardUserData;
+            return ctx->Clipboard.empty() ? "" : ctx->Clipboard.Data;
+        };
+        platform_io.Platform_SetClipboardTextFn = [](ImGuiContext* ui_ctx, const char* text)
+        {
+            ImGuiTestContext* ctx = (ImGuiTestContext*)ui_ctx->PlatformIO.Platform_ClipboardUserData;
+            ctx->Clipboard.resize((int)strlen(text) + 1);
+            strcpy(ctx->Clipboard.Data, text);
+        };
+        platform_io.Platform_ClipboardUserData = ctx;
+#else
         io.GetClipboardTextFn = [](void* user_data) -> const char*
         {
             ImGuiTestContext* ctx = (ImGuiTestContext*)user_data;
@@ -1604,6 +1634,7 @@ void ImGuiTestEngine_RunTest(ImGuiTestEngine* engine, ImGuiTestContext* parent_c
             strcpy(ctx->Clipboard.Data, text);
         };
         io.ClipboardUserData = ctx;
+#endif
     }
 
     // Mark as currently running the TestFunc (this is the only time when we are allowed to yield)
