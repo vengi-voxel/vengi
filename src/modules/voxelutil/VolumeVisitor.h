@@ -93,9 +93,9 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 					visitor(x, y, z, voxel);
 					++cnt;
 				}
-				sampler2.movePositiveY(zOff);
+				sampler2.movePositiveY(yOff);
 			}
-			sampler.movePositiveX(zOff);
+			sampler.movePositiveX(xOff);
 		}
 		break;
 	case VisitorOrder::ZYX:
