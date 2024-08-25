@@ -59,7 +59,20 @@ enum class FaceBits : uint8_t {
 	PositiveY = 4,
 	NegativeY = 8,
 	PositiveZ = 16,
-	NegativeZ = 32
+	NegativeZ = 32,
+
+	Down = NegativeY,
+	Up = PositiveY,
+
+	North = NegativeZ,
+	South = PositiveZ,
+	West = NegativeX,
+	East = PositiveX,
+
+	Front = NegativeZ,
+	Back = PositiveZ,
+	Left = NegativeX,
+	Right = PositiveX
 };
 CORE_ENUM_BIT_OPERATIONS(FaceBits)
 
