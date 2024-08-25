@@ -22,6 +22,11 @@ protected:
 					   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+
+public:
+	bool singleVolume() const override {
+		return true;
+	}
 };
 
 } // namespace voxelformat

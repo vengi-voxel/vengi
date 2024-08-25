@@ -3,6 +3,7 @@
  */
 
 #include "VXBFormat.h"
+#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -121,7 +122,8 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 }
 
 bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
-								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
+								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
+								  const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -199,10 +201,10 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readUInt8(red));
 		uint8_t alpha;
 		wrap(stream->readUInt8(alpha));
-		uint8_t emissive;
-		wrap(stream->readUInt8(emissive));
+		uint8_t hasEmissive;
+		wrap(stream->readUInt8(hasEmissive));
 		palette.setColor(i, core::RGBA(red, green, blue, alpha));
-		if (emissive) {
+		if (hasEmissive) {
 			palette.setEmit(i, emissive);
 		}
 		palette.setAlpha(i, opaque);
@@ -232,6 +234,66 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Could not open file %s", filename.c_str());
+		return false;
+	}
+	wrapBool(stream->writeUInt32(FourCC('V', 'X', 'B', '1')))
+	float opaque = 1.0f;
+	wrapBool(stream->writeFloat(opaque))
+	float emissive = 0.0f;
+	wrapBool(stream->writeFloat(emissive))
+	scenegraph::SceneGraphNode *model = sceneGraph.firstModelNode();
+	if (model == nullptr) {
+		Log::error("No model found in scene graph");
+		return false;
+	}
+	const voxel::RawVolume *volume = model->volume();
+	core_assert(volume != nullptr);
+	const voxel::Region region = volume->region();
+	// take the largest dimension as block size
+	uint32_t blockSize =
+		core_max(region.getWidthInVoxels(), core_max(region.getHeightInVoxels(), region.getDepthInVoxels()));
+	wrapBool(stream->writeUInt32(blockSize))
+	uint32_t uniqueFaces = 6; // TODO:
+	wrapBool(stream->writeUInt32(uniqueFaces))
+	uint32_t indices[6] = {0, 1, 2, 3, 4, 5}; // TODO:
+	for (int i = 0; i < 6; i++) {
+		wrapBool(stream->writeUInt32(indices[i]))
+	}
+	float uSpeed[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	for (int i = 0; i < 6; i++) {
+		wrapBool(stream->writeFloat(uSpeed[i]))
+	}
+	float vSpeed[6] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+	for (int i = 0; i < 6; i++) {
+		wrapBool(stream->writeFloat(vSpeed[i]))
+	}
+	uint32_t channelAmount = 2;
+	wrapBool(stream->writeUInt32(channelAmount))
+	wrapBool(stream->writeString("Diffuse", true));
+	wrapBool(stream->writeString("Emissive", true));
+
+	for (uint32_t i = 0; i < uniqueFaces; ++i) {
+		// TODO: write images for each face
+	}
+
+	for (uint32_t i = 0; i < uniqueFaces; ++i) {
+		// TODO: write emissive images for each face
+	}
+
+	uint8_t materialAmount = model->palette().colorCount();
+	wrapBool(stream->writeUInt8(materialAmount))
+	for (int i = 0; i < (int)materialAmount; ++i) {
+		const core::RGBA color = model->palette().color(i);
+		wrapBool(stream->writeUInt8(color.b))
+		wrapBool(stream->writeUInt8(color.g))
+		wrapBool(stream->writeUInt8(color.r))
+		wrapBool(stream->writeUInt8(color.a))
+		wrapBool(stream->writeUInt8(model->palette().hasEmit(i)))
+	}
+
 	return false;
 }
 
