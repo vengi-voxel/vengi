@@ -48,7 +48,10 @@ bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel
 				glm::vec2 uv;
 				uv[axisIdxUV1] = glm::mix(uv0[axisIdxUV1], uv1[axisIdxUV1], axis1Factor);
 				uv[axisIdxUV2] = glm::mix(uv0[axisIdxUV2], uv1[axisIdxUV2], axis2Factor);
-				const core::RGBA color = image->colorAt(uv);
+				// TODO: use mirrored repeat as wrap mode on some of the faces?
+				image::TextureWrap wrapS = image::Repeat;
+				image::TextureWrap wrapT = image::Repeat;
+				const core::RGBA color = image->colorAt(uv, wrapS, wrapT);
 				palIdx = palette.getClosestMatch(color);
 				if (palIdx == palette::PaletteColorNotFound) {
 					palIdx = replacementPalIdx;
