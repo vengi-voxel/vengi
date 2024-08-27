@@ -373,8 +373,9 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 		if (face.textureIndex >= 0) {
 			image = textureArray[face.textureIndex];
 		}
+		image::TextureWrap wrap = image::TextureWrap::Repeat;
 		voxelutil::importFace(*model.volume(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
-							  element.color);
+							  wrap, wrap, element.color);
 	}
 	model.volume()->region().shift(-region.getLowerCorner());
 	return sceneGraph.emplace(core::move(model), parent) != InvalidNodeId;

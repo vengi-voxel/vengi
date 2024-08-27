@@ -211,7 +211,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.setSize(materialAmount);
 
-	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
+	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
 										  voxel::FaceNames::Up,	  voxel::FaceNames::Front, voxel::FaceNames::Back};
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -225,9 +225,9 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	node.setPalette(palette);
 	const glm::vec2 uvs[2] = {glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f)};
 	for (int i = 0; i < 6; ++i) {
-		// TODO: emissive is wrong here...
 		const int uniqueFace = indices[i];
-		voxelutil::importFace(*volume, palette, faceNames[i], diffuseImages[uniqueFace], uvs[0], uvs[1]);
+		image::TextureWrap wrap = image::TextureWrap::Repeat;
+		voxelutil::importFace(*volume, palette, faceNames[i], diffuseImages[uniqueFace], uvs[0], uvs[1], wrap, wrap);
 	}
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
@@ -256,9 +256,9 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	uint32_t blockSize =
 		core_max(region.getWidthInVoxels(), core_max(region.getHeightInVoxels(), region.getDepthInVoxels()));
 	wrapBool(stream->writeUInt32(blockSize))
-	uint32_t uniqueFaces = 6; // TODO:
+	uint32_t uniqueFaces = 6; // TODO: calculate unique faces and write the indices - this can reduce the file size
 	wrapBool(stream->writeUInt32(uniqueFaces))
-	uint32_t indices[6] = {0, 1, 2, 3, 4, 5}; // TODO:
+	uint32_t indices[6] = {0, 1, 2, 3, 4, 5};
 	for (int i = 0; i < 6; i++) {
 		wrapBool(stream->writeUInt32(indices[i]))
 	}
