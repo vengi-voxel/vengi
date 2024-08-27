@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "voxel/Face.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -15,6 +16,8 @@ namespace voxelformat {
  */
 class VXBFormat : public PaletteFormat {
 protected:
+	void faceTexture(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames face,
+					 const image::ImagePtr &diffuse, const image::ImagePtr &emissive) const;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;

@@ -22,8 +22,7 @@
 namespace voxelutil {
 
 bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames faceName,
-				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, image::TextureWrap wrapS,
-				image::TextureWrap wrapT, uint8_t replacementPalIdx) {
+				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx) {
 	voxel::RawVolumeWrapper wrapper(&volume);
 	const voxel::Region &region = wrapper.region();
 	const glm::ivec3 &mins = region.getLowerCorner();
@@ -42,8 +41,11 @@ bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel
 	const int axisMaxs2 = maxs[axisIdx2];
 	const int axisIdxUV1 = (axisIdx1 + 0) % 2;
 	const int axisIdxUV2 = (axisIdx1 + 1) % 2;
-	constexpr bool flipU = false;
-	constexpr bool flipV = false;
+	const bool flipU = false;
+	const bool flipV = false;
+	const image::TextureWrap wrapS = flipU ? image::TextureWrap::MirroredRepeat : image::Repeat;
+	const image::TextureWrap wrapT = flipV ? image::TextureWrap::MirroredRepeat : image::Repeat;
+
 	for (int axis1 = axisMins1; axis1 <= axisMaxs1; ++axis1) {
 		const float axis1Factor = ((float)(axis1 - axisMins1) + 0.5f) / (float)size[axisIdx1];
 		for (int axis2 = axisMins2; axis2 <= axisMaxs2; ++axis2) {
@@ -65,7 +67,7 @@ bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel
 			pos[axisIdx0] = axisFixed;
 			pos[axisIdx1] = axis1;
 			pos[axisIdx2] = axis2;
-			wrapper.setVoxel(pos.x, pos.y, pos.z, voxel::createVoxel(palette, palIdx));
+			wrapper.setVoxel(pos, voxel::createVoxel(palette, palIdx));
 		}
 	}
 	return true;

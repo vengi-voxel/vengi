@@ -122,6 +122,60 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	return (size_t)materialAmount;
 }
 
+void VXBFormat::faceTexture(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames face,
+							const image::ImagePtr &diffuse, const image::ImagePtr &emissive) const {
+	const int width = volume.region().getWidthInVoxels(); // matches the texture dimentions
+	const int area = width * width;
+
+	for (int y = 0; y < width; ++y) {
+		for (int x = 0; x < width; ++x) {
+			int voxelIdx;
+			switch (face) {
+			case voxel::FaceNames::Left:
+				voxelIdx = (width - y - 1) * width + (width - x - 1) * area;
+				break;
+			case voxel::FaceNames::Right:
+				voxelIdx = width - 1 + (width - y - 1) * width + x * area;
+				break;
+			case voxel::FaceNames::Down:
+				voxelIdx = x + y * area;
+				break;
+			case voxel::FaceNames::Up:
+				voxelIdx = x + (width - 1) * width + (width - y - 1) * area;
+				break;
+			case voxel::FaceNames::Front:
+				voxelIdx = x + (width - y - 1) * width;
+				break;
+			case voxel::FaceNames::Back:
+				voxelIdx = width - x - 1 + (width - y - 1) * width + (width - 1) * area;
+				break;
+			default:
+				return; // invalid face, do nothing
+			}
+			// we are running in a different x-direction compared to the original
+			const glm::ivec3 posFromIndex(width - (voxelIdx % width) - 1, (voxelIdx / width) % width, voxelIdx / area);
+			const core::RGBA color = diffuse->colorAt(x, y);
+			const core::RGBA emit = emissive->colorAt(x, y);
+
+			if (color.a == 0) {
+				// no voxel at all
+			} else if (emit.a == 0 || emit == core::RGBA(0, 0, 0, 255)) {
+				int mat = palette.getClosestMatch(color);
+				if (mat == palette::PaletteColorNotFound) {
+					mat = 0;
+				}
+				volume.setVoxel(posFromIndex, voxel::createVoxel(palette, mat));
+			} else {
+				int mat = palette.getClosestMatch(emit);
+				if (mat == palette::PaletteColorNotFound) {
+					mat = 0;
+				}
+				volume.setVoxel(posFromIndex, voxel::createVoxel(palette, mat));
+			}
+		}
+	}
+}
+
 bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								  const LoadContext &ctx) {
@@ -212,9 +266,8 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.setSize(materialAmount);
 
-	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
+	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
 										  voxel::FaceNames::Up,	  voxel::FaceNames::Front, voxel::FaceNames::Back};
-
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	voxel::Region region(0, 0, 0, blockSize - 1, blockSize - 1, blockSize - 1);
 	if (!region.isValid()) {
@@ -224,11 +277,9 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
-	const glm::vec2 uvs[2] = {glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f)};
 	for (int i = 0; i < 6; ++i) {
 		const int uniqueFace = indices[i];
-		image::TextureWrap wrap = image::TextureWrap::Repeat;
-		voxelutil::importFace(*volume, palette, faceNames[uniqueFace], diffuseImages[uniqueFace], uvs[0], uvs[1], wrap, wrap);
+		faceTexture(*volume, palette, faceNames[i], diffuseImages[uniqueFace], emissiveImages[uniqueFace]);
 	}
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
