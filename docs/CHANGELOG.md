@@ -979,7 +979,7 @@ General:
 VoxConvert:
 
    - Added a new tool to convert different voxel volumes between supported formats
-     Currently supported are cub (CubeWorld), vox (MagicaVoxel), vmx (VoxEdit Sandbox), binvox
+     Currently supported are cub (CubeWorld), vox (MagicaVoxel), vxm (VoxEdit Sandbox), binvox
      and qb/qbt (Qubicle)
 
 Client:
