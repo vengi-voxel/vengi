@@ -247,25 +247,25 @@ msgid "Error: You must select a file type!"
 msgstr "Fehler: Sie müssen einen Dateitypen auswählen!"
 
 msgid "Change the ui colors - [0-3]"
-msgstr ""
+msgstr "Die UI-Farben ändern - [0-3]"
 
 msgid "Timeout for notifications in millis"
-msgstr ""
+msgstr "Timeout für Benachrichtigungen in Millisekunden"
 
 msgid "Allow multi monitor setups - requires a restart"
-msgstr ""
+msgstr "Mehrere Monitor-Setups zulassen - erfordert einen Neustart"
 
 msgid "Render the ui"
-msgstr "Rendern des Benutzerinterfaces"
+msgstr "Das UI rendern"
 
 msgid "Show metric and debug window"
-msgstr ""
+msgstr "Metrik- und Debug-Fenster anzeigen"
 
 msgid "Allow to change the ui font size"
-msgstr ""
+msgstr "Ändern der UI-Schriftgröße zulassen"
 
 msgid "Which keybinding to use"
-msgstr ""
+msgstr "Welche Tastaturbelegung verwenden"
 
 msgid "Bindings"
 msgstr "Tastenbelegungen"
@@ -314,37 +314,37 @@ msgid "Textures"
 msgstr "Texturen"
 
 msgid "Size column to fit###SizeOne"
-msgstr ""
+msgstr "Spalte anpassen###SizeOne"
 
 msgid "Size all columns to fit###SizeAll"
-msgstr ""
+msgstr "Alle Spalten anpassen###SizeAll"
 
 msgid "Size all columns to default###SizeAll"
-msgstr ""
+msgstr "Alle Spalten auf Standardgröße###SizeAll"
 
 msgid "Reset order###ResetOrder"
-msgstr ""
+msgstr "Reihenfolge zurücksetzen###ResetOrder"
 
 msgid "(Main menu bar)"
-msgstr ""
+msgstr "(Hauptmenüleiste)"
 
 msgid "(Popup)"
-msgstr ""
+msgstr "(Popup)"
 
 msgid "(Untitled)"
-msgstr ""
+msgstr "(Unbenannt)"
 
 msgid "Copy Link###CopyLink"
-msgstr ""
+msgstr "Link kopieren###CopyLink"
 
 msgid "Hide tab bar###HideTabBar"
-msgstr ""
+msgstr "Tab-Leiste ausblenden###HideTabBar"
 
 msgid "Hold SHIFT to enable Docking window."
-msgstr ""
+msgstr "SHIFT gedrückt halten, um das Docking-Fenster zu aktivieren."
 
 msgid "Click and drag to move or undock whole node."
-msgstr ""
+msgstr "Klicken und ziehen, um den gesamten Knoten zu verschieben oder zu lösen."
 
 msgid "Language"
 msgstr "Sprache"
@@ -436,29 +436,32 @@ msgstr "Alle Bilder im Texturpool anzeigen"
 msgid "Activate shadow map"
 msgstr "Aktivieren des Schattenrenderings"
 
+msgid "Activate checkerboard rendering"
+msgstr "Schachbrett-Rendering aktivieren"
+
 msgid "Activate bloom post processing"
-msgstr ""
+msgstr "Bloom-Nachbearbeitung aktivieren"
 
 msgid "Activate shadow debug rendering"
-msgstr ""
+msgstr "Schatten-Debug-Rendering aktivieren"
 
 msgid "Activate cascade shadow map debug rendering"
-msgstr ""
+msgstr "Debug-Rendering für kaskadierende Schattenkarte aktivieren"
 
 msgid "Gamma correction"
 msgstr "Gammakorrektur"
 
 msgid "Render voxel outline"
-msgstr ""
+msgstr "Voxel-Umriss rendern"
 
 msgid "Activate tone mapping"
 msgstr "Tone mapping aktivieren"
 
 msgid "Limit the framerate to the monitor refresh rate"
-msgstr ""
+msgstr "Begrenze die Bildrate auf die Bildwiederholfrequenz des Monitors"
 
 msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
-msgstr ""
+msgstr "0 deaktiviert es, 1 nur höchste Schwere, 2 mittlere Schwere, 3 alles"
 
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
@@ -662,7 +665,7 @@ msgid "Show fixed region sizes in the positions panel"
 msgstr "Feste Regionengrößen im Positions-Panel anzeigen"
 
 msgid "Use local space for transforms"
-msgstr ""
+msgstr "Lokalen Raum für Transformationen verwenden"
 
 msgid "Show the grid"
 msgstr "Gitter anzeigen"
@@ -724,6 +727,11 @@ msgstr "Zeige das Gizmo, um auch die Region zu verschieben"
 
 msgid "The amount of viewports (not in simple ui mode)"
 msgstr "Die Anzahl der Ansichtsbereiche (nicht im einfachen UI-Modus)"
+
+msgid ""
+"The maximum size of a volume before a few features are disabled (e.g. undo/"
+"autosave)"
+msgstr ""
 
 msgid "Hide some panels to simplify the ui"
 msgstr "Verstecke einige Komponenten für eine vereinfachte Darstellung"
@@ -983,9 +991,6 @@ msgstr "Pinsel-Einstellungen"
 msgid "Click on a voxel to pick the color"
 msgstr "Klicken Sie auf einen Voxel, um die Farbe auszuwählen"
 
-msgid "Select areas of voxels"
-msgstr "Bereiche von Voxeln auswählen"
-
 msgid "Brush"
 msgstr "Pinsel"
 
@@ -1032,7 +1037,7 @@ msgid "Loading..."
 msgstr "Laden..."
 
 msgid "Double click to load"
-msgstr ""
+msgstr "Doppelklick zum Laden"
 
 msgid "Use stamp"
 msgstr "Stempel verwenden"
@@ -1059,10 +1064,10 @@ msgid "Create thumbnail"
 msgstr "Miniaturansicht erzeugen"
 
 msgid "Double click to create thumbnail"
-msgstr ""
+msgstr "Doppelklick zum Erstellen der Miniaturansicht"
 
 msgid "No match for filter found"
-msgstr ""
+msgstr "Keine Übereinstimmung für den Filter gefunden"
 
 msgid "Empty palette index"
 msgstr "Leerer Paletteneintrag"
@@ -1279,7 +1284,7 @@ msgid "Simple mode"
 msgstr "Einfacher Modus"
 
 msgid "Unreference Model"
-msgstr ""
+msgstr "Referenz auflösen"
 
 msgid ""
 "You can't edit a model reference.\n"
@@ -1412,6 +1417,9 @@ msgstr "Bones"
 
 msgid "Outlines"
 msgstr "Umrisslinien"
+
+msgid "Checkerboard"
+msgstr ""
 
 msgid "Shadow"
 msgstr "Schatten"
@@ -2216,6 +2224,9 @@ msgstr "Voll"
 msgid "Render mode"
 msgstr "Rendermodus"
 
+msgid "Undo disabled for this volume. Max volume size exceeded"
+msgstr "Rückgängig deaktiviert für dieses Volumen. Maximale Volumengröße überschritten"
+
 msgid "Scene Mode"
 msgstr "Szenenmodus"
 
@@ -2229,10 +2240,10 @@ msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
 
 msgid "Delay in second between autosaves - 0 disables autosaves"
-msgstr ""
+msgstr "Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 deaktiviert automatische Speicherungen"
 
 msgid "Update the children of a node when the transform of the node changes"
-msgstr ""
+msgstr "Aktualisiere die Kinder eines Knotens, wenn sich die Transformation des Knotens ändert"
 
 msgid "Resize the volume to the current selection"
 msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
@@ -2241,7 +2252,7 @@ msgid "Executes a lua script"
 msgstr "Führt ein LUA-Skript aus"
 
 msgid "Move the cursor by keys, not by viewport mouse trace"
-msgstr ""
+msgstr "Bewegt den Cursor mit den Tasten, nicht mit der Mausverfolgung im Ansichtsfenster"
 
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
@@ -2576,6 +2587,3 @@ msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
 msgid "Change the text brush axis"
 msgstr "Ändere die Achse des Textpinsels"
-
-#~ msgid "Set auto keyframe"
-#~ msgstr "Automatischer Keyframe"

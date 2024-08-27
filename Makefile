@@ -91,7 +91,6 @@ pot:
 		--keyword=_ --keyword=N_ --keyword="C_:1c,2" --keyword="NC_:1c,2" \
 		-C --files-from=$(BUILDDIR)/POTFILES
 	$(Q)msgmerge --update data/shared/de_DE.po data/vengi.pot
-	$(Q)msgmerge --update data/shared/uk.po data/vengi.pot
 
 doc-images:
 	$(Q)pngquant -f --ext .png docs/img/*.png

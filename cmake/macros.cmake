@@ -485,7 +485,6 @@ function(engine_install_deps TARGET)
 
 	set(PO_FILES
 		de_DE.po
-		uk.po
 	)
 
 	foreach (PO_FILE ${PO_FILES})

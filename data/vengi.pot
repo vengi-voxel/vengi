@@ -409,6 +409,9 @@ msgstr ""
 msgid "Activate shadow map"
 msgstr ""
 
+msgid "Activate checkerboard rendering"
+msgstr ""
+
 msgid "Activate bloom post processing"
 msgstr ""
 
@@ -691,6 +694,11 @@ msgstr ""
 msgid "The amount of viewports (not in simple ui mode)"
 msgstr ""
 
+msgid ""
+"The maximum size of a volume before a few features are disabled (e.g. undo/"
+"autosave)"
+msgstr ""
+
 msgid "Hide some panels to simplify the ui"
 msgstr ""
 
@@ -943,9 +951,6 @@ msgid "Brush settings"
 msgstr ""
 
 msgid "Click on a voxel to pick the color"
-msgstr ""
-
-msgid "Select areas of voxels"
 msgstr ""
 
 msgid "Brush"
@@ -1324,6 +1329,9 @@ msgid "Bones"
 msgstr ""
 
 msgid "Outlines"
+msgstr ""
+
+msgid "Checkerboard"
 msgstr ""
 
 msgid "Shadow"
@@ -2101,6 +2109,9 @@ msgid "Solid"
 msgstr ""
 
 msgid "Render mode"
+msgstr ""
+
+msgid "Undo disabled for this volume. Max volume size exceeded"
 msgstr ""
 
 msgid "Scene Mode"
