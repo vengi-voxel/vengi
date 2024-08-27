@@ -228,7 +228,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	for (int i = 0; i < 6; ++i) {
 		const int uniqueFace = indices[i];
 		image::TextureWrap wrap = image::TextureWrap::Repeat;
-		voxelutil::importFace(*volume, palette, faceNames[i], diffuseImages[uniqueFace], uvs[0], uvs[1], wrap, wrap);
+		voxelutil::importFace(*volume, palette, faceNames[uniqueFace], diffuseImages[uniqueFace], uvs[0], uvs[1], wrap, wrap);
 	}
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
