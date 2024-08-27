@@ -13,6 +13,26 @@
 
 namespace voxel {
 
+const char *faceNameString(FaceNames face) {
+	switch (face) {
+	case voxel::FaceNames::PositiveX:
+		return "PositiveX_East_Right";
+	case voxel::FaceNames::NegativeX:
+		return "NegativeX_West_Left";
+	case voxel::FaceNames::PositiveY:
+		return "PositiveY_Up";
+	case voxel::FaceNames::NegativeY:
+		return "NegativeY_Down";
+	case voxel::FaceNames::PositiveZ:
+		return "PositiveZ_South_Back";
+	case voxel::FaceNames::NegativeZ:
+		return "NegativeZ_North_Front";
+	default:
+		break;
+	}
+	return "Unknown";
+}
+
 math::Axis faceToAxis(FaceNames face) {
 	switch (face) {
 	case FaceNames::PositiveX:
@@ -152,4 +172,4 @@ FaceNames raycastFaceDetection(const glm::vec3& rayOrigin,
 	return face;
 }
 
-}
+} // namespace voxel

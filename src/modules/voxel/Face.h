@@ -34,6 +34,7 @@ enum class FaceNames : uint8_t {
 	Right = PositiveX
 };
 
+const char *faceNameString(FaceNames face);
 math::Axis faceToAxis(FaceNames face);
 
 inline bool isHorizontalFace(FaceNames face) {

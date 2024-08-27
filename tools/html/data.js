@@ -338,7 +338,7 @@ const jsonData = {
       ],
       "mimetype": "application/x-sandbox-voxedit-block",
       "animation": false,
-      "save": false
+      "save": true
     },
     {
       "name": "Blockbench",

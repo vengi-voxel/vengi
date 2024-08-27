@@ -33,10 +33,10 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 	const voxel::Region region(0, 2);
 	voxel::RawVolume volume(region);
 	for (int i = 0; i < 6; ++i) {
-		voxel::FaceNames faceName = (voxel::FaceNames)i;
+		const voxel::FaceNames faceName = (voxel::FaceNames)i;
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, i);
-		math::Axis axis = voxel::faceToAxis(faceName);
-		int idx = math::getIndexForAxis(axis);
+		const math::Axis axis = voxel::faceToAxis(faceName);
+		const int idx = math::getIndexForAxis(axis);
 		glm::ivec3 pos;
 		if (voxel::isNegativeFace(faceName)) {
 			pos[idx] = region.getLowerCorner()[idx];
@@ -52,15 +52,15 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 		}
 	}
 	for (int i = 0; i < 6; ++i) {
-		voxel::FaceNames faceName = (voxel::FaceNames)i;
+		const voxel::FaceNames faceName = (voxel::FaceNames)i;
 		int expectedColorFound = 0;
-		int cnt = visitFace(volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		const int cnt = visitFace(volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel.getColor() == i) {
 				++expectedColorFound;
 			}
 		});
-		EXPECT_EQ(9, cnt);
-		EXPECT_GE(expectedColorFound, 1);
+		EXPECT_EQ(9, cnt) << "Did not visit all voxels on face " << voxel::faceNameString(faceName);
+		EXPECT_GE(expectedColorFound, 1) << "Did not find expected color on face " << voxel::faceNameString(faceName);
 	}
 }
 

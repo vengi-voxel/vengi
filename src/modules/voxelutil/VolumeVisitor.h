@@ -69,7 +69,7 @@ struct EmptyVisitor {
 	}
 };
 
-template <class Volume, class Visitor, typename Condition = SkipEmpty>
+template<class Volume, class Visitor, typename Condition = SkipEmpty>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolume);
@@ -386,23 +386,26 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 	return cnt;
 }
 
-template <class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor, Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+template<class Volume, class Visitor, typename Condition = SkipEmpty>
+int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor,
+				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	const voxel::Region &region = volume.region();
 	return visitVolume(volume, region, xOff, yOff, zOff, visitor, condition, order);
 }
 
-template <class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, Visitor &&visitor, Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+template<class Volume, class Visitor, typename Condition = SkipEmpty>
+int visitVolume(const Volume &volume, Visitor &&visitor, Condition condition = Condition(),
+				VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, 1, 1, 1, visitor, condition, order);
 }
 
-template <class Volume, class Visitor, typename Condition = SkipEmpty>
-int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+template<class Volume, class Visitor, typename Condition = SkipEmpty>
+int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition = Condition(),
+				VisitorOrder order = VisitorOrder::ZYX) {
 	return visitVolume(volume, region, 1, 1, 1, visitor, condition, order);
 }
 
-template <class Volume, class Visitor>
+template<class Volume, class Visitor>
 int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order = VisitorOrder::ZYX) {
 	int cnt = 0;
 	const auto hullVisitor = [&cnt, &volume, visitor](int x, int y, int z, const voxel::Voxel &voxel) {
@@ -431,10 +434,11 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 	int cnt = 0;
 	switch (face) {
 	case voxel::FaceNames::Front:
-		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int y = maxs.y; y >= mins.y; --y) {
+		for (int y = maxs.y; y >= mins.y; --y) {
+			for (int x = maxs.x; x >= mins.x; --x) {
 				for (int z = mins.z; z <= maxs.z; ++z) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Front) != voxel::FaceBits::None) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Front) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
 						++cnt;
 						break;
@@ -447,20 +451,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		for (int y = maxs.y; y >= mins.y; --y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
 				for (int z = maxs.z; z >= mins.z; --z) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Back) != voxel::FaceBits::None) {
-						visitor(x, y, z, volume.voxel(x, y, z));
-						++cnt;
-						break;
-					}
-				}
-			}
-		}
-		break;
-	case voxel::FaceNames::Left:
-		for (int y = maxs.y; y >= mins.y; --y) {
-			for (int z = mins.z; z <= maxs.z; ++z) {
-				for (int x = mins.x; x <= maxs.x; ++x) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Left) != voxel::FaceBits::None) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Back) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
 						++cnt;
 						break;
@@ -472,8 +464,23 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 	case voxel::FaceNames::Right:
 		for (int y = maxs.y; y >= mins.y; --y) {
 			for (int z = mins.z; z <= maxs.z; ++z) {
+				for (int x = mins.x; x <= maxs.x; ++x) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Left) != voxel::FaceBits::None) {
+						visitor(x, y, z, volume.voxel(x, y, z));
+						++cnt;
+						break;
+					}
+				}
+			}
+		}
+		break;
+	case voxel::FaceNames::Left:
+		for (int y = maxs.y; y >= mins.y; --y) {
+			for (int z = maxs.z; z >= mins.z; --z) {
 				for (int x = maxs.x; x >= mins.x; --x) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Right) != voxel::FaceBits::None) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Right) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
 						++cnt;
 						break;
@@ -484,9 +491,10 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		break;
 	case voxel::FaceNames::Up:
 		for (int z = maxs.z; z >= mins.z; --z) {
-			for (int x = mins.x; x <= maxs.x; ++x) {
+			for (int x = maxs.x; x >= mins.x; --x) {
 				for (int y = maxs.y; y >= mins.y; --y) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Up) != voxel::FaceBits::None) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Up) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
 						++cnt;
 						break;
@@ -496,10 +504,11 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		}
 		break;
 	case voxel::FaceNames::Down:
-		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int z = maxs.z; z >= mins.z; --z) {
+		for (int z = mins.z; z <= maxs.z; ++z) {
+			for (int x = maxs.x; x >= mins.x; --x) {
 				for (int y = mins.y; y <= maxs.y; ++y) {
-					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Down) != voxel::FaceBits::None) {
+					if (!searchSurface ||
+						(visibleFaces(volume, x, y, z) & voxel::FaceBits::Down) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
 						++cnt;
 						break;

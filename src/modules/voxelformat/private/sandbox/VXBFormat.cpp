@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "image/Image.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -15,6 +16,12 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
+
+#define VXB_PRINT_IMAGES 0
+#if VXB_PRINT_IMAGES
+#include "io/MemoryReadStream.h"
+#include <SDL_log.h>
+#endif
 
 namespace voxelformat {
 
@@ -31,6 +38,15 @@ namespace voxelformat {
 				   (int)__LINE__);                                                                                     \
 		return false;                                                                                                  \
 	}
+
+namespace priv {
+static const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
+											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
+// TODO: document why this right/left flip is needed
+static const voxel::FaceNames faceNamesSave[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
+											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
+
+}
 
 size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
@@ -74,6 +90,7 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	for (int i = 0; i < 6; i++) {
 		wrap(stream->readFloat(vSpeed[i]))
 	}
+
 	uint32_t channelAmount;
 	wrap(stream->readUInt32(channelAmount))
 	if (channelAmount != 2) {
@@ -81,22 +98,15 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return false;
 	}
 
-	core::String diffuseId; // "Diffuse"
-	wrapBool(stream->readString(sizeof(diffuseId), diffuseId, true))
-
-	core::String emissiveId; // "Emissive"
-	wrapBool(stream->readString(sizeof(emissiveId), emissiveId, true))
-
-	image::ImagePtr diffuseImages[6];
-	for (int i = 0; i < 6; ++i) {
-		diffuseImages[i] =
-			image::loadRGBAImageFromStream(diffuseId + core::string::toString(i), *stream, blockSize, blockSize);
+	core::DynamicArray<core::String> channels;
+	for (uint32_t i = 0; i < channelAmount; ++i) {
+		core::String channelName;
+		wrapBool(stream->readString(64, channelName, true))
+		channels.push_back(channelName);
 	}
-	image::ImagePtr emissiveImages[6];
-	for (int i = 0; i < 6; ++i) {
-		emissiveImages[i] =
-			image::loadRGBAImageFromStream(emissiveId + core::string::toString(i), *stream, blockSize, blockSize);
-	}
+
+	// skip image data
+	stream->skip(blockSize * blockSize * 4 * uniqueFaces * channelAmount);
 
 	uint32_t materialAmount;
 	wrap(stream->readUInt32(materialAmount))
@@ -210,6 +220,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	uint32_t indices[6];
 	for (int i = 0; i < 6; i++) {
 		wrap(stream->readUInt32(indices[i]))
+		Log::debug("index for %i is %i", i, indices[i]);
 	}
 	float uSpeed[6];
 	for (int i = 0; i < 6; i++) {
@@ -226,21 +237,30 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	core::String diffuseId; // "Diffuse"
-	wrapBool(stream->readString(sizeof(diffuseId), diffuseId, true))
-
-	core::String emissiveId; // "Emissive"
-	wrapBool(stream->readString(sizeof(emissiveId), emissiveId, true))
-
-	Log::debug("diffuseId: %s, emissiveId: %s", diffuseId.c_str(), emissiveId.c_str());
+	core::DynamicArray<core::String> channels;
+	for (uint32_t i = 0; i < channelAmount; ++i) {
+		core::String channelName;
+		wrapBool(stream->readString(64, channelName, true))
+		channels.push_back(channelName);
+	}
 
 	core::DynamicArray<image::ImagePtr> diffuseImages;
+	diffuseImages.reserve(uniqueFaces);
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		diffuseImages.emplace_back(image::loadRGBAImageFromStream(diffuseId + core::string::toString(i), *stream, blockSize, blockSize));
+		const core::String name = channels[0] + core::string::toString(i);
+		diffuseImages.emplace_back(image::loadRGBAImageFromStream(name, *stream, blockSize, blockSize));
+
+#if VXB_PRINT_IMAGES
+		const core::String imgPrint = image::print(diffuseImages[i], false);
+		SDL_LogMessage(0, SDL_LOG_PRIORITY_ERROR, "%s\n", imgPrint.c_str());
+#endif
 	}
+
 	core::DynamicArray<image::ImagePtr> emissiveImages;
+	emissiveImages.reserve(uniqueFaces);
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		emissiveImages.emplace_back(image::loadRGBAImageFromStream(emissiveId + core::string::toString(i), *stream, blockSize, blockSize));
+		const core::String name = channels[1] + core::string::toString(i);
+		emissiveImages.emplace_back(image::loadRGBAImageFromStream(name, *stream, blockSize, blockSize));
 	}
 
 	uint8_t materialAmount;
@@ -266,8 +286,6 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.setSize(materialAmount);
 
-	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
-										  voxel::FaceNames::Up,	  voxel::FaceNames::Front, voxel::FaceNames::Back};
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	voxel::Region region(0, 0, 0, blockSize - 1, blockSize - 1, blockSize - 1);
 	if (!region.isValid()) {
@@ -277,9 +295,11 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	node.setVolume(volume, true);
 	node.setPalette(palette);
-	for (int i = 0; i < 6; ++i) {
+	for (uint32_t i = 0; i < 6; ++i) {
 		const int uniqueFace = indices[i];
-		faceTexture(*volume, palette, faceNames[i], diffuseImages[uniqueFace], emissiveImages[uniqueFace]);
+		const voxel::FaceNames faceName = priv::faceNames[indices[i]];
+		Log::debug("Load face %s for index %i (uniqueFace: %i)", voxel::faceNameString(faceName), (int)i, uniqueFace);
+		faceTexture(*volume, palette, faceName, diffuseImages[uniqueFace], emissiveImages[uniqueFace]);
 	}
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
@@ -330,23 +350,35 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeString("Diffuse", true));
 	wrapBool(stream->writeString("Emissive", true));
 
-	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Right, voxel::FaceNames::Left,	voxel::FaceNames::Down,
-										  voxel::FaceNames::Up,	   voxel::FaceNames::Front, voxel::FaceNames::Back};
-
 	const palette::Palette &palette = model->palette();
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		const voxel::FaceNames faceName = faceNames[i];
+#if VXB_PRINT_IMAGES
+		core::DynamicArray<core::RGBA> colors;
+		colors.reserve(blockSize * blockSize);
+#endif
+		const int uniqueFace = indices[i];
+		const voxel::FaceNames faceName = priv::faceNamesSave[uniqueFace];
+		Log::debug("Save face %s for index %i (uniqueFace: %i)", voxel::faceNameString(faceName), (int)i, uniqueFace);
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA color = palette.color(voxel.getColor());
 			stream->writeUInt8(color.r);
 			stream->writeUInt8(color.g);
 			stream->writeUInt8(color.b);
 			stream->writeUInt8(color.a);
+#if VXB_PRINT_IMAGES
+			colors.push_back(color);
+#endif
 		});
+#if VXB_PRINT_IMAGES
+		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
+		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
+		const core::String imgPrint = image::print(img, false);
+		SDL_LogMessage(0, SDL_LOG_PRIORITY_ERROR, "%s\n", imgPrint.c_str());
+#endif
 	}
 
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		const voxel::FaceNames faceName = faceNames[i];
+		const voxel::FaceNames faceName = priv::faceNamesSave[indices[i]];
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA color = palette.emitColor(voxel.getColor());
 			stream->writeUInt8(color.r);
@@ -356,15 +388,15 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		});
 	}
 
-	uint8_t materialAmount = model->palette().colorCount();
+	uint8_t materialAmount = palette.colorCount();
 	wrapBool(stream->writeUInt8(materialAmount))
 	for (int i = 0; i < (int)materialAmount; ++i) {
-		const core::RGBA color = model->palette().color(i);
+		const core::RGBA color = palette.color(i);
 		wrapBool(stream->writeUInt8(color.b))
 		wrapBool(stream->writeUInt8(color.g))
 		wrapBool(stream->writeUInt8(color.r))
 		wrapBool(stream->writeUInt8(color.a))
-		wrapBool(stream->writeUInt8(model->palette().hasEmit(i)))
+		wrapBool(stream->writeUInt8(palette.hasEmit(i)))
 	}
 
 	return true;

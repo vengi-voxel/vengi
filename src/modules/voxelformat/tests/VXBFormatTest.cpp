@@ -14,7 +14,7 @@ TEST_F(VXBFormatTest, testLoad) {
 	testLoad(sceneGraph, "sandbox-block2.vxb", 1);
 }
 
-TEST_F(VXBFormatTest, DISABLED_testLoadAndSave) {
+TEST_F(VXBFormatTest, testLoadAndSave) {
 	VXBFormat src;
 	VXBFormat target;
 	voxel::ValidateFlags flags = voxel::ValidateFlags::All;

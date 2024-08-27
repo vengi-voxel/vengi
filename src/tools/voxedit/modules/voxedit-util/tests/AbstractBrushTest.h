@@ -78,31 +78,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const BrushCombination &st
 		modifier = "Unknown";
 		break;
 	}
-	const char *face;
-	switch (state.face) {
-	case voxel::FaceNames::PositiveX:
-		face = "PositiveX";
-		break;
-	case voxel::FaceNames::NegativeX:
-		face = "NegativeX";
-		break;
-	case voxel::FaceNames::PositiveY:
-		face = "PositiveY";
-		break;
-	case voxel::FaceNames::NegativeY:
-		face = "NegativeY";
-		break;
-	case voxel::FaceNames::PositiveZ:
-		face = "PositiveZ";
-		break;
-	case voxel::FaceNames::NegativeZ:
-		face = "NegativeZ";
-		break;
-	default:
-		face = "Unknown";
-		break;
-	}
-
+	const char *face = voxel::faceNameString(state.face);
 	return os << "face[" << face << "], modifier[" << modifier << "]";
 }
 
