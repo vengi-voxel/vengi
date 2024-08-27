@@ -432,7 +432,7 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 	switch (face) {
 	case voxel::FaceNames::Front:
 		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int y = mins.y; y <= maxs.y; ++y) {
+			for (int y = maxs.y; y >= mins.y; --y) {
 				for (int z = mins.z; z <= maxs.z; ++z) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Front) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
@@ -444,8 +444,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		}
 		break;
 	case voxel::FaceNames::Back:
-		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int y = maxs.y; y >= mins.y; --y) {
+			for (int x = mins.x; x <= maxs.x; ++x) {
 				for (int z = maxs.z; z >= mins.z; --z) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Back) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
@@ -457,8 +457,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		}
 		break;
 	case voxel::FaceNames::Left:
-		for (int z = mins.z; z <= maxs.z; ++z) {
-			for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int y = maxs.y; y >= mins.y; --y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
 				for (int x = mins.x; x <= maxs.x; ++x) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Left) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
@@ -470,8 +470,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		}
 		break;
 	case voxel::FaceNames::Right:
-		for (int z = mins.z; z <= maxs.z; ++z) {
-			for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int y = maxs.y; y >= mins.y; --y) {
+			for (int z = mins.z; z <= maxs.z; ++z) {
 				for (int x = maxs.x; x >= mins.x; --x) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Right) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
@@ -483,8 +483,8 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		}
 		break;
 	case voxel::FaceNames::Up:
-		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int z = mins.z; z <= maxs.z; ++z) {
+		for (int z = maxs.z; z >= mins.z; --z) {
+			for (int x = mins.x; x <= maxs.x; ++x) {
 				for (int y = maxs.y; y >= mins.y; --y) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Up) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
@@ -497,7 +497,7 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bo
 		break;
 	case voxel::FaceNames::Down:
 		for (int x = mins.x; x <= maxs.x; ++x) {
-			for (int z = mins.z; z <= maxs.z; ++z) {
+			for (int z = maxs.z; z >= mins.z; --z) {
 				for (int y = mins.y; y <= maxs.y; ++y) {
 					if (!searchSurface || (visibleFaces(volume, x, y, z) & voxel::FaceBits::Down) != voxel::FaceBits::None) {
 						visitor(x, y, z, volume.voxel(x, y, z));
