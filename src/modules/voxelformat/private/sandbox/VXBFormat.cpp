@@ -14,6 +14,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/ImageUtils.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 
@@ -252,9 +253,12 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	const voxel::RawVolume *volume = model->volume();
 	core_assert(volume != nullptr);
 	const voxel::Region region = volume->region();
-	// take the largest dimension as block size
-	uint32_t blockSize =
-		core_max(region.getWidthInVoxels(), core_max(region.getHeightInVoxels(), region.getDepthInVoxels()));
+	if (region.getWidthInVoxels() != region.getHeightInVoxels() ||
+		region.getWidthInVoxels() != region.getDepthInVoxels()) {
+		Log::error("Block size must be equal in all dimensions");
+		return false;
+	}
+	uint32_t blockSize = region.getWidthInVoxels();
 	wrapBool(stream->writeUInt32(blockSize))
 	uint32_t uniqueFaces = 6; // TODO: calculate unique faces and write the indices - this can reduce the file size
 	wrapBool(stream->writeUInt32(uniqueFaces))
@@ -275,12 +279,30 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeString("Diffuse", true));
 	wrapBool(stream->writeString("Emissive", true));
 
+	const voxel::FaceNames faceNames[] = {voxel::FaceNames::Right, voxel::FaceNames::Left,	voxel::FaceNames::Down,
+										  voxel::FaceNames::Up,	   voxel::FaceNames::Front, voxel::FaceNames::Back};
+
+	const palette::Palette &palette = model->palette();
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		// TODO: write images for each face
+		const voxel::FaceNames faceName = faceNames[i];
+		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA color = palette.color(voxel.getColor());
+			stream->writeUInt8(color.r);
+			stream->writeUInt8(color.g);
+			stream->writeUInt8(color.b);
+			stream->writeUInt8(color.a);
+		});
 	}
 
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
-		// TODO: write emissive images for each face
+		const voxel::FaceNames faceName = faceNames[i];
+		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			const core::RGBA color = palette.emitColor(voxel.getColor());
+			stream->writeUInt8(color.r);
+			stream->writeUInt8(color.g);
+			stream->writeUInt8(color.b);
+			stream->writeUInt8(color.a);
+		});
 	}
 
 	uint8_t materialAmount = model->palette().colorCount();
@@ -294,7 +316,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		wrapBool(stream->writeUInt8(model->palette().hasEmit(i)))
 	}
 
-	return false;
+	return true;
 }
 
 #undef wrap
