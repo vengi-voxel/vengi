@@ -105,17 +105,17 @@ static FaceBits visibleFaces(const Sampler &sampler, bool skipEmpty = true) {
 }
 
 template<class Volume>
-static FaceBits visibleFaces(const Volume &v, int x, int y, int z) {
+static FaceBits visibleFaces(const Volume &v, int x, int y, int z, bool skipEmpty = true) {
 	typename Volume::Sampler sampler(v);
 	if (!sampler.setPosition(x, y, z)) {
 		return FaceBits::None;
 	}
-	return visibleFaces(sampler);
+	return visibleFaces(sampler, skipEmpty);
 }
 
 template<class Volume>
-static FaceBits visibleFaces(const Volume &v, const glm::ivec3 &pos) {
-	return visibleFaces(v, pos.x, pos.y, pos.z);
+static FaceBits visibleFaces(const Volume &v, const glm::ivec3 &pos, bool skipEmpty = true) {
+	return visibleFaces(v, pos.x, pos.y, pos.z, skipEmpty);
 }
 
 

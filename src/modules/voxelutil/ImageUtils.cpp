@@ -21,10 +21,8 @@
 
 namespace voxelutil {
 
-bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel::FaceNames faceName,
+bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName,
 				const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx) {
-	voxel::RawVolumeWrapper wrapper(&volume);
-	const voxel::Region &region = wrapper.region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
 	const math::Axis axis = faceToAxis(faceName);
@@ -67,7 +65,7 @@ bool importFace(voxel::RawVolume &volume, const palette::Palette &palette, voxel
 			pos[axisIdx0] = axisFixed;
 			pos[axisIdx1] = axis1;
 			pos[axisIdx2] = axis2;
-			wrapper.setVoxel(pos, voxel::createVoxel(palette, palIdx));
+			volume.setVoxel(pos, voxel::createVoxel(palette, palIdx));
 		}
 	}
 	return true;

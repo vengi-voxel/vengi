@@ -16,6 +16,7 @@
 #include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 #include "voxelformat/private/mesh/Polygon.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VoxelUtil.h"
@@ -373,7 +374,8 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 		if (face.textureIndex >= 0) {
 			image = textureArray[face.textureIndex];
 		}
-		voxelutil::importFace(*model.volume(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
+		voxel::RawVolumeWrapper wrapper(model.volume());
+		voxelutil::importFace(wrapper, wrapper.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
 							  element.color);
 	}
 	model.volume()->region().shift(-region.getLowerCorner());
