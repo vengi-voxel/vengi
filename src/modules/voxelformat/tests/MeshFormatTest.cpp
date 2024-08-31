@@ -5,6 +5,7 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/Color.h"
 #include "core/tests/TestColorHelper.h"
+#include "image/Image.h"
 #include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -40,9 +41,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 	voxelformat::TexturedTri tri;
 	tri.texture = texture;
 	for (int i = 0; i < 256; ++i) {
-		tri.uv[0] = glm::vec2((float)i / 256.0f, 0.0f);
-		tri.uv[1] = glm::vec2((float)i / 256.0f, 1.0f);
-		tri.uv[2] = glm::vec2((float)(i + 1) / 256.0f, 1.0f);
+		tri.uv[0] = tri.uv[1] = tri.uv[2] = texture->uv(i, 0);
 		const core::RGBA color = tri.colorAt(tri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
