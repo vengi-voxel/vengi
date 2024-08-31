@@ -202,6 +202,7 @@ public:
 	void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
 
 	void clear();
+	void fill(const voxel::Voxel &voxel);
 
 	inline const uint8_t *data() const {
 		return (const uint8_t *)_data;

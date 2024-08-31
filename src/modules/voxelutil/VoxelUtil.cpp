@@ -318,18 +318,15 @@ bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palet
 
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite) {
 	if (overwrite) {
-		visitVolume(
-			in, [&](int x, int y, int z, const voxel::Voxel &) { in.setVoxel(x, y, z, voxel); }, VisitAll());
+		in.fill(voxel);
 		return;
 	}
 	visitVolume(
 		in,
 		[&](int x, int y, int z, const voxel::Voxel &v) {
-			if (voxel::isAir(v.getMaterial())) {
-				in.setVoxel(x, y, z, voxel);
-			}
+			in.setVoxel(x, y, z, voxel);
 		},
-		VisitAll());
+		VisitEmpty());
 }
 
 void hollow(voxel::RawVolumeWrapper &in) {

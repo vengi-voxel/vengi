@@ -85,6 +85,11 @@ public:
 		return _volume;
 	}
 
+	void fill(const voxel::Voxel &voxel) {
+		_volume->fill(voxel);
+		_dirtyRegion = _volume->region();
+	}
+
 	void clear() {
 		_dirtyRegion = _volume->region();
 		_volume->clear();

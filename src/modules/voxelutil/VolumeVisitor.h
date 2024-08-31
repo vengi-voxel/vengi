@@ -52,6 +52,15 @@ struct VisitAll {
 /**
  * @note Visitor condition
  */
+struct VisitEmpty {
+	inline bool operator()(const voxel::Voxel &voxel) const {
+		return isAir(voxel.getMaterial());
+	}
+};
+
+/**
+ * @note Visitor condition
+ */
 struct VisitColor {
 	const uint8_t _color;
 	VisitColor(uint8_t color) : _color(color) {

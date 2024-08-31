@@ -283,6 +283,13 @@ void RawVolume::clear() {
 	core_memset(_data, 0, size);
 }
 
+void RawVolume::fill(const voxel::Voxel &voxel) {
+	const size_t size = width() * height() * depth();
+	for (size_t i = 0; i < size; ++i) {
+		_data[i] = voxel;
+	}
+}
+
 RawVolume::Sampler::Sampler(const RawVolume* volume) :
 		_volume(const_cast<RawVolume*>(volume)), _region(volume->region()) {
 }
