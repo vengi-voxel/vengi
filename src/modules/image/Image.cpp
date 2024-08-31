@@ -10,13 +10,13 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"
+#include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
-#include "io/Base64.h"
 #include <stb_image_resize2.h>
 
 #include <glm/common.hpp>
@@ -104,19 +104,19 @@ core::RGBA Image::colorAt(int x, int y) const {
 	return core::RGBA{ptr[0], ptr[0], ptr[0], 255};
 }
 
-core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
-	const glm::ivec2 pc = pixels(uv, wrapS, wrapT);
+core::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
+	const glm::ivec2 pc = pixels(uv, wrapS, wrapT, originUpperLeft);
 	return colorAt(pc.x, pc.y);
 }
 
-bool writeImage(const image::Image &image, io::SeekableWriteStream& stream) {
+bool writeImage(const image::Image &image, io::SeekableWriteStream &stream) {
 	if (!image.isLoaded()) {
 		return false;
 	}
 	return image.writePng(stream);
 }
 
-bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream& stream) {
+bool writeImage(const image::ImagePtr &image, io::SeekableWriteStream &stream) {
 	if (!image)
 		return false;
 	return writeImage(*image.get(), stream);
@@ -136,7 +136,7 @@ bool writeImage(const image::Image &image, const core::String &filename) {
 	return image.writePng(stream);
 }
 
-bool writeImage(const image::ImagePtr &image, const core::String& filename) {
+bool writeImage(const image::ImagePtr &image, const core::String &filename) {
 	if (!image)
 		return false;
 	return writeImage(*image.get(), filename);
@@ -313,78 +313,83 @@ void Image::flipVerticalRGBA(uint8_t *pixels, int w, int h) {
 }
 
 // OpenGL Spec 14.8.2 Coordinate Wrapping and Texel Selection
-glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT) const {
-	const float w = (float)width();
-	const float h = (float)height();
-	int xint = (int)glm::floor(uv.x * w);
-	int yint = height() - 1 - (int)glm::floor(uv.y * h);
+glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
+	const int w = width();
+	const int h = height();
+	return pixels(uv, w, h, wrapS, wrapT, originUpperLeft);
+}
+
+glm::ivec2 Image::pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS, TextureWrap wrapT,
+						 bool originUpperLeft) {
+	int xint = (int)glm::round(uv.x * (w - 1));
+	int yint = (int)glm::round(uv.y * (h - 1));
+	if (!originUpperLeft) {
+		yint = h - 1 - yint;
+	}
 	switch (wrapS) {
-	case TextureWrap::Repeat: {
-		xint %= width();
+	case TextureWrap::Repeat:
+		xint %= w;
 		break;
-	}
-	case TextureWrap::MirroredRepeat: {
-		xint = glm::abs(xint) % width();
+	case TextureWrap::MirroredRepeat:
+		xint = glm::abs(xint) % w;
 		break;
-	}
 	case TextureWrap::ClampToEdge:
-		xint = glm::clamp(xint, 0, width() - 1);
+		xint = glm::clamp(xint, 0, w - 1);
 		break;
 	case TextureWrap::Max:
 		return glm::ivec2(0);
 	}
 	switch (wrapT) {
-	case TextureWrap::Repeat: {
-		yint %= height();
+	case TextureWrap::Repeat:
+		yint %= h;
 		break;
-	}
-	case TextureWrap::MirroredRepeat: {
-		yint = glm::abs(yint) % height();
+	case TextureWrap::MirroredRepeat:
+		yint = glm::abs(yint) % h;
 		break;
-	}
 	case TextureWrap::ClampToEdge:
-		yint = glm::clamp(yint, 0, height() - 1);
+		yint = glm::clamp(yint, 0, h - 1);
 		break;
 	case TextureWrap::Max:
 		return glm::ivec2(0);
 	}
 
 	while (xint < 0) {
-		xint = glm::abs(xint) % width();
-		xint = width() - xint;
+		xint = glm::abs(xint) % w;
+		xint = w - xint;
 	}
 
 	while (yint < 0) {
-		yint = glm::abs(yint) % height();
-		yint = height() - yint;
+		yint = glm::abs(yint) % h;
+		yint = h - yint;
 	}
 
-	if (xint >= width()) {
-		xint %= width();
+	if (xint >= w) {
+		xint %= w;
 	}
 
-	if (yint >= height()) {
-		yint %= height();
+	if (yint >= h) {
+		yint %= h;
 	}
-
 	return glm::ivec2(xint, yint);
 }
 
-glm::vec2 Image::uv(int x, int y) const {
-	return uv(x, y, _width, _height);
+glm::vec2 Image::uv(int x, int y, bool originUpperLeft) const {
+	return uv(x, y, _width, _height, originUpperLeft);
 }
 
-// sampling the center of a pixel
-// width 2 and height 2
-// -----
-// | | | (pixel space 0/0 and 1/0), uv 0.25/0.75 and 0.75/0.75
-// -----
-// | | | (pixel space 0/1 and 1/1), uv 0.25/0.25 and 0.75/0.25
-// -----
-glm::vec2 Image::uv(int x, int y, int w, int h) {
-	// Calculate the UV coordinates to sample the center of the pixel
-	float u = ((float)x + 0.5f) / (float)w;
-	float v = ((float)h - 1.0f - (float)y + 0.5f) / (float)h;
+glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
+	float u = 0.0f;
+	if (w > 1) {
+		u = ((float)x) / (float)(w - 1);
+	}
+	float v = 0.0f;
+	if (h > 1) {
+		if (originUpperLeft) {
+			v = ((float)y) / (float)h;
+		} else {
+			v = ((float)h - 1.0f - (float)y) / (float)(h - 1);
+		}
+	}
 	return glm::vec2(u, v);
 }
 

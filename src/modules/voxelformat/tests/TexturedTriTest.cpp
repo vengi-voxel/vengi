@@ -26,17 +26,25 @@ TEST_F(TexturedTriTest, testColorAt4x4) {
 	ASSERT_EQ(w, texture->width());
 	ASSERT_EQ(h, texture->height());
 
-	voxelformat::TexturedTri tri;
-	tri.texture = texture;
-	for (int i = 0; i < w; ++i) {
-		for (int j = 0; j < h; ++j) {
-			tri.uv[0] = image::Image::uv(i, j, w, h);
-			tri.uv[1] = image::Image::uv(i, j + 1, w, h);
-			tri.uv[2] = image::Image::uv(i + 1, j, w, h);
-			const core::RGBA color = tri.colorAt(tri.centerUV());
-			const int texIndex = j * w + i;
-			ASSERT_EQ(buffer[texIndex], color) << "i: " << i << "/" << j << " " << core::Color::print(buffer[texIndex])
-											   << " vs " << core::Color::print(color) << " ti: " << texIndex;
+	for (int s = 0; s < 2; ++s) {
+		const bool originUpperLeft = s == 0;
+		SCOPED_TRACE(s);
+		voxelformat::TexturedTri tri;
+		tri.texture = texture;
+		for (int x = 0; x < w; ++x) {
+			for (int y = 0; y < h; ++y) {
+				tri.uv[0] = image::Image::uv(x, y, w, h, originUpperLeft);
+				tri.uv[1] = image::Image::uv(x, y + 1, w, h, originUpperLeft);
+				tri.uv[2] = image::Image::uv(x + 1, y, w, h, originUpperLeft);
+				const glm::vec2 &uv = tri.centerUV();
+				const core::RGBA color = tri.colorAt(uv, originUpperLeft);
+				const int texIndex = y * w + x;
+				ASSERT_EQ(buffer[texIndex], color)
+					<< "pixel(" << x << "/" << y << "), " << core::Color::print(buffer[texIndex]) << " vs "
+					<< core::Color::print(color) << " ti: " << texIndex << ", uv(" << uv.x << "/" << uv.y
+					<< ") triangle uvs(" << tri.uv[0].x << "/" << tri.uv[0].y << ", " << tri.uv[1].x << "/"
+					<< tri.uv[1].y << ", " << tri.uv[2].x << "/" << tri.uv[2].y << ")";
+			}
 		}
 	}
 }

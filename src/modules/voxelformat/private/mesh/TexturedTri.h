@@ -34,7 +34,7 @@ struct TexturedTri : public math::Tri {
 	 * this case.
 	 */
 	[[nodiscard]] bool calcUVs(const glm::vec3 &pos, glm::vec2 &uv) const;
-	core::RGBA colorAt(const glm::vec2 &uv) const;
+	core::RGBA colorAt(const glm::vec2 &uv, bool originUpperLeft = false) const;
 	core::RGBA centerColor() const;
 
 	// Sierpinski gasket with keeping the middle

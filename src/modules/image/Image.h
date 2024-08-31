@@ -11,6 +11,7 @@
 #include "core/SharedPtr.h"
 #include "io/Stream.h"
 #include <glm/fwd.hpp>
+#include <glm/vec2.hpp>
 
 namespace image {
 
@@ -52,12 +53,13 @@ public:
 	bool loadRGBA(io::ReadStream& stream, int w, int h);
 	bool loadBGRA(io::ReadStream& stream, int w, int h);
 
-	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat) const;
+	static glm::ivec2 pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false);
+	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat, TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 	/**
 	 * @sa MeshFormat::paletteUV()
 	 */
-	glm::vec2 uv(int x, int y) const;
-	static glm::vec2 uv(int x, int y, int w, int h);
+	glm::vec2 uv(int x, int y, bool originUpperLeft = false) const;
+	static glm::vec2 uv(int x, int y, int w, int h, bool originUpperLeft = false);
 
 	bool resize(int w, int h);
 
@@ -71,7 +73,7 @@ public:
 	core::String pngBase64() const;
 	core::RGBA colorAt(int x, int y) const;
 	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
-					   TextureWrap wrapT = TextureWrap::Repeat) const;
+					   TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 
 	void setColor(core::RGBA rgba, int x, int y);
 
@@ -87,6 +89,10 @@ public:
 
 	inline const uint8_t* data() const {
 		return _data;
+	}
+
+	inline glm::vec2 size() const {
+		return {_width, _height};
 	}
 
 	inline int width() const {
