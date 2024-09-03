@@ -83,6 +83,22 @@ struct EmptyVisitor {
 	}
 };
 
+// the visitor can return a boolean value to indicate whether the inner loop should break
+#define VISITOR_INNER_PART                                                                                             \
+	if (!condition(voxel)) {                                                                                           \
+		continue;                                                                                                      \
+	}                                                                                                                  \
+	if constexpr (std::is_same_v<decltype(visitor(x, y, z, voxel)), bool>) {                                          \
+		const bool breakInnerLoop = visitor(x, y, z, voxel);                                                           \
+		++cnt;                                                                                                         \
+		if (breakInnerLoop) {                                                                                          \
+			break;                                                                                                     \
+		}                                                                                                              \
+	} else {                                                                                                           \
+		visitor(x, y, z, voxel);                                                                                       \
+		++cnt;                                                                                                         \
+	}
+
 template<class Volume, class Visitor, typename Condition = SkipEmpty>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
@@ -101,11 +117,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveY(yOff);
 			}
@@ -121,11 +133,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveY(yOff);
 			}
@@ -141,11 +149,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveX(xOff);
 			}
@@ -161,11 +165,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -181,11 +181,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -201,11 +197,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeZ(zOff);
 			}
@@ -221,11 +213,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -241,11 +229,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeZ(zOff);
 			}
@@ -261,11 +245,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeZ(zOff);
 			}
@@ -281,11 +261,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeZ(zOff);
 			}
@@ -301,11 +277,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -321,11 +293,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveX(xOff);
 			}
@@ -341,11 +309,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -361,11 +325,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeX(xOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -381,11 +341,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveX(xOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveZ(zOff);
 			}
@@ -401,11 +357,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveZ(zOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeX(xOff);
 			}
@@ -421,11 +373,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeZ(zOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveX(xOff);
 			}
@@ -441,11 +389,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeX(xOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeZ(zOff);
 			}
@@ -461,11 +405,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.moveNegativeY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.moveNegativeX(xOff);
 			}
@@ -481,11 +421,7 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
-					if (!condition(voxel)) {
-						continue;
-					}
-					visitor(x, y, z, voxel);
-					++cnt;
+					VISITOR_INNER_PART
 				}
 				sampler2.movePositiveX(xOff);
 			}
