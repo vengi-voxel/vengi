@@ -285,14 +285,12 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 		}
 	}
 
-	visitVolume(
-		in, region, 1, 1, 1,
-		[&](int x, int y, int z, const voxel::Voxel &) {
-			if (!visited.get(x - mins.x, y - mins.y, z - mins.z)) {
-				in.setVoxel(x, y, z, voxel);
-			}
-		},
-		VisitAll());
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
+		if (!visited.get(x - mins.x, y - mins.y, z - mins.z)) {
+			in.setVoxel(x, y, z, voxel);
+		}
+	};
+	visitVolume(in, region, 1, 1, 1, visitor, VisitAll());
 }
 
 bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette) {
@@ -305,14 +303,12 @@ bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palet
 	const uint8_t colors[2] = {(uint8_t)black, (uint8_t)white};
 	int currentColorIndex = 0;
 
-	visitVolume(
-		in, [&](int x, int y, int z, const voxel::Voxel &) {
-			const int idx = colors[currentColorIndex];
-			in.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
-			currentColorIndex = (currentColorIndex + 1) % 2;
-		},
-		VisitAll());
-
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
+		const int idx = colors[currentColorIndex];
+		in.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
+		currentColorIndex = (currentColorIndex + 1) % 2;
+	};
+	visitVolume(in, visitor, VisitAll());
 	return true;
 }
 
@@ -321,12 +317,8 @@ void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite
 		in.fill(voxel);
 		return;
 	}
-	visitVolume(
-		in,
-		[&](int x, int y, int z, const voxel::Voxel &v) {
-			in.setVoxel(x, y, z, voxel);
-		},
-		VisitEmpty());
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &v) { in.setVoxel(x, y, z, voxel); };
+	visitVolume(in, visitor, VisitEmpty());
 }
 
 void hollow(voxel::RawVolumeWrapper &in) {
