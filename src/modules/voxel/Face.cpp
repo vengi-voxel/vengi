@@ -49,6 +49,26 @@ math::Axis faceToAxis(FaceNames face) {
 	}
 }
 
+FaceBits faceBits(FaceNames face) {
+	switch (face) {
+	case FaceNames::PositiveX:
+		return FaceBits::PositiveX;
+	case FaceNames::NegativeX:
+		return FaceBits::NegativeX;
+	case FaceNames::PositiveY:
+		return FaceBits::PositiveY;
+	case FaceNames::NegativeY:
+		return FaceBits::NegativeY;
+	case FaceNames::PositiveZ:
+		return FaceBits::PositiveZ;
+	case FaceNames::NegativeZ:
+		return FaceBits::NegativeZ;
+	default:
+		break;
+	}
+	return FaceBits::None;
+}
+
 FaceNames raycastFaceDetection(const glm::vec3& rayOrigin, const glm::vec3& hitPos, float offsetMins, float offsetMaxs) {
 	const glm::vec3& rayDirection = glm::normalize(hitPos - rayOrigin);
 	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, offsetMins, offsetMaxs);

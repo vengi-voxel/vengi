@@ -77,6 +77,8 @@ enum class FaceBits : uint8_t {
 };
 CORE_ENUM_BIT_OPERATIONS(FaceBits)
 
+FaceBits faceBits(FaceNames face);
+
 template<class Sampler>
 static FaceBits visibleFaces(const Sampler &sampler, bool skipEmpty = true) {
 	FaceBits vis = FaceBits::None;
