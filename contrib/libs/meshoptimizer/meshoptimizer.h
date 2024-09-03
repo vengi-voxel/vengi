@@ -140,6 +140,19 @@ MESHOPTIMIZER_API void meshopt_generateAdjacencyIndexBuffer(unsigned int* destin
 MESHOPTIMIZER_API void meshopt_generateTessellationIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 
 /**
+ * Experimental: Generate index buffer that can be used for visibility buffer rendering and returns the size of the reorder table
+ * Each triangle's provoking vertex index is equal to primitive id; this allows passing it to the fragment shader using nointerpolate attribute.
+ * This is important for performance on hardware where primitive id can't be accessed efficiently in fragment shader.
+ * The reorder table stores the original vertex id for each vertex in the new index buffer, and should be used in the vertex shader to load vertex data.
+ * The provoking vertex is assumed to be the first vertex in the triangle; if this is not the case (OpenGL), rotate each triangle (abc -> bca) before rendering.
+ * For maximum efficiency the input index buffer should be optimized for vertex cache first.
+ *
+ * destination must contain enough space for the resulting index buffer (index_count elements)
+ * reorder must contain enough space for the worst case reorder table (vertex_count + index_count/3 elements)
+ */
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_generateProvokingIndexBuffer(unsigned int* destination, unsigned int* reorder, const unsigned int* indices, size_t index_count, size_t vertex_count);
+
+/**
  * Vertex transform cache optimizer
  * Reorders indices to reduce the number of GPU vertex shader invocations
  * If index buffer contains multiple ranges for multiple draw calls, this functions needs to be called on each range individually.
@@ -342,7 +355,7 @@ enum
  * Mesh simplifier
  * Reduces the number of triangles in the mesh, attempting to preserve mesh appearance as much as possible
  * The algorithm tries to preserve mesh topology and can stop short of the target goal based on topology constraints or target error.
- * If not all attributes from the input mesh are required, it's recommended to reindex the mesh using meshopt_generateShadowIndexBuffer prior to simplification.
+ * If not all attributes from the input mesh are required, it's recommended to reindex the mesh without them prior to simplification.
  * Returns the number of indices after simplification, with destination containing new index data
  * The resulting index buffer references vertices from the original vertex buffer.
  * If the original vertex data isn't required, creating a compact vertex buffer using meshopt_optimizeVertexFetch is recommended.
@@ -361,7 +374,7 @@ MESHOPTIMIZER_API size_t meshopt_simplify(unsigned int* destination, const unsig
  * Note that the number of attributes affects memory requirements and running time; this algorithm requires ~1.5x more memory and time compared to meshopt_simplify when using 4 scalar attributes.
  *
  * vertex_attributes should have attribute_count floats for each vertex
- * attribute_weights should have attribute_count floats in total; the weights determine relative priority of attributes between each other and wrt position. The recommended weight range is [1e-3..1e-1], assuming attribute data is in [0..1] range.
+ * attribute_weights should have attribute_count floats in total; the weights determine relative priority of attributes between each other and wrt position
  * attribute_count must be <= 32
  * vertex_lock can be NULL; when it's not NULL, it should have a value for each vertex; 1 denotes vertices that can't be moved
  */
@@ -392,6 +405,7 @@ MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifySloppy(unsigned int* destinati
  * destination must contain enough space for the target index buffer (target_vertex_count elements)
  * vertex_positions should have float3 position in the first 12 bytes of each vertex
  * vertex_colors should can be NULL; when it's not NULL, it should have float3 color in the first 12 bytes of each vertex
+ * color_weight determines relative priority of color wrt position; 1.0 is a safe default
  */
 MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_colors, size_t vertex_colors_stride, float color_weight, size_t target_vertex_count);
 
@@ -652,6 +666,8 @@ inline void meshopt_generateAdjacencyIndexBuffer(T* destination, const T* indice
 template <typename T>
 inline void meshopt_generateTessellationIndexBuffer(T* destination, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 template <typename T>
+inline size_t meshopt_generateProvokingIndexBuffer(T* destination, unsigned int* reorder, const T* indices, size_t index_count, size_t vertex_count);
+template <typename T>
 inline void meshopt_optimizeVertexCache(T* destination, const T* indices, size_t index_count, size_t vertex_count);
 template <typename T>
 inline void meshopt_optimizeVertexCacheStrip(T* destination, const T* indices, size_t index_count, size_t vertex_count);
@@ -886,6 +902,19 @@ inline void meshopt_generateTessellationIndexBuffer(T* destination, const T* ind
 	meshopt_IndexAdapter<T> out(destination, NULL, index_count * 4);
 
 	meshopt_generateTessellationIndexBuffer(out.data, in.data, index_count, vertex_positions, vertex_count, vertex_positions_stride);
+}
+
+template <typename T>
+inline size_t meshopt_generateProvokingIndexBuffer(T* destination, unsigned int* reorder, const T* indices, size_t index_count, size_t vertex_count)
+{
+	meshopt_IndexAdapter<T> in(NULL, indices, index_count);
+	meshopt_IndexAdapter<T> out(destination, NULL, index_count);
+
+	size_t bound = vertex_count + (index_count / 3);
+	assert(size_t(T(bound - 1)) == bound - 1); // bound - 1 must fit in T
+	(void)bound;
+
+	return meshopt_generateProvokingIndexBuffer(out.data, reorder, in.data, index_count, vertex_count);
 }
 
 template <typename T>
