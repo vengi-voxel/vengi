@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/AStarPathfinder.h"
 #include "voxelutil/VoxelUtil.h"
+#include "app/I18N.h"
 
 namespace voxedit {
 
@@ -37,7 +38,8 @@ void PathBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 															  func, 4.0f, 10000, _connectivity);
 	voxelutil::AStarPathfinder pathfinder(params);
 	if (!pathfinder.execute()) {
-		Log::debug("Failed to execute pathfinder - is the reference position correctly placed on another voxel?");
+		setErrorReason(
+			_("Failed to execute pathfinder - is the reference position correctly placed on another voxel?"));
 		return;
 	}
 	for (const glm::ivec3 &p : listResult) {

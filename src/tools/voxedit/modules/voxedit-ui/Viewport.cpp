@@ -29,6 +29,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelrender/SceneGraphRenderer.h"
@@ -183,6 +184,13 @@ void Viewport::renderCursor() {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 	} else if (modifier.brushType() == BrushType::Plane) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+	}
+
+	if (const Brush *brush = modifier.currentBrush()) {
+		if (!brush->errorReason().empty()) {
+			ImGui::TooltipTextUnformatted(brush->errorReason().c_str());
+			return;
+		}
 	}
 
 	const int cursorDetailsLevel = _cursorDetails->intVal();

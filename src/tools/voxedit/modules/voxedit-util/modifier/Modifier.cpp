@@ -388,6 +388,15 @@ Brush *Modifier::currentBrush() {
 	return nullptr;
 }
 
+const Brush *Modifier::currentBrush() const {
+	for (Brush *b : _brushes) {
+		if (b->type() == _brushType) {
+			return b;
+		}
+	}
+	return nullptr;
+}
+
 AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Shape) {
 		return &_shapeBrush;

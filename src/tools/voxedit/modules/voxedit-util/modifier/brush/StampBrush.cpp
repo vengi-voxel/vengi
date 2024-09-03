@@ -162,6 +162,9 @@ void StampBrush::update(const BrushContext &ctx, double nowSeconds) {
 		_lastCursorPosition = ctx.cursorPosition;
 		markDirty();
 	}
+	if (!_volume) {
+		setErrorReason(_("No stamp volume set"));
+	}
 }
 
 void StampBrush::setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette) {

@@ -118,6 +118,7 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 
 bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						const BrushContext &context) {
+	setErrorReason("");
 	voxel::Region region = calcRegion(context);
 	region = extendRegionInOrthoMode(region, wrapper.region(), context);
 	glm::ivec3 minsMirror = region.getLowerCorner();

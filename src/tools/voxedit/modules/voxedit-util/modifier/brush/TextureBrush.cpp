@@ -37,6 +37,7 @@ static glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &regi
 bool TextureBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 						   const BrushContext &context) {
 	if (!_image || !_image->isLoaded()) {
+		setErrorReason(_("No image loaded for texture brush"));
 		return false;
 	}
 	return Super::execute(sceneGraph, wrapper, context);

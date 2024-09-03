@@ -12,6 +12,7 @@
 #include "core/DirtyState.h"
 #include "core/IComponent.h"
 #include "core/Log.h"
+#include "core/String.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Face.h"
@@ -68,6 +69,8 @@ protected:
 
 	glm::ivec3 _referencePosition{0};
 
+	core::String _errorReason;
+
 	/**
 	 * The mirror position is based on the reference position whenever the mirror axis is set
 	 */
@@ -98,9 +101,18 @@ protected:
 	virtual void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region) = 0;
 
+	// this error text can be shown in the ui if a brush is e.g. not properly initialized or configured
+	void setErrorReason(const core::String &reason) {
+		_errorReason = reason;
+	}
+
 public:
 	void markDirty() override {
 		core::DirtyState::markDirty();
+	}
+
+	const core::String &errorReason() const {
+		return _errorReason;
 	}
 
 	/**

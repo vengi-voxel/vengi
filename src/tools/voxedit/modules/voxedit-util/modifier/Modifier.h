@@ -152,6 +152,7 @@ public:
 	BrushType setBrushType(BrushType type);
 	BrushType brushType() const;
 
+	const Brush *currentBrush() const;
 	Brush *currentBrush();
 	const AABBBrush *currentAABBBrush() const;
 	AABBBrush *currentAABBBrush();
