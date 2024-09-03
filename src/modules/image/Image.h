@@ -106,6 +106,10 @@ public:
 	inline int depth() const {
 		return _depthOfColor;
 	}
+
+	inline float aspect() const {
+		return (float)_width / (float)_height;
+	}
 };
 
 typedef core::SharedPtr<Image> ImagePtr;

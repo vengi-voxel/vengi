@@ -240,7 +240,11 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 	glm::vec2 uv1 = brush.uv1();
 	if (brush.image()) {
 		const video::TexturePtr &texture = _texturePool->load(brush.image()->name());
-		const ImVec2 size = core_min(ImGui::GetContentRegionAvail().x, ImGui::Size(25));
+		const glm::vec2 &imgSize = brush.image()->size();
+		const ImVec2 available = ImGui::GetContentRegionAvail();
+		const glm::vec2 aspect(available.x / imgSize.x, available.y / imgSize.y);
+		const float scale = core_min(aspect.x, aspect.y);
+		const ImVec2 size = ImVec2(imgSize.x * scale, imgSize.y * scale);
 		ImGui::InvisibleButton("#texturebrushimage", size);
 		ImGui::AddImage(texture->handle(), uv0, uv1);
 		ImGui::OpenPopupOnItemClick(POPUP_TITLE_UV_EDITOR, ImGuiPopupFlags_MouseButtonLeft);
@@ -486,10 +490,8 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 
 void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 	const core::String title = makeTitle(_("UV editor"), POPUP_TITLE_UV_EDITOR);
-	ui::ScopedStyle style;
-	style.setWindowPadding(ImGui::Size(4));
 	bool showUVEditor = true;
-	if (ImGui::BeginPopupModal(title.c_str(), &showUVEditor, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+	if (ImGui::BeginPopupModal(title.c_str(), &showUVEditor, ImGuiWindowFlags_AlwaysAutoResize)) {
 		{
 			ui::ScopedStyle style;
 			style.setFont(_app->bigIconFont());
