@@ -107,7 +107,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app, _sceneMgr),
 #endif
-	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr), _treePanel(app, _sceneMgr),
+	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _animationPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _nodeInspectorPanel(app, _sceneMgr),
 	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),

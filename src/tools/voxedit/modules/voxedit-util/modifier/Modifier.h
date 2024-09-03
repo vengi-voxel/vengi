@@ -21,6 +21,7 @@
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxedit-util/modifier/brush/TextBrush.h"
+#include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -71,6 +72,7 @@ protected:
 	PaintBrush _paintBrush;
 	TextBrush _textBrush;
 	SelectBrush _selectBrush;
+	TextureBrush _textureBrush;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -163,6 +165,7 @@ public:
 	PaintBrush &paintBrush();
 	BrushContext &brushContext();
 	SelectBrush &selectBrush();
+	TextureBrush &textureBrush();
 	const BrushContext &brushContext() const;
 
 	/**
@@ -248,6 +251,10 @@ inline PaintBrush &Modifier::paintBrush() {
 
 inline SelectBrush &Modifier::selectBrush() {
 	return _selectBrush;
+}
+
+inline TextureBrush &Modifier::textureBrush() {
+	return _textureBrush;
 }
 
 inline int Modifier::gridResolution() const {

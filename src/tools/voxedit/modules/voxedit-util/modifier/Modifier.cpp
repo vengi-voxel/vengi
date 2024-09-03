@@ -14,7 +14,6 @@
 #include "video/Camera.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxedit-util/modifier/Selection.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
@@ -37,6 +36,7 @@ Modifier::Modifier(SceneManager *sceneMgr)
 	_brushes.push_back(&_paintBrush);
 	_brushes.push_back(&_textBrush);
 	_brushes.push_back(&_selectBrush);
+	_brushes.push_back(&_textureBrush);
 	core_assert(_brushes.size() == (int)BrushType::Max - 1);
 }
 
@@ -401,6 +401,9 @@ AABBBrush *Modifier::currentAABBBrush() {
 	if (_brushType == BrushType::Plane) {
 		return &_planeBrush;
 	}
+	if (_brushType == BrushType::Texture) {
+		return &_textureBrush;
+	}
 	return nullptr;
 }
 
@@ -416,6 +419,9 @@ const AABBBrush *Modifier::currentAABBBrush() const {
 	}
 	if (_brushType == BrushType::Plane) {
 		return &_planeBrush;
+	}
+	if (_brushType == BrushType::Texture) {
+		return &_textureBrush;
 	}
 	return nullptr;
 }

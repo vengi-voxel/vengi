@@ -26,6 +26,7 @@ VoxEdit:
    - Improved handling for max allowed voxels
    - Disable undo/redo for model changes if you exceed a max suggested model size
    - Disable autosaves for model changes if you exceed a max suggested model size
+   - New brush type to project textures into sub areas or on surfaces
 
 ## 0.0.33 (2024-08-05)
 

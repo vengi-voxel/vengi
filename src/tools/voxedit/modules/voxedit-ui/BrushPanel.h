@@ -5,9 +5,10 @@
 #pragma once
 
 #include "core/SharedPtr.h"
-#include "ui/Panel.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "ui/Panel.h"
+#include "video/TexturePool.h"
 
 namespace command {
 struct CommandExecutionListener;
@@ -26,6 +27,9 @@ private:
 	core::String _stamp;
 	int _stampPaletteIndex = 0;
 	SceneManagerPtr _sceneMgr;
+	video::TexturePoolPtr _texturePool;
+
+	void createPopups(command::CommandExecutionListener &listener);
 
 	void addModifiers(command::CommandExecutionListener &listener);
 	void brushSettings(command::CommandExecutionListener &listener);
@@ -42,6 +46,7 @@ private:
 	void updateLineBrushPanel(command::CommandExecutionListener &listener);
 	void updatePathBrushPanel(command::CommandExecutionListener &listener);
 	void updateSelectBrushPanel(command::CommandExecutionListener &listener);
+	void updateTextureBrushPanel(command::CommandExecutionListener &listener);
 
 	void addBrushClampingOption(Brush &brush);
 	void aabbBrushOptions(command::CommandExecutionListener &listener, AABBBrush &brush);
@@ -49,8 +54,10 @@ private:
 	void updateShapeBrushPanel(command::CommandExecutionListener &listener);
 	void updatePaintBrushPanel(command::CommandExecutionListener &listener);
 	void updateTextBrushPanel(command::CommandExecutionListener &listener);
+
 public:
-	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "brush"), _sceneMgr(sceneMgr) {
+	BrushPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool)
+		: Super(app, "brush"), _sceneMgr(sceneMgr), _texturePool(texturePool) {
 	}
 	void update(const char *id, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
@@ -58,4 +65,4 @@ public:
 #endif
 };
 
-}
+} // namespace voxedit

@@ -13,6 +13,7 @@ set(SRCS
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
+	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
 	modifier/IModifierRenderer.h
 	modifier/Modifier.h modifier/Modifier.cpp
@@ -51,9 +52,11 @@ set(TEST_SRCS
 	tests/ShapeBrushTest.cpp
 	tests/StampBrushTest.cpp
 	tests/TextBrushTest.cpp
+	tests/TextureBrushTest.cpp
 )
 set(TEST_FILES
 	shared/font.ttf
+	tests/test-palette-in.png
 )
 gtest_suite_sources(tests
 	${TEST_SRCS}

@@ -5,38 +5,40 @@
 #include "BrushPanel.h"
 #include "DragAndDropPayload.h"
 #include "ScopedStyle.h"
+#include "Style.h"
 #include "Toolbar.h"
 #include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Bits.h"
 #include "core/Enum.h"
+#include "core/StringUtil.h"
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-ui/Util.h"
+#include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/StampBrush.h"
+#include "voxedit-util/modifier/brush/TextureBrush.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
+#include <glm/common.hpp>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/trigonometric.hpp>
 
 namespace voxedit {
 
-static constexpr const char *BrushTypeIcons[] = {ICON_LC_PIPETTE,
-												 ICON_LC_BOXES,
-												 ICON_LC_GROUP,
-												 ICON_LC_STAMP,
-												 ICON_LC_PEN_LINE,
-												 ICON_LC_FOOTPRINTS,
-												 ICON_LC_PAINTBRUSH,
-												 ICON_LC_TEXT,
-												 ICON_LC_SQUARE_DASHED_MOUSE_POINTER};
+static constexpr const char *BrushTypeIcons[] = {
+	ICON_LC_PIPETTE,	ICON_LC_BOXES,	  ICON_LC_GROUP,
+	ICON_LC_STAMP,		ICON_LC_PEN_LINE, ICON_LC_FOOTPRINTS,
+	ICON_LC_PAINTBRUSH, ICON_LC_TEXT,	  ICON_LC_SQUARE_DASHED_MOUSE_POINTER,
+	ICON_LC_IMAGE};
 static_assert(lengthof(BrushTypeIcons) == (int)BrushType::Max, "BrushTypeIcons size mismatch");
 
 void BrushPanel::addShapes(command::CommandExecutionListener &listener) {
@@ -93,7 +95,7 @@ void BrushPanel::addMirrorPlanes(command::CommandExecutionListener &listener, Br
 }
 
 void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palette::Palette &palette,
-								   command::CommandExecutionListener &listener) {
+										command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
 	if (!modifier.selectionMgr().hasSelection()) {
@@ -108,7 +110,8 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	StampBrush &brush = modifier.stampBrush();
 	addMirrorPlanes(listener, brush);
 	ImGui::Separator();
-	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel or scene graph panel"), &_stamp, ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel or scene graph panel"), &_stamp,
+							 ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
@@ -204,6 +207,52 @@ void BrushPanel::updateSelectBrushPanel(command::CommandExecutionListener &liste
 	SelectBrush &brush = modifier.selectBrush();
 	aabbBrushOptions(listener, brush);
 	aabbBrushModeOptions(brush);
+}
+
+void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &listener) {
+	Modifier &modifier = _sceneMgr->modifier();
+	TextureBrush &brush = modifier.textureBrush();
+	core::String name = brush.image() ? core::string::extractFilenameWithExtension(brush.image()->name()) : _("None");
+	ImGui::InputText(_("Texture"), &name, ImGuiInputTextFlags_ReadOnly);
+	if (ImGui::BeginDragDropTarget()) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
+			brush.setImage(image);
+		}
+		ImGui::EndDragDropTarget();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(ICON_LC_FILE)) {
+		_app->openDialog(
+			[&](const core::String &filename, const io::FormatDescription *desc) {
+				const image::ImagePtr &image = _texturePool->loadImage(filename);
+				brush.setImage(image);
+			},
+			{}, io::format::images());
+	}
+
+	bool projectOntoSurface = brush.projectOntoSurface();
+	if (ImGui::Checkbox(_("Project onto surface"), &projectOntoSurface)) {
+		brush.setProjectOntoSurface(projectOntoSurface);
+	}
+
+	glm::vec2 uv0 = brush.uv0();
+	glm::vec2 uv1 = brush.uv1();
+	if (brush.image()) {
+		const video::TexturePtr &texture = _texturePool->load(brush.image()->name());
+		const ImVec2 size = core_min(ImGui::GetContentRegionAvail().x, ImGui::Size(25));
+		ImGui::InvisibleButton("#texturebrushimage", size);
+		ImGui::AddImage(texture->handle(), uv0, uv1);
+		ImGui::OpenPopupOnItemClick(POPUP_TITLE_UV_EDITOR, ImGuiPopupFlags_MouseButtonLeft);
+	}
+	if (ImGui::InputFloat2(_("UV0"), glm::value_ptr(uv0))) {
+		brush.setUV0(uv0);
+	}
+	ImGui::TooltipTextUnformatted(_("Texture coordinates"));
+	if (ImGui::InputFloat2(_("UV1"), glm::value_ptr(uv1))) {
+		brush.setUV1(uv1);
+	}
+	ImGui::TooltipTextUnformatted(_("Texture coordinates"));
 }
 
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
@@ -386,6 +435,117 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 	aabbBrushModeOptions(brush);
 }
 
+enum class UVEdge { UpperLeft, LowerRight, UpperRight, LowerLeft, Max };
+
+static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &maxs, const glm::ivec2 &uiImageSize,
+						const image::ImagePtr &image, uint32_t colorInt, float &u, float &v) {
+	glm::ivec2 handlePos;
+	switch (edge) {
+	case UVEdge::UpperLeft:
+		handlePos = mins;
+		break;
+	case UVEdge::LowerRight:
+		handlePos = maxs;
+		break;
+	case UVEdge::UpperRight:
+		handlePos = glm::ivec2(maxs.x, mins.y);
+		break;
+	case UVEdge::LowerLeft:
+		handlePos = glm::ivec2(mins.x, maxs.y);
+		break;
+	default:
+		return false;
+	}
+	const float size = ImGui::Size(1);
+	const glm::ivec2 pos1(handlePos.x - size, handlePos.y - size);
+	const glm::ivec2 pos2(handlePos.x + size, handlePos.y + size);
+	bool retVal = false;
+	const ImRect rect(pos1, pos2);
+	const ImGuiID id = ImGui::GetCurrentWindow()->GetID((int)edge);
+	if (!ImGui::ItemAdd(rect, id)) {
+		return false;
+	}
+
+	bool hovered = false, held = false;
+	bool clicked = ImGui::ButtonBehavior(rect, id, &hovered, &held);
+
+	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0, hovered ? 2.0f : 1.0f);
+	if (held && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+		const glm::ivec2 pixelPos = image->pixels({u, v});
+		const ImVec2 mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+		ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
+		const int px = glm::clamp(pixelPos.x + (int)mouseDelta.x, 0, image->width() - 1);
+		const int py = glm::clamp(pixelPos.y - (int)mouseDelta.y, 0, image->height() - 1);
+		const glm::vec2 uv = image->uv(px, py);
+		u = uv.x;
+		v = uv.y;
+		retVal = true;
+	}
+	return retVal;
+}
+
+void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
+	const core::String title = makeTitle(_("UV editor"), POPUP_TITLE_UV_EDITOR);
+	ui::ScopedStyle style;
+	style.setWindowPadding(ImGui::Size(4));
+	bool showUVEditor = true;
+	if (ImGui::BeginPopupModal(title.c_str(), &showUVEditor, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+		{
+			ui::ScopedStyle style;
+			style.setFont(_app->bigIconFont());
+			const ImVec2 buttonSize(ImGui::GetFrameHeight(), ImGui::GetFrameHeight());
+			ui::Toolbar toolbar("scenetools", buttonSize, &listener);
+			toolbar.button(ICON_LC_FLIP_HORIZONTAL, "texturebrushmirroru");
+			toolbar.button(ICON_LC_FLIP_VERTICAL, "texturebrushmirrorv");
+			toolbar.button(ICON_LC_X, "texturebrushresetuv");
+		}
+
+		const glm::ivec2 cursor = ImGui::GetCursorScreenPos();
+		Modifier &modifier = _sceneMgr->modifier();
+		TextureBrush &brush = modifier.textureBrush();
+		const image::ImagePtr &image = brush.image();
+
+		glm::vec2 uv0 = brush.uv0();
+		glm::vec2 uv1 = brush.uv1();
+
+		const video::TexturePtr &texture = _texturePool->load(image->name());
+		const float w = core_min(image->width(), ImGui::Size(70));
+		const float stretchFactor = w / image->width();
+		const float h = image->height() * stretchFactor;
+		const ImVec2 uiImageSize(w, h);
+		ImGui::SetNextItemAllowOverlap();
+		ImGui::InvisibleButton("#texturebrushimage", uiImageSize);
+		ImGui::AddImage(texture->handle());
+		const glm::ivec2 pixelMins =
+			cursor + image::Image::pixels(uv0, w, h, image::TextureWrap::Repeat, image::TextureWrap::Repeat, true);
+		const glm::ivec2 pixelMaxs =
+			cursor + image::Image::pixels(uv1, w, h, image::TextureWrap::Repeat, image::TextureWrap::Repeat, true);
+		const glm::vec4 color = _app->color(style::StyleColor::ColorUVEditor) * 255.0f;
+		const uint32_t colorInt = IM_COL32(color.r, color.g, color.b, color.a);
+
+		bool dirty = false;
+		ImGui::GetWindowDrawList()->AddRect(pixelMins, pixelMaxs, colorInt, 0.0f, 0, 1.0f);
+		if (addUVHandle(UVEdge::UpperLeft, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv0.x, uv0.y)) {
+			dirty = true;
+		}
+		if (addUVHandle(UVEdge::LowerRight, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv1.x, uv1.y)) {
+			dirty = true;
+		}
+		if (addUVHandle(UVEdge::UpperRight, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv1.x, uv0.y)) {
+			dirty = true;
+		}
+		if (addUVHandle(UVEdge::LowerLeft, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv0.x, uv1.y)) {
+			dirty = true;
+		}
+		if (dirty) {
+			brush.setUV0(uv0);
+			brush.setUV1(uv1);
+		}
+
+		ImGui::EndPopup();
+	}
+}
+
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 	const Modifier &modifier = _sceneMgr->modifier();
 	const BrushType brushType = modifier.brushType();
@@ -406,6 +566,8 @@ void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
 			updateTextBrushPanel(listener);
 		} else if (brushType == BrushType::Select) {
 			updateSelectBrushPanel(listener);
+		} else if (brushType == BrushType::Texture) {
+			updateTextureBrushPanel(listener);
 		}
 	}
 
@@ -464,6 +626,7 @@ void BrushPanel::update(const char *id, command::CommandExecutionListener &liste
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		addModifiers(listener);
 		brushSettings(listener);
+		createPopups(listener);
 	}
 	ImGui::End();
 }
