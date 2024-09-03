@@ -45,6 +45,13 @@ bool TextureBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	return Super::execute(sceneGraph, wrapper, context);
 }
 
+bool TextureBrush::needsAdditionalAction(const BrushContext &context) const {
+	if (!_projectOntoSurface) {
+		return false;
+	}
+	return Super::needsAdditionalAction(context);
+}
+
 void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 							const BrushContext &context, const voxel::Region &region) {
 	if (!_image || !_image->isLoaded()) {

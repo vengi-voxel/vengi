@@ -118,7 +118,7 @@ public:
 	 * @return @c true if the aabb has the size of 1 in one direction. This means that the last
 	 * position can still be modified to span a full volume on all three axes.
 	 */
-	bool needsAdditionalAction(const BrushContext &context) const;
+	virtual bool needsAdditionalAction(const BrushContext &context) const;
 
 	/**
 	 * @brief The modifier can build the aabb from the center of the current

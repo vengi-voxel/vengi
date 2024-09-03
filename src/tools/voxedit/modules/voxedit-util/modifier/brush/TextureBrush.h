@@ -44,6 +44,8 @@ public:
 	void construct() override;
 	void shutdown() override;
 
+	bool needsAdditionalAction(const BrushContext &context) const override;
+
 	void setImage(const image::ImagePtr &texture);
 	const image::ImagePtr &image() const;
 
