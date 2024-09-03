@@ -48,23 +48,19 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 	camera.setTarget(center);
 	camera.setTargetDistance(distance);
 	camera.setFarPlane(farPlane);
-	// COORDINATESYSTEM
-	// Note: this is not the front and right definition of the opengl coordinate system that we are using elsewhere,
-	// but it still feels correct here from the volume centric view perspective. Top and bottom as well as left and
-	// right would normally be swapped here.
 	if (mode == SceneCameraMode::Free) {
 		camera.setWorldPosition(glm::vec3(center.x - distance, (float)sceneRegion.getUpperY(), center.z - distance));
 	} else if (mode == SceneCameraMode::Top) {
 		camera.setWorldPosition(glm::vec3(center.x, center.y + size.y, center.z));
 	} else if (mode == SceneCameraMode::Bottom) {
 		camera.setWorldPosition(glm::vec3(center.x, center.y - size.y, center.z));
-	} else if (mode == SceneCameraMode::Left) {
-		camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
 	} else if (mode == SceneCameraMode::Right) {
+		camera.setWorldPosition(glm::vec3(center.x + size.x, center.y, center.z));
+	} else if (mode == SceneCameraMode::Left) {
 		camera.setWorldPosition(glm::vec3(center.x - size.x, center.y, center.z));
-	} else if (mode == SceneCameraMode::Front) {
-		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
 	} else if (mode == SceneCameraMode::Back) {
+		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z + size.z));
+	} else if (mode == SceneCameraMode::Front) {
 		camera.setWorldPosition(glm::vec3(center.x, center.y, center.z - size.z));
 	}
 	camera.lookAt(center);
