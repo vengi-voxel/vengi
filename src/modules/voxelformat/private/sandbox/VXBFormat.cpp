@@ -46,6 +46,33 @@ static const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::Face
 static const voxel::FaceNames faceNamesSave[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
 
+static voxelutil::VisitorOrder visitorOrderForFace(voxel::FaceNames face) {
+	voxelutil::VisitorOrder visitorOrder;
+	switch (face) {
+	case voxel::FaceNames::Front:
+		visitorOrder = voxelutil::VisitorOrder::mYmXZ;
+		break;
+	case voxel::FaceNames::Back:
+		visitorOrder = voxelutil::VisitorOrder::mYXmZ;
+		break;
+	case voxel::FaceNames::Right:
+		visitorOrder = voxelutil::VisitorOrder::mYmZmX;
+		break;
+	case voxel::FaceNames::Left:
+		visitorOrder = voxelutil::VisitorOrder::mYZX;
+		break;
+	case voxel::FaceNames::Up:
+		visitorOrder = voxelutil::VisitorOrder::mZmXmY;
+		break;
+	case voxel::FaceNames::Down:
+		visitorOrder = voxelutil::VisitorOrder::ZmXY;
+		break;
+	default:
+		return voxelutil::VisitorOrder::Max;
+	}
+	return visitorOrder;
+}
+
 }
 
 size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -358,6 +385,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 #endif
 		const int uniqueFace = indices[i];
 		const voxel::FaceNames faceName = priv::faceNamesSave[uniqueFace];
+		voxelutil::VisitorOrder visitorOrder = priv::visitorOrderForFace(faceName);
 		Log::debug("Save face %s for index %i (uniqueFace: %i)", voxel::faceNameString(faceName), (int)i, uniqueFace);
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA color = palette.color(voxel.getColor());
@@ -368,7 +396,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 #if VXB_PRINT_IMAGES
 			colors.push_back(color);
 #endif
-		});
+		}, visitorOrder);
 #if VXB_PRINT_IMAGES
 		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
 		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
@@ -379,13 +407,14 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	for (uint32_t i = 0; i < uniqueFaces; ++i) {
 		const voxel::FaceNames faceName = priv::faceNamesSave[indices[i]];
+		voxelutil::VisitorOrder visitorOrder = priv::visitorOrderForFace(faceName);
 		voxelutil::visitFace(*volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA color = palette.emitColor(voxel.getColor());
 			stream->writeUInt8(color.r);
 			stream->writeUInt8(color.g);
 			stream->writeUInt8(color.b);
 			stream->writeUInt8(color.a);
-		});
+		}, visitorOrder);
 	}
 
 	uint8_t materialAmount = palette.colorCount();

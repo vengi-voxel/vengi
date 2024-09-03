@@ -193,7 +193,9 @@ inline ::std::ostream& operator<<(::std::ostream& os, const VisitorOrder& state)
 		"mYXmZ",
 		"mYmZmX",
 		"mZmXmY",
-		"ZmXY"
+		"ZmXY",
+		"YXmZ",
+		"ZXmY"
 	};
 	static_assert(lengthof(strings) == (int)VisitorOrder::Max, "Array size mismatch");
 	return os << "order[" << strings[(int)state] << " - " << (int)state << "]";
@@ -220,6 +222,9 @@ INSTANTIATE_TEST_SUITE_P(VisitorOrder, VolumeVisitorOrderTest,
 						VisitorOrder::mYXmZ,
 						VisitorOrder::mYmZmX,
 						VisitorOrder::mZmXmY,
-						VisitorOrder::ZmXY));
+						VisitorOrder::ZmXY,
+						VisitorOrder::YXmZ,
+						VisitorOrder::ZXmY
+				));
 
 } // namespace voxelutil

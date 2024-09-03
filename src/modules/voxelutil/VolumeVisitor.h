@@ -33,6 +33,8 @@ enum class VisitorOrder {
 	mYmZmX,
 	mZmXmY,
 	ZmXY,
+	YXmZ,
+	ZXmY,
 	Max
 };
 
@@ -429,6 +431,38 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 			sampler.movePositiveZ(zOff);
 		}
 		break;
+	case VisitorOrder::YXmZ:
+		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
+		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
+			typename Volume::Sampler sampler2 = sampler;
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+				typename Volume::Sampler sampler3 = sampler2;
+				for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+					const voxel::Voxel &voxel = sampler3.voxel();
+					sampler3.moveNegativeZ(zOff);
+					VISITOR_INNER_PART
+				}
+				sampler2.movePositiveX(xOff);
+			}
+			sampler.movePositiveY(yOff);
+		}
+		break;
+	case VisitorOrder::ZXmY:
+		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
+			typename Volume::Sampler sampler2 = sampler;
+			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+				typename Volume::Sampler sampler3 = sampler2;
+				for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
+					const voxel::Voxel &voxel = sampler3.voxel();
+					sampler3.moveNegativeY(yOff);
+					VISITOR_INNER_PART
+				}
+				sampler2.movePositiveX(xOff);
+			}
+			sampler.movePositiveZ(zOff);
+		}
+		break;
 	case VisitorOrder::Max:
 		break;
 	}
@@ -473,7 +507,7 @@ int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder ord
  * @return The number of voxels visited.
  */
 template<class Volume, class Visitor>
-int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor, VisitorOrder order,
 			  bool searchSurface = false) {
 	typename Volume::Sampler sampler(volume);
 	voxel::FaceBits faceBits = voxel::faceBits(face);
@@ -492,7 +526,15 @@ int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceName
 		}
 		return false;
 	};
+	return visitVolume(volume, region, 1, 1, 1, visitorInternal, VisitAll(), order);
+}
 
+/**
+ * @return The number of voxels visited.
+ */
+template<class Volume, class Visitor>
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
+			  bool searchSurface = false) {
 	// only the last axis matters here
 	VisitorOrder visitorOrder;
 	switch (face) {
@@ -517,13 +559,16 @@ int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceName
 	default:
 		return 0;
 	}
-	return visitVolume(volume, region, 1, 1, 1, visitorInternal, VisitAll(), visitorOrder);
+	return visitFace(volume, region, face, visitor, visitorOrder, searchSurface);
 }
 
 template<class Volume, class Visitor>
-int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, bool searchSurface = false) {
+int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor, VisitorOrder order = VisitorOrder::Max, bool searchSurface = false) {
 	const voxel::Region &region = volume.region();
-	return visitFace(volume, region, face, visitor, searchSurface);
+	if (order == VisitorOrder::Max) {
+		return visitFace(volume, region, face, visitor, searchSurface);
+	}
+	return visitFace(volume, region, face, visitor, order, searchSurface);
 }
 
 template<class Volume, class Visitor>
