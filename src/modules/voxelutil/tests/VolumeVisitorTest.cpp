@@ -8,6 +8,7 @@
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 
 namespace voxelutil {
 
@@ -54,14 +55,38 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 	for (int i = 0; i < 6; ++i) {
 		const voxel::FaceNames faceName = (voxel::FaceNames)i;
 		int expectedColorFound = 0;
-		const int cnt = visitFace(volume, faceName, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel.getColor() == i) {
 				++expectedColorFound;
 			}
-		});
+		};
+		const int cnt = visitFace(volume, faceName, visitor);
 		EXPECT_EQ(9, cnt) << "Did not visit all voxels on face " << voxel::faceNameString(faceName);
 		EXPECT_GE(expectedColorFound, 1) << "Did not find expected color on face " << voxel::faceNameString(faceName);
 	}
+}
+
+TEST_F(VolumeVisitorTest, testVisitFacesSurface) {
+	const voxel::Region region(0, 16);
+	voxel::RawVolume volume(region);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int x = 0; x <= 16; ++x) {
+		for (int z = 0; z <= 16; ++z) {
+			for (int y = 0; y < z; ++y) {
+				volume.setVoxel({x, y, z}, voxel);
+			}
+		}
+	}
+	voxel::Region visitRegion(0, 0, 0, 16, 16, 3);
+	const voxel::FaceNames faceName = voxel::FaceNames::Front;
+	int expectedVoxelVisit = 0;
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (!voxel::isAir(voxel.getMaterial())) {
+			++expectedVoxelVisit;
+		}
+	};
+	visitFace(volume, visitRegion, faceName, visitor, true);
+	EXPECT_GE(expectedVoxelVisit, 3 * (16 + 1)) << "Did not find expected color on face " << voxel::faceNameString(faceName);
 }
 
 TEST_F(VolumeVisitorTest, testVisitSurfaceCorners) {
