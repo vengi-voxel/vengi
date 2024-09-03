@@ -299,6 +299,14 @@ bool SceneGraphNode::isModelNode() const {
 	return _type == SceneGraphNodeType::Model;
 }
 
+bool SceneGraphNode::isGroupNode() const {
+	return _type == SceneGraphNodeType::Group;
+}
+
+bool SceneGraphNode::isRootNode() const {
+	return _type == SceneGraphNodeType::Root;
+}
+
 bool SceneGraphNode::isReferenceable() const {
 	return _type == SceneGraphNodeType::Model;
 }

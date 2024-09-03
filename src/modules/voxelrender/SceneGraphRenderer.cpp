@@ -184,7 +184,8 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 
 	const voxel::MeshStatePtr &meshState = _volumeRenderer.meshState();
 
-	const int activeNode = sceneGraph.activeNode();
+	const int activeNodeId = sceneGraph.activeNode();
+	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
 	for (auto entry : sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = entry->value;
 		if (renderContext.onlyModels && !node.isModelNode()) {
@@ -234,13 +235,23 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			meshState->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
 												  region.getUpperCorner());
 		}
+
+		bool hideNode = false;
 		if (hideInactive) {
-			meshState->hide(id, id != activeNode);
+			if (activeNode.isGroupNode() || activeNode.isRootNode()) {
+				if (node.parent() != activeNode.id()) {
+					hideNode = true;
+				}
+			} else {
+				hideNode = id != activeNodeId;
+			}
 		} else {
-			meshState->hide(id, !node.visible());
+			hideNode = !node.visible();
 		}
+		meshState->hide(id, hideNode);
+
 		if (grayInactive) {
-			meshState->gray(id, id != activeNode);
+			meshState->gray(id, id != activeNodeId);
 		} else {
 			meshState->gray(id, false);
 		}
@@ -267,13 +278,23 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			const glm::vec3 scale = transform.scale();
 			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
 			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+
+			bool hideNode = false;
 			if (hideInactive) {
-				meshState->hide(id, id != activeNode);
+				if (activeNode.isGroupNode() || activeNode.isRootNode()) {
+					if (node.parent() != activeNode.id()) {
+						hideNode = true;
+					}
+				} else {
+					hideNode = id != activeNodeId;
+				}
 			} else {
-				meshState->hide(id, !node.visible());
+				hideNode = !node.visible();
 			}
+			meshState->hide(id, hideNode);
+
 			if (grayInactive) {
-				meshState->gray(id, id != activeNode);
+				meshState->gray(id, id != activeNodeId);
 			} else {
 				meshState->gray(id, false);
 			}

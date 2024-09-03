@@ -120,6 +120,8 @@ public:
 	bool isReferenceable() const;
 	bool isAnyModelNode() const;
 	bool isModelNode() const;
+	bool isGroupNode() const;
+	bool isRootNode() const;
 
 	void fixErrors();
 	bool validate() const;
