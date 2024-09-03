@@ -1809,6 +1809,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
             item = ItemInfo(item.ID);
 
             // Log message
+            // FIXME: Consider a second attempt?
             ImVec2 pos_old = item_initial_state.RectFull.Min;
             ImVec2 pos_new = item.RectFull.Min;
             ImVec2 size_old = item_initial_state.RectFull.GetSize();
