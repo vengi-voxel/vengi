@@ -46,6 +46,8 @@ static const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::Face
 static const voxel::FaceNames faceNamesSave[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
 
+// we have special needs for the visitor order here - to be independent from other use-cases for the
+// face visitor, we define our own order here
 static voxelutil::VisitorOrder visitorOrderForFace(voxel::FaceNames face) {
 	voxelutil::VisitorOrder visitorOrder;
 	switch (face) {
