@@ -6,6 +6,7 @@
 
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 
@@ -474,136 +475,49 @@ int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder ord
 template<class Volume, class Visitor>
 int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
 			  bool searchSurface = false) {
-	const glm::ivec3 mins = region.getLowerCorner();
-	const glm::ivec3 maxs = region.getUpperCorner();
-	int cnt = 0;
 	typename Volume::Sampler sampler(volume);
-	const bool skipEmpty = true;
+	voxel::FaceBits faceBits = voxel::faceBits(face);
+	constexpr bool skipEmpty = true;
+
+	auto visitorInternal = [&] (int x, int y, int z, const voxel::Voxel &voxel) {
+		if (!searchSurface) {
+			visitor(x, y, z, voxel);
+			return true;
+		}
+		typename Volume::Sampler sampler2(volume);
+		sampler2.setPosition(x, y, z);
+		if ((visibleFaces(sampler2, skipEmpty) & faceBits) != voxel::FaceBits::None) {
+			visitor(x, y, z, voxel);
+			return true;
+		}
+		return false;
+	};
+
+	// only the last axis matters here
+	VisitorOrder visitorOrder;
 	switch (face) {
 	case voxel::FaceNames::Front:
-		sampler.setPosition(maxs.x, maxs.y, mins.z);
-		for (int y = maxs.y; y >= mins.y; --y) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int x = maxs.x; x >= mins.x; --x) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int z = mins.z; z <= maxs.z; ++z) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Front) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.movePositiveZ();
-				}
-				sampler1.moveNegativeX();
-			}
-			sampler.moveNegativeY();
-		}
+		visitorOrder = VisitorOrder::mYmXZ;
 		break;
 	case voxel::FaceNames::Back:
-		sampler.setPosition(mins.x, maxs.y, maxs.z);
-		for (int y = maxs.y; y >= mins.y; --y) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int x = mins.x; x <= maxs.x; ++x) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int z = maxs.z; z >= mins.z; --z) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Back) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.moveNegativeZ();
-				}
-				sampler1.movePositiveX();
-			}
-			sampler.moveNegativeY();
-		}
+		visitorOrder = VisitorOrder::mYXmZ;
 		break;
 	case voxel::FaceNames::Right:
-		sampler.setPosition(maxs.x, maxs.y, maxs.z);
-		for (int y = maxs.y; y >= mins.y; --y) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int z = maxs.z; z >= mins.z; --z) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int x = maxs.x; x >= mins.x; --x) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Right) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.moveNegativeX();
-				}
-				sampler1.moveNegativeZ();
-			}
-			sampler.moveNegativeY();
-		}
+		visitorOrder = VisitorOrder::mYmZmX;
 		break;
 	case voxel::FaceNames::Left:
-		sampler.setPosition(mins.x, maxs.y, mins.z);
-		for (int y = maxs.y; y >= mins.y; --y) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int z = mins.z; z <= maxs.z; ++z) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int x = mins.x; x <= maxs.x; ++x) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Left) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.movePositiveX();
-				}
-				sampler1.movePositiveZ();
-			}
-			sampler.moveNegativeY();
-		}
+		visitorOrder = VisitorOrder::mYZX;
 		break;
 	case voxel::FaceNames::Up:
-		sampler.setPosition(maxs.x, maxs.y, maxs.z);
-		for (int z = maxs.z; z >= mins.z; --z) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int x = maxs.x; x >= mins.x; --x) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int y = maxs.y; y >= mins.y; --y) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Up) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.moveNegativeY();
-				}
-				sampler1.moveNegativeX();
-			}
-			sampler.moveNegativeZ();
-		}
+		visitorOrder = VisitorOrder::mZmXmY;
 		break;
 	case voxel::FaceNames::Down:
-		sampler.setPosition(maxs.x, mins.y, mins.z);
-		for (int z = mins.z; z <= maxs.z; ++z) {
-			typename Volume::Sampler sampler1(sampler);
-			for (int x = maxs.x; x >= mins.x; --x) {
-				typename Volume::Sampler sampler2(sampler1);
-				for (int y = mins.y; y <= maxs.y; ++y) {
-					if (!searchSurface ||
-						(visibleFaces(sampler, skipEmpty) & voxel::FaceBits::Down) != voxel::FaceBits::None) {
-						visitor(x, y, z, sampler2.voxel());
-						++cnt;
-						break;
-					}
-					sampler2.movePositiveY();
-				}
-				sampler1.moveNegativeX();
-			}
-			sampler.movePositiveZ();
-		}
+		visitorOrder = VisitorOrder::ZmXY;
 		break;
 	default:
-		break;
+		return 0;
 	}
-	return cnt;
+	return visitVolume(volume, region, 1, 1, 1, visitorInternal, VisitAll(), visitorOrder);
 }
 
 template<class Volume, class Visitor>
