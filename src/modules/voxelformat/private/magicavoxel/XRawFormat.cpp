@@ -272,13 +272,12 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		*node->volume(),
 		[&stream, replacement](int, int, int, const voxel::Voxel &voxel) {
 			if (voxel.getMaterial() == voxel::VoxelType::Air) {
-				wrapBool(stream->writeUInt8(0))
+				stream->writeUInt8(0);
 			} else if (voxel.getColor() == 0) {
-				wrapBool(stream->writeUInt8(replacement))
+				stream->writeUInt8(replacement);
 			} else {
-				wrapBool(stream->writeUInt8(voxel.getColor()))
+				stream->writeUInt8(voxel.getColor());
 			}
-			return true;
 		},
 		voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
 
