@@ -292,7 +292,7 @@ void TextWrappedUnformatted(const char* text) {
 }
 
 bool TooltipTextUnformatted(const char *text) {
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
 		ImGui::BeginTooltip();
 		ImGui::TextUnformatted(text);
 		ImGui::EndTooltip();
@@ -301,7 +301,7 @@ bool TooltipTextUnformatted(const char *text) {
 	return false;}
 
 bool TooltipText(const char* msg, ...) {
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
 		ImGui::BeginTooltip();
 
 		va_list ap;
