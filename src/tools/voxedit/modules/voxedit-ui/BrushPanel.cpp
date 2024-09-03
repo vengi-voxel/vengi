@@ -438,7 +438,7 @@ void BrushPanel::updatePaintBrushPanel(command::CommandExecutionListener &listen
 enum class UVEdge { UpperLeft, LowerRight, UpperRight, LowerLeft, Max };
 
 static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &maxs, const glm::ivec2 &uiImageSize,
-						const image::ImagePtr &image, uint32_t colorInt, float &u, float &v) {
+						uint32_t colorInt, float &u, float &v) {
 	glm::ivec2 handlePos;
 	switch (edge) {
 	case UVEdge::UpperLeft:
@@ -471,12 +471,12 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 
 	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0, hovered ? 2.0f : 1.0f);
 	if (held && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-		const glm::ivec2 pixelPos = image->pixels({u, v});
-		const ImVec2 mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
+		const glm::ivec2 &pixelPos = image::Image::pixels({u, v}, uiImageSize.x, uiImageSize.y);
+		const ImVec2 &mouseDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
 		ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-		const int px = glm::clamp(pixelPos.x + (int)mouseDelta.x, 0, image->width() - 1);
-		const int py = glm::clamp(pixelPos.y - (int)mouseDelta.y, 0, image->height() - 1);
-		const glm::vec2 uv = image->uv(px, py);
+		const int px = glm::clamp((int)(pixelPos.x + mouseDelta.x), 0, uiImageSize.x - 1);
+		const int py = glm::clamp((int)(pixelPos.y - mouseDelta.y), 0, uiImageSize.y - 1);
+		const glm::vec2 uv = image::Image::uv(px, py, uiImageSize.x, uiImageSize.y);
 		u = uv.x;
 		v = uv.y;
 		retVal = true;
@@ -509,7 +509,7 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 		glm::vec2 uv1 = brush.uv1();
 
 		const video::TexturePtr &texture = _texturePool->load(image->name());
-		const float w = core_min(image->width(), ImGui::Size(70));
+		const float w = ImGui::Size(70);
 		const float stretchFactor = w / image->width();
 		const float h = image->height() * stretchFactor;
 		const ImVec2 uiImageSize(w, h);
@@ -525,16 +525,16 @@ void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
 
 		bool dirty = false;
 		ImGui::GetWindowDrawList()->AddRect(pixelMins, pixelMaxs, colorInt, 0.0f, 0, 1.0f);
-		if (addUVHandle(UVEdge::UpperLeft, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv0.x, uv0.y)) {
+		if (addUVHandle(UVEdge::UpperLeft, pixelMins, pixelMaxs, uiImageSize, colorInt, uv0.x, uv0.y)) {
 			dirty = true;
 		}
-		if (addUVHandle(UVEdge::LowerRight, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv1.x, uv1.y)) {
+		if (addUVHandle(UVEdge::LowerRight, pixelMins, pixelMaxs, uiImageSize, colorInt, uv1.x, uv1.y)) {
 			dirty = true;
 		}
-		if (addUVHandle(UVEdge::UpperRight, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv1.x, uv0.y)) {
+		if (addUVHandle(UVEdge::UpperRight, pixelMins, pixelMaxs, uiImageSize, colorInt, uv1.x, uv0.y)) {
 			dirty = true;
 		}
-		if (addUVHandle(UVEdge::LowerLeft, pixelMins, pixelMaxs, uiImageSize, image, colorInt, uv0.x, uv1.y)) {
+		if (addUVHandle(UVEdge::LowerLeft, pixelMins, pixelMaxs, uiImageSize, colorInt, uv0.x, uv1.y)) {
 			dirty = true;
 		}
 		if (dirty) {
