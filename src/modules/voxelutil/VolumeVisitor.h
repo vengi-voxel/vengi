@@ -414,19 +414,19 @@ int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int
 		}
 		break;
 	case VisitorOrder::ZmXY:
-		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
-		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
+		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
+		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			typename Volume::Sampler sampler2 = sampler;
-			for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
+			for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 				typename Volume::Sampler sampler3 = sampler2;
 				for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 					const voxel::Voxel &voxel = sampler3.voxel();
 					sampler3.movePositiveY(yOff);
 					VISITOR_INNER_PART
 				}
-				sampler2.movePositiveX(xOff);
+				sampler2.moveNegativeX(xOff);
 			}
-			sampler.moveNegativeZ(zOff);
+			sampler.movePositiveZ(zOff);
 		}
 		break;
 	case VisitorOrder::Max:
