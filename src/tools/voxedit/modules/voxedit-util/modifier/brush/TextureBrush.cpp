@@ -28,6 +28,8 @@ static glm::ivec3 getUVPosForFace(int x, int y, int z, const voxel::Region &regi
 		return glm::ivec3(mins.x + dim.x - (x - mins.x), y, z);
 	case voxel::FaceNames::Right:
 		return glm::ivec3(x, y, mins.z + dim.z - (z - mins.z));
+	case voxel::FaceNames::Up:
+		return glm::ivec3(mins.x + dim.x - (x - mins.x), y, mins.z + dim.z - (z - mins.z));
 	default:
 		break;
 	}
