@@ -79,7 +79,7 @@ analysebuild:
 	$(Q)ClangBuildAnalyzer --analyze $(BUILDDIR)/analyse/capture_file
 
 %.png: data/voxedit/%.vengi
-	$(Q)$(call EXEC_PATH,thumbnailer) -s 128 --use-scene-camera -a 0:-45:0 -p 100:0:200 --input $< --output data/voxedit/$@
+	$(Q)$(call EXEC_PATH,thumbnailer) -s 128 --use-scene-camera --input $< --output data/voxedit/$@
 	$(Q)pngquant -f --ext .png data/voxedit/$@
 
 thumbnails: thumbnailer $(patsubst data/voxedit/%.vengi,%.png,$(wildcard data/voxedit/*.vengi))
