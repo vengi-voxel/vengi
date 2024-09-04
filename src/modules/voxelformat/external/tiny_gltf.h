@@ -3309,9 +3309,10 @@ static bool UpdateImageObject(const Image &image, std::string &baseDir,
     filename = std::to_string(index) + "." + ext;
   }
 
-  // If callback is set and image data exists, modify image data object. If
-  // image data does not exist, this is not considered a failure and the
-  // original uri should be maintained.
+  // If callback is set, modify image data object.
+  // Note that the callback is also invoked for images without data.
+  // The default callback implementation simply returns true for
+  // empty images and sets the out URI to filename.
   bool imageWritten = false;
   if (WriteImageData != nullptr && !filename.empty() && !image.image.empty()) {
     imageWritten = WriteImageData(&baseDir, &filename, &image, embedImages,
@@ -4387,7 +4388,7 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
     }
   } else {
     // Assume external file
-    // Keep texture path (for textures that cannot be decoded)
+    // Unconditionally keep the external URI of the image
     image->uri = uri;
 #ifdef TINYGLTF_NO_EXTERNAL_IMAGE
     return true;
@@ -4434,6 +4435,7 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
     }
     return false;
   }
+
   return LoadImageData(image, image_idx, err, warn, 0, 0, &img.at(0),
                        static_cast<int>(img.size()), load_image_user_data);
 }
@@ -5597,7 +5599,7 @@ static bool ParseAnimation(Animation *animation, std::string *err,
         }
         sampler.input = inputIndex;
         sampler.output = outputIndex;
-        ParseExtrasAndExtensions(&sampler, err, o,
+        ParseExtrasAndExtensions(&sampler, err, s,
                                  store_original_json_for_extras_and_extensions);
 
         animation->samplers.emplace_back(std::move(sampler));
