@@ -1973,11 +1973,18 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("rotate", [&] (const command::CmdArgs& args) {
 		if (args.size() < 1) {
-			Log::info("Usage: rotate <x|y|z>");
+			Log::info("Usage: rotate <x|y|z> <amount:1>");
 			return;
 		}
 		const math::Axis axis = math::toAxis(args[0]);
-		rotate(axis);
+		int n = 0;
+		if (args.size() > 1) {
+			n = core::string::toInt(args[1]);
+		}
+		memento::ScopedMementoGroup group(_mementoHandler, "rotate");
+		for (int i = 0; i < n; ++i) {
+			rotate(axis);
+		}
 	}).setHelp(_("Rotate active nodes around the given axis"));
 
 	command::Command::registerCommand("modelmerge", [&] (const command::CmdArgs& args) {
