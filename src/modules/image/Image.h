@@ -70,6 +70,7 @@ public:
 	 * @param[in] quality Ranges from 1 to 100 where higher is better
 	 */
 	static bool writeJPEG(io::SeekableWriteStream &stream, const uint8_t* buffer, int width, int height, int depth, int quality = 100);
+	bool writeJPEG(io::SeekableWriteStream &stream, int quality = 100) const;
 	core::String pngBase64() const;
 	core::RGBA colorAt(int x, int y) const;
 	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,

@@ -247,7 +247,7 @@ The functions are:
 
 * `color(paletteIndex)`: Pushes the vec4 of the color behind the palette index (`0-255`) as float values between `0.0` and `1.0`.
 
-* `colors()`: Returns the palette RGBA colors as vec4 values.
+* `colors()`: Returns the palette RGBA colors as vec4 values between `0.0` and `1.0`.
 
 * `load(palette)`: Allows to load a [built-in palette](Palette.md) or a filename to a supported [palette format](Formats.md).
 
@@ -468,7 +468,11 @@ end
 
 ## Image
 
+Images are loaded by the `g_import` global.
+
 * `name()`: Returns the name of the image
+
+* `save(filename)`: Save the image as file (`png` and `jpeg`)
 
 ## Streams
 

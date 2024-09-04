@@ -133,6 +133,10 @@ bool writeImage(const image::Image &image, const core::String &filename) {
 	if (!file->validHandle())
 		return false;
 	io::FileStream stream(file);
+	const core::String ext = core::string::extractExtension(filename).toLower();
+	if (ext == "jpg" || ext == "jpeg") {
+		return image.writeJPEG(stream);
+	}
 	return image.writePng(stream);
 }
 
@@ -422,6 +426,10 @@ static void stream_write_func(void *context, void *data, int size) {
 
 bool Image::writePng(io::SeekableWriteStream &stream) const {
 	return writePng(stream, _data, _width, _height, _depthOfColor);
+}
+
+bool Image::writeJPEG(io::SeekableWriteStream &stream, int quality) const {
+	return writeJPEG(stream, _data, _width, _height, _depthOfColor, quality);
 }
 
 bool Image::writeJPEG(io::SeekableWriteStream &stream, const uint8_t *buffer, int width, int height, int depth,

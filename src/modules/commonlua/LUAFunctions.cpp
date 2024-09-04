@@ -1025,9 +1025,19 @@ static int clua_image_name(lua_State *s) {
 	return 1;
 }
 
+static int clua_image_save(lua_State *s) {
+	image::Image *image = clua_toimage(s, 1);
+	const char *filename = luaL_checkstring(s, 2);
+	if (!image::writeImage(*image, filename)) {
+		return clua_error(s, "Failed to save image to %s", filename);
+	}
+	return 0;
+}
+
 void clua_imageregister(lua_State *s) {
 	static const luaL_Reg imageFuncs[] = {
 		{"name", clua_image_name},
+		{"save", clua_image_save},
 		{"__gc", clua_image_gc},
 		{nullptr, nullptr}
 	};
