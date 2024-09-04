@@ -43,7 +43,7 @@ struct BrushContext {
 	math::Axis lockedAxis = math::Axis::None;
 
 	// brushes that e.g. span an aabb behave differently if the view is fixed and in ortho mode. As you don't have the
-	// chance to really span the aabb by given the mins and maxs.
+	// chance to really span the aabb by giving the mins and maxs.
 	bool fixedOrthoSideView = false;
 	int gridResolution = 1;
 
