@@ -176,14 +176,14 @@ void SceneGraph::markMaxFramesDirty() {
 	_cachedMaxFrame = -1;
 }
 
-FrameIndex SceneGraph::maxFrames(const core::String &animation) const {
-	if (_cachedMaxFrame == -1) {
+FrameIndex SceneGraph::maxFrames() const {
+	if (_cachedMaxFrame <= -1) {
 		for (const auto &entry : nodes()) {
 			const SceneGraphNode &node = entry->second;
 			if (node.allKeyFrames().empty()) {
 				continue;
 			}
-			const FrameIndex maxFrame = node.maxFrame(animation);
+			const FrameIndex maxFrame = node.maxFrame();
 			_cachedMaxFrame = core_max(maxFrame, _cachedMaxFrame);
 		}
 	}

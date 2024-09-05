@@ -236,7 +236,7 @@ public:
 	bool setProperty(const core::String& key, core::RGBA value);
 	bool setProperty(const core::String& key, const core::String& value);
 
-	FrameIndex maxFrame(const core::String &animation) const;
+	FrameIndex maxFrame() const;
 	KeyFrameIndex addKeyFrame(FrameIndex frameIdx);
 	bool hasKeyFrame(FrameIndex frameIdx) const;
 	bool removeKeyFrame(FrameIndex frameIdx);

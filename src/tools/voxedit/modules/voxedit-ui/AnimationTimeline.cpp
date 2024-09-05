@@ -178,7 +178,7 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames(sceneGraph.activeAnimation());
+	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}

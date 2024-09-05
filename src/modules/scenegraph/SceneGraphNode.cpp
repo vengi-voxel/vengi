@@ -708,9 +708,9 @@ KeyFrameIndex SceneGraphNode::keyFrameForFrame(FrameIndex frameIdx) const {
 	return n - 1;
 }
 
-FrameIndex SceneGraphNode::maxFrame(const core::String &animation) const {
+FrameIndex SceneGraphNode::maxFrame() const {
 	FrameIndex maxFrameIdx = 0;
-	const SceneGraphKeyFrames &kfs = keyFrames(animation);
+	const SceneGraphKeyFrames &kfs = keyFrames();
 	for (const auto &keyframe : kfs) {
 		maxFrameIdx = core_max(keyframe.frameIdx, maxFrameIdx);
 	}
