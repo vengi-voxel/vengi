@@ -32,6 +32,9 @@ enum class SelectionState {
 };
 
 struct ImGuiNeoSequencerInternalData {
+	~ImGuiNeoSequencerInternalData() {
+		SelectionData.clear_destruct();
+	}
 	ImVec2 TopLeftCursor = {0, 0};	   // Cursor on top of whole widget
 	ImVec2 TopBarStartCursor = {0, 0}; // Cursor on top, below Zoom slider
 	ImVec2 StartValuesCursor = {0, 0}; // Cursor on top of values
