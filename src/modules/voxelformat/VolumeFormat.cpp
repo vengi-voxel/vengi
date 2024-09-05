@@ -622,7 +622,7 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 	Log::info("Load file %s with %i model nodes and %i point nodes", filename.c_str(), models, points);
 	const core::String &ext = core::string::extractExtension(filename);
 	if (!ext.empty()) {
-		metric::count("load", 1, {{"type", ext}});
+		metric::count("load", 1, {{"type", ext.toLower()}});
 	}
 	return true;
 }
@@ -675,7 +675,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		if (f) {
 			if (f->save(sceneGraph, filename, archive, ctx)) {
 				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
-				metric::count("save", 1, {{"type", ext}});
+				metric::count("save", 1, {{"type", ext.toLower()}});
 				return true;
 			}
 			Log::error("Failed to save %s file", desc->name.c_str());
@@ -688,7 +688,7 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 			if (f) {
 				if (f->save(sceneGraph, filename, archive, ctx)) {
 					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
-					metric::count("save", 1, {{"type", ext}});
+					metric::count("save", 1, {{"type", ext.toLower()}});
 					return true;
 				}
 				Log::error("Failed to save %s file", desc->name.c_str());

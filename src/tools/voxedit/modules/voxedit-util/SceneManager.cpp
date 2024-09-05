@@ -412,7 +412,7 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 			_dirty = false;
 			_lastFilename = file;
 			const core::String &ext = core::string::extractExtension(file.name);
-			metric::count("save", 1, {{"type", ext}});
+			metric::count("save", 1, {{"type", ext.toLower()}});
 			core::Var::get(cfg::VoxEditLastFile)->setVal(file.name);
 		}
 		_needAutoSave = false;
