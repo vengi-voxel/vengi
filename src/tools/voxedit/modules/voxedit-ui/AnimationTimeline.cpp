@@ -46,6 +46,13 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 		}
 		ImGui::TooltipText(_("Max frames for this animation: %i"), maxFrame);
 	}
+
+	ImGui::SameLine();
+	ImGui::Checkbox(_("Loop"), &_loop);
+
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(ImGui::Size(5));
+	ImGui::InputDouble(_("FPS"), &_fps, 0.0, 0.0, "%.0f");
 }
 
 void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
@@ -175,24 +182,39 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 
 bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 	core_trace_scoped(AnimationTimeline);
-	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	scenegraph::FrameIndex currentFrame = _sceneMgr->currentFrame();
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex maxFrame = sceneGraph.maxFrames();
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}
-	_seconds += deltaFrameSeconds;
+	_frameTimeSeconds += deltaFrameSeconds;
 
 	if (_play) {
 		if (maxFrame <= 0) {
 			_play = false;
 		} else {
-			// TODO: anim fps
-			currentFrame = (currentFrame + 1) % maxFrame;
-			_sceneMgr->setCurrentFrame(currentFrame);
+			const double targetFrameDuration = 1.0 / _fps;
+			if (_frameTimeSeconds > targetFrameDuration) {
+				++currentFrame;
+				if (currentFrame > maxFrame) {
+					if (_loop) {
+						currentFrame = 0;
+					} else {
+						currentFrame = maxFrame;
+						_play = false;
+					}
+				}
+				if (_play) {
+					_sceneMgr->setCurrentFrame(currentFrame);
+					_frameTimeSeconds -= targetFrameDuration;
+				} else {
+					_frameTimeSeconds = 0.0;
+				}
+			}
 		}
 	}
+	const core::String title = makeTitle(ICON_LC_TABLE, _("Animation"), id);
 	if (ImGui::Begin(title.c_str())) {
 		header(currentFrame, maxFrame);
 		sequencer(currentFrame);
