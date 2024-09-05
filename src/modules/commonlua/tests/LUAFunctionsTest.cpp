@@ -151,6 +151,15 @@ TEST_F(LUAFunctionsTest, testQuaternionRotateX) {
 	EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
 }
 
+TEST_F(LUAFunctionsTest, testQuatMultiplication) {
+	const char *script = R"(
+		function test()
+			return g_quat.new(0, 0, 0, 1) * g_quat.new(0, 0, 0, 1)
+		end
+	)";
+	testExec(script);
+}
+
 TEST_F(LUAFunctionsTest, testVectorMultiplication) {
 	const char *script = R"(
 		function test()

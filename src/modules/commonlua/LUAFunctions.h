@@ -185,7 +185,7 @@ inline int clua_push<glm::quat>(lua_State* s, const glm::quat& v) {
 		lua_settable(s, -3);
 	}
 
-	lua_getglobal(s, clua_meta<glm::quat>::name());
+	luaL_getmetatable(s, clua_meta<glm::quat>::name());
 	lua_setmetatable(s, -2);
 	return 1;
 }
