@@ -1240,6 +1240,8 @@ static int luaVoxel_scenegraphnode_removekeyframeforframe(lua_State* s) {
 	if (!node->node->removeKeyFrame(existingIndex)) {
 		return clua_error(s, "Failed to remove keyframe %d", existingIndex);
 	}
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	sceneGraph->markMaxFramesDirty();
 	return 0;
 }
 
@@ -1249,6 +1251,8 @@ static int luaVoxel_scenegraphnode_removekeyframe(lua_State* s) {
 	if (!node->node->removeKeyFrame(keyFrameIdx)) {
 		return clua_error(s, "Failed to remove keyframe %d", keyFrameIdx);
 	}
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	sceneGraph->markMaxFramesDirty();
 	return 0;
 }
 
