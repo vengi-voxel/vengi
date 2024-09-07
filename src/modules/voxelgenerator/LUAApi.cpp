@@ -614,8 +614,11 @@ static int luaVoxel_import_scene(lua_State *s) {
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
 	scenegraph::SceneGraph newSceneGraph;
-	auto archive = core::make_shared<io::StreamArchive>(readStream);
-	const bool ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
+	bool ret;
+	{
+		auto archive = core::make_shared<io::StreamArchive>(readStream);
+		ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
+	}
 	if (!ret) {
 		newSceneGraph.clear();
 		return clua_error(s, "Could not load file %s", filename);
