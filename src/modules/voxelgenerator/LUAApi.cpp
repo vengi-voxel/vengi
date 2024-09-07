@@ -1122,7 +1122,27 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(nodeId));
 }
 
-static int luaVoxel_scenegraph_get_node(lua_State* s) {
+static int luaVoxel_scenegraph_get_node_by_name(lua_State* s) {
+	const char *name = luaL_checkstring(s, 1);
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	if (scenegraph::SceneGraphNode *node = sceneGraph->findNodeByName(name)) {
+		return luaVoxel_pushscenegraphnode(s, *node);
+	}
+	lua_pushnil(s);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_node_by_uuid(lua_State* s) {
+	const char *uuid = luaL_checkstring(s, 1);
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	if (scenegraph::SceneGraphNode *node = sceneGraph->findNodeByUUID(uuid)) {
+		return luaVoxel_pushscenegraphnode(s, *node);
+	}
+	lua_pushnil(s);
+	return 1;
+}
+
+static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
 	int nodeId = (int)luaL_optinteger(s, 1, -1);
 	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	if (nodeId == -1) {
@@ -1191,6 +1211,12 @@ static int luaVoxel_scenegraphnode_name(lua_State* s) {
 static int luaVoxel_scenegraphnode_id(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushinteger(s, node->node->id());
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_uuid(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	lua_pushstring(s, node->node->uuid().c_str());
 	return 1;
 }
 
@@ -1573,7 +1599,9 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg sceneGraphFuncs[] = {
 		{"align", luaVoxel_scenegraph_align},
 		{"new", luaVoxel_scenegraph_new_node},
-		{"get", luaVoxel_scenegraph_get_node},
+		{"get", luaVoxel_scenegraph_get_node_by_id},
+		{"getByName", luaVoxel_scenegraph_get_node_by_name},
+		{"getByUUID", luaVoxel_scenegraph_get_node_by_uuid},
 		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},
 		{"updateTransforms", luaVoxel_scenegraph_updatetransforms},
 		{nullptr, nullptr}
@@ -1583,6 +1611,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg sceneGraphNodeFuncs[] = {
 		{"name", luaVoxel_scenegraphnode_name},
 		{"id", luaVoxel_scenegraphnode_id},
+		{"uuid", luaVoxel_scenegraphnode_uuid},
 		{"parent", luaVoxel_scenegraphnode_parent},
 		{"volume", luaVoxel_scenegraphnode_volume},
 		{"isModel", luaVoxel_scenegraphnode_is_model},

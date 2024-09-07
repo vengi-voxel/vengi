@@ -130,6 +130,10 @@ The functions are:
 
 * `get([nodeId])`: Returns the `node` for the given `nodeId` - if the `nodeId` is not given, it will return the current active node. Which by default is the node for the volume the script is currently executed for.
 
+* `getByName(name)`: Returns `nil` if no node with the given name exists
+
+* `getByUUID(uuid)`: Returns `nil` if no node with the given uuid exists
+
 * `nodeIds()`: Returns a table with all node ids of the current scene graph.
 
 ```lua
@@ -150,6 +154,8 @@ end
 * `hasKeyFrameForFrame(frame)`:
 
 * `id()`: Returns the id of the current node
+
+* `uuid()`: Returns the uuid of the current node
 
 * `isCamera()`: Returns true if the node is a camera node
 
