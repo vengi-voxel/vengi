@@ -356,6 +356,7 @@ public:
 	}
 };
 
+// This class doesn't own the memory of the streams
 class SeekableReadWriteStreamWrapper : public io::SeekableWriteStream, public io::SeekableReadStream {
 private:
 	io::SeekableWriteStream* _ws;
