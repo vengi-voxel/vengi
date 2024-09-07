@@ -17,7 +17,7 @@ namespace io {
  * @see MemoryReadStream
  * @ingroup IO
  */
-class BufferedReadWriteStream : public SeekableReadStream, public SeekableWriteStream {
+class BufferedReadWriteStream : public SeekableReadWriteStream {
 private:
 	uint8_t* _buffer = nullptr;
 	int64_t _pos = 0;

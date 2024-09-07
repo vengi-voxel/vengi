@@ -25,7 +25,7 @@ typedef core::SharedPtr<File> FilePtr;
  * @see SeekableReadStream
  * @see SeekableWriteStream
  */
-class FileStream : public SeekableReadStream, public SeekableWriteStream {
+class FileStream : public SeekableReadWriteStream {
 private:
 	mutable SDL_RWops *_rwops = nullptr;
 	FilePtr _file;
