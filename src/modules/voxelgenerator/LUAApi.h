@@ -74,6 +74,7 @@ public:
 	LUAApi(const io::FilesystemPtr &filesystem);
 	virtual ~LUAApi() {}
 	bool init() override;
+	void update(double nowSeconds);
 	void shutdown() override;
 
 	core::String load(const core::String& scriptName) const;

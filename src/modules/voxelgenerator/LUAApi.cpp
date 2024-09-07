@@ -1751,6 +1751,9 @@ bool LUAApi::init() {
 	return true;
 }
 
+void LUAApi::update(double nowSeconds) {
+}
+
 void LUAApi::shutdown() {
 	_noise.shutdown();
 }

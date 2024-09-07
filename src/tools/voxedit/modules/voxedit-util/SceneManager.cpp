@@ -2481,6 +2481,7 @@ bool SceneManager::update(double nowSeconds) {
 	}
 
 	_movement.update(nowSeconds);
+	_luaApi.update(nowSeconds);
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
 		const glm::vec3& moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
