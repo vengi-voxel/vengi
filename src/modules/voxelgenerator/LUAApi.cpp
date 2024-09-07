@@ -578,7 +578,7 @@ static int luaVoxel_load_palette(lua_State *s) {
 
 static int luaVoxel_load_image(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::BufferedReadWriteStream *readStream = clua_tostream(s, 2);
+	io::SeekableReadWriteStream *readStream = clua_tostream(s, 2);
 	image::Image* image = new image::Image(filename);
 	if (!image->load(*readStream, readStream->size())) {
 		delete image;
@@ -1694,9 +1694,8 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg importerFuncs[] = {
 		{"palette", luaVoxel_load_palette},
 		{"image", luaVoxel_load_image},
-
-		{"importScene", luaVoxel_import_scene},
-		{"importImageAsPlane", luaVoxel_import_imageasplane},
+		{"scene", luaVoxel_import_scene},
+		{"imageAsPlane", luaVoxel_import_imageasplane},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, importerFuncs, luaVoxel_metaimporter(), "g_import");

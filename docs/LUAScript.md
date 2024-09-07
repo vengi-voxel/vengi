@@ -454,6 +454,10 @@ for k, v in pairs(responseHeaders) do
 end
 ```
 
+* `post(url, body, headers`: Execute a post request
+
+* `get(url, headers)`: Execute a get request
+
 ## Importer
 
 `g_import` is a global that offers the ability to load images and palettes or imports scene graphs/[formats](Formats.md) from e.g. http downloads.
@@ -462,9 +466,9 @@ end
 
 * `palette(filename, stream)`: Returns a palette that was loaded.
 
-* `importScene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
+* `scene(filename, stream)`: Imports the scene from the given stream into the existing scene (`g_scenegraph`).
 
-* `importImageAsPlane(filename, image)`: Imports the given image as plane into the current scene graph and returns the node.
+* `imageAsPlane(filename, image)`: Imports the given image as plane into the current scene graph and returns the node.
 
 ## Image
 
@@ -538,6 +542,8 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 g_var.int("cl_gamma")
 ```
 
+* `create(name, value, help = nil, nopersist = false, secret = false)`: Create a new cvar that is persisted by default.
+
 * `str()`: Returns the string value of the cvar
 
 * `bool()`: Returns the bool value of the cvar
@@ -569,6 +575,12 @@ g_cmd.execute("echo test")
 ## Logging
 
 To use the built-in logging facilities use `g_log` with `info`, `debug`, `warn` and `error`
+
+## System
+
+The system module is available with `g_sys` - and includes the following functions
+
+* `sleep(ms)`: Sleep the given milliseconds
 
 ## Other useful information
 

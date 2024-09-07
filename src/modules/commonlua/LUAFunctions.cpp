@@ -13,6 +13,8 @@
 #include "http/Http.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/File.h"
+#include "io/FileStream.h"
 #include "io/Filesystem.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -221,6 +223,23 @@ void clua_cmdregister(lua_State* s) {
 	clua_registerfuncsglobal(s, funcs, "_metacmd", "g_cmd");
 }
 
+static int clua_varcreate(lua_State *s) {
+	const char *var = luaL_checkstring(s, 1);
+	const char *val = luaL_checkstring(s, 2);
+	const char *help = luaL_optstring(s, 3, nullptr);
+	bool noperist = clua_optboolean(s, 4, false);
+	bool secret = clua_optboolean(s, 5, false);
+	uint32_t flags = 0;
+	if (noperist) {
+		flags |= core::CV_NOPERSIST;
+	}
+	if (secret) {
+		flags |= core::CV_SECRET;
+	}
+	core::Var::get(var, val, flags, help);
+	return 0;
+}
+
 static int clua_vargetstr(lua_State *s) {
 	const char *var = luaL_checkstring(s, 1);
 	const core::VarPtr& v = core::Var::get(var, nullptr);
@@ -303,6 +322,7 @@ static int clua_varsetfloat(lua_State *s) {
 
 void clua_varregister(lua_State* s) {
 	const luaL_Reg funcs[] = {
+		{"create", clua_varcreate},
 		{"str", clua_vargetstr},
 		{"bool", clua_vargetbool},
 		{"int", clua_vargetint},
@@ -514,25 +534,62 @@ void clua_quatregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
 
+static int clua_syssleep(lua_State *s) {
+	const int ms = luaL_checkinteger(s, 1);
+	SDL_Delay(ms);
+	return 0;
+}
+
+static void clua_sysregister(lua_State *s) {
+	const luaL_Reg funcs[] = {
+		{"sleep", clua_syssleep},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, funcs, "_metasys", "g_sys");
+}
+
+static int clua_io_open(lua_State *s) {
+	const char *path = luaL_checkstring(s, 1);
+	const char *modeStr = luaL_optstring(s, 2, "r");
+	io::FileMode mode = modeStr[0] == 'r' ? io::FileMode::SysRead : io::FileMode::SysWrite;
+	io::FilePtr file = io::filesystem()->open(path, mode);
+	if (!file->exists()) {
+		file.release();
+		return clua_error(s, "Could not open file %s", path);
+	}
+	clua_pushstream(s, new io::FileStream(file));
+	return 1;
+}
+
+void clua_ioregister(lua_State *s) {
+	static const luaL_Reg funcs[] = {
+		{"open", clua_io_open},
+		{nullptr, nullptr}
+	};
+	clua_registerfuncsglobal(s, funcs, "_metaio", "g_io");
+}
+
 void clua_register(lua_State *s) {
+	clua_sysregister(s);
 	clua_cmdregister(s);
 	clua_varregister(s);
 	clua_logregister(s);
+	clua_ioregister(s);
 }
 
 static const char *clua_metastream() {
 	return "__global_stream";
 }
 
-int clua_pushstream(lua_State* s, io::BufferedReadWriteStream *stream) {
+int clua_pushstream(lua_State* s, io::SeekableReadWriteStream *stream) {
 	if (stream == nullptr) {
 		return clua_error(s, "No stream given - can't push");
 	}
 	return clua_pushudata(s, stream, clua_metastream());
 }
 
-io::BufferedReadWriteStream *clua_tostream(lua_State* s, int n) {
-	return *(io::BufferedReadWriteStream**)clua_getudata<io::BufferedReadWriteStream*>(s, n, clua_metastream());
+io::SeekableReadWriteStream *clua_tostream(lua_State* s, int n) {
+	return *(io::SeekableReadWriteStream**)clua_getudata<io::SeekableReadWriteStream*>(s, n, clua_metastream());
 }
 
 bool clua_isstream(lua_State* s, int n) {
@@ -577,7 +634,7 @@ static int clua_http_requestexec(lua_State *&s, const char *&url, http::Request 
 	}
 	if (!http::isValidStatusCode(status)) {
 		delete outStream;
-		return clua_error(s, "Invalid status code %i for request %s", status, url);
+		return clua_error(s, "Invalid status code %d for request %s", status, url);
 	}
 	outStream->seek(0);
 	clua_pushstream(s, outStream);
@@ -598,13 +655,13 @@ static int clua_http_get(lua_State *s) {
 }
 
 static int clua_stream_gc(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	delete stream;
 	return 0;
 }
 
 static int clua_stream_readstring(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	const bool terminate = clua_optboolean(s, 2, false);
 	core::String str;
 	stream->readString(stream->size(), str, terminate);
@@ -614,14 +671,10 @@ static int clua_stream_readstring(lua_State *s) {
 
 static int clua_http_post(lua_State *s) {
 	const char *url = luaL_checkstring(s, 1);
-	int headers = 2;
 	http::Request request(url, http::RequestType::POST);
-	if (!lua_istable(s, headers)) {
-		headers = 3;
-		const char *body = luaL_checkstring(s, 2);
-		request.setBody(body);
-	}
-	clua_http_headers(s, headers, request);
+	const char *body = luaL_checkstring(s, 2);
+	request.setBody(body);
+	clua_http_headers(s, 3, request);
 	return clua_http_requestexec(s, url, request);
 }
 
@@ -635,7 +688,7 @@ void clua_httpregister(lua_State *s) {
 }
 
 static int clua_stream_readuint8(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint8_t v;
 	if (stream->readUInt8(v) < 0) {
 		return clua_error(s, "Failed to read uint8");
@@ -645,7 +698,7 @@ static int clua_stream_readuint8(lua_State *s) {
 }
 
 static int clua_stream_readint8(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int8_t v;
 	if (stream->readInt8(v) < 0) {
 		return clua_error(s, "Failed to read int8");
@@ -655,7 +708,7 @@ static int clua_stream_readint8(lua_State *s) {
 }
 
 static int clua_stream_readuint16(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint16_t v;
 	if (stream->readUInt16(v) < 0) {
 		return clua_error(s, "Failed to read uint16");
@@ -665,7 +718,7 @@ static int clua_stream_readuint16(lua_State *s) {
 }
 
 static int clua_stream_readint16(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int16_t v;
 	if (stream->readInt16(v) < 0) {
 		return clua_error(s, "Failed to read int16");
@@ -675,7 +728,7 @@ static int clua_stream_readint16(lua_State *s) {
 }
 
 static int clua_stream_readuint32(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint32_t v;
 	if (stream->readUInt32(v) < 0) {
 		return clua_error(s, "Failed to read uint32");
@@ -685,7 +738,7 @@ static int clua_stream_readuint32(lua_State *s) {
 }
 
 static int clua_stream_readint32(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int32_t v;
 	if (stream->readInt32(v) < 0) {
 		return clua_error(s, "Failed to read int32");
@@ -695,7 +748,7 @@ static int clua_stream_readint32(lua_State *s) {
 }
 
 static int clua_stream_readuint64(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint64_t v;
 	if (stream->readUInt64(v) < 0) {
 		return clua_error(s, "Failed to read uint64");
@@ -705,7 +758,7 @@ static int clua_stream_readuint64(lua_State *s) {
 }
 
 static int clua_stream_readint64(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t v;
 	if (stream->readInt64(v) < 0) {
 		return clua_error(s, "Failed to read int64");
@@ -715,7 +768,7 @@ static int clua_stream_readint64(lua_State *s) {
 }
 
 static int clua_stream_readfloat(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	float v;
 	if (stream->readFloat(v) < 0) {
 		return clua_error(s, "Failed to read float");
@@ -724,7 +777,7 @@ static int clua_stream_readfloat(lua_State *s) {
 	return 1;
 }
 static int clua_stream_readdouble(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	double v;
 	if (stream->readDouble(v) < 0) {
 		return clua_error(s, "Failed to read double");
@@ -734,7 +787,7 @@ static int clua_stream_readdouble(lua_State *s) {
 }
 
 static int clua_stream_writestring(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	const char *str = luaL_checkstring(s, 2);
 	const bool terminate = clua_optboolean(s, 3, false);
 	if (!stream->writeString(str, terminate)) {
@@ -744,7 +797,7 @@ static int clua_stream_writestring(lua_State *s) {
 }
 
 static int clua_stream_writeuint8(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint8_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt8(v)) {
 		return clua_error(s, "Failed to write uint8");
@@ -753,7 +806,7 @@ static int clua_stream_writeuint8(lua_State *s) {
 }
 
 static int clua_stream_writeint8(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int8_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt8(v)) {
 		return clua_error(s, "Failed to write int8");
@@ -762,7 +815,7 @@ static int clua_stream_writeint8(lua_State *s) {
 }
 
 static int clua_stream_writeuint16(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint16_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt16(v)) {
 		return clua_error(s, "Failed to write uint16");
@@ -771,7 +824,7 @@ static int clua_stream_writeuint16(lua_State *s) {
 }
 
 static int clua_stream_writeint16(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int16_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt16(v)) {
 		return clua_error(s, "Failed to write int16");
@@ -780,7 +833,7 @@ static int clua_stream_writeint16(lua_State *s) {
 }
 
 static int clua_stream_writeuint32(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint32_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt32(v)) {
 		return clua_error(s, "Failed to write uint32");
@@ -789,7 +842,7 @@ static int clua_stream_writeuint32(lua_State *s) {
 }
 
 static int clua_stream_writeint32(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int32_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt32(v)) {
 		return clua_error(s, "Failed to write int32");
@@ -798,7 +851,7 @@ static int clua_stream_writeint32(lua_State *s) {
 }
 
 static int clua_stream_writeuint64(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint64_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt64(v)) {
 		return clua_error(s, "Failed to write uint64");
@@ -807,7 +860,7 @@ static int clua_stream_writeuint64(lua_State *s) {
 }
 
 static int clua_stream_writeint64(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt64(v)) {
 		return clua_error(s, "Failed to write int64");
@@ -816,7 +869,7 @@ static int clua_stream_writeint64(lua_State *s) {
 }
 
 static int clua_stream_writefloat(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	float v = luaL_checknumber(s, 2);
 	if (!stream->writeFloat(v)) {
 		return clua_error(s, "Failed to write float");
@@ -825,7 +878,7 @@ static int clua_stream_writefloat(lua_State *s) {
 }
 
 static int clua_stream_writedouble(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	double v = luaL_checknumber(s, 2);
 	if (!stream->writeDouble(v)) {
 		return clua_error(s, "Failed to write double");
@@ -834,7 +887,7 @@ static int clua_stream_writedouble(lua_State *s) {
 }
 
 static int clua_stream_readuint16be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint16_t v;
 	if (stream->readUInt16BE(v) < 0) {
 		return clua_error(s, "Failed to read uint16");
@@ -844,7 +897,7 @@ static int clua_stream_readuint16be(lua_State *s) {
 }
 
 static int clua_stream_readint16be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int16_t v;
 	if (stream->readInt16BE(v) < 0) {
 		return clua_error(s, "Failed to read int16");
@@ -854,7 +907,7 @@ static int clua_stream_readint16be(lua_State *s) {
 }
 
 static int clua_stream_readuint32be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint32_t v;
 	if (stream->readUInt32BE(v) < 0) {
 		return clua_error(s, "Failed to read uint32");
@@ -864,7 +917,7 @@ static int clua_stream_readuint32be(lua_State *s) {
 }
 
 static int clua_stream_readint32be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int32_t v;
 	if (stream->readInt32BE(v) < 0) {
 		return clua_error(s, "Failed to read int32");
@@ -874,7 +927,7 @@ static int clua_stream_readint32be(lua_State *s) {
 }
 
 static int clua_stream_readuint64be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint64_t v;
 	if (stream->readUInt64BE(v) < 0) {
 		return clua_error(s, "Failed to read uint64");
@@ -884,7 +937,7 @@ static int clua_stream_readuint64be(lua_State *s) {
 }
 
 static int clua_stream_readint64be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t v;
 	if (stream->readInt64BE(v) < 0) {
 		return clua_error(s, "Failed to read int64");
@@ -894,7 +947,7 @@ static int clua_stream_readint64be(lua_State *s) {
 }
 
 static int clua_stream_readfloatbe(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	float v;
 	if (stream->readFloatBE(v) < 0) {
 		return clua_error(s, "Failed to read float");
@@ -904,7 +957,7 @@ static int clua_stream_readfloatbe(lua_State *s) {
 }
 
 static int clua_stream_readdoublebe(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	double v;
 	if (stream->readDoubleBE(v) < 0) {
 		return clua_error(s, "Failed to read double");
@@ -914,7 +967,7 @@ static int clua_stream_readdoublebe(lua_State *s) {
 }
 
 static int clua_stream_writeuint16be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint16_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt16BE(v)) {
 		return clua_error(s, "Failed to write uint16");
@@ -923,7 +976,7 @@ static int clua_stream_writeuint16be(lua_State *s) {
 }
 
 static int clua_stream_writeint16be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int16_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt16BE(v)) {
 		return clua_error(s, "Failed to write int16");
@@ -932,7 +985,7 @@ static int clua_stream_writeint16be(lua_State *s) {
 }
 
 static int clua_stream_writeuint32be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint32_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt32BE(v)) {
 		return clua_error(s, "Failed to write uint32");
@@ -941,7 +994,7 @@ static int clua_stream_writeuint32be(lua_State *s) {
 }
 
 static int clua_stream_writeint32be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int32_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt32BE(v)) {
 		return clua_error(s, "Failed to write int32");
@@ -950,7 +1003,7 @@ static int clua_stream_writeint32be(lua_State *s) {
 }
 
 static int clua_stream_writeuint64be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	uint64_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeUInt64BE(v)) {
 		return clua_error(s, "Failed to write uint64");
@@ -959,7 +1012,7 @@ static int clua_stream_writeuint64be(lua_State *s) {
 }
 
 static int clua_stream_writeint64be(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t v = luaL_checkinteger(s, 2);
 	if (!stream->writeInt64BE(v)) {
 		return clua_error(s, "Failed to write int64");
@@ -968,7 +1021,7 @@ static int clua_stream_writeint64be(lua_State *s) {
 }
 
 static int clua_stream_writefloatbe(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	float v = luaL_checknumber(s, 2);
 	if (!stream->writeFloatBE(v)) {
 		return clua_error(s, "Failed to write float");
@@ -977,7 +1030,7 @@ static int clua_stream_writefloatbe(lua_State *s) {
 }
 
 static int clua_stream_writedoublebe(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	double v = luaL_checknumber(s, 2);
 	if (!stream->writeDoubleBE(v)) {
 		return clua_error(s, "Failed to write double");
@@ -986,13 +1039,13 @@ static int clua_stream_writedoublebe(lua_State *s) {
 }
 
 static int clua_stream_eos(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushboolean(s, stream->eos());
 	return 1;
 }
 
 static int clua_stream_seek(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t offset = luaL_checkinteger(s, 2);
 	int mode = luaL_checkinteger(s, SEEK_SET);
 	if (!stream->seek(offset, mode)) {
@@ -1002,13 +1055,13 @@ static int clua_stream_seek(lua_State *s) {
 }
 
 static int clua_stream_tell(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushinteger(s, stream->pos());
 	return 1;
 }
 
 static int clua_stream_size(lua_State *s) {
-	io::BufferedReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushinteger(s, stream->size());
 	return 1;
 }

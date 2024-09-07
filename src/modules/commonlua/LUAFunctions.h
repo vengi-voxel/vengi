@@ -20,7 +20,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace io {
-class BufferedReadWriteStream;
+class SeekableReadWriteStream;
 }
 
 void clua_assert(lua_State* s, bool pass, const char *msg);
@@ -593,10 +593,9 @@ int clua_typerror(lua_State *s, int narg, const char *tname);
 
 int clua_checkboolean(lua_State *s, int index);
 
-int clua_pushstream(lua_State* s, io::BufferedReadWriteStream *stream);
-io::BufferedReadWriteStream *clua_tostream(lua_State* s, int n);
+int clua_pushstream(lua_State* s, io::SeekableReadWriteStream *stream);
+io::SeekableReadWriteStream *clua_tostream(lua_State* s, int n);
 bool clua_isstream(lua_State* s, int n);
-
 
 image::Image *clua_toimage(lua_State* s, int n);
 bool clua_isimage(lua_State* s, int n);
@@ -613,6 +612,7 @@ void clua_httpregister(lua_State *s);
 void clua_streamregister(lua_State *s);
 
 void clua_imageregister(lua_State *s);
+void clua_ioregister(lua_State *s);
 void clua_cmdregister(lua_State *s);
 void clua_varregister(lua_State *s);
 void clua_logregister(lua_State *s);

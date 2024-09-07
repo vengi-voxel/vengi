@@ -26,6 +26,8 @@
 		"g_vec2",
 		"g_vec3",
 		"g_vec4",
-		"g_quat"
+		"g_quat",
+		"g_sys",
+		"g_io"
 	]
 }

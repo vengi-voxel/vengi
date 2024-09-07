@@ -241,4 +241,24 @@ TEST_F(LUAFunctionsTest, testPushVec3) {
 	EXPECT_FLOAT_EQ(3.0f, outputVec.z);
 }
 
+TEST_F(LUAFunctionsTest, testIO) {
+	const char *script = R"(
+		local function FourCC(fourcc)
+			return string.unpack("<I", fourcc)
+		end
+
+		function test()
+			local stream = g_io.open('rgb.qbcl', 'r')
+			if stream == nil then
+				error('stream is nil')
+			end
+			local magic = stream:readUInt32()
+			if magic ~= FourCC("QBCL") then
+				error('magic is not ' .. FourCC("QBCL") .. ' but ' .. magic)
+			end
+		end
+	)";
+	testExec(script);
+}
+
 }
