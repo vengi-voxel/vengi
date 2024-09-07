@@ -15,6 +15,7 @@ set(LUA_SRCS
 	scripts/grid.lua
 	scripts/imageasvolume.lua
 	scripts/maze.lua
+	scripts/meshy.lua
 	scripts/move.lua
 	scripts/noise.lua
 	scripts/noise-builtin.lua

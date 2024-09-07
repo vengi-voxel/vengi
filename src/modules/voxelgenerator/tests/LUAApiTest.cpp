@@ -274,6 +274,13 @@ TEST_F(LUAApiTest, testScriptNoiseBuiltin) {
 	runFile(sceneGraph, "noise-builtin.lua", {}, true);
 }
 
+// requires a meshy api key https://www.meshy.ai/
+TEST_F(LUAApiTest, DISABLED_testScriptMeshy) {
+	voxelformat::FormatConfig::init();
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "meshy.lua", {}, false);
+}
+
 TEST_F(LUAApiTest, testScriptNoise) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "noise.lua", {}, true);
