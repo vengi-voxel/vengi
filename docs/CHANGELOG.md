@@ -17,6 +17,8 @@ General:
    - Added support for Adobe Photoshop ACO palettes
    - Added support for `bbmodel` Blockbench format
    - Added support for `vxb` Sandbox Block format
+   - Fixed a few errors in the lua bindings of the `g_import` global
+   - Extended the lua api (`g_sys`, `g_io`)
 
 VoxEdit:
 
