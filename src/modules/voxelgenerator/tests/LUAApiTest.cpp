@@ -9,6 +9,7 @@
 #include "voxel/Voxel.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/FormatConfig.h"
 
 namespace voxelgenerator {
 
@@ -199,6 +200,21 @@ TEST_F(LUAApiTest, testSceneGraphNewNode) {
 		end
 	)";
 	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
+}
+
+TEST_F(LUAApiTest, DISABLED_testDownloadAndImport) {
+	voxelformat::FormatConfig::init();
+	scenegraph::SceneGraph sceneGraph;
+	const core::String script = R"(
+		function main(node, region, color)
+			local stream = g_http.download('https://github.com/vengi-voxel/vengi/blob/master/data/tests/rgb.qb')
+			if stream == nil then
+				error('Failed to download')
+			end
+			g_import.scene('test.qb', stream)
+		end
+	)";
 	run(sceneGraph, script);
 }
 
