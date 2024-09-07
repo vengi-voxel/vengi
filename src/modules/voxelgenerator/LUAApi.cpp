@@ -619,18 +619,16 @@ static int luaVoxel_import_scene(lua_State *s) {
 	scenegraph::SceneGraph newSceneGraph;
 	bool ret;
 	{
-		// create a copy here as this would otherwise be a double free
-		io::SeekableReadStream* wrapper = new io::SeekableReadWriteStreamWrapper(readStream);
-		auto archive = core::make_shared<io::StreamArchive>(wrapper);
+		auto archive = core::make_shared<io::StreamArchive>(readStream);
 		ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
 	}
 	if (!ret) {
-		newSceneGraph.clear();
+		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not load file %s", filename);
 	}
 	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 	if (scenegraph::addSceneGraphNodes(*sceneGraph, newSceneGraph, sceneGraph->root().id()) <= 0) {
-		newSceneGraph.clear();
+		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not import scene graph nodes");
 	}
 	return 0;

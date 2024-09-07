@@ -700,6 +700,7 @@ void SceneGraph::clear() {
 		entry->value.release();
 	}
 	_nodes.clear();
+	_animations.clear();
 	_nextNodeId = 1;
 
 	SceneGraphNode node(SceneGraphNodeType::Root);

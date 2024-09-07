@@ -22,10 +22,10 @@ public:
 	}
 	~StreamArchive() override = default;
 	SeekableReadStream *readStream(const core::String &filePath) override {
-		return _readStream;
+		return new SeekableReadWriteStreamWrapper(_readStream);
 	}
 	SeekableWriteStream *writeStream(const core::String &filePath) override {
-		return _writeStream;
+		return new SeekableReadWriteStreamWrapper(_writeStream);
 	}
 };
 
