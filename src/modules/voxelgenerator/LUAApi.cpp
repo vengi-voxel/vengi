@@ -566,9 +566,12 @@ static int luaVoxel_load_palette(lua_State *s) {
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
-	auto archive = core::make_shared<io::StreamArchive>(readStream);
 	palette::Palette *palette = new palette::Palette();
-	const bool ret = voxelformat::loadPalette(filename, archive, *palette, ctx);
+	bool ret;
+	{
+		auto archive = core::make_shared<io::StreamArchive>(readStream);
+		ret = voxelformat::loadPalette(filename, archive, *palette, ctx);
+	}
 	if (!ret) {
 		delete palette;
 		return clua_error(s, "Could not load palette %s from string", filename);
@@ -616,7 +619,9 @@ static int luaVoxel_import_scene(lua_State *s) {
 	scenegraph::SceneGraph newSceneGraph;
 	bool ret;
 	{
-		auto archive = core::make_shared<io::StreamArchive>(readStream);
+		// create a copy here as this would otherwise be a double free
+		io::SeekableReadStream* wrapper = new io::SeekableReadWriteStreamWrapper(readStream);
+		auto archive = core::make_shared<io::StreamArchive>(wrapper);
 		ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
 	}
 	if (!ret) {

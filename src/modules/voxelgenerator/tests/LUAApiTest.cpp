@@ -208,7 +208,7 @@ TEST_F(LUAApiTest, DISABLED_testDownloadAndImport) {
 	scenegraph::SceneGraph sceneGraph;
 	const core::String script = R"(
 		function main(node, region, color)
-			local stream = g_http.download('https://github.com/vengi-voxel/vengi/blob/master/data/tests/rgb.qb')
+			local stream = g_http.get('https://raw.githubusercontent.com/vengi-voxel/vengi/master/data/tests/rgb.qb')
 			if stream == nil then
 				error('Failed to download')
 			end
