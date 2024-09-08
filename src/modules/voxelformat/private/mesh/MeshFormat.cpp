@@ -242,10 +242,13 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::Textu
 	const glm::ivec3 size(glm::round(maxs - mins));
 	const glm::ivec3 imaxs = 2 + imins + size;
 
+	glm::vec3 center {};
 	for (int x = imins.x; x < imaxs.x; x++) {
+		center.x = trisMins.x + x;
 		for (int y = imins.y; y < imaxs.y; y++) {
+			center.y = trisMins.y + y;
 			for (int z = imins.z; z < imaxs.z; z++) {
-				const glm::vec3 center = trisMins + glm::vec3(x, y, z);
+				center.z = trisMins.z + z;
 				if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
 					glm::vec2 uv;
 					if (!tri.calcUVs(center, uv)) {
