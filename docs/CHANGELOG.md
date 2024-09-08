@@ -19,6 +19,8 @@ General:
    - Added support for `vxb` Sandbox Block format
    - Fixed a few errors in the lua bindings of the `g_import` global
    - Extended the lua api (`g_sys`, `g_io`)
+   - Fixed nameless, embedded textures in `glb`
+   - Fixed off-by-one in `voxformat_voxelizemode` `1`
 
 VoxEdit:
 
