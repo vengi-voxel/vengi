@@ -495,6 +495,9 @@ core::String Image::pngBase64() const {
 }
 
 core::String print(const image::ImagePtr &image, bool limited) {
+	if (!image || !image->isLoaded()) {
+		return "Image not loaded";
+	}
 	core::String str = core::string::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->depth());
 	const int maxWidth = limited ? 64 : image->width();
 	const int maxHeight = limited ? 64 : image->height();
