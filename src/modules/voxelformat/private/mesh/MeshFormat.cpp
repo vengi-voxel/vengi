@@ -330,7 +330,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			palette = voxel::getPalette();
 		}
 
-		Log::debug("create voxels");
+		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
 		for (const voxelformat::TexturedTri &tri : tris) {
 			voxelizeTriangle(trisMins, tri, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
@@ -354,7 +354,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			voxelutil::fillHollow(wrapper, voxel);
 		}
 	} else {
-		Log::debug("Subdivide triangles");
+		Log::debug("Subdivide %i triangles", (int)tris.size());
 		core::DynamicArray<std::future<TriCollection>> futures;
 		futures.reserve(tris.size());
 		for (const voxelformat::TexturedTri &tri : tris) {
