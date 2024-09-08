@@ -1986,6 +1986,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		return false;
 	}
 
+	// TODO: add a way to implement long running lua scripts without blocking here
 	lua::LUA lua;
 	lua.newGlobalData<scenegraph::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
 	lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
