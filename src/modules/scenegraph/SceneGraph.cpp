@@ -87,9 +87,11 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 
 bool SceneGraph::setAnimation(const core::String &animation) {
 	if (animation.empty()) {
+		Log::debug("Can't set empty animation");
 		return false;
 	}
 	if (core::find(_animations.begin(), _animations.end(), animation) == _animations.end()) {
+		Log::debug("Animation %s not found", animation.c_str());
 		return false;
 	}
 	_activeAnimation = animation;
@@ -701,6 +703,8 @@ void SceneGraph::clear() {
 	}
 	_nodes.clear();
 	_animations.clear();
+	addAnimation(DEFAULT_ANIMATION);
+	setAnimation(DEFAULT_ANIMATION);
 	_nextNodeId = 1;
 
 	SceneGraphNode node(SceneGraphNodeType::Root);
