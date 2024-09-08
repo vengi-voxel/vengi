@@ -1128,13 +1128,17 @@ void GLTFFormat::loadTexture(const core::String &filename, core::StringMap<image
 					const tinygltf::Buffer &gltfImgBuffer = gltfModel.buffers[gltfImgBufferView.buffer];
 					const size_t offset = gltfImgBufferView.byteOffset;
 					const uint8_t *buf = gltfImgBuffer.data.data() + offset;
-					image::ImagePtr tex = image::createEmptyImage(gltfImage.name.c_str());
+					core::String name = gltfImage.name.c_str();
+					if (name.empty()) {
+						name = core::string::format("image%i", gltfTexture.source);
+					}
+					image::ImagePtr tex = image::createEmptyImage(name.c_str());
 					if (!tex->load(buf, (int)gltfImgBufferView.byteLength)) {
-						Log::warn("Failed to load embedded image %s", gltfImage.name.c_str());
+						Log::warn("Failed to load embedded image %s", name.c_str());
 					} else {
-						Log::debug("Loaded embedded image %s", gltfImage.name.c_str());
-						// image::writeImage(tex, "test.png");
-						materialData.diffuseTexture = gltfImage.name.c_str();
+						Log::debug("Loaded embedded image %s", name.c_str());
+						materialData.diffuseTexture = name.c_str();
+						// image::writeImage(tex, materialData.diffuseTexture + ".png");
 						textures.emplace(materialData.diffuseTexture, core::move(tex));
 					}
 				} else {
