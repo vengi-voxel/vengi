@@ -334,6 +334,9 @@ msgstr "(Popup)"
 msgid "(Untitled)"
 msgstr "(Unbenannt)"
 
+msgid "Open"
+msgstr "Öffnen"
+
 msgid "Copy Link###CopyLink"
 msgstr "Link kopieren###CopyLink"
 
@@ -344,7 +347,8 @@ msgid "Hold SHIFT to enable Docking window."
 msgstr "SHIFT gedrückt halten, um das Docking-Fenster zu aktivieren."
 
 msgid "Click and drag to move or undock whole node."
-msgstr "Klicken und ziehen, um den gesamten Knoten zu verschieben oder zu lösen."
+msgstr ""
+"Klicken und ziehen, um den gesamten Knoten zu verschieben oder zu lösen."
 
 msgid "Language"
 msgstr "Sprache"
@@ -816,6 +820,12 @@ msgstr "Bilder zuschneiden"
 msgid "Max frames for this animation: %i"
 msgstr "Maximale Anzahl von Bildern für diese Animation: %i"
 
+msgid "Loop"
+msgstr "Schleife"
+
+msgid "FPS"
+msgstr "FPS"
+
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr "Keyframe %i, Interpolation: %s"
@@ -909,6 +919,21 @@ msgid "Draws a line from the reference position to the current cursor position"
 msgstr ""
 "Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
 
+msgid "None"
+msgstr "Keine"
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Project onto surface"
+msgstr "Auf Oberfläche projezieren"
+
+msgid "UV0"
+msgstr "UV0"
+
+msgid "UV1"
+msgstr "UV1"
+
 msgid "18-connected"
 msgstr "18-verbunden"
 
@@ -984,6 +1009,9 @@ msgstr "Die ausgewählte Ebene bemalen"
 
 msgid "Gradient"
 msgstr "Verlauf"
+
+msgid "UV editor"
+msgstr ""
 
 msgid "Brush settings"
 msgstr "Pinsel-Einstellungen"
@@ -1522,9 +1550,6 @@ msgstr "Layout zurücksetzen"
 
 msgid "Select"
 msgstr "Auswählen"
-
-msgid "None"
-msgstr "Keine"
 
 msgid "Invert"
 msgstr "Invertieren"
@@ -2225,7 +2250,9 @@ msgid "Render mode"
 msgstr "Rendermodus"
 
 msgid "Undo disabled for this volume. Max volume size exceeded"
-msgstr "Rückgängig deaktiviert für dieses Volumen. Maximale Volumengröße überschritten"
+msgstr ""
+"Rückgängig deaktiviert für dieses Volumen. Maximale Volumengröße "
+"überschritten"
 
 msgid "Scene Mode"
 msgstr "Szenenmodus"
@@ -2240,10 +2267,14 @@ msgid "Create a reference node"
 msgstr "Referenzknoten erstellen"
 
 msgid "Delay in second between autosaves - 0 disables autosaves"
-msgstr "Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 deaktiviert automatische Speicherungen"
+msgstr ""
+"Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 "
+"deaktiviert automatische Speicherungen"
 
 msgid "Update the children of a node when the transform of the node changes"
-msgstr "Aktualisiere die Kinder eines Knotens, wenn sich die Transformation des Knotens ändert"
+msgstr ""
+"Aktualisiere die Kinder eines Knotens, wenn sich die Transformation des "
+"Knotens ändert"
 
 msgid "Resize the volume to the current selection"
 msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
@@ -2252,7 +2283,9 @@ msgid "Executes a lua script"
 msgstr "Führt ein LUA-Skript aus"
 
 msgid "Move the cursor by keys, not by viewport mouse trace"
-msgstr "Bewegt den Cursor mit den Tasten, nicht mit der Mausverfolgung im Ansichtsfenster"
+msgstr ""
+"Bewegt den Cursor mit den Tasten, nicht mit der Mausverfolgung im "
+"Ansichtsfenster"
 
 msgid "Change intensity by scaling the rgb values of the palette"
 msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
@@ -2564,6 +2597,11 @@ msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
 msgid "Disable mirror axis"
 msgstr "Deaktiviert die Spiegelachse"
 
+msgid ""
+"Failed to execute pathfinder - is the reference position correctly placed on "
+"another voxel?"
+msgstr ""
+
 msgid "Change the modifier shape type"
 msgstr "Ändert den Modifier-Formtyp"
 
@@ -2585,5 +2623,20 @@ msgstr "Den aktuellen Knoten als neuen Stempel verwenden"
 msgid "Paste the current clipboard content as stamp"
 msgstr "Die Zwischenablage als neuen Stempel verwenden"
 
+msgid "No stamp volume set"
+msgstr ""
+
 msgid "Change the text brush axis"
 msgstr "Ändere die Achse des Textpinsels"
+
+msgid "No image loaded for texture brush"
+msgstr ""
+
+msgid "Mirror the uv coordinates along the u axis"
+msgstr ""
+
+msgid "Mirror the uv coordinates along the v axis"
+msgstr ""
+
+msgid "Reset the uv coordinates"
+msgstr "Zurücksetzen der Texturkoordinaten"

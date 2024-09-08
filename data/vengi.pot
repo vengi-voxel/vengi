@@ -310,6 +310,10 @@ msgstr ""
 msgid "(Untitled)"
 msgstr ""
 
+#, c-format
+msgid "Open '%s'"
+msgstr ""
+
 msgid "Copy Link###CopyLink"
 msgstr ""
 
@@ -780,6 +784,12 @@ msgstr ""
 msgid "Max frames for this animation: %i"
 msgstr ""
 
+msgid "Loop"
+msgstr ""
+
+msgid "FPS"
+msgstr ""
+
 #, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr ""
@@ -872,6 +882,21 @@ msgstr ""
 msgid "Draws a line from the reference position to the current cursor position"
 msgstr ""
 
+msgid "None"
+msgstr ""
+
+msgid "Texture"
+msgstr ""
+
+msgid "Project onto surface"
+msgstr ""
+
+msgid "UV0"
+msgstr ""
+
+msgid "UV1"
+msgstr ""
+
 msgid "18-connected"
 msgstr ""
 
@@ -945,6 +970,9 @@ msgid "Paint the selected plane"
 msgstr ""
 
 msgid "Gradient"
+msgstr ""
+
+msgid "UV editor"
 msgstr ""
 
 msgid "Brush settings"
@@ -1434,9 +1462,6 @@ msgid "Reset layout"
 msgstr ""
 
 msgid "Select"
-msgstr ""
-
-msgid "None"
 msgstr ""
 
 msgid "Invert"
@@ -2405,6 +2430,11 @@ msgstr ""
 msgid "Disable mirror axis"
 msgstr ""
 
+msgid ""
+"Failed to execute pathfinder - is the reference position correctly placed on "
+"another voxel?"
+msgstr ""
+
 msgid "Change the modifier shape type"
 msgstr ""
 
@@ -2426,5 +2456,20 @@ msgstr ""
 msgid "Paste the current clipboard content as stamp"
 msgstr ""
 
+msgid "No stamp volume set"
+msgstr ""
+
 msgid "Change the text brush axis"
+msgstr ""
+
+msgid "No image loaded for texture brush"
+msgstr ""
+
+msgid "Mirror the uv coordinates along the u axis"
+msgstr ""
+
+msgid "Mirror the uv coordinates along the v axis"
+msgstr ""
+
+msgid "Reset the uv coordinates"
 msgstr ""

@@ -632,12 +632,13 @@ app::AppState IMGUIApp::onRunning() {
 		localizeRegisterEntry(ImGuiLocKey_WindowingMainMenuBar, _("(Main menu bar)"));
 		localizeRegisterEntry(ImGuiLocKey_WindowingPopup, _("(Popup)"));
 		localizeRegisterEntry(ImGuiLocKey_WindowingUntitled, _("(Untitled)"));
+		localizeRegisterEntry(ImGuiLocKey_OpenLink_s, _("Open '%s'"));
 		localizeRegisterEntry(ImGuiLocKey_CopyLink, _("Copy Link###CopyLink"));
 		localizeRegisterEntry(ImGuiLocKey_DockingHideTabBar, _("Hide tab bar###HideTabBar"));
 		localizeRegisterEntry(ImGuiLocKey_DockingHoldShiftToDock, _("Hold SHIFT to enable Docking window."));
 		localizeRegisterEntry(ImGuiLocKey_DockingDragToUndockOrMoveNode,
 							  _("Click and drag to move or undock whole node."));
-		static_assert(ImGuiLocKey_COUNT == 12, "Please update ImGui translations");
+		static_assert(ImGuiLocKey_COUNT == 13, "Please update ImGui translations");
 	}
 
 	const float dpiScale = core_max(0.1f, ImGui::GetMainViewport()->DpiScale);
