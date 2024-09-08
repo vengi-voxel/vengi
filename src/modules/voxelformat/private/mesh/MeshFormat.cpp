@@ -232,7 +232,7 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 template<class FUNC>
 static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::TexturedTri &tri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
-	const glm::vec3 shiftedTrisMins = trisMins - voxelHalf;
+	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
 	const glm::vec3 &v0 = tri.vertices[0];
 	const glm::vec3 &v1 = tri.vertices[1];
 	const glm::vec3 &v2 = tri.vertices[2];
