@@ -116,12 +116,12 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 	wrap(stream.readFloat(frameHdr.scale[0]))
-	wrap(stream.readFloat(frameHdr.scale[1]))
 	wrap(stream.readFloat(frameHdr.scale[2]))
+	wrap(stream.readFloat(frameHdr.scale[1]))
 	Log::debug("Scale: %f %f %f", frameHdr.scale[0], frameHdr.scale[1], frameHdr.scale[2]);
 	wrap(stream.readFloat(frameHdr.translate[0]))
-	wrap(stream.readFloat(frameHdr.translate[1]))
 	wrap(stream.readFloat(frameHdr.translate[2]))
+	wrap(stream.readFloat(frameHdr.translate[1]))
 	Log::debug("Translate: %f %f %f", frameHdr.translate[0], frameHdr.translate[1], frameHdr.translate[2]);
 
 	if (!stream.readString(sizeof(frameHdr.name), frameHdr.name)) {

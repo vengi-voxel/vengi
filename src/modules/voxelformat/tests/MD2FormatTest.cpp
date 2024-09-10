@@ -21,10 +21,10 @@ TEST_F(MD2FormatTest, testVoxelize) {
 	EXPECT_EQ(region.getLowerY(), 0);
 	EXPECT_EQ(region.getLowerZ(), 0);
 	EXPECT_EQ(region.getUpperX(), 25);
-	EXPECT_EQ(region.getUpperY(), 25);
-	EXPECT_EQ(region.getUpperZ(), 32);
+	EXPECT_EQ(region.getUpperY(), 32);
+	EXPECT_EQ(region.getUpperZ(), 25);
 	const int cntVoxels = voxel::countVoxels(node->volume());
-	EXPECT_EQ(cntVoxels, 12216);
+	EXPECT_EQ(cntVoxels, 12158);
 }
 
 } // namespace voxelformat
