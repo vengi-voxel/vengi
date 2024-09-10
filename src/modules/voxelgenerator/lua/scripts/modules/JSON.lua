@@ -1041,8 +1041,6 @@ local function grok_string(self, text, start, options)
                   if lo_surrogate then
                      i = i + 6 -- bypass the low surrogate we just read
                      codepoint = 0x2400 + (codepoint - 0xD800) * 0x400 + tonumber(lo_surrogate, 16)
-                  else
-                     -- not a proper low, so we'll just leave the first codepoint as is and spit it out.
                   end
                end
                VALUE = VALUE .. unicode_codepoint_as_utf8(codepoint)
@@ -1125,14 +1123,14 @@ local function grok_object(self, text, start, options)
 
       i = skip_whitespace(text, i + 1)
 
-      local new_val, new_i = grok_one(self, text, i, options)
+      local new_val, new_i2 = grok_one(self, text, i, options)
 
       VALUE[key] = new_val
 
       --
       -- Expect now either '}' to end things, or a ',' to allow us to continue.
       --
-      i = skip_whitespace(text, new_i)
+      i = skip_whitespace(text, new_i2)
 
       local c = text:sub(i,i)
 
