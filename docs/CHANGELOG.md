@@ -21,6 +21,7 @@ General:
    - Extended the lua api (`g_sys`, `g_io`)
    - Fixed nameless, embedded textures in `glb`
    - Fixed off-by-one in `voxformat_voxelizemode` `1`
+   - Fixed missing axis flip for `md2` scale and translate value imports
 
 VoxEdit:
 
@@ -31,6 +32,7 @@ VoxEdit:
    - Disable undo/redo for model changes if you exceed a max suggested model size
    - Disable autosaves for model changes if you exceed a max suggested model size
    - New brush type to project textures into sub areas or on surfaces
+   - Added an FPS option for the animation timeline
 
 ## 0.0.33 (2024-08-05)
 
