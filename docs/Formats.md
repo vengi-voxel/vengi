@@ -54,6 +54,7 @@
 | GL Transmission Format     | gltf      | X       | X         | X          |
 | Polygon File Format        | ply       | X       | X         |            |
 | Quake 1                    | bsp       | X       |           |            |
+| Quake 1 Model              | mdl       | X       |           |            |
 | Quake 2 Model              | md2       | X       |           |            |
 | Standard Triangle Language | stl       | X       | X         |            |
 | UFO:Alien Invasion         | bsp       | X       |           |            |

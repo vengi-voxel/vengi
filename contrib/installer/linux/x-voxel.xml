@@ -176,6 +176,16 @@
 			<match type="byte" offset="0" value="29"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-quake-1-model">
+		<comment>Quake 1 Model</comment>
+		<glob pattern="*.mdl"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IDPO"/>
+		</magic>
+		<magic priority="50">
+			<match type="string" offset="0" value="RAPO"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-quake-2-model">
 		<comment>Quake 2 Model</comment>
 		<glob pattern="*.md2"/>

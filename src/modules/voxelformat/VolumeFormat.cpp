@@ -39,6 +39,7 @@
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
 #include "voxelformat/private/mesh/quake/MD2Format.h"
+#include "voxelformat/private/mesh/quake/MDLFormat.h"
 #include "voxelformat/private/mesh/quake/QuakeBSPFormat.h"
 #include "voxelformat/private/minecraft/DatFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
@@ -134,6 +135,11 @@ static const io::FormatDescription &ufoaiBsp() {
 
 static const io::FormatDescription &quake1Bsp() {
 	static io::FormatDescription f{"Quake 1", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
+static const io::FormatDescription &quakeMdl() {
+	static io::FormatDescription f{"Quake 1 Model", {"mdl"}, {"IDPO", "RAPO"}, VOX_FORMAT_FLAG_MESH};
 	return f;
 }
 
@@ -367,6 +373,7 @@ const io::FormatDescription *voxelLoad() {
 												 minecraftSchematic(),
 												 ufoaiBsp(),
 												 quake1Bsp(),
+												 quakeMdl(),
 												 quakeMd2(),
 												 fbx(),
 												 sproxelCSV(),
@@ -482,6 +489,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<PLYFormat>();
 		} else if (ext == fbx().mainExtension()) {
 			return core::make_shared<FBXFormat>();
+		} else if (ext == quakeMdl().mainExtension()) {
+			return core::make_shared<MDLFormat>();
 		} else if (ext == quakeMd2().mainExtension()) {
 			return core::make_shared<MD2Format>();
 		} else if (ext == minecraftSchematic().mainExtension()) {

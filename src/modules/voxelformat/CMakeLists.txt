@@ -35,6 +35,7 @@ set(SRCS
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
+	private/mesh/quake/MDLFormat.h           private/mesh/quake/MDLFormat.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
 	private/mesh/Polygon.h                   private/mesh/Polygon.cpp
@@ -95,6 +96,7 @@ set(TEST_SRCS
 	tests/MeshFormatTest.cpp
 	tests/MCRFormatTest.cpp
 	tests/MD2FormatTest.cpp
+	tests/MDLFormatTest.cpp
 	tests/OBJFormatTest.cpp
 	tests/PLYFormatTest.cpp
 	tests/QBTFormatTest.cpp

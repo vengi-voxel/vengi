@@ -22,6 +22,7 @@ General:
    - Fixed nameless, embedded textures in `glb`
    - Fixed off-by-one in `voxformat_voxelizemode` `1`
    - Fixed missing axis flip for `md2` scale and translate value imports
+   - Added support for Quake1 `mdl` files
 
 VoxEdit:
 

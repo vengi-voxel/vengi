@@ -399,13 +399,15 @@ glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
 
 bool Image::resize(int w, int h) {
 	uint8_t *res = (uint8_t *)STBI_MALLOC(w * h * _depthOfColor);
-	if (stbir_resize(_data, _width, _height, _depthOfColor * _width, res, w, h, _depthOfColor * w,
-					 (stbir_pixel_layout)_depthOfColor, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP,
-					 STBIR_FILTER_DEFAULT) == nullptr) {
-		core_free(res);
-		return false;
+	if (_data) {
+		if (stbir_resize(_data, _width, _height, _depthOfColor * _width, res, w, h, _depthOfColor * w,
+						(stbir_pixel_layout)_depthOfColor, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP,
+						STBIR_FILTER_DEFAULT) == nullptr) {
+			core_free(res);
+			return false;
+		}
+		stbi_image_free(_data);
 	}
-	stbi_image_free(_data);
 	_data = res;
 	_width = w;
 	_height = h;

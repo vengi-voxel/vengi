@@ -43,6 +43,23 @@ public:
 	Image(const core::String& name);
 	~Image();
 
+	template<typename FUNC>
+	bool load(int w, int h, FUNC &&func) {
+		_depthOfColor = 4;
+		if (!resize(w, h)) {
+			_state = io::IOSTATE_FAILED;
+			return false;
+		}
+		for (int y = 0; y < h; ++y) {
+			for (int x = 0; x < w; ++x) {
+				core::RGBA rgba;
+				func(x, y, rgba);
+				setColor(rgba, x, y);
+			}
+		}
+		_state = io::IOSTATE_LOADED;
+		return true;
+	}
 	bool load(const io::FilePtr& file);
 	bool load(const uint8_t* buffer, int length);
 	bool load(io::ReadStream &stream, int length);

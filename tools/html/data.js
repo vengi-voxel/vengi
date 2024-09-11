@@ -515,6 +515,26 @@ const jsonData = {
       "save": false
     },
     {
+      "name": "Quake 1 Model",
+      "extensions": [
+        "mdl"
+      ],
+      "magics": [
+        {
+          "type": "string",
+          "value": "IDPO"
+        },
+        {
+          "type": "string",
+          "value": "RAPO"
+        }
+      ],
+      "mimetype": "application/x-quake-1-model",
+      "mesh": true,
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Quake 2 Model",
       "extensions": [
         "md2"
