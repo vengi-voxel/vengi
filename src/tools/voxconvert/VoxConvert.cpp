@@ -587,11 +587,21 @@ app::AppState VoxConvert::onInit() {
 
 	for (const core::String &outfile : outfiles) {
 		const core::String &ext = core::string::extractExtension(outfile);
+		// TODO: move into a format
 		if (hasArg("--slice") && io::format::png().matchesExtension(ext)) {
 			if (!slice(sceneGraph, outfile)) {
 				Log::error("Failed to slice models");
 				return app::AppState::InitFailure;
 			}
+		} else if (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes())) {
+			// if the given format is a palette only format (some voxel formats might have the same
+			// extension - so we check that here)
+			const palette::Palette &palette = sceneGraph.mergePalettes(false);
+			if (!palette.save(outfile.c_str())) {
+				Log::error("Failed to save palette to %s", outfile.c_str());
+				return app::AppState::InitFailure;
+			}
+			Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfile.c_str());
 		} else {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
