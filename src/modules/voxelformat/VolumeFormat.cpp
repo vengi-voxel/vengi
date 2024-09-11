@@ -21,7 +21,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
-#include "voxelformat/private/aseprite/AsepriteFormat.h"
+#include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/chronovox/CSMFormat.h"
 #include "voxelformat/private/commandconquer/VXLFormat.h"
