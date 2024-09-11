@@ -145,7 +145,9 @@ static void HideOtherWindows(const ImGuiCaptureArgs* args)
     {
         if (window->Flags & ImGuiWindowFlags_ChildWindow)
             continue;
-        if ((window->Flags & (ImGuiWindowFlags_Popup | ImGuiWindowFlags_Tooltip)) != 0 && (args->InFlags & ImGuiCaptureFlags_IncludeTooltipsAndPopups) != 0)
+        if (window->Flags & ImGuiWindowFlags_Tooltip)
+            continue;
+        if ((window->Flags & ImGuiWindowFlags_Popup) && (args->InFlags & ImGuiCaptureFlags_IncludePopups) != 0)
             continue;
         if (args->InCaptureWindows.contains(window))
             continue;
@@ -338,7 +340,7 @@ ImGuiCaptureStatus ImGuiCaptureContext::CaptureUpdate(ImGuiCaptureArgs* args)
                     // Child windows will be included by their parents.
                     if (window->ParentWindow != NULL)
                         continue;
-                    if ((window->Flags & ImGuiWindowFlags_Popup || window->Flags & ImGuiWindowFlags_Tooltip) && !(args->InFlags & ImGuiCaptureFlags_IncludeTooltipsAndPopups))
+                    if ((window->Flags & ImGuiWindowFlags_Popup) && !(args->InFlags & ImGuiCaptureFlags_IncludePopups))
                         continue;
                     args->InCaptureWindows.push_back(window);
                 }
@@ -710,8 +712,8 @@ void ImGuiCaptureToolUI::_CaptureWindowsSelector(ImGuiCaptureContext* context, I
             continue;
         if (window->Flags & ImGuiWindowFlags_ChildWindow)
             continue;
-        const bool is_popup = (window->Flags & ImGuiWindowFlags_Popup) || (window->Flags & ImGuiWindowFlags_Tooltip);
-        if ((args->InFlags & ImGuiCaptureFlags_IncludeTooltipsAndPopups) && is_popup)
+        const bool is_popup = (window->Flags & ImGuiWindowFlags_Popup) != 0;
+        if ((args->InFlags & ImGuiCaptureFlags_IncludePopups) && is_popup)
         {
             capture_rect.Add(window->Rect());
             args->InCaptureWindows.push_back(window);
@@ -951,7 +953,7 @@ void ImGuiCaptureToolUI::ShowCaptureToolWindow(ImGuiCaptureContext* context, boo
             ImGui::SetItemTooltip("Content stitching is not possible when using viewports.");
 
         ImGui::CheckboxFlags("Include other windows", &_CaptureArgs.InFlags, ImGuiCaptureFlags_IncludeOtherWindows);
-        ImGui::CheckboxFlags("Include tooltips & popups", &_CaptureArgs.InFlags, ImGuiCaptureFlags_IncludeTooltipsAndPopups);
+        ImGui::CheckboxFlags("Include popups", &_CaptureArgs.InFlags, ImGuiCaptureFlags_IncludePopups);
         ImGui::SetItemTooltip("Capture area will be expanded to include visible tooltips.");
 
         ImGui::PopItemWidth();
