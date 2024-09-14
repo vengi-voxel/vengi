@@ -61,7 +61,7 @@ echo
 
 echo "export palette of @DATA_DIR@/$FILE"
 cp -f @DATA_DIR@/$FILE @CMAKE_BINARY_DIR@
-$BINARY -f --input @CMAKE_BINARY_DIR@/$BASE_FILE --export-palette
+$BINARY -f --input @CMAKE_BINARY_DIR@/$BASE_FILE --export-palette --output @CMAKE_BINARY_DIR@/${BASE_FILE%.*}.png
 echo "check if palette exists at @CMAKE_BINARY_DIR@/${BASE_FILE%.*}.png"
 test -f @CMAKE_BINARY_DIR@/${BASE_FILE%.*}.png
 echo

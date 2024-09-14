@@ -14,15 +14,9 @@ vengi-voxconvert --help
 
 * `--crop`: reduces the volume sizes to their voxel boundaries.
 * `--export-models`: export all the models of a scene into single files. It is suggested to name the models properly to get reasonable file names.
-* `--export-palette`: will save the included palette as png next to the source file.
+* `--export-palette`: will save the palette file for the given input file.
 * `--filter <filter>`: will filter out models not mentioned in the expression. E.g. `1-2,4` will handle model 1, 2 and 4. It is the same as `1,2,4`. The first model is `0`. See the models note below.
 * `--force`: overwrite existing files
-* `--image-as-heightmap`: import input images as heightmap (default)
-* `--colored-heightmap`: Use the alpha channel of the heightmap as height and the rgb data as surface color.
-* `--image-as-volume`: import given input image as volume. Uses a depth map to make a volume out of the image.
-* `--image-as-volume-max-depth`: importing image as volume max depth
-* `--image-as-volume-both-sides`: importing image as volume and use the depth map for both sides. The depth-map has the postfix `-dm`. For example the image is called `image.png` then the depth-map image must be called `image-dm.png`. Also see the [examples](Examples.md).
-* `--image-as-plane`: import input images as planes
 * `--input <file>`: allows to specify input files. You can specify more than one file
 * `--merge`: will merge a multi model volume (like `vox`, `qb` or `qbt`) into a single volume of the target file
 * `--mirror <x|y|z>`: allows you to mirror the volumes at x, y and z axis

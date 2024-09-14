@@ -101,6 +101,13 @@ bool FormatConfig::init() {
 				   "Apply KHR_materials_specular when saving into the gltf format", core::Var::boolValidator);
 	core::Var::get(cfg::VoxFormatWithMaterials, "true", core::CV_NOPERSIST,
 				   "Try to export material properties if the formats support it", core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatImageVolumeMaxDepth, "1", core::CV_NOPERSIST,
+				   "The maximum depth of the volume when importing an image as volume",
+				   core::Var::minMaxValidator<1, 255>);
+	core::Var::get(cfg::VoxformatImageVolumeBothSides, "true", core::CV_NOPERSIST,
+				   "Import the image as volume for both sides", core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatImageImportType, "0", core::CV_NOPERSIST, "0 = plane, 1 = heightmap, 2 = volume",
+				   core::Var::minMaxValidator<0, 2>);
 	return true;
 }
 

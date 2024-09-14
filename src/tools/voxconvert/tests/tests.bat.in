@@ -12,7 +12,7 @@ echo "export models of @CMAKE_BINARY_DIR@\%FILE%"
 echo
 
 echo "export palette of @CMAKE_BINARY_DIR@\%FILE%"
-"%BINARY%" -f --input "@CMAKE_BINARY_DIR@\%FILE%" --export-palette
+"%BINARY%" -f --input "@CMAKE_BINARY_DIR@\%FILE%" --export-palette --output @CMAKE_BINARY_DIR@\%FILE_PNGNAME%
 echo "check if palette exists at @CMAKE_BINARY_DIR@\%FILE_PNGNAME%"
 IF NOT EXIST "@CMAKE_BINARY_DIR@\%FILE_PNGNAME%" EXIT 127
 echo

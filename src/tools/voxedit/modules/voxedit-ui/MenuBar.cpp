@@ -90,11 +90,6 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add file to scene"), "import", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add directory to scene"), "importdirectory", true, &listener);
 			ImGui::Separator();
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Heightmap"), "importheightmap", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Colored heightmap"), "importcoloredheightmap", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Image as plane"), "importplane", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_IMAGE, _("Image as volume"), "importvolume", true, &listener);
-			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
 				app->requestQuit();
 			}

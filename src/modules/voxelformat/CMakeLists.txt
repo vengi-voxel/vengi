@@ -14,6 +14,7 @@ set(SRCS
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
 	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
+	private/image/PNGFormat.h                private/image/PNGFormat.cpp
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
 	private/commandconquer/HVAFormat.h       private/commandconquer/HVAFormat.cpp
@@ -99,6 +100,7 @@ set(TEST_SRCS
 	tests/MDLFormatTest.cpp
 	tests/OBJFormatTest.cpp
 	tests/PLYFormatTest.cpp
+	tests/PNGFormatTest.cpp
 	tests/QBTFormatTest.cpp
 	tests/QBFormatTest.cpp
 	tests/QBCLFormatTest.cpp
@@ -190,6 +192,9 @@ set(TEST_FILES
 	tests/ufoai.bsp
 	tests/fuel_can.md2
 	tests/fuel_can.png
+	tests/test-fillplane.png
+	tests/test-heightmap-dm.png
+	tests/test-heightmap.png
 	tests/rgb.vxl
 	tests/rgb.csv
 	tests/rgb.gltf

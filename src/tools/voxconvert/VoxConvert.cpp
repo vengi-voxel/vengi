@@ -50,9 +50,6 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/trigonometric.hpp>
 
-#define MaxHeightmapWidth 4096
-#define MaxHeightmapHeight 4096
-
 VoxConvert::VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider, core::cpus()) {
 	init(ORGANISATION, "voxconvert");
@@ -65,21 +62,10 @@ app::AppState VoxConvert::onConstruct() {
 	registerArg("--json").setDescription(
 		"Print the scene graph of the input file. Give full as argument to also get mesh details");
 	registerArg("--export-models").setDescription("Export all the models of a scene into single files");
-	registerArg("--export-palette").setDescription("Export the used palette data into an image");
+	registerArg("--export-palette").setDescription("Export the palette data into the given output file format");
 	registerArg("--filter").setDescription("Model filter. For example '1-4,6'");
 	registerArg("--filter-property").setDescription("Model filter by property. For example 'name:foo'");
 	registerArg("--force").setShort("-f").setDescription("Overwrite existing files");
-	registerArg("--image-as-plane").setDescription("Import given input images as planes");
-	registerArg("--image-as-volume").setDescription("Import given input image as volume");
-	registerArg("--image-as-volume-max-depth")
-		.setDefaultValue("8")
-		.setDescription("Importing image as volume max depth");
-	registerArg("--image-as-volume-both-sides")
-		.setDefaultValue("false")
-		.setDescription("Importing image as volume for both sides");
-	registerArg("--image-as-heightmap").setDescription("Import given input images as heightmaps");
-	registerArg("--colored-heightmap")
-		.setDescription("Use the alpha channel of the heightmap as height and the rgb data as surface color");
 	registerArg("--input").setShort("-i").setDescription("Allow to specify input files").addFlag(ARGUMENT_FLAG_FILE);
 	registerArg("--wildcard")
 		.setShort("-w")
@@ -107,8 +93,6 @@ app::AppState VoxConvert::onConstruct() {
 						"side of your mesh.");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
-	registerArg("--slice").setDescription(
-		"Allows to save the volume data as png slices if the output file is a png file");
 
 	voxelformat::FormatConfig::init();
 
@@ -383,21 +367,6 @@ app::AppState VoxConvert::onInit() {
 		Log::info("Example: '%s -set metric_flavor json --input xxx --output yyy'", fullAppname().c_str());
 	}
 
-	if (outfiles.size() == 1 && infiles.size() == 1 && !hasArg("--slice")) {
-		if (io::isA(outfiles.front(), io::format::palettes())) {
-			palette::Palette palette;
-			if (!voxelformat::importPalette(infiles[0], palette)) {
-				Log::error("Failed to import the palette from %s", infiles[0].c_str());
-				return app::AppState::InitFailure;
-			}
-			if (palette.save(outfiles.front().c_str())) {
-				Log::info("Saved palette with %i colors to %s", palette.colorCount(), outfiles.front().c_str());
-				return state;
-			}
-			return app::AppState::InitFailure;
-		}
-	}
-
 	if (!outfiles.empty()) {
 		if (!hasArg("--force")) {
 			for (const core::String &outfile : outfiles) {
@@ -408,7 +377,7 @@ app::AppState VoxConvert::onInit() {
 				}
 			}
 		}
-	} else if (!_exportModels && !_exportPalette && !_printSceneGraph) {
+	} else if (!_exportModels && !_printSceneGraph) {
 		Log::error("No output specified");
 		return app::AppState::InitFailure;
 	}
@@ -587,13 +556,7 @@ app::AppState VoxConvert::onInit() {
 
 	for (const core::String &outfile : outfiles) {
 		const core::String &ext = core::string::extractExtension(outfile);
-		// TODO: move into a format
-		if (hasArg("--slice") && io::format::png().matchesExtension(ext)) {
-			if (!slice(sceneGraph, outfile)) {
-				Log::error("Failed to slice models");
-				return app::AppState::InitFailure;
-			}
-		} else if (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes())) {
+		if (_exportPalette || (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes()))) {
 			// if the given format is a palette only format (some voxel formats might have the same
 			// extension - so we check that here)
 			const palette::Palette &palette = sceneGraph.mergePalettes(false);
@@ -643,108 +606,24 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 		_exitCode = 127;
 		return false;
 	}
-	const bool inputIsImage = io::isA(infile, io::format::images());
-	if (inputIsImage) {
-		const image::ImagePtr &image = image::loadImage(infile, *stream);
-		if (!image || !image->isLoaded()) {
-			Log::error("Couldn't load image %s", infile.c_str());
-			return false;
-		}
-		const bool importAsPlane = hasArg("--image-as-plane");
-		const bool importAsVolume = hasArg("--image-as-volume");
-		const bool importAsHeightmap = hasArg("--image-as-heightmap");
-		if (importAsHeightmap || (!importAsPlane && !importAsVolume && !_exportPalette)) {
-			const bool coloredHeightmap = hasArg("--colored-heightmap");
-			if (image->width() > MaxHeightmapWidth || image->height() >= MaxHeightmapHeight) {
-				Log::warn("Skip creating heightmap - image dimensions exceeds the max allowed boundaries");
-				return false;
-			}
-			const int maxHeight = voxelutil::importHeightMaxHeight(image, coloredHeightmap);
-			if (maxHeight == 0) {
-				Log::error("There is no height in either the red channel or the alpha channel");
-				return false;
-			}
-			if (maxHeight == 1) {
-				Log::warn("There is no height value in the image - it is imported as flat plane");
-			}
-			Log::info("Generate from heightmap (%i:%i) with max height of %i", image->width(), image->height(),
-					  maxHeight);
-			voxel::Region region(0, 0, 0, image->width() - 1, maxHeight - 1, image->height() - 1);
-			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			voxel::RawVolumeWrapper wrapper(volume);
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			const voxel::Voxel dirtVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-			if (coloredHeightmap) {
-				palette::PaletteLookup palLookup;
-				voxelutil::importColoredHeightmap(wrapper, palLookup, image, dirtVoxel);
-				node.setPalette(palLookup.palette());
-			} else {
-				const voxel::Voxel grassVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
-				voxelutil::importHeightmap(wrapper, image, dirtVoxel, grassVoxel);
-			}
-			node.setVolume(volume, true);
-			node.setName(core::string::extractFilename(infile));
-			sceneGraph.emplace(core::move(node));
-		}
-		if (importAsVolume) {
-			const int maxDepth = glm::clamp(core::string::toInt(getArgVal("--image-as-volume-max-depth")), 1, 255);
-			const bool bothSides = core::string::toBool(getArgVal("--image-as-volume-both-sides"));
-			voxel::RawVolume *v = voxelutil::importAsVolume(image, maxDepth, bothSides);
-			if (v == nullptr) {
-				Log::warn("Failed to import image as volume: '%s'", image->name().c_str());
-				return false;
-			}
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(v, true);
-			node.setName(core::string::extractFilename(infile));
-			sceneGraph.emplace(core::move(node));
-		}
-		if (importAsPlane) {
-			voxel::RawVolume *v = voxelutil::importAsPlane(image);
-			if (v == nullptr) {
-				Log::warn("Failed to import image as plane: '%s'", image->name().c_str());
-				return false;
-			}
-			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(v, true);
-			node.setName(core::string::extractFilename(infile));
-			sceneGraph.emplace(core::move(node));
-		}
-		if (_exportPalette) {
-			palette::Palette pal;
-			core::String filename = infile;
-			filename = core::string::replaceExtension(filename, "png");
-			filename = core::string::addFilenamePrefix(filename, "palette-");
-			pal.convertImageToPalettePng(image, filename.c_str());
-			Log::info("Wrote palette %s", filename.c_str());
-		}
-	} else {
-		scenegraph::SceneGraph newSceneGraph;
-		voxelformat::LoadContext loadCtx;
-		loadCtx.monitor = printProgress;
-		io::FileDescription fileDesc;
-		fileDesc.set(infile);
-		if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
-			return false;
-		}
+	scenegraph::SceneGraph newSceneGraph;
+	voxelformat::LoadContext loadCtx;
+	loadCtx.monitor = printProgress;
+	io::FileDescription fileDesc;
+	fileDesc.set(infile);
+	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
+		return false;
+	}
 
-		int parent = sceneGraph.root().id();
-		if (multipleInputs) {
-			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
-			groupNode.setName(core::string::extractFilename(infile));
-			parent = sceneGraph.emplace(core::move(groupNode), parent);
-		}
-		scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
-		if (_printSceneGraph) {
-			sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
-		}
-
-		if (_exportPalette) {
-			const core::String &paletteFile = core::string::replaceExtension(infile, "png");
-			if (sceneGraph.firstPalette().save(paletteFile.c_str())) {
-				Log::info("Wrote palette %s", paletteFile.c_str());
-			}
-		}
+	int parent = sceneGraph.root().id();
+	if (multipleInputs) {
+		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
+		groupNode.setName(core::string::extractFilename(infile));
+		parent = sceneGraph.emplace(core::move(groupNode), parent);
+	}
+	scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);
+	if (_printSceneGraph) {
+		sceneGraphJson(sceneGraph, getArgVal("--json", "") == "full");
 	}
 
 	return true;

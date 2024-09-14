@@ -5,7 +5,6 @@
 #include "AbstractFormatTest.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxelformat/private/magicavoxel/VoxFormat.h"
 
 namespace voxelformat {
 

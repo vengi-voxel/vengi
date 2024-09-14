@@ -30,6 +30,7 @@
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include "voxelformat/private/cubzh/PCubesFormat.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
 #include "voxelformat/private/mesh/BlockbenchFormat.h"
@@ -400,6 +401,7 @@ const io::FormatDescription *voxelLoad() {
 												 nicksVoxelModel(),
 												 slab6Vox(),
 												 voxelMax(),
+												 io::format::png(),
 												 {"", {}, {}, 0u}};
 	return desc;
 }
@@ -511,6 +513,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<AsepriteFormat>();
 		} else if (ext == roomsThing().mainExtension()) {
 			return core::make_shared<ThingFormat>();
+		} else if (ext == io::format::png().mainExtension()) {
+			return core::make_shared<PNGFormat>();
 		} else if (gltf().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else {

@@ -23,6 +23,12 @@ General:
    - Fixed off-by-one in `voxformat_voxelizemode` `1`
    - Fixed missing axis flip for `md2` scale and translate value imports
    - Added support for Quake1 `mdl` files
+   - Added support for exporting and importing to and from `png` slices
+
+VoxConvert:
+
+   - Removed `--image-as-XXX` parameters (now part of the `png` format)
+   - Removed `--colored-heightmap` (this is auto-detected in the `png` format now)
 
 VoxEdit:
 

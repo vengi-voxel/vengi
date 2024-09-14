@@ -112,6 +112,32 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			}
 		}
 	} else {
+		if (forceApplyOptions || *desc == io::format::png()) {
+			const char *importTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
+			const core::VarPtr &importTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
+			const int currentImportType = importTypeVar->intVal();
+
+			if (ImGui::BeginCombo(_("Import type"), importTypes[currentImportType])) {
+				for (int i = 0; i < lengthof(importTypes); ++i) {
+					const char *importType = importTypes[i];
+					if (importType == nullptr) {
+						continue;
+					}
+					const bool selected = i == currentImportType;
+					if (ImGui::Selectable(importType, selected)) {
+						importTypeVar->setVal(core::string::toString(i));
+					}
+					if (selected) {
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			if (currentImportType == 2) {
+				ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);
+				ImGui::CheckboxVar(_("Both sides"), cfg::VoxformatImageVolumeBothSides);
+			}
+		}
 		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
 		ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
 		ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);

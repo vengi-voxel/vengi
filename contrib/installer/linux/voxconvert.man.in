@@ -20,10 +20,6 @@ a number of options.
 Generate a bash-completion script
 
 .TP
-\fB\--colored-heightmap\fR
-Use the alpha channel of the heightmap as height and the rgb data as surface color.
-
-.TP
 \fB\--crop\fR
 Reduces the volume sizes to their voxel boundaries.
 
@@ -33,7 +29,7 @@ Dump the scene graph of the input file. Use \fBfull\fR as parameter to also prin
 
 .TP
 \fB\--export-palette\fR
-Export the used palette data into an image.
+Export the used palette data into the specified output palette format.
 
 .TP
 \fB\--export-models\fR
@@ -54,29 +50,8 @@ Overwrite existing files.
 Print usage information with a a full list of cvars
 
 .TP
-\fB\--image-as-heightmap\fR
-Import input images as heightmaps (default).
-
-.TP
-\fB\--image-as-plane\fR
-Import input images as planes.
-
-.TP
-\fB\--image-as-volume\fR
-Import given input image as volume. Uses a depth map to make a volume out of the
-image. The depth map R channel is using values from 0 (black) to white (255)
-resulting in voxel heights from 1 to max-height (see --image-as-volume-max-depth).
-
 The \fB\--input\fR with e.g. \fBsomeimage.png\fR will pick the depth map next to
 the image path called \fBsomeimage-dm.png\fR as depth map.
-
-.TP
-\fB\--image-as-volume-max-depth\fR
-Default is 8 - see --image-as-volume.
-
-.TP
-\fB\--image-as-volume-both-sides\fR
-Importing image as volume and use the depth map for both sides.
 
 .TP
 \fB\--input|-i <file>\fR
@@ -354,7 +329,7 @@ The scripting docs are available at https://vengi-voxel.github.io/vengi/LUAScrip
 .SS Extract palette png
 Saves the png in the same dir as the vox file:
 
-\fB@NAME@ --export-palette --input infile.vengi --output outfile.vengi\fP
+\fB@NAME@ --export-palette --input infile.vengi --output outfile-palette.png\fP
 
 There will be an \fBinfile.png\fP now.
 

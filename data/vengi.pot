@@ -733,20 +733,6 @@ msgstr ""
 msgid "Import all files from a given directory"
 msgstr ""
 
-msgid "Import a 2d heightmap image into the current active node"
-msgstr ""
-
-msgid ""
-"Import a 2d heightmap image into the current active node. The height is "
-"encoded in the alpha channel with this method."
-msgstr ""
-
-msgid "Import an image as a plane into a new node"
-msgstr ""
-
-msgid "Import an image as a volume into a new node"
-msgstr ""
-
 msgid "Import an image as a palette"
 msgstr ""
 
@@ -1058,6 +1044,21 @@ msgid "No match for filter found"
 msgstr ""
 
 msgid "Empty palette index"
+msgstr ""
+
+msgid "Heightmap"
+msgstr ""
+
+msgid "Volume"
+msgstr ""
+
+msgid "Import type"
+msgstr ""
+
+msgid "Max depth"
+msgstr ""
+
+msgid "Both sides"
 msgstr ""
 
 msgid "L-System"
@@ -1390,18 +1391,6 @@ msgid "Add file to scene"
 msgstr ""
 
 msgid "Add directory to scene"
-msgstr ""
-
-msgid "Heightmap"
-msgstr ""
-
-msgid "Colored heightmap"
-msgstr ""
-
-msgid "Image as plane"
-msgstr ""
-
-msgid "Image as volume"
 msgstr ""
 
 msgid "Undo"

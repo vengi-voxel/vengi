@@ -232,7 +232,7 @@ voxel::RawVolume *importAsPlane(const image::Image *image, const palette::Palett
 				  imageHeight, thickness);
 		return nullptr;
 	}
-	Log::info("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
+	Log::debug("Import image as plane: w(%i), h(%i), d(%i)", imageWidth, imageHeight, thickness);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, thickness - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	for (int x = 0; x < imageWidth; ++x) {
@@ -312,7 +312,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 				  imageHeight, volumeDepth);
 		return nullptr;
 	}
-	Log::info("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
+	Log::debug("Import image as volume: w(%i), h(%i), d(%i)", imageWidth, imageHeight, volumeDepth);
 	const voxel::Region region(0, 0, 0, imageWidth - 1, imageHeight - 1, volumeDepth - 1);
 	palette::PaletteLookup palLookup(palette);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);

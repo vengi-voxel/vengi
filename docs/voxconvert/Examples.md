@@ -38,9 +38,9 @@ Convert the model into multiple different formats in the same run
 
 Imports a 2d image and applies depth to it.
 
-`./vengi-voxconvert --image-as-volume --image-as-volume-max-depth 8 --image-as-volume-both-sides true --input infile.png --output output.vox`
+`./vengi-voxconvert -set voxformat_imageimporttype 2 -set voxformat_imagevolumemaxdepth 8 -set voxformat_imagevolumebothsides true --input infile.png --output output.vox`
 
-Import given input image as volume. Uses a depth map to make a volume out of the image. The depth map R channel is using values from 0 (black) to white (255) resulting in voxel heights from 1 to max-height (see `--image-as-volume-max-depth`).
+Import given input image as volume. Uses a depth map to make a volume out of the image. The depth map R channel is using values from 0 (black) to white (255) resulting in voxel heights from 1 to max-height (see `voxformat_imagevolumemaxdepth`).
 
 The `--input` with e.g. `infile.png` will pick the depth map next to the image path called `infile-dm.png` as depth map.
 
@@ -139,12 +139,11 @@ Voxelize an obj and save as magicavoxel (including colors):
 
 Just specify the heightmap as input file like this:
 
-`./vengi-voxconvert --input heightmap.png --output outfile.vox`
+`./vengi-voxconvert --input heightmap.png --output outfile.vox -set voxformat_imageimporttype 1`
 
 It's assumed that the given image is a gray scale image - but only the red channel is used anyway.
 
-If you want to colorize the surface of your heightmap import, you can specify `--colored-heightmap` - this will use the
-alpha channel of the image as height and the rgb channels of the image to determine the surface color.
+If you want to colorize the surface of your heightmap import, you can just provide a heightmap that is no grayscale and the height is taken from the alpha channel of the image - the rgb channels of the image to determine the surface color.
 
 ## Rotate the voxels
 
@@ -304,7 +303,7 @@ for %%f in (%INPUT_FOLDER%*.png) do (
         echo Skipping !input_file! due to -dm in the name.
     ) else (
         set "output_file=%OUTPUT_FOLDER%!file_name!.vox"
-        vengi-voxconvert --image-as-volume --image-as-volume-max-depth 2 --image-as-volume-both-sides false --input "!input_file!" --output "!output_file!"
+        vengi-voxconvert -set voxformat_imageimporttype 2 -set voxformat_imagevolumemaxdepth 2 -set voxformat_imagevolumebothsides false --input "!input_file!" --output "!output_file!"
     )
 )
 ```

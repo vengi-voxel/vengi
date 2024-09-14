@@ -250,52 +250,6 @@ app::AppState VoxEdit::onConstruct() {
 		_sceneMgr->importDirectory(args[0], format);
 	}).setHelp(_("Import all files from a given directory"));
 
-	command::Command::registerCommand("importheightmap", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importHeightmap(file); }, fileDialogOptions, io::format::images());
-			return;
-		}
-		if (!_sceneMgr->importHeightmap(args[0])) {
-			Log::error("Failed to execute 'importheightmap' for file '%s'", args[0].c_str());
-		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import a 2d heightmap image into the current active node"));
-
-	command::Command::registerCommand("importcoloredheightmap", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importHeightmap(file); }, fileDialogOptions, io::format::images());
-			return;
-		}
-		if (!_sceneMgr->importColoredHeightmap(args[0])) {
-			Log::error("Failed to execute 'importcoloredheightmap' for file '%s'", args[0].c_str());
-		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import a 2d heightmap image into the current active node. The height is encoded in the alpha channel with this method."));
-
-	command::Command::registerCommand("importplane", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importAsPlane(file); }, fileDialogOptions, io::format::images());
-			return;
-		}
-		if (!_sceneMgr->importAsPlane(args[0])) {
-			Log::error("Failed to execute 'importplane' for file '%s'", args[0].c_str());
-		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import an image as a plane into a new node"));
-
-	command::Command::registerCommand("importvolume", [this](const command::CmdArgs &args) {
-		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) {
-				const core::String &dmFile = voxelutil::getDefaultDepthMapFile(file);
-				_sceneMgr->importAsVolume(file, dmFile, 8, true);
-			}, fileDialogOptions, io::format::images());
-			return;
-		}
-		const int maxDepth = args.size() >= 3 ? core::string::toInt(args[1]) : 8;
-		const bool bothSides = args.size() >= 4 ? core::string::toBool(args[2]) : true;
-		const core::String &dmFile = voxelutil::getDefaultDepthMapFile(args[0]);
-		if (!_sceneMgr->importAsVolume(args[0], dmFile, maxDepth, bothSides)) {
-			Log::error("Failed to execute 'importvolume' for file '%s'", args[0].c_str());
-		}
-	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Import an image as a volume into a new node"));
-
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
 			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { importPalette(file); }, fileDialogOptions, &_paletteFormats[0]);

@@ -256,23 +256,6 @@ public:
 	bool setActivePalette(const palette::Palette &palette, bool searchBestColors = false);
 
 	/**
-	 * @brief Import a heightmap in the current node of the scene
-	 * @param[in] file The image file to import as heightmap.
-	 * @note The first component is used as height value. In most cases the R channel.
-	 */
-	bool importHeightmap(const core::String &file);
-	bool importColoredHeightmap(const core::String &file);
-	/**
-	 * @brief Import an image as a plane in a new node of the scene.
-	 * @note There is a total max dimension of the texture that is supported.
-	 * @param[in] file The image file path to load
-	 */
-	bool importAsPlane(const core::String &file);
-	/**
-	 * @brief Import an image as a plane and apply a depthmap to it
-	 */
-	bool importAsVolume(const core::String &file, const core::String &dmFile, int maxDepth, bool bothSides);
-	/**
 	 * @brief Import a new palette from the given image file
 	 * @note The amount of colors in the image may not exceed 256
 	 * @param[in] file The image file path

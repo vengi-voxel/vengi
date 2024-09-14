@@ -334,8 +334,9 @@ msgstr "(Popup)"
 msgid "(Untitled)"
 msgstr "(Unbenannt)"
 
-msgid "Open"
-msgstr "Öffnen"
+#, c-format
+msgid "Open '%s'"
+msgstr "Öffne '%s'"
 
 msgid "Copy Link###CopyLink"
 msgstr "Link kopieren###CopyLink"
@@ -767,22 +768,6 @@ msgstr "Ein Volumen zur vorhandenen Szene aus der angegebenen Datei hinzufügen"
 msgid "Import all files from a given directory"
 msgstr "Alle Dateien aus einem angegebenen Verzeichnis importieren"
 
-msgid "Import a 2d heightmap image into the current active node"
-msgstr "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren"
-
-msgid ""
-"Import a 2d heightmap image into the current active node. The height is "
-"encoded in the alpha channel with this method."
-msgstr ""
-"Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren. Die Höhe "
-"wird mit dieser Methode im Alpha-Kanal codiert."
-
-msgid "Import an image as a plane into a new node"
-msgstr "Ein Bild als Ebene in einen neuen Knoten importieren"
-
-msgid "Import an image as a volume into a new node"
-msgstr "Ein Bild als Volumen in einen neuen Knoten importieren"
-
 msgid "Import an image as a palette"
 msgstr "Ein Bild als Palette importieren"
 
@@ -1099,6 +1084,21 @@ msgstr "Keine Übereinstimmung für den Filter gefunden"
 
 msgid "Empty palette index"
 msgstr "Leerer Paletteneintrag"
+
+msgid "Heightmap"
+msgstr "Höhenkarte"
+
+msgid "Volume"
+msgstr "Volumen"
+
+msgid "Import type"
+msgstr "Importart"
+
+msgid "Max depth"
+msgstr "Max. Tiefe"
+
+msgid "Both sides"
+msgstr "Beide Seiten"
 
 msgid "L-System"
 msgstr "L-System"
@@ -1478,18 +1478,6 @@ msgstr "Datei zur Szene hinzufügen"
 
 msgid "Add directory to scene"
 msgstr "Verzeichnis zur Szene hinzufügen"
-
-msgid "Heightmap"
-msgstr "Höhenkarte"
-
-msgid "Colored heightmap"
-msgstr "Farbige Höhenkarte"
-
-msgid "Image as plane"
-msgstr "Bild als Ebene"
-
-msgid "Image as volume"
-msgstr "Bild als Volumen"
 
 msgid "Undo"
 msgstr "Rückgängig"
@@ -2640,3 +2628,28 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
+
+#~ msgid "Import a 2d heightmap image into the current active node"
+#~ msgstr "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren"
+
+#~ msgid ""
+#~ "Import a 2d heightmap image into the current active node. The height is "
+#~ "encoded in the alpha channel with this method."
+#~ msgstr ""
+#~ "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren. Die "
+#~ "Höhe wird mit dieser Methode im Alpha-Kanal codiert."
+
+#~ msgid "Import an image as a plane into a new node"
+#~ msgstr "Ein Bild als Ebene in einen neuen Knoten importieren"
+
+#~ msgid "Import an image as a volume into a new node"
+#~ msgstr "Ein Bild als Volumen in einen neuen Knoten importieren"
+
+#~ msgid "Colored heightmap"
+#~ msgstr "Farbige Höhenkarte"
+
+#~ msgid "Image as plane"
+#~ msgstr "Bild als Ebene"
+
+#~ msgid "Image as volume"
+#~ msgstr "Bild als Volumen"
