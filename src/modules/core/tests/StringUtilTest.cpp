@@ -285,9 +285,10 @@ TEST_F(StringUtilTest, testMatches) {
 }
 
 TEST_F(StringUtilTest, testFileMatchesMultiple) {
+	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "foobar.txt"));
 	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "*.txt"));
 	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "*.tet,*.no,*.no2,*.no3,*.txt"));
-	EXPECT_TRUE(core::string::fileMatchesMultiple("foobar.txt", "tet,no,no2,no3,txt"));
+	EXPECT_FALSE(core::string::fileMatchesMultiple("foobar.txt", "tet,no,no2,no3,txt"));
 	EXPECT_FALSE(core::string::fileMatchesMultiple("foobar.txt", "*.bar,*.foo"));
 	EXPECT_FALSE(core::string::fileMatchesMultiple("foobar.txt", "bar,foo"));
 }

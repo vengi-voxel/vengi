@@ -222,6 +222,7 @@ bool Filesystem::createDir(const core::String &dir, bool recursive) const {
 bool Filesystem::_list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					   const core::String &filter, int depth) {
 	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory.c_str());
+	Log::debug("Found %i entries in %s", (int)entries.size(), directory.c_str());
 	for (FilesystemEntry entry : entries) {
 		normalizePath(entry.name);
 		entry.fullPath = core::string::path(directory, entry.name);
