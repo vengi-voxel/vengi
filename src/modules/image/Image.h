@@ -93,6 +93,8 @@ public:
 	core::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 
+	bool isGrayScale() const;
+
 	void setColor(core::RGBA rgba, int x, int y);
 
 	const uint8_t* at(int x, int y) const;

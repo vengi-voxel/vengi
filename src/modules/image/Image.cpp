@@ -63,6 +63,21 @@ Image::~Image() {
 	}
 }
 
+bool Image::isGrayScale() const {
+	if (_depthOfColor == 1) {
+		return true;
+	}
+	for (int x = 0; x < _width; ++x) {
+		for (int y = 0; y < _height; ++y) {
+			const core::RGBA c = colorAt(x, y);
+			if (c.r != c.g || c.r != c.b) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool Image::load(const io::FilePtr &file) {
 	uint8_t *buffer;
 	const int length = file->read((void **)&buffer);
