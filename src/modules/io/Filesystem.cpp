@@ -267,7 +267,7 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 	if (isRelativePath(directory)) {
 		for (const core::String &p : _paths) {
 			const core::String fullDir = core::string::path(p, directory);
-			Log::debug("List %s in %s", filter.c_str(), fullDir.c_str());
+			Log::debug("List filter '%s' in %s", filter.c_str(), fullDir.c_str());
 			_list(fullDir, entities, filter, depth);
 		}
 	} else {
