@@ -902,6 +902,10 @@ core::String extractPath(const core::String &str) {
 	return str.substr(0, pos + 1);
 }
 
+bool isSamePath(const core::String &a, const core::String &b) {
+	return sanitizeDirPath(a) == sanitizeDirPath(b);
+}
+
 core::String cleanPath(const core::String &str) {
 	core::String tmp;
 	tmp.reserve(str.size() + 1);

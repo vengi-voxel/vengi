@@ -124,6 +124,9 @@ public:
 	 */
 	static bool chdir(const core::String& directory);
 
+	/**
+	 * @brief The current working directory without a tailing /
+	 */
 	core::String currentDir() const;
 
 	/**

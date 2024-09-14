@@ -119,6 +119,9 @@ core::String sanitizeDirPath(core::String str);
 template <typename... ArgTypes>
 inline core::String path(ArgTypes... args);
 
+/**
+ * @brief Assembles a path from the given components terminated with a trailing /
+ */
 template <typename T, typename... ArgTypes>
 inline core::String path(T t, ArgTypes... args) {
 	const core::String &p = path(args...);
@@ -143,6 +146,8 @@ template <>
 inline core::String path() {
 	return "";
 }
+
+bool isSamePath(const core::String &a, const core::String &b);
 
 /**
  * @brief extract path with trailing /
