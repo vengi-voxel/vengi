@@ -5,7 +5,9 @@
 #include "io/FilesystemArchive.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
+#include "core/String.h"
 #include "core/tests/TestHelper.h"
+#include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
 #include <gtest/gtest.h>
@@ -50,6 +52,17 @@ TEST_F(FilesystemArchiveTest, DISABLED_testFilesytemArchiveCurrentDir) {
 TEST_F(FilesystemArchiveTest, testFilesytemArchiveNoDir) {
 	io::FilesystemArchive fsa(fs);
 	EXPECT_TRUE(fsa.exists("iotest.txt"));
+}
+
+TEST_F(FilesystemArchiveTest, testFilesytemArchiveList) {
+	io::FilesystemArchive fsa(fs);
+	io::ArchiveFiles files;
+	fsa.list("iotest.txt", files);
+	ASSERT_EQ(files.size(), 1u);
+	EXPECT_EQ(files.front().name, "iotest.txt");
+	fsa.list("", files, "iotest.txt");
+	ASSERT_EQ(files.size(), 2u);
+	EXPECT_EQ(files.back().name, "iotest.txt");
 }
 
 } // namespace io
