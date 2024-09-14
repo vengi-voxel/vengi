@@ -71,12 +71,12 @@ bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, co
 	return true;
 }
 
-int importHeightMaxHeight(const image::ImagePtr &image, bool alpha) {
+int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight) {
 	const int w = image->width();
 	const int h = image->height();
 	int maxHeight = 0;
 	int minHeight = 255;
-	if (alpha) {
+	if (alphaAsHeight) {
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				const uint8_t alphaVal = image->colorAt(x, y).a;

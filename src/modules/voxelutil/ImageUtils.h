@@ -26,7 +26,11 @@ namespace voxelutil {
  */
 void importColoredHeightmap(voxel::RawVolumeWrapper& volume, palette::PaletteLookup &palLookup, const image::ImagePtr& image, const voxel::Voxel &underground);
 void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& image, const voxel::Voxel &underground, const voxel::Voxel &surface);
-int importHeightMaxHeight(const image::ImagePtr &image, bool alpha);
+/**
+ * @param alphaAsHeight If this is @c true, the rgb color is used for the colors - otherwise the red channel is used
+ * (because a gray scale image is expected)
+ */
+int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight);
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness = 1);
 voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
 voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness = 1);
