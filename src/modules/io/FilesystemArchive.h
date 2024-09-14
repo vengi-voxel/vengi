@@ -21,6 +21,7 @@ protected:
 	bool _sysmode;
 
 public:
+	using Archive::list;
 	FilesystemArchive(const io::FilesystemPtr &filesytem, bool sysmode = true);
 	virtual ~FilesystemArchive();
 	bool init(const core::String &path, io::SeekableReadStream *stream = nullptr) override;
