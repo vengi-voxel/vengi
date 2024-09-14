@@ -266,10 +266,16 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 bool Filesystem::list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					  const core::String &filter, int depth) const {
 	if (isRelativePath(directory)) {
+		const core::String cwd = currentDir();
 		for (const core::String &p : _paths) {
 			const core::String fullDir = core::string::path(p, directory);
-			Log::debug("List filter '%s' in %s", filter.c_str(), fullDir.c_str());
+			if (core::string::isSamePath(fullDir, cwd)) {
+				continue;
+			}
 			_list(fullDir, entities, filter, depth);
+		}
+		if (directory.empty()) {
+			_list(cwd, entities, filter, depth);
 		}
 	} else {
 		_list(directory, entities, filter, depth);
