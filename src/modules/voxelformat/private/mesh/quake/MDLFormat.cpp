@@ -297,6 +297,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				}
 				groupFrame.frames.emplace_back(frame);
 			}
+			poses.emplace_back(groupFrame);
 		}
 	}
 
