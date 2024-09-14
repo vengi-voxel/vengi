@@ -14,7 +14,7 @@ set(SRCS
 	FileStream.cpp FileStream.h
 	Filesystem.cpp Filesystem.h
 	FilesystemArchive.cpp FilesystemArchive.h
-	FilesystemEntry.h
+	FilesystemEntry.cpp FilesystemEntry.h
 	FormatDescription.cpp FormatDescription.h
 	IOResource.h
 	LZFSEReadStream.cpp LZFSEReadStream.h

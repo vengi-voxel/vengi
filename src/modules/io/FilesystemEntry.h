@@ -35,4 +35,6 @@ struct FilesystemEntry {
 	}
 };
 
+FilesystemEntry createFilesystemEntry(const core::String &filename);
+
 }
