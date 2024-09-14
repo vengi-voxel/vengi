@@ -301,6 +301,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	// create textured triangle instances
+	bool first = true;
 	for (uint32_t p = 0; p < poses.size(); ++p) {
 		const MDLPose &pose = poses[p];
 		for (const MDLFrame &frame : pose.frames) {
@@ -324,7 +325,11 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				texturedTri.texture = textures[0];
 				triangles.emplace_back(texturedTri);
 			}
-			voxelizeNode(frame.name, sceneGraph, triangles);
+			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles);
+			if (!first && nodeId != -1) {
+				sceneGraph.node(nodeId).setVisible(false);
+			}
+			first = false;
 		}
 	}
 
