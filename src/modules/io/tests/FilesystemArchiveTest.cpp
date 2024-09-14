@@ -13,11 +13,15 @@
 namespace io {
 
 class FilesystemArchiveTest : public app::AbstractTest {
+private:
+	using Super = app::AbstractTest;
+
 protected:
 	io::FilesystemPtr fs;
 
 public:
 	void SetUp() override {
+		Super::SetUp();
 		fs = core::make_shared<io::Filesystem>();
 		EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
 	}
@@ -25,6 +29,7 @@ public:
 	void TearDown() override {
 		fs->shutdown();
 		fs.release();
+		Super::TearDown();
 	}
 };
 
