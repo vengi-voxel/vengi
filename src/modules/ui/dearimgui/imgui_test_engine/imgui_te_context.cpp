@@ -1700,7 +1700,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
             float extra_width_desired = item.RectFull.Max.x - window_r.Max.x; // item->RectClipped.Max.x;
             if (extra_width_desired > 0.0f && (flags & ImGuiTestOpFlags_IsSecondAttempt) == 0)
             {
-                LogDebug("Will attempt to resize window to make item in menu layer visible.");
+                LogDebug("MouseMove: Will attempt to resize window to make item in menu layer visible.");
                 WindowResize(window->ID, window->Size + ImVec2(extra_width_desired, 0.0f));
             }
         }
@@ -1713,6 +1713,13 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     ImVec2 pos = item.RectFull.GetCenter();
     if (WindowTeleportToMakePosVisible(window->ID, pos))
         item = ItemInfo(item.ID);
+
+    // Handle the off-chance that e.g. item/window stops being submitted while scrolling (easy to repro by pressing Esc during a long scroll)
+    if (item.ID == 0)
+    {
+        LogError("MouseMove: item doesn't exist anymore (after scrolling)");
+        return;
+    }
 
     // Keep a copy of item info
     const ImGuiTestItemInfo item_initial_state = item;
@@ -1742,7 +1749,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
     // Another is window active test (in the case focus change has a side effect but also as we have yield an extra frame)
     if (!item.Window->WasActive)
     {
-        LogError("Window '%s' is not active (after aiming)", item.Window->Name);
+        LogError("MouseMove: Window '%s' is not active (after aiming)", item.Window->Name);
         return;
     }
 
@@ -1797,7 +1804,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
                     is_hovering_resize_corner |= (hovered_id == ImGui::GetWindowResizeCornerID(window, n));
                 if (is_hovering_resize_corner)
                 {
-                    LogDebug("Child obstructed by parent's ResizeGrip, trying to resize window and trying again..");
+                    LogDebug("MouseMove: Child obstructed by parent's ResizeGrip, trying to resize window and trying again..");
                     float extra_size = window->CalcFontSize() * 3.0f;
                     WindowResize(window->ID, window->Size + ImVec2(extra_size, extra_size));
                     MouseMove(ref, flags | ImGuiTestOpFlags_IsSecondAttempt);
@@ -1815,7 +1822,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
             ImVec2 size_old = item_initial_state.RectFull.GetSize();
             ImVec2 size_new = item.RectFull.GetSize();
             Str256f error_message(
-                "Unable to Hover %s:\n"
+                "MouseMove: Unable to Hover %s:\n"
                 "- Expected item 0x%08X in window '%s', targeted position: (%.1f,%.1f)'\n"
                 "- Hovered id was 0x%08X in '%s'.\n"
                 "- Before mouse move: Item Pos (%6.1f,%6.1f) Size (%6.1f,%6.1f)\n"
