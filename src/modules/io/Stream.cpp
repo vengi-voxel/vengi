@@ -387,10 +387,10 @@ bool ReadStream::readString(int length, core::String &str, bool terminated) {
 		if (readUInt8(chr) != 0) {
 			return false;
 		}
-		str += (char)chr;
 		if (terminated && chr == '\0') {
 			break;
 		}
+		str += (char)chr;
 	}
 	return true;
 }
