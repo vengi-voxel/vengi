@@ -199,6 +199,19 @@ bool PaletteFormat::loadGroups(const core::String &filename, const io::ArchivePt
 	if (!loadGroupsPalette(filename, archive, sceneGraph, palette, ctx)) {
 		return false;
 	}
+
+	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+	if (!createPalette) {
+		Log::info("Remap the palette to %s", voxel::getPalette().name().c_str());
+		for (const auto &e :sceneGraph.nodes()) {
+			scenegraph::SceneGraphNode &node = e->value;
+			if (node.isAnyModelNode()) {
+				node.remapToPalette(voxel::getPalette());
+				node.setPalette(voxel::getPalette());
+			}
+		}
+	}
+
 	sceneGraph.updateTransforms();
 	return true;
 }
@@ -287,7 +300,7 @@ core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const 
 bool RGBAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
 							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	palette::Palette palette;
-	const bool createPalette = core::Var::get(cfg::VoxelCreatePalette);
+	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (createPalette) {
 		if (loadPalette(filename, archive, palette, ctx) <= 0) {
 			palette = voxel::getPalette();
