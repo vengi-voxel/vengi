@@ -555,7 +555,6 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	for (const core::String &outfile : outfiles) {
-		const core::String &ext = core::string::extractExtension(outfile);
 		if (_exportPalette || (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes()))) {
 			// if the given format is a palette only format (some voxel formats might have the same
 			// extension - so we check that here)

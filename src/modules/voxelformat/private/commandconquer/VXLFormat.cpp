@@ -77,6 +77,8 @@ static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t no
 	} else if (normalType == 4) { // Red Alert
 		normals = priv::normals::ra2normals;
 		size = lengthof(priv::normals::ra2normals);
+	} else {
+		return 0;
 	}
 
 	const glm::ivec3 samplerPos = sampler.position();
