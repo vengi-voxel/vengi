@@ -3792,7 +3792,31 @@ ImGuiID ImGuiTestContext::PopupGetWindowID(ImGuiTestRef ref)
 }
 
 #ifdef IMGUI_HAS_VIEWPORT
-// Simulate a platform focus WITHOUT a click perceived by dear imgui. Similare to clicking on Platform title bar.
+void    ImGuiTestContext::ViewportPlatform_SetWindowPos(ImGuiViewport* viewport, const ImVec2& pos)
+{
+    if (IsError())
+        return;
+
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("ViewportPlatform_SetWindowPos(0x%08X, {%.2f,%.2f)", viewport->ID, pos.x, pos.y);
+    Inputs->Queue.push_back(ImGuiTestInput::ForViewportSetPos(viewport->ID, pos)); // Queued since this will poke into backend, best to do in main thread.
+    Yield(); // Submit to Platform
+    Yield(); // Let Dear ImGui next frame see it
+}
+
+void    ImGuiTestContext::ViewportPlatform_SetWindowSize(ImGuiViewport* viewport, const ImVec2& size)
+{
+    if (IsError())
+        return;
+
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("ViewportPlatform_SetWindowSize(0x%08X, {%.2f,%.2f)", viewport->ID, size.x, size.y);
+    Inputs->Queue.push_back(ImGuiTestInput::ForViewportSetSize(viewport->ID, size)); // Queued since this will poke into backend, best to do in main thread.
+    Yield(); // Submit to Platform
+    Yield(); // Let Dear ImGui next frame see it
+}
+
+// Simulate a platform focus WITHOUT a click perceived by dear imgui. Similar to clicking on Platform title bar.
 void    ImGuiTestContext::ViewportPlatform_SetWindowFocus(ImGuiViewport* viewport)
 {
     if (IsError())

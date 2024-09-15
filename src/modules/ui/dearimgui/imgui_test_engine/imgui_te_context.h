@@ -483,8 +483,8 @@ struct IMGUI_API ImGuiTestContext
     // IMPORTANT: Those function may alter Platform state (unless using the "Mock Viewport" backend). Use carefully.
     // Those are mostly useful to simulate OS actions and testing of viewport-specific features, may not be useful to most users.
 #ifdef IMGUI_HAS_VIEWPORT
-    //void      ViewportPlatform_SetWindowPos(ImGuiViewport* viewport, const ImVec2& pos);
-    //void      ViewportPlatform_SetWindowSize(ImGuiViewport* viewport, const ImVec2& size);
+    void        ViewportPlatform_SetWindowPos(ImGuiViewport* viewport, const ImVec2& pos);
+    void        ViewportPlatform_SetWindowSize(ImGuiViewport* viewport, const ImVec2& size);
     void        ViewportPlatform_SetWindowFocus(ImGuiViewport* viewport);
     void        ViewportPlatform_CloseWindow(ImGuiViewport* viewport);
 #endif

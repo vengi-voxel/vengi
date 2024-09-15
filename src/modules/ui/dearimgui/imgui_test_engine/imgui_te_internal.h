@@ -67,6 +67,8 @@ enum ImGuiTestInputType
     ImGuiTestInputType_Key,
     ImGuiTestInputType_Char,
     ImGuiTestInputType_ViewportFocus,
+    ImGuiTestInputType_ViewportSetPos,
+    ImGuiTestInputType_ViewportSetSize,
     ImGuiTestInputType_ViewportClose
 };
 
@@ -78,6 +80,7 @@ struct ImGuiTestInput
     ImWchar                 Char = 0;
     bool                    Down = false;
     ImGuiID                 ViewportId = 0;
+    ImVec2                  ViewportPosSize;
 
     static ImGuiTestInput   ForKeyChord(ImGuiKeyChord key_chord, bool down)
     {
@@ -101,6 +104,24 @@ struct ImGuiTestInput
         ImGuiTestInput inp;
         inp.Type = ImGuiTestInputType_ViewportFocus;
         inp.ViewportId = viewport_id;
+        return inp;
+    }
+
+    static ImGuiTestInput   ForViewportSetPos(ImGuiID viewport_id, const ImVec2& pos)
+    {
+        ImGuiTestInput inp;
+        inp.Type = ImGuiTestInputType_ViewportSetPos;
+        inp.ViewportId = viewport_id;
+        inp.ViewportPosSize = pos;
+        return inp;
+    }
+
+    static ImGuiTestInput   ForViewportSetSize(ImGuiID viewport_id, const ImVec2& size)
+    {
+        ImGuiTestInput inp;
+        inp.Type = ImGuiTestInputType_ViewportSetSize;
+        inp.ViewportId = viewport_id;
+        inp.ViewportPosSize = size;
         return inp;
     }
 

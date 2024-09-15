@@ -658,39 +658,69 @@ void ImGuiTestEngine_ApplyInputToImGuiContext(ImGuiTestEngine* engine)
                 io.AddInputCharacter(input.Char);
                 break;
             }
+#ifdef IMGUI_HAS_VIEWPORT
             case ImGuiTestInputType_ViewportFocus:
             {
-#ifdef IMGUI_HAS_VIEWPORT
-                if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                {
-                    IM_ASSERT(engine->TestContext != NULL);
-                    ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
-                    if (viewport == NULL)
-                        engine->TestContext->LogError("ViewportPlatform_SetWindowFocus(%08X): cannot find viewport anymore!", input.ViewportId);
-                    else if (platform_io.Platform_SetWindowSize == NULL)
-                        engine->TestContext->LogError("ViewportPlatform_SetWindowFocus(%08X): backend's Platform_SetWindowSize() is not set", input.ViewportId);
-                    else
-                        platform_io.Platform_SetWindowFocus(viewport);
-                }
-#endif
+                if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) == 0)
+                    break;
+                IM_ASSERT(engine->TestContext != NULL);
+                ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
+                if (viewport == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowFocus(%08X): cannot find viewport anymore!", input.ViewportId);
+                else if (platform_io.Platform_SetWindowFocus == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowFocus(%08X): backend's Platform_SetWindowFocus() is not set", input.ViewportId);
+                else
+                    platform_io.Platform_SetWindowFocus(viewport);
+                break;
+            }
+            case ImGuiTestInputType_ViewportSetPos:
+            {
+                if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) == 0)
+                    break;
+                IM_ASSERT(engine->TestContext != NULL);
+                ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
+                if (viewport == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowPos(%08X): cannot find viewport anymore!", input.ViewportId);
+                else if (platform_io.Platform_SetWindowPos == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowPos(%08X): backend's Platform_SetWindowPos() is not set", input.ViewportId);
+                else
+                    platform_io.Platform_SetWindowPos(viewport, input.ViewportPosSize);
+                break;
+            }
+            case ImGuiTestInputType_ViewportSetSize:
+            {
+                if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) == 0)
+                    break;
+                IM_ASSERT(engine->TestContext != NULL);
+                ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
+                if (viewport == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowSize(%08X): cannot find viewport anymore!", input.ViewportId);
+                else if (platform_io.Platform_SetWindowPos == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_SetWindowSize(%08X): backend's Platform_SetWindowSize() is not set", input.ViewportId);
+                else
+                    platform_io.Platform_SetWindowSize(viewport, input.ViewportPosSize);
                 break;
             }
             case ImGuiTestInputType_ViewportClose:
             {
-#ifdef IMGUI_HAS_VIEWPORT
-                if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                {
-                    IM_ASSERT(engine->TestContext != NULL);
-                    ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
-                    if (viewport == NULL)
-                        engine->TestContext->LogError("ViewportPlatform_CloseWindow(%08X): cannot find viewport anymore!", input.ViewportId);
-                    else
-                        viewport->PlatformRequestClose = true;
-                    // FIXME: doesn't apply to actual backend
-                }
-#endif
+                if ((io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) == 0)
+                    break;
+                IM_ASSERT(engine->TestContext != NULL);
+                ImGuiViewport* viewport = ImGui::FindViewportByID(input.ViewportId);
+                if (viewport == NULL)
+                    engine->TestContext->LogError("ViewportPlatform_CloseWindow(%08X): cannot find viewport anymore!", input.ViewportId);
+                else
+                    viewport->PlatformRequestClose = true;
+                // FIXME: doesn't apply to actual backend
                 break;
             }
+#else
+            case ImGuiTestInputType_ViewportFocus:
+            case ImGuiTestInputType_ViewportSetPos:
+            case ImGuiTestInputType_ViewportSetSize:
+            case ImGuiTestInputType_ViewportClose:
+                break;
+#endif
             case ImGuiTestInputType_None:
             default:
                 break;
