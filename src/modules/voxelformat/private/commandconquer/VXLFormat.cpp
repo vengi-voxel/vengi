@@ -16,14 +16,17 @@
 #include "core/collection/StringSet.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/commandconquer/HVAFormat.h"
+#include "voxelformat/private/commandconquer/VXLNormals.h"
 #include "voxelformat/private/commandconquer/VXLShared.h"
+#include "voxelutil/Connectivity.h"
+#include "voxelutil/VoxelUtil.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/matrix.hpp>
@@ -46,6 +49,43 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
+static uint8_t findClosestNormalIndex(const glm::vec3 &calculatedNormal, const glm::vec3 *normals, size_t size) {
+	uint8_t closestIndex = 0;
+	float maxDot = -1.0f;
+
+	for (size_t i = 0; i < size; ++i) {
+		const float dot = glm::dot(calculatedNormal, normals[i]);
+
+		if (dot > maxDot) {
+			maxDot = dot;
+			closestIndex = i;
+		}
+	}
+	return closestIndex;
+}
+
+static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType) {
+	if (isAir(sampler.voxel().getMaterial())) {
+		return 0;
+	}
+
+	const glm::vec3 *normals;
+	size_t size = 0;
+	if (normalType == 2) { // Tiberian Sun
+		normals = priv::normals::tsnormals;
+		size = lengthof(priv::normals::tsnormals);
+	} else if (normalType == 4) { // Red Alert
+		normals = priv::normals::ra2normals;
+		size = lengthof(priv::normals::ra2normals);
+	}
+
+	const glm::ivec3 samplerPos = sampler.position();
+	const glm::vec3 normal = voxelutil::calculateNormal(sampler, voxelutil::Connectivity::SixConnected);
+	sampler.setPosition(samplerPos);
+	const uint8_t normalIdx = findClosestNormalIndex(normal, normals, size);
+	return normalIdx;
+}
+
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
 									uint8_t normalType) const {
@@ -54,15 +94,14 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
 
+	voxel::RawVolume::Sampler sampler(*volume);
+	sampler.setPosition(x, y, z);
 	for (uint8_t i = 0; i < voxelCount; ++i) {
-		const voxel::Voxel &voxel = volume->voxel(x, y + i, z);
+		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		uint8_t normalIndex = 0;
-		// TODO: normal
-		// if (normalType == 2) { // Tiberian Sun
-		// } else if (normalType == 4) { // Red Alert
-		// }
+		uint8_t normalIndex = calculateVXLNormal(sampler, normalType);
 		wrapBool(stream.writeUInt8(normalIndex))
+		sampler.movePositiveY();
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
 	return true;
