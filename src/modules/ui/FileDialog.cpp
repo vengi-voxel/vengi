@@ -331,30 +331,29 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	static_assert(lengthof(folderNames) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 	static_assert(lengthof(folderIcons) == io::FilesystemDirectories::FS_Dir_Max, "Array size doesn't match enum value");
 
+	int index = 0;
 	if (ImGui::TreeNode(_("Quick Access"))) {
 		for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
 			const core::String& dir = _app->filesystem()->specialDir((io::FilesystemDirectories)n);
 			if (dir.empty()) {
 				continue;
 			}
-			quickAccessEntry(n, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
+			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
-		int i = 0;
 		for (const core::String &path : _app->filesystem()->otherPaths()) {
-			quickAccessEntry(i++, type, path, contentRegionWidth);
+			quickAccessEntry(index++, type, path, contentRegionWidth);
 		}
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode(_("This PC"))) {
 		const io::Paths& paths = _app->filesystem()->paths();
-		int i = 0;
 		for (const core::String& path : paths) {
 			const core::String& absPath = _app->filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				continue;
 			}
-			quickAccessEntry(i++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
+			quickAccessEntry(index++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
 		}
 		ImGui::TreePop();
 	}
@@ -369,14 +368,13 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		}
 		core::DynamicArray<core::String> bm;
 		core::string::splitString(bookmarks, bm, ";");
-		int i = 0;
 		for (const core::String& path : bm) {
 			const core::String& absPath = _app->filesystem()->absolutePath(path);
 			if (absPath.empty()) {
 				removeBookmark(path);
 				continue;
 			}
-			if (quickAccessEntry(i++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
+			if (quickAccessEntry(index++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER)) {
 				if (ImGui::BeginPopupContextItem()) {
 					if (ImGui::IconButton(ICON_LC_TRASH, _("Remove bookmark"))) {
 						removeBookmark(path);
