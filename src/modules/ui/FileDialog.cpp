@@ -340,10 +340,6 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			}
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNode(_("This PC"))) {
 		const io::Paths& paths = _app->filesystem()->paths();
 		for (const core::String& path : paths) {
 			const core::String& absPath = _app->filesystem()->absolutePath(path);
@@ -352,10 +348,16 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			}
 			quickAccessEntry(index++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
 		}
-		for (const core::String &path : _app->filesystem()->otherPaths()) {
-			quickAccessEntry(index++, type, path, contentRegionWidth);
-		}
 		ImGui::TreePop();
+	}
+
+	if (!_app->filesystem()->otherPaths().empty()) {
+		if (ImGui::TreeNode(_("This PC"))) {
+			for (const core::String &path : _app->filesystem()->otherPaths()) {
+				quickAccessEntry(index++, type, path, contentRegionWidth);
+			}
+			ImGui::TreePop();
+		}
 	}
 
 	if (ImGui::TreeNode(_("Bookmarks"))) {
