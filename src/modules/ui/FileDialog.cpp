@@ -151,6 +151,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		}
 		_filteredEntities.push_back(&_entities[i]);
 	}
+	_filteredEntities.sort(fileDialogSorter[(int)FileDialogColumnId::File].asc);
 }
 
 void FileDialog::selectFilter(video::OpenFileMode type, int index) {
