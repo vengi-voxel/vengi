@@ -30,9 +30,14 @@ enum FilesystemDirectories {
 	FS_Dir_Max
 };
 
+struct ThisPCEntry {
+	core::String name;
+	core::String path;
+};
+
 struct FilesystemState {
 	core::String _directories[FilesystemDirectories::FS_Dir_Max];
-	core::DynamicArray<core::String> _other;
+	core::DynamicArray<ThisPCEntry> _thisPc;
 };
 
 
@@ -78,7 +83,7 @@ public:
 	bool registerPath(const core::String& path);
 
 	core::String specialDir(FilesystemDirectories dir) const;
-	const core::DynamicArray<core::String> otherPaths() const;
+	const core::DynamicArray<ThisPCEntry> otherPaths() const;
 
 	/**
 	 * @brief Get the path where the application resides.

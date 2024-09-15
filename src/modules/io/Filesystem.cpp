@@ -155,8 +155,8 @@ core::String Filesystem::findBinary(const core::String &binaryName) const {
 	return "";
 }
 
-const core::DynamicArray<core::String> Filesystem::otherPaths() const {
-	return _state._other;
+const core::DynamicArray<ThisPCEntry> Filesystem::otherPaths() const {
+	return _state._thisPc;
 }
 
 core::String Filesystem::specialDir(FilesystemDirectories dir) const {

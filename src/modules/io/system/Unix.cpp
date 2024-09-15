@@ -119,7 +119,7 @@ bool initState(io::FilesystemState &state) {
 #ifndef __EMSCRIPTEN__
 	char *envHome = priv::getHome();
 	if (envHome == nullptr) {
-		Log::debug("Can't read xdg user dirs: HOME env var not found");
+		Log::debug("HOME env var not found");
 		return false;
 	}
 #if defined __MACOSX__
@@ -168,7 +168,7 @@ bool initState(io::FilesystemState &state) {
 			state._directories[FilesystemDirectories::FS_Dir_Public] = priv::replaceHome(value);
 		}
 	}
-#endif
+#endif // !__MACOSX__
 
 	for (int n = 0; n < FilesystemDirectories::FS_Dir_Max; ++n) {
 		if (state._directories[n].empty()) {
@@ -180,7 +180,10 @@ bool initState(io::FilesystemState &state) {
 		}
 		state._directories[n] = core::string::path(envHome, state._directories[n]);
 	}
-#endif
+
+	state._thisPc.push_back({"Root directory", "/"});
+	state._thisPc.push_back({"Home", envHome});
+#endif // !__EMSCRIPTEN__
 	return true;
 }
 

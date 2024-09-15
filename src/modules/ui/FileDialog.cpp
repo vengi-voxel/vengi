@@ -274,12 +274,14 @@ bool FileDialog::quickAccessEntry(int index, video::OpenFileMode type, const cor
 	core::String bookmarkTitle;
 	if (title == nullptr) {
 		bookmarkTitle = path;
-		if (bookmarkTitle.last() == '/') {
-			bookmarkTitle.erase(bookmarkTitle.size() - 1);
-		}
-		const size_t pos = bookmarkTitle.rfind("/");
-		if (pos != core::String::npos) {
-			bookmarkTitle = bookmarkTitle.substr(pos + 1);
+		if (bookmarkTitle.size() > 1u) {
+			if (bookmarkTitle.last() == '/') {
+				bookmarkTitle.erase(bookmarkTitle.size() - 1);
+			}
+			const size_t pos = bookmarkTitle.rfind("/");
+			if (pos != core::String::npos) {
+				bookmarkTitle = bookmarkTitle.substr(pos + 1);
+			}
 		}
 	} else {
 		bookmarkTitle = title;
@@ -353,8 +355,8 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 
 	if (!_app->filesystem()->otherPaths().empty()) {
 		if (ImGui::TreeNode(_("This PC"))) {
-			for (const core::String &path : _app->filesystem()->otherPaths()) {
-				quickAccessEntry(index++, type, path, contentRegionWidth);
+			for (const io::ThisPCEntry &entry : _app->filesystem()->otherPaths()) {
+				quickAccessEntry(index++, type, entry.path, contentRegionWidth, entry.name.c_str(), ICON_LC_FOLDER);
 			}
 			ImGui::TreePop();
 		}

@@ -73,7 +73,8 @@ bool initState(io::FilesystemState &state) {
 			continue;
 		}
 		const char driveStr[4] = {(char)('A' + i), ':', '/', '\0'};
-		state._other.push_back(driveStr);
+		const core::String description = core::string::format("Drive %c", 'A' + i);
+		state._thisPc.push_back({description, driveStr});
 	}
 
 	return true;
