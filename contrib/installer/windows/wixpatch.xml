@@ -97,6 +97,9 @@
 		<RegistryKey Root="HKCR" Key=".fbx">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".3ds">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".csv">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -182,6 +185,9 @@
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vmaxb">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".png">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
 	</CPackWiXFragment>
@@ -457,6 +463,15 @@
 			</Extension>
 		</ProgId>
 
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".3ds" Value="vengi-voxedit.3ds" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".3ds" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".3ds\OpenWithProgids" Name="vengi-voxedit.3ds" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.3ds" Description="Autodesk 3D Studio" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="3ds" ContentType="application/x-autodesk-3d-studio">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
 		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".csv" Value="vengi-voxedit.csv" Type="string" />
 		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".csv" Value="" Type="string" />
 		<RegistryValue Root="HKCR" Key=".csv\OpenWithProgids" Name="vengi-voxedit.csv" Value="" Type="string" />
@@ -714,6 +729,15 @@
 		<RegistryValue Root="HKCR" Key=".vmaxb\OpenWithProgids" Name="vengi-voxedit.vmaxb" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.vmaxb" Description="VoxelMax" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="vmaxb" ContentType="application/x-voxelmax-vmax-zip">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".png" Value="vengi-voxedit.png" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".png" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".png\OpenWithProgids" Name="vengi-voxedit.png" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.png" Description="Portable Network Graphics" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="png" ContentType="application/x-portable-network-graphics">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

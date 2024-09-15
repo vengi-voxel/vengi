@@ -29,6 +29,7 @@ set(SRCS
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
+	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
 	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
@@ -81,6 +82,7 @@ set(TEST_SRCS
 	tests/AnimaToonFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
+	tests/Autodesk3DSFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/BlockbenchFormatTest.cpp
 	tests/ConvertTest.cpp

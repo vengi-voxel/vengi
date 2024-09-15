@@ -562,6 +562,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Autodesk 3D Studio",
+      "extensions": [
+        "3ds"
+      ],
+      "magics": [],
+      "mimetype": "application/x-autodesk-3d-studio",
+      "mesh": true,
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "Sproxel csv",
       "extensions": [
         "csv"
@@ -856,6 +867,16 @@ const jsonData = {
       "mimetype": "application/x-voxelmax",
       "animation": false,
       "save": false
+    },
+    {
+      "name": "Portable Network Graphics",
+      "extensions": [
+        "png"
+      ],
+      "magics": [],
+      "mimetype": "application/x-portable-network-graphics",
+      "animation": false,
+      "save": true
     }
   ]
 }

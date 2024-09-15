@@ -33,6 +33,7 @@
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/XRawFormat.h"
+#include "voxelformat/private/mesh/Autodesk3DSFormat.h"
 #include "voxelformat/private/mesh/BlockbenchFormat.h"
 #include "voxelformat/private/mesh/FBXFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -233,6 +234,11 @@ static io::FormatDescription fbx() {
 	return f;
 }
 
+static io::FormatDescription autodesk3ds() {
+	static io::FormatDescription f{"Autodesk 3D Studio", {"3ds"}, {}, VOX_FORMAT_FLAG_MESH};
+	return f;
+}
+
 static const io::FormatDescription &sproxelCSV() {
 	static io::FormatDescription f{"Sproxel csv", {"csv"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
 	return f;
@@ -377,6 +383,7 @@ const io::FormatDescription *voxelLoad() {
 												 quakeMdl(),
 												 quakeMd2(),
 												 fbx(),
+												 autodesk3ds(),
 												 sproxelCSV(),
 												 magicaVoxelXRAW(),
 												 starMade(),
@@ -491,6 +498,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<PLYFormat>();
 		} else if (ext == fbx().mainExtension()) {
 			return core::make_shared<FBXFormat>();
+		} else if (ext == autodesk3ds().mainExtension()) {
+			return core::make_shared<Autodesk3DSFormat>();
 		} else if (ext == quakeMdl().mainExtension()) {
 			return core::make_shared<MDLFormat>();
 		} else if (ext == quakeMd2().mainExtension()) {

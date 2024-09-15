@@ -197,6 +197,10 @@
 		<comment>FBX</comment>
 		<glob pattern="*.fbx"/>
 	</mime-type>
+	<mime-type type="application/x-autodesk-3d-studio">
+		<comment>Autodesk 3D Studio</comment>
+		<glob pattern="*.3ds"/>
+	</mime-type>
 	<mime-type type="application/x-sproxel-csv">
 		<comment>Sproxel csv</comment>
 		<glob pattern="*.csv"/>
@@ -326,5 +330,9 @@
 		<comment>VoxelMax</comment>
 		<glob pattern="*.vmax.zip"/>
 		<glob pattern="*.vmaxb"/>
+	</mime-type>
+	<mime-type type="application/x-portable-network-graphics">
+		<comment>Portable Network Graphics</comment>
+		<glob pattern="*.png"/>
 	</mime-type>
 </mime-info>

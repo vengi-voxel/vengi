@@ -24,6 +24,7 @@
 | Minetest                   | mts         | X       |        |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |
 | Particubes                 | pcubes      | X       | X      | X          | X       |            |
+| Portable Network Graphics  | png         | X       | X      |            |         |            |
 | Qubicle Binary             | qb          | X       | X      |            | X       |            |
 | Qubicle Binary Tree        | qbt         | X       | X      |            | X       |            |
 | Qubicle Exchange           | qef         | X       | X      |            |         |            |
@@ -49,6 +50,7 @@
 
 | Name                       | Extension | Loading | Saving    | Animations |
 | :------------------------- | --------- | ------- | --------- | ---------- |
+| Autodesk 3D Studio         | 3ds       | X       |           |            |
 | Blockbench                 | bbmodel   | X       |           |            |
 | FBX                        | fbx       | X       | X         |            |
 | GL Transmission Format     | gltf      | X       | X         | X          |
