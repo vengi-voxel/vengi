@@ -31,6 +31,7 @@ set(SRCS
 	concurrent/Thread.cpp concurrent/Thread.h
 
 	Algorithm.h
+	Alphanumeric.h
 	ArrayLength.h
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
@@ -101,6 +102,7 @@ endif()
 set(TEST_SRCS
 	tests/TestHelper.h
 	tests/AlgorithmTest.cpp
+	tests/AlphanumericTest.cpp
 	tests/ArrayTest.cpp
 	tests/BitsTest.cpp
 	tests/BitSetTest.cpp
