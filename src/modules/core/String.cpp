@@ -530,6 +530,9 @@ char String::first() const {
 }
 
 String &String::operator+=(char c) {
+	if (c == '\0') {
+		return *this;
+	}
 	checkBufferSize(_data._size + 2);
 	_data._str[_data._size + 0] = c;
 	_data._str[_data._size + 1] = '\0';
