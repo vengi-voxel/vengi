@@ -8,6 +8,7 @@
 #include "ScopedStyle.h"
 #include "app/App.h"
 #include "core/Algorithm.h"
+#include "core/Alphanumeric.h"
 #include "core/ArrayLength.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
@@ -50,7 +51,7 @@ static const struct FileDialogSorter {
 		} else if (rhs->name == "..") {
 			return true;
 		}
-		return lhs->name < rhs->name;
+		return core::Alphanumeric(lhs->name.c_str()) < core::Alphanumeric(rhs->name.c_str());
 	 },
 	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
 		if (lhs->name == "..") {
@@ -58,7 +59,7 @@ static const struct FileDialogSorter {
 		} else if (rhs->name == "..") {
 			return true;
 		}
-		return lhs->name > rhs->name;
+		return core::Alphanumeric(lhs->name.c_str()) > core::Alphanumeric(rhs->name.c_str());
 	 }},
 	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
 		if (lhs->name == "..") {
@@ -84,7 +85,7 @@ static const struct FileDialogSorter {
 		}
 		const core::String &aext = core::string::extractExtension(lhs->name);
 		const core::String &bext = core::string::extractExtension(rhs->name);
-		return aext < bext;
+		return core::Alphanumeric(aext.c_str()) < core::Alphanumeric(bext.c_str());
 	 },
 	 [](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
 		if (lhs->name == "..") {
@@ -94,7 +95,7 @@ static const struct FileDialogSorter {
 		}
 		const core::String &aext = core::string::extractExtension(lhs->name);
 		const core::String &bext = core::string::extractExtension(rhs->name);
-		return aext > bext;
+		return core::Alphanumeric(aext.c_str()) > core::Alphanumeric(bext.c_str());
 	 }},
 	{[](const io::FilesystemEntry *lhs, const io::FilesystemEntry *rhs) {
 		if (lhs->name == "..") {
