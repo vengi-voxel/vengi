@@ -33,6 +33,10 @@ bool fs_exists(const char *path) {
 	return false;
 }
 
+bool fs_writeable(const char *path) {
+	return false;
+}
+
 bool fs_chdir(const char *path) {
 	return false;
 }

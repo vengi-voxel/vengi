@@ -27,6 +27,7 @@ extern bool fs_mkdir(const char *path);
 extern bool fs_rmdir(const char *path);
 extern bool fs_unlink(const char *path);
 extern bool fs_exists(const char *path);
+extern bool fs_writeable(const char *path);
 extern bool fs_hidden(const char *path);
 extern bool fs_chdir(const char *path);
 extern core::String fs_realpath(const char *path);

@@ -281,6 +281,10 @@ core::String fs_readlink(const char *path) {
 	return buf;
 }
 
+bool fs_writeable(const char *path) {
+	return access(path, W_OK) == 0;
+}
+
 static int fs_scandir_filter(const struct dirent *dent) {
 	return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
 }

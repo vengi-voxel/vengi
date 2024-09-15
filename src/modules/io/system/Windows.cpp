@@ -135,11 +135,19 @@ bool fs_hidden(const char *path) {
 bool fs_exists(const char *path) {
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	priv::denormalizePath(wpath);
-	const int ret = _waccess(wpath, 00);
+	const int ret = _waccess(wpath, 0);
 	SDL_free(wpath);
 	if (ret != 0) {
 		Log::debug("Failed to access %s: %s", path, strerror(errno));
 	}
+	return ret == 0;
+}
+
+bool fs_writeable(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
+	const int ret = _waccess(wpath, 2);
+	SDL_free(wpath);
 	return ret == 0;
 }
 
