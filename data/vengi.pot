@@ -545,6 +545,18 @@ msgstr ""
 msgid "Normal type"
 msgstr ""
 
+msgid "Flat"
+msgstr ""
+
+msgid "Smooth"
+msgstr ""
+
+msgid "Smoother"
+msgstr ""
+
+msgid "Normal mode"
+msgstr ""
+
 msgid "Fill hollow"
 msgstr ""
 
@@ -558,6 +570,24 @@ msgid "high quality"
 msgstr ""
 
 msgid "Voxelization mode"
+msgstr ""
+
+msgid "Heightmap"
+msgstr ""
+
+msgid "Plane"
+msgstr ""
+
+msgid "Volume"
+msgstr ""
+
+msgid "Import type"
+msgstr ""
+
+msgid "Max depth"
+msgstr ""
+
+msgid "Both sides"
 msgstr ""
 
 msgid "RGB flatten factor"
@@ -949,9 +979,6 @@ msgstr ""
 msgid "Variation threshold"
 msgstr ""
 
-msgid "Plane"
-msgstr ""
-
 msgid "Paint the selected plane"
 msgstr ""
 
@@ -1043,22 +1070,10 @@ msgstr ""
 msgid "No match for filter found"
 msgstr ""
 
+msgid "6 bit color values"
+msgstr ""
+
 msgid "Empty palette index"
-msgstr ""
-
-msgid "Heightmap"
-msgstr ""
-
-msgid "Volume"
-msgstr ""
-
-msgid "Import type"
-msgstr ""
-
-msgid "Max depth"
-msgstr ""
-
-msgid "Both sides"
 msgstr ""
 
 msgid "L-System"

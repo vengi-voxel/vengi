@@ -573,6 +573,18 @@ msgstr "Tiberian Sun"
 msgid "Normal type"
 msgstr "Normaltyp"
 
+msgid "Flat"
+msgstr ""
+
+msgid "Smooth"
+msgstr ""
+
+msgid "Smoother"
+msgstr ""
+
+msgid "Normal mode"
+msgstr ""
+
 msgid "Fill hollow"
 msgstr "Hohlraum füllen"
 
@@ -587,6 +599,24 @@ msgstr "hohe Qualität"
 
 msgid "Voxelization mode"
 msgstr "Voxelisierungsmodus"
+
+msgid "Heightmap"
+msgstr "Höhenkarte"
+
+msgid "Plane"
+msgstr "Ebene"
+
+msgid "Volume"
+msgstr "Volumen"
+
+msgid "Import type"
+msgstr "Importart"
+
+msgid "Max depth"
+msgstr "Max. Tiefe"
+
+msgid "Both sides"
+msgstr "Beide Seiten"
 
 msgid "RGB flatten factor"
 msgstr "RGB-Abflachfaktor"
@@ -986,9 +1016,6 @@ msgstr "Faktor"
 msgid "Variation threshold"
 msgstr "Variationsschwelle"
 
-msgid "Plane"
-msgstr "Ebene"
-
 msgid "Paint the selected plane"
 msgstr "Die ausgewählte Ebene bemalen"
 
@@ -1082,23 +1109,11 @@ msgstr "Doppelklick zum Erstellen der Miniaturansicht"
 msgid "No match for filter found"
 msgstr "Keine Übereinstimmung für den Filter gefunden"
 
+msgid "6 bit color values"
+msgstr ""
+
 msgid "Empty palette index"
 msgstr "Leerer Paletteneintrag"
-
-msgid "Heightmap"
-msgstr "Höhenkarte"
-
-msgid "Volume"
-msgstr "Volumen"
-
-msgid "Import type"
-msgstr "Importart"
-
-msgid "Max depth"
-msgstr "Max. Tiefe"
-
-msgid "Both sides"
-msgstr "Beide Seiten"
 
 msgid "L-System"
 msgstr "L-System"
