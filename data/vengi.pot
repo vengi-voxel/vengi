@@ -1070,7 +1070,7 @@ msgstr ""
 msgid "No match for filter found"
 msgstr ""
 
-msgid "6 bit color values"
+msgid "Command & Conquer palette"
 msgstr ""
 
 msgid "Empty palette index"
