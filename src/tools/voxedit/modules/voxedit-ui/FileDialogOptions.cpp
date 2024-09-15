@@ -18,11 +18,12 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		return;
 	}
 
-	if (*desc == io::format::palPalette()) {
+	const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
+
+	if (forceApplyOptions || *desc == io::format::palPalette()) {
 		ImGui::CheckboxVar(_("6 bit color values"), cfg::PalformatRGB6Bit);
 	}
 
-	const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
 	if (forceApplyOptions || meshFormat) {
 		ImGui::InputVarFloat(_("Uniform scale"), cfg::VoxformatScale);
