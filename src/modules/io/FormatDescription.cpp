@@ -56,6 +56,10 @@ FormatDescription gimpPalette() {
 	return {"Gimp Palette", {"gpl"}, {}, FORMAT_FLAG_SAVE};
 }
 
+FormatDescription palPalette() {
+	return {"RGB Palette", {"pal"}, {}, FORMAT_FLAG_SAVE};
+}
+
 const FormatDescription *palettes() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
@@ -64,7 +68,7 @@ const FormatDescription *palettes() {
 		jascPalette(),
 		{"Adobe Swatch Exchange", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE},
 		{"Photoshop Palette", {"aco", "8bco"}, {}, FORMAT_FLAG_SAVE},
-		{"RGB Palette", {"pal"}, {}, FORMAT_FLAG_SAVE},
+		palPalette(),
 		{"CSV Palette", {"csv"}, {}, FORMAT_FLAG_SAVE},
 		{"Paint.NET Palette", {"txt"}, {}, FORMAT_FLAG_SAVE},
 		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE},

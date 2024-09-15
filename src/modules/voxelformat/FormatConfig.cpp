@@ -109,6 +109,10 @@ bool FormatConfig::init() {
 				   "Import the image as volume for both sides", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatImageImportType, "0", core::CV_NOPERSIST, "0 = plane, 1 = heightmap, 2 = volume",
 				   core::Var::minMaxValidator<0, 2>);
+
+	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST, "Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files",
+				   core::Var::boolValidator);
+
 	return true;
 }
 

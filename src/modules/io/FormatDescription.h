@@ -122,6 +122,7 @@ const FormatDescription* palettes();
 FormatDescription png();
 FormatDescription jascPalette();
 FormatDescription gimpPalette();
+FormatDescription palPalette();
 
 } // namespace format
 

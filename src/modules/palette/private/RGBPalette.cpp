@@ -5,6 +5,7 @@
 #include "RGBPalette.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 
 namespace palette {
 
@@ -36,7 +37,7 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		maxColor = core_max(rgba.b, maxColor);
 	}
 	const bool is6Bit = maxColor <= 63;
-	if (is6Bit) {
+	if (is6Bit && core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal()) {
 		const float scale = (255.0f / 63.0f);
 		for (int i = 0; i < PaletteMaxColors; ++i) {
 			core::RGBA rgba = palette.color(i);
@@ -51,11 +52,19 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 }
 
 bool RGBPalette::save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) {
+	const bool to6Bit = core::Var::getSafe(cfg::PalformatRGB6Bit)->boolVal();
+	const float scale = (255.0f / 63.0f);
 	for (size_t i = 0; i < palette.size(); ++i) {
-		const core::RGBA color = palette.color(i);
-		stream.writeUInt8(color.r);
-		stream.writeUInt8(color.g);
-		stream.writeUInt8(color.b);
+		core::RGBA color = palette.color(i);
+		if (to6Bit) {
+			stream.writeUInt8((uint8_t)((float)color.r / scale));
+			stream.writeUInt8((uint8_t)((float)color.g / scale));
+			stream.writeUInt8((uint8_t)((float)color.b / scale));
+		} else {
+			stream.writeUInt8(color.r);
+			stream.writeUInt8(color.g);
+			stream.writeUInt8(color.b);
+		}
 	}
 	return true;
 }
