@@ -78,6 +78,19 @@ TEST(HashMapTest, testIterator) {
 	EXPECT_EQ(++map.begin(), map.end());
 }
 
+TEST(HashMapTest, testStringMap) {
+	core::StringMap<bool> map;
+	map.put("foo #12", true);
+	map.put("bar", false);
+	EXPECT_EQ(2u, map.size());
+	EXPECT_TRUE(map.hasKey("foo #12"));
+	EXPECT_TRUE(map.hasKey("bar"));
+	EXPECT_FALSE(map.hasKey("foobar"));
+	const core::String key = "foo #12";
+	EXPECT_TRUE(map.hasKey(key));
+	EXPECT_NE(map.find(key), map.end());
+}
+
 TEST(HashMapTest, testIterate) {
 	// leave empty buckets
 	core::Map<int64_t, int64_t, 11, std::hash<int64_t>> map;
