@@ -747,8 +747,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		showError(_error);
 		if (options && ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			const ImVec2 childSize(0.0f, 5 * itemHeight);
-			ImGui::BeginChild("filedialogoptions", childSize);
+			ImGui::BeginChild("filedialogoptions", ImVec2(0, 0), ImGuiChildFlags_AlwaysAutoResize | ImGuiChildFlags_AutoResizeY);
 			options(type, _currentFilterFormat);
 			ImGui::EndChild();
 		}
