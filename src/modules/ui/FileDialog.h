@@ -50,6 +50,8 @@ private:
 	core::VarPtr _lastFilterSave;
 	core::VarPtr _lastFilterOpen;
 
+	bool _scrollToSelection = false;
+
 	io::FilesystemEntry _newFolderName;
 	TimedError _newFolderError;
 
@@ -92,6 +94,8 @@ public:
 #endif
 
 	static const char *popupTitle(video::OpenFileMode type);
+
+	void onKeyPress(void *windowHandle, int32_t key, int16_t modifier);
 
 	bool openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename = "");
 	/**

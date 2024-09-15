@@ -144,7 +144,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		if (_currentFilterEntry != -1) {
 			// this is "all-supported files"
 			const bool showAll = !_filterAll.empty() && _currentFilterEntry == 0;
-			const core::String& filter = showAll ? _filterAll : _filterEntries[_currentFilterEntry].wildCard();
+			const core::String &filter = showAll ? _filterAll : _filterEntries[_currentFilterEntry].wildCard();
 			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), filter.c_str())) {
 				continue;
 			}
@@ -456,13 +456,19 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				specs->SpecsDirty = false;
 			}
 		}
+
 		// add filtered and sorted directory entries
 		ImGuiListClipper clipper;
 		clipper.Begin((int)_filteredEntities.size());
+		if (_scrollToSelection) {
+			ImGui::SetScrollY(ImGui::GetCursorStartPos().y + _entryIndex * ImGui::GetTextLineHeight());
+			_scrollToSelection = false;
+		}
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
 				const io::FilesystemEntry entry = *_filteredEntities[i];
 				ImGui::TableNextColumn();
+
 				const bool selected = i == (int)_entryIndex;
 				if (selected && entry.name != _parentDir.name) {
 					_selectedEntry = entry;
@@ -704,7 +710,21 @@ const char *FileDialog::popupTitle(video::OpenFileMode type) {
 	return _("Select a file");
 }
 
-bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type, const io::FormatDescription **formatDesc) {
+void FileDialog::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
+	int idx = 0;
+	for (const auto &entry : _filteredEntities) {
+		if (entry->name.first() == key) {
+			_selectedEntry = *entry;
+			_entryIndex = idx;
+			_scrollToSelection = true;
+			break;
+		}
+		++idx;
+	}
+}
+
+bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
+								const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
 	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
@@ -817,5 +837,4 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 	ImGui::SetItemDefaultFocus();
 	return false;
 }
-
-}
+} // namespace ui

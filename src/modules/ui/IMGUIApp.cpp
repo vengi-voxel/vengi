@@ -121,6 +121,9 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 }
 
 bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
+	if (_showFileDialog) {
+		_fileDialog.onKeyPress(windowHandle, key, modifier);
+	}
 	if (!Super::onKeyPress(windowHandle, key, modifier) ||
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};
