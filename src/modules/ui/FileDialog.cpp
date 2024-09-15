@@ -340,9 +340,6 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			}
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
-		for (const core::String &path : _app->filesystem()->otherPaths()) {
-			quickAccessEntry(index++, type, path, contentRegionWidth);
-		}
 		ImGui::TreePop();
 	}
 
@@ -354,6 +351,9 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 				continue;
 			}
 			quickAccessEntry(index++, type, absPath, contentRegionWidth, nullptr, ICON_LC_FOLDER);
+		}
+		for (const core::String &path : _app->filesystem()->otherPaths()) {
+			quickAccessEntry(index++, type, path, contentRegionWidth);
 		}
 		ImGui::TreePop();
 	}
