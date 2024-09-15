@@ -311,8 +311,6 @@ public:
 	 */
 	core::TimeProviderPtr timeProvider() const;
 
-	const core::String& currentWorkingDir() const;
-
 	static App* getInstance();
 
 	const char *translate(const char *msgid) const;

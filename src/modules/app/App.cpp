@@ -1163,10 +1163,6 @@ void App::requestSuspend() {
 	_suspendRequested = true;
 }
 
-const core::String &App::currentWorkingDir() const {
-	return _filesystem->basePath();
-}
-
 core::ThreadPool &App::threadPool() {
 	return *_threadPool.get();
 }
