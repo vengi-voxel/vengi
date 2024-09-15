@@ -9,6 +9,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
+#include <glm/geometric.hpp>
 #include "math/Axis.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -23,46 +24,97 @@
 
 namespace voxelutil {
 
+namespace priv {
+
+// TODO: these are duplicated in the pathfinder code
+static const glm::ivec3 arrayPathfinderFaces[6] = {
+	glm::ivec3(0, 0, -1),
+	glm::ivec3(0, 0, +1),
+	glm::ivec3(0, -1, 0),
+	glm::ivec3(0, +1, 0),
+	glm::ivec3(-1, 0, 0),
+	glm::ivec3(+1, 0, 0) };
+
+static const glm::ivec3 arrayPathfinderEdges[12] = {
+	glm::ivec3(0, -1, -1),
+	glm::ivec3(0, -1, +1),
+	glm::ivec3(0, +1, -1),
+	glm::ivec3(0, +1, +1),
+	glm::ivec3(-1, 0, -1),
+	glm::ivec3(-1, 0, +1),
+	glm::ivec3(+1, 0, -1),
+	glm::ivec3(+1, 0, +1),
+	glm::ivec3(-1, -1, 0),
+	glm::ivec3(-1, +1, 0),
+	glm::ivec3(+1, -1, 0),
+	glm::ivec3(+1, +1, 0) };
+
+static const glm::ivec3 arrayPathfinderCorners[8] = {
+	glm::ivec3(-1, -1, -1),
+	glm::ivec3(-1, -1, +1),
+	glm::ivec3(-1, +1, -1),
+	glm::ivec3(-1, +1, +1),
+	glm::ivec3(+1, -1, -1),
+	glm::ivec3(+1, -1, +1),
+	glm::ivec3(+1, +1, -1),
+	glm::ivec3(+1, +1, +1) };
+
+}
+
+glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity connectivity) {
+	const glm::ivec3 pos = sampler.position();
+	glm::ivec3 sum(0);
+	switch (connectivity) {
+	case Connectivity::TwentySixConnected:
+		for (const glm::ivec3 &offset : priv::arrayPathfinderCorners) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum += offset;
+			}
+		}
+		/* fallthrough */
+
+	case Connectivity::EighteenConnected:
+		for (const glm::ivec3 &offset : priv::arrayPathfinderEdges) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum += offset;
+			}
+		}
+		/* fallthrough */
+
+	case Connectivity::SixConnected:
+		for (const glm::ivec3 &offset : priv::arrayPathfinderFaces) {
+			const glm::ivec3 &volPos = pos + offset;
+			if (!sampler.setPosition(volPos)) {
+				continue;
+			}
+			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
+				sum += offset;
+			}
+		}
+		break;
+	}
+	if (sum.x == 0 && sum.y == 0 && sum.z == 0) {
+		return glm::vec3(0.0f);
+	}
+	return glm::normalize(glm::vec3(sum));
+}
+
 bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectivity connectivity) {
-	static const glm::ivec3 arrayPathfinderFaces[6] = {
-			glm::ivec3(0, 0, -1),
-			glm::ivec3(0, 0, +1),
-			glm::ivec3(0, -1, 0),
-			glm::ivec3(0, +1, 0),
-			glm::ivec3(-1, 0, 0),
-			glm::ivec3(+1, 0, 0) };
-
-	static const glm::ivec3 arrayPathfinderEdges[12] = {
-			glm::ivec3(0, -1, -1),
-			glm::ivec3(0, -1, +1),
-			glm::ivec3(0, +1, -1),
-			glm::ivec3(0, +1, +1),
-			glm::ivec3(-1, 0, -1),
-			glm::ivec3(-1, 0, +1),
-			glm::ivec3(+1, 0, -1),
-			glm::ivec3(+1, 0, +1),
-			glm::ivec3(-1, -1, 0),
-			glm::ivec3(-1, +1, 0),
-			glm::ivec3(+1, -1, 0),
-			glm::ivec3(+1, +1, 0) };
-
-	static const glm::ivec3 arrayPathfinderCorners[8] = {
-			glm::ivec3(-1, -1, -1),
-			glm::ivec3(-1, -1, +1),
-			glm::ivec3(-1, +1, -1),
-			glm::ivec3(-1, +1, +1),
-			glm::ivec3(+1, -1, -1),
-			glm::ivec3(+1, -1, +1),
-			glm::ivec3(+1, +1, -1),
-			glm::ivec3(+1, +1, +1) };
-
 	voxel::RawVolume::Sampler sampler(volume);
 	if (!sampler.setPosition(pos)) {
 		return false;
 	}
 	switch (connectivity) {
 	case Connectivity::TwentySixConnected:
-		for (const glm::ivec3 &offset : arrayPathfinderCorners) {
+		for (const glm::ivec3 &offset : priv::arrayPathfinderCorners) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -74,7 +126,7 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectiv
 		/* fallthrough */
 
 	case Connectivity::EighteenConnected:
-		for (const glm::ivec3 &offset : arrayPathfinderEdges) {
+		for (const glm::ivec3 &offset : priv::arrayPathfinderEdges) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -86,7 +138,7 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectiv
 		/* fallthrough */
 
 	case Connectivity::SixConnected:
-		for (const glm::ivec3 &offset : arrayPathfinderFaces) {
+		for (const glm::ivec3 &offset : priv::arrayPathfinderFaces) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;

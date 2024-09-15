@@ -6,14 +6,12 @@
 
 #include "image/Image.h"
 #include "voxel/Face.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/Connectivity.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
-class RawVolume;
-class Region;
-class Voxel;
 class RawVolumeWrapper;
 }
 namespace palette {
@@ -162,5 +160,6 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
  * @return nullptr if the volumes don't differ in the shared region dimensions
  */
 voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
+glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity connectivity);
 
 } // namespace voxelutil
