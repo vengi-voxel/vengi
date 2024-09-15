@@ -27,6 +27,26 @@ bool RGBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 		palette.setColor(i, color);
 	}
 	palette.setSize(PaletteMaxColors);
+
+	int maxColor = 0;
+	for (int i = 0; i < PaletteMaxColors; ++i) {
+		const core::RGBA rgba = palette.color(i);
+		maxColor = core_max(rgba.r, maxColor);
+		maxColor = core_max(rgba.g, maxColor);
+		maxColor = core_max(rgba.b, maxColor);
+	}
+	const bool is6Bit = maxColor <= 63;
+	if (is6Bit) {
+		const float scale = (255.0f / 63.0f);
+		for (int i = 0; i < PaletteMaxColors; ++i) {
+			core::RGBA rgba = palette.color(i);
+			rgba.r = (float)rgba.r * scale;
+			rgba.g = (float)rgba.g * scale;
+			rgba.b = (float)rgba.b * scale;
+			palette.setColor(i, rgba);
+		}
+	}
+
 	return true;
 }
 
@@ -40,4 +60,4 @@ bool RGBPalette::save(const palette::Palette &palette, const core::String &filen
 	return true;
 }
 
-} // namespace voxel
+} // namespace palette
