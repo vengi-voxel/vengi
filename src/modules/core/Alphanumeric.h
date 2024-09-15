@@ -4,6 +4,7 @@
 
 #include "String.h"
 #include "core/StringUtil.h"
+#include <ctype.h>
 
 namespace core {
 
