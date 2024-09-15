@@ -64,7 +64,7 @@ static uint8_t findClosestNormalIndex(const glm::vec3 &calculatedNormal, const g
 	return closestIndex;
 }
 
-static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType) {
+static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType, voxelutil::Connectivity connectivity) {
 	if (isAir(sampler.voxel().getMaterial())) {
 		return 0;
 	}
@@ -80,7 +80,7 @@ static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t no
 	}
 
 	const glm::ivec3 samplerPos = sampler.position();
-	const glm::vec3 normal = voxelutil::calculateNormal(sampler, voxelutil::Connectivity::SixConnected);
+	const glm::vec3 normal = voxelutil::calculateNormal(sampler, connectivity);
 	sampler.setPosition(samplerPos);
 	const uint8_t normalIdx = findClosestNormalIndex(normal, normals, size);
 	return normalIdx;
@@ -88,7 +88,7 @@ static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t no
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
-									uint8_t normalType) const {
+									uint8_t normalType, voxelutil::Connectivity connectivity) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -99,7 +99,7 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	for (uint8_t i = 0; i < voxelCount; ++i) {
 		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		uint8_t normalIndex = calculateVXLNormal(sampler, normalType);
+		uint8_t normalIndex = calculateVXLNormal(sampler, normalType, connectivity);
 		wrapBool(stream.writeUInt8(normalIndex))
 		sampler.movePositiveY();
 	}
@@ -158,6 +158,13 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
 	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
+	voxelutil::Connectivity connectivity = voxelutil::Connectivity::SixConnected;
+	const int normalMode = core::Var::getSafe(cfg::VoxformatVXLNormalMode)->intVal();
+	if (normalMode == 1) {
+		connectivity = voxelutil::Connectivity::EighteenConnected;
+	} else if (normalMode == 2) {
+		connectivity = voxelutil::Connectivity::TwentySixConnected;
+	}
 
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	const int64_t spanDataOffset = stream.pos();
@@ -175,7 +182,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalType))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalType, connectivity))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -184,7 +191,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalType))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalType, connectivity))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -323,6 +330,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 		Log::error("Failed to open stream for file: %s", filename.c_str());
 		return false;
 	}
+
 	const uint32_t numLayers = nodes.size();
 	wrapBool(writeHeader(*stream, numLayers, nodes[0]->palette()))
 	for (uint32_t i = 0; i < numLayers; ++i) {

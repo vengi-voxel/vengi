@@ -69,6 +69,7 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type == 2 || type == 4;
 				   });
+	core::Var::get(cfg::VoxformatVXLNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxformatQBTPaletteMode, "true", core::CV_NOPERSIST, "Use palette mode in qubicle qbt export",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST, "Merge compounds on load",

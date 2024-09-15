@@ -6,6 +6,7 @@
 
 #include "VXLShared.h"
 #include "voxelformat/Format.h"
+#include "voxelutil/Connectivity.h"
 
 namespace voxelformat {
 
@@ -25,7 +26,7 @@ private:
 
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x, uint8_t y,
-							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType) const;
+							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType, voxelutil::Connectivity connectivity) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 					uint64_t nodeSectionOffset) const;

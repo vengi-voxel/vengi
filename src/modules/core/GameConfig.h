@@ -94,6 +94,7 @@ constexpr const char *VoxformatOptimize = "voxformat_optimize";
 constexpr const char *VoxformatFillHollow = "voxformat_fillhollow";
 constexpr const char *VoxformatVoxelizeMode = "voxformat_voxelizemode";
 constexpr const char *VoxformatVXLNormalType = "voxformat_vxlnormaltype";
+constexpr const char *VoxformatVXLNormalMode = "voxformat_vxlnormalmode";
 constexpr const char *VoxformatQBTPaletteMode = "voxformat_qbtpalettemode";
 constexpr const char *VoxformatQBTMergeCompounds = "voxformat_qbtmergecompounds";
 constexpr const char *VoxformatVOXCreateLayers = "voxformat_voxcreatelayers";
