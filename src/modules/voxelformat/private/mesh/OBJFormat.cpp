@@ -292,7 +292,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::debug("- displacement_texname '%s'", material.displacement_texname.c_str());
 		Log::debug("- alpha_texname '%s'", material.alpha_texname.c_str());
 		Log::debug("- reflection_texname '%s'", material.reflection_texname.c_str());
-		// TODO: material.diffuse_texopt.scale
+		// TODO: MATERIAL: material.diffuse_texopt.scale
 		if (name.empty()) {
 			continue;
 		}
@@ -315,7 +315,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &shape : shapes) {
 		int indexOffset = 0;
-		// TODO: shape.lines, shape.points
+		// TODO: FORMAT: shape.lines, shape.points
 		const tinyobj::mesh_t &mesh = shape.mesh;
 		for (const tinyobj::tag_t &tag : mesh.tags) {
 			Log::debug("tag: %s", tag.name.c_str());

@@ -691,7 +691,8 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				}
 				tris.emplace_back(tri);
 			}
-			// TODO: node parent
+			// TODO: FORMAT: node parent
+			// TODO: MATERIAL use the material from the 3ds file
 			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());
 			const int nodeId = voxelizeNode(mesh.name, sceneGraph, tris);
 			if (nodeId == InvalidNodeId) {

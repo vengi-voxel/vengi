@@ -1607,7 +1607,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	for (const tinygltf::Primitive &primitive : gltfMesh.primitives) {
 		core::DynamicArray<uint32_t> indices;
 		core::DynamicArray<GltfVertex> vertices;
-		palette::Material material; // TODO: use the material from the gltf file
+		palette::Material material; // TODO: MATERIAL: use the material from the gltf file
 		if (!loadAttributes(filename, textures, gltfModel, primitive, vertices, material)) {
 			Log::warn("Failed to load vertices");
 			continue;
