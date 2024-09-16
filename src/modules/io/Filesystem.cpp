@@ -435,7 +435,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		}
 		if (isRelativePath(p)) {
 			for (const core::String &s : _paths) {
-				if (s == p) {
+				if (core::string::isSamePath(s, p)) {
 					continue;
 				}
 				core::String fullrelpath = core::string::path(s, p, filename);
