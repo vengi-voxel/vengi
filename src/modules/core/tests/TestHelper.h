@@ -14,6 +14,16 @@ inline std::ostream &operator<<(::std::ostream &os, const String &dt) {
 	return os << dt.c_str();
 }
 
+inline std::ostream &operator<<(::std::ostream &os, const DynamicArray<String> &dt) {
+	for (auto i = dt.begin(); i != dt.end();) {
+		os << *i;
+		if (++i != dt.end()) {
+			os << ", ";
+		}
+	}
+	return os;
+}
+
 }
 
 template<class T>
