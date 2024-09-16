@@ -74,7 +74,8 @@ public:
 		if (&other == this) {
 			return *this;
 		}
-		if (other.hasValue()) {
+		if (!other.hasValue()) {
+			release();
 			_hasValue = false;
 			return *this;
 		}
