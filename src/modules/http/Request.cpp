@@ -231,7 +231,7 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 				continue;
 			}
 			if (!requestState) {
-				Log::error("Failed to send request with error %d", GetLastError());
+				Log::error("Failed to send request with error %d", (int)GetLastError());
 				break;
 			}
 		}
@@ -248,7 +248,7 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 		printLastError("Failed to query status code");
 	}
 	const char *requestTypeStr = _type == RequestType::GET ? "GET" : "POST";
-	Log::debug("Http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, dwStatusCode);
+	Log::debug("Http request for url: %s (%s) with status code: %d", _url.c_str(), requestTypeStr, (int)dwStatusCode);
 	if (statusCode) {
 		*statusCode = (int)dwStatusCode;
 	}

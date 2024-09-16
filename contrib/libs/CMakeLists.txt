@@ -1,6 +1,8 @@
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
+set(CMAKE_C_FLAGS "")
+
 check_c_compiler_flag("-Wno-sign-compare" C_NO_SIGN_COMPARE)
 if (C_NO_SIGN_COMPARE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-sign-compare")
@@ -13,7 +15,12 @@ if (C_NO_SHADOW)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
 endif()
 
-set(CMAKE_C_FLAGS "")
+check_c_compiler_flag("-Wno-cast-qual" C_NO_CAST_QUAL)
+if (C_NO_CAST_QUAL)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-cast-qual")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-cast-qual")
+endif()
+
 if (USE_STACKTRACES)
 	add_subdirectory(backward)
 endif()

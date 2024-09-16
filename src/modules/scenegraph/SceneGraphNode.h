@@ -205,6 +205,7 @@ public:
 	void setVolume(voxel::RawVolume *volume, bool transferOwnership);
 	/**
 	 * @param volume voxel::RawVolume instance. Might be @c nullptr.
+	 * @note This will not take ownership of the volume instance
 	 */
 	void setVolume(const voxel::RawVolume *volume);
 
