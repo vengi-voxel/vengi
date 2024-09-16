@@ -14,6 +14,8 @@
 namespace memento {
 
 class MementoHandlerTest : public app::AbstractTest {
+private:
+	using Super = app::AbstractTest;
 protected:
 	static core::String toFakeUUID(int id) {
 		if (id == InvalidNodeId) {
@@ -48,6 +50,7 @@ protected:
 	}
 
 	void SetUp() override {
+		Super::SetUp();
 		ASSERT_TRUE(_mementoHandler.init());
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, "1");
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 1)), true);
@@ -58,6 +61,7 @@ protected:
 	void TearDown() override {
 		_mementoHandler.shutdown();
 		_sceneGraph.clear();
+		Super::TearDown();
 	}
 
 	static inline MementoState firstState(const MementoStateGroup &group) {
