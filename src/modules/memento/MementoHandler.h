@@ -250,6 +250,7 @@ public:
 	bool markNodeTransform(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markModification(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
 	bool markInitialNodeState(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markInitialSceneState(const scenegraph::SceneGraph& sceneGraph);
 	bool markNodeRenamed(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNodeMoved(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markPaletteChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);

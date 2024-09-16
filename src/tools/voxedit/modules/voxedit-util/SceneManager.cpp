@@ -1156,11 +1156,8 @@ void SceneManager::resetSceneState() {
 	scenegraph::SceneGraphNode &node = *_sceneGraph.beginModel();
 	nodeActivate(node.id());
 	_mementoHandler.clearStates();
-	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "loadscene");
 	Log::debug("New volume for node %i", node.id());
-	for (const auto &n : _sceneGraph.nodes()) {
-		_mementoHandler.markInitialNodeState(_sceneGraph, n->second);
-	}
+	_mementoHandler.markInitialSceneState(_sceneGraph);
 	_dirty = false;
 	_result = voxelutil::PickResult();
 	_modifierFacade.setCursorVoxel(voxel::createVoxel(node.palette(), 0));

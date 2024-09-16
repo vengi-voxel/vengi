@@ -520,6 +520,14 @@ bool MementoHandler::markNodeAdded(const scenegraph::SceneGraph &sceneGraph, con
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion);
 }
 
+bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph& sceneGraph) {
+	memento::ScopedMementoGroup mementoGroup(*this, "initialscene");
+	for (const auto &n : sceneGraph.nodes()) {
+		markInitialNodeState(sceneGraph, n->second);
+	}
+	return true;
+}
+
 bool MementoHandler::markInitialNodeState(const scenegraph::SceneGraph &sceneGraph,
 										  const scenegraph::SceneGraphNode &node) {
 	return markNodeAdded(sceneGraph, node);

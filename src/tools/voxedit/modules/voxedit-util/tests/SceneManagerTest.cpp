@@ -5,15 +5,15 @@
 #include "../SceneManager.h"
 #include "../Config.h"
 #include "app/tests/AbstractTest.h"
-#include "scenegraph/tests/TestHelper.h"
-#include "palette/tests/TestHelper.h"
-#include "math/tests/TestMathHelper.h"
 #include "core/TimeProvider.h"
+#include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
+#include "palette/tests/TestHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "scenegraph/tests/TestHelper.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
@@ -496,7 +496,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 			ASSERT_NE(referenceNodeId, InvalidNodeId);
 		}
 		sceneGraph.updateTransforms();
-		ASSERT_TRUE(((SceneManagerEx*)_sceneMgr.get())->loadForTest(core::move(sceneGraph)));
+		ASSERT_TRUE(((SceneManagerEx *)_sceneMgr.get())->loadForTest(core::move(sceneGraph)));
 	}
 
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
