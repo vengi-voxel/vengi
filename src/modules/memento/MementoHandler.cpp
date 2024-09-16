@@ -192,7 +192,9 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		return MementoData();
 	}
 	voxel::Region mementoRegion = region;
-	const bool partialMemento = false; // mementoRegion.isValid(); TODO: see issue #200
+	// TODO: MEMENTO: see issue https://github.com/vengi-voxel/vengi/issues/200
+	// const bool partialMemento = mementoRegion.isValid();
+	const bool partialMemento = false;
 	if (!partialMemento) {
 		mementoRegion = volume->region();
 	}
@@ -488,8 +490,9 @@ bool MementoHandler::markNodePropertyChange(const scenegraph::SceneGraph &sceneG
 											const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
+	voxel::RawVolume *volume = nullptr;
 	Log::debug("New node property undo state for node %i with name %s", nodeId, name.c_str());
-	return markUndo(sceneGraph, node, nullptr, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
+	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
 }
 
 bool MementoHandler::markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph,
@@ -546,7 +549,7 @@ bool MementoHandler::markPaletteChange(const scenegraph::SceneGraph &sceneGraph,
 bool MementoHandler::markNodeRenamed(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
-	const voxel::RawVolume *volume = node.volume();
+	const voxel::RawVolume *volume = nullptr;
 	Log::debug("Mark node %i renamed (%s)", nodeId, name.c_str());
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeRenamed, voxel::Region::InvalidRegion);
 }

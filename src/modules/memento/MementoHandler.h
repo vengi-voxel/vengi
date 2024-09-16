@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include "core/Optional.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
 #include "palette/Palette.h"
@@ -187,6 +186,22 @@ private:
 	void undoKeyFrames(MementoState &s);
 	void undoModification(MementoState &s);
 
+protected:
+	/**
+	 * @brief Add a new state entry to the memento handler that you can return to.
+	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
+	 * That is the reason why you always have to add the initial (maybe empty) state, too
+	 * @note Keep in mind, that there is a maximum of states that can get handled here.
+	 * @param[in] volume The state of the volume
+	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
+	 */
+	bool markUndo(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
+				  const voxel::Region &region);
+	bool markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
+				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
+				  MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
+				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
+				  const scenegraph::SceneGraphNodeProperties &properties);
 public:
 	MementoHandler();
 	~MementoHandler();
@@ -226,21 +241,6 @@ public:
 
 	static const char *typeToString(MementoType type);
 
-	/**
-	 * @brief Add a new state entry to the memento handler that you can return to.
-	 * @note This is adding the current active state to the handler - you can then undo to the previous state.
-	 * That is the reason why you always have to add the initial (maybe empty) state, too
-	 * @note Keep in mind, that there is a maximum of states that can get handled here.
-	 * @param[in] volume The state of the volume
-	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
-	 */
-	bool markUndo(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region);
-	bool markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
-				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
-				  MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
-				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
-				  const scenegraph::SceneGraphNodeProperties &properties);
 	bool removeLast();
 
 	bool markNodePropertyChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
