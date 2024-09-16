@@ -739,6 +739,16 @@ bool SceneManager::mementoProperties(const memento::MementoState& s) {
 	return false;
 }
 
+bool SceneManager::mementoAnimations(const memento::MementoState &s) {
+	Log::debug("Memento: animations for scene");
+	core_assert(s.stringList.hasValue());
+	const core::DynamicArray<core::String> *animations = s.stringList.value();
+	if (animations == nullptr) {
+		return false;
+	}
+	return _sceneGraph.setAnimations(*animations);
+}
+
 bool SceneManager::mementoKeyFrames(const memento::MementoState& s) {
 	Log::debug("Memento: keyframes of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
@@ -833,6 +843,9 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 	}
 	if (s.type == memento::MementoType::SceneNodeProperties) {
 		return mementoProperties(s);
+	}
+	if (s.type == memento::MementoType::SceneGraphAnimation) {
+		return mementoAnimations(s);
 	}
 	if (s.type == memento::MementoType::SceneNodePaletteChanged) {
 		return mementoPaletteChange(s);

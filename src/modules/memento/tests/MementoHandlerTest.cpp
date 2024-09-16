@@ -746,4 +746,33 @@ TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 	}
 }
 
+TEST_F(MementoHandlerTest, testAllAnimations) {
+	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	_mementoHandler.markInitialNodeState(_sceneGraph, *node);
+	EXPECT_EQ(1, (int)_mementoHandler.stateSize());
+
+	ASSERT_TRUE(_sceneGraph.addAnimation("foo"));
+	EXPECT_EQ(2u, _sceneGraph.animations().size()) << _sceneGraph.animations();
+	_mementoHandler.markAddedAnimation(_sceneGraph, "foo");
+	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
+
+	ASSERT_TRUE(_sceneGraph.removeAnimation("foo"));
+	EXPECT_EQ(1u, _sceneGraph.animations().size()) << _sceneGraph.animations();
+	_mementoHandler.markRemovedAnimation(_sceneGraph, "foo");
+	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
+
+	MementoState stateUndo = firstState(_mementoHandler.undo());
+	EXPECT_EQ(MementoType::SceneGraphAnimation, stateUndo.type);
+	ASSERT_TRUE(stateUndo.stringList.hasValue());
+	ASSERT_EQ(2u, stateUndo.stringList.value()->size());
+	_sceneGraph.setAnimations(*stateUndo.stringList.value());
+
+	MementoState stateRedo = firstState(_mementoHandler.redo());
+	EXPECT_EQ(MementoType::SceneGraphAnimation, stateRedo.type);
+	ASSERT_TRUE(stateRedo.stringList.hasValue());
+	ASSERT_EQ(1u, stateRedo.stringList.value()->size());
+	_sceneGraph.setAnimations(*stateRedo.stringList.value());
+}
+
 } // namespace memento

@@ -31,14 +31,16 @@ MementoState::MementoState() : type(MementoType::Max), nodeType(scenegraph::Scen
 
 MementoState::MementoState(const MementoState &other)
 	: type(other.type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
-		referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
-		properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette) {
+	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
+	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
+	  stringList(other.stringList) {
 }
 
 MementoState::MementoState(MementoType _type, const MementoState &other)
-	: type(_type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID), referenceUUID(other.referenceUUID),
-		nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), name(other.name),
-		pivot(other.pivot), palette(other.palette) {
+	: type(_type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
+	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
+	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
+	  stringList(other.stringList) {
 }
 
 MementoState::MementoState(MementoState &&other) noexcept {
@@ -53,6 +55,7 @@ MementoState::MementoState(MementoState &&other) noexcept {
 	name = core::move(other.name);
 	pivot = core::move(other.pivot);
 	palette = core::move(other.palette);
+	stringList = core::move(other.stringList);
 }
 
 MementoState &MementoState::operator=(MementoState &&other) noexcept {
@@ -70,6 +73,7 @@ MementoState &MementoState::operator=(MementoState &&other) noexcept {
 	name = core::move(other.name);
 	pivot = core::move(other.pivot);
 	palette = core::move(other.palette);
+	stringList = core::move(other.stringList);
 	return *this;
 }
 
@@ -88,6 +92,7 @@ MementoState &MementoState::operator=(const MementoState &other) {
 	name = other.name;
 	pivot = other.pivot;
 	palette = other.palette;
+	stringList = other.stringList;
 	return *this;
 }
 
@@ -108,6 +113,10 @@ MementoState::MementoState(MementoType _type, MementoData &&_data, core::String 
 	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
 		nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
 		palette(_palette) {
+}
+
+MementoState::MementoState(MementoType _type, const core::DynamicArray<core::String> &_stringList)
+	: type(_type), stringList(_stringList) {
 }
 
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
@@ -292,7 +301,8 @@ void MementoHandler::endGroup() {
 const char *MementoHandler::typeToString(MementoType type) {
 	const char *states[] = {"Modification",		  "SceneNodeMove",		 "SceneNodeAdded",
 							"SceneNodeRemoved",	  "SceneNodeRenamed",	 "SceneNodePaletteChanged",
-							"SceneNodeKeyFrames", "SceneNodeProperties", "PaletteChanged"};
+							"SceneNodeKeyFrames", "SceneNodeProperties", "SceneGraphAnimation",
+							"PaletteChanged"};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 	return states[(int)type];
 }
@@ -423,6 +433,19 @@ void MementoHandler::undoKeyFrames(MementoState &s) {
 	Log::warn("No previous node keyframes found for node %s", s.nodeUUID.c_str());
 }
 
+void MementoHandler::undoAnimations(MementoState &s) {
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.type == MementoType::SceneGraphAnimation) {
+				s.stringList = prevS.stringList;
+				return;
+			}
+		}
+	}
+	Log::warn("No previous animations state found");
+}
+
 void MementoHandler::undoRename(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
@@ -468,6 +491,8 @@ MementoStateGroup MementoHandler::undo() {
 			undoNodeProperties(s);
 		} else if (s.type == MementoType::SceneNodeKeyFrames) {
 			undoKeyFrames(s);
+		} else if (s.type == MementoType::SceneGraphAnimation) {
+			undoAnimations(s);
 		} else if (s.type == MementoType::SceneNodeRenamed) {
 			undoRename(s);
 		} else if (s.type == MementoType::SceneNodeMove) {
@@ -484,6 +509,16 @@ MementoStateGroup MementoHandler::redo() {
 	++_groupStatePosition;
 	Log::debug("Available states: %i, current index: %i", (int)_groups.size(), _groupStatePosition);
 	return stateGroup();
+}
+
+bool MementoHandler::markAllAnimations(const core::DynamicArray<core::String> &animations) {
+	Log::debug("Add all (%i) animations from the scenegraph to the memento state", (int)animations.size());
+	if (!markUndoPreamble()) {
+		return false;
+	}
+	MementoState state(MementoType::SceneGraphAnimation, animations);
+	addState(core::move(state));
+	return true;
 }
 
 bool MementoHandler::markNodePropertyChange(const scenegraph::SceneGraph &sceneGraph,
@@ -522,6 +557,9 @@ bool MementoHandler::markNodeAdded(const scenegraph::SceneGraph &sceneGraph, con
 
 bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph& sceneGraph) {
 	memento::ScopedMementoGroup mementoGroup(*this, "initialscene");
+	if (!markAllAnimations(sceneGraph.animations())) {
+		return false;
+	}
 	for (const auto &n : sceneGraph.nodes()) {
 		markInitialNodeState(sceneGraph, n->second);
 	}
@@ -572,13 +610,31 @@ bool MementoHandler::markNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 }
 
 bool MementoHandler::markAddedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
-	// TODO: MEMENTO: record all keyframes from all nodes
-	return false;
+	ScopedMementoGroup group(*this, "Add Animation");
+	markAllAnimations(sceneGraph.animations());
+	for (const auto &entry : sceneGraph.nodes()) {
+		if (!entry->value.isAnyModelNode()) {
+			continue;
+		}
+		if (!markKeyFramesChange(sceneGraph, entry->value)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool MementoHandler::markRemovedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
-	// TODO: MEMENTO: record all keyframes from all nodes
-	return false;
+	ScopedMementoGroup group(*this, "Remove Animation");
+	markAllAnimations(sceneGraph.animations());
+	for (const auto &entry : sceneGraph.nodes()) {
+		if (!entry->value.isAnyModelNode()) {
+			continue;
+		}
+		if (!markKeyFramesChange(sceneGraph, entry->value)) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool MementoHandler::markUndoPreamble() {
@@ -628,7 +684,8 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 	}
 	Log::debug("New memento state for node %s with name '%s'", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
-	if (/*TODO: MEMENTO (type != MementoType::SceneNodeAdded && type != MementoType::Modification) ||*/ !recordVolumeStates(volume)) {
+	if (/*TODO: MEMENTO (type != MementoType::SceneNodeAdded && type != MementoType::Modification) ||*/
+		!recordVolumeStates(volume)) {
 		volume = nullptr;
 	}
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);

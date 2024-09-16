@@ -549,4 +549,12 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	}
 }
 
+TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
+	ASSERT_TRUE(_sceneMgr->addAnimation("foo"));
+	EXPECT_EQ(2u, _sceneMgr->mementoHandler().stateSize());
+	EXPECT_EQ(2u, _sceneMgr->sceneGraph().animations().size());
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(1u, _sceneMgr->sceneGraph().animations().size());
+}
+
 } // namespace voxedit

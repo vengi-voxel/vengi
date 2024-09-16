@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/IComponent.h"
+#include "core/Optional.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
 #include "palette/Palette.h"
@@ -34,6 +35,7 @@ enum class MementoType {
 	SceneNodePaletteChanged,
 	SceneNodeKeyFrames,
 	SceneNodeProperties,
+	SceneGraphAnimation,
 	PaletteChanged,
 
 	Max
@@ -117,6 +119,7 @@ struct MementoState {
 	core::String name;
 	glm::vec3 pivot;
 	palette::Palette palette;
+	core::Optional<core::DynamicArray<core::String>> stringList;
 
 	MementoState();
 	MementoState(const MementoState &other);
@@ -133,6 +136,7 @@ struct MementoState {
 				 core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
 				 scenegraph::SceneGraphNodeProperties &&_properties);
+	MementoState(MementoType _type, const core::DynamicArray<core::String> &stringList);
 
 	inline bool valid() const {
 		return type != MementoType::Max;
@@ -176,6 +180,9 @@ private:
 	 */
 	bool markUndoPreamble();
 
+	// we should not all this method directly - must be part of a group
+	bool markAllAnimations(const core::DynamicArray<core::String> &animations);
+
 	// These undo methods search a valid state in the previous states and apply
 	// the changes to the current state
 	// The given MementoState is changed here
@@ -184,6 +191,7 @@ private:
 	void undoPaletteChange(MementoState &s);
 	void undoNodeProperties(MementoState &s);
 	void undoKeyFrames(MementoState &s);
+	void undoAnimations(MementoState &s);
 	void undoModification(MementoState &s);
 
 protected:

@@ -185,6 +185,11 @@ protected:
 
 	void flip(math::Axis axis);
 
+	/**
+	 * we assume that this is going hand in hand with transform states
+	 * see @c MementoType::SceneGraphAnimation resp. @c MementoHandler::markAddedAnimation() and @c MementoHandler::markRemovedAnimation()
+	 */
+	bool mementoAnimations(const memento::MementoState &s);
 	bool mementoStateExecute(const memento::MementoState &s, bool isRedo);
 	bool mementoStateToNode(const memento::MementoState &s);
 	bool mementoRename(const memento::MementoState &s);

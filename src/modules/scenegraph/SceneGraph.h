@@ -121,6 +121,10 @@ public:
 	bool addAnimation(const core::String &animation);
 	bool duplicateAnimation(const core::String &animation, const core::String &newName);
 	bool removeAnimation(const core::String &animation);
+
+	// !! Use with care - this is low level, and doesn't sync the node animations in any safe way !!
+	bool setAnimations(const core::DynamicArray<core::String> &animations);
+
 	FrameIndex maxFrames() const;
 	/**
 	 * Checks if at least one of the nodes has multiple keyframes

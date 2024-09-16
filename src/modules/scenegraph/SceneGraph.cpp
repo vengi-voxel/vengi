@@ -140,6 +140,20 @@ bool SceneGraph::addAnimation(const core::String &animation) {
 	return true;
 }
 
+bool SceneGraph::setAnimations(const core::DynamicArray<core::String> &animations) {
+	_animations = animations;
+	if (_animations.empty()) {
+		addAnimation(DEFAULT_ANIMATION);
+		setAnimation(DEFAULT_ANIMATION);
+	} else {
+		auto iter = core::find(_animations.begin(), _animations.end(), _activeAnimation);
+		if (iter == _animations.end()) {
+			setAnimation(*_animations.begin());
+		}
+	}
+	return true;
+}
+
 bool SceneGraph::removeAnimation(const core::String &animation) {
 	auto iter = core::find(_animations.begin(), _animations.end(), animation);
 	if (iter == _animations.end()) {
