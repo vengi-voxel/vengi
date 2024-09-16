@@ -98,7 +98,6 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 	}
 
 	for (const auto &face : faces.items()) {
-		const core::String &faceName = face.key().c_str();
 		const nlohmann::json &faceData = face.value();
 		if (faceData.find("uv") == faceData.end()) {
 			Log::error("Face is missing uv in json file: %s", filename.c_str());

@@ -62,7 +62,6 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "model node")->TestFunc = [=](ImGuiTestContext *ctx) {
-		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
@@ -81,7 +80,6 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "group node")->TestFunc = [=](ImGuiTestContext *ctx) {
-		ImGuiContext& g = *ctx->UiContext;
 		IM_CHECK(focusWindow(ctx, id));
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();

@@ -471,7 +471,7 @@ static bool addUVHandle(UVEdge edge, const glm::ivec2 &mins, const glm::ivec2 &m
 	}
 
 	bool hovered = false, held = false;
-	bool clicked = ImGui::ButtonBehavior(rect, id, &hovered, &held);
+	/*bool clicked = */ ImGui::ButtonBehavior(rect, id, &hovered, &held);
 
 	ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), colorInt, 0.0f, 0, hovered ? 2.0f : 1.0f);
 	if (held && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {

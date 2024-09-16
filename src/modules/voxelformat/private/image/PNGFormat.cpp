@@ -224,8 +224,8 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const voxel::Region &region = volume->region();
 		const palette::Palette &palette = node.palette();
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-			const core::String &filename = core::string::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
-			image::Image image(filename);
+			const core::String &layerFilename = core::string::format("%s-%s-%i.png", basename.c_str(), node.uuid().c_str(), z);
+			image::Image image(layerFilename);
 			core::Buffer<core::RGBA> rgba(region.getWidthInVoxels() * region.getHeightInVoxels());
 			for (int y = region.getUpperY(); y >= region.getLowerY(); --y) {
 				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
@@ -239,11 +239,11 @@ bool PNGFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				}
 			}
 			if (!image.loadRGBA((const uint8_t *)rgba.data(), region.getWidthInVoxels(), region.getHeightInVoxels())) {
-				Log::error("Failed to load sliced rgba data %s", filename.c_str());
+				Log::error("Failed to load sliced rgba data %s", layerFilename.c_str());
 				return false;
 			}
-			if (!image::writeImage(image, filename)) {
-				Log::error("Failed to write slice image %s", filename.c_str());
+			if (!image::writeImage(image, layerFilename)) {
+				Log::error("Failed to write slice image %s", layerFilename.c_str());
 				return false;
 			}
 		}

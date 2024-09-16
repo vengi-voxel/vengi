@@ -18,12 +18,12 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(editMode || sceneMode);
 		int buttonIdx = 0;
 		for (;;) {
-			core::String id = core::string::format("%s/###button%i", editMode ? "edittools" : "scenetools", buttonIdx);
-			if (ctx->ItemInfo(id.c_str(), ImGuiTestOpFlags_NoError).ID == 0) {
+			core::String btnid = core::string::format("%s/###button%i", editMode ? "edittools" : "scenetools", buttonIdx);
+			if (ctx->ItemInfo(btnid.c_str(), ImGuiTestOpFlags_NoError).ID == 0) {
 				break;
 			}
 			ctx->LogInfo("Found button %i", buttonIdx);
-			ctx->ItemClick(id.c_str());
+			ctx->ItemClick(btnid.c_str());
 			++buttonIdx;
 		}
 	};
