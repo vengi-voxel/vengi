@@ -152,8 +152,8 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectiv
 	return false;
 }
 
-voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette) {
-	voxel::RawVolumeWrapper::Sampler sampler3(v);
+voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, const palette::Palette &palette) {
+	voxel::RawVolumeWrapper::Sampler sampler3(volume);
 	sampler3.setPosition(pos);
 	const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();
 	const voxel::Voxel voxel001 = sampler3.peekVoxel0px0py1pz();
@@ -213,7 +213,7 @@ bool isEmpty(const voxel::RawVolume &v, const voxel::Region &region) {
 	return true;
 }
 
-bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawVolume &out,
+bool copy(const voxel::RawVolume &volume, const voxel::Region &inRegion, voxel::RawVolume &out,
 		  const voxel::Region &outRegion) {
 	int32_t xIn, yIn, zIn;
 	int32_t xOut, yOut, zOut;
@@ -225,7 +225,7 @@ bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawV
 	for (zIn = inmins.z, zOut = outmins.z; zIn <= inmaxs.z && zOut <= outmaxs.z; ++zIn, ++zOut) {
 		for (yIn = inmins.y, yOut = outmins.y; yIn <= inmaxs.y && yOut <= outmaxs.y; ++yIn, ++yOut) {
 			for (xIn = inmins.x, xOut = outmins.x; xIn <= inmaxs.x && xOut <= outmaxs.x; ++xIn, ++xOut) {
-				const voxel::Voxel &voxel = in.voxel(xIn, yIn, zIn);
+				const voxel::Voxel &voxel = volume.voxel(xIn, yIn, zIn);
 				wrapper.setVoxel(xOut, yOut, zOut, voxel);
 			}
 		}
@@ -237,33 +237,33 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 	return copy(in, in.region(), out, targetRegion);
 }
 
-void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
-	const voxel::Region &region = in.region();
+void fillHollow(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel) {
+	const voxel::Region &region = volume.region();
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
 	const int size = width * height * depth;
-	const glm::ivec3 mins = in.region().getLowerCorner();
+	const glm::ivec3 mins = volume.region().getLowerCorner();
 	core::DynamicArray<glm::ivec3> positions;
 	positions.reserve(size);
 	core::Buffer<bool> visitedData(size);
 	core::Array3DView<bool> visited(visitedData.data(), width, height, depth);
 
 	visitVolume(
-		in, region, 1, 1, 1,
+		volume, region, 1, 1, 1,
 		[&](int x, int y, int z, const voxel::Voxel &) { visited.set(x - mins.x, y - mins.y, z - mins.z, true); },
 		SkipEmpty());
 
 	for (int x = 0; x < width; ++x) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(x, 0, z);
-			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, height - 1, z);
-			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
@@ -271,13 +271,13 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 		}
 		for (int y = 0; y < height; ++y) {
 			const glm::ivec3 v1(x, y, 0);
-			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(x, y, depth - 1);
-			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
@@ -287,13 +287,13 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 	for (int y = 1; y < height - 1; ++y) {
 		for (int z = 1; z < depth - 1; ++z) {
 			const glm::ivec3 v1(0, y, z);
-			const voxel::VoxelType m1 = in.voxel(v1 + mins).getMaterial();
+			const voxel::VoxelType m1 = volume.voxel(v1 + mins).getMaterial();
 			if (voxel::isAir(m1) || voxel::isTransparent(m1)) {
 				positions.push_back(v1);
 				visited.set(v1, true);
 			}
 			const glm::ivec3 v2(width - 1, y, z);
-			const voxel::VoxelType m2 = in.voxel(v2 + mins).getMaterial();
+			const voxel::VoxelType m2 = volume.voxel(v2 + mins).getMaterial();
 			if (voxel::isAir(m2) || voxel::isTransparent(m2)) {
 				positions.push_back(v2);
 				visited.set(v2, true);
@@ -339,13 +339,13 @@ void fillHollow(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel) {
 
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
 		if (!visited.get(x - mins.x, y - mins.y, z - mins.z)) {
-			in.setVoxel(x, y, z, voxel);
+			volume.setVoxel(x, y, z, voxel);
 		}
 	};
-	visitVolume(in, region, 1, 1, 1, visitor, VisitAll());
+	visitVolume(volume, region, 1, 1, 1, visitor, VisitAll());
 }
 
-bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palette) {
+bool fillCheckerboard(voxel::RawVolumeWrapper &volume, const palette::Palette &palette) {
 	const int black = palette.getClosestMatch(core::RGBA(0, 0, 0, 255));
 	const int white = palette.getClosestMatch(core::RGBA(255, 255, 255, 255));
 	if (black == palette::PaletteColorNotFound || white == palette::PaletteColorNotFound) {
@@ -357,28 +357,28 @@ bool fillCheckerboard(voxel::RawVolumeWrapper &in, const palette::Palette &palet
 
 	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) {
 		const int idx = colors[currentColorIndex];
-		in.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
+		volume.setVoxel(x, y, z, voxel::createVoxel(palette, idx));
 		currentColorIndex = (currentColorIndex + 1) % 2;
 	};
-	visitVolume(in, visitor, VisitAll());
+	visitVolume(volume, visitor, VisitAll());
 	return true;
 }
 
-void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite) {
+void fill(voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, bool overwrite) {
 	if (overwrite) {
-		in.fill(voxel);
+		volume.fill(voxel);
 		return;
 	}
-	auto visitor = [&](int x, int y, int z, const voxel::Voxel &v) { in.setVoxel(x, y, z, voxel); };
-	visitVolume(in, visitor, VisitEmpty());
+	auto visitor = [&](int x, int y, int z, const voxel::Voxel &) { volume.setVoxel(x, y, z, voxel); };
+	visitVolume(volume, visitor, VisitEmpty());
 }
 
-void hollow(voxel::RawVolumeWrapper &in) {
+void hollow(voxel::RawVolumeWrapper &volume) {
 	core::DynamicArray<glm::ivec3> filled;
 	voxelutil::visitUndergroundVolume(
-		in, [&filled](int x, int y, int z, const voxel::Voxel &voxel) { filled.emplace_back(x, y, z); });
+		volume, [&filled](int x, int y, int z, const voxel::Voxel &voxel) { filled.emplace_back(x, y, z); });
 	for (const glm::ivec3 &pos : filled) {
-		in.setVoxel(pos, voxel::Voxel());
+		volume.setVoxel(pos, voxel::Voxel());
 	}
 }
 
@@ -391,7 +391,7 @@ using WalkCheckCallback = std::function<bool(const voxel::RawVolumeWrapper &, co
 using WalkExecCallback = std::function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
 template<class CHECK, class EXEC, class Volume>
-static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &region,
+static int walkPlane_r(IVec3Set &visited, Volume &volume, const voxel::Region &region,
 					   CHECK &&check, EXEC &&exec, const glm::ivec3 &position,
 					   const glm::ivec3 &offsetForCheckCallback, voxel::FaceNames face) {
 	const glm::ivec3 checkPosition = position + offsetForCheckCallback;
@@ -402,35 +402,35 @@ static int walkPlane_r(IVec3Set &visited, Volume &in, const voxel::Region &regio
 	if (!region.containsPoint(position)) {
 		return 0;
 	}
-	if (!check(in, checkPosition, face)) {
+	if (!check(volume, checkPosition, face)) {
 		return 0;
 	}
-	if (!exec(in, position)) {
+	if (!exec(volume, position)) {
 		return 0;
 	}
 	int n = 1;
 	if (region.containsPoint(position.x + 1, position.y, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
 						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x - 1, position.y, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
 						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y + 1, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
 						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y - 1, position.z)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
 						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z + 1)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
 						 offsetForCheckCallback, face);
 	}
 	if (region.containsPoint(position.x, position.y, position.z - 1)) {
-		n += walkPlane_r(visited, in, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
+		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
 						 offsetForCheckCallback, face);
 	}
 	return n;
@@ -528,46 +528,46 @@ static bool checkOverrideFunc(Volume &volume, const glm::ivec3 &pos, const voxel
 	return v.isSame(replaceVoxel);
 }
 
-int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int overridePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		return checkOverrideFunc(volume, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
+	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
-	return voxelutil::walkPlane(in, pos, face, -1, check, exec, 1);
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
+	return voxelutil::walkPlane(volume, pos, face, -1, check, exec, 1);
 }
 
 voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 								  const voxel::Voxel &replaceVoxel) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		return checkOverrideFunc(volume, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
+	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::ModificationRecorder &in, const glm::ivec3 &pos) { return in.setVoxel(pos, replaceVoxel); };
+	auto exec = [=](voxel::ModificationRecorder &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, face, -1, check, exec, 1);
 	return recorder.dirtyRegion();
 }
 
-int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int paintPlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		const voxel::Voxel &v = volume.voxel(p);
+	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+		const voxel::Voxel &v = in.voxel(p);
 		return v.isSame(searchVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		return in.setVoxel(pos, replaceVoxel);
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
+		return in.setVoxel(p, replaceVoxel);
 	};
-	return voxelutil::walkPlane(in, pos, face, 0, check, exec, 1);
+	return voxelutil::walkPlane(volume, pos, face, 0, check, exec, 1);
 }
 
 template<class Volume>
 static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Voxel &groundVoxel, voxel::FaceNames face) {
-	const voxel::Voxel &v = volume.voxel(p);
-	if (v.isSame(groundVoxel)) {
+	const voxel::Voxel &voxel = volume.voxel(p);
+	if (voxel.isSame(groundVoxel)) {
 		const math::Axis axis = voxel::faceToAxis(face);
 		const int idx = math::getIndexForAxis(axis);
 		const int offset = voxel::isNegativeFace(face) ? -1 : 1;
@@ -579,23 +579,23 @@ static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Vox
 	return false;
 }
 
-int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int erasePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		return checkEraseFunc(volume, p, groundVoxel, face);
+	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkEraseFunc(in, p, groundVoxel, face);
 	};
-	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) {
-		return in.setVoxel(pos, voxel::Voxel());
+	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
+		return in.setVoxel(p, voxel::Voxel());
 	};
-	return voxelutil::walkPlane(in, pos, face, 0, check, exec, 1);
+	return voxelutil::walkPlane(volume, pos, face, 0, check, exec, 1);
 }
 
 voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face, const voxel::Voxel &groundVoxel) {
-	auto check = [&](const voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames) {
-		return checkEraseFunc(volume, p, groundVoxel, face);
+	auto check = [&](const voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames) {
+		return checkEraseFunc(in, p, groundVoxel, face);
 	};
-	auto exec = [](voxel::ModificationRecorder &in, const glm::ivec3 &pos) {
-		return in.setVoxel(pos, voxel::Voxel());
+	auto exec = [](voxel::ModificationRecorder &in, const glm::ivec3 &p) {
+		return in.setVoxel(p, voxel::Voxel());
 	};
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, face, 0, check, exec, 1);
@@ -618,12 +618,12 @@ static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos,
 
 voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
-	auto check = [&](voxel::ModificationRecorder &volume, const glm::ivec3 &p, voxel::FaceNames direction) {
-		return checkExtrudeFunc(volume, p, direction, pos, groundVoxel, newPlaneVoxel);
+	auto check = [&](voxel::ModificationRecorder &in, const glm::ivec3 &p, voxel::FaceNames direction) {
+		return checkExtrudeFunc(in, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
 
-	auto exec = [&](voxel::ModificationRecorder &in, const glm::ivec3 &pos) {
-		in.setVoxel(pos, newPlaneVoxel);
+	auto exec = [&](voxel::ModificationRecorder &in, const glm::ivec3 &p) {
+		in.setVoxel(p, newPlaneVoxel);
 		return true;
 	};
 	voxel::ModificationRecorder recorder(volume);
@@ -631,49 +631,49 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
 	return recorder.dirtyRegion();
 }
 
-int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int extrudePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
-	auto check = [&](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames direction) {
-		return checkExtrudeFunc(volume, p, direction, pos, groundVoxel, newPlaneVoxel);
+	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames direction) {
+		return checkExtrudeFunc(in, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &pos) { return in.setVoxel(pos, newPlaneVoxel); };
-	return voxelutil::walkPlane(in, pos, face, -1, check, exec, thickness);
+	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, newPlaneVoxel); };
+	return voxelutil::walkPlane(volume, pos, face, -1, check, exec, thickness);
 }
 
-int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
+int fillPlane(voxel::RawVolumeWrapper &volume, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
 			  const glm::ivec3 &position, voxel::FaceNames face) {
 	palette::PaletteLookup palLookup;
 
-	const voxel::Region &region = in.region();
+	const voxel::Region &region = volume.region();
 
-	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &volume, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
 		if (voxel::isAir(searchedVoxel.getMaterial())) {
 			return true;
 		}
-		const voxel::Voxel &v = volume.voxel(p);
-		return v.isSame(searchedVoxel);
+		const voxel::Voxel &voxel = in.voxel(p);
+		return voxel.isSame(searchedVoxel);
 	};
 
-	auto exec = [&](voxel::RawVolumeWrapper &volume, const glm::ivec3 &p) {
+	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
 		const glm::vec2 &uv = calcUV(p, region, face);
 		const core::RGBA rgba = image->colorAt(uv);
 		if (rgba.a == 0) {
 			return true;
 		}
 		const uint8_t index = palLookup.findClosestIndex(rgba);
-		voxel::Voxel v = voxel::createVoxel(palLookup.palette(), index);
-		return volume.setVoxel(p, v);
+		voxel::Voxel voxel = voxel::createVoxel(palLookup.palette(), index);
+		return in.setVoxel(p, voxel);
 	};
 
-	return walkPlane(in, position, face, -1, check, exec, 1);
+	return walkPlane(volume, position, face, -1, check, exec, 1);
 }
 
-voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPalette,
+voxel::Region remapToPalette(voxel::RawVolume *volume, const palette::Palette &oldPalette,
 							 const palette::Palette &newPalette, int skipColorIndex) {
-	if (v == nullptr) {
+	if (volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
-	voxel::RawVolumeWrapper wrapper(v);
+	voxel::RawVolumeWrapper wrapper(volume);
 	voxelutil::visitVolume(
 		wrapper, [&wrapper, &newPalette, skipColorIndex, &oldPalette](int x, int y, int z, const voxel::Voxel &voxel) {
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());

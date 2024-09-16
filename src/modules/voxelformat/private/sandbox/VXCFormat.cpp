@@ -115,12 +115,12 @@ image::ImagePtr VXCFormat::loadScreenshot(const core::String &filename, const io
 			Log::debug("Skip image %s", entry.name.c_str());
 			continue;
 		}
-		core::ScopedPtr<io::SeekableReadStream> stream(vxcArchive->readStream(entry.fullPath));
-		if (!stream) {
+		core::ScopedPtr<io::SeekableReadStream> thumbnailStream(vxcArchive->readStream(entry.fullPath));
+		if (!thumbnailStream) {
 			Log::error("Could not load file %s", entry.fullPath.c_str());
 			return image::ImagePtr();
 		}
-		return image::loadImage(entry.name, *stream, stream->size());
+		return image::loadImage(entry.name, *thumbnailStream, thumbnailStream->size());
 	}
 	Log::debug("Could not find thumbnail.png in the vxc archive");
 	return {};

@@ -188,10 +188,10 @@ bool Autodesk3DSFormat::readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &
 	const int64_t currentPos = stream->pos();
 	const int64_t endOfChunk = currentPos + parent.length - 6;
 
-	uint16_t count;
-	wrap(stream->readUInt16(count))
-	mesh.faces.resize(count);
-	for (uint16_t i = 0; i < count; ++i) {
+	uint16_t faceCount;
+	wrap(stream->readUInt16(faceCount))
+	mesh.faces.resize(faceCount);
+	for (uint16_t i = 0; i < faceCount; ++i) {
 		Face3ds &face = mesh.faces[i];
 		wrap(stream->readUInt16(face.indices.x))
 		wrap(stream->readUInt16(face.indices.y))

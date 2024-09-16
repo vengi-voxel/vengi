@@ -21,7 +21,20 @@
 #define CUTE_ASEPRITE_ALLOC(size, ctx) core_malloc(size)
 #define CUTE_ASEPRITE_FREE(mem, ctx) core_free(mem)
 #define CUTE_ASEPRITE_WARNING(msg) Log::warn("%s", msg)
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 #include "voxelformat/external/cute_aseprite.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace voxelformat {
 

@@ -140,10 +140,10 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 				return false;
 			}
 			const glm::vec3 pos(vertexIter.value()[0], vertexIter.value()[1], vertexIter.value()[2]);
-			const glm::vec2 uv =
+			const glm::vec2 uvCoords =
 				textureIdxValid ? textureArray[textureIdx]->uv(uvIter.value()[0], uvIter.value()[1]) : glm::vec2(0.0f);
 
-			polygon.addVertex(pos, uv);
+			polygon.addVertex(pos, uvCoords);
 		}
 		polygon.toTris(element.mesh.tris);
 	}

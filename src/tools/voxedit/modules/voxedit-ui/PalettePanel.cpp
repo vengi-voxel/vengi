@@ -175,10 +175,9 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 	if (usableColor) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			const float size = 20;
-			const ImVec2 v1 = ImGui::GetCursorScreenPos();
-			const ImVec2 v2(v1.x + size, v1.y + size);
-			ImDrawList *drawList = ImGui::GetWindowDrawList();
-			drawList->AddRectFilled(v1, v2, ImGui::GetColorU32(palette.color(paletteColorIdx)));
+			const ImVec2 rectMins = ImGui::GetCursorScreenPos();
+			const ImVec2 rectMaxs(rectMins.x + size, rectMins.y + size);
+			ImGui::GetWindowDrawList()->AddRectFilled(rectMins, rectMaxs, ImGui::GetColorU32(palette.color(paletteColorIdx)));
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + size + 5);
 			if (dragAndDropSortColors()) {
 				ImGui::TextUnformatted(_("Release CTRL to change the voxel color"));

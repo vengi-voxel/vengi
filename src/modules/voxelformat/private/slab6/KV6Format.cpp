@@ -339,7 +339,6 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setPivot(pivot);
 
-		scenegraph::SceneGraphTransform transform;
 		const uint32_t fps = 20; // TODO fps?
 		const uint32_t div = 1000 / fps;
 		for (const priv::KFASeqTyp &seq : kfa.seq) {

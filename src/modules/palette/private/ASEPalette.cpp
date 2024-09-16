@@ -87,8 +87,8 @@ bool ASEPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			Log::error("ASEPalette: Failed to read color mode");
 			return false;
 		}
-		for (int i = 0; i < 4; ++i) {
-			colorModeStr[i] = core::string::toUpper(colorModeStr[i]);
+		for (int j = 0; j < 4; ++j) {
+			colorModeStr[j] = core::string::toUpper(colorModeStr[j]);
 		}
 		glm::vec4 color(0.0f);
 		if (colorMode == FourCC('C', 'Y', 'M', 'K')) {

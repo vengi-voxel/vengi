@@ -273,8 +273,8 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			for (uint32_t j = 0; j < numFrames; ++j) {
 				MDLFrame frame;
 
-				uint32_t type;
-				wrap(stream->readUInt32(type))
+				uint32_t frameType;
+				wrap(stream->readUInt32(frameType))
 
 				wrap(stream->readUInt8(frame.bboxmin.x))
 				wrap(stream->readUInt8(frame.bboxmin.z))

@@ -143,8 +143,8 @@ static glm::ivec3 createBezierTrunk(Volume& volume, const voxelgenerator::TreePa
 	float trunkSize = (float)ctx.trunkStrength;
 	const glm::ivec3 control(ctx.pos.x, ctx.pos.y + ctx.trunkControlOffset, ctx.pos.z);
 	shape::createBezierFunc(volume, ctx.pos, end, control, voxel,
-		[&] (Volume& volume, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
-			shape::createLine(volume, pos, last, voxel, core_max(1, (int)glm::ceil(trunkSize)));
+		[&] (Volume& in, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& v) {
+			shape::createLine(in, pos, last, v, core_max(1, (int)glm::ceil(trunkSize)));
 			trunkSize *= ctx.trunkFactor;
 		},
 		ctx.trunkHeight);
@@ -166,9 +166,9 @@ void createTreePalm(Volume& volume, const voxelgenerator::TreePalm& ctx, math::R
 		const glm::ivec3 control(start.x - x * (w / 2.0f), start.y + ctx.branchControlOffset, start.z - z * (w / 2.0f));
 		const glm::ivec3 end(start.x - x * w, start.y - randomLength, start.z - z * w);
 		shape::createBezierFunc(volume, start, end, control, leavesVoxel,
-			[&] (Volume& vol, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
+			[&] (Volume& in, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& voxel) {
 				// TODO: this should be some kind of polygon - not a line - we want a flat leaf
-				shape::createLine(vol, pos, last, voxel, core_max(1, (int)glm::ceil(branchSize)));
+				shape::createLine(in, pos, last, voxel, core_max(1, (int)glm::ceil(branchSize)));
 				branchSize *= ctx.branchFactor;
 			},
 			ctx.leavesHeight / 4);

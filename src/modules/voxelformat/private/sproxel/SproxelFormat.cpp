@@ -79,10 +79,10 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 		return 0u;
 	}
 
-	const int32_t x = core::string::toInt(tok.tokens()[0]);
-	const int32_t y = core::string::toInt(tok.tokens()[1]);
-	const int32_t z = core::string::toInt(tok.tokens()[2]);
-	glm::ivec3 size(x, y, z);
+	const int32_t width = core::string::toInt(tok.tokens()[0]);
+	const int32_t height = core::string::toInt(tok.tokens()[1]);
+	const int32_t depth = core::string::toInt(tok.tokens()[2]);
+	glm::ivec3 size(width, height, depth);
 
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {

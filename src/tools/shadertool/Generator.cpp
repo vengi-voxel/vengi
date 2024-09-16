@@ -668,14 +668,14 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	}
 
 	for (auto & buf : shaderStruct.bufferBlocks) {
-		const core::String& name = util::convertName(buf.name, true);
+		const core::String& bufName = util::convertName(buf.name, true);
 		prototypes += "\n\t/**\n";
 		prototypes += "\t * @brief Get the binding index of the buffer object ";
 		prototypes += buf.name;
 		prototypes += "\n";
 		prototypes += "\t */\n";
 		prototypes += "\tinline int getBinding";
-		prototypes += name;
+		prototypes += bufName;
 		prototypes += "() {\n";
 		prototypes += "\t\treturn ";
 		prototypes += core::string::toString(buf.layout.binding);

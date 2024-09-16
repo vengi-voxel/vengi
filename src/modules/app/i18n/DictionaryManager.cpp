@@ -90,7 +90,8 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 		int bestScore = 0;
 
 		for (const auto &file : files) {
-			const Language &poLanguage = Language::fromEnv(convertFilename2Language(file.name));
+			const core::String &fileLng = convertFilename2Language(file.name);
+			Language poLanguage = Language::fromEnv(fileLng);
 
 			if (!poLanguage) {
 				Log::warn("%s: warning: ignoring, unknown language", file.name.c_str());
@@ -136,7 +137,8 @@ core::DynamicArray<Language> DictionaryManager::getLanguages() {
 			continue;
 		}
 		for (const io::FilesystemEntry &file : files) {
-			const Language &lng = Language::fromEnv(core::string::extractFilename(file.name));
+			const core::String &fileLng = convertFilename2Language(file.name);
+			Language lng = Language::fromEnv(fileLng);
 			if (lng) {
 				_languages.push_back(lng);
 			}

@@ -659,8 +659,8 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 void SceneGraph::setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKeyFramesMap &keyFrames) {
 	node.setAllKeyFrames(keyFrames, _activeAnimation);
 	visitChildren(node.id(), true, [](SceneGraphNode &child) {
-		auto &keyFrames = child.allKeyFrames();
-		for (const auto &entry : keyFrames) {
+		auto &nodeKeyFrames = child.allKeyFrames();
+		for (const auto &entry : nodeKeyFrames) {
 			for (scenegraph::SceneGraphKeyFrame &frame : entry->value) {
 				frame.transform().markDirtyParent();
 			}

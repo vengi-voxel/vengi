@@ -122,7 +122,7 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 
 		// this should never get called
 		Log::error("failed to run '%s' with %i parameters: %s (%i)", command.c_str(), (int)arguments.size(),
-				   strerror(errno), errno);
+				   strerror(errno), (int)errno);
 		::exit(errno);
 	}
 
@@ -205,9 +205,9 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 		::FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 						nullptr, errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errmsg, 0, nullptr);
 		if (errmsg == nullptr) {
-			Log::error("%d - Unknown error", errnum);
+			Log::error("%d - Unknown error", (int)errnum);
 		} else {
-			Log::error("%d - %s", errnum, errmsg);
+			Log::error("%d - %s", (int)errnum, errmsg);
 			::LocalFree(errmsg);
 		}
 		SDL_free(commandPtr);

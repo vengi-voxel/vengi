@@ -11,7 +11,6 @@
 #include "core/UTF8.h"
 #include "image/Image.h"
 #include "io/Stream.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/StreamArchive.h"
 #include "lua.h"
 #include "math/Axis.h"
@@ -47,14 +46,14 @@ namespace voxelgenerator {
 
 struct LuaSceneGraphNode {
 	scenegraph::SceneGraphNode *node;
-	LuaSceneGraphNode(scenegraph::SceneGraphNode *node) : node(node) {
+	LuaSceneGraphNode(scenegraph::SceneGraphNode *_node) : node(_node) {
 	}
 };
 
 struct LuaKeyFrame {
 	scenegraph::SceneGraphNode *node;
 	scenegraph::KeyFrameIndex keyFrameIdx;
-	LuaKeyFrame(scenegraph::SceneGraphNode *node, scenegraph::KeyFrameIndex keyFrameIdx) : node(node), keyFrameIdx(keyFrameIdx) {
+	LuaKeyFrame(scenegraph::SceneGraphNode *_node, scenegraph::KeyFrameIndex _keyFrameIdx) : node(_node), keyFrameIdx(_keyFrameIdx) {
 	}
 
 	scenegraph::SceneGraphKeyFrame &keyFrame() {

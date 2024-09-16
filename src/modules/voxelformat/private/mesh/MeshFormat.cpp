@@ -315,8 +315,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		if (createPalette) {
 			RGBAMap colors;
 			Log::debug("create palette");
-			for (const voxelformat::TexturedTri &tri : tris) {
-				voxelizeTriangle(trisMins, tri, [this, &colors] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+			for (const voxelformat::TexturedTri &triangle : tris) {
+				voxelizeTriangle(trisMins, triangle, [this, &colors] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
 					colors.put(rgba, true);
 				});
@@ -335,8 +335,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
-		for (const voxelformat::TexturedTri &tri : tris) {
-			voxelizeTriangle(trisMins, tri, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+		for (const voxelformat::TexturedTri &triangle : tris) {
+			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = tri.colorAt(uv);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
 				wrapper.setVoxel(x, y, z, voxel);
@@ -591,7 +591,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 }
 
 bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							const io::ArchivePtr &archive, const SaveContext &ctx) {
+							const io::ArchivePtr &archive, const SaveContext &saveCtx) {
 	const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 	const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 	const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();

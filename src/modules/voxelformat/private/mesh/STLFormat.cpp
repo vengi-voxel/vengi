@@ -214,10 +214,10 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const voxel::VoxelVertex *vertices = mesh->getRawVertexData();
 			const voxel::IndexType *indices = mesh->getRawIndexData();
 
-			for (int i = 0; i < ni; i += 3) {
-				const uint32_t one = indices[i + 0];
-				const uint32_t two = indices[i + 1];
-				const uint32_t three = indices[i + 2];
+			for (int j = 0; j < ni; j += 3) {
+				const uint32_t one = indices[j + 0];
+				const uint32_t two = indices[j + 1];
+				const uint32_t three = indices[j + 2];
 
 				const voxel::VoxelVertex &v1 = vertices[one];
 				const voxel::VoxelVertex &v2 = vertices[two];
@@ -227,8 +227,8 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				const glm::vec3 edge1 = glm::vec3(v2.position - v1.position);
 				const glm::vec3 edge2 = glm::vec3(v3.position - v1.position);
 				const glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
-				for (int j = 0; j < 3; ++j) {
-					if (!stream->writeFloat(normal[j])) {
+				for (int k = 0; k < 3; ++k) {
+					if (!stream->writeFloat(normal[k])) {
 						return false;
 					}
 				}

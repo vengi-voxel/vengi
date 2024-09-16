@@ -52,8 +52,8 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	int maxsZ = -1000000;
 
 	for (const auto &entity : entities) {
-		const core::String &filename = entity.fullPath;
-		const int layer = extractLayerFromFilename(filename);
+		const core::String &layerFilename = entity.fullPath;
+		const int layer = extractLayerFromFilename(layerFilename);
 		minsZ = glm::min(minsZ, layer);
 		maxsZ = glm::max(maxsZ, layer);
 	}
@@ -65,19 +65,19 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	node.setName(core::string::extractFilename(filename));
 
 	for (const auto &entity : entities) {
-		const core::String &filename = entity.fullPath;
-		const image::ImagePtr &image = image::loadImage(filename);
+		const core::String &layetFilename = entity.fullPath;
+		const image::ImagePtr &image = image::loadImage(layetFilename);
 		if (!image || !image->isLoaded()) {
-			Log::error("Failed to load image %s", filename.c_str());
+			Log::error("Failed to load image %s", layetFilename.c_str());
 			return false;
 		}
 		if (imageWidth != image->width() || imageHeight != image->height()) {
-			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)", filename.c_str(),
+			Log::error("Image %s has different dimensions than the first image (%d:%d) vs (%d:%d)", layetFilename.c_str(),
 					   image->width(), image->height(), imageWidth, imageHeight);
 			return false;
 		}
-		const int layer = extractLayerFromFilename(filename);
-		Log::debug("Import layer %i of image %s", layer, filename.c_str());
+		const int layer = extractLayerFromFilename(layetFilename);
+		Log::debug("Import layer %i of image %s", layer, layetFilename.c_str());
 		for (int y = 0; y < imageHeight; ++y) {
 			for (int x = 0; x < imageWidth; ++x) {
 				const core::RGBA &color = flattenRGB(image->colorAt(x, y));

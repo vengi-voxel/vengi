@@ -60,8 +60,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	Modifier modifier(&mgr);
 	ASSERT_TRUE(modifier.init());
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
-	const voxel::Region region(-10, 10);
-	voxel::RawVolume volume(region);
+	voxel::RawVolume volume({-10, 10});
 	bool modifierExecuted = false;
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -76,8 +75,7 @@ TEST_F(ModifierTest, testModifierAction) {
 }
 
 TEST_F(ModifierTest, testModifierSelection) {
-	const voxel::Region region(-10, 10);
-	voxel::RawVolume volume(region);
+	voxel::RawVolume volume({-10, 10});
 
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());

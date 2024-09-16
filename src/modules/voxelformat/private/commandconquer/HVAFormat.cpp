@@ -51,8 +51,8 @@ bool HVAFormat::readHVAFrames(io::SeekableReadStream &stream, const vxl::VXLMode
 		if (file.header.layerIds[i] == -1) {
 			Log::debug("Failed to resolve layer id for '%s' (node idx: %i/%i)", file.header.nodeNames[i].c_str(), i,
 					   file.header.numLayers);
-			for (uint32_t i = 0; i < mdl.header.layerCount; ++i) {
-				Log::debug(" - found: %s", mdl.layerHeaders[i].name);
+			for (uint32_t j = 0; j < mdl.header.layerCount; ++j) {
+				Log::debug(" - found: %s", mdl.layerHeaders[j].name);
 			}
 		}
 	}
@@ -150,12 +150,12 @@ bool HVAFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph
 	stream.writeUInt32(numNodes);
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
-		const core::String &name = node.name().substr(0, 15);
-		if (stream.write(name.c_str(), name.size()) == -1) {
+		const core::String &nodeNamePart = node.name().substr(0, 15);
+		if (stream.write(nodeNamePart.c_str(), nodeNamePart.size()) == -1) {
 			Log::error("Failed to write layer name");
 			return false;
 		}
-		for (size_t i = 0; i < 16 - name.size(); ++i) {
+		for (size_t i = 0; i < 16 - nodeNamePart.size(); ++i) {
 			wrapBool(stream.writeUInt8(0))
 		}
 	}

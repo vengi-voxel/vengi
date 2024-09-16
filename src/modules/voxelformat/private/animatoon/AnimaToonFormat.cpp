@@ -35,15 +35,15 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		return false;
 	}
 	const int64_t size = stream->size();
-	core::String str(size, ' ');
-	if (!stream->readString((int)str.size(), str.c_str())) {
+	core::String jsonStr(size, ' ');
+	if (!stream->readString((int)jsonStr.size(), jsonStr.c_str())) {
 		Log::error("Failed to read string from stream");
 		return false;
 	}
 
-	nlohmann::json json = nlohmann::json::parse(str, nullptr, false, true);
-	core::String name = json.value("SceneName", "unknown").c_str();
-	Log::debug("Name: %s", name.c_str());
+	nlohmann::json json = nlohmann::json::parse(jsonStr, nullptr, false, true);
+	core::String sceneName = json.value("SceneName", "unknown").c_str();
+	Log::debug("Name: %s", sceneName.c_str());
 
 	// there are a few different scenes in animatoon 3.0 - each scene has one definition
 	// the definition contains the size of the volumes and the names of the nodes as
@@ -197,13 +197,13 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	const SceneDefinition *sceneDefinition = nullptr;
 	for (int i = 0; i < lengthof(sceneDefinitions); ++i) {
 		const SceneDefinition &def = sceneDefinitions[i];
-		if (name == def.name) {
+		if (sceneName == def.name) {
 			sceneDefinition = &def;
 			break;
 		}
 	}
 	if (sceneDefinition == nullptr) {
-		Log::error("Unknown scene type: %s", name.c_str());
+		Log::error("Unknown scene type: %s", sceneName.c_str());
 		return false;
 	}
 	glm::ivec3 regionSize = sceneDefinition->size;
@@ -213,20 +213,20 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	for (const auto &e : json["ModelSave"]) {
 		const int modelIdx = (int)modelNodeIds.size();
 		regionSize = sceneDefinition->size;
-		if (name == "Quad_Simple") {
+		if (sceneName == "Quad_Simple") {
 			if (modelIdx == 5 || modelIdx == 7) {
 				regionSize = glm::ivec3(11);
 			}
 		}
 		scenegraph::SceneGraphNode node;
 		if (modelIdx >= (int)sceneDefinition->nodeNames.size()) {
-			Log::error("No node name for model %d of scene %s", modelIdx, name.c_str());
-			node.setName(name);
+			Log::error("No node name for model %d of scene %s", modelIdx, sceneName.c_str());
+			node.setName(sceneName);
 		} else {
 			const core::String sceneNodeName = sceneDefinition->nodeNames[modelIdx];
 			if (sceneNodeName.empty()) {
-				Log::error("No node name for model %d of scene %s", modelIdx, name.c_str());
-				node.setName(name);
+				Log::error("No node name for model %d of scene %s", modelIdx, sceneName.c_str());
+				node.setName(sceneName);
 			} else {
 				node.setName(sceneDefinition->nodeNames[modelIdx]);
 			}
@@ -234,8 +234,8 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		int parent = 0;
 		node.setPalette(palette);
 		io::BufferedReadWriteStream base64Stream;
-		const core::String str = e.get<std::string>().c_str();
-		if (!io::Base64::decode(base64Stream, str)) {
+		const core::String modelBase64 = e.get<std::string>().c_str();
+		if (!io::Base64::decode(base64Stream, modelBase64)) {
 			Log::error("Failed to decode ModelSave array entry");
 			return false;
 		}
@@ -284,7 +284,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				}
 			}
 		} else {
-			Log::error("No parent name for model %d of scene %s", modelIdx, name.c_str());
+			Log::error("No parent name for model %d of scene %s", modelIdx, sceneName.c_str());
 		}
 	}
 

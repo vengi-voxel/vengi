@@ -4,6 +4,13 @@ include(CheckCXXCompilerFlag)
 check_c_compiler_flag("-Wno-sign-compare" C_NO_SIGN_COMPARE)
 if (C_NO_SIGN_COMPARE)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-sign-compare")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare")
+endif()
+
+check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
+if (C_NO_SHADOW)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-shadow")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
 endif()
 
 set(CMAKE_C_FLAGS "")

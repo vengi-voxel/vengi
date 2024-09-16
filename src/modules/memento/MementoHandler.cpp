@@ -26,6 +26,90 @@ namespace memento {
 
 static const MementoStateGroup InvalidMementoGroup{};
 
+MementoState::MementoState() : type(MementoType::Max), nodeType(scenegraph::SceneGraphNodeType::Max) {
+}
+
+MementoState::MementoState(const MementoState &other)
+	: type(other.type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
+		referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
+		properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette) {
+}
+
+MementoState::MementoState(MementoType _type, const MementoState &other)
+	: type(_type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID), referenceUUID(other.referenceUUID),
+		nodeType(other.nodeType), keyFrames(other.keyFrames), properties(other.properties), name(other.name),
+		pivot(other.pivot), palette(other.palette) {
+}
+
+MementoState::MementoState(MementoState &&other) noexcept {
+	type = other.type;
+	data = core::move(other.data);
+	parentUUID = other.parentUUID;
+	nodeUUID = other.nodeUUID;
+	referenceUUID = other.referenceUUID;
+	nodeType = other.nodeType;
+	keyFrames = core::move(other.keyFrames);
+	properties = core::move(other.properties);
+	name = core::move(other.name);
+	pivot = core::move(other.pivot);
+	palette = core::move(other.palette);
+}
+
+MementoState &MementoState::operator=(MementoState &&other) noexcept {
+	if (&other == this) {
+		return *this;
+	}
+	type = other.type;
+	data = core::move(other.data);
+	parentUUID = other.parentUUID;
+	nodeUUID = other.nodeUUID;
+	referenceUUID = other.referenceUUID;
+	nodeType = other.nodeType;
+	keyFrames = core::move(other.keyFrames);
+	properties = core::move(other.properties);
+	name = core::move(other.name);
+	pivot = core::move(other.pivot);
+	palette = core::move(other.palette);
+	return *this;
+}
+
+MementoState &MementoState::operator=(const MementoState &other) {
+	if (&other == this) {
+		return *this;
+	}
+	type = other.type;
+	data = other.data;
+	parentUUID = other.parentUUID;
+	nodeUUID = other.nodeUUID;
+	referenceUUID = other.referenceUUID;
+	nodeType = other.nodeType;
+	keyFrames = other.keyFrames;
+	properties = other.properties;
+	name = other.name;
+	pivot = other.pivot;
+	palette = other.palette;
+	return *this;
+}
+
+MementoState::MementoState(MementoType _type, const MementoData &_data, const core::String &_parentId,
+				const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
+				scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
+				const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
+				const scenegraph::SceneGraphNodeProperties &_properties)
+	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
+		nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+		palette(_palette) {
+}
+
+MementoState::MementoState(MementoType _type, MementoData &&_data, core::String &&_parentId, core::String &&_nodeId,
+				core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+				glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
+				scenegraph::SceneGraphNodeProperties &&_properties)
+	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
+		nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+		palette(_palette) {
+}
+
 MementoData::MementoData(uint8_t *buf, size_t bufSize, const voxel::Region &region)
 	: _compressedSize(bufSize), _region(region) {
 	if (buf != nullptr) {

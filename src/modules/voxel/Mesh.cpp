@@ -306,13 +306,13 @@ struct Triangle {
 		return (v0->position + v1->position + v2->position) / 3.0f;
 	}
 
-	Triangle(const VoxelVertex *v0, const VoxelVertex *v1, const VoxelVertex *v2, voxel::IndexType *i0,
-			 voxel::IndexType *i1, voxel::IndexType *i2)
-		: v0(v0), v1(v1), v2(v2), i0(i0), i1(i1), i2(i2) {
-		if (i0 != nullptr) {
-			vi0 = *i0;
-			vi1 = *i1;
-			vi2 = *i2;
+	Triangle(const VoxelVertex *_v0, const VoxelVertex *_v1, const VoxelVertex *_v2, voxel::IndexType *_i0,
+			 voxel::IndexType *_i1, voxel::IndexType *_i2)
+		: v0(_v0), v1(_v1), v2(_v2), i0(_i0), i1(_i1), i2(_i2) {
+		if (_i0 != nullptr) {
+			vi0 = *_i0;
+			vi1 = *_i1;
+			vi2 = *_i2;
 		} else {
 			vi0 = -1;
 			vi1 = -1;

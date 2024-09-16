@@ -310,7 +310,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 
 bool MainWindow::load(const core::String &file, const io::FormatDescription *formatDesc) {
 	if (file.empty()) {
-		_app->openDialog([this](const core::String file, const io::FormatDescription *desc) { load(file, desc); }, {},
+		_app->openDialog([this](const core::String filename, const io::FormatDescription *desc) { load(filename, desc); }, {},
 						 voxelformat::voxelLoad());
 		return true;
 	}

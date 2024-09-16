@@ -317,8 +317,8 @@ bool PLYFormat::parseFacesAscii(const Element &element, io::SeekableReadStream &
 			Polygon polygon;
 			polygon.indices.reserve(indices);
 			for (int64_t i = 0; i < indices; ++i) {
-				const int idx = core::string::toInt(tokens[i + 1]);
-				polygon.indices.push_back(idx);
+				const int polygonIdx = core::string::toInt(tokens[i + 1]);
+				polygon.indices.push_back(polygonIdx);
 			}
 			polygons.push_back(polygon);
 		}
@@ -572,7 +572,7 @@ bool PLYFormat::parseFacesBinary(const Element &element, io::SeekableReadStream 
 			} else {
 				Polygon polygon;
 				polygon.indices.reserve(indices);
-				for (int64_t i = 0; i < indices; ++i) {
+				for (int64_t k = 0; k < indices; ++k) {
 					const int idx = read<int>(es, prop.type);
 					polygon.indices.push_back(idx);
 				}
@@ -590,8 +590,8 @@ bool PLYFormat::parseVerticesBinary(const Element &element, io::SeekableReadStre
 	Log::debug("loading %i vertices", element.count);
 	for (int i = 0; i < element.count; ++i) {
 		Vertex vertex;
-		for (size_t i = 0; i < element.properties.size(); ++i) {
-			const Property &prop = element.properties[i];
+		for (size_t j = 0; j < element.properties.size(); ++j) {
+			const Property &prop = element.properties[j];
 			switch (prop.use) {
 			case PropertyUse::x:
 				vertex.position.x = read<float>(es, prop.type);
@@ -782,20 +782,20 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 		Log::error("Could not open file %s", filename.c_str());
 		return false;
 	}
-	int elements = 0;
-	int indices = 0;
+	int elementsCnt = 0;
+	int indicesCnt = 0;
 	for (const auto &meshExt : meshes) {
 		for (int i = 0; i < voxel::ChunkMesh::Meshes; ++i) {
 			const voxel::Mesh &mesh = meshExt.mesh->mesh[i];
 			if (mesh.isEmpty()) {
 				continue;
 			}
-			elements += (int)mesh.getNoOfVertices();
-			indices += (int)mesh.getNoOfIndices();
+			elementsCnt += (int)mesh.getNoOfVertices();
+			indicesCnt += (int)mesh.getNoOfIndices();
 		}
 	}
 
-	if (elements == 0 || indices == 0) {
+	if (elementsCnt == 0 || indicesCnt == 0) {
 		return false;
 	}
 
@@ -804,7 +804,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	stream->writeStringFormat(false, "comment version " PROJECT_VERSION " github.com/vengi-voxel/vengi\n");
 	stream->writeStringFormat(false, "comment TextureFile %s\n", paletteName.c_str());
 
-	stream->writeStringFormat(false, "element vertex %i\n", elements);
+	stream->writeStringFormat(false, "element vertex %i\n", elementsCnt);
 	stream->writeStringFormat(false, "property float x\n");
 	stream->writeStringFormat(false, "property float z\n");
 	stream->writeStringFormat(false, "property float y\n");
@@ -821,9 +821,9 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 	int faces;
 	if (quad) {
-		faces = indices / 6;
+		faces = indicesCnt / 6;
 	} else {
-		faces = indices / 3;
+		faces = indicesCnt / 3;
 	}
 
 	stream->writeStringFormat(false, "element face %i\n", faces);

@@ -24,14 +24,12 @@
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
 #include "palette/Palette.h"
-#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
-#include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
@@ -825,11 +823,11 @@ VoxConvert::NodeStats VoxConvert::sceneGraphJsonNode_r(const scenegraph::SceneGr
 		const bool mergeQuads = core::Var::getSafe(cfg::VoxformatMergequads)->boolVal();
 		const bool reuseVertices = core::Var::getSafe(cfg::VoxformatReusevertices)->boolVal();
 		const bool ambientOcclusion = core::Var::getSafe(cfg::VoxformatAmbientocclusion)->boolVal();
-		const voxel::SurfaceExtractionType type =
+		const voxel::SurfaceExtractionType meshType =
 			(voxel::SurfaceExtractionType)core::Var::getSafe(cfg::VoxelMeshMode)->intVal();
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx =
-			voxel::createContext(type, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0}, mergeQuads,
+			voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0}, mergeQuads,
 								 reuseVertices, ambientOcclusion);
 
 		voxel::extractSurface(ctx);

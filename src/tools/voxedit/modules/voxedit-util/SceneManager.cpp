@@ -219,8 +219,8 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 }
 
 void SceneManager::fillHollow() {
-	nodeForeachGroup([&] (int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	nodeForeachGroup([&] (int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -230,13 +230,13 @@ void SceneManager::fillHollow() {
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
-		modified(nodeId, wrapper.dirtyRegion());
+		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::fill() {
-	nodeForeachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -246,13 +246,13 @@ void SceneManager::fill() {
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::fill(wrapper, _modifierFacade.cursorVoxel(), _modifierFacade.isMode(ModifierType::Override));
-		modified(nodeId, wrapper.dirtyRegion());
+		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::clear() {
-	nodeForeachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -262,13 +262,13 @@ void SceneManager::clear() {
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::clear(wrapper);
-		modified(nodeId, wrapper.dirtyRegion());
+		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
 
 void SceneManager::hollow() {
-	nodeForeachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphModelNode(groupNodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -278,7 +278,7 @@ void SceneManager::hollow() {
 		}
 		voxel::RawVolumeWrapper wrapper = _modifierFacade.createRawVolumeWrapper(v);
 		voxelutil::hollow(wrapper);
-		modified(nodeId, wrapper.dirtyRegion());
+		modified(groupNodeId, wrapper.dirtyRegion());
 	});
 }
 
@@ -305,8 +305,8 @@ void SceneManager::nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelT
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper(v);
-	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &v) {
-		if (v.getColor() != palIdx) {
+	voxelutil::visitVolume(wrapper, [&wrapper, palIdx, newType](int x, int y, int z, const voxel::Voxel &voxel) {
+		if (voxel.getColor() != palIdx) {
 			return;
 		}
 		wrapper.setVoxel(x, y, z, voxel::createVoxel(newType, palIdx));
@@ -650,8 +650,8 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 }
 
 void SceneManager::resizeAll(const glm::ivec3& size) {
-	nodeForeachGroup([&] (int nodeId) {
-		nodeResize(nodeId, size);
+	nodeForeachGroup([&] (int groupNodeId) {
+		nodeResize(groupNodeId, size);
 	});
 }
 
@@ -1402,8 +1402,8 @@ bool SceneManager::newScene(bool force, const core::String& name, const voxel::R
 }
 
 void SceneManager::rotate(math::Axis axis) {
-	nodeForeachGroup([&](int nodeId) {
-		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+	nodeForeachGroup([&](int groupNodeId) {
+		scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId);
 		if (node == nullptr) {
 			return;
 		}
@@ -1419,7 +1419,7 @@ void SceneManager::rotate(math::Axis axis) {
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
 		setSceneGraphNodeVolume(*node, newVolume);
-		modified(nodeId, r);
+		modified(groupNodeId, r);
 		for (const auto &kfAnim : node->allKeyFrames()) {
 			for (auto &kf : kfAnim->second) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
@@ -1448,8 +1448,8 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::move(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	nodeForeachGroup([&] (int nodeId) {
-		nodeMoveVoxels(nodeId, v);
+	nodeForeachGroup([&] (int groupNodeId) {
+		nodeMoveVoxels(groupNodeId, v);
 	});
 }
 
@@ -1470,8 +1470,8 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 
 void SceneManager::shift(int x, int y, int z) {
 	const glm::ivec3 v(x, y, z);
-	nodeForeachGroup([&] (int nodeId) {
-		nodeShift(nodeId, v);
+	nodeForeachGroup([&] (int groupNodeId) {
+		nodeShift(groupNodeId, v);
 	});
 }
 
@@ -1832,27 +1832,27 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_referenceposition", [&] (const command::CmdArgs& args) {
 		const glm::ivec3& refPos = referencePosition();
-		nodeForeachGroup([&](int nodeId) {
-			const voxel::RawVolume *v = volume(nodeId);
+		nodeForeachGroup([&](int groupNodeId) {
+			const voxel::RawVolume *v = volume(groupNodeId);
 			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region& region = v->region();
 			const glm::ivec3& center = region.getCenter();
 			const glm::ivec3& delta = refPos - center;
-			nodeShift(nodeId, delta);
+			nodeShift(groupNodeId, delta);
 		});
 	}).setHelp(_("Center the current active nodes at the reference position"));
 
 	command::Command::registerCommand("center_origin", [&](const command::CmdArgs &args) {
-		nodeForeachGroup([&](int nodeId) {
-			const voxel::RawVolume *v = volume(nodeId);
+		nodeForeachGroup([&](int groupNodeId) {
+			const voxel::RawVolume *v = volume(groupNodeId);
 			if (v == nullptr) {
 				return;
 			}
 			const voxel::Region& region = v->region();
 			const glm::ivec3& delta = -region.getCenter();
-			nodeShift(nodeId, delta);
+			nodeShift(groupNodeId, delta);
 		});
 		setReferencePosition(glm::zero<glm::ivec3>());
 	}).setHelp(_("Center the current active nodes at the origin"));
@@ -2252,19 +2252,19 @@ int SceneManager::addModelChild(const core::String& name, int width, int height,
 }
 
 void SceneManager::flip(math::Axis axis) {
-	nodeForeachGroup([&](int nodeId) {
-		voxel::RawVolume *v = volume(nodeId);
+	nodeForeachGroup([&](int groupNodeId) {
+		voxel::RawVolume *v = volume(groupNodeId);
 		if (v == nullptr) {
 			return;
 		}
 		voxel::RawVolume* newVolume = voxelutil::mirrorAxis(v, axis);
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
-		if (!setNewVolume(nodeId, newVolume)) {
+		if (!setNewVolume(groupNodeId, newVolume)) {
 			delete newVolume;
 			return;
 		}
-		modified(nodeId, r);
+		modified(groupNodeId, r);
 	});
 }
 
@@ -2826,8 +2826,8 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int nodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeForeachGroup([&] (int groupNodeId) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 				nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
 			}
 		});
@@ -2842,8 +2842,8 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, cons
 bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int nodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeForeachGroup([&] (int groupNodeId) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 				nodeUpdateTransform(*node, matrix, keyFrameIdx, local);
 			}
 		});
@@ -2857,8 +2857,8 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
 
 bool SceneManager::nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx) {
 	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int nodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
+		nodeForeachGroup([&] (int groupNodeId) {
+			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
 				nodeResetTransform(*node, keyFrameIdx);
 			}
 		});
@@ -2897,8 +2897,8 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 
 bool SceneManager::nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
 	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&](int nodeId) {
-			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		nodeForeachGroup([&](int groupNodeId) {
+			scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
 			nodeAddKeyframe(node, frameIdx);
 		});
 		return true;
@@ -2921,8 +2921,8 @@ bool SceneManager::nodeAllAddKeyFrames(scenegraph::FrameIndex frameIdx) {
 
 bool SceneManager::nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx) {
 	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&](int nodeId) {
-			scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		nodeForeachGroup([&](int groupNodeId) {
+			scenegraph::SceneGraphNode &node = _sceneGraph.node(groupNodeId);
 			nodeRemoveKeyFrame(node, frameIdx);
 		});
 		return true;
@@ -3116,8 +3116,8 @@ bool SceneManager::nodeSetVisible(int nodeId, bool visible) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		node->setVisible(visible);
 		if (node->type() == scenegraph::SceneGraphNodeType::Group) {
-			_sceneGraph.visitChildren(nodeId, true, [visible] (scenegraph::SceneGraphNode &node) {
-				node.setVisible(visible);
+			_sceneGraph.visitChildren(nodeId, true, [visible] (scenegraph::SceneGraphNode &childNode) {
+				childNode.setVisible(visible);
 			});
 		}
 		return true;
@@ -3167,8 +3167,8 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 		}
 	}
 	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "noderemove");
-	for (int nodeId : removeReferenceNodes) {
-		nodeRemove(_sceneGraph.node(nodeId), recursive);
+	for (int refNodeId : removeReferenceNodes) {
+		nodeRemove(_sceneGraph.node(refNodeId), recursive);
 	}
 	if (recursive) {
 		// create a copy to prevent concurrent modification errors

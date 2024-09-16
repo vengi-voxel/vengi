@@ -138,9 +138,9 @@ void Modifier::shutdown() {
 
 void Modifier::update(double nowSeconds, const video::Camera *camera) {
 	_brushContext.fixedOrthoSideView = camera == nullptr ? false : camera->isOrthoAligned();
-	AABBBrush *brush = currentAABBBrush();
-	if (brush) {
-		if (brush->singleMode()) {
+	AABBBrush *aabbBrush = currentAABBBrush();
+	if (aabbBrush) {
+		if (aabbBrush->singleMode()) {
 			if (_actionExecuteButton.pressed() && nowSeconds >= _nextSingleExecution) {
 				_actionExecuteButton.execute(true);
 				_nextSingleExecution = nowSeconds + 0.1;

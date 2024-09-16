@@ -97,9 +97,9 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			return false;
 		}
 		for (const io::FilesystemEntry &e : files) {
-			const core::String &extension = core::string::extractExtension(e.name);
-			const bool isSmd3 = extension == "smd3";
-			const bool isSmd2 = extension == "smd2";
+			const core::String &fileExt = core::string::extractExtension(e.name);
+			const bool isSmd3 = fileExt == "smd3";
+			const bool isSmd2 = fileExt == "smd2";
 			if (isSmd2 || isSmd3) {
 				// position is encoded in the filename
 				// ENTITY_SHIP_Rexio_1686826017103.0.0.0.smd3

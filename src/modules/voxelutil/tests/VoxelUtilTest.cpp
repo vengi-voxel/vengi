@@ -93,7 +93,7 @@ TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
 	v.setVoxel(2, 0, 1, groundVoxel);
 	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
 	int n = 0;
-	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &v) { n += v.getColor() == 3; }));
+	EXPECT_EQ(9, voxelutil::visitVolume(v, [&](int, int, int, const voxel::Voxel &voxel) { n += voxel.getColor() == 3; }));
 	EXPECT_EQ(9, n);
 }
 

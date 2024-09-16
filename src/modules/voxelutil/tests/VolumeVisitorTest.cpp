@@ -44,10 +44,10 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 		} else {
 			pos[idx] = region.getUpperCorner()[idx];
 		}
-		for (int i = 0; i < 3; ++i) {
-			for (int j = 0; j < 3; ++j) {
-				pos[(idx + 1) % 3] = i;
-				pos[(idx + 2) % 3] = j;
+		for (int j = 0; j < 3; ++j) {
+			for (int k = 0; k < 3; ++k) {
+				pos[(idx + 1) % 3] = j;
+				pos[(idx + 2) % 3] = k;
 				volume.setVoxel(pos, voxel);
 			}
 		}
@@ -69,11 +69,13 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 TEST_F(VolumeVisitorTest, testVisitFacesSurface) {
 	const voxel::Region region(0, 16);
 	voxel::RawVolume volume(region);
-	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	for (int x = 0; x <= 16; ++x) {
-		for (int z = 0; z <= 16; ++z) {
-			for (int y = 0; y < z; ++y) {
-				volume.setVoxel({x, y, z}, voxel);
+	{
+		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x <= 16; ++x) {
+			for (int z = 0; z <= 16; ++z) {
+				for (int y = 0; y < z; ++y) {
+					volume.setVoxel({x, y, z}, voxel);
+				}
 			}
 		}
 	}

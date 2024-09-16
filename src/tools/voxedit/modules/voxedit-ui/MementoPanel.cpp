@@ -73,8 +73,8 @@ void MementoPanel::update(const char *id, command::CommandExecutionListener &lis
 
 		if (ImGui::BeginListBox("##history-actions", ImVec2(-FLT_MIN, -FLT_MIN))) {
 			struct State {
-				State(const core::String *name, const memento::MementoState *state, int stateIdx)
-					: name(name), state(state), stateIdx(stateIdx) {
+				State(const core::String *_name, const memento::MementoState *_state, int _stateIdx)
+					: name(_name), state(_state), stateIdx(_stateIdx) {
 				}
 				const core::String *name;
 				const memento::MementoState *state;

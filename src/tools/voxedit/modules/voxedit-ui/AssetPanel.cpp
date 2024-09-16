@@ -66,10 +66,10 @@ void AssetPanel::update(const char *id, bool sceneMode, command::CommandExecutio
 
 			if (ImGui::BeginTabItem(_("Images"))) {
 				core_trace_scoped(Images);
-				image::ImagePtr image;
-				while (_images.pop(image)) {
-					if (image->isLoaded()) {
-						_texturePool->addImage(image);
+				image::ImagePtr loadImage;
+				while (_images.pop(loadImage)) {
+					if (loadImage->isLoaded()) {
+						_texturePool->addImage(loadImage);
 					}
 				}
 				int n = 1;

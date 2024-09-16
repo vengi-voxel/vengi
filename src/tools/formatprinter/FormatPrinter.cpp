@@ -55,8 +55,8 @@ static void printJsonMagicArray(const T &array) {
 		} else {
 			Log::printf("\"type\": \"bytes\", \"value\": \"");
 			Log::printf("0x");
-			for (size_t i = 0; i < e.size(); ++i) {
-				Log::printf("%02X", (uint8_t)e[i]);
+			for (size_t j = 0; j < e.size(); ++j) {
+				Log::printf("%02X", (uint8_t)e[j]);
 			}
 			Log::printf("\"");
 		}

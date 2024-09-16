@@ -378,9 +378,9 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		}
 
 		if (version >= 11) {
-			uint32_t size;
-			wrap(stream->readUInt32(size));
-			stream->skip(size); // zipped pixel data
+			uint32_t pixelSize;
+			wrap(stream->readUInt32(pixelSize));
+			stream->skip(pixelSize); // zipped pixel data
 		} else if (version == 3) {
 			uint8_t byte;
 			do {

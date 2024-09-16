@@ -32,9 +32,9 @@ static void printLastError(const char *ctx) {
 	if (::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
 						 GetModuleHandleA("winhttp.dll"), errnum, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buffer,
 						 sizeof(buffer), NULL) == 0) {
-		Log::error("%s: %d - Unknown error", ctx, errnum);
+		Log::error("%s: %d - Unknown error", ctx, (int)errnum);
 	} else {
-		Log::error("%s: %d - %s", ctx, errnum, buffer);
+		Log::error("%s: %d - %s", ctx, (int)errnum, buffer);
 	}
 }
 

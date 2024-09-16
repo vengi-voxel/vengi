@@ -148,8 +148,8 @@ Objects: {
 			stream.writeStringFormat(false, "\tModel: \"%s\", \"Mesh\" {\n", objectName);
 			wrapBool(stream.writeString("\t\tVersion: 232\n", false))
 			wrapBool(stream.writeString("\t\tVertices: ", false))
-			for (int i = 0; i < nv; ++i) {
-				const voxel::VoxelVertex &v = vertices[i];
+			for (int j = 0; j < nv; ++j) {
+				const voxel::VoxelVertex &v = vertices[j];
 
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
@@ -158,7 +158,7 @@ Objects: {
 					pos = v.position;
 				}
 				pos *= scale;
-				if (i > 0) {
+				if (j > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
 				stream.writeStringFormat(false, "%.04f,%.04f,%.04f", pos.x, pos.y, pos.z);
@@ -167,11 +167,11 @@ Objects: {
 
 			wrapBool(stream.writeString("\t\tPolygonVertexIndex: ", false))
 
-			for (int i = 0; i < ni; i += 3) {
-				const uint32_t one = indices[i + 0] + 1;
-				const uint32_t two = indices[i + 1] + 1;
-				const uint32_t three = indices[i + 2] + 1;
-				if (i > 0) {
+			for (int j = 0; j < ni; j += 3) {
+				const uint32_t one = indices[j + 0] + 1;
+				const uint32_t two = indices[j + 1] + 1;
+				const uint32_t three = indices[j + 2] + 1;
+				if (j > 0) {
 					wrapBool(stream.writeString(",", false))
 				}
 				stream.writeStringFormat(false, "%i,%i,-%i", (int)one, (int)two, (int)(three + 1));
@@ -189,11 +189,11 @@ Objects: {
 				wrapBool(stream.writeString("\t\t\tReferenceInformationType: \"Direct\"\n", false))
 				wrapBool(stream.writeString("\t\t\tUV: ", false))
 
-				for (int i = 0; i < ni; i++) {
-					const uint32_t index = indices[i];
+				for (int j = 0; j < ni; j++) {
+					const uint32_t index = indices[j];
 					const voxel::VoxelVertex &v = vertices[index];
 					const glm::vec2 &uv = paletteUV(v.colorIndex);
-					if (i > 0) {
+					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
 					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
@@ -221,11 +221,11 @@ Objects: {
 										 "\t\t\tReferenceInformationType: \"Direct\"\n"
 										 "\t\t\tColors: ",
 										 objectName);
-				for (int i = 0; i < ni; i++) {
-					const uint32_t index = indices[i];
+				for (int j = 0; j < ni; j++) {
+					const uint32_t index = indices[j];
 					const voxel::VoxelVertex &v = vertices[index];
 					const glm::vec4 &color = core::Color::fromRGBA(palette.color(v.colorIndex));
-					if (i > 0) {
+					if (j > 0) {
 						wrapBool(stream.writeString(",", false))
 					}
 					stream.writeStringFormat(false, "%.05f,%.05f,%.05f,%.05f", color.r, color.g, color.b, color.a);

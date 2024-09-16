@@ -161,8 +161,8 @@ bool SpaceColonization::step() {
 	for (Branch* branch : newBranches) {
 		// Check if branch already exists. These cases seem to
 		// happen when attraction point is in specific areas
-		auto i = _branches.find(branch->_position);
-		if (i != _branches.end()) {
+		auto iter = _branches.find(branch->_position);
+		if (iter != _branches.end()) {
 			auto& c = branch->_parent->_children;
 			for (size_t i = 0; i < c.size(); ++i) {
 				if (c[i] == branch) {

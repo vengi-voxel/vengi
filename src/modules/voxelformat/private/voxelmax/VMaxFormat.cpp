@@ -313,7 +313,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		}
 
 		// const priv::BinaryPList &deselectedLayerColorUsage = snapshot.getDictEntry("dlc");
-		const priv::BinaryPList &data = snapshot.getDictEntry("ds");
+		const priv::BinaryPList &dsData = snapshot.getDictEntry("ds");
 		// const priv::BinaryPList &layerColorUsage = snapshot.getDictEntry("lc");
 		const VolumeId &volumeId = parseId(snapshot);
 		const VolumeStats &volumeStats = parseStats(snapshot);
@@ -331,13 +331,13 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 			return false;
 		}
 
-		const size_t dsSize = data.size();
+		const size_t dsSize = dsData.size();
 		if (dsSize == 0u) {
 			Log::error("Node 'ds' is empty");
 			return false;
 		}
 
-		io::MemoryReadStream dsStream(data.asData().data(), dsSize);
+		io::MemoryReadStream dsStream(dsData.asData().data(), dsSize);
 		Log::debug("Found voxel data with size %i", (int)dsStream.size());
 
 		// search the chunk world position by getting the morton index for the snapshot id

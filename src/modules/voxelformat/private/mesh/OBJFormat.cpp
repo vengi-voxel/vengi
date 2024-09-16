@@ -114,8 +114,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				return false;
 			}
 
-			for (int i = 0; i < nv; ++i) {
-				const voxel::VoxelVertex &v = vertices[i];
+			for (int j = 0; j < nv; ++j) {
+				const voxel::VoxelVertex &v = vertices[j];
 
 				glm::vec3 pos;
 				if (meshExt.applyTransform) {
@@ -132,16 +132,16 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				wrapBool(stream->writeStringFormat(false, "\n"))
 			}
 			if (withNormals) {
-				for (int i = 0; i < nv; ++i) {
-					const glm::vec3 &norm = normals[i];
+				for (int j = 0; j < nv; ++j) {
+					const glm::vec3 &norm = normals[j];
 					stream->writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
 				}
 			}
 
 			if (quad) {
 				if (withTexCoords) {
-					for (int i = 0; i < ni; i += 6) {
-						const voxel::VoxelVertex &v = vertices[indices[i]];
+					for (int j = 0; j < ni; j += 6) {
+						const voxel::VoxelVertex &v = vertices[indices[j]];
 						const glm::vec2 &uv = paletteUV(v.colorIndex);
 						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
@@ -151,11 +151,11 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				}
 
 				int uvi = texcoordOffset;
-				for (int i = 0; i < ni - 5; i += 6, uvi += 4) {
-					const uint32_t one = idxOffset + indices[i + 0] + 1;
-					const uint32_t two = idxOffset + indices[i + 1] + 1;
-					const uint32_t three = idxOffset + indices[i + 2] + 1;
-					const uint32_t four = idxOffset + indices[i + 5] + 1;
+				for (int j = 0; j < ni - 5; j += 6, uvi += 4) {
+					const uint32_t one = idxOffset + indices[j + 0] + 1;
+					const uint32_t two = idxOffset + indices[j + 1] + 1;
+					const uint32_t three = idxOffset + indices[j + 2] + 1;
+					const uint32_t four = idxOffset + indices[j + 5] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
@@ -178,8 +178,8 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				texcoordOffset += ni / 6 * 4;
 			} else {
 				if (withTexCoords) {
-					for (int i = 0; i < ni; i += 3) {
-						const voxel::VoxelVertex &v = vertices[indices[i]];
+					for (int j = 0; j < ni; j += 3) {
+						const voxel::VoxelVertex &v = vertices[indices[j]];
 						const glm::vec2 &uv = paletteUV(v.colorIndex);
 						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 						stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
@@ -187,19 +187,19 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					}
 				}
 
-				for (int i = 0; i < ni; i += 3) {
-					const uint32_t one = idxOffset + indices[i + 0] + 1;
-					const uint32_t two = idxOffset + indices[i + 1] + 1;
-					const uint32_t three = idxOffset + indices[i + 2] + 1;
+				for (int j = 0; j < ni; j += 3) {
+					const uint32_t one = idxOffset + indices[j + 0] + 1;
+					const uint32_t two = idxOffset + indices[j + 1] + 1;
+					const uint32_t three = idxOffset + indices[j + 2] + 1;
 					if (withTexCoords) {
 						if (withNormals) {
 							stream->writeStringFormat(false, "f %i/%i/%i %i/%i/%i %i/%i/%i\n", (int)one,
-													 texcoordOffset + i + 1, (int)one, (int)two, texcoordOffset + i + 2,
-													 (int)two, (int)three, texcoordOffset + i + 3, (int)three);
+													 texcoordOffset + j + 1, (int)one, (int)two, texcoordOffset + j + 2,
+													 (int)two, (int)three, texcoordOffset + j + 3, (int)three);
 						} else {
-							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + i + 1,
-													 (int)two, texcoordOffset + i + 2, (int)three,
-													 texcoordOffset + i + 3);
+							stream->writeStringFormat(false, "f %i/%i %i/%i %i/%i\n", (int)one, texcoordOffset + j + 1,
+													 (int)two, texcoordOffset + j + 2, (int)three,
+													 texcoordOffset + j + 3);
 						}
 					} else {
 						if (withNormals) {

@@ -114,7 +114,7 @@ void core_stacktrace() {
 	backward::Printer printer;
 	printer.print(st, os);
 	std::string str = os.str();
-	char *c = (char*)str.c_str();
+	const char *c = str.c_str();
 	while (char *l = SDL_strchr(c, '\n')) {
 		*l = '\0';
 		Log::error("%s", c);

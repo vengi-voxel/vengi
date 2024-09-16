@@ -146,10 +146,10 @@ core::String Filesystem::findBinary(const core::String &binaryName) const {
 #endif
 		core::DynamicArray<core::String> paths;
 		core::string::splitString(path, paths, pathSep);
-		for (const auto &path : paths) {
-			const core::String p = core::string::path(path, binaryWithExtension);
-			if (fs_exists(p.c_str())) {
-				return p;
+		for (const auto &p : paths) {
+			const core::String binPath = core::string::path(p, binaryWithExtension);
+			if (fs_exists(binPath.c_str())) {
+				return binPath;
 			}
 		}
 	}

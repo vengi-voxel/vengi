@@ -163,8 +163,8 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		}
 
 		core::Buffer<core::RGBA> buffer(pixelSize);
-		for (int i = 0; i < pixelSize; ++i) {
-			buffer[i] = pal.color(pixels[i]);
+		for (int j = 0; j < pixelSize; ++j) {
+			buffer[j] = pal.color(pixels[j]);
 		}
 		if (tex->loadRGBA((const uint8_t *)buffer.data(), width, height)) {
 			Log::debug("Use image %s", texture.name);

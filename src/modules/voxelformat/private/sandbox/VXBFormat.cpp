@@ -99,10 +99,10 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return false;
 	}
 
-	float opaque;
-	wrap(stream->readFloat(opaque))
-	float emissive;
-	wrap(stream->readFloat(emissive))
+	float globalOpaque;
+	wrap(stream->readFloat(globalOpaque))
+	float globalEmissive;
+	wrap(stream->readFloat(globalEmissive))
 	uint32_t blockSize;
 	wrap(stream->readUInt32(blockSize))
 	uint32_t uniqueFaces;
@@ -155,7 +155,7 @@ size_t VXBFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		if (emissive) {
 			palette.setEmit(i, emissive);
 		}
-		palette.setAlpha(i, opaque);
+		palette.setAlpha(i, globalOpaque);
 	}
 	palette.setSize(materialAmount);
 	return (size_t)materialAmount;

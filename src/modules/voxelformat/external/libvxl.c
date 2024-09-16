@@ -379,10 +379,10 @@ static void libvxl_column_encode(struct libvxl_map* map, size_t* chunk_offsets,
 			desc->length = 0;
 			break;
 		} else { // bottom_start < map->depth
-			struct libvxl_block* last_surface_block;
+			struct libvxl_block* last_surface_block2;
 			size_t bottom_end = find_successive_surface(
 				chunk, chunk_offsets[chunk - map->chunks], x, y, bottom_start,
-				&last_surface_block);
+				&last_surface_block2);
 
 			// there are more spans to follow, emit bottom colors
 			if(bottom_end < map->depth) {

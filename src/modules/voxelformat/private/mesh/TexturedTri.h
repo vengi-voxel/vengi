@@ -11,13 +11,13 @@ namespace voxelformat {
 
 struct TexturedTri : public math::Tri {
 	TexturedTri() = default;
-	inline TexturedTri(const glm::vec3 (&vertices)[3], const glm::vec2 (&uv)[3], const image::ImagePtr &texture,
-								 const core::RGBA (&color)[3])
-		: math::Tri::Tri(vertices, color) {
+	inline TexturedTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const image::ImagePtr &_texture,
+								 const core::RGBA (&_color)[3])
+		: math::Tri::Tri(_vertices, _color) {
 		for (int i = 0; i < 3; ++i) {
-			this->uv[i] = uv[i];
+			this->uv[i] = _uv[i];
 		}
-		this->texture = texture;
+		this->texture = _texture;
 	}
 
 	virtual ~TexturedTri() = default;

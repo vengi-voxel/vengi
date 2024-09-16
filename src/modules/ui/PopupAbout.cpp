@@ -24,13 +24,13 @@ void metricOption() {
 }
 
 void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvailable) {
-	const int w = 600;
-	const int h = 400;
-	ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Appearing);
+	const int popupWidth = 600;
+	const int popupHeight = 400;
+	ImGui::SetNextWindowSize(ImVec2(popupWidth, popupHeight), ImGuiCond_Appearing);
 	if (ImGui::BeginPopupModal(POPUP_TITLE_ABOUT)) {
-		if (ImGui::BeginChild("##scrollwindow", ImVec2(w, h - 80))) {
+		if (ImGui::BeginChild("##scrollwindow", ImVec2(popupWidth, popupHeight - 80))) {
 			if (ImGui::BeginTabBar("##abouttabbar")) {
-				const float w = ImGui::GetContentRegionAvail().x;
+				const float urlIconWidth = ImGui::GetContentRegionAvail().x;
 
 				if (ImGui::BeginTabItem(app::App::getInstance()->fullAppname().c_str())) {
 					ImGui::Text("%s " PROJECT_VERSION, app::App::getInstance()->appname().c_str());
@@ -44,42 +44,42 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					metricOption();
 
 					ImGui::Dummy(ImVec2(1, 10));
-					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues", w);
-					ImGui::URLIconItem(ICON_LC_CIRCLE_HELP, _("Help"), "https://vengi-voxel.github.io/vengi/", w);
-					ImGui::URLIconItem(ICON_LC_TWITTER, _("Twitter"), "https://twitter.com/MartinGerhardy", w);
-					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy", w);
-					ImGui::URLIconItem(ICON_LC_SQUARE, _("Discord"), "https://vengi-voxel.de/discord", w);
+					ImGui::URLIconItem(ICON_LC_GITHUB, _("Bug reports"), "https://github.com/vengi-voxel/vengi/issues", urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_CIRCLE_HELP, _("Help"), "https://vengi-voxel.github.io/vengi/", urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_TWITTER, _("Twitter"), "https://twitter.com/MartinGerhardy", urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_SQUARE, _("Mastodon"), "https://mastodon.social/@mgerhardy", urlIconWidth);
+					ImGui::URLIconItem(ICON_LC_SQUARE, _("Discord"), "https://vengi-voxel.de/discord", urlIconWidth);
 					ImGui::EndTabItem();
 				}
 
 				if (ImGui::BeginTabItem(_("Credits"))) {
-					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", w);
+					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", urlIconWidth);
 #ifdef USE_CURL
 					ImGui::Text("libCURL");
 #endif
-					ImGui::URLItem("cute_aseprite", "https://github.com/RandyGaul/cute_headers", w);
-					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", w);
-					ImGui::URLItem("glm", "https://github.com/g-truc/glm", w);
-					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", w);
-					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", w);
-					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", w);
-					ImGui::URLItem("implot", "https://github.com/epezent/implot", w);
-					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", w);
+					ImGui::URLItem("cute_aseprite", "https://github.com/RandyGaul/cute_headers", urlIconWidth);
+					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", urlIconWidth);
+					ImGui::URLItem("glm", "https://github.com/g-truc/glm", urlIconWidth);
+					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders", urlIconWidth);
+					ImGui::URLItem("imguizmo", "https://github.com/CedricGuillemet/ImGuizmo", urlIconWidth);
+					ImGui::URLItem("im-neo-sequencer", "https://gitlab.com/GroGy/im-neo-sequencer", urlIconWidth);
+					ImGui::URLItem("implot", "https://github.com/epezent/implot", urlIconWidth);
+					ImGui::URLItem("libvxl", "https://github.com/xtreme8000/libvxl", urlIconWidth);
 #ifdef USE_LIBJPEG
-					ImGui::URLItem("libjpeg", "https://github.com/libjpeg-turbo/libjpeg-turbo", w);
+					ImGui::URLItem("libjpeg", "https://github.com/libjpeg-turbo/libjpeg-turbo", urlIconWidth);
 #endif
-					ImGui::URLItem("lua", "https://www.lua.org/", w);
-					ImGui::URLItem("lucide", "https://lucide.dev/", w);
-					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", w);
-					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", w);
-					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", w);
-					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", w);
-					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", w);
-					ImGui::URLItem("tinygettext", "https://github.com/tinygettext/tinygettext/", w);
-					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", w);
-					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", w);
-					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", w);
-					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", w);
+					ImGui::URLItem("lua", "https://www.lua.org/", urlIconWidth);
+					ImGui::URLItem("lucide", "https://lucide.dev/", urlIconWidth);
+					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", urlIconWidth);
+					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", urlIconWidth);
+					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", urlIconWidth);
+					ImGui::URLItem("SDL2", "https://github.com/libsdl-org/SDL", urlIconWidth);
+					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", urlIconWidth);
+					ImGui::URLItem("tinygettext", "https://github.com/tinygettext/tinygettext/", urlIconWidth);
+					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", urlIconWidth);
+					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", urlIconWidth);
+					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", urlIconWidth);
+					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", urlIconWidth);
 #ifdef USE_ZLIB
 					ImGui::Text("zlib");
 #endif
@@ -93,7 +93,7 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 							continue;
 						}
 						core::String fileurl = "file://" + abspath;
-						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), w);
+						ImGui::URLItem(abspath.c_str(), fileurl.c_str(), urlIconWidth);
 					}
 					ImGui::EndTabItem();
 				}

@@ -799,11 +799,11 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 
 			tinygltf::Mesh gltfMesh;
 			gltfMesh.name = objectName;
-			for (int i = 0; i < palette.colorCount(); ++i) {
-				if (palette.color(i).a == 0) {
+			for (int j = 0; j < palette.colorCount(); ++j) {
+				if (palette.color(j).a == 0) {
 					continue;
 				}
-				savePrimitivesPerMaterial(i, pivotOffset, gltfModel, gltfMesh, mesh, palette, withColor, withTexCoords,
+				savePrimitivesPerMaterial(j, pivotOffset, gltfModel, gltfMesh, mesh, palette, withColor, withTexCoords,
 										  colorAsFloat, exportNormals, meshExt.applyTransform, texcoordIndex,
 										  paletteMaterialIndices);
 			}
