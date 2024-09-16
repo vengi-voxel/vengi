@@ -51,7 +51,6 @@ void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::ve
 
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
 	clear();
-	_animations.push_back(_activeAnimation);
 }
 
 SceneGraph::~SceneGraph() {
