@@ -17,7 +17,19 @@
 #define libvxl_mem_realloc core_realloc
 #define libvxl_mem_free core_free
 extern "C" {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 #include "voxelformat/external/libvxl.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 namespace voxelformat {
