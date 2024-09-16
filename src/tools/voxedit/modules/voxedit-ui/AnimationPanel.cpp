@@ -18,6 +18,7 @@ void AnimationPanel::update(const char *id, command::CommandExecutionListener &l
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::SceneGraphAnimationIds &animations = sceneGraph.animations();
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
+		// TODO: ANIMATION: make this a popup asking for a name and which animation to duplicate (or empty)
 		ImGui::InputText("##nameanimationpanel", &_newAnimation);
 		ImGui::SameLine();
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add"))) {

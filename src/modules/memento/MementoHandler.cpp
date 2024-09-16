@@ -491,7 +491,7 @@ bool MementoHandler::markNodePropertyChange(const scenegraph::SceneGraph &sceneG
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	voxel::RawVolume *volume = nullptr;
-	Log::debug("New node property undo state for node %i with name %s", nodeId, name.c_str());
+	Log::debug("New node property memento state for node %i with name %s", nodeId, name.c_str());
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeProperties, voxel::Region::InvalidRegion);
 }
 
@@ -575,11 +575,11 @@ bool MementoHandler::markRemovedAnimation(const scenegraph::SceneGraph &sceneGra
 
 bool MementoHandler::markUndoPreamble() {
 	if (_locked > 0) {
-		Log::debug("Don't add undo state - we are currently in locked mode");
+		Log::debug("Don't add memento state - we are currently in locked mode");
 		return false;
 	}
 	if (!_groups.empty()) {
-		// if we mark something as new undo state, we can throw away
+		// if we mark something as new memento state, we can throw away
 		// every other state that follows the new one (everything after
 		// the current state position)
 		const size_t n = _groups.size() - (_groupStatePosition + 1);
@@ -618,7 +618,7 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 	if (!markUndoPreamble()) {
 		return false;
 	}
-	Log::debug("New undo state for node %s with name '%s'", nodeId.c_str(), name.c_str());
+	Log::debug("New memento state for node %s with name '%s'", nodeId.c_str(), name.c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	if (/*TODO: MEMENTO (type != MementoType::SceneNodeAdded && type != MementoType::Modification) ||*/ !recordVolumeStates(volume)) {
 		volume = nullptr;
