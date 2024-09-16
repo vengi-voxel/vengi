@@ -138,7 +138,7 @@ bool fs_exists(const char *path) {
 	const int ret = _waccess(wpath, 0);
 	SDL_free(wpath);
 	if (ret != 0) {
-		Log::debug("Failed to access %s: %s", path, strerror(errno));
+		Log::trace("Failed to access %s: %s", path, strerror(errno));
 	}
 	return ret == 0;
 }
