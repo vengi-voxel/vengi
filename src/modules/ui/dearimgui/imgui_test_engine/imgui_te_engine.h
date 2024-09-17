@@ -228,7 +228,7 @@ struct IMGUI_API ImGuiTestEngineIO
 
     // Options: Functions
     ImGuiTestCoroutineInterface*                CoroutineFuncs = NULL;          // (Required) Coroutine functions (see imgui_te_coroutines.h)
-    ImFuncPtr(ImGuiTestEngineSrcFileOpenFunc)   SrcFileOpenFunc = NULL;         // (Optional) To open source files from test engine UI
+    ImFuncPtr(ImGuiTestEngineSrcFileOpenFunc)   SrcFileOpenFunc = NULL;         // (Optional) To open source files from test engine UI (otherwise default to open file in shell)
     ImFuncPtr(ImGuiScreenCaptureFunc)           ScreenCaptureFunc = NULL;       // (Optional) To capture graphics output (application _MUST_ call ImGuiTestEngine_PostSwap() function after swapping is framebuffer)
     void*                                       SrcFileOpenUserData = NULL;     // (Optional) User data for SrcFileOpenFunc
     void*                                       ScreenCaptureUserData = NULL;   // (Optional) User data for ScreenCaptureFunc

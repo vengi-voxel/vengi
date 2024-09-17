@@ -52,8 +52,7 @@ static bool ParseLineAndDrawFileOpenItemForSourceFile(ImGuiTestEngine* e, ImGuiT
         const char* src_name = ImPathFindFilename(src_path);
         buf.setf("%.*s%.*s", (int)(src_name - src_path), src_path, (int)(path_end - path_begin), path_begin);
 
-        ImGuiTestEngineIO& e_io = ImGuiTestEngine_GetIO(e);
-        e_io.SrcFileOpenFunc(buf.c_str(), line_no, e_io.SrcFileOpenUserData);
+        ImGuiTestEngine_OpenSourceFile(e, buf.c_str(), line_no);
     }
 
     return true;
@@ -484,7 +483,7 @@ static void ShowTestGroup(ImGuiTestEngine* e, ImGuiTestGroup group, Str* filter)
                 else
                     buf.set("Open source");
                 if (ImGui::MenuItem(buf.c_str(), NULL, false, open_source_available))
-                    e->IO.SrcFileOpenFunc(test->SourceFile, test->SourceLine, e->IO.SrcFileOpenUserData);
+                    ImGuiTestEngine_OpenSourceFile(e, test->SourceFile, test->SourceLine);
                 if (ImGui::MenuItem("View source...", NULL, false, test->SourceFile != NULL))
                     view_source = true;
 
@@ -872,4 +871,18 @@ void    ImGuiTestEngine_ShowTestEngineWindows(ImGuiTestEngine* e, bool* p_open)
         ImGui::ShowMetricsWindow(&e->UiMetricsOpen);
     if (e->UiDebugLogOpen)
         ImGui::ShowDebugLogWindow(&e->UiDebugLogOpen);
+}
+
+void    ImGuiTestEngine_OpenSourceFile(ImGuiTestEngine* e, const char* source_filename, int source_line_no)
+{
+    ImGuiTestEngineIO& e_io = ImGuiTestEngine_GetIO(e);
+    if (e_io.SrcFileOpenFunc == NULL)
+        ImOsOpenInShell(source_filename); // This is never used by imgui_test_suite but we provide it as a second layer of convenience for test engine users.
+    else
+        e_io.SrcFileOpenFunc(source_filename, source_line_no, e_io.SrcFileOpenUserData);
+
+    // Debugger output which may be double-clicked
+    // Print after opener so it appears in a neat place below e.g. DLL loading.
+    if (ImGui::GetIO().ConfigDebugIsDebuggerPresent)
+        ImOsOutputDebugString(Str256f("%s(%d): opening from user action.\n", source_filename, source_line_no).c_str());
 }

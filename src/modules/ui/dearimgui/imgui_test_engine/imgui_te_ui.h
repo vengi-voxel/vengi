@@ -18,4 +18,5 @@
 struct ImGuiTestEngine;
 
 // Functions
-IMGUI_API void    ImGuiTestEngine_ShowTestEngineWindows(ImGuiTestEngine* engine, bool* p_open);
+IMGUI_API void  ImGuiTestEngine_ShowTestEngineWindows(ImGuiTestEngine* engine, bool* p_open);
+IMGUI_API void  ImGuiTestEngine_OpenSourceFile(ImGuiTestEngine* engine, const char* source_filename, int source_line_no);
