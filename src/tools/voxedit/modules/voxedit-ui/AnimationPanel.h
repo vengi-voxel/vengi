@@ -31,6 +31,7 @@ private:
 	core::String _newAnimation;
 	core::String _selectedAnimation;
 	AnimationTimeline *_animationTimeline;
+	bool _copyExistingAnimation = false;
 
 	void popupCreateAnimation();
 

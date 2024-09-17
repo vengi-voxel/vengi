@@ -3,7 +3,7 @@
  */
 
 #include "AnimationPanel.h"
-#include "command/CommandHandler.h"
+#include "ScopedStyle.h"
 #include "core/Log.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -38,32 +38,56 @@ void AnimationPanel::popupCreateAnimation() {
 		ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue;
 		bool renamed = ImGui::InputText(_("Name"), &_newAnimation, flags);
 
-		// TODO: ANIMATION: Allow to create empty animation
+		ImGui::Checkbox(_("Copy from existing animation"), &_copyExistingAnimation);
 
-		if (ImGui::BeginCombo(_("Animation"), _selectedAnimation.c_str())) {
-			const scenegraph::SceneGraphAnimationIds &animations = _sceneMgr->sceneGraph().animations();
-			for (const core::String &animation : animations) {
-				const bool isSelected = _selectedAnimation == animation;
-				if (ImGui::Selectable(animation.c_str(), isSelected)) {
-					_selectedAnimation = animation;
+		if (_copyExistingAnimation) {
+			if (ImGui::BeginCombo(_("Animation"), _selectedAnimation.c_str())) {
+				const scenegraph::SceneGraphAnimationIds &animations = _sceneMgr->sceneGraph().animations();
+				for (const core::String &animation : animations) {
+					const bool isSelected = _selectedAnimation == animation;
+					if (ImGui::Selectable(animation.c_str(), isSelected)) {
+						_selectedAnimation = animation;
+					}
+					if (isSelected) {
+						ImGui::SetItemDefaultFocus();
+					}
 				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
+				ImGui::EndCombo();
 			}
-			ImGui::EndCombo();
 		}
-		if (ImGui::Button(_("Apply")) || renamed) {
-			if (!_sceneMgr->duplicateAnimation(_selectedAnimation, _newAnimation)) {
-				Log::error("Failed to add animation %s", _newAnimation.c_str());
+
+		ui::ScopedStyle style;
+		const bool animAlreadyExists = _sceneMgr->sceneGraph().hasAnimation(_newAnimation);
+		if (animAlreadyExists) {
+			style.disableItem();
+		}
+		bool close = false;
+		if (ImGui::Button(_("Ok")) || renamed) {
+			if (_copyExistingAnimation) {
+				if (!_sceneMgr->duplicateAnimation(_selectedAnimation, _newAnimation)) {
+					Log::error("Failed to add animation %s", _newAnimation.c_str());
+				} else {
+					_newAnimation = "";
+				}
 			} else {
-				_newAnimation = "";
+				if (!_sceneMgr->addAnimation(_newAnimation)) {
+					Log::error("Failed to add animation %s", _newAnimation.c_str());
+				} else {
+					_newAnimation = "";
+				}
 			}
 			_animationTimeline->resetFrames();
-			ImGui::CloseCurrentPopup();
+			close = true;
+		}
+		if (animAlreadyExists) {
+			style.enableItem();
+			ImGui::TooltipTextUnformatted(_("Animation already exists"));
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("Close"))) {
+		if (ImGui::Button(_("Cancel"))) {
+			close = true;
+		}
+		if (close) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();

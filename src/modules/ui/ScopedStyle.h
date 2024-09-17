@@ -66,6 +66,12 @@ public:
 		++_itemFlags;
 		setAlpha(ImGui::GetStyle().Alpha * 0.5f);
 	}
+	inline void enableItem() {
+		ImGui::PopItemFlag();
+		--_itemFlags;
+		ImGui::PopStyleVar();
+		--_n;
+	}
 	inline void setAlpha(float alpha) {
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
 		++_n;
