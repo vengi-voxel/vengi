@@ -3,13 +3,13 @@
  */
 
 #include "AnimationTimeline.h"
-#include "ui/IconsLucide.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/dearimgui/imgui_neo_sequencer.h"
 #include "voxedit-util/SceneManager.h"
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 
@@ -43,6 +43,10 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 	} else {
 		if (ImGui::DisabledButton(ICON_LC_PLAY, maxFrame <= 0)) {
 			_play = true;
+			_frameTimeSeconds = 0.0;
+			if (!_loop && currentFrame >= maxFrame) {
+				_sceneMgr->setCurrentFrame(0);
+			}
 		}
 		ImGui::TooltipText(_("Max frames for this animation: %i"), maxFrame);
 	}
@@ -52,12 +56,14 @@ void AnimationTimeline::header(scenegraph::FrameIndex currentFrame, scenegraph::
 
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::Size(5));
-	ImGui::InputDouble(_("FPS"), &_fps, 0.0, 0.0, "%.0f");
+	if (ImGui::InputDouble(_("FPS"), &_fps, 0.0, 0.0, "%.0f")) {
+		_frameTimeSeconds = 0.0;
+	}
 }
 
 void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
-								  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
-								  const scenegraph::SceneGraphNode &modelNode) {
+									  core::Buffer<scenegraph::FrameIndex> &selectedFrames,
+									  const scenegraph::SceneGraphNode &modelNode) {
 	const core::String &label = core::String::format("%s###node-%i", modelNode.name().c_str(), modelNode.id());
 	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int activeNode = sceneGraph.activeNode();
@@ -84,7 +90,6 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 			ImGui::SetScrollHereY();
 			_lastActivedNodeId = activeNode;
 		}
-		_sceneMgr->setCurrentFrame(currentFrame);
 		if (ImGui::IsNeoTimelineSelected(ImGuiNeoTimelineIsSelectedFlags_NewlySelected)) {
 			_sceneMgr->nodeActivate(modelNode.id());
 			_lastActivedNodeId = modelNode.id();
@@ -105,7 +110,7 @@ void AnimationTimeline::timelineEntry(scenegraph::FrameIndex currentFrame, core:
 }
 
 bool AnimationTimeline::init() {
-	const scenegraph::SceneGraph& sceneGraph = _sceneMgr->sceneGraph();
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	_lastActivedNodeId = sceneGraph.activeNode();
 	return true;
 }
@@ -117,6 +122,7 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDragging;
 	flags |= ImGuiNeoSequencerFlags_Selection_EnableDeletion;
 
+	const scenegraph::FrameIndex frame = currentFrame;
 	if (ImGui::BeginNeoSequencer("sequencer", &currentFrame, &_startFrame, &_endFrame, {0, 0}, flags)) {
 		core::Buffer<Selection> selectionBuffer;
 		if (_clearSelection) {
@@ -133,7 +139,10 @@ void AnimationTimeline::sequencer(scenegraph::FrameIndex &currentFrame) {
 			timelineEntry(currentFrame, selectionBuffer, selectedFrames, node);
 		}
 		bool selectionRightClicked = ImGui::IsNeoKeyframeSelectionRightClicked();
-
+		// check if current frame was changed by dragging the handle
+		if (frame != currentFrame) {
+			_sceneMgr->setCurrentFrame(currentFrame);
+		}
 		ImGui::EndNeoSequencer();
 
 		if (selectionRightClicked) {
@@ -188,9 +197,9 @@ bool AnimationTimeline::update(const char *id, double deltaFrameSeconds) {
 	if (_endFrame == -1) {
 		_endFrame = core_max(64, maxFrame + 1);
 	}
-	_frameTimeSeconds += deltaFrameSeconds;
 
 	if (_play) {
+		_frameTimeSeconds += deltaFrameSeconds;
 		if (maxFrame <= 0) {
 			_play = false;
 		} else {

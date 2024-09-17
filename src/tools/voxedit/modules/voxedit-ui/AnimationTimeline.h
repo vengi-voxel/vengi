@@ -5,10 +5,10 @@
 #pragma once
 
 #include "core/SharedPtr.h"
-#include "scenegraph/SceneGraphNode.h"
-#include "ui/Panel.h"
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "ui/Panel.h"
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -21,6 +21,8 @@ typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
 class AnimationTimeline : public ui::Panel {
 private:
+	using Super = ui::Panel;
+
 	bool _play = false;
 	// modifications on the keyframes would result in incorrect selection in neo-sequencer - so let's ensure to reset
 	// the selection after a modification
@@ -38,17 +40,16 @@ private:
 	core::Buffer<Selection> _selectionBuffer;
 	SceneManagerPtr _sceneMgr;
 
-public:
-private:
-	using Super = ui ::Panel;
-
-public:
-	AnimationTimeline(ui ::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "animationtimeline"), _sceneMgr(sceneMgr) {
-	}
 	void header(scenegraph::FrameIndex currentFrame, scenegraph::FrameIndex maxFrame);
 	void timelineEntry(scenegraph::FrameIndex currentFrame, core::Buffer<Selection> &selectionBuffer,
-				   core::Buffer<scenegraph::FrameIndex> &selectedFrames, const scenegraph::SceneGraphNode &modelNode);
+					   core::Buffer<scenegraph::FrameIndex> &selectedFrames,
+					   const scenegraph::SceneGraphNode &modelNode);
 	void sequencer(scenegraph::FrameIndex &currentFrame);
+
+public:
+	AnimationTimeline(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
+		: Super(app, "animationtimeline"), _sceneMgr(sceneMgr) {
+	}
 	bool init();
 	bool update(const char *id, double deltaFrameSeconds);
 	void resetFrames();
