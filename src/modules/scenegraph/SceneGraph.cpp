@@ -89,7 +89,7 @@ bool SceneGraph::setAnimation(const core::String &animation) {
 		Log::debug("Can't set empty animation");
 		return false;
 	}
-	if (core::find(_animations.begin(), _animations.end(), animation) == _animations.end()) {
+	if (!hasAnimation(animation)) {
 		Log::debug("Animation %s not found", animation.c_str());
 		return false;
 	}
@@ -110,11 +110,11 @@ bool SceneGraph::duplicateAnimation(const core::String &animation, const core::S
 		Log::error("Invalid animation names given");
 		return false;
 	}
-	if (core::find(_animations.begin(), _animations.end(), animation) == _animations.end()) {
-		Log::error("Could not find animation %s", animation.c_str());
+	if (!hasAnimation(animation)) {
+		Log::error("Animation %s not found", animation.c_str());
 		return false;
 	}
-	if (core::find(_animations.begin(), _animations.end(), newName) != _animations.end()) {
+	if (hasAnimation(newName)) {
 		Log::error("Animation %s already exists", newName.c_str());
 		return false;
 	}
@@ -134,7 +134,7 @@ bool SceneGraph::addAnimation(const core::String &animation) {
 	if (animation.empty()) {
 		return false;
 	}
-	if (core::find(_animations.begin(), _animations.end(), animation) != _animations.end()) {
+	if (hasAnimation(animation)) {
 		return false;
 	}
 	_animations.push_back(animation);
@@ -147,12 +147,15 @@ bool SceneGraph::setAnimations(const core::DynamicArray<core::String> &animation
 		addAnimation(DEFAULT_ANIMATION);
 		setAnimation(DEFAULT_ANIMATION);
 	} else {
-		auto iter = core::find(_animations.begin(), _animations.end(), _activeAnimation);
-		if (iter == _animations.end()) {
+		if (!hasAnimation(_activeAnimation)) {
 			setAnimation(*_animations.begin());
 		}
 	}
 	return true;
+}
+
+bool SceneGraph::hasAnimation(const core::String &animation) const {
+	return core::find(_animations.begin(), _animations.end(), animation) != _animations.end();
 }
 
 bool SceneGraph::removeAnimation(const core::String &animation) {
