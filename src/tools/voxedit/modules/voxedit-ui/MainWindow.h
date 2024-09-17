@@ -82,7 +82,6 @@ private:
 	BrushPanel _brushPanel;
 	TreePanel _treePanel;
 	SceneGraphPanel _sceneGraphPanel;
-	AnimationPanel _animationPanel;
 	ToolsPanel _toolsPanel;
 	AssetPanel _assetPanel;
 	MementoPanel _mementoPanel;
@@ -92,6 +91,7 @@ private:
 	StatusBar _statusBar;
 	ScriptPanel _scriptPanel;
 	AnimationTimeline _animationTimeline;
+	AnimationPanel _animationPanel;
 	CameraPanel _cameraPanel;
 
 	/**

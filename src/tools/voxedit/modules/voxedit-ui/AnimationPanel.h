@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/SharedPtr.h"
 #include "ui/Panel.h"
 #include "core/String.h"
@@ -25,13 +26,21 @@ class AnimationTimeline;
 class AnimationPanel : public ui::Panel {
 private:
 	using Super = ui ::Panel;
-	core::String _newAnimation;
 	SceneManagerPtr _sceneMgr;
+	core::VarPtr _popupCreateAnimation;
+	core::String _newAnimation;
+	core::String _selectedAnimation;
+	AnimationTimeline *_animationTimeline;
+
+	void popupCreateAnimation();
 
 public:
-	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "animationpanel"), _sceneMgr(sceneMgr) {
+	AnimationPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, AnimationTimeline *animationTimeline)
+		: Super(app, "animationpanel"), _sceneMgr(sceneMgr), _animationTimeline(animationTimeline) {
 	}
 	void update(const char *id, command::CommandExecutionListener &listener, AnimationTimeline *animationTimeline);
+	void registerPopups();
+	bool init();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
 #endif

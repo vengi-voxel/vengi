@@ -118,6 +118,7 @@ bool SceneGraph::duplicateAnimation(const core::String &animation, const core::S
 		Log::error("Animation %s already exists", newName.c_str());
 		return false;
 	}
+	Log::debug("Add new animation %s by duplicating from %s", newName.c_str(), animation.c_str());
 	_animations.push_back(newName);
 	for (const auto &entry : _nodes) {
 		SceneGraphNode &node = entry->value;

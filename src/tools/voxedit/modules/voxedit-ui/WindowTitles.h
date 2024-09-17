@@ -34,6 +34,7 @@
 #define POPUP_TITLE_WELCOME "###welcomepopup"
 #define POPUP_TITLE_VOLUME_SPLIT "###volumesplitpopup"
 #define POPUP_TITLE_RENAME_NODE "###renamenodepopup"
+#define POPUP_TITLE_CREATE_ANIMATION "###createanimationpopup"
 #define POPUP_TITLE_MODEL_UNREFERENCE "###unreferencedmodelpopup"
 #define POPUP_TITLE_LOAD_PALETTE "###selectpalettepopup"
 #define POPUP_TITLE_UV_EDITOR "###uveditorpopup"

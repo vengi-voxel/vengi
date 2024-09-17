@@ -143,6 +143,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupAbout, "false", _("Trigger opening of popup"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditPopupRenameNode, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupCreateAnimation, "false", _("Trigger opening of popup"), core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();
 
