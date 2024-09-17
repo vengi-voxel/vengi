@@ -195,14 +195,21 @@ void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph)
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];
 		const glm::vec3 target(c.focus[0], c.focus[2], c.focus[1]);
-		const glm::vec3 angles(c.angle[0], c.angle[2], c.angle[1]);
-		const glm::quat quat(glm::radians(angles));
+		const glm::vec3 angles(c.angle[0], -c.angle[1], c.angle[2]);
+		const glm::vec3 rangles = glm::radians(angles);
+		const glm::quat quat(rangles);
 		const float distance = (float)c.radius;
+		// const glm::vec3 forward(glm::cos(rangles.x) * glm::sin(rangles.y), glm::sin(rangles.x),
+		// 					  glm::cos(rangles.x) * glm::cos(rangles.y));
 		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward();
 		const glm::vec3 &backward = -forward;
 		const glm::vec3 &newPosition = target + backward * distance;
+		// const glm::vec3 newPosition =
+		// 	glm::vec3(target.x + (float)size.x / 2.0f, target.y, target.z + (float)size.z / 2.0f) -
+		// 	distance * forward;
 		const glm::mat4 &orientation = glm::mat4_cast(quat);
 		const glm::mat4 &viewMatrix = glm::translate(orientation, -newPosition);
+
 		{
 			scenegraph::SceneGraphNodeCamera camNode;
 			camNode.setName(core::String::format("Camera %u", c.camera_id));
