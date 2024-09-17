@@ -33,7 +33,7 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 					 const glm::vec3 &angles = {0.0f, 0.0f, 0.0f});
 
 /**
- * @brief Rendering of a voxel::MeshState
+ * @brief Rendering of a @c voxel::MeshState
  */
 class SceneGraphRenderer : public core::NonCopyable {
 protected:
