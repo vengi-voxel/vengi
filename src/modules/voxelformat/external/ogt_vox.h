@@ -333,7 +333,7 @@
         ogt_cam_mode mode;
         float        focus[3];    // the target position
         float        angle[3];    // rotation in degree
-        int          radius;
+        float        radius;
         float        frustum;
         int          fov;         // angle in degree
     } ogt_vox_cam;
@@ -1863,7 +1863,7 @@
                     }
                     const char* radius_string = _vox_dict_get_value_as_string(&dict, "_radius", NULL);
                     if (radius_string) {
-                        _vox_str_scanf(angle_string, "%i", &camera.radius);
+                        _vox_str_scanf(radius_string, "%f", &camera.radius);
                     }
                     const char* frustum_string = _vox_dict_get_value_as_string(&dict, "_frustum", NULL);
                     if (frustum_string) {
@@ -2589,7 +2589,7 @@
             const char *cam_mode;
             _vox_sprintf(cam_focus, sizeof(cam_focus), "%.5f %.5f %.5f", camera->focus[0], camera->focus[1], camera->focus[2]);
             _vox_sprintf(cam_angle, sizeof(cam_angle), "%.5f %.5f %.5f", camera->angle[0], camera->angle[1], camera->angle[2]);
-            _vox_sprintf(cam_radius, sizeof(cam_radius), "%i", camera->radius);
+            _vox_sprintf(cam_radius, sizeof(cam_radius), "%.5f", camera->radius);
             _vox_sprintf(cam_frustum, sizeof(cam_frustum), "%.5f", camera->frustum);
             _vox_sprintf(cam_fov, sizeof(cam_fov), "%i", camera->fov);
 
