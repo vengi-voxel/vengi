@@ -1626,6 +1626,74 @@ static ImVec2 GetMouseAimingPos(const ImGuiTestItemInfo& item, ImGuiTestOpFlags 
     return pos;
 }
 
+void ImGuiTestContext::_MakeAimingSpaceOverPos(ImGuiViewport* viewport, ImGuiWindow* over_window, const ImVec2& over_pos)
+{
+    ImGuiContext& g = *UiContext;
+
+    // if window == NULL : make space to reach void
+    // if window != NULL : make space to reach window
+    IMGUI_TEST_CONTEXT_REGISTER_DEPTH(this);
+    LogDebug("_MakeAimingSpaceOverPos(over_window = '%s', over_pos = %.2f,%.2f)", over_window ? over_window->Name : "N/A", over_pos.x, over_pos.y);
+
+    const int over_window_n = (over_window != NULL) ? ImGui::FindWindowDisplayIndex(over_window) : 0;
+    const ImVec2 window_min_pos = over_pos + g.WindowsHoverPadding + ImVec2(1.0f, 1.0f);
+    for (int window_n = g.Windows.Size - 1; window_n >= over_window_n; window_n--)
+    {
+        ImGuiWindow* window = g.Windows[window_n];
+        if (window->WasActive == false)
+            continue;
+#ifdef IMGUI_HAS_DOCK
+        if (window->Viewport != viewport)
+            continue;
+        if (window->RootWindowDockTree != window)
+            continue;
+#else
+        IM_UNUSED(viewport);
+        if (window->RootWindow != window)
+            continue;
+#endif
+        if (window->Rect().Contains(window_min_pos))
+            WindowMove(window->Name, window_min_pos);
+    }
+}
+
+static void FocusOrMakeClickableAtPos(ImGuiTestContext* ctx, ImGuiWindow* window, const ImVec2& pos)
+{
+    IM_ASSERT(window != NULL);
+
+    // Avoid unnecessary focus
+    // While this is generally desirable and much more consistent with user behavior,
+    // it make test-engine behavior a little less deterministic.
+    // incorrectly written tests could possibly succeed or fail based on position of other windows.
+    bool is_covered = ctx->FindHoveredWindowAtPos(pos) != window;
+#if IMGUI_VERSION_NUM >= 18944
+    bool is_inhibited = ImGui::IsWindowContentHoverable(window) == false;
+#else
+    bool is_inhibited = false;
+#endif
+    // FIXME-TESTS-NOT_SAME_AS_END_USER: This has too many side effect, could we do without?
+    // - e.g. This can close a modal.
+    if (is_covered || is_inhibited)
+    {
+        // Testing ImGuiWindowFlags_NoBringToFrontOnFocus is similar to what FocusWindow() does
+        ImGuiWindow* focus_front_window = window ? window->RootWindow : NULL;
+#ifdef IMGUI_HAS_DOCK
+        ImGuiWindow* display_front_window = window ? window->RootWindowDockTree : NULL;
+#else
+        ImGuiWindow* display_front_window = window ? window->RootWindow : NULL;
+#endif
+        if ((window->Flags | focus_front_window->Flags | display_front_window->Flags) & ImGuiWindowFlags_NoBringToFrontOnFocus)
+        {
+            // FIXME-TESTS: Aim to make it the common/default path, and WindowBringToFront() the exceptional path!
+            ctx->_MakeAimingSpaceOverPos(window->Viewport, window, pos);
+        }
+        else
+        {
+            ctx->WindowBringToFront(window->ID);
+        }
+    }
+}
+
 // Conceptucally this could be called ItemHover()
 // Supported values for ImGuiTestOpFlags:
 // - ImGuiTestOpFlags_NoFocusWindow
@@ -1729,22 +1797,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
     // Focus window
     if (!(flags & ImGuiTestOpFlags_NoFocusWindow) && item.Window != NULL)
-    {
-        // Avoid unnecessary focus
-        // While this is generally desirable and much more consistent with user behavior,
-        // it make test-engine behavior a little less deterministic.
-        // Incorrectly written tests could possibly succeed or fail based on position of other windows.
-        bool is_covered = FindHoveredWindowAtPos(pos) != item.Window;
-#if IMGUI_VERSION_NUM >= 18944
-        bool is_inhibited = ImGui::IsWindowContentHoverable(item.Window) == false;
-#else
-        bool is_inhibited = false;
-#endif
-        // FIXME-TESTS-NOT_SAME_AS_END_USER: This has too many side effect, could we do without?
-        // - e.g. This can close a modal.
-        if (is_covered || is_inhibited)
-            WindowBringToFront(item.Window->ID);
-    }
+        FocusOrMakeClickableAtPos(this, item.Window, pos);
 
     // Another is window active test (in the case focus change has a side effect but also as we have yield an extra frame)
     if (!item.Window->WasActive)
@@ -1758,17 +1811,7 @@ void    ImGuiTestContext::MouseMove(ImGuiTestRef ref, ImGuiTestOpFlags flags)
 
     // Focus again in case something made us lost focus (which could happen on a simple hover)
     if (!(flags & ImGuiTestOpFlags_NoFocusWindow))
-    {
-        // Avoid unnecessary focus
-        bool is_covered = FindHoveredWindowAtPos(pos) != item.Window;
-#if IMGUI_VERSION_NUM >= 18944
-        bool is_inhibited = ImGui::IsWindowContentHoverable(item.Window) == false;
-#else
-        bool is_inhibited = false;
-#endif
-        if (is_covered || is_inhibited)
-            WindowBringToFront(window->ID);
-    }
+        FocusOrMakeClickableAtPos(this, item.Window, pos);
 
     // Check hovering target: may be an item (common) or a window (rare)
     if (!Abort && !(flags & ImGuiTestOpFlags_NoCheckHoveredId))
@@ -1910,7 +1953,7 @@ bool    ImGuiTestContext::WindowTeleportToMakePosVisible(ImGuiTestRef ref, ImVec
 // ignore_list is a NULL-terminated list of pointers
 // Windows that are below all of ignore_list windows are not hidden.
 // FIXME-TESTS-NOT_SAME_AS_END_USER: Aim to get rid of this.
-void ImGuiTestContext::ForeignWindowsHideOverPos(ImVec2 pos, ImGuiWindow** ignore_list)
+void ImGuiTestContext::_ForeignWindowsHideOverPos(const ImVec2& pos, ImGuiWindow** ignore_list)
 {
     ImGuiContext& g = *UiContext;
     if (IsError())
@@ -1964,7 +2007,7 @@ void ImGuiTestContext::ForeignWindowsHideOverPos(ImVec2 pos, ImGuiWindow** ignor
         Yield();
 }
 
-void    ImGuiTestContext::ForeignWindowsUnhideAll()
+void    ImGuiTestContext::_ForeignWindowsUnhideAll()
 {
     ForeignWindowsToHide.clear();
     Yield();
@@ -2273,7 +2316,6 @@ bool    ImGuiTestContext::FindExistingVoidPosOnViewport(ImGuiViewport* viewport,
 
 ImVec2   ImGuiTestContext::GetPosOnVoid(ImGuiViewport* viewport)
 {
-    ImGuiContext& g = *UiContext;
     if (IsError())
         return ImVec2();
 
@@ -2285,19 +2327,7 @@ ImVec2   ImGuiTestContext::GetPosOnVoid(ImGuiViewport* viewport)
     // Move windows away
     // FIXME: Should be optional and otherwise error.
     void_pos = viewport->Pos + ImVec2(1, 1);
-    ImVec2 window_min_pos = void_pos + g.WindowsHoverPadding + ImVec2(1.0f, 1.0f);
-    for (ImGuiWindow* window : g.Windows)
-    {
-#ifdef IMGUI_HAS_DOCK
-        if (window->Viewport != viewport)
-            continue;
-        if (window->RootWindowDockTree == window && window->WasActive)
-#else
-        if (window->RootWindow == window && window->WasActive)
-#endif
-            if (window->Rect().Contains(window_min_pos))
-                WindowMove(window->Name, window_min_pos);
-    }
+    _MakeAimingSpaceOverPos(viewport, NULL, void_pos);
 
     return void_pos;
 }
@@ -3925,7 +3955,7 @@ void    ImGuiTestContext::DockInto(ImGuiTestRef src_id, ImGuiTestRef dst_id, ImG
     // Ensure we can reach target
     WindowTeleportToMakePosVisible(window_dst->ID, drop_pos);
     ImGuiWindow* friend_windows[] = { window_src, window_dst, NULL };
-    ForeignWindowsHideOverPos(drop_pos, friend_windows);
+    _ForeignWindowsHideOverPos(drop_pos, friend_windows);
 
     // Drag
     drop_is_valid = ImGui::DockContextCalcDropPosForDocking(window_dst, node_dst, window_src, node_src, split_dir, split_outer, &drop_pos);
@@ -3949,7 +3979,7 @@ void    ImGuiTestContext::DockInto(ImGuiTestRef src_id, ImGuiTestRef dst_id, ImG
     // Cool down
     if (g.IO.ConfigDockingWithShift)
         KeyUp(ImGuiMod_Shift);
-    ForeignWindowsUnhideAll();
+    _ForeignWindowsUnhideAll();
     Yield();
     Yield();
 
