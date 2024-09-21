@@ -1157,6 +1157,41 @@ static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
 	return luaVoxel_pushscenegraphnode(s, node);
 }
 
+static int luaVoxel_scenegraph_addanimation(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	const char *name = luaL_checkstring(s, 1);
+	lua_pushboolean(s, sceneGraph->addAnimation(name));
+	return 1;
+}
+
+static int luaVoxel_scenegraph_hasanimation(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	const char *name = luaL_checkstring(s, 1);
+	lua_pushboolean(s, sceneGraph->hasAnimation(name));
+	return 1;
+}
+
+static int luaVoxel_scenegraph_setanimation(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	const char *name = luaL_checkstring(s, 1);
+	lua_pushboolean(s, sceneGraph->setAnimation(name));
+	return 1;
+}
+
+static int luaVoxel_scenegraph_activeanimation(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	lua_pushstring(s, sceneGraph->activeAnimation().c_str());
+	return 1;
+}
+
+static int luaVoxel_scenegraph_duplicateanimation(lua_State* s) {
+	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	const char *animation = luaL_checkstring(s, 1);
+	const char *newName = luaL_checkstring(s, 2);
+	lua_pushboolean(s, sceneGraph->duplicateAnimation(animation, newName));
+	return 1;
+}
+
 static int luaVoxel_scenegraphnode_volume(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	if (!node->node->isModelNode()) {
@@ -1307,20 +1342,6 @@ static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
 	kf.transform() = prevKf.transform();
 	kf.longRotation = prevKf.longRotation;
 	luaVoxel_pushkeyframe(s, *node->node, newKeyFrameIdx);
-	return 1;
-}
-
-static int luaVoxel_scenegraphnode_addanimation(lua_State* s) {
-	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	const char *name = luaL_checkstring(s, 2);
-	lua_pushboolean(s, node->node->addAnimation(name));
-	return 1;
-}
-
-static int luaVoxel_scenegraphnode_setanimation(lua_State* s) {
-	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	const char *name = luaL_checkstring(s, 2);
-	lua_pushboolean(s, node->node->setAnimation(name));
 	return 1;
 }
 
@@ -1603,6 +1624,11 @@ static void prepareState(lua_State* s) {
 		{"getByUUID", luaVoxel_scenegraph_get_node_by_uuid},
 		{"nodeIds", luaVoxel_scenegraph_get_all_node_ids},
 		{"updateTransforms", luaVoxel_scenegraph_updatetransforms},
+		{"addAnimation", luaVoxel_scenegraph_addanimation},
+		{"setAnimation", luaVoxel_scenegraph_setanimation},
+		{"duplicateAnimation", luaVoxel_scenegraph_duplicateanimation},
+		{"hasAnimation", luaVoxel_scenegraph_hasanimation},
+		{"activeAnimation", luaVoxel_scenegraph_activeanimation},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, sceneGraphFuncs, luaVoxel_metascenegraph(), "g_scenegraph");
@@ -1628,8 +1654,6 @@ static void prepareState(lua_State* s) {
 		{"hasKeyFrameForFrame", luaVoxel_scenegraphnode_hasframe},
 		{"removeKeyFrameForFrame", luaVoxel_scenegraphnode_removekeyframeforframe},
 		{"removeKeyFrame", luaVoxel_scenegraphnode_removekeyframe},
-		{"addAnimation", luaVoxel_scenegraphnode_addanimation},
-		{"setAnimation", luaVoxel_scenegraphnode_setanimation},
 		{"__tostring", luaVoxel_scenegraphnode_tostring},
 		{"__gc", luaVoxel_scenegraphnode_gc},
 		{nullptr, nullptr}

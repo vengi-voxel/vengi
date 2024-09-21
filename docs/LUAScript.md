@@ -134,6 +134,16 @@ The functions are:
 
 * `getByUUID(uuid)`: Returns `nil` if no node with the given uuid exists
 
+* `activeAnimation()`: Return the current active animation
+
+* `setAnimation(string)`: Activate the animation
+
+* `addAnimation(string)`: Add a new animation
+
+* `duplicateAnimation(animation, newAnimationName)`: Add a new animation by duplicating the given animation
+
+* `hasAnimation(string)`: Check if the animation exists
+
 * `nodeIds()`: Returns a table with all node ids of the current scene graph.
 
 ```lua
@@ -182,8 +192,6 @@ end
 * `removeKeyFrameForFrame(frame)`: Remove the keyframe for the given frame. Throws an error if no key frame with the given frame exists.
 
 * `removeKeyFrame(keyFrameIdx)`: Remove the existing key frame at the given index. Throws an error if the index is invalid or the key frame doesn't exist.
-
-* `setAnimation(string)`: Activate the animation
 
 * `setPalette(palette, [remap])`: Change the palette or if remap is given and is true it remaps to the new palette
 

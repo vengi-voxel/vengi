@@ -21,6 +21,7 @@ function arguments()
 		-- NEW_ANIM: add new animation ids to the enum values
 		-- if values are animation specific, please mark them as such by mentioning the animation name like this "(walk)"
 		{ name = 'animation', desc = 'The animation to create', type = 'enum', enum = 'walk,jump,all', default = 'walk'},
+		{ name = 'createAnim', desc = 'Create the animation by duplicating the current animation or add to current animation', type = 'bool', default = 'true' },
 		{ name = 'maxKeyFrames', desc = 'The maximum number of keyframes to create', type = 'int', default = 6, min = 1, max = 100},
 		{ name = 'frameDuration', desc = 'How many frames does each key frame last', type = 'int', default = 20, min = 1, max = 1000},
 		{ name = 'timeFactor', desc = 'How fast the animation should be', type = 'float', default = 12.0, min = 0.0, max = 100.0},
@@ -183,6 +184,10 @@ local function createAnimation(node, context)
 	if animFunc == nil then
 		error("No animation callback registered for: " .. context.animation)
 	end
+	if context.createAnim then
+		g_scenegraph.duplicateAnimation(g_scenegraph.activeAnimation(), context.animation)
+		g_scenegraph.setAnimation(context.animation)
+	end
 	for keyframe = 0, context.maxKeyFrames - 1 do
 		if not animFunc(node, keyframe, context) then
 			break
@@ -190,12 +195,13 @@ local function createAnimation(node, context)
 	end
 end
 
-function main(_, _, _, animation, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
+function main(_, _, _, animation, createAnim, maxKeyFrames, frameDuration, timeFactor, handAngleFactor, footAngleFactor)
 	if not isValidAnimation(animation) then
 		error("Unknown animation: " .. animation)
 	end
 	-- NEW_ANIM: Add new context variables here if your animation needs them
 	context = {
+		createAnim = createAnim,
 		animation = animation,
 		maxKeyFrames = maxKeyFrames,
 		frameDuration = frameDuration,
