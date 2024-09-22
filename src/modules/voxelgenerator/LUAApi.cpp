@@ -1786,7 +1786,6 @@ bool LUAApi::init() {
 	}
 	luaVoxel_newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
 	luaVoxel_newGlobalData(_lua, luaVoxel_globaldirtyregion(), &_dirtyRegion);
-
 	prepareState(_lua);
 	return true;
 }

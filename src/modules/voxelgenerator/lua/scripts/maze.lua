@@ -59,6 +59,7 @@ local function randomizeDFS(volume, x, y, z, visited)
 		volume:setVoxel(x2, y, z2, -1)
 		randomizeDFS(volume, x2, y, z2, visited)
 		x2, z2 = randomUnvisitedNeighbour(volume, x2, y, z2, visited)
+		coroutine.yield()
 	end
 end
 

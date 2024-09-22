@@ -2312,6 +2312,10 @@ bool SceneManager::init() {
 	return true;
 }
 
+bool SceneManager::isScriptRunning() const {
+	return _luaApi.scriptStillRunning();
+}
+
 bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
 	if (luaCode.empty()) {
 		Log::warn("No script selected");

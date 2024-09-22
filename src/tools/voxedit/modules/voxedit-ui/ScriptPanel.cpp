@@ -49,6 +49,11 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 		return false;
 	}
 
+	if (_sceneMgr->isScriptRunning()) {
+		ImGui::Spinner("running_scripts", ImGui::Size(1.0f));
+		return true;
+	}
+
 	if (ImGui::ComboItems("##script", &_currentScript, _scripts)) {
 		if (_currentScript >= 0 && _currentScript < (int)_scripts.size()) {
 			reloadScript();

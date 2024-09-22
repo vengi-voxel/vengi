@@ -337,6 +337,7 @@ public:
 	bool import(const core::String &file);
 	bool importDirectory(const core::String &directory, const io::FormatDescription *format = nullptr, int depth = 3);
 
+	bool isScriptRunning() const;
 	bool runScript(const core::String &luaCode, const core::DynamicArray<core::String> &args);
 
 	/**
