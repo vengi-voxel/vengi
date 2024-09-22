@@ -2297,7 +2297,7 @@ bool SceneManager::init() {
 		return false;
 	}
 	if (!_luaApi.init()) {
-		Log::error("Failed to initialize the lua generator");
+		Log::error("Failed to initialize the lua api");
 		return false;
 	}
 
