@@ -13,6 +13,7 @@ set(SRCS
 
 	Palette.h Palette.cpp
 	PaletteLookup.h
+	PaletteCompleter.h
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image http)
 

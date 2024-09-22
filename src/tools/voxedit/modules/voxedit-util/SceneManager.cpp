@@ -30,6 +30,7 @@
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
+#include "palette/PaletteCompleter.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -76,21 +77,12 @@ namespace voxedit {
 inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
 		int i = 0;
-		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-			scenegraph::SceneGraphNode &modelNode = *iter;
-			matches.push_back(core::string::toString(modelNode.id()));
-		}
-		return i;
-	};
-}
-
-inline auto paletteCompleter() {
-	return [&] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
-		int i = 0;
-		for (i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
-			if (core::string::startsWith(palette::Palette::builtIn[i], str.c_str())) {
-				matches.push_back(palette::Palette::builtIn[i]);
+		for (const auto &entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->value;
+			if (!node.isAnyModelNode()) {
+				continue;
 			}
+			matches.push_back(core::string::toString(node.id()));
 		}
 		return i;
 	};
@@ -1777,7 +1769,7 @@ void SceneManager::construct() {
 		}
 		bool searchBestColors = false;
 		loadPalette(args[0], searchBestColors, true);
-	}).setHelp(_("Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'")).setArgumentCompleter(paletteCompleter());
+	}).setHelp(_("Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'")).setArgumentCompleter(palette::paletteCompleter());
 
 	command::Command::registerCommand("cursor", [this] (const command::CmdArgs& args) {
 		if (args.size() < 3) {
