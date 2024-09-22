@@ -2473,6 +2473,8 @@ void SceneManager::shutdown() {
 
 	autosave();
 
+	_luaApi.shutdown();
+
 	_sceneRenderer->shutdown();
 	_sceneGraph.clear();
 	_mementoHandler.clearStates();
@@ -2480,7 +2482,6 @@ void SceneManager::shutdown() {
 	_movement.shutdown();
 	_modifierFacade.shutdown();
 	_mementoHandler.shutdown();
-	_luaApi.shutdown();
 
 	command::Command::unregisterActionButton("zoom_in");
 	command::Command::unregisterActionButton("zoom_out");
