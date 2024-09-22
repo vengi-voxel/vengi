@@ -24,7 +24,7 @@ end
 
 function main(node, region, _)
 	palette = node:palette()
-	vol.visitYXZ(node:volume(), region, function (loopVolume, x, y, z)
+	local visitor = function (loopVolume, x, y, z)
 		if loopVolume:voxel(x, y, z) ~= -1 then
 			needNewModel = true
 			splitVolume = nil
@@ -33,5 +33,6 @@ function main(node, region, _)
 				splitVolume:crop()
 			end
 		end
-	end)
+	end
+	vol.visitYXZ(node:volume(), region, visitor)
 end

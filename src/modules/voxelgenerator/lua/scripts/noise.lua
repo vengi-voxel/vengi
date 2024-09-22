@@ -1,4 +1,5 @@
 local perlin = require "modules.perlin"
+local vol = require "modules.volume"
 
 function arguments()
 	return {
@@ -9,17 +10,13 @@ function arguments()
 end
 
 function main(node, region, color, freq, amplitude, offset)
-	local volume = node:volume()
 	perlin:load()
-	local mins = region:mins()
-	local maxs = region:maxs()
-	for x = mins.x, maxs.x do
-		for z = mins.z, maxs.z do
-			local maxY = perlin:norm(amplitude * perlin:noise(offset + x * freq, offset + z * freq, freq)) * region:height()
-			for y = 0, maxY do
-				volume:setVoxel(x, y, z, color)
-			end
+
+	local visitor = function (volume, x, z)
+		local maxY = perlin:norm(amplitude * perlin:noise(offset + x * freq, offset + z * freq, freq)) * region:height()
+		for y = 0, maxY do
+			volume:setVoxel(x, y, z, color)
 		end
-		coroutine.yield()
 	end
+	vol.visitXZ(node:volume(), region, visitor)
 end
