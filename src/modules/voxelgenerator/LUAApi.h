@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "commonlua/LUA.h"
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -70,6 +71,7 @@ class LUAApi : public core::IComponent {
 private:
 	noise::Noise _noise;
 	io::FilesystemPtr _filesystem;
+	lua::LUA _lua;
 public:
 	LUAApi(const io::FilesystemPtr &filesystem);
 	virtual ~LUAApi() {}

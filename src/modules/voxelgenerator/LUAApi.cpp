@@ -1771,6 +1771,8 @@ bool LUAApi::init() {
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise");
 	}
+	lua::LUA::newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
+	prepareState(_lua);
 	return true;
 }
 
@@ -2010,14 +2012,10 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	// TODO: add a way to implement long running lua scripts without blocking here
-	lua::LUA _lua;
-	_lua.newGlobalData<scenegraph::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
-	_lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
-	_lua.newGlobalData<int>(luaVoxel_globalnodeid(), &nodeId);
-	_lua.newGlobalData<noise::Noise>(luaVoxel_globalnoise(), &_noise);
-
-	lua_State *s = _lua;
-	prepareState(s);
+	lua_State *s = _lua.state();
+	lua::LUA::newGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
+	lua::LUA::newGlobalData(s, luaVoxel_globaldirtyregion(), &dirtyRegion);
+	lua::LUA::newGlobalData(s, luaVoxel_globalnodeid(), &nodeId);
 
 	// load and run once to initialize the global variables
 	if (luaL_dostring(s, luaScript.c_str())) {
@@ -2076,6 +2074,8 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		Log::error("LUA generate script: %s", lua_isstring(s, -1) ? lua_tostring(s, -1) : "Unknown Error");
 		return false;
 	}
+
+	lua_gc(s, LUA_GCCOLLECT, 0);
 
 	return true;
 }

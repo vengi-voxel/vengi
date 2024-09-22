@@ -54,17 +54,9 @@ public:
 	 */
 	bool resetState();
 
-	template<class T>
-	static T* newGlobalData(lua_State *L, const core::String& prefix, T *userData) {
+	static void newGlobalData(lua_State *L, const core::String& prefix, void *userData) {
 		lua_pushlightuserdata(L, userData);
 		lua_setglobal(L, prefix.c_str());
-		return userData;
-	}
-
-	template<class T>
-	inline T* newGlobalData(const core::String& prefix, T *userData) const {
-		newGlobalData(_state, prefix, userData);
-		return userData;
 	}
 
 	template<class T>
