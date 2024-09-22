@@ -181,8 +181,11 @@ TEST_F(LUAApiTest, testKeyFrames) {
 			if kf:frame() ~= 0 then
 				error('Expected frame 0')
 			end
-			if not node:setAnimation("test") then
-				error('Expected to add and activate animation')
+			if not g_scenegraph.addAnimation("test") then
+				error('Failed to add animation')
+			end
+			if not g_scenegraph.setAnimation("test") then
+				error('Failed to activate animation')
 			end
 		end
 	)";
