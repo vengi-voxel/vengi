@@ -1954,8 +1954,8 @@ core::String LUAApi::load(const core::String& scriptName) const {
 		filename = core::string::path("scripts", filename);
 	}
 #if LUA_VERSION_NUM < 504
-	core::String lua = _filesystem->load(filename);
-	return core::string::replaceAll(lua, "<const>", "");
+	core::String luaStr = _filesystem->load(filename);
+	return core::string::replaceAll(luaStr, "<const>", "");
 #else
 	return _filesystem->load(filename);
 #endif
@@ -2010,68 +2010,70 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	// TODO: add a way to implement long running lua scripts without blocking here
-	lua::LUA lua;
-	lua.newGlobalData<scenegraph::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
-	lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
-	lua.newGlobalData<int>(luaVoxel_globalnodeid(), &nodeId);
-	lua.newGlobalData<noise::Noise>(luaVoxel_globalnoise(), &_noise);
-	prepareState(lua);
+	lua::LUA _lua;
+	_lua.newGlobalData<scenegraph::SceneGraph>(luaVoxel_globalscenegraph(), &sceneGraph);
+	_lua.newGlobalData<voxel::Region>(luaVoxel_globaldirtyregion(), &dirtyRegion);
+	_lua.newGlobalData<int>(luaVoxel_globalnodeid(), &nodeId);
+	_lua.newGlobalData<noise::Noise>(luaVoxel_globalnoise(), &_noise);
+
+	lua_State *s = _lua;
+	prepareState(s);
 
 	// load and run once to initialize the global variables
-	if (luaL_dostring(lua, luaScript.c_str())) {
-		Log::error("%s", lua_tostring(lua, -1));
+	if (luaL_dostring(s, luaScript.c_str())) {
+		Log::error("%s", lua_tostring(s, -1));
 		return false;
 	}
 
 	// get main(node, region, color) method
-	lua_getglobal(lua, "main");
-	if (!lua_isfunction(lua, -1)) {
+	lua_getglobal(s, "main");
+	if (!lua_isfunction(s, -1)) {
 		Log::error("LUA generator: no main(node, region, color) function found in '%s'", luaScript.c_str());
 		return false;
 	}
 
 	// first parameter is scene node
-	if (luaVoxel_pushscenegraphnode(lua, node) == 0) {
+	if (luaVoxel_pushscenegraphnode(s, node) == 0) {
 		Log::error("Failed to push scene graph node");
 		return false;
 	}
 
 	// second parameter is the region to operate on
-	if (luaVoxel_pushregion(lua, &region) == 0) {
+	if (luaVoxel_pushregion(s, &region) == 0) {
 		Log::error("Failed to push region");
 		return false;
 	}
 
 	// third parameter is the current color
-	lua_pushinteger(lua, voxel.getColor());
+	lua_pushinteger(s, voxel.getColor());
 
 #if GENERATOR_LUA_SANTITY > 0
-	if (!lua_isfunction(lua, -4)) {
+	if (!lua_isfunction(s, -4)) {
 		Log::error("LUA generate: expected to find the main function");
 		return false;
 	}
-	if (luaL_testudata(lua, -3, luaVoxel_metascenegraphnode()) == nullptr) {
+	if (luaL_testudata(s, -3, luaVoxel_metascenegraphnode()) == nullptr) {
 		Log::error("LUA generate: expected to find scene graph node");
 		return false;
 	}
-	if (luaL_testudata(lua, -2, luaVoxel_metaregion()) == nullptr) {
+	if (luaL_testudata(s, -2, luaVoxel_metaregion()) == nullptr) {
 		Log::error("LUA generate: expected to find region");
 		return false;
 	}
-	if (!lua_isnumber(lua, -1)) {
+	if (!lua_isnumber(s, -1)) {
 		Log::error("LUA generate: expected to find color");
 		return false;
 	}
 #endif
 
-	if (!luaVoxel_pushargs(lua, args, argsInfo)) {
+	if (!luaVoxel_pushargs(s, args, argsInfo)) {
 		Log::error("Failed to execute main() function with the given number of arguments. Try calling with 'help' as parameter");
 		return false;
 	}
 
-	const int error = lua_pcall(lua, 3 + argsInfo.size(), 0, 0);
+	const int error = lua_pcall(s, 3 + argsInfo.size(), 0, 0);
 	if (error != LUA_OK) {
-		Log::error("LUA generate script: %s", lua_isstring(lua, -1) ? lua_tostring(lua, -1) : "Unknown Error");
+		Log::error("LUA generate script: %s", lua_isstring(s, -1) ? lua_tostring(s, -1) : "Unknown Error");
 		return false;
 	}
 
