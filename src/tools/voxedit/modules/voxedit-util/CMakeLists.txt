@@ -28,7 +28,6 @@ set(SRCS
 
 	ISceneRenderer.h
 	SceneRenderer.h SceneRenderer.cpp
-	SceneUtil.h SceneUtil.cpp
 
 	ModelNodeSettings.h
 

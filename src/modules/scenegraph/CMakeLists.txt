@@ -8,6 +8,7 @@ set(SRCS
 	SceneGraphNode.h SceneGraphNode.cpp
 	SceneGraphTransform.h SceneGraphTransform.cpp
 	SceneGraphUtil.h SceneGraphUtil.cpp
+	SceneUtil.h SceneUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES voxelutil)
 

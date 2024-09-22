@@ -40,14 +40,8 @@ public:
 	}
 	virtual void removeNode(int nodeId) {
 	}
-	/**
-	 * @brief Before calling this, make sure to set the SceneGraph pointer in the RenderContext
-	 */
 	virtual void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
-	/**
-	 * @brief Before calling this, make sure to set the SceneGraph pointer in the RenderContext
-	 */
 	virtual void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
 };

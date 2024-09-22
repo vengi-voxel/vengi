@@ -46,6 +46,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "scenegraph/SceneUtil.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
@@ -63,7 +64,6 @@
 #include "voxelutil/ImageUtils.h"
 
 #include "Config.h"
-#include "SceneUtil.h"
 #include "Clipboard.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
@@ -2628,7 +2628,7 @@ int SceneManager::traceScene() {
 		const voxel::Region& region = _sceneGraph.resolveRegion(node);
 		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
-		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
+		const math::OBB<float>& obb = scenegraph::toOBB(true, region, pivot, transform);
 		if (obb.intersect(ray.origin, ray.direction, distance)) {
 			if (distance < intersectDist) {
 				intersectDist = distance;

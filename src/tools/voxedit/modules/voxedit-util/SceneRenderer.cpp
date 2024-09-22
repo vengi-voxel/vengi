@@ -3,12 +3,12 @@
  */
 
 #include "SceneRenderer.h"
-#include "SceneUtil.h"
 #include "app/App.h"
 #include "core/TimeProvider.h"
 #include "core/Log.h"
 #include "ui/Style.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneUtil.h"
 #include "video/ScopedPolygonMode.h"
 #include "video/ScopedState.h"
 #include "voxedit-util/AxisUtil.h"
@@ -72,7 +72,7 @@ void SceneRenderer::shutdown() {
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
 	if (region.isValid()) {
-		_gridRenderer.update(toAABB(region));
+		_gridRenderer.update(scenegraph::toAABB(region));
 	}
 }
 
@@ -196,7 +196,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		core_assert_msg(region.isValid(), "Region for node %s of type %i is invalid", node.name().c_str(), (int)node.type());
 		const glm::vec3 pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
-		const math::OBB<float>& obb = toOBB(true, region, pivot, transform);
+		const math::OBB<float>& obb = scenegraph::toOBB(true, region, pivot, transform);
 		// TODO: make this an aabb and use the transform matrix from the rawvolumerenderer
 		_shapeBuilder.obb(obb);
 	}
@@ -209,7 +209,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const voxel::Region &region = v->region();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(activeNode, frameIdx);
 		// TODO: make this an aabb and use the transform matrix from the rawvolumerenderer
-		_shapeBuilder.obb(toOBB(sceneMode, region, activeNode.pivot(), transform));
+		_shapeBuilder.obb(scenegraph::toOBB(sceneMode, region, activeNode.pivot(), transform));
 	}
 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);
@@ -323,7 +323,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		// TODO: render arrows for the distance of the region mins to the origin - to indicate a shifted region
 	} else if (n != nullptr) {
 		const voxel::Region &region = n->region();
-		_gridRenderer.render(camera, toAABB(region));
+		_gridRenderer.render(camera, scenegraph::toAABB(region));
 
 		if (_showLockedAxis->boolVal()) {
 			for (int i = 0; i < lengthof(_planeMeshIndex); ++i) {
