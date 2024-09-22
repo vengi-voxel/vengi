@@ -919,10 +919,12 @@ void VoxConvert::script(const core::String &scriptParameters, scenegraph::SceneG
 			}
 			for (int nodeId : nodes) {
 				const scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-				voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 				Log::debug("execute for node: %i", nodeId);
-				if (!script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, dirtyRegion, args)) {
+				if (!script.exec(luaScript, sceneGraph, node.id(), node.region(), voxel, args)) {
 					break;
+				}
+				while (script.scriptStillRunning()) {
+					script.update(0.0);
 				}
 			}
 		}

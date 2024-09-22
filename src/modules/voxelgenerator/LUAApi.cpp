@@ -186,18 +186,8 @@ static voxel::Region* luaVoxel_toregion(lua_State* s, int n) {
 	return *(voxel::Region**)clua_getudata<voxel::Region*>(s, n, luaVoxel_metaregion());
 }
 
-static int luaVoxel_pushregion(lua_State* s, const voxel::Region* region) {
-	if (region == nullptr) {
-		return clua_error(s, "No region given - can't push");
-	}
-	return clua_pushudata(s, region, luaVoxel_metaregion());
-}
-
-static int luaVoxel_pushregion(lua_State* s, voxel::Region* region) {
-	if (region == nullptr) {
-		return clua_error(s, "No region given - can't push");
-	}
-	return clua_pushudata(s, region, luaVoxel_metaregion_gc());
+static int luaVoxel_pushregion(lua_State* s, const voxel::Region& region) {
+	return clua_pushudata(s, new voxel::Region(region), luaVoxel_metaregion_gc());
 }
 
 static LuaSceneGraphNode* luaVoxel_toscenegraphnode(lua_State* s, int n) {
@@ -270,7 +260,7 @@ static int luaVoxel_volumewrapper_voxel(lua_State* s) {
 
 static int luaVoxel_volumewrapper_region(lua_State* s) {
 	const LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
-	return luaVoxel_pushregion(s, &volume->region());
+	return luaVoxel_pushregion(s, volume->region());
 }
 
 static int luaVoxel_volumewrapper_translate(lua_State* s) {
@@ -1022,7 +1012,7 @@ static int luaVoxel_region_new(lua_State* s) {
 	const int maxsx = (int)luaL_checkinteger(s, 4);
 	const int maxsy = (int)luaL_checkinteger(s, 5);
 	const int maxsz = (int)luaL_checkinteger(s, 6);
-	return luaVoxel_pushregion(s, new voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz));
+	return luaVoxel_pushregion(s, voxel::Region(minsx, minsy, minsz, maxsx, maxsy, maxsz));
 }
 
 static int luaVoxel_region_eq(lua_State* s) {
@@ -1112,8 +1102,10 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	node.setName(name);
 	node.setVisible(visible);
 	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
-	int* currentNodeId = lua::LUA::globalData<int>(s, luaVoxel_globalnodeid());
-	const int nodeId = scenegraph::moveNodeToSceneGraph(*sceneGraph, node, *currentNodeId);
+	lua_getglobal(s, luaVoxel_globalnodeid());
+	int currentNodeId = lua_tointeger(s, -1);
+	lua_pop(s, 1);
+	const int nodeId = scenegraph::moveNodeToSceneGraph(*sceneGraph, node, currentNodeId);
 	if (nodeId == -1) {
 		return clua_error(s, "Failed to add new %s node", scenegraph::SceneGraphNodeTypeStr[(int)type]);
 	}
@@ -1772,14 +1764,34 @@ bool LUAApi::init() {
 		Log::warn("Failed to initialize noise");
 	}
 	lua::LUA::newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
+	lua::LUA::newGlobalData(_lua, luaVoxel_globaldirtyregion(), &_dirtyRegion);
+
 	prepareState(_lua);
 	return true;
 }
 
-void LUAApi::update(double nowSeconds) {
+ScriptState LUAApi::update(double nowSeconds) {
+	if (_scriptStillRunning) {
+		int nres = 0;
+		const int nargs = 3 + _argsInfo.size();
+		const int error = lua_resume(_lua, nullptr, nargs, &nres);
+		if (error == LUA_OK) {
+			_scriptStillRunning = false;
+			lua_gc(_lua, LUA_GCCOLLECT, 0);
+			return ScriptState::Finished;
+		} else if (error != LUA_YIELD) {
+			Log::error("Error running script: %s", lua_tostring(_lua, -1));
+			_scriptStillRunning = false;
+			lua_gc(_lua, LUA_GCCOLLECT, 0);
+			return ScriptState::Error;
+		}
+		return ScriptState::Running;
+	}
+	return ScriptState::Inactive;
 }
 
 void LUAApi::shutdown() {
+	lua_gc(_lua, LUA_GCCOLLECT, 0);
 	_noise.shutdown();
 }
 
@@ -1988,17 +2000,24 @@ core::DynamicArray<LUAScript> LUAApi::listScripts() const {
 }
 
 bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
-						const voxel::Region &region, const voxel::Voxel &voxel, voxel::Region &dirtyRegion,
+						const voxel::Region &region, const voxel::Voxel &voxel,
 						const core::DynamicArray<core::String> &args) {
-	core::DynamicArray<LUAParameterDescription> argsInfo;
-	if (!argumentInfo(luaScript, argsInfo)) {
+	if (_scriptStillRunning) {
+		Log::error("Script is still running");
+		return false;
+	}
+
+	_dirtyRegion = voxel::Region::InvalidRegion;
+
+	_argsInfo.clear();
+	if (!argumentInfo(luaScript, _argsInfo)) {
 		Log::error("Failed to get argument details");
 		return false;
 	}
 
 	if (!args.empty() && args[0] == "help") {
 		Log::info("Parameter description");
-		for (const auto& e : argsInfo) {
+		for (const auto& e : _argsInfo) {
 			Log::info(" %s: %s (default: '%s')", e.name.c_str(), e.description.c_str(), e.defaultValue.c_str());
 		}
 		return true;
@@ -2011,11 +2030,11 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		return false;
 	}
 
-	// TODO: add a way to implement long running lua scripts without blocking here
 	lua_State *s = _lua.state();
 	lua::LUA::newGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
-	lua::LUA::newGlobalData(s, luaVoxel_globaldirtyregion(), &dirtyRegion);
-	lua::LUA::newGlobalData(s, luaVoxel_globalnodeid(), &nodeId);
+
+	lua_pushinteger(s, nodeId);
+	lua_setglobal(s, luaVoxel_globalnodeid());
 
 	// load and run once to initialize the global variables
 	if (luaL_dostring(s, luaScript.c_str())) {
@@ -2037,7 +2056,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	// second parameter is the region to operate on
-	if (luaVoxel_pushregion(s, &region) == 0) {
+	if (luaVoxel_pushregion(s, region) == 0) {
 		Log::error("Failed to push region");
 		return false;
 	}
@@ -2054,7 +2073,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 		Log::error("LUA generate: expected to find scene graph node");
 		return false;
 	}
-	if (luaL_testudata(s, -2, luaVoxel_metaregion()) == nullptr) {
+	if (!luaVoxel_isregion(s, -2)) {
 		Log::error("LUA generate: expected to find region");
 		return false;
 	}
@@ -2064,18 +2083,12 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 #endif
 
-	if (!luaVoxel_pushargs(s, args, argsInfo)) {
+	if (!luaVoxel_pushargs(s, args, _argsInfo)) {
 		Log::error("Failed to execute main() function with the given number of arguments. Try calling with 'help' as parameter");
 		return false;
 	}
 
-	const int error = lua_pcall(s, 3 + argsInfo.size(), 0, 0);
-	if (error != LUA_OK) {
-		Log::error("LUA generate script: %s", lua_isstring(s, -1) ? lua_tostring(s, -1) : "Unknown Error");
-		return false;
-	}
-
-	lua_gc(s, LUA_GCCOLLECT, 0);
+	_scriptStillRunning = true;
 
 	return true;
 }

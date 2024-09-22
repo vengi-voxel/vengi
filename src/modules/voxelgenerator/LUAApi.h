@@ -4,13 +4,14 @@
 
 #pragma once
 
+#include "command/CommandCompleter.h"
 #include "commonlua/LUA.h"
 #include "core/IComponent.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "command/CommandCompleter.h"
 #include "io/Filesystem.h"
 #include "noise/Noise.h"
+#include "voxel/Region.h"
 
 struct lua_State;
 
@@ -19,10 +20,9 @@ class SceneGraph;
 }
 
 namespace voxel {
-class Region;
 class RawVolumeWrapper;
 class Voxel;
-}
+} // namespace voxel
 
 namespace voxelgenerator {
 
@@ -47,8 +47,11 @@ struct LUAParameterDescription {
 	double maxValue = 0.0;
 	LUAParameterType type;
 
-	LUAParameterDescription(const core::String &_name, const core::String &_description, const core::String &_defaultValue, const core::String &_enumValues, double _minValue, double _maxValue, LUAParameterType _type)
-		: name(_name), description(_description), defaultValue(_defaultValue), enumValues(_enumValues), minValue(_minValue), maxValue(_maxValue), type(_type) {
+	LUAParameterDescription(const core::String &_name, const core::String &_description,
+							const core::String &_defaultValue, const core::String &_enumValues, double _minValue,
+							double _maxValue, LUAParameterType _type)
+		: name(_name), description(_description), defaultValue(_defaultValue), enumValues(_enumValues),
+		  minValue(_minValue), maxValue(_maxValue), type(_type) {
 	}
 	LUAParameterDescription() : type(LUAParameterType::Max) {
 	}
@@ -67,40 +70,64 @@ struct LUAScript {
 	}
 };
 
+enum class ScriptState { Running, Finished, Inactive, Error };
+
 class LUAApi : public core::IComponent {
 private:
 	noise::Noise _noise;
 	io::FilesystemPtr _filesystem;
 	lua::LUA _lua;
+	core::DynamicArray<LUAParameterDescription> _argsInfo;
+	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
+	bool _scriptStillRunning = false;
+
 public:
 	LUAApi(const io::FilesystemPtr &filesystem);
-	virtual ~LUAApi() {}
+	virtual ~LUAApi() {
+	}
 	bool init() override;
-	void update(double nowSeconds);
+	ScriptState update(double nowSeconds);
 	void shutdown() override;
 
-	core::String load(const core::String& scriptName) const;
+	bool scriptStillRunning() const {
+		return _scriptStillRunning;
+	}
+
+	const core::String &error() const;
+
+	core::String load(const core::String &scriptName) const;
 	core::DynamicArray<LUAScript> listScripts() const;
-	bool argumentInfo(const core::String& luaScript, core::DynamicArray<LUAParameterDescription>& params);
+	bool argumentInfo(const core::String &luaScript, core::DynamicArray<LUAParameterDescription> &params);
 	/**
+	 * @note The real execution happens in the @c update() method
 	 * @param luaScript The lua script string to execute
-	 * @param sceneGraph The scene graph to operate on
+	 * @param sceneGraph The scene graph to operate on - this is the active scene graph and a pointer is stored until @c
+	 * update() returned @c ScriptState::Finished
 	 * @param nodeId The node ID of the active node
 	 * @param region The region to operate on
 	 * @param voxel The voxel color and material that is currently selected
-	 * @param dirtyRegion The region that was modified by the script
 	 * @param args The arguments to pass to the script
-	 * @return @c true if the script was executed successfully, @c false otherwise
+	 * @return @c true if the script was scheduled successfully, @c false otherwise
 	 */
 	bool exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGraph, int nodeId,
-			  const voxel::Region &region, const voxel::Voxel &voxel, voxel::Region &dirtyRegion,
+			  const voxel::Region &region, const voxel::Voxel &voxel,
 			  const core::DynamicArray<core::String> &args = {});
+
+	const voxel::Region &dirtyRegion() const;
 };
 
-inline auto scriptCompleter(const io::FilesystemPtr& filesystem) {
-	return [=] (const core::String& str, core::DynamicArray<core::String>& matches) -> int {
+inline const core::String &LUAApi::error() const {
+	return _lua.error();
+}
+
+inline const voxel::Region &LUAApi::dirtyRegion() const {
+	return _dirtyRegion;
+}
+
+inline auto scriptCompleter(const io::FilesystemPtr &filesystem) {
+	return [=](const core::String &str, core::DynamicArray<core::String> &matches) -> int {
 		return command::complete(filesystem, "scripts", str, matches, "*.lua");
 	};
 }
 
-}
+} // namespace voxelgenerator

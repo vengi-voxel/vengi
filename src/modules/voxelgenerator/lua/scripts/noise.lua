@@ -20,5 +20,6 @@ function main(node, region, color, freq, amplitude, offset)
 				volume:setVoxel(x, y, z, color)
 			end
 		end
+		coroutine.yield()
 	end
 end

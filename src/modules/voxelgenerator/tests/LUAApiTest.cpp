@@ -60,12 +60,17 @@ protected:
 			node.setName("head");
 			sceneGraph.emplace(core::move(node), nodeId);
 		}
-		voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
 
 		LUAApi g(_testApp->filesystem());
 		ASSERT_TRUE(g.init());
-		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, dirtyRegion, args));
+		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, args));
+		while (g.scriptStillRunning()) {
+			const ScriptState state = g.update(0.0001);
+			EXPECT_NE(ScriptState::Error, state);
+			EXPECT_NE(ScriptState::Inactive, state);
+		}
 		if (validateDirtyRegion) {
+			const voxel::Region &dirtyRegion = g.dirtyRegion();
 			EXPECT_TRUE(dirtyRegion.isValid());
 		}
 		g.shutdown();
@@ -109,6 +114,20 @@ TEST_F(LUAApiTest, testExecute) {
 	voxel::RawVolume *volume = sceneGraph.node(sceneGraph.activeNode()).volume();
 	EXPECT_EQ(42u, volume->voxel(0, 0, 0).getColor());
 	EXPECT_NE(0u, volume->voxel(1, 0, 0).getColor());
+}
+
+TEST_F(LUAApiTest, testYield) {
+	const core::String script = R"(
+		function main(node, region, color)
+			for i = 1, 5 do
+				g_log.debug("Lua: Running step " .. i)
+				coroutine.yield()
+			end
+		end
+	)";
+
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph, script);
 }
 
 TEST_F(LUAApiTest, testArgumentInfo) {

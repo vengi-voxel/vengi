@@ -19,6 +19,7 @@ function module.conditionYXZ(volume, region, visitor, condition)
 					visitor(volume, x, y, z)
 				end
 			end
+			coroutine.yield()
 		end
 	end
 end
@@ -37,6 +38,7 @@ function module.conditionXZ(volume, region, visitor, condition)
 				visitor(volume, x, z)
 			end
 		end
+		coroutine.yield()
 	end
 end
 
@@ -53,6 +55,7 @@ function module.conditionYXZDown(volume, region, visitor, condition)
 					visitor(volume, x, y, z)
 				end
 			end
+			coroutine.yield()
 		end
 	end
 end

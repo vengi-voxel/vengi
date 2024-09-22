@@ -48,6 +48,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "scenegraph/SceneUtil.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RawVolumeRenderer.h"
@@ -2312,26 +2313,13 @@ bool SceneManager::init() {
 }
 
 bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArray<core::String>& args) {
-	voxel::Region dirtyRegion = voxel::Region::InvalidRegion;
-
 	if (luaCode.empty()) {
 		Log::warn("No script selected");
 		return false;
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
-	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), dirtyRegion, args)) {
-		return false;
-	}
-	if (dirtyRegion.isValid()) {
-		modified(activeNode(), dirtyRegion, true);
-	}
-	if (_sceneGraph.dirty()) {
-		markDirty();
-		_sceneRenderer->clear();
-		_sceneGraph.markClean();
-	}
-	return true;
+	return _luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args);
 }
 
 bool SceneManager::animateActive() const {
@@ -2412,7 +2400,20 @@ bool SceneManager::update(double nowSeconds) {
 	}
 
 	_movement.update(nowSeconds);
-	_luaApi.update(nowSeconds);
+	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
+	if (state == voxelgenerator::ScriptState::Error) {
+		Log::error("Error in script: %s", _luaApi.error().c_str());
+	} else if (state == voxelgenerator::ScriptState::Finished) {
+		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
+		if (dirtyRegion.isValid()) {
+			modified(activeNode(), dirtyRegion, true);
+		}
+		if (_sceneGraph.dirty()) {
+			markDirty();
+			_sceneRenderer->clear();
+			_sceneGraph.markClean();
+		}
+	}
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
 		const glm::vec3& moveDelta = _movement.moveDelta(_movementSpeed->floatVal());
