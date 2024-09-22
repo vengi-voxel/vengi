@@ -156,6 +156,19 @@ static inline const char *luaVoxel_metaregion() {
 	return "__meta_region";
 }
 
+static void luaVoxel_newGlobalData(lua_State *L, const core::String& prefix, void *userData) {
+	lua_pushlightuserdata(L, userData);
+	lua_setglobal(L, prefix.c_str());
+}
+
+template<class T>
+static T* luaVoxel_globalData(lua_State *L, const core::String& prefix) {
+	lua_getglobal(L, prefix.c_str());
+	T* data = (T*) lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	return data;
+}
+
 template<int N, class T>
 static glm::vec<N, T> luaVoxel_getvec(lua_State *s, int idx) {
 	glm::vec<N, T> val;
@@ -171,6 +184,10 @@ static glm::vec<N, T> luaVoxel_getvec(lua_State *s, int idx) {
 			val[3] = (T)luaL_optnumber(s, idx + 3, val[2]);
 	}
 	return val;
+}
+
+static scenegraph::SceneGraph *luaVoxel_scenegraph(lua_State *s) {
+	return luaVoxel_globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
 }
 
 static bool luaVoxel_isregion(lua_State *s, int n) {
@@ -447,7 +464,7 @@ static int luaVoxel_volumewrapper_setvoxel(lua_State* s) {
 static int luaVoxel_volumewrapper_gc(lua_State *s) {
 	LuaRawVolumeWrapper* volume = luaVoxel_tovolumewrapper(s, 1);
 	if (volume->dirtyRegion().isValid()) {
-		voxel::Region* dirtyRegion = lua::LUA::globalData<voxel::Region>(s, luaVoxel_globaldirtyregion());
+		voxel::Region* dirtyRegion = luaVoxel_globalData<voxel::Region>(s, luaVoxel_globaldirtyregion());
 		if (dirtyRegion->isValid()) {
 			dirtyRegion->accumulate(volume->dirtyRegion());
 		} else {
@@ -587,7 +604,7 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 	if (v == nullptr) {
 		return clua_error(s, "Failed to import image as plane");
 	}
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v);
 	node.setName(image->name());
@@ -615,7 +632,7 @@ static int luaVoxel_import_scene(lua_State *s) {
 		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not load file %s", filename);
 	}
-	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	if (scenegraph::addSceneGraphNodes(*sceneGraph, newSceneGraph, sceneGraph->root().id()) <= 0) {
 		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not import scene graph nodes");
@@ -936,8 +953,12 @@ static int luaVoxel_noise_fBm4(lua_State* s) {
 	return 1;
 }
 
+static noise::Noise *luaVoxel_globalnoise(lua_State* s) {
+	return luaVoxel_globalData<noise::Noise>(s, luaVoxel_globalnoise());
+}
+
 static int luaVoxel_noise_voronoi(lua_State* s) {
-	noise::Noise* noise = lua::LUA::globalData<noise::Noise>(s, luaVoxel_globalnoise());
+	noise::Noise* noise = luaVoxel_globalnoise(s);
 	int n = 1;
 	const glm::vec3 v = to_vec3(s, n);
 	const float frequency = (float)luaL_optnumber(s, n + 1, 1.0f);
@@ -948,7 +969,7 @@ static int luaVoxel_noise_voronoi(lua_State* s) {
 }
 
 static int luaVoxel_noise_swissturbulence(lua_State* s) {
-	noise::Noise* noise = lua::LUA::globalData<noise::Noise>(s, luaVoxel_globalnoise());
+	noise::Noise* noise = luaVoxel_globalnoise(s);
 	int n = 1;
 	const glm::vec2 v = to_vec2(s, n);
 	const float offset = (float)luaL_optnumber(s, n + 1, 1.0f);
@@ -1029,13 +1050,13 @@ static int luaVoxel_region_gc(lua_State *s) {
 }
 
 static int luaVoxel_scenegraph_updatetransforms(lua_State* s) {
-	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	sceneGraph->updateTransforms();
 	return 0;
 }
 
 static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
-	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 
 	lua_newtable(s);
 	for (const auto &entry : sceneGraph->nodes()) {
@@ -1052,7 +1073,7 @@ static int luaVoxel_scenegraph_get_all_node_ids(lua_State *s) {
 }
 
 static int luaVoxel_scenegraph_align(lua_State* s) {
-	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	int padding = (int)luaL_optinteger(s, 1, 2);
 	sceneGraph->align(padding);
 	return 0;
@@ -1101,7 +1122,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 	}
 	node.setName(name);
 	node.setVisible(visible);
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	lua_getglobal(s, luaVoxel_globalnodeid());
 	int currentNodeId = lua_tointeger(s, -1);
 	lua_pop(s, 1);
@@ -1115,7 +1136,7 @@ static int luaVoxel_scenegraph_new_node(lua_State* s) {
 
 static int luaVoxel_scenegraph_get_node_by_name(lua_State* s) {
 	const char *name = luaL_checkstring(s, 1);
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	if (scenegraph::SceneGraphNode *node = sceneGraph->findNodeByName(name)) {
 		return luaVoxel_pushscenegraphnode(s, *node);
 	}
@@ -1125,7 +1146,7 @@ static int luaVoxel_scenegraph_get_node_by_name(lua_State* s) {
 
 static int luaVoxel_scenegraph_get_node_by_uuid(lua_State* s) {
 	const char *uuid = luaL_checkstring(s, 1);
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	if (scenegraph::SceneGraphNode *node = sceneGraph->findNodeByUUID(uuid)) {
 		return luaVoxel_pushscenegraphnode(s, *node);
 	}
@@ -1135,7 +1156,7 @@ static int luaVoxel_scenegraph_get_node_by_uuid(lua_State* s) {
 
 static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
 	int nodeId = (int)luaL_optinteger(s, 1, -1);
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	if (nodeId == -1) {
 		nodeId = sceneGraph->activeNode();
 	}
@@ -1150,34 +1171,34 @@ static int luaVoxel_scenegraph_get_node_by_id(lua_State* s) {
 }
 
 static int luaVoxel_scenegraph_addanimation(lua_State* s) {
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	const char *name = luaL_checkstring(s, 1);
 	lua_pushboolean(s, sceneGraph->addAnimation(name));
 	return 1;
 }
 
 static int luaVoxel_scenegraph_hasanimation(lua_State* s) {
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	const char *name = luaL_checkstring(s, 1);
 	lua_pushboolean(s, sceneGraph->hasAnimation(name));
 	return 1;
 }
 
 static int luaVoxel_scenegraph_setanimation(lua_State* s) {
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	const char *name = luaL_checkstring(s, 1);
 	lua_pushboolean(s, sceneGraph->setAnimation(name));
 	return 1;
 }
 
 static int luaVoxel_scenegraph_activeanimation(lua_State* s) {
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	lua_pushstring(s, sceneGraph->activeAnimation().c_str());
 	return 1;
 }
 
 static int luaVoxel_scenegraph_duplicateanimation(lua_State* s) {
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	const char *animation = luaL_checkstring(s, 1);
 	const char *newName = luaL_checkstring(s, 2);
 	lua_pushboolean(s, sceneGraph->duplicateAnimation(animation, newName));
@@ -1298,7 +1319,7 @@ static int luaVoxel_scenegraphnode_removekeyframeforframe(lua_State* s) {
 	if (!node->node->removeKeyFrame(existingIndex)) {
 		return clua_error(s, "Failed to remove keyframe %d", existingIndex);
 	}
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	sceneGraph->markMaxFramesDirty();
 	return 0;
 }
@@ -1309,7 +1330,7 @@ static int luaVoxel_scenegraphnode_removekeyframe(lua_State* s) {
 	if (!node->node->removeKeyFrame(keyFrameIdx)) {
 		return clua_error(s, "Failed to remove keyframe %d", keyFrameIdx);
 	}
-	scenegraph::SceneGraph* sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
 	sceneGraph->markMaxFramesDirty();
 	return 0;
 }
@@ -1326,7 +1347,7 @@ static int luaVoxel_scenegraphnode_addframe(lua_State* s) {
 	if (newKeyFrameIdx == InvalidKeyFrame) {
 		return clua_error(s, "Failed to add keyframe for frame %d", frameIdx);
 	}
-	scenegraph::SceneGraph *sceneGraph = lua::LUA::globalData<scenegraph::SceneGraph>(s, luaVoxel_globalscenegraph());
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
 	sceneGraph->markMaxFramesDirty();
 	scenegraph::SceneGraphKeyFrame &kf = node->node->keyFrame(newKeyFrameIdx);
 	kf.interpolation = interpolation;
@@ -1763,8 +1784,8 @@ bool LUAApi::init() {
 	if (!_noise.init()) {
 		Log::warn("Failed to initialize noise");
 	}
-	lua::LUA::newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
-	lua::LUA::newGlobalData(_lua, luaVoxel_globaldirtyregion(), &_dirtyRegion);
+	luaVoxel_newGlobalData(_lua, luaVoxel_globalnoise(), &_noise);
+	luaVoxel_newGlobalData(_lua, luaVoxel_globaldirtyregion(), &_dirtyRegion);
 
 	prepareState(_lua);
 	return true;
@@ -2031,7 +2052,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	lua_State *s = _lua.state();
-	lua::LUA::newGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
+	luaVoxel_newGlobalData(s, luaVoxel_globalscenegraph(), &sceneGraph);
 
 	lua_pushinteger(s, nodeId);
 	lua_setglobal(s, luaVoxel_globalnodeid());
