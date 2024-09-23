@@ -11,6 +11,8 @@ set(SRCS
 	private/QBCLPalette.cpp private/QBCLPalette.h
 	private/RGBPalette.cpp private/RGBPalette.h
 
+	NormalPalette.cpp NormalPalette.h
+
 	Palette.h Palette.cpp
 	PaletteLookup.h
 	PaletteCompleter.h

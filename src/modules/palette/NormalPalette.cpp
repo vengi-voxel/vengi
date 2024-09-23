@@ -2,14 +2,16 @@
  * @file
  */
 
-#pragma once
+#include "NormalPalette.h"
+#include "core/ArrayLength.h"
+#include "core/Common.h"
+#include "core/Hash.h"
 
+#include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
 
+namespace palette {
 namespace priv {
-namespace normals {
-
-// header with normals from westwood
 
 static const glm::vec3 tsnormals[]{
 	{0.671213984489441, 0.198492005467415, -0.714193999767303},
@@ -294,5 +296,76 @@ static const glm::vec3 ra2normals[]{{0.526578009128571, -0.359620988368988, -0.7
 									{-0.328188002109528, 0.140250995755196, 0.934143006801605},
 									{-0.328188002109528, 0.140250995755196, 0.934143006801605},
 									{-0.328188002109528, 0.140250995755196, 0.934143006801605}};
-} // namespace normals
 } // namespace priv
+
+static inline core::RGBA toRGBA(const glm::vec3 &normal) {
+	const uint8_t r = normal.x * 127.0f + 128.0f;
+	const uint8_t g = normal.y * 127.0f + 128.0f;
+	const uint8_t b = normal.z * 127.0f + 128.0f;
+	return core::RGBA(r, g, b, 255);
+}
+
+static inline glm::vec3 toVec3(const core::RGBA &rgba) {
+	return glm::vec3(rgba.r / 127.0f - 1.0f, rgba.g / 127.0f - 1.0f, rgba.b / 127.0f - 1.0f);
+}
+
+uint8_t NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
+	uint8_t closestIndex = 0;
+	float maxDot = -1.0f;
+
+	for (size_t i = 0; i < _size; ++i) {
+		const float dot = glm::dot(normal, toVec3(_normals[i]));
+
+		if (dot > maxDot) {
+			maxDot = dot;
+			closestIndex = i;
+		}
+	}
+	return closestIndex;
+}
+
+void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
+	_normals[index] = toRGBA(normal);
+	_size = core_max(index, _size);
+}
+
+void NormalPalette::loadNormalMap(const glm::vec3 *normals, uint8_t size) {
+	for (uint8_t i = 0; i < size; i++) {
+		_normals[i] = toRGBA(normals[i]);
+	}
+	_size = size;
+}
+
+void NormalPalette::loadNormalMap(const core::RGBA *normals, uint8_t size) {
+	for (uint8_t i = 0; i < size; i++) {
+		_normals[i] = normals[i];
+	}
+	_size = size;
+}
+
+void NormalPalette::tiberianSun() {
+	loadNormalMap(priv::tsnormals, (uint8_t)lengthof(priv::tsnormals));
+}
+
+void NormalPalette::redAlert2() {
+	loadNormalMap(priv::ra2normals, (uint8_t)lengthof(priv::ra2normals));
+}
+
+void NormalPalette::markDirty() {
+	core::DirtyState::markDirty();
+	_hash = core::hash(_normals, sizeof(_normals));
+}
+
+bool NormalPalette::load(const char *name) {
+	return false;
+}
+
+bool NormalPalette::load(const image::ImagePtr &img) {
+	return false;
+}
+
+bool NormalPalette::save(const char *name) const {
+	return false;
+}
+
+} // namespace palette

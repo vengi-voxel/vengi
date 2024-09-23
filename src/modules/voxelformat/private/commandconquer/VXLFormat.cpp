@@ -16,6 +16,7 @@
 #include "core/collection/StringSet.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -23,7 +24,6 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/commandconquer/HVAFormat.h"
-#include "voxelformat/private/commandconquer/VXLNormals.h"
 #include "voxelformat/private/commandconquer/VXLShared.h"
 #include "voxelutil/VoxelUtil.h"
 #include <glm/gtc/matrix_access.hpp>
@@ -48,48 +48,23 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-static uint8_t findClosestNormalIndex(const glm::vec3 &calculatedNormal, const glm::vec3 *normals, size_t size) {
-	uint8_t closestIndex = 0;
-	float maxDot = -1.0f;
-
-	for (size_t i = 0; i < size; ++i) {
-		const float dot = glm::dot(calculatedNormal, normals[i]);
-
-		if (dot > maxDot) {
-			maxDot = dot;
-			closestIndex = i;
-		}
-	}
-	return closestIndex;
-}
-
-static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType, voxel::Connectivity connectivity) {
+static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) {
 	if (isAir(sampler.voxel().getMaterial())) {
 		return 0;
 	}
-
-	const glm::vec3 *normals;
-	size_t size = 0;
-	if (normalType == 2) { // Tiberian Sun
-		normals = priv::normals::tsnormals;
-		size = lengthof(priv::normals::tsnormals);
-	} else if (normalType == 4) { // Red Alert
-		normals = priv::normals::ra2normals;
-		size = lengthof(priv::normals::ra2normals);
-	} else {
+	if (normalPalette.size() == 0u) {
 		return 0;
 	}
 
 	const glm::ivec3 samplerPos = sampler.position();
 	const glm::vec3 normal = voxelutil::calculateNormal(sampler, connectivity);
 	sampler.setPosition(samplerPos);
-	const uint8_t normalIdx = findClosestNormalIndex(normal, normals, size);
-	return normalIdx;
+	return normalPalette.getClosestMatch(normal);
 }
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
-									uint8_t normalType, voxel::Connectivity connectivity) const {
+									const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -100,7 +75,7 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	for (uint8_t i = 0; i < voxelCount; ++i) {
 		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		uint8_t normalIndex = calculateVXLNormal(sampler, normalType, connectivity);
+		uint8_t normalIndex = calculateVXLNormal(sampler, normalPalette, connectivity);
 		wrapBool(stream.writeUInt8(normalIndex))
 		sampler.movePositiveY();
 	}
@@ -132,7 +107,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 
 bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						   const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
-						   uint64_t nodeSectionOffset) const {
+						   uint64_t nodeSectionOffset, const palette::NormalPalette &normalPalette) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(size, maxSize()))) {
@@ -158,7 +133,6 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	}
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
-	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 	voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
 	const int normalMode = core::Var::getSafe(cfg::VoxformatVXLNormalMode)->intVal();
 	if (normalMode == 1) {
@@ -183,7 +157,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalType, connectivity))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalPalette, connectivity))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -192,7 +166,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalType, connectivity))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalPalette, connectivity))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -322,7 +296,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 
 bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 						core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-						const io::ArchivePtr &archive) {
+						const io::ArchivePtr &archive, const palette::NormalPalette &normalPalette) {
 	if (nodes.empty()) {
 		return false;
 	}
@@ -354,7 +328,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 	const uint64_t bodyStart = stream->pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayer(*stream, sceneGraph, *node, layerOffsets[i], bodyStart))
+		wrapBool(writeLayer(*stream, sceneGraph, *node, layerOffsets[i], bodyStart, normalPalette))
 	}
 
 	const uint64_t afterBodyPos = stream->pos();
@@ -402,20 +376,28 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		}
 	}
 
+	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
+	palette::NormalPalette normalPalette;
+	if (normalType == 2) {
+		normalPalette.tiberianSun();
+	} else if (normalType == 4) {
+		normalPalette.redAlert2();
+	}
+
 	const core::String &basename = core::string::stripExtension(filename);
 
-	if (!saveVXL(sceneGraph, body, filename, archive)) {
+	if (!saveVXL(sceneGraph, body, filename, archive, normalPalette)) {
 		return false;
 	}
 	if (!barrel.empty()) {
 		const core::String &extFilename = basename + "barl.vxl";
-		if (!saveVXL(sceneGraph, barrel, extFilename, archive)) {
+		if (!saveVXL(sceneGraph, barrel, extFilename, archive, normalPalette)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
 	if (!turret.empty()) {
 		const core::String &extFilename = basename + "tur.vxl";
-		if (!saveVXL(sceneGraph, turret, extFilename, archive)) {
+		if (!saveVXL(sceneGraph, turret, extFilename, archive, normalPalette)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}

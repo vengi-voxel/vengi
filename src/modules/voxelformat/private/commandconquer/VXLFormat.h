@@ -5,6 +5,7 @@
 #pragma once
 
 #include "VXLShared.h"
+#include "palette/NormalPalette.h"
 #include "voxelformat/Format.h"
 #include "voxel/Connectivity.h"
 
@@ -26,10 +27,10 @@ private:
 
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x, uint8_t y,
-							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, uint8_t normalType, voxel::Connectivity connectivity) const;
+							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
-					uint64_t nodeSectionOffset) const;
+					uint64_t nodeSectionOffset, const palette::NormalPalette &normalPalette) const;
 	bool writeLayerHeader(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
 						  uint32_t nodeIdx) const;
 	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
@@ -48,7 +49,7 @@ private:
 
 	bool saveVXL(const scenegraph::SceneGraph &sceneGraph,
 				 core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-				 const io::ArchivePtr &archive);
+				 const io::ArchivePtr &archive, const palette::NormalPalette &normalPalette);
 
 	bool prepareModel(vxl::VXLModel &mdl) const;
 	bool readHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, palette::Palette &palette);
