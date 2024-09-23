@@ -4,6 +4,7 @@ set(SRCS
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
 
+	Connectivity.h
 	SurfaceExtractor.h SurfaceExtractor.cpp
 	ChunkMesh.h
 	Face.h Face.cpp
@@ -19,6 +20,7 @@ set(SRCS
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
 	VoxelData.h VoxelData.cpp
+	VoxelNormalUtil.h VoxelNormalUtil.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES commonlua palette meshoptimizer)
 engine_target_optimize(${LIB})

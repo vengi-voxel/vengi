@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Common.h"
-#include "Connectivity.h"
 #include <glm/vec3.hpp>
 #include <algorithm>
 #include <limits> //For numeric_limits

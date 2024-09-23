@@ -6,7 +6,7 @@
 
 #include "Brush.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxelutil/Connectivity.h"
+#include "voxel/Connectivity.h"
 
 namespace voxedit {
 
@@ -19,7 +19,7 @@ private:
 	using Super = Brush;
 
 protected:
-	voxelutil::Connectivity _connectivity = voxelutil::Connectivity::EighteenConnected;
+	voxel::Connectivity _connectivity = voxel::Connectivity::EighteenConnected;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &context,
 				  const voxel::Region &region) override;
 	voxel::Region calcRegion(const BrushContext &context) const override;
@@ -29,15 +29,15 @@ public:
 	}
 	virtual ~PathBrush() = default;
 
-	void setConnectivity(voxelutil::Connectivity connectivity);
-	voxelutil::Connectivity connectivity() const;
+	void setConnectivity(voxel::Connectivity connectivity);
+	voxel::Connectivity connectivity() const;
 };
 
-inline void PathBrush::setConnectivity(voxelutil::Connectivity connectivity) {
+inline void PathBrush::setConnectivity(voxel::Connectivity connectivity) {
 	_connectivity = connectivity;
 }
 
-inline voxelutil::Connectivity PathBrush::connectivity() const {
+inline voxel::Connectivity PathBrush::connectivity() const {
 	return _connectivity;
 }
 

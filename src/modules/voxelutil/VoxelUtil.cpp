@@ -24,49 +24,12 @@
 
 namespace voxelutil {
 
-namespace priv {
-
-// TODO: these are duplicated in the pathfinder code
-static const glm::ivec3 arrayPathfinderFaces[6] = {
-	glm::ivec3(0, 0, -1),
-	glm::ivec3(0, 0, +1),
-	glm::ivec3(0, -1, 0),
-	glm::ivec3(0, +1, 0),
-	glm::ivec3(-1, 0, 0),
-	glm::ivec3(+1, 0, 0) };
-
-static const glm::ivec3 arrayPathfinderEdges[12] = {
-	glm::ivec3(0, -1, -1),
-	glm::ivec3(0, -1, +1),
-	glm::ivec3(0, +1, -1),
-	glm::ivec3(0, +1, +1),
-	glm::ivec3(-1, 0, -1),
-	glm::ivec3(-1, 0, +1),
-	glm::ivec3(+1, 0, -1),
-	glm::ivec3(+1, 0, +1),
-	glm::ivec3(-1, -1, 0),
-	glm::ivec3(-1, +1, 0),
-	glm::ivec3(+1, -1, 0),
-	glm::ivec3(+1, +1, 0) };
-
-static const glm::ivec3 arrayPathfinderCorners[8] = {
-	glm::ivec3(-1, -1, -1),
-	glm::ivec3(-1, -1, +1),
-	glm::ivec3(-1, +1, -1),
-	glm::ivec3(-1, +1, +1),
-	glm::ivec3(+1, -1, -1),
-	glm::ivec3(+1, -1, +1),
-	glm::ivec3(+1, +1, -1),
-	glm::ivec3(+1, +1, +1) };
-
-}
-
-glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity connectivity) {
+glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivity connectivity) {
 	const glm::ivec3 pos = sampler.position();
 	glm::ivec3 sum(0);
 	switch (connectivity) {
-	case Connectivity::TwentySixConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderCorners) {
+	case voxel::Connectivity::TwentySixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -77,8 +40,8 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity conne
 		}
 		/* fallthrough */
 
-	case Connectivity::EighteenConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderEdges) {
+	case voxel::Connectivity::EighteenConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -89,8 +52,8 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity conne
 		}
 		/* fallthrough */
 
-	case Connectivity::SixConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderFaces) {
+	case voxel::Connectivity::SixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -107,14 +70,14 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity conne
 	return glm::normalize(glm::vec3(sum));
 }
 
-bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectivity connectivity) {
+bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Connectivity connectivity) {
 	voxel::RawVolume::Sampler sampler(volume);
 	if (!sampler.setPosition(pos)) {
 		return false;
 	}
 	switch (connectivity) {
-	case Connectivity::TwentySixConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderCorners) {
+	case voxel::Connectivity::TwentySixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -125,8 +88,8 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectiv
 		}
 		/* fallthrough */
 
-	case Connectivity::EighteenConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderEdges) {
+	case voxel::Connectivity::EighteenConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
@@ -137,8 +100,8 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, Connectiv
 		}
 		/* fallthrough */
 
-	case Connectivity::SixConnected:
-		for (const glm::ivec3 &offset : priv::arrayPathfinderFaces) {
+	case voxel::Connectivity::SixConnected:
+		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
 			const glm::ivec3 &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;

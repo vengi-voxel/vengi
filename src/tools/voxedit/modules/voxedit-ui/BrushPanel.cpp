@@ -262,14 +262,14 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 void BrushPanel::updatePathBrushPanel(command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	PathBrush &brush = modifier.pathBrush();
-	voxelutil::Connectivity c = brush.connectivity();
+	voxel::Connectivity c = brush.connectivity();
 	int selected = (int)c;
 	const char *items[] = {_("6-connected"), _("18-connected"), _("26-connected")};
 	if (ImGui::BeginCombo(_("Connectivity"), items[selected])) {
 		for (int i = 0; i < lengthof(items); ++i) {
 			bool isSelected = selected == i;
 			if (ImGui::Selectable(items[i], isSelected)) {
-				brush.setConnectivity((voxelutil::Connectivity)i);
+				brush.setConnectivity((voxel::Connectivity)i);
 			}
 			if (isSelected) {
 				ImGui::SetItemDefaultFocus();

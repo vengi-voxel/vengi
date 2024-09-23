@@ -10,6 +10,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/collection/List.h"
+#include "voxel/Connectivity.h"
 #include <glm/gtc/constants.hpp>
 #include <glm/geometric.hpp>
 
@@ -33,7 +34,7 @@ template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
 	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, std::function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
-			uint32_t uMaxNoOfNodes = 10000, Connectivity requiredConnectivity = TwentySixConnected, std::function<void(float)> funcProgressCallback = nullptr) :
+			uint32_t uMaxNoOfNodes = 10000, voxel::Connectivity requiredConnectivity = voxel::Connectivity::TwentySixConnected, std::function<void(float)> funcProgressCallback = nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
 					core::move(funcIsVoxelValidForPath)), progressCallback(core::move(funcProgressCallback)) {
 	}
@@ -54,7 +55,7 @@ public:
 	/// The AStarPathfinder performs its search by examining the neighbours
 	/// of each voxel it encounters. This property controls the meaning of
 	/// neighbour - e.g. whether two voxels must share a face, edge, or corner.
-	Connectivity connectivity;
+	voxel::Connectivity connectivity;
 
 	/// For each voxel the pathfinder tracks its distance to the start (known as g())
 	/// and estimates its distance to the end (known as h()). Increasing or decreasing
@@ -180,38 +181,6 @@ bool AStarPathfinder<VolumeType>::execute() {
 		_params.progressCallback(_progress);
 	}
 
-	static const glm::ivec3 arrayPathfinderFaces[6] = {
-			glm::ivec3(0, 0, -1),
-			glm::ivec3(0, 0, +1),
-			glm::ivec3(0, -1, 0),
-			glm::ivec3(0, +1, 0),
-			glm::ivec3(-1, 0, 0),
-			glm::ivec3(+1, 0, 0) };
-
-	static const glm::ivec3 arrayPathfinderEdges[12] = {
-			glm::ivec3(0, -1, -1),
-			glm::ivec3(0, -1, +1),
-			glm::ivec3(0, +1, -1),
-			glm::ivec3(0, +1, +1),
-			glm::ivec3(-1, 0, -1),
-			glm::ivec3(-1, 0, +1),
-			glm::ivec3(+1, 0, -1),
-			glm::ivec3(+1, 0, +1),
-			glm::ivec3(-1, -1, 0),
-			glm::ivec3(-1, +1, 0),
-			glm::ivec3(+1, -1, 0),
-			glm::ivec3(+1, +1, 0) };
-
-	static const glm::ivec3 arrayPathfinderCorners[8] = {
-			glm::ivec3(-1, -1, -1),
-			glm::ivec3(-1, -1, +1),
-			glm::ivec3(-1, +1, -1),
-			glm::ivec3(-1, +1, +1),
-			glm::ivec3(+1, -1, -1),
-			glm::ivec3(+1, -1, +1),
-			glm::ivec3(+1, +1, -1),
-			glm::ivec3(+1, +1, +1) };
-
 	while (!_openNodes.empty() && _openNodes.getFirst() != endNode) {
 		//Move the first node from open to closed.
 		_current = _openNodes.getFirst();
@@ -238,39 +207,39 @@ bool AStarPathfinder<VolumeType>::execute() {
 		//Process the neighbours. Note the deliberate lack of 'break'
 		//statements, larger connectivities include smaller ones.
 		switch (_params.connectivity) {
-		case TwentySixConnected:
-			processNeighbour(_current->position + arrayPathfinderCorners[0], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[1], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[2], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[3], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[4], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[5], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[6], _current->gVal + fCornerCost);
-			processNeighbour(_current->position + arrayPathfinderCorners[7], _current->gVal + fCornerCost);
+		case voxel::Connectivity::TwentySixConnected:
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[0], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[1], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[2], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[3], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[4], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[5], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[6], _current->gVal + fCornerCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderCorners[7], _current->gVal + fCornerCost);
 			/* fallthrough */
 
-		case EighteenConnected:
-			processNeighbour(_current->position + arrayPathfinderEdges[0], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[1], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[2], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[3], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[4], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[5], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[6], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[7], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[8], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[9], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[10], _current->gVal + fEdgeCost);
-			processNeighbour(_current->position + arrayPathfinderEdges[11], _current->gVal + fEdgeCost);
+		case voxel::Connectivity::EighteenConnected:
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[0], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[1], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[2], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[3], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[4], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[5], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[6], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[7], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[8], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[9], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[10], _current->gVal + fEdgeCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderEdges[11], _current->gVal + fEdgeCost);
 			/* fallthrough */
 
-		case SixConnected:
-			processNeighbour(_current->position + arrayPathfinderFaces[0], _current->gVal + fFaceCost);
-			processNeighbour(_current->position + arrayPathfinderFaces[1], _current->gVal + fFaceCost);
-			processNeighbour(_current->position + arrayPathfinderFaces[2], _current->gVal + fFaceCost);
-			processNeighbour(_current->position + arrayPathfinderFaces[3], _current->gVal + fFaceCost);
-			processNeighbour(_current->position + arrayPathfinderFaces[4], _current->gVal + fFaceCost);
-			processNeighbour(_current->position + arrayPathfinderFaces[5], _current->gVal + fFaceCost);
+		case voxel::Connectivity::SixConnected:
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[0], _current->gVal + fFaceCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[1], _current->gVal + fFaceCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[2], _current->gVal + fFaceCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[3], _current->gVal + fFaceCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[4], _current->gVal + fFaceCost);
+			processNeighbour(_current->position + voxel::arrayPathfinderFaces[5], _current->gVal + fFaceCost);
 			break;
 		}
 
@@ -393,13 +362,13 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 	float hVal;
 
 	switch (_params.connectivity) {
-	case TwentySixConnected:
+	case voxel::Connectivity::TwentySixConnected:
 		hVal = TwentySixConnectedCost(a, b);
 		break;
-	case EighteenConnected:
+	case voxel::Connectivity::EighteenConnected:
 		hVal = EighteenConnectedCost(a, b);
 		break;
-	case SixConnected:
+	case voxel::Connectivity::SixConnected:
 		hVal = SixConnectedCost(a, b);
 		break;
 	default:

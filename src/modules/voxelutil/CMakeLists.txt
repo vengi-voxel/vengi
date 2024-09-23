@@ -2,7 +2,6 @@ set(LIB voxelutil)
 set(SRCS
 	AStarPathfinder.h
 	AStarPathfinderImpl.h
-	Connectivity.h
 	ImageUtils.h ImageUtils.cpp
 	Raycast.h
 	Picking.h

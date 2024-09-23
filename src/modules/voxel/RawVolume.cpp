@@ -18,31 +18,28 @@ size_t RawVolume::size(const Region &region) {
 	return size;
 }
 
-RawVolume::RawVolume(const Region& regValid) :
-		_region(regValid) {
-	//Create a volume of the right size.
+RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
+	// Create a volume of the right size.
 	initialise(regValid);
 }
 
-RawVolume::RawVolume(const RawVolume* copy) :
-		_region(copy->region()) {
+RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	_data = (Voxel*)core_malloc(size);
+	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy->_borderVoxel;
 	core_memcpy((void*)_data, (void*)copy->_data, size);
 }
 
-RawVolume::RawVolume(const RawVolume& copy) :
-		_region(copy.region()) {
+RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	_data = (Voxel*)core_malloc(size);
+	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy._borderVoxel;
 	core_memcpy((void*)_data, (void*)copy._data, size);
 }
 
-static inline voxel::Region accumulate(const core::DynamicArray<Region>& regions) {
+static inline voxel::Region accumulate(const core::DynamicArray<Region> &regions) {
 	voxel::Region r = voxel::Region::InvalidRegion;
 	for (const Region &region : regions) {
 		if (r.isValid()) {
@@ -132,20 +129,20 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	}
 }
 
-RawVolume::RawVolume(RawVolume&& move) noexcept {
+RawVolume::RawVolume(RawVolume &&move) noexcept {
 	_data = move._data;
 	move._data = nullptr;
 	_region = move._region;
+	_borderVoxel = move._borderVoxel;
 }
 
-RawVolume::RawVolume(const Voxel* data, const voxel::Region& region) {
+RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
 	initialise(region);
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	core_memcpy((void*)_data, (const void*)data, size);
+	core_memcpy((void *)_data, (const void *)data, size);
 }
 
-RawVolume::RawVolume(Voxel* data, const voxel::Region& region) :
-		_region(region), _data(data) {
+RawVolume::RawVolume(Voxel *data, const voxel::Region &region) : _region(region), _data(data) {
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
@@ -185,10 +182,10 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 	return true;
 }
 
-Voxel* RawVolume::copyVoxels() const {
+Voxel *RawVolume::copyVoxels() const {
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	Voxel* rawCopy = (Voxel*)core_malloc(size);
-	core_memcpy((void*)rawCopy, (void*)_data, size);
+	Voxel *rawCopy = (Voxel *)core_malloc(size);
+	core_memcpy((void *)rawCopy, (void *)_data, size);
 	return rawCopy;
 }
 
@@ -200,7 +197,7 @@ Voxel* RawVolume::copyVoxels() const {
  * @param z The @c z position of the voxel
  * @return The voxel value
  */
-const Voxel& RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
+const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 	if (_region.containsPoint(x, y, z)) {
 		const int32_t iLocalXPos = x - _region.getLowerX();
 		const int32_t iLocalYPos = y - _region.getLowerY();
@@ -214,7 +211,7 @@ const Voxel& RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 /**
  * @param[in] voxel The value to use for voxels outside the volume.
  */
-void RawVolume::setBorderValue(const Voxel& voxel) {
+void RawVolume::setBorderValue(const Voxel &voxel) {
 	_borderVoxel = voxel;
 }
 
@@ -225,7 +222,7 @@ void RawVolume::setBorderValue(const Voxel& voxel) {
  * @param voxel the value to which the voxel will be set
  * @return @c true if the voxel was placed, @c false if it was already the same voxel
  */
-bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel) {
+bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
 	return setVoxel(glm::ivec3(x, y, z), voxel);
 }
 
@@ -234,15 +231,15 @@ bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel& voxel) {
  * @param voxel the value to which the voxel will be set
  * @return @c true if the voxel was placed, @c false if it was already the same voxel
  */
-bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	const bool inside = _region.containsPoint(pos);
-	core_assert_msg(inside, "Position is outside valid region %i:%i:%i (mins[%i:%i:%i], maxs[%i:%i:%i])",
-			pos.x, pos.y, pos.z, _region.getLowerX(), _region.getLowerY(), _region.getLowerZ(),
-			_region.getUpperX(), _region.getUpperY(), _region.getUpperZ());
+	core_assert_msg(inside, "Position is outside valid region %i:%i:%i (mins[%i:%i:%i], maxs[%i:%i:%i])", pos.x, pos.y,
+					pos.z, _region.getLowerX(), _region.getLowerY(), _region.getLowerZ(), _region.getUpperX(),
+					_region.getUpperY(), _region.getUpperZ());
 	if (!inside) {
 		return false;
 	}
-	const glm::ivec3& lowerCorner = _region.getLowerCorner();
+	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
 	if (_data[index].isSame(voxel)) {
@@ -253,7 +250,7 @@ bool RawVolume::setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
 }
 
 void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
-	const glm::ivec3& lowerCorner = _region.getLowerCorner();
+	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int index = localPos.x + localPos.y * width() + localPos.z * width() * height();
 	_data[index] = voxel;
@@ -262,17 +259,18 @@ void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 /**
  * This function should probably be made internal...
  */
-void RawVolume::initialise(const Region& regValidRegion) {
+void RawVolume::initialise(const Region &regValidRegion) {
 	_region = regValidRegion;
 
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
-	//Create the data
+	// Create the data
 	const size_t size = width() * height() * depth() * sizeof(Voxel);
-	_data = (Voxel*)core_malloc(size);
-	core_assert_msg_always(_data != nullptr, "Failed to allocate the memory for a volume with the dimensions %i:%i:%i", width(),  height(), depth());
+	_data = (Voxel *)core_malloc(size);
+	core_assert_msg_always(_data != nullptr, "Failed to allocate the memory for a volume with the dimensions %i:%i:%i",
+						   width(), height(), depth());
 
 	// Clear to zeros
 	clear();
@@ -290,18 +288,18 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 	}
 }
 
-RawVolume::Sampler::Sampler(const RawVolume* volume) :
-		_volume(const_cast<RawVolume*>(volume)), _region(volume->region()) {
+RawVolume::Sampler::Sampler(const RawVolume *volume)
+	: _volume(const_cast<RawVolume *>(volume)), _region(volume->region()) {
 }
 
-RawVolume::Sampler::Sampler(const RawVolume& volume) :
-		_volume(const_cast<RawVolume*>(&volume)), _region(volume.region()) {
+RawVolume::Sampler::Sampler(const RawVolume &volume)
+	: _volume(const_cast<RawVolume *>(&volume)), _region(volume.region()) {
 }
 
 RawVolume::Sampler::~Sampler() {
 }
 
-bool RawVolume::Sampler::setVoxel(const Voxel& voxel) {
+bool RawVolume::Sampler::setVoxel(const Voxel &voxel) {
 	if (_currentPositionInvalid) {
 		return false;
 	}
@@ -314,7 +312,7 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 	_posInVolume.y = yPos;
 	_posInVolume.z = zPos;
 
-	const voxel::Region& region = this->region();
+	const voxel::Region &region = this->region();
 	_currentPositionInvalid = 0u;
 	if (!region.containsPointInX(xPos)) {
 		_currentPositionInvalid |= SAMPLER_INVALIDX;
@@ -328,7 +326,7 @@ bool RawVolume::Sampler::setPosition(int32_t xPos, int32_t yPos, int32_t zPos) {
 
 	// Then we update the voxel pointer
 	if (currentPositionValid()) {
-		const glm::ivec3& v3dLowerCorner = region.getLowerCorner();
+		const glm::ivec3 &v3dLowerCorner = region.getLowerCorner();
 		const int32_t iLocalXPos = xPos - v3dLowerCorner.x;
 		const int32_t iLocalYPos = yPos - v3dLowerCorner.y;
 		const int32_t iLocalZPos = zPos - v3dLowerCorner.z;
@@ -499,4 +497,4 @@ void RawVolume::Sampler::moveNegativeZ(uint32_t offset) {
 	}
 }
 
-}
+} // namespace voxel

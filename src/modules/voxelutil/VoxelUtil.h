@@ -8,7 +8,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/Connectivity.h"
+#include "voxel/Connectivity.h"
 #include <glm/fwd.hpp>
 
 namespace voxel {
@@ -59,7 +59,7 @@ bool copy(const voxel::RawVolume &in, const voxel::Region &inRegion, voxel::RawV
 /**
  * @brief Checks if there is a solid voxel around the given position
  */
-bool isTouching(const voxel::RawVolume &volume, const glm::ivec3& pos, Connectivity connectivity = Connectivity::SixConnected);
+bool isTouching(const voxel::RawVolume &volume, const glm::ivec3& pos, voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
 
 /**
  * @brief Checks whether the given region of the volume is only filled with air
@@ -160,6 +160,6 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
  * @return nullptr if the volumes don't differ in the shared region dimensions
  */
 voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
-glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, Connectivity connectivity);
+glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivity connectivity);
 
 } // namespace voxelutil

@@ -25,7 +25,6 @@
 #include "voxelformat/private/commandconquer/HVAFormat.h"
 #include "voxelformat/private/commandconquer/VXLNormals.h"
 #include "voxelformat/private/commandconquer/VXLShared.h"
-#include "voxelutil/Connectivity.h"
 #include "voxelutil/VoxelUtil.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -64,7 +63,7 @@ static uint8_t findClosestNormalIndex(const glm::vec3 &calculatedNormal, const g
 	return closestIndex;
 }
 
-static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType, voxelutil::Connectivity connectivity) {
+static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t normalType, voxel::Connectivity connectivity) {
 	if (isAir(sampler.voxel().getMaterial())) {
 		return 0;
 	}
@@ -90,7 +89,7 @@ static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, uint8_t no
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
-									uint8_t normalType, voxelutil::Connectivity connectivity) const {
+									uint8_t normalType, voxel::Connectivity connectivity) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -160,12 +159,12 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
 	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
-	voxelutil::Connectivity connectivity = voxelutil::Connectivity::SixConnected;
+	voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
 	const int normalMode = core::Var::getSafe(cfg::VoxformatVXLNormalMode)->intVal();
 	if (normalMode == 1) {
-		connectivity = voxelutil::Connectivity::EighteenConnected;
+		connectivity = voxel::Connectivity::EighteenConnected;
 	} else if (normalMode == 2) {
-		connectivity = voxelutil::Connectivity::TwentySixConnected;
+		connectivity = voxel::Connectivity::TwentySixConnected;
 	}
 
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
