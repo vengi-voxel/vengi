@@ -8,6 +8,7 @@
 #include "core/Optional.h"
 #include "core/String.h"
 #include "core/collection/RingBuffer.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -33,10 +34,10 @@ enum class MementoType {
 	SceneNodeRemoved,
 	SceneNodeRenamed,
 	SceneNodePaletteChanged,
+	SceneNodeNormalPaletteChanged,
 	SceneNodeKeyFrames,
 	SceneNodeProperties,
 	SceneGraphAnimation,
-	PaletteChanged,
 
 	Max
 };
@@ -119,6 +120,7 @@ struct MementoState {
 	core::String name;
 	glm::vec3 pivot;
 	palette::Palette palette;
+	palette::NormalPalette normalPalette;
 	core::Optional<core::DynamicArray<core::String>> stringList;
 
 	MementoState();
@@ -131,11 +133,11 @@ struct MementoState {
 				 const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
 				 scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
 				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
-				 const scenegraph::SceneGraphNodeProperties &_properties);
+				 const palette::NormalPalette &_normalPalette, const scenegraph::SceneGraphNodeProperties &_properties);
 	MementoState(MementoType _type, MementoData &&_data, core::String &&_parentId, core::String &&_nodeId,
 				 core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
 				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
-				 scenegraph::SceneGraphNodeProperties &&_properties);
+				 palette::NormalPalette &&_normalPalette, scenegraph::SceneGraphNodeProperties &&_properties);
 	MementoState(MementoType _type, const core::DynamicArray<core::String> &stringList);
 
 	inline bool valid() const {
@@ -189,6 +191,7 @@ private:
 	void undoRename(MementoState &s);
 	void undoMove(MementoState &s);
 	void undoPaletteChange(MementoState &s);
+	void undoNormalPaletteChange(MementoState &s);
 	void undoNodeProperties(MementoState &s);
 	void undoKeyFrames(MementoState &s);
 	void undoAnimations(MementoState &s);
@@ -203,13 +206,14 @@ protected:
 	 * @param[in] volume The state of the volume
 	 * @param[in] type The @c MementoType - has influence on undo() and redo() state position changes.
 	 */
-	bool markUndo(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume, MementoType type,
-				  const voxel::Region &region);
+	bool markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+				  const voxel::RawVolume *volume, MementoType type, const voxel::Region &region);
 	bool markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
 				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
 				  MementoType type, const voxel::Region &region, const glm::vec3 &pivot,
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
-				  const scenegraph::SceneGraphNodeProperties &properties);
+				  const palette::NormalPalette &normalPalette, const scenegraph::SceneGraphNodeProperties &properties);
+
 public:
 	MementoHandler();
 	~MementoHandler();
@@ -251,19 +255,21 @@ public:
 
 	bool removeLast();
 
-	bool markNodePropertyChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markKeyFramesChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markNodeRemoved(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markNodeAdded(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markNodeTransform(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markModification(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node, const voxel::Region &modifiedRegion);
-	bool markInitialNodeState(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markInitialSceneState(const scenegraph::SceneGraph& sceneGraph);
-	bool markNodeRenamed(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markNodeMoved(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markPaletteChange(const scenegraph::SceneGraph& sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markAddedAnimation(const scenegraph::SceneGraph& sceneGraph, const core::String &animation);
-	bool markRemovedAnimation(const scenegraph::SceneGraph& sceneGraph, const core::String &animation);
+	bool markNodePropertyChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNodeRemoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNodeAdded(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNodeTransform(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markModification(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+						  const voxel::Region &modifiedRegion);
+	bool markInitialNodeState(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markInitialSceneState(const scenegraph::SceneGraph &sceneGraph);
+	bool markNodeRenamed(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNodeMoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markPaletteChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNormalPaletteChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markAddedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
+	bool markRemovedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
 
 	MementoStateGroup undo();
 	MementoStateGroup redo();

@@ -761,6 +761,15 @@ bool SceneManager::mementoPaletteChange(const memento::MementoState &s) {
 	return false;
 }
 
+bool SceneManager::mementoNormalPaletteChange(const memento::MementoState &s) {
+	Log::debug("Memento: normal palette change of node %s to %s", s.nodeUUID.c_str(), s.name.c_str());
+	if (scenegraph::SceneGraphNode* node = sceneGraphNodeByUUID(s.nodeUUID)) {
+		node->setNormalPalette(s.normalPalette);
+		return true;
+	}
+	return false;
+}
+
 bool SceneManager::mementoModification(const memento::MementoState& s) {
 	Log::debug("Memento: modification in volume of node %s (%s)", s.nodeUUID.c_str(), s.name.c_str());
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(s.nodeUUID)) {
@@ -841,6 +850,9 @@ bool SceneManager::mementoStateExecute(const memento::MementoState &s, bool isRe
 	}
 	if (s.type == memento::MementoType::SceneNodePaletteChanged) {
 		return mementoPaletteChange(s);
+	}
+	if (s.type == memento::MementoType::SceneNodeNormalPaletteChanged) {
+		return mementoNormalPaletteChange(s);
 	}
 	if (s.type == memento::MementoType::SceneNodeMove) {
 		Log::debug("Memento: move of node %s (%s) (new parent %s)", s.nodeUUID.c_str(), s.name.c_str(), s.parentUUID.c_str());

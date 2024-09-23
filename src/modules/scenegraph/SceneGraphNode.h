@@ -11,6 +11,7 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/StringMap.h"
 #include "SceneGraphKeyFrame.h"
+#include "palette/NormalPalette.h"
 
 namespace voxel {
 class RawVolume;
@@ -96,6 +97,7 @@ protected:
 	core::Buffer<int, 32> _children;
 	SceneGraphNodeProperties _properties;
 	mutable core::Optional<palette::Palette> _palette;
+	mutable core::Optional<palette::NormalPalette> _normalPalette;
 
 	/**
 	 * @brief Called in emplace() if a parent id is given
@@ -137,6 +139,9 @@ public:
 
 	palette::Palette &palette() const;
 	void setPalette(const palette::Palette &palette);
+
+	palette::NormalPalette &normalPalette() const;
+	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);

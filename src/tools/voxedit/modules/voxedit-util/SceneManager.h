@@ -196,6 +196,7 @@ protected:
 	bool mementoKeyFrames(const memento::MementoState &s);
 	bool mementoProperties(const memento::MementoState &s);
 	bool mementoPaletteChange(const memento::MementoState &s);
+	bool mementoNormalPaletteChange(const memento::MementoState &s);
 	bool mementoModification(const memento::MementoState &s);
 
 	/**

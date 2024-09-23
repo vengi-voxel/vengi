@@ -9,6 +9,7 @@
 #include "core/Hash.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -30,6 +31,7 @@ SceneGraphNode::SceneGraphNode(SceneGraphNode &&move) noexcept {
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
+	_normalPalette = core::move(move._normalPalette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
 	_pivot = move._pivot;
@@ -62,6 +64,7 @@ SceneGraphNode &SceneGraphNode::operator=(SceneGraphNode &&move) noexcept {
 	_referenceId = move._referenceId;
 	move._referenceId = InvalidNodeId;
 	_palette = core::move(move._palette);
+	_normalPalette = core::move(move._normalPalette);
 	_parent = move._parent;
 	move._parent = InvalidNodeId;
 	_pivot = move._pivot;
@@ -139,6 +142,23 @@ voxel::Region SceneGraphNode::remapToPalette(const palette::Palette &newPalette,
 		return voxel::Region::InvalidRegion;
 	}
 	return voxelutil::remapToPalette(volume(), palette(), newPalette, skipColorIndex);
+}
+
+void SceneGraphNode::setNormalPalette(const palette::NormalPalette &normalPalette) {
+	if (normalPalette.size() <= 0) {
+		return;
+	}
+	_normalPalette.setValue(normalPalette);
+	_normalPalette.value()->markDirty();
+}
+
+palette::NormalPalette &SceneGraphNode::normalPalette() const {
+	if (!_normalPalette.hasValue()) {
+		palette::NormalPalette normalPalette;
+		normalPalette.redAlert2();
+		_normalPalette.setValue(normalPalette);
+	}
+	return *_normalPalette.value();
 }
 
 void SceneGraphNode::setPalette(const palette::Palette &palette) {

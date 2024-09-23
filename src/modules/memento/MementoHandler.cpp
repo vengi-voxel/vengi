@@ -15,6 +15,7 @@
 #include "io/MemoryReadStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -33,14 +34,14 @@ MementoState::MementoState(const MementoState &other)
 	: type(other.type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
 	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
 	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
-	  stringList(other.stringList) {
+	  normalPalette(other.normalPalette), stringList(other.stringList) {
 }
 
 MementoState::MementoState(MementoType _type, const MementoState &other)
 	: type(_type), data(other.data), parentUUID(other.parentUUID), nodeUUID(other.nodeUUID),
 	  referenceUUID(other.referenceUUID), nodeType(other.nodeType), keyFrames(other.keyFrames),
 	  properties(other.properties), name(other.name), pivot(other.pivot), palette(other.palette),
-	  stringList(other.stringList) {
+	  normalPalette(other.normalPalette), stringList(other.stringList) {
 }
 
 MementoState::MementoState(MementoState &&other) noexcept {
@@ -55,6 +56,7 @@ MementoState::MementoState(MementoState &&other) noexcept {
 	name = core::move(other.name);
 	pivot = core::move(other.pivot);
 	palette = core::move(other.palette);
+	normalPalette = core::move(other.normalPalette);
 	stringList = core::move(other.stringList);
 }
 
@@ -73,6 +75,7 @@ MementoState &MementoState::operator=(MementoState &&other) noexcept {
 	name = core::move(other.name);
 	pivot = core::move(other.pivot);
 	palette = core::move(other.palette);
+	normalPalette = core::move(other.normalPalette);
 	stringList = core::move(other.stringList);
 	return *this;
 }
@@ -92,27 +95,30 @@ MementoState &MementoState::operator=(const MementoState &other) {
 	name = other.name;
 	pivot = other.pivot;
 	palette = other.palette;
+	normalPalette = other.normalPalette;
 	stringList = other.stringList;
 	return *this;
 }
 
 MementoState::MementoState(MementoType _type, const MementoData &_data, const core::String &_parentId,
-				const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
-				scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
-				const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
-				const scenegraph::SceneGraphNodeProperties &_properties)
+						   const core::String &_nodeId, const core::String &_referenceId, const core::String &_name,
+						   scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
+						   const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
+						   const palette::NormalPalette &_normalPalette,
+						   const scenegraph::SceneGraphNodeProperties &_properties)
 	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
-		nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
-		palette(_palette) {
+	  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+	  palette(_palette), normalPalette(_normalPalette) {
 }
 
 MementoState::MementoState(MementoType _type, MementoData &&_data, core::String &&_parentId, core::String &&_nodeId,
-				core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
-				glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
-				scenegraph::SceneGraphNodeProperties &&_properties)
+						   core::String &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
+						   glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
+						   palette::Palette &&_palette, palette::NormalPalette &&_normalPalette,
+						   scenegraph::SceneGraphNodeProperties &&_properties)
 	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
-		nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
-		palette(_palette) {
+	  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
+	  palette(_palette), normalPalette(_normalPalette) {
 }
 
 MementoState::MementoState(MementoType _type, const core::DynamicArray<core::String> &_stringList)
@@ -299,16 +305,23 @@ void MementoHandler::endGroup() {
 }
 
 const char *MementoHandler::typeToString(MementoType type) {
-	const char *states[] = {"Modification",		  "SceneNodeMove",		 "SceneNodeAdded",
-							"SceneNodeRemoved",	  "SceneNodeRenamed",	 "SceneNodePaletteChanged",
-							"SceneNodeKeyFrames", "SceneNodeProperties", "SceneGraphAnimation",
-							"PaletteChanged"};
+	const char *states[] = {"Modification",
+							"SceneNodeMove",
+							"SceneNodeAdded",
+							"SceneNodeRemoved",
+							"SceneNodeRenamed",
+							"SceneNodePaletteChanged",
+							"SceneNodeNormalPaletteChanged",
+							"SceneNodeKeyFrames",
+							"SceneNodeProperties",
+							"SceneGraphAnimation"};
 	static_assert((int)MementoType::Max == lengthof(states), "Array sizes don't match");
 	return states[(int)type];
 }
 
 void MementoHandler::printState(const MementoState &state) const {
 	core::String palHash = core::string::toString(state.palette.hash());
+	core::String normalPalHash = core::string::toString(state.normalPalette.hash());
 	Log::info("%s: node id: %s", typeToString(state.type), state.nodeUUID.c_str());
 	Log::info(" - parent: %s", state.parentUUID.c_str());
 	Log::info(" - name: %s", state.name.c_str());
@@ -318,6 +331,7 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - region: mins(%i:%i:%i)/maxs(%i:%i:%i)", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	Log::info(" - size: %ib", (int)state.data.size());
 	Log::info(" - palette: %s", palHash.c_str());
+	Log::info(" - normalPalette: %s", normalPalHash.c_str());
 	Log::info(" - pivot: %f:%f:%f", state.pivot.x, state.pivot.y, state.pivot.z);
 	const scenegraph::SceneGraphKeyFramesMap &keyFrames = state.keyFrames;
 	Log::info(" - key frames");
@@ -406,6 +420,19 @@ void MementoHandler::undoPaletteChange(MementoState &s) {
 	Log::warn("No previous palette found for node %s", s.nodeUUID.c_str());
 }
 
+void MementoHandler::undoNormalPaletteChange(MementoState &s) {
+	for (int i = _groupStatePosition; i >= 0; --i) {
+		const MementoStateGroup &group = _groups[i];
+		for (const MementoState &prevS : group.states) {
+			if (prevS.nodeUUID == s.nodeUUID) {
+				s.normalPalette = prevS.normalPalette;
+				return;
+			}
+		}
+	}
+	Log::warn("No previous palette found for node %s", s.nodeUUID.c_str());
+}
+
 void MementoHandler::undoNodeProperties(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
@@ -487,6 +514,8 @@ MementoStateGroup MementoHandler::undo() {
 			undoModification(s);
 		} else if (s.type == MementoType::SceneNodePaletteChanged) {
 			undoPaletteChange(s);
+		} else if (s.type == MementoType::SceneNodeNormalPaletteChanged) {
+			undoNormalPaletteChange(s);
 		} else if (s.type == MementoType::SceneNodeProperties) {
 			undoNodeProperties(s);
 		} else if (s.type == MementoType::SceneNodeKeyFrames) {
@@ -555,7 +584,7 @@ bool MementoHandler::markNodeAdded(const scenegraph::SceneGraph &sceneGraph, con
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeAdded, voxel::Region::InvalidRegion);
 }
 
-bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph& sceneGraph) {
+bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph &sceneGraph) {
 	memento::ScopedMementoGroup mementoGroup(*this, "initialscene");
 	if (!markAllAnimations(sceneGraph.animations())) {
 		return false;
@@ -581,6 +610,15 @@ bool MementoHandler::markModification(const scenegraph::SceneGraph &sceneGraph, 
 	}
 	Log::debug("Mark node %i modification (%s)", nodeId, name.c_str());
 	return markUndo(sceneGraph, node, volume, MementoType::Modification, modifiedRegion);
+}
+
+bool MementoHandler::markNormalPaletteChange(const scenegraph::SceneGraph &sceneGraph,
+											 const scenegraph::SceneGraphNode &node) {
+	const int nodeId = node.id();
+	const core::String &name = node.name();
+	const voxel::RawVolume *volume = nullptr;
+	Log::debug("Mark node %i normal palette change (%s)", nodeId, name.c_str());
+	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeNormalPaletteChanged, voxel::Region::InvalidRegion);
 }
 
 bool MementoHandler::markPaletteChange(const scenegraph::SceneGraph &sceneGraph,
@@ -671,14 +709,15 @@ bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const sc
 	const core::String &parentId = sceneGraph.uuid(node.parent());
 	const core::String &referenceId = sceneGraph.uuid(node.reference());
 	return markUndo(parentId, node.uuid(), referenceId, node.name(), node.type(), volume, type, modifiedRegion,
-					node.pivot(), node.allKeyFrames(), node.palette(), node.properties());
+					node.pivot(), node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties());
 }
 
 bool MementoHandler::markUndo(const core::String &parentId, const core::String &nodeId, const core::String &referenceId,
 							  const core::String &name, scenegraph::SceneGraphNodeType nodeType,
 							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion,
 							  const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &allKeyFrames,
-							  const palette::Palette &palette, const scenegraph::SceneGraphNodeProperties &properties) {
+							  const palette::Palette &palette, const palette::NormalPalette &normalPalette,
+							  const scenegraph::SceneGraphNodeProperties &properties) {
 	if (!markUndoPreamble()) {
 		return false;
 	}
@@ -690,7 +729,7 @@ bool MementoHandler::markUndo(const core::String &parentId, const core::String &
 	}
 	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, data, parentId, nodeId, referenceId, name, nodeType, pivot, allKeyFrames, palette,
-					   properties);
+					   normalPalette, properties);
 	addState(core::move(state));
 	return true;
 }

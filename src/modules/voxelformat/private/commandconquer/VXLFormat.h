@@ -30,7 +30,7 @@ private:
 							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
-					uint64_t nodeSectionOffset, const palette::NormalPalette &normalPalette) const;
+					uint64_t nodeSectionOffset) const;
 	bool writeLayerHeader(io::SeekableWriteStream &stream, const scenegraph::SceneGraphNode &node,
 						  uint32_t nodeIdx) const;
 	bool writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
@@ -49,7 +49,7 @@ private:
 
 	bool saveVXL(const scenegraph::SceneGraph &sceneGraph,
 				 core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-				 const io::ArchivePtr &archive, const palette::NormalPalette &normalPalette);
+				 const io::ArchivePtr &archive);
 
 	bool prepareModel(vxl::VXLModel &mdl) const;
 	bool readHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, palette::Palette &palette);

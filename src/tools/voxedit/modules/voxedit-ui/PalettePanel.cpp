@@ -19,8 +19,6 @@
 #include "voxel/Voxel.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#define PALETTEACTIONPOPUP "##paletteactionpopup"
-
 namespace voxedit {
 
 PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)

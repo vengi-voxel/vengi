@@ -16,6 +16,7 @@ namespace memento {
 class MementoHandlerTest : public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
+
 protected:
 	static core::String toFakeUUID(int id) {
 		if (id == InvalidNodeId) {
@@ -34,9 +35,10 @@ protected:
 					  const voxel::Region &region = voxel::Region::InvalidRegion,
 					  const glm::vec3 &pivot = glm::vec3(0.0f),
 					  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames = {}, const palette::Palette &palette = {},
+					  const palette::NormalPalette &normalPalette = {},
 					  const scenegraph::SceneGraphNodeProperties &properties = {}) {
 			return Super::markUndo(toFakeUUID(parentId), toFakeUUID(nodeId), toFakeUUID(referenceId), name, nodeType,
-								   volume, type, region, pivot, allKeyFrames, palette, properties);
+								   volume, type, region, pivot, allKeyFrames, palette, normalPalette, properties);
 		}
 	};
 

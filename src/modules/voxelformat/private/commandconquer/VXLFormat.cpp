@@ -107,7 +107,7 @@ static bool spanIsEmpty(const voxel::RawVolume *v, int x, int z) {
 
 bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						   const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
-						   uint64_t nodeSectionOffset, const palette::NormalPalette &normalPalette) const {
+						   uint64_t nodeSectionOffset) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	if (glm::any(glm::greaterThan(size, maxSize()))) {
@@ -157,7 +157,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, normalPalette, connectivity))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, node.normalPalette(), connectivity))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -166,7 +166,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, normalPalette, connectivity))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, node.normalPalette(), connectivity))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -296,7 +296,7 @@ bool VXLFormat::writeHeader(io::SeekableWriteStream &stream, uint32_t numNodes, 
 
 bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 						core::DynamicArray<const scenegraph::SceneGraphNode *> &nodes, const core::String &filename,
-						const io::ArchivePtr &archive, const palette::NormalPalette &normalPalette) {
+						const io::ArchivePtr &archive) {
 	if (nodes.empty()) {
 		return false;
 	}
@@ -328,7 +328,7 @@ bool VXLFormat::saveVXL(const scenegraph::SceneGraph &sceneGraph,
 	const uint64_t bodyStart = stream->pos();
 	for (uint32_t i = 0; i < numLayers; ++i) {
 		const scenegraph::SceneGraphNode *node = nodes[(int)i];
-		wrapBool(writeLayer(*stream, sceneGraph, *node, layerOffsets[i], bodyStart, normalPalette))
+		wrapBool(writeLayer(*stream, sceneGraph, *node, layerOffsets[i], bodyStart))
 	}
 
 	const uint64_t afterBodyPos = stream->pos();
@@ -364,6 +364,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	barrel.reserve(numNodes);
 	turret.reserve(numNodes);
 
+	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String &lowerName = node.name().toLower();
@@ -374,30 +375,30 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		} else {
 			body.push_back(&node);
 		}
+		// TODO: NORMALS: remove me once we can change this in the ui
+		if (normalType == 2) {
+			node.normalPalette().tiberianSun();
+		} else if (normalType == 4) {
+			node.normalPalette().redAlert2();
+		}
 	}
 
-	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 	palette::NormalPalette normalPalette;
-	if (normalType == 2) {
-		normalPalette.tiberianSun();
-	} else if (normalType == 4) {
-		normalPalette.redAlert2();
-	}
 
 	const core::String &basename = core::string::stripExtension(filename);
 
-	if (!saveVXL(sceneGraph, body, filename, archive, normalPalette)) {
+	if (!saveVXL(sceneGraph, body, filename, archive)) {
 		return false;
 	}
 	if (!barrel.empty()) {
 		const core::String &extFilename = basename + "barl.vxl";
-		if (!saveVXL(sceneGraph, barrel, extFilename, archive, normalPalette)) {
+		if (!saveVXL(sceneGraph, barrel, extFilename, archive)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
 	if (!turret.empty()) {
 		const core::String &extFilename = basename + "tur.vxl";
-		if (!saveVXL(sceneGraph, turret, extFilename, archive, normalPalette)) {
+		if (!saveVXL(sceneGraph, turret, extFilename, archive)) {
 			Log::warn("Failed to write %s", extFilename.c_str());
 		}
 	}
