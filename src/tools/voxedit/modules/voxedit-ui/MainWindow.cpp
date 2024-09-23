@@ -110,7 +110,7 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
 	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _nodeInspectorPanel(app, _sceneMgr),
-	  _palettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
+	  _palettePanel(app, _sceneMgr), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
 	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr) {
 
 	_tipOfTheDayList.push_back(_("Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."));
@@ -372,6 +372,7 @@ bool MainWindow::isPaletteWidgetDropTarget() const {
 
 void MainWindow::configureLeftTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_PALETTE, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_NORMALPALETTE, dockId);
 }
 
 void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
@@ -382,6 +383,7 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 void MainWindow::leftWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
+	_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
 	if (_lastSceneMode) {
 		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, true, listener);
 	} else {

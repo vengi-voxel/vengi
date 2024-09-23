@@ -6,6 +6,7 @@
 
 #define TITLE_STATUSBAR "##statusbar"
 #define TITLE_PALETTE "###palettepanel"
+#define TITLE_NORMALPALETTE "###normalpalettepanel"
 #define TITLE_NODE_INSPECTOR "###nodeinspectorpanel"
 #define TITLE_VOLUME_INSPECTOR "###nodeinspectorpanel"
 #define TITLE_ANIMATION_TIMELINE "###animationtimeline"
