@@ -46,21 +46,22 @@ extern VoxelType getVoxelType(const char *str);
 class Voxel {
 public:
 	constexpr inline Voxel() :
-		_material(VoxelType::Air), _flags(0), _colorIndex(0) {
+		_material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0) {
 	}
 
 	constexpr inline Voxel(VoxelType material, uint8_t colorIndex, uint8_t flags = 0u) :
-		_material(material), _flags(flags), _colorIndex(colorIndex) {
+		_material(material), _flags(flags), _unused(0), _colorIndex(colorIndex) {
 	}
 
 	constexpr inline Voxel(const Voxel& voxel) :
-		_material(voxel._material), _flags(voxel._flags), _colorIndex(voxel._colorIndex) {
+		_material(voxel._material), _flags(voxel._flags), _unused(voxel._unused), _colorIndex(voxel._colorIndex) {
 	}
 
 	constexpr inline Voxel& operator=(const Voxel& voxel) {
 		_material = voxel._material;
 		_colorIndex = voxel._colorIndex;
 		_flags = voxel._flags;
+		_unused = voxel._unused;
 		return *this;
 	}
 
@@ -111,19 +112,17 @@ public:
 
 	void setFlags(uint8_t flags);
 
-	void setBloom() {
-		setFlags(2); // FlagBloom
-	}
-
 	void setOutline() {
 		setFlags(1); // FlagOutline
 	}
 
 private:
-	VoxelType _material:5;
-	uint8_t _flags:3;
+	VoxelType _material:2;
+	uint8_t _flags:1;
+	uint8_t _unused:5; // VoxelVertex::padding
 	uint8_t _colorIndex;
 };
+static_assert(sizeof(Voxel) == 2, "Voxel size must be 2 bytes");
 
 constexpr Voxel createVoxel(VoxelType type, uint8_t colorIndex, uint8_t flags = 0u) {
 	return Voxel(type, colorIndex, flags);

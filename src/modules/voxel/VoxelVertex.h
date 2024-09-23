@@ -19,8 +19,8 @@ struct VoxelVertex {
 	union {
 		struct {
 			uint8_t ambientOcclusion:2;
-			uint8_t flags:3; // this should match the @c Voxel::_flags member
-			uint8_t padding:3;
+			uint8_t flags:1; // this should match the @c Voxel::_flags member
+			uint8_t padding:5;
 		};
 		uint8_t info;
 	};

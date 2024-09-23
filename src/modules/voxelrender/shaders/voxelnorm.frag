@@ -41,9 +41,5 @@ void main(void) {
 		o_color = calcColor();
 	}
 	o_color.rgb = pow(o_color.rgb, vec3(1.0 / cl_gamma));
-	if ((v_flags & FLAGBLOOM) != 0u) {
-		o_glow = o_color;
-	} else {
-		o_glow = v_glow;
-	}
+	o_glow = v_glow;
 }

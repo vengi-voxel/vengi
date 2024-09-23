@@ -367,9 +367,10 @@ static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 			vertex.colorIndex = materialIn.getColor();
 			vertex.ambientOcclusion = ambientOcclusion;
 			vertex.flags = materialIn.getFlags();
-			vertex.padding = 0u;
+			vertex.padding = 0u; // Voxel::_unused
 
 			entry.index = (int32_t)meshCurrent->addVertex(vertex) + 1;
+			// meshCurrent->setNormal(entry.index, normal); // TODO: NORMAL: Add normal to mesh here
 			entry.voxel = materialIn;
 			entry.ambientOcclusion = vertex.ambientOcclusion;
 
