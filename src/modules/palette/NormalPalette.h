@@ -29,7 +29,7 @@ public:
 	void loadNormalMap(const core::RGBA *normals, uint8_t size);
 	void loadNormalMap(const glm::vec3 *normals, uint8_t size);
 
-	const core::RGBA &getNormal(uint8_t index) const;
+	const core::RGBA &normal(uint8_t index) const;
 	void setNormal(uint8_t index, const core::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
@@ -81,7 +81,7 @@ inline void NormalPalette::setNormal(uint8_t index, const core::RGBA &normal) {
 	_normals[index] = normal;
 }
 
-inline const core::RGBA &NormalPalette::getNormal(uint8_t index) const {
+inline const core::RGBA &NormalPalette::normal(uint8_t index) const {
 	return _normals[index];
 }
 

@@ -3,9 +3,15 @@
  */
 
 #include "NormalPalette.h"
+#include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/Hash.h"
+#include "core/Log.h"
+#include "core/StringUtil.h"
+#include "io/FileStream.h"
+#include "palette/Palette.h"
+#include "palette/private/PaletteFormat.h"
 
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
@@ -299,14 +305,30 @@ static const glm::vec3 ra2normals[]{{0.526578009128571, -0.359620988368988, -0.7
 } // namespace priv
 
 static inline core::RGBA toRGBA(const glm::vec3 &normal) {
-	const uint8_t r = normal.x * 127.0f + 128.0f;
-	const uint8_t g = normal.y * 127.0f + 128.0f;
-	const uint8_t b = normal.z * 127.0f + 128.0f;
-	return core::RGBA(r, g, b, 255);
+	// Map the normal components back to [0, 1] range
+	const float rf = (normal.x + 1.0f) / 2.0f; // X component to [0, 1]
+	const float gf = (normal.y + 1.0f) / 2.0f; // Y component to [0, 1]
+	const float bf = (normal.z + 1.0f) / 2.0f; // Z component to [0, 1]
+
+	// Convert to [0, 255] for RGB
+	const uint8_t r = (uint8_t)(rf * 255.0f);
+	const uint8_t g = (uint8_t)(gf * 255.0f);
+	const uint8_t b = (uint8_t)(bf * 255.0f);
+	return core::RGBA(r, g, b);
 }
 
 static inline glm::vec3 toVec3(const core::RGBA &rgba) {
-	return glm::vec3(rgba.r / 127.0f - 1.0f, rgba.g / 127.0f - 1.0f, rgba.b / 127.0f - 1.0f);
+	// Normalize RGB values to the range [0, 1]
+	const float r = rgba.r / 255.0f;
+	const float g = rgba.g / 255.0f;
+	const float b = rgba.b / 255.0f;
+
+	// Map to the correct range [-1, 1] for X, Y, and Z
+	const float nx = 2.0f * r - 1.0f;
+	const float ny = 2.0f * g - 1.0f;
+	const float nz = 2.0f * b - 1.0f;
+
+	return glm::vec3(nx, ny, nz);
 }
 
 uint8_t NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
@@ -356,16 +378,112 @@ void NormalPalette::markDirty() {
 	_hash = core::hash(_normals, sizeof(_normals));
 }
 
-bool NormalPalette::load(const char *name) {
-	return false;
+bool NormalPalette::load(const char *paletteName) {
+	if (paletteName == nullptr || paletteName[0] == '\0') {
+		return false;
+	}
+
+	// this is handled in the scene manager it is just ignored here
+	if (SDL_strncmp(paletteName, "node:", 5) == 0) {
+		if (_size == 0) {
+			redAlert2();
+		}
+		_name = paletteName + 5;
+		return false;
+	}
+
+	if (SDL_strcmp(paletteName, builtIn[0]) == 0) {
+		redAlert2();
+		return true;
+	} else if (SDL_strcmp(paletteName, builtIn[1]) == 0) {
+		tiberianSun();
+		return true;
+	}
+	static_assert(lengthof(builtIn) == 2, "Unexpected amount of built-in palettes");
+
+	const io::FilesystemPtr &filesystem = io::filesystem();
+	io::FilePtr paletteFile = filesystem->open(paletteName);
+	if (!paletteFile->validHandle()) {
+		paletteFile = filesystem->open(core::string::format("normals-%s.png", paletteName));
+		if (!paletteFile->validHandle()) {
+			Log::error("Failed to load normal palette file %s", paletteName);
+			return false;
+		}
+	}
+	io::FileStream stream(paletteFile);
+	if (!stream.valid()) {
+		Log::error("Failed to load image %s", paletteFile->name().c_str());
+		return false;
+	}
+
+	palette::Palette paletteToLoad;
+	if (!palette::loadPalette(paletteFile->name(), stream, paletteToLoad)) {
+		const image::ImagePtr &img = image::loadImage(paletteFile);
+		if (!img->isLoaded()) {
+			Log::error("Failed to load image %s", paletteFile->name().c_str());
+			return false;
+		}
+		return load(img);
+	}
+	_size = paletteToLoad.colorCount();
+	for (uint8_t i = 0; i < _size; ++i) {
+		_normals[i] = paletteToLoad.color(i);
+	}
+	return true;
 }
 
 bool NormalPalette::load(const image::ImagePtr &img) {
-	return false;
+	if (img->depth() != 4) {
+		Log::warn("Palette image has invalid depth (expected: 4bpp, got %i)", img->depth());
+		return false;
+	}
+	if (img->width() * img->height() > NormalPaletteMaxNormals) {
+		Log::warn("Palette image has invalid dimensions - we need max 256x1");
+		return false;
+	}
+	int ncolors = img->width();
+	if (ncolors > PaletteMaxColors) {
+		ncolors = PaletteMaxColors;
+		Log::warn("Palette image has invalid dimensions - we need max 256x1(depth: 4)");
+	}
+	_size = ncolors;
+	for (int i = 0; i < _size; ++i) {
+		_normals[i] = img->colorAt(i, 0);
+	}
+	for (int i = _size; i < NormalPaletteMaxNormals; ++i) {
+		_normals[i] = core::RGBA(0);
+	}
+	_name = img->name();
+	markDirty();
+	Log::debug("Set up %i normals", _size);
+	return true;
 }
 
 bool NormalPalette::save(const char *name) const {
-	return false;
+	if (name == nullptr || name[0] == '\0') {
+		if (_name.empty()) {
+			Log::error("No name given to save the current palette");
+			return false;
+		}
+		name = _name.c_str();
+	}
+	const core::String ext = core::string::extractExtension(name);
+	if (ext.empty()) {
+		Log::error("No extension found for %s - can't determine the palette format", name);
+		return false;
+	}
+	const io::FilePtr &file = io::filesystem()->open(name, io::FileMode::SysWrite);
+	io::FileStream stream(file);
+	if (!stream.valid()) {
+		Log::error("Failed to open file %s for writing", name);
+		return false;
+	}
+	palette::Palette palForSave;
+	palForSave.setSize(_size);
+	for (uint8_t i = 0; i < _size; i++) {
+		palForSave.setColor(i, _normals[i]);
+	}
+	return palette::savePalette(palForSave, name, stream);
 }
 
 } // namespace palette

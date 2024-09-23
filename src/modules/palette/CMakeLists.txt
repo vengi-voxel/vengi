@@ -20,6 +20,7 @@ set(SRCS
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image http)
 
 set(TEST_SRCS
+	tests/NormalPaletteTest.cpp
 	tests/PaletteTest.cpp
 )
 
