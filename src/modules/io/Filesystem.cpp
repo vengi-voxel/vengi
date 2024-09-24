@@ -207,10 +207,9 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory);
 	Log::debug("Found %i entries in %s", (int)entries.size(), directory.c_str());
 	for (FilesystemEntry entry : entries) {
-		normalizePath(entry.name);
 		entry.fullPath = directory.append(entry.name);
 		if (entry.type == FilesystemEntry::Type::link) {
-			core::Path symlink = fs_readlink(core::Path(entry.fullPath));
+			core::Path symlink = fs_readlink(entry.fullPath);
 			if (symlink.empty()) {
 				Log::debug("Could not resolve symlink %s", entry.fullPath.c_str());
 				continue;
@@ -228,7 +227,7 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 				entry.fullPath = symlink;
 			}
 		} else if (entry.type == FilesystemEntry::Type::dir && depth > 0) {
-			_list(core::Path(entry.fullPath), entities, filter, depth - 1);
+			_list(entry.fullPath, entities, filter, depth - 1);
 		} else {
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
@@ -237,7 +236,7 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 				}
 			}
 		}
-		if (!fs_stat(core::Path(entry.fullPath), entry)) {
+		if (!fs_stat(entry.fullPath, entry)) {
 			Log::debug("Could not stat file %s", entry.fullPath.c_str());
 		}
 		entities.push_back(entry);

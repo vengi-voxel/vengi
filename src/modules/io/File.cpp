@@ -13,30 +13,14 @@
 
 namespace io {
 
-void normalizePath(core::String& str) {
-	core::string::replaceAllChars(str, '\\', '/');
-#ifndef __WINDOWS__
-	if (str.size() >= 3 && str[0] != '\0' && core::string::isAlpha(str[0]) && str[1] == ':' && (str[2] == '\\' || str[2] == '/')) {
-		str.erase(0, 2);
-	}
-#endif
-}
-
-File::File(const core::Path& rawPath, FileMode mode) :
-		IOResource(), _rawPath(rawPath.str()), _mode(mode) {
-	normalizePath(_rawPath);
+File::File(const core::Path &rawPath, FileMode mode) : IOResource(), _rawPath(rawPath), _mode(mode) {
 	_file = createRWops(mode);
 }
 
-File::File(const core::String& rawPath, FileMode mode) :
-		IOResource(), _rawPath(rawPath), _mode(mode) {
-	normalizePath(_rawPath);
-	_file = createRWops(mode);
+File::File(const core::String &rawPath, FileMode mode) : File(core::String(rawPath), mode) {
 }
 
-File::File(core::String&& rawPath, FileMode mode) :
-		IOResource(), _rawPath(core::move(rawPath)), _mode(mode) {
-	normalizePath(_rawPath);
+File::File(core::String &&rawPath, FileMode mode) : IOResource(), _rawPath(core::move(rawPath)), _mode(mode) {
 	_file = createRWops(mode);
 }
 
@@ -75,6 +59,10 @@ bool File::exists() const {
 }
 
 const core::String& File::name() const {
+	return _rawPath.str();
+}
+
+const core::Path& File::path() const {
 	return _rawPath;
 }
 
@@ -180,21 +168,16 @@ long File::write(const unsigned char *buf, size_t len) const {
 }
 
 core::Path File::dir() const {
-	// TODO: use the core::Path class for _rawPath
-	return core::Path(core::string::extractDir(name()));
+	return _rawPath.dirname();
 }
 
 core::String File::fileName() const {
-	return core::string::extractFilename(name());
+	const core::Path &bn = _rawPath.basename();
+	return core::string::stripExtension(bn.str());
 }
 
 core::String File::extension() const {
-	const char *ext = SDL_strrchr(name().c_str(), '.');
-	if (ext == nullptr) {
-		return "";
-	}
-	++ext;
-	return core::String(ext);
+	return _rawPath.extension();
 }
 
 long File::length() const {

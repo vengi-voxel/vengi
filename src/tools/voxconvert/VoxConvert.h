@@ -64,7 +64,7 @@ protected:
 	glm::ivec3 getArgIvec3(const core::String &name);
 	core::String getFilenameForModelName(const core::String &inputfile, const core::String &modelName,
 										 const core::String &outExt, int id, bool uniqueNames);
-	bool handleInputFile(const core::String &infile, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+	bool handleInputFile(const core::Path &infile, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						 bool multipleInputs);
 
 	void usage() const override;

@@ -255,7 +255,7 @@ void App::deletePid() {
 	if (oldPid.toInt() != _pid) {
 		return;
 	}
-	_filesystem->sysRemoveFile(core::Path(_filesystem->homeWritePath("app.pid")));
+	_filesystem->sysRemoveFile(_filesystem->homeWritePath("app.pid"));
 }
 
 void App::onFrame() {

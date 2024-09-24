@@ -27,11 +27,6 @@ enum class FileMode {
 };
 
 /**
- * @sa core::string::sanitizeDirPath()
- */
-extern void normalizePath(core::String& str);
-
-/**
  * @brief Wrapper for file based io.
  *
  * @see FileSystem
@@ -42,7 +37,7 @@ class File : public IOResource {
 	friend class core::SharedPtr<io::File>;
 protected:
 	SDL_RWops* _file;
-	core::String _rawPath;
+	core::Path _rawPath;
 	FileMode _mode;
 	mutable core::String _error;
 
@@ -99,6 +94,7 @@ public:
 	 * @return The full raw path of the file
 	 */
 	const core::String& name() const;
+	const core::Path& path() const;
 
 	SDL_RWops* createRWops(FileMode mode) const;
 	long write(io::ReadStream &stream) const;

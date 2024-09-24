@@ -21,7 +21,7 @@ TEST_F(FileTest, testGetPath) {
 	io::Filesystem fs;
 	fs.init("test", "test");
 	const io::FilePtr &file = fs.open("foobar/1.txt", io::FileMode::Read);
-	EXPECT_TRUE(core::string::endsWith(file->dir().str(), "foobar/"));
+	EXPECT_TRUE(core::string::endsWith(file->dir().str(), "foobar"));
 	EXPECT_EQ("txt", file->extension());
 	EXPECT_EQ("1", file->fileName());
 	EXPECT_TRUE(core::string::endsWith(file->name(), "foobar/1.txt"));

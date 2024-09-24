@@ -1979,19 +1979,18 @@ static bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::Strin
 }
 
 core::String LUAApi::load(const core::String& scriptName) const {
-	core::String filename = scriptName;
-	io::normalizePath(filename);
-	if (!_filesystem->exists(filename)) {
-		if (core::string::extractExtension(filename) != "lua") {
-			filename.append(".lua");
+	core::Path filename(scriptName);
+	if (!_filesystem->exists(filename.str())) {
+		if (filename.extension() != "lua") {
+			filename = filename.append(".lua");
 		}
-		filename = core::string::path("scripts", filename);
+		filename = core::Path(core::string::path("scripts", filename.str()));
 	}
 #if LUA_VERSION_NUM < 504
-	core::String luaStr = _filesystem->load(filename);
+	core::String luaStr = _filesystem->load(filename.str());
 	return core::string::replaceAll(luaStr, "<const>", "");
 #else
-	return _filesystem->load(filename);
+	return _filesystem->load(filename.str());
 #endif
 }
 

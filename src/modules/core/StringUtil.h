@@ -109,7 +109,6 @@ char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetS
 
 /**
  * @brief Ensure that exactly one / is at the end of the given path
- * @sa io::normalizePath()
  */
 core::String sanitizeDirPath(core::String str);
 
