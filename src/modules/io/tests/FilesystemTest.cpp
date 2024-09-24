@@ -149,9 +149,9 @@ TEST_F(FilesystemTest, testMkdir) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.sysCreateDir(core::Path("testdir")));
 	EXPECT_TRUE(fs.sysCreateDir(core::Path("testdir2/subdir/other")));
-	EXPECT_TRUE(fs.sysRemoveDir("testdir2/subdir/other"));
-	EXPECT_TRUE(fs.sysRemoveDir("testdir2/subdir"));
-	EXPECT_TRUE(fs.sysRemoveDir("testdir2"));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("testdir2/subdir/other")));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("testdir2/subdir")));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("testdir2")));
 	fs.shutdown();
 }
 
@@ -197,8 +197,8 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 		file->close();
 	}
 	EXPECT_EQ("123", content) << "Written content doesn't match expected";
-	EXPECT_TRUE(fs.sysRemoveFile(filename)) << "Failed to delete " << filename.c_str();
-	EXPECT_TRUE(fs.sysRemoveDir(filepath)) << "Failed to delete " << filepath.c_str();
+	EXPECT_TRUE(fs.sysRemoveFile(core::Path(filename))) << "Failed to delete " << filename.c_str();
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path(filepath))) << "Failed to delete " << filepath.c_str();
 	fs.shutdown();
 }
 
@@ -206,10 +206,10 @@ TEST_F(FilesystemTest, testCreateDirRecursive) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.sysCreateDir(core::Path("dir1/dir2/dir3/dir4"), true));
-	EXPECT_TRUE(fs.sysRemoveDir("dir1/dir2/dir3/dir4"));
-	EXPECT_TRUE(fs.sysRemoveDir("dir1/dir2/dir3"));
-	EXPECT_TRUE(fs.sysRemoveDir("dir1/dir2"));
-	EXPECT_TRUE(fs.sysRemoveDir("dir1"));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("dir1/dir2/dir3/dir4")));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("dir1/dir2/dir3")));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("dir1/dir2")));
+	EXPECT_TRUE(fs.sysRemoveDir(core::Path("dir1")));
 	fs.shutdown();
 }
 

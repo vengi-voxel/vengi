@@ -432,8 +432,8 @@ app::AppState VoxConvert::onInit() {
 						continue;
 					}
 				}
-				const core::String &fullPath = filesystem()->homeWritePath(entry.fullPath);
-				if (!handleInputFile(fullPath, archive, sceneGraph, archive->files().size() > 1)) {
+				const core::Path &fullPath = filesystem()->homeWritePath(entry.fullPath);
+				if (!handleInputFile(fullPath.str(), archive, sceneGraph, archive->files().size() > 1)) {
 					Log::error("Failed to handle input file %s", fullPath.c_str());
 				}
 			}

@@ -6,7 +6,6 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
-#include "core/tests/TestHelper.h"
 #include "io/Archive.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"

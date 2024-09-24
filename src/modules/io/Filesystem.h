@@ -118,7 +118,7 @@ public:
 	/**
 	 * @brief Returns a path where the given file can be saved.
 	 */
-	core::String homeWritePath(const core::String &name) const;
+	core::Path homeWritePath(const core::String &name) const;
 
 	bool homeWrite(const core::String& filename, const uint8_t* content, size_t length);
 	long homeWrite(const core::String& filename, io::ReadStream &stream);
@@ -180,12 +180,12 @@ public:
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	bool sysRemoveDir(const core::String& dir, bool recursive = false) const;
+	bool sysRemoveDir(const core::Path& dir, bool recursive = false) const;
 	/**
 	 * @brief This will remove the file without taking the write path into account. BEWARE!
 	 * @param file The full path to the file or relative to the current working dir of your app.
 	 */
-	bool sysRemoveFile(const core::String& file) const;
+	bool sysRemoveFile(const core::Path& file) const;
 };
 
 inline const Paths& Filesystem::registeredPaths() const {

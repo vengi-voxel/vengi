@@ -143,7 +143,7 @@ core::String Filesystem::sysSpecialDir(FilesystemDirectories dir) const {
 	return _state._directories[dir];
 }
 
-bool Filesystem::sysRemoveFile(const core::String &file) const {
+bool Filesystem::sysRemoveFile(const core::Path &file) const {
 	if (file.empty()) {
 		Log::error("Can't delete file: No path given");
 		return false;
@@ -151,7 +151,7 @@ bool Filesystem::sysRemoveFile(const core::String &file) const {
 	return fs_unlink(file.c_str());
 }
 
-bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) const {
+bool Filesystem::sysRemoveDir(const core::Path &dir, bool recursive) const {
 	if (dir.empty()) {
 		Log::error("Can't delete dir: No path given");
 		return false;
@@ -447,9 +447,8 @@ core::String Filesystem::load(const core::String &filename) const {
 	return f->load();
 }
 
-core::String Filesystem::homeWritePath(const core::String &name) const {
-	core::Path path = _homePath.append(name);
-	return path.str();
+core::Path Filesystem::homeWritePath(const core::String &name) const {
+	return _homePath.append(name);
 }
 
 long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream) {

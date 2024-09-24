@@ -50,10 +50,10 @@ bool CollectionManager::init() {
 	return true;
 }
 
-core::String CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
+core::Path CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
 	// this has to match with the http cache stream
 	if (voxelFile.isLocal()) {
-		return voxelFile.targetFile();
+		return core::Path(voxelFile.targetFile());
 	}
 	return _filesystem->homeWritePath(voxelFile.targetFile());
 }
@@ -225,8 +225,8 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 	scenegraph::SceneGraph sceneGraph;
 	io::FileDescription fileDesc;
-	const core::String &fileName = absolutePath(voxelFile);
-	fileDesc.set(fileName);
+	const core::Path &fileName = absolutePath(voxelFile);
+	fileDesc.set(fileName.str());
 	voxelformat::LoadContext loadctx;
 	if (!voxelformat::loadFormat(fileDesc, _archive, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());
