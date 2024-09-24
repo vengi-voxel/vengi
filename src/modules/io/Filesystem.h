@@ -80,7 +80,7 @@ public:
 	 * @param[in] path If this is a relative path the filesystem will append this relative path to all
 	 * known search paths when trying to find a file.
 	 */
-	bool registerPath(const core::String& path);
+	bool registerPath(const core::Path& path);
 
 	/**
 	 * @brief Get the path where the application resides.

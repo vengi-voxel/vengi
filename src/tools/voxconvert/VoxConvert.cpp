@@ -105,7 +105,7 @@ app::AppState VoxConvert::onConstruct() {
 	_withColor = core::Var::getSafe(cfg::VoxformatWithColor);
 	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
 
-	if (!filesystem()->registerPath("scripts/")) {
+	if (!filesystem()->registerPath(core::Path("scripts/"))) {
 		Log::warn("Failed to register lua generator script path");
 	}
 

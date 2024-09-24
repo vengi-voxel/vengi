@@ -29,7 +29,7 @@ protected:
 
 	virtual bool onInitApp() {
 		app::AbstractTest::onInitApp();
-		return _testApp->filesystem()->registerPath("scripts/");
+		return _testApp->filesystem()->registerPath(core::Path("scripts/"));
 	}
 
 	void runFile(scenegraph::SceneGraph &sceneGraph, const core::String &filename,

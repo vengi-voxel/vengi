@@ -63,11 +63,11 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		return false;
 	}
 
-	core_assert_always(registerPath(_homePath));
+	core_assert_always(registerPath(core::Path(_homePath)));
 	// this is a build system option that packagers could use to install
 	// the application data into the proper system wide paths
 #ifdef PKGDATADIR
-	core_assert_always(registerPath(PKGDATADIR));
+	core_assert_always(registerPath(core::Path(PKGDATADIR)));
 #endif
 
 	// https://docs.appimage.org/packaging-guide/environment-variables.html
@@ -77,7 +77,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		const core::String appImagePath =
 			core::string::sanitizeDirPath(core::string::path(appImageDirectory, "usr", "share", appDir));
 		if (exists(appImagePath)) {
-			core_assert_always(registerPath(appImagePath));
+			core_assert_always(registerPath(core::Path(appImagePath)));
 		}
 	}
 
@@ -87,14 +87,14 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		core::Var::get(cfg::CorePath, "", 0, "Specifies an additional filesystem search path - must end on /");
 	if (!corePath->strVal().empty()) {
 		if (exists(corePath->strVal())) {
-			core_assert_always(registerPath(corePath->strVal()));
+			core_assert_always(registerPath(core::Path(corePath->strVal())));
 		} else {
 			Log::warn("%s '%s' does not exist", cfg::CorePath, corePath->strVal().c_str());
 		}
 	}
 
 	if (!_basePath.empty()) {
-		registerPath(_basePath);
+		registerPath(core::Path(_basePath));
 	}
 
 	if (!initState(_state)) {
@@ -334,11 +334,7 @@ bool Filesystem::sysIsRelativePath(const core::String &name) {
 #endif
 }
 
-bool Filesystem::registerPath(const core::String &path) {
-	if (!core::string::endsWith(path, "/")) {
-		Log::error("Failed to register data path: '%s' - it must end on /.", path.c_str());
-		return false;
-	}
+bool Filesystem::registerPath(const core::Path &path) {
 	_paths.push_back(path);
 	Log::debug("Registered data path: '%s'", path.c_str());
 	return true;
