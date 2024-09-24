@@ -1,0 +1,194 @@
+/**
+ * @file
+ */
+
+#include "core/Path.h"
+#include "core/Common.h"
+#include "core/String.h"
+#include "core/StringUtil.h"
+#include <SDL_platform.h>
+
+namespace core {
+
+Path::Path(const core::String &path) : _path(path) {
+	core::string::replaceAllChars(_path, '\\', '/');
+}
+
+Path::Path(core::String &&path) : _path(core::move(path)) {
+	core::string::replaceAllChars(_path, '\\', '/');
+}
+
+char Path::separator() const {
+#ifdef __WINDOWS__
+	return '\\';
+#else
+	return '/';
+#endif
+}
+
+core::String Path::toNativePath() const {
+#ifdef __WINDOWS__
+	core::String path = _path;
+	core::string::replaceAllChars(path, '/', '\\');
+	return path;
+#else
+	return _path;
+#endif
+}
+
+char Path::driveLetter() const {
+	if (_path.size() >= 2 && _path[1] == ':') {
+		return core::string::toUpper(_path[0]);
+	}
+#ifdef __WINDOWS__
+	return 'C';
+#else
+	return '/';
+#endif
+}
+
+Path Path::dirname() const {
+	core::String base = _path;
+	if (base.size() == 1 && base.last() == '/') {
+		return base;
+	}
+	while (base.last() == '/') {
+		base.erase(base.size() - 1);
+	}
+	const size_t pos = base.find_last_of("/");
+	if (pos == core::String::npos) {
+		return Path(".");
+	}
+	return base.substr(0, pos);
+}
+
+Path Path::basename() const {
+	core::String base = _path;
+	if (base.size() == 1 && base.last() == '/') {
+		return base;
+	}
+	while (base.last() == '/') {
+		base.erase(base.size() - 1);
+	}
+	const size_t pos = base.find_last_of("/");
+	if (pos != core::String::npos) {
+		base = base.substr(pos + 1);
+	}
+	return base;
+}
+
+core::String Path::extension() const {
+	const size_t pos = _path.find_last_of(".");
+	if (pos == core::String::npos) {
+		return core::String();
+	}
+	if (_path.find_last_of("/") > pos) {
+		return core::String();
+	}
+	return _path.substr(pos + 1);
+}
+
+Path Path::removeExtension() const {
+	const size_t pos = _path.find_last_of(".");
+	if (pos == core::String::npos) {
+		return _path;
+	}
+	if (_path.find_last_of("/") > pos) {
+		return _path;
+	}
+	return _path.substr(0, pos);
+}
+
+Path Path::replaceExtension(const core::String &newExtension) const {
+	const size_t pos = _path.find_last_of(".");
+	if (pos == core::String::npos || _path.find_last_of("/") > pos) {
+		return _path + "." + newExtension;
+	}
+	return _path.substr(0, pos) + "." + newExtension;
+}
+
+bool Path::isRelativePath() const {
+	const size_t size = _path.size();
+#ifdef __WINDOWS__
+	if (size < 2) {
+		return true;
+	}
+	// TODO: hm... not cool and most likely not enough
+	return _path[1] != ':';
+#else
+	if (size == 0) {
+		return true;
+	}
+	return _path[0] != '/';
+#endif
+}
+
+bool Path::isAbsolutePath() const {
+	if (_path.size() >= 3U && core::string::isAlpha(_path[0]) && _path[1] == ':' &&
+		(_path[2] == '\\' || _path[2] == '/')) {
+		return true;
+	}
+	return _path.size() > 1U && (_path[0] == '/' || _path[0] == '\\');
+}
+
+bool Path::isRootPath() const {
+	if (_path.size() == 3U && core::string::isAlpha(_path[0]) && _path[1] == ':' &&
+		(_path[2] == '\\' || _path[2] == '/')) {
+		return true;
+	}
+	return _path.size() == 1U && (_path[0] == '/' || _path[0] == '\\');
+}
+
+core::DynamicArray<core::String> Path::components() const {
+	core::DynamicArray<core::String> c;
+	core::string::splitString(_path, c, "/");
+	return c;
+}
+
+Path Path::append(const core::String &component) const {
+	return Path(core::string::path(_path, component));
+}
+
+Path Path::append(const core::Path &component) const {
+	return Path(core::string::path(_path, component.str()));
+}
+
+Path &Path::operator+=(const core::String &other) {
+	_path = core::string::path(_path, other);
+	return *this;
+}
+
+Path &Path::operator+=(const Path &other) {
+	_path = core::string::path(_path, other._path);
+	return *this;
+}
+
+bool Path::operator==(const core::String &other) const {
+	core::String path = other;
+	core::string::replaceAllChars(path, '\\', '/');
+	return _path == path;
+}
+
+bool Path::operator!=(const core::String &other) const {
+	core::String path = other;
+	core::string::replaceAllChars(path, '\\', '/');
+	return _path != path;
+}
+
+bool Path::operator==(const Path &other) const {
+	return _path == other._path;
+}
+
+bool Path::operator!=(const Path &other) const {
+	return _path != other._path;
+}
+
+Path operator+(const Path &lhs, const core::Path &rhs) {
+	return Path(core::string::path(lhs.str(), rhs.str()));
+}
+
+Path operator+(const Path &lhs, const core::String &rhs) {
+	return Path(core::string::path(lhs.str(), rhs));
+}
+
+} // namespace core

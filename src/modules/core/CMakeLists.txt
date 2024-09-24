@@ -53,6 +53,7 @@ set(SRCS
 	NonCopyable.h
 	Optional.h
 	Pair.h
+	Path.cpp Path.h
 	PoolAllocator.h
 	Process.cpp Process.h
 	RGBA.h RGBA.cpp
@@ -119,6 +120,7 @@ set(TEST_SRCS
 	tests/DynamicMapTest.cpp
 	tests/MD5Test.cpp
 	tests/OptionalTest.cpp
+	tests/PathTest.cpp
 	tests/PoolAllocatorTest.cpp
 	tests/QueueTest.cpp
 	tests/ReadWriteLockTest.cpp

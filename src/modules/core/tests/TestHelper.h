@@ -6,11 +6,16 @@
 
 #include <gtest/gtest.h>
 #include "core/String.h"
+#include "core/Path.h"
 #include "core/collection/DynamicArray.h"
 
 namespace core {
 
 inline std::ostream &operator<<(::std::ostream &os, const String &dt) {
+	return os << dt.c_str();
+}
+
+inline std::ostream &operator<<(::std::ostream &os, const Path &dt) {
 	return os << dt.c_str();
 }
 
