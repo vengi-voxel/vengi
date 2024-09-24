@@ -523,11 +523,11 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 // TODO: use io::Archive here, too
 core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) {
-	const core::String &meshPath = core::string::extractDir(meshFilename);
+	const core::Path meshPath(core::string::extractDir(meshFilename));
 	core::String name = in;
 	io::normalizePath(name);
 	if (!core::string::isAbsolutePath(name)) {
-		name = core::string::path(meshPath, name);
+		name = core::string::path(meshPath.str(), name);
 	}
 	if (io::filesystem()->exists(name)) {
 		Log::debug("Found image %s in path %s", in.c_str(), name.c_str());
@@ -538,10 +538,10 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		io::filesystem()->sysPushDir(meshPath);
 	}
 	core::String filename = core::string::extractFilenameWithExtension(name);
-	const core::String &path = core::string::extractDir(name);
-	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
+	const core::Path path(core::string::extractDir(name));
+	core::String fullpath = io::searchPathFor(io::filesystem(), path.str(), filename);
 	if (fullpath.empty() && path != meshPath) {
-		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);
+		fullpath = io::searchPathFor(io::filesystem(), meshPath.str(), filename);
 	}
 	if (fullpath.empty()) {
 		fullpath = io::searchPathFor(io::filesystem(), "texture", filename);
@@ -560,9 +560,9 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 					if (f == filename) {
 						continue;
 					}
-					fullpath = io::searchPathFor(io::filesystem(), path, f);
+					fullpath = io::searchPathFor(io::filesystem(), path.str(), f);
 					if (fullpath.empty() && path != meshPath) {
-						fullpath = io::searchPathFor(io::filesystem(), meshPath, f);
+						fullpath = io::searchPathFor(io::filesystem(), meshPath.str(), f);
 					}
 					if (fullpath.empty()) {
 						fullpath = io::searchPathFor(io::filesystem(), "texture", f);

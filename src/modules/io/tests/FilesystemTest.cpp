@@ -97,7 +97,7 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.sysCreateDir("absolutePathInCurDir"));
 	const core::String &absolutePathInCurDir = fs.sysAbsolutePath("absolutePathInCurDir");
-	EXPECT_EQ(core::string::path(fs.sysCurrentDir(), "absolutePathInCurDir"), absolutePathInCurDir);
+	EXPECT_EQ(core::string::path(fs.sysCurrentDir().str(), "absolutePathInCurDir"), absolutePathInCurDir);
 	EXPECT_TRUE(core::string::isAbsolutePath(absolutePathInCurDir));
 	const core::String &abspath = fs.sysAbsolutePath("");
 	EXPECT_EQ(fs.sysCurrentDir(), abspath);
@@ -159,7 +159,7 @@ TEST_F(FilesystemTest, testPushPopDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.sysCreateDir("testdir"));
-	EXPECT_TRUE(fs.sysPushDir("testdir"));
+	EXPECT_TRUE(fs.sysPushDir(core::Path("testdir")));
 	EXPECT_TRUE(fs.sysPopDir());
 	fs.shutdown();
 }
@@ -223,9 +223,9 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 TEST_F(FilesystemTest, testSearchPathFor) {
 	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
 	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_EQ(core::string::path(fs->sysCurrentDir(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
+	EXPECT_EQ(core::string::path(fs->sysCurrentDir().str(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
 	ASSERT_TRUE(fs->sysWrite("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
-	EXPECT_EQ(core::string::path(fs->sysCurrentDir(), "dir123/testfile"), searchPathFor(fs, "/foobar/does/not/dir123", "TestFile"));
+	EXPECT_EQ(core::string::path(fs->sysCurrentDir().str(), "dir123/testfile"), searchPathFor(fs, "/foobar/does/not/dir123", "TestFile"));
 	fs->shutdown();
 }
 

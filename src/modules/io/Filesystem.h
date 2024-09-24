@@ -65,7 +65,7 @@ private:
 	FilesystemState _state;
 	Paths _paths;
 
-	core::Stack<core::String, 32> _dirStack;
+	core::Stack<core::Path, 32> _dirStack;
 
 	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0);
 
@@ -133,7 +133,7 @@ public:
 	/**
 	 * @brief Push a working dir change onto the stack for later returning without knowing the origin
 	 */
-	bool sysPushDir(const core::String& directory);
+	bool sysPushDir(const core::Path& directory);
 
 	core::String sysSpecialDir(FilesystemDirectories dir) const;
 	const core::DynamicArray<ThisPCEntry> sysOtherPaths() const;
@@ -143,7 +143,7 @@ public:
 	/**
 	 * @brief The current working directory without a tailing /
 	 */
-	core::String sysCurrentDir() const;
+	core::Path sysCurrentDir() const;
 
 	static bool sysIsReadableDir(const core::String& name);
 	static bool sysIsHidden(const core::String &name);

@@ -250,7 +250,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 bool Filesystem::list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					  const core::String &filter, int depth) const {
 	if (sysIsRelativePath(directory)) {
-		const core::String cwd = sysCurrentDir();
+		const core::Path cwd = sysCurrentDir();
 		for (const core::Path &p : _paths) {
 			const core::Path &fullDir = p.append(directory);
 			if (fullDir == cwd) {
@@ -259,7 +259,7 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 			_list(fullDir.str(), entities, filter, depth);
 		}
 		if (directory.empty()) {
-			_list(cwd, entities, filter, depth);
+			_list(cwd.str(), entities, filter, depth);
 		}
 	} else {
 		_list(directory, entities, filter, depth);
@@ -340,10 +340,8 @@ bool Filesystem::registerPath(const core::Path &path) {
 	return true;
 }
 
-core::String Filesystem::sysCurrentDir() const {
-	core::String cwd = fs_cwd();
-	normalizePath(cwd);
-	return cwd;
+core::Path Filesystem::sysCurrentDir() const {
+	return core::Path(fs_cwd());
 }
 
 bool Filesystem::sysPopDir() {
@@ -354,20 +352,20 @@ bool Filesystem::sysPopDir() {
 	if (_dirStack.empty()) {
 		return false;
 	}
-	const core::String &directory = _dirStack.top();
+	const core::Path &directory = _dirStack.top();
 	Log::trace("change current dir to %s", directory.c_str());
-	if (!sysChdir(directory)) {
+	if (!sysChdir(directory.str())) {
 		return false;
 	}
 	return true;
 }
 
-bool Filesystem::sysPushDir(const core::String &directory) {
+bool Filesystem::sysPushDir(const core::Path &directory) {
 	if (_dirStack.empty()) {
-		core::String cwd = sysCurrentDir();
+		core::Path cwd = sysCurrentDir();
 		_dirStack.push(cwd);
 	}
-	if (!sysChdir(directory)) {
+	if (!sysChdir(directory.str())) {
 		return false;
 	}
 	Log::trace("change current dir to %s", directory.c_str());
