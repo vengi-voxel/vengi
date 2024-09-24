@@ -134,9 +134,9 @@ bool CollectionManager::local() {
 				continue;
 			}
 			VoxelFile voxelFile;
-			voxelFile.name = entry.fullPath.substr(localDir.size());
-			voxelFile.fullPath = entry.fullPath;
-			voxelFile.url = "file://" + entry.fullPath;
+			voxelFile.name = entry.fullPath.str().substr(localDir.size());
+			voxelFile.fullPath = entry.fullPath.str();
+			voxelFile.url = "file://" + entry.fullPath.str();
 			voxelFile.source = LOCAL_SOURCE;
 			voxelFile.license = "unknown";
 			// voxelFile.licenseUrl = "";

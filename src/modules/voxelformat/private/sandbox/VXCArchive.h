@@ -27,7 +27,7 @@ public:
 			io::FilesystemEntry entry;
 			entry.size = fileSize;
 			entry.name = path;
-			entry.fullPath = entry.name;
+			entry.fullPath = core::Path(entry.name);
 			entry.type = io::FilesystemEntry::Type::file;
 			_files.push_back(entry);
 		}

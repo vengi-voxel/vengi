@@ -208,8 +208,7 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 	Log::debug("Found %i entries in %s", (int)entries.size(), directory.c_str());
 	for (FilesystemEntry entry : entries) {
 		normalizePath(entry.name);
-		core::Path fullPath = directory.append(entry.name);
-		entry.fullPath = fullPath.str();
+		entry.fullPath = directory.append(entry.name);
 		if (entry.type == FilesystemEntry::Type::link) {
 			core::Path symlink = fs_readlink(core::Path(entry.fullPath));
 			if (symlink.empty()) {
@@ -224,9 +223,9 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 			}
 
 			if (symlink.isRelativePath()) {
-				entry.fullPath = core::string::path(directory.str(), symlink.str());
+				entry.fullPath = directory.append(symlink);
 			} else {
-				entry.fullPath = symlink.str();
+				entry.fullPath = symlink;
 			}
 		} else if (entry.type == FilesystemEntry::Type::dir && depth > 0) {
 			_list(core::Path(entry.fullPath), entities, filter, depth - 1);
@@ -357,21 +356,19 @@ bool Filesystem::sysPushDir(const core::Path &directory) {
 	return true;
 }
 
-// TODO: case insensitive search should be possible - see searchPathFor()
-io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
-	const core::Path path(filename);
+io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
-	if (sysIsReadableDir(filename)) {
+	if (sysIsReadableDir(filename.str())) {
 		Log::debug("%s is a directory - skip this", filename.c_str());
 		return core::make_shared<io::File>("", mode);
 	}
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
-	} else if (mode == FileMode::SysRead && fs_exists(path)) {
+	} else if (mode == FileMode::SysRead && fs_exists(filename)) {
 		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::Write) {
-		if (!path.isRelativePath()) {
+		if (!filename.isRelativePath()) {
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
@@ -406,16 +403,22 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			}
 		}
 	}
-	if (fs_exists(path)) {
+	if (fs_exists(filename)) {
 		Log::debug("loading file '%s'", filename.c_str());
 		return core::make_shared<io::File>(filename, openmode);
 	}
-	if (!path.isRelativePath()) {
+	if (!filename.isRelativePath()) {
 		Log::debug("'%s' not found", filename.c_str());
 		return core::make_shared<io::File>("", openmode);
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
 	return core::make_shared<io::File>(_basePath.append(filename), openmode);
+}
+
+// TODO: case insensitive search should be possible - see searchPathFor()
+io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
+	const core::Path path(filename);
+	return open(path, mode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {

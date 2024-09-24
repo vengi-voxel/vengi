@@ -108,6 +108,7 @@ public:
 	 */
 	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
 
+	io::FilePtr open(const core::Path &filename, FileMode mode = FileMode::Read) const;
 	io::FilePtr open(const core::String& filename, FileMode mode = FileMode::Read) const;
 
 	core::String load(CORE_FORMAT_STRING const char *filename, ...) CORE_PRINTF_VARARG_FUNC(2);
