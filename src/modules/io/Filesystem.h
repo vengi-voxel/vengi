@@ -6,6 +6,7 @@
 
 #include "File.h"
 #include "FilesystemEntry.h"
+#include "core/Path.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -15,7 +16,7 @@
 
 namespace io {
 
-using Paths = core::DynamicArray<core::String>;
+using Paths = core::DynamicArray<core::Path>;
 
 enum FilesystemDirectories {
 	FS_Dir_Download,

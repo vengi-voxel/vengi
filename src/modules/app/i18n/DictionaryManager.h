@@ -25,6 +25,7 @@
 
 #include "Dictionary.h"
 #include "Language.h"
+#include "core/Path.h"
 #include "io/Filesystem.h"
 
 namespace app {
@@ -39,7 +40,7 @@ private:
 	typedef core::Map<Language, Dictionary *, 11, Language_hash> Dictionaries;
 	Dictionaries _dictionaries;
 
-	typedef core::DynamicArray<core::String> SearchPath;
+	typedef core::DynamicArray<core::Path> SearchPath;
 	SearchPath _searchPath;
 
 	core::String _charset;
@@ -87,7 +88,7 @@ public:
 	 * added directories have higher priority then later added ones.
 	 * Set @p precedence to true to invert this for a single addition.
 	 */
-	void addDirectory(const core::String &pathname, bool precedence = false);
+	void addDirectory(const core::Path &pathname, bool precedence = false);
 
 	/** Remove a directory from the search path */
 	void removeDirectory(const core::String &pathname);

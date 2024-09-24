@@ -22,6 +22,12 @@ void normalizePath(core::String& str) {
 #endif
 }
 
+File::File(const core::Path& rawPath, FileMode mode) :
+		IOResource(), _rawPath(rawPath.str()), _mode(mode) {
+	normalizePath(_rawPath);
+	_file = createRWops(mode);
+}
+
 File::File(const core::String& rawPath, FileMode mode) :
 		IOResource(), _rawPath(rawPath), _mode(mode) {
 	normalizePath(_rawPath);

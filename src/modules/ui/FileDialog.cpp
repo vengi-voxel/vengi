@@ -345,8 +345,8 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
 		const io::Paths& paths = _app->filesystem()->registeredPaths();
-		for (const core::String& path : paths) {
-			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path);
+		for (const core::Path& path : paths) {
+			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path.str());
 			if (absPath.empty()) {
 				continue;
 			}

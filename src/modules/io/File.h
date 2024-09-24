@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Path.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "IOResource.h"
@@ -48,6 +49,7 @@ protected:
 	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
 public:
+	File(const core::Path& rawPath, FileMode mode = FileMode::Read);
 	File(const core::String& rawPath, FileMode mode = FileMode::Read);
 	File(core::String&& rawPath, FileMode mode = FileMode::Read);
 	virtual ~File();

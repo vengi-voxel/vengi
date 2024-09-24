@@ -33,13 +33,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	_appname = appname;
 
 #ifdef __EMSCRIPTEN__
-	EM_ASM(
-		FS.mkdir('/libsdl');
-		FS.mount(IDBFS, {}, '/libsdl');
-		FS.syncfs(true, function (err) {
-			assert(!err);
-		});
-	);
+	EM_ASM(FS.mkdir('/libsdl'); FS.mount(IDBFS, {}, '/libsdl'); FS.syncfs(true, function(err) { assert(!err); }););
 #endif
 
 	char *path = SDL_GetBasePath();
@@ -80,7 +74,8 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	const char *appImageDirectory = SDL_getenv("APPDIR");
 	if (appImageDirectory != nullptr) {
 		const core::String appDir = _organisation + "-" + _appname;
-		const core::String appImagePath = core::string::sanitizeDirPath(core::string::path(appImageDirectory, "usr", "share", appDir));
+		const core::String appImagePath =
+			core::string::sanitizeDirPath(core::string::path(appImageDirectory, "usr", "share", appDir));
 		if (exists(appImagePath)) {
 			core_assert_always(registerPath(appImagePath));
 		}
@@ -256,12 +251,12 @@ bool Filesystem::list(const core::String &directory, core::DynamicArray<Filesyst
 					  const core::String &filter, int depth) const {
 	if (sysIsRelativePath(directory)) {
 		const core::String cwd = sysCurrentDir();
-		for (const core::String &p : _paths) {
-			const core::String fullDir = core::string::path(p, directory);
-			if (core::string::isSamePath(fullDir, cwd)) {
+		for (const core::Path &p : _paths) {
+			const core::Path &fullDir = p.append(directory);
+			if (fullDir == cwd) {
 				continue;
 			}
-			_list(fullDir, entities, filter, depth);
+			_list(fullDir.str(), entities, filter, depth);
 		}
 		if (directory.empty()) {
 			_list(cwd, entities, filter, depth);
@@ -279,18 +274,15 @@ bool Filesystem::sysChdir(const core::String &directory) {
 
 void Filesystem::shutdown() {
 #ifdef __EMSCRIPTEN__
-	EM_ASM(
-		FS.syncfs(true, function (err) {
-		});
-	);
+	EM_ASM(FS.syncfs(true, function(err){}););
 #endif
 }
 
 core::String Filesystem::sysAbsolutePath(const core::String &path) const {
 	core::String abspath = fs_realpath(path.c_str());
 	if (abspath.empty()) {
-		for (const core::String &p : registeredPaths()) {
-			const core::String &fullPath = core::string::path(p, path);
+		for (const core::Path &p : registeredPaths()) {
+			const core::Path &fullPath = p.append(path);
 			abspath = fs_realpath(fullPath.c_str());
 			if (!abspath.empty()) {
 				normalizePath(abspath);
@@ -411,22 +403,22 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	if (openmode == FileMode::ReadNoHome) {
 		openmode = FileMode::Read;
 	}
-	for (const core::String &p : _paths) {
+	for (const core::Path &p : _paths) {
 		if (mode == FileMode::ReadNoHome && p == _homePath) {
 			Log::debug("Skip reading home path");
 			continue;
 		}
-		core::String fullpath = core::string::path(p, filename);
+		core::Path fullpath = p.append(filename);
 		if (fs_exists(fullpath.c_str())) {
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
 			return core::make_shared<io::File>(core::move(fullpath), openmode);
 		}
-		if (sysIsRelativePath(p)) {
-			for (const core::String &s : _paths) {
-				if (core::string::isSamePath(s, p)) {
+		if (p.isRelativePath()) {
+			for (const core::Path &s : _paths) {
+				if (s.isRelativePath() || s == p) {
 					continue;
 				}
-				core::String fullrelpath = core::string::path(s, p, filename);
+				const core::Path fullrelpath = s + p + filename;
 				if (fs_exists(fullrelpath.c_str())) {
 					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
 					return core::make_shared<io::File>(core::move(fullrelpath), openmode);
@@ -542,9 +534,7 @@ core::String searchPathFor(const FilesystemPtr &filesystem, const core::String &
 	const core::String abspath = filesystem->sysAbsolutePath(relativePath);
 	filesystem->list(abspath, entities);
 	Log::trace("Found %i entries in %s", (int)entities.size(), abspath.c_str());
-	auto predicate = [&] (const io::FilesystemEntry &e) {
-		return core::string::iequals(e.name, filename);
-	};
+	auto predicate = [&](const io::FilesystemEntry &e) { return core::string::iequals(e.name, filename); };
 	auto iter = core::find_if(entities.begin(), entities.end(), predicate);
 	if (iter == entities.end()) {
 		Log::debug("Could not find %s in '%s'", filename.c_str(), abspath.c_str());
