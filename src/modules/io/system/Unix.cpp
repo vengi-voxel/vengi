@@ -187,77 +187,78 @@ bool initState(io::FilesystemState &state) {
 	return true;
 }
 
-bool fs_mkdir(const char *path) {
-	const int ret = mkdir(path, 0740);
+bool fs_mkdir(const core::Path &path) {
+	const int ret = mkdir(path.c_str(), 0740);
 	if (ret == 0) {
 		return true;
 	}
 	if (errno == EEXIST) {
 		return true;
 	}
-	Log::error("Failed to mkdir %s: %s", path, strerror(errno));
+	Log::error("Failed to mkdir %s: %s", path.c_str(), strerror(errno));
 	return false;
 }
 
-bool fs_rmdir(const char *path) {
-	const int ret = rmdir(path);
+bool fs_rmdir(const core::Path& path) {
+	const int ret = rmdir(path.c_str());
 	if (ret != 0) {
-		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
+		Log::error("Failed to rmdir %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_unlink(const char *path) {
-	const int ret = unlink(path);
+bool fs_unlink(const core::Path& path) {
+	const int ret = unlink(path.c_str());
 	if (ret != 0) {
-		Log::error("Failed to unlink %s: %s", path, strerror(errno));
+		Log::error("Failed to unlink %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_exists(const char *path) {
-	const int ret = access(path, F_OK);
+bool fs_exists(const core::Path& path) {
+	const int ret = access(path.c_str(), F_OK);
 	if (ret != 0) {
-		Log::trace("Failed to access %s: %s", path, strerror(errno));
+		Log::trace("Failed to access %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_chdir(const char *path) {
-	const int ret = chdir(path);
+bool fs_chdir(const core::Path& path) {
+	const int ret = chdir(path.c_str());
 	if (ret != 0) {
-		Log::error("Failed to chdir to %s: %s", path, strerror(errno));
+		Log::error("Failed to chdir to %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-core::String fs_cwd() {
+core::Path fs_cwd() {
 	char buf[4096];
 	const char *p = getcwd(buf, lengthof(buf));
 	if (p == nullptr) {
 		Log::error("Failed to get current working dir: %s", strerror(errno));
+		return core::Path();
 	}
-	return p;
+	return core::Path(p);
 }
 
-core::String fs_realpath(const char *path) {
-	if (path[0] == '\0') {
+core::Path fs_realpath(const core::Path& path) {
+	if (path.empty()) {
 		// unified with _fullpath on windows
 		return fs_cwd();
 	}
 	char buf[PATH_MAX];
-	const char *rp = realpath(path, buf);
+	const char *rp = realpath(path.c_str(), buf);
 	if (rp == nullptr) {
-		return "";
+		return core::Path("");
 	}
-	return rp;
+	return core::Path(rp);
 }
 
-bool fs_stat(const char *path, FilesystemEntry &entry) {
+bool fs_stat(const core::Path& path, FilesystemEntry &entry) {
 	struct stat s;
-	const int ret = stat(path, &s);
+	const int ret = stat(path.c_str(), &s);
 	if (ret != 0) {
-		Log::debug("Failed to stat %s: %s", path, strerror(errno));
+		Log::debug("Failed to stat %s: %s", path.c_str(), strerror(errno));
 		return false;
 	}
 
@@ -270,9 +271,9 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 	return true;
 }
 
-core::String fs_readlink(const char *path) {
+core::String fs_readlink(const core::Path& path) {
 	char buf[4096];
-	ssize_t len = readlink(path, buf, lengthof(buf));
+	ssize_t len = readlink(path.c_str(), buf, lengthof(buf));
 	if (len == -1) {
 		return "";
 	}
@@ -281,8 +282,8 @@ core::String fs_readlink(const char *path) {
 	return buf;
 }
 
-bool fs_writeable(const char *path) {
-	return access(path, W_OK) == 0;
+bool fs_writeable(const core::Path& path) {
+	return access(path.c_str(), W_OK) == 0;
 }
 
 static int fs_scandir_filter(const struct dirent *dent) {
@@ -293,9 +294,9 @@ static int fs_scandir_sort(const struct dirent **a, const struct dirent **b) {
 	return strcoll((*a)->d_name, (*b)->d_name);
 }
 
-core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
+core::DynamicArray<FilesystemEntry> fs_scandir(const core::Path& path) {
 	struct dirent **files = nullptr;
-	const int n = scandir(path, &files, fs_scandir_filter, fs_scandir_sort);
+	const int n = scandir(path.c_str(), &files, fs_scandir_filter, fs_scandir_sort);
 	core::DynamicArray<FilesystemEntry> entries;
 	entries.reserve(n);
 	for (int i = 0; i < n; ++i) {
@@ -325,11 +326,11 @@ core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
 	return entries;
 }
 
-bool fs_hidden(const char *path) {
+bool fs_hidden(const core::Path& path) {
 	if (path == nullptr) {
 		return false;
 	}
-	return path[0] == '.';
+	return path.str().first() == '.';
 }
 
 } // namespace io

@@ -80,8 +80,8 @@ bool initState(io::FilesystemState &state) {
 	return true;
 }
 
-bool fs_mkdir(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_mkdir(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _wmkdir(wpath);
 	SDL_free(wpath);
@@ -91,108 +91,108 @@ bool fs_mkdir(const char *path) {
 	if (errno == EEXIST) {
 		return true;
 	}
-	Log::error("Failed to mkdir %s: %s", path, strerror(errno));
+	Log::error("Failed to mkdir %s: %s", path.c_str(), strerror(errno));
 	return false;
 }
 
-bool fs_unlink(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_unlink(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _wunlink(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
-		Log::error("Failed to unlink %s: %s", path, strerror(errno));
+		Log::error("Failed to unlink %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_rmdir(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_rmdir(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _wrmdir(wpath);
 	SDL_free(wpath);
 	if (ret != 0) {
-		Log::error("Failed to rmdir %s: %s", path, strerror(errno));
+		Log::error("Failed to rmdir %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_hidden(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_hidden(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 
 	DWORD attributes = GetFileAttributesW(wpath);
 	SDL_free(wpath);
 
 	if (attributes == INVALID_FILE_ATTRIBUTES) {
-		Log::debug("Failed to get file attributes for %s: %s", path, strerror(errno));
+		Log::debug("Failed to get file attributes for %s: %s", path.c_str(), strerror(errno));
 		return false;
 	}
 
 	return (attributes & FILE_ATTRIBUTE_HIDDEN) != 0;
 }
 
-bool fs_exists(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_exists(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _waccess(wpath, 0);
 	SDL_free(wpath);
 	if (ret != 0) {
-		Log::trace("Failed to access %s: %s", path, strerror(errno));
+		Log::trace("Failed to access %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret == 0;
 }
 
-bool fs_writeable(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_writeable(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _waccess(wpath, 2);
 	SDL_free(wpath);
 	return ret == 0;
 }
 
-bool fs_chdir(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+bool fs_chdir(const core::Path& path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const bool ret = SetCurrentDirectoryW(wpath);
 	SDL_free(wpath);
 	if (!ret) {
-		Log::error("Failed to chdir to %s: %s", path, strerror(errno));
+		Log::error("Failed to chdir to %s: %s", path.c_str(), strerror(errno));
 	}
 	return ret;
 }
 
-core::String fs_cwd() {
+core::Path fs_cwd() {
 	WCHAR buf[4096];
 	const WCHAR *p = _wgetcwd(buf, lengthof(buf));
 	if (p == nullptr) {
 		Log::error("Failed to get current working dir: %s", strerror(errno));
-		return "";
+		return core::Path();
 	}
 	char *utf8 = io_StringToUTF8W(p);
 	const core::String str(utf8);
 	SDL_free(utf8);
-	return str;
+	return core::Path(str);
 }
 
-core::String fs_realpath(const char *path) {
-	WCHAR *wpath = io_UTF8ToStringW(path);
+core::Path fs_realpath(const core::Path &path) {
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	WCHAR wfull[_MAX_PATH];
 	if (_wfullpath(wfull, wpath, lengthof(wfull)) == nullptr) {
 		SDL_free(wpath);
-		return "";
+		return core::Path();
 	}
 	SDL_free(wpath);
 	priv::denormalizePath(wfull);
 	char *full = io_StringToUTF8W(wfull);
 	const core::String str(full);
 	SDL_free(full);
-	return str;
+	return core::Path(str);
 }
 
-bool fs_stat(const char *path, FilesystemEntry &entry) {
+bool fs_stat(const core::Path &path, FilesystemEntry &entry) {
 	struct _stat s;
-	WCHAR *wpath = io_UTF8ToStringW(path);
+	WCHAR *wpath = io_UTF8ToStringW(path.c_str());
 	priv::denormalizePath(wpath);
 	const int ret = _wstat(wpath, &s);
 	SDL_free(wpath);
@@ -204,21 +204,21 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 		entry.size = s.st_size;
 		return true;
 	}
-	Log::debug("Failed to stat %s: %s", path, strerror(errno));
+	Log::debug("Failed to stat %s: %s", path.c_str(), strerror(errno));
 	return false;
 }
 
-core::String fs_readlink(const char *path) {
-	return "";
+core::Path fs_readlink(const core::Path &path) {
+	return path;
 }
 
 static int fs_scandir_filter(const struct dirent *dent) {
 	return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
 }
 
-core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
+core::DynamicArray<FilesystemEntry> fs_scandir(const core::Path &path) {
 	struct dirent **files = nullptr;
-	const int n = scandir(path, &files, fs_scandir_filter, alphasort);
+	const int n = scandir(path.c_str(), &files, fs_scandir_filter, alphasort);
 	core::DynamicArray<FilesystemEntry> entries;
 	entries.reserve(n);
 	for (int i = 0; i < n; ++i) {

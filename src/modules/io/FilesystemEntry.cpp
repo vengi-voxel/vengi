@@ -4,6 +4,7 @@
 
 #include "FilesystemEntry.h"
 #include "core/Log.h"
+#include "core/Path.h"
 #include "core/StringUtil.h"
 #include "system/System.h"
 
@@ -13,7 +14,7 @@ FilesystemEntry createFilesystemEntry(const core::String &filename) {
 	FilesystemEntry entry;
 	entry.name = core::string::extractFilenameWithExtension(filename);
 	entry.fullPath = filename;
-	if (!fs_stat(filename.c_str(), entry)) {
+	if (!fs_stat(core::Path(filename), entry)) {
 		Log::trace("Could not stat '%s'", filename.c_str());
 	}
 	return entry;

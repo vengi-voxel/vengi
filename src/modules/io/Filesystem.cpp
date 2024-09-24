@@ -100,19 +100,22 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 }
 
 core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
-	core::String binaryWithExtension = binaryName;
 #ifdef _WIN32
+	core::String binaryWithExtension = binaryName;
 	binaryWithExtension += ".exe";
+	core::Path binaryPath(binaryWithExtension);
+#else
+	core::Path binaryPath(binaryName);
 #endif
 	// Check current working directory
-	if (fs_exists(binaryWithExtension.c_str())) {
-		return sysAbsolutePath(binaryWithExtension);
+	if (fs_exists(binaryPath)) {
+		return sysAbsolutePath(binaryPath.str());
 	}
 
 	// Check the directory of the current binary
-	core::Path binaryPath = _basePath.append(binaryWithExtension);
-	if (fs_exists(binaryPath.c_str())) {
-		return sysAbsolutePath(binaryPath.str());
+	core::Path fullBinaryPath = _basePath.append(binaryName);
+	if (fs_exists(fullBinaryPath)) {
+		return sysAbsolutePath(fullBinaryPath.str());
 	}
 
 	// Check PATH environment variable
@@ -126,9 +129,10 @@ core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
 		core::DynamicArray<core::String> paths;
 		core::string::splitString(path, paths, pathSep);
 		for (const auto &p : paths) {
-			const core::String binPath = core::string::path(p, binaryWithExtension);
-			if (fs_exists(binPath.c_str())) {
-				return binPath;
+			core::Path binPath(p);
+			binPath.append(binaryPath);
+			if (fs_exists(binPath)) {
+				return binPath.str();
 			}
 		}
 	}
@@ -148,7 +152,7 @@ bool Filesystem::sysRemoveFile(const core::Path &file) const {
 		Log::error("Can't delete file: No path given");
 		return false;
 	}
-	return fs_unlink(file.c_str());
+	return fs_unlink(file);
 }
 
 bool Filesystem::sysRemoveDir(const core::Path &dir, bool recursive) const {
@@ -158,7 +162,7 @@ bool Filesystem::sysRemoveDir(const core::Path &dir, bool recursive) const {
 	}
 
 	if (!recursive) {
-		return fs_rmdir(dir.c_str());
+		return fs_rmdir(dir);
 	}
 	// TODO: implement me
 	return false;
@@ -170,7 +174,7 @@ bool Filesystem::sysCreateDir(const core::Path &dir, bool recursive) const {
 	}
 
 	if (!recursive) {
-		if (!fs_mkdir(dir.c_str())) {
+		if (!fs_mkdir(dir)) {
 			Log::error("Failed to create dir '%s'", dir.c_str());
 			return false;
 		}
@@ -188,9 +192,8 @@ bool Filesystem::sysCreateDir(const core::Path &dir, bool recursive) const {
 		if (dirpart.empty() || dirpart.last() == ':') {
 			continue; // if leading / first time is 0 length
 		}
-		const char *dirc = dirpart.c_str();
-		if (!fs_mkdir(dirc)) {
-			Log::debug("Failed to create dir '%s'", dirc);
+		if (!fs_mkdir(core::Path(dirpart))) {
+			Log::debug("Failed to create dir '%s'", dirpart.c_str());
 			lastResult = false;
 			continue;
 		}
@@ -199,16 +202,16 @@ bool Filesystem::sysCreateDir(const core::Path &dir, bool recursive) const {
 	return lastResult;
 }
 
-bool Filesystem::_list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
+bool Filesystem::_list(const core::Path &directory, core::DynamicArray<FilesystemEntry> &entities,
 					   const core::String &filter, int depth) {
-	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory.c_str());
+	const core::DynamicArray<FilesystemEntry> &entries = fs_scandir(directory);
 	Log::debug("Found %i entries in %s", (int)entries.size(), directory.c_str());
 	for (FilesystemEntry entry : entries) {
 		normalizePath(entry.name);
-		entry.fullPath = core::string::path(directory, entry.name);
+		core::Path fullPath = directory.append(entry.name);
+		entry.fullPath = fullPath.str();
 		if (entry.type == FilesystemEntry::Type::link) {
-			core::String symlink = fs_readlink(entry.fullPath.c_str());
-			normalizePath(symlink);
+			core::Path symlink = fs_readlink(core::Path(entry.fullPath));
 			if (symlink.empty()) {
 				Log::debug("Could not resolve symlink %s", entry.fullPath.c_str());
 				continue;
@@ -220,9 +223,13 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 				}
 			}
 
-			entry.fullPath = sysIsRelativePath(symlink) ? core::string::path(directory, symlink) : symlink;
+			if (symlink.isRelativePath()) {
+				entry.fullPath = core::string::path(directory.str(), symlink.str());
+			} else {
+				entry.fullPath = symlink.str();
+			}
 		} else if (entry.type == FilesystemEntry::Type::dir && depth > 0) {
-			_list(entry.fullPath, entities, filter, depth - 1);
+			_list(core::Path(entry.fullPath), entities, filter, depth - 1);
 		} else {
 			if (!filter.empty()) {
 				if (!core::string::fileMatchesMultiple(entry.name.c_str(), filter.c_str())) {
@@ -231,7 +238,7 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 				}
 			}
 		}
-		if (!fs_stat(entry.fullPath.c_str(), entry)) {
+		if (!fs_stat(core::Path(entry.fullPath), entry)) {
 			Log::debug("Could not stat file %s", entry.fullPath.c_str());
 		}
 		entities.push_back(entry);
@@ -245,27 +252,28 @@ bool Filesystem::_list(const core::String &directory, core::DynamicArray<Filesys
 
 bool Filesystem::list(const core::String &directory, core::DynamicArray<FilesystemEntry> &entities,
 					  const core::String &filter, int depth) const {
-	if (sysIsRelativePath(directory)) {
+	core::Path path(directory);
+	if (path.isRelativePath()) {
 		const core::Path cwd = sysCurrentDir();
 		for (const core::Path &p : _paths) {
-			const core::Path &fullDir = p.append(directory);
+			const core::Path &fullDir = p.append(path);
 			if (fullDir == cwd) {
 				continue;
 			}
-			_list(fullDir.str(), entities, filter, depth);
+			_list(fullDir, entities, filter, depth);
 		}
-		if (directory.empty()) {
-			_list(cwd.str(), entities, filter, depth);
+		if (path.empty()) {
+			_list(cwd, entities, filter, depth);
 		}
 	} else {
-		_list(directory, entities, filter, depth);
+		_list(path, entities, filter, depth);
 	}
 	return true;
 }
 
-bool Filesystem::sysChdir(const core::String &directory) {
+bool Filesystem::sysChdir(const core::Path &directory) {
 	Log::debug("Change current working dir to %s", directory.c_str());
-	return fs_chdir(directory.c_str());
+	return fs_chdir(directory);
 }
 
 void Filesystem::shutdown() {
@@ -275,59 +283,39 @@ void Filesystem::shutdown() {
 }
 
 core::String Filesystem::sysAbsolutePath(const core::String &path) const {
-	core::String abspath = fs_realpath(path.c_str());
+	core::Path abspath = fs_realpath(core::Path(path));
 	if (abspath.empty()) {
 		for (const core::Path &p : registeredPaths()) {
 			const core::Path &fullPath = p.append(path);
-			abspath = fs_realpath(fullPath.c_str());
+			abspath = fs_realpath(fullPath);
 			if (!abspath.empty()) {
-				normalizePath(abspath);
-				return abspath;
+				return abspath.str();
 			}
 		}
 		Log::error("Failed to get absolute path for '%s'", path.c_str());
 		return "";
 	}
-	normalizePath(abspath);
-	return abspath;
+	return abspath.str();
 }
 
-bool Filesystem::sysIsHidden(const core::String &name) {
-	return fs_hidden(name.c_str());
+bool Filesystem::sysIsHidden(const core::Path &name) {
+	return fs_hidden(name);
 }
 
 bool Filesystem::sysIsReadableDir(const core::String &name) {
-	if (!fs_exists(name.c_str())) {
+	core::Path path(name);
+	if (!fs_exists(path)) {
 		Log::trace("%s doesn't exist", name.c_str());
 		return false;
 	}
 
 	FilesystemEntry entry;
-	if (!fs_stat(name.c_str(), entry)) {
+	if (!fs_stat(path, entry)) {
 		Log::trace("Could not stat '%s'", name.c_str());
 		return false;
 	}
 	Log::trace("Found type %i for '%s'", (int)entry.type, name.c_str());
 	return entry.type == FilesystemEntry::Type::dir;
-}
-
-bool Filesystem::sysIsRelativePath(const core::String &name) {
-	const size_t size = name.size();
-#ifdef __WINDOWS__
-	if (size < 2) {
-		return true;
-	}
-	if (name[0] == '/') {
-		return false;
-	}
-	// TODO: hm... not cool and most likely not enough
-	return name[1] != ':';
-#else
-	if (size == 0) {
-		return true;
-	}
-	return name[0] != '/';
-#endif
 }
 
 bool Filesystem::registerPath(const core::Path &path) {
@@ -350,7 +338,7 @@ bool Filesystem::sysPopDir() {
 	}
 	const core::Path &directory = _dirStack.top();
 	Log::trace("change current dir to %s", directory.c_str());
-	if (!sysChdir(directory.str())) {
+	if (!sysChdir(directory)) {
 		return false;
 	}
 	return true;
@@ -361,7 +349,7 @@ bool Filesystem::sysPushDir(const core::Path &directory) {
 		core::Path cwd = sysCurrentDir();
 		_dirStack.push(cwd);
 	}
-	if (!sysChdir(directory.str())) {
+	if (!sysChdir(directory)) {
 		return false;
 	}
 	Log::trace("change current dir to %s", directory.c_str());
@@ -371,6 +359,7 @@ bool Filesystem::sysPushDir(const core::Path &directory) {
 
 // TODO: case insensitive search should be possible - see searchPathFor()
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
+	const core::Path path(filename);
 	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
 	if (sysIsReadableDir(filename)) {
 		Log::debug("%s is a directory - skip this", filename.c_str());
@@ -379,10 +368,10 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 	if (mode == FileMode::SysWrite) {
 		Log::debug("Use absolute path to open file %s for writing", filename.c_str());
 		return core::make_shared<io::File>(filename, mode);
-	} else if (mode == FileMode::SysRead && fs_exists(filename.c_str())) {
+	} else if (mode == FileMode::SysRead && fs_exists(path)) {
 		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::Write) {
-		if (!sysIsRelativePath(filename)) {
+		if (!path.isRelativePath()) {
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
@@ -400,7 +389,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			continue;
 		}
 		core::Path fullpath = p.append(filename);
-		if (fs_exists(fullpath.c_str())) {
+		if (fs_exists(fullpath)) {
 			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
 			return core::make_shared<io::File>(core::move(fullpath), openmode);
 		}
@@ -410,18 +399,18 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 					continue;
 				}
 				const core::Path fullrelpath = s + p + filename;
-				if (fs_exists(fullrelpath.c_str())) {
+				if (fs_exists(fullrelpath)) {
 					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
 					return core::make_shared<io::File>(core::move(fullrelpath), openmode);
 				}
 			}
 		}
 	}
-	if (fs_exists(filename.c_str())) {
+	if (fs_exists(path)) {
 		Log::debug("loading file '%s'", filename.c_str());
 		return core::make_shared<io::File>(filename, openmode);
 	}
-	if (!sysIsRelativePath(filename)) {
+	if (!path.isRelativePath()) {
 		Log::debug("'%s' not found", filename.c_str());
 		return core::make_shared<io::File>("", openmode);
 	}

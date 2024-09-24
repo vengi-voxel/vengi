@@ -407,7 +407,7 @@ bool FileDialog::hide(const core::String &file) const {
 	if (_showHidden->boolVal()) {
 		return false;
 	}
-	return io::Filesystem::sysIsHidden(file);
+	return io::Filesystem::sysIsHidden(core::Path(file));
 }
 
 static const char *iconForType(io::FilesystemEntry::Type type) {

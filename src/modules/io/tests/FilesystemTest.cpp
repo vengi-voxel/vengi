@@ -104,22 +104,6 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	fs.shutdown();
 }
 
-TEST_F(FilesystemTest, testIsRelativePath) {
-	io::Filesystem fs;
-	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_TRUE(fs.sysIsRelativePath("./foo"));
-#ifdef WIN32
-	EXPECT_FALSE(fs.sysIsRelativePath("C:"));
-#endif
-	EXPECT_TRUE(fs.sysIsRelativePath("foo"));
-	EXPECT_TRUE(fs.sysIsRelativePath("foo/bar"));
-	EXPECT_TRUE(fs.sysIsRelativePath("foo/bar/"));
-	EXPECT_FALSE(fs.sysIsRelativePath("/foo"));
-	EXPECT_FALSE(fs.sysIsRelativePath("/foo/bar"));
-	EXPECT_FALSE(fs.sysIsRelativePath("/foo/bar/"));
-	fs.shutdown();
-}
-
 TEST_F(FilesystemTest, testIsReadableDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";

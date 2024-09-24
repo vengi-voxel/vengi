@@ -13,53 +13,53 @@ bool initState(io::FilesystemState &state) {
 	return false;
 }
 
-bool fs_mkdir(const char *path) {
+bool fs_mkdir(const core::Path &path) {
 	return false;
 }
 
-bool fs_rmdir(const char *path) {
+bool fs_rmdir(const core::Path &path) {
 	return false;
 }
 
-bool fs_hidden(const char *path) {
+bool fs_hidden(const core::Path &path) {
 	return false;
 }
 
-bool fs_unlink(const char *path) {
+bool fs_unlink(const core::Path &path) {
 	return false;
 }
 
-bool fs_exists(const char *path) {
+bool fs_exists(const core::Path &path) {
 	return false;
 }
 
-bool fs_writeable(const char *path) {
+bool fs_writeable(const core::Path &path) {
 	return false;
 }
 
-bool fs_chdir(const char *path) {
+bool fs_chdir(const core::Path &path) {
 	return false;
 }
 
-core::String fs_realpath(const char *path) {
+core::Path fs_realpath(const core::Path &path) {
 	return path;
 }
 
-bool fs_stat(const char *path, FilesystemEntry &entry) {
+bool fs_stat(const core::Path &path, FilesystemEntry &entry) {
 	return false;
 }
 
-core::DynamicArray<FilesystemEntry> fs_scandir(const char *path) {
+core::DynamicArray<FilesystemEntry> fs_scandir(const core::Path &path) {
 	core::DynamicArray<FilesystemEntry> foo;
 	return foo;
 }
 
-core::String fs_readlink(const char *path) {
+core::Path fs_readlink(const core::Path &path) {
 	return path;
 }
 
-core::String fs_cwd() {
-	return "/";
+core::Path fs_cwd() {
+	return core::Path("/");
 }
 
 } // namespace io
