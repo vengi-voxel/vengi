@@ -69,7 +69,7 @@ SeekableWriteStream *FilesystemArchive::writeStream(const core::String &filePath
 
 ArchivePtr openFilesystemArchive(const io::FilesystemPtr &fs, const core::String &path, bool sysmode) {
 	core::SharedPtr<FilesystemArchive> fa = core::make_shared<FilesystemArchive>(fs, sysmode);
-	if (!path.empty() && fs->isReadableDir(path)) {
+	if (!path.empty() && fs->sysIsReadableDir(path)) {
 		fa->init(path);
 	}
 	return fa;

@@ -16,8 +16,8 @@ class ShaderTest : public app::AbstractTest {
 TEST_F(ShaderTest, testInclude) {
 	const io::FilesystemPtr& filesystem = _testApp->filesystem();
 
-	filesystem->write("foobar.vert", "#define SUCCESS");
-	filesystem->write("foobar.frag", "#define SUCCESS");
+	filesystem->homeWrite("foobar.vert", "#define SUCCESS");
+	filesystem->homeWrite("foobar.frag", "#define SUCCESS");
 
 	Shader s;
 	const core::String &vert = s.getSource(ShaderType::Vertex, "#include \"foobar.vert\"");

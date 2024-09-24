@@ -87,8 +87,8 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 				}
 
 				if (ImGui::BeginTabItem(_("Paths"))) {
-					for (const core::String &path : io::filesystem()->paths()) {
-						const core::String &abspath = io::filesystem()->absolutePath(path);
+					for (const core::String &path : io::filesystem()->registeredPaths()) {
+						const core::String &abspath = io::filesystem()->sysAbsolutePath(path);
 						if (abspath.empty()) {
 							continue;
 						}

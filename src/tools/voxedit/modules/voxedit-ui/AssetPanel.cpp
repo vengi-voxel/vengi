@@ -39,7 +39,7 @@ bool AssetPanel::init() {
 	}
 
 	_future = app::async([this] () {
-		const core::String &dir = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Pictures);
+		const core::String &dir = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Pictures);
 		core::DynamicArray<io::FilesystemEntry> entities;
 		_filesystem->list(dir, entities);
 		for (const auto &e : entities) {

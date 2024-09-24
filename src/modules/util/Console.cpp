@@ -56,7 +56,7 @@ void Console::shutdown() {
 	}
 
 	const io::FilesystemPtr& fs = io::filesystem();
-	if (!fs->write(_historyFilename, content)) {
+	if (!fs->homeWrite(_historyFilename, content)) {
 		Log::warn("Failed to write the history");
 	} else {
 		Log::debug("Wrote the history");

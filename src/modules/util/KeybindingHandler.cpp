@@ -240,14 +240,14 @@ void KeyBindingHandler::shutdown(int version) {
 	if (keybindings.empty()) {
 		removeApplicationKeyBindings(version);
 	} else {
-		io::filesystem()->write(filename(version), keybindings);
+		io::filesystem()->homeWrite(filename(version), keybindings);
 	}
 }
 
 void KeyBindingHandler::removeApplicationKeyBindings(int version) {
 	const core::String &f = filename(version);
-	const core::String &path = io::filesystem()->writePath(f);
-	io::filesystem()->removeFile(path);
+	const core::String &path = io::filesystem()->homeWritePath(f);
+	io::filesystem()->sysRemoveFile(path);
 }
 
 void KeyBindingHandler::reset(int version) {

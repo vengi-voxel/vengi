@@ -164,7 +164,7 @@ void SceneManager::autosave() {
 	// autosaves go into the write path directory (which is usually the home directory of the user)
 	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename.set(_filesystem->writePath("autosave-noname." + voxelformat::vengi().mainExtension()));
+		autoSaveFilename.set(_filesystem->homeWritePath("autosave-noname." + voxelformat::vengi().mainExtension()));
 	} else {
 		const io::FilePtr &file = _filesystem->open(_lastFilename.name);
 		const core::String &filename = file->fileName();
@@ -172,7 +172,7 @@ void SceneManager::autosave() {
 		const core::String &ext = file->extension();
 		const core::String &autosaveFilename =
 			core::string::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
-		autoSaveFilename.set(_filesystem->writePath(autosaveFilename), &_lastFilename.desc);
+		autoSaveFilename.set(_filesystem->homeWritePath(autosaveFilename), &_lastFilename.desc);
 	}
 	if (save(autoSaveFilename, true)) {
 		Log::info("Autosave file %s", autoSaveFilename.c_str());

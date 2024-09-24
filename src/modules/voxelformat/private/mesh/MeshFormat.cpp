@@ -535,7 +535,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	}
 
 	if (!meshPath.empty()) {
-		io::filesystem()->pushDir(meshPath);
+		io::filesystem()->sysPushDir(meshPath);
 	}
 	core::String filename = core::string::extractFilenameWithExtension(name);
 	const core::String &path = core::string::extractPath(name);
@@ -572,7 +572,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 					}
 					if (!fullpath.empty()) {
 						if (!meshPath.empty()) {
-							io::filesystem()->popDir();
+							io::filesystem()->sysPopDir();
 						}
 						return fullpath;
 					}
@@ -585,7 +585,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		Log::error("Failed to perform texture lookup for '%s' (filename: '%s')", name.c_str(), filename.c_str());
 	}
 	if (!meshPath.empty()) {
-		io::filesystem()->popDir();
+		io::filesystem()->sysPopDir();
 	}
 	return fullpath;
 }

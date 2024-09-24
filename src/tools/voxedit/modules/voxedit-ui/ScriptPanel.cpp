@@ -241,7 +241,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 				}
 				if (!_activeScriptFilename.empty()) {
 					if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save"))) {
-						if (_app->filesystem()->write(core::string::path("scripts", _activeScriptFilename),
+						if (_app->filesystem()->homeWrite(core::string::path("scripts", _activeScriptFilename),
 													 _textEditor.GetText())) {
 							_activeScript = _textEditor.GetText();
 							reloadScriptParameters(_activeScript);
@@ -253,7 +253,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 					core::Var::getSafe(cfg::UILastDirectory)->setVal("scripts/");
 					_app->saveDialog(
 						[&](const core::String &file, const io::FormatDescription *desc) {
-							if (_app->filesystem()->write(file, _textEditor.GetText())) {
+							if (_app->filesystem()->homeWrite(file, _textEditor.GetText())) {
 								_scripts.clear();
 								_currentScript = -1;
 								Log::info("Saved script to %s", file.c_str());

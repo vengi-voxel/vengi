@@ -128,7 +128,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 	if (!isRootPath) {
 		_parentDir.name = "..";
 		_parentDir.type = io::FilesystemEntry::Type::dir;
-		_parentDir.fullPath = _app->filesystem()->absolutePath(core::string::path(_currentPath, ".."));
+		_parentDir.fullPath = _app->filesystem()->sysAbsolutePath(core::string::path(_currentPath, ".."));
 		_filteredEntities.push_back(&_parentDir);
 	}
 	for (size_t i = 0; i < _entities.size(); ++i) {
@@ -338,15 +338,15 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 	int index = 0;
 	if (ImGui::TreeNode(_("Quick Access"))) {
 		for (int n = 0; n < io::FilesystemDirectories::FS_Dir_Max; ++n) {
-			const core::String& dir = _app->filesystem()->specialDir((io::FilesystemDirectories)n);
+			const core::String& dir = _app->filesystem()->sysSpecialDir((io::FilesystemDirectories)n);
 			if (dir.empty()) {
 				continue;
 			}
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
-		const io::Paths& paths = _app->filesystem()->paths();
+		const io::Paths& paths = _app->filesystem()->registeredPaths();
 		for (const core::String& path : paths) {
-			const core::String& absPath = _app->filesystem()->absolutePath(path);
+			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path);
 			if (absPath.empty()) {
 				continue;
 			}
@@ -355,9 +355,9 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		ImGui::TreePop();
 	}
 
-	if (!_app->filesystem()->otherPaths().empty()) {
+	if (!_app->filesystem()->sysOtherPaths().empty()) {
 		if (ImGui::TreeNode(_("This PC"))) {
-			for (const io::ThisPCEntry &entry : _app->filesystem()->otherPaths()) {
+			for (const io::ThisPCEntry &entry : _app->filesystem()->sysOtherPaths()) {
 				quickAccessEntry(index++, type, entry.path, contentRegionWidth, entry.name.c_str(), ICON_LC_FOLDER);
 			}
 			ImGui::TreePop();
@@ -375,7 +375,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 		core::DynamicArray<core::String> bm;
 		core::string::splitString(bookmarks, bm, ";");
 		for (const core::String& path : bm) {
-			const core::String& absPath = _app->filesystem()->absolutePath(path);
+			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path);
 			if (absPath.empty()) {
 				removeBookmark(path);
 				continue;
@@ -407,7 +407,7 @@ bool FileDialog::hide(const core::String &file) const {
 	if (_showHidden->boolVal()) {
 		return false;
 	}
-	return io::Filesystem::isHidden(file);
+	return io::Filesystem::sysIsHidden(file);
 }
 
 static const char *iconForType(io::FilesystemEntry::Type type) {
@@ -614,7 +614,7 @@ void FileDialog::popupNewFolder() {
 				_newFolderError = TimedError(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				_app->filesystem()->createDir(newFilePath);
+				_app->filesystem()->sysCreateDir(newFilePath);
 				ImGui::CloseCurrentPopup();
 			}
 		}

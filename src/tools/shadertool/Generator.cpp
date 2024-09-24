@@ -657,7 +657,7 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 		includes += ".h\"\n";
 
 		Log::debug("Generate ubo bindings for %s at %s", uniformBufferStructName.c_str(), targetFileUb.c_str());
-		if (!filesystem->syswrite(targetFileUb, generatedUb)) {
+		if (!filesystem->sysWrite(targetFileUb, generatedUb)) {
 			Log::error("Failed to write %s", targetFileUb.c_str());
 			return false;
 		}
@@ -762,19 +762,19 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 
 	Log::debug("Generate shader bindings for %s", shaderStruct.name.c_str());
 	const core::String targetHeaderFile = sourceDirectory + filename + ".h" + postfix;
-	if (!filesystem->syswrite(targetHeaderFile, srcHeader)) {
+	if (!filesystem->sysWrite(targetHeaderFile, srcHeader)) {
 		Log::error("Failed to write %s", targetHeaderFile.c_str());
 		return false;
 	}
 
 	const core::String targetSourceFile = sourceDirectory + filename + ".cpp" + postfix;
-	if (!filesystem->syswrite(targetSourceFile, srcSource)) {
+	if (!filesystem->sysWrite(targetSourceFile, srcSource)) {
 		Log::error("Failed to write %s", targetSourceFile.c_str());
 		return false;
 	}
 
 	const core::String targetConstantHeaderFile = sourceDirectory + filename + "Constants.h" + postfix;
-	if (!filesystem->syswrite(targetConstantHeaderFile, srcConstantsHeader)) {
+	if (!filesystem->sysWrite(targetConstantHeaderFile, srcConstantsHeader)) {
 		Log::error("Failed to write %s", targetConstantHeaderFile.c_str());
 		return false;
 	}

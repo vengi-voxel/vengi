@@ -232,7 +232,7 @@ bool App::isRunning(int pid) const {
 bool App::createPid() {
 	core::String oldPid = _filesystem->load("app.pid");
 	if (oldPid.empty()) {
-		_filesystem->write("app.pid", core::string::toString(_pid));
+		_filesystem->homeWrite("app.pid", core::string::toString(_pid));
 		return false;
 	}
 	// check if oldPid process is still running
@@ -240,7 +240,7 @@ bool App::createPid() {
 	if (isRunning(pid)) {
 		return false;
 	}
-	_filesystem->write("app.pid", core::string::toString(_pid));
+	_filesystem->homeWrite("app.pid", core::string::toString(_pid));
 	// the pid doesn't exist anymore, so this was most likely a crash
 	return _wantCrashLogs;
 }
@@ -255,7 +255,7 @@ void App::deletePid() {
 	if (oldPid.toInt() != _pid) {
 		return;
 	}
-	_filesystem->removeFile(_filesystem->writePath("app.pid"));
+	_filesystem->sysRemoveFile(_filesystem->homeWritePath("app.pid"));
 }
 
 void App::onFrame() {
@@ -334,7 +334,7 @@ void App::onFrame() {
 						if (!request.execute(stream, &statusCode)) {
 							Log::error("Failed to upload crash log with status: %i", statusCode);
 						} else {
-							_filesystem->removeFile(crashlogFilename);
+							_filesystem->sysRemoveFile(crashlogFilename);
 						}
 					}
 				}
@@ -447,7 +447,7 @@ AppState App::onConstruct() {
 	}
 	core_assert_init(_filesystem->homePath().c_str());
 
-	for (const core::String &path : _filesystem->paths()) {
+	for (const core::String &path : _filesystem->registeredPaths()) {
 		_dictManager.addDirectory(path);
 		_dictManager.addDirectory(core::string::path(path, "po"));
 	}
@@ -595,7 +595,7 @@ AppState App::onConstruct() {
 #endif
 	}
 
-	const core::String &logfilePath = _filesystem->writePath("log.txt");
+	const core::String &logfilePath = _filesystem->homeWritePath("log.txt");
 	Log::init(logfilePath.c_str());
 
 	return AppState::Init;
@@ -946,7 +946,7 @@ void App::usage() const {
 		[=](const command::Command &c) { Log::info("   %-*s %s", maxWidth, c.name().c_str(), c.help().c_str()); });
 	Log::info("------------");
 	Log::info("Search paths:");
-	const io::Paths &paths = _filesystem->paths();
+	const io::Paths &paths = _filesystem->registeredPaths();
 	for (const core::String &path : paths) {
 		Log::info(" * %s", path.c_str());
 	}
@@ -1098,7 +1098,7 @@ bool App::saveConfiguration() {
 			ss += "\"\n";
 		},
 		0u);
-	return _filesystem->write(filename, ss);
+	return _filesystem->homeWrite(filename, ss);
 }
 
 AppState App::onCleanup() {

@@ -386,7 +386,7 @@ app::AppState VoxConvert::onInit() {
 		if (shouldQuit()) {
 			break;
 		}
-		if (filesystem()->isReadableDir(infile)) {
+		if (filesystem()->sysIsReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
 			filesystem()->list(infile, entities, getArgVal("--wildcard", ""));
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
@@ -432,7 +432,7 @@ app::AppState VoxConvert::onInit() {
 						continue;
 					}
 				}
-				const core::String &fullPath = filesystem()->writePath(entry.fullPath);
+				const core::String &fullPath = filesystem()->homeWritePath(entry.fullPath);
 				if (!handleInputFile(fullPath, archive, sceneGraph, archive->files().size() > 1)) {
 					Log::error("Failed to handle input file %s", fullPath.c_str());
 				}

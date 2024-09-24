@@ -465,7 +465,7 @@ app::AppState VoxEdit::onInit() {
 		const char *file = _argv[_argc - 1];
 		const io::FilePtr& filePtr = filesystem()->open(file);
 		if (filePtr->exists()) {
-			const core::String &filePath = filesystem()->absolutePath(filePtr->name());
+			const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 			_mainWindow->load(filePath, nullptr);
 		}
 	} else {
@@ -473,7 +473,7 @@ app::AppState VoxEdit::onInit() {
 		if (!file.empty()) {
 			const io::FilePtr& filePtr = filesystem()->open(file);
 			if (filePtr->exists()) {
-				const core::String &filePath = filesystem()->absolutePath(filePtr->name());
+				const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 				_mainWindow->load(filePath, nullptr);
 			}
 		}

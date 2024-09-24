@@ -207,7 +207,7 @@ app::AppState VoxConvertUI::onConstruct() {
 
 app::AppState VoxConvertUI::onInit() {
 	app::AppState state = Super::onInit();
-	_voxconvertBinary = _filesystem->findBinary("vengi-voxconvert");
+	_voxconvertBinary = _filesystem->sysFindBinary("vengi-voxconvert");
 
 	if (_filterFormatTextWidth < 0.0f) {
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {

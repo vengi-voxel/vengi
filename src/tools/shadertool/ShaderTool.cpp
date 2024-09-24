@@ -24,7 +24,7 @@ ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProv
 }
 
 bool ShaderTool::parse(const core::String &filename, const core::String &buffer, bool vertex) {
-	return shadertool::parse(io::filesystem()->absolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
+	return shadertool::parse(io::filesystem()->sysAbsolutePath(filename), _shaderStruct, _shaderfile, buffer, vertex);
 }
 
 app::AppState ShaderTool::onConstruct() {
@@ -161,7 +161,7 @@ app::AppState ShaderTool::onRunning() {
 	Log::debug("Preparing shader file %s", _shaderfile.c_str());
 	const io::FilesystemPtr& fs = filesystem();
 	_shaderpath = core::string::extractPath(shaderfile.c_str());
-	const bool changedDir = fs->pushDir(_shaderpath);
+	const bool changedDir = fs->sysPushDir(_shaderpath);
 
 	video::Shader shader;
 
@@ -202,7 +202,7 @@ app::AppState ShaderTool::onRunning() {
 
 		const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
 		const core::String& finalComputeFilename = _appname + "-" + computeFilename;
-		fs->write(finalComputeFilename, computeSource);
+		fs->homeWrite(finalComputeFilename, computeSource);
 
 		Log::debug("Validating shader file %s", _shaderfile.c_str());
 		validate(finalComputeFilename);
@@ -271,16 +271,16 @@ app::AppState ShaderTool::onRunning() {
 	const core::String& geometrySource = shader.getSource(video::ShaderType::Geometry, geometryBuffer.first, true);
 
 	if (changedDir) {
-		fs->popDir();
+		fs->sysPopDir();
 	}
 
 	const core::String& finalFragmentFilename = _appname + "-" + fragmentFilename;
 	const core::String& finalVertexFilename = _appname + "-" + vertexFilename;
 	const core::String& finalGeometryFilename = _appname + "-" + geometryFilename;
-	fs->write(finalFragmentFilename, fragmentSource);
-	fs->write(finalVertexFilename, vertexSource);
+	fs->homeWrite(finalFragmentFilename, fragmentSource);
+	fs->homeWrite(finalVertexFilename, vertexSource);
 	if (!geometrySource.empty()) {
-		fs->write(finalGeometryFilename, geometrySource);
+		fs->homeWrite(finalGeometryFilename, geometrySource);
 	}
 
 	Log::debug("Validating shader file %s", _shaderfile.c_str());

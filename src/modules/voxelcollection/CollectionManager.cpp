@@ -31,12 +31,12 @@ bool CollectionManager::init() {
 	VoxelSource local;
 	local.name = LOCAL_SOURCE;
 	_sources.push_back(local);
-	core::String documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Documents);
+	core::String documents = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Documents);
 	if (documents.empty()) {
-		documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Public);
+		documents = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Public);
 	}
 	if (documents.empty()) {
-		documents = _filesystem->specialDir(io::FilesystemDirectories::FS_Dir_Download);
+		documents = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Download);
 	}
 	if (documents.empty()) {
 		documents = _filesystem->homePath();
@@ -55,7 +55,7 @@ core::String CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
 	if (voxelFile.isLocal()) {
 		return voxelFile.targetFile();
 	}
-	return _filesystem->writePath(voxelFile.targetFile());
+	return _filesystem->homeWritePath(voxelFile.targetFile());
 }
 
 bool CollectionManager::setLocalDir(const core::String &dir) {
