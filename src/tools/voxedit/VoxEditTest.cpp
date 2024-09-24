@@ -12,6 +12,7 @@ public:
 				const video::TexturePoolPtr &texturePool)
 		: VoxEdit(filesystem, timeProvider, sceneMgr, collectionMgr, texturePool) {
 		_showWindow = false;
+		_wantCrashLogs = false;
 	}
 };
 
