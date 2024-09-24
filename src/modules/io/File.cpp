@@ -179,8 +179,9 @@ long File::write(const unsigned char *buf, size_t len) const {
 	return (long)len;
 }
 
-core::String File::dir() const {
-	return core::string::extractDir(name());
+core::Path File::dir() const {
+	// TODO: use the core::Path class for _rawPath
+	return core::Path(core::string::extractDir(name()));
 }
 
 core::String File::fileName() const {

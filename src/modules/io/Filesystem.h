@@ -60,8 +60,8 @@ private:
 	 * the installation directory or the current working directory. In case the
 	 * binary is a symlink, it it resolved.
 	 */
-	core::String _basePath;
-	core::String _homePath;
+	core::Path _basePath;
+	core::Path _homePath;
 	FilesystemState _state;
 	Paths _paths;
 
@@ -90,12 +90,12 @@ public:
 	 * be the process's current working directory.
 	 * @note Ends with path separator
 	 */
-	const core::String& basePath() const;
+	const core::Path& basePath() const;
 	/**
 	 * @brief The path where the application can store data
 	 * @note Ends with path separator
 	 */
-	const core::String& homePath() const;
+	const core::Path& homePath() const;
 
 	bool exists(const core::String& filename) const;
 
@@ -174,7 +174,7 @@ public:
 	 * @brief This will create the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	bool sysCreateDir(const core::String& dir, bool recursive = true) const;
+	bool sysCreateDir(const core::Path& dir, bool recursive = true) const;
 
 	/**
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
@@ -199,11 +199,11 @@ inline bool Filesystem::exists(const core::String& filename) const {
 	return open(filename)->exists();
 }
 
-inline const core::String& Filesystem::basePath() const {
+inline const core::Path& Filesystem::basePath() const {
 	return _basePath;
 }
 
-inline const core::String& Filesystem::homePath() const {
+inline const core::Path& Filesystem::homePath() const {
 	return _homePath;
 }
 

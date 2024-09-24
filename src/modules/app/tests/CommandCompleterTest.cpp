@@ -12,7 +12,7 @@ class CommandCompleterTest: public app::AbstractTest {
 public:
 	bool onInitApp() override{
 		const io::FilesystemPtr& fs = io::filesystem();
-		fs->sysCreateDir("commandcompletertest/dir1");
+		fs->sysCreateDir(core::Path("commandcompletertest/dir1"));
 		fs->sysWrite("commandcompletertest/dir1/ignored", "ignore");
 		fs->sysWrite("commandcompletertest/dir1/ignoredtoo", "ignore");
 		fs->sysWrite("commandcompletertest/dir1/foo1.foo", "foo1");

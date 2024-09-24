@@ -235,7 +235,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		if (_app->filesystem()->exists(lastDir)) {
 			_currentPath = lastDir;
 		} else {
-			_currentPath = _app->filesystem()->homePath();
+			_currentPath = _app->filesystem()->homePath().str();
 		}
 	} else {
 		_currentPath = filePath;
@@ -244,7 +244,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	_entryIndex = -1;
 
 	if (!_app->filesystem()->exists(_currentPath)) {
-		_currentPath = _app->filesystem()->homePath();
+		_currentPath = _app->filesystem()->homePath().str();
 		_lastDirVar->setVal(_currentPath);
 	}
 
@@ -614,7 +614,7 @@ void FileDialog::popupNewFolder() {
 				_newFolderError = TimedError(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				_app->filesystem()->sysCreateDir(newFilePath);
+				_app->filesystem()->sysCreateDir(core::Path(newFilePath));
 				ImGui::CloseCurrentPopup();
 			}
 		}

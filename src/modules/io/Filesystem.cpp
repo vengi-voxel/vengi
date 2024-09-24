@@ -37,27 +37,23 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 #endif
 
 	char *path = SDL_GetBasePath();
-	if (path == nullptr) {
-		_basePath = "";
-	} else {
-		_basePath = path;
-		normalizePath(_basePath);
+	if (path != nullptr) {
+		_basePath = core::Path(path);
 		SDL_free(path);
 	}
 
 	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
 	if (prefPath != nullptr) {
-		_homePath = prefPath;
+		_homePath = core::Path(prefPath);
 		SDL_free(prefPath);
 	}
 	if (_homePath.empty()) {
-		_homePath = "./";
+		_homePath = core::Path("./");
 	}
 	const core::VarPtr &homePathVar =
 		core::Var::get(cfg::AppHomePath, _homePath.c_str(), core::CV_READONLY | core::CV_NOPERSIST);
 
-	_homePath = homePathVar->strVal();
-	normalizePath(_homePath);
+	_homePath = core::Path(homePathVar->strVal());
 	if (!sysCreateDir(_homePath, true)) {
 		Log::error("Could not create home dir at: %s", _homePath.c_str());
 		return false;
@@ -114,9 +110,9 @@ core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
 	}
 
 	// Check the directory of the current binary
-	core::String binaryPath = core::string::path(_basePath, binaryWithExtension);
+	core::Path binaryPath = _basePath.append(binaryWithExtension);
 	if (fs_exists(binaryPath.c_str())) {
-		return sysAbsolutePath(binaryPath);
+		return sysAbsolutePath(binaryPath.str());
 	}
 
 	// Check PATH environment variable
@@ -168,7 +164,7 @@ bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) const {
 	return false;
 }
 
-bool Filesystem::sysCreateDir(const core::String &dir, bool recursive) const {
+bool Filesystem::sysCreateDir(const core::Path &dir, bool recursive) const {
 	if (dir.empty()) {
 		return false;
 	}
@@ -182,7 +178,7 @@ bool Filesystem::sysCreateDir(const core::String &dir, bool recursive) const {
 	}
 
 	// force trailing / so we can handle everything in loop
-	core::String s = core::string::sanitizeDirPath(dir);
+	core::String s = core::string::sanitizeDirPath(dir.str());
 
 	size_t pre = 0, pos;
 	bool lastResult = false;
@@ -390,8 +386,9 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
-		sysCreateDir(core::string::path(_homePath, core::string::extractDir(filename)), true);
-		return core::make_shared<io::File>(core::string::path(_homePath, filename), mode);
+		const core::Path fullpath = _homePath.append(filename);
+		sysCreateDir(fullpath.dirname(), true);
+		return core::make_shared<io::File>(_homePath.append(filename), mode);
 	}
 	FileMode openmode = mode;
 	if (openmode == FileMode::ReadNoHome) {
@@ -429,7 +426,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		return core::make_shared<io::File>("", openmode);
 	}
 	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
-	return core::make_shared<io::File>(core::string::path(_basePath, filename), openmode);
+	return core::make_shared<io::File>(_basePath.append(filename), openmode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {
@@ -451,12 +448,13 @@ core::String Filesystem::load(const core::String &filename) const {
 }
 
 core::String Filesystem::homeWritePath(const core::String &name) const {
-	return core::string::path(_homePath, name);
+	core::Path path = _homePath.append(name);
+	return path.str();
 }
 
 long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream) {
-	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractDir(fullPath.c_str()));
+	const core::Path fullPath = _homePath.append(filename);
+	const core::Path path = fullPath.dirname();
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	long written = f.write(stream);
@@ -465,8 +463,8 @@ long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream)
 }
 
 bool Filesystem::homeWrite(const core::String &filename, const uint8_t *content, size_t length) {
-	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractDir(fullPath.c_str()));
+	const core::Path fullPath = _homePath.append(filename);
+	const core::Path path = fullPath.dirname();
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	return f.write(content, length) == static_cast<long>(length);
