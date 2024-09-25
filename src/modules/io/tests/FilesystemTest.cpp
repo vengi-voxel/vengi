@@ -109,7 +109,7 @@ TEST_F(FilesystemTest, testIsRelativePath) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(fs.sysIsRelativePath("./foo"));
 #ifdef WIN32
-	EXPECT_FALSE(fs.isRelativePath("C:"));
+	EXPECT_FALSE(fs.sysIsRelativePath("C:"));
 #endif
 	EXPECT_TRUE(fs.sysIsRelativePath("foo"));
 	EXPECT_TRUE(fs.sysIsRelativePath("foo/bar"));
