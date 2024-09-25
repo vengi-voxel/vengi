@@ -164,23 +164,28 @@ Path &Path::operator+=(const Path &other) {
 }
 
 bool Path::operator==(const core::String &other) const {
-	core::String path = other;
-	core::string::replaceAllChars(path, '\\', '/');
-	return _path == path;
+	core::String otherCleaned = other;
+	core::string::replaceAllChars(otherCleaned, '\\', '/');
+	if (otherCleaned.last() == '/') {
+		otherCleaned.erase(otherCleaned.size() - 1);
+	}
+	core::String ownCleaned = _path;
+	if (ownCleaned.last() == '/') {
+		ownCleaned.erase(ownCleaned.size() - 1);
+	}
+	return ownCleaned == otherCleaned;
 }
 
 bool Path::operator!=(const core::String &other) const {
-	core::String path = other;
-	core::string::replaceAllChars(path, '\\', '/');
-	return _path != path;
+	return !(*this == other);
 }
 
 bool Path::operator==(const Path &other) const {
-	return _path == other._path;
+	return *this == other._path;
 }
 
 bool Path::operator!=(const Path &other) const {
-	return _path != other._path;
+	return *this != other._path;
 }
 
 Path operator+(const Path &lhs, const core::Path &rhs) {

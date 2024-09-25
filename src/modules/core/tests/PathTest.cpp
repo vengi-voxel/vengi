@@ -31,6 +31,12 @@ TEST_F(PathTest, testComponents) {
 	EXPECT_EQ(c[3], "Baz");
 }
 
+TEST_F(PathTest, testOperators) {
+	Path path1("C:\\Program Files\\Foo\\Baz");
+	Path path2("C:\\Program Files\\Foo\\Baz\\");
+	EXPECT_EQ(path1, path2);
+}
+
 TEST_F(PathTest, testWindows) {
 	Path path1("C:\\Program Files\\");
 	EXPECT_EQ(path1.driveLetter(), 'C');
