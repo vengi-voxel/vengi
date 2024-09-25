@@ -13,6 +13,7 @@
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/FilesystemEntry.h"
+#include "system/System.h"
 #include <SDL.h>
 #ifndef __WINDOWS__
 #include <unistd.h>
@@ -22,19 +23,6 @@
 #endif
 
 namespace io {
-
-extern bool fs_mkdir(const char *path);
-extern bool fs_rmdir(const char *path);
-extern bool fs_unlink(const char *path);
-extern bool fs_exists(const char *path);
-extern bool fs_writeable(const char *path);
-extern bool fs_hidden(const char *path);
-extern bool fs_chdir(const char *path);
-extern core::String fs_realpath(const char *path);
-extern bool fs_stat(const char *path, FilesystemEntry &entry);
-extern core::DynamicArray<FilesystemEntry> fs_scandir(const char *path);
-extern core::String fs_readlink(const char *path);
-extern core::String fs_cwd();
 
 Filesystem::~Filesystem() {
 	shutdown();

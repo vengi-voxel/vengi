@@ -5,10 +5,9 @@
 #include "FilesystemEntry.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "system/System.h"
 
 namespace io {
-
-extern bool fs_stat(const char *path, FilesystemEntry &entry);
 
 FilesystemEntry createFilesystemEntry(const core::String &filename) {
 	FilesystemEntry entry;

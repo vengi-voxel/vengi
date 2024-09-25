@@ -27,9 +27,12 @@ set(SRCS
 	ZipReadStream.cpp ZipReadStream.h
 	ZipWriteStream.cpp ZipWriteStream.h
 
+	system/System.h
 	system/Null.cpp
 	system/Unix.cpp
 	system/Windows.cpp
+	system/emscripten_browser_file.h
+	system/windirent.h
 )
 
 set(LIB io)
