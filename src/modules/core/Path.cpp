@@ -50,7 +50,7 @@ char Path::driveLetter() const {
 Path Path::dirname() const {
 	core::String base = _path;
 	if (base.size() == 1 && base.last() == '/') {
-		return base;
+		return core::Path(base);
 	}
 	while (base.last() == '/') {
 		base.erase(base.size() - 1);
@@ -59,13 +59,13 @@ Path Path::dirname() const {
 	if (pos == core::String::npos) {
 		return Path(".");
 	}
-	return base.substr(0, pos);
+	return core::Path(base.substr(0, pos));
 }
 
 Path Path::basename() const {
 	core::String base = _path;
 	if (base.size() == 1 && base.last() == '/') {
-		return base;
+		return core::Path(base);
 	}
 	while (base.last() == '/') {
 		base.erase(base.size() - 1);
@@ -74,7 +74,7 @@ Path Path::basename() const {
 	if (pos != core::String::npos) {
 		base = base.substr(pos + 1);
 	}
-	return base;
+	return core::Path(base);
 }
 
 core::String Path::extension() const {
@@ -91,20 +91,20 @@ core::String Path::extension() const {
 Path Path::removeExtension() const {
 	const size_t pos = _path.find_last_of(".");
 	if (pos == core::String::npos) {
-		return _path;
+		return *this;
 	}
 	if (_path.find_last_of("/") > pos) {
-		return _path;
+		return *this;
 	}
-	return _path.substr(0, pos);
+	return core::Path(_path.substr(0, pos));
 }
 
 Path Path::replaceExtension(const core::String &newExtension) const {
 	const size_t pos = _path.find_last_of(".");
 	if (pos == core::String::npos || _path.find_last_of("/") > pos) {
-		return _path + "." + newExtension;
+		return core::Path(_path + "." + newExtension);
 	}
-	return _path.substr(0, pos) + "." + newExtension;
+	return core::Path(_path.substr(0, pos) + "." + newExtension);
 }
 
 bool Path::isRelativePath() const {

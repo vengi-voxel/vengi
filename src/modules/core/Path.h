@@ -21,8 +21,8 @@ private:
 
 public:
 	Path() = default;
-	Path(const core::String &path);
-	Path(core::String &&path);
+	explicit Path(const core::String &path);
+	explicit Path(core::String &&path);
 
 	/**
 	 * Returns the directory part of the path.
