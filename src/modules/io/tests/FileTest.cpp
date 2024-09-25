@@ -21,11 +21,11 @@ TEST_F(FileTest, testGetPath) {
 	io::Filesystem fs;
 	fs.init("test", "test");
 	const io::FilePtr &file = fs.open("foobar/1.txt", io::FileMode::Read);
-	ASSERT_TRUE(core::string::endsWith(file->dir(), "foobar/"));
-	ASSERT_EQ("txt", file->extension());
-	ASSERT_EQ("1", file->fileName());
-	ASSERT_TRUE(core::string::endsWith(file->name(), "foobar/1.txt"));
-	ASSERT_FALSE(file->exists());
+	EXPECT_TRUE(core::string::endsWith(file->dir(), "foobar/"));
+	EXPECT_EQ("txt", file->extension());
+	EXPECT_EQ("1", file->fileName());
+	EXPECT_TRUE(core::string::endsWith(file->name(), "foobar/1.txt"));
+	EXPECT_FALSE(file->exists());
 }
 
 TEST_F(FileTest, testLoad) {
@@ -33,7 +33,7 @@ TEST_F(FileTest, testLoad) {
 	fs.init("test", "test");
 	const io::FilePtr &file = fs.open("iotest.txt", io::FileMode::Read);
 	const core::String &str = file->load();
-	ASSERT_NE("", str);
+	EXPECT_NE("", str);
 }
 
 } // namespace io
