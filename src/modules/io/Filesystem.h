@@ -140,7 +140,7 @@ public:
 	core::String sysSpecialDir(FilesystemDirectories dir) const;
 	const core::DynamicArray<ThisPCEntry> sysOtherPaths() const;
 
-	core::String sysFindBinary(const core::String &binaryName) const;
+	core::Path sysFindBinary(const core::String &binaryName) const;
 
 	/**
 	 * @brief The current working directory without a tailing /
@@ -150,6 +150,7 @@ public:
 	static bool sysIsReadableDir(const core::String& name);
 	static bool sysIsHidden(const core::Path &name);
 	core::String sysAbsolutePath(const core::String& path) const;
+	core::Path sysAbsolutePath(const core::Path& path) const;
 
 	/**
 	 * @brief Changes the current working directory

@@ -99,7 +99,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	return true;
 }
 
-core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
+core::Path Filesystem::sysFindBinary(const core::String &binaryName) const {
 #ifdef _WIN32
 	core::String binaryWithExtension = binaryName;
 	binaryWithExtension += ".exe";
@@ -109,13 +109,13 @@ core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
 #endif
 	// Check current working directory
 	if (fs_exists(binaryPath)) {
-		return sysAbsolutePath(binaryPath.str());
+		return sysAbsolutePath(binaryPath);
 	}
 
 	// Check the directory of the current binary
 	core::Path fullBinaryPath = _basePath.append(binaryName);
 	if (fs_exists(fullBinaryPath)) {
-		return sysAbsolutePath(fullBinaryPath.str());
+		return sysAbsolutePath(fullBinaryPath);
 	}
 
 	// Check PATH environment variable
@@ -132,11 +132,11 @@ core::String Filesystem::sysFindBinary(const core::String &binaryName) const {
 			core::Path binPath(p);
 			binPath.append(binaryPath);
 			if (fs_exists(binPath)) {
-				return binPath.str();
+				return binPath;
 			}
 		}
 	}
-	return "";
+	return core::Path();
 }
 
 const core::DynamicArray<ThisPCEntry> Filesystem::sysOtherPaths() const {
@@ -280,20 +280,25 @@ void Filesystem::shutdown() {
 #endif
 }
 
-core::String Filesystem::sysAbsolutePath(const core::String &path) const {
+core::Path Filesystem::sysAbsolutePath(const core::Path& path) const {
 	core::Path abspath = fs_realpath(core::Path(path));
 	if (abspath.empty()) {
 		for (const core::Path &p : registeredPaths()) {
 			const core::Path &fullPath = p.append(path);
 			abspath = fs_realpath(fullPath);
 			if (!abspath.empty()) {
-				return abspath.str();
+				return abspath;
 			}
 		}
 		Log::error("Failed to get absolute path for '%s'", path.c_str());
-		return "";
+		return core::Path();
 	}
-	return abspath.str();
+	return abspath;
+}
+
+core::String Filesystem::sysAbsolutePath(const core::String &path) const {
+	core::Path p = sysAbsolutePath(core::Path(path));
+	return p.str();
 }
 
 bool Filesystem::sysIsHidden(const core::Path &name) {

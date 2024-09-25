@@ -360,7 +360,7 @@ void VoxConvertUI::onRenderUI() {
 				if (_overwriteTargetFile) {
 					arguments.push_back("-f");
 				}
-				const int exitCode = core::Process::exec(_voxconvertBinary, arguments, nullptr, &stream);
+				const int exitCode = core::Process::exec(_voxconvertBinary.str(), arguments, nullptr, &stream);
 				stream.seek(0);
 				stream.readString(stream.size(), _output);
 				_output = core::string::removeAnsiColors(_output.c_str());
