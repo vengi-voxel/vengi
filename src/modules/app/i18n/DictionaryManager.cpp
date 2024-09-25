@@ -105,7 +105,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 		}
 
 		if (!bestFilename.empty()) {
-			const core::String &pofile = core::string::path(p->c_str(), bestFilename);
+			const core::Path &pofile = p->append(bestFilename);
 			const io::FilePtr &in = _filesystem->open(pofile);
 			if (!in) {
 				Log::error("failure opening: %s", pofile.c_str());

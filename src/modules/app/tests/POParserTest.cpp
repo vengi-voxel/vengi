@@ -43,7 +43,7 @@ msgstr "Translation for Single line string"
 };
 
 TEST_F(POParserTest, testParse) {
-	const core::String filename = "mem";
+	const core::Path filename("mem");
 	io::MemoryReadStream stream(poString, strlen(poString));
 	Dictionary dict;
 	ASSERT_TRUE(POParser::parse(filename, stream, dict));
