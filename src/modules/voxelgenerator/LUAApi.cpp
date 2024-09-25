@@ -1987,10 +1987,10 @@ core::String LUAApi::load(const core::String& scriptName) const {
 		filename = core::Path(core::string::path("scripts", filename.str()));
 	}
 #if LUA_VERSION_NUM < 504
-	core::String luaStr = _filesystem->load(filename.str());
+	core::String luaStr = _filesystem->load(filename);
 	return core::string::replaceAll(luaStr, "<const>", "");
 #else
-	return _filesystem->load(filename.str());
+	return _filesystem->load(filename);
 #endif
 }
 

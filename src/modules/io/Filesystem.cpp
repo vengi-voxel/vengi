@@ -433,6 +433,11 @@ core::String Filesystem::load(const char *filename, ...) {
 	return load(core::String(text));
 }
 
+core::String Filesystem::load(const core::Path& filename) const {
+	const io::FilePtr &f = open(filename);
+	return f->load();
+}
+
 core::String Filesystem::load(const core::String &filename) const {
 	const io::FilePtr &f = open(filename);
 	return f->load();

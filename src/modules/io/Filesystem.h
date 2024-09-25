@@ -113,6 +113,7 @@ public:
 
 	core::String load(CORE_FORMAT_STRING const char *filename, ...) CORE_PRINTF_VARARG_FUNC(2);
 	core::String load(const core::String& filename) const;
+	core::String load(const core::Path& filename) const;
 
 	// HOME PATH HANDLING
 
