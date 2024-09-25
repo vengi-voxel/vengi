@@ -74,7 +74,7 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 				   versionName ? versionName->c_str() : "-", versionSeries ? versionSeries->c_str() : "-");
 	}
 	io::ArchiveFiles entities;
-	const core::String baseName = core::string::extractPath(filename);
+	const core::String baseName = core::string::extractDir(filename);
 	archive->list(core::string::path(baseName, "region"), entities, "*.mca,*.mcr");
 	if (entities.empty()) {
 		Log::error("Could not find any region file");

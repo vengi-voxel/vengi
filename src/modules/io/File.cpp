@@ -173,8 +173,8 @@ long File::write(const unsigned char *buf, size_t len) const {
 	return (long)len;
 }
 
-core::String File::path() const {
-	return core::string::extractPath(name());
+core::String File::dir() const {
+	return core::string::extractDir(name());
 }
 
 core::String File::fileName() const {

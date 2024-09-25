@@ -246,7 +246,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	std::vector<tinyobj::material_t> materials;
 	std::string warn;
 	std::string err;
-	const core::String &mtlbasedir = core::string::extractPath(filename);
+	const core::String &mtlbasedir = core::string::extractDir(filename);
 	io::StdIStreamBuf stdStreamBuf(*stream);
 	std::istream inputStream(&stdStreamBuf);
 	// TODO: use the archive

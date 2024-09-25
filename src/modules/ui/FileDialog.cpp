@@ -229,7 +229,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		selectFilter(type, lastFilter);
 	}
 
-	const core::String &filePath = core::string::extractPath(filename);
+	const core::String &filePath = core::string::extractDir(filename);
 	if (filePath.empty() || !_app->filesystem()->exists(filePath)) {
 		const core::String &lastDir = _lastDirVar->strVal();
 		if (_app->filesystem()->exists(lastDir)) {

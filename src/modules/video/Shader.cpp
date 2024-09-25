@@ -428,7 +428,7 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	}
 
 	core::List<core::String> includeDirs;
-	includeDirs.insert(core::String(core::string::extractPath(_name)));
+	includeDirs.insert(core::String(core::string::extractDir(_name)));
 	const core::Pair<core::String, bool>& includesFirst = util::handleIncludes(_name, buffer, includeDirs, includedFiles);
 	src += includesFirst.first;
 	int level = 0;

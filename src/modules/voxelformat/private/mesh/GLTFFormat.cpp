@@ -1739,7 +1739,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	std::string err;
 	bool state;
 
-	const core::String filePath = core::string::extractPath(filename);
+	const core::String filePath = core::string::extractDir(filename);
 	tinygltf::TinyGLTF gltfLoader;
 	tinygltf::Model gltfModel;
 	if (magic == FourCC('g', 'l', 'T', 'F')) {

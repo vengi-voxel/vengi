@@ -440,7 +440,7 @@ image::ImagePtr VMaxFormat::loadScreenshot(const core::String &filename, const i
 	if (zipArchive) {
 		thumbnailStream = zipArchive->readStream(thumbnailPath);
 	} else {
-		const core::String fullPath = core::string::path(core::string::extractPath(filename), thumbnailPath);
+		const core::String fullPath = core::string::path(core::string::extractDir(filename), thumbnailPath);
 		thumbnailStream = archive->readStream(fullPath);
 	}
 	if (!thumbnailStream) {
@@ -493,7 +493,7 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 			return 0u;
 		}
 	} else {
-		const core::String fullPath = core::string::path(core::string::extractPath(filename), paletteName);
+		const core::String fullPath = core::string::path(core::string::extractDir(filename), paletteName);
 		if (!loadPaletteFromArchive(archive, fullPath, palette, ctx)) {
 			return 0u;
 		}

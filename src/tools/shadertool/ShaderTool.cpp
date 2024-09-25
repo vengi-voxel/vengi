@@ -160,7 +160,7 @@ app::AppState ShaderTool::onRunning() {
 	_shaderfile = core::string::extractFilename(shaderfile.c_str());
 	Log::debug("Preparing shader file %s", _shaderfile.c_str());
 	const io::FilesystemPtr& fs = filesystem();
-	_shaderpath = core::string::extractPath(shaderfile.c_str());
+	_shaderpath = core::string::extractDir(shaderfile.c_str());
 	const bool changedDir = fs->sysPushDir(_shaderpath);
 
 	video::Shader shader;

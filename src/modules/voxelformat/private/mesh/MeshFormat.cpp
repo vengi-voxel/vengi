@@ -523,7 +523,7 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 // TODO: use io::Archive here, too
 core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) {
-	const core::String &meshPath = core::string::extractPath(meshFilename);
+	const core::String &meshPath = core::string::extractDir(meshFilename);
 	core::String name = in;
 	io::normalizePath(name);
 	if (!core::string::isAbsolutePath(name)) {
@@ -538,7 +538,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		io::filesystem()->sysPushDir(meshPath);
 	}
 	core::String filename = core::string::extractFilenameWithExtension(name);
-	const core::String &path = core::string::extractPath(name);
+	const core::String &path = core::string::extractDir(name);
 	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
 	if (fullpath.empty() && path != meshPath) {
 		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);

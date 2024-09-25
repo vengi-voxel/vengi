@@ -109,9 +109,9 @@ TEST_F(StringUtilTest, testReplaceExtension) {
 	EXPECT_EQ("foo.foo", core::string::replaceExtension("foo", "foo"));
 }
 
-TEST_F(StringUtilTest, testExtractPath) {
-	EXPECT_EQ("/a/b/c/def/", core::string::extractPath("/a/b/c/def/foo.bar"));
-	EXPECT_EQ("E:/a/b/c/def/", core::string::extractPath("E:/a/b/c/def/foo.bar"));
+TEST_F(StringUtilTest, testExtractDir) {
+	EXPECT_EQ("/a/b/c/def/", core::string::extractDir("/a/b/c/def/foo.bar"));
+	EXPECT_EQ("E:/a/b/c/def/", core::string::extractDir("E:/a/b/c/def/foo.bar"));
 }
 
 TEST_F(StringUtilTest, testExtractExtension) {

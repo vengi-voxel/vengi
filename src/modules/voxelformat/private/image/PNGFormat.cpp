@@ -183,7 +183,7 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	}
 
 	core::String basename = core::string::extractFilename(filename);
-	const core::String &directory = core::string::extractPath(filename);
+	const core::String &directory = core::string::extractDir(filename);
 	size_t sep = basename.rfind('-');
 	if (sep != core::String::npos) {
 		basename = basename.substr(0, sep);

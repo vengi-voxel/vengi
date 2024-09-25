@@ -34,10 +34,10 @@ core::String VoxelFile::targetFile() const {
 
 core::String VoxelFile::targetDir() const {
 	if (isLocal()) {
-		return core::string::sanitizeDirPath(core::string::extractPath(fullPath));
+		return core::string::sanitizeDirPath(core::string::extractDir(fullPath));
 	}
 	const core::String cleanSource = core::string::cleanPath(source);
-	const core::String path = core::string::path(cleanSource, core::string::extractPath(fullPath));
+	const core::String path = core::string::path(cleanSource, core::string::extractDir(fullPath));
 	return core::string::sanitizeDirPath(path);
 }
 
@@ -146,7 +146,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 		subFile.license = archiveFile.license;
 		subFile.licenseUrl = archiveFile.licenseUrl;
 		subFile.thumbnailUrl = archiveFile.thumbnailUrl;
-		subFile.fullPath = core::string::path(core::string::extractPath(archiveFile.fullPath), f.fullPath);
+		subFile.fullPath = core::string::path(core::string::extractDir(archiveFile.fullPath), f.fullPath);
 		subFile.downloaded = true;
 
 		if (supportedFileExtension(subFile.name)) {

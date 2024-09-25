@@ -153,7 +153,7 @@ bool isSamePath(const core::String &a, const core::String &b);
  * @brief extract path with trailing /
  * @note Assumed to be normalized (no \ , only /)
  */
-core::String extractPath(const core::String& str);
+core::String extractDir(const core::String& str);
 // remove all characters that are not alphanumeric and convert everything to lower case
 core::String cleanPath(const core::String &str);
 core::String stripExtension(const core::String& str);

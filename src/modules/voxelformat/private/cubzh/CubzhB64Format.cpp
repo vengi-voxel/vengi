@@ -48,7 +48,7 @@ bool CubzhB64Format::loadObject(const io::ArchivePtr &archive, const core::Strin
 	fullPath.append(".3zh");
 
 	if (!archive->exists(fullPath)) {
-		const core::String &path = core::string::extractPath(fullPath);
+		const core::String &path = core::string::extractDir(fullPath);
 		const core::String &file = core::string::extractFilenameWithExtension(fullPath);
 		if (archive->exists(core::string::path(path, "..", "cache", file))) {
 			fullPath = core::string::path(path, "..", "cache", file);

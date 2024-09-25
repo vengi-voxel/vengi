@@ -894,7 +894,7 @@ core::String sanitizeDirPath(core::String str) {
 	return str.append("/");
 }
 
-core::String extractPath(const core::String &str) {
+core::String extractDir(const core::String &str) {
 	const size_t pos = str.rfind("/");
 	if (pos == core::String::npos) {
 		return "";
@@ -962,7 +962,7 @@ core::String extractFilenameWithExtension(const core::String &str) {
 }
 
 core::String addFilenamePrefix(const core::String &filename, const core::String &prefix) {
-	const core::String &path = extractPath(filename);
+	const core::String &path = extractDir(filename);
 	const core::String &file = extractFilenameWithExtension(filename);
 	return core::string::path(path, prefix + file);
 }

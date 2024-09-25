@@ -210,7 +210,7 @@ void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 			}
 			if (ImGui::MenuItem(_("Open target dir"))) {
 				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
-				command::executeCommands("url \"file://" + core::string::extractPath(absPath) + "\"");
+				command::executeCommands("url \"file://" + core::string::extractDir(absPath) + "\"");
 			}
 		} else if (!thumbnailLookup(*voxelFile)) {
 			if (ImGui::MenuItem(_("Create thumbnail"))) {

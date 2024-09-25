@@ -416,7 +416,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 			Log::error("%s can't get opened in write mode", filename.c_str());
 			return core::make_shared<io::File>("", mode);
 		}
-		sysCreateDir(core::string::path(_homePath, core::string::extractPath(filename)), true);
+		sysCreateDir(core::string::path(_homePath, core::string::extractDir(filename)), true);
 		return core::make_shared<io::File>(core::string::path(_homePath, filename), mode);
 	}
 	FileMode openmode = mode;
@@ -482,7 +482,7 @@ core::String Filesystem::homeWritePath(const core::String &name) const {
 
 long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream) {
 	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractPath(fullPath.c_str()));
+	const core::String path(core::string::extractDir(fullPath.c_str()));
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	long written = f.write(stream);
@@ -492,7 +492,7 @@ long Filesystem::homeWrite(const core::String &filename, io::ReadStream &stream)
 
 bool Filesystem::homeWrite(const core::String &filename, const uint8_t *content, size_t length) {
 	const core::String &fullPath = core::string::path(_homePath, filename);
-	const core::String path(core::string::extractPath(fullPath.c_str()));
+	const core::String path(core::string::extractDir(fullPath.c_str()));
 	sysCreateDir(path, true);
 	io::File f(fullPath, FileMode::Write);
 	return f.write(content, length) == static_cast<long>(length);
@@ -505,7 +505,7 @@ bool Filesystem::homeWrite(const core::String &filename, const core::String &str
 
 bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, size_t length) const {
 	io::File f(filename, FileMode::SysWrite);
-	if (!sysCreateDir(f.path())) {
+	if (!sysCreateDir(f.dir())) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
 	}
@@ -515,7 +515,7 @@ bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, 
 
 long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) const {
 	io::File f(filename, FileMode::SysWrite);
-	if (!sysCreateDir(f.path())) {
+	if (!sysCreateDir(f.dir())) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
 	}

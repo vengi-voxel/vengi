@@ -144,7 +144,7 @@ bool VXRFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		const scenegraph::SceneGraphNode &node = sceneGraph.node(child);
 		wrapBool(saveRecursiveNode(sceneGraph, node, filename, archive, *stream, ctx))
 	}
-	const core::String &basePath = core::string::extractPath(filename);
+	const core::String &basePath = core::string::extractDir(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
 	for (const core::String &id : animationIds) {
 		const core::String &vxaFilename = core::string::format("%s.%s.vxa", baseName.c_str(), id.c_str());
@@ -306,7 +306,7 @@ bool VXRFormat::importChild(const core::String &vxmPath, const io::ArchivePtr &a
 	wrapBool(stream.readString(sizeof(filename), filename, true))
 	if (filename[0] != '\0') {
 		Log::debug("load vxm %s", filename);
-		const core::String modelPath = core::string::path(core::string::extractPath(vxmPath), filename);
+		const core::String modelPath = core::string::path(core::string::extractDir(vxmPath), filename);
 		if (!loadChildVXM(modelPath, archive, sceneGraph, node, version, ctx)) {
 			Log::warn("Failed to attach model for id '%s' with filename %s (%s)", id, filename, modelPath.c_str());
 		}
@@ -415,7 +415,7 @@ bool VXRFormat::loadGroupsVersion3AndEarlier(const core::String &filename, const
 		char vxmFilename[1024];
 		wrapBool(stream.readString(sizeof(vxmFilename), vxmFilename, true))
 		if (vxmFilename[0] != '\0') {
-			const core::String modelPath = core::string::path(core::string::extractPath(filename), vxmFilename);
+			const core::String modelPath = core::string::path(core::string::extractDir(filename), vxmFilename);
 			if (!loadChildVXM(modelPath, archive, sceneGraph, *node, version, ctx)) {
 				Log::warn("Failed to attach model for %s with filename %s", nodeId, modelPath.c_str());
 			}
@@ -488,7 +488,7 @@ bool VXRFormat::loadGroupsVersion4AndLater(const core::String &filename, const i
 		wrapBool(importChild(filename, archive, stream, sceneGraph, version, rootNodeId, ctx))
 	}
 
-	const core::String &basePath = core::string::extractPath(filename);
+	const core::String &basePath = core::string::extractDir(filename);
 	const core::String &baseName = core::string::extractFilename(filename);
 	io::ArchiveFiles entities;
 	archive->list(basePath, entities, "*.vxa");

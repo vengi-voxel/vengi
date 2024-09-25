@@ -87,7 +87,7 @@ public:
 	 * @return The path of the file, without the name - or an
 	 * empty string if no path component was found
 	 */
-	core::String path() const;
+	core::String dir() const;
 	/**
 	 * @return Just the base file name component part - without
 	 * path and extension

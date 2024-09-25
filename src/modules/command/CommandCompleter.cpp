@@ -8,7 +8,7 @@
 namespace command {
 
 int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::String& match, core::DynamicArray<core::String>& matches, const char* pattern) {
-	const core::String additionalDir = core::string::extractPath(match.c_str());
+	const core::String additionalDir = core::string::extractDir(match.c_str());
 	dir += additionalDir;
 	core::String currentMatch;
 	if (dir.empty()) {
@@ -21,7 +21,7 @@ int complete(const io::FilesystemPtr& filesystem, core::String dir, const core::
 	core::DynamicArray<io::FilesystemEntry> entries;
 	const core::String filter = match + pattern;
 	const core::String& filterName = core::string::extractFilenameWithExtension(filter.c_str());
-	const core::String& filterPath = core::string::extractPath(filter.c_str());
+	const core::String& filterPath = core::string::extractDir(filter.c_str());
 	filesystem->list(dir, entries, currentMatch + "*");
 	int i = 0;
 	for (const io::FilesystemEntry& entry : entries) {

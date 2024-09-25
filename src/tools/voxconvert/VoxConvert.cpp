@@ -587,7 +587,7 @@ core::String VoxConvert::getFilenameForModelName(const core::String &inputfile, 
 	} else {
 		name = core::string::format("%s-%i.%s", modelName.c_str(), id, ext.c_str());
 	}
-	return core::string::path(core::string::extractPath(inputfile), core::string::sanitizeFilename(name));
+	return core::string::path(core::string::extractDir(inputfile), core::string::sanitizeFilename(name));
 }
 
 static void printProgress(const char *name, int cur, int max) {
