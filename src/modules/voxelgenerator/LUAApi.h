@@ -80,6 +80,7 @@ private:
 	core::DynamicArray<LUAParameterDescription> _argsInfo;
 	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
 	bool _scriptStillRunning = false;
+	int _nargs = 0;
 
 public:
 	LUAApi(const io::FilesystemPtr &filesystem);

@@ -1793,8 +1793,8 @@ bool LUAApi::init() {
 ScriptState LUAApi::update(double nowSeconds) {
 	if (_scriptStillRunning) {
 		int nres = 0;
-		const int nargs = 3 + _argsInfo.size();
-		const int error = lua_resume(_lua, nullptr, nargs, &nres);
+		const int error = lua_resume(_lua, nullptr, _nargs, &nres);
+		_nargs = 0;
 		if (error == LUA_OK) {
 			_scriptStillRunning = false;
 			lua_gc(_lua, LUA_GCCOLLECT, 0);
@@ -2109,6 +2109,7 @@ bool LUAApi::exec(const core::String &luaScript, scenegraph::SceneGraph &sceneGr
 	}
 
 	_scriptStillRunning = true;
+	_nargs = 3 + _argsInfo.size();
 
 	return true;
 }
