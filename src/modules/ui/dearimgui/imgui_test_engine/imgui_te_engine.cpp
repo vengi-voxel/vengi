@@ -2152,6 +2152,8 @@ void ImGuiTestEngineHook_ItemInfo(ImGuiContext* ui_ctx, ImGuiID id, const char* 
 void ImGuiTestEngineHook_Log(ImGuiContext* ui_ctx, const char* fmt, ...)
 {
     ImGuiTestEngine* engine = (ImGuiTestEngine*)ui_ctx->TestEngine;
+    if (engine == NULL || engine->TestContext == NULL)
+        return;
 
     va_list args;
     va_start(args, fmt);
