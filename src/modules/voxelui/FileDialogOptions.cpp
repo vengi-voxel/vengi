@@ -140,6 +140,8 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 			}
 			ImGui::EndCombo();
 		}
+
+		ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
 	}
 
 	if (*desc == io::format::png()) {
@@ -180,7 +182,6 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
-	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
 	ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
 	// TODO: cfg::PalformatRGB6Bit
 	return true;
