@@ -26,6 +26,8 @@ General:
    - Added support for exporting and importing to and from `png` slices
    - Added support for Autodesk `3ds` files
    - Support for loading normals for voxelization (mesh formats) and for voxel formats (`vxl`)
+   - Fixed `vxl` saving for negative coordinates
+   - Split file dialog options into a new separated dialog
 
 VoxConvert:
 
@@ -43,6 +45,7 @@ VoxEdit:
    - New brush type to project textures into sub areas or on surfaces
    - Added an FPS option for the animation timeline
    - Added normal palette panel
+   - Fixed missing memento group for merging nodes
 
 ## 0.0.33 (2024-08-05)
 
