@@ -75,19 +75,19 @@ glm::vec3 Tri::calculateBarycentric(const glm::vec3 &pos) const {
 	// Check for degenerated triangle
 	if (det < glm::epsilon<float>()) {
 		// Check if the triangle is degenerate and lies on a line
-		if (glm::length2(v0) < glm::epsilon<float>()) {
+		if (d00 < glm::epsilon<float>()) {
 			// vertices[0] and vertices[2] are the same point
-			if (glm::length2(v1) < glm::epsilon<float>()) {
+			if (d11 < glm::epsilon<float>()) {
 				// All vertices are the same point
 				return glm::vec3(1.0f, 0.0f, 0.0f); // All barycentric weight goes to vertices[0]
 			} else {
 				// Collapse to a line between vertices[1] and vertices[2]
-				float t = glm::clamp(glm::dot(v2, v1) / glm::dot(v1, v1), 0.0f, 1.0f);
+				float t = glm::clamp(r1 / d11, 0.0f, 1.0f);
 				return glm::vec3(0.0f, t, 1.0f - t); // Return interpolation on the line
 			}
 		} else {
 			// Collapse to a line between vertices[0] and vertices[2]
-			float t = glm::clamp(glm::dot(v2, v0) / glm::dot(v0, v0), 0.0f, 1.0f);
+			float t = glm::clamp(r0 / d00, 0.0f, 1.0f);
 			return glm::vec3(t, 0.0f, 1.0f - t); // Return interpolation on the line
 		}
 	}
