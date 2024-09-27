@@ -334,7 +334,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Cube &cube = element.cube;
 
-	// TODO: is this (from > to) used to flip the uv coordinates or for culling?
+	// TODO: VOXELFORMAT: is this (from > to) used to flip the uv coordinates or for culling?
 	glm::vec3 mins = glm::min(element.cube.from, element.cube.to);
 	glm::vec3 maxs = glm::max(element.cube.from, element.cube.to);
 
@@ -358,7 +358,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 	model.setLocked(node.locked);
 	model.setVisible(node.visible);
 	model.setRotation(glm::quat(glm::radians(element.rotation)), true);
-	// TODO: pivot or translation is still wrong and group rotations are not correctly applied yet
+	// TODO: VOXELFORMAT: pivot or translation is still wrong and group rotations are not correctly applied yet
 	const glm::vec3 pivot = (element.origin - element.cube.from) / size;
 	model.setPivot(pivot);
 	const glm::vec3 regionsize = region.getDimensionsInVoxels();
@@ -448,7 +448,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		const bool selected = animationJson["selected"];
 		const int length = animationJson["length"];
 		const int snapping = animationJson["snapping"];
-		// TODO: load animations
+		// TODO: VOXELFORMAT: load animations
 		// "anim_time_update": "",
 		// "blend_weight": "",
 		// "start_delay": "",
@@ -472,7 +472,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				const glm::vec3 keyframeBezierRightTime = priv::toVec3(keyframeJson, "bezier_right_time");
 				const glm::vec3 keyframeBezierLeftValue = priv::toVec3(keyframeJson, "bezier_left_value");
 				const glm::vec3 keyframeBezierLeftTime = priv::toVec3(keyframeJson, "bezier_left_time");
-				// TODO: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
+				// TODO: VOXELFORMAT: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
 				// "data_points": [{"x": "0","y": "0","z": 90}],
 			}
 		}
@@ -533,7 +533,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	for (const auto &texture : textures) {
 		const core::String &name = priv::toStr(texture, "name");
-		// TODO: allow to load from "path" instead of "source"
+		// TODO: VOXELFORMAT: allow to load from "path" instead of "source"
 		// relative_path
 		const core::String &source = priv::toStr(texture, "source");
 		if (core::string::startsWith(source, "data:")) {

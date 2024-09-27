@@ -39,30 +39,6 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	return saveMeshesAscii(meshes, filename, *stream, scale, quad, withColor, withTexCoords, sceneGraph);
 }
 
-// TODO: unused
-class FBXScopedHeader {
-private:
-	io::SeekableWriteStream *_stream;
-	/**
-	 * @brief EndOffset is the distance from the beginning of the file to the end of the node record (i.e. the first
-	 * byte of whatever comes next). This can be used to easily skip over unknown or not required records.
-	 */
-	int64_t _endOffsetPos;
-
-public:
-	FBXScopedHeader(io::SeekableWriteStream *stream) : _stream(stream) {
-		_endOffsetPos = stream->pos();
-		stream->writeUInt32(0u);
-	}
-
-	~FBXScopedHeader() {
-		const int64_t currentPos = _stream->pos();
-		_stream->seek(_endOffsetPos);
-		_stream->writeUInt32(currentPos);
-		_stream->seek(currentPos);
-	}
-};
-
 bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 								 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 								 const scenegraph::SceneGraph &sceneGraph) {
@@ -70,7 +46,7 @@ bool FBXFormat::saveMeshesBinary(const Meshes &meshes, const core::String &filen
 	stream.writeUInt8(0x1A);  // unknown
 	stream.writeUInt8(0x00);  // unknown
 	stream.writeUInt32(7300); // version
-	// TODO: implement me https://code.blender.org/2013/08/fbx-binary-file-format-specification/
+	// TODO: VOXELFORMAT: implement me https://code.blender.org/2013/08/fbx-binary-file-format-specification/
 	return false;
 }
 
@@ -88,7 +64,7 @@ bool FBXFormat::saveMeshesAscii(const Meshes &meshes, const core::String &filena
 			++meshCount;
 		}
 	}
-	// TODO: support keyframes (takes)
+	// TODO: VOXELFORMAT: support keyframes (takes)
 	stream.writeStringFormat(false, R"(FBXHeaderExtension:  {
 	FBXHeaderVersion: 1003
 	FBXVersion: 6100
@@ -117,8 +93,8 @@ Objects: {
 
 	Log::debug("Exporting %i models", meshCount);
 
-	// TODO: maybe also export Model: "Model::Camera", "Camera"
-	// TODO: are connections and relations needed?
+	// TODO: VOXELFORMAT: maybe also export Model: "Model::Camera", "Camera"
+	// TODO: VOXELFORMAT: are connections and relations needed?
 	// https://github.com/libgdx/fbx-conv/blob/master/samples/blender/cube.fbx
 
 	for (const MeshExt &meshExt : meshes) {
@@ -179,7 +155,7 @@ Objects: {
 			wrapBool(stream.writeString("\n", false))
 			wrapBool(stream.writeString("\t\tGeometryVersion: 124\n", false))
 
-			// TODO: LayerElementNormal
+			// TODO: VOXELFORMAT: LayerElementNormal
 
 			if (withTexCoords) {
 				wrapBool(stream.writeString("\t\tLayerElementUV: 0 {\n", false))
@@ -199,7 +175,7 @@ Objects: {
 					stream.writeStringFormat(false, "%f,%f", uv.x, uv.y);
 				}
 				wrapBool(stream.writeString("\n\t\t}\n", false))
-				// TODO: UVIndex needed or only for IndexToDirect?
+				// TODO: VOXELFORMAT: UVIndex needed or only for IndexToDirect?
 
 				wrapBool(stream.writeString("\t\tLayerElementTexture: 0 {\n"
 											"\t\t\tVersion: 101\n"
@@ -232,7 +208,7 @@ Objects: {
 				}
 				// close LayerElementColor
 				wrapBool(stream.writeString("\n\t\t}\n", false))
-				// TODO: ColorIndex needed or only for IndexToDirect?
+				// TODO: VOXELFORMAT: ColorIndex needed or only for IndexToDirect?
 
 				wrapBool(stream.writeString("\t\tLayer: 0 {\n"
 											"\t\t\tVersion: 100\n"
@@ -352,7 +328,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				}
 			}
 			if (material->features.ior.enabled) {
-				// TODO: rendering features for e.g. magicavoxel
+				// TODO: MATERIAL: rendering features for e.g. magicavoxel
 			}
 			const core::String &materialName = priv::_ufbx_to_string(material->name);
 			auto textureIter = textures.find(materialName);
@@ -383,7 +359,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					}
 					const ufbx_vec2 &uv =
 						mesh->vertex_uv.exists ? ufbx_get_vertex_vec2(&mesh->vertex_uv, ix) : defaultUV;
-					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale; // TODO: transform here - see issue https://github.com/vengi-voxel/vengi/issues/227
+					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale; // TODO: VOXELFORMAT: transform here - see issue https://github.com/vengi-voxel/vengi/issues/227
 					tri.uv[ti] = priv::_ufbx_to_vec2(uv);
 				}
 				tri.texture = texture;
@@ -410,7 +386,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	}
 	sceneGraphNode.setTransform(keyFrameIdx, transform);
 	sceneGraphNode.setVisible(node->visible);
-	// TODO: animations - see ufbx_evaluate_transform
+	// TODO: VOXELFORMAT: animations - see ufbx_evaluate_transform
 	return nodeId;
 }
 
@@ -499,7 +475,8 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	ufbxopts.raw_filename.data = filename.c_str();
 	ufbxopts.raw_filename.size = filename.size();
 
-	ufbxopts.target_axes = ufbx_axes_right_handed_y_up; // TODO: see issue https://github.com/vengi-voxel/vengi/issues/227
+	// TODO: VOXELFORMAT: see issue https://github.com/vengi-voxel/vengi/issues/227
+	ufbxopts.target_axes = ufbx_axes_right_handed_y_up;
 	ufbxopts.target_unit_meters = 1.0f;
 	ufbxopts.target_light_axes = ufbxopts.target_axes;
 	ufbxopts.target_camera_axes = ufbxopts.target_axes;

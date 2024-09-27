@@ -249,7 +249,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const core::String &mtlbasedir = core::string::extractDir(filename);
 	io::StdIStreamBuf stdStreamBuf(*stream);
 	std::istream inputStream(&stdStreamBuf);
-	// TODO: use the archive
+	// TODO: VOXELFORMAT: use the archive
 	tinyobj::MaterialFileReader matFileReader(mtlbasedir.c_str());
 	Log::debug("Load obj %s", filename.c_str());
 	const bool ret =
@@ -315,7 +315,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	const glm::vec3 &scale = getInputScale();
 	for (tinyobj::shape_t &shape : shapes) {
 		int indexOffset = 0;
-		// TODO: FORMAT: shape.lines, shape.points
+		// TODO: VOXELFORMAT: shape.lines, shape.points
 		const tinyobj::mesh_t &mesh = shape.mesh;
 		for (const tinyobj::tag_t &tag : mesh.tags) {
 			Log::debug("tag: %s", tag.name.c_str());

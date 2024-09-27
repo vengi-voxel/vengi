@@ -168,7 +168,8 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				// if (mask && 16 == 16) // bottom side visible
 				// if (mask && 32 == 32) // front side visible
 				// if (mask && 64 == 64) // back side visible
-				const int vismask = 0x7E; // TODO: this produces voxels where every side is visible, it's up to the
+				// const voxel::FaceBits faceBits = voxel::visibleFaces(v, x, y, z);
+				const int vismask = 0x7E; // TODO: VOXELFORMAT: this produces voxels where every side is visible, it's up to the
 										  // importer to fix this atm
 				stream->writeStringFormat(false, "%i %i %i %i %i\n", x, z, y, voxel.getColor(), vismask);
 			}

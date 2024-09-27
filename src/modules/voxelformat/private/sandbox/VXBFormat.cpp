@@ -42,7 +42,7 @@ namespace voxelformat {
 namespace priv {
 static const voxel::FaceNames faceNames[] = {voxel::FaceNames::Left, voxel::FaceNames::Right, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
-// TODO: document why this right/left flip is needed
+// TODO: VOXELFORMAT: document why this right/left flip is needed
 static const voxel::FaceNames faceNamesSave[] = {voxel::FaceNames::Right, voxel::FaceNames::Left, voxel::FaceNames::Down,
 											 voxel::FaceNames::Up,	 voxel::FaceNames::Front, voxel::FaceNames::Back};
 
@@ -360,7 +360,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	}
 	uint32_t blockSize = region.getWidthInVoxels();
 	wrapBool(stream->writeUInt32(blockSize))
-	uint32_t uniqueFaces = 6; // TODO: calculate unique faces and write the indices - this can reduce the file size
+	uint32_t uniqueFaces = 6; // TODO: VOXELFORMAT: calculate unique faces and write the indices - this can reduce the file size
 	wrapBool(stream->writeUInt32(uniqueFaces))
 	uint32_t indices[6] = {0, 1, 2, 3, 4, 5};
 	for (int i = 0; i < 6; i++) {

@@ -241,7 +241,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapBool(stream->writeUInt32(dim.y))
 	Log::debug("Dimensions: %i:%i:%i", dim.x, dim.z, dim.y);
 
-	// TODO: support the pivot
+	// TODO: VOXELFORMAT: support the pivot
 	glm::ivec3 pivot(0); // normalized pivot
 	wrapBool(stream->writeInt32(-pivot.x))
 	wrapBool(stream->writeInt32(pivot.z))

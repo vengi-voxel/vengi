@@ -34,7 +34,7 @@
 #include <limits.h>
 
 #define TINYGLTF_IMPLEMENTATION
-// #define TINYGLTF_NO_FS // TODO: use our own file abstraction
+// #define TINYGLTF_NO_FS // TODO: VOXELFORMAT: use our own file abstraction
 #define JSON_HAS_CPP_11
 #include "voxelformat/external/tiny_gltf.h"
 
@@ -491,7 +491,7 @@ void GLTFFormat::save_KHR_materials_emissive_strength(const palette::Material &m
 	if (!material.has(palette::MaterialProperty::MaterialEmit)) {
 		return;
 	}
-	// TODO: needed?
+	// TODO: VOXELFORMAT: needed?
 	// addExtension(gltfModel, "KHR_materials_emissive_strength");
 }
 
@@ -555,7 +555,7 @@ void GLTFFormat::save_KHR_materials_pbrSpecularGlossiness(const palette::Materia
 		diffuseFactor[0] = tinygltf::Value(fcolor[0] * diffusion);
 		diffuseFactor[1] = tinygltf::Value(fcolor[1] * diffusion);
 		diffuseFactor[2] = tinygltf::Value(fcolor[2] * diffusion);
-		diffuseFactor[3] = tinygltf::Value(fcolor[3]); // TODO: maybe the magicavoxel transparent factor would fit here?
+		diffuseFactor[3] = tinygltf::Value(fcolor[3]); // TODO: VOXELFORMAT: maybe the magicavoxel transparent factor would fit here?
 		sg["diffuseFactor"] = tinygltf::Value(diffuseFactor);
 	}
 	{
@@ -1309,7 +1309,7 @@ bool GLTFFormat::loadMaterial(const core::String &filename, core::StringMap<imag
 	Log::debug("Primitive mode: %i", gltfPrimitive.mode);
 	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)gltfModel.materials.size()) {
 		const tinygltf::Material *gltfMaterial = &gltfModel.materials[gltfPrimitive.material];
-		// TODO: load emissiveTexture
+		// TODO: VOXELFORMAT: load emissiveTexture
 		const tinygltf::TextureInfo &gltfTextureInfo = gltfMaterial->pbrMetallicRoughness.baseColorTexture;
 		if (gltfTextureInfo.index != -1 && gltfTextureInfo.index < (int)gltfModel.textures.size()) {
 			loadTexture(filename, textures, gltfModel, materialData, gltfTextureInfo, gltfTextureInfo.index);
@@ -1418,7 +1418,7 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 	} else if (gltfAnimSampler.interpolation == "STEP") {
 		interpolation = scenegraph::InterpolationType::Instant;
 		// } else if (sampler.interpolation == "CUBICSPLINE") {
-		// TODO: implement easing for this type
+		// TODO: VOXELFORMAT: implement easing for this type
 		// interpolation = InterpolationType::Linear;
 	}
 

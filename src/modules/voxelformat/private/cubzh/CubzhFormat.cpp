@@ -23,7 +23,7 @@
 
 namespace voxelformat {
 
-// TODO: z-axis must be flipped
+// TODO: VOXELFORMAT: z-axis must be flipped
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \

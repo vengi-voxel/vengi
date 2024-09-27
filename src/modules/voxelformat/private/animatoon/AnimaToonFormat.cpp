@@ -318,7 +318,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	camNode.setPerspective();
 	sceneGraph.emplace(core::move(camNode), sceneGraph.root().id());
 
-	// TODO: use me
+	// TODO: VOXELFORMAT: use me
 #if 0
 	for (const auto &savedPos : json["savedPositionsList"]) {
 		const std::string innerJson = savedPos.get<std::string>();

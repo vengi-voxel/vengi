@@ -228,7 +228,7 @@ bool Autodesk3DSFormat::readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &
 			}
 			break;
 		}
-		// TODO: face normals? 0x4154
+		// TODO: VOXELFORMAT: face normals? 0x4154
 		default:
 			skipUnknown(stream, scoped.chunk, "Face");
 			break;
@@ -499,7 +499,7 @@ bool Autodesk3DSFormat::readNodeChildren(io::SeekableReadStream *stream, Chunk3d
 			node.meshes.emplace_back(mesh);
 			break;
 		}
-		// TODO: camera
+		// TODO: VOXELFORMAT: camera
 		default:
 			skipUnknown(stream, scoped.chunk, "Child");
 			break;
@@ -691,8 +691,8 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				}
 				tris.emplace_back(tri);
 			}
-			// TODO: FORMAT: node parent
-			// TODO: MATERIAL use the material from the 3ds file
+			// TODO: VOXELFORMAT: node parent
+			// TODO: MATERIAL: use the material from the 3ds file
 			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());
 			const int nodeId = voxelizeNode(mesh.name, sceneGraph, tris);
 			if (nodeId == InvalidNodeId) {

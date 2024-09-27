@@ -220,8 +220,8 @@ VMaxFormat::VolumeStats VMaxFormat::parseStats(const priv::BinaryPList &snapshot
 		volumeStats.smin[i] = (int)statsSmins[i].asInt();
 		volumeStats.smax[i] = (int)statsSmaxs[i].asInt();
 	}
-	// TODO: is this extent.mins/maxs ?? volumeStats.emin
-	// TODO: is this extent.mins/maxs ?? volumeStats.emax
+	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emin
+	// TODO: VOXELFORMAT: is this extent.mins/maxs ?? volumeStats.emax
 	volumeStats.extent.o = (int)extent.getDictEntry("o").asInt();
 	// const priv::BinaryPList &regionBounds = extent.getDictEntry("r");
 	// const priv::PListArray &extentMins = regionBounds.getDictEntry("min").asArray();
@@ -476,7 +476,7 @@ bool VMaxFormat::loadPaletteFromArchive(const io::ArchivePtr &archive, const cor
 
 size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) {
-	// TODO: there is also a "pal" dict in the vmaxb plist file for some files
+	// TODO: VOXELFORMAT: there is also a "pal" dict in the vmaxb plist file for some files
 	// pal->dict
 	//      colors->data
 	//      materials->array

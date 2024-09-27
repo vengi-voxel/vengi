@@ -338,7 +338,7 @@ bool SchematicFormat::parseBlocks(const priv::NamedBinaryTag &schematic, scenegr
 	const int16_t height = schematic.get("Height").int16();
 	const int16_t depth = schematic.get("Length").int16();
 
-	// TODO: Support for WorldEdit's AddBlocks is missing
+	// TODO: VOXELFORMAT: Support for WorldEdit's AddBlocks is missing
 	// * https://github.com/EngineHub/WorldEdit/blob/master/worldedit-core/src/main/java/com/sk89q/worldedit/extent/clipboard/io/MCEditSchematicReader.java#L171
 	// * https://github.com/mcedit/mcedit2/blob/master/src/mceditlib/schematic.py#L143
 	// * https://github.com/Lunatrius/Schematica/blob/master/src/main/java/com/github/lunatrius/schematica/world/schematic/SchematicAlpha.java
@@ -532,7 +532,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	compound.put("z", (int32_t)mins.z);
 	compound.put("Materials", priv::NamedBinaryTag("Alpha"));
 	compound.put("Version", 3);
-	// TODO: palette
+	// TODO: VOXELFORMAT: palette
 	{
 		core::DynamicArray<int8_t> blocks;
 		blocks.resize((size_t)size.x * (size_t)size.y * (size_t)size.z);

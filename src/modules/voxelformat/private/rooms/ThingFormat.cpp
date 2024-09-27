@@ -35,7 +35,7 @@ bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpe
 
 static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, const glm::vec3 &localPos,
 												   const glm::vec3 &localRot, const glm::vec3 &localSize) {
-	// TODO: positioning is wrong
+	// TODO: VOXELFORMAT: positioning is wrong
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalOrientation(glm::quat(glm::radians(localRot)));
 	transform.setLocalTranslation(localPos);

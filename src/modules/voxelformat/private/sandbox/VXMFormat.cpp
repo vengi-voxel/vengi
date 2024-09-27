@@ -463,7 +463,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	Log::debug("Volume of size %u:%u:%u", size.x, size.y, size.z);
 
 	if (version >= 11) {
-		// TODO: parse the material emit data
+		// TODO: MATERIAL: parse the material emit data
 		stream->skip(256l * 4l); // palette data rgba for albedo materials
 		stream->skip(256l * 4l); // palette data rgba for emissive materials
 		uint8_t chunkAmount;	// palette chunks

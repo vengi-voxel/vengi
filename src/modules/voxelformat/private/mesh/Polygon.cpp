@@ -8,7 +8,7 @@
 namespace voxelformat {
 
 bool Polygon::toTris(MeshFormat::TriCollection &tris) const {
-	// TODO: mapbox::earcut
+	// TODO: VOXELFORMAT: mapbox::earcut
 	if (_vertices.size() < 3) {
 		return false;
 	}

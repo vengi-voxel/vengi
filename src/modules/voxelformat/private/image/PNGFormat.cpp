@@ -206,7 +206,7 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 
 size_t PNGFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							  const LoadContext &ctx) {
-	// TODO:
+	// TODO: VOXELFORMAT: assemble palette from image
 	palette.nippon();
 	return palette.colorCount();
 }

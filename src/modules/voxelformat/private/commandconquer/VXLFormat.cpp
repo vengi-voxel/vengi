@@ -211,7 +211,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	vxl::VXLMatrix vxlMatrix;
 	convertWrite(vxlMatrix, transform.localMatrix(), false);
 
-	// TODO: always 0.0833333358f?
+	// TODO: VOXELFORMAT: always 0.0833333358f?
 	wrapBool(stream.writeFloat(vxl::Scale /*transform.localScale()*/))
 
 	for (int j = 0; j < 12; ++j) {

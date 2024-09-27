@@ -133,7 +133,7 @@ bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &arch
 bool HVAFormat::writeHVAHeader(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph) const {
 	char name[16];
 	core_memset(name, 0, sizeof(name));
-	// TODO: name
+	// TODO: VOXELFORMAT: name
 	if (stream.write(name, sizeof(name)) == -1) {
 		Log::error("Failed to write hva header name");
 		return false;

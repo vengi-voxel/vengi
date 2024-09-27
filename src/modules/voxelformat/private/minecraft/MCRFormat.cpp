@@ -196,7 +196,7 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 		Log::error("No volumes found at %i:%i", xPos, zPos);
 		return nullptr;
 	}
-	// TODO: only merge connected y chunks - don't fill empty chunks - just a waste of memory
+	// TODO: VOXELFORMAT: only merge connected y chunks - don't fill empty chunks - just a waste of memory
 	voxel::RawVolume *merged = voxelutil::merge(volumes);
 	for (voxel::RawVolume *v : volumes) {
 		delete v;

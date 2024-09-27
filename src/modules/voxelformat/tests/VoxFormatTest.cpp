@@ -18,7 +18,7 @@ namespace voxelformat {
 
 class VoxFormatTest : public AbstractFormatTest {};
 
-// TODO: add a test to check the group handling scene graph layout in general.
+// TODO: VOXELFORMAT: add a test to check the group handling scene graph layout in general.
 
 TEST_F(VoxFormatTest, testLoad) {
 	testLoad("magicavoxel.vox");

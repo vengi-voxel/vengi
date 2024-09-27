@@ -167,7 +167,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 					zipStream.writeUInt8(voxelColor.b);
 				}
 				// mask != 0 means solid, 1 is core (surrounded by others and not visible)
-				// TODO: const voxel::FaceBits faceBits = voxel::visibleFaces(v, x, y, z);
+				// TODO: VOXELFORMAT: const voxel::FaceBits faceBits = voxel::visibleFaces(v, x, y, z);
 				zipStream.writeUInt8(0xff);
 			}
 		}

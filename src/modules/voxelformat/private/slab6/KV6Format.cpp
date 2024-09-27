@@ -308,7 +308,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 	}
 
 	core::DynamicArray<voxel::RawVolume *> volumes;
-	// TODO: the order here matters for the references in the kfa structs
+	// TODO: VOXELFORMAT: the order here matters for the references in the kfa structs
 	voxelutil::splitObjects(volume, volumes, voxelutil::VisitorOrder::XYZ);
 	if (volumes.empty()) {
 		Log::error("Could not split volume into single objects");
@@ -339,7 +339,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setPivot(pivot);
 
-		const uint32_t fps = 20; // TODO fps?
+		const uint32_t fps = 20; // TODO VOXELFORMAT: fps unknown?
 		const uint32_t div = 1000 / fps;
 		for (const priv::KFASeqTyp &seq : kfa.seq) {
 			scenegraph::KeyFrameIndex keyFrameIdx = node.addKeyFrame(seq.time / div);
@@ -349,7 +349,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 			}
 			scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-			// TODO: implement keyframe loading
+			// TODO: VOXELFORMAT: implement keyframe loading
 			(void)transform;
 #if 0
 			// rotation
@@ -364,7 +364,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		node.setVolume(v, true);
 		node.setName(filename);
 		node.setPalette(palette);
-		// TODO: proper parenting
+		// TODO: VOXELFORMAT: proper parenting
 		int parent = 0;
 		if (sceneGraph.emplace(core::move(node), parent) == InvalidNodeId) {
 			Log::error("Failed to add node to scene graph");

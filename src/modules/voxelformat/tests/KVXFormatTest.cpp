@@ -13,7 +13,7 @@ TEST_F(KVXFormatTest, testLoad) {
 	testLoad("test.kvx");
 }
 
-// TODO: fix the pivot - see KVXFormat::saveGroups()
+// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(KVXFormatTest, testSaveSmallVoxel) {
 	KVXFormat f;
 	testSaveLoadVoxel("kvx-smallvolumesavetest.kvx", &f, -16, 15,

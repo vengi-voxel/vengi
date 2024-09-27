@@ -180,7 +180,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 	// restore old name
 	node.setName(nodeName);
 
-	// TODO: support loading all models
+	// TODO: VOXELFORMAT: support loading all models
 #if 0
 	for (int i = 1; i < modelCount; ++i) {
 		SceneGraphNode child;
@@ -188,7 +188,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 		copyNode(src, child, false);
 		src.releaseOwnership();
 		child.setVolume(src.volume(), true);
-		// TODO: the node instance is not yet added to the scene graph - and thus doesn't have a parent yet
+		// TODO: VOXELFORMAT: the node instance is not yet added to the scene graph - and thus doesn't have a parent yet
 		sceneGraph.emplace(core::move(child), node.parent());
 	}
 #endif

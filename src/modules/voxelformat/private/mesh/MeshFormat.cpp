@@ -531,7 +531,7 @@ bool MeshFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	return false;
 }
 
-// TODO: use io::Archive here, too
+// TODO: VOXELFORMAT: use io::Archive here, too
 core::String MeshFormat::lookupTexture(const core::String &meshFilename, const core::String &in) {
 	const core::String &meshPath = core::string::extractDir(meshFilename);
 	core::String name = in;
@@ -618,7 +618,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	Meshes meshes;
 	core::Map<int, int> meshIdxNodeMap;
 	core_trace_mutex(core::Lock, lock, "MeshFormat");
-	// TODO: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
+	// TODO: VOXELFORMAT: this could get optimized by re-using the same mesh for multiple nodes (in case of reference nodes)
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		app::async([&, volume = sceneGraph.resolveVolume(node), region = sceneGraph.resolveRegion(node)]() {

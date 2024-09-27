@@ -377,7 +377,7 @@ TEST_F(ConvertTest, testQBChrKnightToKV6) {
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kv6", target, flags, 4);
 }
 
-// TODO: fix the pivot - see KVXFormat::saveGroups()
+// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBToKVX) {
 	QBFormat src;
 	KVXFormat target;
@@ -387,7 +387,7 @@ TEST_F(ConvertTest, testQBToKVX) {
 	testConvert("kvx_save.qb", src, "convert-kvx_save.kvx", target, flags);
 }
 
-// TODO: fix the pivot - see KVXFormat::saveGroups()
+// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testQBChrKnightToKVX) {
 	QBFormat src;
 	KVXFormat target;
@@ -397,7 +397,7 @@ TEST_F(ConvertTest, testQBChrKnightToKVX) {
 	testConvert("chr_knight.qb", src, "convert-chr_knight.kvx", target, flags);
 }
 
-// TODO: fix the pivot - see KVXFormat::saveGroups()
+// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testKVXToKVX) {
 	KVXFormat src;
 	KVXFormat target;
@@ -406,7 +406,7 @@ TEST_F(ConvertTest, testKVXToKVX) {
 	testConvert("test.kvx", src, "convert-test.kvx", target, flags);
 }
 
-// TODO: fix the pivot - see KVXFormat::saveGroups()
+// TODO: VOXELFORMAT: fix the pivot - see KVXFormat::saveGroups()
 TEST_F(ConvertTest, testVengiToKVX) {
 	VENGIFormat src;
 	KVXFormat target;
@@ -414,7 +414,7 @@ TEST_F(ConvertTest, testVengiToKVX) {
 	testConvert("testkv6-multiple-slots.vengi", src, "vengi-to-kvx-broken.kvx", target, flags, 4.0f);
 }
 
-// TODO: one color is missing
+// TODO: VOXELFORMAT: one color is missing
 TEST_F(ConvertTest, testVoxToKV6) {
 	VoxFormat src;
 	KV6Format target;
@@ -423,10 +423,10 @@ TEST_F(ConvertTest, testVoxToKV6) {
 	testConvert("vox-to-kv6-broken.vox", src, "vox-to-kv6-broken.kv6", target, flags);
 }
 
-// TODO: pivot broken
-// TODO: broken keyframes
-// TODO: broken voxels
-// TODO: the voxels are loaded correctly - but got the wrong region and world position after
+// TODO: VOXELFORMAT: pivot broken
+// TODO: VOXELFORMAT: broken keyframes
+// TODO: VOXELFORMAT: broken voxels
+// TODO: VOXELFORMAT: the voxels are loaded correctly - but got the wrong region and world position after
 //       loading. This might be related to the pivot, too.
 TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
 	GLTFFormat src;
@@ -435,8 +435,8 @@ TEST_F(ConvertTest, DISABLED_testGLTFToGLTF) {
 	testLoadSaveAndLoadSceneGraph("glTF/BoxAnimated.glb", src, "convert-BoxAnimated2.glb", target, flags);
 }
 
-// TODO: pivot broken
-// TODO: translation broken
+// TODO: VOXELFORMAT: pivot broken
+// TODO: VOXELFORMAT: translation broken
 TEST_F(ConvertTest, testVoxToVXR) {
 	VoxFormat src;
 	VXMFormat target;
@@ -445,7 +445,7 @@ TEST_F(ConvertTest, testVoxToVXR) {
 	testLoadSaveAndLoadSceneGraph("robo.vox", src, "convert-robo.vxr", target, flags);
 }
 
-// TODO: translation broken
+// TODO: VOXELFORMAT: translation broken
 TEST_F(ConvertTest, testQbToGox) {
 	QBFormat src;
 	GoxFormat target;
@@ -455,7 +455,7 @@ TEST_F(ConvertTest, testQbToGox) {
 	testLoadSaveAndLoadSceneGraph("chr_knight.qb", src, "convert-chr_knight.gox", target, flags);
 }
 
-// TODO: animations should work here already
+// TODO: VOXELFORMAT: animations should work here already
 TEST_F(ConvertTest, DISABLED_testVengiToGLTF) {
 	VENGIFormat src;
 	GLTFFormat target;

@@ -243,7 +243,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 			core::String name;
 			glm::vec3 pos{0.0f};
 			glm::vec3 rot{0.0f};
-			glm::vec3 scale{1.0f}; // TODO: check this - might also be 0.5
+			glm::vec3 scale{1.0f}; // TODO: VOXELFORMAT: check this - might also be 0.5
 			uint8_t physicMode = 0;
 			Log::trace("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
@@ -364,7 +364,7 @@ void CubzhB64Format::setAmbienceProperties(scenegraph::SceneGraph &sceneGraph, c
 bool CubzhB64Format::loadVersion1(const core::String &filename, const io::ArchivePtr &archive, io::ReadStream &stream,
 								  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 								  const LoadContext &ctx) {
-	// TODO: not supported - base64 lua tables
+	// TODO: VOXELFORMAT: not supported - base64 lua tables
 	Ambience ambience;
 	uint8_t chunkId;
 	wrap(stream.readUInt8(chunkId))

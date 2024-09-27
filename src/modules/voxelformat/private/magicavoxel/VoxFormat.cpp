@@ -83,7 +83,7 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	loadKeyFrames(sceneGraph, node, ogtInstance, scene);
-	// TODO: we are overriding the keyframe data here
+	// TODO: VOXELFORMAT: we are overriding the keyframe data here
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setColor(instanceColor(scene, ogtInstance));
@@ -97,11 +97,11 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	node.setName(instanceName(scene, ogtInstance));
 	node.setVisible(!instanceHidden(scene, ogtInstance));
 	node.setVolume(v, true);
-	// TODO: use already loaded models and create a model reference if needed
-	// TODO: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume), true);
-	// TODO: set correct pivot
-	// TODO: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
-	// TODO: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
+	// TODO: VOXELFORMAT: use already loaded models and create a model reference if needed
+	// TODO: VOXELFORMAT: node.setVolume(new voxel::RawVolume(models[ogtInstance.model_index].volume), true);
+	// TODO: VOXELFORMAT: set correct pivot
+	// TODO: VOXELFORMAT: node.setPivot({ogtPivot.x / (float)ogtModel->size_x, ogtPivot.z / (float)ogtModel->size_z, ogtPivot.y / (float)ogtModel->size_y});
+	// TODO: VOXELFORMAT: node.setPivot({(ogtPivot.x + 0.5f) / (float)ogtModel->size_x, (ogtPivot.z + 0.5f) / (float)ogtModel->size_z, (ogtPivot.y + 0.5f) / (float)ogtModel->size_y});
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node), parent) != -1;
 }
@@ -221,7 +221,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		if (addedInstances.has(n)) {
 			continue;
 		}
-		// TODO: the parent is wrong
+		// TODO: VOXELFORMAT: the parent is wrong
 		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
 			return false;
 		}
@@ -273,7 +273,7 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 		ogt_keyframe.transform.m31 = kftransform.z;
 		ogt_keyframe.transform.m32 = kftransform.y;
 		checkRotation(ogt_keyframe.transform);
-		// TODO: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
+		// TODO: VOXELFORMAT: apply rotation - but rotations are not interpolated - they must be aligned here somehow...
 		ctx.keyframeTransforms[ctx.transformKeyFrameIdx++] = ogt_keyframe;
 	}
 }
@@ -289,7 +289,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		}
 		const bool addLayers = core::Var::getSafe(cfg::VoxformatVOXCreateLayers)->boolVal();
 		if (node.type() == scenegraph::SceneGraphNodeType::Root || addLayers) {
-			// TODO: only add the layer if there are models in this group?
+			// TODO: VOXELFORMAT: only add the layer if there are models in this group?
 			// https://github.com/vengi-voxel/vengi/issues/186
 			ogt_vox_layer ogt_layer;
 			core_memset(&ogt_layer, 0, sizeof(ogt_layer));

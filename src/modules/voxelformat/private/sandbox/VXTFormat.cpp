@@ -107,8 +107,8 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		}
 #if 0
 		// 0-6 are valid orientation values
-		uint32_t forward = 1; // TODO: orientation
-		uint32_t up = 3; // TODO: orientation
+		uint32_t forward = 1; // TODO: VOXELFORMAT: orientation
+		uint32_t up = 3; // TODO: VOXELFORMAT: orientation
 		if (version >= 2) {
 			forward = (orientation & 0xF0) >> 4;
 			up = orientation & 0xF;
@@ -121,7 +121,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		const glm::vec3 forwardVec(nX[forward], nY[forward], nZ[forward]);
 		const glm::vec3 upVec(nX[up], nY[up], nZ[up]);
 #endif
-		const int tileSize = 64; // TODO: positioning unknown
+		const int tileSize = 64; // TODO: VOXELFORMAT: positioning unknown
 		for (int32_t i = idx; i < idx + rle; ++i) {
 			const int32_t x = i / (height * depth);
 			const int32_t y = (i / depth) % height;
@@ -129,7 +129,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			scenegraph::SceneGraphNode tileNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(*node, tileNode, true);
 			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
-			tileNode.volume()->translate(pos); // TODO
+			tileNode.volume()->translate(pos); // TODO: VOXELFORMAT: positioning unknown
 			// tileNode.transform().position = pos;
 			tileGraph.emplace(core::move(tileNode));
 		}

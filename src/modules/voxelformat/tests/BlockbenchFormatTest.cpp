@@ -40,9 +40,9 @@ TEST_F(BlockbenchFormatTest, testLoad_4_5) {
 	// const glm::vec3 expectedFirstWorldPivot(8.0f, 21.9f, 0.0f);
 	// const glm::vec3 firstWorldPivot = firstCube.worldPivot();
 	// EXPECT_VEC_NEAR(firstWorldPivot, expectedFirstWorldPivot, 0.0001f);
-	// TODO: this is without pivot
+	// TODO: VOXELFORMAT: this is without pivot
 	// EXPECT_VEC_NEAR(firstCube.transform().worldTranslation(), glm::vec3(12.0f, 20.9f, -1.0f), 0.0001f);
-	// TODO: check voxels and colors
+	// TODO: VOXELFORMAT: check voxels and colors
 
 	ASSERT_EQ(secondCube.type(), scenegraph::SceneGraphNodeType::Model);
 	const voxel::Region &secondRegion = secondCube.volume()->region();
@@ -71,7 +71,7 @@ TEST_F(BlockbenchFormatTest, testLoad_4_10) {
 	EXPECT_EQ(dim.z, 8);
 	const voxel::Voxel v1 = volume->voxel(region.getLowerCenter());
 	EXPECT_TRUE(voxel::isBlocked(v1.getMaterial()));
-	// TODO: compare colors - needed because we overwrite the color while loading all faces for a cube
+	// TODO: VOXELFORMAT: compare colors - needed because we overwrite the color while loading all faces for a cube
 }
 
 // this model was created in the blockbench web edition and includes all mesh types

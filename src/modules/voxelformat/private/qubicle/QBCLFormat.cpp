@@ -162,9 +162,9 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 	wrapSave(outStream.writeInt32(translation.z))
 
 	const glm::vec3 &normalizedPivot = node.pivot();
-	wrapSave(outStream.writeFloat(/* TODO mins.x +*/ normalizedPivot.x * size.x))
-	wrapSave(outStream.writeFloat(/* TODO mins.y +*/ normalizedPivot.y * size.y))
-	wrapSave(outStream.writeFloat(/* TODO mins.z +*/ normalizedPivot.z * size.z))
+	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.x +*/ normalizedPivot.x * size.x))
+	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.y +*/ normalizedPivot.y * size.y))
+	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.z +*/ normalizedPivot.z * size.z))
 
 	constexpr voxel::Voxel Empty;
 
@@ -431,7 +431,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				if (alpha == 0) {
 					y += rleLength;
 				} else {
-					const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: alpha support? */);
+					const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
 					if (header.loadPalette) {
 						palette.tryAdd(color, false);
 					} else {
@@ -451,7 +451,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 				++y;
 			} else {
 				// Uncompressed
-				const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: alpha support? */);
+				const core::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
 				if (header.loadPalette) {
 					palette.tryAdd(color, false);
 				} else {
@@ -485,7 +485,7 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	// the pivot is given in voxel coordinates
-	// node.setPivot(pivot / glm::vec3(size)); // TODO:
+	// node.setPivot(pivot / glm::vec3(size)); // TODO: VOXELFORMAT:
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != -1;
 }
@@ -494,7 +494,7 @@ bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream 
 						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
 						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
 	const size_t skip = 3 * 3 * sizeof(float);
-	stream.skip((int64_t)skip); // TODO: rotation matrix?
+	stream.skip((int64_t)skip); // TODO: VOXELFORMAT: rotation matrix?
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount))
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);

@@ -269,9 +269,9 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 				}
 			}
 		}
-		// TODO: it looks like the whole node gets the same material in gox...
+		// TODO: VOXELFORMAT: it looks like the whole node gets the same material in gox...
 		// this will remove empty blocks and the final volume might have a smaller region.
-		// TODO: we should remove this once we have sparse volumes support
+		// TODO: VOXELFORMAT: we should remove this once we have sparse volumes support
 		if (!empty) {
 			voxel::Region destReg(modelVolume->region());
 			if (!destReg.containsRegion(blockRegion)) {
@@ -304,7 +304,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 			scenegraph::SceneGraphTransform transform;
 			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
 			glm::mat4 mat(0.0f);
-			// TODO: axis
+			// TODO: VOXELFORMAT: axis
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
 			}
@@ -462,7 +462,7 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 			scenegraph::SceneGraphTransform transform;
 			io::MemoryReadStream subStream(dictValue, valueLength);
 			glm::mat4 mat(0.0f);
-			// TODO: axis
+			// TODO: VOXELFORMAT: axis
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
 			}
@@ -671,7 +671,7 @@ bool GoxFormat::saveChunk_DictMat4(io::WriteStream &stream, const core::String &
 		return false;
 	}
 	const float *p = glm::value_ptr(value);
-	// TODO: axis
+	// TODO: VOXELFORMAT: axis
 	for (int i = 0; i < 16; ++i) {
 		if (!stream.writeFloat(*p++)) {
 			return false;
