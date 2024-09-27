@@ -521,7 +521,8 @@ bool MeshFormat::voxelizePointCloud(const core::String &filename, scenegraph::Sc
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(v, true);
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
+	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }
 

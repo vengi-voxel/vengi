@@ -4,7 +4,6 @@
 
 #include "RGBPalette.h"
 #include "core/Log.h"
-#include "core/StringUtil.h"
 #include "core/Var.h"
 
 namespace palette {
