@@ -477,6 +477,124 @@ msgstr "0 deaktiviert es, 1 nur höchste Schwere, 2 mittlere Schwere, 3 alles"
 msgid "Minimize the window"
 msgstr "Das Fenster minimieren"
 
+msgid "Controls the algorithm that is used to perform the color reduction"
+msgstr ""
+
+msgid "Merge similar quads to optimize the mesh"
+msgstr ""
+
+msgid "0 = cubes, 1 = marching cubes"
+msgstr ""
+
+msgid "Reuse vertices or always create new ones"
+msgstr ""
+
+msgid ""
+"If multiple triangles contribute to the same voxel the color values are "
+"averaged based on their area contribution"
+msgstr ""
+
+msgid "Extra vertices for ambient occlusion"
+msgstr ""
+
+msgid "The RGB color flatten factor for importing color and mesh formats"
+msgstr ""
+
+msgid "Save only visible nodes"
+msgstr ""
+
+msgid "Scale the vertices for voxelization on all axis by the given factor"
+msgstr ""
+
+msgid "Scale the vertices for voxelization X axis by the given factor"
+msgstr ""
+
+msgid "Scale the vertices for voxelization Y axis by the given factor"
+msgstr ""
+
+msgid "Scale the vertices for voxelization Z axis by the given factor"
+msgstr ""
+
+msgid "Export as quads. If this false, triangles will be used."
+msgstr ""
+
+msgid "Export with vertex colors"
+msgstr ""
+
+msgid "Export smoothed normals for cubic meshes"
+msgstr ""
+
+msgid ""
+"Export with vertex colors as float values (if vertex colors are exported)"
+msgstr ""
+
+msgid "Export with uv coordinates of the palette image"
+msgstr ""
+
+msgid "Apply the scene graph transform to mesh exports"
+msgstr ""
+
+msgid "Apply mesh optimization steps to meshes"
+msgstr ""
+
+msgid "Fill the hollows when voxelizing a mesh format"
+msgstr ""
+
+msgid "0 = high quality, 1 = faster and less memory"
+msgstr ""
+
+msgid "Use palette mode in qubicle qbt export"
+msgstr ""
+
+msgid "Merge compounds on load"
+msgstr ""
+
+msgid ""
+"This is the NAME part of palette-<NAME>.png or absolute png file to use "
+"(1x256)"
+msgstr ""
+
+msgid "Merge all objects into one"
+msgstr ""
+
+msgid "The index of the empty color in the palette"
+msgstr ""
+
+msgid "Toggle between left and right handed"
+msgstr ""
+
+msgid "Save RLE compressed"
+msgstr ""
+
+msgid "Create own palette from textures or colors"
+msgstr ""
+
+msgid "Specify the side length for the voxels when loading a point cloud"
+msgstr ""
+
+msgid ""
+"Apply KHR_materials_pbrSpecularGlossiness when saving into the gltf format"
+msgstr ""
+
+msgid "Apply KHR_materials_specular when saving into the gltf format"
+msgstr ""
+
+msgid "Try to export material properties if the formats support it"
+msgstr ""
+
+msgid "The maximum depth of the volume when importing an image as volume"
+msgstr ""
+
+msgid "Import the image as volume for both sides"
+msgstr ""
+
+msgid "0 = plane, 1 = heightmap, 2 = volume"
+msgstr ""
+
+msgid ""
+"Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
+msgstr ""
+
 msgid "Back"
 msgstr "Rückseite"
 
@@ -498,24 +616,6 @@ msgstr "Rechts"
 msgid "Top"
 msgstr "Oben"
 
-#, c-format
-msgid "Save as: %s"
-msgstr "Speichern als: %s"
-
-#, c-format
-msgid "Open: %s"
-msgstr "Öffnen von: %s"
-
-msgid "Showing all options because you've selected all supported formats"
-msgstr "Zeige alle Optionen an, da alle unterstützten Formate ausgewählt sind"
-
-#, c-format
-msgid "Warning: Selected file type does not match extension %s: %s"
-msgstr ""
-
-msgid "Command & Conquer palette"
-msgstr "Command & Conquer Palette"
-
 msgid "Uniform scale"
 msgstr "Gleichmäßige Skalierung"
 
@@ -527,6 +627,16 @@ msgstr "Y-Achsen-Skalierung"
 
 msgid "Z axis scale"
 msgstr "Z-Achsen-Skalierung"
+
+msgid "Layer information"
+msgstr ""
+
+msgid ""
+"This is saving several images as layers per object.\n"
+"\n"
+"The name of the files will include the uuid of the node\n"
+"and the z layer index."
+msgstr ""
 
 msgid "Merge quads"
 msgstr "Quads zusammenführen"
@@ -561,26 +671,8 @@ msgstr "Texturkoordinaten"
 msgid "Export materials"
 msgstr "Materialien exportieren"
 
-msgid "Fill hollow"
-msgstr "Hohlraum füllen"
-
-msgid "Point cloud size"
-msgstr "Punktwolkengröße"
-
-msgid "faster and less memory"
-msgstr "schneller und weniger Speicher"
-
-msgid "high quality"
-msgstr "hohe Qualität"
-
-msgid "Voxelization mode"
-msgstr "Voxelisierungsmodus"
-
 msgid "Single object"
 msgstr "Einzelnes Objekt"
-
-msgid "Empty palette index"
-msgstr "Leerer Paletteneintrag"
 
 msgid "Save visible only"
 msgstr "Nur sichtbares speichern"
@@ -603,6 +695,9 @@ msgstr "Linkshändig"
 msgid "Compressed"
 msgstr "Komprimiert"
 
+msgid "Empty palette index"
+msgstr "Leerer Paletteneintrag"
+
 msgid "Heightmap"
 msgstr "Höhenkarte"
 
@@ -621,17 +716,37 @@ msgstr "Max. Tiefe"
 msgid "Both sides"
 msgstr "Beide Seiten"
 
-msgid "RGB flatten factor"
-msgstr "RGB-Abflachfaktor"
+#, c-format
+msgid "Depth map: %s"
+msgstr ""
+
+#, c-format
+msgid "Depth map not found: %s"
+msgstr ""
+
+msgid "Fill hollow"
+msgstr "Hohlraum füllen"
+
+msgid "Point cloud size"
+msgstr "Punktwolkengröße"
+
+msgid "faster and less memory"
+msgstr "schneller und weniger Speicher"
+
+msgid "high quality"
+msgstr "hohe Qualität"
+
+msgid "Voxelization mode"
+msgstr "Voxelisierungsmodus"
 
 msgid "RGB weighted average"
 msgstr "RGB gewichteter Durchschnitt"
 
+msgid "RGB flatten factor"
+msgstr "RGB-Abflachfaktor"
+
 msgid "Create palette"
 msgstr "Palette erstellen"
-
-msgid "Overwrite existing target file"
-msgstr "Überschreibe existierende Zieldatei"
 
 msgid "Quit"
 msgstr "Beenden"
@@ -674,6 +789,9 @@ msgstr "Quellformat"
 
 msgid "Target format"
 msgstr "Zielformat"
+
+msgid "Overwrite existing target file"
+msgstr "Überschreibe existierende Zieldatei"
 
 msgid "Source options"
 msgstr "Quelloptionen"
