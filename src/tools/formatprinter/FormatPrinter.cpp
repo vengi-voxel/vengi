@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteFormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
 #include <SDL_stdinc.h>
 
@@ -257,7 +258,7 @@ void FormatPrinter::printMarkdownTables() {
 	Log::printf("| :------------------------------ | --------- | ------- | ------ |\n");
 
 	formatDescriptions.clear();
-	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		formatDescriptions.push_back(*desc);
 	}
 	formatDescriptions.sort(core::Greater<io::FormatDescription>());
@@ -451,7 +452,7 @@ void FormatPrinter::printJson(bool palette, bool image, bool voxel) {
 	if (palette) {
 		Log::printf("\"palettes\": [");
 		int i = 0;
-		for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+		for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 			if (i != 0) {
 				Log::printf(",");
 			}

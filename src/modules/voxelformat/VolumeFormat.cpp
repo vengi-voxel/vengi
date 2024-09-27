@@ -16,6 +16,7 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
+#include "palette/PaletteFormatDescription.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
@@ -276,7 +277,7 @@ image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePt
 }
 
 bool importPalette(const core::String &filename, palette::Palette &palette) {
-	if (io::isA(filename, io::format::palettes())) {
+	if (io::isA(filename, palette::palettes())) {
 		return palette.load(filename.c_str());
 	}
 	if (io::isA(filename, voxelformat::voxelLoad())) {

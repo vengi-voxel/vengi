@@ -5,6 +5,7 @@
 #pragma once
 
 #include "PaletteFormat.h"
+#include "io/FormatDescription.h"
 
 namespace palette {
 
@@ -17,6 +18,11 @@ class QBCLPalette : public PaletteFormat {
 public:
 	bool load(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) override;
 	bool save(const palette::Palette &palette, const core::String &filename, io::SeekableWriteStream &stream) override;
+
+	static const io::FormatDescription &format() {
+		static const io::FormatDescription desc = {"Qubicle Palette", {"qsm"}, {}, 0u};
+		return desc;
+	}
 };
 
 } // namespace palette

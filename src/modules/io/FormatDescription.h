@@ -120,12 +120,8 @@ namespace format {
 const FormatDescription *images();
 const FormatDescription* fonts();
 const FormatDescription *lua();
-const FormatDescription* palettes();
 
 FormatDescription png();
-FormatDescription jascPalette();
-FormatDescription gimpPalette();
-FormatDescription palPalette();
 
 } // namespace format
 

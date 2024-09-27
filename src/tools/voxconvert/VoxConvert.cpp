@@ -23,6 +23,7 @@
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "io/ZipArchive.h"
+#include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -138,7 +139,7 @@ void VoxConvert::usage() const {
 		}
 	}
 	Log::info("Supported palette formats:");
-	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		for (const core::String &ext : desc->exts) {
 			Log::info(" * %s (*.%s)", desc->name.c_str(), ext.c_str());
 		}
@@ -250,7 +251,7 @@ app::AppState VoxConvert::onInit() {
 		Log::printf("],\"images\":[");
 		printFormatDetails(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"palettes\":[");
-		printFormatDetails(io::format::palettes(), {{"save", FORMAT_FLAG_SAVE}});
+		printFormatDetails(palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("]}\n");
 		return state;
 	}
@@ -554,7 +555,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	for (const core::String &outfile : outfiles) {
-		if (_exportPalette || (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes()))) {
+		if (_exportPalette || (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, palette::palettes()))) {
 			// if the given format is a palette only format (some voxel formats might have the same
 			// extension - so we check that here)
 			const palette::Palette &palette = sceneGraph.mergePalettes(false);

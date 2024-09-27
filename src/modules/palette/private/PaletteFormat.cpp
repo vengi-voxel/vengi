@@ -16,6 +16,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteFormatDescription.h"
 
 namespace palette {
 
@@ -23,7 +24,7 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 	core::SharedPtr<PaletteFormat> format;
 	for (const core::String &ext : desc.exts) {
 		// you only have to check one of the supported extensions here
-		if (ext == "gpl") {
+		if (ext == GimpPalette::format().mainExtension()) {
 			return core::make_shared<GimpPalette>();
 		} else if (ext == "qsm") {
 			return core::make_shared<QBCLPalette>();
@@ -33,12 +34,12 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 			return core::make_shared<CSVPalette>();
 		} else if (ext == "aco") {
 			return core::make_shared<PhotoshopPalette>();
-		} else if (ext == "txt") {
+		} else if (ext == PaintNetPalette::format().mainExtension()) {
 			return core::make_shared<PaintNetPalette>();
-		} else if (ext == "png") {
+		} else if (ext == io::format::png().mainExtension()) {
 			return core::make_shared<PNGPalette>();
-		} else if (ext == "pal") {
-			if (desc.name == io::format::jascPalette().name || magic == FourCC('J', 'A', 'S', 'C')) {
+		} else if (ext == JASCPalette::format().mainExtension()) {
+			if (desc.name == JASCPalette::format().name || magic == FourCC('J', 'A', 'S', 'C')) {
 				return core::make_shared<JASCPalette>();
 			}
 			return core::make_shared<RGBPalette>();
@@ -51,7 +52,7 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 
 bool loadPalette(const core::String &filename, io::SeekableReadStream &stream, palette::Palette &palette) {
 	const uint32_t magic = loadMagic(stream);
-	const io::FormatDescription *desc = io::getDescription(filename, magic, io::format::palettes());
+	const io::FormatDescription *desc = io::getDescription(filename, magic, palette::palettes());
 	if (desc == nullptr) {
 		Log::warn("Palette format %s isn't supported", filename.c_str());
 		return false;
@@ -91,7 +92,7 @@ bool savePalette(const palette::Palette &palette, const core::String &filename, 
 		Log::error("No extension found for '%s' - can't determine the palette format", filename.c_str());
 		return false;
 	}
-	for (desc = io::format::palettes(); desc->valid(); ++desc) {
+	for (desc = palette::palettes(); desc->valid(); ++desc) {
 		if (!desc->matchesExtension(ext) /*&& (type.empty() || type == desc->name)*/) {
 			continue;
 		}

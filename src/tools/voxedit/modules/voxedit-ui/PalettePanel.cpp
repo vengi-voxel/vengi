@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -296,7 +297,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {
 				_app->saveDialog(
 					[&](const core::String &file, const io::FormatDescription *desc) { palette.save(file.c_str()); },
-					{}, io::format::palettes(), "palette.png");
+					{}, palette::palettes(), "palette.png");
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_DOWNLOAD, _("Lospec"))) {
 				const char *command = "loadpalette";

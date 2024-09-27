@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "palette/PaletteFormatDescription.h"
 #include "ui/IconsLucide.h"
 #include "PopupAbout.h"
 #include "ScopedStyle.h"
@@ -909,7 +910,7 @@ void MainWindow::popupAbout() {
 				ImGui::TableSetupColumn(_("Extension"), ImGuiTableColumnFlags_WidthStretch, 0.09f, 1);
 				ImGui::TableSetupScrollFreeze(0, 1);
 				ImGui::TableHeadersRow();
-				for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+				for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 					ImGui::TableNextColumn();
 					ImGui::TextUnformatted(desc->name.c_str());
 					ImGui::TableNextColumn();

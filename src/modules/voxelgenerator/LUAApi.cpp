@@ -15,6 +15,7 @@
 #include "lua.h"
 #include "math/Axis.h"
 #include "noise/Simplex.h"
+#include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
@@ -677,7 +678,7 @@ static int luaVoxel_palette_load(lua_State* s) {
 			builtInPalettes.append(palette::Palette::builtIn[i]);
 		}
 		core::String supportedPaletteFormats;
-		for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+		for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 			for (const core::String& ext : desc->exts) {
 				if (!supportedPaletteFormats.empty()) {
 					supportedPaletteFormats.append(", ");

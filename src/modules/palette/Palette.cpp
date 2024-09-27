@@ -24,6 +24,7 @@
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
 #include "math/Math.h"
+#include "palette/private/GimpPalette.h"
 #include "private/PaletteFormat.h"
 
 #include <SDL_endian.h>
@@ -633,7 +634,7 @@ bool Palette::load(const char *paletteName) {
 
 	if (SDL_strncmp(paletteName, "lospec:", 7) == 0) {
 		const core::String lospecId = paletteName + 7;
-		const core::String gimpPalette = lospecId + io::format::gimpPalette().mainExtension(true);
+		const core::String gimpPalette = lospecId + GimpPalette::format().mainExtension(true);
 		return loadLospec(lospecId, gimpPalette);
 	}
 

@@ -8,6 +8,7 @@
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "imgui.h"
+#include "palette/PaletteFormatDescription.h"
 #include "palette/NormalPalette.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-util/Config.h"
@@ -80,7 +81,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {
 				_app->saveDialog([&](const core::String &file,
 									 const io::FormatDescription *desc) { normalPalette.save(file.c_str()); },
-								 {}, io::format::palettes(), "palette.png");
+								 {}, palette::palettes(), "palette.png");
 			}
 			voxel::RawVolume *v = node.volume();
 			core_assert(v != nullptr);

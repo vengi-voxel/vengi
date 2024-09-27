@@ -13,6 +13,8 @@ set(SRCS
 
 	NormalPalette.cpp NormalPalette.h
 
+	PaletteFormatDescription.cpp PaletteFormatDescription.h
+
 	Palette.h Palette.cpp
 	PaletteLookup.h
 	PaletteCompleter.h

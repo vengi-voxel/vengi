@@ -15,6 +15,7 @@
 #include "core/concurrent/Concurrency.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteFormatDescription.h"
 #include "video/WindowedApp.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/Viewport.h"
@@ -135,7 +136,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
-	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
 	}
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {

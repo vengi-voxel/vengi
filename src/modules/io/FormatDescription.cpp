@@ -14,7 +14,7 @@ namespace io {
 namespace format {
 
 FormatDescription png() {
-	return {"Portable Network Graphics", {"png"}, {}, FORMAT_FLAG_SAVE};
+	return {"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE};
 }
 
 const FormatDescription *images() {
@@ -42,36 +42,6 @@ const FormatDescription *fonts() {
 	// clang-format: off
 	static thread_local FormatDescription desc[] = {
 		{"TrueType Font", {"ttf"}, {}, 0u},
-		{"", {}, {}, 0u}
-	};
-	// clang-format: on
-	return desc;
-}
-
-FormatDescription jascPalette() {
-	return {"JASC Palette", {"pal"}, {"JASC"}, FORMAT_FLAG_SAVE};
-}
-
-FormatDescription gimpPalette() {
-	return {"Gimp Palette", {"gpl"}, {}, FORMAT_FLAG_SAVE};
-}
-
-FormatDescription palPalette() {
-	return {"RGB Palette", {"pal"}, {}, FORMAT_FLAG_SAVE};
-}
-
-const FormatDescription *palettes() {
-	// clang-format: off
-	static thread_local FormatDescription desc[] = {
-		gimpPalette(),
-		{"Qubicle Palette", {"qsm"}, {}, 0u},
-		jascPalette(),
-		{"Adobe Swatch Exchange", {"ase"}, {"ASEF"}, FORMAT_FLAG_SAVE},
-		{"Photoshop Palette", {"aco", "8bco"}, {}, FORMAT_FLAG_SAVE},
-		palPalette(),
-		{"CSV Palette", {"csv"}, {}, FORMAT_FLAG_SAVE},
-		{"Paint.NET Palette", {"txt"}, {}, FORMAT_FLAG_SAVE},
-		{"Portable Network Graphics", {"png"}, {"\x89PNG"}, FORMAT_FLAG_SAVE},
 		{"", {}, {}, 0u}
 	};
 	// clang-format: on
