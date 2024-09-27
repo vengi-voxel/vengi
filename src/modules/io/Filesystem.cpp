@@ -169,7 +169,7 @@ bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) const {
 	if (!recursive) {
 		return fs_rmdir(dir.c_str());
 	}
-	// TODO: implement me
+	// TODO: implement recursive directory deletion
 	return false;
 }
 
