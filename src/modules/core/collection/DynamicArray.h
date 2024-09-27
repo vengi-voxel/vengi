@@ -282,7 +282,6 @@ public:
 		const int n = core::distance(first, last);
 
 		if (pos == end()) {
-			// TODO: this can be optimized by only calling the move ctor once
 			checkBufferSize(_size + n);
 
 			for (ITER i = first; i != last; ++i) {

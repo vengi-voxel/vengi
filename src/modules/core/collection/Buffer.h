@@ -318,7 +318,6 @@ public:
 		const int n = last - first;
 
 		if (pos == end()) {
-			// TODO: this can be optimized by only calling the move ctor once
 			checkBufferSize(_size + n);
 
 			for (ITER i = first; i != last; ++i) {
