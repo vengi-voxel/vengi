@@ -6,6 +6,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Region.h"
 #include "voxel/RawVolume.h"
+#include "voxel/private/BinaryGreedyMesher.h"
 #include "voxel/private/CubicSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
 
@@ -27,9 +28,11 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 void extractSurface(SurfaceExtractionContext &ctx) {
 	if (ctx.type == SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh, ctx.optimize);
+	} else if (ctx.type == SurfaceExtractionType::Binary) {
 	} else {
-		voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
-								ctx.ambientOcclusion, ctx.optimize);
+		voxel::extractBinaryGreedyMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.ambientOcclusion, ctx.optimize);
+		// voxel::extractCubicMesh(ctx.volume, ctx.region, &ctx.mesh, ctx.translate, ctx.mergeQuads, ctx.reuseVertices,
+		// 						ctx.ambientOcclusion, ctx.optimize);
 	}
 }
 
