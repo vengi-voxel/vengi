@@ -37,7 +37,7 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	target.setPivot(node.pivot());
 	target.setColor(node.color());
 	target.addProperties(node.properties());
-	// TODO: the reference node id might have changed - fix this
+	// TODO: SCENEGRAPH: the reference node id might have changed - fix this
 	target.setReference(node.reference());
 	if (node.hasPalette()) {
 		target.setPalette(node.palette());
@@ -199,12 +199,12 @@ core::DynamicArray<int> copySceneGraph(SceneGraph &target, const SceneGraph &sou
 		}
 	}
 
-	// TODO: fix references - see copy() above
+	// TODO: SCENEGRAPH: fix references - see copy() above
 	return nodesAdded;
 }
 
-// TODO: split is destroying groups
-// TODO: for referenced nodes we should have to create new model references for each newly splitted model node, too
+// TODO: SCENEGRAPH: split is destroying groups
+// TODO: SCENEGRAPH: for referenced nodes we should have to create new model references for each newly splitted model node, too
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
 				  bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
 	core_assert(&srcSceneGraph != &destSceneGraph);

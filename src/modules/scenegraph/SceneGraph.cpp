@@ -336,9 +336,9 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, const core::String &animation,
 											 FrameIndex frameIdx) const {
-	// TODO ik solver https://github.com/vengi-voxel/vengi/issues/182
+	// TODO: SCENEGRAPH: ik solver https://github.com/vengi-voxel/vengi/issues/182
 	// and https://github.com/vengi-voxel/vengi/issues/265
-	// TODO: solve flipping of child transforms if parent has rotation applied - see
+	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
 	// https://github.com/vengi-voxel/vengi/issues/420
 	FrameTransform parentTransform;
 	if (node.parent() == InvalidNodeId) {
@@ -906,7 +906,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 			return true;
 		};
 		const voxel::RawVolume *v = resolveVolume(node);
-		// TODO: rotation
+		// TODO: SCENEGRAPH: rotation
 		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, func);
 	}
 	return MergeResult{merged, mergedPalette, normalPalette};

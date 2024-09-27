@@ -392,7 +392,7 @@ voxel::Region SceneGraphNode::sceneRegion(const voxel::Region &volumeRegion, con
 										  KeyFrameIndex keyFrameIdx) const {
 	const SceneGraphTransform &transform = this->transform(keyFrameIdx);
 	const glm::vec3 &scale = transform.worldScale();
-	// TODO: rotation
+	// TODO: SCENEGRAPH: rotation
 	const glm::vec3 translation = transform.worldTranslation() - pivot * glm::vec3(volumeRegion.getDimensionsInVoxels());
 	const glm::vec3 mins = (volumeRegion.getLowerCornerf() + translation) * scale;
 	const glm::vec3 maxs = mins + glm::vec3(volumeRegion.getDimensionsInCells());
