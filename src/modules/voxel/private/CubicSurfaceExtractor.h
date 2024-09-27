@@ -105,5 +105,3 @@ struct ChunkMesh;
 void extractCubicMesh(const voxel::RawVolume* volData, const Region& region, ChunkMesh* result, const glm::ivec3& translate, bool mergeQuads = true, bool reuseVertices = true, bool ambientOcclusion = true, bool optimize = false);
 
 }
-
-#undef BUFFERED_SAMPLER
