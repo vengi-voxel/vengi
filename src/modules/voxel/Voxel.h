@@ -31,6 +31,8 @@ enum class VoxelType : uint8_t {
 	Max
 };
 
+#define NO_NORMAL 255u
+
 static constexpr const char* VoxelTypeStr[] = {
 	"Air",
 	"Transparent",
@@ -46,10 +48,10 @@ extern VoxelType getVoxelType(const char *str);
 class Voxel {
 public:
 	constexpr inline Voxel()
-		: _material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0), _normalIndex(255u), _unused2(0) {
+		: _material(VoxelType::Air), _flags(0), _unused(0), _colorIndex(0), _normalIndex(NO_NORMAL), _unused2(0) {
 	}
 
-	constexpr inline Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = 255u, uint8_t flags = 0u)
+	constexpr inline Voxel(VoxelType material, uint8_t colorIndex, uint8_t normalIndex = NO_NORMAL, uint8_t flags = 0u)
 		: _material(material), _flags(flags), _unused(0), _colorIndex(colorIndex), _normalIndex(normalIndex), _unused2(0) {
 	}
 

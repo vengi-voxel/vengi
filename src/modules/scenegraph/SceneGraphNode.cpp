@@ -152,8 +152,12 @@ void SceneGraphNode::setNormalPalette(const palette::NormalPalette &normalPalett
 	_normalPalette.value()->markDirty();
 }
 
+bool SceneGraphNode::hasNormalPalette() const {
+	return _normalPalette.hasValue();
+}
+
 palette::NormalPalette &SceneGraphNode::normalPalette() const {
-	if (!_normalPalette.hasValue()) {
+	if (!hasNormalPalette()) {
 		palette::NormalPalette normalPalette;
 		normalPalette.redAlert2();
 		_normalPalette.setValue(normalPalette);

@@ -141,6 +141,7 @@ public:
 	palette::Palette &palette() const;
 	void setPalette(const palette::Palette &palette);
 
+	bool hasNormalPalette() const;
 	palette::NormalPalette &normalPalette() const;
 	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
