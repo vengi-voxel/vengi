@@ -9,8 +9,10 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
+#include "core/collection/Array.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
@@ -107,6 +109,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 			} else {
 				stream.writeUInt8(voxel.getColor());
 			}
+			stream.writeUInt8(voxel.getNormal());
 		}
 	};
 	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
@@ -122,6 +125,20 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyfram
 	const float *localMatrix = glm::value_ptr(transform.localMatrix());
 	for (int i = 0; i < 16; ++i) {
 		wrapBool(stream.writeFloat(localMatrix[i]))
+	}
+	return true;
+}
+
+bool VENGIFormat::saveNodePaletteNormals(const scenegraph::SceneGraph &sceneGraph,
+										const scenegraph::SceneGraphNode &node, io::WriteStream &stream) {
+	if (!node.hasNormalPalette()) {
+		return true;
+	}
+	wrapBool(stream.writeUInt32(FourCC('P', 'A', 'L', 'N')))
+	const palette::NormalPalette &palette = node.normalPalette();
+	wrapBool(stream.writeUInt32(palette.size()))
+	for (size_t i = 0; i < palette.size(); ++i) {
+		wrapBool(stream.writeUInt32(palette.normal(i).rgba))
 	}
 	return true;
 }
@@ -184,6 +201,7 @@ bool VENGIFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, io::WriteSt
 	} else {
 		wrapBool(saveNodePaletteColors(sceneGraph, node, stream))
 	}
+	wrapBool(saveNodePaletteNormals(sceneGraph, node, stream))
 	wrapBool(saveNodeData(sceneGraph, node, stream))
 	for (const core::String &animation : sceneGraph.animations()) {
 		wrapBool(saveAnimation(node, animation, stream))
@@ -224,16 +242,35 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	node.setVolume(v, true);
 	const palette::Palette &palette = node.palette();
 
-	auto visitor = [&stream, v, &palette](int x, int y, int z, const voxel::Voxel &voxel) {
+	auto visitor = [&stream, v, version, &palette](int x, int y, int z, const voxel::Voxel &voxel) {
 		const bool air = stream.readBool();
 		if (air) {
 			return;
 		}
 		uint8_t color;
 		stream.readUInt8(color);
-		v->setVoxel(x, y, z, voxel::createVoxel(palette, color));
+		uint8_t normal = NO_NORMAL;
+		if (version >= 4u) {
+			stream.readUInt8(normal);
+		}
+		v->setVoxel(x, y, z, voxel::createVoxel(palette, color, normal));
 	};
 	voxelutil::visitVolume(*v, visitor, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
+	return true;
+}
+
+bool VENGIFormat::loadNodePaletteNormals(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+										uint32_t version, io::ReadStream &stream) {
+	palette::NormalPalette normalPalette;
+	uint32_t normalCount;
+	wrap(stream.readUInt32(normalCount))
+	Log::debug("Load node normal palette with %u normals", normalCount);
+	core::Array<core::RGBA, palette::NormalPaletteMaxNormals> normals;
+	for (size_t i = 0; i < normalCount; ++i) {
+		wrap(stream.readUInt32(normals[i].rgba))
+	}
+	normalPalette.loadNormalMap(normals.data(), normalCount);
+	node.setNormalPalette(normalPalette);
 	return true;
 }
 
@@ -420,6 +457,10 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 			if (!loadNodePaletteColors(sceneGraph, node, version, stream)) {
 				return false;
 			}
+		} else if (chunkMagic == FourCC('P', 'A', 'L', 'N')) {
+			if (!loadNodePaletteNormals(sceneGraph, node, version, stream)) {
+				return false;
+			}
 		} else if (chunkMagic == FourCC('P', 'A', 'L', 'I')) {
 			if (!loadNodePaletteIdentifier(sceneGraph, node, version, stream)) {
 				return false;
@@ -451,7 +492,7 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
 	io::ZipWriteStream zipStream(*stream, stream->size());
-	wrapBool(zipStream.writeUInt32(3))
+	wrapBool(zipStream.writeUInt32(4))
 	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
 		return false;
 	}
@@ -474,7 +515,7 @@ bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ZipReadStream zipStream(*stream, stream->size());
 	uint32_t version;
 	wrap(zipStream.readUInt32(version))
-	if (version > 3) {
+	if (version > 4) {
 		Log::error("Unsupported version %u", version);
 		return false;
 	}
