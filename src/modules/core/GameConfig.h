@@ -45,6 +45,7 @@ constexpr const char *ClientDebugShadowMapCascade = "cl_debug_cascade";
 constexpr const char *ClientDebugShadow = "cl_debug_shadow";
 
 constexpr const char *RenderOutline = "r_renderoutline";
+constexpr const char *RenderNormals = "r_normals";
 constexpr const char *ToneMapping = "r_tonemapping";
 constexpr const char *RenderCheckerBoard = "r_checkerboard";
 

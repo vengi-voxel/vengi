@@ -429,6 +429,7 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::get(cfg::ClientOpenGLVersion, "3.3", core::CV_READONLY);
 	core::Var::get(cfg::ClientMouseRotationSpeed, "0.01");
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER, _("Render voxel outline"), core::Var::boolValidator);
+	core::Var::get(cfg::RenderNormals, "false", _("Render voxel normals"), core::Var::boolValidator);
 	core::Var::get(cfg::ToneMapping, "0", core::CV_SHADER, _("Activate tone mapping"), core::Var::minMaxValidator<0, 3>);
 	core::Var::get(cfg::ClientVSync, "true", _("Limit the framerate to the monitor refresh rate"), core::Var::boolValidator);
 	core::Var::get(cfg::ClientDebugSeverity, "0", 0u, _("0 disables it, 1 only highest severity, 2 medium severity, 3 everything"));

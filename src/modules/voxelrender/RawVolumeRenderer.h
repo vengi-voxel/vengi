@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "render/ShapeRenderer.h"
 #include "voxel/MeshState.h"
 #include "ShadowmapData.h"
 #include "ShadowmapShader.h"
@@ -47,6 +48,7 @@ struct RenderContext : public core::NonCopyable {
 	bool grayInactive = false;
 	bool sceneMode = false;
 	bool onlyModels = false;
+	// render the built-in normals
 	bool renderNormals = false;
 
 	bool init(const glm::ivec2 &size);
@@ -64,8 +66,10 @@ protected:
 	struct State {
 		bool _culled = false;
 		bool _empty = false; // this is only updated for non hidden nodes
+		bool _dirtyNormals = false;
 		int32_t _vertexBufferIndex[voxel::MeshType_Max]{-1, -1};
 		int32_t _normalBufferIndex[voxel::MeshType_Max]{-1, -1};
+		int32_t _normalPreviewBufferIndex = -1;
 		int32_t _indexBufferIndex[voxel::MeshType_Max]{-1, -1};
 		video::Buffer _vertexBuffer[voxel::MeshType_Max];
 
@@ -93,6 +97,9 @@ protected:
 	shader::ShadowmapData _shadowMapUniformBlock;
 	shader::ShadowmapShader &_shadowMapShader;
 	voxelrender::Shadow _shadow;
+
+	render::ShapeRenderer _shapeRenderer;
+	video::ShapeBuilder _shapeBuilder;
 
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;

@@ -371,7 +371,6 @@ static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 			vertex.padding2 = 0u;
 
 			entry.index = (int32_t)meshCurrent->addVertex(vertex) + 1;
-			// meshCurrent->setNormal(entry.index, entry.voxel.getNormal()); // TODO: NORMAL: set normal from NormalPalette
 			entry.voxel = materialIn;
 			entry.ambientOcclusion = vertex.ambientOcclusion;
 

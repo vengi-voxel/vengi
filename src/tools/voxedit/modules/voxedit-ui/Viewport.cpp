@@ -75,6 +75,7 @@ bool Viewport::init() {
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
 	_autoKeyFrame = core::Var::getSafe(cfg::VoxEditAutoKeyFrame);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
+	_renderNormals = core::Var::getSafe(cfg::RenderNormals);
 	if (!_renderContext.init(video::getWindowSize())) {
 		return false;
 	}
@@ -417,6 +418,8 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	const int sceneWindowFlags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
 								 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoFocusOnAppearing;
 	const char *modeStr = isSceneMode() ? _("SceneMode") : _("EditMode");
+
+	_renderContext.renderNormals = _renderNormals->boolVal();
 
 	core::String name;
 	if (_detailedTitle) {

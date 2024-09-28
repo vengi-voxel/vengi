@@ -7,12 +7,14 @@
 #include "VoxelShaderConstants.h"
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
+#include "core/Color.h"
 #include "core/GameConfig.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
@@ -27,8 +29,10 @@
 #include "video/TextureConfig.h"
 #include "video/Types.h"
 #include "voxel/MaterialColor.h"
+#include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelutil/VolumeVisitor.h"
 #include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -230,6 +234,8 @@ bool RawVolumeRenderer::init() {
 	_voxelData.create(_voxelShaderFragData);
 	_voxelData.create(_voxelShaderVertData);
 
+	_shapeRenderer.init();
+
 	return true;
 }
 
@@ -282,6 +288,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, voxel::MeshType type) {
 		buffer.update(state._vertexBufferIndex[type], nullptr, 0);
 		buffer.update(state._normalBufferIndex[type], nullptr, 0);
 		buffer.update(state._indexBufferIndex[type], nullptr, 0);
+		state._dirtyNormals = true;
 		return true;
 	}
 
@@ -321,6 +328,7 @@ bool RawVolumeRenderer::updateBufferForVolume(int idx, voxel::MeshType type) {
 		normalsPos += normalVector.size();
 		offset += vertexVector.size();
 	}
+	state._dirtyNormals = true;
 
 	Log::debug("update vertexbuffer: %i (type: %i)", idx, type);
 	if (!state._vertexBuffer[type].update(state._vertexBufferIndex[type], verticesBuf, verticesBufSize)) {
@@ -457,10 +465,36 @@ bool RawVolumeRenderer::isVisible(int idx, bool hideEmpty) const {
 }
 
 void RawVolumeRenderer::renderNormals(const RenderContext &renderContext, const video::Camera &camera) {
-	if (renderContext.renderNormals) {
+	// TODO: NORMALS: allow to render the normals in scene mode - currently the transform
+	// is not correct - MeshState::centerPos()
+	if (!renderContext.renderNormals || renderContext.sceneMode) {
 		return;
 	}
+
 	core_trace_scoped(RenderNormals);
+	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
+		if (!isVisible(idx)) {
+			continue;
+		}
+		const palette::NormalPalette &normalPalette = _meshState->normalsPalette(idx);
+		if (normalPalette.size() == 0u) {
+			continue;
+		}
+		if (_state[idx]._dirtyNormals) {
+			_shapeBuilder.clear();
+			_shapeBuilder.setColor(core::Color::Red());
+			if (const voxel::RawVolume *v = _meshState->volume(idx)) {
+				voxelutil::visitVolume(*v, [this, idx, &normalPalette](int x, int y, int z, const voxel::Voxel &voxel) {
+					const glm::vec3 &center = _meshState->centerPos(idx, x, y, z);
+					const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
+					_shapeBuilder.line(center, center + norm * 3.0f);
+				});
+			}
+			_shapeRenderer.createOrUpdate(_state[idx]._normalPreviewBufferIndex, _shapeBuilder);
+			_state[idx]._dirtyNormals = false;
+		}
+		_shapeRenderer.render(_state[idx]._normalPreviewBufferIndex, camera);
+	}
 }
 
 void RawVolumeRenderer::renderOpaque(const video::Camera &camera, bool normals) {
@@ -711,6 +745,11 @@ void RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode &node, boo
 voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
 											   palette::NormalPalette *normalPalette, bool meshDelete) {
 	bool meshDeleted = false;
+	if (!_meshState->sameNormalPalette(idx, normalPalette)) {
+		if (idx >= 0 && idx < voxel::MAX_VOLUMES) {
+			_state[idx]._dirtyNormals = true;
+		}
+	}
 	voxel::RawVolume *v = _meshState->setVolume(idx, volume, palette, normalPalette, meshDelete, meshDeleted);
 	if (meshDeleted) {
 		deleteMeshes(idx);
@@ -722,6 +761,7 @@ void RawVolumeRenderer::deleteMeshes(int idx) {
 	for (int i = 0; i < voxel::MeshType_Max; ++i) {
 		deleteMesh(idx, (voxel::MeshType)i);
 	}
+	_state[idx]._dirtyNormals = true;
 }
 
 void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
@@ -737,6 +777,11 @@ void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
 	}
 	vertexBuffer.update(state._indexBufferIndex[meshType], nullptr, 0);
 	core_assert(vertexBuffer.size(state._indexBufferIndex[meshType]) == 0);
+
+	if (state._normalPreviewBufferIndex != -1) {
+		vertexBuffer.update(state._normalPreviewBufferIndex, nullptr, 0);
+		core_assert(vertexBuffer.size(state._normalPreviewBufferIndex) == 0);
+	}
 }
 
 void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) {
@@ -752,6 +797,7 @@ void RawVolumeRenderer::shutdownStateBuffers() {
 			state._normalBufferIndex[i] = -1;
 			state._indexBufferIndex[i] = -1;
 		}
+		state._normalPreviewBufferIndex = -1;
 	}
 }
 
@@ -769,6 +815,8 @@ core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown() {
 	_shadow.shutdown();
 	const core::DynamicArray<voxel::RawVolume *> &old = _meshState->shutdown();
 	shutdownStateBuffers();
+	_shapeRenderer.shutdown();
+	_shapeBuilder.shutdown();
 	return old;
 }
 

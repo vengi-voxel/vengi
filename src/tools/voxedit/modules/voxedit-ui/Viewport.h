@@ -92,6 +92,7 @@ private:
 	core::VarPtr _gridSize;
 	core::VarPtr _autoKeyFrame;
 	core::VarPtr _localSpace;
+	core::VarPtr _renderNormals;
 
 	bool wantGizmo() const;
 	/**
