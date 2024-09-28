@@ -25,6 +25,7 @@
 
 #include "Iconv.h"
 #include "core/NonCopyable.h"
+#include "core/Path.h"
 #include "io/Stream.h"
 
 namespace app {
@@ -33,7 +34,7 @@ class Dictionary;
 
 class POParser : public core::NonCopyable {
 private:
-	core::String _filename;
+	core::Path _filename;
 	io::SeekableReadStream &_in;
 	Dictionary &_dict;
 	bool _useFuzzy;
@@ -47,7 +48,7 @@ private:
 
 	IConv _conv;
 
-	POParser(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy = true);
+	POParser(const core::Path &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy = true);
 	~POParser();
 
 	bool parseHeader(const core::String &header);
@@ -66,7 +67,7 @@ public:
 	 * @param in stream from which the PO file is read.
 	 * @param dict dictionary to which the strings are written
 	 */
-	static bool parse(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict);
+	static bool parse(const core::Path &filename, io::SeekableReadStream &in, Dictionary &dict);
 	static bool pedantic;
 };
 

@@ -38,9 +38,9 @@ static int extractLayerFromFilename(const core::String &filename) {
 
 bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							 const io::ArchiveFiles &entities) const {
-	const core::String filename = entities.front().fullPath;
+	const core::Path filename = entities.front().fullPath;
 	Log::debug("Use %s as reference image", filename.c_str());
-	image::ImagePtr referenceImage = image::loadImage(filename);
+	image::ImagePtr referenceImage = image::loadImage(filename.str());
 	if (!referenceImage || !referenceImage->isLoaded()) {
 		Log::error("Failed to load first image as reference %s", filename.c_str());
 		return false;
@@ -52,8 +52,8 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	int maxsZ = -1000000;
 
 	for (const auto &entity : entities) {
-		const core::String &layerFilename = entity.fullPath;
-		const int layer = extractLayerFromFilename(layerFilename);
+		const core::Path &layerFilename = entity.fullPath;
+		const int layer = extractLayerFromFilename(layerFilename.str());
 		minsZ = glm::min(minsZ, layer);
 		maxsZ = glm::max(maxsZ, layer);
 	}
@@ -62,11 +62,11 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setName(core::string::extractFilename(filename));
+	node.setName(core::string::extractFilename(filename.str()));
 
 	for (const auto &entity : entities) {
-		const core::String &layetFilename = entity.fullPath;
-		const image::ImagePtr &image = image::loadImage(layetFilename);
+		const core::Path &layetFilename = entity.fullPath;
+		const image::ImagePtr &image = image::loadImage(layetFilename.str());
 		if (!image || !image->isLoaded()) {
 			Log::error("Failed to load image %s", layetFilename.c_str());
 			return false;
@@ -76,7 +76,7 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 					   image->width(), image->height(), imageWidth, imageHeight);
 			return false;
 		}
-		const int layer = extractLayerFromFilename(layetFilename);
+		const int layer = extractLayerFromFilename(layetFilename.str());
 		Log::debug("Import layer %i of image %s", layer, layetFilename.c_str());
 		for (int y = 0; y < imageHeight; ++y) {
 			for (int x = 0; x < imageWidth; ++x) {
@@ -193,7 +193,7 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	io::ArchiveFiles entities;
 	archive->list(directory, entities, core::string::format("%s-*.png", basename.c_str()));
 	if (entities.empty()) {
-		io::FilesystemEntry val = io::createFilesystemEntry(filename);
+		io::FilesystemEntry val = io::createFilesystemEntry(core::Path(filename));
 		entities.push_back(val);
 	}
 	Log::debug("Found %i images for import", (int)entities.size());

@@ -205,12 +205,13 @@ void CollectionPanel::contextMenu(voxelcollection::VoxelFile *voxelFile) {
 
 		if (!io::isA(voxelFile->name, voxelformat::voxelLoad())) {
 			if (ImGui::MenuItem(_("Open target file"))) {
-				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
-				command::executeCommands("url \"file://" + absPath + "\"");
+				const core::Path &absPath = _collectionMgr->absolutePath(*voxelFile);
+				command::executeCommands("url \"file://" + absPath.str() + "\"");
 			}
 			if (ImGui::MenuItem(_("Open target dir"))) {
-				core::String absPath = _collectionMgr->absolutePath(*voxelFile);
-				command::executeCommands("url \"file://" + core::string::extractDir(absPath) + "\"");
+				const core::Path &absPath = _collectionMgr->absolutePath(*voxelFile);
+				const core::Path &dir = absPath.dirname();
+				command::executeCommands("url \"file://" + dir.str() + "\"");
 			}
 		} else if (!thumbnailLookup(*voxelFile)) {
 			if (ImGui::MenuItem(_("Create thumbnail"))) {

@@ -151,7 +151,7 @@ bool ThingFormat::loadGroups(const core::String &filename, const io::ArchivePtr 
 	io::ArchiveFiles files;
 	zipArchive->list("*.node", files);
 	for (const io::FilesystemEntry &file : files) {
-		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath));
+		core::ScopedPtr<io::SeekableReadStream> nodeSpecStream(zipArchive->readStream(file.fullPath.str()));
 		if (nodeSpecStream) {
 			NodeSpec nodeSpec;
 			if (!loadNodeSpec(*nodeSpecStream, nodeSpec)) {

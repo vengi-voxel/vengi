@@ -140,8 +140,8 @@ bool ZipArchive::init(const core::String &path, io::SeekableReadStream *stream) 
 			continue;
 		}
 		FilesystemEntry entry;
-		entry.fullPath = zipStat.m_filename;
-		entry.name = core::string::extractFilenameWithExtension(entry.fullPath);
+		entry.fullPath = core::Path(zipStat.m_filename);
+		entry.name = core::string::extractFilenameWithExtension(entry.fullPath.str());
 		entry.type = FilesystemEntry::Type::file;
 		entry.size = zipStat.m_uncomp_size;
 		entry.mtime = zipStat.m_time;

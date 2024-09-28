@@ -115,7 +115,7 @@ image::ImagePtr VXCFormat::loadScreenshot(const core::String &filename, const io
 			Log::debug("Skip image %s", entry.name.c_str());
 			continue;
 		}
-		core::ScopedPtr<io::SeekableReadStream> thumbnailStream(vxcArchive->readStream(entry.fullPath));
+		core::ScopedPtr<io::SeekableReadStream> thumbnailStream(vxcArchive->readStream(entry.fullPath.str()));
 		if (!thumbnailStream) {
 			Log::error("Could not load file %s", entry.fullPath.c_str());
 			return image::ImagePtr();

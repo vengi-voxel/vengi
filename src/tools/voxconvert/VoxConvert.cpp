@@ -105,7 +105,7 @@ app::AppState VoxConvert::onConstruct() {
 	_withColor = core::Var::getSafe(cfg::VoxformatWithColor);
 	_withTexCoords = core::Var::getSafe(cfg::VoxformatWithtexcoords);
 
-	if (!filesystem()->registerPath("scripts/")) {
+	if (!filesystem()->registerPath(core::Path("scripts/"))) {
 		Log::warn("Failed to register lua generator script path");
 	}
 
@@ -258,7 +258,7 @@ app::AppState VoxConvert::onInit() {
 	const bool hasScript = hasArg("--script");
 
 	core::String infilesstr;
-	core::DynamicArray<core::String> infiles;
+	core::DynamicArray<core::Path> infiles;
 	bool inputIsMesh = false;
 	if (hasArg("--input")) {
 		int argn = 0;
@@ -267,8 +267,7 @@ app::AppState VoxConvert::onInit() {
 			if (val.empty()) {
 				break;
 			}
-			io::normalizePath(val);
-			infiles.push_back(val);
+			infiles.emplace_back(val);
 			if (voxelformat::isMeshFormat(val, false)) {
 				inputIsMesh = true;
 			}
@@ -283,7 +282,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	core::String outfilesstr;
-	core::DynamicArray<core::String> outfiles;
+	core::DynamicArray<core::Path> outfiles;
 	bool outputIsMesh = false;
 	if (hasArg("--output")) {
 		int argn = 0;
@@ -292,8 +291,7 @@ app::AppState VoxConvert::onInit() {
 			if (val.empty()) {
 				break;
 			}
-			io::normalizePath(val);
-			outfiles.push_back(val);
+			outfiles.emplace_back(val);
 			if (voxelformat::isMeshFormat(val, false)) {
 				outputIsMesh = true;
 			}
@@ -367,7 +365,7 @@ app::AppState VoxConvert::onInit() {
 
 	if (!outfiles.empty()) {
 		if (!hasArg("--force")) {
-			for (const core::String &outfile : outfiles) {
+			for (const core::Path &outfile : outfiles) {
 				const bool outfileExists = filesystem()->open(outfile)->exists();
 				if (outfileExists) {
 					Log::error("Given output file '%s' already exists", outfile.c_str());
@@ -382,13 +380,13 @@ app::AppState VoxConvert::onInit() {
 
 	const io::ArchivePtr &fsArchive = io::openFilesystemArchive(filesystem());
 	scenegraph::SceneGraph sceneGraph;
-	for (const core::String &infile : infiles) {
+	for (const core::Path &infile : infiles) {
 		if (shouldQuit()) {
 			break;
 		}
-		if (filesystem()->sysIsReadableDir(infile)) {
+		if (filesystem()->sysIsReadableDir(infile.str())) {
 			core::DynamicArray<io::FilesystemEntry> entities;
-			filesystem()->list(infile, entities, getArgVal("--wildcard", ""));
+			filesystem()->list(infile.str(), entities, getArgVal("--wildcard", ""));
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());
 			int success = 0;
 			for (const io::FilesystemEntry &entry : entities) {
@@ -398,7 +396,7 @@ app::AppState VoxConvert::onInit() {
 				if (entry.type != io::FilesystemEntry::Type::file) {
 					continue;
 				}
-				const core::String fullpath = core::string::path(infile, entry.name);
+				const core::Path &fullpath = infile.append(entry.name);
 				if (handleInputFile(fullpath, fsArchive, sceneGraph, entities.size() > 1)) {
 					++success;
 				}
@@ -407,7 +405,7 @@ app::AppState VoxConvert::onInit() {
 				Log::error("Could not find a valid input file in directory %s", infile.c_str());
 				return app::AppState::InitFailure;
 			}
-		} else if (io::isZipArchive(infile)) {
+		} else if (io::isZipArchive(infile.str())) {
 			io::FileStream archiveStream(filesystem()->open(infile, io::FileMode::SysRead));
 			io::ArchivePtr archive = io::openZipArchive(&archiveStream);
 			if (!archive) {
@@ -432,7 +430,7 @@ app::AppState VoxConvert::onInit() {
 						continue;
 					}
 				}
-				const core::String &fullPath = filesystem()->homeWritePath(entry.fullPath);
+				const core::Path &fullPath = filesystem()->homeWritePath(entry.fullPath.str());
 				if (!handleInputFile(fullPath, archive, sceneGraph, archive->files().size() > 1)) {
 					Log::error("Failed to handle input file %s", fullPath.c_str());
 				}
@@ -489,13 +487,13 @@ app::AppState VoxConvert::onInit() {
 		if (infiles.size() > 1) {
 			Log::warn("The format and path of the first input file is used for exporting all models");
 		}
-		for (const core::String &outfile : outfiles) {
+		for (const core::Path &outfile : outfiles) {
 			io::FilePtr outputFile = filesystem()->open(outfile, io::FileMode::SysWrite);
 			if (!outputFile->validHandle()) {
 				Log::error("Could not open target file: %s", outfile.c_str());
 				return app::AppState::InitFailure;
 			}
-			exportModelsIntoSingleObjects(sceneGraph, infiles[0], outputFile ? outputFile->extension() : "");
+			exportModelsIntoSingleObjects(sceneGraph, infiles[0].str(), outputFile ? outputFile->extension() : "");
 		}
 		return state;
 	}
@@ -552,8 +550,8 @@ app::AppState VoxConvert::onInit() {
 		split(getArgIvec3("--split"), sceneGraph);
 	}
 
-	for (const core::String &outfile : outfiles) {
-		if (_exportPalette || (!io::isA(outfile, voxelformat::voxelSave()) && io::isA(outfile, io::format::palettes()))) {
+	for (const core::Path &outfile : outfiles) {
+		if (_exportPalette || (!io::isA(outfile.str(), voxelformat::voxelSave()) && io::isA(outfile.str(), io::format::palettes()))) {
 			// if the given format is a palette only format (some voxel formats might have the same
 			// extension - so we check that here)
 			const palette::Palette &palette = sceneGraph.mergePalettes(false);
@@ -566,7 +564,7 @@ app::AppState VoxConvert::onInit() {
 			Log::debug("Save %i models", (int)sceneGraph.size());
 			voxelformat::SaveContext saveCtx;
 			const io::ArchivePtr &archive = io::openFilesystemArchive(filesystem());
-			if (!voxelformat::saveFormat(sceneGraph, outfile, nullptr, archive, saveCtx)) {
+			if (!voxelformat::saveFormat(sceneGraph, outfile.str(), nullptr, archive, saveCtx)) {
 				Log::error("Failed to write to output file '%s'", outfile.c_str());
 				return app::AppState::InitFailure;
 			}
@@ -594,10 +592,10 @@ static void printProgress(const char *name, int cur, int max) {
 	// Log::info("%s: %i/%i", name, cur, max);
 }
 
-bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePtr &archive,
+bool VoxConvert::handleInputFile(const core::Path &infile, const io::ArchivePtr &archive,
 								 scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(infile));
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(infile.str()));
 	if (!stream) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
@@ -607,7 +605,7 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 	voxelformat::LoadContext loadCtx;
 	loadCtx.monitor = printProgress;
 	io::FileDescription fileDesc;
-	fileDesc.set(infile);
+	fileDesc.set(infile.str());
 	if (!voxelformat::loadFormat(fileDesc, archive, newSceneGraph, loadCtx)) {
 		return false;
 	}
@@ -615,7 +613,8 @@ bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePt
 	int parent = sceneGraph.root().id();
 	if (multipleInputs) {
 		scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
-		groupNode.setName(core::string::extractFilename(infile));
+		const core::Path &bn = infile.basename();
+		groupNode.setName(bn.str());
 		parent = sceneGraph.emplace(core::move(groupNode), parent);
 	}
 	scenegraph::addSceneGraphNodes(sceneGraph, newSceneGraph, parent);

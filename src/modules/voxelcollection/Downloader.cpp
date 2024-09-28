@@ -146,7 +146,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 		subFile.license = archiveFile.license;
 		subFile.licenseUrl = archiveFile.licenseUrl;
 		subFile.thumbnailUrl = archiveFile.thumbnailUrl;
-		subFile.fullPath = core::string::path(core::string::extractDir(archiveFile.fullPath), f.fullPath);
+		subFile.fullPath = core::string::path(core::string::extractDir(archiveFile.fullPath), f.fullPath.str());
 		subFile.downloaded = true;
 
 		if (supportedFileExtension(subFile.name)) {
@@ -155,7 +155,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 				files.push_back(subFile);
 				continue;
 			}
-			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(f.fullPath));
+			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(f.fullPath.str()));
 			if (!rs) {
 				Log::error("Failed to read file %s from archive %s", f.fullPath.c_str(),
 						   archiveFile.fullPath.c_str());
@@ -169,7 +169,7 @@ bool Downloader::handleArchive(const io::ArchivePtr &archive, const VoxelFile &a
 			}
 		} else if (io::isZipArchive(subFile.name)) {
 			// save file and call handleArchive again
-			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(f.fullPath));
+			core::ScopedPtr<io::SeekableReadStream> rs(zipArchive->readStream(f.fullPath.str()));
 			if (!rs) {
 				Log::error("Failed to read file %s from archive %s", f.fullPath.c_str(),
 						   archiveFile.fullPath.c_str());

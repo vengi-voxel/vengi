@@ -105,7 +105,7 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 		}
 
 		if (!bestFilename.empty()) {
-			const core::String &pofile = core::string::path(*p, bestFilename);
+			const core::Path &pofile = p->append(bestFilename);
 			const io::FilePtr &in = _filesystem->open(pofile);
 			if (!in) {
 				Log::error("failure opening: %s", pofile.c_str());
@@ -173,7 +173,7 @@ bool DictionaryManager::getUseFuzzy() const {
 	return _useFuzzy;
 }
 
-void DictionaryManager::addDirectory(const core::String &pathname, bool precedence /* = false */) {
+void DictionaryManager::addDirectory(const core::Path &pathname, bool precedence /* = false */) {
 	if (core::find(_searchPath.begin(), _searchPath.end(), pathname) == _searchPath.end()) {
 		clearCache(); // adding directories invalidates cache
 		if (precedence) {

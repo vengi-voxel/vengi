@@ -88,7 +88,7 @@ public:
 	int downloadProgress() const;
 	int allEntries() const;
 
-	core::String absolutePath(const VoxelFile &voxelFile) const;
+	core::Path absolutePath(const VoxelFile &voxelFile) const;
 };
 
 inline const core::String &CollectionManager::localDir() const {

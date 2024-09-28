@@ -39,7 +39,7 @@ bool CollectionManager::init() {
 		documents = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Download);
 	}
 	if (documents.empty()) {
-		documents = _filesystem->homePath();
+		documents = _filesystem->homePath().str();
 	}
 	core_assert(!documents.empty());
 	const core::VarPtr &var = core::Var::get(cfg::AssetPanelLocalDirectory, documents);
@@ -50,10 +50,10 @@ bool CollectionManager::init() {
 	return true;
 }
 
-core::String CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
+core::Path CollectionManager::absolutePath(const VoxelFile &voxelFile) const {
 	// this has to match with the http cache stream
 	if (voxelFile.isLocal()) {
-		return voxelFile.targetFile();
+		return core::Path(voxelFile.targetFile());
 	}
 	return _filesystem->homeWritePath(voxelFile.targetFile());
 }
@@ -134,9 +134,9 @@ bool CollectionManager::local() {
 				continue;
 			}
 			VoxelFile voxelFile;
-			voxelFile.name = entry.fullPath.substr(localDir.size());
-			voxelFile.fullPath = entry.fullPath;
-			voxelFile.url = "file://" + entry.fullPath;
+			voxelFile.name = entry.fullPath.str().substr(localDir.size());
+			voxelFile.fullPath = entry.fullPath.str();
+			voxelFile.url = "file://" + entry.fullPath.str();
 			voxelFile.source = LOCAL_SOURCE;
 			voxelFile.license = "unknown";
 			// voxelFile.licenseUrl = "";
@@ -225,8 +225,8 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 	scenegraph::SceneGraph sceneGraph;
 	io::FileDescription fileDesc;
-	const core::String &fileName = absolutePath(voxelFile);
-	fileDesc.set(fileName);
+	const core::Path &fileName = absolutePath(voxelFile);
+	fileDesc.set(fileName.str());
 	voxelformat::LoadContext loadctx;
 	if (!voxelformat::loadFormat(fileDesc, _archive, sceneGraph, loadctx)) {
 		Log::error("Failed to load given input file: %s", fileName.c_str());

@@ -33,12 +33,12 @@ namespace app {
 
 bool POParser::pedantic = true;
 
-bool POParser::parse(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict) {
+bool POParser::parse(const core::Path &filename, io::SeekableReadStream &in, Dictionary &dict) {
 	POParser parser(filename, in, dict);
 	return parser.parse();
 }
 
-POParser::POParser(const core::String &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy)
+POParser::POParser(const core::Path &filename, io::SeekableReadStream &in, Dictionary &dict, bool useFuzzy)
 	: _filename(filename), _in(in), _dict(dict), _useFuzzy(useFuzzy) {
 }
 

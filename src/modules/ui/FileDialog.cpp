@@ -116,7 +116,7 @@ static const struct FileDialogSorter {
 
 static core::String assemblePath(const core::String &dir, const io::FilesystemEntry &ent) {
 	if (ent.isDirectory() && ent.name == "..") {
-		return ent.fullPath;
+		return ent.fullPath.str();
 	}
 	return core::string::path(dir, ent.name);
 }
@@ -128,7 +128,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 	if (!isRootPath) {
 		_parentDir.name = "..";
 		_parentDir.type = io::FilesystemEntry::Type::dir;
-		_parentDir.fullPath = _app->filesystem()->sysAbsolutePath(core::string::path(_currentPath, ".."));
+		_parentDir.fullPath = core::Path(_app->filesystem()->sysAbsolutePath(core::string::path(_currentPath, "..")));
 		_filteredEntities.push_back(&_parentDir);
 	}
 	for (size_t i = 0; i < _entities.size(); ++i) {
@@ -229,22 +229,23 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		selectFilter(type, lastFilter);
 	}
 
-	const core::String &filePath = core::string::extractDir(filename);
-	if (filePath.empty() || !_app->filesystem()->exists(filePath)) {
+	const core::Path path(filename);
+	const core::Path pathDir = path.dirname();
+	if (pathDir.empty() || !_app->filesystem()->exists(pathDir.str())) {
 		const core::String &lastDir = _lastDirVar->strVal();
 		if (_app->filesystem()->exists(lastDir)) {
 			_currentPath = lastDir;
 		} else {
-			_currentPath = _app->filesystem()->homePath();
+			_currentPath = _app->filesystem()->homePath().str();
 		}
 	} else {
-		_currentPath = filePath;
+		_currentPath = pathDir.str();
 	}
-	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), filename, io::FilesystemEntry::Type::file, 0, 0};
+	_selectedEntry = io::FilesystemEntry{core::string::extractFilenameWithExtension(filename), path, io::FilesystemEntry::Type::file, 0, 0};
 	_entryIndex = -1;
 
 	if (!_app->filesystem()->exists(_currentPath)) {
-		_currentPath = _app->filesystem()->homePath();
+		_currentPath = _app->filesystem()->homePath().str();
 		_lastDirVar->setVal(_currentPath);
 	}
 
@@ -345,8 +346,8 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
 		const io::Paths& paths = _app->filesystem()->registeredPaths();
-		for (const core::String& path : paths) {
-			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path);
+		for (const core::Path& path : paths) {
+			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path.str());
 			if (absPath.empty()) {
 				continue;
 			}
@@ -407,7 +408,7 @@ bool FileDialog::hide(const core::String &file) const {
 	if (_showHidden->boolVal()) {
 		return false;
 	}
-	return io::Filesystem::sysIsHidden(file);
+	return io::Filesystem::sysIsHidden(core::Path(file));
 }
 
 static const char *iconForType(io::FilesystemEntry::Type type) {
@@ -614,7 +615,7 @@ void FileDialog::popupNewFolder() {
 				_newFolderError = TimedError(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				_app->filesystem()->sysCreateDir(newFilePath);
+				_app->filesystem()->sysCreateDir(core::Path(newFilePath));
 				ImGui::CloseCurrentPopup();
 			}
 		}

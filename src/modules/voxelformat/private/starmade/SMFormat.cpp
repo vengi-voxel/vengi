@@ -111,7 +111,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 						position[i] = core::string::toInt(e.name.substr(dot + 1)) * priv::segments;
 					}
 				}
-				core::ScopedPtr<io::SeekableReadStream> modelStream(zipArchive->readStream(e.fullPath));
+				core::ScopedPtr<io::SeekableReadStream> modelStream(zipArchive->readStream(e.fullPath.str()));
 				if (!modelStream) {
 					Log::warn("Failed to load zip archive entry %s", e.fullPath.c_str());
 					continue;

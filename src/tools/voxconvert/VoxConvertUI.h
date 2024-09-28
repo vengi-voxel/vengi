@@ -16,7 +16,7 @@ private:
 	using Super = ui::IMGUIApp;
 	core::String _output;
 	core::String _source;
-	core::String _voxconvertBinary = "vengi-voxconvert";
+	core::Path _voxconvertBinary {"vengi-voxconvert"};
 	core::String _targetFile;
 	bool _targetFileExists = false;
 	bool _overwriteTargetFile = false;

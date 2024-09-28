@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Path.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "IOResource.h"
@@ -26,11 +27,6 @@ enum class FileMode {
 };
 
 /**
- * @sa core::string::sanitizeDirPath()
- */
-extern void normalizePath(core::String& str);
-
-/**
  * @brief Wrapper for file based io.
  *
  * @see FileSystem
@@ -41,13 +37,14 @@ class File : public IOResource {
 	friend class core::SharedPtr<io::File>;
 protected:
 	SDL_RWops* _file;
-	core::String _rawPath;
+	core::Path _rawPath;
 	FileMode _mode;
 	mutable core::String _error;
 
 	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
 public:
+	File(const core::Path& rawPath, FileMode mode = FileMode::Read);
 	File(const core::String& rawPath, FileMode mode = FileMode::Read);
 	File(core::String&& rawPath, FileMode mode = FileMode::Read);
 	virtual ~File();
@@ -87,7 +84,7 @@ public:
 	 * @return The path of the file, without the name - or an
 	 * empty string if no path component was found
 	 */
-	core::String dir() const;
+	core::Path dir() const;
 	/**
 	 * @return Just the base file name component part - without
 	 * path and extension
@@ -97,6 +94,7 @@ public:
 	 * @return The full raw path of the file
 	 */
 	const core::String& name() const;
+	const core::Path& path() const;
 
 	SDL_RWops* createRWops(FileMode mode) const;
 	long write(io::ReadStream &stream) const;

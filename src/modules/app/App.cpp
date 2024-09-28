@@ -334,7 +334,7 @@ void App::onFrame() {
 						if (!request.execute(stream, &statusCode)) {
 							Log::error("Failed to upload crash log with status: %i", statusCode);
 						} else {
-							_filesystem->sysRemoveFile(crashlogFilename);
+							_filesystem->sysRemoveFile(core::Path(crashlogFilename));
 						}
 					}
 				}
@@ -447,9 +447,9 @@ AppState App::onConstruct() {
 	}
 	core_assert_init(_filesystem->homePath().c_str());
 
-	for (const core::String &path : _filesystem->registeredPaths()) {
+	for (const core::Path &path : _filesystem->registeredPaths()) {
 		_dictManager.addDirectory(path);
-		_dictManager.addDirectory(core::string::path(path, "po"));
+		_dictManager.addDirectory(path.append("po"));
 	}
 
 	FL_Locale *locale = nullptr;
@@ -595,7 +595,7 @@ AppState App::onConstruct() {
 #endif
 	}
 
-	const core::String &logfilePath = _filesystem->homeWritePath("log.txt");
+	const core::Path &logfilePath = _filesystem->homeWritePath("log.txt");
 	Log::init(logfilePath.c_str());
 
 	return AppState::Init;
@@ -947,7 +947,7 @@ void App::usage() const {
 	Log::info("------------");
 	Log::info("Search paths:");
 	const io::Paths &paths = _filesystem->registeredPaths();
-	for (const core::String &path : paths) {
+	for (const core::Path &path : paths) {
 		Log::info(" * %s", path.c_str());
 	}
 	Log::info("------------");

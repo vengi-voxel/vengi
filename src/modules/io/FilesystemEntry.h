@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Path.h"
 #include "core/String.h"
 #include <stdint.h>
 
@@ -11,7 +12,7 @@ namespace io {
 
 struct FilesystemEntry {
 	core::String name;
-	core::String fullPath;
+	core::Path fullPath;
 	enum class Type : uint8_t {
 		file,
 		dir,
@@ -35,6 +36,6 @@ struct FilesystemEntry {
 	}
 };
 
-FilesystemEntry createFilesystemEntry(const core::String &filename);
+FilesystemEntry createFilesystemEntry(const core::Path &filename);
 
 }

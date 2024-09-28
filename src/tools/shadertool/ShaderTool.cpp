@@ -54,9 +54,9 @@ void ShaderTool::validate(const core::String &name) {
 	if (_glslangValidatorBin.empty()) {
 		return;
 	}
-	const core::String &writePath = filesystem()->homePath();
+	const core::Path &writePath = filesystem()->homePath();
 	core::DynamicArray<core::String> args;
-	args.push_back(writePath + name);
+	args.push_back(writePath.str() + name);
 	Log::debug("Execute glslang validator with the following commandline: %s %s", _glslangValidatorBin.c_str(),
 			   args[0].c_str());
 	io::BufferedReadWriteStream stream(4096);
@@ -131,7 +131,7 @@ app::AppState ShaderTool::onRunning() {
 		_constantsTemplateFile            = getArgVal("--constantstemplate");
 		_shaderDirectory                  = getArgVal("--shaderdir");
 		_sourceDirectory                  = getArgVal("--sourcedir",
-				core::string::path(_filesystem->basePath(), "src", "modules", _namespaceSrc));
+				core::string::path(_filesystem->basePath().str(), "src", "modules", _namespaceSrc));
 		_postfix                          = getArgVal("--postfix", "");
 
 		// handle include dirs
@@ -161,11 +161,11 @@ app::AppState ShaderTool::onRunning() {
 	Log::debug("Preparing shader file %s", _shaderfile.c_str());
 	const io::FilesystemPtr& fs = filesystem();
 	_shaderpath = core::string::extractDir(shaderfile.c_str());
-	const bool changedDir = fs->sysPushDir(_shaderpath);
+	const bool changedDir = fs->sysPushDir(core::Path(_shaderpath));
 
 	video::Shader shader;
 
-	const core::String& writePath = fs->homePath();
+	const core::Path& writePath = fs->homePath();
 	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), writePath.c_str());
 
 	const core::String& templateShaderHeader = fs->load(_headerTemplateFile);

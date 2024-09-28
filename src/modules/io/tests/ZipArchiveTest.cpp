@@ -34,7 +34,7 @@ TEST_F(ZipArchiveTest, testZipArchive) {
 	EXPECT_STREQ("yet another file in root\n", buf);
 	EXPECT_EQ("file.txt", files[1].name);
 	EXPECT_EQ("file.txt", files[2].name);
-	EXPECT_EQ("dir/file.txt", files[2].fullPath);
+	EXPECT_EQ("dir/file.txt", files[2].fullPath.str());
 }
 
 } // namespace io
