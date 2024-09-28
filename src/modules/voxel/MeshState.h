@@ -57,6 +57,7 @@ private:
 		glm::vec3 _maxs{0.0f};
 		/**
 		 * @brief Applies the pivot and the model matrix
+		 * @note Used for sorting (for transparency)
 		 */
 		glm::vec3 centerPos() const;
 	};
@@ -142,6 +143,10 @@ public:
 
 	const glm::vec3 &mins(int idx) const;
 	const glm::vec3 &maxs(int idx) const;
+	/**
+	 * @brief Applies the pivot and the model matrix
+	 * @note Used for sorting (for transparency)
+	 */
 	glm::vec3 centerPos(int idx) const;
 	const glm::vec3 &pivot(int idx) const;
 	const glm::mat4 &model(int idx) const;
