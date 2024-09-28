@@ -359,8 +359,9 @@ voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Pa
 core::DynamicArray<voxel::RawVolume *> MeshState::shutdown() {
 	_threadPool.shutdown();
 	clear();
-	core::DynamicArray<voxel::RawVolume *> old(MAX_VOLUMES);
-	for (int idx = 0; idx < MAX_VOLUMES; ++idx) {
+	core::DynamicArray<voxel::RawVolume *> old;
+	old.reserve(MAX_VOLUMES);
+	for (int idx = 0; idx < (int)_volumeData.size(); ++idx) {
 		VolumeData &state = _volumeData[idx];
 		// hand over the ownership to the caller
 		old.push_back(state._rawVolume);
