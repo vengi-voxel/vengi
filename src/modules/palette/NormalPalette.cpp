@@ -142,6 +142,10 @@ void NormalPalette::redAlert2() {
 	loadNormalMap(priv::ra2normals, (uint8_t)lengthof(priv::ra2normals));
 }
 
+glm::vec3 NormalPalette::normal3f(uint8_t index) const {
+	return toVec3(_normals[index]);
+}
+
 void NormalPalette::toVec4f(core::DynamicArray<glm::vec4> &vec4f) const {
 	vec4f.reserve(NormalPaletteMaxNormals);
 	for (int i = 0; i < _size; ++i) {

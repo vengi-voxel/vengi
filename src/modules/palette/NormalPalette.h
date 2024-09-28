@@ -31,6 +31,7 @@ public:
 	void loadNormalMap(const glm::vec3 *normals, uint8_t size);
 
 	const core::RGBA &normal(uint8_t index) const;
+	glm::vec3 normal3f(uint8_t index) const;
 	void setNormal(uint8_t index, const core::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
 
