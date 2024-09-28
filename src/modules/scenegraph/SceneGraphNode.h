@@ -121,6 +121,7 @@ public:
 	bool isReference() const;
 	bool isReferenceable() const;
 	bool isAnyModelNode() const;
+	bool isCameraNode() const;
 	bool isModelNode() const;
 	bool isGroupNode() const;
 	bool isRootNode() const;

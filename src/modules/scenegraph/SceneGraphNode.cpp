@@ -315,6 +315,10 @@ bool SceneGraphNode::isAnyModelNode() const {
 	return _type == SceneGraphNodeType::Model || _type == SceneGraphNodeType::ModelReference;
 }
 
+bool SceneGraphNode::isCameraNode() const {
+	return _type == scenegraph::SceneGraphNodeType::Camera;
+}
+
 bool SceneGraphNode::isModelNode() const {
 	return _type == SceneGraphNodeType::Model;
 }
