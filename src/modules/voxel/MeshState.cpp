@@ -31,6 +31,13 @@ glm::vec3 MeshState::VolumeData::centerPos() const {
 	return pos;
 }
 
+glm::vec3 MeshState::VolumeData::centerPos(int x, int y, int z) const {
+	// we want the center of the voxel
+	const glm::vec4 center((float)x + 0.5f - _pivot.x, (float)y + 0.5f  - _pivot.y, (float)z + 0.5f  - _pivot.z, 0.0f);
+	const glm::vec3 pos = _model * center;
+	return pos;
+}
+
 const glm::vec3 &MeshState::mins(int idx) const {
 	return _volumeData[idx]._mins;
 }
@@ -41,6 +48,10 @@ const glm::vec3 &MeshState::maxs(int idx) const {
 
 glm::vec3 MeshState::centerPos(int idx) const {
 	return _volumeData[idx].centerPos();
+}
+
+glm::vec3 MeshState::centerPos(int idx, int x, int y, int z) const {
+	return _volumeData[idx].centerPos(x, y, z);
 }
 
 const glm::mat4 &MeshState::model(int idx) const {
@@ -326,6 +337,20 @@ int MeshState::resolveIdx(int idx) const {
 		return resolveIdx(ref);
 	}
 	return idx;
+}
+
+bool MeshState::sameNormalPalette(int idx, const palette::NormalPalette *palette) const {
+	if (idx < 0 || idx >= MAX_VOLUMES) {
+		return false;
+	}
+	const palette::NormalPalette *normalPalette = _volumeData[idx]._normalPalette.value();
+	if (normalPalette == nullptr) {
+		return palette == nullptr;
+	}
+	if (palette == nullptr) {
+		return false;
+	}
+	return normalPalette->hash() == palette->hash();
 }
 
 voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette, palette::NormalPalette *normalPalette, bool meshDelete,

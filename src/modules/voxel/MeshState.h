@@ -56,10 +56,11 @@ private:
 		glm::vec3 _mins{0.0f};
 		glm::vec3 _maxs{0.0f};
 		/**
-		 * @brief Applies the pivot and the model matrix
+		 * @brief Applies the model matrix
 		 * @note Used for sorting (for transparency)
 		 */
 		glm::vec3 centerPos() const;
+		glm::vec3 centerPos(int x, int y, int z) const;
 	};
 	typedef core::Array<VolumeData, MAX_VOLUMES> Volumes;
 
@@ -144,10 +145,14 @@ public:
 	const glm::vec3 &mins(int idx) const;
 	const glm::vec3 &maxs(int idx) const;
 	/**
-	 * @brief Applies the pivot and the model matrix
+	 * @brief Applies the model matrix
 	 * @note Used for sorting (for transparency)
 	 */
 	glm::vec3 centerPos(int idx) const;
+	/**
+	 * @brief Center position of a voxel having the pivot and model matrix applied
+	 */
+	glm::vec3 centerPos(int idx, int x, int y, int z) const;
 	const glm::vec3 &pivot(int idx) const;
 	const glm::mat4 &model(int idx) const;
 	void setModel(int idx, const glm::mat4 &model);
@@ -171,6 +176,8 @@ public:
 	 * @return @c true if the mesh should get deleted in the renderer
 	 */
 	bool scheduleRegionExtraction(int idx, const voxel::Region &region);
+
+	bool sameNormalPalette(int idx, const palette::NormalPalette *palette) const;
 
 	[[nodiscard]] voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
 											  palette::NormalPalette *normalPalette, bool meshDelete,
