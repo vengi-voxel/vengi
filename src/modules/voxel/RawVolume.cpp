@@ -25,7 +25,7 @@ RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
 
 RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy->_borderVoxel;
 	core_memcpy((void*)_data, (void*)copy->_data, size);
@@ -33,7 +33,7 @@ RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	_borderVoxel = copy._borderVoxel;
 	core_memcpy((void*)_data, (void*)copy._data, size);
@@ -79,7 +79,7 @@ RawVolume::RawVolume(const RawVolume &src, const core::DynamicArray<Region> &cop
 RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) : _region(region) {
 	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	if (!intersects(src.region(), _region)) {
 		if (onlyAir) {
@@ -138,7 +138,7 @@ RawVolume::RawVolume(RawVolume &&move) noexcept {
 
 RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
 	initialise(region);
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	core_memcpy((void *)_data, (const void *)data, size);
 }
 
@@ -183,7 +183,7 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 }
 
 Voxel *RawVolume::copyVoxels() const {
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	Voxel *rawCopy = (Voxel *)core_malloc(size);
 	core_memcpy((void *)rawCopy, (void *)_data, size);
 	return rawCopy;
@@ -267,7 +267,7 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	// Create the data
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	core_assert_msg_always(_data != nullptr, "Failed to allocate the memory for a volume with the dimensions %i:%i:%i",
 						   width(), height(), depth());
@@ -277,7 +277,7 @@ void RawVolume::initialise(const Region &regValidRegion) {
 }
 
 void RawVolume::clear() {
-	const size_t size = width() * height() * depth() * sizeof(Voxel);
+	const size_t size = RawVolume::size(_region);
 	core_memset(_data, 0, size);
 }
 
