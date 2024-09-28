@@ -6,12 +6,13 @@
 
 #include "core/DirtyState.h"
 #include "core/RGBA.h"
+#include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include <glm/fwd.hpp>
 
 namespace palette {
 
-static const int NormalPaletteMaxNormals = 256;
+static const int NormalPaletteMaxNormals = 255;
 
 class NormalPalette : public core::DirtyState {
 private:
@@ -32,6 +33,8 @@ public:
 	const core::RGBA &normal(uint8_t index) const;
 	void setNormal(uint8_t index, const core::RGBA &normal);
 	void setNormal(uint8_t index, const glm::vec3 &normal);
+
+	void toVec4f(core::DynamicArray<glm::vec4> &normals) const;
 
 	const core::String &name() const;
 	void setName(const core::String &name);
