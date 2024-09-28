@@ -160,6 +160,11 @@ bool RawVolumeRenderer::initStateBuffers() {
 				const video::Attribute &attributeInfo = getInfoVertexAttribute(
 					state._vertexBufferIndex[i], _voxelShader.getLocationInfo(), _voxelShader.getComponentsInfo());
 				state._vertexBuffer[i].addAttribute(attributeInfo);
+
+				const video::Attribute &attributeInfo2 =
+					getInfo2VertexAttribute(state._vertexBufferIndex[i], _voxelShader.getLocationInfo2(),
+										   _voxelShader.getComponentsInfo2());
+				state._vertexBuffer[i].addAttribute(attributeInfo2);
 			}
 		}
 	}
@@ -355,7 +360,7 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 }
 
 void RawVolumeRenderer::resetVolume(int idx) {
-	setVolume(idx, nullptr, nullptr, true);
+	setVolume(idx, nullptr, nullptr, nullptr, true);
 }
 
 bool RawVolumeRenderer::updateBufferForVolume(int idx) {
@@ -374,7 +379,7 @@ void RawVolumeRenderer::clear() {
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a
 		// node
-		voxel::RawVolume *old = setVolume(i, nullptr, nullptr, true);
+		voxel::RawVolume *old = setVolume(i, nullptr, nullptr, nullptr, true);
 		if (old != nullptr) {
 			updateBufferForVolume(i);
 		}
@@ -385,6 +390,7 @@ void RawVolumeRenderer::clear() {
 void RawVolumeRenderer::updatePalette(int idx) {
 	const int bufferIndex = _meshState->resolveIdx(idx);
 	const palette::Palette &palette = _meshState->palette(bufferIndex);
+	const palette::NormalPalette &normalsPalette = _meshState->normalsPalette(bufferIndex);
 
 	if (palette.hash() != _paletteHash) {
 		_paletteHash = palette.hash();
@@ -392,9 +398,20 @@ void RawVolumeRenderer::updatePalette(int idx) {
 		palette.toVec4f(materialColors);
 		core::DynamicArray<glm::vec4> glowColors;
 		palette.emitToVec4f(glowColors);
-		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		static_assert(lengthof(_voxelShaderVertData.materialcolor) == palette::PaletteMaxColors);
+		for (int i = 0; i < lengthof(_voxelShaderVertData.materialcolor); ++i) {
 			_voxelShaderVertData.materialcolor[i] = materialColors[i];
 			_voxelShaderVertData.glowcolor[i] = glowColors[i];
+		}
+	}
+
+	if (normalsPalette.hash() != _normalsPaletteHash) {
+		_normalsPaletteHash = normalsPalette.hash();
+		core::DynamicArray<glm::vec4> normals;
+		normalsPalette.toVec4f(normals);
+		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals);
+		for (int i = 0; i < lengthof(_voxelShaderVertData.normals); ++i) {
+			_voxelShaderVertData.normals[i] = normals[i];
 		}
 	}
 }
@@ -437,6 +454,13 @@ bool RawVolumeRenderer::isVisible(int idx, bool hideEmpty) const {
 		return false;
 	}
 	return true;
+}
+
+void RawVolumeRenderer::renderNormals(const RenderContext &renderContext, const video::Camera &camera) {
+	if (renderContext.renderNormals) {
+		return;
+	}
+	core_trace_scoped(RenderNormals);
 }
 
 void RawVolumeRenderer::renderOpaque(const video::Camera &camera, bool normals) {
@@ -675,17 +699,19 @@ void RawVolumeRenderer::render(RenderContext &renderContext, const video::Camera
 	} else {
 		_voxelShader.deactivate();
 	}
+
+	renderNormals(renderContext, camera);
 	video::useProgram(oldShader);
 }
 
 void RawVolumeRenderer::setVolume(int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
-	setVolume(idx, node.volume(), &node.palette(), deleteMesh);
+	setVolume(idx, node.volume(), &node.palette(), &node.normalPalette(), deleteMesh);
 }
 
 voxel::RawVolume *RawVolumeRenderer::setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
-											   bool meshDelete) {
+											   palette::NormalPalette *normalPalette, bool meshDelete) {
 	bool meshDeleted = false;
-	voxel::RawVolume *v = _meshState->setVolume(idx, volume, palette, meshDelete, meshDeleted);
+	voxel::RawVolume *v = _meshState->setVolume(idx, volume, palette, normalPalette, meshDelete, meshDeleted);
 	if (meshDeleted) {
 		deleteMeshes(idx);
 	}

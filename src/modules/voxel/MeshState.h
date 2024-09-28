@@ -12,6 +12,7 @@
 #include "core/collection/DynamicMap.h"
 #include "core/collection/PriorityQueue.h"
 #include "core/concurrent/ThreadPool.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "video/Types.h"
 #include "voxel/ChunkMesh.h"
@@ -43,6 +44,7 @@ private:
 	struct VolumeData {
 		voxel::RawVolume *_rawVolume = nullptr;
 		core::Optional<palette::Palette> _palette;
+		core::Optional<palette::NormalPalette> _normalPalette;
 		bool _hidden = false;
 		bool _gray = false;
 		// if all axes scale positive: cull the back face
@@ -118,6 +120,7 @@ public:
 	int pop();
 	void count(MeshType meshType, int idx, size_t &vertCount, size_t &normalsCount, size_t &indCount) const;
 	const palette::Palette &palette(int idx) const;
+	const palette::NormalPalette &normalsPalette(int idx) const;
 
 	/**
 	 * @brief Extracts all the pending regions
@@ -165,7 +168,8 @@ public:
 	bool scheduleRegionExtraction(int idx, const voxel::Region &region);
 
 	[[nodiscard]] voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
-											  bool meshDelete, bool &meshDeleted);
+											  palette::NormalPalette *normalPalette, bool meshDelete,
+											  bool &meshDeleted);
 
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.

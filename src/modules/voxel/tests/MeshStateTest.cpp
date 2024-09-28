@@ -32,7 +32,7 @@ TEST_F(MeshStateTest, testExtractRegion) {
 	bool deleted = false;
 	palette::Palette pal;
 	pal.nippon();
-	(void)meshState.setVolume(0, &v, &pal, true, deleted);
+	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	const voxel::Region region(1, 0, 1, 1, 0, 1);
@@ -51,7 +51,7 @@ TEST_F(MeshStateTest, testExtractRegionBoundary) {
 	bool deleted = false;
 	palette::Palette pal;
 	pal.nippon();
-	(void)meshState.setVolume(0, &v, &pal, true, deleted);
+	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
 
 	EXPECT_EQ(0, meshState.pendingExtractions());
 	// worst case scenario - touching all adjacent regions

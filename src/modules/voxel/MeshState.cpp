@@ -4,6 +4,7 @@
 
 #include "MeshState.h"
 #include "core/Log.h"
+#include "palette/NormalPalette.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
@@ -166,6 +167,14 @@ const palette::Palette &MeshState::palette(int idx) const {
 	return *_volumeData[idx]._palette.value();
 }
 
+const palette::NormalPalette &MeshState::normalsPalette(int idx) const {
+	if (idx < 0 || idx > MAX_VOLUMES || !_volumeData[idx]._normalPalette.hasValue()) {
+		static palette::NormalPalette normalPalette;
+		return normalPalette;
+	}
+	return *_volumeData[idx]._normalPalette.value();
+}
+
 voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const {
 	const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
 	const glm::ivec3 maxs = mins + meshSize - 1;
@@ -319,13 +328,14 @@ int MeshState::resolveIdx(int idx) const {
 	return idx;
 }
 
-voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette, bool meshDelete,
+voxel::RawVolume *MeshState::setVolume(int idx, voxel::RawVolume *v, palette::Palette *palette, palette::NormalPalette *normalPalette, bool meshDelete,
 									   bool &meshDeleted) {
 	meshDeleted = false;
 	if (idx < 0 || idx >= MAX_VOLUMES) {
 		return nullptr;
 	}
 	_volumeData[idx]._palette.setValue(palette);
+	_volumeData[idx]._normalPalette.setValue(normalPalette);
 	voxel::RawVolume *old = volume(idx);
 	if (old == v) {
 		return nullptr;

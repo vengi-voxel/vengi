@@ -50,4 +50,22 @@ inline video::Attribute getInfoVertexAttribute(uint32_t bufferIndex, uint32_t at
 	return attrib;
 }
 
+/**
+ * @note we are uploading multiple bytes at once here
+ */
+inline video::Attribute getInfo2VertexAttribute(uint32_t bufferIndex, uint32_t attributeLocation, int components) {
+	static_assert(sizeof(voxel::VoxelVertex::padding2) == sizeof(uint8_t), "Unused padding size doesn't match");
+	static_assert(sizeof(voxel::VoxelVertex::normalIndex) == sizeof(uint8_t), "Voxel normal size doesn't match");
+	static_assert(offsetof(voxel::VoxelVertex, normalIndex) < offsetof(voxel::VoxelVertex, padding2), "Layout change of VoxelVertex without change in upload");
+	video::Attribute attrib;
+	attrib.bufferIndex = (int32_t)bufferIndex;
+	attrib.location = (int32_t)attributeLocation;
+	attrib.stride = sizeof(voxel::VoxelVertex);
+	attrib.size = components;
+	attrib.type = video::mapType<decltype(voxel::VoxelVertex::normalIndex)>();
+	attrib.typeIsInt = true;
+	attrib.offset = offsetof(voxel::VoxelVertex, normalIndex);
+	return attrib;
+}
+
 }

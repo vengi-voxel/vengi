@@ -642,7 +642,7 @@ voxel::Region remapToPalette(voxel::RawVolume *volume, const palette::Palette &o
 			const core::RGBA rgba = oldPalette.color(voxel.getColor());
 			const int newColor = newPalette.getClosestMatch(rgba, skipColorIndex);
 			if (newColor != palette::PaletteColorNotFound) {
-				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor);
+				voxel::Voxel newVoxel(voxel::VoxelType::Generic, newColor, voxel.getNormal(), voxel.getFlags());
 				wrapper.setVoxel(x, y, z, newVoxel);
 			}
 		});

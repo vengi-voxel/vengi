@@ -1,4 +1,5 @@
 $in vec4 v_pos;
+$in vec3 v_normal;
 $in vec4 v_color;
 $in vec4 v_glow;
 $in float v_ambientocclusion;
@@ -8,11 +9,16 @@ flat $in uint v_flags;
 #include "_tonemapping.glsl"
 
 vec4 calcColor(void) {
-	vec3 fdx = dFdx(v_pos.xyz);
-	vec3 fdy = dFdy(v_pos.xyz);
-	// http://www.aclockworkberry.com/shader-derivative-functions/
-	// face normal (flat shading)
-	vec3 normal = normalize(cross(fdx, fdy));
+	vec3 normal;
+	if ((v_flags & FLAGHASNORMALPALETTECOLOR) != 0u) {
+		normal = v_normal;
+	} else {
+		vec3 fdx = dFdx(v_pos.xyz);
+		vec3 fdy = dFdy(v_pos.xyz);
+		// http://www.aclockworkberry.com/shader-derivative-functions/
+		// face normal (flat shading)
+		normal = normalize(cross(fdx, fdy));
+	}
 	float ndotl1 = dot(normal, u_lightdir);
 	float ndotl2 = dot(normal, -u_lightdir);
 	vec3 diffuse = u_diffuse_color * max(0.0, max(ndotl1, ndotl2));

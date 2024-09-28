@@ -50,9 +50,8 @@ struct VertexData {
 	int32_t index;
 	Voxel voxel;
 	uint8_t ambientOcclusion;
-	int8_t padding;
 };
-static_assert(sizeof(VertexData) == 8, "Unexpected size of VertexData");
+static_assert(sizeof(VertexData) == 12, "Unexpected size of VertexData");
 
 class Array : public core::NonCopyable {
 private:
@@ -125,7 +124,7 @@ CORE_FORCE_INLINE bool isTransparentQuadNeeded(VoxelType back, VoxelType front, 
 }
 
 static CORE_FORCE_INLINE bool isSameVertex(const VoxelVertex& v1, const VoxelVertex& v2) {
-	return v1.colorIndex == v2.colorIndex && v1.info == v2.info;
+	return v1.colorIndex == v2.colorIndex && v1.info == v2.info && v1.normalIndex == v2.normalIndex;
 }
 
 static CORE_FORCE_INLINE bool isSameColor(const VoxelVertex& v1, const VoxelVertex& v2) {
@@ -365,12 +364,14 @@ static IndexType addVertex(bool reuseVertices, uint32_t x, uint32_t y, uint32_t 
 			VoxelVertex vertex;
 			vertex.position = glm::ivec3(x, y, z) + offset;
 			vertex.colorIndex = materialIn.getColor();
+			vertex.normalIndex = materialIn.getNormal();
 			vertex.ambientOcclusion = ambientOcclusion;
 			vertex.flags = materialIn.getFlags();
 			vertex.padding = 0u; // Voxel::_unused
+			vertex.padding2 = 0u;
 
 			entry.index = (int32_t)meshCurrent->addVertex(vertex) + 1;
-			// meshCurrent->setNormal(entry.index, normal); // TODO: NORMAL: Add normal to mesh here
+			// meshCurrent->setNormal(entry.index, entry.voxel.getNormal()); // TODO: NORMAL: set normal from NormalPalette
 			entry.voxel = materialIn;
 			entry.ambientOcclusion = vertex.ambientOcclusion;
 

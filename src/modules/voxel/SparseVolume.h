@@ -18,7 +18,7 @@ namespace voxel {
 class SparseVolume {
 private:
 	core::DynamicMap<glm::ivec3, voxel::Voxel, 1031, glm::hash<glm::ivec3>> _map;
-	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0};
+	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
 	const voxel::Region _region;
 	const bool _isRegionValid;
 	bool _storeEmptyVoxels = false;

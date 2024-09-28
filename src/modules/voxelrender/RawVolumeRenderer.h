@@ -47,6 +47,7 @@ struct RenderContext : public core::NonCopyable {
 	bool grayInactive = false;
 	bool sceneMode = false;
 	bool onlyModels = false;
+	bool renderNormals = false;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();
@@ -80,6 +81,7 @@ protected:
 	core::SharedPtr<voxel::MeshState> _meshState;
 
 	uint64_t _paletteHash = 0;
+	uint32_t _normalsPaletteHash = 0;
 
 	shader::VoxelData _voxelData;
 
@@ -111,6 +113,7 @@ protected:
 	bool updateBufferForVolume(int idx);
 	void renderOpaque(const video::Camera &camera, bool normals);
 	void renderTransparency(RenderContext &renderContext, const video::Camera &camera, bool normals);
+	void renderNormals(const RenderContext &renderContext, const video::Camera &camera);
 public:
 	RawVolumeRenderer();
 	RawVolumeRenderer(const voxel::MeshStatePtr &meshState);
@@ -132,9 +135,10 @@ public:
 	 * @return The old volume that was managed by the class, @c nullptr if there was none
 	 *
 	 * @sa volume()
-	 */
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, bool meshDelete);
-	void setVolume(int idx, scenegraph::SceneGraphNode& node, bool deleteMesh);
+s	 */
+	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
+								palette::NormalPalette *normalPalette, bool meshDelete);
+	void setVolume(int idx, scenegraph::SceneGraphNode &node, bool deleteMesh);
 
 	void resetVolume(int idx);
 

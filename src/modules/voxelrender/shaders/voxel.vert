@@ -1,6 +1,7 @@
-// attributes from the VAOs
+// attributes from the VAOs (see VoxelVertex.h)
 layout (location = 0) $in vec3 a_pos;
 layout (location = 1) $in uvec2 a_info;
+layout (location = 2) $in uvec2 a_info2;
 $out float v_ambientocclusion;
 
 #include "_sharedvert.glsl"
@@ -10,11 +11,22 @@ void main(void) {
 	uint a_ao = (a_info[0] & 3u);
 	uint a_flags = ((a_info[0] & ~3u) >> 2u);
 	uint a_colorindex = a_info[1];
+	uint a_normalindex = a_info2[0];
 	v_pos = u_model * vec4(a_pos - u_pivot, 1.0);
 
 	int materialColorIndex = int(a_colorindex);
 	vec4 materialColor = u_materialcolor[materialColorIndex];
 	vec4 glowColor = u_glowcolor[materialColorIndex];
+
+	int normalIndex = int(a_normalindex);
+	vec4 normal = u_normals[normalIndex];
+	if (normalIndex < 255) {
+		v_normal = normal.xyz;
+		v_flags |= FLAGHASNORMALPALETTECOLOR;
+	} else {
+		v_normal = vec3(0.0, 0.0, 0.0);
+	}
+
 	v_flags = 0u;
 #if r_renderoutline == 0
 	if ((a_flags & FLAGOUTLINE) != 0u)

@@ -1,7 +1,9 @@
 
 #define MATERIALCOLORS 256
+#define NORMALS 255
 layout(std140) uniform u_vert {
 	vec4 u_materialcolor[MATERIALCOLORS];
+	vec4 u_normals[NORMALS];
 	vec4 u_glowcolor[MATERIALCOLORS];
 	mat4 u_viewprojection;
 	mat4 u_model;

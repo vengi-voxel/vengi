@@ -12,6 +12,7 @@ namespace voxel {
 /**
  * @brief Represents a vertex in a mesh and includes position and ambient occlusion
  * as well as color and material information.
+ * @note see voxel.vert for the shader layout
  */
 struct VoxelVertex {
 	glm::highp_vec3 position;
@@ -25,6 +26,8 @@ struct VoxelVertex {
 		uint8_t info;
 	};
 	uint8_t colorIndex;
+	uint8_t normalIndex; // 255 means not set
+	uint8_t padding2;
 };
 static_assert(sizeof(VoxelVertex) == 16, "Unexpected size of the vertex struct");
 
