@@ -25,6 +25,7 @@ class NormalPalettePanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	SceneManagerPtr _sceneMgr;
+	bool _recalcAll = false;
 
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void addColor(float startingPosX, uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,

@@ -104,15 +104,15 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					}
 					ImGui::EndCombo();
 				}
-				if (ImGui::MenuItem(_("Calculate normals"))) {
+				ImGui::Checkbox(_("Recalculate all normals"), &_recalcAll);
+				if (ImGui::IconMenuItem(ICON_LC_PLAY, _("Calculate normals"))) {
 					voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
-					const int normalMode = core::Var::getSafe(cfg::VoxformatAutoNormalMode)->intVal();
-					if (normalMode == 1) {
+					if (currentNormalMode == 1) {
 						connectivity = voxel::Connectivity::EighteenConnected;
-					} else if (normalMode == 2) {
+					} else if (currentNormalMode == 2) {
 						connectivity = voxel::Connectivity::TwentySixConnected;
 					}
-					_sceneMgr->calculateNormals(node.id(), connectivity);
+					_sceneMgr->calculateNormals(node.id(), connectivity, _recalcAll);
 				}
 
 				ImGui::EndMenu();

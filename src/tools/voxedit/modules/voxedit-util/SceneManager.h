@@ -273,7 +273,7 @@ public:
 	 */
 	bool loadPalette(const core::String &paletteName, bool searchBestColors, bool save);
 
-	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = true);
+	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false);
 
 	/**
 	 * @brief Create a new procgen tree
