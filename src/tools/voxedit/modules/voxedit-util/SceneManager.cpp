@@ -30,6 +30,7 @@
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
 #include "metric/MetricFacade.h"
+#include "palette/NormalPalette.h"
 #include "palette/PaletteCompleter.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -140,7 +141,7 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 		return false;
 	}
 
-	core::String paletteName(core::string::extractFilename(file));
+	const core::String paletteName(core::string::extractFilename(file));
 	const core::String &paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
 	const io::FilePtr &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write);
 	if (palette.save(pngFile->name().c_str())) {
@@ -1774,6 +1775,24 @@ void SceneManager::construct() {
 		const int z = core::string::toInt(args[2]);
 		moveCursor(x, y, z);
 	}).setHelp(_("Move the cursor by the specified offsets"));
+
+	command::Command::registerCommand("normalpalette", [this] (const command::CmdArgs& args) {
+		if (args.size() != 1) {
+			Log::info("Expected to get the normal palette name");
+			return;
+		}
+		const int nodeId = activeNode();
+		scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
+		if (node == nullptr) {
+			return;
+		}
+		const core::String &name = args[0];
+		palette::NormalPalette normalPalette;
+		if (normalPalette.load(name.c_str())) {
+			node->setNormalPalette(normalPalette);
+			_mementoHandler.markNormalPaletteChange(sceneGraph(), *node);
+		}
+	}).setHelp(_("Change the normal palette"));
 
 	command::Command::registerCommand("loadpalette", [this] (const command::CmdArgs& args) {
 		if (args.size() != 1) {

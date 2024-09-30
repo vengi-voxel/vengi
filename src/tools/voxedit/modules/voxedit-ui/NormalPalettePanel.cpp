@@ -6,7 +6,9 @@
 #include "IMGUIEx.h"
 #include "IconsLucide.h"
 #include "app/I18N.h"
+#include "command/CommandHandler.h"
 #include "imgui.h"
+#include "palette/NormalPalette.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -65,10 +67,12 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, _("File"))) {
 			if (ImGui::MenuItem(_("Tiberan Sun"))) {
-				normalPalette.tiberianSun();
+				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[1]);
+				command::executeCommands(cmd, &listener);
 			}
 			if (ImGui::MenuItem(_("Red Alert 2"))) {
-				normalPalette.redAlert2();
+				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[0]);
+				command::executeCommands(cmd, &listener);
 			}
 			if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Export"))) {
 				_app->saveDialog([&](const core::String &file,
