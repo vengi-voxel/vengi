@@ -479,6 +479,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 		const uint8_t x = (uint8_t)(i % footer.xsize);
 		const uint8_t y = (uint8_t)(i / footer.xsize);
 		uint8_t z = 0;
+		glm::ivec3 pos(x, z, footer.ysize - y - 1);
 		while (z < footer.zsize) {
 			uint8_t skipCount;
 			wrap(stream.readUInt8(skipCount))
@@ -494,7 +495,8 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
 				const voxel::Voxel v = voxel::createVoxel(palette, color, normal);
-				volume->setVoxel(x, z, footer.ysize - y - 1, v);
+				pos.y = z;
+				volume->setVoxel(pos, v);
 				++z;
 			}
 
