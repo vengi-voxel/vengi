@@ -11,6 +11,8 @@
 #include "palette/NormalPalette.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
+#include "voxelutil/VoxelUtil.h"
 
 namespace voxedit {
 
@@ -78,6 +80,42 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 				_app->saveDialog([&](const core::String &file,
 									 const io::FormatDescription *desc) { normalPalette.save(file.c_str()); },
 								 {}, io::format::palettes(), "palette.png");
+			}
+			voxel::RawVolume *v = node.volume();
+			core_assert(v != nullptr);
+			if (ImGui::BeginMenu(_("Auto normals"))) {
+				const char *normalModes[] = {_("Flat"), _("Smooth"), _("Smoother")};
+				const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxformatAutoNormalMode);
+				const int currentNormalMode = normalModeVar->intVal();
+
+				if (ImGui::BeginCombo(_("Normal mode"), normalModes[currentNormalMode])) {
+					for (int i = 0; i < lengthof(normalModes); ++i) {
+						const char *normalMode = normalModes[i];
+						if (normalMode == nullptr) {
+							continue;
+						}
+						const bool selected = i == currentNormalMode;
+						if (ImGui::Selectable(normalMode, selected)) {
+							normalModeVar->setVal(core::string::toString(i));
+						}
+						if (selected) {
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+				if (ImGui::MenuItem(_("Calculate normals"))) {
+					voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
+					const int normalMode = core::Var::getSafe(cfg::VoxformatAutoNormalMode)->intVal();
+					if (normalMode == 1) {
+						connectivity = voxel::Connectivity::EighteenConnected;
+					} else if (normalMode == 2) {
+						connectivity = voxel::Connectivity::TwentySixConnected;
+					}
+					_sceneMgr->calculateNormals(node.id(), connectivity);
+				}
+
+				ImGui::EndMenu();
 			}
 			ImGui::TooltipTextUnformatted(_("Export the palette"));
 			ImGui::EndMenu();

@@ -86,49 +86,6 @@ void VoxConvertUI::targetOptions(const io::FormatDescription *desc) const {
 		ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
 		ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 	}
-	if (*desc == voxelformat::tiberianSun()) {
-		const char *normalTypes[] = {nullptr, nullptr, _("Tiberian Sun"), nullptr, _("Red Alert")};
-		const core::VarPtr &normalTypeVar = core::Var::getSafe(cfg::VoxformatVXLNormalType);
-		const int currentNormalType = normalTypeVar->intVal();
-
-		if (ImGui::BeginCombo(_("Normal type"), normalTypes[currentNormalType])) {
-			for (int i = 0; i < lengthof(normalTypes); ++i) {
-				const char *normalType = normalTypes[i];
-				if (normalType == nullptr) {
-					continue;
-				}
-				const bool selected = i == currentNormalType;
-				if (ImGui::Selectable(normalType, selected)) {
-					normalTypeVar->setVal(core::string::toString(i));
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-
-		const char *normalModes[] = {_("Flat"), _("Smooth"), _("Smoother")};
-		const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxformatVXLNormalMode);
-		const int currentNormalMode = normalModeVar->intVal();
-
-		if (ImGui::BeginCombo(_("Normal mode"), normalModes[currentNormalMode])) {
-			for (int i = 0; i < lengthof(normalModes); ++i) {
-				const char *normalMode = normalModes[i];
-				if (normalMode == nullptr) {
-					continue;
-				}
-				const bool selected = i == currentNormalMode;
-				if (ImGui::Selectable(normalMode, selected)) {
-					normalModeVar->setVal(core::string::toString(i));
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-	}
 }
 
 void VoxConvertUI::sourceOptions(const io::FormatDescription *desc) const {

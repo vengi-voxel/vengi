@@ -571,8 +571,6 @@ bool VXLFormat::readLayerInfo(io::SeekableReadStream &stream, vxl::VXLModel &mdl
 	Log::debug("FooterSize: %u:%u:%u", footer.xsize, footer.ysize, footer.zsize);
 	Log::debug("Normaltype: %u", footer.normalType);
 
-	core::Var::getSafe(cfg::VoxformatVXLNormalType)->setVal(footer.normalType);
-
 	return true;
 }
 

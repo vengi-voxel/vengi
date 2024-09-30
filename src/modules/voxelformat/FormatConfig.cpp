@@ -64,12 +64,7 @@ bool FormatConfig::init() {
 				   "Fill the hollows when voxelizing a mesh format", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVoxelizeMode, "0", core::CV_NOPERSIST,
 				   "0 = high quality, 1 = faster and less memory", core::Var::minMaxValidator<0, 1>);
-	core::Var::get(cfg::VoxformatVXLNormalType, "2", core::CV_NOPERSIST,
-				   "Normal type for VXL format - 2 (TS) or 4 (RedAlert2)", [](const core::String &var) {
-					   const int type = var.toInt();
-					   return type == 2 || type == 4;
-				   });
-	core::Var::get(cfg::VoxformatVXLNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
+	core::Var::get(cfg::VoxformatAutoNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxformatQBTPaletteMode, "true", core::CV_NOPERSIST, "Use palette mode in qubicle qbt export",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST, "Merge compounds on load",
