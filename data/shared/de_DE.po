@@ -459,6 +459,9 @@ msgstr "Gammakorrektur"
 msgid "Render voxel outline"
 msgstr "Voxel-Umriss rendern"
 
+msgid "Render voxel normals"
+msgstr "Voxelnormalen rendern"
+
 msgid "Activate tone mapping"
 msgstr "Tone mapping aktivieren"
 
@@ -563,27 +566,6 @@ msgstr "Linkshändig"
 
 msgid "Compressed"
 msgstr "Komprimiert"
-
-msgid "Red Alert"
-msgstr "Red Alert"
-
-msgid "Tiberian Sun"
-msgstr "Tiberian Sun"
-
-msgid "Normal type"
-msgstr "Normaltyp"
-
-msgid "Flat"
-msgstr ""
-
-msgid "Smooth"
-msgstr ""
-
-msgid "Smoother"
-msgstr ""
-
-msgid "Normal mode"
-msgstr ""
 
 msgid "Fill hollow"
 msgstr "Hohlraum füllen"
@@ -807,14 +789,29 @@ msgstr "Eine neue Szene mit UI-Interaktion erstellen"
 msgid "Reset cameras in viewports"
 msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
 
+msgid "Create animation"
+msgstr "Animation erzeugen"
+
+msgid "Copy from existing animation"
+msgstr ""
+
 msgid "Animation"
 msgstr "Animation"
 
-msgid "Add"
-msgstr "Hinzufügen"
+msgid "Ok"
+msgstr ""
+
+msgid "Animation already exists"
+msgstr "Animation existiert bereits"
+
+msgid "Add new animation"
+msgstr "Neue Animation hinzufügen"
 
 msgid "Delete"
 msgstr "Löschen"
+
+msgid "Add"
+msgstr "Hinzufügen"
 
 msgid "Add a new keyframe to the current active node"
 msgstr "Ein neues Keyframes zum aktuellen aktiven Knoten hinzufügen"
@@ -1109,9 +1106,8 @@ msgstr "Doppelklick zum Erstellen der Miniaturansicht"
 msgid "No match for filter found"
 msgstr "Keine Übereinstimmung für den Filter gefunden"
 
-#, fuzzy
 msgid "Command & Conquer palette"
-msgstr "Palette konvertieren"
+msgstr "Command & Conquer Palette"
 
 msgid "Empty palette index"
 msgstr "Leerer Paletteneintrag"
@@ -1634,6 +1630,39 @@ msgstr "Knoteninspektor"
 msgid "Volume Inspector"
 msgstr "Volumeninspektor"
 
+msgid "Tiberian Sun"
+msgstr "Tiberian Sun"
+
+msgid "Red Alert 2"
+msgstr "Red Alert 2"
+
+msgid "Export"
+msgstr "Exportieren"
+
+msgid "Auto normals"
+msgstr "Auto Normalen"
+
+msgid "Flat"
+msgstr ""
+
+msgid "Smooth"
+msgstr ""
+
+msgid "Smoother"
+msgstr ""
+
+msgid "Normal mode"
+msgstr "Normalen Modus"
+
+msgid "Recalculate all normals"
+msgstr "All Normalen neu berechnen"
+
+msgid "Calculate normals"
+msgstr "Normalen berechnen"
+
+msgid "Export the palette"
+msgstr "Die Palette exportieren"
+
 msgid "Model from color"
 msgstr "Modell aus Farbe"
 
@@ -1686,17 +1715,11 @@ msgstr "Importieren"
 msgid "Switch"
 msgstr "Wechseln"
 
-msgid "Export"
-msgstr "Exportieren"
-
 msgid "Lospec"
 msgstr "Lospec"
 
 msgid "ID"
 msgstr "ID"
-
-msgid "Export the palette"
-msgstr "Die Palette exportieren"
 
 msgid "Sort"
 msgstr "Sortieren"
@@ -2369,6 +2392,9 @@ msgstr "Setzt die Referenzposition auf die angegebene Position"
 msgid "Move the cursor by the specified offsets"
 msgstr "Verschiebt den Cursor um die angegebenen Versätze"
 
+msgid "Change the normal palette"
+msgstr "Ändert die Normalen Palette"
+
 msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"
 msgstr "Lädt eine Palette nach Namen. Z.B. 'built-in:nippon' oder 'lospec:id'"
 
@@ -2644,6 +2670,9 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
+
+#~ msgid "Normal type"
+#~ msgstr "Normaltyp"
 
 #~ msgid "Import a 2d heightmap image into the current active node"
 #~ msgstr "Ein 2D-Höhenkartenbild in den aktuellen aktiven Knoten importieren"

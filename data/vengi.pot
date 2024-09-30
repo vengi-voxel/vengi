@@ -431,6 +431,9 @@ msgstr ""
 msgid "Render voxel outline"
 msgstr ""
 
+msgid "Render voxel normals"
+msgstr ""
+
 msgid "Activate tone mapping"
 msgstr ""
 
@@ -534,27 +537,6 @@ msgid "Left handed"
 msgstr ""
 
 msgid "Compressed"
-msgstr ""
-
-msgid "Red Alert"
-msgstr ""
-
-msgid "Tiberian Sun"
-msgstr ""
-
-msgid "Normal type"
-msgstr ""
-
-msgid "Flat"
-msgstr ""
-
-msgid "Smooth"
-msgstr ""
-
-msgid "Smoother"
-msgstr ""
-
-msgid "Normal mode"
 msgstr ""
 
 msgid "Fill hollow"
@@ -772,13 +754,28 @@ msgstr ""
 msgid "Reset cameras in viewports"
 msgstr ""
 
+msgid "Create animation"
+msgstr ""
+
+msgid "Copy from existing animation"
+msgstr ""
+
 msgid "Animation"
 msgstr ""
 
-msgid "Add"
+msgid "Ok"
+msgstr ""
+
+msgid "Animation already exists"
+msgstr ""
+
+msgid "Add new animation"
 msgstr ""
 
 msgid "Delete"
+msgstr ""
+
+msgid "Add"
 msgstr ""
 
 msgid "Add a new keyframe to the current active node"
@@ -1546,6 +1543,39 @@ msgstr ""
 msgid "Volume Inspector"
 msgstr ""
 
+msgid "Tiberian Sun"
+msgstr ""
+
+msgid "Red Alert 2"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Auto normals"
+msgstr ""
+
+msgid "Flat"
+msgstr ""
+
+msgid "Smooth"
+msgstr ""
+
+msgid "Smoother"
+msgstr ""
+
+msgid "Normal mode"
+msgstr ""
+
+msgid "Recalculate all normals"
+msgstr ""
+
+msgid "Calculate normals"
+msgstr ""
+
+msgid "Export the palette"
+msgstr ""
+
 msgid "Model from color"
 msgstr ""
 
@@ -1592,16 +1622,10 @@ msgstr ""
 msgid "Switch"
 msgstr ""
 
-msgid "Export"
-msgstr ""
-
 msgid "Lospec"
 msgstr ""
 
 msgid "ID"
-msgstr ""
-
-msgid "Export the palette"
 msgstr ""
 
 msgid "Sort"
@@ -2236,6 +2260,9 @@ msgid "Set the reference position to the specified position"
 msgstr ""
 
 msgid "Move the cursor by the specified offsets"
+msgstr ""
+
+msgid "Change the normal palette"
 msgstr ""
 
 msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"

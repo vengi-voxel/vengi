@@ -68,7 +68,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 	palette::NormalPalette &normalPalette = node.normalPalette();
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_PALETTE, _("File"))) {
-			if (ImGui::MenuItem(_("Tiberan Sun"))) {
+			if (ImGui::MenuItem(_("Tiberian Sun"))) {
 				const core::String &cmd = core::String::format("normalpalette %s", palette::NormalPalette::builtIn[1]);
 				command::executeCommands(cmd, &listener);
 			}
