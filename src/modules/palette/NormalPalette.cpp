@@ -142,6 +142,23 @@ void NormalPalette::redAlert2() {
 	loadNormalMap(priv::ra2normals, (uint8_t)lengthof(priv::ra2normals));
 }
 
+bool NormalPalette::isTiberianSun() const {
+	return _name == builtIn[1];
+}
+
+bool NormalPalette::isRedAlert2() const {
+	return _name == builtIn[0];
+}
+
+bool NormalPalette::isBuiltIn() const {
+	for (int i = 0; i < lengthof(builtIn); ++i) {
+		if (_name.equals(builtIn[i])) {
+			return true;
+		}
+	}
+	return false;
+}
+
 glm::vec3 NormalPalette::normal3f(uint8_t index) const {
 	return toVec3(_normals[index]);
 }

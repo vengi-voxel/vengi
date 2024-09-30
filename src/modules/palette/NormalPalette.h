@@ -23,9 +23,6 @@ private:
 	core::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:
-	void tiberianSun();
-	void redAlert2();
-
 	uint8_t getClosestMatch(const glm::vec3 &normal) const;
 	void loadNormalMap(const core::RGBA *normals, uint8_t size);
 	void loadNormalMap(const glm::vec3 *normals, uint8_t size);
@@ -47,6 +44,11 @@ public:
 
 	static constexpr const char *builtIn[] = {"built-in:redalert2", "built-in:tiberiansun"};
 	bool isBuiltIn() const;
+	bool isTiberianSun() const;
+	bool isRedAlert2() const;
+	void tiberianSun();
+	void redAlert2();
+
 	void markDirty() override;
 	void markSave();
 	bool needsSave() const;
