@@ -48,23 +48,9 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-static uint8_t calculateVXLNormal(voxel::RawVolume::Sampler &sampler, const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) {
-	if (isAir(sampler.voxel().getMaterial())) {
-		return 0;
-	}
-	if (normalPalette.size() == 0u) {
-		return 0;
-	}
-
-	const glm::ivec3 samplerPos = sampler.position();
-	const glm::vec3 normal = voxelutil::calculateNormal(sampler, connectivity);
-	sampler.setPosition(samplerPos);
-	return normalPalette.getClosestMatch(normal);
-}
-
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
 									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
-									const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) const {
+									const palette::NormalPalette &normalPalette) const {
 	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -75,8 +61,7 @@ bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel
 	for (uint8_t i = 0; i < voxelCount; ++i) {
 		const voxel::Voxel &voxel = sampler.voxel();
 		wrapBool(stream.writeUInt8(voxel.getColor()))
-		uint8_t normalIndex = calculateVXLNormal(sampler, normalPalette, connectivity);
-		wrapBool(stream.writeUInt8(normalIndex))
+		wrapBool(stream.writeUInt8(voxel.getNormal()))
 		sampler.movePositiveY();
 	}
 	wrapBool(stream.writeUInt8(voxelCount)) // duplicated count
@@ -133,14 +118,6 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	}
 	offsets.data = stream.pos() - (int64_t)nodeSectionOffset;
 
-	voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
-	const int normalMode = core::Var::getSafe(cfg::VoxformatVXLNormalMode)->intVal();
-	if (normalMode == 1) {
-		connectivity = voxel::Connectivity::EighteenConnected;
-	} else if (normalMode == 2) {
-		connectivity = voxel::Connectivity::TwentySixConnected;
-	}
-
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(node);
 	const int64_t spanDataOffset = stream.pos();
 	for (uint32_t i = 0u; i < baseSize; ++i) {
@@ -157,7 +134,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, node.normalPalette(), connectivity))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, node.normalPalette()))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -166,7 +143,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, node.normalPalette(), connectivity))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, node.normalPalette()))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;
@@ -258,7 +235,11 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	wrapBool(stream.writeUInt8(size.z))
 	wrapBool(stream.writeUInt8(size.y))
 
-	wrapBool(stream.writeUInt8(core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal()))
+	if (node.hasNormalPalette() && node.normalPalette().isRedAlert2()) {
+		wrapBool(stream.writeUInt8(4))
+	} else {
+		wrapBool(stream.writeUInt8(2))
+	}
 
 	return true;
 }
@@ -364,7 +345,6 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	barrel.reserve(numNodes);
 	turret.reserve(numNodes);
 
-	const uint8_t normalType = core::Var::getSafe(cfg::VoxformatVXLNormalType)->intVal();
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const core::String &lowerName = node.name().toLower();
@@ -374,12 +354,6 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			turret.push_back(&node);
 		} else {
 			body.push_back(&node);
-		}
-		// TODO: NORMALS: remove me once we can change this in the ui
-		if (normalType == 2) {
-			node.normalPalette().tiberianSun();
-		} else if (normalType == 4) {
-			node.normalPalette().redAlert2();
 		}
 	}
 
@@ -405,8 +379,7 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 }
 
 bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx,
-						  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-						  palette::NormalPalette &normalPalette) const {
+						  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) const {
 	const uint64_t nodeStart = stream.pos();
 	const vxl::VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
 	const vxl::VXLLayerHeader &header = mdl.layerHeaders[nodeIdx];
@@ -506,15 +479,13 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 		}
 	}
 
-	// first try the smaller normal palette
-	// if we load any normal in the scene with a bigger
-	// index, we switch to the bigger palette of red alert 2
-	if (normalPalette.size() == 0) {
+	palette::NormalPalette normalPalette;
+	if (footer.normalType == 2) {
 		normalPalette.tiberianSun();
-	}
-	if (maxNormalIndex > normalPalette.size()) {
+	} else {
 		normalPalette.redAlert2();
 	}
+	node.setNormalPalette(normalPalette);
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
@@ -524,20 +495,12 @@ bool VXLFormat::readLayers(io::SeekableReadStream &stream, vxl::VXLModel &mdl, s
 	const vxl::VXLHeader &hdr = mdl.header;
 	sceneGraph.reserve(hdr.layerCount);
 	const int64_t bodyPos = stream.pos();
-	palette::NormalPalette normalPalette;
 	for (uint32_t i = 0; i < hdr.layerCount; ++i) {
 		if (stream.seek(bodyPos) == -1) {
 			Log::error("Failed to seek for layer %u", i);
 			return false;
 		}
-		wrapBool(readLayer(stream, mdl, i, sceneGraph, palette, normalPalette))
-	}
-	for (const auto &entry : sceneGraph.nodes()) {
-		scenegraph::SceneGraphNode &node = entry->value;
-		if (!node.isAnyModelNode()) {
-			continue;
-		}
-		node.setNormalPalette(normalPalette);
+		wrapBool(readLayer(stream, mdl, i, sceneGraph, palette))
 	}
 	return true;
 }

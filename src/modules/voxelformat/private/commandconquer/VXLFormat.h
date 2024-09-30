@@ -7,7 +7,6 @@
 #include "VXLShared.h"
 #include "palette/NormalPalette.h"
 #include "voxelformat/Format.h"
-#include "voxel/Connectivity.h"
 
 namespace voxelformat {
 
@@ -27,7 +26,7 @@ private:
 
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x, uint8_t y,
-							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette, voxel::Connectivity connectivity) const;
+							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 					uint64_t nodeSectionOffset) const;
@@ -41,8 +40,7 @@ private:
 	bool readLayerHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayerInfo(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx,
-				   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-				   palette::NormalPalette &normalPalette) const;
+				   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) const;
 	bool readLayers(io::SeekableReadStream &stream, vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph,
 					const palette::Palette &palette) const;
 	bool readLayerInfos(io::SeekableReadStream &stream, vxl::VXLModel &mdl) const;
