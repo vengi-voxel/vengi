@@ -18,6 +18,7 @@
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
+#include "palette/NormalPalette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -310,6 +311,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	} else if (voxelizeMode == 1) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::Palette palette;
+		palette::NormalPalette normalPalette;
+		normalPalette.redAlert2();
 
 		const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (createPalette) {
@@ -338,7 +341,9 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		for (const voxelformat::TexturedTri &triangle : tris) {
 			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = tri.colorAt(uv);
-				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color));
+				const glm::vec3 &normal = tri.normal();
+				const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
+				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIndex);
 				wrapper.setVoxel(x, y, z, voxel);
 			});
 		}
