@@ -272,6 +272,9 @@ public:
 	 * @note The name is extended to a filename like this @c palette-<paletteName>.[lua.png]
 	 */
 	bool loadPalette(const core::String &paletteName, bool searchBestColors, bool save);
+
+	bool calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = true);
+
 	/**
 	 * @brief Create a new procgen tree
 	 */

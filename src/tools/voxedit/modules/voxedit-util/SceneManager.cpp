@@ -154,6 +154,32 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 	return setActivePalette(palette, searchBestColors);
 }
 
+bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll) {
+	if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId)) {
+		if (!node->hasNormalPalette()) {
+			Log::warn("Node %i has no normal palette", nodeId);
+			return false;
+		}
+		voxel::RawVolumeWrapper wrapper(node->volume());
+		voxel::RawVolumeWrapper::Sampler sampler(wrapper);
+		const palette::NormalPalette &normalPalette = node->normalPalette();
+		voxelutil::visitSurfaceVolume(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
+			if (!recalcAll && voxel.getNormal() != NO_NORMAL) {
+				return;
+			}
+			sampler.setPosition(x, y, z);
+			const glm::vec3 &normal = voxelutil::calculateNormal(sampler, connectivity);
+			const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
+			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIndex, voxel.getFlags());
+			wrapper.setVoxel(x, y, z, newVoxel);
+		});
+		modified(nodeId, wrapper.dirtyRegion());
+		return true;
+	}
+
+	return false;
+}
+
 void SceneManager::autosave() {
 	if (!_needAutoSave) {
 		return;
