@@ -383,8 +383,6 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		}
 	}
 
-	palette::NormalPalette normalPalette;
-
 	const core::String &basename = core::string::stripExtension(filename);
 
 	if (!saveVXL(sceneGraph, body, filename, archive)) {
@@ -407,7 +405,8 @@ bool VXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 }
 
 bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx,
-						  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) const {
+						  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+						  palette::NormalPalette &normalPalette) const {
 	const uint64_t nodeStart = stream.pos();
 	const vxl::VXLLayerInfo &footer = mdl.layerInfos[nodeIdx];
 	const vxl::VXLLayerHeader &header = mdl.layerHeaders[nodeIdx];
@@ -463,6 +462,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	transform.setLocalMatrix(footer.transform.toVengi());
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
+	uint8_t maxNormalIndex = 0;
 
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		Log::trace("Read SpanStartPos: %i", (int)colStart[i]);
@@ -494,6 +494,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 				wrap(stream.readUInt8(color))
 				uint8_t normal;
 				wrap(stream.readUInt8(normal))
+				maxNormalIndex = core_max(maxNormalIndex, normal);
 				const voxel::Voxel v = voxel::createVoxel(palette, color, normal);
 				pos.y = z;
 				volume->setVoxel(pos, v);
@@ -504,6 +505,16 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 			stream.skip(1);
 		}
 	}
+
+	// first try the smaller normal palette
+	// if we load any normal in the scene with a bigger
+	// index, we switch to the bigger palette of red alert 2
+	if (normalPalette.size() == 0) {
+		normalPalette.tiberianSun();
+	}
+	if (maxNormalIndex > normalPalette.size()) {
+		normalPalette.redAlert2();
+	}
 	sceneGraph.emplace(core::move(node));
 	return true;
 }
@@ -513,12 +524,20 @@ bool VXLFormat::readLayers(io::SeekableReadStream &stream, vxl::VXLModel &mdl, s
 	const vxl::VXLHeader &hdr = mdl.header;
 	sceneGraph.reserve(hdr.layerCount);
 	const int64_t bodyPos = stream.pos();
+	palette::NormalPalette normalPalette;
 	for (uint32_t i = 0; i < hdr.layerCount; ++i) {
 		if (stream.seek(bodyPos) == -1) {
 			Log::error("Failed to seek for layer %u", i);
 			return false;
 		}
-		wrapBool(readLayer(stream, mdl, i, sceneGraph, palette))
+		wrapBool(readLayer(stream, mdl, i, sceneGraph, palette, normalPalette))
+	}
+	for (const auto &entry : sceneGraph.nodes()) {
+		scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		node.setNormalPalette(normalPalette);
 	}
 	return true;
 }

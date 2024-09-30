@@ -41,7 +41,8 @@ private:
 	bool readLayerHeader(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayerInfo(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx) const;
 	bool readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, uint32_t nodeIdx,
-				   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette) const;
+				   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+				   palette::NormalPalette &normalPalette) const;
 	bool readLayers(io::SeekableReadStream &stream, vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph,
 					const palette::Palette &palette) const;
 	bool readLayerInfos(io::SeekableReadStream &stream, vxl::VXLModel &mdl) const;
