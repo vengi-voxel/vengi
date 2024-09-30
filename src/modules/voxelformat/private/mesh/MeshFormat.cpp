@@ -319,10 +319,15 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 			RGBAMap colors;
 			Log::debug("create palette");
 			for (const voxelformat::TexturedTri &triangle : tris) {
+#if 1
 				voxelizeTriangle(trisMins, triangle, [this, &colors] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
 					colors.put(rgba, true);
 				});
+#else
+				const core::RGBA rgba = flattenRGB(triangle.centerColor());
+				colors.put(rgba, true);
+#endif
 			}
 
 			const size_t colorCount = colors.size();
