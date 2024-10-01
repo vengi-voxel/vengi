@@ -19,14 +19,14 @@ namespace video {
  */
 class Buffer : public core::NonCopyable {
 private:
-	static constexpr int MAX_HANDLES = 6;
-	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
+	static constexpr int MAX_HANDLES = 8;
+	size_t _size[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
 #if VIDEO_BUFFER_HASH_COMPARE
-	uint32_t _hash[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u};
+	uint32_t _hash[MAX_HANDLES] = {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u};
 #endif
-	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
-	BufferType _targets[MAX_HANDLES] = {BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max};
-	BufferMode _modes[MAX_HANDLES] = {BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static};
+	Id _handles[MAX_HANDLES] = {InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId, InvalidId};
+	BufferType _targets[MAX_HANDLES] = {BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max, BufferType::Max};
+	BufferMode _modes[MAX_HANDLES] = {BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static, BufferMode::Static};
 	uint32_t _handleIdx = 0u;
 
 	core::List<Attribute> _attributes;
