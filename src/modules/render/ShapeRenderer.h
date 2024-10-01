@@ -22,7 +22,7 @@ namespace render {
  */
 class ShapeRenderer : public core::IComponent {
 public:
-	static constexpr int MAX_MESHES = 16;
+	static constexpr int MAX_MESHES = 2048;
 private:
 	struct Vertex {
 		glm::vec4 pos;
