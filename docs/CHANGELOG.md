@@ -25,6 +25,7 @@ General:
    - Added support for Quake1 `mdl` files
    - Added support for exporting and importing to and from `png` slices
    - Added support for Autodesk `3ds` files
+   - Support for loading normals for voxelization (mesh formats) and for voxel formats (`vxl`)
 
 VoxConvert:
 
@@ -41,6 +42,7 @@ VoxEdit:
    - Disable autosaves for model changes if you exceed a max suggested model size
    - New brush type to project textures into sub areas or on surfaces
    - Added an FPS option for the animation timeline
+   - Added normal palette panel
 
 ## 0.0.33 (2024-08-05)
 
