@@ -402,7 +402,7 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		}
 	}
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = objectSceneGraph.merge();
-	if (merged.first == nullptr) {
+	if (merged.head == nullptr) {
 		Log::error("No volumes found in the scene graph");
 		return false;
 	}
@@ -421,8 +421,9 @@ bool VMaxFormat::loadObjectFromArchive(const core::String &filename, const io::A
 		node.setProperty("parent-uuid", obj.pid);
 	}
 	node.setVisible(!obj.h);
-	node.setPalette(merged.second);
-	node.setVolume(merged.first, true);
+	node.setVolume(core::get<0>(merged), true);
+	node.setPalette(core::get<1>(merged));
+	node.setNormalPalette(core::get<2>(merged));
 	return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
 }
 

@@ -415,22 +415,22 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 						  ValidateFlags flags, float maxDelta) {
 	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
 		const scenegraph::SceneGraph::MergedVolumePalette &merged1 = graph1.merge();
-		core::ScopedPtr<voxel::RawVolume> v1(merged1.first);
+		core::ScopedPtr<voxel::RawVolume> v1(merged1.head);
 		const scenegraph::SceneGraph::MergedVolumePalette &merged2 = graph2.merge();
-		core::ScopedPtr<voxel::RawVolume> v2(merged2.first);
-		ASSERT_NE(nullptr, merged1.first);
-		ASSERT_NE(nullptr, merged2.first);
+		core::ScopedPtr<voxel::RawVolume> v2(merged2.head);
+		ASSERT_NE(nullptr, merged1.head);
+		ASSERT_NE(nullptr, merged2.head);
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
-			voxel::paletteComparator(merged1.second, merged2.second, maxDelta);
+			voxel::paletteComparator(core::get<1>(merged1), core::get<1>(merged2), maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(merged1.second, merged2.second, flags, maxDelta);
+			voxel::partialPaletteComparator(core::get<1>(merged1), core::get<1>(merged2), flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
-			voxel::paletteComparatorScaled(merged1.second, merged2.second, (int)maxDelta);
+			voxel::paletteComparatorScaled(core::get<1>(merged1), core::get<1>(merged2), (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
 				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
-			voxel::orderPaletteComparator(merged1.second, merged2.second, maxDelta);
+			voxel::orderPaletteComparator(core::get<1>(merged1), core::get<1>(merged2), maxDelta);
 		}
-		volumeComparator(*v1, merged1.second, *v2, merged2.second, flags, maxDelta);
+		volumeComparator(*v1, core::get<1>(merged1), *v2, core::get<1>(merged2), flags, maxDelta);
 		return;
 	}
 	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));

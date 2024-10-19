@@ -512,12 +512,12 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	}
 	// save as sponge-3
 	const scenegraph::SceneGraph::MergedVolumePalette &merged = sceneGraph.merge();
-	if (merged.first == nullptr) {
+	if (merged.head == nullptr) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.first);
-	const voxel::Region &region = merged.first->region();
+	core::ScopedPtr<voxel::RawVolume> scopedPtr(merged.head);
+	const voxel::Region &region = merged.head->region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	const glm::ivec3 &mins = region.getLowerCorner();
 
@@ -541,7 +541,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 			for (int y = 0; y < size.y; ++y) {
 				for (int z = 0; z < size.z; ++z) {
 					const int idx = (y * size.z + z) * size.x + x;
-					const voxel::Voxel &voxel = merged.first->voxel(mins.x + x, mins.y + y, mins.z + z);
+					const voxel::Voxel &voxel = merged.head->voxel(mins.x + x, mins.y + y, mins.z + z);
 					if (voxel::isAir(voxel.getMaterial())) {
 						blocks[idx] = 0;
 					} else {
