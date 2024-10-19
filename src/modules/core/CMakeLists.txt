@@ -66,6 +66,7 @@ set(SRCS
 	TimedValue.h
 	Tokenizer.h Tokenizer.cpp
 	Trace.cpp Trace.h
+	Tuple.h
 	UTF8.cpp UTF8.h
 	Var.cpp Var.h
 )
@@ -132,6 +133,7 @@ set(TEST_SRCS
 	tests/ThreadPoolTest.cpp
 	tests/ThreadTest.cpp
 	tests/TokenizerTest.cpp
+	tests/TupleTest.cpp
 	tests/VarTest.cpp
 	tests/VectorTest.cpp
 )
