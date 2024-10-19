@@ -247,7 +247,7 @@ static void GetFailingTestsAsString(ImGuiTestEngine* e, ImGuiTestGroup group, ch
 static void TestStatusButton(const char* id, const ImVec4& color, bool running, int display_counter)
 {
     ImGuiContext& g = *GImGui;
-    ImGui::PushItemFlag(ImGuiItemFlags_NoTabStop, true);
+    ImGui::PushItemFlag(ImGuiItemFlags_NoTabStop | ImGuiItemFlags_NoNav, true);
     ImGui::ColorButton(id, color, ImGuiColorEditFlags_NoTooltip);
     ImGui::PopItemFlag();
     if (running)

@@ -169,7 +169,11 @@ static bool Button3(const char* label, int* value)
 
     // Render
     const ImU32 col = ImGui::GetColorU32(ImGuiCol_FrameBg);
+#if IMGUI_VERSION_NUM >= 19136
+    ImGui::RenderNavCursor(bb, id);
+#else
     ImGui::RenderNavHighlight(bb, id);
+#endif
     ImGui::RenderFrame(bb.Min + style.FramePadding, bb.Min + style.FramePadding + btn_size, col, true, /*style.FrameRounding*/ 5.0f);
 
     ImColor btn_col;

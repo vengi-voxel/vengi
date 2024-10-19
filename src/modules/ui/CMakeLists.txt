@@ -89,6 +89,13 @@ if (USE_IMGUITESTENGINE)
 
 	set(TEST_ENGINE ${LIB}_test_engine)
 	engine_add_module(TARGET ${TEST_ENGINE} SRCS ${SRCS} ${TEST_ENGINE_SRCS} DEPENDENCIES render app ${LIBS})
+
+	check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
+	if (C_NO_SHADOW)
+		foreach (src ${TEST_ENGINE_SRCS})
+			set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-shadow)
+		endforeach()
+	endif()
 	target_compile_definitions(${TEST_ENGINE} PUBLIC ${DEFINITIONS} -DIMGUI_ENABLE_TEST_ENGINE -DIMGUI_TEST_ENGINE_ENABLE_STD_FUNCTION=1 -DIMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1 -DIMGUI_TEST_ENGINE_ENABLE_IMPLOT=1)
 	target_include_directories(${TEST_ENGINE} PUBLIC . ${GENERATE_DIR}/${LIB} dearimgui dearimgui/imgui_test_engine)
 	target_link_libraries(${TEST_ENGINE} PRIVATE ui-fonts)
