@@ -165,6 +165,10 @@ palette::NormalPalette &SceneGraphNode::normalPalette() const {
 	return *_normalPalette.value();
 }
 
+bool SceneGraphNode::hasPalette() const {
+	return _palette.hasValue();
+}
+
 void SceneGraphNode::setPalette(const palette::Palette &palette) {
 	if (palette.size() <= 0) {
 		return;

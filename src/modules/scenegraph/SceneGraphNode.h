@@ -138,6 +138,7 @@ public:
 	bool setReference(int nodeId, bool forceChangeNodeType = false);
 	bool unreferenceModelNode(const SceneGraphNode &node);
 
+	bool hasPalette() const;
 	palette::Palette &palette() const;
 	void setPalette(const palette::Palette &palette);
 
