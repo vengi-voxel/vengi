@@ -10,7 +10,7 @@
 #include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
 
-void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc) {
+void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
 	if (mode == video::OpenFileMode::Directory) {
 		return;
 	}

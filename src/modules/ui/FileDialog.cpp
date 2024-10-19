@@ -638,7 +638,7 @@ bool FileDialog::popupOptions(video::FileDialogOptions &options, core::String &e
 	}
 	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		options(type, _currentFilterFormat);
+		options(type, _currentFilterFormat, _selectedEntry);
 
 		if (ImGui::Button(_("Ok"))) {
 			entityPath = assemblePath(_currentPath, _selectedEntry);
