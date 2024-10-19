@@ -4345,9 +4345,9 @@ public:
     *prev_exception_filter_ptr() = SetUnhandledExceptionFilter(crash_handler);
 
     signal(SIGABRT, signal_handler);
-    _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
 
 #if defined(_MSC_VER)
+    _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
     set_terminate(&terminator);
     set_unexpected(&terminator);
 #else
