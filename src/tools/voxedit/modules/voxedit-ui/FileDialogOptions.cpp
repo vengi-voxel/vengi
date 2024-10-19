@@ -29,7 +29,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	const bool allSupportedFormats = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
 	const core::String extension = core::string::extractExtension(entry.name);
 	if (allSupportedFormats) {
-		ImGui::Text(_("Showing all options because you've selected all supported formats"));
+		ImGui::TextUnformatted(_("Showing all options because you've selected all supported formats"));
 		ImGui::Separator();
 	} else {
 		if (!desc->matchesExtension(extension)) {
