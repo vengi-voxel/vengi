@@ -750,11 +750,39 @@ bool SceneGraph::hasMoreThanOnePalette() const {
 	return false;
 }
 
+bool SceneGraph::checkSamePalette() const {
+	uint64_t hash = 0;
+	for (const auto entry : _nodes) {
+		const SceneGraphNode &node = entry->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+
+		if (hash == 0) {
+			hash = node.palette().hash();
+		} else {
+			if (hash != node.palette().hash()) {
+				Log::debug("Palettes differ between model nodes");
+				return false;
+			}
+		}
+	}
+	Log::debug("Palettes are the same for model nodes");
+	return true;
+}
+
 palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) const {
+	if (checkSamePalette()) {
+		return firstPalette();
+	}
+
 	palette::Palette palette;
 	bool tooManyColors = false;
-	for (auto iter = beginAllModels(); iter != end(); ++iter) {
-		const SceneGraphNode &node = *iter;
+	for (const auto entry : _nodes) {
+		const SceneGraphNode &node = entry->second;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
 		const palette::Palette &nodePalette = node.palette();
 		for (int i = 0; i < nodePalette.colorCount(); ++i) {
 			const core::RGBA rgba = nodePalette.color(i);

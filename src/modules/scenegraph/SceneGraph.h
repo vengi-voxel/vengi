@@ -98,6 +98,8 @@ public:
 	 * @sa hasMoreThanOnePalette()
 	 */
 	palette::Palette mergePalettes(bool removeUnused, int emptyIndex = -1) const;
+	bool checkSamePalette() const;
+
 	/**
 	 * @brief Checks if the scene graph model nodes are using the same palette.
 	 * @note This is important for some formats that only support one palette for all nodes and can be used to
