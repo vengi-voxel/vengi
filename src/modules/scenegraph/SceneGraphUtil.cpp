@@ -39,8 +39,13 @@ static void copy(const SceneGraphNode &node, SceneGraphNode &target, bool copyKe
 	target.addProperties(node.properties());
 	// TODO: the reference node id might have changed - fix this
 	target.setReference(node.reference());
-	if (node.type() == SceneGraphNodeType::Model) {
+	if (node.hasPalette()) {
 		target.setPalette(node.palette());
+	}
+	if (node.hasNormalPalette()) {
+		target.setNormalPalette(node.normalPalette());
+	}
+	if (node.type() == SceneGraphNodeType::Model) {
 		core_assert(node.volume() != nullptr);
 	} else if (node.type() == SceneGraphNodeType::ModelReference) {
 		core_assert(node.reference() != InvalidNodeId);
@@ -60,6 +65,12 @@ int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
 	newNode.setColor(node.color());
 	newNode.setPivot(node.pivot());
 	newNode.setKeyFrames(node.keyFrames());
+	if (node.hasPalette()) {
+		newNode.setPalette(node.palette());
+	}
+	if (node.hasNormalPalette()) {
+		newNode.setNormalPalette(node.normalPalette());
+	}
 	const int mainNodeId = addToGraph(sceneGraph, core::move(newNode), parent < 0 ? node.parent() : parent);
 	if (mainNodeId == InvalidNodeId) {
 		Log::error("Failed to add node to the scene graph");
