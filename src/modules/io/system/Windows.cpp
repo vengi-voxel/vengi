@@ -67,14 +67,28 @@ bool initState(io::FilesystemState &state) {
 	state._directories[FilesystemDirectories::FS_Dir_Recent] = priv::knownFolderPath(FOLDERID_Recent);
 	state._directories[FilesystemDirectories::FS_Dir_Cloud] = priv::knownFolderPath(FOLDERID_SkyDrive);
 
-	const DWORD drives = GetLogicalDrives();
-	for (int i = 0; i < 26; ++i) {
-		if ((drives & (1 << i)) == 0) {
-			continue;
+	uint32_t drives = (uint32_t)GetLogicalDrives();
+	char driveLetter[4] = "A:\\";
+	while (drives) {
+		if ((drives & 1) != 0) {
+			bool addDrive = true;
+			UINT type = GetDriveTypeA(driveLetter);
+			if (type == DRIVE_REMOVABLE || type == DRIVE_CDROM) {
+				DWORD fsFlags = 0;
+				if (!GetVolumeInformationA(driveLetter, nullptr, 0, nullptr, nullptr, &fsFlags, nullptr, 0)) {
+					addDrive = false;
+				}
+			}
+			// TODO: what about DRIVE_RAMDISK
+			if (addDrive) {
+				const char driveStr[4] = {driveLetter[0], ':', '/', '\0'};
+				const core::String description = core::string::format("Drive %c", driveLetter[0]);
+				state._thisPc.push_back({description, driveStr});
+			}
 		}
-		const char driveStr[4] = {(char)('A' + i), ':', '/', '\0'};
-		const core::String description = core::string::format("Drive %c", 'A' + i);
-		state._thisPc.push_back({description, driveStr});
+		// next drive letter
+		drives >>= 1;
+		driveLetter[0]++;
 	}
 
 	return true;
