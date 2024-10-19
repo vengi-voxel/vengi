@@ -71,6 +71,9 @@ private:
 	bool buttons(core::String &entityPath, video::OpenFileMode type, bool doubleClickedFile);
 	void popupNewFolder();
 	bool popupAlreadyExists();
+	bool popupOptions(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
+								const io::FormatDescription **formatDesc);
+
 	void filter(video::OpenFileMode type);
 	/**
 	 * @return @c true if a file was double clicked

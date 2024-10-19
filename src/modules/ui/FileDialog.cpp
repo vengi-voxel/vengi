@@ -29,6 +29,7 @@
 namespace ui {
 
 static const char *FILE_ALREADY_EXISTS_POPUP = "###fileoverwritepopup";
+static const char *OPTIONS_POPUP = "###optionspopup";
 static const char *NEW_FOLDER_POPUP = "###newfolderpopup";
 static const char *FILEDIALOGBOOKMARKDND = "filedialog-dir";
 
@@ -630,6 +631,32 @@ void FileDialog::popupNewFolder() {
 	}
 }
 
+bool FileDialog::popupOptions(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
+							  const io::FormatDescription **formatDesc) {
+	if (!options) {
+		return false;
+	}
+	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		options(type, _currentFilterFormat);
+
+		if (ImGui::Button(_("Ok"))) {
+			entityPath = assemblePath(_currentPath, _selectedEntry);
+			resetState();
+			*formatDesc = _currentFilterFormat;
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(_("Cancel"))) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+	return false;
+}
+
 bool FileDialog::popupAlreadyExists() {
 	const core::String title = makeTitle(_("File already exists"), FILE_ALREADY_EXISTS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -760,6 +787,9 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			entityPath = assemblePath(_currentPath, _selectedEntry);
 			resetState();
 			*formatDesc = _currentFilterFormat;
+			ImGui::OpenPopup(OPTIONS_POPUP);
+		}
+		if (popupOptions(options, entityPath, type, formatDesc)) {
 			ImGui::EndPopup();
 			return true;
 		}
@@ -770,11 +800,6 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			return true;
 		}
 		showError(_error);
-		if (options && ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			ImGui::BeginChild("filedialogoptions", ImVec2(0, 0), ImGuiChildFlags_AlwaysAutoResize | ImGuiChildFlags_AutoResizeY);
-			options(type, _currentFilterFormat);
-			ImGui::EndChild();
-		}
 		ImGui::EndPopup();
 	}
 	return false;
@@ -828,8 +853,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
 				} else {
 					entityPath = fullPath;
-					resetState();
-					return true;
+					ImGui::OpenPopup(OPTIONS_POPUP);
 				}
 			}
 		}
