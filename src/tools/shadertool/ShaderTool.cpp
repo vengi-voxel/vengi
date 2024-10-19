@@ -42,6 +42,7 @@ app::AppState ShaderTool::onConstruct() {
 	core::Var::get(cfg::ClientShadowMap, "true", core::CV_SHADER);
 	core::Var::get(cfg::RenderCheckerBoard, "false", core::CV_SHADER);
 	core::Var::get(cfg::RenderOutline, "false", core::CV_SHADER);
+	core::Var::get(cfg::RenderNormals, "false", core::CV_SHADER);
 	core::Var::get(cfg::ToneMapping, "1", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadow, "false", core::CV_SHADER);
 	core::Var::get(cfg::ClientDebugShadowMapCascade, "false", core::CV_SHADER);
