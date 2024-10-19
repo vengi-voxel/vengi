@@ -147,7 +147,7 @@ app::AppState TestCamera::onCleanup() {
 	return Super::onCleanup();
 }
 
-bool TestCamera::onMouseWheel(void *windowHandle, float x, float y) {
+bool TestCamera::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	const SDL_Keymod mods = SDL_GetModState();
 	if (mods & KMOD_SHIFT) {
 		video::Camera& c = _renderCamera[_targetCamera];
@@ -159,7 +159,7 @@ bool TestCamera::onMouseWheel(void *windowHandle, float x, float y) {
 		return true;
 	}
 
-	return Super::onMouseWheel(windowHandle, x, y);
+	return Super::onMouseWheel(windowHandle, x, y, mouseId);
 }
 
 bool TestCamera::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {

@@ -64,20 +64,20 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 			break;
 		}
 		SDL_Window *window = SDL_GetWindowFromID(event.motion.windowID);
-		mouseMotion((void*)window, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel);
+		mouseMotion((void*)window, event.motion.x, event.motion.y, event.motion.xrel, event.motion.yrel, event.motion.which);
 		break;
 	}
 	case SDL_MOUSEBUTTONDOWN:
 		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
 		}
-		mouseButtonPress((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.clicks);
+		mouseButtonPress((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.clicks, event.button.which);
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if (event.button.which == SDL_TOUCH_MOUSEID) {
 			break;
 		}
-		mouseButtonRelease((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button);
+		mouseButtonRelease((void*)SDL_GetWindowFromID(event.button.windowID), event.button.x, event.button.y, event.button.button, event.button.which);
 		break;
 	case SDL_MOUSEWHEEL: {
 		if (event.wheel.which == SDL_TOUCH_MOUSEID) {
@@ -94,7 +94,7 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 #endif
 		x = glm::clamp(x, -1.0f, 1.0f);
 		y = glm::clamp(y, -1.0f, 1.0f);
-		mouseWheel((void*)SDL_GetWindowFromID(event.wheel.windowID), x, y);
+		mouseWheel((void*)SDL_GetWindowFromID(event.wheel.windowID), x, y, event.wheel.which);
 		break;
 	}
 	case SDL_CONTROLLERAXISMOTION:
@@ -260,15 +260,15 @@ void EventHandler::foreground() {
 	}
 }
 
-void EventHandler::mouseWheel(void *windowHandle, float x, float y) {
+void EventHandler::mouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseWheel(windowHandle, x, y);
+		observer->onMouseWheel(windowHandle, x, y, mouseId);
 	}
 }
 
-void EventHandler::mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
+void EventHandler::mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseMotion(windowHandle, x, y, relX, relY);
+		observer->onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
 	}
 }
 
@@ -302,15 +302,15 @@ void EventHandler::controllerButtonRelease(const core::String& button, uint32_t 
 	}
 }
 
-void EventHandler::mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+void EventHandler::mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseButtonPress(windowHandle, x, y, button, clicks);
+		observer->onMouseButtonPress(windowHandle, x, y, button, clicks, mouseId);
 	}
 }
 
-void EventHandler::mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
+void EventHandler::mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
 	for (IEventObserver* observer : _observers) {
-		observer->onMouseButtonRelease(windowHandle, x, y, button);
+		observer->onMouseButtonRelease(windowHandle, x, y, button, mouseId);
 	}
 }
 

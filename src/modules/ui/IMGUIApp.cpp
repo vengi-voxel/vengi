@@ -60,19 +60,20 @@ IMGUIApp::IMGUIApp(const io::FilesystemPtr &filesystem, const core::TimeProvider
 IMGUIApp::~IMGUIApp() {
 }
 
-void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
-	Super::onMouseMotion(windowHandle, x, y, relX, relY);
+void IMGUIApp::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
+	Super::onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
 
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEMOTION;
 	ev.motion.x = x;
 	ev.motion.y = y;
+	ev.motion.which = mouseId;
 	ev.motion.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y) {
-	if (!Super::onMouseWheel(windowHandle, x, y)) {
+bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
+	if (!Super::onMouseWheel(windowHandle, x, y, mouseId)) {
 		SDL_Event ev{};
 		ev.type = SDL_MOUSEWHEEL;
 #if SDL_VERSION_ATLEAST(2, 0, 18)
@@ -81,6 +82,7 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y) {
 #endif
 		ev.wheel.x = (int)x;
 		ev.wheel.y = (int)y;
+		ev.wheel.which = mouseId;
 		ev.wheel.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 
 		ImGui_ImplSDL2_ProcessEvent(&ev);
@@ -88,25 +90,27 @@ bool IMGUIApp::onMouseWheel(void *windowHandle, float x, float y) {
 	return true;
 }
 
-void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
-	Super::onMouseButtonRelease(windowHandle, x, y, button);
+void IMGUIApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
+	Super::onMouseButtonRelease(windowHandle, x, y, button, mouseId);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONUP;
 	ev.button.button = button;
 	ev.button.x = x;
 	ev.button.y = y;
+	ev.button.which = mouseId;
 	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }
 
-void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
-	Super::onMouseButtonPress(windowHandle, x, y, button, clicks);
+void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
+	Super::onMouseButtonPress(windowHandle, x, y, button, clicks, mouseId);
 	SDL_Event ev{};
 	ev.type = SDL_MOUSEBUTTONDOWN;
 	ev.button.button = button;
 	ev.button.clicks = clicks;
 	ev.button.x = x;
 	ev.button.y = y;
+	ev.button.which = mouseId;
 	ev.button.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
 	ImGui_ImplSDL2_ProcessEvent(&ev);
 }

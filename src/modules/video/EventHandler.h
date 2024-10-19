@@ -61,10 +61,10 @@ public:
 	 * @param[in] id game controller id
 	 */
 	void controllerMotion(uint8_t axis, int value, uint32_t id);
-	void mouseWheel(void *windowHandle, float x, float y);
-	void mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY);
-	void mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks);
-	void mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button);
+	void mouseWheel(void *windowHandle, float x, float y, int32_t mouseId);
+	void mouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId);
+	void mouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId);
+	void mouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId);
 	void dropFile(void *windowHandle, const core::String& file);
 	void dropText(void *windowHandle, const core::String& text);
 	void textInput(void *windowHandle, const core::String& text);

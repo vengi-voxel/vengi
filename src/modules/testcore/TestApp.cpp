@@ -177,8 +177,8 @@ app::AppState TestApp::onCleanup() {
 	return Super::onCleanup();
 }
 
-bool TestApp::onMouseWheel(void *windowHandle, float x, float y) {
-	const bool retVal = Super::onMouseWheel(windowHandle, x, y);
+bool TestApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
+	const bool retVal = Super::onMouseWheel(windowHandle, x, y, mouseId);
 	const float targetDistance = glm::clamp(camera().targetDistance() - y, 0.0f, 500.0f);
 	camera().setTargetDistance(targetDistance);
 	return retVal;

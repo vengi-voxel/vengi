@@ -44,17 +44,17 @@ public:
 	virtual void onForeground() {
 	}
 
-	virtual bool onMouseWheel(void *windowHandle, float x, float y) {
+	virtual bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 		return false;
 	}
 
-	virtual void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY) {
+	virtual void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
 	}
 
-	virtual void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks) {
+	virtual void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
 	}
 
-	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button) {
+	virtual void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
 	}
 
 	/**
