@@ -18,14 +18,33 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		return;
 	}
 
-	const bool forceApplyOptions = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
+	if (mode == video::OpenFileMode::Save) {
+		ImGui::Text(_("Save as: %s"), entry.name.c_str());
+		ImGui::TooltipTextUnformatted(entry.fullPath.c_str());
+	} else {
+		ImGui::Text(_("Open: %s"), entry.name.c_str());
+		ImGui::TooltipTextUnformatted(entry.fullPath.c_str());
+	}
 
-	if (forceApplyOptions || *desc == io::format::palPalette()) {
+	const bool allSupportedFormats = (desc->flags & FORMAT_FLAG_ALL) == FORMAT_FLAG_ALL;
+	const core::String extension = core::string::extractExtension(entry.name);
+	if (allSupportedFormats) {
+		ImGui::Text(_("Showing all options because you've selected all supported formats"));
+		ImGui::Separator();
+	} else {
+		if (!desc->matchesExtension(extension)) {
+			ImGui::Text(_("Warning: Selected file type does not match extension %s: %s"), extension.c_str(),
+						desc->name.c_str());
+			ImGui::Separator();
+		}
+	}
+
+	if (allSupportedFormats || *desc == io::format::palPalette()) {
 		ImGui::CheckboxVar(_("Command & Conquer palette"), cfg::PalformatRGB6Bit);
 	}
 
 	const bool meshFormat = voxelformat::isMeshFormat(*desc);
-	if (forceApplyOptions || meshFormat) {
+	if (allSupportedFormats || meshFormat) {
 		ImGui::InputVarFloat(_("Uniform scale"), cfg::VoxformatScale);
 		ImGui::InputVarFloat(_("X axis scale"), cfg::VoxformatScaleX);
 		ImGui::InputVarFloat(_("Y axis scale"), cfg::VoxformatScaleY);
@@ -45,7 +64,8 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::EndDisabled();
 			ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
 			if (*desc == voxelformat::gltf()) {
-				ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness", cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
+				ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
+								   cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
 				ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
 			}
 			ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
@@ -77,25 +97,26 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	}
 
 	if (mode == video::OpenFileMode::Save) {
-		if (forceApplyOptions || !meshFormat) {
+		if (allSupportedFormats || !meshFormat) {
 			ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
-			ImGui::SliderVarInt(_("Empty palette index"), cfg::VoxformatEmptyPaletteIndex, -1, palette::PaletteMaxColors);
+			ImGui::SliderVarInt(_("Empty palette index"), cfg::VoxformatEmptyPaletteIndex, -1,
+								palette::PaletteMaxColors);
 		}
 		ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
-		if (forceApplyOptions || *desc == voxelformat::qubicleBinaryTree()) {
+		if (allSupportedFormats || *desc == voxelformat::qubicleBinaryTree()) {
 			ImGui::CheckboxVar(_("Palette mode"), cfg::VoxformatQBTPaletteMode);
 			ImGui::CheckboxVar(_("Merge compounds"), cfg::VoxformatQBTMergeCompounds);
 		}
-		if (forceApplyOptions || *desc == voxelformat::magicaVoxel()) {
+		if (allSupportedFormats || *desc == voxelformat::magicaVoxel()) {
 			ImGui::CheckboxVar(_("Create groups"), cfg::VoxformatVOXCreateGroups);
 			ImGui::CheckboxVar(_("Create layers"), cfg::VoxformatVOXCreateLayers);
 		}
-		if (forceApplyOptions || *desc == voxelformat::qubicleBinary()) {
+		if (allSupportedFormats || *desc == voxelformat::qubicleBinary()) {
 			ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
 			ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 		}
 	} else {
-		if (forceApplyOptions || *desc == io::format::png()) {
+		if (allSupportedFormats || *desc == io::format::png()) {
 			const char *importTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
 			const core::VarPtr &importTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
 			const int currentImportType = importTypeVar->intVal();
