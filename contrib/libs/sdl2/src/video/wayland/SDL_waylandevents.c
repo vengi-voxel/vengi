@@ -260,12 +260,25 @@ static SDL_bool keyboard_repeat_key_is_set(SDL_WaylandKeyboardRepeat *repeat_inf
     return repeat_info->is_initialized && repeat_info->is_key_down && key == repeat_info->key;
 }
 
+static void sync_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+    /* Nothing to do, just destroy the callback */
+    wl_callback_destroy(callback);
+}
+
+static struct wl_callback_listener sync_listener = {
+    sync_done_handler
+};
+
 void Wayland_SendWakeupEvent(_THIS, SDL_Window *window)
 {
     SDL_VideoData *d = _this->driverdata;
 
-    /* TODO: Maybe use a pipe to avoid the compositor roundtrip? */
-    wl_display_sync(d->display);
+    /* Queue a sync event to unblock the event queue fd if it's empty and being waited on.
+     * TODO: Maybe use a pipe to avoid the compositor roundtrip?
+     */
+    struct wl_callback *cb = wl_display_sync(d->display);
+    wl_callback_add_listener(cb, &sync_listener, NULL);
     WAYLAND_wl_display_flush(d->display);
 }
 
@@ -919,6 +932,28 @@ static void touch_handler_frame(void *data, struct wl_touch *touch)
 
 static void touch_handler_cancel(void *data, struct wl_touch *touch)
 {
+	struct SDL_WaylandTouchPoint *tp;
+	while ((tp = touch_points.head)) {
+		wl_fixed_t fx = 0, fy = 0;
+		struct wl_surface *surface = NULL;
+		int id = tp->id;
+
+		touch_del(id, &fx, &fy, &surface);
+
+		if (surface) {
+			SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(surface);
+
+			if (window_data) {
+				const double dblx = wl_fixed_to_double(fx) * window_data->pointer_scale_x;
+				const double dbly = wl_fixed_to_double(fy) * window_data->pointer_scale_y;
+				const float x = dblx / window_data->sdlwindow->w;
+				const float y = dbly / window_data->sdlwindow->h;
+
+				SDL_SendTouch((SDL_TouchID)(intptr_t)touch, (SDL_FingerID)id,
+					      window_data->sdlwindow, SDL_FALSE, x, y, 1.0f);
+			}
+		}
+	}
 }
 
 static const struct wl_touch_listener touch_listener = {
@@ -2536,6 +2571,9 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     if (input->primary_selection_device) {
         if (input->primary_selection_device->selection_offer) {
             Wayland_primary_selection_offer_destroy(input->primary_selection_device->selection_offer);
+        }
+        if (input->primary_selection_device->primary_selection_device) {
+            zwp_primary_selection_device_v1_destroy(input->primary_selection_device->primary_selection_device);
         }
         SDL_free(input->primary_selection_device);
     }

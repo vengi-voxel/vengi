@@ -336,8 +336,9 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 {
     SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     unsigned w, h;
-    int ret, num_planes = 0;
-    Uint32 format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
+    int rc = -1;
+    int num_planes = 0;
+    uint32_t format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
     uint64_t modifiers[4] = { 0 };
 
     /* Check for an existing framebuffer */
@@ -364,34 +365,36 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     h = KMSDRM_gbm_bo_get_height(bo);
     format = KMSDRM_gbm_bo_get_format(bo);
 
-    modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
-    num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
-    for (int i = 0; i < num_planes; i++) {
-        strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
-        handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
-        offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
-        modifiers[i] = modifiers[0];
-    }
+    if (KMSDRM_drmModeAddFB2WithModifiers &&
+        KMSDRM_gbm_bo_get_modifier &&
+        KMSDRM_gbm_bo_get_plane_count &&
+        KMSDRM_gbm_bo_get_offset &&
+        KMSDRM_gbm_bo_get_stride_for_plane &&
+        KMSDRM_gbm_bo_get_handle_for_plane) {
 
-    if (modifiers[0] && modifiers[0] != DRM_FORMAT_MOD_INVALID) {
-        flags = DRM_MODE_FB_MODIFIERS;
-    }
-
-    ret = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
-
-    if (ret) {
-        handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
-        strides[0] = KMSDRM_gbm_bo_get_stride(bo);
-        offsets[0] = 0;
-        for (int i = 1; i<4; i++) {
-            handles[i] = 0;
-            strides[i] = 0;
-            offsets[i] = 0;
+        modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
+        num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
+        for (int i = 0; i < num_planes; i++) {
+            strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
+            handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
+            offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
+            modifiers[i] = modifiers[0];
         }
-        ret = KMSDRM_drmModeAddFB2(viddata->drm_fd, w, h, format, handles, strides, offsets, &fb_info->fb_id, 0);
+
+        if (modifiers[0] && modifiers[0] != DRM_FORMAT_MOD_INVALID) {
+            flags = DRM_MODE_FB_MODIFIERS;
+        }
+
+        rc = KMSDRM_drmModeAddFB2WithModifiers(viddata->drm_fd, w, h, format, handles, strides, offsets, modifiers, &fb_info->fb_id, flags);
     }
 
-    if (ret) {
+    if (rc < 0) {
+        strides[0] = KMSDRM_gbm_bo_get_stride(bo);
+        handles[0] = KMSDRM_gbm_bo_get_handle(bo).u32;
+        rc = KMSDRM_drmModeAddFB(viddata->drm_fd, w, h, 24, 32, strides[0], handles[0], &fb_info->fb_id);
+    }
+
+    if (rc < 0) {
         SDL_free(fb_info);
         return NULL;
     }
@@ -527,10 +530,23 @@ static drmModeModeInfo *KMSDRM_GetClosestDisplayMode(SDL_VideoDisplay *display,
 /* _this is a SDL_VideoDevice *                                              */
 /*****************************************************************************/
 
+static SDL_bool KMSDRM_DropMaster(_THIS)
+{
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
+
+    /* Check if we have DRM master to begin with */
+    if (KMSDRM_drmAuthMagic(viddata->drm_fd, 0) == -EACCES) {
+        /* Nope, nothing to do then */
+        return SDL_TRUE;
+    }
+
+    return KMSDRM_drmDropMaster(viddata->drm_fd) < 0 ? SDL_FALSE : SDL_TRUE;
+}
+
 /* Deinitializes the driverdata of the SDL Displays in the SDL display list. */
 static void KMSDRM_DeinitDisplays(_THIS)
 {
-
+    SDL_VideoData *viddata = ((SDL_VideoData *)_this->driverdata);
     SDL_DisplayData *dispdata;
     int num_displays, i;
 
@@ -553,6 +569,11 @@ static void KMSDRM_DeinitDisplays(_THIS)
             KMSDRM_drmModeFreeCrtc(dispdata->crtc);
             dispdata->crtc = NULL;
         }
+    }
+
+    if (viddata->drm_fd >= 0) {
+        close(viddata->drm_fd);
+        viddata->drm_fd = -1;
     }
 }
 
@@ -909,8 +930,6 @@ cleanup:
 
 /* Initializes the list of SDL displays: we build a new display for each
    connecter connector we find.
-   Inoffeensive for VK compatibility, except we must leave the drm_fd
-   closed when we get to the end of this function.
    This is to be called early, in VideoInit(), because it gets us
    the videomode information, which SDL needs immediately after VideoInit(). */
 static int KMSDRM_InitDisplays(_THIS)
@@ -983,10 +1002,13 @@ static int KMSDRM_InitDisplays(_THIS)
     /* Block for Vulkan compatibility. */
     /***********************************/
 
-    /* THIS IS FOR VULKAN! Leave the FD closed, so VK can work.
-       Will reopen this in CreateWindow, but only if requested a non-VK window. */
-    close(viddata->drm_fd);
-    viddata->drm_fd = -1;
+    /* Vulkan requires DRM master on its own FD to work, so try to drop master
+       on our FD. This will only work without root on kernels v5.8 and later.
+       If it doesn't work, just close the FD and we'll reopen it later. */
+    if (!KMSDRM_DropMaster(_this)) {
+        close(viddata->drm_fd);
+        viddata->drm_fd = -1;
+    }
 
 cleanup:
     if (resources) {
@@ -1014,10 +1036,15 @@ static int KMSDRM_GBMInit(_THIS, SDL_DisplayData *dispdata)
     SDL_VideoData *viddata = (SDL_VideoData *)_this->driverdata;
     int ret = 0;
 
-    /* Reopen the FD! */
-    viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+    /* Reopen the FD if we weren't able to drop master on the original one */
+    if (viddata->drm_fd < 0) {
+        viddata->drm_fd = open(viddata->devpath, O_RDWR | O_CLOEXEC);
+        if (viddata->drm_fd < 0) {
+            return SDL_SetError("Could not reopen %s", viddata->devpath);
+        }
+    }
 
-    /* Set the FD we just opened as current DRM master. */
+    /* Set the FD as current DRM master. */
     KMSDRM_drmSetMaster(viddata->drm_fd);
 
     /* Create the GBM device. */
@@ -1043,8 +1070,9 @@ static void KMSDRM_GBMDeinit(_THIS, SDL_DisplayData *dispdata)
         viddata->gbm_dev = NULL;
     }
 
-    /* Finally close DRM FD. May be reopen on next non-vulkan window creation. */
-    if (viddata->drm_fd >= 0) {
+    /* Finally drop DRM master if possible, otherwise close DRM FD.
+       May be reopened on next non-vulkan window creation. */
+    if (viddata->drm_fd >= 0 && !KMSDRM_DropMaster(_this)) {
         close(viddata->drm_fd);
         viddata->drm_fd = -1;
     }
@@ -1589,7 +1617,12 @@ int KMSDRM_CreateWindow(_THIS, SDL_Window *window)
     SDL_SetKeyboardFocus(window);
 
     /* Tell the app that the window has moved to top-left. */
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, 0, 0);
+    {
+        SDL_Rect display_bounds;
+        SDL_zero(display_bounds);
+        SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(window), &display_bounds);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, display_bounds.x, display_bounds.y);
+    }
 
     /* Allocated windata will be freed in KMSDRM_DestroyWindow,
        and KMSDRM_DestroyWindow() will be called by SDL_CreateWindow()

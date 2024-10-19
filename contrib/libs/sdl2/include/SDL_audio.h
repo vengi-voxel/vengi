@@ -591,7 +591,7 @@ extern DECLSPEC int SDLCALL SDL_GetDefaultAudioInfo(char **name,
  *   frames_ (with stereo output, two samples--left and right--would make a
  *   single sample frame). This number should be a power of two, and may be
  *   adjusted by the audio driver to a value more suitable for the hardware.
- *   Good values seem to range between 512 and 8096 inclusive, depending on
+ *   Good values seem to range between 512 and 4096 inclusive, depending on
  *   the application and CPU speed. Smaller values reduce latency, but can
  *   lead to underflow if the application is doing heavy processing and cannot
  *   fill the audio buffer in time. Note that the number of sample frames is
@@ -1172,9 +1172,8 @@ extern DECLSPEC void SDLCALL SDL_MixAudio(Uint8 * dst, const Uint8 * src,
  * \param format the SDL_AudioFormat structure representing the desired audio
  *               format.
  * \param len the length of the audio buffer in bytes.
- * \param volume ranges from -128 - ∞ (at -128, the volume is at 0%, at 0 -
- *               100% and the higher the number, the bigger the %), and should
- *               be set to SDL_MIX_MAXVOLUME for full audio volume.
+ * \param volume ranges from 0 - 128, and should be set to SDL_MIX_MAXVOLUME
+ *               for full audio volume.
  *
  * \since This function is available since SDL 2.0.0.
  */
