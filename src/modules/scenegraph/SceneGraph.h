@@ -10,9 +10,9 @@
 
 #include "SceneGraphNode.h"
 #include "core/DirtyState.h"
-#include "core/Tuple.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "voxel/Region.h"
 
@@ -216,14 +216,18 @@ public:
 	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0, bool onlyVisible = false) const;
 	voxel::Region sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const;
 
-	using MergedVolumePalette = core::Tuple<voxel::RawVolume*, palette::Palette, palette::NormalPalette>;
+	struct MergeResult {
+		voxel::RawVolume *volume = nullptr;
+		palette::Palette palette;
+		palette::NormalPalette normalPalette;
+	};
 	/**
 	 * @brief Merge all available nodes into one big volume.
 	 * @note If the graph is empty, this returns @c nullptr for the volume and a dummy value for the palette
 	 * @note The caller is responsible for deleting the returned volume
 	 * @note The palette indices are just taken as they come in. There is no quantization here.
 	 */
-	MergedVolumePalette merge(bool skipHidden = true) const;
+	MergeResult merge(bool skipHidden = true) const;
 
 	/**
 	 * Performs the recursive lookup in case of model references

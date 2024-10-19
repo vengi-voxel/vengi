@@ -866,16 +866,16 @@ voxel::RawVolume *SceneGraph::resolveVolume(SceneGraphNode &n) {
 	return n.volume();
 }
 
-SceneGraph::MergedVolumePalette SceneGraph::merge(bool skipHidden) const {
+SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 	const size_t n = size(SceneGraphNodeType::AllModels);
 	if (n == 0) {
-		return MergedVolumePalette{};
+		return MergeResult{};
 	} else if (n == 1) {
 		if (const SceneGraphNode *node = firstModelNode()) {
 			if (skipHidden && !node->visible()) {
-				return MergedVolumePalette{};
+				return MergeResult{};
 			}
-			return MergedVolumePalette{new voxel::RawVolume(node->volume()), node->palette(), node->normalPalette()};
+			return MergeResult{new voxel::RawVolume(node->volume()), node->palette(), node->normalPalette()};
 		}
 	}
 
@@ -909,7 +909,7 @@ SceneGraph::MergedVolumePalette SceneGraph::merge(bool skipHidden) const {
 		// TODO: rotation
 		voxelutil::mergeVolumes(merged, v, destRegion, sourceRegion, func);
 	}
-	return MergedVolumePalette{merged, mergedPalette, normalPalette};
+	return MergeResult{merged, mergedPalette, normalPalette};
 }
 
 void SceneGraph::align(int padding) {

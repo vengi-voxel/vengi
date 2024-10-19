@@ -414,23 +414,23 @@ void materialComparator(const scenegraph::SceneGraph &graph1, const scenegraph::
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2,
 						  ValidateFlags flags, float maxDelta) {
 	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
-		const scenegraph::SceneGraph::MergedVolumePalette &merged1 = graph1.merge();
-		core::ScopedPtr<voxel::RawVolume> v1(merged1.head);
-		const scenegraph::SceneGraph::MergedVolumePalette &merged2 = graph2.merge();
-		core::ScopedPtr<voxel::RawVolume> v2(merged2.head);
-		ASSERT_NE(nullptr, merged1.head);
-		ASSERT_NE(nullptr, merged2.head);
+		const scenegraph::SceneGraph::MergeResult &merged1 = graph1.merge();
+		core::ScopedPtr<voxel::RawVolume> v1(merged1.volume);
+		const scenegraph::SceneGraph::MergeResult &merged2 = graph2.merge();
+		core::ScopedPtr<voxel::RawVolume> v2(merged2.volume);
+		ASSERT_NE(nullptr, merged1.volume);
+		ASSERT_NE(nullptr, merged2.volume);
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
-			voxel::paletteComparator(core::get<1>(merged1), core::get<1>(merged2), maxDelta);
+			voxel::paletteComparator(merged1.palette, merged2.palette, maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(core::get<1>(merged1), core::get<1>(merged2), flags, maxDelta);
+			voxel::partialPaletteComparator(merged1.palette, merged2.palette, flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
-			voxel::paletteComparatorScaled(core::get<1>(merged1), core::get<1>(merged2), (int)maxDelta);
+			voxel::paletteComparatorScaled(merged1.palette, merged2.palette, (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
 				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
-			voxel::orderPaletteComparator(core::get<1>(merged1), core::get<1>(merged2), maxDelta);
+			voxel::orderPaletteComparator(merged1.palette, merged2.palette, maxDelta);
 		}
-		volumeComparator(*v1, core::get<1>(merged1), *v2, core::get<1>(merged2), flags, maxDelta);
+		volumeComparator(*v1, merged1.palette, *v2, merged2.palette, flags, maxDelta);
 		return;
 	}
 	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));

@@ -373,12 +373,12 @@ bool SceneManager::save(const io::FileDescription& file, bool autosave) {
 
 static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 	if (newSceneGraph.size() > voxel::MAX_VOLUMES) {
-		const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
+		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
 		scenegraph::SceneGraphNode newNode;
-		newNode.setVolume(core::get<0>(merged), true);
-		newNode.setPalette(core::get<1>(merged));
-		newNode.setNormalPalette(core::get<2>(merged));
+		newNode.setVolume(merged.volume, true);
+		newNode.setPalette(merged.palette);
+		newNode.setNormalPalette(merged.normalPalette);
 		newSceneGraph.emplace(core::move(newNode));
 	}
 }
@@ -1133,8 +1133,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		scenegraph::copyNode(*node, copiedNode, true);
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
-	scenegraph::SceneGraph::MergedVolumePalette merged = newSceneGraph.merge();
-	if (merged.head == nullptr) {
+	scenegraph::SceneGraph::MergeResult merged = newSceneGraph.merge();
+	if (merged.volume == nullptr) {
 		return InvalidNodeId;
 	}
 
@@ -1145,9 +1145,9 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	}
 	scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
 	transform.setWorldTranslation(glm::vec3(0.0f));
-	newNode.setVolume(core::get<0>(merged), true);
-	newNode.setPalette(core::get<1>(merged));
-	newNode.setNormalPalette(core::get<2>(merged));
+	newNode.setVolume(merged.volume, true);
+	newNode.setPalette(merged.palette);
+	newNode.setNormalPalette(merged.normalPalette);
 
 	int newNodeId = moveNodeToSceneGraph(newNode, parent);
 	if (newNodeId == InvalidNodeId) {
@@ -1983,11 +1983,11 @@ void SceneManager::construct() {
 		int nodeId2;
 		if (args.size() == 1) {
 			if (args[0] == "all") {
-				scenegraph::SceneGraph::MergedVolumePalette merged = _sceneGraph.merge();
-				newScene(true, "merged", merged.head);
+				scenegraph::SceneGraph::MergeResult merged = _sceneGraph.merge();
+				newScene(true, "merged", merged.volume);
 				if (auto *node = _sceneGraph.firstModelNode()) {
-					node->setPalette(core::get<1>(merged));
-					node->setNormalPalette(core::get<2>(merged));
+					node->setPalette(merged.palette);
+					node->setNormalPalette(merged.normalPalette);
 				}
 				return;
 			}

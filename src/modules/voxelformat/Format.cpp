@@ -139,12 +139,12 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 	const bool saveVisibleOnly = core::Var::getSafe(cfg::VoxformatSaveVisibleOnly)->boolVal();
 	if (singleVolume() && sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels) > 1) {
 		Log::debug("Merge volumes before saving as the target format only supports one volume");
-		scenegraph::SceneGraph::MergedVolumePalette merged = sceneGraph.merge(saveVisibleOnly);
+		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
 		scenegraph::SceneGraph mergedSceneGraph(2);
 		scenegraph::SceneGraphNode mergedNode(scenegraph::SceneGraphNodeType::Model);
-		mergedNode.setVolume(core::get<0>(merged), true);
-		mergedNode.setPalette(core::get<1>(merged));
-		mergedNode.setNormalPalette(core::get<2>(merged));
+		mergedNode.setVolume(merged.volume, true);
+		mergedNode.setPalette(merged.palette);
+		mergedNode.setNormalPalette(merged.normalPalette);
 		mergedSceneGraph.emplace(core::move(mergedNode));
 		return saveGroups(mergedSceneGraph, filename, archive, ctx);
 	}

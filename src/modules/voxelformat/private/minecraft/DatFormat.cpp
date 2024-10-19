@@ -97,15 +97,15 @@ bool DatFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 				Log::debug("Could not load %s", regionFilename.c_str());
 				return core::move(newSceneGraph);
 			}
-			const scenegraph::SceneGraph::MergedVolumePalette &merged = newSceneGraph.merge();
+			const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 			newSceneGraph.clear();
-			if (merged.head == nullptr) {
+			if (merged.volume == nullptr) {
 				return core::move(newSceneGraph);
 			}
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-			node.setVolume(core::get<0>(merged), true);
-			node.setPalette(core::get<1>(merged));
-			node.setNormalPalette(core::get<2>(merged));
+			node.setVolume(merged.volume, true);
+			node.setPalette(merged.palette);
+			node.setNormalPalette(merged.normalPalette);
 			newSceneGraph.emplace(core::move(node));
 			return core::move(newSceneGraph);
 		}));
