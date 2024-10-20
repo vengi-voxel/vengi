@@ -3499,4 +3499,18 @@ void SceneManager::setActiveCamera(video::Camera *camera) {
 	resetLastTrace();
 }
 
+core::String SceneManager::getSuggestedFilename(const core::String &extension) const {
+	core::String filename = _lastFilename.name;
+	if (filename.empty()) {
+		if (!extension.empty()) {
+			return "scene." + extension;
+		}
+		return "scene" + voxelformat::vengi().mainExtension(true);
+	}
+	if (extension.empty()) {
+		return filename;
+	}
+	return core::string::replaceExtension(filename, extension);
+}
+
 }

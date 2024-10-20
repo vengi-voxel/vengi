@@ -82,20 +82,6 @@ void VoxEdit::onDropFile(void *window, const core::String& file) {
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
 }
 
-core::String VoxEdit::getSuggestedFilename(const core::String &extension) const {
-	core::String filename = _sceneMgr->filename();
-	if (filename.empty()) {
-		if (!extension.empty() && !voxelformat::vengi().matchesExtension(extension)) {
-			return "scene" + voxelformat::vengi().mainExtension(true);
-		}
-		return filename;
-	}
-	if (extension.empty()) {
-		return filename;
-	}
-	return core::string::replaceExtension(filename, extension);
-}
-
 void VoxEdit::toggleScene() {
 	if (_mainWindow == nullptr) {
 		return;
@@ -167,7 +153,7 @@ app::AppState VoxEdit::onConstruct() {
 		}
 		core::String viewportId = args.empty() ? "" : args[0];
 		if (args.size() <= 1) {
-			const core::String filename = getSuggestedFilename(io::format::png().mainExtension(false));
+			const core::String filename = _sceneMgr->getSuggestedFilename(io::format::png().mainExtension(false));
 			saveDialog([this, viewportId] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file, viewportId); }, fileDialogOptions, io::format::images(), filename);
 			return;
 		}
@@ -183,7 +169,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			const core::String filename = getSuggestedFilename();
+			const core::String filename = _sceneMgr->getSuggestedFilename();
 			if (filename.empty()) {
 				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), "scene.vengi");
 			} else {
@@ -198,7 +184,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		const core::String &filename = getSuggestedFilename(voxelformat::vengi().mainExtension(false));
+		const core::String &filename = _sceneMgr->getSuggestedFilename(voxelformat::vengi().mainExtension());
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 

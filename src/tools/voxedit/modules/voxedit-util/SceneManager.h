@@ -246,7 +246,7 @@ public:
 	void setActiveCamera(video::Camera *camera);
 	video::Camera *activeCamera() const;
 
-	const core::String &filename() const;
+	core::String getSuggestedFilename(const core::String &extension = "") const;
 	const voxel::Voxel &hitCursorVoxel() const;
 
 	const glm::ivec3 &cursorPosition() const;
@@ -526,10 +526,6 @@ inline scenegraph::FrameIndex SceneManager::currentFrame() const {
 
 inline void SceneManager::setCurrentFrame(scenegraph::FrameIndex frameIdx) {
 	_currentFrameIdx = frameIdx;
-}
-
-inline const core::String &SceneManager::filename() const {
-	return _lastFilename.name;
 }
 
 inline video::Camera *SceneManager::activeCamera() const {

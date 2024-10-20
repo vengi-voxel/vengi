@@ -557,4 +557,8 @@ TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
 	EXPECT_EQ(1u, _sceneMgr->sceneGraph().animations().size());
 }
 
+TEST_F(SceneManagerTest, testGetSuggestedFilename) {
+	EXPECT_EQ("scene.vengi", _sceneMgr->getSuggestedFilename());
+}
+
 } // namespace voxedit
