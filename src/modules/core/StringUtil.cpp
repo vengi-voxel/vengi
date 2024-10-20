@@ -929,6 +929,9 @@ core::String stripExtension(const core::String &str) {
 }
 
 core::String replaceExtension(const core::String &filename, const core::String &newExtension) {
+	if (newExtension.first() == '.') {
+		return replaceExtension(filename, newExtension.substr(1));
+	}
 	const size_t pos = filename.rfind(".");
 	if (pos == core::String::npos) {
 		return filename + "." + newExtension;
