@@ -559,6 +559,8 @@ TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
 
 TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	EXPECT_EQ("scene.vengi", _sceneMgr->getSuggestedFilename());
+
+	// TODO: load a scene and test the suggested filename
 }
 
 } // namespace voxedit

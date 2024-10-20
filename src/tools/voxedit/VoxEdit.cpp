@@ -184,7 +184,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (_mainWindow == nullptr) {
 			return;
 		}
-		const core::String &filename = _sceneMgr->getSuggestedFilename(voxelformat::vengi().mainExtension());
+		const core::String &filename = _sceneMgr->getSuggestedFilename();
 		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, fileDialogOptions, voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 

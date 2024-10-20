@@ -3500,17 +3500,22 @@ void SceneManager::setActiveCamera(video::Camera *camera) {
 }
 
 core::String SceneManager::getSuggestedFilename(const core::String &extension) const {
-	core::String filename = _lastFilename.name;
-	if (filename.empty()) {
-		if (!extension.empty()) {
-			return "scene." + extension;
+	const io::FileDescription &fileDesc = _lastFilename;
+	core::String name = "scene";
+	core::String ext = extension;
+	if (!fileDesc.empty()) {
+		name = core::string::extractFilename(fileDesc.name);
+		if (ext.empty()) {
+			ext = core::string::extractExtension(fileDesc.name);
 		}
-		return "scene" + voxelformat::vengi().mainExtension(true);
 	}
-	if (extension.empty()) {
-		return filename;
+	if (ext.empty()) {
+		ext = fileDesc.desc.mainExtension();
 	}
-	return core::string::replaceExtension(filename, extension);
+	if (ext.empty()) {
+		ext = voxelformat::vengi().mainExtension();
+	}
+	return name + "." + ext;
 }
 
 }
