@@ -263,7 +263,7 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::Checkbox(_("Color match"), &_searchFittingColors);
 		ImGui::TooltipTextUnformatted(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("OK"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
 			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
 			ImGui::CloseCurrentPopup();
 		}
@@ -302,7 +302,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 				const char *command = "loadpalette";
 				const core::String &keybinding = _app->getKeyBindingsString(command);
 				ImGui::InputText(_("ID"), &_lospecID);
-				if (ImGui::MenuItem(_("OK"), keybinding.c_str(), false, true)) {
+				if (ImGui::MenuItem(_("Ok"), keybinding.c_str(), false, true)) {
 					core::String cmd = command;
 					cmd.append(" lospec:");
 					cmd.append(_lospecID);

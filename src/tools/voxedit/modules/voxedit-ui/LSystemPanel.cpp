@@ -28,7 +28,7 @@ void LSystemPanel::update(const char *id) {
 		ImGui::InputInt(_("Iterations"), &_lsystemData.iterations);
 		ImGui::InputFloat(_("Leaves radius"), &_lsystemData.leavesRadius);
 
-		if (ImGui::IconButton(ICON_LC_PLAY, _("OK"))) {
+		if (ImGui::IconButton(ICON_LC_PLAY, _("Ok"))) {
 			core::DynamicArray<voxelgenerator::lsystem::Rule> rules;
 			if (voxelgenerator::lsystem::parseRules(_lsystemData.rulesStr, rules)) {
 				_sceneMgr->lsystem(_lsystemData.axiom.c_str(), rules, _lsystemData.angle, _lsystemData.length,

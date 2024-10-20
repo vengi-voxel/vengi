@@ -165,6 +165,12 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Options"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
 msgid "File already exists"
 msgstr ""
 
@@ -199,9 +205,6 @@ msgid "Filename"
 msgstr ""
 
 msgid "Show hidden"
-msgstr ""
-
-msgid "Options"
 msgstr ""
 
 msgid "Choose"
@@ -467,7 +470,22 @@ msgstr ""
 msgid "Top"
 msgstr ""
 
-msgid "Overwrite existing target file"
+#, c-format
+msgid "Save as: %s"
+msgstr ""
+
+#, c-format
+msgid "Open: %s"
+msgstr ""
+
+msgid "Showing all options because you've selected all supported formats"
+msgstr ""
+
+#, c-format
+msgid "Warning: Selected file type does not match extension %s: %s"
+msgstr ""
+
+msgid "Command & Conquer palette"
 msgstr ""
 
 msgid "Uniform scale"
@@ -515,7 +533,25 @@ msgstr ""
 msgid "Export materials"
 msgstr ""
 
+msgid "Fill hollow"
+msgstr ""
+
+msgid "Point cloud size"
+msgstr ""
+
+msgid "faster and less memory"
+msgstr ""
+
+msgid "high quality"
+msgstr ""
+
+msgid "Voxelization mode"
+msgstr ""
+
 msgid "Single object"
+msgstr ""
+
+msgid "Empty palette index"
 msgstr ""
 
 msgid "Save visible only"
@@ -537,21 +573,6 @@ msgid "Left handed"
 msgstr ""
 
 msgid "Compressed"
-msgstr ""
-
-msgid "Fill hollow"
-msgstr ""
-
-msgid "Point cloud size"
-msgstr ""
-
-msgid "faster and less memory"
-msgstr ""
-
-msgid "high quality"
-msgstr ""
-
-msgid "Voxelization mode"
 msgstr ""
 
 msgid "Heightmap"
@@ -579,6 +600,9 @@ msgid "RGB weighted average"
 msgstr ""
 
 msgid "Create palette"
+msgstr ""
+
+msgid "Overwrite existing target file"
 msgstr ""
 
 msgid "Quit"
@@ -761,9 +785,6 @@ msgid "Copy from existing animation"
 msgstr ""
 
 msgid "Animation"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "Animation already exists"
@@ -1067,12 +1088,6 @@ msgstr ""
 msgid "No match for filter found"
 msgstr ""
 
-msgid "Command & Conquer palette"
-msgstr ""
-
-msgid "Empty palette index"
-msgstr ""
-
 msgid "L-System"
 msgstr ""
 
@@ -1098,9 +1113,6 @@ msgid "Iterations"
 msgstr ""
 
 msgid "Leaves radius"
-msgstr ""
-
-msgid "OK"
 msgstr ""
 
 msgid "Draw line forwards"
