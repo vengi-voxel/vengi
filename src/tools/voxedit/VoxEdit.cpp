@@ -7,6 +7,7 @@
 #include "core/BindingContext.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/concurrent/Concurrency.h"
 #include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
@@ -124,12 +125,12 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditMaxSuggestedVolumeSize, "128", _("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"), core::Var::minMaxValidator<32, voxedit::MaxVolumeSize>);
 	core::Var::get(cfg::VoxEditSimplifiedView, "false", _("Hide some panels to simplify the ui"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditTipOftheDay, "true", _("Show the tip of the day on startup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupWelcome, "false", _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupAbout, "false", _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupRenameNode, "false", _("Trigger opening of popup"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxEditPopupCreateAnimation, "false", _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupTipOfTheDay, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupWelcome, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupSceneSettings, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupAbout, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupRenameNode, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxEditPopupCreateAnimation, "false", core::CV_NOPERSIST, _("Trigger opening of popup"), core::Var::boolValidator);
 
 	voxelformat::FormatConfig::init();
 
