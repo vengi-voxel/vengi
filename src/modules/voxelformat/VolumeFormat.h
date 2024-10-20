@@ -51,5 +51,6 @@ bool isMeshFormat(const core::String &filename, bool save);
 bool isMeshFormat(const io::FormatDescription &desc);
 bool isAnimationSupported(const io::FormatDescription &desc);
 bool isModelFormat(const core::String &filename);
+bool isPaletteEmbedded(const io::FormatDescription &desc);
 
 } // namespace voxelformat

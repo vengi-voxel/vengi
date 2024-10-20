@@ -19,6 +19,7 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 
 #define FORMAT_FLAG_ALL (1 << 0)
 #define FORMAT_FLAG_GROUP (1 << 1)
+// we also have saving implemented
 #define FORMAT_FLAG_SAVE (1 << 2)
 
 // the format has a built-in renderer shot of the creating software
@@ -29,7 +30,6 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 #define VOX_FORMAT_FLAG_MESH (1 << 10)
 // the format has support for animation and it is implemented
 #define VOX_FORMAT_FLAG_ANIMATION (1 << 11)
-// we also have saving implemented
 
 struct FormatDescription {
 	core::String name;				  /**< the name of the format */

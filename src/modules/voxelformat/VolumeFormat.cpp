@@ -653,6 +653,10 @@ bool isMeshFormat(const io::FormatDescription &desc) {
 	return desc.flags & VOX_FORMAT_FLAG_MESH;
 }
 
+bool isPaletteEmbedded(const io::FormatDescription &desc) {
+	return desc.flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED;
+}
+
 bool isAnimationSupported(const io::FormatDescription &desc) {
 	return desc.flags & VOX_FORMAT_FLAG_ANIMATION;
 }
