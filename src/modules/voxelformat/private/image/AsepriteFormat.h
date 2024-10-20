@@ -29,6 +29,11 @@ protected:
 public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"aseprite", {"aseprite", "ase"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		return f;
+	}
 };
 
 } // namespace voxelformat

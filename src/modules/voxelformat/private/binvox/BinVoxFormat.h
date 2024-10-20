@@ -41,6 +41,11 @@ public:
 	bool singleVolume() const override {
 		return true;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"BinVox", {"binvox"}, {"#binvox"}, FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

@@ -40,6 +40,12 @@ private:
 public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{
+			"StarMade Blueprint", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		return f;
+	}
 };
 
 } // namespace voxelformat

@@ -66,6 +66,7 @@
 #include "twinsen_png.h"
 #include "undead.h"
 #include "undead_png.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 
 namespace voxedit {
 
@@ -291,7 +292,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	io::FileDescription fd;
 	const core::String &ext = core::string::extractExtension(file);
 	if (ext.empty()) {
-		core::String newExt = voxelformat::vengi().mainExtension();
+		core::String newExt = voxelformat::VENGIFormat::format().mainExtension();
 		if (desc && !desc->exts.empty()) {
 			newExt = desc->exts[0];
 		}
@@ -497,8 +498,8 @@ void MainWindow::rightWidget() {
 void MainWindow::addTemplate(const TemplateModel &model) {
 	io::FileDescription fileDesc;
 	const core::String name = model.name;
-	fileDesc.name = name + voxelformat::vengi().mainExtension(true);
-	fileDesc.desc = voxelformat::vengi();
+	fileDesc.name = name + voxelformat::VENGIFormat::format().mainExtension(true);
+	fileDesc.desc = voxelformat::VENGIFormat::format();
 	ImGui::TableNextColumn();
 	const video::TexturePtr &texture = _texturePool->get(name);
 	const ImVec2 size((float)texture->width(), (float)texture->height());

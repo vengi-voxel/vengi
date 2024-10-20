@@ -32,5 +32,10 @@ public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
 					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Wavefront Object", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 } // namespace voxelformat

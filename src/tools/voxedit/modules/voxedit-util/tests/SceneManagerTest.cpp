@@ -21,6 +21,7 @@
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -576,10 +577,10 @@ TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
 	EXPECT_EQ("test.png", _sceneMgr->getSuggestedFilename("png"));
 	EXPECT_EQ("test.png", _sceneMgr->getSuggestedFilename(".png"));
-	sceneMgr()->setLastFilename("test", &voxelformat::magicaVoxel());
+	sceneMgr()->setLastFilename("test", &voxelformat::VoxFormat::format());
 	EXPECT_EQ("test.vox", _sceneMgr->getSuggestedFilename());
 	// TODO: here we need to define which extension should be used - from the format, or the given one...
-	sceneMgr()->setLastFilename("test.vengi", &voxelformat::magicaVoxel());
+	sceneMgr()->setLastFilename("test.vengi", &voxelformat::VoxFormat::format());
 	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
 }
 

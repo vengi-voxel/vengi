@@ -98,6 +98,11 @@ public:
 
 	using Textures = core::DynamicArray<image::ImagePtr>;
 
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
+
 private:
 	bool addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
 				 const Textures &textureArray, int parent) const;

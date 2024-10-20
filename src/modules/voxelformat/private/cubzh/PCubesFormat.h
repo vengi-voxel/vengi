@@ -20,6 +20,15 @@ public:
 	bool singleVolume() const override {
 		return true;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Particubes",
+									{"pcubes", "particubes"},
+									{"PARTICUBES!"},
+									VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
+										FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

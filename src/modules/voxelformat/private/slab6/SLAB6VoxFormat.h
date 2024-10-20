@@ -25,9 +25,15 @@ protected:
 	int emptyPaletteIndex() const override {
 		return 255;
 	}
+
 public:
 	bool singleVolume() const override {
 		return true;
+	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"SLAB6 vox", {"vox"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		return f;
 	}
 };
 

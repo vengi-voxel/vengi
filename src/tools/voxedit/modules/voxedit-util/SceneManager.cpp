@@ -49,6 +49,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "scenegraph/SceneUtil.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeGenerator.h"
 #include "voxelrender/ImageGenerator.h"
@@ -191,7 +192,7 @@ void SceneManager::autosave() {
 	// autosaves go into the write path directory (which is usually the home directory of the user)
 	io::FileDescription autoSaveFilename;
 	if (_lastFilename.empty()) {
-		autoSaveFilename.set(_filesystem->homeWritePath("autosave-noname." + voxelformat::vengi().mainExtension()));
+		autoSaveFilename.set(_filesystem->homeWritePath("autosave-noname." + voxelformat::VENGIFormat::format().mainExtension()));
 	} else {
 		const io::FilePtr &file = _filesystem->open(_lastFilename.name);
 		const core::String &filename = file->fileName();
@@ -3516,7 +3517,7 @@ core::String SceneManager::getSuggestedFilename(const core::String &extension) c
 		ext = fileDesc.desc.mainExtension();
 	}
 	if (ext.empty()) {
-		ext = voxelformat::vengi().mainExtension();
+		ext = voxelformat::VENGIFormat::format().mainExtension();
 	}
 	return name + "." + ext;
 }

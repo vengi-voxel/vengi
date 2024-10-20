@@ -59,6 +59,12 @@ protected:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;
+public:
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{
+			"Vengi", {"vengi"}, {"VENG"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

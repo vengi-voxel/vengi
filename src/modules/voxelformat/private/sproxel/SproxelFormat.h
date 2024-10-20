@@ -29,6 +29,11 @@ public:
 	bool singleVolume() const override {
 		return true;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Sproxel csv", {"csv"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
+		return f;
+	}
 };
 
 } // namespace voxelformat

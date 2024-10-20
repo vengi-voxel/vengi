@@ -31,6 +31,11 @@ public:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override {
 		return false;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"VoxelBuilder", {"vbx"}, {"; Voxel Builder file format (VBX)"}, VOX_FORMAT_FLAG_RGB};
+		return f;
+	}
 };
 
 } // namespace voxelformat

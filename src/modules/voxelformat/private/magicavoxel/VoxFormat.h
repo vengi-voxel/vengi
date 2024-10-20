@@ -50,6 +50,12 @@ public:
 	VoxFormat();
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{
+			"MagicaVoxel", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

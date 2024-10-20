@@ -137,6 +137,15 @@ public:
 					   const LoadContext &ctx) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Goxel",
+									{"gox"},
+									{"GOX "},
+									VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
+										FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

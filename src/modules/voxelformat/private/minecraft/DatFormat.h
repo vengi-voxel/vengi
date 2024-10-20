@@ -24,6 +24,11 @@ protected:
 					const io::ArchivePtr &archive, const SaveContext &ctx) override {
 		return false;
 	}
+public:
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Minecraft level dat", {"dat"}, {}, 0u};
+		return f;
+	}
 };
 
 } // namespace voxelformat

@@ -32,6 +32,11 @@ public:
 	bool singleVolume() const override {
 		return true;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Qubicle Exchange", {"qef"}, {"Qubicle Exchange Format"}, FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

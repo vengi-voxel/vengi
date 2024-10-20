@@ -254,6 +254,12 @@ public:
 								   const LoadContext &ctx) override;
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{
+			"VoxelMax", {"vmax.zip", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
+		return f;
+	}
 };
 
 } // namespace voxelformat

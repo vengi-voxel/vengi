@@ -364,6 +364,15 @@ public:
 	int emptyPaletteIndex() const override {
 		return 255;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Cubzh",
+									{"3zh"},
+									{"CUBZH!"},
+									VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
+										FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

@@ -9,6 +9,10 @@
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
+#include "voxelformat/private/qubicle/QBTFormat.h"
 
 void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
 	if (mode == video::OpenFileMode::Directory) {
@@ -63,7 +67,7 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 			ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
 			ImGui::EndDisabled();
 			ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
-			if (*desc == voxelformat::gltf()) {
+			if (*desc == voxelformat::GLTFFormat::format()) {
 				ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
 								   cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
 				ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
@@ -103,15 +107,15 @@ void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 								palette::PaletteMaxColors);
 		}
 		ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
-		if (allSupportedFormats || *desc == voxelformat::qubicleBinaryTree()) {
+		if (allSupportedFormats || *desc == voxelformat::QBTFormat::format()) {
 			ImGui::CheckboxVar(_("Palette mode"), cfg::VoxformatQBTPaletteMode);
 			ImGui::CheckboxVar(_("Merge compounds"), cfg::VoxformatQBTMergeCompounds);
 		}
-		if (allSupportedFormats || *desc == voxelformat::magicaVoxel()) {
+		if (allSupportedFormats || *desc == voxelformat::VoxFormat::format()) {
 			ImGui::CheckboxVar(_("Create groups"), cfg::VoxformatVOXCreateGroups);
 			ImGui::CheckboxVar(_("Create layers"), cfg::VoxformatVOXCreateLayers);
 		}
-		if (allSupportedFormats || *desc == voxelformat::qubicleBinary()) {
+		if (allSupportedFormats || *desc == voxelformat::QBFormat::format()) {
 			ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
 			ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 		}

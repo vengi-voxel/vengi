@@ -70,339 +70,58 @@
 
 namespace voxelformat {
 
-const io::FormatDescription &tiberianSun() {
-	static io::FormatDescription f{"Tiberian Sun",
-								   {"vxl"},
-								   {"Voxel Animation"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &qubicleBinary() {
-	static io::FormatDescription f{"Qubicle Binary", {"qb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &magicaVoxel() {
-	static io::FormatDescription f{
-		"MagicaVoxel", {"vox"}, {"VOX "}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &qubicleBinaryTree() {
-	static io::FormatDescription f{
-		"Qubicle Binary Tree", {"qbt"}, {"QB 2"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &vengi() {
-	static io::FormatDescription f{
-		"Vengi", {"vengi"}, {"VENG"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &aseprite() {
-	static io::FormatDescription f{"aseprite", {"aseprite", "ase"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &roomsThing() {
-	static io::FormatDescription f{"Rooms.xyz Thing", {"thing"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &qubicleProject() {
-	static io::FormatDescription f{"Qubicle Project",
-								   {"qbcl"},
-								   {"QBCL"},
-								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
-									   FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &qubicleExchange() {
-	static io::FormatDescription f{"Qubicle Exchange", {"qef"}, {"Qubicle Exchange Format"}, FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &ufoaiBsp() {
-	static io::FormatDescription f{"UFO:Alien Invasion", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &quake1Bsp() {
-	static io::FormatDescription f{"Quake 1", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &quakeMdl() {
-	static io::FormatDescription f{"Quake 1 Model", {"mdl"}, {"IDPO", "RAPO"}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &quakeMd2() {
-	static io::FormatDescription f{"Quake 2 Model", {"md2"}, {"IDP2"}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &blockbench() {
-	static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &sandboxVXM() {
-	static io::FormatDescription f{"Sandbox VoxEdit Model",
-								   {"vxm"},
-								   {"VXMA", "VXMB", "VXMC", "VXM9", "VXM8", "VXM7", "VXM6", "VXM5", "VXM4", "VXM3"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &sandboxVXB() {
-	static io::FormatDescription f{"Sandbox VoxEdit Block",
-								   {"vxb"},
-								   {"VXB1"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &sandboxVXR() {
-	static io::FormatDescription f{"Sandbox VoxEdit Hierarchy",
-								   {"vxr"},
-								   {"VXR9", "VXR8", "VXR7", "VXR6", "VXR5", "VXR4", "VXR3", "VXR2", "VXR1"},
-								   VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &sandboxTilemap() {
-	static io::FormatDescription f{"Sandbox VoxEdit Tilemap", {"vxt"}, {"VXT1"}, 0u};
-	return f;
-}
-
-const io::FormatDescription &sandboxCollection() {
-	static io::FormatDescription f{"Sandbox VoxEdit Collection", {"vxc"}, {}, VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &binvox() {
-	static io::FormatDescription f{"BinVox", {"binvox"}, {"#binvox"}, FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &goxel() {
-	static io::FormatDescription f{"Goxel",
-								   {"gox"},
-								   {"GOX "},
-								   VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED | VOX_FORMAT_FLAG_PALETTE_EMBEDDED |
-									   FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &cubeWorld() {
-	static io::FormatDescription f{"CubeWorld", {"cub"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
-	return f;
-}
-
-const io::FormatDescription &minetest() {
-	static io::FormatDescription f{"Minetest", {"mts"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &minecraftRegion() {
-	static io::FormatDescription f{"Minecraft region", {"mca", "mcr"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &minecraftLevelDat() {
-	static io::FormatDescription f{"Minecraft level dat", {"dat"}, {}, 0u};
-	return f;
-}
-
-const io::FormatDescription &minecraftSchematic() {
-	static io::FormatDescription f{
-		"Minecraft schematic", {"schematic", "schem", "nbt", "litematic"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &fbx() {
-	static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &autodesk3ds() {
-	static io::FormatDescription f{"Autodesk 3D Studio", {"3ds"}, {}, VOX_FORMAT_FLAG_MESH};
-	return f;
-}
-
-const io::FormatDescription &sproxelCSV() {
-	static io::FormatDescription f{"Sproxel csv", {"csv"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
-	return f;
-}
-
-const io::FormatDescription &magicaVoxelXRAW() {
-	static io::FormatDescription f{
-		"Magicavoxel XRAW", {"xraw"}, {"XRAW"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE | VOX_FORMAT_FLAG_RGB};
-	return f;
-}
-
-const io::FormatDescription &gltf() {
-	static io::FormatDescription f{"GL Transmission Format",
-								   {"gltf", "glb", "vrm"},
-								   {},
-								   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &particubes() {
-	static io::FormatDescription f{"Particubes",
-								   {"pcubes", "particubes"},
-								   {"PARTICUBES!"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
-									   FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &cubzhB64() {
-	static io::FormatDescription f{"Cubzh World", {"b64"}, {}, 0u};
-	return f;
-}
-
-const io::FormatDescription &cubzh() {
-	static io::FormatDescription f{"Cubzh",
-								   {"3zh"},
-								   {"CUBZH!"},
-								   VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED |
-									   FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &aceOfSpadesKV6() {
-	static io::FormatDescription f{
-		"AceOfSpades", {"kv6"}, {"Kvxl"}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &voxelMax() {
-	static io::FormatDescription f{
-		"VoxelMax", {"vmax.zip", "vmaxb"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_SCREENSHOT_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &starMade() {
-	static io::FormatDescription f{
-		"StarMade Blueprint", {"sment", "smd2", "smd3"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
-	return f;
-}
-
-const io::FormatDescription &starMadeTemplate() {
-	static io::FormatDescription f{
-		"StarMade Template", {"smtpl"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &animaToon() {
-	static io::FormatDescription f{
-		"AnimaToon", {"scn"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION};
-	return f;
-}
-
-const io::FormatDescription &voxelBuilder() {
-	static io::FormatDescription f{"VoxelBuilder", {"vbx"}, {"; Voxel Builder file format (VBX)"}, VOX_FORMAT_FLAG_RGB};
-	return f;
-}
-
-const io::FormatDescription &wavefrontObj() {
-	static io::FormatDescription f{"Wavefront Object", {"obj"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &standardTriangleLanguage() {
-	static io::FormatDescription f{"Standard Triangle Language", {"stl"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &polygonFileFormat() {
-	static io::FormatDescription f{"Polygon File Format", {"ply"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &buildKVX() {
-	static io::FormatDescription f{"Build engine", {"kvx"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &voxel3D() {
-	static io::FormatDescription f{"Voxel3D", {"v3a", "v3b"}, {}, FORMAT_FLAG_SAVE};
-	return f;
-}
-
-const io::FormatDescription &chronoVox() {
-	static io::FormatDescription f{"Chronovox", {"csm"}, {".CSM"}, 0u};
-	return f;
-}
-
-const io::FormatDescription &nicksVoxelModel() {
-	static io::FormatDescription f{"Nicks Voxel Model", {"nvm"}, {".NVM"}, 0u};
-	return f;
-}
-
-const io::FormatDescription &slab6Vox() {
-	static io::FormatDescription f{"SLAB6 vox", {"vox"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | FORMAT_FLAG_SAVE};
-	return f;
-}
-
 const io::FormatDescription *voxelLoad() {
 	// this is the list of supported voxel volume formats that are
 	// have importers implemented
-	static const io::FormatDescription desc[] = {vengi(),
-												 aseprite(),
-												 qubicleBinary(),
-												 magicaVoxel(),
-												 qubicleBinaryTree(),
-												 qubicleProject(),
-												 sandboxTilemap(),
-												 sandboxCollection(),
-												 sandboxVXM(),
-												 sandboxVXB(),
-												 blockbench(),
-												 sandboxVXR(),
-												 binvox(),
-												 goxel(),
-												 cubeWorld(),
-												 minetest(),
-												 minecraftRegion(),
-												 minecraftLevelDat(),
-												 minecraftSchematic(),
-												 ufoaiBsp(),
-												 quake1Bsp(),
-												 quakeMdl(),
-												 quakeMd2(),
-												 fbx(),
-												 autodesk3ds(),
-												 sproxelCSV(),
-												 magicaVoxelXRAW(),
-												 starMade(),
-												 starMadeTemplate(),
-												 animaToon(),
-												 voxelBuilder(),
-												 wavefrontObj(),
-												 gltf(),
-												 standardTriangleLanguage(),
-												 polygonFileFormat(),
-												 buildKVX(),
-												 particubes(),
-												 cubzh(),
-												 cubzhB64(),
-												 voxel3D(),
-												 roomsThing(),
-												 aceOfSpadesKV6(),
-												 tiberianSun(),
+	static const io::FormatDescription desc[] = {VENGIFormat::format(),
+												 AsepriteFormat::format(),
+												 QBFormat::format(),
+												 VoxFormat::format(),
+												 QBTFormat::format(),
+												 QBCLFormat::format(),
+												 VXTFormat::format(),
+												 VXCFormat::format(),
+												 VXMFormat::format(),
+												 VXBFormat::format(),
+												 BlockbenchFormat::format(),
+												 VXRFormat::format(),
+												 BinVoxFormat::format(),
+												 GoxFormat::format(),
+												 CubFormat::format(),
+												 MTSFormat::format(),
+												 MCRFormat::format(),
+												 DatFormat::format(),
+												 SchematicFormat::format(),
+												 QuakeBSPFormat::formatUFOAI(),
+												 QuakeBSPFormat::formatQuake1(),
+												 MDLFormat::format(),
+												 MD2Format::format(),
+												 FBXFormat::format(),
+												 Autodesk3DSFormat::format(),
+												 SproxelFormat::format(),
+												 XRawFormat::format(),
+												 SMFormat::format(),
+												 SMTPLFormat::format(),
+												 AnimaToonFormat::format(),
+												 VBXFormat::format(),
+												 OBJFormat::format(),
+												 GLTFFormat::format(),
+												 STLFormat::format(),
+												 PLYFormat::format(),
+												 KVXFormat::format(),
+												 PCubesFormat::format(),
+												 CubzhFormat::format(),
+												 CubzhB64Format::format(),
+												 V3AFormat::format(),
+												 ThingFormat::format(),
+												 KV6Format::format(),
+												 VXLFormat::format(),
 												 AoSVXLFormat::format(),
-												 qubicleExchange(),
-												 chronoVox(),
-												 nicksVoxelModel(),
-												 slab6Vox(),
-												 voxelMax(),
+												 QEFFormat::format(),
+												 CSMFormat::format(),
+												 CSMFormat::formatNVM(),
+												 SLAB6VoxFormat::format(),
+												 VMaxFormat::format(),
 												 io::format::png(),
 												 {"", {}, {}, 0u}};
 	return desc;
@@ -425,101 +144,101 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 	for (const core::String &ext : desc.exts) {
 		// you only have to check one of the supported extensions
 		// here
-		if (ext == vengi().mainExtension()) {
+		if (ext == VENGIFormat::format().mainExtension()) {
 			return core::make_shared<VENGIFormat>();
-		} else if (ext == qubicleBinary().mainExtension()) {
+		} else if (ext == QBFormat::format().mainExtension()) {
 			return core::make_shared<QBFormat>();
-		} else if (ext == magicaVoxel().mainExtension() && desc.name == magicaVoxel().name) {
+		} else if (ext == VoxFormat::format().mainExtension() && desc.name == VoxFormat::format().name) {
 			return core::make_shared<VoxFormat>();
-		} else if (ext == slab6Vox().mainExtension()) {
+		} else if (ext == SLAB6VoxFormat::format().mainExtension()) {
 			return core::make_shared<SLAB6VoxFormat>();
-		} else if (ext == qubicleBinaryTree().mainExtension() || io::isA(qubicleBinaryTree(), magic)) {
+		} else if (ext == QBTFormat::format().mainExtension() || io::isA(QBTFormat::format(), magic)) {
 			return core::make_shared<QBTFormat>();
-		} else if (ext == buildKVX().mainExtension()) {
+		} else if (ext == KVXFormat::format().mainExtension()) {
 			return core::make_shared<KVXFormat>();
-		} else if (ext == aceOfSpadesKV6().mainExtension()) {
+		} else if (ext == KV6Format::format().mainExtension()) {
 			return core::make_shared<KV6Format>();
-		} else if (ext == sproxelCSV().mainExtension()) {
+		} else if (ext == SproxelFormat::format().mainExtension()) {
 			return core::make_shared<SproxelFormat>();
-		} else if (ext == cubeWorld().mainExtension()) {
+		} else if (ext == CubFormat::format().mainExtension()) {
 			return core::make_shared<CubFormat>();
-		} else if (ext == goxel().mainExtension()) {
+		} else if (ext == GoxFormat::format().mainExtension()) {
 			return core::make_shared<GoxFormat>();
-		} else if (ext == animaToon().mainExtension()) {
+		} else if (ext == AnimaToonFormat::format().mainExtension()) {
 			return core::make_shared<AnimaToonFormat>();
-		} else if (ext == minecraftRegion().mainExtension()) {
+		} else if (ext == MCRFormat::format().mainExtension()) {
 			return core::make_shared<MCRFormat>();
-		} else if (ext == minetest().mainExtension()) {
+		} else if (ext == MTSFormat::format().mainExtension()) {
 			return core::make_shared<MTSFormat>();
-		} else if (ext == minecraftLevelDat().mainExtension()) {
+		} else if (ext == DatFormat::format().mainExtension()) {
 			return core::make_shared<DatFormat>();
-		} else if (ext == starMade().mainExtension()) {
+		} else if (ext == SMFormat::format().mainExtension()) {
 			return core::make_shared<SMFormat>();
-		} else if (ext == starMadeTemplate().mainExtension()) {
+		} else if (ext == SMTPLFormat::format().mainExtension()) {
 			return core::make_shared<SMTPLFormat>();
-		} else if (ext == sandboxVXM().mainExtension()) {
+		} else if (ext == VXMFormat::format().mainExtension()) {
 			return core::make_shared<VXMFormat>();
-		} else if (ext == sandboxVXR().mainExtension()) {
+		} else if (ext == VXRFormat::format().mainExtension()) {
 			return core::make_shared<VXRFormat>();
-		} else if (ext == sandboxVXB().mainExtension()) {
+		} else if (ext == VXBFormat::format().mainExtension()) {
 			return core::make_shared<VXBFormat>();
-		} else if (ext == voxelMax().mainExtension()) {
+		} else if (ext == VMaxFormat::format().mainExtension()) {
 			return core::make_shared<VMaxFormat>();
-		} else if (ext == blockbench().mainExtension()) {
+		} else if (ext == BlockbenchFormat::format().mainExtension()) {
 			return core::make_shared<BlockbenchFormat>();
-		} else if (ext == sandboxCollection().mainExtension()) {
+		} else if (ext == VXCFormat::format().mainExtension()) {
 			return core::make_shared<VXCFormat>();
-		} else if (ext == sandboxTilemap().mainExtension()) {
+		} else if (ext == VXTFormat::format().mainExtension()) {
 			return core::make_shared<VXTFormat>();
-		} else if (ext == tiberianSun().mainExtension() && desc.name == tiberianSun().name) {
+		} else if (ext == VXLFormat::format().mainExtension() && desc.name == VXLFormat::format().name) {
 			return core::make_shared<VXLFormat>();
 		} else if (ext == AoSVXLFormat::format().mainExtension() && desc.name == AoSVXLFormat::format().name) {
 			return core::make_shared<AoSVXLFormat>();
-		} else if (ext == nicksVoxelModel().mainExtension() || ext == chronoVox().mainExtension()) {
+		} else if (ext == CSMFormat::formatNVM().mainExtension() || ext == CSMFormat::format().mainExtension()) {
 			return core::make_shared<CSMFormat>();
-		} else if (ext == binvox().mainExtension()) {
+		} else if (ext == BinVoxFormat::format().mainExtension()) {
 			return core::make_shared<BinVoxFormat>();
-		} else if (ext == qubicleExchange().mainExtension()) {
+		} else if (ext == QEFFormat::format().mainExtension()) {
 			return core::make_shared<QEFFormat>();
-		} else if (ext == qubicleProject().mainExtension()) {
+		} else if (ext == QBCLFormat::format().mainExtension()) {
 			return core::make_shared<QBCLFormat>();
-		} else if (ext == wavefrontObj().mainExtension()) {
+		} else if (ext == OBJFormat::format().mainExtension()) {
 			return core::make_shared<OBJFormat>();
-		} else if (ext == standardTriangleLanguage().mainExtension()) {
+		} else if (ext == STLFormat::format().mainExtension()) {
 			return core::make_shared<STLFormat>();
-		} else if (ext == ufoaiBsp().mainExtension() || ext == quake1Bsp().mainExtension()) {
+		} else if (ext == QuakeBSPFormat::formatUFOAI().mainExtension() || ext == QuakeBSPFormat::formatQuake1().mainExtension()) {
 			return core::make_shared<QuakeBSPFormat>();
-		} else if (ext == polygonFileFormat().mainExtension()) {
+		} else if (ext == PLYFormat::format().mainExtension()) {
 			return core::make_shared<PLYFormat>();
-		} else if (ext == fbx().mainExtension()) {
+		} else if (ext == FBXFormat::format().mainExtension()) {
 			return core::make_shared<FBXFormat>();
-		} else if (ext == autodesk3ds().mainExtension()) {
+		} else if (ext == Autodesk3DSFormat::format().mainExtension()) {
 			return core::make_shared<Autodesk3DSFormat>();
-		} else if (ext == quakeMdl().mainExtension()) {
+		} else if (ext == MDLFormat::format().mainExtension()) {
 			return core::make_shared<MDLFormat>();
-		} else if (ext == quakeMd2().mainExtension()) {
+		} else if (ext == MD2Format::format().mainExtension()) {
 			return core::make_shared<MD2Format>();
-		} else if (ext == minecraftSchematic().mainExtension()) {
+		} else if (ext == SchematicFormat::format().mainExtension()) {
 			return core::make_shared<SchematicFormat>();
-		} else if (ext == voxelBuilder().mainExtension()) {
+		} else if (ext == VBXFormat::format().mainExtension()) {
 			return core::make_shared<VBXFormat>();
-		} else if (ext == magicaVoxelXRAW().mainExtension()) {
+		} else if (ext == XRawFormat::format().mainExtension()) {
 			return core::make_shared<XRawFormat>();
-		} else if (ext == voxel3D().mainExtension()) {
+		} else if (ext == V3AFormat::format().mainExtension()) {
 			return core::make_shared<V3AFormat>();
-		} else if (ext == particubes().mainExtension()) {
+		} else if (ext == PCubesFormat::format().mainExtension()) {
 			return core::make_shared<PCubesFormat>();
-		} else if (ext == cubzh().mainExtension()) {
+		} else if (ext == CubzhFormat::format().mainExtension()) {
 			return core::make_shared<CubzhFormat>();
-		} else if (ext == cubzhB64().mainExtension()) {
+		} else if (ext == CubzhB64Format::format().mainExtension()) {
 			return core::make_shared<CubzhB64Format>();
-		} else if (ext == aseprite().mainExtension()) {
+		} else if (ext == AsepriteFormat::format().mainExtension()) {
 			return core::make_shared<AsepriteFormat>();
-		} else if (ext == roomsThing().mainExtension()) {
+		} else if (ext == ThingFormat::format().mainExtension()) {
 			return core::make_shared<ThingFormat>();
 		} else if (ext == io::format::png().mainExtension()) {
 			return core::make_shared<PNGFormat>();
-		} else if (gltf().matchesExtension(ext)) {
+		} else if (GLTFFormat::format().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());

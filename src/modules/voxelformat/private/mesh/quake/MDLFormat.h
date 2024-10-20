@@ -55,5 +55,10 @@ public:
 					bool withTexCoords = true) override {
 		return false;
 	}
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Quake 1 Model", {"mdl"}, {"IDPO", "RAPO"}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
 };
 } // namespace voxelformat

@@ -80,6 +80,11 @@ protected:
 					const io::ArchivePtr &archive, const SaveContext &ctx) {
 		return false;
 	}
+public:
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Cubzh World", {"b64"}, {}, 0u};
+		return f;
+	}
 };
 
 } // namespace voxelformat

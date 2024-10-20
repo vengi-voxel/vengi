@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
+#include "voxelformat/Format.h"
 
 namespace voxelformat {
 
@@ -44,12 +44,18 @@ protected:
 		core::DynamicArray<AnimaToonVoxel> voxels;
 	};
 
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-						const LoadContext &ctx) override;
+	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const palette::Palette &palette, const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override {
 		return false;
+	}
+
+public:
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{
+			"AnimaToon", {"scn"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED | VOX_FORMAT_FLAG_ANIMATION};
+		return f;
 	}
 };
 

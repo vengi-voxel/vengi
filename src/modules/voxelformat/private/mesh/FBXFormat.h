@@ -43,6 +43,11 @@ public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const Meshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
+
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"FBX", {"fbx"}, {}, VOX_FORMAT_FLAG_MESH | FORMAT_FLAG_SAVE};
+		return f;
+	}
 };
 
 } // namespace voxelformat

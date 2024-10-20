@@ -16,6 +16,10 @@
 #include "ui/IMGUIEx.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/qubicle/QBFormat.h"
+#include "voxelformat/private/qubicle/QBTFormat.h"
 
 VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -64,7 +68,7 @@ void VoxConvertUI::targetOptions(const io::FormatDescription *desc) const {
 		ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
 		ImGui::EndDisabled();
 		ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
-		if (*desc == voxelformat::gltf()) {
+		if (*desc == voxelformat::GLTFFormat::format()) {
 			ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
 							   cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
 			ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
@@ -74,15 +78,15 @@ void VoxConvertUI::targetOptions(const io::FormatDescription *desc) const {
 		ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
 	}
 	ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
-	if (*desc == voxelformat::qubicleBinaryTree()) {
+	if (*desc == voxelformat::QBTFormat::format()) {
 		ImGui::CheckboxVar(_("Palette mode"), cfg::VoxformatQBTPaletteMode);
 		ImGui::CheckboxVar(_("Merge compounds"), cfg::VoxformatQBTMergeCompounds);
 	}
-	if (*desc == voxelformat::magicaVoxel()) {
+	if (*desc == voxelformat::VoxFormat::format()) {
 		ImGui::CheckboxVar(_("Create groups"), cfg::VoxformatVOXCreateGroups);
 		ImGui::CheckboxVar(_("Create layers"), cfg::VoxformatVOXCreateLayers);
 	}
-	if (*desc == voxelformat::qubicleBinary()) {
+	if (*desc == voxelformat::QBFormat::format()) {
 		ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
 		ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 	}

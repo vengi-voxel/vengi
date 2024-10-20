@@ -116,6 +116,11 @@ protected:
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override {
 		return false;
 	}
+public:
+	static const io::FormatDescription &format() {
+		static io::FormatDescription f{"Autodesk 3D Studio", {"3ds"}, {}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
 };
 
 } // namespace voxelformat
