@@ -11,6 +11,7 @@
 #include "core/collection/DynamicMap.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/FormatDescription.h"
 #include "io/Stream.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/FormatThumbnail.h"

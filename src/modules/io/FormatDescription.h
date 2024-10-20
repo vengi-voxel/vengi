@@ -30,6 +30,9 @@ using FormatDescriptionMagics = core::Vector<core::String, MAX_FORMATDESCRIPTION
 #define VOX_FORMAT_FLAG_MESH (1 << 10)
 // the format has support for animation and it is implemented
 #define VOX_FORMAT_FLAG_ANIMATION (1 << 11)
+// the format is a RGB(A) format and no palette based format - this is used
+// for formats where we create palettes from the RGB values.
+#define VOX_FORMAT_FLAG_RGB (1 << 12)
 
 struct FormatDescription {
 	core::String name;				  /**< the name of the format */
