@@ -228,8 +228,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
 
 			bool change = false;
-			change |= ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f",
-										ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f");
+			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resettr")) {
@@ -240,7 +240,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			}
 
 			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
-			change |= ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f");
+			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetrt")) {
@@ -250,7 +251,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 				ImGui::TooltipTextUnformatted(_("Reset"));
 			}
 
-			change |= ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f");
+			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_LC_X "##resetsc")) {
@@ -261,8 +263,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			}
 
 			glm::vec3 pivot = node.pivot();
-			bool pivotChanged =
-				ImGui::InputFloat3(_("Pv"), glm::value_ptr(pivot), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::InputFloat3(_("Pv"), glm::value_ptr(pivot), "%.3f");
+			bool pivotChanged = ImGui::IsItemDeactivatedAfterEdit();
 			change |= pivotChanged;
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_LC_X "##resetpv")) {
