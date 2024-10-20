@@ -3500,6 +3500,9 @@ void SceneManager::setActiveCamera(video::Camera *camera) {
 }
 
 core::String SceneManager::getSuggestedFilename(const core::String &extension) const {
+	if (extension.first() == '.') {
+		return getSuggestedFilename(extension.substr(1));
+	}
 	const io::FileDescription &fileDesc = _lastFilename;
 	core::String name = "scene";
 	core::String ext = extension;
