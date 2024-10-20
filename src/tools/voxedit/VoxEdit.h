@@ -33,7 +33,7 @@ protected:
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
 
-	core::String getSuggestedFilename(const char *extension = nullptr) const;
+	core::String getSuggestedFilename(const core::String &extension = "") const;
 
 	// 0 is the default binding
 	enum KeyBindings {

@@ -101,7 +101,10 @@ core::String FormatDescription::mainExtension(bool includeDot) const {
 }
 
 bool FormatDescription::matchesExtension(const core::String &fileExt) const {
-	const core::String &lowerExt = fileExt.toLower();
+	core::String lowerExt = fileExt.toLower();
+	if (lowerExt.first() == '.') {
+		lowerExt = lowerExt.substr(1);
+	}
 	for (const core::String &ext : exts) {
 		if (lowerExt == ext) {
 			return true;
