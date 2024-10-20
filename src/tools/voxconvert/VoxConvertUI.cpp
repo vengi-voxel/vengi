@@ -16,10 +16,7 @@
 #include "ui/IMGUIEx.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
-#include "voxelformat/private/magicavoxel/VoxFormat.h"
-#include "voxelformat/private/mesh/GLTFFormat.h"
-#include "voxelformat/private/qubicle/QBFormat.h"
-#include "voxelformat/private/qubicle/QBTFormat.h"
+#include "voxelui/FileDialogOptions.h"
 
 VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -31,129 +28,6 @@ VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::Time
 	_showConsole = false;
 	_windowWidth = 1024;
 	_windowHeight = 820;
-}
-
-void VoxConvertUI::genericOptions(const io::FormatDescription *desc) {
-	if (_targetFileExists) {
-		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
-		ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
-	}
-	if (desc == nullptr) {
-		return;
-	}
-	const bool meshFormat = voxelformat::isMeshFormat(*desc);
-	if (meshFormat) {
-		ImGui::InputVarFloat(_("Uniform scale"), cfg::VoxformatScale);
-		ImGui::InputVarFloat(_("X axis scale"), cfg::VoxformatScaleX);
-		ImGui::InputVarFloat(_("Y axis scale"), cfg::VoxformatScaleY);
-		ImGui::InputVarFloat(_("Z axis scale"), cfg::VoxformatScaleZ);
-	}
-}
-
-void VoxConvertUI::targetOptions(const io::FormatDescription *desc) const {
-	if (desc == nullptr) {
-		return;
-	}
-	const bool meshFormat = voxelformat::isMeshFormat(*desc);
-	if (meshFormat) {
-		ImGui::CheckboxVar(_("Merge quads"), cfg::VoxformatMergequads);
-		ImGui::CheckboxVar(_("Reuse vertices"), cfg::VoxformatReusevertices);
-		ImGui::CheckboxVar(_("Ambient occlusion"), cfg::VoxformatAmbientocclusion);
-		ImGui::CheckboxVar(_("Apply transformations"), cfg::VoxformatTransform);
-		ImGui::CheckboxVar(_("Apply optimizations"), cfg::VoxformatOptimize);
-		ImGui::CheckboxVar(_("Exports quads"), cfg::VoxformatQuads);
-		ImGui::CheckboxVar(_("Vertex colors"), cfg::VoxformatWithColor);
-		ImGui::CheckboxVar(_("Normals"), cfg::VoxformatWithNormals);
-		ImGui::BeginDisabled(!core::Var::get(cfg::VoxformatWithColor)->boolVal());
-		ImGui::CheckboxVar(_("Vertex colors as float"), cfg::VoxformatColorAsFloat);
-		ImGui::EndDisabled();
-		ImGui::CheckboxVar(_("Texture coordinates"), cfg::VoxformatWithtexcoords);
-		if (*desc == voxelformat::GLTFFormat::format()) {
-			ImGui::CheckboxVar("KHR_materials_pbrSpecularGlossiness",
-							   cfg::VoxFormatGLTF_KHR_materials_pbrSpecularGlossiness);
-			ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
-		}
-		ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
-	} else {
-		ImGui::CheckboxVar(_("Single object"), cfg::VoxformatMerge);
-	}
-	ImGui::CheckboxVar(_("Save visible only"), cfg::VoxformatSaveVisibleOnly);
-	if (*desc == voxelformat::QBTFormat::format()) {
-		ImGui::CheckboxVar(_("Palette mode"), cfg::VoxformatQBTPaletteMode);
-		ImGui::CheckboxVar(_("Merge compounds"), cfg::VoxformatQBTMergeCompounds);
-	}
-	if (*desc == voxelformat::VoxFormat::format()) {
-		ImGui::CheckboxVar(_("Create groups"), cfg::VoxformatVOXCreateGroups);
-		ImGui::CheckboxVar(_("Create layers"), cfg::VoxformatVOXCreateLayers);
-	}
-	if (*desc == voxelformat::QBFormat::format()) {
-		ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
-		ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
-	}
-}
-
-void VoxConvertUI::sourceOptions(const io::FormatDescription *desc) const {
-	if (desc == nullptr) {
-		return;
-	}
-
-	const bool meshFormat = voxelformat::isMeshFormat(*desc);
-	if (meshFormat) {
-		ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
-		ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
-
-		const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
-		const core::VarPtr &voxelizationVar = core::Var::getSafe(cfg::VoxformatVoxelizeMode);
-		const int currentVoxelizationMode = voxelizationVar->intVal();
-
-		if (ImGui::BeginCombo(_("Voxelization mode"), voxelizationModes[currentVoxelizationMode])) {
-			for (int i = 0; i < lengthof(voxelizationModes); ++i) {
-				const char *type = voxelizationModes[i];
-				if (type == nullptr) {
-					continue;
-				}
-				const bool selected = i == currentVoxelizationMode;
-				if (ImGui::Selectable(type, selected)) {
-					voxelizationVar->setVal(core::string::toString(i));
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-	}
-
-	if (*desc == io::format::png()) {
-		const char *importTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
-		const core::VarPtr &importTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
-		const int currentImportType = importTypeVar->intVal();
-
-		if (ImGui::BeginCombo(_("Import type"), importTypes[currentImportType])) {
-			for (int i = 0; i < lengthof(importTypes); ++i) {
-				const char *importType = importTypes[i];
-				if (importType == nullptr) {
-					continue;
-				}
-				const bool selected = i == currentImportType;
-				if (ImGui::Selectable(importType, selected)) {
-					importTypeVar->setVal(core::string::toString(i));
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		if (currentImportType == 2) {
-			ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);
-			ImGui::CheckboxVar(_("Both sides"), cfg::VoxformatImageVolumeBothSides);
-		}
-	}
-
-	ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
-	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
-	ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
 }
 
 app::AppState VoxConvertUI::onConstruct() {
@@ -293,7 +167,7 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			genericOptions(&_filterEntries[_lastSource->intVal()]);
+			genericOptions(&_filterEntries[_lastSource->intVal()], _targetFileExists, _overwriteTargetFile);
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {

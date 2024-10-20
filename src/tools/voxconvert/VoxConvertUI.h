@@ -26,10 +26,6 @@ private:
 	core::VarPtr _lastTarget;
 	core::VarPtr _lastSource;
 
-	void genericOptions(const io::FormatDescription *desc);
-	void sourceOptions(const io::FormatDescription *desc) const;
-	void targetOptions(const io::FormatDescription *desc) const;
-
 protected:
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;

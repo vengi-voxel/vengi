@@ -7,7 +7,6 @@ set(SRCS
 	CameraPanel.h CameraPanel.cpp
 	CollectionPanel.h CollectionPanel.cpp
 	DragAndDropPayload.h
-	FileDialogOptions.h FileDialogOptions.cpp
 	Gizmo.h
 	NodeInspectorPanel.h NodeInspectorPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
@@ -55,7 +54,7 @@ if (USE_IMGUITESTENGINE)
 	)
 endif()
 
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES ui voxedit-util voxelpathtracer voxelcollection)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} FILES ${FILES} DEPENDENCIES voxedit-util voxelpathtracer voxelcollection voxelui)
 target_include_directories(${LIB} PRIVATE ${GENERATE_DIR})
 
 # vengi model files in data/voxedit

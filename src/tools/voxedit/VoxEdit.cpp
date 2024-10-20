@@ -4,29 +4,29 @@
 
 #include "VoxEdit.h"
 #include "app/App.h"
+#include "command/Command.h"
+#include "command/CommandCompleter.h"
 #include "core/BindingContext.h"
 #include "core/Color.h"
+#include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/concurrent/Concurrency.h"
+#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "video/WindowedApp.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/Config.h"
-#include "core/TimeProvider.h"
-#include "command/Command.h"
-#include "command/CommandCompleter.h"
-#include "io/Filesystem.h"
-#include "core/Log.h"
 
-#include "voxedit-util/SceneManager.h"
-#include "voxedit-util/ModelNodeSettings.h"
+#include "engine-git.h"
 #include "voxedit-ui/MainWindow.h"
-#include "voxedit-ui/FileDialogOptions.h"
+#include "voxedit-util/ModelNodeSettings.h"
+#include "voxedit-util/SceneManager.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
-#include "engine-git.h"
+#include "voxelui/FileDialogOptions.h"
 #include "voxelutil/ImageUtils.h"
 
 VoxEdit::VoxEdit(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider,
@@ -66,7 +66,7 @@ app::AppState VoxEdit::onCleanup() {
 	return Super::onCleanup();
 }
 
-void VoxEdit::onDropFile(void *window, const core::String& file) {
+void VoxEdit::onDropFile(void *window, const core::String &file) {
 	if (_mainWindow == nullptr) {
 		return;
 	}
@@ -134,10 +134,10 @@ app::AppState VoxEdit::onConstruct() {
 
 	voxelformat::FormatConfig::init();
 
-	for (const io::FormatDescription* desc = io::format::palettes(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = io::format::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
 	}
-	for (const io::FormatDescription* desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		if (desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED) {
 			_paletteFormats.push_back(*desc);
 		}
@@ -450,7 +450,7 @@ app::AppState VoxEdit::onInit() {
 
 	if (_argc >= 2) {
 		const char *file = _argv[_argc - 1];
-		const io::FilePtr& filePtr = filesystem()->open(file);
+		const io::FilePtr &filePtr = filesystem()->open(file);
 		if (filePtr->exists()) {
 			const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 			_mainWindow->load(filePath, nullptr);
@@ -458,7 +458,7 @@ app::AppState VoxEdit::onInit() {
 	} else {
 		const core::String &file = loadingDocument();
 		if (!file.empty()) {
-			const io::FilePtr& filePtr = filesystem()->open(file);
+			const io::FilePtr &filePtr = filesystem()->open(file);
 			if (filePtr->exists()) {
 				const core::String &filePath = filesystem()->sysAbsolutePath(filePtr->name());
 				_mainWindow->load(filePath, nullptr);
