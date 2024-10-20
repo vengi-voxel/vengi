@@ -57,7 +57,7 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
  * @note The data is shared across all viewports
  */
 class SceneManager : public core::DeltaFrameSeconds {
-private:
+protected:
 	scenegraph::SceneGraph _sceneGraph;
 	memento::MementoHandler _mementoHandler;
 	util::Movement _movement;

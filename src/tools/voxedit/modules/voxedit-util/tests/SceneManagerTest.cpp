@@ -20,6 +20,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
@@ -33,6 +34,14 @@ public:
 	bool loadForTest(scenegraph::SceneGraph &&sceneGraph) {
 		return loadSceneGraph(core::move(sceneGraph));
 	}
+
+	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
+		_lastFilename.set(name, desc);
+	}
+
+	void clearLastFilename() {
+		_lastFilename.clear();
+	}
 };
 
 class SceneManagerTest : public app::AbstractTest {
@@ -41,6 +50,9 @@ private:
 
 protected:
 	SceneManagerPtr _sceneMgr;
+	SceneManagerEx *sceneMgr() {
+		return ((SceneManagerEx *)_sceneMgr.get());
+	}
 
 	template<typename Volume>
 	inline int countVoxels(const Volume &volume, const voxel::Voxel &voxel) {
@@ -496,7 +508,7 @@ TEST_F(SceneManagerTest, testUnReferenceAndUndoForLoadedScene) {
 			ASSERT_NE(referenceNodeId, InvalidNodeId);
 		}
 		sceneGraph.updateTransforms();
-		ASSERT_TRUE(((SceneManagerEx *)_sceneMgr.get())->loadForTest(core::move(sceneGraph)));
+		ASSERT_TRUE(sceneMgr()->loadForTest(core::move(sceneGraph)));
 	}
 
 	ASSERT_EQ(1, _sceneMgr->sceneGraph().size()) << _sceneMgr->sceneGraph();
@@ -528,7 +540,8 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 
 		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(cnodeId, ctranslationMat, keyFrameIndex, false));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
-		ASSERT_VEC_NEAR(ctransform.worldTranslation(), ctransform.localTranslation(), 0.0001f) << "local and world should match at this point";
+		ASSERT_VEC_NEAR(ctransform.worldTranslation(), ctransform.localTranslation(), 0.0001f)
+			<< "local and world should match at this point";
 		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(nodeId, glm::vec3(1.0f, 1.0f, 1.0f)));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
@@ -559,8 +572,12 @@ TEST_F(SceneManagerTest, testAddAnimationThenUndo) {
 
 TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	EXPECT_EQ("scene.vengi", _sceneMgr->getSuggestedFilename());
-
-	// TODO: load a scene and test the suggested filename
+	sceneMgr()->setLastFilename("test.vengi");
+	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
+	EXPECT_EQ("test.png", _sceneMgr->getSuggestedFilename("png"));
+	// TODO: here we need to define which extension should be used - from the format, or the given one...
+	sceneMgr()->setLastFilename("test.vengi", &voxelformat::magicaVoxel());
+	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
 }
 
 } // namespace voxedit
