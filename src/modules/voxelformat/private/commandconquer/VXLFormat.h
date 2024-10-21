@@ -25,8 +25,8 @@ private:
 	}
 
 	// writing
-	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x, uint8_t y,
-							 uint8_t z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette) const;
+	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, int x, int y,
+							 int z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 					uint64_t nodeSectionOffset) const;

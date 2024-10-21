@@ -48,10 +48,10 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
-bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, uint8_t x,
-									uint8_t y, uint8_t z, uint8_t skipCount, uint8_t voxelCount,
+bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, int x,
+									int y, int z, uint8_t skipCount, uint8_t voxelCount,
 									const palette::NormalPalette &normalPalette) const {
-	Log::trace("skipCount: %i voxelCount: %i", skipCount, voxelCount);
+	Log::trace("skipCount: %i voxelCount: %i for (x/y/z: %i:%i:%i)", skipCount, voxelCount, x, y, z);
 
 	wrapBool(stream.writeUInt8(skipCount))
 	wrapBool(stream.writeUInt8(voxelCount))
@@ -123,8 +123,8 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 	for (uint32_t i = 0u; i < baseSize; ++i) {
 		const int64_t spanStartPos = stream.pos();
 
-		const uint8_t x = (uint8_t)(i % size.x) + region.getLowerX();
-		const uint8_t z = size.z - 1 - (uint8_t)(i / size.x) + region.getLowerZ();
+		const int x = (i % size.x) + region.getLowerX();
+		const int z = size.z - 1 - (i / size.x) + region.getLowerZ();
 
 		int32_t spanStartOffset = vxl::EmptyColumn;
 		int32_t spanEndOffset = vxl::EmptyColumn;
