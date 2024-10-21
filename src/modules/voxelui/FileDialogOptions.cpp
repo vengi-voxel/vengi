@@ -24,7 +24,7 @@ bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	// maybe we've manually specified a file extension that is different from the
 	// given description - in that case we try to detect it.
 	const io::FormatDescription *descByName = io::getDescription(
-		entry.fullPath, 0, mode == video::OpenFileMode::Save ? voxelformat::voxelSave() : voxelformat::voxelLoad());
+		entry.name, 0, mode == video::OpenFileMode::Save ? voxelformat::voxelSave() : voxelformat::voxelLoad());
 	if (descByName != nullptr) {
 		desc = descByName;
 	}
