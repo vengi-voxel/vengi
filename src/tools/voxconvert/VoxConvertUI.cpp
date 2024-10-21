@@ -4,6 +4,7 @@
 
 #include "VoxConvertUI.h"
 #include "IMGUIStyle.h"
+#include "io/FilesystemEntry.h"
 #include "ui/IconsLucide.h"
 #include "PopupAbout.h"
 #include "app/App.h"
@@ -167,15 +168,21 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			genericOptions(&_filterEntries[_lastSource->intVal()], _targetFileExists, _overwriteTargetFile);
+			if (_targetFileExists) {
+				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
+				ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
+			}
+			genericOptions(&_filterEntries[_lastSource->intVal()]);
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			sourceOptions(&_filterEntries[_lastSource->intVal()]);
+			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_source), _source};
+			loadOptions(&_filterEntries[_lastSource->intVal()], entry);
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			targetOptions(&_filterEntries[_lastTarget->intVal()]);
+			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
+			saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
 		}
 
 		if (ImGui::Button(_("Convert"))) {

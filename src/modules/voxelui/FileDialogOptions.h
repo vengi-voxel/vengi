@@ -9,8 +9,8 @@
 /**
  * @brief Adds the options (dependent on the mode) for the given @c io::FormatDescription instances to the file dialog
  */
-void fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry);
+bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry);
 
-void genericOptions(const io::FormatDescription *desc, bool targetFileExists, bool &overwriteTargetFile);
-void targetOptions(const io::FormatDescription *desc);
-void sourceOptions(const io::FormatDescription *desc);
+bool genericOptions(const io::FormatDescription *desc);
+bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry);
+bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry);

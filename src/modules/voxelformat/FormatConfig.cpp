@@ -35,7 +35,7 @@ bool FormatConfig::init() {
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST, "Extra vertices for ambient occlusion",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatRGBFlattenFactor, "0", core::CV_NOPERSIST,
-				   "To flatten factor for RGBA and mesh formats", [](const core::String &var) {
+				   "The RGB color flatten factor for importing color and mesh formats", [](const core::String &var) {
 					   const int type = var.toInt();
 					   return type >= 0 && type <= 255;
 				   });
@@ -64,7 +64,6 @@ bool FormatConfig::init() {
 				   "Fill the hollows when voxelizing a mesh format", core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVoxelizeMode, "0", core::CV_NOPERSIST,
 				   "0 = high quality, 1 = faster and less memory", core::Var::minMaxValidator<0, 1>);
-	core::Var::get(cfg::VoxformatAutoNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxformatQBTPaletteMode, "true", core::CV_NOPERSIST, "Use palette mode in qubicle qbt export",
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBTMergeCompounds, "false", core::CV_NOPERSIST, "Merge compounds on load",

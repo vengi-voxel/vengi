@@ -49,5 +49,6 @@ constexpr const char *VoxEditViewdistance = "ve_viewdistance";
 constexpr const char *VoxEditShowlockedaxis = "ve_showlockedaxis";
 constexpr const char *VoxEditRendershadow = "ve_rendershadow";
 constexpr const char *VoxEditAnimationSpeed = "ve_animspeed";
+constexpr const char *VoxEditAutoNormalMode = "ve_autonormalmode";
 
 }

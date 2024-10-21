@@ -10,6 +10,7 @@
 #include "imgui.h"
 #include "palette/NormalPalette.h"
 #include "ui/IMGUIApp.h"
+#include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VoxelUtil.h"
@@ -85,7 +86,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 			core_assert(v != nullptr);
 			if (ImGui::BeginMenu(_("Auto normals"))) {
 				const char *normalModes[] = {_("Flat"), _("Smooth"), _("Smoother")};
-				const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxformatAutoNormalMode);
+				const core::VarPtr &normalModeVar = core::Var::getSafe(cfg::VoxEditAutoNormalMode);
 				const int currentNormalMode = normalModeVar->intVal();
 
 				if (ImGui::BeginCombo(_("Normal mode"), normalModes[currentNormalMode])) {

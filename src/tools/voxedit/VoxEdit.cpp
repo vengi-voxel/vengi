@@ -106,6 +106,7 @@ app::AppState VoxEdit::onConstruct() {
 	core::Var::get(cfg::VoxEditShowBones, "false", _("Show the bones in scene mode"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditRendershadow, "true", _("Render with shadows - make sure to set the scene lighting up properly"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxEditAnimationSpeed, "100", _("Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"));
+	core::Var::get(cfg::VoxEditAutoNormalMode, "0", core::CV_NOPERSIST, "Flat, Smooth, Smoother", core::Var::minMaxValidator<0, 2>);
 	core::Var::get(cfg::VoxEditGridsize, "1", _("The size of the voxel grid"), core::Var::minMaxValidator<1, 64>);
 	core::Var::get(cfg::VoxEditLastFile, "");
 	core::Var::get(cfg::VoxEditLastFiles, "");

@@ -631,14 +631,18 @@ void FileDialog::popupNewFolder() {
 	}
 }
 
-bool FileDialog::popupOptions(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
+bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, core::String &entityPath, video::OpenFileMode type,
 							  const io::FormatDescription **formatDesc) {
-	if (!options) {
+	if (!fileDialogOptions_f) {
 		return false;
 	}
 	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		options(type, _currentFilterFormat, _selectedEntry);
+		if (!fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry)) {
+			ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+			return false;
+		}
 
 		if (ImGui::Button(_("Ok"))) {
 			entityPath = assemblePath(_currentPath, _selectedEntry);

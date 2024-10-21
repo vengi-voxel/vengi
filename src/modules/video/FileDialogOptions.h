@@ -19,6 +19,6 @@ namespace video {
 
 using FileDialogSelectionCallback = std::function<void(const core::String &, const io::FormatDescription *desc)>;
 using FileDialogOptions =
-	std::function<void(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry)>;
+	std::function<bool(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry)>;
 
 } // namespace video
