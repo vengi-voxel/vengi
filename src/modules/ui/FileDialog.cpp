@@ -784,7 +784,10 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			ImGui::SameLine();
 		}
 		if (type == video::OpenFileMode::Save) {
-			ImGui::InputText(_("Filename"), &_selectedEntry.name);
+			if (ImGui::InputText(_("Filename"), &_selectedEntry.name)) {
+				_selectedEntry.fullPath =
+					core::string::path(core::string::extractDir(_selectedEntry.fullPath), _selectedEntry.name);
+			}
 			_selectedEntry.type = io::FilesystemEntry::Type::file;
 			_entryIndex = -1;
 		}
