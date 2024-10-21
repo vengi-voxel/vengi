@@ -1139,6 +1139,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		return InvalidNodeId;
 	}
 
+	memento::ScopedMementoGroup mementoGroup(_mementoHandler, "merge");
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	int parent = 0;
 	if (scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
