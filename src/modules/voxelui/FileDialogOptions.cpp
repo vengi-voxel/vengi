@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogOptions.h"
+#include "IconsLucide.h"
 #include "app/App.h"
 #include "core/GameConfig.h"
 #include "core/StringUtil.h"
@@ -98,8 +99,11 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	}
 
 	if (*desc == io::format::png()) {
+		ImGui::SeparatorText(_("Layer information"));
 		const core::String basename = core::string::extractFilename(entry.name);
-		ImGui::TextWrapped(_("This is saving several images as layers per object. The name of the files will include the uuid of the node and the z layer index. For example: '%s-<uuid>-0.png', '%s-<uuid>-1.png' and so on."), basename.c_str(), basename.c_str());
+		ImGui::IconDialog(ICON_LC_INFO, _("This is saving several images as layers per object.\n\n"
+										  "The name of the files will include the uuid of the node\n"
+										  "and the z layer index."));
 	}
 
 	// TODO: cfg::VoxformatEmptyPaletteIndex
