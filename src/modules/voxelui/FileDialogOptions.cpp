@@ -8,6 +8,7 @@
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
+#include "video/OpenFileMode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -20,7 +21,10 @@ bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 		return false;
 	}
 
-	const io::FormatDescription *descByName = io::getDescription(entry.fullPath, 0, voxelformat::voxelLoad());
+	// maybe we've manually specified a file extension that is different from the
+	// given description - in that case we try to detect it.
+	const io::FormatDescription *descByName = io::getDescription(
+		entry.fullPath, 0, mode == video::OpenFileMode::Save ? voxelformat::voxelSave() : voxelformat::voxelLoad());
 	if (descByName != nullptr) {
 		desc = descByName;
 	}
