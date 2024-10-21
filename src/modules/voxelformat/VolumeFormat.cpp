@@ -71,7 +71,7 @@
 namespace voxelformat {
 
 const io::FormatDescription *voxelLoad() {
-	// this is the list of supported voxel volume formats that are
+	// this is the list of supported voxel volume formats that
 	// have importers implemented
 	static const io::FormatDescription desc[] = {VENGIFormat::format(),
 												 AsepriteFormat::format(),
