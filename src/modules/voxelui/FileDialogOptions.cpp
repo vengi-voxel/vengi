@@ -96,6 +96,12 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 		ImGui::CheckboxVar(_("Left handed"), cfg::VoxformatQBSaveLeftHanded);
 		ImGui::CheckboxVar(_("Compressed"), cfg::VoxformatQBSaveCompressed);
 	}
+
+	if (*desc == io::format::png()) {
+		const core::String basename = core::string::extractFilename(entry.name);
+		ImGui::TextWrapped(_("This is saving several images as layers per object. The name of the files will include the uuid of the node and the z layer index. For example: '%s-<uuid>-0.png', '%s-<uuid>-1.png' and so on."), basename.c_str(), basename.c_str());
+	}
+
 	// TODO: cfg::VoxformatEmptyPaletteIndex
 	return true;
 }

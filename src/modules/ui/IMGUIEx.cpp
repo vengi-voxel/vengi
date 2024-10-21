@@ -279,16 +279,17 @@ float CalcComboWidth(const char *previewLabel, bool withPadding) {
 	return CalcTextWidth(previewLabel, withPadding) + ImGui::GetFrameHeightWithSpacing();
 }
 
-void TextWrappedUnformatted(const char* text) {
-    ImGuiContext& g = *GImGui;
-    const bool need_backup = (g.CurrentWindow->DC.TextWrapPos < 0.0f);  // Keep existing wrap position if one is already set
-    if (need_backup)
-        PushTextWrapPos(0.0f);
-    ImGuiWindow* window = GetCurrentWindow();
-    if (!window->SkipItems)
-	    TextEx(text, nullptr, ImGuiTextFlags_NoWidthForLargeClippedText);
-    if (need_backup)
-        PopTextWrapPos();
+void TextWrappedUnformatted(const char *text) {
+	ImGuiContext &g = *GImGui;
+	const bool need_backup =
+		(g.CurrentWindow->DC.TextWrapPos < 0.0f); // Keep existing wrap position if one is already set
+	if (need_backup)
+		PushTextWrapPos(0.0f);
+	ImGuiWindow *window = GetCurrentWindow();
+	if (!window->SkipItems)
+		TextEx(text, nullptr, ImGuiTextFlags_NoWidthForLargeClippedText);
+	if (need_backup)
+		PopTextWrapPos();
 }
 
 bool TooltipTextUnformatted(const char *text) {
