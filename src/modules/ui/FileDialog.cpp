@@ -638,20 +638,25 @@ bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, cor
 	}
 	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		const core::String &path = assemblePath(_currentPath, _selectedEntry);
 		if (!fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry)) {
+			entityPath = path;
+			resetState();
+			*formatDesc = _currentFilterFormat;
 			ImGui::CloseCurrentPopup();
 			ImGui::EndPopup();
 			return false;
 		}
 
 		if (ImGui::Button(_("Ok"))) {
-			entityPath = assemblePath(_currentPath, _selectedEntry);
+			entityPath = path;
 			resetState();
 			*formatDesc = _currentFilterFormat;
 			ImGui::CloseCurrentPopup();
 			ImGui::EndPopup();
 			return true;
 		}
+		ImGui::TooltipTextUnformatted(path.c_str());
 		ImGui::SameLine();
 		if (ImGui::Button(_("Cancel"))) {
 			ImGui::CloseCurrentPopup();
@@ -788,9 +793,6 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 		}
 		popupNewFolder();
 		if (popupAlreadyExists()) {
-			entityPath = assemblePath(_currentPath, _selectedEntry);
-			resetState();
-			*formatDesc = _currentFilterFormat;
 			ImGui::OpenPopup(OPTIONS_POPUP);
 		}
 		if (popupOptions(options, entityPath, type, formatDesc)) {
