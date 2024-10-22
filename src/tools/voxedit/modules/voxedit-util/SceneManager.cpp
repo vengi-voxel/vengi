@@ -1156,6 +1156,17 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	newNode.setVolume(merged.volume, true);
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
+	if (const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
+		newNode.setKeyFrames(firstNode->keyFrames());
+		newNode.setName(firstNode->name());
+		newNode.setVisible(firstNode->visible());
+		newNode.setLocked(firstNode->locked());
+		newNode.setPivot(firstNode->pivot());
+		newNode.setColor(firstNode->color());
+		newNode.addProperties(firstNode->properties());
+		const glm::ivec3 newPos = -newNode.volume()->region().getLowerCorner() + firstNode->volume()->region().getLowerCorner();
+		newNode.volume()->region().shift(newPos);
+	}
 
 	int newNodeId = moveNodeToSceneGraph(newNode, parent);
 	if (newNodeId == InvalidNodeId) {
