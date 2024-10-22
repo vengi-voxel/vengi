@@ -3,6 +3,7 @@
  */
 
 #include "FileDialogOptions.h"
+#include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "app/App.h"
 #include "core/ConfigVar.h"
@@ -191,6 +192,7 @@ static void loadOptionsMesh() {
 }
 
 static void loadOptionsGeneric() {
+	imguiApp()->colorReductionOptions();
 	ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
 	ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
 	// TODO: cfg::PalformatRGB6Bit

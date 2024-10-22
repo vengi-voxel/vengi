@@ -27,10 +27,7 @@ public:
 	MenuBar(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "menubar"), _sceneMgr(sceneMgr) {
 	}
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
-	/**
-	 * @return true if the dock layout should get reset
-	 */
-	void colorReductionOptions();
+
 	static void viewportOptions();
 	void init();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
