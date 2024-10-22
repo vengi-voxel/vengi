@@ -103,6 +103,8 @@ bool ComboItems(const char *label, int *currentItem, const Collection &items) {
 	return false;
 }
 
+IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
+
 template<class Collection>
 bool ComboVar(const char *label, const char *varName, const Collection &items) {
 	const core::VarPtr &var = core::Var::getSafe(varName);
@@ -112,10 +114,12 @@ bool ComboVar(const char *label, const char *varName, const Collection &items) {
 		var->setVal(currentItem);
 		return true;
 	}
+	if (var->help()) {
+		TooltipText("%s", var->help());
+	}
 	return false;
 }
 
-IMGUI_API bool TooltipText(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 IMGUI_API void TextCentered(const char *text, bool reset = false);
 IMGUI_API void Headline(const char *text);
 IMGUI_API bool ToggleButton(const char *text, bool state);

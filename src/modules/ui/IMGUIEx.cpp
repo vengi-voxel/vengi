@@ -6,6 +6,7 @@
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
+#include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "command/Command.h"
@@ -234,6 +235,9 @@ bool SliderVarInt(const char* label, const core::VarPtr& var, int v_min, int v_m
 		var->setVal(val);
 		return true;
 	}
+	if (var->help()) {
+		TooltipText("%s", var->help());
+	}
 	return false;
 }
 
@@ -258,11 +262,15 @@ bool SliderVarFloat(const char* label, const char* varName, float v_min, float v
 
 bool ColorEdit3Var(const char* label, const char* varName) {
 	glm::vec3 col;
-	core::Var::getSafe(varName)->vec3Val(&col[0]);
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	var->vec3Val(&col[0]);
 	if (ImGui::ColorEdit3(label, glm::value_ptr(col))) {
 		const core::String &c = core::string::format("%f %f %f", col.x, col.y, col.z);
-		core::Var::getSafe(varName)->setVal(c);
+		var->setVal(c);
 		return true;
+	}
+	if (var->help()) {
+		TooltipText("%s", var->help());
 	}
 	return false;
 }
