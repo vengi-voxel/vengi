@@ -35,7 +35,7 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivit
 				continue;
 			}
 			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-				sum += offset;
+				sum -= offset;
 			}
 		}
 		/* fallthrough */
@@ -47,7 +47,7 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivit
 				continue;
 			}
 			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-				sum += offset;
+				sum -= offset;
 			}
 		}
 		/* fallthrough */
@@ -59,7 +59,7 @@ glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivit
 				continue;
 			}
 			if (voxel::isBlocked(sampler.voxel().getMaterial())) {
-				sum += offset;
+				sum -= offset;
 			}
 		}
 		break;
