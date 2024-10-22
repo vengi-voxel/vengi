@@ -153,6 +153,14 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		_filteredEntities.push_back(&_entities[i]);
 	}
 	_filteredEntities.sort(fileDialogSorter[(int)FileDialogColumnId::File].asc);
+
+	if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
+		const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
+		const core::String &extension = core::string::extractExtension(_selectedEntry.name);
+		if (!desc.exts.empty() && !desc.matchesExtension(extension)) {
+			_selectedEntry.setExtension(desc.exts[0]);
+		}
+	}
 }
 
 void FileDialog::selectFilter(video::OpenFileMode type, int index) {
@@ -169,16 +177,6 @@ void FileDialog::selectFilter(video::OpenFileMode type, int index) {
 		_currentFilterFormat = nullptr;
 	}
 	applyFilter(type);
-
-	if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
-		const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
-		const core::String &extension = core::string::extractExtension(_selectedEntry.name);
-		if (!desc.exts.empty() && !desc.matchesExtension(extension)) {
-			_selectedEntry.name = core::string::stripExtension(_selectedEntry.name);
-			_selectedEntry.name.append(".");
-			_selectedEntry.name.append(desc.exts[0]);
-		}
-	}
 }
 
 #ifdef __EMSCRIPTEN__
