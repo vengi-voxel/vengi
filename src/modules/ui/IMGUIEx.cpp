@@ -7,18 +7,18 @@
 #include "IconsLucide.h"
 #include "ScopedStyle.h"
 #include "app/App.h"
+#include "command/Command.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
-#include "command/Command.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "video/Camera.h"
 #include "video/FileDialogOptions.h"
 #include "video/WindowedApp.h"
 #include <SDL_stdinc.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 namespace ImGui {
 
@@ -52,7 +52,7 @@ static int InputTextCallback(ImGuiInputTextCallbackData *data) {
 	return 0;
 }
 
-}
+} // namespace _priv
 
 bool InputText(const char *label, core::String *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *userData) {
 	core_assert((flags & ImGuiInputTextFlags_CallbackResize) == 0);
@@ -87,7 +87,7 @@ bool InputTextWithHint(const char *label, const char *hint, core::String *str, I
 	return InputTextWithHint(label, hint, str->c_str(), str->capacity(), flags, _priv::InputTextCallback, &cb_userData);
 }
 
-bool InputVarString(const char* label, const core::VarPtr& var, ImGuiInputTextFlags flags) {
+bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags) {
 	core::String buf = var->strVal();
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
 	if (InputText(label, &buf, flags)) {
@@ -142,23 +142,23 @@ bool InputVarFloat(const char* label, const char *varName, float step, float ste
 	return InputVarFloat(label, var, step, step_fast, extra_flags);
 }
 
-bool InputVec2(const char* label, glm::ivec2& vec, ImGuiInputTextFlags flags) {
+bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags) {
 	return InputInt2(label, glm::value_ptr(vec), flags);
 }
 
-bool InputVec2(const char* label, glm::vec2& vec, const char *format, ImGuiInputTextFlags flags) {
+bool InputVec2(const char *label, glm::vec2 &vec, const char *format, ImGuiInputTextFlags flags) {
 	return InputFloat2(label, glm::value_ptr(vec), format, flags);
 }
 
-bool InputVec3(const char* label, glm::vec3& vec, const char *format, ImGuiInputTextFlags flags) {
+bool InputVec3(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
 	return InputFloat3(label, glm::value_ptr(vec), format, flags);
 }
 
-bool InputVec3(const char* label, glm::ivec3& vec, ImGuiInputTextFlags flags) {
+bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
 	return InputInt3(label, glm::value_ptr(vec), flags);
 }
 
-bool InputVarInt(const char* label, const core::VarPtr& var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const char *label, const core::VarPtr &var, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	int v = var->intVal();
 	if (InputInt(label, &v, step, step_fast, extra_flags)) {
 		if (var->setVal(v)) {
@@ -171,7 +171,7 @@ bool InputVarInt(const char* label, const core::VarPtr& var, int step, int step_
 	return false;
 }
 
-bool InputVarInt(const char* label, const char* varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
+bool InputVarInt(const char *label, const char *varName, int step, int step_fast, ImGuiInputTextFlags extra_flags) {
 	core::VarPtr var = core::Var::getSafe(varName);
 	return InputVarInt(label, var, step, step_fast, extra_flags);
 }
@@ -181,7 +181,7 @@ bool IconCheckboxVar(const char *icon, const char *label, const core::VarPtr &va
 	return CheckboxVar(labelWithIcon.c_str(), var);
 }
 
-bool CheckboxVar(const char* label, const core::VarPtr& var) {
+bool CheckboxVar(const char *label, const core::VarPtr &var) {
 	bool val = var->boolVal();
 	if (Checkbox(label, &val)) {
 		if (var->setVal(val)) {
@@ -194,12 +194,12 @@ bool CheckboxVar(const char* label, const core::VarPtr& var) {
 	return false;
 }
 
-bool IconCheckboxVar(const char *icon, const char* label, const char* varName) {
+bool IconCheckboxVar(const char *icon, const char *label, const char *varName) {
 	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
 	return CheckboxVar(labelWithIcon.c_str(), varName);
 }
 
-bool CheckboxVar(const char* label, const char* varName) {
+bool CheckboxVar(const char *label, const char *varName) {
 	core::VarPtr var = core::Var::getSafe(varName);
 	if (CheckboxVar(label, var)) {
 		return true;
@@ -255,12 +255,13 @@ bool SliderVarFloat(const char* label, const core::VarPtr& var, float v_min, flo
 	return false;
 }
 
-bool SliderVarFloat(const char* label, const char* varName, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool SliderVarFloat(const char *label, const char *varName, float v_min, float v_max, const char *format,
+					ImGuiSliderFlags flags) {
 	core::VarPtr var = core::Var::getSafe(varName);
 	return SliderVarFloat(label, var, v_min, v_max, format, flags);
 }
 
-bool ColorEdit3Var(const char* label, const char* varName) {
+bool ColorEdit3Var(const char *label, const char *varName) {
 	glm::vec3 col;
 	const core::VarPtr &var = core::Var::getSafe(varName);
 	var->vec3Val(&col[0]);
@@ -307,9 +308,10 @@ bool TooltipTextUnformatted(const char *text) {
 		ImGui::EndTooltip();
 		return true;
 	}
-	return false;}
+	return false;
+}
 
-bool TooltipText(const char* msg, ...) {
+bool TooltipText(const char *msg, ...) {
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
 		ImGui::BeginTooltip();
 
@@ -378,8 +380,8 @@ bool MenuItemCmd(const char *label, const char *command) {
 
 bool ToggleButton(const char *label, bool state) {
 	if (state) {
-		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
-		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
 		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::brighter(buttonColor));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::brighter(buttonHoveredColor));
 	}
@@ -390,10 +392,10 @@ bool ToggleButton(const char *label, bool state) {
 	return pressed;
 }
 
-bool DisabledButton(const char *label, bool disabled, const ImVec2& size) {
+bool DisabledButton(const char *label, bool disabled, const ImVec2 &size) {
 	if (disabled) {
-		const ImVec4& buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
-		const ImVec4& buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+		const ImVec4 &buttonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+		const ImVec4 &buttonHoveredColor = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
 		ImGui::PushStyleColor(ImGuiCol_Button, core::Color::gray(buttonColor));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, core::Color::gray(buttonHoveredColor));
 		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -443,7 +445,7 @@ const char *CommandIconButton(const char *icon, const char *label, const char *c
 	return CommandButton(labelWithIcon.c_str(), command, listener);
 }
 
-const char *CommandButton(const char *label, const char *command, command::CommandExecutionListener& listener) {
+const char *CommandButton(const char *label, const char *command, command::CommandExecutionListener &listener) {
 	return CommandButton(label, command, nullptr, {0.0f, 0.0f}, &listener);
 }
 
@@ -483,7 +485,7 @@ bool URLIconButton(const char *icon, const char *label, const char *url) {
 }
 
 bool URLButton(const char *label, const char *url) {
-	const core::String& cmd = core::String::format("url \"%s\"", url);
+	const core::String &cmd = core::String::format("url \"%s\"", url);
 	if (CommandButton(label, cmd.c_str())) {
 		imguiApp()->minimize();
 		return true;
@@ -566,6 +568,14 @@ bool Spinner(const char *label, float radius, int thickness, const ImU32 &color)
 
 	window->DrawList->PathStroke(color, false, thickness);
 	return true;
+}
+
+void SetItemTooltipUnformatted(const char *text) {
+	if (IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
+		BeginTooltip();
+		TextUnformatted(text);
+		EndTooltip();
+	}
 }
 
 // https://github.com/ocornut/imgui/issues/1901#issuecomment-444929973
@@ -682,7 +692,7 @@ bool IconCheckbox(const char *icon, const char *label, bool *v) {
 	return ImGui::Checkbox(labelWithIcon.c_str(), v);
 }
 
-bool BeginIconCombo(const char *icon, const char* label, const char* preview_value, ImGuiComboFlags flags) {
+bool BeginIconCombo(const char *icon, const char *label, const char *preview_value, ImGuiComboFlags flags) {
 	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
 	return ImGui::BeginCombo(labelWithIcon.c_str(), preview_value, flags);
 }
@@ -692,7 +702,7 @@ bool BeginIconMenu(const char *icon, const char *label, bool enabled) {
 	return BeginMenu(labelWithIcon.c_str(), enabled);
 }
 
-bool IconMenuItem(const char *icon, const char* label, const char* shortcut, bool selected, bool enabled) {
+bool IconMenuItem(const char *icon, const char *label, const char *shortcut, bool selected, bool enabled) {
 	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
 	return MenuItem(labelWithIcon.c_str(), shortcut, selected, enabled);
 }
@@ -707,4 +717,4 @@ bool DisabledIconButton(const char *icon, const char *label, bool disabled, cons
 	return DisabledButton(labelWithIcon.c_str(), disabled, size);
 }
 
-}
+} // namespace ImGui

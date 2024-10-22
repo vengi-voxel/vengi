@@ -108,7 +108,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 				}
 				ImGui::Checkbox(_("Recalculate all normals"), &_recalcAll);
 				ImGui::Checkbox(_("Model is hollow"), &_onlySurfaceVoxels);
-				ImGui::SetItemTooltip(
+				ImGui::SetItemTooltipUnformatted(
 					_("Fill hollows to re-calculate the normals and\nhollow the model afterwards again.\n\n"
 					  "For calculating normals it is needed that the model has a closed\n"
 					  "surface and the hollow area is filled.\n\n"
