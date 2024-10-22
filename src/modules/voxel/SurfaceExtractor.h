@@ -15,7 +15,7 @@ class RawVolume;
 class Region;
 struct ChunkMesh;
 
-enum class SurfaceExtractionType { Cubic, MarchingCubes, Max };
+enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, Max };
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
