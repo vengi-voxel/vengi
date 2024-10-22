@@ -364,6 +364,16 @@ msgstr ""
 msgid "Keymap"
 msgstr "Tastaturbelegung"
 
+msgid "Color reduction"
+msgstr "Farbreduktion"
+
+msgid ""
+"The color reduction algorithm that is used when importing RGBA colors from "
+"images or rgba formats"
+msgstr ""
+"Der Farbreduktionsalgorithmus, der beim Importieren von RGBA-Farben aus "
+"Bildern oder RGBA-Formaten verwendet wird"
+
 msgid "Clear"
 msgstr "Löschen"
 
@@ -892,8 +902,8 @@ msgid ""
 "autosave)"
 msgstr ""
 
-msgid "Hide some panels to simplify the ui"
-msgstr "Verstecke einige Komponenten für eine vereinfachte Darstellung"
+msgid "Configure the editor view mode"
+msgstr ""
 
 msgid "Show the tip of the day on startup"
 msgstr "Zeige den Tipp des Tages beim Start"
@@ -1450,9 +1460,6 @@ msgstr ""
 "Wir würden gerne anonyme Nutzungsstatistiken aktivieren, um den Editor zu "
 "verbessern. Bitte aktivieren Sie es um uns zu unterstützen."
 
-msgid "Simple mode"
-msgstr "Einfacher Modus"
-
 msgid "Unreference Model"
 msgstr "Referenz auflösen"
 
@@ -1560,16 +1567,6 @@ msgstr "Verlauf"
 msgid "Current state: %i / %i"
 msgstr "Aktueller Zustand: %i / %i"
 
-msgid "Color reduction"
-msgstr "Farbreduktion"
-
-msgid ""
-"The color reduction algorithm that is used when importing RGBA colors from "
-"images or rgba formats"
-msgstr ""
-"Der Farbreduktionsalgorithmus, der beim Importieren von RGBA-Farben aus "
-"Bildern oder RGBA-Formaten verwendet wird"
-
 msgid "Grid"
 msgstr "Raster"
 
@@ -1599,6 +1596,18 @@ msgstr "Bloom"
 
 msgid "Tone mapping"
 msgstr "Tonemapping"
+
+msgid "All"
+msgstr "Alle"
+
+msgid "Command & Conquer"
+msgstr "Command & Conquer"
+
+msgid "Simple"
+msgstr "Einfach"
+
+msgid "View mode"
+msgstr "Oberflächenmodus"
 
 msgid "New"
 msgstr "Neu"
@@ -1648,9 +1657,6 @@ msgstr "Farbauswahl"
 msgid "Color wheel"
 msgstr "Farbrad"
 
-msgid "Simplified UI"
-msgstr "Vereinfachte Benutzeroberfläche"
-
 msgid "Cubes"
 msgstr "Würfel"
 
@@ -1683,9 +1689,6 @@ msgstr "Auswählen"
 
 msgid "Invert"
 msgstr "Invertieren"
-
-msgid "All"
-msgstr "Alle"
 
 msgid "Welcome screen"
 msgstr "Willkommensbildschirm"

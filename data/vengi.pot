@@ -338,6 +338,14 @@ msgstr ""
 msgid "Keymap"
 msgstr ""
 
+msgid "Color reduction"
+msgstr ""
+
+msgid ""
+"The color reduction algorithm that is used when importing RGBA colors from "
+"images or rgba formats"
+msgstr ""
+
 msgid "Clear"
 msgstr ""
 
@@ -857,7 +865,7 @@ msgid ""
 "autosave)"
 msgstr ""
 
-msgid "Hide some panels to simplify the ui"
+msgid "Configure the editor view mode"
 msgstr ""
 
 msgid "Show the tip of the day on startup"
@@ -1374,9 +1382,6 @@ msgid ""
 "Please consider enabling it."
 msgstr ""
 
-msgid "Simple mode"
-msgstr ""
-
 msgid "Unreference Model"
 msgstr ""
 
@@ -1476,14 +1481,6 @@ msgstr ""
 msgid "Current state: %i / %i"
 msgstr ""
 
-msgid "Color reduction"
-msgstr ""
-
-msgid ""
-"The color reduction algorithm that is used when importing RGBA colors from "
-"images or rgba formats"
-msgstr ""
-
 msgid "Grid"
 msgstr ""
 
@@ -1512,6 +1509,18 @@ msgid "Bloom"
 msgstr ""
 
 msgid "Tone mapping"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Command & Conquer"
+msgstr ""
+
+msgid "Simple"
+msgstr ""
+
+msgid "View mode"
 msgstr ""
 
 msgid "New"
@@ -1562,9 +1571,6 @@ msgstr ""
 msgid "Color wheel"
 msgstr ""
 
-msgid "Simplified UI"
-msgstr ""
-
 msgid "Cubes"
 msgstr ""
 
@@ -1596,9 +1602,6 @@ msgid "Select"
 msgstr ""
 
 msgid "Invert"
-msgstr ""
-
-msgid "All"
 msgstr ""
 
 msgid "Welcome screen"
