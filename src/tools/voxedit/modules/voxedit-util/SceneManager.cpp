@@ -1976,7 +1976,7 @@ void SceneManager::construct() {
 			return;
 		}
 		const math::Axis axis = math::toAxis(args[0]);
-		int n = 0;
+		int n = 1;
 		if (args.size() > 1) {
 			n = core::string::toInt(args[1]);
 		}
