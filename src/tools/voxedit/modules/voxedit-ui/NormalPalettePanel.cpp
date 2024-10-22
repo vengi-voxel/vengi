@@ -8,8 +8,8 @@
 #include "app/I18N.h"
 #include "command/CommandHandler.h"
 #include "imgui.h"
-#include "palette/PaletteFormatDescription.h"
 #include "palette/NormalPalette.h"
+#include "palette/PaletteFormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
@@ -107,6 +107,12 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					ImGui::EndCombo();
 				}
 				ImGui::Checkbox(_("Recalculate all normals"), &_recalcAll);
+				ImGui::Checkbox(_("Model is hollow"), &_onlySurfaceVoxels);
+				ImGui::SetItemTooltip(
+					_("Fill hollows to re-calculate the normals and\nhollow the model afterwards again.\n\n"
+					  "For calculating normals it is needed that the model has a closed\n"
+					  "surface and the hollow area is filled.\n\n"
+					  "Either do it manually or activate this option."));
 				if (ImGui::IconMenuItem(ICON_LC_PLAY, _("Calculate normals"))) {
 					voxel::Connectivity connectivity = voxel::Connectivity::SixConnected;
 					if (currentNormalMode == 1) {
@@ -114,7 +120,7 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					} else if (currentNormalMode == 2) {
 						connectivity = voxel::Connectivity::TwentySixConnected;
 					}
-					_sceneMgr->calculateNormals(node.id(), connectivity, _recalcAll);
+					_sceneMgr->calculateNormals(node.id(), connectivity, _recalcAll, _onlySurfaceVoxels);
 				}
 
 				ImGui::EndMenu();

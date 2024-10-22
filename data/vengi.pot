@@ -1703,6 +1703,19 @@ msgstr ""
 msgid "Recalculate all normals"
 msgstr ""
 
+msgid "Model is hollow"
+msgstr ""
+
+msgid ""
+"Fill hollows to re-calculate the normals and\n"
+"hollow the model afterwards again.\n"
+"\n"
+"For calculating normals it is needed that the model has a closed\n"
+"surface and the hollow area is filled.\n"
+"\n"
+"Either do it manually or activate this option."
+msgstr ""
+
 msgid "Calculate normals"
 msgstr ""
 

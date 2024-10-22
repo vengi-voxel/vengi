@@ -155,13 +155,16 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 	return setActivePalette(palette, searchBestColors);
 }
 
-bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll) {
+bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll, bool fillAndHollow) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId)) {
 		if (!node->hasNormalPalette()) {
 			Log::warn("Node %i has no normal palette", nodeId);
 			return false;
 		}
 		voxel::RawVolumeWrapper wrapper(node->volume());
+		if (fillAndHollow) {
+			voxelutil::fillHollow(wrapper, _modifierFacade.cursorVoxel());
+		}
 		voxel::RawVolumeWrapper::Sampler sampler(wrapper);
 		const palette::NormalPalette &normalPalette = node->normalPalette();
 		voxelutil::visitSurfaceVolume(*node->volume(), [&] (int x, int y, int z, const voxel::Voxel &voxel) {
@@ -174,6 +177,9 @@ bool SceneManager::calculateNormals(int nodeId, voxel::Connectivity connectivity
 			const voxel::Voxel newVoxel = voxel::createVoxel(voxel.getMaterial(), voxel.getColor(), normalIndex, voxel.getFlags());
 			wrapper.setVoxel(x, y, z, newVoxel);
 		});
+		if (fillAndHollow) {
+			voxelutil::hollow(wrapper);
+		}
 		modified(nodeId, wrapper.dirtyRegion());
 		return true;
 	}
