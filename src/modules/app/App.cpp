@@ -230,7 +230,7 @@ bool App::isRunning(int pid) const {
 }
 
 bool App::createPid() {
-	core::String oldPid = _filesystem->load("app.pid");
+	core::String oldPid = _filesystem->load(_filesystem->homeWritePath("app.pid"));
 	if (oldPid.empty()) {
 		_filesystem->homeWrite("app.pid", core::string::toString(_pid));
 		return false;
@@ -246,7 +246,7 @@ bool App::createPid() {
 }
 
 void App::deletePid() {
-	core::String oldPid = _filesystem->load("app.pid");
+	core::String oldPid = _filesystem->load(_filesystem->homeWritePath("app.pid"));
 	if (oldPid.empty()) {
 		return;
 	}
