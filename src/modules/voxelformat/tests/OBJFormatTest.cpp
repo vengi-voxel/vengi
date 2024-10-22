@@ -3,7 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
 #include "voxel/Voxel.h"

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "app/tests/AbstractTest.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/Singleton.h"

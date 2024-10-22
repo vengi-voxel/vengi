@@ -4,7 +4,7 @@
 
 #include "AbstractFormatTest.h"
 #include "app/App.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"

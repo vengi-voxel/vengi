@@ -7,7 +7,7 @@
 #include "app/App.h"
 #include "core/Color.h"
 #include "core/Common.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"

@@ -3,7 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "util/VarUtil.h"
 
 namespace voxelformat {

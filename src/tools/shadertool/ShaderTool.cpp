@@ -5,7 +5,7 @@
 #include "ShaderTool.h"
 #include "Generator.h"
 #include "Parser.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Process.h"
 #include "core/StringUtil.h"

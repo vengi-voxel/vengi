@@ -9,7 +9,7 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "engine-config.h"
 #include "ui/IMGUIEx.h"

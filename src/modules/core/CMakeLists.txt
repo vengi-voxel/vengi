@@ -43,7 +43,7 @@ set(SRCS
 	Enum.h
 	FixedString.h
 	FourCC.h
-	GameConfig.h
+	ConfigVar.h
 	GLM.cpp GLM.h
 	GLMConst.h
 	Hash.cpp Hash.h

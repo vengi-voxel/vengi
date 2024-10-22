@@ -10,7 +10,7 @@
 #include "core/Algorithm.h"
 #include "core/Alphanumeric.h"
 #include "core/ArrayLength.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"

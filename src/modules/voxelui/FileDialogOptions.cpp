@@ -5,7 +5,7 @@
 #include "FileDialogOptions.h"
 #include "IconsLucide.h"
 #include "app/App.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"

@@ -7,7 +7,7 @@
 #include "app/Async.h"
 #include "core/Color.h"
 #include "core/GLM.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/RGBA.h"
 #include "core/StringUtil.h"

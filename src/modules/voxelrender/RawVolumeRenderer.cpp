@@ -8,7 +8,7 @@
 #include "core/Algorithm.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"

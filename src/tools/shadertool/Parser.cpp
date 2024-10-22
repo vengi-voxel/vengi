@@ -10,7 +10,7 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "core/Assert.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "video/Shader.h"
 #include "Generator.h"
 #include "Parser.h"

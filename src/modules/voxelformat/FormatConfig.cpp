@@ -5,7 +5,7 @@
 #include "FormatConfig.h"
 #include "app/I18N.h"
 #include "core/Color.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "palette/Palette.h"

@@ -5,7 +5,7 @@
 #include "CaptureTool.h"
 #include "app/App.h"
 #include "app/Async.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "external/jo_mpeg.h"

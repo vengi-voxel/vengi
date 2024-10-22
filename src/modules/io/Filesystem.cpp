@@ -4,7 +4,7 @@
 
 #include "Filesystem.h"
 #include "core/Assert.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"

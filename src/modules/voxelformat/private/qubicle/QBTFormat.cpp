@@ -7,7 +7,7 @@
 #include "core/Common.h"
 #include "core/FourCC.h"
 #include "core/GLM.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"

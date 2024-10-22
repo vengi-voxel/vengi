@@ -4,7 +4,7 @@
 
 #include "Metric.h"
 #include "core/Hash.h"
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include <SDL_stdinc.h>

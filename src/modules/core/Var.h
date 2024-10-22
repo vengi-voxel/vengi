@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/GameConfig.h"
+#include "core/ConfigVar.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
