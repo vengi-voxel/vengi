@@ -271,6 +271,9 @@ bool MainWindow::init() {
 		_modelNodeSettings.reset();
 		region = _modelNodeSettings.region();
 	}
+
+	updateViewMode();
+
 	if (!_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
 		return false;
 	}
@@ -957,15 +960,21 @@ QuitDisallowReason MainWindow::allowToQuit() {
 	return QuitDisallowReason::None;
 }
 
+void MainWindow::updateViewMode() {
+	if (_viewMode->intVal() == (int)ViewMode::CommandAndConquer) {
+		core::Var::getSafe(cfg::PalformatRGB6Bit)->setVal(true);
+	} else {
+		core::Var::getSafe(cfg::RenderNormals)->setVal(false);
+	}
+}
+
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
 	if (_viewMode->isDirty() || _numViewports->isDirty()) {
 		if (!initScenes()) {
 			Log::error("Failed to update scenes");
 		}
-		if (_viewMode->intVal() != (int)ViewMode::CommandAndConquer) {
-			core::Var::getSafe(cfg::RenderNormals)->setVal(false);
-		}
+		updateViewMode();
 	}
 
 	ImGuiViewport *viewport = ImGui::GetMainViewport();

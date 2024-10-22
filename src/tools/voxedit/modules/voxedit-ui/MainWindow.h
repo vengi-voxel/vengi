@@ -140,6 +140,7 @@ private:
 	void popupVolumeSplit();
 	void registerPopups();
 	void addTemplate(const TemplateModel &model);
+	void updateViewMode();
 public:
 	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
 			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem);
