@@ -192,6 +192,7 @@ static void loadOptionsMesh() {
 }
 
 static void loadOptionsGeneric() {
+	// TODO: only for non-palette formats
 	imguiApp()->colorReductionOptions();
 	ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
 	ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
