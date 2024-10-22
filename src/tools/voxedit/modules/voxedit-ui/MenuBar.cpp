@@ -49,12 +49,17 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_BONE, _("Bones"), cfg::VoxEditShowBones);
 	ImGui::BeginDisabled(core::Var::get(cfg::VoxelMeshMode)->intVal() != (int)voxel::SurfaceExtractionType::Cubic);
 	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Outlines"), cfg::RenderOutline);
-	ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
+	if (core::Var::getSafe(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::CommandAndConquer) {
+		ImGui::IconCheckboxVar(ICON_LC_BOX, _("Normals"), cfg::RenderNormals);
+	}
 	ImGui::IconCheckboxVar(ICON_LC_BRICK_WALL, _("Checkerboard"), cfg::RenderCheckerBoard);
 	ImGui::EndDisabled();
 	ImGui::IconCheckboxVar(ICON_LC_SUNSET, _("Shadow"), cfg::VoxEditRendershadow);
 	ImGui::IconCheckboxVar(ICON_LC_SUN, _("Bloom"), cfg::ClientBloom);
 	ImGui::IconSliderVarInt(ICON_LC_ECLIPSE, _("Tone mapping"), cfg::ToneMapping, 0, 3);
+}
+
+void MenuBar::init() {
 }
 
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {

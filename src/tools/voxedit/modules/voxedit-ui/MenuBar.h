@@ -32,6 +32,7 @@ public:
 	 */
 	void colorReductionOptions();
 	static void viewportOptions();
+	void init();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override {

@@ -9,6 +9,7 @@
 #include "WindowTitles.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
@@ -254,6 +255,7 @@ bool MainWindow::init() {
 	_assetPanel.init();
 	_animationTimeline.init();
 	_animationPanel.init();
+	_menuBar.init();
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
@@ -386,7 +388,9 @@ void MainWindow::configureLeftBottomWidgetDock(ImGuiID dockId) {
 void MainWindow::leftWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	_palettePanel.update(TITLE_PALETTE, listener);
-	_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
+	if (_viewMode->intVal() == (int)ViewMode::CommandAndConquer) {
+		_normalPalettePanel.update(TITLE_NORMALPALETTE, listener);
+	}
 	if (_lastSceneMode) {
 		_nodeInspectorPanel.update(TITLE_NODE_INSPECTOR, true, listener);
 	} else {
@@ -958,6 +962,9 @@ void MainWindow::update() {
 	if (_viewMode->isDirty() || _numViewports->isDirty()) {
 		if (!initScenes()) {
 			Log::error("Failed to update scenes");
+		}
+		if (_viewMode->intVal() != (int)ViewMode::CommandAndConquer) {
+			core::Var::getSafe(cfg::RenderNormals)->setVal(false);
 		}
 	}
 
