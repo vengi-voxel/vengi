@@ -29,6 +29,8 @@ public:
 	void setLastOpenedFiles(const LastOpenedFiles &lastOpenedFiles);
 
 	static void viewportOptions();
+	static void viewModeOption();
+
 	void init();
 	bool update(ui::IMGUIApp *app, command::CommandExecutionListener &listener);
 #ifdef IMGUI_ENABLE_TEST_ENGINE

@@ -42,6 +42,12 @@ void MenuBar::viewportOptions() {
 void MenuBar::init() {
 }
 
+void MenuBar::viewModeOption() {
+	static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
+			_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
+	ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
+}
+
 bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &listener) {
 	core_trace_scoped(MenuBar);
 	bool resetDockLayout = false;
@@ -105,11 +111,9 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
 				ImGui::CheckboxVar(_("Tip of the day"), cfg::VoxEditTipOftheDay);
-				static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
-					_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
-				ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
 
 				ui::metricOption();
+				viewModeOption();
 				_app->languageOption();
 
 				static const core::Array<core::String, (int)voxel::SurfaceExtractionType::Max> meshModes = {

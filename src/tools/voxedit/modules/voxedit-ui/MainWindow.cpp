@@ -574,11 +574,7 @@ void MainWindow::popupWelcome() {
 		ImGui::Separator();
 		_app->languageOption();
 		ImGui::Separator();
-
-		static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
-			_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
-		ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
-
+		MenuBar::viewModeOption();
 		ImGui::Separator();
 		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
