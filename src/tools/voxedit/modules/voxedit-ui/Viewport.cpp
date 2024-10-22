@@ -69,7 +69,7 @@ bool Viewport::init() {
 	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
 	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
-	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
+	_simplifiedView = core::Var::getSafe(cfg::VoxEditViewMode);
 	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);

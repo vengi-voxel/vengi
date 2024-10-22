@@ -3,6 +3,7 @@
  */
 
 #include "../TreePanel.h"
+#include "../ViewMode.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -11,7 +12,7 @@ namespace voxedit {
 
 void TreePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "create tree")->TestFunc = [=](ImGuiTestContext *ctx) {
-		if (core::Var::getSafe(cfg::VoxEditSimplifiedView)->boolVal()) {
+		if (core::Var::getSafe(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::Simple) {
 			return;
 		}
 		IM_CHECK(focusWindow(ctx, id));

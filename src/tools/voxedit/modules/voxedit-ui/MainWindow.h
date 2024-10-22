@@ -46,7 +46,7 @@ private:
 
 	core::VarPtr _lastOpenedFile;
 	core::VarPtr _lastOpenedFiles;
-	core::VarPtr _simplifiedView;
+	core::VarPtr _viewMode;
 	core::VarPtr _numViewports;
 	core::VarPtr _tipOfTheDay;
 	core::VarPtr _popupTipOfTheDay;

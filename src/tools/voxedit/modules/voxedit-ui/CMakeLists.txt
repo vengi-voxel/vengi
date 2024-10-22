@@ -8,6 +8,7 @@ set(SRCS
 	CollectionPanel.h CollectionPanel.cpp
 	DragAndDropPayload.h
 	Gizmo.h
+	ViewMode.h
 	NodeInspectorPanel.h NodeInspectorPanel.cpp
 	LSystemPanel.h LSystemPanel.cpp
 	MainWindow.h MainWindow.cpp

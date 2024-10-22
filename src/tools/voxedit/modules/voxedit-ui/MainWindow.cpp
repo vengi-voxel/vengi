@@ -3,34 +3,36 @@
  */
 
 #include "MainWindow.h"
-#include "palette/PaletteFormatDescription.h"
-#include "ui/IconsLucide.h"
-#include "PopupAbout.h"
-#include "ScopedStyle.h"
 #include "Util.h"
+#include "ViewMode.h"
 #include "Viewport.h"
+#include "WindowTitles.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "engine-config.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteFormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/FileDialog.h"
 #include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
+#include "ui/PopupAbout.h"
+#include "ui/ScopedStyle.h"
 #include "util/TextProcessor.h"
 #include "util/VersionCheck.h"
 #include "video/Texture.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "engine-config.h"
-#include "WindowTitles.h"
 
 // generated models
 #include "aquarium.h"
@@ -67,7 +69,6 @@
 #include "twinsen_png.h"
 #include "undead.h"
 #include "undead_png.h"
-#include "voxelformat/private/vengi/VENGIFormat.h"
 
 namespace voxedit {
 
@@ -187,7 +188,7 @@ void MainWindow::shutdownScenes() {
 bool MainWindow::initScenes() {
 	shutdownScenes();
 
-	if (_simplifiedView->boolVal()) {
+	if (_viewMode->intVal() == (int)ViewMode::Simple) {
 		_scenes.resize(2);
 		_scenes[0] = new Viewport(_app, _sceneMgr, 0, true, false);
 		_scenes[1] = new Viewport(_app, _sceneMgr, 1, false, false);
@@ -214,13 +215,13 @@ bool MainWindow::initScenes() {
 	}
 #endif
 
-	_simplifiedView->markClean();
+	_viewMode->markClean();
 	_numViewports->markClean();
 	return success;
 }
 
 bool MainWindow::init() {
-	_simplifiedView = core::Var::getSafe(cfg::VoxEditSimplifiedView);
+	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
 	_numViewports = core::Var::getSafe(cfg::VoxEditViewports);
 	_tipOfTheDay = core::Var::getSafe(cfg::VoxEditTipOftheDay);
 	_popupTipOfTheDay = core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay);
@@ -236,7 +237,7 @@ bool MainWindow::init() {
 
 	_popupTipOfTheDay->setVal(_tipOfTheDay->boolVal());
 
-	const core::VarPtr& appVersion = core::Var::getSafe(cfg::AppVersion);
+	const core::VarPtr &appVersion = core::Var::getSafe(cfg::AppVersion);
 	if (appVersion->strVal().empty() || util::isNewerVersion(PROJECT_VERSION, appVersion->strVal())) {
 		appVersion->setVal(PROJECT_VERSION);
 		_popupWelcome->setVal("true");
@@ -256,7 +257,7 @@ bool MainWindow::init() {
 
 	for (int i = 0; i < lengthof(TEMPLATEMODELS); ++i) {
 		_texturePool->load(TEMPLATEMODELS[i].name, (const uint8_t *)TEMPLATEMODELS[i].imageData,
-						  (size_t)TEMPLATEMODELS[i].imageSize);
+						   (size_t)TEMPLATEMODELS[i].imageSize);
 	}
 
 	_lastOpenedFile = core::Var::getSafe(cfg::VoxEditLastFile);
@@ -339,7 +340,7 @@ void MainWindow::onNewScene() {
 	checkPossibleVolumeSplit();
 }
 
-void MainWindow::onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors) {
+void MainWindow::onNewPaletteImport(const core::String &paletteName, bool setActive, bool searchBestColors) {
 	_palettePanel.onNewPaletteImport(paletteName, setActive, searchBestColors);
 }
 
@@ -453,7 +454,6 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_ANIMATION_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
-
 }
 
 void MainWindow::configureRightBottomWidgetDock(ImGuiID dockId) {
@@ -475,7 +475,7 @@ void MainWindow::rightWidget() {
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
 	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
-	if (!_simplifiedView->boolVal()) {
+	if (_viewMode->intVal() != (int)ViewMode::Simple) {
 		_mementoPanel.update(TITLE_MEMENTO, listener);
 		if (_lastHoveredScene != nullptr) {
 			_cameraPanel.update(TITLE_CAMERA, _lastHoveredScene->camera(), listener);
@@ -487,7 +487,7 @@ void MainWindow::rightWidget() {
 #if ENABLE_RENDER_PANEL
 	_renderPanel.updateSettings(TITLE_RENDERSETTINGS, _sceneMgr->sceneGraph());
 #endif
-	if (!_simplifiedView->boolVal()) {
+	if (_viewMode->intVal() != (int)ViewMode::Simple) {
 		_treePanel.update(TITLE_TREES);
 		_lsystemPanel.update(TITLE_LSYSTEMPANEL);
 		_scriptPanel.update(TITLE_SCRIPT, listener);
@@ -567,7 +567,11 @@ void MainWindow::popupWelcome() {
 		ImGui::Separator();
 		_app->languageOption();
 		ImGui::Separator();
-		ImGui::CheckboxVar(_("Simple mode"), _simplifiedView);
+
+		static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
+			_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
+		ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
+
 		ImGui::Separator();
 		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
@@ -951,7 +955,7 @@ QuitDisallowReason MainWindow::allowToQuit() {
 
 void MainWindow::update() {
 	core_trace_scoped(MainWindow);
-	if (_simplifiedView->isDirty() || _numViewports->isDirty()) {
+	if (_viewMode->isDirty() || _numViewports->isDirty()) {
 		if (!initScenes()) {
 			Log::error("Failed to update scenes");
 		}

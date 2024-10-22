@@ -3,17 +3,18 @@
  */
 
 #include "MenuBar.h"
-#include "IMGUIApp.h"
-#include "IMGUIStyle.h"
-#include "PopupAbout.h"
+#include "ViewMode.h"
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "engine-config.h"
+#include "ui/IMGUIApp.h"
 #include "ui/IMGUIEx.h"
+#include "ui/IMGUIStyle.h"
 #include "ui/IconsLucide.h"
+#include "ui/PopupAbout.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/SurfaceExtractor.h"
@@ -89,7 +90,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::Separator();
 
 			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add file to scene"), "import", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add directory to scene"), "importdirectory", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_PLUS, _("Add directory to scene"), "importdirectory", true,
+									   &listener);
 			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_DOOR_CLOSED, _("Quit"))) {
 				app->requestQuit();
@@ -104,21 +106,23 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SCISSORS, _("Cut"), "cut", hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_COPY, _("Copy"), "copy", hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at reference"), "paste",
-								   _sceneMgr->clipBoardData(), &listener);
+									   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste at cursor"), "pastecursor",
-								   _sceneMgr->clipBoardData(), &listener);
+									   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as new node"), "pastenewnode",
-								   _sceneMgr->clipBoardData(), &listener);
+									   _sceneMgr->clipBoardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as stamp"), "stampbrushpaste",
-								   _sceneMgr->clipBoardData(), &listener);
+									   _sceneMgr->clipBoardData(), &listener);
 			ImGui::Separator();
 			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
 				viewportOptions();
 				ImGui::IconCheckboxVar(ICON_LC_TV_MINIMAL, _("Allow multi monitor"), cfg::UIMultiMonitor);
 				ImGui::CheckboxVar(_("Color picker"), cfg::VoxEditShowColorPicker);
 				ImGui::CheckboxVar(_("Color wheel"), cfg::VoxEditColorWheel);
-				ImGui::CheckboxVar(_("Simplified UI"), cfg::VoxEditSimplifiedView);
 				ImGui::CheckboxVar(_("Tip of the day"), cfg::VoxEditTipOftheDay);
+				static const core::Array<core::String, (int)voxedit::ViewMode::Max> viewModes = {
+					_("Default"), _("Simple"), _("All"), _("Command & Conquer")};
+				ImGui::ComboVar(_("View mode"), cfg::VoxEditViewMode, viewModes);
 
 				ui::metricOption();
 				_app->languageOption();
