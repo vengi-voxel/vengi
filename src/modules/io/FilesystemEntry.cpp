@@ -9,6 +9,15 @@
 
 namespace io {
 
+bool FilesystemEntry::setExtension(const core::String &ext) {
+	if (!isFile()) {
+		return false;
+	}
+	name = core::string::replaceExtension(name, ext);
+	fullPath = core::string::replaceExtension(fullPath, ext);
+	return true;
+}
+
 FilesystemEntry createFilesystemEntry(const core::String &filename) {
 	FilesystemEntry entry;
 	entry.name = core::string::extractFilenameWithExtension(filename);

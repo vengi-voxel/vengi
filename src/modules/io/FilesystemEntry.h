@@ -22,6 +22,8 @@ struct FilesystemEntry {
 	uint64_t size = 0u;		/**< size in bytes */
 	uint64_t mtime = 0u;	/**< last modification time in millis */
 
+	bool setExtension(const core::String &ext);
+
 	inline bool isFile() const {
 		return type == Type::file;
 	}
