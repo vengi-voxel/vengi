@@ -140,11 +140,18 @@ size_t XRawFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	}
 
 	// palette buffer
-
-	for (uint32_t i = 0u; i < paletteSize; ++i) {
-		const core::RGBA rgba = readColor(*stream);
-		const core::RGBA color = flattenRGB(rgba);
-		palette.tryAdd(color, false);
+	if (paletteSize <= (uint32_t)palette::PaletteMaxColors) {
+		for (uint32_t i = 0u; i < paletteSize; ++i) {
+			const core::RGBA rgba = readColor(*stream);
+			palette.setColor(i, rgba);
+		}
+	} else {
+		RGBAMap colors;
+		for (uint32_t i = 0u; i < paletteSize; ++i) {
+			const core::RGBA rgba = flattenRGB(readColor(*stream));
+			colors.put(rgba, true);
+		}
+		createPalette(colors, palette);
 	}
 	// end of file
 	return palette.size();
