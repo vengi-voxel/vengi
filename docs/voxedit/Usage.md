@@ -66,7 +66,7 @@ This modifier puts voxels onto a path using the reference position as start and 
 
 ### Line
 
-A line will just draw a line from the reference position to the position you clicked at. See the bindings window (__Edit__ / __Bindings__) for the binding to place the reference position in the scene (the ).
+A line will just draw a line from the reference position to the position you clicked at. See the bindings window (__Edit__ / __Bindings__) for the binding to place the reference position in the scene (the blue dot).
 
 ### Color picker
 
