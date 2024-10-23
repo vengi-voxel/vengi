@@ -162,14 +162,7 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 	libvxl_free(&map);
 	core_free(data);
 
-	const size_t colorCount = colors.size();
-	core::Buffer<core::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
-	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
-	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	return palette.size();
+	return createPalette(colors, palette);
 }
 
 glm::ivec3 AoSVXLFormat::maxSize() const {

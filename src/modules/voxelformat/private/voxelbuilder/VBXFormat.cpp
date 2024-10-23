@@ -171,15 +171,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 			}
 		}
 	}
-
-	const size_t colorCount = colors.size();
-	core::Buffer<core::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
-	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
-	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	return palette.colorCount();
+	return createPalette(colors, palette);
 }
 
 } // namespace voxelformat

@@ -314,8 +314,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		palette::NormalPalette normalPalette;
 		normalPalette.redAlert2();
 
-		const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
-		if (createPalette) {
+		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+		if (shouldCreatePalette) {
 			RGBAMap colors;
 			Log::debug("create palette");
 			for (const voxelformat::TexturedTri &triangle : tris) {
@@ -329,14 +329,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 				colors.put(rgba, true);
 #endif
 			}
-
-			const size_t colorCount = colors.size();
-			core::Buffer<core::RGBA> colorBuffer;
-			colorBuffer.reserve(colorCount);
-			for (const auto &e : colors) {
-				colorBuffer.push_back(e->first);
-			}
-			palette.quantize(colorBuffer.data(), colorBuffer.size());
+			createPalette(colors, palette);
 		} else {
 			palette = voxel::getPalette();
 		}
@@ -424,8 +417,8 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const {
 	voxel::RawVolumeWrapper wrapper(node.volume());
 	palette::Palette palette;
-	const bool createPalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
-	if (createPalette) {
+	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
+	if (shouldCreatePalette) {
 		RGBAMap colors;
 		Log::debug("create palette");
 		for (const auto &entry : posMap) {
@@ -439,13 +432,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			}
 			colors.put(rgba, true);
 		}
-		const size_t colorCount = colors.size();
-		core::Buffer<core::RGBA> colorBuffer;
-		colorBuffer.reserve(colorCount);
-		for (const auto &e : colors) {
-			colorBuffer.push_back(e->first);
-		}
-		palette.quantize(colorBuffer.data(), colorBuffer.size());
+		createPalette(colors, palette);
 	} else {
 		palette = voxel::getPalette();
 	}

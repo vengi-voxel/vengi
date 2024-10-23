@@ -307,10 +307,6 @@ size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, 
 		Log::warn("Format %s isn't supported", filename.c_str());
 		return 0;
 	}
-	if (!(desc->flags & VOX_FORMAT_FLAG_PALETTE_EMBEDDED)) {
-		Log::warn("Format %s doesn't have a palette embedded", desc->name.c_str());
-		return 0;
-	}
 	if (const core::SharedPtr<Format> &f = getFormat(*desc, magic)) {
 		const size_t n = f->loadPalette(filename, archive, palette, ctx);
 		palette.markDirty();

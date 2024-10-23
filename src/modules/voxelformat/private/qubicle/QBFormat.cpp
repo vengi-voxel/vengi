@@ -490,15 +490,7 @@ size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 			break;
 		}
 	}
-	const size_t colorCount = colors.size();
-	core::Buffer<core::RGBA> colorBuffer;
-	colorBuffer.reserve(colorCount);
-	for (const auto &e : colors) {
-		colorBuffer.push_back(e->first);
-	}
-	palette.quantize(colorBuffer.data(), colorBuffer.size());
-	Log::debug("%i colors loaded from %i individual rgb colors", palette.colorCount(), (int)colorBuffer.size());
-	return palette.colorCount();
+	return createPalette(colors, palette);
 }
 
 bool QBFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,

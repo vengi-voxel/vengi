@@ -11,6 +11,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "palette/PaletteLookup.h"
+#include "voxelformat/Format.h"
 
 namespace voxelformat {
 
@@ -84,6 +85,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 	const int32_t depth = core::string::toInt(tok.tokens()[2]);
 	glm::ivec3 size(width, height, depth);
 
+	RGBAMap colors;
 	for (int y = size.y - 1; y >= 0; y--) {
 		for (int z = 0; z < size.z; z++) {
 			for (int x = 0; x < size.x; x++) {
@@ -101,7 +103,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 				}
 				if (a != 0) {
 					const core::RGBA color(r, g, b, a);
-					palette.tryAdd(color, false);
+					colors.put(color, true);
 				}
 				if (x != size.x - 1) {
 					if (!skipComma(*stream)) {
@@ -118,7 +120,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 			return false;
 		}
 	}
-	return palette.colorCount();
+	return createPalette(colors, palette);
 }
 
 bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,

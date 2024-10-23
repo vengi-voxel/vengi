@@ -204,7 +204,9 @@ size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 	for (int i = 0; i < lengthof(BLOCKCOLOR); ++i) {
 		uint8_t index = 0;
 		const core::RGBA rgba = BLOCKCOLOR[i].color;
-		palette.tryAdd(rgba, true, &index);
+		if (!palette.tryAdd(rgba, true, &index)) {
+			continue;
+		}
 		for (int j = 0; j < lengthof(BLOCKEMITCOLOR); ++j) {
 			if (BLOCKEMITCOLOR[j].blockId != BLOCKCOLOR[i].blockId) {
 				continue;

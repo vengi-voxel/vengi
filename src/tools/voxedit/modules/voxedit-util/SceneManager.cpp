@@ -1437,7 +1437,7 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 	_sceneGraph.clear();
 	_sceneRenderer->clear();
 
-	scenegraph::SceneGraphNode newNode;
+	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(v, true);
 	if (name.empty()) {
 		newNode.setName("unnamed");

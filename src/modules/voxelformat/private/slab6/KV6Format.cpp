@@ -18,6 +18,7 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/Format.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
@@ -220,14 +221,15 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 	// SPal not found, most likely slab5
 	stream->seek(headerSize);
 
+	RGBAMap colors;
 	for (uint32_t c = 0u; c < numvoxs; ++c) {
 		core::RGBA color;
 		wrapBool(priv::readBGRColor(*stream, color));
-		palette.tryAdd(color, false);
+		colors.put(color, true);
 		wrap2(stream->skip(5));
 	}
 
-	return palette.size();
+	return createPalette(colors, palette);
 }
 
 #undef wrap

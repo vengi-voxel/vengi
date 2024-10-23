@@ -89,6 +89,7 @@ void Format::calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize
 }
 
 size_t Format::loadPalette(const core::String &, const io::ArchivePtr &, palette::Palette &, const LoadContext &) {
+	Log::error("Format doesn't have an embedded or loadable palette (or it isn't supported)");
 	return 0;
 }
 
@@ -296,6 +297,17 @@ core::RGBA Format::flattenRGB(core::RGBA rgba) const {
 
 core::RGBA Format::flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const {
 	return core::Color::flattenRGB(r, g, b, a, _flattenFactor);
+}
+
+int Format::createPalette(const RGBAMap &colors, palette::Palette &palette) const {
+	const size_t colorCount = colors.size();
+	core::Buffer<core::RGBA> colorBuffer;
+	colorBuffer.reserve(colorCount);
+	for (const auto &e : colors) {
+		colorBuffer.push_back(e->first);
+	}
+	palette.quantize(colorBuffer.data(), colorBuffer.size());
+	return palette.colorCount();
 }
 
 bool RGBAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,

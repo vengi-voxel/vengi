@@ -106,6 +106,11 @@ protected:
 
 	core::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	core::RGBA flattenRGB(core::RGBA rgba) const;
+	/**
+	 * @brief This can be used for rgb color formats to create a palette. Just read
+	 * all the colors and add then add them to the palette.
+	 */
+	int createPalette(const RGBAMap &colors, palette::Palette &palette) const;
 
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops
