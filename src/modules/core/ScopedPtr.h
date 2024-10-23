@@ -42,6 +42,14 @@ public:
 		return _ptr;
 	}
 
+	bool operator==(decltype(nullptr)) const {
+		return nullptr == _ptr;
+	}
+
+	bool operator!=(decltype(nullptr)) const {
+		return nullptr != _ptr;
+	}
+
 	T *release() {
 		T *const p = _ptr;
 		_ptr = nullptr;
