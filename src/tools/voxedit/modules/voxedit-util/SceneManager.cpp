@@ -2847,6 +2847,15 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 	return true;
 }
 
+bool SceneManager::nodeUpdatePivotGroup(const glm::vec3 &pivot) {
+	nodeForeachGroup([&] (int groupNodeId) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
+			nodeUpdatePivot(*node, pivot);
+		}
+	});
+	return true;
+}
+
 bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
 	if (nodeId == InvalidNodeId) {
 		return false;
@@ -2909,16 +2918,21 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
-							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
-	if (nodeId == InvalidNodeId) {
-		nodeForeachGroup([&] (int groupNodeId) {
-			if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
+bool SceneManager::nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+											scenegraph::FrameIndex frameIdx, bool local) {
+	nodeForeachGroup([&] (int groupNodeId) {
+		if (scenegraph::SceneGraphNode *node = sceneGraphNode(groupNodeId)) {
+			const scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(frameIdx);
+			if (keyFrameIdx != InvalidKeyFrame) {
 				nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
 			}
-		});
-		return true;
-	}
+		}
+	});
+	return true;
+}
+
+bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
 		return nodeUpdateTransform(*node, angles, scale, translation, keyFrameIdx, local);
 	}

@@ -222,12 +222,14 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 			glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
 			glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
 			glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
+			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 
 			ImGui::CheckboxVar(_("Local transforms"), _localSpace);
 			ImGui::CheckboxVar(_("Update children"), cfg::VoxEditTransformUpdateChildren);
 			ImGui::CheckboxVar(_("Auto Keyframe"), cfg::VoxEditAutoKeyFrame);
 
 			bool change = false;
+			bool changeMultiple = false;
 			ImGui::InputFloat3(_("Tr"), glm::value_ptr(matrixTranslation), "%.3f");
 			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
@@ -237,9 +239,14 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					change = true;
 				}
 				ImGui::TooltipTextUnformatted(_("Reset"));
+
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_LOCK "##multipletr")) {
+					changeMultiple = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			}
 
-			glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
 			ImGui::InputFloat3(_("Rt"), glm::value_ptr(matrixRotation), "%.3f");
 			change |= ImGui::IsItemDeactivatedAfterEdit();
 			if (_localSpace->boolVal()) {
@@ -249,6 +256,12 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					change = true;
 				}
 				ImGui::TooltipTextUnformatted(_("Reset"));
+
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_LOCK "##multiplert")) {
+					changeMultiple = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			}
 
 			ImGui::InputFloat3(_("Sc"), glm::value_ptr(matrixScale), "%.3f");
@@ -260,6 +273,12 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					change = true;
 				}
 				ImGui::TooltipTextUnformatted(_("Reset"));
+
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_LC_LOCK "##multiplesc")) {
+					changeMultiple = true;
+				}
+				ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			}
 
 			glm::vec3 pivot = node.pivot();
@@ -272,7 +291,11 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 				pivotChanged = change = true;
 			}
 			ImGui::TooltipTextUnformatted(_("Reset"));
-
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_LC_LOCK "##multiplepv")) {
+				_sceneMgr->nodeUpdatePivotGroup(pivot);
+			}
+			ImGui::TooltipTextUnformatted(_("Update all locked nodes with this value"));
 			keyFrameActionsAndOptions(sceneGraph, node, frameIdx, keyFrameIdx);
 			keyFrameInterpolationSettings(node, keyFrameIdx);
 
@@ -293,6 +316,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 					_sceneMgr->nodeUpdateTransform(node.id(), matrixRotation, matrixScale, matrixTranslation,
 												   keyFrameIdx, _localSpace->boolVal());
 				}
+			} else if (changeMultiple) {
+				_sceneMgr->nodeUpdateTransformGroup(matrixRotation, matrixScale, matrixTranslation, frameIdx, _localSpace->boolVal());
 			}
 		}
 	}

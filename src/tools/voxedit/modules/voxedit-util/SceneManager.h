@@ -454,10 +454,13 @@ private:
 public:
 	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransformGroup(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+								  scenegraph::FrameIndex frameIdx, bool local);
 	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, scenegraph::InterpolationType interpolation);
+	bool nodeUpdatePivotGroup(const glm::vec3 &pivot);
 	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
 	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
