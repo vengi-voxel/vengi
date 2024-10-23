@@ -26,5 +26,6 @@ A few of the features are:
 * Several editing brushes are available
 * Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
 * Calculating normals for voxels (non-hollow models) is supported, too. This is useful for some games like Command & Conquer.
+* View modes for animation, Command & Conquer or simple voxel editing
 
 There are a lot more features to explore and this list is definitely not complete.

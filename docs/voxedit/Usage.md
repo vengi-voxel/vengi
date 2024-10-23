@@ -181,3 +181,9 @@ Here you can generate a lot of different tree types - all with their own set of 
 ![voxedit-viewport](../img/voxedit-viewport.png)
 
 The viewport can get changed to scene and edit mode. You can switch the cameras from orthogonal to projection, you can record videos of your scene or let the camera automatically rotate.
+
+## View modes
+
+There are several view modes available - most of them will change the layout and/or options that are available in the ui. There is e.g. a Command & Conquer mode where you can manage the normals that are part of the [vxl](,,/Formats.md).
+
+Artists that only want to edit voxels without animating them might use the simple layout to get a less complex ui.
