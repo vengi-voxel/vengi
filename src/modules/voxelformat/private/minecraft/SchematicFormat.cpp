@@ -512,11 +512,11 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	}
 	// save as sponge-3
 	const scenegraph::SceneGraph::MergeResult &merged = sceneGraph.merge();
-	if (merged.volume == nullptr) {
+	if (!merged.hasVolume()) {
 		Log::error("Failed to merge volumes");
 		return false;
 	}
-	core::ScopedPtr<voxel::RawVolume> mergedVolume(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> mergedVolume(merged.volume());
 	const voxel::Region &region = mergedVolume->region();
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	const glm::ivec3 &mins = region.getLowerCorner();

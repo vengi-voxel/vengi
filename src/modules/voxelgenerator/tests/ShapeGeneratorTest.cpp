@@ -93,7 +93,7 @@ protected:
 		voxelformat::QBFormat format;
 		ASSERT_TRUE(format.load(filename, archive, sceneGraph, loadCtx));
 		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-		core::ScopedPtr<voxel::RawVolume> v(merged.volume);
+		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 		ASSERT_NE(nullptr, v) << "Can't load " << filename;
 		volumeComparator(*v, voxel::getPalette(), *_volume, voxel::getPalette());
 	}

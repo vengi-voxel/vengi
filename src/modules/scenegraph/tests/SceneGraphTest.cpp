@@ -252,7 +252,7 @@ TEST_F(SceneGraphTest, testMerge) {
 	}
 	EXPECT_EQ(2u, sceneGraph.size(SceneGraphNodeType::AllModels));
 	SceneGraph::MergeResult merged = sceneGraph.merge();
-	core::ScopedPtr<voxel::RawVolume> v(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(3, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(1, 1, 1).getMaterial()));
@@ -284,7 +284,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		sceneGraph.emplace(core::move(node));
 	}
 	SceneGraph::MergeResult merged = sceneGraph.merge();
-	core::ScopedPtr<voxel::RawVolume> v(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(26, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-9, -9, -9).getMaterial()));
@@ -319,7 +319,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		sceneGraph.emplace(core::move(node));
 	}
 	SceneGraph::MergeResult merged = sceneGraph.merge();
-	core::ScopedPtr<voxel::RawVolume> v(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(27, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-10, -10, -10).getMaterial()));
@@ -359,7 +359,7 @@ TEST_F(SceneGraphTest, DISABLED_testMergeWithTranslationPivotAndRotation) {
 		sceneGraph.emplace(core::move(node));
 	}
 	SceneGraph::MergeResult merged = sceneGraph.merge();
-	core::ScopedPtr<voxel::RawVolume> v(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(27, v->region().getWidthInVoxels());
 	EXPECT_TRUE(voxel::isBlocked(v->voxel(-10, -10, -10).getMaterial()));

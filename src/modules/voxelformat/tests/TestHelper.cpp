@@ -415,11 +415,11 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 						  ValidateFlags flags, float maxDelta) {
 	if ((flags & ValidateFlags::SceneGraphModels) != ValidateFlags::SceneGraphModels) {
 		const scenegraph::SceneGraph::MergeResult &merged1 = graph1.merge();
-		core::ScopedPtr<voxel::RawVolume> v1(merged1.volume);
+		core::ScopedPtr<voxel::RawVolume> v1(merged1.volume());
 		const scenegraph::SceneGraph::MergeResult &merged2 = graph2.merge();
-		core::ScopedPtr<voxel::RawVolume> v2(merged2.volume);
-		ASSERT_NE(nullptr, merged1.volume);
-		ASSERT_NE(nullptr, merged2.volume);
+		core::ScopedPtr<voxel::RawVolume> v2(merged2.volume());
+		ASSERT_NE(nullptr, v1);
+		ASSERT_NE(nullptr, v2);
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
 			voxel::paletteComparator(merged1.palette, merged2.palette, maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {

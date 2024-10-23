@@ -383,7 +383,7 @@ static void mergeIfNeeded(scenegraph::SceneGraph &newSceneGraph) {
 		const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
 		newSceneGraph.clear();
 		scenegraph::SceneGraphNode newNode;
-		newNode.setVolume(merged.volume, true);
+		newNode.setVolume(merged.volume(), true);
 		newNode.setPalette(merged.palette);
 		newNode.setNormalPalette(merged.normalPalette);
 		newSceneGraph.emplace(core::move(newNode));
@@ -1140,8 +1140,8 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 		scenegraph::copyNode(*node, copiedNode, true);
 		newSceneGraph.emplace(core::move(copiedNode));
 	}
-	scenegraph::SceneGraph::MergeResult merged = newSceneGraph.merge();
-	if (merged.volume == nullptr) {
+	const scenegraph::SceneGraph::MergeResult &merged = newSceneGraph.merge();
+	if (!merged.hasVolume()) {
 		return InvalidNodeId;
 	}
 
@@ -1153,7 +1153,7 @@ int SceneManager::mergeNodes(const core::DynamicArray<int>& nodeIds) {
 	}
 	scenegraph::SceneGraphTransform &transform = newNode.keyFrame(0).transform();
 	transform.setWorldTranslation(glm::vec3(0.0f));
-	newNode.setVolume(merged.volume, true);
+	newNode.setVolume(merged.volume(), true);
 	newNode.setPalette(merged.palette);
 	newNode.setNormalPalette(merged.normalPalette);
 	if (const scenegraph::SceneGraphNode* firstNode = sceneGraphNode(nodeIds.front())) {
@@ -2002,8 +2002,8 @@ void SceneManager::construct() {
 		int nodeId2;
 		if (args.size() == 1) {
 			if (args[0] == "all") {
-				scenegraph::SceneGraph::MergeResult merged = _sceneGraph.merge();
-				newScene(true, "merged", merged.volume);
+				const scenegraph::SceneGraph::MergeResult &merged = _sceneGraph.merge();
+				newScene(true, "merged", merged.volume());
 				if (auto *node = _sceneGraph.firstModelNode()) {
 					node->setPalette(merged.palette);
 					node->setNormalPalette(merged.normalPalette);

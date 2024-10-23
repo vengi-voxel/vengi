@@ -216,8 +216,21 @@ public:
 	voxel::Region sceneRegion(KeyFrameIndex keyFrameIdx = 0, bool onlyVisible = false) const;
 	voxel::Region sceneRegion(const SceneGraphNode &node, KeyFrameIndex keyFrameIdx) const;
 
-	struct MergeResult {
-		voxel::RawVolume *volume = nullptr;
+	class MergeResult {
+	private:
+		mutable voxel::RawVolume *_volume = nullptr;
+
+	public:
+		MergeResult() = default;
+		MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
+					const palette::NormalPalette &_normalPalette);
+		~MergeResult();
+		// now it's your pointer
+		voxel::RawVolume *volume() const;
+		inline bool hasVolume() const {
+			return _volume != nullptr;
+		}
+
 		palette::Palette palette;
 		palette::NormalPalette normalPalette;
 	};

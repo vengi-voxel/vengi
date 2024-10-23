@@ -504,13 +504,13 @@ app::AppState VoxConvert::onInit() {
 	if (_mergeModels) {
 		Log::info("Merge models");
 		const scenegraph::SceneGraph::MergeResult &merged = sceneGraph.merge();
-		if (merged.volume == nullptr) {
+		if (!merged.hasVolume()) {
 			Log::error("Failed to merge models");
 			return app::AppState::InitFailure;
 		}
 		sceneGraph.clear();
-		scenegraph::SceneGraphNode node;
-		node.setVolume(merged.volume, true);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(merged.volume(), true);
 		node.setPalette(merged.palette);
 		node.setNormalPalette(merged.normalPalette);
 		node.setName(infilesstr);
@@ -681,7 +681,7 @@ void VoxConvert::split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGrap
 	const scenegraph::SceneGraph::MergeResult &merged = sceneGraph.merge();
 	sceneGraph.clear();
 	core::DynamicArray<voxel::RawVolume *> rawVolumes;
-	core::ScopedPtr<voxel::RawVolume> volume(merged.volume);
+	core::ScopedPtr<voxel::RawVolume> volume(merged.volume());
 	voxelutil::splitVolume(volume, size, rawVolumes);
 	for (voxel::RawVolume *v : rawVolumes) {
 		scenegraph::SceneGraphNode node;

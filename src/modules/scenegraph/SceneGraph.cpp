@@ -49,6 +49,21 @@ void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::ve
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 }
 
+SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
+									 const palette::NormalPalette &_normalPalette)
+	: _volume(volume), palette(_palette), normalPalette(_normalPalette) {
+}
+
+SceneGraph::MergeResult::~MergeResult() {
+	delete _volume;
+}
+
+voxel::RawVolume *SceneGraph::MergeResult::volume() const {
+	voxel::RawVolume *tmp = _volume;
+	_volume = nullptr;
+	return tmp;
+}
+
 SceneGraph::SceneGraph(int nodes) : _nodes(nodes), _activeAnimation(DEFAULT_ANIMATION) {
 	clear();
 }
