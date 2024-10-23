@@ -21,6 +21,10 @@ A few of the features are:
 * Procedurally generated content like trees and a L-System integration
 * Generate level of details (LOD) volumes
 * Cropping volumes
+* Online asset browsing for voxel repositories
 * Presentation mode for e.g. kitbashing sets
+* Several editing brushes are available
+* Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
+* Calculating normals for voxels (non-hollow models) is supported, too. This is useful for some games like Command & Conquer.
 
 There are a lot more features to explore and this list is definitely not complete.
