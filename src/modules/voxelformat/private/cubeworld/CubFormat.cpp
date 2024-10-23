@@ -40,6 +40,7 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return 0;
 	}
 
+	RGBAMap colors;
 	for (uint32_t h = 0u; h < height; ++h) {
 		for (uint32_t d = 0u; d < depth; ++d) {
 			for (uint32_t w = 0u; w < width; ++w) {
@@ -52,11 +53,11 @@ size_t CubFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 					continue;
 				}
 				const core::RGBA color = flattenRGB(r, g, b);
-				palette.tryAdd(color, false);
+				colors.put(color, true);
 			}
 		}
 	}
-	return palette.size();
+	return createPalette(colors, palette);
 }
 
 bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,

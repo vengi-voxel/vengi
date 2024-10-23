@@ -132,7 +132,7 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		uint32_t matrixIndex = 0u;
 
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		scenegraph::SceneGraphNode node;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume, true);
 
 		while (matrixIndex < voxels) {

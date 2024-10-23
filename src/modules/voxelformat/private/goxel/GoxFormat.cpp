@@ -556,6 +556,7 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		loadChunk_ValidateCRC(*stream);
 	}
 
+	RGBAMap colors;
 	for (image::ImagePtr &img : state.images) {
 		for (int x = 0; x < img->width(); ++x) {
 			for (int y = 0; y < img->height(); ++y) {
@@ -563,12 +564,12 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 				if (rgba.a == 0) {
 					continue;
 				}
-				palette.tryAdd(flattenRGB(rgba), false);
+				colors.put(flattenRGB(rgba), true);
 			}
 		}
 	}
 
-	return palette.size();
+	return createPalette(colors, palette);
 }
 
 bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,

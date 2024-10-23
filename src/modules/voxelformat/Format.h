@@ -32,6 +32,13 @@ class SceneGraphNode;
 
 namespace voxelformat {
 
+/**
+ * see @c Format::createPalette()
+ *
+ * it's best to use @c flattenRGB() before putting the color into the map to filling
+ * the map with almost identical colors (this speeds up the process of quantizing
+ * the colors later on)
+ */
 using RGBAMap = core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher>;
 
 typedef void (*ProgressMonitor)(const char *name, int cur, int max);
@@ -109,6 +116,9 @@ protected:
 	/**
 	 * @brief This can be used for rgb color formats to create a palette. Just read
 	 * all the colors and add then add them to the palette.
+	 *
+	 * @sa RGBAMap
+	 * @sa palette::Palette::createPalette()
 	 */
 	int createPalette(const RGBAMap &colors, palette::Palette &palette) const;
 
