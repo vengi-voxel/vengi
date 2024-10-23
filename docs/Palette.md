@@ -31,3 +31,7 @@ There are several color or palette related cvars available:
 * `core_colorreduction`: Allows you to specify a color reduction value when e.g. importing RGB(A) based voxel or mesh formats. Possible values are: `Octree`, `Wu`, `MedianCut`, `KMeans`, `NeuQuant`.
 
 You can find the detailed description and more cvars by using e.g. the [voxconvert](voxconvert/Index.md) `--help` parameter
+
+## Normals
+
+Command & Conquer supports voxel normals. `vengi-voxedit` got a few features to support this. Change the view mode to __Command & Conquer__ to see a normal palette panel and to be able to render the normals for the voxels.
