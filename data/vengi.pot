@@ -1652,6 +1652,9 @@ msgstr ""
 msgid "Tr"
 msgstr ""
 
+msgid "Update all locked nodes with this value"
+msgstr ""
+
 msgid "Rt"
 msgstr ""
 
