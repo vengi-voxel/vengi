@@ -381,6 +381,11 @@ TEST_F(LUAApiTest, testScriptMandelbulb) {
 	runFile(sceneGraph, "mandelbulb.lua");
 }
 
+TEST_F(LUAApiTest, testScriptSmooth) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "smooth.lua");
+}
+
 TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	{
 		scenegraph::SceneGraph sceneGraph;
