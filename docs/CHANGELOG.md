@@ -28,6 +28,7 @@ General:
    - Support for loading normals for voxelization (mesh formats) and for voxel formats (`vxl`)
    - Fixed `vxl` saving for negative coordinates
    - Split file dialog options into a new separated dialog
+   - Added new lua scripts (game of life, mandelbulb, smooth)
 
 VoxConvert:
 
@@ -46,6 +47,7 @@ VoxEdit:
    - Added an FPS option for the animation timeline
    - Added normal palette panel
    - Fixed missing memento group for merging nodes
+   - Improved undo/redo for lua script changes on the scenegraph
 
 ## 0.0.33 (2024-08-05)
 
