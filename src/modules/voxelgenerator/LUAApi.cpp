@@ -692,6 +692,17 @@ static int luaVoxel_palette_load(lua_State* s) {
 	return 0;
 }
 
+static int luaVoxel_palette_rgba(lua_State* s) {
+	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
+	const uint8_t color = luaL_checkinteger(s, 2);
+	const core::RGBA rgba = palette->color(color);
+	lua_pushinteger(s, rgba.r);
+	lua_pushinteger(s, rgba.g);
+	lua_pushinteger(s, rgba.b);
+	lua_pushinteger(s, rgba.a);
+	return 4;
+}
+
 static int luaVoxel_palette_color(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
@@ -733,8 +744,9 @@ static int luaVoxel_palette_closestmatch(lua_State* s) {
 	const float r = (float)luaL_checkinteger(s, 2) / 255.0f;
 	const float g = (float)luaL_checkinteger(s, 3) / 255.0f;
 	const float b = (float)luaL_checkinteger(s, 4) / 255.0f;
+	const int skipIndex = luaL_optinteger(s, 5, -1);
 	core::RGBA rgba(r * 255.0f, g * 255.0f, b * 255.0f, 255);
-	const int match = palette->getClosestMatch(rgba);
+	const int match = palette->getClosestMatch(rgba, skipIndex);
 	if (match < 0 || match > palette->colorCount()) {
 		return clua_error(s, "Given color index is not valid or palette is not loaded");
 	}
@@ -1700,6 +1712,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"rgba", luaVoxel_palette_rgba},
 		{"load", luaVoxel_palette_load},
 		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},
@@ -1714,6 +1727,7 @@ static void prepareState(lua_State* s) {
 	static const luaL_Reg paletteFuncs_gc[] = {
 		{"colors", luaVoxel_palette_colors},
 		{"color", luaVoxel_palette_color},
+		{"rgba", luaVoxel_palette_rgba},
 		{"load", luaVoxel_palette_load},
 		{"setColor", luaVoxel_palette_setcolor},
 		{"match", luaVoxel_palette_closestmatch},

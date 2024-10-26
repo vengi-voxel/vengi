@@ -261,6 +261,8 @@ The functions are:
 
 * `color(paletteIndex)`: Pushes the vec4 of the color behind the palette index (`0-255`) as float values between `0.0` and `1.0`.
 
+* `rgba(paletteIndex)`: Pushes the four values of the color behind the palette index (`0-255`).
+
 * `colors()`: Returns the palette RGBA colors as vec4 values between `0.0` and `1.0`.
 
 * `load(palette)`: Allows to load a [built-in palette](Palette.md) or a filename to a supported [palette format](Formats.md).
@@ -268,7 +270,7 @@ The functions are:
 * `material(paletteIndex, material)`: Get the value of the material property for the given palette index.
 > Valid [material](Material.md) names
 
-* `match(r, g, b)`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method.
+* `match(r, g, b, [skipIndex])`: Returns the closest possible palette color match for the given RGB (`0-255`) color. The returned palette index is in the range `0-255`. This value can then be used for the `setVoxel` method. `skipIndex` is not taken into account when doing the search.
 
 * `setColor(paletteIndex, red, green, blue, [alpha])`: Change the color of a palette entry to the given rgba values in the range `[0-255]`.
 
