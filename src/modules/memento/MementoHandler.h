@@ -257,7 +257,7 @@ public:
 
 	bool markNodePropertyChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markKeyFramesChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markNodeRemoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+	bool markNodeRemove(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNodeAdded(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNodeTransform(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markModification(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
@@ -268,8 +268,8 @@ public:
 	bool markNodeMoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markPaletteChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 	bool markNormalPaletteChange(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
-	bool markAddedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
-	bool markRemovedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
+	bool markAnimationAdded(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
+	bool markAnimationRemoved(const scenegraph::SceneGraph &sceneGraph, const core::String &animation);
 
 	MementoStateGroup undo();
 	MementoStateGroup redo();

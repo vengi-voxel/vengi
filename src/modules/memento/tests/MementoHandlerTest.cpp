@@ -756,12 +756,12 @@ TEST_F(MementoHandlerTest, testAllAnimations) {
 
 	ASSERT_TRUE(_sceneGraph.addAnimation("foo"));
 	EXPECT_EQ(2u, _sceneGraph.animations().size()) << _sceneGraph.animations();
-	_mementoHandler.markAddedAnimation(_sceneGraph, "foo");
+	_mementoHandler.markAnimationAdded(_sceneGraph, "foo");
 	EXPECT_EQ(2, (int)_mementoHandler.stateSize());
 
 	ASSERT_TRUE(_sceneGraph.removeAnimation("foo"));
 	EXPECT_EQ(1u, _sceneGraph.animations().size()) << _sceneGraph.animations();
-	_mementoHandler.markRemovedAnimation(_sceneGraph, "foo");
+	_mementoHandler.markAnimationRemoved(_sceneGraph, "foo");
 	EXPECT_EQ(3, (int)_mementoHandler.stateSize());
 
 	MementoState stateUndo = firstState(_mementoHandler.undo());

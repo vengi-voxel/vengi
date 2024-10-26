@@ -28,6 +28,7 @@
 #include "voxelgenerator/LUAApi.h"
 #include "voxelgenerator/TreeContext.h"
 #include "voxelutil/Picking.h"
+#include "LUAApiListener.h"
 #include <functional>
 
 namespace voxedit {
@@ -57,6 +58,7 @@ CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
  * @note The data is shared across all viewports
  */
 class SceneManager : public core::DeltaFrameSeconds {
+	friend class LUAApiListener;
 protected:
 	scenegraph::SceneGraph _sceneGraph;
 	memento::MementoHandler _mementoHandler;
@@ -67,6 +69,7 @@ protected:
 	SceneRendererPtr _sceneRenderer;
 	ModifierFacade _modifierFacade;
 	voxelgenerator::LUAApi _luaApi;
+	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
 
 	/**

@@ -568,7 +568,7 @@ bool MementoHandler::markKeyFramesChange(const scenegraph::SceneGraph &sceneGrap
 	return markUndo(sceneGraph, node, volume, MementoType::SceneNodeKeyFrames, voxel::Region::InvalidRegion);
 }
 
-bool MementoHandler::markNodeRemoved(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+bool MementoHandler::markNodeRemove(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const int nodeId = node.id();
 	const core::String &name = node.name();
 	const voxel::RawVolume *volume = node.volume();
@@ -647,7 +647,7 @@ bool MementoHandler::markNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 	return markKeyFramesChange(sceneGraph, node);
 }
 
-bool MementoHandler::markAddedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
+bool MementoHandler::markAnimationAdded(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
 	ScopedMementoGroup group(*this, "Add Animation");
 	markAllAnimations(sceneGraph.animations());
 	for (const auto &entry : sceneGraph.nodes()) {
@@ -661,7 +661,7 @@ bool MementoHandler::markAddedAnimation(const scenegraph::SceneGraph &sceneGraph
 	return true;
 }
 
-bool MementoHandler::markRemovedAnimation(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
+bool MementoHandler::markAnimationRemoved(const scenegraph::SceneGraph &sceneGraph, const core::String &animation) {
 	ScopedMementoGroup group(*this, "Remove Animation");
 	markAllAnimations(sceneGraph.animations());
 	for (const auto &entry : sceneGraph.nodes()) {

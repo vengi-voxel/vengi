@@ -14,6 +14,7 @@
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
+#include "scenegraph/SceneGraphListener.h"
 #include "voxel/Region.h"
 
 namespace voxel {
@@ -54,6 +55,7 @@ protected:
 	mutable bool _regionDirty = true;
 	mutable FrameIndex _cachedMaxFrame = -1;
 	const core::String _emptyUUID;
+	core::DynamicArray<SceneGraphListener*> _listeners;
 
 	void updateTransforms_r(SceneGraphNode &node);
 	voxel::Region calcRegion() const;
@@ -116,6 +118,10 @@ public:
 	 */
 	const voxel::Region &region() const;
 	const core::String &uuid(int nodeId) const;
+
+	bool isRegistered(SceneGraphListener *listener) const;
+	void unregisterListener(SceneGraphListener *listener);
+	void registerListener(SceneGraphListener *listener);
 
 	/**
 	 * @brief The list of known animation ids

@@ -73,6 +73,7 @@ SceneGraph::~SceneGraph() {
 		entry->value.release();
 	}
 	_nodes.clear();
+	_listeners.clear();
 }
 
 SceneGraph::SceneGraph(SceneGraph &&other) noexcept
@@ -97,6 +98,30 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_dirty = other.dirty();
 	}
 	return *this;
+}
+
+void SceneGraph::registerListener(SceneGraphListener *listener) {
+	for (SceneGraphListener *l : _listeners) {
+		if (l == listener) {
+			Log::error("Listener is already registered");
+			return;
+		}
+	}
+	_listeners.push_back(listener);
+}
+
+bool SceneGraph::isRegistered(SceneGraphListener *listener) const {
+	return core::find(_listeners.begin(), _listeners.end(), listener) != _listeners.end();
+}
+
+void SceneGraph::unregisterListener(SceneGraphListener *listener) {
+	for (auto iter = _listeners.begin(); iter != _listeners.end(); ++iter) {
+		if (*iter == listener) {
+			_listeners.erase(iter);
+			return;
+		}
+	}
+	Log::error("Listener not found - could not unregister");
 }
 
 bool SceneGraph::setAnimation(const core::String &animation) {
@@ -141,6 +166,9 @@ bool SceneGraph::duplicateAnimation(const core::String &animation, const core::S
 			Log::warn("Failed to set keyframes for node %i and animation %s", node.id(), animation.c_str());
 		}
 	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onAnimationAdded(newName);
+	}
 	updateTransforms_r(node(0));
 	return true;
 }
@@ -153,6 +181,9 @@ bool SceneGraph::addAnimation(const core::String &animation) {
 		return false;
 	}
 	_animations.push_back(animation);
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onAnimationAdded(animation);
+	}
 	return true;
 }
 
@@ -187,6 +218,9 @@ bool SceneGraph::removeAnimation(const core::String &animation) {
 		setAnimation(DEFAULT_ANIMATION);
 	} else if (_activeAnimation == animation) {
 		setAnimation(*_animations.begin());
+	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onAnimationRemoved(animation);
 	}
 	return true;
 }
@@ -583,6 +617,9 @@ int SceneGraph::emplace(SceneGraphNode &&node, int parent) {
 	if (type == SceneGraphNodeType::Model) {
 		_regionDirty = true;
 	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onNodeAdded(nodeId);
+	}
 	markMaxFramesDirty();
 	return nodeId;
 }
@@ -638,6 +675,10 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, bool updateTransform)
 		}
 		updateTransforms();
 	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onNodeChangedParent(nodeId);
+	}
+
 	return true;
 }
 
@@ -672,6 +713,9 @@ bool SceneGraph::removeNode(int nodeId, bool recursive) {
 			cnode.setParent(parent);
 			core_assert_always(parentNode.addChild(childId));
 		}
+	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onNodeRemove(nodeId);
 	}
 	core_assert_always(_nodes.erase(iter));
 	if (_activeNodeId == nodeId) {
@@ -983,6 +1027,9 @@ void SceneGraph::align(int padding) {
 		n.setPivot(glm::vec3(0.0f));
 		n.volume()->translate(-n.region().getLowerCorner());
 		n.volume()->translate(glm::ivec3(rect.x, 0, rect.y));
+	}
+	for (SceneGraphListener *listener : _listeners) {
+		listener->onNodesAligned();
 	}
 	updateTransforms();
 	markDirty();

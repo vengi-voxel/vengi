@@ -94,7 +94,7 @@ inline auto nodeCompleter(const scenegraph::SceneGraph &sceneGraph) {
 SceneManager::SceneManager(const core::TimeProviderPtr &timeProvider, const io::FilesystemPtr &filesystem,
 						   const SceneRendererPtr &sceneRenderer, const ModifierRendererPtr &modifierRenderer)
 	: _timeProvider(timeProvider), _sceneRenderer(sceneRenderer), _modifierFacade(this, modifierRenderer),
-	  _luaApi(filesystem), _filesystem(filesystem) {
+	  _luaApi(filesystem), _luaApiListener(_mementoHandler, _sceneGraph), _filesystem(filesystem) {
 }
 
 SceneManager::~SceneManager() {
@@ -1379,7 +1379,7 @@ bool SceneManager::setAnimation(const core::String &animation) {
 
 bool SceneManager::addAnimation(const core::String &animation) {
 	if (_sceneGraph.addAnimation(animation)) {
-		_mementoHandler.markAddedAnimation(_sceneGraph, animation);
+		_mementoHandler.markAnimationAdded(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1387,7 +1387,7 @@ bool SceneManager::addAnimation(const core::String &animation) {
 
 bool SceneManager::duplicateAnimation(const core::String &animation, const core::String &newName) {
 	if (_sceneGraph.duplicateAnimation(animation, newName)) {
-		_mementoHandler.markAddedAnimation(_sceneGraph, animation);
+		_mementoHandler.markAnimationAdded(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -1395,7 +1395,7 @@ bool SceneManager::duplicateAnimation(const core::String &animation, const core:
 
 bool SceneManager::removeAnimation(const core::String &animation) {
 	if (_sceneGraph.removeAnimation(animation)) {
-		_mementoHandler.markRemovedAnimation(_sceneGraph, animation);
+		_mementoHandler.markAnimationRemoved(_sceneGraph, animation);
 		return true;
 	}
 	return false;
@@ -2403,8 +2403,11 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	const int nodeId = _sceneGraph.activeNode();
 	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
 	_mementoHandler.beginGroup("lua script");
-	SceneManagerLUAEventHandler sceneManagerEventHandler(this);
-	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args, &sceneManagerEventHandler)) {
+	// TODO: MEMENTO: there are still no memento states for direct node modifications during the script run
+	//                we can e.g. set or modify the transforms, properties and so on of a node.
+	_sceneGraph.registerListener(&_luaApiListener);
+	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args)) {
+		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
 		return false;
 	}
@@ -2491,6 +2494,7 @@ bool SceneManager::update(double nowSeconds) {
 	_movement.update(nowSeconds);
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
 	if (state == voxelgenerator::ScriptState::Error) {
+		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
 		Log::error("Error in script: %s", _luaApi.error().c_str());
 	} else if (state == voxelgenerator::ScriptState::Finished) {
@@ -2503,6 +2507,7 @@ bool SceneManager::update(double nowSeconds) {
 			_sceneRenderer->clear();
 			_sceneGraph.markClean();
 		}
+		_sceneGraph.unregisterListener(&_luaApiListener);
 		_mementoHandler.endGroup();
 	}
 	video::Camera *camera = activeCamera();
@@ -2563,6 +2568,10 @@ void SceneManager::shutdown() {
 	_luaApi.shutdown();
 
 	_sceneRenderer->shutdown();
+	if (_sceneGraph.isRegistered(&_luaApiListener)) {
+		Log::error("Lua api listener still registered");
+		_sceneGraph.unregisterListener(&_luaApiListener);
+	}
 	_sceneGraph.clear();
 	_mementoHandler.clearStates();
 
@@ -3288,7 +3297,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 			}
 		}
 	}
-	_mementoHandler.markNodeRemoved(_sceneGraph, node);
+	_mementoHandler.markNodeRemove(_sceneGraph, node);
 	if (!_sceneGraph.removeNode(nodeId, false)) {
 		Log::error("Failed to remove node with id %i", nodeId);
 		return false;
