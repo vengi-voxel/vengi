@@ -456,8 +456,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 		ImGuiListClipper clipper;
 		clipper.Begin((int)_filteredEntities.size());
 		if (_scrollToSelection) {
-			ImGui::SetScrollY(ImGui::GetCursorStartPos().y + _entryIndex * ImGui::GetTextLineHeight());
-			_scrollToSelection = false;
+			clipper.IncludeItemByIndex(_entryIndex);
 		}
 		while (clipper.Step()) {
 			for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
@@ -465,6 +464,10 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				ImGui::TableNextColumn();
 
 				const bool selected = i == (int)_entryIndex;
+				if (selected && _scrollToSelection) {
+					_scrollToSelection = false;
+					ImGui::SetScrollHereY();
+				}
 				if (selected && entry.name != _parentDir.name) {
 					_selectedEntry = entry;
 				}
@@ -590,7 +593,7 @@ void FileDialog::resetState() {
 	}
 
 	_selectedEntry = io::FilesystemEntry();
-	_error = TimedError();
+	_error = TimedString();
 }
 
 void FileDialog::popupNewFolder() {
@@ -606,7 +609,7 @@ void FileDialog::popupNewFolder() {
 		if (ImGui::Button(_("Create"))) {
 			if (_newFolderName.name.empty()) {
 				const core::TimeProviderPtr &timeProvider = _app->timeProvider();
-				_newFolderError = TimedError(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
+				_newFolderError = TimedString(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
 				_app->filesystem()->sysCreateDir(newFilePath);
@@ -617,7 +620,7 @@ void FileDialog::popupNewFolder() {
 		ImGui::SameLine();
 		if (ImGui::Button(_("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 			_newFolderName = io::FilesystemEntry();
-			_newFolderError = TimedError();
+			_newFolderError = TimedString();
 			ImGui::CloseCurrentPopup();
 		}
 		showError(_newFolderError);
@@ -707,7 +710,7 @@ void FileDialog::filter(video::OpenFileMode type) {
 	}
 }
 
-void FileDialog::showError(const TimedError &error) const {
+void FileDialog::showError(const TimedString &error) const {
 	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 	if (error.isValid(timeProvider->tickNow())) {
 		ImGui::TextColored(ImColor(1.0f, 0.0f, 0.2f, 1.0f), "%s", error.value().c_str());
@@ -729,10 +732,21 @@ const char *FileDialog::popupTitle(video::OpenFileMode type) {
 	return _("Select a file");
 }
 
-void FileDialog::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
+void FileDialog::onTextInput(void *windowHandle, const core::String &text) {
+	if (text.empty()) {
+		return;
+	}
 	int idx = 0;
+
+	const core::TimeProviderPtr &timeProvider = _app->timeProvider();
+	if (!_scrollToText.isValid(timeProvider->tickNow())) {
+		_scrollToText.value().clear();
+		_scrollToText = TimedString(text, timeProvider->tickNow(), 1500UL);
+	} else {
+		_scrollToText.value().append(text);
+	}
 	for (const auto &entry : _filteredEntities) {
-		if (entry->name.first() == key) {
+		if (core::string::startsWith(entry->name, _scrollToText.value())) {
 			_selectedEntry = *entry;
 			_entryIndex = idx;
 			_scrollToSelection = true;
@@ -819,7 +833,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 	if (ImGui::Button(buttonText) || ImGui::IsKeyDown(ImGuiKey_Enter) || doubleClickedFile) {
 		if (type == video::OpenFileMode::Directory) {
 			if (_selectedEntry.name.empty()) {
-				_error = TimedError(_("Error: You must select a folder!"), timeProvider->tickNow(), 1500UL);
+				_error = TimedString(_("Error: You must select a folder!"), timeProvider->tickNow(), 1500UL);
 			} else {
 				entityPath = assemblePath(_currentPath, _selectedEntry);
 				resetState();
@@ -827,7 +841,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 			}
 		} else if (type == video::OpenFileMode::Open || type == video::OpenFileMode::Save) {
 			if (_selectedEntry.name.empty() || !_selectedEntry.isFile()) {
-				_error = TimedError(_("Error: You must select a file!"), timeProvider->tickNow(), 1500UL);
+				_error = TimedString(_("Error: You must select a file!"), timeProvider->tickNow(), 1500UL);
 			} else {
 				core::String fullPath = assemblePath(_currentPath, _selectedEntry);
 				if (type == video::OpenFileMode::Save) {
@@ -835,7 +849,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 					if (ext.empty()) {
 						if (_currentFilterFormat == nullptr || _currentFilterFormat->mainExtension().empty()) {
 							// if we didn't provide an extension, and we can't add one, we can't save the file
-							_error = TimedError(_("Error: You must select a file type!"), timeProvider->tickNow(), 1500UL);
+							_error = TimedString(_("Error: You must select a file type!"), timeProvider->tickNow(), 1500UL);
 							return false;
 						}
 						fullPath.append(_currentFilterFormat->mainExtension(true));

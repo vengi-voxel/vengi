@@ -116,6 +116,9 @@ void IMGUIApp::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint
 }
 
 bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
+	if (_showFileDialog) {
+		_fileDialog.onTextInput(windowHandle, text);
+	}
 	SDL_Event ev{};
 	ev.type = SDL_TEXTINPUT;
 	ev.text.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
@@ -125,9 +128,6 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 }
 
 bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
-	if (_showFileDialog) {
-		_fileDialog.onKeyPress(windowHandle, key, modifier);
-	}
 	if (!Super::onKeyPress(windowHandle, key, modifier) ||
 		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
 		SDL_Event ev{};

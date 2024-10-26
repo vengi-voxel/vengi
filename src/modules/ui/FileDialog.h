@@ -37,8 +37,8 @@ private:
 	core::DynamicArray<const io::FilesystemEntry*> _filteredEntities;
 	io::FilesystemEntry _parentDir;
 
-	using TimedError = core::TimedValue<core::String>;
-	TimedError _error;
+	using TimedString = core::TimedValue<core::String>;
+	TimedString _error;
 	size_t _entryIndex = 0;
 	io::FilesystemEntry _selectedEntry;
 	video::OpenFileMode _type = video::OpenFileMode::Open;
@@ -55,9 +55,10 @@ private:
 	core::VarPtr _lastFilterOpen;
 
 	bool _scrollToSelection = false;
+	TimedString _scrollToText;
 
 	io::FilesystemEntry _newFolderName;
-	TimedError _newFolderError;
+	TimedString _newFolderError;
 
 	core::String _dragAndDropName;
 
@@ -83,7 +84,7 @@ private:
 	 * @return @c true if a file was double clicked
 	 */
 	bool entitiesPanel(video::OpenFileMode type, int height);
-	void showError(const TimedError &error) const;
+	void showError(const TimedString &error) const;
 
 #ifdef __EMSCRIPTEN__
 	static void uploadHandler(std::string const& filename, std::string const& mimetype, std::string_view buffer, void* userdata);
@@ -102,7 +103,7 @@ public:
 
 	static const char *popupTitle(video::OpenFileMode type);
 
-	void onKeyPress(void *windowHandle, int32_t key, int16_t modifier);
+	void onTextInput(void *windowHandle, const core::String &text);
 
 	bool openDir(video::OpenFileMode type, const io::FormatDescription* formats, const core::String& filename = "");
 	/**
