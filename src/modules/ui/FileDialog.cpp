@@ -570,7 +570,7 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 									  ImGuiCond_Always);
 			ImGui::EndDragDropSource();
 		}
-		ImGui::TooltipText("%s", path.c_str());
+		ImGui::TooltipTextUnformatted(path.c_str());
 	}
 }
 
