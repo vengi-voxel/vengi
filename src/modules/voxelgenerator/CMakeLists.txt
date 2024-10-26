@@ -14,6 +14,7 @@ set(LUA_SRCS
 	scripts/grass.lua
 	scripts/grid.lua
 	scripts/imageasvolume.lua
+	scripts/mandelbulb.lua
 	scripts/maze.lua
 	scripts/meshy.lua
 	scripts/move.lua

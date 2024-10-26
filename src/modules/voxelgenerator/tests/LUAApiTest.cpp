@@ -376,6 +376,11 @@ TEST_F(LUAApiTest, testScriptAlign) {
 	runFile(sceneGraph, "align.lua");
 }
 
+TEST_F(LUAApiTest, testScriptMandelbulb) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "mandelbulb.lua");
+}
+
 TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	{
 		scenegraph::SceneGraph sceneGraph;
