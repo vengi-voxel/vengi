@@ -90,7 +90,7 @@ bool FormatConfig::init() {
 				   _("Toggle between left and right handed"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatQBSaveCompressed, "true", core::CV_NOPERSIST, _("Save RLE compressed"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST, _("Create own palette from textures or colors"),
+	core::Var::get(cfg::VoxelCreatePalette, "true", core::CV_NOPERSIST, _("Create own palette from textures or colors or remap the existing palette colors to a new palette"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatPointCloudSize, "1", core::CV_NOPERSIST,
 				   _("Specify the side length for the voxels when loading a point cloud"));
