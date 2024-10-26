@@ -629,24 +629,13 @@ void FileDialog::popupNewFolder() {
 	}
 }
 
-bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, core::String &entityPath, video::OpenFileMode type,
-							  const io::FormatDescription **formatDesc) {
-	if (!fileDialogOptions_f) {
-		return false;
-	}
+bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, core::String &entityPath,
+							  video::OpenFileMode type, const io::FormatDescription **formatDesc) {
 	const core::String title = makeTitle(_("Options"), OPTIONS_POPUP);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		const core::String &path = assemblePath(_currentPath, _selectedEntry);
-		if (!fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry)) {
-			entityPath = path;
-			resetState();
-			*formatDesc = _currentFilterFormat;
-			ImGui::CloseCurrentPopup();
-			ImGui::EndPopup();
-			return false;
-		}
-
-		if (ImGui::Button(_("Ok"))) {
+		if (!fileDialogOptions_f || !fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry) ||
+			ImGui::Button(_("Ok"))) {
 			entityPath = path;
 			resetState();
 			*formatDesc = _currentFilterFormat;
