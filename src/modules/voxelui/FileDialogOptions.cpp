@@ -12,6 +12,7 @@
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
 #include "ui/IMGUIEx.h"
+#include "video/FileDialogOptions.h"
 #include "video/OpenFileMode.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
@@ -21,7 +22,11 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/ImageUtils.h"
 
-bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
+FileDialogOptions::FileDialogOptions(palette::PaletteCache &paletteCache) : _paletteCache(paletteCache) {
+}
+
+bool FileDialogOptions::operator()(video::OpenFileMode mode, const io::FormatDescription *desc,
+								   const io::FilesystemEntry &entry) {
 	if (mode == video::OpenFileMode::Directory) {
 		return false;
 	}
@@ -41,10 +46,14 @@ bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	if (mode == video::OpenFileMode::Save) {
 		hasOptions |= saveOptions(desc, entry);
 	} else {
-		palette::PaletteCache paletteCache({});
-		hasOptions |= loadOptions(desc, entry, paletteCache);
+		hasOptions |= loadOptions(desc, entry, _paletteCache);
 	}
 	return hasOptions;
+}
+
+video::FileDialogOptions FileDialogOptions::build(palette::PaletteCache &paletteCache) {
+	FileDialogOptions options(paletteCache);
+	return options;
 }
 
 bool genericOptions(const io::FormatDescription *desc) {
@@ -202,9 +211,9 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 	}
 	const core::VarPtr &createPalette = core::Var::getSafe(cfg::VoxelCreatePalette);
 	ImGui::CheckboxVar(_("Create palette"), createPalette);
-	if (createPalette->boolVal()) {
+	if (!createPalette->boolVal()) {
 		core::VarPtr paletteVar = core::Var::getSafe(cfg::VoxelPalette);
-		if (ImGui::BeginCombo("##type", paletteVar->strVal().c_str(), 0)) {
+		if (ImGui::BeginCombo(_("Map colors to palette"), paletteVar->strVal().c_str(), 0)) {
 			for (const core::String &palette : paletteCache.availablePalettes()) {
 				if (ImGui::Selectable(palette.c_str(), palette == paletteVar->strVal())) {
 					paletteVar->setVal(palette);

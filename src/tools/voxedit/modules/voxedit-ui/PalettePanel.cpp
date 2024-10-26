@@ -33,17 +33,6 @@ PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, p
 void PalettePanel::reloadAvailablePalettes() {
 	_paletteCache.clear();
 	_paletteCache.detectPalettes(true);
-	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		const scenegraph::SceneGraphNode &node = *iter;
-		core::String id;
-		if (node.name().empty()) {
-			id = core::string::format("node:%i##%i", node.id(), node.id());
-		} else {
-			id = core::string::format("node:%s##%i", node.name().c_str(), node.id());
-		}
-		_paletteCache.add(id);
-	}
 }
 
 // only re-order the palette entries without changing the colors for the voxels
