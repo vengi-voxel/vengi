@@ -60,11 +60,11 @@ end
 ---
 --- Count the amount of empty voxels around the given position
 ---
-function module.countEmptyAround(volume, x, y, z)
+function module.countEmptyAround(volume, x, y, z, size)
 	local adjacent = 0
-	for sx = -1, 1, 1 do
-		for sy = -1, 1, 1 do
-			for sz = -1, 1, 1 do
+	for sx = -size, size, 1 do
+		for sy = -size, size, 1 do
+			for sz = -size, size, 1 do
 				if (sx ~= 0 or sy ~= 0 or sz ~= 0) then
 					local color = volume:voxel(x + sx, y + sy, z + sz)
 					-- if empty voxel

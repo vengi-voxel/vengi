@@ -16,7 +16,7 @@ end
 
 function main(node, region, color, emptycnt, octaves, lacunarity, gain, threshold)
 	local visitor = function (volume, x, y, z)
-		local adjacent = vol.countEmptyAround(volume, x, y, z)
+		local adjacent = vol.countEmptyAround(volume, x, y, z, 1)
 		if (adjacent >= emptycnt) then
 			local size = region:size()
 			local p = g_vec3.new(x / size.x, y / size.y, z / size.z)
