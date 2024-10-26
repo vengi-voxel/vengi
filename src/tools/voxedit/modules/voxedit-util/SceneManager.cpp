@@ -2402,7 +2402,13 @@ bool SceneManager::runScript(const core::String& luaCode, const core::DynamicArr
 	}
 	const int nodeId = _sceneGraph.activeNode();
 	const voxel::Region &region = _sceneGraph.resolveRegion(_sceneGraph.node(nodeId));
-	return _luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args);
+	_mementoHandler.beginGroup("lua script");
+	SceneManagerLUAEventHandler sceneManagerEventHandler(this);
+	if (!_luaApi.exec(luaCode, _sceneGraph, nodeId, region, _modifierFacade.cursorVoxel(), args, &sceneManagerEventHandler)) {
+		_mementoHandler.endGroup();
+		return false;
+	}
+	return true;
 }
 
 bool SceneManager::animateActive() const {
@@ -2485,6 +2491,7 @@ bool SceneManager::update(double nowSeconds) {
 	_movement.update(nowSeconds);
 	voxelgenerator::ScriptState state = _luaApi.update(nowSeconds);
 	if (state == voxelgenerator::ScriptState::Error) {
+		_mementoHandler.endGroup();
 		Log::error("Error in script: %s", _luaApi.error().c_str());
 	} else if (state == voxelgenerator::ScriptState::Finished) {
 		const voxel::Region dirtyRegion = _luaApi.dirtyRegion();
@@ -2496,6 +2503,7 @@ bool SceneManager::update(double nowSeconds) {
 			_sceneRenderer->clear();
 			_sceneGraph.markClean();
 		}
+		_mementoHandler.endGroup();
 	}
 	video::Camera *camera = activeCamera();
 	if (camera != nullptr && camera->rotationType() == video::CameraRotationType::Eye) {
