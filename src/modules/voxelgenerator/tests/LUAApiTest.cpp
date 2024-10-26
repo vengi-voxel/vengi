@@ -386,6 +386,11 @@ TEST_F(LUAApiTest, testScriptSmooth) {
 	runFile(sceneGraph, "smooth.lua");
 }
 
+TEST_F(LUAApiTest, testScriptGameoflife) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "gameoflife.lua");
+}
+
 TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	{
 		scenegraph::SceneGraph sceneGraph;

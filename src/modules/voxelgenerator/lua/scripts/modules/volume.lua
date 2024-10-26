@@ -78,6 +78,23 @@ function module.countEmptyAround(volume, x, y, z, size)
 	return adjacent
 end
 
+function module.countEmptyAroundOnY(volume, x, y, z, size)
+	local adjacent = 0
+	for sx = -size, size, 1 do
+		for sz = -size, size, 1 do
+			if (sx ~= 0 or sz ~= 0) then
+				local color = volume:voxel(x + sx, y, z + sz)
+				-- if empty voxel
+				if color == -1 then
+					adjacent = adjacent + 1
+				end
+			end
+		end
+	end
+	return adjacent
+end
+
+
 ---
 --- See also the condition functions where you can also specify the condition
 ---
