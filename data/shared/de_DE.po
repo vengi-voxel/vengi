@@ -501,7 +501,8 @@ msgstr ""
 
 msgid ""
 "If multiple triangles contribute to the same voxel the color values are "
-"averaged based on their area contribution"
+"averaged based on their area contribution - otherwise only the biggest "
+"triangle counts"
 msgstr ""
 
 msgid "Extra vertices for ambient occlusion"
@@ -576,7 +577,9 @@ msgstr ""
 msgid "Save RLE compressed"
 msgstr ""
 
-msgid "Create own palette from textures or colors"
+msgid ""
+"Create own palette from textures or colors or remap the existing palette "
+"colors to a new palette"
 msgstr ""
 
 msgid "Specify the side length for the voxels when loading a point cloud"
@@ -757,6 +760,12 @@ msgstr "RGB-Abflachfaktor"
 
 msgid "Create palette"
 msgstr "Palette erstellen"
+
+msgid "Map colors to palette"
+msgstr "Mappe Farben auf Palette"
+
+msgid "6 bit colors"
+msgstr "6-Bit Farbwerte"
 
 msgid "Quit"
 msgstr "Beenden"

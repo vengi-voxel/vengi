@@ -33,7 +33,7 @@ bool FormatConfig::init() {
 				   _("Reuse vertices or always create new ones"), core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatRGBWeightedAverage, "true", core::CV_NOPERSIST,
 				   _("If multiple triangles contribute to the same voxel the color values are averaged based on their "
-					 "area contribution"),
+					 "area contribution - otherwise only the biggest triangle counts"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatAmbientocclusion, "false", core::CV_NOPERSIST,
 				   _("Extra vertices for ambient occlusion"), core::Var::boolValidator);
