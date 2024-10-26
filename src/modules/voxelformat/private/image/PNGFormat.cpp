@@ -175,10 +175,10 @@ bool PNGFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 							   const LoadContext &ctx) {
 	const int type = core::Var::getSafe(cfg::VoxformatImageImportType)->intVal();
-	if (type == 1) {
+	if (type == ImportType::Heightmap) {
 		return importAsHeightmap(sceneGraph, palette, filename, archive);
 	}
-	if (type == 2) {
+	if (type == ImportType::Volume) {
 		return importAsVolume(sceneGraph, palette, filename, archive);
 	}
 

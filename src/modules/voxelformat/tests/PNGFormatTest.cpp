@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/private/image/PNGFormat.h"
 #include "AbstractFormatTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -21,7 +22,7 @@ TEST_F(PNGFormatTest, testLoadPlane) {
 }
 
 TEST_F(PNGFormatTest, testLoadVolume) {
-	util::ScopedVarChange scped(cfg::VoxformatImageImportType, "2");
+	util::ScopedVarChange scped(cfg::VoxformatImageImportType, PNGFormat::ImportType::Volume);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test-heightmap.png", 1);
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -31,7 +32,7 @@ TEST_F(PNGFormatTest, testLoadVolume) {
 }
 
 TEST_F(PNGFormatTest, testLoadHeightmap) {
-	util::ScopedVarChange scped(cfg::VoxformatImageImportType, "1");
+	util::ScopedVarChange scped(cfg::VoxformatImageImportType, PNGFormat::ImportType::Heightmap);
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test-heightmap.png", 1);
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();

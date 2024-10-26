@@ -28,6 +28,8 @@ protected:
 public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
+
+	enum ImportType { Plane = 0, Heightmap = 1, Volume = 2 };
 };
 
 } // namespace voxelformat

@@ -16,6 +16,7 @@
 #include "video/FileDialogOptions.h"
 #include "video/OpenFileMode.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
@@ -143,6 +144,9 @@ bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 
 static void loadOptionsPng(const io::FilesystemEntry &entry) {
 	const char *importTypes[] = {_("Plane"), _("Heightmap"), _("Volume")};
+	static_assert(voxelformat::PNGFormat::ImportType::Volume == 2, "Volume must be at index 2");
+	static_assert(voxelformat::PNGFormat::ImportType::Heightmap == 1, "Heightmap must be at index 1");
+	static_assert(voxelformat::PNGFormat::ImportType::Plane == 0, "Plane must be at index 0");
 	const core::VarPtr &importTypeVar = core::Var::getSafe(cfg::VoxformatImageImportType);
 	const int currentImportType = importTypeVar->intVal();
 
@@ -162,7 +166,7 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 		}
 		ImGui::EndCombo();
 	}
-	if (currentImportType == 2) {
+	if (currentImportType == voxelformat::PNGFormat::ImportType::Volume) {
 		ImGui::InputVarInt(_("Max depth"), cfg::VoxformatImageVolumeMaxDepth);
 		ImGui::CheckboxVar(_("Both sides"), cfg::VoxformatImageVolumeBothSides);
 		if (!entry.fullPath.empty()) {

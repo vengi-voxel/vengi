@@ -10,6 +10,7 @@
 #include "core/Var.h"
 #include "palette/Palette.h"
 #include "voxel/SurfaceExtractor.h"
+#include "voxelformat/private/image/PNGFormat.h"
 
 namespace voxelformat {
 
@@ -106,8 +107,11 @@ bool FormatConfig::init() {
 				   core::Var::minMaxValidator<1, 255>);
 	core::Var::get(cfg::VoxformatImageVolumeBothSides, "true", core::CV_NOPERSIST,
 				   _("Import the image as volume for both sides"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatImageImportType, "0", core::CV_NOPERSIST, _("0 = plane, 1 = heightmap, 2 = volume"),
-				   core::Var::minMaxValidator<0, 2>);
+	core::Var::get(cfg::VoxformatImageImportType, PNGFormat::ImportType::Plane, core::CV_NOPERSIST,
+				   _("0 = plane, 1 = heightmap, 2 = volume"),
+				   core::Var::minMaxValidator<PNGFormat::ImportType::Plane, PNGFormat::ImportType::Volume>);
+	static_assert(PNGFormat::ImportType::Plane == 0, "Plane must be 0");
+	static_assert(PNGFormat::ImportType::Volume == 2, "Volume must be 2");
 
 	core::Var::get(cfg::PalformatRGB6Bit, "false", core::CV_NOPERSIST,
 				   _("Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"),
