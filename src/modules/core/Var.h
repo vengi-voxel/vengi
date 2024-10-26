@@ -162,7 +162,7 @@ public:
 	 */
 	static bool boolean(const core::String& name);
 
-	static VarPtr get(const core::String& name, int value, int32_t flags = -1);
+	static VarPtr get(const core::String& name, int value, int32_t flags = -1, const char *help = nullptr, ValidatorFunc validatorFunc = {});
 
 	static void shutdown();
 

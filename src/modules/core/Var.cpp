@@ -20,10 +20,10 @@ Var::VarMap Var::_vars;
 uint8_t Var::_visitFlags = 0u;
 core_trace_mutex_static(Lock, Var, _lock);
 
-VarPtr Var::get(const core::String& name, int value, int32_t flags) {
+VarPtr Var::get(const core::String& name, int value, int32_t flags, const char *help, ValidatorFunc validatorFunc) {
 	char buf[64];
 	core::string::formatBuf(buf, sizeof(buf), "%i", value);
-	return get(name, buf, flags);
+	return get(name, buf, flags, help, validatorFunc);
 }
 
 void Var::shutdown() {
