@@ -308,7 +308,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		PosMap posMap(maxVoxels);
 		transformTrisAxisAligned(region, tris, posMap);
 		voxelizeTris(node, posMap, fillHollow);
-	} else if (voxelizeMode == 1) {
+	} else if (voxelizeMode == VoxelizeMode::Fast) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::Palette palette;
 		palette::NormalPalette normalPalette;

@@ -11,6 +11,7 @@
 #include "palette/Palette.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 
 namespace voxelformat {
 
@@ -68,7 +69,7 @@ bool FormatConfig::init() {
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatFillHollow, "true", core::CV_NOPERSIST,
 				   _("Fill the hollows when voxelizing a mesh format"), core::Var::boolValidator);
-	core::Var::get(cfg::VoxformatVoxelizeMode, "0", core::CV_NOPERSIST,
+	core::Var::get(cfg::VoxformatVoxelizeMode, MeshFormat::VoxelizeMode::HighQuality, core::CV_NOPERSIST,
 				   _("0 = high quality, 1 = faster and less memory"), core::Var::minMaxValidator<0, 1>);
 	core::Var::get(cfg::VoxformatQBTPaletteMode, "true", core::CV_NOPERSIST,
 				   _("Use palette mode in qubicle qbt export"), core::Var::boolValidator);

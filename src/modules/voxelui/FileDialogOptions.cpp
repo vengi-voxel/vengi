@@ -19,6 +19,7 @@
 #include "voxelformat/private/image/PNGFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
+#include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
@@ -102,6 +103,8 @@ static void saveOptionsMesh(const io::FormatDescription *desc) {
 		ImGui::CheckboxVar("KHR_materials_specular", cfg::VoxFormatGLTF_KHR_materials_specular);
 	}
 	ImGui::CheckboxVar(_("Export materials"), cfg::VoxFormatWithMaterials);
+
+	// TODO: cfg::VoxelMeshMode
 }
 
 bool saveOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
@@ -187,6 +190,8 @@ static void loadOptionsMesh() {
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
 
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
+	static_assert(voxelformat::MeshFormat::VoxelizeMode::HighQuality == 0, "HighQuality must be at index 0");
+	static_assert(voxelformat::MeshFormat::VoxelizeMode::Fast == 1, "Fast must be at index 1");
 	const core::VarPtr &voxelizationVar = core::Var::getSafe(cfg::VoxformatVoxelizeMode);
 	const int currentVoxelizationMode = voxelizationVar->intVal();
 

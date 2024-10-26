@@ -159,6 +159,8 @@ public:
 					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
+
+	enum VoxelizeMode { HighQuality = 0, Fast = 1 };
 };
 
 } // namespace voxelformat
