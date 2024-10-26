@@ -14,6 +14,7 @@ set(SRCS
 	Style.cpp Style.h
 	TextEditor.h TextEditor.cpp
 	Toolbar.h Toolbar.cpp
+	DragAndDropPayload.h
 
 	dearimgui/imgui.cpp dearimgui/imgui_draw.cpp
 	dearimgui/imgui_widgets.cpp

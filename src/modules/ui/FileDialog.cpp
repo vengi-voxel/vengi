@@ -24,6 +24,7 @@
 #include "io/MemoryReadStream.h"
 #endif
 #include "ui/IMGUIApp.h"
+#include "ui/DragAndDropPayload.h"
 #include "video/OpenFileMode.h"
 
 namespace ui {
@@ -360,7 +361,7 @@ void FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 
 	if (ImGui::TreeNode(_("Bookmarks"))) {
 		if (ImGui::BeginDragDropTarget()) {
-			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(FILEDIALOGBOOKMARKDND)) {
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload(dragdrop::FileDialogDirectoryPayload)) {
 				const core::String &directory = *(core::String *)payload->Data;
 				addBookmark(directory);
 			}
@@ -493,7 +494,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 						_dragAndDropName = core::string::path(_currentPath, entry.name);
 						ImGui::TextUnformatted(_dragAndDropName.c_str());
-						ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
+						ImGui::SetDragDropPayload(dragdrop::FileDialogDirectoryPayload, &_dragAndDropName, sizeof(core::String),
 													ImGuiCond_Always);
 						ImGui::EndDragDropSource();
 					}
@@ -565,8 +566,8 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 			_dragAndDropName = path;
 			ImGui::TextUnformatted(_dragAndDropName.c_str());
-			ImGui::SetDragDropPayload(FILEDIALOGBOOKMARKDND, &_dragAndDropName, sizeof(core::String),
-										ImGuiCond_Always);
+			ImGui::SetDragDropPayload(dragdrop::FileDialogDirectoryPayload, &_dragAndDropName, sizeof(core::String),
+									  ImGuiCond_Always);
 			ImGui::EndDragDropSource();
 		}
 		ImGui::TooltipText("%s", path.c_str());
