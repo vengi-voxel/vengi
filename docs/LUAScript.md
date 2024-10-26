@@ -165,6 +165,8 @@ end
 
 * `id()`: Returns the id of the current node
 
+* `clone()`: Clones the current node
+
 * `uuid()`: Returns the uuid of the current node
 
 * `isCamera()`: Returns true if the node is a camera node

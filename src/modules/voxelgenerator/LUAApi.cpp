@@ -1274,6 +1274,16 @@ static int luaVoxel_scenegraphnode_id(lua_State* s) {
 	return 1;
 }
 
+static int luaVoxel_scenegraphnode_clone(lua_State* s) {
+	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
+	scenegraph::SceneGraph* sceneGraph = luaVoxel_scenegraph(s);
+	const int nodeId = scenegraph::copyNodeToSceneGraph(*sceneGraph, *node->node, node->node->parent(), false);
+	if (nodeId == InvalidNodeId) {
+		return clua_error(s, "Failed to clone node %d", node->node->id());
+	}
+	return luaVoxel_pushscenegraphnode(s, sceneGraph->node(nodeId));
+}
+
 static int luaVoxel_scenegraphnode_uuid(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
 	lua_pushstring(s, node->node->uuid().c_str());
@@ -1663,6 +1673,7 @@ static void prepareState(lua_State* s) {
 		{"name", luaVoxel_scenegraphnode_name},
 		{"id", luaVoxel_scenegraphnode_id},
 		{"uuid", luaVoxel_scenegraphnode_uuid},
+		{"clone", luaVoxel_scenegraphnode_clone},
 		{"parent", luaVoxel_scenegraphnode_parent},
 		{"volume", luaVoxel_scenegraphnode_volume},
 		{"isModel", luaVoxel_scenegraphnode_is_model},
