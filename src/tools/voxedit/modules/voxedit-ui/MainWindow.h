@@ -6,6 +6,7 @@
 
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteCache.h"
 #include "ui/IMGUIEx.h"
 #include "ui/Panel.h"
 #include "video/TexturePool.h"
@@ -143,7 +144,7 @@ private:
 	void updateViewMode();
 public:
 	MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
-			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem);
+			   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem, palette::PaletteCache &paletteCache);
 	virtual ~MainWindow();
 	bool init();
 	void shutdown();

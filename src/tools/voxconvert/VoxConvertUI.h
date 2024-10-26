@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "palette/PaletteCache.h"
 #include "ui/IMGUIApp.h"
 
 /**
@@ -25,6 +26,7 @@ private:
 	core::DynamicArray<io::FormatDescription> _filterEntries;
 	core::VarPtr _lastTarget;
 	core::VarPtr _lastSource;
+	palette::PaletteCache _paletteCache;
 
 protected:
 	app::AppState onConstruct() override;

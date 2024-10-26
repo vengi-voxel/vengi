@@ -8,7 +8,9 @@
 #include "app/App.h"
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteCache.h"
 #include "ui/IMGUIEx.h"
 #include "video/OpenFileMode.h"
 #include "voxelformat/VolumeFormat.h"
@@ -39,7 +41,8 @@ bool fileDialogOptions(video::OpenFileMode mode, const io::FormatDescription *de
 	if (mode == video::OpenFileMode::Save) {
 		hasOptions |= saveOptions(desc, entry);
 	} else {
-		hasOptions |= loadOptions(desc, entry);
+		palette::PaletteCache paletteCache({});
+		hasOptions |= loadOptions(desc, entry, paletteCache);
 	}
 	return hasOptions;
 }
@@ -191,15 +194,30 @@ static void loadOptionsMesh() {
 	ImGui::CheckboxVar(_("RGB weighted average"), cfg::VoxformatRGBWeightedAverage);
 }
 
-static void loadOptionsGeneric() {
-	// TODO: only for non-palette formats
-	imguiApp()->colorReductionOptions();
-	ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
-	ImGui::CheckboxVar(_("Create palette"), cfg::VoxelCreatePalette);
+static void loadOptionsGeneric(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
+							   const palette::PaletteCache &paletteCache) {
+	if (voxelformat::isRGBFormat(*desc) || voxelformat::isMeshFormat(*desc)) {
+		imguiApp()->colorReductionOptions();
+		ImGui::InputVarInt(_("RGB flatten factor"), cfg::VoxformatRGBFlattenFactor);
+	}
+	const core::VarPtr &createPalette = core::Var::getSafe(cfg::VoxelCreatePalette);
+	ImGui::CheckboxVar(_("Create palette"), createPalette);
+	if (createPalette->boolVal()) {
+		core::VarPtr paletteVar = core::Var::getSafe(cfg::VoxelPalette);
+		if (ImGui::BeginCombo("##type", paletteVar->strVal().c_str(), 0)) {
+			for (const core::String &palette : paletteCache.availablePalettes()) {
+				if (ImGui::Selectable(palette.c_str(), palette == paletteVar->strVal())) {
+					paletteVar->setVal(palette);
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
 	// TODO: cfg::PalformatRGB6Bit
 }
 
-bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry) {
+bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
+				 const palette::PaletteCache &paletteCache) {
 	if (desc == nullptr) {
 		return false;
 	}
@@ -213,6 +231,6 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 		loadOptionsPng(entry);
 	}
 
-	loadOptionsGeneric();
+	loadOptionsGeneric(desc, entry, paletteCache);
 	return true;
 }

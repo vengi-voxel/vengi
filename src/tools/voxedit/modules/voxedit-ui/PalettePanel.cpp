@@ -22,24 +22,17 @@
 
 namespace voxedit {
 
-PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr)
+PalettePanel::PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, palette::PaletteCache &paletteCache)
 	: Super(app, "palette"), _redColor(ImGui::GetColorU32(core::Color::Red())),
 	  _yellowColor(ImGui::GetColorU32(core::Color::Yellow())),
-	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())), _sceneMgr(sceneMgr) {
+	  _darkRedColor(ImGui::GetColorU32(core::Color::DarkRed())), _paletteCache(paletteCache),
+	  _sceneMgr(sceneMgr) {
 	_currentSelectedPalette = palette::Palette::getDefaultPaletteName();
 }
 
 void PalettePanel::reloadAvailablePalettes() {
-	core::DynamicArray<io::FilesystemEntry> entities;
-	io::filesystem()->list("", entities, "palette-*.png");
-	_availablePalettes.clear();
-	for (const io::FilesystemEntry &file : entities) {
-		if (file.type != io::FilesystemEntry::Type::file) {
-			continue;
-		}
-		const core::String &name = palette::Palette::extractPaletteName(file.name);
-		_availablePalettes.push_back(name);
-	}
+	_paletteCache.clear();
+	_paletteCache.detectPalettes(true);
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -49,7 +42,7 @@ void PalettePanel::reloadAvailablePalettes() {
 		} else {
 			id = core::string::format("node:%s##%i", node.name().c_str(), node.id());
 		}
-		_availablePalettes.push_back(id);
+		_paletteCache.add(id);
 	}
 }
 
@@ -245,15 +238,9 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::TextUnformatted(_("Select the palette"));
 		ImGui::Separator();
 		if (ImGui::BeginCombo("##type", _currentSelectedPalette.c_str(), 0)) {
-			for (const core::String &palette : _availablePalettes) {
+			for (const core::String &palette : _paletteCache.availablePalettes()) {
 				if (ImGui::Selectable(palette.c_str(), palette == _currentSelectedPalette)) {
 					_currentSelectedPalette = palette;
-				}
-			}
-			for (int i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
-				if (ImGui::Selectable(palette::Palette::builtIn[i],
-									  palette::Palette::builtIn[i] == _currentSelectedPalette)) {
-					_currentSelectedPalette = palette::Palette::builtIn[i];
 				}
 			}
 			ImGui::EndCombo();

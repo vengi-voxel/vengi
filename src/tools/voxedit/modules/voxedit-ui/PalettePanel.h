@@ -8,6 +8,7 @@
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "palette/PaletteCache.h"
 #include "ui/Panel.h"
 #include <glm/vec4.hpp>
 
@@ -43,7 +44,7 @@ private:
 	core::String _importPalette;
 	core::String _currentSelectedPalette;
 	core::String _lospecID;
-	core::DynamicArray<core::String> _availablePalettes;
+	palette::PaletteCache &_paletteCache;
 	SceneManagerPtr _sceneMgr;
 
 	void closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
@@ -63,7 +64,7 @@ private:
 	uint8_t currentPaletteColorIndex() const;
 
 public:
-	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr);
+	PalettePanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, palette::PaletteCache &paletteCache);
 	void update(const char *id, command::CommandExecutionListener &listener);
 	void onNewPaletteImport(const core::String& paletteName, bool setActive, bool searchBestColors);
 	bool hasFocus() const;

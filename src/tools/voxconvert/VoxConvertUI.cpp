@@ -20,7 +20,7 @@
 #include "voxelui/FileDialogOptions.h"
 
 VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider) {
+	: Super(filesystem, timeProvider), _paletteCache(filesystem) {
 	// use the same config as voxconvert
 	init(ORGANISATION, "voxconvert");
 	_allowRelativeMouseMode = false;
@@ -57,6 +57,9 @@ app::AppState VoxConvertUI::onInit() {
 	if (_lastSource->intVal() < 0 || _lastSource->intVal() >= (int)_filterEntries.size()) {
 		_lastSource->setVal(0);
 	}
+
+	_paletteCache.detectPalettes();
+
 	return state;
 }
 
@@ -177,7 +180,7 @@ void VoxConvertUI::onRenderUI() {
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_source), _source};
-			loadOptions(&_filterEntries[_lastSource->intVal()], entry);
+			loadOptions(&_filterEntries[_lastSource->intVal()], entry, _paletteCache);
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {

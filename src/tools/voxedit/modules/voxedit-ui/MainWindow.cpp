@@ -106,16 +106,19 @@ static const struct TemplateModel {
 bool MainWindow::_popupModelUnreference = false;
 
 MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const video::TexturePoolPtr &texturePool,
-					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem)
+					   const voxelcollection::CollectionManagerPtr &collectionMgr, const io::FilesystemPtr &filesystem,
+					   palette::PaletteCache &paletteCache)
 	: Super(app, "main"), _texturePool(texturePool), _sceneMgr(sceneMgr),
 #if ENABLE_RENDER_PANEL
 	  _renderPanel(app, _sceneMgr),
 #endif
 	  _lsystemPanel(app, _sceneMgr), _brushPanel(app, _sceneMgr, texturePool), _treePanel(app, _sceneMgr),
 	  _sceneGraphPanel(app, _sceneMgr), _toolsPanel(app, _sceneMgr),
-	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr), _nodeInspectorPanel(app, _sceneMgr),
-	  _palettePanel(app, _sceneMgr), _normalPalettePanel(app, _sceneMgr), _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
-	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline), _cameraPanel(app, _sceneMgr) {
+	  _assetPanel(app, _sceneMgr, collectionMgr, texturePool, filesystem), _mementoPanel(app, _sceneMgr),
+	  _nodeInspectorPanel(app, _sceneMgr), _palettePanel(app, _sceneMgr, paletteCache), _normalPalettePanel(app, _sceneMgr),
+	  _menuBar(app, _sceneMgr), _statusBar(app, _sceneMgr), _scriptPanel(app, _sceneMgr),
+	  _animationTimeline(app, _sceneMgr), _animationPanel(app, _sceneMgr, &_animationTimeline),
+	  _cameraPanel(app, _sceneMgr) {
 
 	_tipOfTheDayList.push_back(_("Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."));
 	_tipOfTheDayList.push_back(_("Use the file dialog options for format specific options."));

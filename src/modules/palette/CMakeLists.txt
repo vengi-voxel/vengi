@@ -15,6 +15,8 @@ set(SRCS
 
 	PaletteFormatDescription.cpp PaletteFormatDescription.h
 
+	PaletteCache.cpp PaletteCache.h
+
 	Palette.h Palette.cpp
 	PaletteLookup.h
 	PaletteCompleter.h

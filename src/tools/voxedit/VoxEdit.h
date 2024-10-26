@@ -6,6 +6,7 @@
 
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
+#include "palette/PaletteCache.h"
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
 #include "voxedit-util/SceneManager.h"
@@ -32,6 +33,7 @@ protected:
 	voxedit::SceneManagerPtr _sceneMgr;
 	voxelcollection::CollectionManagerPtr _collectionMgr;
 	video::TexturePoolPtr _texturePool;
+	palette::PaletteCache _paletteCache;
 
 	// 0 is the default binding
 	enum KeyBindings {
