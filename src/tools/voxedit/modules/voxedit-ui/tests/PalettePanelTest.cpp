@@ -18,7 +18,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->ItemClick("##type");
 			core::String name = core::string::format("//$FOCUSED/%s", palette::Palette::builtIn[i]);
 			ctx->ItemClick(name.c_str());
-			ctx->ItemClick("###OK");
+			ctx->ItemClick("###Ok");
 			palette::Palette check;
 			check.load(palette::Palette::builtIn[i]);
 			const palette::Palette& activePalette = _sceneMgr->activePalette();
@@ -32,7 +32,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->SetRef(id);
 		ctx->MenuClick("###File/###Lospec/ID");
 		ctx->ItemInputValue("//$FOCUSED/ID", "commodore64");
-		ctx->ItemClick("//$FOCUSED/OK");
+		ctx->ItemClick("//$FOCUSED/Ok");
 		ctx->MenuClick("###File/###Export");
 		saveFile(ctx, "palette-lospec.png");
 		const palette::Palette& activePalette = _sceneMgr->activePalette();

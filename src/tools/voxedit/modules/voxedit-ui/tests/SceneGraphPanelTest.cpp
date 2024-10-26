@@ -72,7 +72,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		IM_CHECK(focusWindow(ctx, POPUP_TITLE_MODEL_NODE_SETTINGS));
 		ctx->ItemInputValue("##modelsettingsname", "automated ui test node");
-		ctx->ItemClick("###OK");
+		ctx->ItemClick("###Ok");
 		ctx->Yield();
 
 		const int after = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);

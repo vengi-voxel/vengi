@@ -88,7 +88,7 @@ int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 	// so let's check it to make this a viewport in scene mode
 	if (viewportId == -1) {
 		viewportId = 0;
-		const core::String viewportRef = Viewport::viewportId(viewportId) + "/##menubar/Edit Mode";
+		const core::String viewportRef = Viewport::viewportId(viewportId) + "/##menubar/Scene Mode";
 		ctx->ItemClick(viewportRef.c_str());
 	}
 	return viewportId;

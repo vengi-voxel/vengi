@@ -28,11 +28,6 @@
 
 namespace ui {
 
-static const char *FILE_ALREADY_EXISTS_POPUP = "###fileoverwritepopup";
-static const char *OPTIONS_POPUP = "###optionspopup";
-static const char *NEW_FOLDER_POPUP = "###newfolderpopup";
-static const char *FILEDIALOGBOOKMARKDND = "filedialog-dir";
-
 enum class FileDialogColumnId {
 	File,
 	Size,

@@ -6,6 +6,7 @@
 #include "IMGUIApp.h"
 #include "core/Log.h"
 #ifdef IMGUI_ENABLE_TEST_ENGINE
+#include "FileDialog.h"
 #include "core/Assert.h"
 #endif
 
@@ -57,8 +58,8 @@ bool Panel::saveFile(ImGuiTestContext *ctx, const char *filename) {
 	ctx->ItemClick("Save");
 	ctx->Yield();
 	if (g.OpenPopupStack.Size == currentPopupSize) {
-		IM_CHECK_RETV(g.OpenPopupStack[g.OpenPopupStack.Size - 1].PopupId == ctx->GetID("###fileoverwritepopup"), false);
-		IM_CHECK_RETV(focusWindow(ctx, "###fileoverwritepopup"), false);
+		IM_CHECK_RETV(g.OpenPopupStack[g.OpenPopupStack.Size - 1].PopupId == ctx->GetID(FILE_ALREADY_EXISTS_POPUP), false);
+		IM_CHECK_RETV(focusWindow(ctx, FILE_ALREADY_EXISTS_POPUP), false);
 		ctx->ItemClick("Yes");
 		ctx->Yield();
 	}

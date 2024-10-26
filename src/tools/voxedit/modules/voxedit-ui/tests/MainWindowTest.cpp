@@ -44,7 +44,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemClick("###Yes");
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
 		ctx->ItemInputValue("##newscenename", "Automated ui test");
-		ctx->ItemClick("###OK");
+		ctx->ItemClick("###Ok");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -54,7 +54,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		ctx->SetRef(POPUP_TITLE_NEW_SCENE);
 		ctx->ItemInputValue("##newscenename", "Automated ui test");
-		ctx->ItemClick("###OK");
+		ctx->ItemClick("###Ok");
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "new scene template")->TestFunc = [=](ImGuiTestContext *ctx) {

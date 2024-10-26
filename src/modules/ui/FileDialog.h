@@ -22,6 +22,11 @@ struct FormatDescription;
 
 namespace ui {
 
+#define FILE_ALREADY_EXISTS_POPUP "###fileoverwritepopup"
+#define OPTIONS_POPUP "###optionspopup"
+#define NEW_FOLDER_POPUP "###newfolderpopup"
+#define FILEDIALOGBOOKMARKDND "filedialog-dir"
+
 class FileDialog : public Panel {
 private:
 	using Super = Panel;
