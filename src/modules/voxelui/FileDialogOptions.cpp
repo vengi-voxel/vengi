@@ -11,6 +11,7 @@
 #include "core/Var.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
+#include "palette/private/RGBPalette.h"
 #include "ui/IMGUIEx.h"
 #include "video/FileDialogOptions.h"
 #include "video/OpenFileMode.h"
@@ -224,7 +225,9 @@ static void loadOptionsGeneric(const io::FormatDescription *desc, const io::File
 			ImGui::EndCombo();
 		}
 	}
-	// TODO: cfg::PalformatRGB6Bit
+	if (*desc == palette::RGBPalette::format()) {
+		ImGui::CheckboxVar(_("6 bit colors"), cfg::PalformatRGB6Bit);
+	}
 }
 
 bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &entry,
