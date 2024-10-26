@@ -34,6 +34,16 @@ public:
 		_oldValue = _var->strVal();
 		_var->setVal(value);
 	}
+	ScopedVarChange(const core::String &name, int value) {
+		_var = core::Var::getSafe(name);
+		_oldValue = _var->strVal();
+		_var->setVal(value);
+	}
+	ScopedVarChange(const core::String &name, float value) {
+		_var = core::Var::getSafe(name);
+		_oldValue = _var->strVal();
+		_var->setVal(value);
+	}
 
 	~ScopedVarChange() {
 		_var->setVal(_oldValue);
