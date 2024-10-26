@@ -36,6 +36,7 @@ IMGUI_API bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags
 IMGUI_API bool InputVec2(const char *label, glm::vec2 &vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVec3(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputVarFloat(const char *label, const core::VarPtr &var, float step = 0.0f, float step_fast = 0.0f,
 							 ImGuiInputTextFlags extra_flags = 0);

@@ -87,6 +87,11 @@ bool InputTextWithHint(const char *label, const char *hint, core::String *str, I
 	return InputTextWithHint(label, hint, str->c_str(), str->capacity(), flags, _priv::InputTextCallback, &cb_userData);
 }
 
+bool InputVarString(const char *label, const char *varName, ImGuiInputTextFlags flags) {
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	return InputVarString(label, var, flags);
+}
+
 bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags) {
 	core::String buf = var->strVal();
 	flags &= ~ImGuiInputTextFlags_EnterReturnsTrue;
