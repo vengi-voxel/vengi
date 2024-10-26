@@ -158,7 +158,7 @@ app::AppState VoxEdit::onConstruct() {
 		core::String viewportId = args.empty() ? "" : args[0];
 		if (args.size() <= 1) {
 			const core::String filename = _sceneMgr->getSuggestedFilename(io::format::png().mainExtension(false));
-			saveDialog([this, viewportId] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file, viewportId); }, FileDialogOptions::build(_paletteCache), io::format::images(), filename);
+			saveDialog([this, viewportId] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->saveScreenshot(file, viewportId); }, voxelui::FileDialogOptions::build(_paletteCache), io::format::images(), filename);
 			return;
 		}
 		_mainWindow->saveScreenshot(args[1], viewportId);
@@ -175,7 +175,7 @@ app::AppState VoxEdit::onConstruct() {
 		if (args.empty()) {
 			const core::String filename = _sceneMgr->getSuggestedFilename();
 			if (filename.empty()) {
-				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, FileDialogOptions::build(_paletteCache), voxelformat::voxelSave(), "scene.vengi");
+				saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache), voxelformat::voxelSave(), "scene.vengi");
 			} else {
 				_mainWindow->save(filename, nullptr);
 			}
@@ -189,7 +189,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		const core::String &filename = _sceneMgr->getSuggestedFilename();
-		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, FileDialogOptions::build(_paletteCache), voxelformat::voxelSave(), filename);
+		saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache), voxelformat::voxelSave(), filename);
 	}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
 
 	command::Command::registerCommand("exportselection", [&] (const command::CmdArgs& args) {
@@ -198,7 +198,7 @@ app::AppState VoxEdit::onConstruct() {
 			fd.set(file, desc);
 			_sceneMgr->saveSelection(fd);
 		};
-		saveDialog(func, FileDialogOptions::build(_paletteCache), voxelformat::voxelSave());
+		saveDialog(func, voxelui::FileDialogOptions::build(_paletteCache), voxelformat::voxelSave());
 	}).setHelp(_("Save the selection from the current active model node"));
 
 	command::Command::registerCommand("load", [this](const command::CmdArgs &args) {
@@ -206,7 +206,7 @@ app::AppState VoxEdit::onConstruct() {
 			return;
 		}
 		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->load(file, desc); }, FileDialogOptions::build(_paletteCache), voxelformat::voxelLoad());
+			openDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->load(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache), voxelformat::voxelLoad());
 			return;
 		}
 		_mainWindow->load(args[0], nullptr);
@@ -214,7 +214,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("import", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->import(file); }, FileDialogOptions::build(_paletteCache), voxelformat::voxelLoad());
+			openDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->import(file); }, voxelui::FileDialogOptions::build(_paletteCache), voxelformat::voxelLoad());
 			return;
 		}
 		_sceneMgr->import(args[0]);
@@ -222,7 +222,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importdirectory", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			directoryDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importDirectory(file); }, FileDialogOptions::build(_paletteCache));
+			directoryDialog([this](const core::String &file, const io::FormatDescription *desc) { _sceneMgr->importDirectory(file); }, voxelui::FileDialogOptions::build(_paletteCache));
 			return;
 		}
 		const io::FormatDescription* format = nullptr;
@@ -243,7 +243,7 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("importpalette", [this](const command::CmdArgs &args) {
 		if (args.empty()) {
-			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { importPalette(file); }, FileDialogOptions::build(_paletteCache), &_paletteFormats[0]);
+			openDialog([this] (const core::String &file, const io::FormatDescription *desc) { importPalette(file); }, voxelui::FileDialogOptions::build(_paletteCache), &_paletteFormats[0]);
 			return;
 		}
 		importPalette(args[0]);

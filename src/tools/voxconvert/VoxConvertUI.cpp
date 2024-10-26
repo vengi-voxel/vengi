@@ -175,17 +175,17 @@ void VoxConvertUI::onRenderUI() {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
 				ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
 			}
-			genericOptions(&_filterEntries[_lastSource->intVal()]);
+			voxelui::genericOptions(&_filterEntries[_lastSource->intVal()]);
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_source), _source};
-			loadOptions(&_filterEntries[_lastSource->intVal()], entry, _paletteCache);
+			voxelui::loadOptions(&_filterEntries[_lastSource->intVal()], entry, _paletteCache);
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
-			saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
+			voxelui::saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
 		}
 
 		if (ImGui::Button(_("Convert"))) {

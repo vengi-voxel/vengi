@@ -22,6 +22,8 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelutil/ImageUtils.h"
 
+namespace voxelui {
+
 FileDialogOptions::FileDialogOptions(palette::PaletteCache &paletteCache) : _paletteCache(paletteCache) {
 }
 
@@ -243,3 +245,5 @@ bool loadOptions(const io::FormatDescription *desc, const io::FilesystemEntry &e
 	loadOptionsGeneric(desc, entry, paletteCache);
 	return true;
 }
+
+} // namespace voxelui
