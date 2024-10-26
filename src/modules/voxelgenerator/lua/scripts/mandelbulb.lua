@@ -14,6 +14,10 @@ end
 
 function main(node, region, color, power, iterations, threshold)
 	local visitor = function(volume, x, y, z)
+		volume:setVoxel(x, y, z, color)
+	end
+
+	local condition = function(volume, x, y, z)
 		local width = region:width()
 		local height = region:height()
 		local depth = region:depth()
@@ -28,7 +32,7 @@ function main(node, region, color, power, iterations, threshold)
 		for _ = 1, iterations do
 			local r = math.sqrt(zx * zx + zy * zy + zz * zz)
 			if r > threshold then
-				return  -- Point escapes, do not set voxel
+				return false -- Point escapes, do not set voxel
 			end
 
 			-- Convert to polar coordinates
@@ -45,10 +49,8 @@ function main(node, region, color, power, iterations, threshold)
 			zy = zr * math.sin(theta) * math.sin(phi) + ny
 			zz = zr * math.cos(theta) + nz
 		end
-
-		-- If the loop completes, this point is within the Mandelbulb boundary
-		volume:setVoxel(x, y, z, color)
+		return true
 	end
 
-	vol.visitYXZ(node:volume(), region, visitor)
+	vol.conditionYXZ(node:volume(), region, visitor, condition)
 end
