@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "io/Archive.h"
+#include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxelformat/Format.h"
 
@@ -99,9 +100,10 @@ protected:
 	 * during voxelization
 	 */
 	struct PosSamplingEntry {
-		inline PosSamplingEntry(float _area, core::RGBA _color) : area(_area), color(_color) {
+		inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal) : area(_area), normal(_normal), color(_color) {
 		}
-		float area;
+		uint32_t area : 24;
+		uint8_t normal;
 		core::RGBA color;
 	};
 
@@ -111,10 +113,11 @@ protected:
 	 */
 	struct PosSampling {
 		core::DynamicArray<PosSamplingEntry> entries;
-		inline PosSampling(float area, core::RGBA color) {
-			entries.emplace_back(area, color);
+		inline PosSampling(uint32_t area, core::RGBA color, uint8_t normal) {
+			entries.emplace_back(area, color, normal);
 		}
 		core::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
+		uint8_t getNormal() const;
 	};
 
 	/**
@@ -130,7 +133,8 @@ protected:
 	 * @sa transformTrisAxisAligned()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap);
+	static void transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+							  const palette::NormalPalette &normalPalette);
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
 	 * aligned aligned triangles. This is usually the case for meshes that were exported from voxels.
@@ -140,7 +144,8 @@ protected:
 	 * @sa transformTris()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap);
+	static void transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+										 const palette::NormalPalette &normalPalette);
 	/**
 	 * @brief Convert the given @c PosMap into a volume
 	 *

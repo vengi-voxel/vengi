@@ -5,8 +5,10 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
 #include "voxedit-ui/Viewport.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Region.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
 
@@ -40,7 +42,8 @@ void executeViewportClick() {
 	command::executeCommands("+actionexecute 1 1;-actionexecute 1 1");
 }
 
-bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, const ImVec2 &offset) {
+bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId,
+							  const ImVec2 &offset) {
 	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportId, {0.0f, 0.0f}), false);
 	command::executeCommands("+actionexecute 1 1");
 	IM_CHECK_RETV(centerOnViewport(ctx, sceneMgr, viewportId, offset), false);

@@ -90,27 +90,39 @@ void MeshFormat::subdivideTri(const voxelformat::TexturedTri &tri, TriCollection
 	tinyTris.push_back(tri);
 }
 
+uint8_t MeshFormat::PosSampling::getNormal() const {
+	uint8_t normal = 0;
+	uint32_t area = 0;
+	for (const PosSamplingEntry &pe : entries) {
+		if (pe.area > area) {
+			area = pe.area;
+			normal = pe.normal;
+		}
+	}
+	return normal;
+}
+
 core::RGBA MeshFormat::PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
 	if (entries.size() == 1) {
 		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
 									   flattenFactor);
 	}
 	if (weightedAverage) {
-		float sumArea = 0.0f;
+		uint32_t sumArea = 0;
 		for (const PosSamplingEntry &pe : entries) {
 			sumArea += pe.area;
 		}
 		core::RGBA color(0, 0, 0, 255);
-		if (sumArea <= 0.0f) {
+		if (sumArea == 0) {
 			return color;
 		}
 		for (const PosSamplingEntry &pe : entries) {
-			color = core::RGBA::mix(color, pe.color, pe.area / sumArea);
+			color = core::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
 		}
 		return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
 	}
 	core::RGBA color(0, 0, 0, AlphaThreshold);
-	float area = 0.0f;
+	uint32_t area = 0;
 	for (const PosSamplingEntry &pe : entries) {
 		if (pe.area > area) {
 			area = pe.area;
@@ -142,34 +154,37 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
-void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap) {
+void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+							   const palette::NormalPalette &normalPalette) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
 	for (const voxelformat::TexturedTri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
-		const float area = tri.area();
 		const core::RGBA rgba = tri.centerColor();
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
+		const uint32_t area = (uint32_t)(tri.area() * 1000.0f);
 		glm::vec3 c = tri.center();
 		convertToVoxelGrid(c);
+
+		const uint8_t normalIdx = normalPalette.getClosestMatch(tri.normal());
 
 		const glm::ivec3 p(c);
 		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
 						region.toString().c_str());
 		auto iter = posMap.find(p);
 		if (iter == posMap.end()) {
-			posMap.emplace(p, {area, rgba});
+			posMap.emplace(p, {area, rgba, normalIdx});
 		} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
 			PosSampling &pos = iter->value;
-			pos.entries.emplace_back(area, rgba);
+			pos.entries.emplace_back(area, rgba, normalIdx);
 		}
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap) {
+void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap, const palette::NormalPalette &normalPalette) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
 	for (const voxelformat::TexturedTri &tri : tris) {
 		if (stopExecution()) {
@@ -179,7 +194,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
-		const float area = tri.area();
+		const uint32_t area = (uint32_t)(tri.area() * 1000.0f);
 		const glm::vec3 &normal = glm::normalize(tri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 		const glm::ivec3 mins = tri.roundedMins();
@@ -188,7 +203,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
 		Log::debug("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
-
+		const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
 				for (int z = mins.z; z < maxs.z; z++) {
@@ -200,10 +215,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 					}
 					auto iter = posMap.find(p);
 					if (iter == posMap.end()) {
-						posMap.emplace(p, {area, rgba});
+						posMap.emplace(p, {area, rgba, normalIdx});
 					} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
 						PosSampling &pos = iter->value;
-						pos.entries.emplace_back(area, rgba);
+						pos.entries.emplace_back(area, rgba, normalIdx);
 					}
 				}
 			}
@@ -299,6 +314,9 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
+	palette::NormalPalette normalPalette;
+	normalPalette.redAlert2();
+	node.setNormalPalette(normalPalette);
 
 	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();
 	const bool fillHollow = core::Var::getSafe(cfg::VoxformatFillHollow)->boolVal();
@@ -306,13 +324,11 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		const int maxVoxels = vdim.x * vdim.y * vdim.z;
 		Log::debug("max voxels: %i (%i:%i:%i)", maxVoxels, vdim.x, vdim.y, vdim.z);
 		PosMap posMap(maxVoxels);
-		transformTrisAxisAligned(region, tris, posMap);
+		transformTrisAxisAligned(region, tris, posMap, normalPalette);
 		voxelizeTris(node, posMap, fillHollow);
 	} else if (voxelizeMode == VoxelizeMode::Fast) {
 		voxel::RawVolumeWrapper wrapper(node.volume());
 		palette::Palette palette;
-		palette::NormalPalette normalPalette;
-		normalPalette.redAlert2();
 
 		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (shouldCreatePalette) {
@@ -382,7 +398,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		}
 
 		PosMap posMap((int)subdivided.size() * 3);
-		transformTris(region, subdivided, posMap);
+		transformTris(region, subdivided, posMap, normalPalette);
 		voxelizeTris(node, posMap, fillHollow);
 	}
 
@@ -447,7 +463,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
-		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba));
+		const voxel::Voxel voxel = voxel::createVoxel(palette, palette.getClosestMatch(rgba), pos.getNormal());
 		wrapper.setVoxel(entry->first, voxel);
 	}
 	if (palette.colorCount() == 1) {
