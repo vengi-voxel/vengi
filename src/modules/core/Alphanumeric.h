@@ -2,9 +2,12 @@
  * @file
  */
 
-#include "String.h"
-#include "core/StringUtil.h"
 #include <ctype.h>
+#include <string.h>
+
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#endif
 
 namespace core {
 
@@ -12,54 +15,69 @@ class Alphanumeric {
 private:
 	const char *_value;
 
+	static int ndigits(const char *s) {
+		const int n = strlen(s);
+
+		int nd = 0;
+		for (int i = 0; i < n; i++) {
+			if (isdigit(s[i])) {
+				++nd;
+			}
+		}
+		return nd;
+	}
+
 public:
 	Alphanumeric(const char *str) : _value(str) {
 	}
 
 	// Overloading the < operator
+	// https://stackoverflow.com/a/10204043/774082
 	bool operator<(const Alphanumeric &other) const {
-		size_t i = 0, j = 0;
-		size_t len1 = strlen(_value);
-		size_t len2 = strlen(other._value);
+		const char *s = _value;
+		const char *t = other._value;
 
-		while (i < len1 && j < len2) {
-			if (isdigit(_value[i]) && isdigit(other._value[j])) {
-				// Compare numeric values
-				core::String num1, num2;
+		const int sd = ndigits(s);
+		const int td = ndigits(t);
 
-				// Extract full number from the first string
-				while (i < len1 && isdigit(_value[i])) {
-					num1 += _value[i++];
-				}
-
-				// Extract full number from the second string
-				while (j < len2 && isdigit(other._value[j])) {
-					num2 += other._value[j++];
-				}
-
-				// Compare the numerical values as integers
-				int int1 = core::string::toInt(num1);
-				int int2 = core::string::toInt(num2);
-				if (int1 != int2) {
-					return int1 < int2;
-				}
-			} else if (isalpha(_value[i]) && isalpha(other._value[j])) {
-				// Compare alphabetically
-				char v1 = string::toLower(_value[i]);
-				char v2 = string::toLower(other._value[j]);
-				if (v1 != v2) {
-					return v1 < v2;
-				}
-				++i;
-				++j;
-			} else {
-				// Digits come before letters
-				return isdigit(_value[i]) && isalpha(other._value[j]);
-			}
+		/* presence of digits */
+		if (!sd && !td) {
+			return strcasecmp(s, t);
+		}
+		if (!sd) {
+			return 1;
+		}
+		if (!td) {
+			return -1;
 		}
 
-		// If we reached here, one string is a prefix of the other
-		return len1 < len2;
+		/* value of digits */
+		int i, j;
+		for (i = 0, j = 0; i < sd && j < td; ++i, ++j) {
+			while (!isdigit(*s)) {
+				++s;
+			}
+			while (!isdigit(*t)) {
+				++t;
+			}
+
+			if (*s != *t) {
+				return *s - *t;
+			}
+			++s;
+			++t;
+		}
+
+		/* number of digits */
+		if (i < sd) {
+			return 1;
+		}
+		if (j < td) {
+			return -1;
+		}
+
+		/* value of string after last digit */
+		return strcasecmp(s, t);
 	}
 
 	bool operator>(const Alphanumeric &other) const {
