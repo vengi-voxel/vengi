@@ -26,6 +26,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->ItemClick(btnid.c_str());
 			++buttonIdx;
 		}
+		IM_CHECK(buttonIdx > 0);
 	};
 }
 
