@@ -311,6 +311,8 @@ public:
 	 */
 	core::TimeProviderPtr timeProvider() const;
 
+	void wait(uint32_t ms);
+
 	static App* getInstance();
 
 	const char *translate(const char *msgid) const;

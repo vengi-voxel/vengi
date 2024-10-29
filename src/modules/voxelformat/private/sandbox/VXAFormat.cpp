@@ -290,7 +290,7 @@ bool VXAFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	uint64_t hash[2]{0};
 	vxa_priv::calculateHash(sceneGraph, hash);
 
-	if (SDL_memcmp(md5, hash, sizeof(hash))) {
+	if (core_memcmp(md5, hash, sizeof(hash))) {
 		// this changed between versions - uses iso8859-1 for node names and might also skip decorative nodes (stored as node property)
 		Log::debug("hash checksums differ from vxa to current scene graph nodes (version: %i)", version);
 	}

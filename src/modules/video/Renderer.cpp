@@ -3,13 +3,13 @@
  */
 
 #include "Renderer.h"
+#include "core/ArrayLength.h"
 #include "core/Enum.h"
 #include "core/Log.h"
 #include "core/Assert.h"
-#include <SDL_video.h>
 #include "TextureConfig.h"
 #include "core/Var.h"
-#include "image/Image.h"
+#include <SDL_video.h>
 
 namespace video {
 
@@ -22,7 +22,7 @@ static const char *featuresArray[] = {
 	"r_multidrawindirect",		"r_computeshaders",
 	"r_transformfeedback",		"r_shaderstoragebufferobject"
 };
-static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(featuresArray), "Array sizes don't match with Feature enum");
+static_assert(core::enumVal(Feature::Max) == (int)lengthof(featuresArray), "Array sizes don't match with Feature enum");
 static core::VarPtr featureVars[core::enumVal(Feature::Max)];
 
 static RenderState s;

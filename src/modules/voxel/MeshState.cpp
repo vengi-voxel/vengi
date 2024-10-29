@@ -3,12 +3,12 @@
  */
 
 #include "MeshState.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "palette/NormalPalette.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
-#include <SDL.h>
 
 namespace voxel {
 
@@ -314,14 +314,14 @@ void MeshState::extractAllPending() {
 
 void MeshState::waitForPendingExtractions() {
 	while (_pendingExtractorTasks > 0) {
-		SDL_Delay(1);
+		app::App::getInstance()->wait(1);
 	}
 }
 
 void MeshState::clearPendingExtractions() {
 	_threadPool.abort();
 	while (_runningExtractorTasks > 0) {
-		SDL_Delay(1);
+		app::App::getInstance()->wait(1);
 	}
 	_pendingQueue.clear();
 	_pendingExtractorTasks = 0;

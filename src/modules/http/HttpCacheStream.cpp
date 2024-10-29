@@ -3,13 +3,13 @@
  */
 
 #include "HttpCacheStream.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "http/Http.h"
 #include "io/Archive.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
-#include <SDL_timer.h>
 
 namespace http {
 
@@ -32,7 +32,7 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 			write(archive, file, bufStream);
 		} else if (statusCode == 429) {
 			Log::warn("Too many requests, retrying in 5 seconds... %s (%s)", url.c_str(), file.c_str());
-			SDL_Delay(5000);
+			app::App::getInstance()->wait(5000);
 			if (http::download(url, bufStream, &statusCode)) {
 				if (http::isValidStatusCode(statusCode)) {
 					write(archive, file, bufStream);

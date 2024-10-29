@@ -20,7 +20,6 @@
 #define VXB_PRINT_IMAGES 0
 #if VXB_PRINT_IMAGES
 #include "io/MemoryReadStream.h"
-#include <SDL_log.h>
 #endif
 
 namespace voxelformat {
@@ -281,7 +280,7 @@ bool VXBFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 #if VXB_PRINT_IMAGES
 		const core::String imgPrint = image::print(diffuseImages[i], false);
-		SDL_LogMessage(0, SDL_LOG_PRIORITY_ERROR, "%s\n", imgPrint.c_str());
+		Log::printf("%s\n", imgPrint.c_str());
 #endif
 	}
 
@@ -403,7 +402,7 @@ bool VXBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		io::MemoryReadStream memStream(colors.data(), colors.size() * sizeof(core::RGBA));
 		image::ImagePtr img = image::loadRGBAImageFromStream("diffuse", memStream, blockSize, blockSize);
 		const core::String imgPrint = image::print(img, false);
-		SDL_LogMessage(0, SDL_LOG_PRIORITY_ERROR, "%s\n", imgPrint.c_str());
+		Log::printf("%s\n", imgPrint.c_str());
 #endif
 	}
 

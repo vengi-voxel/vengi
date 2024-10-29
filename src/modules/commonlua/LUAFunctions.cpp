@@ -20,7 +20,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/ext/quaternion_trigonometric.hpp>
-#include <SDL.h>
 
 int clua_errorhandler(lua_State* s) {
 	Log::error("Lua error handler invoked");
@@ -537,7 +536,7 @@ void clua_quatregister(lua_State* s) {
 
 static int clua_syssleep(lua_State *s) {
 	const int ms = luaL_checkinteger(s, 1);
-	SDL_Delay(ms);
+	app::App::getInstance()->wait(ms);
 	return 0;
 }
 

@@ -7,7 +7,6 @@
 #include "core/tests/TestHelper.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include <SDL_stdinc.h>
 
 namespace core {
 
@@ -53,14 +52,13 @@ TEST_F(StringUtilTest, testIsInteger) {
 
 TEST_F(StringUtilTest, testGetBeforeToken) {
 	const size_t bufSize = 32u;
-	char *buf = (char*)core_malloc(bufSize);
+	char buf[64];
+	core::string::formatBuf(buf, sizeof(buf), "a = b c");
 	char *p = buf;
-	SDL_snprintf(buf, bufSize, "a = b c");
 	char *a = core::string::getBeforeToken(&p, " = ", bufSize);
 	char *b = p;
 	EXPECT_STREQ("a", a);
 	EXPECT_STREQ("b c", b);
-	core_free(buf);
 }
 
 TEST_F(StringUtilTest, testPath) {

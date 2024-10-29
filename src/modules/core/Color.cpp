@@ -13,7 +13,6 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Octree.h"
-#include <SDL_stdinc.h>
 #include <glm/ext/scalar_integer.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>

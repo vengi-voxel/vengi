@@ -6,7 +6,6 @@
 #include "app/tests/AbstractTest.h"
 #include "command/Command.h"
 #include "core/Var.h"
-#include <SDL_log.h>
 
 namespace util {
 

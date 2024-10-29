@@ -2,7 +2,6 @@
  * @file
  */
 
-#include "SDL_events.h"
 #include "app/tests/AbstractTest.h"
 #include "core/BindingContext.h"
 #include "util/CustomButtonNames.h"
@@ -84,13 +83,13 @@ protected:
 		core::resetBindingContexts();
 	}
 
-	void execute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+	void execute(int32_t key, int16_t modifier = 0, bool pressed = true, uint16_t count = 1u) {
 		reset();
 		EXPECT_TRUE(_handler.execute(key, modifier, pressed, 0.0, count))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should be executed";
 	}
 
-	void notExecute(int32_t key, int16_t modifier = KMOD_NONE, bool pressed = true, uint16_t count = 1u) {
+	void notExecute(int32_t key, int16_t modifier = 0, bool pressed = true, uint16_t count = 1u) {
 		reset();
 		EXPECT_FALSE(_handler.execute(key, modifier, pressed, 0.0, count))
 				<< "Command for key '" << KeyBindingHandler::toString(key, modifier, count) << "' should not be executed";

@@ -5,7 +5,6 @@
 #include "Voxel.h"
 #include "core/Assert.h"
 #include "palette/Palette.h"
-#include <SDL_stdinc.h>
 
 namespace voxel {
 

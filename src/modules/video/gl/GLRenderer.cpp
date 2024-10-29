@@ -1724,7 +1724,7 @@ void setup() {
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, buffers);
 	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, samples);
 	Log::debug("Request gles context %i.%i", glv.majorVersion, glv.minorVersion);
-	for (size_t i = 0; i < SDL_arraysize(GLVersions); ++i) {
+	for (size_t i = 0; i < lengthof(GLVersions); ++i) {
 		if (GLVersions[i].version == glv) {
 			Shader::glslVersion = GLVersions[i].glslVersion;
 			break;

@@ -13,7 +13,6 @@
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/DynamicMap.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
@@ -29,7 +28,6 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
-#include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -651,7 +649,7 @@ bool MeshFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		const size_t size = meshes.size();
 		lock.unlock();
 		if (size < models) {
-			SDL_Delay(10);
+			app::App::getInstance()->wait(10);
 		} else {
 			break;
 		}

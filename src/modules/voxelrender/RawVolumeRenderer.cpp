@@ -33,7 +33,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <SDL_timer.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL

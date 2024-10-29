@@ -207,6 +207,10 @@ int App::startMainLoop(int argc, char *argv[]) {
 	return _exitCode;
 }
 
+void App::wait(uint32_t ms) {
+	SDL_Delay(ms);
+}
+
 void App::addBlocker(AppState blockedState) {
 	_blockers[(int)blockedState] = true;
 }
@@ -273,7 +277,7 @@ void App::onFrame() {
 
 	_timeProvider->updateTickTime();
 	if (AppState::Blocked == _curState) {
-		SDL_Delay(1);
+		wait(1);
 		_deltaFrameSeconds = 0.001;
 	} else {
 		const double now = _timeProvider->tickSeconds();
@@ -288,7 +292,7 @@ void App::onFrame() {
 			if (createPid()) {
 				Log::error("Previous session crashed for %s", _appname.c_str());
 				SDL_MessageBoxData messageboxdata;
-				memset(&messageboxdata, 0, sizeof(messageboxdata));
+				core_memset(&messageboxdata, 0, sizeof(messageboxdata));
 				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
 				messageboxdata.title = "Detected previous crash";
 				const io::FilePtr &file = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead);
@@ -304,7 +308,7 @@ void App::onFrame() {
 					messageboxdata.message = "If the error persists, reset the configuration";
 				}
 				SDL_MessageBoxButtonData buttons[3];
-				memset(&buttons, 0, sizeof(buttons));
+				core_memset(&buttons, 0, sizeof(buttons));
 				buttons[0].buttonid = 0;
 				buttons[0].text = "Reset";
 				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
@@ -384,7 +388,7 @@ void App::onFrame() {
 					_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;
 					if (delay > 0.0) {
 						const uint32_t milliDelay = (uint32_t)(delay * 1000.0);
-						SDL_Delay(milliDelay);
+						wait(milliDelay);
 					}
 				} else {
 					_nextFrameSeconds = now + 1.0 / framesPerSecondsCap;

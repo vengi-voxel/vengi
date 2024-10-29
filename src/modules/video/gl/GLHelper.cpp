@@ -3,6 +3,7 @@
  */
 
 #include "GLHelper.h"
+#include "core/ArrayLength.h"
 #include "video/Renderer.h"
 #include "core/Common.h"
 #include "core/collection/List.h"
@@ -248,7 +249,7 @@ void setupFeatures() {
 		{"GL_ARB_transform_feedback2"},
 		{"GL_ARB_shader_storage_buffer_object"}
 	};
-	static_assert(core::enumVal(Feature::Max) == (int)SDL_arraysize(extensionArray), "Array sizes don't match for Feature enum");
+	static_assert(core::enumVal(Feature::Max) == (int)lengthof(extensionArray), "Array sizes don't match for Feature enum");
 
 	int numExts;
 	core_assert(glGetIntegerv != nullptr);
@@ -259,7 +260,7 @@ void setupFeatures() {
 		Log::debug("ext: %s", extensionStr);
 	}
 
-	for (size_t i = 0; i < SDL_arraysize(extensionArray); ++i) {
+	for (size_t i = 0; i < lengthof(extensionArray); ++i) {
 		const core::List<const char *>& extStrVector = extensionArray[i];
 		for (const char *extStr : extStrVector) {
 			renderState().features[i] = SDL_GL_ExtensionSupported(extStr);

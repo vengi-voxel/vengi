@@ -14,7 +14,7 @@
 #include "app/I18N.h"
 #include <inttypes.h>
 #include <SDL.h>
-#ifdef _WIN32
+#ifdef __WIN32__
 #include <windows.h>
 #include <shellapi.h>
 #else

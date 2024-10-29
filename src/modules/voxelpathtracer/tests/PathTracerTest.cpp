@@ -14,7 +14,6 @@
 #include "voxelformat/VolumeFormat.h"
 #include "core/GLM.h"
 #include "palette/Palette.h"
-#include <SDL_timer.h>
 
 class PathTracerTest : public app::AbstractTest {
 private:
@@ -45,7 +44,7 @@ TEST_F(PathTracerTest, testHMec) {
 	pathTracer.state().params.samples = 8;
 	ASSERT_TRUE(pathTracer.start(sceneGraph));
 	while (!pathTracer.update()) {
-		SDL_Delay(100);
+		_testApp->wait(100);
 	}
 	const image::ImagePtr &img = pathTracer.image();
 	ASSERT_TRUE(img);

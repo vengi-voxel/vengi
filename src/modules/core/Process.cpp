@@ -151,7 +151,7 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 	int status;
 	const pid_t pid = ::wait(&status);
 #ifdef DEBUG
-	SDL_assert(pid == childPid);
+	core_assert(pid == childPid);
 #else
 	(void)pid;
 #endif
