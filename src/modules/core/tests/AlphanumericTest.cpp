@@ -41,4 +41,14 @@ TEST(AlphanumericTest, testSort) {
 	EXPECT_GT(str21, Str20);
 }
 
+TEST(AlphanumericTest, testSort2) {
+	Alphanumeric a2("1abc2");
+	Alphanumeric a3("1abc3");
+	Alphanumeric a1("1abc1");
+
+	EXPECT_LT(a1, a2);
+	EXPECT_LT(a2, a3);
+	EXPECT_LT(a1, a3);
+}
+
 } // namespace core
