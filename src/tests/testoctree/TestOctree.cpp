@@ -21,7 +21,7 @@ bool TestOctree::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	if (Super::onKeyPress(windowHandle, key, modifier)) {
 		return true;
 	}
-	const SDL_bool current = SDL_GetRelativeMouseMode();
+	const bool current = SDL_GetRelativeMouseMode();
 	if (current) {
 		if (key == SDLK_PLUS || key == SDLK_KP_PLUS || key == SDLK_INSERT) {
 			insert();
