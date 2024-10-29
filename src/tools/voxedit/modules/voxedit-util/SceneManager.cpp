@@ -1631,6 +1631,21 @@ void SceneManager::construct() {
 		nodeRemoveUnusedColors(nodeId, updateVoxels);
 	}).setHelp(_("Remove unused colors from palette"));
 
+	command::Command::registerCommand("palette_applyall", [&] (const command::CmdArgs& args) {
+		const int nodeId = activeNode();
+		const scenegraph::SceneGraphNode &currentNode = _sceneGraph.node(nodeId);
+		const palette::Palette &currentPal = currentNode.palette();
+		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "palette_applyall");
+		for (const auto &entry : _sceneGraph.nodes()) {
+			scenegraph::SceneGraphNode &node = entry->value;
+			if (!node.isAnyModelNode()) {
+				continue;
+			}
+			node.setPalette(currentPal);
+			_mementoHandler.markPaletteChange(_sceneGraph, node);
+		}
+	}).setHelp(_("Apply the current palette to all model nodes"));
+
 	command::Command::registerCommand("palette_sort", [&] (const command::CmdArgs& args) {
 		if (args.empty()) {
 			Log::info("Usage: palette_sort [hue|saturation|brightness|cielab|original]");

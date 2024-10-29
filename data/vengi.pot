@@ -1813,6 +1813,9 @@ msgstr ""
 msgid "Remove and re-create palette"
 msgstr ""
 
+msgid "Apply to all nodes"
+msgstr ""
+
 msgid "Color closest match"
 msgstr ""
 
@@ -2356,6 +2359,9 @@ msgid "Change intensity by scaling the rgb values of the palette"
 msgstr ""
 
 msgid "Remove unused colors from palette"
+msgstr ""
+
+msgid "Apply the current palette to all model nodes"
 msgstr ""
 
 msgid "Switch active node to hovered from scene graph mode"

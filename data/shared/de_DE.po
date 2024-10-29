@@ -1914,6 +1914,9 @@ msgstr "Unbenutzte Farbe entfernen"
 msgid "Remove and re-create palette"
 msgstr "Palette entfernen und neu erstellen"
 
+msgid "Apply to all nodes"
+msgstr "Auf alle Knoten anwenden"
+
 msgid "Color closest match"
 msgstr "Nächste Farbe"
 
@@ -2485,6 +2488,9 @@ msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
 
 msgid "Remove unused colors from palette"
 msgstr "Entfernt unbenutzte Farben aus der Palette"
+
+msgid "Apply the current palette to all model nodes"
+msgstr "Die aktuelle Palette auf alle Knoten anwenden"
 
 msgid "Switch active node to hovered from scene graph mode"
 msgstr "Wechselt den aktiven Knoten vom Szenengraph-Modus zum Hovern"
