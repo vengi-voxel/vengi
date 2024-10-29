@@ -83,6 +83,13 @@ def crashlog():
         fo.write(f"Application: {userAgent}\n")
         fo.write(f"OS: {operatingSystem}/{operatingSystemVersion}\n")
         fo.write(request.data.decode("utf-8"))
+
+    tags = {}
+    tags['application'] = userAgent
+    tags['os'] = operatingSystem
+    tags['osversion'] = operatingSystemVersion
+    insertMetric("crashdump", "1", fileuuidstr, tags)
+
     return Response(status = 204)
 
 @app.route('/metric', methods = ['POST'])

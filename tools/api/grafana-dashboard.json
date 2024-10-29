@@ -1,4 +1,41 @@
 {
+	"__inputs": [
+	  {
+		"name": "DS_INFLUXDB",
+		"label": "InfluxDB",
+		"description": "",
+		"type": "datasource",
+		"pluginId": "influxdb",
+		"pluginName": "InfluxDB"
+	  }
+	],
+	"__elements": {},
+	"__requires": [
+	  {
+		"type": "grafana",
+		"id": "grafana",
+		"name": "Grafana",
+		"version": "11.1.0"
+	  },
+	  {
+		"type": "datasource",
+		"id": "influxdb",
+		"name": "InfluxDB",
+		"version": "1.0.0"
+	  },
+	  {
+		"type": "panel",
+		"id": "stat",
+		"name": "Stat",
+		"version": ""
+	  },
+	  {
+		"type": "panel",
+		"id": "timeseries",
+		"name": "Time series",
+		"version": ""
+	  }
+	],
 	"annotations": {
 	  "list": [
 		{
@@ -18,14 +55,151 @@
 	"editable": true,
 	"fiscalYearStartMonth": 0,
 	"graphTooltip": 0,
-	"id": 1,
+	"id": null,
 	"links": [],
 	"liveNow": false,
 	"panels": [
 	  {
 		"datasource": {
 		  "type": "influxdb",
-		  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+		  "uid": "${DS_INFLUXDB}"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "axisBorderShow": false,
+			  "axisCenteredZero": false,
+			  "axisColorMode": "text",
+			  "axisLabel": "",
+			  "axisPlacement": "auto",
+			  "barAlignment": 0,
+			  "drawStyle": "line",
+			  "fillOpacity": 0,
+			  "gradientMode": "none",
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  },
+			  "insertNulls": false,
+			  "lineInterpolation": "linear",
+			  "lineWidth": 1,
+			  "pointSize": 5,
+			  "scaleDistribution": {
+				"type": "linear"
+			  },
+			  "showPoints": "auto",
+			  "spanNulls": false,
+			  "stacking": {
+				"group": "A",
+				"mode": "none"
+			  },
+			  "thresholdsStyle": {
+				"mode": "off"
+			  }
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				},
+				{
+				  "color": "red",
+				  "value": 80
+				}
+			  ]
+			}
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 8,
+		  "w": 12,
+		  "x": 0,
+		  "y": 0
+		},
+		"id": 4,
+		"options": {
+		  "legend": {
+			"calcs": [
+			  "sum"
+			],
+			"displayMode": "table",
+			"placement": "right",
+			"showLegend": true
+		  },
+		  "tooltip": {
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "influxdb",
+			  "uid": "${DS_INFLUXDB}"
+			},
+			"groupBy": [
+			  {
+				"params": [
+				  "$__interval"
+				],
+				"type": "time"
+			  },
+			  {
+				"params": [
+				  "os::tag"
+				],
+				"type": "tag"
+			  },
+			  {
+				"params": [
+				  "application::tag"
+				],
+				"type": "tag"
+			  },
+			  {
+				"params": [
+				  "null"
+				],
+				"type": "fill"
+			  }
+			],
+			"measurement": "start",
+			"orderByTime": "ASC",
+			"policy": "default",
+			"refId": "A",
+			"resultFormat": "time_series",
+			"select": [
+			  [
+				{
+				  "params": [
+					"value"
+				  ],
+				  "type": "field"
+				},
+				{
+				  "params": [],
+				  "type": "count"
+				}
+			  ]
+			],
+			"tags": []
+		  }
+		],
+		"title": "Operating System",
+		"type": "timeseries"
+	  },
+	  {
+		"datasource": {
+		  "type": "influxdb",
+		  "uid": "${DS_INFLUXDB}"
 		},
 		"fieldConfig": {
 		  "defaults": {
@@ -51,16 +225,17 @@
 		},
 		"gridPos": {
 		  "h": 8,
-		  "w": 3,
-		  "x": 0,
+		  "w": 4,
+		  "x": 12,
 		  "y": 0
 		},
-		"id": 1,
+		"id": 3,
 		"options": {
 		  "colorMode": "value",
 		  "graphMode": "area",
 		  "justifyMode": "auto",
 		  "orientation": "auto",
+		  "percentChangeColorMode": "standard",
 		  "reduceOptions": {
 			"calcs": [
 			  "lastNotNull"
@@ -68,29 +243,163 @@
 			"fields": "",
 			"values": false
 		  },
+		  "showPercentChange": false,
 		  "textMode": "auto",
 		  "wideLayout": true
 		},
-		"pluginVersion": "10.2.2",
+		"pluginVersion": "11.1.0",
 		"targets": [
 		  {
 			"datasource": {
 			  "type": "influxdb",
-			  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+			  "uid": "${DS_INFLUXDB}"
 			},
 			"groupBy": [
 			  {
 				"params": [
-				  "uuid::tag"
+				  "$__interval"
+				],
+				"type": "time"
+			  },
+			  {
+				"params": [
+				  "application::tag"
 				],
 				"type": "tag"
 			  }
 			],
-			"measurement": "voxedit.start",
+			"measurement": "start",
 			"orderByTime": "ASC",
 			"policy": "default",
-			"query": "SELECT COUNT(mean)\nFROM (\nSELECT mean(\"value\") FROM \"voxedit.start\" WHERE $timeFilter GROUP BY time($__interval), \"uuid\" \n)\nGROUP BY  time($__interval)",
+			"query": "SELECT count(distinct(\"uuid\")) FROM \"start\" WHERE $timeFilter GROUP BY \"application\"::tag",
 			"rawQuery": true,
+			"refId": "A",
+			"resultFormat": "time_series",
+			"select": [
+			  [
+				{
+				  "params": [
+					"uuid"
+				  ],
+				  "type": "field"
+				},
+				{
+				  "params": [],
+				  "type": "distinct"
+				},
+				{
+				  "params": [],
+				  "type": "count"
+				}
+			  ]
+			],
+			"tags": []
+		  }
+		],
+		"title": "unique start count",
+		"type": "stat"
+	  },
+	  {
+		"datasource": {
+		  "type": "influxdb",
+		  "uid": "${DS_INFLUXDB}"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "axisBorderShow": false,
+			  "axisCenteredZero": false,
+			  "axisColorMode": "text",
+			  "axisLabel": "",
+			  "axisPlacement": "auto",
+			  "barAlignment": 0,
+			  "drawStyle": "line",
+			  "fillOpacity": 0,
+			  "gradientMode": "none",
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  },
+			  "insertNulls": false,
+			  "lineInterpolation": "linear",
+			  "lineWidth": 1,
+			  "pointSize": 5,
+			  "scaleDistribution": {
+				"type": "linear"
+			  },
+			  "showPoints": "auto",
+			  "spanNulls": false,
+			  "stacking": {
+				"group": "A",
+				"mode": "none"
+			  },
+			  "thresholdsStyle": {
+				"mode": "off"
+			  }
+			},
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				},
+				{
+				  "color": "red",
+				  "value": 80
+				}
+			  ]
+			}
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 8,
+		  "w": 8,
+		  "x": 0,
+		  "y": 8
+		},
+		"id": 1,
+		"options": {
+		  "legend": {
+			"calcs": [],
+			"displayMode": "list",
+			"placement": "bottom",
+			"showLegend": true
+		  },
+		  "tooltip": {
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "influxdb",
+			  "uid": "${DS_INFLUXDB}"
+			},
+			"groupBy": [
+			  {
+				"params": [
+				  "$__interval"
+				],
+				"type": "time"
+			  },
+			  {
+				"params": [
+				  "application::tag"
+				],
+				"type": "tag"
+			  }
+			],
+			"measurement": "start",
+			"orderByTime": "ASC",
+			"policy": "default",
 			"refId": "A",
 			"resultFormat": "time_series",
 			"select": [
@@ -103,20 +412,20 @@
 				},
 				{
 				  "params": [],
-				  "type": "mean"
+				  "type": "count"
 				}
 			  ]
 			],
 			"tags": []
 		  }
 		],
-		"title": "Unique User Count",
-		"type": "stat"
+		"title": "application starts",
+		"type": "timeseries"
 	  },
 	  {
 		"datasource": {
 		  "type": "influxdb",
-		  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+		  "uid": "${DS_INFLUXDB}"
 		},
 		"fieldConfig": {
 		  "defaults": {
@@ -124,36 +433,70 @@
 			  "mode": "palette-classic"
 			},
 			"custom": {
+			  "axisBorderShow": false,
+			  "axisCenteredZero": false,
+			  "axisColorMode": "text",
+			  "axisLabel": "",
+			  "axisPlacement": "auto",
+			  "barAlignment": 0,
+			  "drawStyle": "bars",
+			  "fillOpacity": 0,
+			  "gradientMode": "none",
 			  "hideFrom": {
 				"legend": false,
 				"tooltip": false,
 				"viz": false
+			  },
+			  "insertNulls": false,
+			  "lineInterpolation": "linear",
+			  "lineWidth": 1,
+			  "pointSize": 5,
+			  "scaleDistribution": {
+				"type": "linear"
+			  },
+			  "showPoints": "always",
+			  "spanNulls": false,
+			  "stacking": {
+				"group": "A",
+				"mode": "none"
+			  },
+			  "thresholdsStyle": {
+				"mode": "off"
 			  }
 			},
-			"mappings": []
+			"decimals": 0,
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				},
+				{
+				  "color": "red",
+				  "value": 80
+				}
+			  ]
+			}
 		  },
 		  "overrides": []
 		},
 		"gridPos": {
-		  "h": 14,
-		  "w": 4,
-		  "x": 3,
-		  "y": 0
+		  "h": 8,
+		  "w": 8,
+		  "x": 8,
+		  "y": 8
 		},
-		"id": 2,
+		"id": 5,
 		"options": {
 		  "legend": {
-			"displayMode": "list",
+			"calcs": [
+			  "sum"
+			],
+			"displayMode": "table",
 			"placement": "bottom",
 			"showLegend": true
-		  },
-		  "pieType": "pie",
-		  "reduceOptions": {
-			"calcs": [
-			  "lastNotNull"
-			],
-			"fields": "",
-			"values": false
 		  },
 		  "tooltip": {
 			"mode": "single",
@@ -164,7 +507,130 @@
 		  {
 			"datasource": {
 			  "type": "influxdb",
-			  "uid": "f693da12-3471-4856-acfe-70fd7ac26db1"
+			  "uid": "${DS_INFLUXDB}"
+			},
+			"groupBy": [
+			  {
+				"params": [
+				  "$interval"
+				],
+				"type": "time"
+			  },
+			  {
+				"params": [
+				  "application::tag"
+				],
+				"type": "tag"
+			  }
+			],
+			"measurement": "crashdump",
+			"orderByTime": "ASC",
+			"policy": "default",
+			"refId": "A",
+			"resultFormat": "time_series",
+			"select": [
+			  [
+				{
+				  "params": [
+					"value"
+				  ],
+				  "type": "field"
+				},
+				{
+				  "params": [],
+				  "type": "count"
+				}
+			  ]
+			],
+			"tags": []
+		  }
+		],
+		"title": "Crashes",
+		"type": "timeseries"
+	  },
+	  {
+		"datasource": {
+		  "type": "influxdb",
+		  "uid": "${DS_INFLUXDB}"
+		},
+		"fieldConfig": {
+		  "defaults": {
+			"color": {
+			  "mode": "palette-classic"
+			},
+			"custom": {
+			  "axisBorderShow": false,
+			  "axisCenteredZero": false,
+			  "axisColorMode": "text",
+			  "axisLabel": "",
+			  "axisPlacement": "auto",
+			  "barAlignment": 0,
+			  "drawStyle": "line",
+			  "fillOpacity": 0,
+			  "gradientMode": "none",
+			  "hideFrom": {
+				"legend": false,
+				"tooltip": false,
+				"viz": false
+			  },
+			  "insertNulls": false,
+			  "lineInterpolation": "linear",
+			  "lineWidth": 1,
+			  "pointSize": 5,
+			  "scaleDistribution": {
+				"type": "linear"
+			  },
+			  "showPoints": "auto",
+			  "spanNulls": false,
+			  "stacking": {
+				"group": "A",
+				"mode": "none"
+			  },
+			  "thresholdsStyle": {
+				"mode": "off"
+			  }
+			},
+			"decimals": 0,
+			"mappings": [],
+			"thresholds": {
+			  "mode": "absolute",
+			  "steps": [
+				{
+				  "color": "green",
+				  "value": null
+				}
+			  ]
+			},
+			"unit": "none"
+		  },
+		  "overrides": []
+		},
+		"gridPos": {
+		  "h": 9,
+		  "w": 16,
+		  "x": 0,
+		  "y": 16
+		},
+		"id": 2,
+		"options": {
+		  "legend": {
+			"calcs": [
+			  "sum"
+			],
+			"displayMode": "table",
+			"placement": "right",
+			"showLegend": true
+		  },
+		  "tooltip": {
+			"mode": "single",
+			"sort": "none"
+		  }
+		},
+		"targets": [
+		  {
+			"datasource": {
+			  "type": "influxdb",
+			  "uid": "${DS_INFLUXDB}"
 			},
 			"groupBy": [
 			  {
@@ -180,7 +646,7 @@
 				"type": "tag"
 			  }
 			],
-			"measurement": "voxedit.load",
+			"measurement": "load",
 			"orderByTime": "ASC",
 			"policy": "default",
 			"refId": "A",
@@ -195,31 +661,31 @@
 				},
 				{
 				  "params": [],
-				  "type": "sum"
+				  "type": "count"
 				}
 			  ]
 			],
 			"tags": []
 		  }
 		],
-		"title": "Formats",
-		"type": "piechart"
+		"title": "formats",
+		"type": "timeseries"
 	  }
 	],
-	"refresh": "",
-	"schemaVersion": 38,
+	"refresh": "5s",
+	"schemaVersion": 39,
 	"tags": [],
 	"templating": {
 	  "list": []
 	},
 	"time": {
-	  "from": "now-1y",
+	  "from": "now-7d",
 	  "to": "now"
 	},
 	"timepicker": {},
 	"timezone": "",
-	"title": "vengi metrics",
+	"title": "vengi",
 	"uid": "b947d4f7-71b1-4442-a220-ff8b6c3cca6d",
-	"version": 1,
+	"version": 13,
 	"weekStart": ""
 }
