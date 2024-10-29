@@ -148,7 +148,8 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		}
 		_filteredEntities.push_back(&_entities[i]);
 	}
-	_filteredEntities.sort(fileDialogSorter[(int)FileDialogColumnId::File].asc);
+
+	_needsSorting = true;
 
 	if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
 		const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
@@ -439,7 +440,7 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 
 		// Sort files
 		if (ImGuiTableSortSpecs *specs = ImGui::TableGetSortSpecs()) {
-			if (specs->SpecsDirty && _filteredEntities.size() > 1U) {
+			if ((_needsSorting || specs->SpecsDirty) && _filteredEntities.size() > 1U) {
 				for (int n = 0; n < specs->SpecsCount; n++) {
 					const ImGuiTableColumnSortSpecs &spec = specs->Specs[n];
 					if (spec.SortDirection == ImGuiSortDirection_Ascending) {
@@ -447,8 +448,9 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 					} else {
 						_filteredEntities.sort(fileDialogSorter[spec.ColumnUserID].desc);
 					}
+					break;
 				}
-				specs->SpecsDirty = false;
+				_needsSorting = specs->SpecsDirty = false;
 			}
 		}
 

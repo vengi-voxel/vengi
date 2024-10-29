@@ -54,6 +54,8 @@ private:
 	core::VarPtr _lastFilterSave;
 	core::VarPtr _lastFilterOpen;
 
+	// used when e.g. changing the directory
+	bool _needsSorting = false;
 	bool _scrollToSelection = false;
 	TimedString _scrollToText;
 
