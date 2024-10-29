@@ -427,10 +427,13 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 	bool doubleClickedFile = false;
 	bool doubleClickedDir = false;
 	io::FilesystemEntry doubleClickedDirEntry;
-	static const uint32_t TableFlags =
+	uint32_t tableFlags =
 		ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable |
-		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Sortable;
-	if (ImGui::BeginTable("##files", 4, TableFlags)) {
+		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+	if (_filteredEntities.size() < 2000) {
+		tableFlags |= ImGuiTableFlags_Sortable;
+	}
+	if (ImGui::BeginTable("##files", 4, tableFlags)) {
 		ImGui::TableSetupColumn(_("File"), ImGuiTableColumnFlags_WidthStretch, 0.7f, (int)FileDialogColumnId::File);
 		ImGui::TableSetupColumn(_("Size"), ImGuiTableColumnFlags_WidthStretch, 0.09f, (int)FileDialogColumnId::Size);
 		ImGui::TableSetupColumn(_("Type"), ImGuiTableColumnFlags_WidthStretch, 0.07f, (int)FileDialogColumnId::Type);
