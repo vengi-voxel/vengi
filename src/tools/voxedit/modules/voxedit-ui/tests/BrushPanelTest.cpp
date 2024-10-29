@@ -15,8 +15,7 @@ namespace voxedit {
 static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *id, const SceneManagerPtr &sceneMgr, BrushType type) {
 	IM_CHECK_RETV(sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)), false);
 
-	const int viewportId = viewportEditMode(ctx, panel->app());
-	IM_CHECK_SILENT_RETV(viewportId != -1, false);
+	IM_CHECK_SILENT_RETV(activateViewportEditMode(ctx, panel->app()),	 false);
 
 	// now we can focus the brush panel
 	IM_CHECK_SILENT_RETV(panel->focusWindow(ctx, id), false);
@@ -83,7 +82,7 @@ static bool runBrushModifiers(BrushPanel *panel, ImGuiTestContext *ctx, const ch
 
 void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "cycle brush types")->TestFunc = [=](ImGuiTestContext *ctx) {
-		viewportEditMode(ctx, _app);
+		IM_CHECK(activateViewportEditMode(ctx, _app));
 
 		// now we can focus the brush panel
 		IM_CHECK(focusWindow(ctx, id));

@@ -12,6 +12,7 @@ namespace voxedit {
 
 void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 	IM_REGISTER_TEST(engine, testCategory(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(activateViewportEditMode(ctx, _app));
 		const int viewportId = viewportEditMode(ctx, _app);
 		IM_CHECK_SILENT(viewportId != -1);
 		IM_CHECK(_sceneMgr->newScene(true, ctx->Test->Name, voxel::Region(0, 31)));

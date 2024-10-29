@@ -12,7 +12,7 @@ namespace voxedit {
 
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset) {
 	IM_CHECK_RETV(viewportId != -1, false);
-	ImGuiWindow* window = ImGui::FindWindowByName(Viewport::viewportId(viewportId).c_str());
+	ImGuiWindow *window = ImGui::FindWindowByName(Viewport::viewportId(viewportId).c_str());
 	IM_CHECK_SILENT_RETV(window != nullptr, false);
 	ImVec2 pos = window->Rect().GetCenter();
 	pos.x += offset.x;
@@ -92,6 +92,48 @@ int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 		ctx->ItemClick(viewportRef.c_str());
 	}
 	return viewportId;
+}
+
+bool activateViewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
+	const int viewportId = viewportSceneMode(ctx, app);
+	IM_CHECK_RETV(viewportId != -1, false);
+	const core::String vid = Viewport::viewportId(viewportId);
+	ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+	if (window == nullptr) {
+		ctx->LogError("Error: could not find viewport window with title/id %s", vid.c_str());
+		IM_CHECK_SILENT_RETV(window != nullptr, false);
+	}
+	ctx->WindowFocus(window->ID);
+	ctx->Yield();
+	ctx->ItemClick(window->ID);
+	ctx->Yield();
+	return true;
+}
+
+bool activateViewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
+	const int viewportId = viewportEditMode(ctx, app);
+	IM_CHECK_RETV(viewportId != -1, false);
+	const core::String vid = Viewport::viewportId(viewportId);
+	ImGuiWindow *window = ImGui::FindWindowByName(vid.c_str());
+	if (window == nullptr) {
+		ctx->LogError("Error: could not find viewport window with title/id %s", vid.c_str());
+		IM_CHECK_SILENT_RETV(window != nullptr, false);
+	}
+	ctx->WindowFocus(window->ID);
+	ctx->Yield();
+	ctx->ItemClick(window->ID);
+	ctx->Yield();
+	return true;
+}
+
+bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const glm::ivec3 &pos,
+			  const voxel::Voxel &voxel) {
+	voxel::RawVolume *volume = node->volume();
+	IM_CHECK_RETV(volume != nullptr, false);
+	IM_CHECK_RETV(volume->region().containsPoint(pos), false);
+	IM_CHECK_RETV(volume->setVoxel(pos, voxel), false);
+	sceneMgr->modified(node->id(), voxel::Region(pos, pos));
+	return true;
 }
 
 } // namespace voxedit

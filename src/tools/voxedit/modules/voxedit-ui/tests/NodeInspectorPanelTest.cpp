@@ -14,13 +14,7 @@ namespace voxedit {
 
 void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	IM_REGISTER_TEST(engine, testCategory(), "transform")->TestFunc = [=](ImGuiTestContext *ctx) {
-		const int viewportId = viewportSceneMode(ctx, _app);
-		IM_CHECK_SILENT(viewportId != -1);
-
-		// by activating the edit mode viewport - we activate the brush panel
-		const core::String vid = Viewport::viewportId(viewportId);
-		ctx->ItemClick(vid.c_str());
-
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("Tr/$$0", 1.0f);
 		ctx->ItemInputValue("Tr/$$1", 2.0f);
@@ -42,11 +36,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "properties")->TestFunc = [=](ImGuiTestContext *ctx) {
-		const int viewportId = viewportSceneMode(ctx, _app);
-		IM_CHECK_SILENT(viewportId != -1);
-		const core::String vid = Viewport::viewportId(viewportId);
-		ctx->ItemClick(vid.c_str());
-
+		IM_CHECK(activateViewportSceneMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->ItemInputValue("##nodelist/##newpropertykey", "Key");
 		ctx->ItemInputValue("##nodelist/##newpropertyvalue", "Value");
@@ -55,12 +45,7 @@ void NodeInspectorPanel::registerUITests(ImGuiTestEngine *engine, const char *id
 
 	IM_REGISTER_TEST(engine, testCategory(), "sizes")->TestFunc = [=](ImGuiTestContext *ctx) {
 		util::ScopedVarChange scoped(cfg::VoxEditRegionSizes, "3 3 3,2 2 2,1 1 1");
-		const int viewportId = viewportEditMode(ctx, _app);
-		IM_CHECK_SILENT(viewportId != -1);
-		const core::String vid = Viewport::viewportId(viewportId);
-		ctx->ItemClick(vid.c_str());
-		ctx->Yield();
-
+		IM_CHECK(activateViewportEditMode(ctx, _app));
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemClick("2x2x2##regionsize");

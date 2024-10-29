@@ -6,6 +6,7 @@
 
 #include "scenegraph/SceneGraphNode.h" // InvalidNodeId
 #include "ui/IMGUIApp.h"
+#include "voxel/Voxel.h"
 
 namespace voxedit {
 
@@ -19,5 +20,8 @@ bool executeViewportClickArea(ImGuiTestContext *ctx, const SceneManagerPtr &scen
 bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, int viewportId, ImVec2 offset = {0.0f, 0.0f});
 int viewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
 int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
+bool activateViewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
+bool activateViewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
+bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 
 } // namespace voxedit
