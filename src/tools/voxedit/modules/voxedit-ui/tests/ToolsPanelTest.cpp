@@ -3,13 +3,9 @@
  */
 
 #include "../ToolsPanel.h"
-#include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "TestUtil.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxel/RawVolume.h"
-#include "voxel/Region.h"
 
 namespace voxedit {
 
