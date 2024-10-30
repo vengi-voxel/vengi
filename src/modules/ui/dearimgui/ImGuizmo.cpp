@@ -1,5 +1,5 @@
 // https://github.com/CedricGuillemet/ImGuizmo
-// v 1.89 WIP
+// v1.91.3 WIP
 //
 // The MIT License(MIT)
 //
@@ -668,6 +668,7 @@ namespace IMGUIZMO_NAMESPACE
    {
       Context() : mbUsing(false), mbEnable(true), mbUsingBounds(false)
       {
+		  mIDStack.push_back(-1);
       }
 
       ImDrawList* mDrawList;
@@ -708,7 +709,7 @@ namespace IMGUIZMO_NAMESPACE
       bool mbMouseOver;
       bool mReversed; // reversed projection matrix
 
-      // view manipulator
+      // mgerhardy: view manipulator
       bool mbIsDragging = false;
       bool mbIsClicking = false;
       bool mbIsInside = false;
@@ -762,12 +763,14 @@ namespace IMGUIZMO_NAMESPACE
 
       bool mIsOrthographic = false;
 
-      int mActualID = -1;
-      int mEditingID = -1;
+      ImVector<ImGuiID> mIDStack;
+      ImGuiID mEditingID = -1;
       OPERATION mOperation = OPERATION(-1);
 
       bool mAllowAxisFlip = true;
       float mGizmoSizeClipSpace = 0.1f;
+
+      inline ImGuiID GetCurrentID() {return mIDStack.back();}
    };
 
    static Context gContext;
@@ -1007,7 +1010,7 @@ namespace IMGUIZMO_NAMESPACE
 
    bool IsUsing()
    {
-      return (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID)) || gContext.mbUsingBounds;
+      return (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID)) || gContext.mbUsingBounds;
    }
 
    bool IsUsingAny()
@@ -1170,7 +1173,7 @@ namespace IMGUIZMO_NAMESPACE
       dirPlaneX = directionUnary[(axisIndex + 1) % 3];
       dirPlaneY = directionUnary[(axisIndex + 2) % 3];
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID))
       {
          // when using, use stored factors so the gizmo doesn't flip when we translate
          belowAxisLimit = gContext.mBelowAxisLimit[axisIndex];
@@ -1322,7 +1325,7 @@ namespace IMGUIZMO_NAMESPACE
          drawList->AddCircle(worldToPos(gContext.mModel.v.position, gContext.mViewProjection), gContext.mRadiusSquareCenter, colors[0], 64, gContext.mStyle.RotationOuterLineThickness);
       }
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsRotateType(type))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsRotateType(type))
       {
          ImVec2 circlePos[halfCircleSegmentCount + 1];
 
@@ -1379,7 +1382,7 @@ namespace IMGUIZMO_NAMESPACE
       // draw
       vec_t scaleDisplay = { 1.f, 1.f, 1.f, 1.f };
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID))
       {
          scaleDisplay = gContext.mScale;
       }
@@ -1406,7 +1409,7 @@ namespace IMGUIZMO_NAMESPACE
                ImVec2 worldDirSSpaceNoScale = worldToPos(dirAxis * markerScale * gContext.mScreenFactor, gContext.mMVP);
                ImVec2 worldDirSSpace = worldToPos((dirAxis * markerScale * scaleDisplay[i]) * gContext.mScreenFactor, gContext.mMVP);
 
-               if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+               if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID))
                {
                   ImU32 scaleLineColor = GetColorU32(SCALE_LINE);
                   drawList->AddLine(baseSSpace, worldDirSSpaceNoScale, scaleLineColor, gContext.mStyle.ScaleLineThickness);
@@ -1430,7 +1433,7 @@ namespace IMGUIZMO_NAMESPACE
       // draw screen cirle
       drawList->AddCircleFilled(gContext.mScreenSquareCenter, gContext.mStyle.CenterCircleSize, colors[0], 32);
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsScaleType(type))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsScaleType(type))
       {
          //ImVec2 sourcePosOnScreen = worldToPos(gContext.mMatrixOrigin, gContext.mViewProjection);
          ImVec2 destinationPosOnScreen = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
@@ -1467,7 +1470,7 @@ namespace IMGUIZMO_NAMESPACE
       // draw
       vec_t scaleDisplay = { 1.f, 1.f, 1.f, 1.f };
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID))
       {
          scaleDisplay = gContext.mScale;
       }
@@ -1495,7 +1498,7 @@ namespace IMGUIZMO_NAMESPACE
                ImVec2 worldDirSSpace = worldToPos((dirAxis * markerScale * scaleDisplay[i]) * gContext.mScreenFactor, gContext.mMVPLocal);
 
 #if 0
-               if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+               if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID))
                {
                   drawList->AddLine(baseSSpace, worldDirSSpaceNoScale, IM_COL32(0x40, 0x40, 0x40, 0xFF), 3.f);
                   drawList->AddCircleFilled(worldDirSSpaceNoScale, 6.f, IM_COL32(0x40, 0x40, 0x40, 0xFF));
@@ -1515,7 +1518,7 @@ namespace IMGUIZMO_NAMESPACE
       // draw screen cirle
       drawList->AddCircle(gContext.mScreenSquareCenter, 20.f, colors[0], 32, gContext.mStyle.CenterCircleSize);
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsScaleType(type))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsScaleType(type))
       {
          //ImVec2 sourcePosOnScreen = worldToPos(gContext.mMatrixOrigin, gContext.mViewProjection);
          ImVec2 destinationPosOnScreen = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
@@ -1609,7 +1612,7 @@ namespace IMGUIZMO_NAMESPACE
 
       drawList->AddCircleFilled(gContext.mScreenSquareCenter, gContext.mStyle.CenterCircleSize, colors[0], 32);
 
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsTranslateType(type))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsTranslateType(type))
       {
          ImU32 translationLineColor = GetColorU32(TRANSLATION_LINE);
 
@@ -1803,7 +1806,7 @@ namespace IMGUIZMO_NAMESPACE
                gContext.mBoundsLocalPivot[thirdAxis] = aabb[oppositeIndex][thirdAxis];
 
                gContext.mbUsingBounds = true;
-               gContext.mEditingID = gContext.mActualID;
+               gContext.mEditingID = gContext.GetCurrentID();
                gContext.mBoundsMatrix = gContext.mModelSource;
             }
             // small anchor on middle of segment
@@ -1822,12 +1825,12 @@ namespace IMGUIZMO_NAMESPACE
                gContext.mBoundsLocalPivot[gContext.mBoundsAxis[0]] = aabb[oppositeIndex][indices[i % 2]];// bounds[gContext.mBoundsAxis[0]] * (((i + 1) & 2) ? 1.f : -1.f);
 
                gContext.mbUsingBounds = true;
-               gContext.mEditingID = gContext.mActualID;
+               gContext.mEditingID = gContext.GetCurrentID();
                gContext.mBoundsMatrix = gContext.mModelSource;
             }
          }
 
-         if (gContext.mbUsingBounds && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID))
+         if (gContext.mbUsingBounds && (gContext.GetCurrentID() == gContext.mEditingID))
          {
             matrix_t scale;
             scale.SetToIdentity();
@@ -2116,7 +2119,7 @@ namespace IMGUIZMO_NAMESPACE
       bool modified = false;
 
       // move
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsTranslateType(gContext.mCurrentOperation))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsTranslateType(gContext.mCurrentOperation))
       {
 #if IMGUI_VERSION_NUM >= 18723
          ImGui::SetNextFrameWantCaptureMouse(true);
@@ -2202,7 +2205,7 @@ namespace IMGUIZMO_NAMESPACE
          if (CanActivate() && type != MT_NONE)
          {
             gContext.mbUsing = true;
-            gContext.mEditingID = gContext.mActualID;
+            gContext.mEditingID = gContext.GetCurrentID();
             gContext.mCurrentOperation = type;
             vec_t movePlanNormal[] = { gContext.mModel.v.right, gContext.mModel.v.up, gContext.mModel.v.dir,
                gContext.mModel.v.right, gContext.mModel.v.up, gContext.mModel.v.dir,
@@ -2251,7 +2254,7 @@ namespace IMGUIZMO_NAMESPACE
          if (CanActivate() && type != MT_NONE)
          {
             gContext.mbUsing = true;
-            gContext.mEditingID = gContext.mActualID;
+            gContext.mEditingID = gContext.GetCurrentID();
             gContext.mCurrentOperation = type;
             const vec_t movePlanNormal[] = { gContext.mModel.v.up, gContext.mModel.v.dir, gContext.mModel.v.right, gContext.mModel.v.dir, gContext.mModel.v.up, gContext.mModel.v.right, -gContext.mCameraDir };
             // pickup plan
@@ -2267,7 +2270,7 @@ namespace IMGUIZMO_NAMESPACE
          }
       }
       // scale
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsScaleType(gContext.mCurrentOperation))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsScaleType(gContext.mCurrentOperation))
       {
 #if IMGUI_VERSION_NUM >= 18723
          ImGui::SetNextFrameWantCaptureMouse(true);
@@ -2379,7 +2382,7 @@ namespace IMGUIZMO_NAMESPACE
          if (CanActivate() && type != MT_NONE)
          {
             gContext.mbUsing = true;
-            gContext.mEditingID = gContext.mActualID;
+            gContext.mEditingID = gContext.GetCurrentID();
             gContext.mCurrentOperation = type;
             const vec_t rotatePlanNormal[] = { gContext.mModel.v.right, gContext.mModel.v.up, gContext.mModel.v.dir, -gContext.mCameraDir };
             // pickup plan
@@ -2400,7 +2403,7 @@ namespace IMGUIZMO_NAMESPACE
       }
 
       // rotation
-      if (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID) && IsRotateType(gContext.mCurrentOperation))
+      if (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID) && IsRotateType(gContext.mCurrentOperation))
       {
 #if IMGUI_VERSION_NUM >= 18723
          ImGui::SetNextFrameWantCaptureMouse(true);
@@ -2508,7 +2511,63 @@ namespace IMGUIZMO_NAMESPACE
 
    void SetID(int id)
    {
-      gContext.mActualID = id;
+      gContext.mIDStack.back() = id;
+   }
+
+   ImGuiID GetID(const char* str, const char* str_end)
+   {
+      ImGuiID seed = gContext.mIDStack.back();
+      ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
+      return id;
+   }
+
+   ImGuiID GetID(const char* str)
+   {
+      return GetID(str, nullptr);
+   }
+
+   ImGuiID GetID(const void* ptr)
+   {
+      ImGuiID seed = gContext.mIDStack.back();
+      ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
+      return id;
+   }
+
+   ImGuiID GetID(int n)
+   {
+      ImGuiID seed = gContext.mIDStack.back();
+      ImGuiID id = ImHashData(&n, sizeof(n), seed);
+      return id;
+   }
+
+   void PushID(const char* str_id)
+   {
+      ImGuiID id = GetID(str_id);
+      gContext.mIDStack.push_back(id);
+   }
+
+   void PushID(const char* str_id_begin, const char* str_id_end)
+   {
+      ImGuiID id = GetID(str_id_begin, str_id_end);
+      gContext.mIDStack.push_back(id);
+   }
+
+   void PushID(const void* ptr_id)
+   {
+      ImGuiID id = GetID(ptr_id);
+      gContext.mIDStack.push_back(id);
+   }
+
+   void PushID(int int_id)
+   {
+      ImGuiID id = GetID(int_id);
+      gContext.mIDStack.push_back(id);
+   }
+
+   void PopID()
+   {
+      IM_ASSERT(gContext.mIDStack.Size > 1); // Too many PopID(), or could be popping in a wrong/different window?
+      gContext.mIDStack.pop_back();
    }
 
    void AllowAxisFlip(bool value)

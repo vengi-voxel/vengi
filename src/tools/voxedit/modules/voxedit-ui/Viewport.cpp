@@ -816,7 +816,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 
 	const bool orthographic = camera.mode() == video::CameraMode::Orthogonal;
 
-	ImGuizmo::SetID(_id);
+	ImGuizmo::PushID(_id);
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetWindow();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
@@ -826,6 +826,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	ImGuizmo::SetOrthographic(orthographic);
 	const bool editModeModified = runGizmo(camera);
 	renderCameraManipulator(camera, headerSize);
+	ImGuizmo::PopID();
 	return editModeModified;
 }
 
