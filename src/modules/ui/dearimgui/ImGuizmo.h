@@ -224,6 +224,8 @@ namespace IMGUIZMO_NAMESPACE
    // use this version if you did not call Manipulate before and you are just using ViewManipulate
    IMGUI_API void ViewManipulate(float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor);
 
+   IMGUI_API void SetAlternativeWindow(ImGuiWindow* window);
+
    [[deprecated("Use PushID/PopID instead.")]]
    IMGUI_API void SetID(int id);
 
