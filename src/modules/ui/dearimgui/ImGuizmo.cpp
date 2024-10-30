@@ -666,7 +666,7 @@ namespace IMGUIZMO_NAMESPACE
 
    struct Context
    {
-      Context() : mbUsing(false), mbEnable(true), mbUsingBounds(false)
+      Context() : mbUsing(false), mbUsingViewManipulate(false), mbEnable(true), mbUsingBounds(false)
       {
 		  mIDStack.push_back(-1);
       }
@@ -705,6 +705,7 @@ namespace IMGUIZMO_NAMESPACE
       vec_t mRelativeOrigin;
 
       bool mbUsing;
+      bool mbUsingViewManipulate;
       bool mbEnable;
       bool mbMouseOver;
       bool mReversed; // reversed projection matrix
@@ -1011,6 +1012,11 @@ namespace IMGUIZMO_NAMESPACE
    bool IsUsing()
    {
       return (gContext.mbUsing && (gContext.GetCurrentID() == gContext.mEditingID)) || gContext.mbUsingBounds;
+   }
+
+   bool IsUsingViewManipulate()
+   {
+      return gContext.mbUsingViewManipulate;
    }
 
    bool IsUsingAny()
@@ -3073,6 +3079,8 @@ namespace IMGUIZMO_NAMESPACE
          vec_t newEye = camTarget + newDir * length;
          LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view);
       }
+
+      gContext.mbUsingViewManipulate = (interpolationFrames != 0) || gContext.mbIsDragging;
 
       // restore view/projection because it was used to compute ray
       ComputeContext(svgView.m16, svgProjection.m16, gContext.mModelSource.m16, gContext.mMode);
