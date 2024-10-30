@@ -2591,6 +2591,14 @@ namespace IMGUIZMO_NAMESPACE
      gContext.mPlaneLimit = value;
    }
 
+   bool IsOver(float* position, float pixelRadius)
+   {
+      const ImGuiIO& io = ImGui::GetIO();
+
+      float radius = sqrtf((ImLengthSqr(worldToPos({ position[0], position[1], position[2], 0.0f }, gContext.mViewProjection) - io.MousePos)));
+      return radius < pixelRadius;
+   }
+
    bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix, const float* snap, const float* localBounds, const float* boundsSnap)
    {
       gContext.mDrawList->PushClipRect (ImVec2 (gContext.mX, gContext.mY), ImVec2 (gContext.mX + gContext.mWidth, gContext.mY + gContext.mHeight), false);
