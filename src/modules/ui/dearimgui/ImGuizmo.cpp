@@ -763,6 +763,8 @@ namespace IMGUIZMO_NAMESPACE
       float mDisplayRatio = 1.f;
 
       bool mIsOrthographic = false;
+      // check to not have multiple gizmo highlighted at the same time
+      bool mbOverGizmoHotspot = false;
 
       ImVector<ImGuiID> mIDStack;
       ImGuiID mEditingID = -1;
@@ -1004,6 +1006,7 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mDrawList = ImGui::GetWindowDrawList();
       // mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
       gContext.mWindow = ImGui::GetCurrentWindow();
+      gContext.mbOverGizmoHotspot = false;
       ImGui::End();
       ImGui::PopStyleVar();
       ImGui::PopStyleColor(2);
@@ -2199,7 +2202,8 @@ namespace IMGUIZMO_NAMESPACE
       {
          // find new possible way to move
          vec_t gizmoHitProportion;
-         type = GetMoveType(op, &gizmoHitProportion);
+         type = gContext.mbOverGizmoHotspot ? MT_NONE : GetMoveType(op, &gizmoHitProportion);
+         gContext.mbOverGizmoHotspot |= type != MT_NONE;
          if (type != MT_NONE)
          {
 #if IMGUI_VERSION_NUM >= 18723
@@ -2248,7 +2252,9 @@ namespace IMGUIZMO_NAMESPACE
       if (!gContext.mbUsing)
       {
          // find new possible way to scale
-         type = GetScaleType(op);
+         type = gContext.mbOverGizmoHotspot ? MT_NONE : GetScaleType(op);
+         gContext.mbOverGizmoHotspot |= type != MT_NONE;
+
          if (type != MT_NONE)
          {
 #if IMGUI_VERSION_NUM >= 18723
@@ -2369,7 +2375,8 @@ namespace IMGUIZMO_NAMESPACE
 
       if (!gContext.mbUsing)
       {
-         type = GetRotateType(op);
+         type = gContext.mbOverGizmoHotspot ? MT_NONE : GetRotateType(op);
+         gContext.mbOverGizmoHotspot |= type != MT_NONE;
 
          if (type != MT_NONE)
          {
