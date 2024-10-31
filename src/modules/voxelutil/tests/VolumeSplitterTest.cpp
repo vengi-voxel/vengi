@@ -4,6 +4,7 @@
 
 #include "voxelutil/VolumeSplitter.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ScopedPtr.h"
 #include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -51,7 +52,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	EXPECT_EQ(8u, rawVolumes.size());
 
 	// merge volumes
-	voxel::RawVolume *merged = voxelutil::merge(rawVolumes);
+	core::ScopedPtr<voxel::RawVolume> merged(voxelutil::merge(rawVolumes));
 	for (voxel::RawVolume *v : rawVolumes) {
 		delete v;
 	}
@@ -60,8 +61,6 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	// count voxels
 	const int foundVoxelsAfterSplitAndMerge = countVoxels(*merged, voxel);
 	EXPECT_EQ(expectedVoxelCount, foundVoxelsAfterSplitAndMerge);
-
-	delete merged;
 }
 
 TEST_F(VolumeSplitterTest, testSplitObjects) {
