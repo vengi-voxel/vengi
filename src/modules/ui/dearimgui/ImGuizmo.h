@@ -115,7 +115,6 @@ void EditTransform(const Camera& camera, matrix_t& matrix)
 #define IMGUIZMO_NAMESPACE ImGuizmo
 #endif
 
-// mgerhardy - fixed issue https://github.com/vengi-voxel/vengi/issues/350
 struct ImGuiWindow;
 
 namespace IMGUIZMO_NAMESPACE

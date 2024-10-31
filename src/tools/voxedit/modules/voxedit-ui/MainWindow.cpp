@@ -3,6 +3,7 @@
  */
 
 #include "MainWindow.h"
+#include "ImGuizmo.h"
 #include "Util.h"
 #include "ViewMode.h"
 #include "Viewport.h"
@@ -431,6 +432,7 @@ void MainWindow::mainWidget() {
 		_lastHoveredScene = scene;
 	}
 	command::CommandExecutionListener &listener = _app->commandListener();
+	ImGuizmo::BeginFrame();
 	for (size_t i = 0; i < _scenes.size(); ++i) {
 		_scenes[i]->update(&listener);
 	}

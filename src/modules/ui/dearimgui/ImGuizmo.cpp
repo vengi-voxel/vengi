@@ -711,8 +711,6 @@ namespace IMGUIZMO_NAMESPACE
       bool mReversed; // reversed projection matrix
 
       // mgerhardy: view manipulator
-      bool mbIsDragging = false;
-      bool mbIsClicking = false;
       bool mbIsInside = false;
 
       // translation
@@ -2929,6 +2927,8 @@ namespace IMGUIZMO_NAMESPACE
 
    void ViewManipulate(float* view, float length, ImVec2 position, ImVec2 size, ImU32 backgroundColor)
    {
+      static bool isDraging = false;
+      static bool isClicking = false;
       static vec_t interpolationUp;
       static vec_t interpolationDir;
       static int interpolationFrames = 0;
@@ -3035,7 +3035,7 @@ namespace IMGUIZMO_NAMESPACE
                bool insidePanel = localx > panelCorners[0].x && localx < panelCorners[1].x && localy > panelCorners[0].y && localy < panelCorners[1].y;
                int boxCoordInt = int(boxCoord.x * 9.f + boxCoord.y * 3.f + boxCoord.z);
                IM_ASSERT(boxCoordInt < 27);
-               boxes[boxCoordInt] |= insidePanel && (!gContext.mbIsDragging) && gContext.mbMouseOver;
+               boxes[boxCoordInt] |= insidePanel && (!isDraging) && gContext.mbMouseOver;
 
                // draw face with lighter color
                if (iPass)
@@ -3046,10 +3046,10 @@ namespace IMGUIZMO_NAMESPACE
                   {
                      gContext.mDrawList->AddConvexPolyFilled(faceCoordsScreen, 4, IM_COL32(0xF0, 0xA0, 0x60, 0x80));
 
-                     if (io.MouseDown[0] && !gContext.mbIsClicking && !gContext.mbIsDragging && GImGui->ActiveId == 0) {
+                     if (io.MouseDown[0] && !isClicking && !isDraging && GImGui->ActiveId == 0) {
                         overBox = boxCoordInt;
-                        gContext.mbIsClicking = true;
-                        gContext.mbIsDragging = true;
+                        isClicking = true;
+                        isDraging = true;
                      }
                   }
                }
@@ -3072,14 +3072,14 @@ namespace IMGUIZMO_NAMESPACE
       }
       gContext.mbIsInside = gContext.mbMouseOver && ImRect(position, position + size).Contains(io.MousePos);
 
-      if (io.MouseDown[0] && (fabsf(io.MouseDelta[0]) || fabsf(io.MouseDelta[1])) && gContext.mbIsClicking)
+      if (io.MouseDown[0] && (fabsf(io.MouseDelta[0]) || fabsf(io.MouseDelta[1])) && isClicking)
       {
-         gContext.mbIsClicking = false;
+         isClicking = false;
       }
 
       if (!io.MouseDown[0])
       {
-         if (gContext.mbIsClicking)
+         if (isClicking)
          {
             // apply new view direction
             int cx = overBox / 9;
@@ -3110,12 +3110,12 @@ namespace IMGUIZMO_NAMESPACE
             interpolationFrames = 40;
 
          }
-         gContext.mbIsClicking = false;
-         gContext.mbIsDragging = false;
+         isClicking = false;
+         isDraging = false;
       }
 
 
-      if (gContext.mbIsDragging)
+      if (isDraging)
       {
          matrix_t rx, ry, roll;
 
@@ -3143,7 +3143,7 @@ namespace IMGUIZMO_NAMESPACE
          LookAt(&newEye.x, &camTarget.x, &referenceUp.x, view);
       }
 
-      gContext.mbUsingViewManipulate = (interpolationFrames != 0) || gContext.mbIsDragging;
+      gContext.mbUsingViewManipulate = (interpolationFrames != 0) || isDraging;
 
       // restore view/projection because it was used to compute ray
       ComputeContext(svgView.m16, svgProjection.m16, gContext.mModelSource.m16, gContext.mMode);
