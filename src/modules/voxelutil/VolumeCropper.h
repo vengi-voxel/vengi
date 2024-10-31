@@ -24,7 +24,7 @@ struct CropSkipEmpty {
  * @brief Resizes a volume to cut off empty parts
  */
 template<class CropSkipCondition = CropSkipEmpty>
-voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
+[[nodiscard]] voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& mins, const glm::ivec3& maxs, CropSkipCondition condition = CropSkipCondition()) {
 	core_trace_scoped(CropRawVolume);
 	const voxel::Region newRegion(mins, maxs);
 	if (!newRegion.isValid()) {
@@ -39,7 +39,7 @@ voxel::RawVolume* cropVolume(const voxel::RawVolume* volume, const glm::ivec3& m
  * @brief Resizes a volume to cut off empty parts
  */
 template<class CropSkipCondition = CropSkipEmpty>
-voxel::RawVolume *cropVolume(const voxel::RawVolume *volume) {
+[[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume) {
 	if (volume == nullptr) {
 		return nullptr;
 	}

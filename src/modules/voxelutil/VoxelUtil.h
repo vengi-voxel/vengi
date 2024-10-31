@@ -159,7 +159,7 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
  * @note The caller has to free the volume
  * @return nullptr if the volumes don't differ in the shared region dimensions
  */
-voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
+[[nodiscard]] voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
 glm::vec3 calculateNormal(voxel::RawVolume::Sampler &sampler, voxel::Connectivity connectivity);
 
 } // namespace voxelutil

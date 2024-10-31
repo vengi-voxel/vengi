@@ -217,7 +217,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	scaleDown(sourceVolume, palette, sourceVolume.region(), destVolume, destVolume.region());
 }
 
-voxel::RawVolume *scaleUp(const voxel::RawVolume &sourceVolume) {
+[[nodiscard]] voxel::RawVolume *scaleUp(const voxel::RawVolume &sourceVolume) {
 	const voxel::Region srcRegion = sourceVolume.region();
 	const glm::ivec3 &dim = srcRegion.getDimensionsInVoxels();
 	const glm::ivec3 &mins = srcRegion.getLowerCorner();

@@ -31,14 +31,14 @@ void importHeightmap(voxel::RawVolumeWrapper& volume, const image::ImagePtr& ima
  * (because a gray scale image is expected)
  */
 int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight);
-voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness = 1);
-voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
-voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness = 1);
-voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness = 1);
+[[nodiscard]] voxel::RawVolume* importAsPlane(const image::ImagePtr& image, const palette::Palette &palette, uint8_t thickness = 1);
+[[nodiscard]] voxel::RawVolume* importAsPlane(const image::ImagePtr& image, uint8_t thickness = 1);
+[[nodiscard]] voxel::RawVolume* importAsPlane(const image::Image *image, const palette::Palette &palette, uint8_t thickness = 1);
+[[nodiscard]] voxel::RawVolume* importAsPlane(const image::Image *image, uint8_t thickness = 1);
 core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix = "-dm");
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
-voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides = false);
+[[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
+[[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
+[[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, uint8_t maxDepth, bool bothSides = false);
 bool importFace(voxel::RawVolumeWrapper &volume, const voxel::Region &region, const palette::Palette &palette, voxel::FaceNames faceName, const image::ImagePtr &image, const glm::vec2 &uv0, const glm::vec2 &uv1, uint8_t replacementPalIdx = 0);
 
 }
