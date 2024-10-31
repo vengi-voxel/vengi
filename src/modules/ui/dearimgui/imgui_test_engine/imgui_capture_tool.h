@@ -48,7 +48,7 @@ enum ImGuiCaptureFlags_ : unsigned int
     ImGuiCaptureFlags_None                      = 0,
     ImGuiCaptureFlags_StitchAll                 = 1 << 0,   // Capture entire window scroll area (by scrolling and taking multiple screenshot). Only works for a single window.
     ImGuiCaptureFlags_IncludeOtherWindows       = 1 << 1,   // Disable hiding other windows (when CaptureAddWindow has been called by default other windows are hidden)
-    ImGuiCaptureFlags_IncludePopups             = 1 << 2,   // Expand capture area to automatically include visible popups (use with ImGuiCaptureflags_HideOtherWindows)
+    ImGuiCaptureFlags_IncludePopups             = 1 << 2,   // Expand capture area to automatically include visible popups (Unused if ImGuiCaptureFlags_IncludeOtherWindows is set)
     ImGuiCaptureFlags_HideMouseCursor           = 1 << 3,   // Hide render software mouse cursor during capture.
     ImGuiCaptureFlags_Instant                   = 1 << 4,   // Perform capture on very same frame. Only works when capturing a rectangular region. Unsupported features: content stitching, window hiding, window relocation.
     ImGuiCaptureFlags_NoSave                    = 1 << 5    // Do not save output image.
