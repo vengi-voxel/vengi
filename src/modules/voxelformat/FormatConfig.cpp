@@ -29,8 +29,8 @@ bool FormatConfig::init() {
 
 	core::Var::get(cfg::VoxformatMergequads, "true", core::CV_NOPERSIST, _("Merge similar quads to optimize the mesh"),
 				   core::Var::boolValidator);
-	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic),
-				   core::CV_SHADER, _("0 = cubes, 1 = marching cubes"),
+	core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Binary),
+				   core::CV_SHADER, _("0 = cubes, 1 = marching cubes, 2 = binary mesher"),
 				   core::Var::minMaxValidator<(int)voxel::SurfaceExtractionType::Cubic,
 											  (int)voxel::SurfaceExtractionType::Max - 1>);
 	core::Var::get(cfg::VoxformatReusevertices, "true", core::CV_NOPERSIST,
