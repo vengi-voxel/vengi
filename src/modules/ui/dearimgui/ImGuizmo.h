@@ -142,6 +142,8 @@ namespace IMGUIZMO_NAMESPACE
 
    // return true if the view gizmo is in moving state
    IMGUI_API bool IsUsingViewManipulate();
+   // only check if your mouse is over the view manipulator - no matter whether it's active or not
+   IMGUI_API bool IsViewManipulateHovered();
 
    // return true if any gizmo is in moving state
    IMGUI_API bool IsUsingAny();
@@ -250,7 +252,6 @@ namespace IMGUIZMO_NAMESPACE
 
    // return true if the cursor is over the operation's gizmo
    IMGUI_API bool IsOver(OPERATION op);
-   IMGUI_API bool IsManipulatorHovered();
    IMGUI_API void SetGizmoSizeClipSpace(float value);
 
    // Allow axis to flip

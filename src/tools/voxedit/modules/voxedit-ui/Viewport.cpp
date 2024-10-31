@@ -794,7 +794,7 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 		const ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
 		ImGuizmo::ViewManipulate(viewPtr, projPtr, operation, mode, matrixPtr, length, position, size, backgroundColor);
 	}
-	if (ImGuizmo::IsManipulatorHovered()) {
+	if (ImGuizmo::IsViewManipulateHovered()) {
 		_cameraManipulated = true;
 	}
 	if (viewMatrix != camera.viewMatrix()) {
