@@ -46,9 +46,11 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 	}
 }
 
-void splitObjects(const voxel::RawVolume *v, core::DynamicArray<voxel::RawVolume *> &rawVolumes, VisitorOrder order) {
+core::DynamicArray<voxel::RawVolume *> splitObjects(const voxel::RawVolume *v, VisitorOrder order) {
 	voxel::RawVolume copy(*v);
 	copy.setBorderValue(priv::visited);
+
+	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 
 	visitVolume(copy, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (voxel.getFlags() == priv::visitedFlag) {
@@ -64,13 +66,16 @@ void splitObjects(const voxel::RawVolume *v, core::DynamicArray<voxel::RawVolume
 		processNeighbours(copy, object, position);
 		rawVolumes.push_back(voxelutil::cropVolume(&object));
 	}, VisitAll(), order);
+
+	return rawVolumes;
 }
 
-void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
-				 core::DynamicArray<voxel::RawVolume *> &rawVolumes, bool createEmpty) {
+core::DynamicArray<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize, bool createEmpty) {
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &mins = region.getLowerCorner();
 	const glm::ivec3 &maxs = region.getUpperCorner();
+
+	core::DynamicArray<voxel::RawVolume *> rawVolumes;
 
 	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), maxSize);
 	Log::debug("split region: %s", region.toString().c_str());
@@ -92,6 +97,8 @@ void splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
 			}
 		}
 	}
+
+	return rawVolumes;
 }
 
 } // namespace voxelutil

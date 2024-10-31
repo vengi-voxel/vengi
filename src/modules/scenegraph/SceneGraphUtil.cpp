@@ -227,8 +227,7 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 			continue;
 		}
 		Log::debug("Split needed for node '%s'", node.name().c_str());
-		core::DynamicArray<voxel::RawVolume *> rawVolumes;
-		voxelutil::splitVolume(node.volume(), maxSize, rawVolumes, createEmpty);
+		core::DynamicArray<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(node.volume(), maxSize, createEmpty);
 		Log::debug("Created %i volumes", (int)rawVolumes.size());
 		for (voxel::RawVolume *v : rawVolumes) {
 			scenegraph::SceneGraphNode newNode(SceneGraphNodeType::Model);

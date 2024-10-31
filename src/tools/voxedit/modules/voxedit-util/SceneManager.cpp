@@ -595,8 +595,7 @@ void SceneManager::splitObjects() {
 	if (node == nullptr) {
 		return;
 	}
-	core::DynamicArray<voxel::RawVolume *> volumes;
-	voxelutil::splitObjects(node->volume(), volumes);
+	core::DynamicArray<voxel::RawVolume *> volumes = voxelutil::splitObjects(node->volume());
 	if (volumes.empty()) {
 		return;
 	}

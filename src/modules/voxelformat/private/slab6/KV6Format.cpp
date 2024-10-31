@@ -309,9 +309,8 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 		kfa.seq.push_back(seq);
 	}
 
-	core::DynamicArray<voxel::RawVolume *> volumes;
 	// TODO: VOXELFORMAT: the order here matters for the references in the kfa structs
-	voxelutil::splitObjects(volume, volumes, voxelutil::VisitorOrder::XYZ);
+	core::DynamicArray<voxel::RawVolume *> volumes = voxelutil::splitObjects(volume, voxelutil::VisitorOrder::XYZ);
 	if (volumes.empty()) {
 		Log::error("Could not split volume into single objects");
 		return false;
