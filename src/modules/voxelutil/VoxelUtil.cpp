@@ -115,7 +115,7 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Co
 	return false;
 }
 
-voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, const palette::Palette &palette) {
+voxel::Voxel getInterpolated(const voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, const palette::Palette &palette) {
 	voxel::RawVolumeWrapper::Sampler sampler3(volume);
 	sampler3.setPosition(pos);
 	const voxel::Voxel voxel000 = sampler3.peekVoxel0px0py0pz();

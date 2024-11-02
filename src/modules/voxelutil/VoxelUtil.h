@@ -35,11 +35,11 @@ bool copyIntoRegion(const voxel::RawVolume &in, voxel::RawVolume &out, const vox
 /**
  * @brief The interpolated voxel for the given position
  *
- * @param v The voxel volume to fill.
+ * @param v The voxel volume to operate on.
  * @param pos The position in the voxel volume to get the interpolated voxel for.
  * @param palette The palette used for interpolation.
  */
-voxel::Voxel getInterpolated(voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette);
+voxel::Voxel getInterpolated(const voxel::RawVolumeWrapper &v, const glm::ivec3 &pos, const palette::Palette &palette);
 
 /**
  * @brief Copies a region from one voxel volume to another.
