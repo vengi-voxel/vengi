@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include <cctype>
 #include <inttypes.h>
 
 namespace core {
@@ -15,7 +16,9 @@ core::String sanitizeFilename(const core::String& input);
 core::String format(CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 bool formatBuf(char *buf, size_t bufSize, CORE_FORMAT_STRING const char *msg, ...) CORE_PRINTF_VARARG_FUNC(3);
 core::String humanSize(uint64_t bytes);
-
+inline bool isspace(int c) {
+	return ::isspace(c);
+}
 size_t levensteinDistance(const core::String &source, const core::String &target);
 int toInt(const char* str);
 

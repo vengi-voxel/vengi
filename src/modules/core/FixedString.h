@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "core/StandardLib.h"
 #include "core/String.h"
 #include "core/Assert.h"
+#include "core/StringUtil.h"
 
 template<size_t SIZE>
 class FixedString {
@@ -15,7 +15,7 @@ private:
 	static_assert(SIZE >= 2, "SIZE must be >= 2");
 
 	inline void copyBuf(const char *buf) {
-		SDL_strlcpy(_buf, buf, SIZE);
+		core::string::strncpyz(_buf, strlen(buf), buf, SIZE);
 	}
 
 public:

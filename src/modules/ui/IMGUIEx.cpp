@@ -321,15 +321,9 @@ bool TooltipText(const char *msg, ...) {
 		ImGui::BeginTooltip();
 
 		va_list ap;
-		constexpr size_t bufSize = 4096;
-		char text[bufSize];
-
 		va_start(ap, msg);
-		SDL_vsnprintf(text, bufSize, msg, ap);
-		text[sizeof(text) - 1] = '\0';
+		ImGui::TextV(msg, ap);
 		va_end(ap);
-
-		ImGui::TextUnformatted(text);
 		ImGui::EndTooltip();
 		return true;
 	}
@@ -415,12 +409,10 @@ bool DisabledButton(const char *label, bool disabled, const ImVec2 &size) {
 
 void TooltipCommand(const char *command) {
 	if (ImGui::IsItemHovered()) {
-		char buf[64];
-		SDL_strlcpy(buf, command, sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		char *firstwhitespace = SDL_strchr(buf, ' ');
-		if (firstwhitespace) {
-			*firstwhitespace = '\0';
+		core::String buf = command;
+		auto n = buf.find_first_of(' ');
+		if (n != core::String::npos) {
+			buf = buf.substr(0, n);
 		}
 		const core::String &help = command::help(buf);
 		if (!help.empty()) {

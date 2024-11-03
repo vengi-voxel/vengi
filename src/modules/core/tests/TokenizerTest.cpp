@@ -6,7 +6,6 @@
 #include "core/StringUtil.h"
 #include "core/tests/TestHelper.h"
 #include "core/Tokenizer.h"
-#include <SDL_stdinc.h>
 
 namespace core {
 
@@ -14,18 +13,18 @@ class TokenizerTest: public testing::Test {
 };
 
 TEST_F(TokenizerTest, testTokenizerNoSkipComment) {
-	const char *str = "http://foo.bar";
+	const core::String str = "http://foo.bar";
 	core::TokenizerConfig cfg;
 	cfg.skipComments = false;
-	core::Tokenizer t(cfg, str, SDL_strlen(str), ";");
+	core::Tokenizer t(cfg, str.c_str(), str.size(), ";");
 	ASSERT_EQ(1u, t.size()) << string::toString(t.tokens());
-	EXPECT_STREQ(str, t.tokens()[0].c_str()) << toString(t.tokens());
+	EXPECT_STREQ(str.c_str(), t.tokens()[0].c_str()) << toString(t.tokens());
 }
 
 TEST_F(TokenizerTest, testTokenizerSkipComment) {
-	const char *str = "http://foo.bar";
+	const core::String str = "http://foo.bar";
 	core::TokenizerConfig cfg;
-	core::Tokenizer t(cfg, str, SDL_strlen(str), ";");
+	core::Tokenizer t(cfg, str.c_str(), str.size(), ";");
 	ASSERT_EQ(1u, t.size()) << toString(t.tokens());
 	EXPECT_STREQ("http:", t.tokens()[0].c_str()) << toString(t.tokens());
 }

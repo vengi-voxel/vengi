@@ -4,6 +4,12 @@
 
 #include <SDL_endian.h>
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define CORE_LITTLE_ENDIAN 1
+#else
+#define CORE_LITTLE_ENDIAN 0
+#endif
+
 #define core_swap32le SDL_SwapLE32
 #define core_swap32be SDL_SwapBE32
 #define core_swap16le SDL_SwapLE16

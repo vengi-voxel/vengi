@@ -27,7 +27,7 @@ class ImGuiToast {
 private:
 	ImGuiToastType _type = ImGuiToastType_None;
 	core::String _message;
-	uint64_t _creationTime = 0;
+	double _creationTime = 0;
 
 public:
 	ImGuiToast() {}
@@ -38,9 +38,9 @@ public:
 	ImVec4 color() const;
 	const char *icon() const;
 	const char *content() const;
-	uint32_t elapsedTime() const;
-	ImGuiToastPhase phase(int dismissMillis) const;
-	float fadePercent(int dismissMillis) const;
+	double elapsedTime() const;
+	ImGuiToastPhase phase(double dismissMillis) const;
+	float fadePercent(double dismissMillis) const;
 };
 
 namespace ImGui {

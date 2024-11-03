@@ -11,14 +11,7 @@
 
 class Log {
 public:
-	enum class Level {
-		None = 0,
-		Trace = SDL_LOG_PRIORITY_VERBOSE,
-		Debug = SDL_LOG_PRIORITY_DEBUG,
-		Info = SDL_LOG_PRIORITY_INFO,
-		Warn = SDL_LOG_PRIORITY_WARN,
-		Error = SDL_LOG_PRIORITY_ERROR
-	};
+	enum class Level { None, Trace, Debug, Info, Warn, Error };
 
 	static Level toLogLevel(const char* level);
 	static const char* toLogLevel(Level level);

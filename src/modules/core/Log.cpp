@@ -7,8 +7,6 @@
 #include "core/StringUtil.h"
 #include "engine-config.h"
 #include "core/Common.h"
-#include "core/Enum.h"
-#include "core/ArrayLength.h"
 #include "core/Assert.h"
 #include <string.h>
 #include <stdio.h>
@@ -38,7 +36,7 @@ namespace priv {
 static bool _syslog = false;
 static FILE* _logfile = nullptr;
 static constexpr int bufSize = 4096;
-static SDL_LogPriority _logLevel = SDL_LOG_PRIORITY_INFO;
+static Log::Level _logLevel = Log::Level::Info;
 
 #ifdef HAVE_SYSLOG_H
 static SDL_LogOutputFunction _syslogLogCallback = nullptr;
@@ -104,7 +102,11 @@ const char* Log::toLogLevel(Log::Level level) {
 }
 
 void Log::init(const char *logfile) {
-	priv::_logLevel = (SDL_LogPriority)core::Var::getSafe(cfg::CoreLogLevel)->intVal();
+	int rawLogLevel = core::Var::getSafe(cfg::CoreLogLevel)->intVal();
+	if (rawLogLevel < 0 || rawLogLevel > (int)Log::Level::Error) {
+		rawLogLevel = (int)Log::Level::Error;
+	}
+	priv::_logLevel = (Log::Level)rawLogLevel;
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
 
 	if (priv::_logfile == nullptr && logfile != nullptr) {
@@ -156,7 +158,7 @@ void Log::shutdown() {
 		fclose(priv::_logfile);
 		priv::_logfile = nullptr;
 	}
-	priv::_logLevel = SDL_LOG_PRIORITY_INFO;
+	priv::_logLevel = Log::Level::Info;
 	priv::_syslog = false;
 }
 
@@ -241,7 +243,7 @@ static void printfVA(const char *msg, va_list args) {
 }
 
 void Log::trace(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+	if (priv::_logLevel > Log::Level::Trace) {
 		return;
 	}
 	va_list args;
@@ -251,7 +253,7 @@ void Log::trace(const char* msg, ...) {
 }
 
 void Log::debug(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+	if (priv::_logLevel > Log::Level::Debug) {
 		return;
 	}
 	va_list args;
@@ -261,7 +263,7 @@ void Log::debug(const char* msg, ...) {
 }
 
 void Log::info(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
+	if (priv::_logLevel > Log::Level::Info) {
 		return;
 	}
 	va_list args;
@@ -271,7 +273,7 @@ void Log::info(const char* msg, ...) {
 }
 
 void Log::warn(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
+	if (priv::_logLevel > Log::Level::Warn) {
 		return;
 	}
 	va_list args;
@@ -281,7 +283,7 @@ void Log::warn(const char* msg, ...) {
 }
 
 void Log::error(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
+	if (priv::_logLevel > Log::Level::Error) {
 		return;
 	}
 	va_list args;
@@ -298,7 +300,7 @@ void Log::printf(const char* msg, ...) {
 }
 
 void c_logtrace(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_VERBOSE) {
+	if (priv::_logLevel > Log::Level::Trace) {
 		return;
 	}
 	va_list args;
@@ -308,7 +310,7 @@ void c_logtrace(const char* msg, ...) {
 }
 
 void c_logdebug(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_DEBUG) {
+	if (priv::_logLevel > Log::Level::Debug) {
 		return;
 	}
 	va_list args;
@@ -318,7 +320,7 @@ void c_logdebug(const char* msg, ...) {
 }
 
 void c_loginfo(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_INFO) {
+	if (priv::_logLevel > Log::Level::Info) {
 		return;
 	}
 	va_list args;
@@ -328,7 +330,7 @@ void c_loginfo(const char* msg, ...) {
 }
 
 void c_logwarn(const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_WARN) {
+	if (priv::_logLevel > Log::Level::Warn) {
 		return;
 	}
 	va_list args;
@@ -338,7 +340,7 @@ void c_logwarn(const char* msg, ...) {
 }
 
 void c_logerror(CORE_FORMAT_STRING const char* msg, ...) {
-	if (priv::_logLevel > SDL_LOG_PRIORITY_ERROR) {
+	if (priv::_logLevel > Log::Level::Error) {
 		return;
 	}
 	va_list args;

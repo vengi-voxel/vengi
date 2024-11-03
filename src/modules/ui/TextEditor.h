@@ -377,7 +377,7 @@ private:
 	UndoBuffer _undoBuffer;
 	int _undoIndex = 0;
 	int _tabSize = 4;
-	uint64_t _startTime;
+	double _startTime;
 	float _lastClick = -1.0f;
 	/** position (in pixels) where a code line starts relative to the left of the TextEditor. */
 	float _textStart = 20.0f;

@@ -22,8 +22,8 @@
 
 #include "MD5.h"
 #include "core/Assert.h"
-#include <SDL_endian.h>
-#include <SDL_stdinc.h>
+#include "core/Endian.h"
+#include "core/StringUtil.h"
 
 namespace core {
 
@@ -33,7 +33,7 @@ typedef struct MD5Context {
 	unsigned char in[64];
 } MD5_CTX;
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#if CORE_LITTLE_ENDIAN
 #define byteReverse(buf, len)  {} /* Nothing */
 #else
 /**
@@ -184,10 +184,10 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 
 		t = 64 - t;
 		if (len < t) {
-			SDL_memcpy(p, buf, len);
+			core_memcpy(p, buf, len);
 			return;
 		}
-		SDL_memcpy(p, buf, t);
+		core_memcpy(p, buf, t);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 		buf += t;
@@ -196,7 +196,7 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 	/* Process data in 64-byte chunks */
 
 	while (len >= 64) {
-		SDL_memcpy(ctx->in, buf, 64);
+		core_memcpy(ctx->in, buf, 64);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 		buf += 64;
@@ -205,7 +205,7 @@ static void MD5Update (struct MD5Context *ctx, unsigned char const* buf, unsigne
 
 	/* Handle any remaining bytes of data. */
 
-	SDL_memcpy(ctx->in, buf, len);
+	core_memcpy(ctx->in, buf, len);
 }
 
 /**
@@ -228,15 +228,15 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	/* Pad out to 56 mod 64 */
 	if (count < 8) {
 		/* Two lots of padding:  Pad the first block to 64 bytes */
-		SDL_memset(p, 0, count);
+		core_memset(p, 0, count);
 		byteReverse(ctx->in, 16);
 		MD5Transform(ctx->buf, (uint32_t*) ctx->in);
 
 		/* Now fill the next block with 56 bytes */
-		SDL_memset(ctx->in, 0, 56);
+		core_memset(ctx->in, 0, 56);
 	} else {
 		/* Pad block to 56 bytes */
-		SDL_memset(p, 0, count - 8);
+		core_memset(p, 0, count - 8);
 	}
 	byteReverse(ctx->in, 14);
 
@@ -248,9 +248,9 @@ static void MD5Final (struct MD5Context *ctx, unsigned char* digest)
 	byteReverse((unsigned char*) ctx->buf, 4);
 
 	if (digest != nullptr) {
-		SDL_memcpy(digest, ctx->buf, 16);
+		core_memcpy(digest, ctx->buf, 16);
 	}
-	SDL_memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
+	core_memset(ctx, 0, sizeof(*ctx)); /* In case it's sensitive */
 }
 
 void md5sum(const uint8_t *buf, uint32_t len, uint8_t digest[16]) {
@@ -266,7 +266,7 @@ core::String md5ToString(uint8_t digest[16]) {
 	char strbuf[size * 2 + 1];
 	char *b = strbuf;
 	for (uint32_t i = 0u; i < size; ++i) {
-		SDL_snprintf(b, sizeof(strbuf) - i * 2, "%02x", digest[i]);
+		core::string::formatBuf(b, sizeof(strbuf) - i * 2, "%02x", digest[i]);
 		b += 2;
 	}
 	strbuf[size * 2] = '\0';

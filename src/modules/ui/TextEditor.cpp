@@ -1,10 +1,10 @@
+#include "app/App.h"
+#include "core/StringUtil.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "TextEditor.h"
 #include "core/Common.h"
 #include "core/UTF8.h"
 #include <glm/common.hpp>
-
-#include <SDL.h>
 
 const core::Map<char, char> TextEditor::OPEN_TO_CLOSE_CHAR = {
 	{'{', '}'},
@@ -26,7 +26,7 @@ bool equals(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, Bi
 	return first1 == last1 && first2 == last2;
 }
 
-TextEditor::TextEditor() : _startTime(SDL_GetTicks()) {
+TextEditor::TextEditor() : _startTime(app::App::getInstance()->nowSeconds()) {
 	SetPalette(GetDarkPalette());
 	SetLanguageDefinition(LanguageDefinition::Lua());
 	_lines.push_back(Line());
@@ -270,7 +270,7 @@ TextEditor::Coordinates TextEditor::FindWordStart(const Coordinates &aFrom) cons
 		return at;
 	}
 
-	while (cindex > 0 && SDL_isspace(line[cindex].mChar)) {
+	while (cindex > 0 && core::string::isspace(line[cindex].mChar)) {
 		--cindex;
 	}
 
@@ -278,7 +278,7 @@ TextEditor::Coordinates TextEditor::FindWordStart(const Coordinates &aFrom) cons
 	while (cindex > 0) {
 		Char c = line[cindex].mChar;
 		if (!core::utf8::isMultibyte(c)) {
-			if (c <= 32 && SDL_isspace(c)) {
+			if (c <= 32 && core::string::isspace(c)) {
 				++cindex;
 				break;
 			}
@@ -304,7 +304,7 @@ TextEditor::Coordinates TextEditor::FindWordEnd(const Coordinates &aFrom) const 
 		return at;
 	}
 
-	bool prevspace = (bool)SDL_isspace(line[cindex].mChar);
+	bool prevspace = (bool)core::string::isspace(line[cindex].mChar);
 	PaletteIndex cstart = (PaletteIndex)line[cindex].mColorIndex;
 	while (cindex < (int)line.size()) {
 		Char c = line[cindex].mChar;
@@ -312,9 +312,9 @@ TextEditor::Coordinates TextEditor::FindWordEnd(const Coordinates &aFrom) const 
 		if (cstart != (PaletteIndex)line[cindex].mColorIndex)
 			break;
 
-		if (prevspace != !!SDL_isspace(c)) {
-			if (SDL_isspace(c))
-				while (cindex < (int)line.size() && SDL_isspace(line[cindex].mChar))
+		if (prevspace != !!core::string::isspace(c)) {
+			if (core::string::isspace(c))
+				while (cindex < (int)line.size() && core::string::isspace(line[cindex].mChar))
 					++cindex;
 			break;
 		}
@@ -449,7 +449,7 @@ bool TextEditor::IsOnWordBoundary(const Coordinates &aAt) const {
 		return line[cindex].mColorIndex != line[size_t(cindex - 1)].mColorIndex;
 	}
 
-	return SDL_isspace(line[cindex].mChar) != SDL_isspace(line[cindex - 1].mChar);
+	return core::string::isspace(line[cindex].mChar) != core::string::isspace(line[cindex - 1].mChar);
 }
 
 void TextEditor::RemoveLine(int aStart, int aEnd) {
@@ -880,7 +880,7 @@ void TextEditor::Render() {
 			}
 
 			// Draw line number (right aligned)
-			SDL_snprintf(buf, 16, "%d  ", lineNo + 1);
+			core::string::formatBuf(buf, sizeof(buf), "%d  ", lineNo + 1);
 
 			const float lineNoWidth =
 				ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, buf, nullptr, nullptr).x;
@@ -901,9 +901,9 @@ void TextEditor::Render() {
 
 				// Render the cursor
 				if (focused) {
-					uint64_t timeEnd = SDL_GetTicks();
-					uint64_t elapsed = timeEnd - _startTime;
-					if (elapsed > 400) {
+					const double timeEnd = app::App::getInstance()->nowSeconds();
+					const double elapsed = timeEnd - _startTime;
+					if (elapsed > 0.4) {
 						float width = 1.0f;
 						int cindex = GetCharacterIndex(_state.mCursorPosition);
 						float cx = TextDistanceToLineStart(_state.mCursorPosition);
@@ -924,7 +924,7 @@ void TextEditor::Render() {
 						const ImVec2 cstart(textScreenPos.x + cx, lineStartScreenPos.y);
 						const ImVec2 cend(textScreenPos.x + cx + width, lineStartScreenPos.y + _charAdvance.y);
 						drawList->AddRectFilled(cstart, cend, _palette[(int)PaletteIndex::Cursor]);
-						if (elapsed > 800)
+						if (elapsed > 0.8)
 							_startTime = timeEnd;
 #if 0
 						if (cindex < (int)line.size()) {
@@ -2048,7 +2048,7 @@ void TextEditor::ColorizeInternal() {
 				TextEditor::Glyph &g = line[currentIndex];
 				TextEditor::Char c = g.mChar;
 
-				if (c != (Char)_languageDefinition.mPreprocChar && !SDL_isspace(c)) {
+				if (c != (Char)_languageDefinition.mPreprocChar && !core::string::isspace(c)) {
 					firstChar = false;
 				}
 

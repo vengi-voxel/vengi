@@ -4,16 +4,17 @@
 
 #include "Notify.h"
 #include "IconsLucide.h"
+#include "app/App.h"
+#include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/Var.h"
-#include <SDL.h>
 
 #define NOTIFY_PADDING_X 20.0f		  // Bottom-left X padding
 #define NOTIFY_PADDING_Y 20.0f		  // Bottom-left Y padding
 #define NOTIFY_PADDING_MESSAGE_Y 10.0f // Padding Y between each message
 
-#define NOTIFY_FADE_IN_OUT_TIME 500u	  // Fade in and out duration
-#define NOTIFY_DEFAULT_DISMISS 3000u
+#define NOTIFY_FADE_IN_OUT_TIME 0.5	  // Fade in and out duration
+#define NOTIFY_DEFAULT_DISMISS 3.0
 
 #define NOTIFY_OPACITY 1.0f
 #define NOTIFY_TOAST_FLAGS                                                                                             \
@@ -32,7 +33,7 @@ enum ImGuiToastPhase_ {
 
 ImGuiToast::ImGuiToast(ImGuiToastType type, const core::String &message) : _type(type), _message(message) {
 	IM_ASSERT(type < ImGuiToastType_COUNT);
-	_creationTime = SDL_GetTicks();
+	_creationTime = app::App::getInstance()->nowSeconds() * 1000.0;
 }
 
 const char *ImGuiToast::defaultTitle() const {
@@ -89,12 +90,12 @@ const char *ImGuiToast::content() const {
 	return _message.c_str();
 }
 
-uint32_t ImGuiToast::elapsedTime() const {
-	return (uint32_t)(SDL_GetTicks() - _creationTime);
+double ImGuiToast::elapsedTime() const {
+	return app::App::getInstance()->nowSeconds() * 1000.0 - _creationTime;
 }
 
-ImGuiToastPhase ImGuiToast::phase(int dismissMillis) const {
-	const uint32_t elapsed = elapsedTime();
+ImGuiToastPhase ImGuiToast::phase(double dismissMillis) const {
+	const double elapsed = elapsedTime();
 
 	if (elapsed > NOTIFY_FADE_IN_OUT_TIME + dismissMillis + NOTIFY_FADE_IN_OUT_TIME) {
 		return ImGuiToastPhase_Expired;
@@ -106,9 +107,9 @@ ImGuiToastPhase ImGuiToast::phase(int dismissMillis) const {
 	return ImGuiToastPhase_FadeIn;
 }
 
-float ImGuiToast::fadePercent(int dismissMillis) const {
+float ImGuiToast::fadePercent(double dismissMillis) const {
 	const ImGuiToastPhase p = phase(dismissMillis);
-	const uint32_t elapsed = elapsedTime();
+	const double elapsed = elapsedTime();
 
 	if (p == ImGuiToastPhase_FadeIn) {
 		return ((float)elapsed / (float)NOTIFY_FADE_IN_OUT_TIME) * NOTIFY_OPACITY;
@@ -130,7 +131,7 @@ int RenderNotifications(ImGuiToasts &notifications) {
 	float height = 0.0f;
 	int n = 0;
 
-	const int dismissMillis = core::Var::getSafe(cfg::UINotifyDismissMillis)->intVal();
+	const double dismissMillis = core::Var::getSafe(cfg::UINotifyDismissMillis)->intVal();
 
 	for (size_t i = 0; i < notifications.size();) {
 		ImGuiToast *currentToast = &notifications[i];
@@ -155,7 +156,7 @@ int RenderNotifications(ImGuiToasts &notifications) {
 
 		// Generate new unique name for this toast
 		char windowName[50];
-		SDL_snprintf(windowName, sizeof(windowName), "##TOAST%i", (int)i);
+		core::string::formatBuf(windowName, sizeof(windowName), "##TOAST%i", (int)i);
 
 		// PushStyleColor(ImGuiCol_Text, text_color);
 		ImGui::SetNextWindowBgAlpha(opacity);
