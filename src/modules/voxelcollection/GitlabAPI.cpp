@@ -16,7 +16,7 @@ namespace voxelcollection {
 namespace gitlab {
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
-	return core::string::format("https://gitlab.com/veloren/veloren/-/raw/%s/%s", branch.c_str(), path.c_str());
+	return core::string::format("https://gitlab.com/%s/-/raw/%s/%s", repository.c_str(), branch.c_str(), path.c_str());
 }
 
 core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
