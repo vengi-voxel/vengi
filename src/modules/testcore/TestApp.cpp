@@ -11,7 +11,6 @@
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "core/Log.h"
-#include <SDL.h>
 #include <glm/gtc/type_ptr.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -103,10 +102,10 @@ app::AppState TestApp::onInit() {
 void TestApp::beforeUI() {
 	Super::beforeUI();
 	if (_cameraMotion) {
-		const bool current = SDL_GetRelativeMouseMode();
+		const bool current = isRelativeMouseMode();
 		if (current) {
 			camera().rotate(glm::vec3(_mouseRelativePos.y,_mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
-			SDL_WarpMouseInWindow(_window, frameBufferWidth() / 2, frameBufferHeight() / 2);
+			centerMousePosition();
 		}
 	}
 
