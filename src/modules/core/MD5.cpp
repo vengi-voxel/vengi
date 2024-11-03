@@ -42,7 +42,7 @@ typedef struct MD5Context {
 static void byteReverse (unsigned char* buf, unsigned longs)
 {
 	do {
-		const uint32_t t = SDL_SwapLE32(*(uint32_t*)buf);
+		const uint32_t t = core_swap32le(*(uint32_t*)buf);
 		*(uint32_t*) buf = t;
 		buf += 4;
 	} while (--longs);

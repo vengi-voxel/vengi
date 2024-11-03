@@ -7,7 +7,7 @@
 #include "core/Assert.h"
 #include "core/UTF8.h"
 #include "core/collection/DynamicArray.h"
-#include <SDL_endian.h>
+#include "core/Endian.h"
 #include <SDL_stdinc.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -193,32 +193,32 @@ bool WriteStream::writePascalStringUInt32BE(const core::String &str) {
 }
 
 bool WriteStream::writeInt16(int16_t word) {
-	const int16_t swappedWord = SDL_SwapLE16(word);
+	const int16_t swappedWord = core_swap16le(word);
 	return write(&swappedWord, sizeof(int16_t)) != -1;
 }
 
 bool WriteStream::writeInt32(int32_t dword) {
-	const int32_t swappedDWord = SDL_SwapLE32(dword);
+	const int32_t swappedDWord = core_swap32le(dword);
 	return write(&swappedDWord, sizeof(int32_t)) != -1;
 }
 
 bool WriteStream::writeInt64(int64_t dword) {
-	const int64_t swappedDWord = SDL_SwapLE64(dword);
+	const int64_t swappedDWord = core_swap64le(dword);
 	return write(&swappedDWord, sizeof(int64_t)) != -1;
 }
 
 bool WriteStream::writeUInt16(uint16_t word) {
-	const uint16_t swappedWord = SDL_SwapLE16(word);
+	const uint16_t swappedWord = core_swap16le(word);
 	return write(&swappedWord, sizeof(uint16_t)) != -1;
 }
 
 bool WriteStream::writeUInt32(uint32_t dword) {
-	const uint32_t swappedDWord = SDL_SwapLE32(dword);
+	const uint32_t swappedDWord = core_swap32le(dword);
 	return write(&swappedDWord, sizeof(uint32_t)) != -1;
 }
 
 bool WriteStream::writeUInt64(uint64_t dword) {
-	const uint64_t swappedDWord = SDL_SwapLE64(dword);
+	const uint64_t swappedDWord = core_swap64le(dword);
 	return write(&swappedDWord, sizeof(uint64_t)) != -1;
 }
 
@@ -241,32 +241,32 @@ bool WriteStream::writeDouble(double val) {
 }
 
 bool WriteStream::writeInt16BE(int16_t word) {
-	const int16_t swappedWord = SDL_SwapBE16(word);
+	const int16_t swappedWord = core_swap16be(word);
 	return write(&swappedWord, sizeof(int16_t)) != -1;
 }
 
 bool WriteStream::writeInt32BE(int32_t dword) {
-	const int32_t swappedDWord = SDL_SwapBE32(dword);
+	const int32_t swappedDWord = core_swap32be(dword);
 	return write(&swappedDWord, sizeof(int32_t)) != -1;
 }
 
 bool WriteStream::writeInt64BE(int64_t dword) {
-	const int64_t swappedDWord = SDL_SwapBE64(dword);
+	const int64_t swappedDWord = core_swap64be(dword);
 	return write(&swappedDWord, sizeof(int64_t)) != -1;
 }
 
 bool WriteStream::writeUInt16BE(uint16_t word) {
-	const uint16_t swappedWord = SDL_SwapBE16(word);
+	const uint16_t swappedWord = core_swap16be(word);
 	return write(&swappedWord, sizeof(uint16_t)) != -1;
 }
 
 bool WriteStream::writeUInt32BE(uint32_t dword) {
-	const uint32_t swappedDWord = SDL_SwapBE32(dword);
+	const uint32_t swappedDWord = core_swap32be(dword);
 	return write(&swappedDWord, sizeof(uint32_t)) != -1;
 }
 
 bool WriteStream::writeUInt64BE(uint64_t dword) {
-	const uint64_t swappedDWord = SDL_SwapBE64(dword);
+	const uint64_t swappedDWord = core_swap64be(dword);
 	return write(&swappedDWord, sizeof(uint64_t)) != -1;
 }
 
@@ -496,7 +496,7 @@ bool ReadStream::readBool() {
 
 int ReadStream::readUInt16(uint16_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint16_t swapped = SDL_SwapLE16(val);
+		const uint16_t swapped = core_swap16le(val);
 		val = swapped;
 		return 0;
 	}
@@ -505,7 +505,7 @@ int ReadStream::readUInt16(uint16_t &val) {
 
 int ReadStream::readInt16(int16_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int16_t swapped = SDL_SwapLE16(val);
+		const int16_t swapped = core_swap16le(val);
 		val = swapped;
 		return 0;
 	}
@@ -514,7 +514,7 @@ int ReadStream::readInt16(int16_t &val) {
 
 int ReadStream::readInt16BE(int16_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int16_t swapped = SDL_SwapBE16(val);
+		const int16_t swapped = core_swap16be(val);
 		val = swapped;
 		return 0;
 	}
@@ -523,7 +523,7 @@ int ReadStream::readInt16BE(int16_t &val) {
 
 int ReadStream::readUInt16BE(uint16_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint16_t swapped = SDL_SwapBE16(val);
+		const uint16_t swapped = core_swap16be(val);
 		val = swapped;
 		return 0;
 	}
@@ -580,7 +580,7 @@ int ReadStream::readDoubleBE(double &val) {
 
 int ReadStream::readUInt32(uint32_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint32_t swapped = SDL_SwapLE32(val);
+		const uint32_t swapped = core_swap32le(val);
 		val = swapped;
 		return 0;
 	}
@@ -589,7 +589,7 @@ int ReadStream::readUInt32(uint32_t &val) {
 
 int ReadStream::readInt32(int32_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int32_t swapped = (int32_t)SDL_SwapLE32(val);
+		const int32_t swapped = (int32_t)core_swap32le(val);
 		val = swapped;
 		return 0;
 	}
@@ -598,7 +598,7 @@ int ReadStream::readInt32(int32_t &val) {
 
 int ReadStream::readUInt32BE(uint32_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint32_t swapped = SDL_SwapBE32(val);
+		const uint32_t swapped = core_swap32be(val);
 		val = swapped;
 		return 0;
 	}
@@ -607,7 +607,7 @@ int ReadStream::readUInt32BE(uint32_t &val) {
 
 int ReadStream::readInt32BE(int32_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int32_t swapped = SDL_SwapBE32(val);
+		const int32_t swapped = core_swap32be(val);
 		val = swapped;
 		return 0;
 	}
@@ -616,7 +616,7 @@ int ReadStream::readInt32BE(int32_t &val) {
 
 int ReadStream::readUInt64(uint64_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint64_t swapped = SDL_SwapLE64(val);
+		const uint64_t swapped = core_swap64le(val);
 		val = swapped;
 		return 0;
 	}
@@ -625,7 +625,7 @@ int ReadStream::readUInt64(uint64_t &val) {
 
 int ReadStream::readInt64(int64_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int64_t swapped = SDL_SwapLE64(val);
+		const int64_t swapped = core_swap64le(val);
 		val = swapped;
 		return 0;
 	}
@@ -634,7 +634,7 @@ int ReadStream::readInt64(int64_t &val) {
 
 int ReadStream::readUInt64BE(uint64_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const uint64_t swapped = SDL_SwapBE64(val);
+		const uint64_t swapped = core_swap64be(val);
 		val = swapped;
 		return 0;
 	}
@@ -643,7 +643,7 @@ int ReadStream::readUInt64BE(uint64_t &val) {
 
 int ReadStream::readInt64BE(int64_t &val) {
 	if (read(&val, sizeof(val)) == sizeof(val)) {
-		const int64_t swapped = SDL_SwapBE64(val);
+		const int64_t swapped = core_swap64be(val);
 		val = swapped;
 		return 0;
 	}

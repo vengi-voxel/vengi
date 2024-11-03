@@ -26,8 +26,8 @@
 #include "math/Math.h"
 #include "palette/private/GimpPalette.h"
 #include "private/PaletteFormat.h"
+#include "core/Endian.h"
 
-#include <SDL_endian.h>
 #include <float.h>
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/gtc/epsilon.hpp>
@@ -731,7 +731,7 @@ bool Palette::minecraft() {
 
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
+		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "minecraft");
 }
@@ -770,7 +770,7 @@ bool Palette::magicaVoxel() {
 
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
+		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "magicavoxel");
 }
@@ -808,7 +808,7 @@ bool Palette::commandAndConquer() {
 		0xfc00fcff, 0xfc00fcff, 0xfc00fcff, 0xfc00fcff};
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapBE32(swapBuf[i]);
+		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "commandandconquer");
 }
@@ -846,7 +846,7 @@ bool Palette::starMade() {
 		0xEFE5E5FF, 0xF56B46FF, 0xA0FEFEFF, 0x00000000};
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapBE32(swapBuf[i]);
+		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "starmade");
 }
@@ -888,7 +888,7 @@ bool Palette::quake1() {
 	};
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapBE32(swapBuf[i]);
+		swapBuf[i] = core_swap32be(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "quake1");
 }
@@ -927,7 +927,7 @@ bool Palette::nippon() {
 	};
 	uint32_t *swapBuf = palette;
 	for (int i = 0; i < lengthof(palette); ++i) {
-		swapBuf[i] = SDL_SwapLE32(swapBuf[i]);
+		swapBuf[i] = core_swap32le(swapBuf[i]);
 	}
 	return load((const uint8_t *)palette, sizeof(palette), "nippon");
 }

@@ -8,7 +8,7 @@
 #include "core/ArrayLength.h"
 #include "core/StringUtil.h"
 #include "core/collection/BufferView.h"
-#include <SDL_endian.h>
+#include "core/Endian.h"
 
 namespace core {
 
@@ -31,7 +31,7 @@ inline std::ostream &operator<<(::std::ostream &os, const core::BufferView<RGBA>
 
 TEST(ColorTest, testRGBA) {
 	core::RGBA color;
-	color.rgba = SDL_SwapLE32(0xff6699fe);
+	color.rgba = core_swap32le(0xff6699fe);
 	EXPECT_EQ(0xfe, color.r);
 	EXPECT_EQ(0x99, color.g);
 	EXPECT_EQ(0x66, color.b);

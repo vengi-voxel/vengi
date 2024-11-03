@@ -40,6 +40,7 @@ set(SRCS
 	Common.cpp Common.h
 	CMYK.cpp CMYK.h
 	DirtyState.h
+	Endian.h
 	Enum.h
 	FixedString.h
 	FourCC.h
