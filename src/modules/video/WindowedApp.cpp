@@ -277,10 +277,8 @@ app::AppState WindowedApp::onInit() {
 
 	Log::debug("CPU count: %d", SDL_GetCPUCount());
 	Log::debug("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	Log::debug("RDTSC: %d", SDL_HasRDTSC());
 	Log::debug("Altivec: %d", SDL_HasAltiVec());
 	Log::debug("MMX: %d", SDL_HasMMX());
-	Log::debug("3DNow: %d", SDL_Has3DNow());
 	Log::debug("SSE: %d", SDL_HasSSE());
 	Log::debug("SSE2: %d", SDL_HasSSE2());
 	Log::debug("SSE3: %d", SDL_HasSSE3());
@@ -293,26 +291,9 @@ app::AppState WindowedApp::onInit() {
 #endif
 	Log::debug("RAM: %d MB", SDL_GetSystemRAM());
 
-	SDL_DisplayMode displayMode;
 	const int numDisplays = core_max(0, SDL_GetNumVideoDisplays());
 	const int displayIndex = glm::clamp(core::Var::getSafe(cfg::ClientWindowDisplay)->intVal(), 0, core_max(0, numDisplays - 1));
 	Log::debug("Try to use display %i", displayIndex);
-	if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == -1) {
-		Log::error("%s", SDL_GetError());
-		return app::AppState::InitFailure;
-	}
-
-	for (int i = 0; i < numDisplays; ++i) {
-		SDL_Rect dr;
-		if (SDL_GetDisplayBounds(i, &dr) == -1) {
-			continue;
-		}
-		float ddpi = -1.0f;
-		float hdpi = -1.0f;
-		float vdpi = -1.0f;
-		SDL_GetDisplayDPI(i, &ddpi, &hdpi, &vdpi);
-		Log::debug("Display %i: %i:%i x %i:%i (dpi: %f, h: %f, v: %f)", i, dr.x, dr.y, dr.w, dr.h, ddpi, hdpi, vdpi);
-	}
 
 	video::setup();
 
@@ -379,15 +360,6 @@ app::AppState WindowedApp::onInit() {
 	if (_rendererContext == nullptr) {
 		sdlCheckError();
 		return app::AppState::InitFailure;
-	}
-
-	int screen = 0;
-	int modes = SDL_GetNumDisplayModes(screen);
-	Log::debug("possible display modes:");
-	for (int i = 0; i < modes; i++) {
-		SDL_GetDisplayMode(screen, i, &displayMode);
-		const char *name = SDL_GetPixelFormatName(displayMode.format);
-		Log::debug("%ix%i@%iHz %s", displayMode.w, displayMode.h, displayMode.refresh_rate, name);
 	}
 
 	// some platforms may override or hardcode the resolution - so

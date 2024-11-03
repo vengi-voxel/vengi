@@ -112,15 +112,6 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 	case SDL_CONTROLLERDEVICEREMOVED:
 		controllerDeviceRemoved(event.cdevice.which);
 		break;
-	case SDL_DOLLARRECORD:
-		gestureRecord(event.dgesture.gestureId);
-		break;
-	case SDL_DOLLARGESTURE:
-		gesture(event.dgesture.gestureId, event.dgesture.error, event.dgesture.numFingers);
-		break;
-	case SDL_MULTIGESTURE:
-		multiGesture(event.mgesture.dTheta, event.mgesture.dDist, event.mgesture.numFingers);
-		break;
 	case SDL_JOYHATMOTION:
 	case SDL_JOYDEVICEADDED:
 	case SDL_JOYDEVICEREMOVED:
@@ -363,25 +354,6 @@ void EventHandler::fingerMotion(void *windowHandle, int64_t finger, float x, flo
 	}
 	for (IEventObserver* observer : _observers) {
 		observer->onFingerMotion(windowHandle, finger, x, y, dx, dy);
-	}
-}
-
-void EventHandler::gestureRecord(int64_t gestureId) {
-	for (IEventObserver* observer : _observers) {
-		observer->onGestureRecord(gestureId);
-	}
-}
-
-void EventHandler::gesture(int64_t gestureId, float error, int32_t numFingers) {
-	for (IEventObserver* observer : _observers) {
-		observer->onGesture(gestureId, error, numFingers);
-	}
-}
-
-void EventHandler::multiGesture(float theta, float dist, int32_t numFingers) {
-	_multiGesture = true;
-	for (IEventObserver* observer : _observers) {
-		observer->onMultiGesture(theta, dist, numFingers);
 	}
 }
 
