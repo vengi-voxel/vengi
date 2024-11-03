@@ -144,14 +144,19 @@ inline Id Buffer::handle() const {
 class ScopedBuffer {
 private:
 	const Buffer& _buf;
+	bool _success;
 public:
 	ScopedBuffer(const Buffer& buf) :
 			_buf(buf) {
-		buf.bind();
+		_success = buf.bind();
 	}
 
 	~ScopedBuffer() {
 		_buf.unbind();
+	}
+
+	inline bool success() const {
+		return _success;
 	}
 };
 

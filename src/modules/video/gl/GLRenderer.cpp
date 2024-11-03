@@ -115,6 +115,8 @@ bool checkError(bool triggerAssert) {
 
 		if (triggerAssert) {
 			core_assert_msg(glError == GL_NO_ERROR, "GL err: %s => %i", error, glError);
+		} else {
+			Log::error("GL error: %s (%i)", error, glError);
 		}
 		hasError |= (glError == GL_NO_ERROR);
 	}

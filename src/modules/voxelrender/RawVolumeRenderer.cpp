@@ -522,6 +522,7 @@ void RawVolumeRenderer::renderOpaque(const video::Camera &camera, bool normals) 
 		video::ScopedPolygonMode polygonMode(mode);
 		video::ScopedFaceCull scopedFaceCull(_meshState->cullFace(idx));
 		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+		core_assert(scopedBuf.success());
 		if (normals) {
 			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
 			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
