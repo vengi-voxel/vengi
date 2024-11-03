@@ -9,7 +9,7 @@
 #include "core/Log.h"
 #include "palette/Palette.h"
 #include <glm/vec3.hpp>
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelformat {
 

@@ -9,6 +9,7 @@ endif()
 
 add_subdirectory(core)
 add_subdirectory(io)
+add_subdirectory(json)
 add_subdirectory(command)
 add_subdirectory(app)
 add_subdirectory(commonlua)

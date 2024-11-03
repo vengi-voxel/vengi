@@ -7,7 +7,7 @@
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include <gtest/gtest.h>
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace http {
 

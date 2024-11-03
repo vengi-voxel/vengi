@@ -25,7 +25,7 @@
 #include "voxelutil/VoxelUtil.h"
 
 #include <glm/trigonometric.hpp>
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelformat {
 
@@ -62,15 +62,6 @@ struct Animation {
 	int snapping;
 	core::DynamicArray<Animator> animators;
 };
-
-static inline core::String toStr(const std::string &str) {
-	core::String p(str.c_str());
-	return p;
-}
-
-static inline core::String toStr(const nlohmann::json &json, const char *key, const core::String &defaultValue = "") {
-	return toStr(json.value(key, defaultValue.c_str()));
-}
 
 static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::json &json, const char *key, const scenegraph::InterpolationType defaultValue = scenegraph::InterpolationType::Linear) {
 	const std::string val = json.value(key, "");
@@ -141,7 +132,7 @@ static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::
 }
 
 static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const char *key) {
-	const core::String &type = priv::toStr(json, key);
+	const core::String &type = json::toStr(json, key);
 	if (type == "cube") {
 		return BlockbenchFormat::ElementType::Cube;
 	} else if (type == "mesh") {
@@ -322,8 +313,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::Element element;
-		element.uuid = priv::toStr(elementJson, "uuid");
-		element.name = priv::toStr(elementJson, "name");
+		element.uuid = json::toStr(elementJson, "uuid");
+		element.name = json::toStr(elementJson, "name");
 		element.origin = scale * priv::toVec3(elementJson, "origin");
 		element.rotation = priv::toVec3(elementJson, "rotation");
 		element.rescale = elementJson.value("rescale", false);
@@ -352,8 +343,8 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 
 static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
 						  const nlohmann::json &entryJson, BlockbenchFormat::Node &node) {
-	node.name = priv::toStr(entryJson, "name");
-	node.uuid = priv::toStr(entryJson, "uuid");
+	node.name = json::toStr(entryJson, "name");
+	node.uuid = json::toStr(entryJson, "uuid");
 	node.locked = entryJson.value("locked", false);
 	node.visible = entryJson.value("visibility", true);
 	node.mirror_uv = entryJson.value("mirror_uv", false);
@@ -378,7 +369,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 	for (auto iter = childrenJson.begin(); iter != childrenJson.end(); ++iter) {
 		if (iter->is_string()) {
-			core::String uuid = priv::toStr(*iter);
+			core::String uuid = json::toStr(*iter);
 			node.referenced.emplace_back(uuid);
 			continue;
 		}
@@ -518,38 +509,38 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		return false;
 	}
 	for (const auto &animationJson : animationsJson) {
-		const core::String animationName = priv::toStr(animationJson, "name");
+		const core::String animationName = json::toStr(animationJson, "name");
 		if (animationName.empty()) {
 			continue;
 		}
 		sceneGraph.addAnimation(animationName);
 #if 0
 		priv::Animation animation;
-		animation.uuid = priv::toStr(animationJson, "uuid");
+		animation.uuid = json::toStr(animationJson, "uuid");
 		animation.name = animationName;
-		animation.loop = priv::toStr(animationJson, "loop");
+		animation.loop = json::toStr(animationJson, "loop");
 		animation.overrideVal = animationJson["override"];
 		animation.selected = animationJson["selected"];
 		animation.length = animationJson["length"];
 		animation.snapping = animationJson["snapping"];
-		const core::String animTimeUpdate = priv::toStr(animationJson, "anim_time_update");
-		const core::String blendWeight = priv::toStr(animationJson, "blend_weight");
-		const core::String startDelay = priv::toStr(animationJson, "start_delay");
-		const core::String loopDelay = priv::toStr(animationJson, "loop_delay");
+		const core::String animTimeUpdate = json::toStr(animationJson, "anim_time_update");
+		const core::String blendWeight = json::toStr(animationJson, "blend_weight");
+		const core::String startDelay = json::toStr(animationJson, "start_delay");
+		const core::String loopDelay = json::toStr(animationJson, "loop_delay");
 		for (auto animatorsIter = animationJson.find("animators"); animatorsIter != animationJson.end();
 			 ++animatorsIter) {
 			priv::Animator animator;
 
-			const core::String uuid = priv::toStr(animatorsIter.key());
+			animator.uuid = json::toStr(animatorsIter.key());
 			const auto &animatorsJson = animatorsIter.value();
-			animator.name = priv::toStr(animatorsJson, "name");
-			animator.type = priv::toStr(animatorsJson, "type");
+			animator.name = json::toStr(animatorsJson, "name");
+			animator.type = json::toStr(animatorsJson, "type");
 			for (auto kfIter = animatorsJson.find("keyframes"); kfIter != animatorsJson.end(); ++kfIter) {
 				priv::KeyFrame kf;
 				const auto &keyframeJson = kfIter.value();
-				kf.channel = priv::toStr(keyframeJson, "channel");
+				kf.channel = json::toStr(keyframeJson, "channel");
 				kf.interpolation = priv::toInterpolationType(keyframeJson, "interpolation");
-				kf.uuid = priv::toStr(keyframeJson, "uuid");
+				kf.uuid = json::toStr(keyframeJson, "uuid");
 				kf.time = keyframeJson.value("time", 0.0f);
 				kf.color = keyframeJson.value("color", 0);
 				kf.bezierLinked = keyframeJson.value("bezier_linked", false);
@@ -616,17 +607,17 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	}
 
 	Meta meta;
-	meta.formatVersion = priv::toStr(metaJson, "format_version");
+	meta.formatVersion = json::toStr(metaJson, "format_version");
 	meta.version = util::parseVersion(meta.formatVersion);
-	meta.modelFormat = priv::toStr(metaJson, "model_format");
+	meta.modelFormat = json::toStr(metaJson, "model_format");
 	if (!priv::isSupportModelFormat(meta.modelFormat)) {
 		Log::error("Unsupported model format: %s", meta.modelFormat.c_str());
 		return false;
 	}
 	meta.creationTimestamp = priv::toNumber(metaJson, "creation_time", (uint64_t)0);
 	meta.box_uv = metaJson.value("box_uv", false);
-	meta.name = priv::toStr(json, "name", core::string::extractFilename(filename));
-	meta.model_identifier = priv::toStr(json, "model_identifier");
+	meta.name = json::toStr(json, "name", core::string::extractFilename(filename));
+	meta.model_identifier = json::toStr(json, "model_identifier");
 
 	auto resolutionJsonIter = json.find("resolution");
 	if (resolutionJsonIter != json.end()) {
@@ -647,10 +638,10 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	textureArray.reserve(textures.size());
 
 	for (const auto &texture : textures) {
-		const core::String &name = priv::toStr(texture, "name");
+		const core::String &name = json::toStr(texture, "name");
 		// TODO: VOXELFORMAT: allow to load from "path" instead of "source"
 		// relative_path
-		const core::String &source = priv::toStr(texture, "source");
+		const core::String &source = json::toStr(texture, "source");
 		if (core::string::startsWith(source, "data:")) {
 			const size_t mimetypeEndPos = source.find(";");
 			if (mimetypeEndPos == core::String::npos) {
@@ -710,7 +701,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 				return false;
 			}
 		} else if (entry.is_string()) {
-			core::String uuid = priv::toStr(entry);
+			core::String uuid = json::toStr(entry);
 			root.referenced.emplace_back(uuid);
 		}
 	}

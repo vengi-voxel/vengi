@@ -19,7 +19,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
 #include <glm/gtx/quaternion.hpp>
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelformat {
 

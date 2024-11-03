@@ -8,7 +8,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "engine-config.h"
 #include <SDL_stdinc.h>
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace util {
 

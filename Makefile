@@ -397,7 +397,7 @@ update-yocto:
 update-tinygltf:
 	$(call UPDATE_GIT,tinygltf,https://github.com/syoyo/tinygltf.git)
 	cp $(UPDATEDIR)/tinygltf.sync/tiny_gltf.h src/modules/voxelformat/external
-	cp $(UPDATEDIR)/tinygltf.sync/json.hpp contrib/libs/json
+	cp $(UPDATEDIR)/tinygltf.sync/json.hpp src/modules/json/private
 
 update-tinyobjloader:
 	$(call UPDATE_GIT,tinyobjloader,https://github.com/tinyobjloader/tinyobjloader.git)

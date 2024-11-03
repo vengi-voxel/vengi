@@ -20,7 +20,7 @@
 #include "io/FormatDescription.h"
 #include "io/ZipArchive.h"
 #include "voxelformat/VolumeFormat.h"
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelcollection {
 

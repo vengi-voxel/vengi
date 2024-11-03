@@ -7,7 +7,7 @@
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "http/HttpCacheStream.h"
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelcollection {
 namespace github {

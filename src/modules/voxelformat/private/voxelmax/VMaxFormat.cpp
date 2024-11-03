@@ -24,7 +24,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include <glm/common.hpp>
-#include <json.hpp>
+#include "json/JSON.h"
 
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL

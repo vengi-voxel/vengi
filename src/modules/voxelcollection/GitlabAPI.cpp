@@ -10,7 +10,7 @@
 #include "core/collection/StringMap.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"
-#include <json.hpp>
+#include "json/JSON.h"
 
 namespace voxelcollection {
 namespace gitlab {
