@@ -293,6 +293,8 @@ public:
 	void requestQuit();
 	void requestSuspend();
 
+	void openURL(const core::String &url);
+
 	double deltaFrameSeconds() const;
 	double nowSeconds() const;
 

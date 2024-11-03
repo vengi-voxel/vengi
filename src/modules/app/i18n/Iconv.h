@@ -25,7 +25,6 @@
 
 #include "core/NonCopyable.h"
 #include "core/String.h"
-#include <SDL_stdinc.h>
 
 namespace app {
 
@@ -33,7 +32,7 @@ class IConv : public core::NonCopyable {
 private:
 	core::String _toCharset;
 	core::String _fromCharset;
-	SDL_iconv_t _cd;
+	void* _cd;
 
 public:
 	IConv();

@@ -22,6 +22,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #include "Iconv.h"
+#include <SDL_stdinc.h>
 
 namespace app {
 
@@ -35,12 +36,12 @@ IConv::IConv(const core::String &from_charset_, const core::String &to_charset_)
 
 IConv::~IConv() {
 	if (_cd)
-		SDL_iconv_close(_cd);
+		SDL_iconv_close((SDL_iconv_t)_cd);
 }
 
 bool IConv::setCharsets(const core::String &from_charset_, const core::String &to_charset_) {
 	if (_cd)
-		SDL_iconv_close(_cd);
+		SDL_iconv_close((SDL_iconv_t)_cd);
 
 	_fromCharset = from_charset_.toUpper();
 	_toCharset = to_charset_.toUpper();
@@ -71,7 +72,7 @@ core::String IConv::convert(const core::String &text) {
 	char *outbuf = &result[0];
 
 	// Try to convert the text.
-	size_t ret = SDL_iconv(_cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+	size_t ret = SDL_iconv((SDL_iconv_t)_cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 	if (ret == (size_t)-1) {
 		return text;
 	}

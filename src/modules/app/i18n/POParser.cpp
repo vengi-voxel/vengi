@@ -26,6 +26,7 @@
 #include "Iconv.h"
 #include "PluralForms.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 
@@ -131,7 +132,7 @@ bool POParser::getStringLine(io::WriteStream &out, size_t skip) {
 
 	// process trailing garbage in line and warn if there is any
 	for (i = i + 1; i < _currentLine.size(); ++i)
-		if (!SDL_isspace(_currentLine[i])) {
+		if (!core::string::isspace(_currentLine[i])) {
 			warning("unexpected garbage after string ignoren");
 			break;
 		}
@@ -165,7 +166,7 @@ core::String POParser::getString(unsigned int skip) {
 					return "";
 				}
 				break;
-			} else if (!SDL_isspace(_currentLine[skip])) {
+			} else if (!core::string::isspace(_currentLine[skip])) {
 				error("string must start with '\"'");
 				return "";
 			} else {
@@ -190,7 +191,7 @@ next:
 				return "";
 			}
 			goto next;
-		} else if (SDL_isspace(_currentLine[i])) {
+		} else if (core::string::isspace(_currentLine[i])) {
 			// skip
 		} else {
 			break;
@@ -258,10 +259,10 @@ bool POParser::isEmptyLine() {
 		return true;
 	}
 	if (_currentLine[0] == '#') { // handle comments as empty lines
-		return (_currentLine.size() == 1 || (_currentLine.size() >= 2 && SDL_isspace(_currentLine[1])));
+		return (_currentLine.size() == 1 || (_currentLine.size() >= 2 && core::string::isspace(_currentLine[1])));
 	}
 	for (auto i = _currentLine.begin(); i != _currentLine.end(); ++i) {
-		if (!SDL_isspace(*i)) {
+		if (!core::string::isspace(*i)) {
 			return false;
 		}
 	}

@@ -12,15 +12,6 @@
 #include "core/Log.h"
 #include "core/Var.h"
 #include "app/I18N.h"
-#include <inttypes.h>
-#include <SDL.h>
-#ifdef __WIN32__
-#include <windows.h>
-#include <shellapi.h>
-#else
-#include <stdio.h>
-#include <stdlib.h>
-#endif
 
 namespace app {
 
@@ -46,29 +37,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: url <http://my-url>");
 			return;
 		}
-		const char *url = args[0].c_str();
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-		if (SDL_OpenURL(url) == -1) {
-			Log::warn("Failed to open url %s with error: %s", url, SDL_GetError());
-		}
-#else
-
-#ifdef _WIN32
-		ShellExecuteA(nullptr, nullptr, url, nullptr, nullptr, 0);
-#elif defined __APPLE__
-		char buf[1024];
-		snprintf(buf, sizeof(buf) - 1, "open %s", url);
-		buf[sizeof(buf) - 1] = '\0';
-		const int ret = system(buf);
-		(void)ret;
-#else
-		char buf[1024];
-		snprintf(buf, sizeof(buf) - 1, "xdg-open %s", url);
-		buf[sizeof(buf) - 1] = '\0';
-		const int ret = system(buf);
-		(void)ret;
-#endif
-#endif
+		app::App::getInstance()->openURL(args[0]);
 	}).setHelp(_("Open the given url in a browser"));
 
 	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {

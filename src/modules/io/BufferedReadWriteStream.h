@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <SDL_endian.h>
 #include "io/Stream.h"
 
 namespace io {

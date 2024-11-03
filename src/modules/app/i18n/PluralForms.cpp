@@ -22,6 +22,7 @@
 // 3. This notice may not be removed or altered from any source distribution.
 
 #include "PluralForms.h"
+#include "core/StringUtil.h"
 #include "core/collection/StringMap.h"
 
 namespace app {
@@ -205,7 +206,7 @@ PluralForms PluralForms::fromString(const core::String &str) {
 	// Remove spaces from string before lookup
 	core::String space_less_str;
 	for (size_t i = 0; i < str.size(); ++i)
-		if (!SDL_isspace(str[i]))
+		if (!core::string::isspace(str[i]))
 			space_less_str += str[i];
 
 	auto it = plural_forms.find(space_less_str);
