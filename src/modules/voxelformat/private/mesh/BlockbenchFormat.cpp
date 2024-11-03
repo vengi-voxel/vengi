@@ -70,7 +70,6 @@ static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::
 	if (val.empty()) {
 		return defaultValue;
 	}
-	// "linear", "catmullrom", "ease_in", "ease_out", "ease_in_out", "bezier"
 	if (val == "linear") {
 		return scenegraph::InterpolationType::Linear;
 	} else if (val == "ease_in") {
@@ -79,14 +78,11 @@ static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::
 		return scenegraph::InterpolationType::QuadEaseOut;
 	} else if (val == "ease_in_out") {
 		return scenegraph::InterpolationType::QuadEaseInOut;
-	}
-#if 0
-	 else if (val == "bezier") {
-		return scenegraph::InterpolationType::Bezier;
+	} else if (val == "bezier") {
+		return scenegraph::InterpolationType::CubicBezier;
 	} else if (val == "catmullrom") {
 		return scenegraph::InterpolationType::CatmullRom;
 	}
-#endif
 	Log::warn("Unsupported interpolation type: %s", val.c_str());
 	return defaultValue;
 }

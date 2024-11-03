@@ -23,11 +23,14 @@ enum class InterpolationType : uint8_t {
 	CubicEaseIn = 5,
 	CubicEaseOut = 6,
 	CubicEaseInOut = 7,
+	CubicBezier = 8,
+	CatmullRom = 9,
 	Max
 };
 
 static constexpr const char *InterpolationTypeStr[]{"Instant",		 "Linear",		"QuadEaseIn",	"QuadEaseOut",
-													"QuadEaseInOut", "CubicEaseIn", "CubicEaseOut", "CubicEaseInOut"};
+													"QuadEaseInOut", "CubicEaseIn", "CubicEaseOut", "CubicEaseInOut",
+													"CubicBezier",	 "CatmullRom"};
 static_assert(int(scenegraph::InterpolationType::Max) == lengthof(InterpolationTypeStr), "Array sizes don't match Max");
 
 /**

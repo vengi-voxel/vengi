@@ -274,6 +274,15 @@ double interpolate(InterpolationType interpolationType, double current, double s
 	case InterpolationType::CubicEaseInOut:
 		val = util::easing::cubicInOut(current, start, end);
 		break;
+	case InterpolationType::CubicBezier:
+		val = util::easing::cubicBezier(current, start, end);
+		break;
+	case InterpolationType::CatmullRom: {
+		// TODO: check the parameters here
+		const double t = (end - start) / current;
+		val = util::easing::catmullRom(start, start, end, end, t);
+		break;
+	}
 	case InterpolationType::Max:
 		break;
 	}
