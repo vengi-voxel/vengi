@@ -36,7 +36,7 @@ struct KeyFrame {
 	core::DynamicArray<glm::vec3> dataPoints;
 	core::String uuid;
 	float time = 0.0f;
-	int color; // white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray
+	int color; // none = -1, white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray
 	scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
 	bool bezierLinked = false;
 	glm::vec3 bezierLeftTime{0.0f};
@@ -527,17 +527,26 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		const core::String blendWeight = json::toStr(animationJson, "blend_weight");
 		const core::String startDelay = json::toStr(animationJson, "start_delay");
 		const core::String loopDelay = json::toStr(animationJson, "loop_delay");
-		for (auto animatorsIter = animationJson.find("animators"); animatorsIter != animationJson.end();
-			 ++animatorsIter) {
+		auto animatorsIter = animationJson.find("animators");
+		if (animatorsIter == animationJson.end()) {
+			Log::debug("No animators found in json file: %s", filename.c_str());
+			continue;
+		}
+		const auto &object = animatorsIter->get<std::map<std::string, nlohmann::json>>();
+		for (const auto &entry : object) {
 			priv::Animator animator;
-
-			animator.uuid = json::toStr(animatorsIter.key());
-			const auto &animatorsJson = animatorsIter.value();
+			animator.uuid = json::toStr(entry.first);
+			const auto &animatorsJson = entry.second;
 			animator.name = json::toStr(animatorsJson, "name");
 			animator.type = json::toStr(animatorsJson, "type");
-			for (auto kfIter = animatorsJson.find("keyframes"); kfIter != animatorsJson.end(); ++kfIter) {
+			auto keyFramesIter = animatorsJson.find("keyframes");
+			if (keyFramesIter == animatorsJson.end()) {
+				Log::debug("No keyframes found in json file: %s", filename.c_str());
+				continue;
+			}
+
+			for (const auto &keyframeJson : animatorsJson["keyframes"]) {
 				priv::KeyFrame kf;
-				const auto &keyframeJson = kfIter.value();
 				kf.channel = json::toStr(keyframeJson, "channel");
 				kf.interpolation = priv::toInterpolationType(keyframeJson, "interpolation");
 				kf.uuid = json::toStr(keyframeJson, "uuid");
@@ -706,14 +715,14 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 	}
 
-	if (!parseAnimations(filename, meta, json, sceneGraph)) {
-		Log::error("Failed to parse animations");
-		// don't abort because we can still load the model without animations
-	}
-
 	if (!addNode(root, elementMap, sceneGraph, textureArray, 0)) {
 		Log::error("Failed to add node");
 		return false;
+	}
+
+	if (!parseAnimations(filename, meta, json, sceneGraph)) {
+		Log::error("Failed to parse animations");
+		// don't abort because we can still load the model without animations
 	}
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
