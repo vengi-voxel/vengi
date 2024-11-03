@@ -12,7 +12,10 @@
 #include "io/Base64ReadStream.h"
 #include "io/MemoryReadStream.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphAnimation.h"
+#include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -27,6 +30,39 @@
 namespace voxelformat {
 
 namespace priv {
+
+struct KeyFrame {
+	core::String channel; // "rotation", "position", "scale"
+	core::DynamicArray<glm::vec3> dataPoints;
+	core::String uuid;
+	float time = 0.0f;
+	int color; // white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray
+	scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
+	bool bezierLinked = false;
+	glm::vec3 bezierLeftTime{0.0f};
+	glm::vec3 bezierLeftValue{0.0f};
+	glm::vec3 bezierRightTime{0.0f};
+	glm::vec3 bezierRightValue{0.0f};
+};
+
+struct Animator {
+	core::String uuid;
+	core::String name;
+	core::String type; // "bone", "cube"
+	core::DynamicArray<KeyFrame> keyframes;
+};
+
+struct Animation {
+	core::String uuid;
+	core::String name;
+	core::String loop; // "loop", "once"
+	bool overrideVal;
+	bool selected;
+	float length;
+	int snapping;
+	core::DynamicArray<Animator> animators;
+};
+
 static inline core::String toStr(const std::string &str) {
 	core::String p(str.c_str());
 	return p;
@@ -36,8 +72,34 @@ static inline core::String toStr(const nlohmann::json &json, const char *key, co
 	return toStr(json.value(key, defaultValue.c_str()));
 }
 
+static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::json &json, const char *key, const scenegraph::InterpolationType defaultValue = scenegraph::InterpolationType::Linear) {
+	const std::string val = json.value(key, "");
+	if (val.empty()) {
+		return defaultValue;
+	}
+	// "linear", "catmullrom", "ease_in", "ease_out", "ease_in_out", "bezier"
+	if (val == "linear") {
+		return scenegraph::InterpolationType::Linear;
+	} else if (val == "ease_in") {
+		return scenegraph::InterpolationType::QuadEaseIn;
+	} else if (val == "ease_out") {
+		return scenegraph::InterpolationType::QuadEaseOut;
+	} else if (val == "ease_in_out") {
+		return scenegraph::InterpolationType::QuadEaseInOut;
+	}
+#if 0
+	 else if (val == "bezier") {
+		return scenegraph::InterpolationType::Bezier;
+	} else if (val == "catmullrom") {
+		return scenegraph::InterpolationType::CatmullRom;
+	}
+#endif
+	Log::warn("Unsupported interpolation type: %s", val.c_str());
+	return defaultValue;
+}
+
 template<class T>
-static T toInt(const nlohmann::json &json, const char *key, T defaultValue) {
+static T toNumber(const nlohmann::json &json, const char *key, T defaultValue) {
 	auto iter = json.find(key);
 	if (iter == json.end() || iter->is_null()) {
 		return defaultValue;
@@ -49,12 +111,33 @@ static T toInt(const nlohmann::json &json, const char *key, T defaultValue) {
 	return json[key];
 }
 
-static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
-	auto iter = json.find(key);
-	if (iter == json.end() || !iter->is_array() || iter->size() != 3) {
+static const glm::vec3 toVec3(const nlohmann::json &json, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
+	if (json.is_array() && json.size() == 3) {
+		return glm::vec3(json[0].get<float>(), json[1].get<float>(), json[2].get<float>());
+	}
+	auto iterX = json.find("x");
+	auto iterY = json.find("y");
+	auto iterZ = json.find("z");
+	if (iterX == json.end() || iterY == json.end() || iterZ == json.end()) {
 		return defaultValue;
 	}
-	return glm::vec3(iter.value()[0], iter.value()[1], iter.value()[2]);
+	if (!iterX->is_number() || !iterY->is_number() || !iterZ->is_number()) {
+		return defaultValue;
+	}
+	// TODO: VOXELFORMAT: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
+	// "data_points": [{"x": "0","y": "0","z": 90}],
+	const float x = iterX.value().get<float>();
+	const float y = iterY.value().get<float>();
+	const float z = iterZ.value().get<float>();
+	return glm::vec3(x, y, z);
+}
+
+static glm::vec3 toVec3(const nlohmann::json &json, const char *key, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
+	auto iter = json.find(key);
+	if (iter == json.end()) {
+		return defaultValue;
+	}
+	return toVec3(*iter, defaultValue);
 }
 
 static BlockbenchFormat::ElementType toType(const nlohmann::json &json, const char *key) {
@@ -121,7 +204,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			return false;
 		}
 
-		const int textureIdx = priv::toInt(faceData, "texture", -1);
+		const int textureIdx = priv::toNumber(faceData, "texture", -1);
 		const bool textureIdxValid = textureIdx >= 0 && textureIdx < (int)textureArray.size();
 		Polygon polygon;
 		if (textureIdxValid) {
@@ -214,7 +297,7 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 
 		int textureIdx = -1;
 		if (!textureArray.empty()) {
-			textureIdx = priv::toInt(faceData, "texture", -1);
+			textureIdx = priv::toNumber(faceData, "texture", -1);
 			if (textureIdx >= (int)textureArray.size()) {
 				Log::error("Invalid texture index: %d", textureIdx);
 				return false;
@@ -246,7 +329,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		element.rescale = elementJson.value("rescale", false);
 		element.locked = elementJson.value("locked", false);
 		element.box_uv = elementJson.value("box_uv", false);
-		element.color = priv::toInt(elementJson, "color", 0);
+		element.color = priv::toNumber(elementJson, "color", 0);
 		element.type = priv::toType(elementJson, "type");
 		if (element.type == BlockbenchFormat::ElementType::Max) {
 			element.type = BlockbenchFormat::ElementType::Cube;
@@ -276,7 +359,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 	node.mirror_uv = entryJson.value("mirror_uv", false);
 	node.origin = scale * priv::toVec3(entryJson, "origin");
 	node.rotation = priv::toVec3(entryJson, "rotation");
-	node.color = priv::toInt(entryJson, "color", 0);
+	node.color = priv::toNumber(entryJson, "color", 0);
 
 	Log::debug("Node name: %s (%i references)", node.name.c_str(), (int)node.referenced.size());
 
@@ -434,7 +517,6 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		Log::error("Animations is not an array in json file: %s", filename.c_str());
 		return false;
 	}
-
 	for (const auto &animationJson : animationsJson) {
 		const core::String animationName = priv::toStr(animationJson, "name");
 		if (animationName.empty()) {
@@ -442,43 +524,76 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 		}
 		sceneGraph.addAnimation(animationName);
 #if 0
-		// const core::String uuid = priv::toStr(animationJson, "uuid");
-		const core::String loop = priv::toStr(animationJson, "loop"); // "once"
-		const bool overrideVal = animationJson["override"];
-		const bool selected = animationJson["selected"];
-		const int length = animationJson["length"];
-		const int snapping = animationJson["snapping"];
-		// TODO: VOXELFORMAT: load animations
-		// "anim_time_update": "",
-		// "blend_weight": "",
-		// "start_delay": "",
-		// "loop_delay": "",
+		priv::Animation animation;
+		animation.uuid = priv::toStr(animationJson, "uuid");
+		animation.name = animationName;
+		animation.loop = priv::toStr(animationJson, "loop");
+		animation.overrideVal = animationJson["override"];
+		animation.selected = animationJson["selected"];
+		animation.length = animationJson["length"];
+		animation.snapping = animationJson["snapping"];
+		const core::String animTimeUpdate = priv::toStr(animationJson, "anim_time_update");
+		const core::String blendWeight = priv::toStr(animationJson, "blend_weight");
+		const core::String startDelay = priv::toStr(animationJson, "start_delay");
+		const core::String loopDelay = priv::toStr(animationJson, "loop_delay");
 		for (auto animatorsIter = animationJson.find("animators"); animatorsIter != animationJson.end();
 			 ++animatorsIter) {
+			priv::Animator animator;
+
 			const core::String uuid = priv::toStr(animatorsIter.key());
 			const auto &animatorsJson = animatorsIter.value();
-			const core::String animatorName = priv::toStr(animatorsJson, "name");
-			const core::String type = priv::toStr(animatorsJson, "type"); // "bone"
-			for (auto keyframesIter = animatorsJson.find("keyframes"); keyframesIter != animatorsJson.end();
-				 ++keyframesIter) {
-				const auto &keyframeJson = keyframesIter.value();
-				const core::String keyframeChannel = priv::toStr(keyframeJson, "channel"); // "rotation", "position"
-				const core::String keyframeInterpolation = priv::toStr(keyframeJson, "interpolation"); // "linear", "catmullrom"
-				const core::String keyframeUuid = priv::toStr(keyframeJson, "uuid");
-				const float keyframeTime = keyframeJson.value("time", 0.0f);
-				const int keyframeColor = keyframeJson.value("color", 0);
-				const bool keyframeBezierLinked = keyframeJson.value("bezier_linked", false);
-				const glm::vec3 keyframeBezierRightValue = priv::toVec3(keyframeJson, "bezier_right_value");
-				const glm::vec3 keyframeBezierRightTime = priv::toVec3(keyframeJson, "bezier_right_time");
-				const glm::vec3 keyframeBezierLeftValue = priv::toVec3(keyframeJson, "bezier_left_value");
-				const glm::vec3 keyframeBezierLeftTime = priv::toVec3(keyframeJson, "bezier_left_time");
-				// TODO: VOXELFORMAT: parse data_points - x, y and z - there can be strings inside for some - like "z": "0\n" and "z": 0
-				// "data_points": [{"x": "0","y": "0","z": 90}],
+			animator.name = priv::toStr(animatorsJson, "name");
+			animator.type = priv::toStr(animatorsJson, "type");
+			for (auto kfIter = animatorsJson.find("keyframes"); kfIter != animatorsJson.end(); ++kfIter) {
+				priv::KeyFrame kf;
+				const auto &keyframeJson = kfIter.value();
+				kf.channel = priv::toStr(keyframeJson, "channel");
+				kf.interpolation = priv::toInterpolationType(keyframeJson, "interpolation");
+				kf.uuid = priv::toStr(keyframeJson, "uuid");
+				kf.time = keyframeJson.value("time", 0.0f);
+				kf.color = keyframeJson.value("color", 0);
+				kf.bezierLinked = keyframeJson.value("bezier_linked", false);
+				kf.bezierRightValue = priv::toVec3(keyframeJson, "bezier_right_value");
+				kf.bezierRightTime = priv::toVec3(keyframeJson, "bezier_right_time");
+				kf.bezierLeftValue = priv::toVec3(keyframeJson, "bezier_left_value");
+				kf.bezierLeftTime = priv::toVec3(keyframeJson, "bezier_left_time");
+				for (auto dataPointsIter = keyframeJson.find("data_points"); dataPointsIter != keyframeJson.end(); ++dataPointsIter) {
+					kf.dataPoints.push_back(priv::toVec3(*dataPointsIter));
+				}
+				animator.keyframes.push_back(kf);
+			}
+			animation.animators.push_back(animator);
+		}
+		for (const priv::Animator &animator : animation.animators) {
+			Log::debug("Animator: %s", animator.name.c_str());
+			if (scenegraph::SceneGraphNode *node = sceneGraph.findNodeByUUID(animator.uuid)) {
+				Log::debug("Found node: %s (uuid: %s)", node->name().c_str(), node->uuid().c_str());
+				const auto &keyframes = animator.keyframes;
+				scenegraph::KeyFrameIndex keyFrameIdx = 0;
+				node->keyFrames()->reserve(keyframes.size());
+				// TODO: VOXELFORMAT: finish this
+				for (const priv::KeyFrame &keyframe : keyframes) {
+					Log::debug("Keyframe: %s", keyframe.channel.c_str());
+					scenegraph::SceneGraphKeyFrame kf = node->keyFrame(keyFrameIdx);
+					kf.interpolation = keyframe.interpolation;
+					// TODO: VOXELFORMAT: the assumption here is that the keyframes are sorted by time
+					kf.frameIdx = keyframe.time * 60.0f;
+					scenegraph::SceneGraphTransform transform;
+					if (keyframe.channel == "rotation") {
+						transform.setLocalOrientation(glm::quat(glm::radians(keyframe.dataPoints[0])));
+					} else if (keyframe.channel == "position") {
+						transform.setLocalTranslation(keyframe.dataPoints[0]);
+					} else if (keyframe.channel == "scale") {
+						transform.setLocalScale(keyframe.dataPoints[0]);
+					}
+					kf.setTransform(transform);
+				}
+			} else {
+				Log::warn("Node not found for uuid: %s", animator.uuid.c_str());
 			}
 		}
 #endif
 	}
-
 	return true;
 }
 
@@ -508,7 +623,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		Log::error("Unsupported model format: %s", meta.modelFormat.c_str());
 		return false;
 	}
-	meta.creationTimestamp = priv::toInt(metaJson, "creation_time", (uint64_t)0);
+	meta.creationTimestamp = priv::toNumber(metaJson, "creation_time", (uint64_t)0);
 	meta.box_uv = metaJson.value("box_uv", false);
 	meta.name = priv::toStr(json, "name", core::string::extractFilename(filename));
 	meta.model_identifier = priv::toStr(json, "model_identifier");
@@ -517,8 +632,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 	if (resolutionJsonIter != json.end()) {
 		const nlohmann::json &resolutionJson = *resolutionJsonIter;
 		if (resolutionJson.is_object()) {
-			meta.resolution.x = priv::toInt(resolutionJson, "width", 0);
-			meta.resolution.y = priv::toInt(resolutionJson, "height", 0);
+			meta.resolution.x = priv::toNumber(resolutionJson, "width", 0);
+			meta.resolution.y = priv::toNumber(resolutionJson, "height", 0);
 		}
 	}
 
