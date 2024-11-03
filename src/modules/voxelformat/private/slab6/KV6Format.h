@@ -30,6 +30,7 @@ protected:
 	 * The kfa file and the kv6 file must have the same basename
 	 *
 	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/share/documentation/kwalkhlp.txt
+	 * https://github.com/Ericson2314/Voxlap/blob/no-asm/source/kwalk.cpp
 	 * Example files at https://github.com/Ericson2314/Voxlap/tree/no-asm/share (anasplit.kfa)
 	 */
 	bool loadKFA(const core::String &filename, const io::ArchivePtr &archive, const voxel::RawVolume *volume,
