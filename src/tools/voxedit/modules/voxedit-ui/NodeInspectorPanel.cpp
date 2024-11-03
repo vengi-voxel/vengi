@@ -327,6 +327,8 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener) 
 }
 
 void NodeInspectorPanel::detailView(scenegraph::SceneGraphNode &node) {
+	ImGui::Text(_("UUID: %s"), node.uuid().c_str());
+
 	core::String deleteKey;
 	static const uint32_t tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable |
 										ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY |
