@@ -175,7 +175,7 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGitlab) {
 	ASSERT_EQ(voxelFile.name, "test.vox");
 	ASSERT_EQ(voxelFile.fullPath, "data/test.vox");
 	ASSERT_EQ(voxelFile.url, entry1.url);
-	ASSERT_EQ(voxelFile.licenseUrl, "https://gitlab.com/veloren/veloren/-/raw/master/LICENSE");
+	ASSERT_EQ(voxelFile.licenseUrl, "https://gitlab.com/vengi-voxel/vengi/-/raw/master/LICENSE");
 }
 
 } // namespace voxelcollection
