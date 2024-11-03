@@ -15,6 +15,8 @@ public:
 	PaletteCacheEx(const SceneManagerPtr &sceneMgr, const io::FilesystemPtr &filesystem)
 		: PaletteCache(filesystem), _sceneMgr(sceneMgr) {
 	}
+	virtual ~PaletteCacheEx() {
+	}
 
 	void detectPalettes(bool includeBuiltIn = true) override {
 		Super::detectPalettes(includeBuiltIn);

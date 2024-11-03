@@ -152,9 +152,6 @@ public:
 	ImFont *smallFont();
 
 	void languageOption();
-	/**
-	 * @return true if the dock layout should get reset
-	 */
 	void colorReductionOptions();
 	bool keyMapOption();
 

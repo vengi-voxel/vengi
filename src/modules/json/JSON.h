@@ -7,7 +7,7 @@
 #include "core/String.h"
 #include "core/Assert.h"
 
-#define JSON_THROW_USER(exception) core_assert_msg(false, exception.what()); std::abort()
+#define JSON_THROW_USER(exception) core_assert_msg(false, "%s", exception.what()); std::abort()
 #include "private/json.hpp"
 
 namespace json {

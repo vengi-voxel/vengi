@@ -63,6 +63,7 @@ struct Animation {
 	core::DynamicArray<Animator> animators;
 };
 
+#if 0
 static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::json &json, const char *key, const scenegraph::InterpolationType defaultValue = scenegraph::InterpolationType::Linear) {
 	const std::string val = json.value(key, "");
 	if (val.empty()) {
@@ -88,6 +89,7 @@ static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::
 	Log::warn("Unsupported interpolation type: %s", val.c_str());
 	return defaultValue;
 }
+#endif
 
 template<class T>
 static T toNumber(const nlohmann::json &json, const char *key, T defaultValue) {

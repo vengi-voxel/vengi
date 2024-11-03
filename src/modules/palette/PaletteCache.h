@@ -26,6 +26,8 @@ private:
 public:
 	PaletteCache(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
 	}
+	virtual ~PaletteCache() {
+	}
 
 	void clear();
 	virtual void detectPalettes(bool includeBuiltIn = true);
