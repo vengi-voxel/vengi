@@ -63,7 +63,8 @@ struct Animation {
 	core::DynamicArray<Animator> animators;
 };
 
-#if 0
+#define BLOCKBENCH_ANIMATION 1
+#if BLOCKBENCH_ANIMATION
 static inline scenegraph::InterpolationType toInterpolationType(const nlohmann::json &json, const char *key, const scenegraph::InterpolationType defaultValue = scenegraph::InterpolationType::Linear) {
 	const std::string val = json.value(key, "");
 	if (val.empty()) {
@@ -516,7 +517,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 			continue;
 		}
 		sceneGraph.addAnimation(animationName);
-#if 0
+#if BLOCKBENCH_ANIMATION
 		priv::Animation animation;
 		animation.uuid = json::toStr(animationJson, "uuid");
 		animation.name = animationName;
