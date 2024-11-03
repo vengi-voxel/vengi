@@ -1,4 +1,4 @@
-// Str v0.32
+// Str v0.33
 // Simple C++ string type with an optional local buffer, by Omar Cornut
 // https://github.com/ocornut/str
 
@@ -70,6 +70,7 @@ All StrXXX types derives from Str and instance hold the local buffer capacity. S
 
 /*
  CHANGELOG
+  0.33 - fixed capacity() return value to match standard. e.g. a Str256's capacity() now returns 255, not 256.
   0.32 - added owned() accessor.
   0.31 - fixed various warnings.
   0.30 - turned into a single header file, removed Str.cpp.
@@ -138,7 +139,7 @@ TODO
 class STR_API Str
 {
     char*               Data;                   // Point to LocalBuf() or heap allocated
-    int                 Capacity : 21;          // Max 2 MB
+    int                 Capacity : 21;          // Max 2 MB. Exclude zero terminator.
     int                 LocalBufSize : 10;      // Max 1023 bytes
     unsigned int        Owned : 1;              // Set when we have ownership of the pointed data (most common, unless using set_ref() method or StrRef constructor)
 
@@ -212,7 +213,7 @@ protected:
         STR_ASSERT(local_buf_size < 1024);
         Data = local_buf();
         Data[0] = '\0';
-        Capacity = local_buf_size;
+        Capacity = local_buf_size ? local_buf_size - 1 : 0;
         LocalBufSize = local_buf_size;
         Owned = 1;
     }
@@ -226,40 +227,40 @@ void    Str::set(const char* src)
         clear();
         return;
     }
-    int buf_len = (int)strlen(src)+1;
+    int buf_len = (int)strlen(src);
     if (Capacity < buf_len)
         reserve_discard(buf_len);
-    memcpy(Data, src, (size_t)buf_len);
+    memcpy(Data, src, (size_t)(buf_len + 1));
     Owned = 1;
 }
 
 void    Str::set(const char* src, const char* src_end)
 {
     STR_ASSERT(src != NULL && src_end >= src);
-    int buf_len = (int)(src_end-src)+1;
+    int buf_len = (int)(src_end - src);
     if ((int)Capacity < buf_len)
         reserve_discard(buf_len);
-    memcpy(Data, src, (size_t)(buf_len - 1));
-    Data[buf_len-1] = 0;
+    memcpy(Data, src, (size_t)buf_len);
+    Data[buf_len] = 0;
     Owned = 1;
 }
 
 void    Str::set(const Str& src)
 {
-    int buf_len = (int)strlen(src.c_str())+1;
+    int buf_len = (int)strlen(src.c_str());
     if ((int)Capacity < buf_len)
         reserve_discard(buf_len);
-    memcpy(Data, src.c_str(), (size_t)buf_len);
+    memcpy(Data, src.c_str(), (size_t)(buf_len + 1));
     Owned = 1;
 }
 
 #if STR_SUPPORT_STD_STRING
 void    Str::set(const std::string& src)
 {
-    int buf_len = (int)src.length()+1;
+    int buf_len = (int)src.length();
     if ((int)Capacity < buf_len)
         reserve_discard(buf_len);
-    memcpy(Data, src.c_str(), (size_t)buf_len);
+    memcpy(Data, src.c_str(), (size_t)(buf_len + 1));
     Owned = 1;
 }
 #endif
@@ -413,7 +414,7 @@ void    Str::clear()
     {
         Data = local_buf();
         Data[0] = '\0';
-        Capacity = LocalBufSize;
+        Capacity = LocalBufSize - 1;
         Owned = 1;
     }
     else
@@ -425,31 +426,32 @@ void    Str::clear()
 }
 
 // Reserve memory, preserving the current of the buffer
+// Capacity doesn't include the zero terminator, so reserve(5) is enough to store "hello".
 void    Str::reserve(int new_capacity)
 {
     if (new_capacity <= Capacity)
         return;
 
     char* new_data;
-    if (new_capacity < LocalBufSize)
+    if (new_capacity <= LocalBufSize - 1)
     {
         // Disowned -> LocalBuf
         new_data = local_buf();
-        new_capacity = LocalBufSize;
+        new_capacity = LocalBufSize - 1;
     }
     else
     {
         // Disowned or LocalBuf -> Heap
-        new_data = (char*)STR_MEMALLOC((size_t)new_capacity * sizeof(char));
+        new_data = (char*)STR_MEMALLOC((size_t)(new_capacity + 1) * sizeof(char));
     }
 
     // string in Data might be longer than new_capacity if it wasn't owned, don't copy too much
 #ifdef _MSC_VER
-    strncpy_s(new_data, (size_t)new_capacity, Data, (size_t)new_capacity - 1);
+    strncpy_s(new_data, (size_t)new_capacity + 1, Data, (size_t)new_capacity);
 #else
-    strncpy(new_data, Data, (size_t)new_capacity - 1);
+    strncpy(new_data, Data, (size_t)new_capacity);
 #endif
-    new_data[new_capacity - 1] = 0;
+    new_data[new_capacity] = 0;
 
     if (Owned && !is_using_local_buf())
         STR_MEMFREE(Data);
@@ -468,16 +470,16 @@ void    Str::reserve_discard(int new_capacity)
     if (Owned && !is_using_local_buf())
         STR_MEMFREE(Data);
 
-    if (new_capacity < LocalBufSize)
+    if (new_capacity <= LocalBufSize - 1)
     {
         // Disowned -> LocalBuf
         Data = local_buf();
-        Capacity = LocalBufSize;
+        Capacity = LocalBufSize - 1;
     }
     else
     {
         // Disowned or LocalBuf -> Heap
-        Data = (char*)STR_MEMALLOC((size_t)new_capacity * sizeof(char));
+        Data = (char*)STR_MEMALLOC((size_t)(new_capacity + 1) * sizeof(char));
         Capacity = new_capacity;
     }
     Owned = 1;
@@ -487,12 +489,12 @@ void    Str::shrink_to_fit()
 {
     if (!Owned || is_using_local_buf())
         return;
-    int new_capacity = length() + 1;
+    int new_capacity = length();
     if (Capacity <= new_capacity)
         return;
 
-    char* new_data = (char*)STR_MEMALLOC((size_t)new_capacity * sizeof(char));
-    memcpy(new_data, Data, (size_t)new_capacity);
+    char* new_data = (char*)STR_MEMALLOC((size_t)(new_capacity + 1) * sizeof(char));
+    memcpy(new_data, Data, (size_t)(new_capacity + 1));
     STR_MEMFREE(Data);
     Data = new_data;
     Capacity = new_capacity;
@@ -511,17 +513,17 @@ int     Str::setfv(const char* fmt, va_list args)
     int len = vsnprintf(NULL, 0, fmt, args);
     STR_ASSERT(len >= 0);
 
-    if (Capacity < len + 1)
-        reserve_discard(len + 1);
-    len = vsnprintf(Data, len + 1, fmt, args2);
+    if (Capacity < len)
+        reserve_discard(len);
+    len = vsnprintf(Data, (size_t)len + 1, fmt, args2);
 #else
     // First try
-    int len = vsnprintf(Owned ? Data : NULL, Owned ? (size_t)Capacity : 0, fmt, args);
+    int len = vsnprintf(Owned ? Data : NULL, Owned ? (size_t)(Capacity + 1): 0, fmt, args);
     STR_ASSERT(len >= 0);
 
-    if (Capacity < len + 1)
+    if (Capacity < len)
     {
-        reserve_discard(len + 1);
+        reserve_discard(len);
         len = vsnprintf(Data, (size_t)len + 1, fmt, args2);
     }
 #endif
@@ -546,10 +548,10 @@ int     Str::setfv_nogrow(const char* fmt, va_list args)
     if (Capacity == 0)
         return 0;
 
-    int w = vsnprintf(Data, (size_t)Capacity, fmt, args);
-    Data[Capacity - 1] = 0;
+    int w = vsnprintf(Data, (size_t)(Capacity + 1), fmt, args);
+    Data[Capacity] = 0;
     Owned = 1;
-    return (w == -1) ? Capacity - 1 : w;
+    return (w == -1) ? Capacity : w;
 }
 
 int     Str::setf_nogrow(const char* fmt, ...)
@@ -564,8 +566,8 @@ int     Str::setf_nogrow(const char* fmt, ...)
 int     Str::append_from(int idx, char c)
 {
     int add_len = 1;
-    if (Capacity < idx + add_len + 1)
-        reserve(idx + add_len + 1);
+    if (Capacity < idx + add_len)
+        reserve(idx + add_len);
     Data[idx] = c;
     Data[idx + add_len] = 0;
     STR_ASSERT(Owned);
@@ -577,10 +579,10 @@ int     Str::append_from(int idx, const char* s, const char* s_end)
     if (!s_end)
         s_end = s + strlen(s);
     int add_len = (int)(s_end - s);
-    if (Capacity < idx + add_len + 1)
-        reserve(idx + add_len + 1);
+    if (Capacity < idx + add_len)
+        reserve(idx + add_len);
     memcpy(Data + idx, (const void*)s, (size_t)add_len);
-    Data[idx + add_len] = 0; // Our source data isn't necessarily zero-terminated
+    Data[idx + add_len] = 0; // Our source data isn't necessarily zero terminated
     STR_ASSERT(Owned);
     return add_len;
 }
@@ -598,17 +600,17 @@ int     Str::appendfv_from(int idx, const char* fmt, va_list args)
     int add_len = vsnprintf(NULL, 0, fmt, args);
     STR_ASSERT(add_len >= 0);
 
-    if (Capacity < idx + add_len + 1)
-        reserve(idx + add_len + 1);
+    if (Capacity < idx + add_len)
+        reserve(idx + add_len);
     add_len = vsnprintf(Data + idx, add_len + 1, fmt, args2);
 #else
     // First try
-    int add_len = vsnprintf(Owned ? Data + idx : NULL, Owned ? (size_t)(Capacity - idx) : 0, fmt, args);
+    int add_len = vsnprintf(Owned ? Data + idx : NULL, Owned ? (size_t)(Capacity + 1 - idx) : 0, fmt, args);
     STR_ASSERT(add_len >= 0);
 
-    if (Capacity < idx + add_len + 1)
+    if (Capacity < idx + add_len)
     {
-        reserve(idx + add_len + 1);
+        reserve(idx + add_len);
         add_len = vsnprintf(Data + idx, (size_t)add_len + 1, fmt, args2);
     }
 #endif

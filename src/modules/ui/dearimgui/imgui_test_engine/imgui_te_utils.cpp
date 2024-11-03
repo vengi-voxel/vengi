@@ -452,7 +452,7 @@ void ImStrReplace(Str* s, const char* find, const char* repl)
     if (repl_diff > 0)
     {
         num_matches = 0;
-        need_capacity = s->length() + 1;
+        need_capacity = s->length();
         for (char* p = s->c_str(), *end = s->c_str() + s->length(); p != NULL && p < end;)
         {
             p = (char*)ImStrStr(p, end - p, find, find_len);
@@ -665,11 +665,14 @@ void ImTimestampToISO8601(uint64_t timestamp, Str* out_date)
     time_t unix_time = (time_t)(timestamp / 1000000); // Convert to seconds.
     tm* time = gmtime(&unix_time);
     const char* time_format = "%Y-%m-%dT%H:%M:%S";
-    size_t size_req = strftime(out_date->c_str(), out_date->capacity(), time_format, time);
-    if (size_req >= (size_t)out_date->capacity())
+
+    // max_size "maximum number of characters to be copied to ptr, including the terminating null-character."
+    // return   "returns the total number of characters copied to ptr (not including the terminating null-character)"
+    size_t size_req = strftime(out_date->c_str(), out_date->capacity() + 1, time_format, time);
+    if (size_req > (size_t)out_date->capacity())
     {
         out_date->reserve((int)size_req);
-        strftime(out_date->c_str(), out_date->capacity(), time_format, time);
+        strftime(out_date->c_str(), out_date->capacity() + 1, time_format, time);
     }
 }
 
@@ -1061,7 +1064,7 @@ static int InputTextCallbackStr(ImGuiInputTextCallbackData* data)
         // If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we need to set them back to what we want.
         Str* str = user_data->StrObj;
         IM_ASSERT(data->Buf == str->c_str());
-        str->reserve(data->BufTextLen + 1);
+        str->reserve(data->BufTextLen);
         data->Buf = (char*)str->c_str();
     }
     else if (user_data->ChainCallback)
