@@ -28,8 +28,11 @@ private:
 	const int _id;
 	const core::String _uiId;
 	const bool _detailedTitle;
+	// was the view manipulator used to change the camera?
 	bool _cameraManipulated = false;
+	// is this viewport instance hovered at the moment?
 	bool _hovered = false;
+	// is this viewport instance visible at all?
 	bool _visible = false;
 	/**
 	 * while we are still modifying the transform or shifting the volume we don't want to
