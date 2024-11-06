@@ -171,8 +171,8 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	backward::SignalHandling sh;
 #endif
 
-	_initialLogLevel = SDL_LOG_PRIORITY_INFO;
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)_initialLogLevel);
+	_initialLogLevel = Log::Level::Info;
+	Log::setLevel(_initialLogLevel);
 	_timeProvider->updateTickTime();
 	_staticInstance = this;
 	signal(SIGINT, app_graceful_shutdown);
@@ -468,7 +468,7 @@ AppState App::onConstruct() {
 	}
 	FL_FreeLocale(&locale);
 
-	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, _initialLogLevel);
+	core::VarPtr logVar = core::Var::get(cfg::CoreLogLevel, (int)_initialLogLevel);
 	core::VarPtr syslogVar = core::Var::get(cfg::CoreSysLog, _syslog ? "true" : "false");
 	syslogVar->setValidator(core::Var::boolValidator);
 

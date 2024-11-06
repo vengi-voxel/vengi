@@ -101,13 +101,17 @@ const char* Log::toLogLevel(Log::Level level) {
 	return "none";
 }
 
+void Log::setLevel(Level level) {
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)level);
+}
+
 void Log::init(const char *logfile) {
 	int rawLogLevel = core::Var::getSafe(cfg::CoreLogLevel)->intVal();
 	if (rawLogLevel < 0 || rawLogLevel > (int)Log::Level::Error) {
 		rawLogLevel = (int)Log::Level::Error;
 	}
 	priv::_logLevel = (Log::Level)rawLogLevel;
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_VERBOSE);
+	setLevel(Log::Level::Trace);
 
 	if (priv::_logfile == nullptr && logfile != nullptr) {
 		priv::_logfile = fopen(logfile, "w");

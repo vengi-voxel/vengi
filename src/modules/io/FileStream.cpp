@@ -3,7 +3,6 @@
  */
 
 #include "FileStream.h"
-#include "core/Assert.h"
 #include "core/Log.h"
 #include "io/File.h"
 #include <SDL_endian.h>

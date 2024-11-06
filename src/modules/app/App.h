@@ -7,6 +7,7 @@
 #include "app/i18n/DictionaryManager.h"
 #include "core/Common.h"
 #include "core/Trace.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"
@@ -61,7 +62,7 @@ protected:
 	// the first entry is the application name
 	char **_argv = nullptr;
 
-	int _initialLogLevel = 0;
+	Log::Level _initialLogLevel = Log::Level::Info;
 	int _pid = -1;
 
 	core::String _organisation;

@@ -6,10 +6,11 @@
 
 #include "core/SharedPtr.h"
 #include "io/Stream.h"
-#include <SDL_rwops.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
+
+struct SDL_RWops;
 
 namespace io {
 

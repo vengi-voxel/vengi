@@ -43,7 +43,7 @@ void AbstractTest::TearDown() {
 AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, AbstractTest* test) :
 		Super(filesystem, timeProvider), _test(test) {
 	init(ORGANISATION, "test");
-	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
+	_initialLogLevel = Log::Level::Warn;
 	_argc = ::_argc;
 	_argv = ::_argv;
 }

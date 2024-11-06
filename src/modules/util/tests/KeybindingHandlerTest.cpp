@@ -8,7 +8,7 @@
 #include "util/KeybindingHandler.h"
 #include "command/Command.h"
 #include "core/Log.h"
-#include <SDL.h>
+#include <SDL_keycode.h>
 
 namespace util {
 

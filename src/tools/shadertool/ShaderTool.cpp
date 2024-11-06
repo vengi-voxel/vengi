@@ -19,7 +19,7 @@
 ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "shadertool");
-	_initialLogLevel = SDL_LOG_PRIORITY_WARN;
+	_initialLogLevel = Log::Level::Warn;
 	_saveConfiguration = false;
 }
 
