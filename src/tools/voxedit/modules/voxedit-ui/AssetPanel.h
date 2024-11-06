@@ -32,7 +32,7 @@ public:
 	AssetPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr,
 			   const voxelcollection::CollectionManagerPtr &collectionMgr, const video::TexturePoolPtr &texturePool, const io::FilesystemPtr &filesystem);
 	bool init();
-	void update(const char *id, bool sceneMode, command::CommandExecutionListener &listener);
+	void update(const char *id, command::CommandExecutionListener &listener);
 	void shutdown();
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;

@@ -54,7 +54,7 @@ bool AssetPanel::init() {
 	return true;
 }
 
-void AssetPanel::update(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {
+void AssetPanel::update(const char *id, command::CommandExecutionListener &listener) {
 	const core::String title = makeTitle(ICON_LC_LIST, _("Assets"), id);
 	if (ImGui::Begin(title.c_str(), nullptr, ImGuiWindowFlags_NoFocusOnAppearing)) {
 		core_trace_scoped(AssetPanel);

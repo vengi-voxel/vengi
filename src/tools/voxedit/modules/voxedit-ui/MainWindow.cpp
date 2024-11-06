@@ -485,7 +485,7 @@ void MainWindow::rightWidget() {
 	command::CommandExecutionListener &listener = _app->commandListener();
 	// top
 	_toolsPanel.update(TITLE_TOOLS, _lastSceneMode, listener);
-	_assetPanel.update(TITLE_ASSET, _lastSceneMode, listener);
+	_assetPanel.update(TITLE_ASSET, listener);
 	_animationPanel.update(TITLE_ANIMATION_SETTINGS, listener, &_animationTimeline);
 	if (_viewMode->intVal() != (int)ViewMode::Simple) {
 		_mementoPanel.update(TITLE_MEMENTO, listener);
