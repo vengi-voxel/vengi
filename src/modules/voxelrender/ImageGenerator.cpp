@@ -87,7 +87,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	volumeRenderer.construct();
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
-	renderContext.sceneMode = true;
+	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
 
@@ -106,7 +106,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 	voxelrender::SceneGraphRenderer volumeRenderer;
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
-	renderContext.sceneMode = true;
+	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
 

@@ -139,7 +139,8 @@ private:
 	image::ImagePtr renderToImage(const char *imageName);
 
 public:
-	Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle = true);
+	Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, voxelrender::RenderMode renderMode,
+			 bool detailedTitle = true);
 	~Viewport();
 
 	static core::String viewportId(int id, bool printable = false);

@@ -53,9 +53,11 @@ core::String Viewport::viewportId(int id, bool printable) {
 	return core::string::format("###viewport%i", id);
 }
 
-Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, bool sceneMode, bool detailedTitle)
-	: Super(app, viewportId(id, true).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle), _sceneMgr(sceneMgr) {
-	_renderContext.sceneMode = sceneMode;
+Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, voxelrender::RenderMode renderMode,
+				   bool detailedTitle)
+	: Super(app, viewportId(id, true).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle),
+	  _sceneMgr(sceneMgr) {
+	_renderContext.renderMode = renderMode;
 }
 
 Viewport::~Viewport() {
@@ -286,7 +288,7 @@ void Viewport::menuBarCameraMode() {
 }
 
 bool Viewport::isSceneMode() const {
-	return _renderContext.sceneMode;
+	return _renderContext.renderMode == voxelrender::RenderMode::Scene;
 }
 
 void Viewport::toggleScene() {
@@ -294,9 +296,9 @@ void Viewport::toggleScene() {
 		return;
 	}
 	if (isSceneMode()) {
-		_renderContext.sceneMode = false;
+		_renderContext.renderMode = voxelrender::RenderMode::Edit;
 	} else {
-		_renderContext.sceneMode = true;
+		_renderContext.renderMode = voxelrender::RenderMode::Scene;
 	}
 }
 
@@ -397,7 +399,14 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		menuBarCameraProjection();
 		menuBarCameraMode();
 		if (!_simplifiedView->boolVal()) {
-			ImGui::Checkbox(_("Scene Mode"), &_renderContext.sceneMode);
+			bool sceneMode = isSceneMode();
+			if (ImGui::Checkbox(_("Scene Mode"), &sceneMode)) {
+				if (sceneMode) {
+					_renderContext.renderMode = voxelrender::RenderMode::Scene;
+				} else {
+					_renderContext.renderMode = voxelrender::RenderMode::Edit;
+				}
+			}
 		}
 		menuBarView(listener);
 

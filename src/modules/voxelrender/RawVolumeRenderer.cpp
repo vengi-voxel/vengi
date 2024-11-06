@@ -466,7 +466,7 @@ bool RawVolumeRenderer::isVisible(int idx, bool hideEmpty) const {
 void RawVolumeRenderer::renderNormals(const RenderContext &renderContext, const video::Camera &camera) {
 	// TODO: NORMALS: allow to render the normals in scene mode - currently the transform
 	// is not correct - MeshState::centerPos()
-	if (!renderContext.renderNormals || renderContext.sceneMode) {
+	if (!renderContext.renderNormals || renderContext.renderMode == RenderMode::Scene) {
 		return;
 	}
 

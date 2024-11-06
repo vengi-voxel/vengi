@@ -39,6 +39,10 @@ class Palette;
  */
 namespace voxelrender {
 
+enum class RenderMode {
+	Edit, Scene, Max
+};
+
 struct RenderContext : public core::NonCopyable {
 	video::FrameBuffer frameBuffer;
 	render::BloomRenderer bloomRenderer;
@@ -46,7 +50,7 @@ struct RenderContext : public core::NonCopyable {
 	scenegraph::FrameIndex frame = 0;
 	bool hideInactive = false;
 	bool grayInactive = false;
-	bool sceneMode = false;
+	RenderMode renderMode = RenderMode::Edit;
 	bool onlyModels = false;
 	// render the built-in normals
 	bool renderNormals = false;

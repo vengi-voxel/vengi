@@ -215,7 +215,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 		if (v != node.volume()) {
 			_volumeRenderer.scheduleRegionExtraction(id, region);
 		}
-		if (renderContext.sceneMode) {
+		if (renderContext.renderMode == RenderMode::Scene) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const glm::vec3 scale = transform.scale();
 			const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) +
@@ -258,7 +258,7 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 
 	meshState->resetReferences();
-	if (renderContext.sceneMode) {
+	if (renderContext.renderMode == RenderMode::Scene) {
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
 			if (!node.isReference()) {
@@ -312,7 +312,7 @@ void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camer
 	}
 
 	_volumeRenderer.render(renderContext, camera, shadow);
-	if (renderContext.sceneMode) {
+	if (renderContext.renderMode == RenderMode::Scene) {
 		for (video::Camera &sceneCamera : _cameras) {
 			sceneCamera.setSize(camera.size());
 			sceneCamera.update(0.0);

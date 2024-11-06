@@ -296,8 +296,8 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 	renderContext.grayInactive = _grayInactive->boolVal();
 
 	video::ScopedState depthTest(video::State::DepthTest, true);
-	updateAABBMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
-	updateBoneMesh(renderContext.sceneMode, *renderContext.sceneGraph, renderContext.frame);
+	updateAABBMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
+	updateBoneMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
 	_volumeRenderer.render(renderContext, camera, _renderShadow->boolVal(), false);
 	extractVolume(*renderContext.sceneGraph);
 }
@@ -311,7 +311,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	video::ScopedState blend(video::State::Blend, true);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
-	if (renderContext.sceneMode) {
+	if (renderContext.renderMode == voxelrender::RenderMode::Scene) {
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);
 		}

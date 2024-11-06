@@ -195,13 +195,13 @@ bool MainWindow::initScenes() {
 
 	if (_viewMode->intVal() == (int)ViewMode::Simple) {
 		_scenes.resize(2);
-		_scenes[0] = new Viewport(_app, _sceneMgr, 0, true, false);
-		_scenes[1] = new Viewport(_app, _sceneMgr, 1, false, false);
+		_scenes[0] = new Viewport(_app, _sceneMgr, 0, voxelrender::RenderMode::Scene, false);
+		_scenes[1] = new Viewport(_app, _sceneMgr, 1, voxelrender::RenderMode::Edit, false);
 	} else {
 		_scenes.resize(_numViewports->intVal());
 		bool sceneMode = true;
 		for (int i = 0; i < _numViewports->intVal(); ++i) {
-			_scenes[i] = new Viewport(_app, _sceneMgr, i, sceneMode, true);
+			_scenes[i] = new Viewport(_app, _sceneMgr, i, sceneMode ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit, true);
 			sceneMode = false;
 		}
 	}
