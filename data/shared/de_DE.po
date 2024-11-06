@@ -1763,6 +1763,10 @@ msgstr "Pv"
 msgid "Properties"
 msgstr "Eigenschaften"
 
+#, c-format
+msgid "UUID: %s"
+msgstr ""
+
 msgid "Delete this node property"
 msgstr "Diese Knoteneigenschaft löschen"
 
@@ -2394,17 +2398,17 @@ msgstr "Orthogonal"
 msgid "Perspective"
 msgstr "Perspektive"
 
-msgid "View"
-msgstr "Ansicht"
+msgid "Lines"
+msgstr "Linien"
 
-msgid "Reset camera"
-msgstr "Kamera zurücksetzen"
+msgid "Points"
+msgstr "Punkte"
 
-msgid "Camera rotation"
-msgstr "Kamerarotation"
+msgid "Solid"
+msgstr "Voll"
 
-msgid "Screenshot"
-msgstr "Screenshot"
+msgid "Render mode"
+msgstr "Rendermodus"
 
 msgid "Video"
 msgstr "Video"
@@ -2424,6 +2428,9 @@ msgstr ""
 "Sie können die Bildrate des Videos mit der cvar %s steuern\n"
 "Ausstehende Frames: %u"
 
+msgid "Camera rotation"
+msgstr "Kamerarotation"
+
 msgid "Eye"
 msgstr "Auge"
 
@@ -2433,25 +2440,22 @@ msgstr "Referenzpunkt"
 msgid "Camera movement"
 msgstr "Kamerabewegung"
 
-msgid "Lines"
-msgstr "Linien"
+msgid "Reset camera"
+msgstr "Kamera zurücksetzen"
 
-msgid "Points"
-msgstr "Punkte"
+msgid "Screenshot"
+msgstr "Screenshot"
 
-msgid "Solid"
-msgstr "Voll"
+msgid "View"
+msgstr "Ansicht"
 
-msgid "Render mode"
-msgstr "Rendermodus"
+msgid "Scene Mode"
+msgstr "Szenenmodus"
 
 msgid "Undo disabled for this volume. Max volume size exceeded"
 msgstr ""
 "Rückgängig deaktiviert für dieses Volumen. Maximale Volumengröße "
 "überschritten"
-
-msgid "Scene Mode"
-msgstr "Szenenmodus"
 
 msgid "EditMode"
 msgstr "Bearbeitungsmodus"

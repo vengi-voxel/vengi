@@ -1676,6 +1676,10 @@ msgstr ""
 msgid "Properties"
 msgstr ""
 
+#, c-format
+msgid "UUID: %s"
+msgstr ""
+
 msgid "Delete this node property"
 msgstr ""
 
@@ -2276,16 +2280,16 @@ msgstr ""
 msgid "Perspective"
 msgstr ""
 
-msgid "View"
+msgid "Lines"
 msgstr ""
 
-msgid "Reset camera"
+msgid "Points"
 msgstr ""
 
-msgid "Camera rotation"
+msgid "Solid"
 msgstr ""
 
-msgid "Screenshot"
+msgid "Render mode"
 msgstr ""
 
 msgid "Video"
@@ -2304,6 +2308,9 @@ msgid ""
 "Pending frames: %u"
 msgstr ""
 
+msgid "Camera rotation"
+msgstr ""
+
 msgid "Eye"
 msgstr ""
 
@@ -2313,22 +2320,19 @@ msgstr ""
 msgid "Camera movement"
 msgstr ""
 
-msgid "Lines"
+msgid "Reset camera"
 msgstr ""
 
-msgid "Points"
+msgid "Screenshot"
 msgstr ""
 
-msgid "Solid"
-msgstr ""
-
-msgid "Render mode"
-msgstr ""
-
-msgid "Undo disabled for this volume. Max volume size exceeded"
+msgid "View"
 msgstr ""
 
 msgid "Scene Mode"
+msgstr ""
+
+msgid "Undo disabled for this volume. Max volume size exceeded"
 msgstr ""
 
 msgid "EditMode"
