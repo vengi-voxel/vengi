@@ -307,17 +307,17 @@ void Viewport::setRenderMode(voxelrender::RenderMode renderMode) {
 }
 
 void Viewport::toggleVideoRecording() {
-	if (!_captureTool.isRecording()) {
-		video::WindowedApp::getInstance()->saveDialog(
-			[this](const core::String &file, const io::FormatDescription *desc) {
-				const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
-				_captureTool.startRecording(file.c_str(), dim.x, dim.y);
-			},
-			{}, nullptr, "video.avi");
-	} else {
+	if (_captureTool.isRecording()) {
 		Log::debug("Stop recording");
 		_captureTool.stopRecording();
+		return;
 	}
+	video::WindowedApp::getInstance()->saveDialog(
+		[this](const core::String &file, const io::FormatDescription *desc) {
+			const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
+			_captureTool.startRecording(file.c_str(), dim.x, dim.y);
+		},
+		{}, nullptr, "video.avi");
 }
 
 void Viewport::menuBarPolygonModeOptions() {
@@ -405,14 +405,15 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 }
 
 void Viewport::menuBarRenderModeToggle() {
-	if (!_simplifiedView->boolVal()) {
-		bool sceneMode = isSceneMode();
-		if (ImGui::Checkbox(_("Scene Mode"), &sceneMode)) {
-			if (sceneMode) {
-				_renderContext.renderMode = voxelrender::RenderMode::Scene;
-			} else {
-				_renderContext.renderMode = voxelrender::RenderMode::Edit;
-			}
+	if (_simplifiedView->boolVal()) {
+		return;
+	}
+	bool sceneMode = isSceneMode();
+	if (ImGui::Checkbox(_("Scene Mode"), &sceneMode)) {
+		if (sceneMode) {
+			_renderContext.renderMode = voxelrender::RenderMode::Scene;
+		} else {
+			_renderContext.renderMode = voxelrender::RenderMode::Edit;
 		}
 	}
 }
