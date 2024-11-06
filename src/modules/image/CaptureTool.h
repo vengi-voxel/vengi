@@ -29,6 +29,11 @@ public:
 	~CaptureTool() {
 		abort();
 	}
+
+	inline CaptureType type() const {
+		return _type;
+	}
+
 	bool isRecording() const;
 	bool startRecording(const char *filename, int width, int height);
 	void enqueueFrame(const image::ImagePtr &image);

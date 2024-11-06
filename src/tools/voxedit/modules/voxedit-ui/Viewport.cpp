@@ -317,7 +317,7 @@ void Viewport::toggleVideoRecording() {
 			const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
 			_captureTool.startRecording(file.c_str(), dim.x, dim.y);
 		},
-		{}, nullptr, "video.avi");
+		{}, nullptr, _captureTool.type() == image::CaptureType::AVI ? "video.avi" : "video.mpeg2");
 }
 
 void Viewport::menuBarPolygonModeOptions() {
