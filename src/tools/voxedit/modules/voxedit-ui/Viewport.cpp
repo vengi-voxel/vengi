@@ -126,7 +126,7 @@ void Viewport::updateViewportTrace(float headerSize) {
 	move(pan, rotate, mouseX, mouseY);
 	_sceneMgr->setMousePos(_mouseX, _mouseY);
 	_sceneMgr->setActiveCamera(&camera());
-	_sceneMgr->trace(_renderContext.sceneMode);
+	_sceneMgr->trace(isSceneMode());
 }
 
 void Viewport::dragAndDrop(float headerSize) {
@@ -177,7 +177,7 @@ void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 }
 
 void Viewport::renderCursor() {
-	if (_renderContext.sceneMode) {
+	if (isSceneMode()) {
 		return;
 	}
 
@@ -293,7 +293,7 @@ void Viewport::toggleScene() {
 	if (_simplifiedView->boolVal()) {
 		return;
 	}
-	if (_renderContext.sceneMode) {
+	if (isSceneMode()) {
 		_renderContext.sceneMode = false;
 	} else {
 		_renderContext.sceneMode = true;
@@ -472,7 +472,7 @@ void Viewport::resetCamera() {
 	voxel::Region region;
 
 	const int activeNode = sceneGraph.activeNode();
-	if (_renderContext.sceneMode) {
+	if (isSceneMode()) {
 		if (_hideInactive->boolVal()) {
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(activeNode)) {
 				scenegraph::KeyFrameIndex keyFrameIndex = node->keyFrameForFrame(_sceneMgr->currentFrame());
@@ -578,7 +578,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 }
 
 bool Viewport::wantGizmo() const {
-	if (_renderContext.sceneMode) {
+	if (isSceneMode()) {
 		return true;
 	}
 	if (_modelGizmo->boolVal()) {
@@ -786,7 +786,7 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	glm::mat4 viewMatrix = camera.viewMatrix();
 	float *viewPtr = glm::value_ptr(viewMatrix);
 
-	if (_renderContext.sceneMode) {
+	if (isSceneMode()) {
 		ImGuizmo::ViewManipulate(viewPtr, length, position, size, backgroundColor);
 	} else {
 		const float *projPtr = glm::value_ptr(camera.projectionMatrix());
@@ -822,7 +822,7 @@ bool Viewport::renderGizmo(video::Camera &camera, float headerSize, const ImVec2
 	ImGuizmo::SetDrawlist();
 	ImGuizmo::SetWindow();
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
-	ImGuizmo::Enable(_renderContext.sceneMode || _modelGizmo->boolVal());
+	ImGuizmo::Enable(isSceneMode() || _modelGizmo->boolVal());
 	ImGuizmo::AllowAxisFlip(_gizmoAllowAxisFlip->boolVal());
 	ImGuizmo::SetAxisMask(s_hideAxis[0], s_hideAxis[1], s_hideAxis[2]);
 	ImGuizmo::SetRect(windowPos.x, windowPos.y + headerSize, size.x, size.y);
