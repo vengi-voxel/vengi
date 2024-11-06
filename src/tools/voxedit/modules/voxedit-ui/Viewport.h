@@ -131,6 +131,7 @@ private:
 	void renderViewportImage(const glm::ivec2 &contentSize);
 	void dragAndDrop(float headerSize);
 	void renderCursor();
+	void renderCursorDetails() const;
 	void renderViewport();
 	void toggleVideoRecording();
 	void menuBarPolygonModeOptions();

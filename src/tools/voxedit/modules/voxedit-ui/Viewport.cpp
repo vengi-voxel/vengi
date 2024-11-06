@@ -178,26 +178,8 @@ void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 	ImGui::Image(texture->handle(), contentSize, uva, uvc);
 }
 
-void Viewport::renderCursor() {
-	if (isSceneMode()) {
-		return;
-	}
-
+void Viewport::renderCursorDetails() const {
 	const ModifierFacade &modifier = _sceneMgr->modifier();
-	if (modifier.isMode(ModifierType::ColorPicker) || modifier.isMode(ModifierType::Select) ||
-		modifier.brushType() == BrushType::Paint) {
-		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
-	} else if (modifier.brushType() == BrushType::Plane) {
-		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
-	}
-
-	if (const Brush *brush = modifier.currentBrush()) {
-		if (!brush->errorReason().empty()) {
-			ImGui::TooltipTextUnformatted(brush->errorReason().c_str());
-			return;
-		}
-	}
-
 	const int cursorDetailsLevel = _cursorDetails->intVal();
 	if (cursorDetailsLevel == 0) {
 		return;
@@ -222,6 +204,29 @@ void Viewport::renderCursor() {
 							   cursorPos.x - mins.x, cursorPos.y - mins.y, cursorPos.z - mins.z);
 		}
 	}
+}
+
+void Viewport::renderCursor() {
+	if (isSceneMode()) {
+		return;
+	}
+
+	const ModifierFacade &modifier = _sceneMgr->modifier();
+	if (modifier.isMode(ModifierType::ColorPicker) || modifier.isMode(ModifierType::Select) ||
+		modifier.brushType() == BrushType::Paint) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+	} else if (modifier.brushType() == BrushType::Plane) {
+		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+	}
+
+	if (const Brush *brush = modifier.currentBrush()) {
+		if (!brush->errorReason().empty()) {
+			ImGui::TooltipTextUnformatted(brush->errorReason().c_str());
+			return;
+		}
+	}
+
+	renderCursorDetails();
 }
 
 void Viewport::renderViewport() {
