@@ -57,7 +57,7 @@ Viewport::Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, v
 				   bool detailedTitle)
 	: Super(app, viewportId(id, true).c_str()), _id(id), _uiId(viewportId(id)), _detailedTitle(detailedTitle),
 	  _sceneMgr(sceneMgr) {
-	_renderContext.renderMode = renderMode;
+	setRenderMode(renderMode);
 }
 
 Viewport::~Viewport() {
@@ -296,10 +296,14 @@ void Viewport::toggleScene() {
 		return;
 	}
 	if (isSceneMode()) {
-		_renderContext.renderMode = voxelrender::RenderMode::Edit;
+		setRenderMode(voxelrender::RenderMode::Edit);
 	} else {
-		_renderContext.renderMode = voxelrender::RenderMode::Scene;
+		setRenderMode(voxelrender::RenderMode::Scene);
 	}
+}
+
+void Viewport::setRenderMode(voxelrender::RenderMode renderMode) {
+	_renderContext.renderMode = renderMode;
 }
 
 void Viewport::toggleVideoRecording() {

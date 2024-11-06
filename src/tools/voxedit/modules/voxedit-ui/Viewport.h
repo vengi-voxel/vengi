@@ -137,6 +137,7 @@ private:
 	void resize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
+	void setRenderMode(voxelrender::RenderMode renderMode);
 
 public:
 	Viewport(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, int id, voxelrender::RenderMode renderMode,
