@@ -37,7 +37,7 @@ void init(const core::TimeProviderPtr& timeProvider) {
 			Log::info("Usage: url <http://my-url>");
 			return;
 		}
-		app::App::getInstance()->openURL(args[0]);
+		app::App::openURL(args[0]);
 	}).setHelp(_("Open the given url in a browser"));
 
 	command::Command::registerCommand("echo", [] (const command::CmdArgs& args) {

@@ -294,8 +294,6 @@ public:
 	void requestQuit();
 	void requestSuspend();
 
-	void openURL(const core::String &url);
-
 	double deltaFrameSeconds() const;
 	double nowSeconds() const;
 
@@ -317,6 +315,7 @@ public:
 	void wait(uint32_t ms);
 
 	static App* getInstance();
+	static void openURL(const core::String &url);
 
 	const char *translate(const char *msgid) const;
 	const char *translateCtxt(const char *msgctxt, const char *msgid) const;
