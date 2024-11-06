@@ -312,12 +312,12 @@ void Viewport::toggleVideoRecording() {
 		_captureTool.stopRecording();
 		return;
 	}
-	video::WindowedApp::getInstance()->saveDialog(
-		[this](const core::String &file, const io::FormatDescription *desc) {
-			const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
-			_captureTool.startRecording(file.c_str(), dim.x, dim.y);
-		},
-		{}, nullptr, _captureTool.type() == image::CaptureType::AVI ? "video.avi" : "video.mpeg2");
+	auto callback = [this](const core::String &file, const io::FormatDescription *desc) {
+		const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
+		_captureTool.startRecording(file.c_str(), dim.x, dim.y);
+	};
+	const char *filename = _captureTool.type() == image::CaptureType::AVI ? "video.avi" : "video.mpeg2";
+	video::WindowedApp::getInstance()->saveDialog(callback, {}, nullptr, filename);
 }
 
 void Viewport::menuBarPolygonModeOptions() {
