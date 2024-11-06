@@ -320,71 +320,100 @@ void Viewport::toggleVideoRecording() {
 	}
 }
 
+void Viewport::menuBarPolygonModeOptions() {
+	const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
+	static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
+	const int currentPolygonMode = (int)camera().polygonMode();
+	if (ImGui::BeginCombo(_("Render mode"), polygonModes[currentPolygonMode])) {
+		for (int n = 0; n < lengthof(polygonModes); n++) {
+			const bool isSelected = (currentPolygonMode == n);
+			if (ImGui::Selectable(polygonModes[n], isSelected)) {
+				camera().setPolygonMode((video::PolygonMode)n);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void Viewport::menuBarCaptureOptions() {
+	const char *icon = ICON_LC_CLAPPERBOARD;
+	const char *text = _("Video");
+	if (_captureTool.isRecording()) {
+		icon = ICON_LC_CIRCLE_STOP;
+		text = _("Stop recording");
+	}
+	if (ImGui::IconMenuItem(icon, text)) {
+		toggleVideoRecording();
+	}
+	const uint32_t pendingFrames = _captureTool.pendingFrames();
+	if (pendingFrames > 0u) {
+		ImGui::SameLine();
+		ImGui::Text(_("Pending frames: %u"), pendingFrames);
+	} else {
+		ImGui::TooltipText(_("You can control the fps of the video with the cvar %s\nPending frames: %u"),
+						   cfg::CoreMaxFPS, pendingFrames);
+	}
+}
+
+void Viewport::menuBarFreeCameraOptions() {
+	glm::vec3 omega = _camera.omega();
+	if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
+		_camera.setOmega(omega);
+	}
+
+	const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
+	static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
+	const int currentCamRotType = (int)camera().rotationType();
+	if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
+		for (int n = 0; n < lengthof(camRotTypes); n++) {
+			const bool isSelected = (currentCamRotType == n);
+			if (ImGui::Selectable(camRotTypes[n], isSelected)) {
+				camera().setRotationType((video::CameraRotationType)n);
+			}
+			if (isSelected) {
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void Viewport::menuBarCameraOptions(command::CommandExecutionListener *listener) {
+	ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
+	if (!isFixedCamera()) {
+		menuBarFreeCameraOptions();
+	}
+}
+
+void Viewport::menuBarScreenshotOptions(command::CommandExecutionListener *listener) {
+	const core::String command = core::string::format("screenshot %i", _id);
+	ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
+}
+
 void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 	if (ImGui::BeginIconMenu(ICON_LC_EYE, _("View"))) {
-		ImGui::CommandIconMenuItem(ICON_LC_VIDEO, _("Reset camera"), "resetcamera", true, listener);
-
-		glm::vec3 omega = _camera.omega();
-		if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
-			_camera.setOmega(omega);
-		}
-
-		const core::String command = core::string::format("screenshot %i", _id);
-		ImGui::CommandIconMenuItem(ICON_LC_CAMERA, _("Screenshot"), command.c_str(), listener);
-
-		const char *icon = ICON_LC_CLAPPERBOARD;
-		const char *text = _("Video");
-		if (_captureTool.isRecording()) {
-			icon = ICON_LC_CIRCLE_STOP;
-			text = _("Stop recording");
-		}
-		if (ImGui::IconMenuItem(icon, text)) {
-			toggleVideoRecording();
-		}
-		const uint32_t pendingFrames = _captureTool.pendingFrames();
-		if (pendingFrames > 0u) {
-			ImGui::SameLine();
-			ImGui::Text(_("Pending frames: %u"), pendingFrames);
-		} else {
-			ImGui::TooltipText(_("You can control the fps of the video with the cvar %s\nPending frames: %u"),
-							   cfg::CoreMaxFPS, pendingFrames);
-		}
-
-		if (!isFixedCamera()) {
-			const char *camRotTypes[] = {_("Reference Point"), _("Eye")};
-			static_assert(lengthof(camRotTypes) == (int)video::CameraRotationType::Max, "Array size doesn't match enum values");
-			const int currentCamRotType = (int)camera().rotationType();
-			if (ImGui::BeginCombo(_("Camera movement"), camRotTypes[currentCamRotType])) {
-				for (int n = 0; n < lengthof(camRotTypes); n++) {
-					const bool isSelected = (currentCamRotType == n);
-					if (ImGui::Selectable(camRotTypes[n], isSelected)) {
-						camera().setRotationType((video::CameraRotationType)n);
-					}
-					if (isSelected) {
-						ImGui::SetItemDefaultFocus();
-					}
-				}
-				ImGui::EndCombo();
-			}
-		}
-
-		const char *polygonModes[] = {_("Points"), _("Lines"), _("Solid")};
-		static_assert(lengthof(polygonModes) == (int)video::PolygonMode::Max, "Array size doesn't match enum values");
-		const int currentPolygonMode = (int)camera().polygonMode();
-		if (ImGui::BeginCombo(_("Render mode"), polygonModes[currentPolygonMode])) {
-			for (int n = 0; n < lengthof(polygonModes); n++) {
-				const bool isSelected = (currentPolygonMode == n);
-				if (ImGui::Selectable(polygonModes[n], isSelected)) {
-					camera().setPolygonMode((video::PolygonMode)n);
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
+		menuBarScreenshotOptions(listener);
+		menuBarCaptureOptions();
+		menuBarCameraOptions(listener);
+		menuBarPolygonModeOptions();
 		MenuBar::viewportOptions();
 		ImGui::EndMenu();
+	}
+}
+
+void Viewport::menuBarRenderModeToggle() {
+	if (!_simplifiedView->boolVal()) {
+		bool sceneMode = isSceneMode();
+		if (ImGui::Checkbox(_("Scene Mode"), &sceneMode)) {
+			if (sceneMode) {
+				_renderContext.renderMode = voxelrender::RenderMode::Scene;
+			} else {
+				_renderContext.renderMode = voxelrender::RenderMode::Edit;
+			}
+		}
 	}
 }
 
@@ -402,16 +431,7 @@ void Viewport::renderMenuBar(command::CommandExecutionListener *listener) {
 		ImGui::Dummy(ImVec2(20, 0));
 		menuBarCameraProjection();
 		menuBarCameraMode();
-		if (!_simplifiedView->boolVal()) {
-			bool sceneMode = isSceneMode();
-			if (ImGui::Checkbox(_("Scene Mode"), &sceneMode)) {
-				if (sceneMode) {
-					_renderContext.renderMode = voxelrender::RenderMode::Scene;
-				} else {
-					_renderContext.renderMode = voxelrender::RenderMode::Edit;
-				}
-			}
-		}
+		menuBarRenderModeToggle();
 		menuBarView(listener);
 
 		ImGui::EndMenuBar();

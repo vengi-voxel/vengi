@@ -130,10 +130,16 @@ private:
 	void renderCursor();
 	void renderViewport();
 	void toggleVideoRecording();
+	void menuBarPolygonModeOptions();
+	void menuBarCaptureOptions();
+	void menuBarFreeCameraOptions();
+	void menuBarCameraOptions(command::CommandExecutionListener *listener);
+	void menuBarScreenshotOptions(command::CommandExecutionListener *listener);
 	void menuBarView(command::CommandExecutionListener *listener);
-	void renderMenuBar(command::CommandExecutionListener *listener);
+	void menuBarRenderModeToggle();
 	void menuBarCameraMode();
 	void menuBarCameraProjection();
+	void renderMenuBar(command::CommandExecutionListener *listener);
 	void resize(const glm::ivec2 &frameBufferSize);
 	void move(bool pan, bool rotate, int x, int y);
 	image::ImagePtr renderToImage(const char *imageName);
