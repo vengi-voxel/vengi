@@ -3,7 +3,6 @@
  */
 #include "TestTexture.h"
 #include "testcore/TestAppMain.h"
-#include "video/Camera.h"
 #include "video/ScopedViewPort.h"
 #include "core/Color.h"
 #include "core/Log.h"
