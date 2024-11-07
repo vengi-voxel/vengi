@@ -43,7 +43,6 @@ protected:
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 public:
-	SceneGraphRenderer(const voxel::MeshStatePtr &meshState);
 	SceneGraphRenderer();
 	void construct();
 	bool init(bool normals);
