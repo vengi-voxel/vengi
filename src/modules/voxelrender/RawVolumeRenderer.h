@@ -51,6 +51,7 @@ struct RenderContext : public core::NonCopyable {
 	bool hideInactive = false;
 	bool grayInactive = false;
 	RenderMode renderMode = RenderMode::Edit;
+
 	bool onlyModels = false;
 	// render the built-in normals
 	bool renderNormals = false;
@@ -86,7 +87,6 @@ protected:
 		}
 	};
 	core::Array<State, voxel::MAX_VOLUMES> _state{};
-	core::SharedPtr<voxel::MeshState> _meshState;
 
 	uint64_t _paletteHash = 0;
 	uint32_t _normalsPaletteHash = 0;
@@ -108,50 +108,49 @@ protected:
 	core::VarPtr _shadowMap;
 	core::VarPtr _bloom;
 
-	void updatePalette(int idx);
-	bool updateBufferForVolume(int idx, voxel::MeshType type);
+	void updatePalette(const voxel::MeshStatePtr &meshState, int idx);
+	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type);
 	void deleteMesh(int idx, voxel::MeshType meshType);
 	void deleteMeshes(int idx);
-	void updateCulling(int idx, const video::Camera &camera);
+	void updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera);
 
-	bool initStateBuffers();
+	bool initStateBuffers(const voxel::MeshStatePtr &meshState);
 	void shutdownStateBuffers();
-	bool resetStateBuffers();
+	bool resetStateBuffers(const voxel::MeshStatePtr &meshState);
 	/**
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
 	 */
-	bool updateBufferForVolume(int idx);
-	void renderOpaque(const video::Camera &camera, bool normals);
-	void renderTransparency(RenderContext &renderContext, const video::Camera &camera, bool normals);
-	void renderNormals(const RenderContext &renderContext, const video::Camera &camera);
+	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx);
+	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera, bool normals);
+	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool normals);
+	void renderNormals(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext, const video::Camera &camera);
 public:
 	RawVolumeRenderer();
-	RawVolumeRenderer(const voxel::MeshStatePtr &meshState);
 
-	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow);
-	void clear();
+	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow);
+	void clear(const voxel::MeshStatePtr &meshState);
 	/**
 	 * @brief Checks whether the given volume @c idx is visible
 	 * @param[in] idx The volume index
 	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
 	 * @return @c true if the volume is visible, @c false otherwise
 	 */
-	bool isVisible(int idx, bool hideEmpty = true) const;
+	bool isVisible(const voxel::MeshStatePtr &meshState, int idx, bool hideEmpty = true) const;
 
-	void scheduleRegionExtraction(int idx, const voxel::Region& region);
+	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, int idx, const voxel::Region& region);
 
 	/**
 	 * @param[in,out] volume The RawVolume pointer
 	 * @return The old volume that was managed by the class, @c nullptr if there was none
 	 *
 	 * @sa volume()
-s	 */
-	voxel::RawVolume *setVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
+	 */
+	voxel::RawVolume *setVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::RawVolume *volume, palette::Palette *palette,
 								palette::NormalPalette *normalPalette, bool meshDelete);
-	void setVolume(int idx, scenegraph::SceneGraphNode &node, bool deleteMesh);
+	void setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh);
 
-	void resetVolume(int idx);
+	void resetVolume(const voxel::MeshStatePtr &meshState, int idx);
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
@@ -162,9 +161,9 @@ s	 */
 	/**
 	 * @sa shutdown()
 	 */
-	bool init();
+	bool init(const voxel::MeshStatePtr &meshState);
 
-	void update();
+	void update(const voxel::MeshStatePtr &meshState);
 
 	/**
 	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
@@ -172,13 +171,7 @@ s	 */
 	 *
 	 * @sa init()
 	 */
-	core::DynamicArray<voxel::RawVolume *> shutdown();
-
-	voxel::MeshStatePtr meshState() const;
+	core::DynamicArray<voxel::RawVolume *> shutdown(const voxel::MeshStatePtr &meshState);
 };
-
-inline voxel::MeshStatePtr RawVolumeRenderer::meshState() const {
-	return _meshState;
-}
 
 } // namespace voxelrender

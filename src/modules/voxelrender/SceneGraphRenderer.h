@@ -40,36 +40,36 @@ protected:
 	RawVolumeRenderer _volumeRenderer;
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
-	void prepare(const RenderContext &renderContext);
+	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 
 public:
 	SceneGraphRenderer(const voxel::MeshStatePtr &meshState);
 	SceneGraphRenderer();
 	void construct();
-	bool init();
-	void update();
-	void shutdown();
+	bool init(const voxel::MeshStatePtr &meshState);
+	void update(const voxel::MeshStatePtr &meshState);
+	void shutdown(const voxel::MeshStatePtr &meshState);
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
 
-	void nodeRemove(int nodeId);
+	void nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId);
 	/**
 	 * @brief Checks whether the given model node is visible
 	 * @param[in] nodeId The node id
 	 * @param[in] hideEmpty If @c true, the function will return @c false if the volume is empty
 	 * @return @c true if the node is visible, @c false otherwise
 	 */
-	bool isVisible(int nodeId, bool hideEmpty = true) const;
+	bool isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty = true) const;
 
-	void scheduleRegionExtraction(scenegraph::SceneGraphNode &node, const voxel::Region &region);
+	void scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region);
 	/**
 	 * @param waitPending Wait for pending extractions and update the buffers before doing the rendering. If this is
 	 * false, you have to call @c update() manually!
 	 */
-	void render(RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
+	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
 				bool waitPending = false);
-	void clear();
+	void clear(const voxel::MeshStatePtr &meshState);
 };
 
 } // namespace voxelrender

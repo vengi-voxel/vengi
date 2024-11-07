@@ -18,6 +18,7 @@ namespace voxedit {
 
 class SceneRenderer : public ISceneRenderer {
 private:
+	voxel::MeshStatePtr _meshState;
 	voxelrender::SceneGraphRenderer _volumeRenderer;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;

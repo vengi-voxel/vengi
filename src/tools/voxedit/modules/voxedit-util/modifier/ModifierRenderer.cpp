@@ -20,10 +20,10 @@
 
 namespace voxedit {
 
-ModifierRenderer::ModifierRenderer() : ModifierRenderer(core::make_shared<voxel::MeshState>()) {
+ModifierRenderer::ModifierRenderer() : _meshState(core::make_shared<voxel::MeshState>()) {
 }
 
-ModifierRenderer::ModifierRenderer(const voxel::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
+ModifierRenderer::ModifierRenderer(const voxel::MeshStatePtr &meshState) : _meshState(meshState) {
 }
 
 bool ModifierRenderer::init() {
@@ -32,8 +32,14 @@ bool ModifierRenderer::init() {
 		return false;
 	}
 
+	_meshState->construct();
+	if (!_meshState->init()) {
+		Log::error("Failed to initialize the mesh state");
+		return false;
+	}
+
 	_volumeRenderer.construct();
-	if (!_volumeRenderer.init()) {
+	if (!_volumeRenderer.init(_meshState)) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}
@@ -55,7 +61,7 @@ void ModifierRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 	_volumeRendererCtx.shutdown();
 	// this is automatically deleted in the ModifierFacade
-	_volumeRenderer.shutdown();
+	_volumeRenderer.shutdown(_meshState);
 }
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face, bool flip) {
@@ -125,13 +131,13 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 }
 
 void ModifierRenderer::clearBrushMeshes() {
-	_volumeRenderer.clear();
+	_volumeRenderer.clear(_meshState);
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
-	delete _volumeRenderer.setVolume(idx, volume, palette, nullptr, true);
+	delete _volumeRenderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
 	if (volume != nullptr) {
-		_volumeRenderer.scheduleRegionExtraction(idx, volume->region());
+		_volumeRenderer.scheduleRegionExtraction(_meshState, idx, volume->region());
 	}
 }
 
@@ -140,9 +146,9 @@ void ModifierRenderer::renderBrushVolume(const video::Camera &camera) {
 		_volumeRendererCtx.shutdown();
 		_volumeRendererCtx.init(camera.size());
 	}
-	_volumeRenderer.meshState()->extractAllPending();
-	_volumeRenderer.update();
-	_volumeRenderer.render(_volumeRendererCtx, camera, false);
+	_meshState->extractAllPending();
+	_volumeRenderer.update(_meshState);
+	_volumeRenderer.render(_meshState, _volumeRendererCtx, camera, false);
 }
 
 void ModifierRenderer::render(const video::Camera& camera, const glm::mat4& model) {

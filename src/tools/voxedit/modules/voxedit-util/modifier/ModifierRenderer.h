@@ -13,6 +13,7 @@ namespace voxedit {
 
 class ModifierRenderer : public IModifierRenderer {
 private:
+	voxel::MeshStatePtr _meshState;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	voxelrender::RawVolumeRenderer _volumeRenderer;

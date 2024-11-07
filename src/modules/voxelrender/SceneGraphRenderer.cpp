@@ -108,29 +108,26 @@ static inline int getNodeId(int volumeIdx) {
 	return volumeIdx;
 }
 
-SceneGraphRenderer::SceneGraphRenderer(const voxel::MeshStatePtr &meshState) : _volumeRenderer(meshState) {
-}
-
-SceneGraphRenderer::SceneGraphRenderer() : voxelrender::SceneGraphRenderer(core::make_shared<voxel::MeshState>()) {
+SceneGraphRenderer::SceneGraphRenderer() {
 }
 
 void SceneGraphRenderer::construct() {
 	_volumeRenderer.construct();
 }
 
-bool SceneGraphRenderer::init() {
+bool SceneGraphRenderer::init(const voxel::MeshStatePtr &meshState) {
 	if (!_cameraRenderer.init(core::Color::White(), 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
-	return _volumeRenderer.init();
+	return _volumeRenderer.init(meshState);
 }
 
-void SceneGraphRenderer::update() {
-	_volumeRenderer.update();
+void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
+	_volumeRenderer.update(meshState);
 }
 
-void SceneGraphRenderer::scheduleRegionExtraction(scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	_volumeRenderer.scheduleRegionExtraction(getVolumeId(node), region);
+void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region) {
+	_volumeRenderer.scheduleRegionExtraction(meshState, getVolumeId(node), region);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
@@ -141,32 +138,33 @@ void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_volumeRenderer.setDiffuseColor(color);
 }
 
-void SceneGraphRenderer::shutdown() {
-	_volumeRenderer.shutdown();
+void SceneGraphRenderer::shutdown(const voxel::MeshStatePtr &meshState) {
+	// don't free the volumes here, they belong to the scene graph
+	_volumeRenderer.shutdown(meshState);
 	_cameraRenderer.shutdown();
 }
 
-void SceneGraphRenderer::clear() {
-	_volumeRenderer.clear();
+void SceneGraphRenderer::clear(const voxel::MeshStatePtr &meshState) {
+	_volumeRenderer.clear(meshState);
 }
 
-void SceneGraphRenderer::nodeRemove(int nodeId) {
+void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId) {
 	const int id = getVolumeId(nodeId);
 	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return;
 	}
-	_volumeRenderer.resetVolume(id);
+	_volumeRenderer.resetVolume(meshState, id);
 }
 
-bool SceneGraphRenderer::isVisible(int nodeId, bool hideEmpty) const {
+bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty) const {
 	const int id = getVolumeId(nodeId);
 	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return false;
 	}
-	return _volumeRenderer.isVisible(id, hideEmpty);
+	return _volumeRenderer.isVisible(meshState, id, hideEmpty);
 }
 
-void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
+void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
@@ -177,12 +175,10 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
-			_volumeRenderer.resetVolume(nodeId);
+			_volumeRenderer.resetVolume(meshState, nodeId);
 		}
 	}
 	_cameras.clear();
-
-	const voxel::MeshStatePtr &meshState = _volumeRenderer.meshState();
 
 	const int activeNodeId = sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(activeNodeId);
@@ -210,10 +206,10 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 			continue;
 		}
 		const voxel::RawVolume *v = meshState->volume(id);
-		_volumeRenderer.setVolume(id, node, true);
+		_volumeRenderer.setVolume(meshState, id, node, true);
 		const voxel::Region &region = node.region();
 		if (v != node.volume()) {
-			_volumeRenderer.scheduleRegionExtraction(id, region);
+			_volumeRenderer.scheduleRegionExtraction(meshState, id, region);
 		}
 		if (renderContext.renderMode == RenderMode::Scene) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
@@ -302,16 +298,16 @@ void SceneGraphRenderer::prepare(const RenderContext &renderContext) {
 	}
 }
 
-void SceneGraphRenderer::render(RenderContext &renderContext, const video::Camera &camera, bool shadow,
+void SceneGraphRenderer::render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow,
 								bool waitPending) {
 	core_trace_scoped(SceneGraphRenderer);
-	prepare(renderContext);
+	prepare(meshState, renderContext);
 	if (waitPending) {
-		_volumeRenderer.meshState()->extractAllPending();
-		_volumeRenderer.update();
+		meshState->extractAllPending();
+		_volumeRenderer.update(meshState);
 	}
 
-	_volumeRenderer.render(renderContext, camera, shadow);
+	_volumeRenderer.render(meshState, renderContext, camera, shadow);
 	if (renderContext.renderMode == RenderMode::Scene) {
 		for (video::Camera &sceneCamera : _cameras) {
 			sceneCamera.setSize(camera.size());

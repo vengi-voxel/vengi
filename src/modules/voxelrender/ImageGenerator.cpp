@@ -20,7 +20,7 @@
 
 namespace voxelrender {
 
-static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::ThumbnailContext &ctx) {
+static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, voxelrender::SceneGraphRenderer &volumeRenderer, const voxelformat::ThumbnailContext &ctx) {
 	if (!renderContext.sceneGraph) {
 		Log::error("No scene graph set");
 		return image::ImagePtr();
@@ -76,42 +76,47 @@ static image::ImagePtr volumeThumbnail(RenderContext &renderContext, voxelrender
 	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.frameBuffer.bind(true);
-	volumeRenderer.render(renderContext, camera, true, true);
+	volumeRenderer.render(meshState, renderContext, camera, true, true);
 	renderContext.frameBuffer.unbind();
 
 	return renderContext.frameBuffer.image("thumbnail", video::FrameBufferAttachment::Color0);
 }
 
 image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const voxelformat::ThumbnailContext &ctx) {
-	voxelrender::SceneGraphRenderer volumeRenderer;
-	volumeRenderer.construct();
+	voxelrender::SceneGraphRenderer sceneGraphRenderer;
+	sceneGraphRenderer.construct();
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
-
-	if (!volumeRenderer.init()) {
+	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
+	meshState->construct();
+	meshState->init();
+	if (!sceneGraphRenderer.init(meshState)) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
 
-	const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, ctx);
-	volumeRenderer.shutdown();
+	const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
+	sceneGraphRenderer.shutdown(meshState);
 	renderContext.shutdown();
 	return image;
 }
 
 bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::String &imageFile, voxelformat::ThumbnailContext ctx, int loops) {
-	voxelrender::SceneGraphRenderer volumeRenderer;
+	voxelrender::SceneGraphRenderer sceneGraphRenderer;
 	RenderContext renderContext;
 	renderContext.init(ctx.outputSize);
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
+	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
+	meshState->construct();
+	meshState->init();
 
-	volumeRenderer.construct();
-	if (!volumeRenderer.init()) {
+	sceneGraphRenderer.construct();
+	if (!sceneGraphRenderer.init(meshState)) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -122,11 +127,11 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		const core::String &filepath = core::string::format("%s_%i.%s", baseFilePath.c_str(), i, ext.c_str());
 		const io::FilePtr &outfile = io::filesystem()->open(filepath, io::FileMode::SysWrite);
 		io::FileStream outStream(outfile);
-		const image::ImagePtr &image = volumeThumbnail(renderContext, volumeRenderer, ctx);
+		const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
 		if (image) {
 			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 				Log::error("Failed to write image %s", filepath.c_str());
-				volumeRenderer.shutdown();
+				sceneGraphRenderer.shutdown(meshState);
 				renderContext.shutdown();
 				return false;
 			} else {
@@ -134,14 +139,14 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 			}
 		} else {
 			Log::error("Failed to create thumbnail for %s", imageFile.c_str());
-			volumeRenderer.shutdown();
+			sceneGraphRenderer.shutdown(meshState);
 			renderContext.shutdown();
 			return false;
 		}
 		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
 		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
-	volumeRenderer.shutdown();
+	sceneGraphRenderer.shutdown(meshState);
 	renderContext.shutdown();
 	return true;
 }
