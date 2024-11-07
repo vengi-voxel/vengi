@@ -99,8 +99,10 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 
 	const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
-	sceneGraphRenderer.shutdown(meshState);
+	sceneGraphRenderer.shutdown();
 	renderContext.shutdown();
+	// don't free the volumes here, they belong to the scene graph
+	(void)meshState->shutdown();
 	return image;
 }
 
@@ -131,23 +133,29 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		if (image) {
 			if (!image::Image::writePng(outStream, image->data(), image->width(), image->height(), image->depth())) {
 				Log::error("Failed to write image %s", filepath.c_str());
-				sceneGraphRenderer.shutdown(meshState);
+				sceneGraphRenderer.shutdown();
 				renderContext.shutdown();
+				// don't free the volumes here, they belong to the scene graph
+				(void)meshState->shutdown();
 				return false;
 			} else {
 				Log::info("Write image %s", filepath.c_str());
 			}
 		} else {
 			Log::error("Failed to create thumbnail for %s", imageFile.c_str());
-			sceneGraphRenderer.shutdown(meshState);
+			sceneGraphRenderer.shutdown();
 			renderContext.shutdown();
+			// don't free the volumes here, they belong to the scene graph
+			(void)meshState->shutdown();
 			return false;
 		}
 		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
 		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
-	sceneGraphRenderer.shutdown(meshState);
+	sceneGraphRenderer.shutdown();
 	renderContext.shutdown();
+	// don't free the volumes here, they belong to the scene graph
+	(void)meshState->shutdown();
 	return true;
 }
 

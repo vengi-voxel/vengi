@@ -171,7 +171,7 @@ public:
 	 *
 	 * @sa init()
 	 */
-	core::DynamicArray<voxel::RawVolume *> shutdown(const voxel::MeshStatePtr &meshState);
+	void shutdown();
 };
 
 } // namespace voxelrender

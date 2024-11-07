@@ -796,18 +796,16 @@ bool RawVolumeRenderer::resetStateBuffers(bool normals) {
 	return initStateBuffers(normals);
 }
 
-core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown(const voxel::MeshStatePtr &meshState) {
+void RawVolumeRenderer::shutdown() {
 	_voxelShader.shutdown();
 	_voxelNormShader.shutdown();
 	_shadowMapShader.shutdown();
 	_voxelData.shutdown();
 	_shadowMapUniformBlock.shutdown();
 	_shadow.shutdown();
-	const core::DynamicArray<voxel::RawVolume *> &old = meshState->shutdown();
 	shutdownStateBuffers();
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
-	return old;
 }
 
 } // namespace voxelrender

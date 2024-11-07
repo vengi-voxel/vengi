@@ -48,7 +48,7 @@ public:
 	void construct();
 	bool init(bool normals);
 	void update(const voxel::MeshStatePtr &meshState);
-	void shutdown(const voxel::MeshStatePtr &meshState);
+	void shutdown();
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);

@@ -138,9 +138,8 @@ void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_volumeRenderer.setDiffuseColor(color);
 }
 
-void SceneGraphRenderer::shutdown(const voxel::MeshStatePtr &meshState) {
-	// don't free the volumes here, they belong to the scene graph
-	_volumeRenderer.shutdown(meshState);
+void SceneGraphRenderer::shutdown() {
+	_volumeRenderer.shutdown();
 	_cameraRenderer.shutdown();
 }
 

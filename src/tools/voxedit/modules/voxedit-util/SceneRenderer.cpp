@@ -65,8 +65,9 @@ void SceneRenderer::clear() {
 }
 
 void SceneRenderer::shutdown() {
+	_volumeRenderer.shutdown();
 	// don't free the volumes here, they belong to the scene graph
-	_volumeRenderer.shutdown(_meshState);
+	(void)_meshState->shutdown();
 
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
