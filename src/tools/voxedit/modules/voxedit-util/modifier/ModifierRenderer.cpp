@@ -62,10 +62,8 @@ void ModifierRenderer::shutdown() {
 	_volumeRendererCtx.shutdown();
 	// this is automatically deleted in the ModifierFacade
 	_volumeRenderer.shutdown();
-	const auto volumes = _meshState->shutdown();
-	for (voxel::RawVolume *volume : volumes) {
-		delete volume;
-	}
+	// the volumes in this state belong to the brush
+	(void)_meshState->shutdown();
 }
 
 void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames face, bool flip) {

@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "voxedit-util/modifier/IModifierRenderer.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
+#include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
 namespace voxedit {
@@ -30,10 +30,15 @@ public:
 	bool init() override;
 	void shutdown() override;
 
-	void render(const video::Camera& camera, const glm::mat4& model) override;
+	void render(const video::Camera &camera, const glm::mat4 &model) override;
 	void renderBrushVolume(const video::Camera &camera) override;
-	void renderSelection(const video::Camera& camera) override;
+	void renderSelection(const video::Camera &camera) override;
 	void clearBrushMeshes() override;
+	/**
+	 * @note The given volume must still get freed by the caller - the renderer is taking overship.
+	 *
+	 * But it is keep a pointer to the volume!
+	 */
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
 	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion) override;
@@ -41,4 +46,4 @@ public:
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip) override;
 };
 
-}
+} // namespace voxedit
