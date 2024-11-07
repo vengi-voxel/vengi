@@ -124,6 +124,10 @@ public:
 	const palette::Palette &palette(int idx) const;
 	const palette::NormalPalette &normalsPalette(int idx) const;
 
+	bool hasNormals() const {
+		return meshMode() == voxel::SurfaceExtractionType::MarchingCubes;
+	}
+
 	/**
 	 * @brief Extracts all the pending regions
 	 * @note This method is blocking
