@@ -35,7 +35,7 @@ public:
 	void renderSelection(const video::Camera &camera) override;
 	void clearBrushMeshes() override;
 	/**
-	 * @note The given volume must still get freed by the caller - the renderer is taking overship.
+	 * @note The given volume must still get freed by the caller - the renderer is not taking overship.
 	 *
 	 * But it is keep a pointer to the volume!
 	 */
