@@ -119,7 +119,6 @@ protected:
 	bool resetStateBuffers(bool normals);
 	/**
 	 * @brief Updates the vertex buffers manually
-	 * @sa extract()
 	 */
 	bool updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx);
 	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera, bool normals);

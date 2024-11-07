@@ -375,7 +375,7 @@ void RawVolumeRenderer::clear(const voxel::MeshStatePtr &meshState) {
 	meshState->clearPendingExtractions();
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		// TODO: collect the old volumes and allow to let the caller delete them - they might not all be managed by a
-		// node
+		// node or brush
 		voxel::RawVolume *old = resetVolume(meshState, i);
 		if (old != nullptr) {
 			updateBufferForVolume(meshState, i);
