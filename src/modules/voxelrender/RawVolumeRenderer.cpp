@@ -100,7 +100,7 @@ void RawVolumeRenderer::construct() {
 
 bool RawVolumeRenderer::initStateBuffers(bool normals) {
 	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		State &state = _state[idx];
+		RenderState &state = _state[idx];
 		for (int i = 0; i < voxel::MeshType_Max; ++i) {
 			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
 			if (state._vertexBufferIndex[i] == -1) {
@@ -126,7 +126,7 @@ bool RawVolumeRenderer::initStateBuffers(bool normals) {
 
 	if (normals) {
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-			State &state = _state[idx];
+			RenderState &state = _state[idx];
 			for (int i = 0; i < voxel::MeshType_Max; ++i) {
 				const video::Attribute &attributePos =
 					getPositionVertexAttribute(state._vertexBufferIndex[i], _voxelNormShader.getLocationPos(),
@@ -146,7 +146,7 @@ bool RawVolumeRenderer::initStateBuffers(bool normals) {
 		}
 	} else {
 		for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-			State &state = _state[idx];
+			RenderState &state = _state[idx];
 			for (int i = 0; i < voxel::MeshType_Max; ++i) {
 				const video::Attribute &attributePos = getPositionVertexAttribute(
 					state._vertexBufferIndex[i], _voxelShader.getLocationPos(), _voxelShader.getComponentsPos());
@@ -270,7 +270,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 	size_t indCount = 0u;
 	meshState->count(type, bufferIndex, vertCount, normalsCount, indCount);
 
-	State &state = _state[bufferIndex];
+	RenderState &state = _state[bufferIndex];
 	if (indCount == 0u || vertCount == 0u) {
 		Log::debug("clear vertexbuffer: %i", idx);
 		video::Buffer &buffer = state._vertexBuffer[type];
@@ -356,8 +356,8 @@ void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
 	_voxelShaderFragData.diffuseColor = color;
 }
 
-void RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &meshState, int idx) {
-	setVolume(meshState, idx, nullptr, nullptr, nullptr, true);
+voxel::RawVolume *RawVolumeRenderer::resetVolume(const voxel::MeshStatePtr &meshState, int idx) {
+	return setVolume(meshState, idx, nullptr, nullptr, nullptr, true);
 }
 
 bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshState, int idx) {
@@ -729,7 +729,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 }
 
 void RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh) {
-	setVolume(meshState, idx, node.volume(), &node.palette(), &node.normalPalette(), deleteMesh);
+	// ignore the return value because the volume is owned by the node
+	(void)setVolume(meshState, idx, node.volume(), &node.palette(), &node.normalPalette(), deleteMesh);
 }
 
 voxel::RawVolume *RawVolumeRenderer::setVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::RawVolume *volume, palette::Palette *palette,
@@ -755,7 +756,7 @@ void RawVolumeRenderer::deleteMeshes(int idx) {
 }
 
 void RawVolumeRenderer::deleteMesh(int idx, voxel::MeshType meshType) {
-	State &state = _state[idx];
+	RenderState &state = _state[idx];
 	video::Buffer &vertexBuffer = state._vertexBuffer[meshType];
 	Log::debug("clear vertexbuffer: %i", idx);
 
@@ -780,7 +781,7 @@ void RawVolumeRenderer::setSunPosition(const glm::vec3 &eye, const glm::vec3 &ce
 
 void RawVolumeRenderer::shutdownStateBuffers() {
 	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
-		State &state = _state[idx];
+		RenderState &state = _state[idx];
 		for (int i = 0; i < voxel::MeshType_Max; ++i) {
 			state._vertexBuffer[i].shutdown();
 			state._vertexBufferIndex[i] = -1;

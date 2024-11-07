@@ -152,7 +152,8 @@ void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, int no
 	if (id < 0 || id >= voxel::MAX_VOLUMES) {
 		return;
 	}
-	_volumeRenderer.resetVolume(meshState, id);
+	// ignore the return value because the volume is owned by the node
+	(void)_volumeRenderer.resetVolume(meshState, id);
 }
 
 bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty) const {
@@ -174,7 +175,8 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 	for (int i = 0; i < voxel::MAX_VOLUMES; ++i) {
 		const int nodeId = getNodeId(i);
 		if (!sceneGraph.hasNode(nodeId)) {
-			_volumeRenderer.resetVolume(meshState, nodeId);
+			// ignore the return value because the volume is owned by the node
+			(void)_volumeRenderer.resetVolume(meshState, nodeId);
 		}
 	}
 	_cameras.clear();

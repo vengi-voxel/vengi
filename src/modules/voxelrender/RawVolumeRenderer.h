@@ -68,7 +68,7 @@ struct RenderContext : public core::NonCopyable {
  */
 class RawVolumeRenderer : public core::NonCopyable {
 protected:
-	struct State {
+	struct RenderState : public core::NonCopyable {
 		bool _culled = false;
 		bool _empty = false; // this is only updated for non hidden nodes
 		bool _dirtyNormals = false;
@@ -86,7 +86,7 @@ protected:
 			return indices(voxel::MeshType_Opaque) > 0 || indices(voxel::MeshType_Transparency) > 0;
 		}
 	};
-	core::Array<State, voxel::MAX_VOLUMES> _state{};
+	core::Array<RenderState, voxel::MAX_VOLUMES> _state{};
 
 	uint64_t _paletteHash = 0;
 	uint32_t _normalsPaletteHash = 0;
@@ -143,14 +143,16 @@ public:
 	/**
 	 * @param[in,out] volume The RawVolume pointer
 	 * @return The old volume that was managed by the class, @c nullptr if there was none
-	 *
-	 * @sa volume()
 	 */
-	voxel::RawVolume *setVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::RawVolume *volume, palette::Palette *palette,
-								palette::NormalPalette *normalPalette, bool meshDelete);
+	[[nodiscard]] voxel::RawVolume *setVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::RawVolume *volume,
+											  palette::Palette *palette, palette::NormalPalette *normalPalette,
+											  bool meshDelete);
 	void setVolume(const voxel::MeshStatePtr &meshState, int idx, scenegraph::SceneGraphNode &node, bool deleteMesh);
 
-	void resetVolume(const voxel::MeshStatePtr &meshState, int idx);
+	/**
+	 * @return The old volume that was managed by the class, @c nullptr if there was none
+	 */
+	[[nodiscard]] voxel::RawVolume *resetVolume(const voxel::MeshStatePtr &meshState, int idx);
 
 	void setAmbientColor(const glm::vec3 &color);
 	void setDiffuseColor(const glm::vec3 &color);
@@ -166,9 +168,6 @@ public:
 	void update(const voxel::MeshStatePtr &meshState);
 
 	/**
-	 * @return the managed voxel::RawVolume instance pointer, or @c nullptr if there is none set.
-	 * @note You take the ownership of the returned volume pointers. Don't forget to delete them.
-	 *
 	 * @sa init()
 	 */
 	void shutdown();
