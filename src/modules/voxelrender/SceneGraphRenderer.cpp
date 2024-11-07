@@ -115,11 +115,11 @@ void SceneGraphRenderer::construct() {
 	_volumeRenderer.construct();
 }
 
-bool SceneGraphRenderer::init(const voxel::MeshStatePtr &meshState) {
+bool SceneGraphRenderer::init(bool normals) {
 	if (!_cameraRenderer.init(core::Color::White(), 0)) {
 		Log::warn("Failed to initialize camera renderer");
 	}
-	return _volumeRenderer.init(meshState);
+	return _volumeRenderer.init(normals);
 }
 
 void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {

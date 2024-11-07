@@ -98,12 +98,9 @@ RawVolumeRenderer::RawVolumeRenderer()
 void RawVolumeRenderer::construct() {
 }
 
-bool RawVolumeRenderer::initStateBuffers(const voxel::MeshStatePtr &meshState) {
-	const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
-	const bool normals = meshMode != voxel::SurfaceExtractionType::Cubic;
+bool RawVolumeRenderer::initStateBuffers(bool normals) {
 	for (int idx = 0; idx < voxel::MAX_VOLUMES; ++idx) {
 		State &state = _state[idx];
-		meshState->setModel(idx, glm::mat4(1.0f));
 		for (int i = 0; i < voxel::MeshType_Max; ++i) {
 			state._vertexBufferIndex[i] = state._vertexBuffer[i].create();
 			if (state._vertexBufferIndex[i] == -1) {
@@ -170,7 +167,7 @@ bool RawVolumeRenderer::initStateBuffers(const voxel::MeshStatePtr &meshState) {
 	return true;
 }
 
-bool RawVolumeRenderer::init(const voxel::MeshStatePtr &meshState) {
+bool RawVolumeRenderer::init(bool normals) {
 	_shadowMap = core::Var::getSafe(cfg::ClientShadowMap);
 	_bloom = core::Var::getSafe(cfg::ClientBloom);
 
@@ -189,7 +186,7 @@ bool RawVolumeRenderer::init(const voxel::MeshStatePtr &meshState) {
 	alignas(16) shader::ShadowmapData::BlockData var;
 	_shadowMapUniformBlock.create(var);
 
-	if (!initStateBuffers(meshState)) {
+	if (!initStateBuffers(normals)) {
 		Log::error("Failed to initialize the state buffers");
 		return false;
 	}
@@ -239,7 +236,7 @@ void RawVolumeRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &mesh
 
 void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	if (meshState->update()) {
-		resetStateBuffers(meshState);
+		resetStateBuffers(meshState->hasNormals());
 	}
 
 	int cnt = 0;
@@ -554,7 +551,7 @@ void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState,
 		}
 
 		const glm::vec3 &camPos = camera.worldPosition();
-		core::sort(sorted.begin(), sorted.end(), [this, &camPos, &meshState](int a, int b) {
+		core::sort(sorted.begin(), sorted.end(), [&camPos, &meshState](int a, int b) {
 			const glm::vec3 &posA = meshState->centerPos(a);
 			const glm::vec3 &posB = meshState->centerPos(b);
 			const float d1 = glm::distance2(camPos, posA);
@@ -794,9 +791,9 @@ void RawVolumeRenderer::shutdownStateBuffers() {
 	}
 }
 
-bool RawVolumeRenderer::resetStateBuffers(const voxel::MeshStatePtr &meshState) {
+bool RawVolumeRenderer::resetStateBuffers(bool normals) {
 	shutdownStateBuffers();
-	return initStateBuffers(meshState);
+	return initStateBuffers(normals);
 }
 
 core::DynamicArray<voxel::RawVolume *> RawVolumeRenderer::shutdown(const voxel::MeshStatePtr &meshState) {

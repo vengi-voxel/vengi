@@ -93,7 +93,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
 	meshState->construct();
 	meshState->init();
-	if (!sceneGraphRenderer.init(meshState)) {
+	if (!sceneGraphRenderer.init(meshState->hasNormals())) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
@@ -116,7 +116,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 	meshState->init();
 
 	sceneGraphRenderer.construct();
-	if (!sceneGraphRenderer.init(meshState)) {
+	if (!sceneGraphRenderer.init(meshState->hasNormals())) {
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}

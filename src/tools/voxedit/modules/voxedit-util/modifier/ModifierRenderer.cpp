@@ -39,7 +39,7 @@ bool ModifierRenderer::init() {
 	}
 
 	_volumeRenderer.construct();
-	if (!_volumeRenderer.init(_meshState)) {
+	if (!_volumeRenderer.init(_meshState->hasNormals())) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}

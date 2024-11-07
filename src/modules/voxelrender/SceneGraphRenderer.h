@@ -46,7 +46,7 @@ public:
 	SceneGraphRenderer(const voxel::MeshStatePtr &meshState);
 	SceneGraphRenderer();
 	void construct();
-	bool init(const voxel::MeshStatePtr &meshState);
+	bool init(bool normals);
 	void update(const voxel::MeshStatePtr &meshState);
 	void shutdown(const voxel::MeshStatePtr &meshState);
 

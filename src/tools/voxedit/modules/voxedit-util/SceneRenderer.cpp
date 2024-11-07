@@ -41,7 +41,7 @@ bool SceneRenderer::init() {
 		Log::error("Failed to initialize the mesh state");
 		return false;
 	}
-	if (!_volumeRenderer.init(_meshState)) {
+	if (!_volumeRenderer.init(_meshState->hasNormals())) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}

@@ -114,9 +114,9 @@ protected:
 	void deleteMeshes(int idx);
 	void updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera);
 
-	bool initStateBuffers(const voxel::MeshStatePtr &meshState);
+	bool initStateBuffers(bool normals);
 	void shutdownStateBuffers();
-	bool resetStateBuffers(const voxel::MeshStatePtr &meshState);
+	bool resetStateBuffers(bool normals);
 	/**
 	 * @brief Updates the vertex buffers manually
 	 * @sa extract()
@@ -161,7 +161,7 @@ public:
 	/**
 	 * @sa shutdown()
 	 */
-	bool init(const voxel::MeshStatePtr &meshState);
+	bool init(bool normals);
 
 	void update(const voxel::MeshStatePtr &meshState);
 
