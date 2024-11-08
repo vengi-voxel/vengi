@@ -118,7 +118,7 @@ inline int mergeRawVolumesSameDimension(voxel::RawVolume* destination, const vox
 	return mergeVolumes(destination, source, destination->region(), source->region());
 }
 
-extern voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes);
-extern voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes);
+[[nodiscard]] voxel::RawVolume* merge(const core::DynamicArray<voxel::RawVolume*>& volumes);
+[[nodiscard]] voxel::RawVolume* merge(const core::DynamicArray<const voxel::RawVolume*>& volumes);
 
 }

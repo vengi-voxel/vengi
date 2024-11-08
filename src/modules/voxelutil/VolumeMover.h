@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "voxel/RawVolume.h"
-#include "core/Common.h"
+#include "voxel/Voxel.h"
+#include "voxel/Region.h"
 #include "core/Trace.h"
 
 namespace voxelutil {
