@@ -171,7 +171,7 @@ bool HVAFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 
 	for (uint32_t i = 0; i < numFrames; ++i) {
 		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
-			scenegraph::SceneGraphNode &node = *iter;
+			const scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
 
 			vxl::VXLMatrix vxlMatrix;
