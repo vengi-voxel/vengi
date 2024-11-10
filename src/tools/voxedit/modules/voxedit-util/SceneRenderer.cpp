@@ -275,7 +275,7 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 }
 
 const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGraphNode &node) {
-	int idx = voxelrender::SceneGraphRenderer::getVolumeId(node);
+	int idx = voxelrender::SceneGraphRenderer::getVolumeIdx(node);
 	const voxel::RawVolume *v = _meshState->volume(idx);
 	if (v == nullptr) {
 		v = node.volume();

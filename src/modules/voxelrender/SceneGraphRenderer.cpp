@@ -113,7 +113,7 @@ void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
 }
 
 void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	const int idx = getVolumeId(node);
+	const int idx = getVolumeIdx(node);
 	if (_sliceVolume && _sliceVolume.get() == meshState->volume(idx)) {
 		_sliceVolumeDirty = true;
 		return;
@@ -139,20 +139,20 @@ void SceneGraphRenderer::clear(const voxel::MeshStatePtr &meshState) {
 }
 
 void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId) {
-	const int id = getVolumeId(nodeId);
-	if (id < 0 || id >= voxel::MAX_VOLUMES) {
+	const int idx = getVolumeIdx(nodeId);
+	if (idx < 0 || idx >= voxel::MAX_VOLUMES) {
 		return;
 	}
 	// ignore the return value because the volume is owned by the node
-	(void)_volumeRenderer.resetVolume(meshState, id);
+	(void)_volumeRenderer.resetVolume(meshState, idx);
 }
 
 bool SceneGraphRenderer::isVisible(const voxel::MeshStatePtr &meshState, int nodeId, bool hideEmpty) const {
-	const int id = getVolumeId(nodeId);
-	if (id < 0 || id >= voxel::MAX_VOLUMES) {
+	const int idx = getVolumeIdx(nodeId);
+	if (idx < 0 || idx >= voxel::MAX_VOLUMES) {
 		return false;
 	}
-	return _volumeRenderer.isVisible(meshState, id, hideEmpty);
+	return _volumeRenderer.isVisible(meshState, idx, hideEmpty);
 }
 
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
@@ -193,11 +193,11 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			continue;
 		}
 
-		const int id = getVolumeId(node);
-		if (id >= voxel::MAX_VOLUMES) {
+		const int idx = getVolumeIdx(node);
+		if (idx >= voxel::MAX_VOLUMES) {
 			continue;
 		}
-		const voxel::RawVolume *v = meshState->volume(id);
+		const voxel::RawVolume *v = meshState->volume(idx);
 		const voxel::RawVolume *nodeVolume = sceneGraph.resolveVolume(node);
 
 		bool sliceView = false;
@@ -208,8 +208,8 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 				if (_sliceVolumeDirty || !_sliceVolume || _sliceVolume->region() != renderContext.sliceRegion) {
 					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, renderContext.sliceRegion);
 					// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)
-					(void)_volumeRenderer.setVolume(meshState, id, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
-					_volumeRenderer.scheduleRegionExtraction(meshState, id, _sliceVolume->region());
+					(void)_volumeRenderer.setVolume(meshState, idx, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
+					_volumeRenderer.scheduleRegionExtraction(meshState, idx, _sliceVolume->region());
 					_sliceVolumeDirty = false;
 
 					region = _sliceVolume->region();
@@ -222,10 +222,10 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		}
 
 		if (!sliceView) {
-			_volumeRenderer.setVolume(meshState, id, node, true);
+			_volumeRenderer.setVolume(meshState, idx, node, true);
 			region = node.region();
 			if (v != nodeVolume) {
-				_volumeRenderer.scheduleRegionExtraction(meshState, id, region);
+				_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 			}
 		}
 		if (renderContext.renderMode == RenderMode::Scene) {
@@ -234,18 +234,18 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			const int negative = (int)std::signbit(scale.x) + (int)std::signbit(scale.y) +
 								 (int)std::signbit(scale.z);
 			if (negative == 1 || negative == 3) {
-				meshState->setCullFace(id, video::Face::Front);
+				meshState->setCullFace(idx, video::Face::Front);
 			} else {
-				meshState->setCullFace(id, video::Face::Back);
+				meshState->setCullFace(idx, video::Face::Back);
 			}
 			const glm::mat4 worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
 		} else {
-			meshState->setCullFace(id, video::Face::Back);
-			meshState->setModelMatrix(id, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
+			meshState->setCullFace(idx, video::Face::Back);
+			meshState->setModelMatrix(idx, glm::mat4(1.0f), glm::vec3(0.0f), region.getLowerCorner(),
 												  region.getUpperCorner());
 		}
 
@@ -261,12 +261,12 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		} else {
 			hideNode = !node.visible();
 		}
-		meshState->hide(id, hideNode);
+		meshState->hide(idx, hideNode);
 
 		if (grayInactive) {
-			meshState->gray(id, node.id() != activeNodeId);
+			meshState->gray(idx, node.id() != activeNodeId);
 		} else {
-			meshState->gray(id, false);
+			meshState->gray(idx, false);
 		}
 	}
 
@@ -277,12 +277,12 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			if (!node.isReference()) {
 				continue;
 			}
-			const int id = getVolumeId(node);
-			if (id >= voxel::MAX_VOLUMES) {
+			const int idx = getVolumeIdx(node);
+			if (idx >= voxel::MAX_VOLUMES) {
 				continue;
 			}
-			const int referencedId = getVolumeId(node.reference());
-			meshState->setReference(id, referencedId);
+			const int referencedIdx = getVolumeIdx(node.reference());
+			meshState->setReference(idx, referencedIdx);
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
 			const voxel::Region region = sceneGraph.resolveRegion(node);
 			const glm::mat4 worldMatrix = transform.worldMatrix();
@@ -290,7 +290,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 scale = transform.scale();
 			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
-			meshState->setModelMatrix(id, worldMatrix, pivot, mins, maxs);
+			meshState->setModelMatrix(idx, worldMatrix, pivot, mins, maxs);
 
 			bool hideNode = false;
 			if (hideInactive) {
@@ -304,12 +304,12 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			} else {
 				hideNode = !node.visible();
 			}
-			meshState->hide(id, hideNode);
+			meshState->hide(idx, hideNode);
 
 			if (grayInactive) {
-				meshState->gray(id, node.id() != activeNodeId);
+				meshState->gray(idx, node.id() != activeNodeId);
 			} else {
-				meshState->gray(id, false);
+				meshState->gray(idx, false);
 			}
 		}
 	}

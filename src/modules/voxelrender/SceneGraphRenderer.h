@@ -73,13 +73,13 @@ public:
 				bool waitPending = false);
 	void clear(const voxel::MeshStatePtr &meshState);
 
-	static inline int getVolumeId(int nodeId) {
+	static inline int getVolumeIdx(int nodeId) {
 		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
 		return nodeId;
 	}
 
-	static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
-		return getVolumeId(node.id());
+	static inline int getVolumeIdx(const scenegraph::SceneGraphNode &node) {
+		return getVolumeIdx(node.id());
 	}
 
 	static inline int getNodeId(int volumeIdx) {
