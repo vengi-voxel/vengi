@@ -694,8 +694,8 @@ core::RGBA Color::fromHSB(const float hue, const float saturation, const float b
 	if (0.00001f > saturation) {
 		return core::RGBA(brightness * 255.0f, brightness * 255.0f, brightness * 255.0f, alpha * 255.0f);
 	}
-	const float h = (hue - (float)SDL_floor(hue)) * 6.f;
-	const float f = h - (float)SDL_floor(h);
+	const float h = (hue - SDL_floorf(hue)) * 6.0f;
+	const float f = h - SDL_floorf(h);
 	const uint8_t p = (uint8_t)(brightness * (1.f - saturation) * 255.0f);
 	const uint8_t q = (uint8_t)(brightness * (1.f - saturation * f) * 255.0f);
 	const uint8_t t = (uint8_t)(brightness * (1.f - (saturation * (1.f - f))) * 255.0f);
