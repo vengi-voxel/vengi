@@ -45,6 +45,7 @@ protected:
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
 	bool _sliceVolumeDirty = false;
+	int _sliceVolumeNodeId = -1;
 public:
 	SceneGraphRenderer();
 	void construct();

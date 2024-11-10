@@ -203,21 +203,31 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		bool sliceView = false;
 		voxel::Region region;
 		if (node.id() == activeNodeId) {
-			if (renderContext.sliceRegion.isValid()) {
+			const voxel::Region &sliceRegion = renderContext.sliceRegion;
+			if (sliceRegion.isValid()) {
 				sliceView = true;
-				if (_sliceVolumeDirty || !_sliceVolume || _sliceVolume->region() != renderContext.sliceRegion) {
-					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, renderContext.sliceRegion);
-					// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)
-					(void)_volumeRenderer.setVolume(meshState, idx, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
-					_volumeRenderer.scheduleRegionExtraction(meshState, idx, _sliceVolume->region());
-					_sliceVolumeDirty = false;
-
-					region = _sliceVolume->region();
-					v = _sliceVolume.get();
+				// check several things to re-create the slice volume
+				// * a new activated node
+				// * the region changed
+				// * we don't yet have a sliced volume view but requested one
+				if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume || _sliceVolume->region() != sliceRegion) {
+					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, sliceRegion);
+					_sliceVolumeNodeId = activeNodeId;
 				}
+				// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)
+				// if the old volume was not the slice volume, the return value is not null
+				const voxel::RawVolume *oldV = _volumeRenderer.setVolume(meshState, idx, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
+				if (_sliceVolumeDirty || oldV != nullptr) {
+					_volumeRenderer.scheduleRegionExtraction(meshState, idx, _sliceVolume->region());
+				}
+				_sliceVolumeDirty = false;
+
+				region = _sliceVolume->region();
+				v = _sliceVolume.get();
 			} else {
 				_sliceVolume = nullptr;
 				_sliceVolumeDirty = false;
+				_sliceVolumeNodeId = -1;
 			}
 		}
 
@@ -238,7 +248,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			} else {
 				meshState->setCullFace(idx, video::Face::Back);
 			}
-			const glm::mat4 worldMatrix = transform.worldMatrix();
+			const glm::mat4 &worldMatrix = transform.worldMatrix();
 			const glm::vec3 maxs = worldMatrix * glm::vec4(region.getUpperCorner(), 1.0f);
 			const glm::vec3 mins = worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f);
 			const glm::vec3 pivot = scale * node.pivot() * glm::vec3(region.getDimensionsInVoxels());
