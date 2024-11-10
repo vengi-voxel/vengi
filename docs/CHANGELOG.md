@@ -48,6 +48,8 @@ VoxEdit:
    - Added normal palette panel
    - Fixed missing memento group for merging nodes
    - Improved undo/redo for lua script changes on the scenegraph
+   - Added a slice mode to only show a particular height level of your volume
+   - Don't place invalid colored voxels in group lock mode
 
 ## 0.0.33 (2024-08-05)
 
