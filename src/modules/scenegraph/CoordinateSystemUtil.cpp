@@ -10,9 +10,11 @@
 namespace scenegraph {
 
 //
-// Generate right, forward and up direction vectors to express the desired coordinate system as it would have been in opengl
+// Generate right, forward and up direction vectors to express the desired coordinate system for vengi
 //
 //     MV/VXL        GL          VENGI
+//     Blender       Maya
+//     3dsmax
 //
 //     Z             Y           Y
 //     | Y           |           | Z
