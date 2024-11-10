@@ -180,6 +180,9 @@ void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 }
 
 void Viewport::renderCursorDetails() const {
+	if (_viewportUIElementHovered) {
+		return;
+	}
 	const ModifierFacade &modifier = _sceneMgr->modifier();
 	const int cursorDetailsLevel = _cursorDetails->intVal();
 	if (cursorDetailsLevel == 0) {
@@ -251,6 +254,7 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			changed = true;
 		}
 		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip(_("Slice view"));
 			_viewportUIElementHovered = true;
 		}
 		if (sliceActive && ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y}, &mins.y,
