@@ -6,6 +6,7 @@
 #include "command/Command.h"
 #include "core/Log.h"
 #include "app/I18N.h"
+#include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -83,6 +84,13 @@ void ShapeBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	centerBottom[axisIdx] = region.getLowerCorner()[axisIdx];
 
 	const voxel::Voxel &voxel = context.cursorVoxel;
+	if (!voxel::isAir(voxel.getMaterial())) {
+		const palette::Palette &palette = wrapper.node().palette();
+		if (palette.color(voxel.getColor()).a == 0) {
+			Log::warn("Can't place shape with fully transparent color");
+			return;
+		}
+	}
 	switch (_shapeType) {
 	case ShapeType::AABB:
 		voxelgenerator::shape::createCubeNoCenter(wrapper, region.getLowerCorner(), dimensions, voxel);

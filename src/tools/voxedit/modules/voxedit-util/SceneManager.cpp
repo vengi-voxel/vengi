@@ -522,6 +522,7 @@ void SceneManager::modified(int nodeId, const voxel::Region& modifiedRegion, boo
 		_mementoHandler.markModification(_sceneGraph, node, modifiedRegion);
 	}
 	if (modifiedRegion.isValid()) {
+		Log::debug("Modify region for nodeid %i", nodeId);
 		_sceneRenderer->updateNodeRegion(nodeId, modifiedRegion, renderRegionMillis);
 	}
 	markDirty();
