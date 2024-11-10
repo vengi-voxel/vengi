@@ -247,7 +247,7 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			} else {
 				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
 				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
-				nodeMaxs.y = nodeMaxs.y;
+				nodeMaxs.y = nodeMins.y;
 				_renderContext.sliceRegion.setLowerCorner(nodeMins);
 				_renderContext.sliceRegion.setUpperCorner(nodeMaxs);
 			}
