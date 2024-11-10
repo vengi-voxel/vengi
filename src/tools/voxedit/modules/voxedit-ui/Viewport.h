@@ -34,6 +34,7 @@ private:
 	bool _hovered = false;
 	// is this viewport instance visible at all?
 	bool _visible = false;
+	bool _viewportUIElementHovered = false;
 	/**
 	 * while we are still modifying the transform or shifting the volume we don't want to
 	 * flood the memento states - thus we lock the memento handler and track this here.
@@ -132,6 +133,7 @@ private:
 	void dragAndDrop(float headerSize);
 	void renderCursor();
 	void renderCursorDetails() const;
+	bool renderSlicer(const glm::ivec2 &contentSize);
 	void renderViewport();
 	void toggleVideoRecording();
 	void menuBarPolygonModeOptions();
@@ -189,7 +191,7 @@ inline int Viewport::id() const {
 }
 
 inline bool Viewport::isHovered() const {
-	return _hovered && !_cameraManipulated;
+	return _hovered && !_cameraManipulated && !_viewportUIElementHovered;
 }
 
 inline bool Viewport::isVisible() const {

@@ -6,10 +6,12 @@
 
 #include "RawVolumeRenderer.h"
 #include "app/I18N.h"
+#include "core/SharedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "render/CameraFrustum.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
+#include "voxel/RawVolume.h"
 
 /**
  * Basic voxel rendering
@@ -41,7 +43,8 @@ protected:
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
-
+	core::SharedPtr<voxel::RawVolume> _sliceVolume;
+	bool _sliceVolumeDirty = false;
 public:
 	SceneGraphRenderer();
 	void construct();
@@ -69,6 +72,20 @@ public:
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
 				bool waitPending = false);
 	void clear(const voxel::MeshStatePtr &meshState);
+
+	static inline int getVolumeId(int nodeId) {
+		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+		return nodeId;
+	}
+
+	static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
+		return getVolumeId(node.id());
+	}
+
+	static inline int getNodeId(int volumeIdx) {
+		// TODO: using the node id here is not good as they are increasing when you modify the scene graph
+		return volumeIdx;
+	}
 };
 
 } // namespace voxelrender

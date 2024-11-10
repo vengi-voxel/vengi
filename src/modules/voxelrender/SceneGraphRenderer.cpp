@@ -94,20 +94,6 @@ video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeC
 	return camera;
 }
 
-static inline int getVolumeId(int nodeId) {
-	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-	return nodeId;
-}
-
-static inline int getVolumeId(const scenegraph::SceneGraphNode &node) {
-	return getVolumeId(node.id());
-}
-
-static inline int getNodeId(int volumeIdx) {
-	// TODO: using the node id here is not good as they are increasing when you modify the scene graph
-	return volumeIdx;
-}
-
 SceneGraphRenderer::SceneGraphRenderer() {
 }
 
@@ -127,7 +113,12 @@ void SceneGraphRenderer::update(const voxel::MeshStatePtr &meshState) {
 }
 
 void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &meshState, scenegraph::SceneGraphNode &node, const voxel::Region &region) {
-	_volumeRenderer.scheduleRegionExtraction(meshState, getVolumeId(node), region);
+	const int idx = getVolumeId(node);
+	if (_sliceVolume && _sliceVolume.get() == meshState->volume(idx)) {
+		_sliceVolumeDirty = true;
+		return;
+	}
+	_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 }
 
 void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
@@ -207,10 +198,35 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			continue;
 		}
 		const voxel::RawVolume *v = meshState->volume(id);
-		_volumeRenderer.setVolume(meshState, id, node, true);
-		const voxel::Region &region = node.region();
-		if (v != node.volume()) {
-			_volumeRenderer.scheduleRegionExtraction(meshState, id, region);
+		const voxel::RawVolume *nodeVolume = sceneGraph.resolveVolume(node);
+
+		bool sliceView = false;
+		voxel::Region region;
+		if (node.id() == activeNodeId) {
+			if (renderContext.sliceRegion.isValid()) {
+				sliceView = true;
+				if (_sliceVolumeDirty || !_sliceVolume || _sliceVolume->region() != renderContext.sliceRegion) {
+					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, renderContext.sliceRegion);
+					// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)
+					(void)_volumeRenderer.setVolume(meshState, id, _sliceVolume.get(), &node.palette(), &node.normalPalette(), !_sliceVolumeDirty);
+					_volumeRenderer.scheduleRegionExtraction(meshState, id, _sliceVolume->region());
+					_sliceVolumeDirty = false;
+
+					region = _sliceVolume->region();
+					v = _sliceVolume.get();
+				}
+			} else {
+				_sliceVolume = nullptr;
+				_sliceVolumeDirty = false;
+			}
+		}
+
+		if (!sliceView) {
+			_volumeRenderer.setVolume(meshState, id, node, true);
+			region = node.region();
+			if (v != nodeVolume) {
+				_volumeRenderer.scheduleRegionExtraction(meshState, id, region);
+			}
 		}
 		if (renderContext.renderMode == RenderMode::Scene) {
 			const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frame);
@@ -240,7 +256,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 					hideNode = true;
 				}
 			} else {
-				hideNode = id != activeNodeId;
+				hideNode = node.id() != activeNodeId;
 			}
 		} else {
 			hideNode = !node.visible();
@@ -248,7 +264,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		meshState->hide(id, hideNode);
 
 		if (grayInactive) {
-			meshState->gray(id, id != activeNodeId);
+			meshState->gray(id, node.id() != activeNodeId);
 		} else {
 			meshState->gray(id, false);
 		}
@@ -283,7 +299,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 						hideNode = true;
 					}
 				} else {
-					hideNode = id != activeNodeId;
+					hideNode = node.id() != activeNodeId;
 				}
 			} else {
 				hideNode = !node.visible();
@@ -291,7 +307,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 			meshState->hide(id, hideNode);
 
 			if (grayInactive) {
-				meshState->gray(id, id != activeNodeId);
+				meshState->gray(id, node.id() != activeNodeId);
 			} else {
 				meshState->gray(id, false);
 			}

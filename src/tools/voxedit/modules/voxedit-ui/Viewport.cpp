@@ -5,6 +5,7 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
+#include "imgui.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "ui/IconsLucide.h"
@@ -229,14 +230,57 @@ void Viewport::renderCursor() {
 	renderCursorDetails();
 }
 
+bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
+	auto &sceneGraph = _sceneMgr->sceneGraph();
+	const int activeNode = sceneGraph.activeNode();
+	bool changed = false;
+	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
+		glm::ivec3 mins = _renderContext.sliceRegion.getLowerCorner();
+		const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
+		bool sliceActive = _renderContext.sliceRegion.isValid();
+		if (ImGui::Checkbox("##sliceactive", &sliceActive)) {
+			if (!sliceActive) {
+				_renderContext.sliceRegion = voxel::Region::InvalidRegion;
+			} else {
+				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
+				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+				nodeMaxs.y = nodeMaxs.y;
+				_renderContext.sliceRegion.setLowerCorner(nodeMins);
+				_renderContext.sliceRegion.setUpperCorner(nodeMaxs);
+			}
+			changed = true;
+		}
+		if (ImGui::IsItemHovered()) {
+			_viewportUIElementHovered = true;
+		}
+		if (sliceActive && ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y}, &mins.y,
+											 nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
+			glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
+			glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+			nodeMaxs.y = mins.y;
+			nodeMins.y = mins.y;
+			_renderContext.sliceRegion.setLowerCorner(nodeMins);
+			_renderContext.sliceRegion.setUpperCorner(nodeMaxs);
+			changed = true;
+		}
+		if (ImGui::IsItemHovered()) {
+			_viewportUIElementHovered = true;
+		}
+	}
+	return changed;
+}
+
 void Viewport::renderViewport() {
 	core_trace_scoped(Viewport);
 	glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
-	const float headerSize = ImGui::GetCursorPosY();
+	ImVec2 cursorPos = ImGui::GetCursorPos();
+	const float headerSize = cursorPos.y;
 	if (setupFrameBuffer(contentSize)) {
 		_camera.update(_app->deltaFrameSeconds());
 
 		renderToFrameBuffer();
+		renderSlicer(contentSize);
+		ImGui::SetCursorPos(cursorPos);
 		renderViewportImage(contentSize);
 		const bool modifiedRegion = renderGizmo(camera(), headerSize, contentSize);
 
@@ -452,6 +496,7 @@ void Viewport::update(command::CommandExecutionListener *listener) {
 	core_trace_scoped(ViewportPanel);
 	_camera.setFarPlane(_viewDistance->floatVal());
 
+	_viewportUIElementHovered = false;
 	_hovered = false;
 	_visible = false;
 	_cameraManipulated = false;

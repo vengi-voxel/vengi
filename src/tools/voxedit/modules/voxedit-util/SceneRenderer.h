@@ -19,7 +19,7 @@ namespace voxedit {
 class SceneRenderer : public ISceneRenderer {
 private:
 	voxel::MeshStatePtr _meshState;
-	voxelrender::SceneGraphRenderer _volumeRenderer;
+	voxelrender::SceneGraphRenderer _sceneGraphRenderer;
 	render::GridRenderer _gridRenderer;
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
@@ -77,6 +77,7 @@ public:
 	bool isVisible(int nodeId, bool hideEmpty = true) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
+	const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) override;
 };
 
 } // namespace voxedit

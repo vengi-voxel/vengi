@@ -14,6 +14,8 @@
 #include "voxedit-util/AxisUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxel/RawVolume.h"
+#include "voxelrender/RawVolumeRenderer.h"
+#include "voxelrender/SceneGraphRenderer.h"
 
 namespace voxedit {
 
@@ -21,7 +23,7 @@ SceneRenderer::SceneRenderer() : _meshState(core::make_shared<voxel::MeshState>(
 }
 
 void SceneRenderer::construct() {
-	_volumeRenderer.construct();
+	_sceneGraphRenderer.construct();
 	_meshState->construct();
 }
 
@@ -41,7 +43,7 @@ bool SceneRenderer::init() {
 		Log::error("Failed to initialize the mesh state");
 		return false;
 	}
-	if (!_volumeRenderer.init(_meshState->hasNormals())) {
+	if (!_sceneGraphRenderer.init(_meshState->hasNormals())) {
 		Log::error("Failed to initialize the volume renderer");
 		return false;
 	}
@@ -61,11 +63,11 @@ bool SceneRenderer::init() {
 }
 
 void SceneRenderer::clear() {
-	_volumeRenderer.clear(_meshState);
+	_sceneGraphRenderer.clear(_meshState);
 }
 
 void SceneRenderer::shutdown() {
-	_volumeRenderer.shutdown();
+	_sceneGraphRenderer.shutdown();
 	// don't free the volumes here, they belong to the scene graph
 	(void)_meshState->shutdown();
 
@@ -128,7 +130,7 @@ bool SceneRenderer::extractVolume(const scenegraph::SceneGraph &sceneGraph) {
 	for (size_t i = 0; i < n; ++i) {
 		const voxel::Region &region = _extractRegions[i].region;
 		if (scenegraph::SceneGraphNode *node = sceneGraphModelNode(sceneGraph, _extractRegions[i].nodeId)) {
-			_volumeRenderer.scheduleRegionExtraction(_meshState, *node, region);
+			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, *node, region);
 			Log::debug("Extract node %i", _extractRegions[i].nodeId);
 			voxel::logRegion("Extraction", region);
 		}
@@ -272,12 +274,21 @@ void SceneRenderer::updateBoneMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeRenderer.createOrUpdate(_boneMeshIndex, _shapeBuilder);
 }
 
+const voxel::RawVolume *SceneRenderer::volumeForNode(const scenegraph::SceneGraphNode &node) {
+	int idx = voxelrender::SceneGraphRenderer::getVolumeId(node);
+	const voxel::RawVolume *v = _meshState->volume(idx);
+	if (v == nullptr) {
+		v = node.volume();
+	}
+	return v;
+}
+
 bool SceneRenderer::isVisible(int nodeId, bool hideEmpty) const {
-	return _volumeRenderer.isVisible(_meshState, nodeId, hideEmpty);
+	return _sceneGraphRenderer.isVisible(_meshState, nodeId, hideEmpty);
 }
 
 void SceneRenderer::removeNode(int nodeId) {
-	_volumeRenderer.nodeRemove(_meshState, nodeId);
+	_sceneGraphRenderer.nodeRemove(_meshState, nodeId);
 }
 
 void SceneRenderer::update() {
@@ -287,10 +298,10 @@ void SceneRenderer::update() {
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
-	_volumeRenderer.setAmbientColor(val);
+	_sceneGraphRenderer.setAmbientColor(val);
 	_diffuseColor->vec3Val(&val[0]);
-	_volumeRenderer.setDiffuseColor(val);
-	_volumeRenderer.update(_meshState);
+	_sceneGraphRenderer.setDiffuseColor(val);
+	_sceneGraphRenderer.update(_meshState);
 }
 
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
@@ -306,7 +317,7 @@ void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const
 	video::ScopedState depthTest(video::State::DepthTest, true);
 	updateAABBMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
 	updateBoneMesh(renderContext.renderMode == voxelrender::RenderMode::Scene, *renderContext.sceneGraph, renderContext.frame);
-	_volumeRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
+	_sceneGraphRenderer.render(_meshState, renderContext, camera, _renderShadow->boolVal(), false);
 	extractVolume(*renderContext.sceneGraph);
 }
 

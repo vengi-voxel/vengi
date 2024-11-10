@@ -6,6 +6,8 @@
 
 #include "core/IComponent.h"
 #include "math/Axis.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelrender/RawVolumeRenderer.h"
 
@@ -43,6 +45,9 @@ public:
 	virtual void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	}
 	virtual void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
+	}
+	virtual const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) {
+		return node.volume();
 	}
 };
 

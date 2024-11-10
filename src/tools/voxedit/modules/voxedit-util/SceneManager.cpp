@@ -2793,7 +2793,7 @@ bool SceneManager::mouseRayTrace(bool force) {
 	if (node == nullptr) {
 		return false;
 	}
-	const voxel::RawVolume* v = node->volume();
+	const voxel::RawVolume* v = _sceneRenderer->volumeForNode(*node);
 	if (v == nullptr) {
 		return false;
 	}
