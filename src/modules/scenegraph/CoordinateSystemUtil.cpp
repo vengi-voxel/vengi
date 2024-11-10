@@ -12,27 +12,44 @@ namespace scenegraph {
 //
 // Generate right, forward and up direction vectors to express the desired coordinate system for vengi
 //
-//     MV/VXL        GL          VENGI
-//     Blender       Maya
+//                      Right handed   Left handed
+//   -----------------------------------------------
+//     Magicavoxel      OpenGL         VENGI
+//     VXL              Maya           DirectX12
+//     Blender
 //     3dsmax
 //
-//     Z             Y           Y
-//     | Y           |           | Z
-//     |/            |           |/
-//     o----X        o----X      o----X
-//                  /
-//                 Z
+//     Z                Y              Y
+//     | Y              |              | Z
+//     |/               |              |/
+//     o----X           o----X         o----X
+//                     /
+//                    Z
 //
 bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
+	// read the assignment as: our right is your ... (and so on)
+	// so right = glm::right() is a no-op, but right = glm::vec3(-1, 0, 0)
+	// would mean: our right is your left (with your left given in opengl
+	// coordinate system)
 	glm::vec3 right;
 	glm::vec3 up;
 	glm::vec3 forward;
 	switch (sys) {
+	case CoordinateSystem::DirectX:
 	case CoordinateSystem::Vengi:
+		// no-op for conversion to vengi
 		right = glm::right();
 		up = glm::up();
 		forward = glm::forward();
 		break;
+	case CoordinateSystem::Maya:
+	case CoordinateSystem::OpenGL:
+		// opengl forward is the vengi backward
+		right = glm::vec3(1.0f, 0.0f, 0.0f);
+		up = glm::vec3(0.0f, 1.0f, 0.0f);
+		forward = glm::vec3(0.0f, 0.0f, 1.0f);
+		break;
+	case CoordinateSystem::Autodesk3dsmax:
 	case CoordinateSystem::MagicaVoxel:
 	case CoordinateSystem::VXL:
 		// Z-up coordinate system (like 3dsmax).
