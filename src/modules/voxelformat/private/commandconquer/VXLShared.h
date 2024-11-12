@@ -70,7 +70,7 @@ struct VXLLayerInfo {
 	uint32_t spanDataOffset;  /**< Offset into body section to span data */
 	float scale;			  /**< Scaling vector for the image */
 	VXLMatrix transform;	  /**< 4x3 right handed matrix - x, y and z axis point right, up and back
-							   * @sa @c CoordinateSystem::XRightYBackZUp */
+							   * @sa @c CoordinateSystem::VXL */
 	// this is the bounding box of the final rendered model. If the size of the bounding box is the same as the
 	// below given size of the volume - the scaling value would be exactly one.
 	glm::vec3 mins;
