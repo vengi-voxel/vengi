@@ -10,6 +10,7 @@
 #include "core/Assert.h"
 #include <string.h>
 #include <stdio.h>
+#include <SDL_log.h>
 
 #ifdef HAVE_SYSLOG_H
 #include <syslog.h>
