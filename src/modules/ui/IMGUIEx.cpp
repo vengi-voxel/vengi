@@ -456,19 +456,18 @@ bool CommandRadioButton(const char *label, const core::String &command, bool ena
 }
 
 const char *CommandIconMenuItem(const char *icon, const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
-	return CommandMenuItem(labelWithIcon.c_str(), command, enabled, listener);
-}
-
-const char *CommandMenuItem(const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
 	const core::String& keybinding = imguiApp()->getKeyBindingsString(command);
-	if (ImGui::MenuItem(label, keybinding.c_str(), false, enabled)) {
+	if (ImGui::MenuItemEx(label, icon, keybinding.c_str(), false, enabled)) {
 		if (command::executeCommands(command, listener) > 0) {
 			return command;
 		}
 	}
 	TooltipCommand(command);
 	return nullptr;
+}
+
+const char *CommandMenuItem(const char *label, const char *command, bool enabled, command::CommandExecutionListener* listener) {
+	return CommandIconMenuItem(nullptr, label, command, enabled, listener);
 }
 
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
@@ -695,13 +694,11 @@ bool BeginIconCombo(const char *icon, const char *label, const char *preview_val
 }
 
 bool BeginIconMenu(const char *icon, const char *label, bool enabled) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
-	return BeginMenu(labelWithIcon.c_str(), enabled);
+	return BeginMenuEx(label, icon, enabled);
 }
 
 bool IconMenuItem(const char *icon, const char *label, const char *shortcut, bool selected, bool enabled) {
-	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
-	return MenuItem(labelWithIcon.c_str(), shortcut, selected, enabled);
+	return MenuItemEx(label, icon, shortcut, selected, enabled);
 }
 
 bool IconButton(const char *icon, const char *label, const ImVec2 &size) {
