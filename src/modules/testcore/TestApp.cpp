@@ -62,7 +62,7 @@ app::AppState TestApp::onInit() {
 #ifdef SDL_HINT_SHUTDOWN_DBUS_ON_QUIT
 	SDL_SetHint(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, "1");
 #endif
-	_logLevelVar->setVal(core::string::toString(SDL_LOG_PRIORITY_DEBUG));
+	_logLevelVar->setVal((int)Log::Level::Debug);
 	Log::init();
 
 	video::enableDebug(video::DebugSeverity::Medium);
