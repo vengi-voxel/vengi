@@ -99,6 +99,11 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 	setColor(color);
 }
 
+void ShapeBuilder::arrow(const glm::vec3 &left, const glm::vec3 &center, const glm::vec3 &right, float thickness) {
+	line(left, center, thickness);
+	line(center, right, thickness);
+}
+
 void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thickness) {
 	if (thickness <= 1.0f) {
 		setPrimitive(Primitive::Lines);

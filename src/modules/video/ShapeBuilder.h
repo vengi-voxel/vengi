@@ -118,6 +118,8 @@ public:
 	void aabbGridYZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
 
+	void arrow(const glm::vec3 &point1, const glm::vec3 &point2, const glm::vec3 &point3, float thickness = 1.0f);
+
 	void cylinder(float radius, float length, int slices = 20);
 
 	/**

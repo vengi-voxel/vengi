@@ -34,6 +34,7 @@ protected:
 	int32_t _gridMeshIndexXZFar = -1;
 	int32_t _gridMeshIndexYZNear = -1;
 	int32_t _gridMeshIndexYZFar = -1;
+	int32_t _array = -1;
 
 	int _resolution = 1;
 	bool _renderAABB;
@@ -49,6 +50,7 @@ public:
 	 * @param aabb The region to do the plane culling with
 	 */
 	void render(const video::Camera& camera, const math::AABB<float>& aabb);
+	void renderForwardArrow(const video::Camera& camera);
 
 	bool renderAABB() const;
 	void setRenderAABB(bool renderAABB);

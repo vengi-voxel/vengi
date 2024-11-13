@@ -342,6 +342,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	video::ScopedState blend(video::State::Blend, true);
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
+	_gridRenderer.renderForwardArrow(camera);
 	if (renderContext.renderMode == voxelrender::RenderMode::Scene) {
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);

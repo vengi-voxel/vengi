@@ -3,12 +3,14 @@
  */
 
 #include "GridRenderer.h"
+#include "core/GLMConst.h"
 #include "core/Trace.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "core/Log.h"
 #include "core/GLM.h"
 #include "video/Camera.h"
+#include "video/ScopedState.h"
 
 namespace render {
 
@@ -76,6 +78,22 @@ void GridRenderer::update(const math::AABB<float>& aabb) {
 	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
 
+	_shapeBuilder.clear();
+
+	const float arrowSize = 10.0f;
+	const float forward = glm::forward().z * arrowSize;
+	const float left = glm::left().x * arrowSize;
+	const float right = glm::right().x * arrowSize;
+	const float arrowX = aabb.getCenterX();
+	const float arrowY = aabb.getLowerY();
+	const float arrowZ = aabb.getLowerZ();
+	const glm::vec3 point1{arrowX + left, arrowY, arrowZ + forward};
+	const glm::vec3 point2{arrowX, arrowY, arrowZ + 2.0f * forward};
+	const glm::vec3 point3{arrowX + right, arrowY, arrowZ + forward};
+	_shapeBuilder.arrow(point1, point2, point3);
+	_shapeRenderer.createOrUpdate(_array, _shapeBuilder);
+	_shapeRenderer.hide(_array, true);
+
 	_dirty = false;
 }
 
@@ -130,6 +148,13 @@ void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& 
 	_shapeRenderer.renderAll(camera);
 }
 
+void GridRenderer::renderForwardArrow(const video::Camera& camera) {
+	_shapeRenderer.hide(_array, false);
+	video::ScopedState cull(video::State::CullFace, false);
+	_shapeRenderer.render(_array, camera);
+	_shapeRenderer.hide(_array, true);
+}
+
 void GridRenderer::shutdown() {
 	_aabbMeshIndex = -1;
 	_gridMeshIndexXYNear = -1;
@@ -138,6 +163,7 @@ void GridRenderer::shutdown() {
 	_gridMeshIndexXZFar = -1;
 	_gridMeshIndexYZNear = -1;
 	_gridMeshIndexYZFar = -1;
+	_array = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }

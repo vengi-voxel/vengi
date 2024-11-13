@@ -50,6 +50,7 @@ VoxEdit:
    - Improved undo/redo for lua script changes on the scenegraph
    - Added a slice mode to only show a particular height level of your volume
    - Don't place invalid colored voxels in group lock mode
+   - Render forward direction in the viewport
 
 ## 0.0.33 (2024-08-05)
 
