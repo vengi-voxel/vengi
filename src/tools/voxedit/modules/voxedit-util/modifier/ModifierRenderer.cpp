@@ -132,7 +132,7 @@ void ModifierRenderer::updateSelectionBuffers(const Selections& selections) {
 	_shapeRenderer.createOrUpdate(_selectionIndex, _shapeBuilder);
 }
 
-void ModifierRenderer::clearBrushMeshes() {
+void ModifierRenderer::clear() {
 	_volumeRenderer.clear(_meshState);
 }
 

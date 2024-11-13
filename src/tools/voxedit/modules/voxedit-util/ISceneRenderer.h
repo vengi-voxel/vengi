@@ -49,6 +49,14 @@ public:
 	virtual const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) {
 		return node.volume();
 	}
+	virtual const voxel::Region &sliceRegion() const {
+		return voxel::Region::InvalidRegion;
+	}
+	virtual void setSliceRegion(const voxel::Region &region) {
+	}
+	virtual bool isSliceModeActive() const {
+		return sliceRegion().isValid();
+	}
 };
 
 using SceneRendererPtr = core::SharedPtr<ISceneRenderer>;

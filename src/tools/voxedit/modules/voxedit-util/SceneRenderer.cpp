@@ -66,6 +66,18 @@ void SceneRenderer::clear() {
 	_sceneGraphRenderer.clear(_meshState);
 }
 
+const voxel::Region &SceneRenderer::sliceRegion() const {
+	return _sceneGraphRenderer.sliceRegion();
+}
+
+void SceneRenderer::setSliceRegion(const voxel::Region &region) {
+	_sceneGraphRenderer.setSliceRegion(region);
+}
+
+bool SceneRenderer::isSliceModeActive() const {
+	return _sceneGraphRenderer.isSliceModeActive();
+}
+
 void SceneRenderer::shutdown() {
 	_sceneGraphRenderer.shutdown();
 	// don't free the volumes here, they belong to the scene graph

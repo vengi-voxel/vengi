@@ -55,7 +55,6 @@ struct RenderContext : public core::NonCopyable {
 	bool onlyModels = false;
 	// render the built-in normals
 	bool renderNormals = false;
-	voxel::Region sliceRegion = voxel::Region::InvalidRegion;
 
 	bool init(const glm::ivec2 &size);
 	void shutdown();

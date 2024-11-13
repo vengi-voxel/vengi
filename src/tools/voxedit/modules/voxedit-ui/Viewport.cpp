@@ -238,34 +238,36 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 	const int activeNode = sceneGraph.activeNode();
 	bool changed = false;
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(activeNode)) {
-		glm::ivec3 mins = _renderContext.sliceRegion.getLowerCorner();
-		const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
-		bool sliceActive = _renderContext.sliceRegion.isValid();
+		bool sliceActive = _sceneMgr->isSliceModeActive();
 		if (ImGui::Checkbox("##sliceactive", &sliceActive)) {
 			if (!sliceActive) {
-				_renderContext.sliceRegion = voxel::Region::InvalidRegion;
+				_sceneMgr->setSliceRegion(voxel::Region::InvalidRegion);
 			} else {
+				const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
 				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
 				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
 				nodeMaxs.y = nodeMins.y;
-				_renderContext.sliceRegion.setLowerCorner(nodeMins);
-				_renderContext.sliceRegion.setUpperCorner(nodeMaxs);
+				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 			}
 			changed = true;
 		}
 		if (ImGui::IsItemHovered()) {
-			ImGui::SetTooltip(_("Slice view"));
+			ImGui::SetItemTooltipUnformatted(_("Slice view"));
 			_viewportUIElementHovered = true;
 		}
-		if (sliceActive && ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y}, &mins.y,
-											 nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
-			glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
-			glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
-			nodeMaxs.y = mins.y;
-			nodeMins.y = mins.y;
-			_renderContext.sliceRegion.setLowerCorner(nodeMins);
-			_renderContext.sliceRegion.setUpperCorner(nodeMaxs);
-			changed = true;
+		if (sliceActive) {
+			const voxel::Region &sliceRegion = _sceneMgr->sliceRegion();
+			glm::ivec3 mins = sliceRegion.getLowerCorner();
+			const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
+			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y}, &mins.y,
+								  nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
+				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
+				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+				nodeMaxs.y = mins.y;
+				nodeMins.y = mins.y;
+				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
+				changed = true;
+			}
 		}
 		if (ImGui::IsItemHovered()) {
 			_viewportUIElementHovered = true;

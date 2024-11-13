@@ -3586,4 +3586,16 @@ core::String SceneManager::getSuggestedFilename(const core::String &extension) c
 	return name + "." + ext;
 }
 
+const voxel::Region &SceneManager::sliceRegion() const {
+	return _sceneRenderer->sliceRegion();
+}
+
+void SceneManager::setSliceRegion(const voxel::Region &region) {
+	_sceneRenderer->setSliceRegion(region);
+}
+
+bool SceneManager::isSliceModeActive() const {
+	return _sceneRenderer->isSliceModeActive();
+}
+
 }

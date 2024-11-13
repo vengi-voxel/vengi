@@ -32,7 +32,7 @@ public:
 
 	virtual void renderBrushVolume(const video::Camera &camera) {
 	}
-	virtual void clearBrushMeshes() {
+	virtual void clear() {
 	}
 	virtual void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) {
 	}

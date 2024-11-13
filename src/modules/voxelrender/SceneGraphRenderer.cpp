@@ -136,6 +136,19 @@ void SceneGraphRenderer::shutdown() {
 
 void SceneGraphRenderer::clear(const voxel::MeshStatePtr &meshState) {
 	_volumeRenderer.clear(meshState);
+	_sliceRegion = voxel::Region::InvalidRegion;
+}
+
+const voxel::Region &SceneGraphRenderer::sliceRegion() const {
+	return _sliceRegion;
+}
+
+void SceneGraphRenderer::setSliceRegion(const voxel::Region &region) {
+	_sliceRegion = region;
+}
+
+bool SceneGraphRenderer::isSliceModeActive() const {
+	return _sliceRegion.isValid();
 }
 
 void SceneGraphRenderer::nodeRemove(const voxel::MeshStatePtr &meshState, int nodeId) {
@@ -203,15 +216,14 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 		bool sliceView = false;
 		voxel::Region region;
 		if (node.id() == activeNodeId) {
-			const voxel::Region &sliceRegion = renderContext.sliceRegion;
-			if (sliceRegion.isValid()) {
+			if (_sliceRegion.isValid()) {
 				sliceView = true;
 				// check several things to re-create the slice volume
 				// * a new activated node
 				// * the region changed
 				// * we don't yet have a sliced volume view but requested one
-				if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume || _sliceVolume->region() != sliceRegion) {
-					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, sliceRegion);
+				if (_sliceVolumeDirty || _sliceVolumeNodeId != activeNodeId || !_sliceVolume || _sliceVolume->region() != _sliceRegion) {
+					_sliceVolume = core::make_shared<voxel::RawVolume>(nodeVolume, _sliceRegion);
 					_sliceVolumeNodeId = activeNodeId;
 				}
 				// either node or slice volume (nodes get their volume managed - and here we have a smart pointer)

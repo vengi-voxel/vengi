@@ -43,9 +43,12 @@ protected:
 	render::CameraFrustum _cameraRenderer;
 	core::DynamicArray<video::Camera> _cameras;
 	void prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext);
+
 	core::SharedPtr<voxel::RawVolume> _sliceVolume;
+	voxel::Region _sliceRegion = voxel::Region::InvalidRegion;
 	bool _sliceVolumeDirty = false;
 	int _sliceVolumeNodeId = -1;
+
 public:
 	SceneGraphRenderer();
 	void construct();
@@ -73,6 +76,10 @@ public:
 	void render(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera, bool shadow = true,
 				bool waitPending = false);
 	void clear(const voxel::MeshStatePtr &meshState);
+
+	const voxel::Region &sliceRegion() const;
+	void setSliceRegion(const voxel::Region &region);
+	bool isSliceModeActive() const;
 
 	static inline int getVolumeIdx(int nodeId) {
 		// TODO: using the node id here is not good as they are increasing when you modify the scene graph

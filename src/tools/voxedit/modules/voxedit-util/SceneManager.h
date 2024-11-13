@@ -233,6 +233,10 @@ public:
 	 */
 	bool supportsEditMode() const;
 
+	const voxel::Region &sliceRegion() const;
+	void setSliceRegion(const voxel::Region &region);
+	bool isSliceModeActive() const;
+
 	bool exceedsMaxSuggestedVolumeSize() const;
 
 	bool cameraRotate() const;

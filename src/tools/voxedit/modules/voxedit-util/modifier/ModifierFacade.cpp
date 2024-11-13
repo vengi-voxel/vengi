@@ -69,7 +69,7 @@ void ModifierFacade::updateBrushVolumePreview(palette::Palette &activePalette) {
 	voxel.setOutline();
 
 	// this call is needed to prevent double frees
-	_modifierRenderer->clearBrushMeshes();
+	_modifierRenderer->clear();
 
 	Log::debug("regenerate preview volume");
 
@@ -157,7 +157,7 @@ void ModifierFacade::render(const video::Camera &camera, palette::Palette &activ
 		_modifierRenderer->renderBrushVolume(camera);
 		video::polygonOffset(glm::vec3(0.0f));
 	} else {
-		_modifierRenderer->clearBrushMeshes();
+		_modifierRenderer->clear();
 	}
 }
 

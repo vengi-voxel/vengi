@@ -78,6 +78,9 @@ public:
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	const voxel::RawVolume *volumeForNode(const scenegraph::SceneGraphNode &node) override;
+	const voxel::Region &sliceRegion() const override;
+	void setSliceRegion(const voxel::Region &region) override;
+	bool isSliceModeActive() const override;
 };
 
 } // namespace voxedit

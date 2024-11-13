@@ -33,7 +33,7 @@ public:
 	void render(const video::Camera &camera, const glm::mat4 &model) override;
 	void renderBrushVolume(const video::Camera &camera) override;
 	void renderSelection(const video::Camera &camera) override;
-	void clearBrushMeshes() override;
+	void clear() override;
 	/**
 	 * @note The given volume must still get freed by the caller - the renderer is not taking overship.
 	 *
