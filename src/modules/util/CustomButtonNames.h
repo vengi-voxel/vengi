@@ -5,6 +5,7 @@
 #pragma once
 
 #include <SDL_keycode.h>
+#include <SDL_mouse.h>
 #include "core/String.h"
 
 #define CUSTOM_SDL_KEYCODE(X) SDL_SCANCODE_TO_KEYCODE((util::button::CUSTOM_SCANCODES + (X)))
