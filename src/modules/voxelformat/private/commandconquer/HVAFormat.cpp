@@ -79,9 +79,7 @@ bool HVAFormat::readHVAFrames(io::SeekableReadStream &stream, const vxl::VXLMode
 static void convertHVARead(glm::mat4 &vengiMatrix, const vxl::VXLLayerInfo &footer) {
 	glm::vec4 &translation = vengiMatrix[3];
 	// the hva matrices have to be scaled
-	const glm::vec3 sectionScale{(footer.maxs.x - footer.mins.x) / (float)footer.xsize,
-									(footer.maxs.y - footer.mins.y) / (float)footer.ysize,
-									(footer.maxs.z - footer.mins.z) / (float)footer.zsize};
+	const glm::vec3 sectionScale = footer.calcScale();
 	// swap y and z here
 	translation.x *= footer.scale * sectionScale.x;
 	translation.y *= footer.scale * sectionScale.z;

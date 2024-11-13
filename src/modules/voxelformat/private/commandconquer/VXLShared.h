@@ -81,6 +81,17 @@ struct VXLLayerInfo {
 	uint8_t zsize;		/**< Height of the voxel node - this is our y */
 	uint8_t normalType; /**< 2 (TS) or 4 (RedAlert2) - normal encoding -
 						   https://xhp.xwis.net/documents/normals_tables.html */
+
+	inline glm::vec3 calcScale() const {
+		// y and z flipped
+		const glm::vec3 s{(maxs[0] - mins[0]) / (float)xsize, (maxs[2] - mins[2]) / (float)zsize, (maxs[1] - mins[1]) / (float)ysize};
+		return s;
+	}
+
+	inline glm::vec3 offset() const {
+		// y and z flipped
+		return glm::vec3(mins[0], mins[2], mins[1]);
+	}
 };
 
 struct VXLModel {
