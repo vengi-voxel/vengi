@@ -373,7 +373,6 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##nodedelete", colFlags);
 			ImGui::TableHeadersRow();
-			// TODO: filter by name and type
 
 			int referencedNode = InvalidNodeId;
 			const scenegraph::SceneGraphNode& activeNode = sceneGraph.node(sceneGraph.activeNode());
