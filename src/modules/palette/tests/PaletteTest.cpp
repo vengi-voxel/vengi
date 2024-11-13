@@ -255,4 +255,11 @@ TEST_F(PaletteTest, testMaterialPropertyByName) {
 	EXPECT_FLOAT_EQ(palette.materialProperty(0, "emit"), 0.5f);
 }
 
+TEST_F(PaletteTest, testPixeloramaPalette) {
+	Palette pal;
+	// https://raw.githubusercontent.com/Orama-Interactive/Pixelorama/refs/heads/master/pixelorama_data/Palettes/Pixelorama.json
+	EXPECT_TRUE(pal.load("pixelorama.json"));
+	EXPECT_EQ(56, pal.colorCount());
+}
+
 } // namespace palette

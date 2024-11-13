@@ -9,6 +9,7 @@
 #include "palette/private/JASCPalette.h"
 #include "palette/private/PaintNetPalette.h"
 #include "palette/private/PhotoshopPalette.h"
+#include "palette/private/PixeloramaPalette.h"
 #include "palette/private/QBCLPalette.h"
 #include "palette/private/RGBPalette.h"
 
@@ -23,6 +24,7 @@ const io::FormatDescription *palettes() {
 		ASEPalette::format(),
 		PhotoshopPalette::format(),
 		RGBPalette::format(),
+		PixeloramaPalette::format(),
 		CSVPalette::format(),
 		PaintNetPalette::format(),
 		io::format::png(),

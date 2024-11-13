@@ -10,6 +10,7 @@ set(SRCS
 	private/PNGPalette.cpp private/PNGPalette.h
 	private/QBCLPalette.cpp private/QBCLPalette.h
 	private/RGBPalette.cpp private/RGBPalette.h
+	private/PixeloramaPalette.cpp private/PixeloramaPalette.h
 
 	NormalPalette.cpp NormalPalette.h
 
@@ -21,7 +22,7 @@ set(SRCS
 	PaletteLookup.h
 	PaletteCompleter.h
 )
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image http)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES util image http json)
 
 set(TEST_SRCS
 	tests/NormalPaletteTest.cpp
@@ -32,6 +33,7 @@ set(TEST_FILES
 	tests/test-palette-in.png
 	tests/paint.net.txt
 	tests/test.aco
+	tests/pixelorama.json
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

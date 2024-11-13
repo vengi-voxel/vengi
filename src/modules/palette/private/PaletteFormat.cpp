@@ -17,6 +17,7 @@
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteFormatDescription.h"
+#include "palette/private/PixeloramaPalette.h"
 
 namespace palette {
 
@@ -26,16 +27,18 @@ static core::SharedPtr<PaletteFormat> getFormat(const io::FormatDescription &des
 		// you only have to check one of the supported extensions here
 		if (ext == GimpPalette::format().mainExtension()) {
 			return core::make_shared<GimpPalette>();
-		} else if (ext == "qsm") {
+		} else if (ext == QBCLPalette::format().mainExtension()) {
 			return core::make_shared<QBCLPalette>();
-		} else if (ext == "ase") {
+		} else if (ext == ASEPalette::format().mainExtension()) {
 			return core::make_shared<ASEPalette>();
-		} else if (ext == "csv") {
+		} else if (ext == CSVPalette::format().mainExtension()) {
 			return core::make_shared<CSVPalette>();
-		} else if (ext == "aco") {
+		} else if (ext == PhotoshopPalette::format().mainExtension()) {
 			return core::make_shared<PhotoshopPalette>();
 		} else if (ext == PaintNetPalette::format().mainExtension()) {
 			return core::make_shared<PaintNetPalette>();
+		} else if (ext == PixeloramaPalette::format().mainExtension()) {
+			return core::make_shared<PixeloramaPalette>();
 		} else if (ext == io::format::png().mainExtension()) {
 			return core::make_shared<PNGPalette>();
 		} else if (ext == JASCPalette::format().mainExtension()) {
