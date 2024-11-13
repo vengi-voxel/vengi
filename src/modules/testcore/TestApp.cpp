@@ -11,6 +11,7 @@
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "core/Log.h"
+#include <SDL_hints.h>
 #include <glm/gtc/type_ptr.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -59,9 +60,7 @@ app::AppState TestApp::onInit() {
 	if (state != app::AppState::Running) {
 		return state;
 	}
-#ifdef SDL_HINT_SHUTDOWN_DBUS_ON_QUIT
 	SDL_SetHint(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, "1");
-#endif
 	_logLevelVar->setVal((int)Log::Level::Debug);
 	Log::init();
 

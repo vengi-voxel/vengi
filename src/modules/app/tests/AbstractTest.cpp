@@ -74,9 +74,7 @@ AppState AbstractTest::TestApp::onInit() {
 	if (!_test->onInitApp()) {
 		return AppState::InitFailure;
 	}
-#ifdef SDL_HINT_SHUTDOWN_DBUS_ON_QUIT
 	SDL_SetHint(SDL_HINT_SHUTDOWN_DBUS_ON_QUIT, "1");
-#endif
 
 	return state;
 }
