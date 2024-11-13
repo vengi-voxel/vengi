@@ -161,13 +161,13 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 #endif
-			if (ImGui::MenuItem(_("Show all commands"))) {
+			if (ImGui::IconMenuItem(ICON_LC_TERMINAL, _("Show all commands"))) {
 				app->showCommandDialog();
 			}
-			if (ImGui::MenuItem(_("Show all cvars"))) {
+			if (ImGui::IconMenuItem(ICON_LC_SETTINGS, _("Show all cvars"))) {
 				app->showCvarDialog();
 			}
-			if (ImGui::MenuItem(_("Tip of the day"))) {
+			if (ImGui::IconMenuItem(ICON_LC_LIGHTBULB, _("Tip of the day"))) {
 				core::Var::getSafe(cfg::VoxEditPopupTipOfTheDay)->setVal(true);
 			}
 			if (ImGui::MenuItem(_("Welcome screen"))) {
