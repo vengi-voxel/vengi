@@ -235,7 +235,7 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (_argc < 2) {
-		_logLevelVar->setVal(SDL_LOG_PRIORITY_INFO);
+		_logLevelVar->setVal((int)Log::Level::Info);
 		Log::init();
 		usage();
 		return app::AppState::InitFailure;

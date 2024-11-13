@@ -43,19 +43,19 @@ AppState CommandlineApp::onConstruct() {
 
 	bool changed = false;
 	if (hasArg("--trace")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal(SDL_LOG_PRIORITY_VERBOSE);
+		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Trace);
 		changed = true;
 	} else if (hasArg("--debug")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal(SDL_LOG_PRIORITY_DEBUG);
+		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Debug);
 		changed = true;
 	} else if (hasArg("--info")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal(SDL_LOG_PRIORITY_INFO);
+		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Info);
 		changed = true;
 	} else if (hasArg("--warn")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal(SDL_LOG_PRIORITY_WARN);
+		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Warn);
 		changed = true;
 	} else if (hasArg("--error")) {
-		core::Var::getSafe(cfg::CoreLogLevel)->setVal(SDL_LOG_PRIORITY_ERROR);
+		core::Var::getSafe(cfg::CoreLogLevel)->setVal((int)Log::Level::Error);
 		changed = true;
 	}
 	if (changed) {

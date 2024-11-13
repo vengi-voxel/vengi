@@ -15,18 +15,18 @@ namespace util {
 static const core::String GitHubURL = "https://api.github.com/repos/vengi-voxel/vengi";
 
 bool isNewerVersion(const core::String &versionLatest, const core::String &vengiVersion) {
-	struct Version {
+	struct VersionData {
 		int major = 0;
 		int minor = 0;
 		int micro = 0;
 		int patch = 0;
 	};
-	Version latest;
+	VersionData latest;
 	if (SDL_sscanf(versionLatest.c_str(), "%d.%d.%d.%d", &latest.major, &latest.minor, &latest.micro, &latest.patch) == 0) {
 		Log::debug("Failed to parse latest version %s", versionLatest.c_str());
 		return false;
 	}
-	Version current;
+	VersionData current;
 	if (SDL_sscanf(vengiVersion.c_str(), "%d.%d.%d.%d", &current.major, &current.minor, &current.micro, &current.patch) == 0) {
 		Log::debug("Failed to parse vengi version %s", vengiVersion.c_str());
 		return false;

@@ -593,6 +593,7 @@ static int s_decode(deflate_t* s, uint32_t* tree, int hi)
 	uint32_t key = tree[lo - 1];
 	uint32_t len = (32 - (key & 0xF));
 	CUTE_ASEPRITE_ASSERT((search >> len) == (key >> len));
+	(void)len;
 
 	s_consume_bits(s, key & 0xF);
 	return (key >> 4) & 0xFFF;
@@ -840,7 +841,7 @@ static char* s_fopen(const char* path, int* size, void* mem_ctx)
 		sz = CUTE_ASEPRITE_FTELL(fp);
 		CUTE_ASEPRITE_FSEEK(fp, 0, CUTE_ASEPRITE_SEEK_SET);
 		data = (char*)CUTE_ASEPRITE_ALLOC(sz + 1, mem_ctx);
-		CUTE_ASEPRITE_FREAD(data, sz, 1, fp);
+		(void)CUTE_ASEPRITE_FREAD(data, sz, 1, fp);
 		data[sz] = 0;
 		CUTE_ASEPRITE_FCLOSE(fp);
 	}
@@ -935,6 +936,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 	s_skip(s, sizeof(uint32_t)); // File size.
 	int magic = (int)s_read_uint16(s);
 	CUTE_ASEPRITE_ASSERT(magic == 0xA5E0);
+	(void)magic;
 
 	ase->frame_count = (int)s_read_uint16(s);
 	ase->w = s_read_uint16(s);
@@ -1073,6 +1075,8 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 					CUTE_ASEPRITE_ASSERT((zlib_byte0 & 0x0F) == 0x08); // Only zlib compression method (RFC 1950) is supported.
 					CUTE_ASEPRITE_ASSERT((zlib_byte0 & 0xF0) <= 0x70); // Innapropriate window size detected.
 					CUTE_ASEPRITE_ASSERT(!(zlib_byte1 & 0x20)); // Preset dictionary is present and not supported.
+					(void)zlib_byte0;
+					(void)zlib_byte1;
 					int pixels_sz = cel->w * cel->h * bpp;
 					void* pixels_decompressed = CUTE_ASEPRITE_ALLOC(pixels_sz, mem_ctx);
 					int ret = s_inflate(pixels, deflate_bytes, pixels_decompressed, pixels_sz, mem_ctx);
@@ -1219,6 +1223,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 
 			uint32_t size_read = (uint32_t)(s->in - chunk_start);
 			CUTE_ASEPRITE_ASSERT(size_read == chunk_size);
+			(void)size_read;
 		}
 	}
 
@@ -1247,6 +1252,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 					}
 				}
 				CUTE_ASEPRITE_ASSERT(found);
+				(void)found;
 			}
 			void* src = cel->pixels;
 			uint8_t opacity = (uint8_t)(cel->opacity * cel->layer->opacity * 255.0f);
