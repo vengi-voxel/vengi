@@ -143,7 +143,6 @@ protected:
 	bool setNewVolume(int nodeId, voxel::RawVolume *volume, bool deleteMesh = true);
 	void autosave();
 	void setReferencePosition(const glm::ivec3 &pos);
-	void updateGridRenderer(const voxel::Region &region);
 	void updateDirtyRendererStates();
 	void zoom(video::Camera &camera, float level) const;
 	bool mouseRayTrace(bool force);

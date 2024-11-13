@@ -1335,10 +1335,6 @@ bool SceneManager::splitVolumes() {
 	return false;
 }
 
-void SceneManager::updateGridRenderer(const voxel::Region& region) {
-	_sceneRenderer->updateGridRegion(region);
-}
-
 scenegraph::SceneGraphNode *SceneManager::sceneGraphModelNode(int nodeId) {
 	scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId);
 	if (node == nullptr || node->type() != scenegraph::SceneGraphNodeType::Model) {
@@ -1423,7 +1419,7 @@ bool SceneManager::setSceneGraphNodeVolume(scenegraph::SceneGraphNode &node, vox
 	_sceneRenderer->removeNode(node.id());
 
 	const voxel::Region& region = volume->region();
-	updateGridRenderer(region);
+	_sceneRenderer->updateGridRegion(region);
 
 	_dirty = false;
 	_result = voxelutil::PickResult();
@@ -2697,7 +2693,7 @@ void SceneManager::updateDirtyRendererStates() {
 	}
 	if (_dirtyRenderer & DirtyRendererGridRenderer) {
 		_dirtyRenderer &= ~DirtyRendererGridRenderer;
-		updateGridRenderer(_sceneGraph.node(activeNode()).region());
+		_sceneRenderer->updateGridRegion(_sceneGraph.node(activeNode()).region());
 	}
 }
 

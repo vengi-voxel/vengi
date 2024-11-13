@@ -93,9 +93,11 @@ void SceneRenderer::shutdown() {
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
-	if (region.isValid()) {
-		_gridRenderer.update(scenegraph::toAABB(region));
+	if (!region.isValid()) {
+		return;
 	}
+	const math::AABB<float> &aabb = scenegraph::toAABB(region);
+	_gridRenderer.update(aabb);
 }
 
 void SceneRenderer::updateNodeRegion(int nodeId, const voxel::Region &region, uint64_t renderRegionMillis) {
