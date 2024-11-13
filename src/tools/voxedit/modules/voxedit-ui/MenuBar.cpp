@@ -54,6 +54,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 	if (ImGui::BeginMenuBar()) {
 		core_trace_scoped(MenuBar);
 
+		ImGui::Dummy({});
+
 		const Modifier &modifier = _sceneMgr->modifier();
 		const bool hasSelection = modifier.selectionMgr().hasSelection();
 
