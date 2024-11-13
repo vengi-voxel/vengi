@@ -207,6 +207,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const glm::ivec3 &size = region.getDimensionsInVoxels();
 	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
+	// TODO: VOXELFORMAT: check pivot handling (https://github.com/vengi-voxel/vengi/issues/537)
 	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
 	vxl::VXLMatrix vxlMatrix;
 	convertWrite(vxlMatrix, transform.localMatrix(), false);
@@ -420,6 +421,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
+	// TODO: VOXELFORMAT: pivot handling is broken (https://github.com/vengi-voxel/vengi/issues/537)
 	glm::vec3 pivot = glm::abs(footer.mins);
 	pivot.x /= (float)footer.xsize;
 	pivot.y /= (float)footer.ysize;
