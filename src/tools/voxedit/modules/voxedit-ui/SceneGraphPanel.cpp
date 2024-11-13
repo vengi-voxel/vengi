@@ -367,8 +367,10 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			const uint32_t colFlags = ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoResize |
 										ImGuiTableColumnFlags_NoReorder | ImGuiTableColumnFlags_NoHide;
 
-			ImGui::TableSetupColumn(ICON_LC_EYE "##visiblenode", colFlags);
-			ImGui::TableSetupColumn(ICON_LC_LOCK "##lockednode", colFlags);
+			ImGui::TableSetupScrollFreeze(0, 1);
+			// TODO: UI: this space is here to align the icon a little bit - maybe there is a better way to do this
+			ImGui::TableSetupColumn(" " ICON_LC_EYE "##visiblenode", colFlags);
+			ImGui::TableSetupColumn(" " ICON_LC_LOCK "##lockednode", colFlags);
 			ImGui::TableSetupColumn("##nodecolor", colFlags);
 			ImGui::TableSetupColumn(_("Name"), ImGuiTableColumnFlags_WidthStretch);
 			ImGui::TableSetupColumn("##nodedelete", colFlags);
