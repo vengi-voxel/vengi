@@ -3,14 +3,11 @@
  */
 
 #include "VXLFormat.h"
-#include "app/App.h"
 #include "core/Assert.h"
 #include "core/Common.h"
-#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringSet.h"
@@ -209,8 +206,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
 	// TODO: VOXELFORMAT: check pivot handling (https://github.com/vengi-voxel/vengi/issues/537)
 	const glm::vec3 mins = node.pivot() * glm::vec3(-size);
-	vxl::VXLMatrix vxlMatrix;
-	convertWrite(vxlMatrix, transform.localMatrix(), false);
+	const vxl::VXLMatrix &vxlMatrix = vxl::convertVXLWrite(transform.localMatrix());
 
 	// TODO: VOXELFORMAT: always 0.0833333358f?
 	wrapBool(stream.writeFloat(vxl::Scale /*transform.localScale()*/))
@@ -421,20 +417,12 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
 	node.setName(header.name);
-	// TODO: VOXELFORMAT: pivot handling is broken (https://github.com/vengi-voxel/vengi/issues/537)
-	glm::vec3 pivot = glm::abs(footer.mins);
-	pivot.x /= (float)footer.xsize;
-	pivot.y /= (float)footer.ysize;
-	pivot.z /= (float)footer.zsize;
-
-	Log::debug("pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
-
-	node.setPivot({pivot.x, pivot.z, pivot.y});
+	node.setPivot(footer.pivot());
 	if (palette.colorCount() > 0) {
 		node.setPalette(palette);
 	}
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalMatrix(footer.transform.toVengi());
+	transform.setLocalMatrix(vxl::convertVXLRead(footer.transform));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	uint8_t maxNormalIndex = 0;

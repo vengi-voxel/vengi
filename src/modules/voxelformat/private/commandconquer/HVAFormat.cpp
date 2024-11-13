@@ -3,12 +3,11 @@
  */
 
 #include "HVAFormat.h"
-#include "app/App.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "io/Archive.h"
-#include "io/FileStream.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/private/commandconquer/VXLShared.h"
 
 namespace voxelformat {
 
@@ -76,16 +75,6 @@ bool HVAFormat::readHVAFrames(io::SeekableReadStream &stream, const vxl::VXLMode
 	return true;
 }
 
-static void convertHVARead(glm::mat4 &vengiMatrix, const vxl::VXLLayerInfo &footer) {
-	glm::vec4 &translation = vengiMatrix[3];
-	// the hva matrices have to be scaled
-	const glm::vec3 sectionScale = footer.calcScale();
-	// swap y and z here
-	translation.x *= footer.scale * sectionScale.x;
-	translation.y *= footer.scale * sectionScale.z;
-	translation.z *= footer.scale * sectionScale.y;
-}
-
 bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &archive, const vxl::VXLModel &mdl, scenegraph::SceneGraph &sceneGraph) {
 	vxl::HVAModel file;
 	{
@@ -114,11 +103,9 @@ bool HVAFormat::loadHVA(const core::String &filename, const io::ArchivePtr &arch
 
 			const int nodeId = file.header.layerIds[vxlNodeId];
 			if (nodeId != InvalidNodeId) {
-				glm::mat4 glmMatrix = sectionMatrices[vxlNodeId].toVengi();
-				convertHVARead(glmMatrix, mdl.layerInfos[nodeId]);
-
+				const vxl::VXLLayerInfo &footer = mdl.layerInfos[nodeId];
 				scenegraph::SceneGraphTransform transform;
-				transform.setLocalMatrix(glmMatrix);
+				transform.setLocalMatrix(convertHVARead(sectionMatrices[vxlNodeId], footer));
 				kf.setTransform(transform);
 			} else {
 				Log::error("Failed to assign key frame idx %u to node '%s'", keyFrameIdx, name.c_str());
@@ -171,9 +158,7 @@ bool HVAFormat::writeHVAFrames(io::SeekableWriteStream &stream, const scenegraph
 		for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = *iter;
 			const scenegraph::SceneGraphTransform &transform = node.transform(i);
-
-			vxl::VXLMatrix vxlMatrix;
-			convertWrite(vxlMatrix, transform.localMatrix(), true);
+			const vxl::VXLMatrix &vxlMatrix = vxl::convertHVAWrite(transform.localMatrix());
 
 			for (int j = 0; j < 12; ++j) {
 				const int col = j % 4;

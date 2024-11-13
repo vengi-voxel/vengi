@@ -6,7 +6,6 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include "voxel/Region.h"
 #include <glm/matrix.hpp>
 
 namespace voxelformat {
@@ -82,16 +81,9 @@ struct VXLLayerInfo {
 	uint8_t normalType; /**< 2 (TS) or 4 (RedAlert2) - normal encoding -
 						   https://xhp.xwis.net/documents/normals_tables.html */
 
-	inline glm::vec3 calcScale() const {
-		// y and z flipped
-		const glm::vec3 s{(maxs[0] - mins[0]) / (float)xsize, (maxs[2] - mins[2]) / (float)zsize, (maxs[1] - mins[1]) / (float)ysize};
-		return s;
-	}
-
-	inline glm::vec3 offset() const {
-		// y and z flipped
-		return glm::vec3(mins[0], mins[2], mins[1]);
-	}
+	glm::vec3 calcScale() const;
+	glm::vec3 offset() const;
+	glm::vec3 pivot() const;
 };
 
 struct VXLModel {
@@ -129,7 +121,10 @@ struct HVAModel {
 	HVAFrames frames[MaxLayers];
 };
 
-void convertWrite(VXLMatrix &vxlMatrix, const glm::mat4 &vengiMatrix, bool hva);
+glm::mat4 convertVXLRead(const VXLMatrix &matrix);
+VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix);
+glm::mat4 convertHVARead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
+VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix);
 
 } // namespace vxl
 } // namespace voxelformat
