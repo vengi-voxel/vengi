@@ -20,11 +20,11 @@ math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::v
 	core_assert(region.isValid());
 	if (sceneMode) {
 		const glm::vec3 pivot =
-			(normalizedPivot - 0.5f) * glm::vec3(region.getDimensionsInVoxels()) - region.getLowerCornerf();
+			transform.scale() * normalizedPivot * glm::vec3(region.getDimensionsInVoxels());
 		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = transform.translation();
-		const glm::mat4x4 &matrix = transform.matrix;
-		return math::OBB<float>(center, pivot, extents, matrix);
+		const glm::vec3 &center = transform.matrix * glm::vec4(region.calcCenterf() - pivot, 1.0f);
+		const glm::mat3x3 &matrix = transform.matrix;
+		return math::OBB<float>(center, extents, matrix);
 	}
 	return math::OBB<float>(glm::floor(region.getLowerCornerf()),
 							glm::floor(glm::vec3(region.getUpperCornerf() + 1.0f)));

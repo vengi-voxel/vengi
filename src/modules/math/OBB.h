@@ -44,7 +44,7 @@ public:
 		_inv = glm::inverse(_rotation);
 	}
 
-	void setRotation(const glm::mat4 &mat) {
+	void setRotation(const glm::mat3x3 &mat) {
 		_rotation = mat;
 		_inv = glm::inverse(_rotation);
 	}
