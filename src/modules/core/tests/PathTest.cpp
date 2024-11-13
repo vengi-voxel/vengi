@@ -24,7 +24,7 @@ TEST_F(PathTest, testPathLetter) {
 TEST_F(PathTest, testComponents) {
 	Path path1("C:\\Program Files\\Foo\\Baz");
 	const core::DynamicArray<core::String> &c = path1.components();
-	ASSERT_EQ(c.size(), 4);
+	ASSERT_EQ(c.size(), 4u);
 	EXPECT_EQ(c[0], "C:");
 	EXPECT_EQ(c[1], "Program Files");
 	EXPECT_EQ(c[2], "Foo");

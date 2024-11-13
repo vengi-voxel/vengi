@@ -29,6 +29,7 @@
 #include "core/StringUtil.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
+#include <SDL_stdinc.h>
 
 namespace app {
 
