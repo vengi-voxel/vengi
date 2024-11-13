@@ -334,5 +334,11 @@
 	<mime-type type="application/x-portable-network-graphics">
 		<comment>Portable Network Graphics</comment>
 		<glob pattern="*.png"/>
+		<magic priority="50">
+			<match type="byte" offset="0" value="-119"/>
+			<match type="byte" offset="1" value="80"/>
+			<match type="byte" offset="2" value="78"/>
+			<match type="byte" offset="3" value="71"/>
+		</magic>
 	</mime-type>
 </mime-info>

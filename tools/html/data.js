@@ -54,6 +54,13 @@ const jsonData = {
       "magics": []
     },
     {
+      "name": "Pixelorama",
+      "extensions": [
+        "json"
+      ],
+      "magics": []
+    },
+    {
       "name": "CSV Palette",
       "extensions": [
         "csv"
@@ -86,7 +93,12 @@ const jsonData = {
       "extensions": [
         "png"
       ],
-      "magics": []
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x89504E47"
+        }
+      ]
     },
     {
       "name": "JPEG",
@@ -873,7 +885,12 @@ const jsonData = {
       "extensions": [
         "png"
       ],
-      "magics": [],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x89504E47"
+        }
+      ],
       "mimetype": "application/x-portable-network-graphics",
       "animation": false,
       "save": true

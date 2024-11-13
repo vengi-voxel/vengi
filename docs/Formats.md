@@ -8,7 +8,7 @@
 | :------------------------- | ----------- | ------- | ------ | ---------- | ------- | ---------- |
 | AceOfSpades                | kv6         | X       | X      |            | X       |            |
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
-| AnimaToon                  | scn         | X       |        |            | X       | X          |
+| AnimaToon                  | scn         | X       |        |            |         | X          |
 | BinVox                     | binvox      | X       | X      |            |         |            |
 | Build engine               | kvx         | X       | X      |            | X       |            |
 | Chronovox                  | csm         | X       |        |            |         |            |
@@ -74,6 +74,7 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | JASC Palette                    | pal       | X       | X      |
 | Paint.NET Palette               | txt       | X       | X      |
 | Photoshop Palette               | aco       | X       | X      |
+| Pixelorama                      | json      | X       | X      |
 | Portable Network Graphics       | png       | X       | X      |
 | Qubicle Palette                 | qsm       | X       |        |
 | RGB Palette                     | pal       | X       | X      |
