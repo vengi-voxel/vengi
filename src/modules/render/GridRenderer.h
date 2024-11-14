@@ -35,8 +35,9 @@ protected:
 	int32_t _gridMeshIndexYZNear = -1;
 	int32_t _gridMeshIndexYZFar = -1;
 	int32_t _array = -1;
+	void createForwardArrow(const math::AABB<float> &aabb);
 
-	int _resolution = 1;
+	int _resolution = -1;
 	bool _renderAABB;
 	bool _renderGrid;
 	bool _dirty = false;
@@ -62,7 +63,7 @@ public:
 	 * @brief Update the internal render buffers for the new region.
 	 * @param region The region to render the grid for
 	 */
-	void update(const math::AABB<float>& region);
+	void update(const math::AABB<float> &region);
 	void clear();
 	void setColor(const glm::vec4 &color);
 
@@ -83,11 +84,19 @@ inline bool GridRenderer::renderGrid() const {
 }
 
 inline void GridRenderer::setRenderAABB(bool renderAABB) {
+	if (_renderAABB == renderAABB) {
+		return;
+	}
 	_renderAABB = renderAABB;
+	_dirty = true;
 }
 
 inline void GridRenderer::setRenderGrid(bool renderGrid) {
+	if (_renderGrid == renderGrid) {
+		return;
+	}
 	_renderGrid = renderGrid;
+	_dirty = true;
 }
 
 }

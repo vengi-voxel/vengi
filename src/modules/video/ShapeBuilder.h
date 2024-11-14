@@ -203,7 +203,7 @@ public:
 	const Colors& getColors() const;
 	const Texcoords& getTexcoords() const;
 
-	void setColor(const glm::vec4& color);
+	bool setColor(const glm::vec4& color);
 	void setPosition(const glm::vec3& position);
 	void setRotation(const glm::mat3& rotation);
 	void resetRotation();
@@ -216,10 +216,6 @@ inline void ShapeBuilder::resetRotation() {
 inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth, float thickness) {
 	const math::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
 	this->aabb(converted, renderGrid, stepWidth, thickness);
-}
-
-inline void ShapeBuilder::setColor(const glm::vec4& color) {
-	_color = color;
 }
 
 inline void ShapeBuilder::setPosition(const glm::vec3& position) {

@@ -31,6 +31,9 @@ bool GridRenderer::setGridResolution(int resolution) {
 	if (resolution < 1) {
 		return false;
 	}
+	if (_resolution == resolution) {
+		return false;
+	}
 	_resolution = resolution;
 	_dirty = true;
 	return true;
@@ -41,10 +44,32 @@ int GridRenderer::gridResolution() const {
 }
 
 void GridRenderer::setColor(const glm::vec4 &color) {
-	_shapeBuilder.setColor(color);
+	if (_shapeBuilder.setColor(color)) {
+		_dirty = true;
+	}
 }
 
-void GridRenderer::update(const math::AABB<float>& aabb) {
+void GridRenderer::createForwardArrow(const math::AABB<float> &aabb) {
+	if (!aabb.isValid() || aabb.isEmpty()) {
+		return;
+	}
+	_shapeBuilder.clear();
+	const float arrowSize = 10.0f;
+	const float forward = glm::forward().z * arrowSize;
+	const float left = glm::left().x * arrowSize;
+	const float right = glm::right().x * arrowSize;
+	const float arrowX = aabb.getCenterX();
+	const float arrowY = aabb.getLowerY();
+	const float arrowZ = aabb.getLowerZ();
+	const glm::vec3 point1{arrowX + left, arrowY, arrowZ + forward};
+	const glm::vec3 point2{arrowX, arrowY, arrowZ + 2.0f * forward};
+	const glm::vec3 point3{arrowX + right, arrowY, arrowZ + forward};
+	_shapeBuilder.arrow(point1, point2, point3);
+	_shapeRenderer.createOrUpdate(_array, _shapeBuilder);
+	_shapeRenderer.hide(_array, true);
+}
+
+void GridRenderer::update(const math::AABB<float> &aabb) {
 	if (!_dirty && _aabb == aabb) {
 		return;
 	}
@@ -78,21 +103,7 @@ void GridRenderer::update(const math::AABB<float>& aabb) {
 	_shapeBuilder.aabbGridYZ(aabb, true, (float)_resolution, thickness);
 	_shapeRenderer.createOrUpdate(_gridMeshIndexYZNear, _shapeBuilder);
 
-	_shapeBuilder.clear();
-
-	const float arrowSize = 10.0f;
-	const float forward = glm::forward().z * arrowSize;
-	const float left = glm::left().x * arrowSize;
-	const float right = glm::right().x * arrowSize;
-	const float arrowX = aabb.getCenterX();
-	const float arrowY = aabb.getLowerY();
-	const float arrowZ = aabb.getLowerZ();
-	const glm::vec3 point1{arrowX + left, arrowY, arrowZ + forward};
-	const glm::vec3 point2{arrowX, arrowY, arrowZ + 2.0f * forward};
-	const glm::vec3 point3{arrowX + right, arrowY, arrowZ + forward};
-	_shapeBuilder.arrow(point1, point2, point3);
-	_shapeRenderer.createOrUpdate(_array, _shapeBuilder);
-	_shapeRenderer.hide(_array, true);
+	createForwardArrow(aabb);
 
 	_dirty = false;
 }

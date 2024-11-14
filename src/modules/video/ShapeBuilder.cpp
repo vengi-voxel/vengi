@@ -13,6 +13,8 @@
 #include "core/ArrayLength.h"
 #include "video/Types.h"
 #include <glm/geometric.hpp>
+#include <glm/gtc/epsilon.hpp>
+#include <glm/vector_relational.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -102,6 +104,14 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 void ShapeBuilder::arrow(const glm::vec3 &left, const glm::vec3 &center, const glm::vec3 &right, float thickness) {
 	line(left, center, thickness);
 	line(center, right, thickness);
+}
+
+bool ShapeBuilder::setColor(const glm::vec4& color) {
+	if (glm::all(glm::epsilonEqual(_color, color, glm::epsilon<float>()))) {
+		return false;
+	}
+	_color = color;
+	return true;
 }
 
 void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thickness) {
