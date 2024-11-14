@@ -85,7 +85,13 @@ def crashlog():
         fo.write(request.data.decode("utf-8"))
 
     tags = {}
-    tags['application'] = userAgent
+    if '/' in userAgent:
+        application, version = userAgent.split('/', 2)
+    else:
+        application = userAgent
+        version = '0.0.0'
+    tags['application'] = application
+    tags['version'] = version
     tags['os'] = operatingSystem
     tags['osversion'] = operatingSystemVersion
     insertMetric("crashdump", "1", fileuuidstr, tags)
