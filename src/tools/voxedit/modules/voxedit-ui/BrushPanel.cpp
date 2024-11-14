@@ -599,6 +599,8 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	}
 	toolbarBrush.end();
 
+	ImGui::Separator();
+
 	const ModifierType supported = modifier.checkModifierType();
 	if (core::countSetBits(core::enumVal(supported)) > 1) {
 		ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
