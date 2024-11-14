@@ -868,14 +868,14 @@ void MainWindow::popupNodeRename() {
 
 		ImGui::IconDialog(ICON_LC_INFO, _("Node names should be unique"));
 
-		if (ImGui::Button(_("Apply")) || renamed) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Apply")) || renamed) {
 			const int nodeId = _sceneMgr->sceneGraph().activeNode();
 			_sceneMgr->nodeRename(nodeId, _currentNodeName);
 			_currentNodeName = "";
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("Close"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();

@@ -263,7 +263,7 @@ bool ScriptPanel::updateEditor(const char *id) {
 						},
 						{}, io::format::lua());
 				}
-				if (ImGui::MenuItem(_("Close"))) {
+				if (ImGui::IconMenuItem(ICON_LC_X, _("Close"))) {
 					_scriptEditor = false;
 				}
 				ImGui::EndMenu();

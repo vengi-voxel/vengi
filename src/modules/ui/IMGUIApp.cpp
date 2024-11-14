@@ -558,7 +558,7 @@ void IMGUIApp::renderCvarDialog() {
 			});
 			ImGui::EndTable();
 		}
-		if (ImGui::Button(_("Close"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			_showCvarDialog = false;
 		}
 	}
@@ -585,7 +585,7 @@ void IMGUIApp::renderCommandDialog() {
 			});
 			ImGui::EndTable();
 		}
-		if (ImGui::Button(_("Close"))) {
+		if (ImGui::IconButton(ICON_LC_X, _("Close"))) {
 			_showCommandDialog = false;
 		}
 	}
