@@ -315,6 +315,10 @@ void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {
 	_volume = (voxel::RawVolume *)volume;
 }
 
+bool SceneGraphNode::isLocked() const {
+	return _flags & Locked;
+}
+
 bool SceneGraphNode::isReference() const {
 	return _type == SceneGraphNodeType::ModelReference;
 }

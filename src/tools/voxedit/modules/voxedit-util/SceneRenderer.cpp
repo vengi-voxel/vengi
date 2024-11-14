@@ -201,6 +201,8 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	}
 	core_trace_scoped(UpdateAABBMesh);
 	_shapeBuilder.clear();
+	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
+	const bool activeNodeLocked = activeNode.isLocked();
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
 		if (!node.isAnyModelNode()) {
@@ -211,6 +213,8 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		}
 		if (node.id() == sceneGraph.activeNode()) {
 			continue;
+		} else if (activeNodeLocked && node.isLocked()) {
+			_shapeBuilder.setColor(style::color(style::ColorLockedNode));
 		} else if (node.isReference()) {
 			_shapeBuilder.setColor(style::color(style::ColorReferenceNode));
 		} else {
@@ -224,7 +228,6 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		_shapeBuilder.obb(obb);
 	}
 
-	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 	if (activeNode.isAnyModelNode() && activeNode.visible()) {
 		_shapeBuilder.setColor(style::color(style::ColorActiveNode));
 		const voxel::RawVolume *v = sceneGraph.resolveVolume(activeNode);
