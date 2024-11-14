@@ -240,12 +240,12 @@ void PalettePanel::createPopups(scenegraph::SceneGraphNode &node) {
 		ImGui::Checkbox(_("Color match"), &_searchFittingColors);
 		ImGui::TooltipTextUnformatted(_("Adopt the current voxels to the best fitting colors of\nthe new palette."));
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
+		if (ImGui::OkButton()) {
 			_sceneMgr->loadPalette(_currentSelectedPalette, _searchFittingColors, false);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
+		if (ImGui::CancelButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -279,7 +279,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 				const char *command = "loadpalette";
 				const core::String &keybinding = _app->getKeyBindingsString(command);
 				ImGui::InputText(_("ID"), &_lospecID);
-				if (ImGui::MenuItem(_("Ok"), keybinding.c_str(), false, true)) {
+				if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Ok"), keybinding.c_str(), false, true)) {
 					core::String cmd = command;
 					cmd.append(" lospec:");
 					cmd.append(_lospecID);
@@ -292,18 +292,18 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_ARROW_DOWN_NARROW_WIDE, _("Sort"))) {
-			ImGui::CommandMenuItem(_("Original"), "palette_sort original", true, &listener);
-			ImGui::CommandMenuItem(_("Hue"), "palette_sort hue", true, &listener);
-			ImGui::CommandMenuItem(_("Saturation"), "palette_sort saturation", true, &listener);
-			ImGui::CommandMenuItem(_("Brightness"), "palette_sort brightness", true, &listener);
-			ImGui::CommandMenuItem(_("CIELab"), "palette_sort cielab", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ARCHIVE_RESTORE, _("Original"), "palette_sort original", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ARROW_DOWN_0_1, _("Hue"), "palette_sort hue", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ARROW_DOWN_0_1, _("Saturation"), "palette_sort saturation", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SUN, _("Brightness"), "palette_sort brightness", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_ARROW_DOWN_0_1, _("CIELab"), "palette_sort cielab", true, &listener);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu(_("Tools"))) {
-			ImGui::CommandMenuItem(_("Remove unused color"), "palette_removeunused", true, &listener);
-			ImGui::CommandMenuItem(_("Remove and re-create palette"), "palette_removeunused true", true, &listener);
-			ImGui::CommandMenuItem(_("Model from color"), "colortomodel", true, &listener);
-			ImGui::CommandMenuItem(_("Apply to all nodes"), "palette_applyall", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Remove unused color"), "palette_removeunused", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_TRASH_2, _("Remove and re-create palette"), "palette_removeunused true", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PICKAXE, _("Model from color"), "colortomodel", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_REPLACE_ALL, _("Apply to all nodes"), "palette_applyall", true, &listener);
 			// TODO: add color quantisation to parts of the palette
 			ImGui::EndMenu();
 		}

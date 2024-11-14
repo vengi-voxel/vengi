@@ -592,12 +592,12 @@ void MainWindow::popupModelUnreference() {
 	const core::String title = makeTitle(_("Unreference Model"), POPUP_TITLE_MODEL_UNREFERENCE);
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("You can't edit a model reference.\n\nDo you want to convert the reference into a model?"), true);
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
+		if (ImGui::YesButton()) {
 			command::Command::execute("modelunref");
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_CHECK, _("No"))) {
+		if (ImGui::NoButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -637,7 +637,7 @@ void MainWindow::popupNewScene() {
 			ImGui::NewLine();
 		}
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
+		if (ImGui::OkButton()) {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
@@ -658,7 +658,7 @@ void MainWindow::popupFailedSave() {
 	const core::String title = makeTitle(_("Failed to save"), POPUP_TITLE_FAILED_TO_SAVE);
 	if (ImGui::BeginPopup(title.c_str(), ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("Failed to save the model!"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
+		if (ImGui::OkButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
@@ -670,14 +670,14 @@ void MainWindow::popupUnsavedChanges() {
 	const core::String title = makeTitle(_("Unsaved Changes"), POPUP_TITLE_UNSAVED_SCENE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Unsaved changes - are you sure to quit?"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
+		if (ImGui::OkButton()) {
 			_forceQuit = true;
 			_app->requestQuit();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
+		if (ImGui::CancelButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -688,7 +688,7 @@ void MainWindow::popupUnsavedDiscard() {
 	const core::String title = makeTitle(_("Unsaved Modifications"), POPUP_TITLE_UNSAVED);
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("There are unsaved modifications.\nDo you wish to discard them?"));
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
+		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				_sceneMgr->load(_loadFile);
@@ -698,7 +698,7 @@ void MainWindow::popupUnsavedDiscard() {
 			}
 		}
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("No"))) {
+		if (ImGui::NoButton()) {
 			ImGui::CloseCurrentPopup();
 			_loadFile.clear();
 		}
@@ -730,13 +730,13 @@ void MainWindow::popupVolumeSplit() {
 	if (ImGui::BeginPopupModal(title.c_str())) {
 		ImGui::IconDialog(ICON_LC_CIRCLE_HELP, _("Some model volumes are too big for optimal performance.\nIt's encouraged to split "
 								 "them into smaller volumes.\nDo you wish to split them now?"), true);
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Yes"))) {
+		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
 			_sceneMgr->splitVolumes();
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("No"))) {
+		if (ImGui::NoButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -765,7 +765,7 @@ void MainWindow::popupModelNodeSettings() {
 		veui::InputAxisInt(math::Axis::Z, _("Depth"), &_modelNodeSettings.size.z);
 		ImGui::NewLine();
 
-		if (ImGui::IconButton(ICON_LC_CHECK, _("Ok"))) {
+		if (ImGui::OkButton()) {
 			ImGui::CloseCurrentPopup();
 			scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 			voxel::RawVolume *v = new voxel::RawVolume(_modelNodeSettings.region());
@@ -778,7 +778,7 @@ void MainWindow::popupModelNodeSettings() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::IconButton(ICON_LC_X, _("Cancel"))) {
+		if (ImGui::CancelButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 

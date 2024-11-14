@@ -184,14 +184,8 @@ msgstr "Erstellen"
 msgid "Folder name can't be empty"
 msgstr "Der Ordnername darf nicht leer sein"
 
-msgid "Cancel"
-msgstr "Abbrechen"
-
 msgid "Options"
 msgstr "Optionen"
-
-msgid "Ok"
-msgstr "Ok"
 
 msgid "File already exists"
 msgstr "Datei existiert bereits"
@@ -203,12 +197,6 @@ msgid ""
 msgstr ""
 "%s existiert bereits.\n"
 "Möchten Sie die Datei überschreiben?"
-
-msgid "Yes"
-msgstr "Ja"
-
-msgid "No"
-msgstr "Nein"
 
 msgid "Filter"
 msgstr "Filter"
@@ -239,6 +227,9 @@ msgstr "Öffnen"
 
 msgid "Save"
 msgstr "Speichern"
+
+msgid "Cancel"
+msgstr "Abbrechen"
 
 msgid "Error: You must select a folder!"
 msgstr "Fehler: Sie müssen einen Ordner auswählen!"
@@ -388,6 +379,15 @@ msgstr "Debug-Protokollierung für die Konsole aktivieren"
 
 msgid "Auto scrolling"
 msgstr "Automatisches Scrollen"
+
+msgid "Ok"
+msgstr "Ok"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nein"
 
 #, c-format
 msgid ""
@@ -2388,6 +2388,9 @@ msgstr ""
 "Größe: %i:%i:%i\n"
 "Absolut: %i:%i:%i\n"
 "Relativ: %i:%i:%i"
+
+msgid "Slice view"
+msgstr ""
 
 msgid "Loading"
 msgstr "Laden"

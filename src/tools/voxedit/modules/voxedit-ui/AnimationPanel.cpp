@@ -62,7 +62,7 @@ void AnimationPanel::popupCreateAnimation() {
 			style.disableItem();
 		}
 		bool close = false;
-		if (ImGui::Button(_("Ok")) || renamed) {
+		if (ImGui::OkButton() || renamed) {
 			if (_copyExistingAnimation) {
 				if (!_sceneMgr->duplicateAnimation(_selectedAnimation, _newAnimation)) {
 					Log::error("Failed to add animation %s", _newAnimation.c_str());
@@ -84,7 +84,7 @@ void AnimationPanel::popupCreateAnimation() {
 			ImGui::TooltipTextUnformatted(_("Animation already exists"));
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("Cancel"))) {
+		if (ImGui::CancelButton()) {
 			close = true;
 		}
 		if (close) {

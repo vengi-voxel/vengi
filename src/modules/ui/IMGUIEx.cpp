@@ -470,6 +470,22 @@ const char *CommandMenuItem(const char *label, const char *command, bool enabled
 	return CommandIconMenuItem(nullptr, label, command, enabled, listener);
 }
 
+bool CancelButton() {
+	return IconButton(ICON_LC_X, _("Cancel"));
+}
+
+bool OkButton() {
+	return IconButton(ICON_LC_CHECK, _("Ok"));
+}
+
+bool YesButton() {
+	return IconButton(ICON_LC_CHECK, _("Yes"));
+}
+
+bool NoButton() {
+	return IconButton(ICON_LC_X, _("No"));
+}
+
 bool IconSelectable(const char *icon, const char *label, bool selected, ImGuiSelectableFlags flags, const ImVec2& size) {
 	core::String labelWithIcon = core::string::format("%s %s###%s", icon, label, label);
 	return Selectable(labelWithIcon.c_str(), selected, flags, size);

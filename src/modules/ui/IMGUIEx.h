@@ -78,6 +78,10 @@ IMGUI_API bool InputFile(const char *label, core::String *file, const io::Format
 IMGUI_API bool InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags = 0u);
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
+IMGUI_API bool CancelButton();
+IMGUI_API bool OkButton();
+IMGUI_API bool YesButton();
+IMGUI_API bool NoButton();
 
 template<class Collection>
 bool ComboItems(const char *label, int *currentItem, const Collection &items) {

@@ -623,7 +623,7 @@ void FileDialog::popupNewFolder() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::Button(_("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+		if (ImGui::CancelButton() || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 			_newFolderName = io::FilesystemEntry();
 			_newFolderError = TimedString();
 			ImGui::CloseCurrentPopup();
@@ -639,7 +639,7 @@ bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, cor
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		const core::String &path = assemblePath(_currentPath, _selectedEntry);
 		if (!fileDialogOptions_f || !fileDialogOptions_f(type, _currentFilterFormat, _selectedEntry) ||
-			ImGui::Button(_("Ok"))) {
+			ImGui::OkButton()) {
 			entityPath = path;
 			resetState();
 			*formatDesc = _currentFilterFormat;
@@ -649,7 +649,7 @@ bool FileDialog::popupOptions(video::FileDialogOptions &fileDialogOptions_f, cor
 		}
 		ImGui::TooltipTextUnformatted(path.c_str());
 		ImGui::SameLine();
-		if (ImGui::Button(_("Cancel"))) {
+		if (ImGui::CancelButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -671,13 +671,13 @@ bool FileDialog::popupAlreadyExists() {
 		ImGui::Spacing();
 		ImGui::Separator();
 
-		if (ImGui::Button(_("Yes"))) {
+		if (ImGui::YesButton()) {
 			ImGui::CloseCurrentPopup();
 			ImGui::EndPopup();
 			return true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(_("No"))) {
+		if (ImGui::NoButton()) {
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -765,7 +765,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 								const io::FormatDescription **formatDesc) {
 	float width = core_min(100.0f * ImGui::GetFontSize(), ImGui::GetMainViewport()->Size.x * 0.95f);
 	const float itemHeight = (ImGui::GetFontSize() + ImGui::GetStyle().ItemSpacing.y);
-	ImGui::SetNextWindowSize(ImVec2(width, 0.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(width, 0.0f));
 	const char *title = popupTitle(type);
 	if (!ImGui::IsPopupOpen(title)) {
 		ImGui::OpenPopup(title);
@@ -826,10 +826,11 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 
 	const ImVec2 cancelTextSize = ImGui::CalcTextSize(_("Cancel"));
 	const ImVec2 chooseTextSize = ImGui::CalcTextSize(buttonText);
+	const ImVec2 iconSize = ImGui::CalcTextSize(ICON_LC_X);
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
-	ImGui::SetCursorPosX(contentRegionWidth - cancelTextSize.x - chooseTextSize.x - 40.0f);
-	if (ImGui::Button(_("Cancel")) || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+	ImGui::SetCursorPosX(contentRegionWidth - cancelTextSize.x - chooseTextSize.x - iconSize.x - 40.0f);
+	if (ImGui::CancelButton() || ImGui::IsKeyDown(ImGuiKey_Escape)) {
 		resetState();
 		return true;
 	}

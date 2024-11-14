@@ -162,13 +162,7 @@ msgstr ""
 msgid "Folder name can't be empty"
 msgstr ""
 
-msgid "Cancel"
-msgstr ""
-
 msgid "Options"
-msgstr ""
-
-msgid "Ok"
 msgstr ""
 
 msgid "File already exists"
@@ -178,12 +172,6 @@ msgstr ""
 msgid ""
 "%s already exist.\n"
 "Do you want to overwrite the file?"
-msgstr ""
-
-msgid "Yes"
-msgstr ""
-
-msgid "No"
 msgstr ""
 
 msgid "Filter"
@@ -214,6 +202,9 @@ msgid "Open"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "Cancel"
 msgstr ""
 
 msgid "Error: You must select a folder!"
@@ -359,6 +350,15 @@ msgid "Enable debug logging for the console"
 msgstr ""
 
 msgid "Auto scrolling"
+msgstr ""
+
+msgid "Ok"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
 msgstr ""
 
 #, c-format
@@ -2269,6 +2269,9 @@ msgid ""
 "size: %i:%i:%i\n"
 "absolute: %i:%i:%i\n"
 "relative: %i:%i:%i"
+msgstr ""
+
+msgid "Slice view"
 msgstr ""
 
 msgid "Loading"
