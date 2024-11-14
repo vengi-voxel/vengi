@@ -188,7 +188,7 @@ void VoxConvertUI::onRenderUI() {
 			voxelui::saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
 		}
 
-		if (ImGui::Button(_("Convert"))) {
+		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {
 			if (_source.empty()) {
 				_output = "No source file selected";
 			} else {
