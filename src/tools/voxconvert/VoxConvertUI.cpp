@@ -108,7 +108,7 @@ void VoxConvertUI::onRenderUI() {
 			}
 			if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
 				if (ImGui::IconMenuItem(ICON_LC_INFO, _("About"))) {
-					ImGui::OpenPopup(POPUP_TITLE_ABOUT); // FIXME
+					ImGui::OpenPopup(POPUP_TITLE_ABOUT);
 				}
 				ImGui::EndMenu();
 			}
