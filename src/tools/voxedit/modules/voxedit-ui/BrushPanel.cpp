@@ -603,7 +603,7 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	if (core::countSetBits(core::enumVal(supported)) > 1) {
 		ui::Toolbar toolbarModifiers("modifiers", buttonSize, &listener);
 		if ((supported & ModifierType::Select) != ModifierType::None) {
-			toolbarModifiers.button(ICON_LC_EXPAND, "actionselect", !modifier.isMode(ModifierType::Select));
+			toolbarModifiers.button(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, "actionselect", !modifier.isMode(ModifierType::Select));
 		}
 		if ((supported & ModifierType::ColorPicker) != ModifierType::None) {
 			toolbarModifiers.button(ICON_LC_PIPETTE, "actioncolorpicker", !modifier.isMode(ModifierType::ColorPicker));

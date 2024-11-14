@@ -149,9 +149,11 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_SQUARE, _("Select"))) {
-			ImGui::CommandMenuItem(_("None"), "select none", true, &listener);
-			ImGui::CommandMenuItem(_("Invert"), "select invert", true, &listener);
-			ImGui::CommandMenuItem(_("All"), "select all", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("None"), "select none", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Select"), "actionselect", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_PIPETTE, _("Color picker"), "actioncolorpicker", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Invert"), "select invert", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("All"), "select all", true, &listener);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginIconMenu(ICON_LC_CIRCLE_HELP, _("Help"))) {
