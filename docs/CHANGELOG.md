@@ -29,6 +29,7 @@ General:
    - Fixed `vxl` saving for negative coordinates
    - Split file dialog options into a new separated dialog
    - Added new lua scripts (game of life, mandelbulb, smooth)
+   - Added support for Pixelorama palette
 
 VoxConvert:
 
