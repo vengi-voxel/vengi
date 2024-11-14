@@ -13,10 +13,10 @@ enum class ModifierType {
 	Place = (1 << 1),
 	Erase = (1 << 2),
 	Override = (1 << 4),
-
-	Mask = (Paint | Place | Erase | Override),
-
 	Select = (1 << 5),
+
+	Mask = (Paint | Place | Erase | Override | Select),
+
 	ColorPicker = (1 << 6)
 };
 CORE_ENUM_BIT_OPERATIONS(ModifierType)
