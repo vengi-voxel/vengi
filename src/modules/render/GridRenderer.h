@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Log.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
 #include "math/AABB.h"
@@ -34,15 +35,19 @@ protected:
 	int32_t _gridMeshIndexXZFar = -1;
 	int32_t _gridMeshIndexYZNear = -1;
 	int32_t _gridMeshIndexYZFar = -1;
-	int32_t _array = -1;
+	int32_t _arrow = -1;
+	int32_t _plane = -1;
 	void createForwardArrow(const math::AABB<float> &aabb);
-
+	void createPlane();
+	int _planeGridSize = -1;
 	int _resolution = -1;
 	bool _renderAABB;
 	bool _renderGrid;
+	bool _renderPlane;
 	bool _dirty = false;
+	bool _dirtyPlane = true;
 public:
-	GridRenderer(bool renderAABB = false, bool renderGrid = true);
+	GridRenderer(bool renderAABB = false, bool renderGrid = true, bool renderPlane = false);
 
 	bool setGridResolution(int resolution);
 	int gridResolution() const;
@@ -52,11 +57,18 @@ public:
 	 */
 	void render(const video::Camera& camera, const math::AABB<float>& aabb);
 	void renderForwardArrow(const video::Camera& camera);
+	void renderPlane(const video::Camera &camera);
 
-	bool renderAABB() const;
+	void setPlaneGridSize(int planeGridSize);
+	int planeGridSize() const;
+
+	bool isRenderAABB() const;
 	void setRenderAABB(bool renderAABB);
 
-	bool renderGrid() const;
+	bool isRenderPlane() const;
+	void setRenderPlane(bool renderPlane);
+
+	bool isRenderGrid() const;
 	void setRenderGrid(bool renderGrid);
 
 	/**
@@ -75,11 +87,34 @@ public:
 	void shutdown();
 };
 
-inline bool GridRenderer::renderAABB() const {
+inline void GridRenderer::setPlaneGridSize(int planeGridSize) {
+	if (_planeGridSize == planeGridSize) {
+		return;
+	}
+	_planeGridSize = planeGridSize;
+	_dirtyPlane = true;
+}
+
+inline int GridRenderer::planeGridSize() const {
+	return _planeGridSize;
+}
+
+inline bool GridRenderer::isRenderPlane() const {
+	return _renderPlane;
+}
+
+inline void GridRenderer::setRenderPlane(bool renderPlane) {
+	if (_renderPlane == renderPlane) {
+		return;
+	}
+	_renderPlane = renderPlane;
+}
+
+inline bool GridRenderer::isRenderAABB() const {
 	return _renderAABB;
 }
 
-inline bool GridRenderer::renderGrid() const {
+inline bool GridRenderer::isRenderGrid() const {
 	return _renderGrid;
 }
 

@@ -38,6 +38,8 @@ bool SceneRenderer::init() {
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	_ambientColor = core::Var::get(cfg::VoxEditAmbientColor, "1.0 1.0 1.0");
 	_diffuseColor = core::Var::get(cfg::VoxEditDiffuseColor, "0.0 0.0 0.0");
+	_planeSize = core::Var::getSafe(cfg::VoxEditPlaneSize);
+	_showPlane = core::Var::getSafe(cfg::VoxEditShowPlane);
 
 	if (!_meshState->init()) {
 		Log::error("Failed to initialize the mesh state");
@@ -93,9 +95,6 @@ void SceneRenderer::shutdown() {
 }
 
 void SceneRenderer::updateGridRegion(const voxel::Region &region) {
-	if (!region.isValid()) {
-		return;
-	}
 	const math::AABB<float> &aabb = scenegraph::toAABB(region);
 	_gridRenderer.update(aabb);
 }
@@ -310,6 +309,8 @@ void SceneRenderer::update() {
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());
 	_gridRenderer.setGridResolution(_gridSize->intVal());
+	_gridRenderer.setPlaneGridSize(_planeSize->intVal());
+	_gridRenderer.setRenderPlane(_showPlane->boolVal());
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	glm::vec3 val;
 	_ambientColor->vec3Val(&val[0]);
@@ -346,6 +347,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 	const scenegraph::SceneGraph &sceneGraph = *renderContext.sceneGraph;
 	scenegraph::SceneGraphNode *n = sceneGraphModelNode(sceneGraph, sceneGraph.activeNode());
 	_gridRenderer.renderForwardArrow(camera);
+	_gridRenderer.renderPlane(camera);
 	if (renderContext.renderMode == voxelrender::RenderMode::Scene) {
 		if (_showAABB->boolVal()) {
 			_shapeRenderer.render(_aabbMeshIndex, camera);

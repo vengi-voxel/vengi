@@ -34,6 +34,8 @@ private:
 	core::VarPtr _hideInactive;
 	core::VarPtr _ambientColor;
 	core::VarPtr _diffuseColor;
+	core::VarPtr _planeSize;
+	core::VarPtr _showPlane;
 	math::Axis _lockedAxis = math::Axis::None;
 
 	int32_t _planeMeshIndex[3] = {-1, -1, -1};

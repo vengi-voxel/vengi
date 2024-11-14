@@ -3,19 +3,20 @@
  */
 
 #include "GridRenderer.h"
+#include "core/Color.h"
+#include "core/GLM.h"
 #include "core/GLMConst.h"
+#include "core/Log.h"
 #include "core/Trace.h"
 #include "math/AABB.h"
 #include "math/Plane.h"
-#include "core/Log.h"
-#include "core/GLM.h"
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 
 namespace render {
 
-GridRenderer::GridRenderer(bool renderAABB, bool renderGrid) :
-		_renderAABB(renderAABB), _renderGrid(renderGrid) {
+GridRenderer::GridRenderer(bool renderAABB, bool renderGrid, bool renderPlane)
+	: _renderAABB(renderAABB), _renderGrid(renderGrid), _renderPlane(renderPlane) {
 }
 
 bool GridRenderer::init() {
@@ -36,6 +37,7 @@ bool GridRenderer::setGridResolution(int resolution) {
 	}
 	_resolution = resolution;
 	_dirty = true;
+	_dirtyPlane = true;
 	return true;
 }
 
@@ -65,11 +67,34 @@ void GridRenderer::createForwardArrow(const math::AABB<float> &aabb) {
 	const glm::vec3 point2{arrowX, arrowY, arrowZ + 2.0f * forward};
 	const glm::vec3 point3{arrowX + right, arrowY, arrowZ + forward};
 	_shapeBuilder.arrow(point1, point2, point3);
-	_shapeRenderer.createOrUpdate(_array, _shapeBuilder);
-	_shapeRenderer.hide(_array, true);
+	_shapeRenderer.createOrUpdate(_arrow, _shapeBuilder);
+	_shapeRenderer.hide(_arrow, true);
+}
+
+void GridRenderer::createPlane() {
+	_shapeBuilder.clear();
+	for (int i = -_planeGridSize; i <= _planeGridSize; ++i) {
+		if (glm::abs(i) % 100 == 0) {
+			_shapeBuilder.setColor(core::Color::DarkGray());
+		} else if (glm::abs(i) % 10 == 0) {
+			_shapeBuilder.setColor(core::Color::Gray());
+		} else {
+			_shapeBuilder.setColor(core::Color::LightGray());
+		}
+		for (int dir = 0; dir < 2; dir++) {
+			glm::vec3 start(dir ? -_planeGridSize : i, 0.f, dir ? i : -_planeGridSize);
+			glm::vec3 end(dir ? _planeGridSize : i, 0.f, dir ? i : _planeGridSize);
+			_shapeBuilder.line(start, end);
+		}
+	}
+	_shapeRenderer.createOrUpdate(_plane, _shapeBuilder);
+	_shapeRenderer.hide(_plane, true);
 }
 
 void GridRenderer::update(const math::AABB<float> &aabb) {
+	if (!aabb.isValid()) {
+		return;
+	}
 	if (!_dirty && _aabb == aabb) {
 		return;
 	}
@@ -109,35 +134,36 @@ void GridRenderer::update(const math::AABB<float> &aabb) {
 }
 
 void GridRenderer::clear() {
-	 _shapeBuilder.clear();
-	 _dirty = false;
+	_shapeBuilder.clear();
+	_dirty = false;
 }
 
-void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& aabb) {
+void GridRenderer::render(const video::Camera &camera, const math::AABB<float> &aabb) {
 	core_trace_scoped(GridRendererRender);
 
-	if (_dirty && aabb.isValid()) {
+	if (_dirty) {
 		update(aabb);
 	}
 
 	_shapeRenderer.hide(_aabbMeshIndex, !_renderAABB);
+	_shapeRenderer.hide(_plane, true);
 	if (_renderGrid && aabb.isValid()) {
 		const glm::vec3 &center = aabb.getCenter();
 		const glm::vec3 &halfWidth = aabb.getWidth() / 2.0f;
-		const math::Plane planeLeft  (glm::left(),     center + glm::left()     * halfWidth);
-		const math::Plane planeRight (glm::right(),    center + glm::right()    * halfWidth);
-		const math::Plane planeBottom(glm::down(),     center + glm::down()     * halfWidth);
-		const math::Plane planeTop   (glm::up(),       center + glm::up()       * halfWidth);
-		const math::Plane planeNear  (glm::forward(),  center + glm::forward()  * halfWidth);
-		const math::Plane planeFar   (glm::backward(), center + glm::backward() * halfWidth);
+		const math::Plane planeLeft(glm::left(), center + glm::left() * halfWidth);
+		const math::Plane planeRight(glm::right(), center + glm::right() * halfWidth);
+		const math::Plane planeBottom(glm::down(), center + glm::down() * halfWidth);
+		const math::Plane planeTop(glm::up(), center + glm::up() * halfWidth);
+		const math::Plane planeNear(glm::forward(), center + glm::forward() * halfWidth);
+		const math::Plane planeFar(glm::backward(), center + glm::backward() * halfWidth);
 
 		if (camera.mode() == video::CameraMode::Perspective) {
 			const glm::vec3 &eye = camera.eye();
-			_shapeRenderer.hide(_gridMeshIndexXYFar,  !planeFar.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexXYFar, !planeFar.isBackSide(eye));
 			_shapeRenderer.hide(_gridMeshIndexXYNear, !planeNear.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexXZFar,  !planeTop.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexXZFar, !planeTop.isBackSide(eye));
 			_shapeRenderer.hide(_gridMeshIndexXZNear, !planeBottom.isBackSide(eye));
-			_shapeRenderer.hide(_gridMeshIndexYZFar,  !planeRight.isBackSide(eye));
+			_shapeRenderer.hide(_gridMeshIndexYZFar, !planeRight.isBackSide(eye));
 			_shapeRenderer.hide(_gridMeshIndexYZNear, !planeLeft.isBackSide(eye));
 		} else {
 			const glm::vec3 &viewDirection = -camera.forward();
@@ -149,21 +175,34 @@ void GridRenderer::render(const video::Camera& camera, const math::AABB<float>& 
 			_shapeRenderer.hide(_gridMeshIndexYZNear, glm::dot(viewDirection, planeLeft.norm()) > 0);
 		}
 	} else {
-		_shapeRenderer.hide(_gridMeshIndexXYFar,  true);
+		_shapeRenderer.hide(_gridMeshIndexXYFar, true);
 		_shapeRenderer.hide(_gridMeshIndexXYNear, true);
-		_shapeRenderer.hide(_gridMeshIndexXZFar,  true);
+		_shapeRenderer.hide(_gridMeshIndexXZFar, true);
 		_shapeRenderer.hide(_gridMeshIndexXZNear, true);
-		_shapeRenderer.hide(_gridMeshIndexYZFar,  true);
+		_shapeRenderer.hide(_gridMeshIndexYZFar, true);
 		_shapeRenderer.hide(_gridMeshIndexYZNear, true);
 	}
 	_shapeRenderer.renderAll(camera);
 }
 
-void GridRenderer::renderForwardArrow(const video::Camera& camera) {
-	_shapeRenderer.hide(_array, false);
+void GridRenderer::renderPlane(const video::Camera &camera) {
+	if (!_renderPlane) {
+		return;
+	}
+	if (_dirtyPlane) {
+		createPlane();
+		_dirtyPlane = false;
+	}
+	_shapeRenderer.hide(_plane, false);
+	_shapeRenderer.render(_plane, camera);
+	_shapeRenderer.hide(_plane, true);
+}
+
+void GridRenderer::renderForwardArrow(const video::Camera &camera) {
+	_shapeRenderer.hide(_arrow, false);
 	video::ScopedState cull(video::State::CullFace, false);
-	_shapeRenderer.render(_array, camera);
-	_shapeRenderer.hide(_array, true);
+	_shapeRenderer.render(_arrow, camera);
+	_shapeRenderer.hide(_arrow, true);
 }
 
 void GridRenderer::shutdown() {
@@ -174,9 +213,10 @@ void GridRenderer::shutdown() {
 	_gridMeshIndexXZFar = -1;
 	_gridMeshIndexYZNear = -1;
 	_gridMeshIndexYZFar = -1;
-	_array = -1;
+	_arrow = -1;
+	_plane = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 }
 
-}
+} // namespace render
