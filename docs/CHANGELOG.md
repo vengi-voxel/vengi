@@ -10,7 +10,9 @@ Known [issues](https://github.com/vengi-voxel/vengi/issues?q=is%3Aissue+is%3Aope
 
 ## 0.0.35 (2024-XX-XX)
 
-General:
+VoxEdit:
+
+   - Added the possibility to render a plane to the viewport for easier orientation
 
 ## 0.0.34 (2024-11-14)
 
