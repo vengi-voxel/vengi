@@ -9,6 +9,7 @@
 | AceOfSpades                | kv6         | X       | X      |            | X       |            |
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
 | AnimaToon                  | scn         | X       |        |            |         | X          |
+| aseprite                   | aseprite    | X       |        |            | X       |            |
 | BinVox                     | binvox      | X       | X      |            |         |            |
 | Build engine               | kvx         | X       | X      |            | X       |            |
 | Chronovox                  | csm         | X       |        |            |         |            |
@@ -30,12 +31,12 @@
 | Qubicle Exchange           | qef         | X       | X      |            |         |            |
 | Qubicle Project            | qbcl        | X       | X      | X          | X       |            |
 | Rooms.xyz Thing            | thing       | X       |        |            | X       |            |
-| SLAB6 vox                  | vox         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Block      | vxb         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Collection | vxc         | X       |        | X          |         |            |
 | Sandbox VoxEdit Hierarchy  | vxr         | X       | X      |            |         | X          |
 | Sandbox VoxEdit Model      | vxm         | X       | X      |            | X       |            |
 | Sandbox VoxEdit Tilemap    | vxt         | X       |        |            |         |            |
+| SLAB6 vox                  | vox         | X       | X      |            | X       |            |
 | Sproxel csv                | csv         | X       | X      |            | X       |            |
 | StarMade Blueprint         | sment       | X       |        |            | X       |            |
 | StarMade Template          | smtpl       | X       | X      |            | X       |            |
@@ -44,7 +45,6 @@
 | Voxel3D                    | v3a         | X       | X      |            |         |            |
 | VoxelBuilder               | vbx         | X       |        |            |         |            |
 | VoxelMax                   | vmax.zip    | X       |        | X          | X       |            |
-| aseprite                   | aseprite    | X       |        |            | X       |            |
 
 ## Mesh formats
 
@@ -89,11 +89,11 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | DDS                         | dds       |
 | Graphics Interchange Format | gif       |
 | JPEG                        | jpeg      |
-| PKM                         | pkm       |
-| PVR                         | pvr       |
 | Photoshop                   | psd       |
+| PKM                         | pkm       |
 | Portable Anymap             | pnm       |
 | Portable Network Graphics   | png       |
+| PVR                         | pvr       |
 | Radiance rgbE               | hdr       |
 | Softimage PIC               | pic       |
 | Targa image file            | tga       |

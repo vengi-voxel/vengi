@@ -24,6 +24,12 @@ extern "C" void *SDLCALL SDL_memcpy(void *dst, const void *src, size_t len);
 extern "C" int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 extern "C" char *SDLCALL SDL_strdup(const char *str);
 
+#ifdef _MSC_VER
+#define core_strcasecmp _stricmp
+#else
+#define core_strcasecmp strcasecmp
+#endif
+
 #ifndef core_malloc
 #define core_malloc SDL_malloc
 #endif

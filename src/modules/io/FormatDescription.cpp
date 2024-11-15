@@ -4,10 +4,12 @@
 
 #include "FormatDescription.h"
 #include "core/Algorithm.h"
+#include "core/Alphanumeric.h"
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
+#include "core/StandardLib.h"
 
 namespace io {
 
@@ -84,11 +86,11 @@ bool FormatDescription::matchesExtension(const core::String &fileExt) const {
 }
 
 bool FormatDescription::operator<(const FormatDescription &rhs) const {
-	return name < rhs.name;
+	return core_strcasecmp(name.c_str(), rhs.name.c_str()) < 0;
 }
 
 bool FormatDescription::operator>(const FormatDescription &rhs) const {
-	return name > rhs.name;
+	return core_strcasecmp(name.c_str(), rhs.name.c_str()) > 0;
 }
 
 core::String FormatDescription::wildCard() const {

@@ -2,12 +2,9 @@
  * @file
  */
 
+#include "core/StandardLib.h"
 #include <ctype.h>
 #include <string.h>
-
-#ifdef _MSC_VER
-#define strcasecmp _stricmp
-#endif
 
 namespace core {
 
@@ -42,7 +39,7 @@ public:
 
 		/* presence of digits */
 		if (!sd && !td) {
-			return strcasecmp(s, t);
+			return core_strcasecmp(s, t);
 		}
 		if (!sd) {
 			return 1;
@@ -77,7 +74,7 @@ public:
 		}
 
 		/* value of string after last digit */
-		return strcasecmp(s, t);
+		return core_strcasecmp(s, t);
 	}
 
 	bool operator>(const Alphanumeric &other) const {

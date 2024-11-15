@@ -3,6 +3,7 @@
  */
 
 #include "Map.h"
+#include "core/StandardLib.h"
 #include <SDL_stdinc.h>
 
 namespace core {
@@ -18,7 +19,7 @@ size_t hashCharPtr::operator()(const char *p) const {
 }
 
 bool hashCharCompare::operator()(const char *lhs, const char *rhs) const {
-	return SDL_strcasecmp(lhs, rhs) == 0;
+	return core_strcasecmp(lhs, rhs) == 0;
 }
 
 } // namespace core
