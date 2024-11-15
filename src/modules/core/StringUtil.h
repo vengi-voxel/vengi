@@ -19,7 +19,7 @@ core::String humanSize(uint64_t bytes);
 inline bool isspace(int c) {
 	return ::isspace(c);
 }
-size_t levensteinDistance(const core::String &source, const core::String &target);
+size_t levenshteinDistance(const core::String &source, const core::String &target);
 int toInt(const char* str);
 
 inline int toInt(const core::String& str) {

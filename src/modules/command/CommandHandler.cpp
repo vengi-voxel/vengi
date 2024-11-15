@@ -17,7 +17,7 @@ static core::String findPotentialMatch(const core::String& arg) {
 	core::String match;
 	size_t leastCost = 1000000u;
 	command::Command::visit([&] (const command::Command& c) {
-		const size_t cost = core::string::levensteinDistance(arg, c.name());
+		const size_t cost = core::string::levenshteinDistance(arg, c.name());
 		if (cost < leastCost) {
 			leastCost = cost;
 			match = c.name();

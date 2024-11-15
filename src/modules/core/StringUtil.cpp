@@ -6,6 +6,7 @@
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include "core/collection/Map.h"
 #include <SDL_stdinc.h>
 #include <ctype.h>
 #include <glm/vec3.hpp>
@@ -371,9 +372,11 @@ bool isRootPath(const core::String &in) {
 }
 
 // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
-size_t levensteinDistance(const core::String &source, const core::String &target) {
+// A specific algorithm for measuring the minimum number of single-character edits (insertions, deletions, or
+// substitutions) required to change one string into another.
+size_t levenshteinDistance(const core::String &source, const core::String &target) {
 	if (source.size() > target.size()) {
-		return levensteinDistance(target, source);
+		return levenshteinDistance(target, source);
 	}
 
 	const size_t minSize = source.size();
@@ -401,6 +404,124 @@ size_t levensteinDistance(const core::String &source, const core::String &target
 
 	return levDist[minSize];
 }
+
+#if 0
+static double jaroWinklerDistance(const core::String &s1, const core::String &s2) {
+	if (s1 == s2) {
+		return 1.0; // Exact match
+	}
+
+	const size_t s1Len = s1.size();
+	const size_t s2Len = s2.size();
+	if (s1Len == 0 || s2Len == 0) {
+		return 0.0; // No similarity with empty strings
+	}
+
+	const size_t matchDistance = core_max(s1Len, s2Len) / 2 - 1;
+
+	core::DynamicArray<bool> s1Matches(s1Len);
+	core::DynamicArray<bool> s2Matches(s2Len);
+
+	size_t matches = 0;
+
+	// Count matches
+	for (size_t i = 0; i < s1Len; ++i) {
+		const size_t start = i >= matchDistance ? i - matchDistance : 0;
+		const size_t end = core_min(i + matchDistance + 1, s2Len);
+		for (size_t j = start; j < end; ++j) {
+			if (!s2Matches[j] && s1[i] == s2[j]) { // TODO: tolower?
+				s1Matches[i] = true;
+				s2Matches[j] = true;
+				++matches;
+				break;
+			}
+		}
+	}
+
+	if (matches == 0) {
+		return 0.0; // No similarity
+	}
+
+	// Count transpositions
+	size_t transpositions = 0;
+	size_t k = 0;
+	for (size_t i = 0; i < s1Len; ++i) {
+		if (s1Matches[i]) {
+			while (!s2Matches[k]) {
+				++k;
+			}
+			if (s1[i] != s2[k]) {
+				++transpositions;
+			}
+			++k;
+		}
+	}
+	transpositions /= 2;
+
+	double jaroScore = (matches / (double)(s1Len) + matches / (double)(s2Len) +
+						(matches - transpositions) / (double)(matches)) /
+					   3.0;
+
+	// Adjust with Winkler prefix scale
+	const double prefixScale = 0.1; // Standard weight for the prefix
+	size_t prefixLength = 0;
+	for (size_t i = 0; i < core_min(s1Len, s2Len) && s1[i] == s2[i]; ++i) {
+		++prefixLength;
+	}
+	prefixLength = core_min(prefixLength, static_cast<size_t>(4)); // Max prefix length considered is 4
+
+	return jaroScore + (prefixLength * prefixScale * (1.0 - jaroScore));
+}
+
+static double cosineSimilarity(const core::String &s1, const core::String &s2) {
+	if (s1.empty() || s2.empty()) {
+		return 0.0; // No similarity for empty strings
+	}
+
+	// Frequency maps for each string
+	core::Map<char, size_t> freq1;
+	core::Map<char, size_t> freq2;
+
+	for (const char c : s1) {
+		size_t val;
+		if (freq1.get(c, val)) {
+			freq1.put(c, val + 1);
+		} else {
+			freq1.put(c, 1);
+		}
+	}
+	for (const char c : s2) {
+		size_t val;
+		if (freq2.get(c, val)) {
+			freq2.put(c, val + 1);
+		} else {
+			freq2.put(c, 1);
+		}
+	}
+
+	// Calculate dot product and magnitudes
+	double dotProduct = 0.0;
+	double magnitude1 = 0.0;
+	double magnitude2 = 0.0;
+
+	for (const auto &e : freq1) {
+		size_t val = 0;
+		freq2.get(e->key, val);
+		dotProduct += e->value * val;
+		magnitude1 += e->value * e->value;
+	}
+	for (const auto &e : freq2) {
+		magnitude2 += e->value * e->value;
+	}
+
+	// Avoid division by zero
+	if (magnitude1 == 0.0 || magnitude2 == 0.0) {
+		return 0.0;
+	}
+
+	return dotProduct / (sqrt(magnitude1) * sqrt(magnitude2));
+}
+#endif
 
 static bool patternMatch(const char *text, const char *pattern);
 static bool patternMatchMulti(const char *text, const char *pattern) {
