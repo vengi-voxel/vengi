@@ -2,6 +2,7 @@ set(LIB scenegraph)
 set(SRCS
 	CoordinateSystem.h
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
+	FrameTransform.h FrameTransform.cpp
 	SceneGraph.h SceneGraph.cpp
 	SceneGraphAnimation.h
 	SceneGraphKeyFrame.h

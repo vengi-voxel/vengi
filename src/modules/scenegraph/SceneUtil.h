@@ -5,8 +5,7 @@
 #include "math/AABB.h"
 #include "math/OBB.h"
 
-#include "scenegraph/SceneGraph.h"
-#include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/FrameTransform.h"
 #include "voxel/Region.h"
 
 namespace scenegraph {

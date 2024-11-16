@@ -22,32 +22,12 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtc/matrix_access.hpp>
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_ASSERT core_assert
 #include "external/stb_rect_pack.h"
 
 namespace scenegraph {
-
-glm::vec3 FrameTransform::scale() const {
-	glm::vec3 sc;
-	glm::quat orientation;
-	glm::vec3 translation;
-	decompose(sc, orientation, translation);
-	return sc;
-}
-
-glm::vec3 FrameTransform::translation() const {
-	return glm::column(matrix, 3);
-}
-
-void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const {
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-}
 
 SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
 									 const palette::NormalPalette &_normalPalette)

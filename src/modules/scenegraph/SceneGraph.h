@@ -9,6 +9,7 @@
 #pragma once
 
 #include "SceneGraphNode.h"
+#include "FrameTransform.h"
 #include "core/DirtyState.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/NormalPalette.h"
@@ -25,18 +26,6 @@ namespace scenegraph {
 
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;
 using SceneGraphNodes = core::Map<int, SceneGraphNode, 251>;
-
-struct FrameTransform {
-	glm::mat4 matrix;
-
-	inline const glm::mat4 &worldMatrix() const {
-		return matrix;
-	}
-
-	glm::vec3 translation() const;
-	glm::vec3 scale() const;
-	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
-};
 
 /**
  * @brief The internal format for the save/load methods.
