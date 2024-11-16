@@ -6,6 +6,35 @@
 
 namespace scenegraph {
 
+voxel::Region toRegion(const math::OBB<float> &obb) {
+	return toRegion(toAABB(obb));
+}
+
+voxel::Region toRegion(const math::AABB<float> &aabb) {
+	return voxel::Region(glm::floor(aabb.getLowerCorner()), glm::ceil(aabb.getUpperCorner() - 1.0f));
+}
+
+math::AABB<float> toAABB(const math::OBB<float> &obb) {
+	const glm::vec3 &origin = obb.origin();
+	const glm::mat3 &rotation = obb.rotation();
+	const glm::vec3 &extends = obb.extents();
+	glm::vec3 mins = origin;
+	glm::vec3 maxs = origin;
+	for (int i = 0; i < 3; ++i) {
+		glm::vec3 worldAxis(0.0f);
+		worldAxis[i] = 1.0f;
+
+		// Project each OBB axis onto the world axis and compute the contribution
+		float extent = glm::abs(glm::dot(rotation[0], worldAxis)) * extends.x +
+					   glm::abs(glm::dot(rotation[1], worldAxis)) * extends.y +
+					   glm::abs(glm::dot(rotation[2], worldAxis)) * extends.z;
+
+		mins[i] = origin[i] - extent;
+		maxs[i] = origin[i] + extent;
+	}
+	return {mins, maxs};
+}
+
 math::AABB<float> toAABB(const voxel::Region &region) {
 	if (region.isValid()) {
 		return math::AABB<float>(glm::floor(region.getLowerCornerf()),
