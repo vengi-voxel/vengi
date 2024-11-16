@@ -62,6 +62,10 @@ const glm::vec4 &Color::Orange() {
 	static const glm::vec4 v = glm::vec4(252.f, 167, 0, 255) / glm::vec4(Color::magnitudef);
 	return v;
 }
+const glm::vec4 &Color::LightYellow() {
+	static const glm::vec4 v = glm::vec4(127.f, 127, 0, 255) / glm::vec4(Color::magnitudef);
+	return v;
+}
 const glm::vec4 &Color::Yellow() {
 	static const glm::vec4 v = glm::vec4(255.f, 255, 0, 255) / glm::vec4(Color::magnitudef);
 	return v;

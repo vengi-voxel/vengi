@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraph.h"
+#include "SceneUtil.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/Log.h"
@@ -10,6 +11,7 @@
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
+#include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -357,6 +359,32 @@ int SceneGraph::nextModelNode(int nodeId) const {
 		}
 	}
 	return InvalidNodeId;
+}
+
+math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, FrameIndex frameIdx) const {
+	const FrameTransform &transform = transformForFrame(node, frameIdx);
+	math::AABB<float> aabb;
+	if (node.isAnyModelNode()) {
+		const voxel::Region &nregion = resolveRegion(node);
+		const math::OBB<float> &obb = toOBB(true, nregion, node.pivot(), transform);
+		aabb = toAABB(obb);
+	} else {
+		aabb = math::AABB<float>(transform.translation(), transform.translation() + 1.0f);
+	}
+
+	for (int child : node.children()) {
+		const SceneGraphNode &cnode = this->node(child);
+		const math::AABB<float> &caabb = calculateGroupAABB(cnode, frameIdx);
+		if (caabb.isValid()) {
+			if (aabb.isValid()) {
+				aabb.accumulate(caabb);
+			} else {
+				aabb = caabb;
+			}
+		}
+	}
+
+	return aabb;
 }
 
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {

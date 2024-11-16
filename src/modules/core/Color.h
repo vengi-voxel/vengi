@@ -39,6 +39,7 @@ public:
 	static const glm::vec4& Pink();
 	static const glm::vec4& Purple();
 	static const glm::vec4& Yellow();
+	static const glm::vec4& LightYellow();
 	static const glm::vec4& Sandy();
 	static const glm::vec4& Cyan();
 	static const glm::vec4& Orange();

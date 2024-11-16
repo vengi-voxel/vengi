@@ -12,6 +12,7 @@
 #include "FrameTransform.h"
 #include "core/DirtyState.h"
 #include "core/collection/DynamicArray.h"
+#include "math/AABB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -136,6 +137,11 @@ public:
 	 */
 	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
 	FrameTransform transformForFrame(const SceneGraphNode &node, const core::String &animation, FrameIndex frameIdx) const;
+
+	/**
+	 * Calculate the region for the whole scene having the transform for the given frame applied
+	 */
+	math::AABB<float> calculateGroupAABB(const SceneGraphNode &node, FrameIndex frameIdx) const;
 
 	void setAllKeyFramesForNode(SceneGraphNode &node, const SceneGraphKeyFramesMap &keyFrames);
 

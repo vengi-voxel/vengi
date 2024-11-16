@@ -202,6 +202,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 	_shapeBuilder.clear();
 	const scenegraph::SceneGraphNode &activeNode = sceneGraph.node(sceneGraph.activeNode());
 	const bool activeNodeLocked = activeNode.isLocked();
+	int modelNodes = 0;
 	for (auto entry : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = entry->second;
 		if (!node.isAnyModelNode()) {
@@ -225,6 +226,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBB<float>& obb = scenegraph::toOBB(true, region, pivot, transform);
 		_shapeBuilder.obb(obb);
+		++modelNodes;
 	}
 
 	if (activeNode.isAnyModelNode() && activeNode.visible()) {
@@ -234,6 +236,14 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 		const voxel::Region &region = v->region();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(activeNode, frameIdx);
 		_shapeBuilder.obb(scenegraph::toOBB(sceneMode, region, activeNode.pivot(), transform));
+	}
+
+	if (modelNodes > 1 && !activeNode.children().empty()) {
+		const math::AABB<float> &aabb = sceneGraph.calculateGroupAABB(activeNode, frameIdx);
+		if (aabb.isValid()) {
+			_shapeBuilder.setColor(style::color(style::ColorGroupNode));
+			_shapeBuilder.aabb(aabb);
+		}
 	}
 
 	_shapeRenderer.createOrUpdate(_aabbMeshIndex, _shapeBuilder);

@@ -425,6 +425,8 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		}
 		return core::Color::LightRed();
 	}
+	case style::ColorGroupNode:
+		return core::Color::LightYellow();
 	case style::ColorActiveNode:
 		if (style == ImGui::StyleLight || style == ImGui::StyleClassic) {
 			return core::Color::DarkGreen();
