@@ -3,7 +3,6 @@
  */
 
 #include "SceneUtil.h"
-#include "scenegraph/SceneGraph.h"
 
 namespace scenegraph {
 
@@ -19,10 +18,9 @@ math::OBB<float> toOBB(bool sceneMode, const voxel::Region &region, const glm::v
 					   const scenegraph::FrameTransform &transform) {
 	core_assert(region.isValid());
 	if (sceneMode) {
-		const glm::vec3 pivot =
-			transform.scale() * normalizedPivot * glm::vec3(region.getDimensionsInVoxels());
-		const glm::vec3 &extents = glm::vec3(region.getDimensionsInVoxels()) / 2.0f;
-		const glm::vec3 &center = transform.matrix * glm::vec4(region.calcCenterf() - pivot, 1.0f);
+		const glm::vec3 pivot = calculateWorldPivot(transform, normalizedPivot, region.getDimensionsInVoxels());
+		const glm::vec3 extents = calculateExtents(region.getDimensionsInVoxels());
+		const glm::vec3 center = calculateCenter(transform, pivot, region.calcCenterf());
 		const glm::mat3x3 &matrix = transform.matrix;
 		return math::OBB<float>(center, extents, matrix);
 	}

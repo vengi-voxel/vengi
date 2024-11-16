@@ -30,4 +30,17 @@ void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::ve
 	glm::decompose(matrix, scale, orientation, translation, skew, perspective);
 }
 
+glm::vec3 calculateWorldPivot(const FrameTransform &transform, const glm::vec3 &normalizedPivot,
+							  const glm::vec3 &dimensions) {
+	return transform.scale() * normalizedPivot * dimensions;
+}
+
+glm::vec3 calculateExtents(const glm::vec3 &dimensions) {
+	return dimensions / 2.0f;
+}
+
+glm::vec3 calculateCenter(const FrameTransform &transform, const glm::vec3 &worldPivot, const glm::vec3 &regionCenter) {
+	return transform.matrix * glm::vec4(regionCenter - worldPivot, 1.0f);
+}
+
 } // namespace scenegraph
