@@ -1,0 +1,211 @@
+/**
+ * @file
+ */
+
+#include "BenBinary.h"
+#include "BenShared.h"
+#include "core/FourCC.h"
+#include "core/Log.h"
+#include "io/BufferedReadWriteStream.h"
+
+namespace voxelformat {
+
+namespace benv {
+
+static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadata) {
+	while (!stream.eos()) {
+		ScopedChunkCheck chunk(stream);
+		if (chunk.id == FourCC('P', 'R', 'O', 'P')) {
+			uint16_t amount;
+			if (stream.readUInt16(amount) != 0) {
+				Log::error("Failed to read amount of properties");
+				return false;
+			}
+			for (uint16_t i = 0; i < amount; ++i) {
+				core::String name;
+				if (!stream.readPascalStringUInt8(name)) {
+					Log::error("Failed to read property name");
+					return false;
+				}
+				core::String value;
+				if (!stream.readPascalStringUInt32LE(value)) {
+					Log::error("Failed to read property value");
+					return false;
+				}
+				metadata.properties.emplace(name, core::move(value));
+			}
+		} else if (chunk.id == FourCC('P', 'T', '3', 'D')) {
+			uint16_t amountPoints;
+			if (stream.readUInt16(amountPoints) != 0) {
+				Log::error("Failed to read amount of points");
+				return false;
+			}
+			for (uint16_t i = 0; i < amountPoints; ++i) {
+				core::String name;
+				if (!stream.readPascalStringUInt8(name)) {
+					Log::error("Failed to read point name");
+					return false;
+				}
+				glm::ivec3 pointPos;
+				if (stream.readInt32(pointPos.x) != 0 || stream.readInt32(pointPos.y) != 0 ||
+					stream.readInt32(pointPos.z) != 0) {
+					Log::error("Failed to read point position");
+					return false;
+				}
+				metadata.points.emplace_back(name, pointPos);
+			}
+		} else if (chunk.id == FourCC('P', 'A', 'L', 'C')) {
+			uint16_t amountPalettes;
+			if (stream.readUInt16(amountPalettes) != 0) {
+				Log::error("Failed to read amount of colors");
+				return false;
+			}
+			for (uint16_t i = 0; i < amountPalettes; ++i) {
+				core::String name;
+				if (!stream.readPascalStringUInt8(name)) {
+					Log::error("Failed to read palette name");
+					return false;
+				}
+				palette::Palette palette;
+				palette.setName(name);
+				uint32_t entries;
+				if (stream.readUInt32(entries) != 0) {
+					Log::error("Failed to read amount of colors for palette %u", i);
+					return false;
+				}
+				Log::debug("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
+						   name.c_str(), entries);
+				for (uint32_t j = 0; j < entries; ++j) {
+					core::RGBA color;
+					if (stream.readUInt32(color.rgba) != 0) {
+						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
+						return false;
+					}
+					palette.tryAdd(color, false);
+				}
+				const bool hasDescriptions = stream.readBool();
+				if (hasDescriptions) {
+					for (uint32_t j = 0; j < entries; ++j) {
+						core::String description;
+						if (!stream.readPascalStringUInt32LE(description)) {
+							Log::error("Failed to read description for palette %u", i);
+							return false;
+						}
+						Log::debug("Description for palette %u entry: %u: %s", i, j, description.c_str());
+					}
+				}
+				metadata.palettes.emplace(name, core::move(palette));
+			}
+		}
+	}
+	return true;
+}
+
+static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::String &name, palette::Palette &palette,
+							io::SeekableReadStream &stream, const Metadata &globalMetadata) {
+	Metadata metadata;
+	int nodeId = InvalidNodeId;
+	while (!stream.eos()) {
+		ScopedChunkCheck chunk(stream);
+		if (chunk.id != FourCC('D', 'A', 'T', 'A')) {
+			io::BufferedReadWriteStream dataStream(stream, chunk.length);
+			if (!loadMetadataBinary(dataStream, metadata)) {
+				Log::error("Failed to load metadata");
+				return false;
+			}
+		} else if (chunk.id != FourCC('S', 'V', 'O', 'G')) {
+			io::BufferedReadWriteStream dataStream(stream, chunk.length);
+			uint16_t width, height, depth;
+			if (stream.readUInt16(width) != 0 || stream.readUInt16(height) != 0 || stream.readUInt16(depth) != 0) {
+				Log::error("Failed to read size of model");
+				return false;
+			}
+			nodeId =
+				createModelNode(sceneGraph, palette, name, width, height, depth, dataStream, globalMetadata, metadata);
+			if (nodeId == InvalidNodeId) {
+				return false;
+			}
+		}
+	}
+	for (const PointNode &pointNode : metadata.points) {
+		if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos)) {
+			Log::error("Failed to add point node");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, io::SeekableReadStream &stream) {
+	Metadata globalMetadata;
+
+	while (!stream.eos()) {
+		uint32_t chunkId;
+		if (stream.readUInt32(chunkId) != 0) {
+			Log::error("Failed to read chunk id");
+			return false;
+		}
+		uint32_t length;
+		if (stream.readUInt32(length) != 0) {
+			Log::error("Failed to read length of riff header");
+			return false;
+		}
+		if (chunkId == FourCC('D', 'A', 'T', 'A')) {
+			io::BufferedReadWriteStream dataStream(stream, length);
+			if (!loadMetadataBinary(dataStream, globalMetadata)) {
+				Log::error("Failed to load metadata");
+				return false;
+			}
+			// empty name is default palette
+			globalMetadata.palettes.get("", palette);
+		} else {
+			stream.seek(-8, SEEK_CUR);
+		}
+
+		uint16_t amount;
+		if (stream.readUInt16(amount) != 0) {
+			Log::error("Failed to read amount of models");
+			return false;
+		}
+
+		for (uint16_t i = 0; i < amount; ++i) {
+			core::String name;
+			if (!stream.readPascalStringUInt8(name)) {
+				Log::error("Failed to read model name");
+				return false;
+			}
+			if (stream.readUInt32(chunkId) != 0) {
+				Log::error("Failed to read chunk id");
+				return false;
+			}
+			if (stream.readUInt32(length) != 0) {
+				Log::error("Failed to read length of riff header");
+				return false;
+			}
+
+			if (chunkId == FourCC('M', 'O', 'D', 'L')) {
+				io::BufferedReadWriteStream modelStream(stream, length);
+				if (!loadModelBinary(sceneGraph, name, palette, modelStream, globalMetadata)) {
+					Log::error("Failed to load model");
+					return false;
+				}
+			} else {
+				uint8_t buf[4];
+				FourCCRev(buf, chunkId);
+				Log::error("Unknown riff id with length %u: %c%c%c%c", length, buf[0], buf[1], buf[2], buf[3]);
+				stream.skipDelta(length);
+			}
+		}
+	}
+	for (const PointNode &pointNode : globalMetadata.points) {
+		if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos)) {
+			Log::error("Failed to add point node");
+			return false;
+		}
+	}
+	return true;
+}
+
+} // namespace benv
+
+} // namespace voxelformat

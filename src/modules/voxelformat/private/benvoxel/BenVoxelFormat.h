@@ -4,7 +4,12 @@
 
 #pragma once
 
+#include "palette/Palette.h"
 #include "voxelformat/Format.h"
+
+namespace io {
+class ZipReadStream;
+}
 
 namespace voxelformat {
 
@@ -27,7 +32,7 @@ public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 	static const io::FormatDescription &format() {
-		static io::FormatDescription f{"BenVoxel", {"ben.json"}, {}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
+		static io::FormatDescription f{"BenVoxel", {"ben.json", "ben"}, {/*"BENV"*/}, VOX_FORMAT_FLAG_PALETTE_EMBEDDED};
 		return f;
 	}
 };

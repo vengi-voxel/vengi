@@ -14,6 +14,10 @@ set(SRCS
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
 	private/benvoxel/BenVoxelFormat.h        private/benvoxel/BenVoxelFormat.cpp
+	private/benvoxel/BenBinary.h             private/benvoxel/BenBinary.cpp
+	private/benvoxel/BenJson.h               private/benvoxel/BenJson.cpp
+	private/benvoxel/BenShared.h             private/benvoxel/BenShared.cpp
+
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
 	private/commandconquer/HVAFormat.h       private/commandconquer/HVAFormat.cpp
@@ -144,6 +148,7 @@ set(TEST_FILES
 	tests/palette-nippon.png
 
 	tests/sora.ben.json
+	tests/sora.ben
 	tests/ambient-occlusion.vengi
 	tests/qubicle.qb
 	tests/qubicle.qbt
