@@ -33,18 +33,29 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	if (readStream.readUInt8(gzipHeader[1]) == -1) {
 		_err = true;
 	}
+
+	int windowBits = 0;
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
-		readStream.skip(8); // gzip header is 10 bytes
-		if (inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS) != Z_OK) {
-			Log::error("Failed to initialize gzip stream");
-			_err = true;
-		}
-	} else {
+		// gzip
+		windowBits = -Z_DEFAULT_WINDOW_BITS;
+		// gzip header is 10 bytes long
+		readStream.skip(8);
+	} else if ((gzipHeader[0] & 0x0F) == Z_DEFLATED &&							// Compression method is DEFLATE
+			   ((gzipHeader[0] >> 4) >= 7 && (gzipHeader[0] >> 4) <= 15) && // Valid window size
+			   ((gzipHeader[0] << 8 | gzipHeader[1]) % 31 == 0)) {
+		// zlib
+		Log::debug("detected zlib");
+		windowBits = Z_DEFAULT_WINDOW_BITS;
 		readStream.seek(-2, SEEK_CUR);
-		if (inflateInit(((z_stream*)_stream)) != Z_OK) {
-			Log::error("Failed to initialize zip stream");
-			_err = true;
-		}
+	} else {
+		// raw deflate
+		Log::debug("Detected raw deflate");
+		windowBits = -Z_DEFAULT_WINDOW_BITS;
+		readStream.seek(-2, SEEK_CUR);
+	}
+	if (inflateInit2(((z_stream*)_stream), windowBits) != Z_OK) {
+		Log::error("Failed to initialize zip stream");
+		_err = true;
 	}
 }
 
@@ -69,6 +80,7 @@ int64_t ZipReadStream::skip(int64_t delta) {
 	for (int64_t i = 0; i < delta; ++i) {
 		uint8_t b = 0;
 		if (readUInt8(b) == -1) {
+			_err = true;
 			return -1;
 		}
 	}
@@ -92,6 +104,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 				const int bytes = _readStream.read(_buf, stream->avail_in);
 				if (bytes == -1) {
 					Log::debug("Failed to read from parent stream");
+					_err = true;
 					return -1;
 				}
 				if (_size >= 0) {
@@ -109,6 +122,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 		case Z_STREAM_END:
 			break;
 		default:
+			_err = true;
 			Log::debug("error while reading the stream: '%s'", zError(retval));
 			return -1;
 		}
