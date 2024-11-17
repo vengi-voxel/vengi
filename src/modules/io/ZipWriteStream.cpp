@@ -19,12 +19,13 @@
 
 namespace io {
 
-ZipWriteStream::ZipWriteStream(io::WriteStream &outStream, int level) : _outStream(outStream) {
+ZipWriteStream::ZipWriteStream(io::WriteStream &outStream, int level, bool rawDeflate) : _outStream(outStream) {
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream*)_stream), 0, sizeof(*((z_stream*)_stream)));
 	((z_stream*)_stream)->zalloc = Z_NULL;
 	((z_stream*)_stream)->zfree = Z_NULL;
-	deflateInit(((z_stream*)_stream), level);
+	const int windowBits = rawDeflate ? -Z_DEFAULT_WINDOW_BITS : Z_DEFAULT_WINDOW_BITS;
+	deflateInit2(((z_stream *)_stream), level, Z_DEFLATED, windowBits, 9, Z_DEFAULT_STRATEGY);
 }
 
 ZipWriteStream::~ZipWriteStream() {

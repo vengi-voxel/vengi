@@ -25,7 +25,7 @@ public:
 	 * @param outStream The buffer that receives the writes for the compressed data.
 	 * @param level The compression level (0 is no compression, 1 is the best speed, 9 is the best compression).
 	 */
-	ZipWriteStream(io::WriteStream &outStream, int level = 6);
+	ZipWriteStream(io::WriteStream &outStream, int level = 6, bool rawDeflate = false);
 	virtual ~ZipWriteStream();
 
 	/**
