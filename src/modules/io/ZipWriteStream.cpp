@@ -6,6 +6,10 @@
 #include "core/StandardLib.h"
 #include "engine-config.h" // USE_ZLIB
 #if USE_ZLIB
+#define ZLIB_CONST
+#ifndef Z_DEFAULT_WINDOW_BITS
+#define Z_DEFAULT_WINDOW_BITS 15
+#endif
 #include <zlib.h>
 #else
 #define MINIZ_NO_STDIO

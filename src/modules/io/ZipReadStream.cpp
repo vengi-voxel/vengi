@@ -7,10 +7,11 @@
 #include "core/StandardLib.h"
 #include "engine-config.h" // USE_ZLIB
 #if USE_ZLIB
-#include <zlib.h>
+#define ZLIB_CONST
 #ifndef Z_DEFAULT_WINDOW_BITS
 #define Z_DEFAULT_WINDOW_BITS 15
 #endif
+#include <zlib.h>
 #else
 #define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
@@ -34,7 +35,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 	}
 	if (gzipHeader[0] == 0x1F && gzipHeader[1] == 0x8B) {
 		readStream.skip(8); // gzip header is 10 bytes
-		if (inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS) != MZ_OK) {
+		if (inflateInit2(((z_stream*)_stream), -Z_DEFAULT_WINDOW_BITS) != Z_OK) {
 			Log::error("Failed to initialize gzip stream");
 			_err = true;
 		}
