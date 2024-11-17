@@ -22,6 +22,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
+#include "voxelformat/private/benvoxel/BenVoxelFormat.h"
 #include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
 #include "voxelformat/private/chronovox/CSMFormat.h"
@@ -77,6 +78,7 @@ const io::FormatDescription *voxelLoad() {
 	static const io::FormatDescription desc[] = {VENGIFormat::format(),
 												 AsepriteFormat::format(),
 												 QBFormat::format(),
+												 BenVoxelFormat::format(),
 												 VoxFormat::format(),
 												 QBTFormat::format(),
 												 QBCLFormat::format(),
@@ -241,6 +243,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<PNGFormat>();
 		} else if (GLTFFormat::format().matchesExtension(ext)) {
 			return core::make_shared<GLTFFormat>();
+		} else if (BenVoxelFormat::format().matchesExtension(ext)) {
+			return core::make_shared<BenVoxelFormat>();
 		} else {
 			Log::warn("Unknown extension %s", ext.c_str());
 		}

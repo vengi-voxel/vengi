@@ -13,8 +13,7 @@ set(SRCS
 
 	private/aceofspades/AoSVXLFormat.h       private/aceofspades/AoSVXLFormat.cpp
 	private/animatoon/AnimaToonFormat.h      private/animatoon/AnimaToonFormat.cpp
-	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
-	private/image/PNGFormat.h                private/image/PNGFormat.cpp
+	private/benvoxel/BenVoxelFormat.h        private/benvoxel/BenVoxelFormat.cpp
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
 	private/commandconquer/HVAFormat.h       private/commandconquer/HVAFormat.cpp
@@ -26,6 +25,8 @@ set(SRCS
 	private/cubzh/PCubesFormat.h             private/cubzh/PCubesFormat.cpp
 	private/cubzh/CubzhB64Format.h           private/cubzh/CubzhB64Format.cpp
 	private/goxel/GoxFormat.h                private/goxel/GoxFormat.cpp
+	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
+	private/image/PNGFormat.h                private/image/PNGFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/VoxFormat.h          private/magicavoxel/VoxFormat.cpp
 	private/magicavoxel/MagicaVoxel.h        private/magicavoxel/MagicaVoxel.cpp
@@ -83,6 +84,7 @@ set(TEST_SRCS
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
 	tests/Autodesk3DSFormatTest.cpp
+	tests/BenVoxelFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
 	tests/BlockbenchFormatTest.cpp
 	tests/ConvertTest.cpp
@@ -141,6 +143,7 @@ set(TEST_SRCS
 set(TEST_FILES
 	tests/palette-nippon.png
 
+	tests/sora.ben.json
 	tests/ambient-occlusion.vengi
 	tests/qubicle.qb
 	tests/qubicle.qbt
