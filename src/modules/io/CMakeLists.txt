@@ -26,6 +26,7 @@ set(SRCS
 	ZipArchive.cpp ZipArchive.h
 	ZipReadStream.cpp ZipReadStream.h
 	ZipWriteStream.cpp ZipWriteStream.h
+	Z85.h Z85.cpp
 
 	system/System.h
 	system/Null.cpp
@@ -65,6 +66,7 @@ set(TEST_SRCS
 	tests/StdStreamBufTest.cpp
 	tests/ZipArchiveTest.cpp
 	tests/ZipStreamTest.cpp
+	tests/Z85Test.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
