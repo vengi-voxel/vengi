@@ -42,7 +42,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	const int64_t length = stream->size();
 	if (length < SECTOR_BYTES) {
-		Log::error("File does not contain enough data");
+		Log::debug("File does not contain enough data: %s", filename.c_str());
 		return false;
 	}
 
@@ -82,7 +82,7 @@ bool MCRFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 		// might be an empty region file
 		if (stream->eos()) {
-			Log::warn("Empty region file");
+			Log::debug("Empty region file: %s", filename.c_str());
 			return false;
 		}
 
