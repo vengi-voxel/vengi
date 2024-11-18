@@ -9,7 +9,7 @@
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxelformat/private/mesh/TexturedTri.h"
+#include "voxelformat/private/mesh/MeshTri.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
@@ -670,7 +670,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		for (const Mesh3ds &mesh : node.meshes) {
 			TriCollection tris;
 			for (const Face3ds &face : mesh.faces) {
-				TexturedTri tri;
+				MeshTri tri;
 				for (int i = 0; i < 3; ++i) {
 					tri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[face.indices[i]] * scale, 1.0f);
 				}

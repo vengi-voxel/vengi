@@ -21,7 +21,7 @@ bool Polygon::toTris(MeshFormat::TriCollection &tris) const {
 	core_assert(_vertices.size() == _colors.size());
 
 	for (int i = 1; i < (int)_vertices.size() - 1; ++i) {
-		TexturedTri tri;
+		MeshTri tri;
 		tri.vertices[0] = _vertices[0];
 		tri.vertices[1] = _vertices[i];
 		tri.vertices[2] = _vertices[i + 1];

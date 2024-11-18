@@ -1665,7 +1665,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		const size_t maxIndices = indices.size();
 		tris.reserve(tris.size() + maxIndices / 3);
 		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-			voxelformat::TexturedTri tri;
+			voxelformat::MeshTri tri;
 			for (size_t i = 0; i < 3; ++i) {
 				const size_t idx = indices[i + indexOffset];
 				tri.vertices[i] = vertices[idx].pos * scale;

@@ -326,7 +326,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
 			const int faceVertices = mesh.num_face_vertices[faceNum];
 			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
-			voxelformat::TexturedTri tri;
+			voxelformat::MeshTri tri;
 			for (int i = 0; i < faceVertices; ++i) {
 				const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
 				tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;

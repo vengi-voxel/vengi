@@ -391,7 +391,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			const size_t numTris = ufbx_triangulate_face(triIndices.data(), numTriIndices, mesh, face);
 
 			for (size_t vi = 0; vi < numTris; vi++) {
-				voxelformat::TexturedTri tri;
+				voxelformat::MeshTri tri;
 				for (int ti = 0; ti < 3; ++ti) {
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);

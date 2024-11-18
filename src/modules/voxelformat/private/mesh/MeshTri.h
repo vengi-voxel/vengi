@@ -9,9 +9,9 @@
 
 namespace voxelformat {
 
-struct TexturedTri : public math::Tri {
-	TexturedTri() = default;
-	inline TexturedTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const MeshMaterialPtr &_material,
+struct MeshTri : public math::Tri {
+	MeshTri() = default;
+	inline MeshTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const MeshMaterialPtr &_material,
 					   const core::RGBA (&_color)[3])
 		: math::Tri::Tri(_vertices, _color) {
 		for (int i = 0; i < 3; ++i) {
@@ -20,7 +20,7 @@ struct TexturedTri : public math::Tri {
 		this->material = _material;
 	}
 
-	virtual ~TexturedTri() = default;
+	virtual ~MeshTri() = default;
 
 	glm::vec2 uv[3]{};
 	MeshMaterialPtr material;
@@ -36,7 +36,7 @@ struct TexturedTri : public math::Tri {
 	core::RGBA centerColor() const;
 
 	// Sierpinski gasket with keeping the middle
-	void subdivide(TexturedTri out[4]) const;
+	void subdivide(MeshTri out[4]) const;
 };
 
 } // namespace voxelformat

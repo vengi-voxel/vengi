@@ -70,7 +70,7 @@ glm::vec3 MeshFormat::getInputScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-void MeshFormat::subdivideTri(const voxelformat::TexturedTri &tri, TriCollection &tinyTris) {
+void MeshFormat::subdivideTri(const voxelformat::MeshTri &tri, TriCollection &tinyTris) {
 	if (stopExecution()) {
 		return;
 	}
@@ -78,7 +78,7 @@ void MeshFormat::subdivideTri(const voxelformat::TexturedTri &tri, TriCollection
 	const glm::vec3 &maxs = tri.maxs();
 	const glm::vec3 size = maxs - mins;
 	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
-		voxelformat::TexturedTri out[4];
+		voxelformat::MeshTri out[4];
 		tri.subdivide(out);
 		for (int i = 0; i < lengthof(out); ++i) {
 			subdivideTri(out[i], tinyTris);
@@ -165,7 +165,7 @@ void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uin
 void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
 							   const palette::NormalPalette &normalPalette) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	for (const voxelformat::TexturedTri &tri : tris) {
+	for (const voxelformat::MeshTri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -188,7 +188,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const TriCollection 
 
 void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap, const palette::NormalPalette &normalPalette) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	for (const voxelformat::TexturedTri &tri : tris) {
+	for (const voxelformat::MeshTri &tri : tris) {
 		if (stopExecution()) {
 			return;
 		}
@@ -223,7 +223,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 }
 
 bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
-	for (const voxelformat::TexturedTri &tri : tris) {
+	for (const voxelformat::MeshTri &tri : tris) {
 		if (!tri.flat()) {
 			Log::debug("No axis aligned mesh found");
 #ifdef DEBUG
@@ -242,7 +242,7 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 }
 
 template<class FUNC>
-static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::TexturedTri &tri, FUNC &&func) {
+static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshTri &tri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
 	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
 	const glm::vec3 &v0 = tri.vertices[0];
@@ -330,9 +330,9 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		if (shouldCreatePalette) {
 			RGBAMap colors;
 			Log::debug("create palette");
-			for (const voxelformat::TexturedTri &triangle : tris) {
+			for (const voxelformat::MeshTri &triangle : tris) {
 #if 1
-				voxelizeTriangle(trisMins, triangle, [this, &colors] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+				voxelizeTriangle(trisMins, triangle, [this, &colors] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
 					colors.put(rgba, true);
 				});
@@ -348,8 +348,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
-		for (const voxelformat::TexturedTri &triangle : tris) {
-			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+		for (const voxelformat::MeshTri &triangle : tris) {
+			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = flattenRGB(tri.colorAt(uv));
 				const glm::vec3 &normal = tri.normal();
 				const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
@@ -375,7 +375,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		Log::debug("Subdivide %i triangles", (int)tris.size());
 		core::DynamicArray<std::future<TriCollection>> futures;
 		futures.reserve(tris.size());
-		for (const voxelformat::TexturedTri &tri : tris) {
+		for (const voxelformat::MeshTri &tri : tris) {
 			futures.emplace_back(app::async([tri]() {
 				TriCollection subdivided;
 				subdivideTri(tri, subdivided);
@@ -419,7 +419,7 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 	maxs = tris[0].mins();
 	mins = tris[0].maxs();
 
-	for (const voxelformat::TexturedTri &tri : tris) {
+	for (const voxelformat::MeshTri &tri : tris) {
 		maxs = glm::max(maxs, tri.maxs());
 		mins = glm::min(mins, tri.mins());
 	}

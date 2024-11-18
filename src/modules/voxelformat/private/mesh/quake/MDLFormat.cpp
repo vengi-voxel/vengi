@@ -310,22 +310,22 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			TriCollection triangles;
 			for (uint32_t i = 0; i < hdr.numTris; ++i) {
 				const MDLTriangle &tri = tris[i];
-				voxelformat::TexturedTri texturedTri;
+				voxelformat::MeshTri meshTri;
 				for (int j = 0; j < 3; ++j) {
 					if (idPolyModel) {
 						uint32_t idx = tri.id.indices[j];
 						const glm::vec3 &vertex = frame.vertices[idx];
-						texturedTri.vertices[j] = vertex;
-						texturedTri.uv[j] = texCoords[tri.id.indices[j]];
+						meshTri.vertices[j] = vertex;
+						meshTri.uv[j] = texCoords[tri.id.indices[j]];
 					} else {
 						uint32_t idx = tri.ra.indices[j];
 						const glm::vec3 &vertex = frame.vertices[idx];
-						texturedTri.vertices[j] = vertex;
-						texturedTri.uv[j] = texCoords[tri.ra.uv[j]];
+						meshTri.vertices[j] = vertex;
+						meshTri.uv[j] = texCoords[tri.ra.uv[j]];
 					}
 				}
-				texturedTri.material = createMaterial(textures[0]);
-				triangles.emplace_back(texturedTri);
+				meshTri.material = createMaterial(textures[0]);
+				triangles.emplace_back(meshTri);
 			}
 			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles);
 			if (!first && nodeId != -1) {

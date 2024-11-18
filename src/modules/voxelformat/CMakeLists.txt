@@ -47,7 +47,7 @@ set(SRCS
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
 	private/mesh/Polygon.h                   private/mesh/Polygon.cpp
-	private/mesh/TexturedTri.h               private/mesh/TexturedTri.cpp
+	private/mesh/MeshTri.h                   private/mesh/MeshTri.cpp
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp
 	private/minecraft/MTSFormat.h            private/minecraft/MTSFormat.cpp
@@ -122,7 +122,7 @@ set(TEST_SRCS
 	tests/SMFormatTest.cpp
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
-	tests/TexturedTriTest.cpp
+	tests/MeshTriTest.cpp
 	tests/ThingFormatTest.cpp
 	tests/V3AFormatTest.cpp
 	tests/VBXFormatTest.cpp

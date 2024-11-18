@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "TexturedTri.h"
+#include "MeshTri.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "io/Archive.h"
@@ -24,12 +24,12 @@ namespace voxelformat {
 class MeshFormat : public Format {
 public:
 	static constexpr const uint8_t FillColorIndex = 2;
-	using TriCollection = core::DynamicArray<voxelformat::TexturedTri, 512>;
+	using TriCollection = core::DynamicArray<voxelformat::MeshTri, 512>;
 
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static void subdivideTri(const voxelformat::TexturedTri &tri, TriCollection &tinyTris);
+	static void subdivideTri(const voxelformat::MeshTri &tri, TriCollection &tinyTris);
 	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	/**
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
@@ -70,7 +70,7 @@ protected:
 	/**
 	 * @brief Voxelizes the input mesh
 	 *
-	 * Convert your input mesh into @c voxelformat::TexturedTri instances and use the methods of this class to help
+	 * Convert your input mesh into @c voxelformat::MeshTri instances and use the methods of this class to help
 	 * voxelizing those.
 	 * @see voxelizeNode()
 	 */

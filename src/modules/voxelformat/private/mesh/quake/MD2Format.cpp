@@ -187,7 +187,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 			return false;
 		}
 
-		voxelformat::TexturedTri tri;
+		voxelformat::MeshTri tri;
 		for (int j = 0; j < 3; ++j) {
 			tri.vertices[j] = vertices[vertexIndices[j]] * scale;
 			tri.uv[j] = uvs[uvIndices[j]];

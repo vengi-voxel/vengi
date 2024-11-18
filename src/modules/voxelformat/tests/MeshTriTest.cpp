@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "voxelformat/private/mesh/TexturedTri.h"
+#include "voxelformat/private/mesh/MeshTri.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "image/Image.h"
@@ -10,9 +10,9 @@
 
 namespace voxelformat {
 
-class TexturedTriTest : public app::AbstractTest {};
+class MeshTriTest : public app::AbstractTest {};
 
-TEST_F(TexturedTriTest, testColorAt4x4) {
+TEST_F(MeshTriTest, testColorAt4x4) {
 	constexpr int h = 4;
 	constexpr int w = 4;
 	constexpr core::RGBA buffer[w * h]{
@@ -30,7 +30,7 @@ TEST_F(TexturedTriTest, testColorAt4x4) {
 	for (int s = 0; s < 2; ++s) {
 		const bool originUpperLeft = s == 0;
 		SCOPED_TRACE(s);
-		voxelformat::TexturedTri tri;
+		voxelformat::MeshTri tri;
 		tri.material = createMaterial(texture);
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
