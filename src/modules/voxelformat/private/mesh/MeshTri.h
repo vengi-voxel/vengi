@@ -33,7 +33,9 @@ struct MeshTri : public math::Tri {
 	 */
 	[[nodiscard]] bool calcUVs(const glm::vec3 &pos, glm::vec2 &uv) const;
 	core::RGBA colorAt(const glm::vec2 &uv, bool originUpperLeft = false) const;
+	core::RGBA extracted() const;
 	core::RGBA centerColor() const;
+	core::RGBA blendedColor() const;
 
 	// Sierpinski gasket with keeping the middle
 	void subdivide(MeshTri out[4]) const;
