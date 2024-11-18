@@ -8,6 +8,7 @@
 #include "core/Pair.h"
 #include "core/collection/StringMap.h"
 #include "palette/Palette.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace tinygltf {
 class Model;
@@ -105,36 +106,27 @@ private:
 	struct GltfVertex {
 		glm::vec3 pos{0.0f};
 		glm::vec2 uv{0.0f};
-		image::TextureWrap wrapS = image::TextureWrap::Repeat;
-		image::TextureWrap wrapT = image::TextureWrap::Repeat;
 		core::RGBA color{0};
-		core::String texture;
+		MeshMaterialPtr material;
 	};
 	struct GltfMaterialData {
-		core::String diffuseTexture;
 		core::String texCoordAttribute;
-		image::TextureWrap wrapS = image::TextureWrap::Repeat;
-		image::TextureWrap wrapT = image::TextureWrap::Repeat;
-		core::RGBA baseColor{255, 255, 255, 255};
+		MeshMaterial meshMaterial{""};
 	};
-	void loadTexture(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-					 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
+	void loadTexture(const core::String &filename, const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
 					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
-	bool loadMaterial(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-					  const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-					  GltfMaterialData &materialData, palette::Material &material) const;
-	bool loadAttributes(const core::String &filename, core::StringMap<image::ImagePtr> &textures,
-						const tinygltf::Model &gltfModel, const tinygltf::Primitive &gltfPrimitive,
-						core::DynamicArray<GltfVertex> &vertices, palette::Material &material) const;
+	bool loadMaterial(const core::String &filename, const tinygltf::Model &gltfModel,
+					  const tinygltf::Primitive &gltfPrimitive, GltfMaterialData &materialData) const;
+	bool loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
+						const tinygltf::Primitive &gltfPrimitive, core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
 							  const tinygltf::AnimationChannel &gltfAnimChannel,
 							  scenegraph::SceneGraphNode &node) const;
 	bool loadAnimations(scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &model, int gltfNodeIdx,
 						scenegraph::SceneGraphNode &node) const;
-	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-					core::StringMap<image::ImagePtr> &textures, const tinygltf::Model &gltfModel, int gltfNodeIdx,
-					int parentNodeId) const;
+	bool loadNode_r(const core::String &filename, scenegraph::SceneGraph &sceneGraph, const tinygltf::Model &gltfModel,
+					int gltfNodeIdx, int parentNodeId) const;
 	bool loadIndices(const tinygltf::Model &model, const tinygltf::Primitive &gltfPrimitive,
 					 core::DynamicArray<uint32_t> &indices, size_t indicesOffset) const;
 	scenegraph::SceneGraphTransform loadTransform(const tinygltf::Node &gltfNode) const;

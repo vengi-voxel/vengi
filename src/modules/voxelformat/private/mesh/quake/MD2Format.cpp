@@ -11,6 +11,7 @@
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
 
@@ -192,7 +193,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 			tri.uv[j] = uvs[uvIndices[j]];
 		}
 		if (!textures.empty()) {
-			tri.texture = textures.begin()->second;
+			tri.material = createMaterial(textures.begin()->second);
 		}
 		tris.push_back(tri);
 	}

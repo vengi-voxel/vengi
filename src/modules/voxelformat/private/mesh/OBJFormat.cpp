@@ -19,6 +19,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 #include "palette/Palette.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT
@@ -349,7 +350,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				if (!diffuseTexture.empty()) {
 					auto textureIter = textures.find(diffuseTexture);
 					if (textureIter != textures.end()) {
-						tri.texture = textureIter->second;
+						tri.material = createMaterial(textureIter->second);
 					} else {
 						Log::warn("Failed to look up texture %s", diffuseTexture.c_str());
 						textures.put(diffuseTexture, image::ImagePtr());

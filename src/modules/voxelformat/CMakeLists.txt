@@ -37,6 +37,7 @@ set(SRCS
 	private/mesh/Autodesk3DSFormat.h         private/mesh/Autodesk3DSFormat.cpp
 	private/mesh/BlockbenchFormat.h          private/mesh/BlockbenchFormat.cpp
 	private/mesh/MeshFormat.h                private/mesh/MeshFormat.cpp
+	private/mesh/MeshMaterial.h              private/mesh/MeshMaterial.cpp
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp

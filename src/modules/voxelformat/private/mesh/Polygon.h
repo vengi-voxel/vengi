@@ -6,6 +6,7 @@
 
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -16,13 +17,13 @@ private:
 	core::DynamicArray<glm::vec2> _uvs;
 	core::DynamicArray<glm::vec3> _vertices;
 	core::DynamicArray<core::RGBA> _colors;
-	image::ImagePtr _texture;
+	MeshMaterialPtr _material;
 	image::TextureWrap _wrapS = image::TextureWrap::Repeat;
 	image::TextureWrap _wrapT = image::TextureWrap::Repeat;
 
 public:
-	Polygon &setTexture(const image::ImagePtr &texture) {
-		_texture = texture;
+	Polygon &setMaterial(const MeshMaterialPtr &material) {
+		_material = material;
 		return *this;
 	}
 

@@ -687,12 +687,12 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				} else {
 					Material3ds &material = matIter->value;
 					tri.color[0] = tri.color[1] = tri.color[2] = material.diffuseColor;
-					tri.texture = material.diffuse.texture;
+					tri.material = createMaterial(material.diffuse.texture);
+					// TODO: MATERIAL: convert to MeshMaterial
 				}
 				tris.emplace_back(tri);
 			}
 			// TODO: VOXELFORMAT: node parent
-			// TODO: MATERIAL: use the material from the 3ds file
 			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());
 			const int nodeId = voxelizeNode(mesh.name, sceneGraph, tris);
 			if (nodeId == InvalidNodeId) {

@@ -707,7 +707,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, const
 		}
 		const int textureIdx = textureIndices[indices[i]];
 		const Texture &texture = textures[textureIdx];
-		tri.texture = texture.image;
+		tri.material = createMaterial(texture.image);
 		tris.push_back(tri);
 	}
 

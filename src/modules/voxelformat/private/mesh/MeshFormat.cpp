@@ -152,6 +152,16 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
+void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos) {
+	auto iter = posMap.find(pos);
+	if (iter == posMap.end()) {
+		posMap.emplace(pos, {area, rgba, normalIdx});
+	} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
+		PosSampling &posSampling = iter->value;
+		posSampling.entries.emplace_back(area, rgba, normalIdx);
+	}
+}
+
 void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
 							   const palette::NormalPalette &normalPalette) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
@@ -172,13 +182,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const TriCollection 
 		const glm::ivec3 p(c);
 		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
 						region.toString().c_str());
-		auto iter = posMap.find(p);
-		if (iter == posMap.end()) {
-			posMap.emplace(p, {area, rgba, normalIdx});
-		} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
-			PosSampling &pos = iter->value;
-			pos.entries.emplace_back(area, rgba, normalIdx);
-		}
+		addToPosMap(posMap, rgba, area, normalIdx, p);
 	}
 }
 
@@ -197,10 +201,10 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
 		const glm::ivec3 mins = tri.roundedMins();
 		const glm::ivec3 maxs = tri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
-		Log::debug("mins: %i:%i:%i", mins.x, mins.y, mins.z);
-		Log::debug("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
-		Log::debug("normal: %f:%f:%f", normal.x, normal.y, normal.z);
-		Log::debug("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
+		Log::trace("mins: %i:%i:%i", mins.x, mins.y, mins.z);
+		Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
+		Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
+		Log::trace("sideDelta: %i:%i:%i", sideDelta.x, sideDelta.y, sideDelta.z);
 		const uint8_t normalIdx = normalPalette.getClosestMatch(normal);
 		for (int x = mins.x; x < maxs.x; x++) {
 			for (int y = mins.y; y < maxs.y; y++) {
@@ -211,13 +215,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 								   p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
 						continue;
 					}
-					auto iter = posMap.find(p);
-					if (iter == posMap.end()) {
-						posMap.emplace(p, {area, rgba, normalIdx});
-					} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
-						PosSampling &pos = iter->value;
-						pos.entries.emplace_back(area, rgba, normalIdx);
-					}
+					addToPosMap(posMap, rgba, area, normalIdx, p);
 				}
 			}
 		}
@@ -352,7 +350,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		palette::PaletteLookup palLookup(palette);
 		for (const voxelformat::TexturedTri &triangle : tris) {
 			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::TexturedTri &tri, const glm::vec2 &uv, int x, int y, int z) {
-				const core::RGBA color = tri.colorAt(uv);
+				const core::RGBA color = flattenRGB(tri.colorAt(uv));
 				const glm::vec3 &normal = tri.normal();
 				const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
 				const voxel::Voxel voxel = voxel::createVoxel(palette, palLookup.findClosestIndex(color), normalIndex);

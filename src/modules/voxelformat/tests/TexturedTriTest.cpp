@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "core/Color.h"
 #include "image/Image.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
 
@@ -30,7 +31,7 @@ TEST_F(TexturedTriTest, testColorAt4x4) {
 		const bool originUpperLeft = s == 0;
 		SCOPED_TRACE(s);
 		voxelformat::TexturedTri tri;
-		tri.texture = texture;
+		tri.material = createMaterial(texture);
 		for (int x = 0; x < w; ++x) {
 			for (int y = 0; y < h; ++y) {
 				tri.uv[0] = image::Image::uv(x, y, w, h, originUpperLeft);

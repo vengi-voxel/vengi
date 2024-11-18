@@ -4,28 +4,26 @@
 
 #pragma once
 
-#include "image/Image.h"
+#include "MeshMaterial.h"
 #include "math/Tri.h"
 
 namespace voxelformat {
 
 struct TexturedTri : public math::Tri {
 	TexturedTri() = default;
-	inline TexturedTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const image::ImagePtr &_texture,
-								 const core::RGBA (&_color)[3])
+	inline TexturedTri(const glm::vec3 (&_vertices)[3], const glm::vec2 (&_uv)[3], const MeshMaterialPtr &_material,
+					   const core::RGBA (&_color)[3])
 		: math::Tri::Tri(_vertices, _color) {
 		for (int i = 0; i < 3; ++i) {
 			this->uv[i] = _uv[i];
 		}
-		this->texture = _texture;
+		this->material = _material;
 	}
 
 	virtual ~TexturedTri() = default;
 
 	glm::vec2 uv[3]{};
-	image::ImagePtr texture;
-	image::TextureWrap wrapS = image::TextureWrap::Repeat;
-	image::TextureWrap wrapT = image::TextureWrap::Repeat;
+	MeshMaterialPtr material;
 
 	glm::vec2 centerUV() const;
 

@@ -15,6 +15,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include <cstdint>
 
 namespace voxelformat {
@@ -323,7 +324,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 						texturedTri.uv[j] = texCoords[tri.ra.uv[j]];
 					}
 				}
-				texturedTri.texture = textures[0];
+				texturedTri.material = createMaterial(textures[0]);
 				triangles.emplace_back(texturedTri);
 			}
 			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles);

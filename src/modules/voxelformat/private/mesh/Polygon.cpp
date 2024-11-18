@@ -4,6 +4,7 @@
 
 #include "Polygon.h"
 #include "voxelformat/external/earcut.hpp"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
 
@@ -30,9 +31,7 @@ bool Polygon::toTris(MeshFormat::TriCollection &tris) const {
 		tri.color[0] = _colors[0];
 		tri.color[1] = _colors[i];
 		tri.color[2] = _colors[i + 1];
-		tri.texture = _texture;
-		tri.wrapS = _wrapS;
-		tri.wrapT = _wrapT;
+		tri.material = _material;
 		tris.push_back(tri);
 	}
 	return true;

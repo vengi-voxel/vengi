@@ -13,6 +13,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/tests/AbstractFormatTest.h"
 
 namespace voxelformat {
@@ -39,7 +40,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 	pal.nippon();
 
 	voxelformat::TexturedTri tri;
-	tri.texture = texture;
+	tri.material = createMaterial(texture);
 	for (int i = 0; i < 256; ++i) {
 		tri.uv[0] = tri.uv[1] = tri.uv[2] = texture->uv(i, 0);
 		const core::RGBA color = tri.colorAt(tri.centerUV());

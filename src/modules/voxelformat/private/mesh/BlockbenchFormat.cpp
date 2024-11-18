@@ -20,6 +20,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/Polygon.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VoxelUtil.h"
@@ -198,7 +199,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 		const bool textureIdxValid = textureIdx >= 0 && textureIdx < (int)textureArray.size();
 		Polygon polygon;
 		if (textureIdxValid) {
-			polygon.setTexture(textureArray[textureIdx]);
+			polygon.setMaterial(createMaterial(textureArray[textureIdx]));
 		}
 		for (const auto &vertex : faceVertices) {
 			const std::string &vertexName = vertex;

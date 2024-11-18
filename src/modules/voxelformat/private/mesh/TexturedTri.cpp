@@ -20,16 +20,22 @@ glm::vec2 TexturedTri::centerUV() const {
 }
 
 core::RGBA TexturedTri::centerColor() const {
-	if (texture) {
+	if (material && material->texture && material->texture->isLoaded()) {
 		const glm::vec2 &c = centerUV();
-		return texture->colorAt(c, wrapS, wrapT);
+		return material->texture->colorAt(c, material->wrapS, material->wrapT);
+	}
+	if (material) {
+		const core::RGBA c1 = material->blendWithBaseColor(color[0]);
+		const core::RGBA c2 = material->blendWithBaseColor(color[1]);
+		const core::RGBA c3 = material->blendWithBaseColor(color[2]);
+		return core::RGBA::mix(core::RGBA::mix(c1, c2), c3);
 	}
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }
 
 core::RGBA TexturedTri::colorAt(const glm::vec2 &inputuv, bool originUpperLeft) const {
-	if (texture) {
-		return texture->colorAt(inputuv, wrapS, wrapT, originUpperLeft);
+	if (material && material->texture && material->texture->isLoaded()) {
+		return material->texture->colorAt(inputuv, material->wrapS, material->wrapT, originUpperLeft);
 	}
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }
@@ -44,14 +50,14 @@ void TexturedTri::subdivide(TexturedTri out[4]) const {
 
 	// the subdivided new three triangles
 	out[0] = TexturedTri{
-		{vertices[0], midv[0], midv[2]}, {uv[0], miduv[0], miduv[2]}, texture, {color[0], midc[0], midc[2]}};
+		{vertices[0], midv[0], midv[2]}, {uv[0], miduv[0], miduv[2]}, material, {color[0], midc[0], midc[2]}};
 	out[1] = TexturedTri{
-		{vertices[1], midv[1], midv[0]}, {uv[1], miduv[1], miduv[0]}, texture, {color[1], midc[1], midc[0]}};
+		{vertices[1], midv[1], midv[0]}, {uv[1], miduv[1], miduv[0]}, material, {color[1], midc[1], midc[0]}};
 	out[2] = TexturedTri{
-		{vertices[2], midv[2], midv[1]}, {uv[2], miduv[2], miduv[1]}, texture, {color[2], midc[2], midc[1]}};
+		{vertices[2], midv[2], midv[1]}, {uv[2], miduv[2], miduv[1]}, material, {color[2], midc[2], midc[1]}};
 	// keep the middle
 	out[3] =
-		TexturedTri{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, texture, {midc[0], midc[1], midc[2]}};
+		TexturedTri{{midv[0], midv[1], midv[2]}, {miduv[0], miduv[1], miduv[2]}, material, {midc[0], midc[1], midc[2]}};
 }
 
 // https://en.wikipedia.org/wiki/Barycentric_coordinate_system

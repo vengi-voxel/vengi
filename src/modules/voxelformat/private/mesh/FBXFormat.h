@@ -31,10 +31,10 @@ private:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-				  scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+				  scenegraph::SceneGraph &sceneGraph,
 				  int parent) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-					scenegraph::SceneGraph &sceneGraph, const core::StringMap<image::ImagePtr> &textures,
+					scenegraph::SceneGraph &sceneGraph,
 					int parent) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					  int parent) const;
