@@ -282,7 +282,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	Log::debug("%i materials", (int)materials.size());
 
 	for (tinyobj::material_t &material : materials) {
-		core::String name = material.diffuse_texname.c_str();
+		core::String materialName = material.name.c_str();
 		Log::debug("material: '%s'", material.name.c_str());
 		Log::debug("- emissive_texname '%s'", material.emissive_texname.c_str());
 		Log::debug("- ambient_texname '%s'", material.ambient_texname.c_str());
@@ -294,25 +294,35 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		Log::debug("- alpha_texname '%s'", material.alpha_texname.c_str());
 		Log::debug("- reflection_texname '%s'", material.reflection_texname.c_str());
 		// TODO: MATERIAL: material.diffuse_texopt.scale
-		if (name.empty()) {
+		if (materialName.empty()) {
 			continue;
 		}
 
-		if (meshMaterials.hasKey(name)) {
-			Log::debug("texture for material '%s' is already loaded", name.c_str());
+		if (meshMaterials.hasKey(materialName)) {
+			Log::debug("texture for material '%s' is already loaded", materialName.c_str());
 			continue;
 		}
 
-		name = lookupTexture(filename, name);
-		image::ImagePtr tex = image::loadImage(name);
-		if (tex->isLoaded()) {
-			Log::debug("Use image %s", name.c_str());
-			MeshMaterialPtr mat = createMaterial(material.diffuse_texname.c_str());
-			mat->texture = tex;
-			meshMaterials.put(mat->name, mat);
-		} else {
-			Log::warn("Failed to load image %s from %s", name.c_str(), material.name.c_str());
+		MeshMaterialPtr meshMaterial = createMaterial(materialName);
+		palette::Material &paletteMaterial = meshMaterial->material;
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, material.ior);
+		// TODO: MATERIAL: should be average these values?
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, material.emission[0]);
+		// TODO: MATERIAL: is this maybe shininess? (Ns) material specular exponent is multiplied by the texture value
+		// see https://www.fileformat.info/format/material/
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, material.specular[0]);
+
+		if (!material.diffuse_texname.empty()) {
+			const core::String &diffuseTextureName = lookupTexture(filename, material.diffuse_texname.c_str());
+			image::ImagePtr diffuseTexture = image::loadImage(diffuseTextureName);
+			if (diffuseTexture->isLoaded()) {
+				Log::debug("Use image %s", diffuseTextureName.c_str());
+				meshMaterial->texture = diffuseTexture;
+			} else {
+				Log::warn("Failed to load image %s from %s", materialName.c_str(), material.name.c_str());
+			}
 		}
+		meshMaterials.put(meshMaterial->name, meshMaterial);
 	}
 
 	const glm::vec3 &scale = getInputScale();
@@ -326,6 +336,9 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		MeshTriCollection tris;
 		tris.reserve(mesh.num_face_vertices.size());
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
+			const int materialIndex = mesh.material_ids[faceNum];
+			const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
+			const float dissolve = material ? material->dissolve : 1.0f;
 			const int faceVertices = mesh.num_face_vertices[faceNum];
 			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
 			voxelformat::MeshTri meshTri;
@@ -338,29 +351,27 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 					const float r = attrib.colors[3 * idx.vertex_index + 0];
 					const float g = attrib.colors[3 * idx.vertex_index + 1];
 					const float b = attrib.colors[3 * idx.vertex_index + 2];
-					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
+					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f * dissolve));
 				}
 				if (idx.texcoord_index >= 0) {
 					meshTri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
 					meshTri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
 				}
 			}
-			const int materialIndex = mesh.material_ids[faceNum];
-			const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
 			if (material != nullptr) {
-				const core::String diffuseTexture = material->diffuse_texname.c_str();
-				if (!diffuseTexture.empty()) {
-					auto meshMaterialIter = meshMaterials.find(diffuseTexture);
+				const core::String materialName = material->name.c_str();
+				if (!materialName.empty()) {
+					auto meshMaterialIter = meshMaterials.find(materialName);
 					if (meshMaterialIter != meshMaterials.end()) {
 						meshTri.material = meshMaterialIter->second;
 					} else {
-						Log::warn("Failed to look up texture %s", diffuseTexture.c_str());
-						meshMaterials.put(diffuseTexture, MeshMaterialPtr());
+						Log::warn("Failed to look up texture %s", materialName.c_str());
+						meshMaterials.put(materialName, MeshMaterialPtr());
 					}
 				}
 				if (attrib.colors.empty()) {
 					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2],
-												 1.0f);
+												 1.0f * dissolve);
 					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = core::Color::getRGBA(diffuseColor);
 				}
 			}
