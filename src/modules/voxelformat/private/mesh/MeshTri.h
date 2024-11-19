@@ -25,17 +25,17 @@ struct MeshTri : public math::Tri {
 	glm::vec2 uv[3]{};
 	MeshMaterialPtr material;
 
-	glm::vec2 centerUV() const;
+	[[nodiscard]] glm::vec2 centerUV() const;
 
 	/**
 	 * @return @c false if the given position is not within the triangle area. The value of uv should not be used in
 	 * this case.
 	 */
 	[[nodiscard]] bool calcUVs(const glm::vec3 &pos, glm::vec2 &uv) const;
-	core::RGBA colorAt(const glm::vec2 &uv, bool originUpperLeft = false) const;
-	core::RGBA extracted() const;
-	core::RGBA centerColor() const;
-	core::RGBA blendedColor() const;
+	[[nodiscard]] core::RGBA colorAt(const glm::vec2 &uv, bool originUpperLeft = false) const;
+	[[nodiscard]] core::RGBA extracted() const;
+	[[nodiscard]] core::RGBA centerColor() const;
+	[[nodiscard]] core::RGBA blendedColor() const;
 
 	// Sierpinski gasket with keeping the middle
 	void subdivide(MeshTri out[4]) const;

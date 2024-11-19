@@ -24,7 +24,7 @@ public:
 	core::RGBA emitColor{0, 0, 0, 0};
 	float baseColorFactor = 0.0f;
 
-	core::RGBA blendWithBaseColor(core::RGBA color) const {
+	[[nodiscard]] core::RGBA blendWithBaseColor(core::RGBA color) const {
 		if (baseColorFactor <= 0.0f) {
 			return color;
 		}
