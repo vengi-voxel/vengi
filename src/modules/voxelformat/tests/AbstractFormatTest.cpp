@@ -12,9 +12,9 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
-#include "io/MemoryArchive.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
+#include "io/MemoryArchive.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -51,7 +51,7 @@ io::ArchivePtr AbstractFormatTest::helper_filesystemarchive() {
 }
 
 image::ImagePtr AbstractFormatTest::helper_testThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
-														 const ThumbnailContext &ctx) {
+																const ThumbnailContext &ctx) {
 	return image::ImagePtr();
 }
 
@@ -111,8 +111,29 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 	voxel::sceneGraphComparator(sceneGraphsave1, sceneGraphLoad, flags, 0.001f);
 }
 
+void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename) {
+	const io::ArchivePtr &archive = helper_filesystemarchive();
+	ASSERT_TRUE(archive->exists("test_material.vox"));
+	SCOPED_TRACE(filename.c_str());
+	scenegraph::SceneGraph voxSceneGraph;
+	{
+		io::FileDescription fileDesc;
+		fileDesc.set("test_material.vox");
+		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, voxSceneGraph, testLoadCtx));
+		EXPECT_EQ(12u, voxSceneGraph.size());
+	}
+	ASSERT_TRUE(voxelformat::saveFormat(voxSceneGraph, filename, nullptr, archive, testSaveCtx));
+	{
+		io::FileDescription fileDesc;
+		fileDesc.set(filename);
+		ASSERT_TRUE(voxelformat::loadFormat(fileDesc, archive, sceneGraph, testLoadCtx));
+		EXPECT_EQ(12u, sceneGraph.size());
+	}
+	voxel::materialComparator(voxSceneGraph, sceneGraph);
+}
+
 void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-								 size_t expectedVolumes) {
+								  size_t expectedVolumes) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	if (!archive->exists(filename)) {
 		GTEST_SKIP() << "Could not open " << filename;
@@ -164,7 +185,7 @@ void AbstractFormatTest::testRGBSmall(const core::String &filename, const io::Ar
 }
 
 void AbstractFormatTest::testRGBSmall(const core::String &filename) {
-	const io::ArchivePtr &archive = helper_filesystemarchive();;
+	const io::ArchivePtr &archive = helper_filesystemarchive();
 	scenegraph::SceneGraph sceneGraph;
 	testRGBSmall(filename, archive, sceneGraph);
 }
@@ -259,17 +280,17 @@ void AbstractFormatTest::testRGB(const core::String &filename, float maxDelta) {
 }
 
 void AbstractFormatTest::testConvert(const core::String &srcFilename, Format &srcFormat,
-											 const core::String &destFilename, Format &destFormat,
-											 voxel::ValidateFlags flags, float maxDelta) {
+									 const core::String &destFilename, Format &destFormat, voxel::ValidateFlags flags,
+									 float maxDelta) {
 	SCOPED_TRACE("src: " + srcFilename);
 	io::ArchivePtr archive = helper_filesystemarchive();
 	scenegraph::SceneGraph sceneGraph;
-	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename, archive, srcFormat, sceneGraph)) << "Failed to load " << srcFilename;
+	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename, archive, srcFormat, sceneGraph))
+		<< "Failed to load " << srcFilename;
 
 	SCOPED_TRACE("target: " + destFilename);
 
-	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, archive, testSaveCtx))
-		<< "Could not save " << destFilename;
+	ASSERT_TRUE(destFormat.save(sceneGraph, destFilename, archive, testSaveCtx)) << "Could not save " << destFilename;
 
 	scenegraph::SceneGraph sceneGraphLoad;
 	ASSERT_TRUE(destFormat.load(destFilename, archive, sceneGraphLoad, testLoadCtx));
@@ -277,15 +298,17 @@ void AbstractFormatTest::testConvert(const core::String &srcFilename, Format &sr
 }
 
 void AbstractFormatTest::testConvertSceneGraph(const core::String &srcFilename1, Format &srcFormat1,
-											const core::String &srcFilename2, Format &srcFormat2,
-											voxel::ValidateFlags flags, float maxDelta) {
+											   const core::String &srcFilename2, Format &srcFormat2,
+											   voxel::ValidateFlags flags, float maxDelta) {
 	SCOPED_TRACE("src1: " + srcFilename1);
 	scenegraph::SceneGraph srcSceneGraph1;
 	io::ArchivePtr archive = helper_filesystemarchive();
-	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename1, archive, srcFormat1, srcSceneGraph1)) << "Failed to load " << srcFilename1;
+	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename1, archive, srcFormat1, srcSceneGraph1))
+		<< "Failed to load " << srcFilename1;
 	SCOPED_TRACE("src2: " + srcFilename2);
 	scenegraph::SceneGraph srcSceneGraph2;
-	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename2, archive, srcFormat2, srcSceneGraph2)) << "Failed to load " << srcFilename2;
+	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename2, archive, srcFormat2, srcSceneGraph2))
+		<< "Failed to load " << srcFilename2;
 	voxel::sceneGraphComparator(srcSceneGraph1, srcSceneGraph2, flags, maxDelta);
 }
 
@@ -296,8 +319,10 @@ void AbstractFormatTest::testLoadSaveAndLoadSceneGraph(const core::String &srcFi
 	SCOPED_TRACE("target: " + destFilename);
 	const io::ArchivePtr &archive = helper_filesystemarchive();
 	scenegraph::SceneGraph srcSceneGraph;
-	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename, archive, srcFormat, srcSceneGraph)) << "Failed to load " << srcFilename;
-	ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, archive, testSaveCtx)) << "Could not save " << destFilename;
+	ASSERT_TRUE(helper_loadIntoSceneGraph(srcFilename, archive, srcFormat, srcSceneGraph))
+		<< "Failed to load " << srcFilename;
+	ASSERT_TRUE(destFormat.save(srcSceneGraph, destFilename, archive, testSaveCtx))
+		<< "Could not save " << destFilename;
 	scenegraph::SceneGraph destSceneGraph;
 	ASSERT_TRUE(destFormat.load(destFilename, archive, destSceneGraph, testLoadCtx))
 		<< "Failed to load the target format";
@@ -537,12 +562,13 @@ io::FilePtr AbstractFormatTest::open(const core::String &filename, io::FileMode 
 	return file;
 }
 
-bool AbstractFormatTest::helper_loadIntoSceneGraph(const core::String &filename, const io::ArchivePtr &archive, Format &format,
-											scenegraph::SceneGraph &sceneGraph) {
+bool AbstractFormatTest::helper_loadIntoSceneGraph(const core::String &filename, const io::ArchivePtr &archive,
+												   Format &format, scenegraph::SceneGraph &sceneGraph) {
 	return format.load(filename, archive, sceneGraph, testLoadCtx);
 }
 
-int AbstractFormatTest::helper_loadPalette(const core::String &filename, const io::ArchivePtr &archive, Format &format, palette::Palette &palette) {
+int AbstractFormatTest::helper_loadPalette(const core::String &filename, const io::ArchivePtr &archive, Format &format,
+										   palette::Palette &palette) {
 	return (int)format.loadPalette(filename, archive, palette, testLoadCtx);
 }
 

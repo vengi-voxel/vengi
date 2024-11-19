@@ -34,4 +34,10 @@ TEST_F(OBJFormatTest, testVoxelizeUVSphereObj) {
 	ASSERT_EQ(cntVoxels, 24);
 }
 
+// TODO: MATERIAL: materials are not yet written for obj
+TEST_F(OBJFormatTest, DISABLED_testMaterial) {
+	scenegraph::SceneGraph sceneGraph;
+	testMaterial(sceneGraph, "test_material.obj");
+}
+
 } // namespace voxelformat

@@ -60,16 +60,9 @@ TEST_F(GLTFFormatTest, testVoxelizeLantern) {
 }
 
 // TODO: MATERIAL: materials are not yet properly loaded back from gltf
-TEST_F(GLTFFormatTest, DISABLED_testMaterials) {
-	// load the mv scenegraph
-	scenegraph::SceneGraph mvSceneGraph;
-	testLoad(mvSceneGraph, "test_material.vox", 12u);
-	// now save as gltf
-	ASSERT_TRUE(helper_saveSceneGraph(mvSceneGraph, "test_material.gltf"));
-	// load the gltf scenegraph
-	scenegraph::SceneGraph gltfSceneGraph;
-	testLoad(gltfSceneGraph, "test_material.gltf", 12u);
-	voxel::materialComparator(mvSceneGraph, gltfSceneGraph);
+TEST_F(GLTFFormatTest, DISABLED_testMaterial) {
+	scenegraph::SceneGraph sceneGraph;
+	testMaterial(sceneGraph, "test_material.gltf");
 }
 
 } // namespace voxelformat

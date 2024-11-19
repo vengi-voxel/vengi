@@ -395,7 +395,7 @@ void materialComparator(const palette::Palette &pal1, const palette::Palette &pa
 		}
 		ASSERT_NE(-1, foundColorMatch) << "Could not find a color match in the pal1 palette: " << pal1.name();
 		ASSERT_NE(-1, foundMaterialMatch) << "Found a color match - but the materials differ: " << pal2Mat
-											<< " versus " << pal1.material(foundColorMatch);
+											<< " versus " << pal1.material(foundColorMatch) << " for entry " << i;
 	}
 }
 

@@ -55,6 +55,10 @@ protected:
 	void testRGBSmallSaveLoad(const core::String &filename);
 	void testLoadScreenshot(const core::String &filename, int width, int height, const core::RGBA expectedColor,
 							int expectedX, int expectedY);
+
+	// load test_material.vox and check the material for the given target format (identified by the filename)
+	void testMaterial(scenegraph::SceneGraph &sceneGraph, const core::String &filename);
+
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 
