@@ -47,6 +47,7 @@ protected:
 		glm::vec3 position{0.0f};
 		core::RGBA color{0, 0, 0, 255};
 	};
+	using PointCloud = core::DynamicArray<PointCloudVertex>;
 
 	struct MeshExt {
 		MeshExt(voxel::ChunkMesh *mesh, const scenegraph::SceneGraphNode &node, bool applyTransform);
@@ -77,7 +78,7 @@ protected:
 	virtual bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
 	bool voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
-							const core::DynamicArray<PointCloudVertex> &vertices) const;
+							const PointCloud &vertices) const;
 
 	/**
 	 * @return A particular uv value for the palette image for the given color index
