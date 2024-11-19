@@ -47,6 +47,7 @@ set(SRCS
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
 	private/mesh/GLTFFormat.h                private/mesh/GLTFFormat.cpp
 	private/mesh/Polygon.h                   private/mesh/Polygon.cpp
+	private/mesh/PosSampling.h               private/mesh/PosSampling.cpp
 	private/mesh/MeshTri.h                   private/mesh/MeshTri.cpp
 	private/minecraft/DatFormat.h            private/minecraft/DatFormat.cpp
 	private/minecraft/MCRFormat.h            private/minecraft/MCRFormat.cpp

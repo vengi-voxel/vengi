@@ -1,0 +1,118 @@
+/**
+ * @file
+ */
+
+#include "PosSampling.h"
+#include "core/Color.h"
+
+namespace voxelformat {
+
+uint8_t PosSampling::getNormal() const {
+	if (entries[1].area == 0) {
+		return entries[0].normal;
+	}
+	uint8_t normal = 0;
+	uint32_t area = 0;
+	for (const PosSamplingEntry &pe : entries) {
+		if (pe.area > area) {
+			area = pe.area;
+			normal = pe.normal;
+		}
+	}
+	return normal;
+}
+
+bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
+	// TODO: VOXELFORMAT: why?
+	if (entries[0].color == color) {
+		return false;
+	}
+	if (area == 0) {
+		// nothing to contribute
+		return false;
+	}
+#if 0
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// same values only increase the area of contribution and thus the weighting influence for this color
+		if (entries[i].area > 0 && entries[i].color == color && entries[i].normal == normal) {
+			entries[i].area += area;
+			return true;
+		}
+	}
+#endif
+
+#if 1
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// free slot
+		if (entries[i].area == 0) {
+			entries[i].area = area;
+			entries[i].color = color;
+			entries[i].normal = normal;
+			return true;
+		}
+	}
+#else
+	int smallestArea = 0xffffffff;
+	int index = 0;
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// free slot
+		if (entries[i].area == 0) {
+			entries[i].area = area;
+			entries[i].color = color;
+			entries[i].normal = normal;
+			return true;
+		}
+		if (smallestArea > entries[i].area) {
+			smallestArea = entries[i].area;
+			index = i;
+		}
+	}
+	// check if this contribution should have a higher impact
+	if (entries[index].area < area) {
+		entries[index].area = area;
+		entries[index].color = color;
+		entries[index].normal = normal;
+		return true;
+	}
+#endif
+
+	return false;
+}
+
+core::RGBA PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
+	if (entries[1].area == 0) {
+		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
+									   flattenFactor);
+	}
+	if (weightedAverage) {
+		uint32_t sumArea = 0;
+		for (const PosSamplingEntry &pe : entries) {
+			sumArea += pe.area;
+		}
+		core::RGBA color(0, 0, 0, 255);
+		if (sumArea == 0) {
+			return color;
+		}
+		for (const PosSamplingEntry &pe : entries) {
+			if (pe.area == 0) {
+				break;
+			}
+			color = core::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
+		}
+		return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+	}
+	core::RGBA color(0, 0, 0, AlphaThreshold);
+	uint32_t area = 0;
+	for (const PosSamplingEntry &pe : entries) {
+		if (pe.area == 0) {
+			break;
+		}
+		if (pe.area > area) {
+			area = pe.area;
+			color = pe.color;
+		}
+	}
+	return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
+}
+
+} // namespace voxelformat
