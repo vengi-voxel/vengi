@@ -88,6 +88,15 @@ const char* Palette::getDefaultPaletteName() {
 	return builtIn[0];
 }
 
+bool Palette::hasMaterials() const {
+	for (int i = 0; i < _colorCount; ++i) {
+		if (_materials[i].mask != MaterialNone) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void Palette::fill() {
 	for (int i = _colorCount; i < PaletteMaxColors; ++i) {
 		_colors[i] = core::RGBA(64, 64, 64, 255);

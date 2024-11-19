@@ -200,6 +200,8 @@ public:
 	void setGlossiness(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setMedia(uint8_t paletteColorIdx, float factor = 1.0f);
 	void setLowDynamicRange(uint8_t paletteColorIdx, float factor = 1.0f);
+	// returns true if the palette has any materials set
+	bool hasMaterials() const;
 
 	bool hasFreeSlot() const;
 	void duplicateColor(uint8_t paletteColorIdx);
