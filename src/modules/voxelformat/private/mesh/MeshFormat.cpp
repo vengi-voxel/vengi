@@ -282,20 +282,20 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 		if (shouldCreatePalette) {
-			RGBAMap colors;
+			RGBAMaterialMap colorMaterials;
 			Log::debug("create palette");
 			for (const voxelformat::MeshTri &triangle : tris) {
 #if 1
-				voxelizeTriangle(trisMins, triangle, [this, &colors] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+				voxelizeTriangle(trisMins, triangle, [this, &colorMaterials] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
-					colors.put(rgba, true);
+					colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
 				});
 #else
 				const core::RGBA rgba = flattenRGB(triangle.centerColor());
-				colors.put(rgba, true);
+				colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
 #endif
 			}
-			createPalette(colors, palette);
+			createPalette(colorMaterials, palette);
 		} else {
 			palette = voxel::getPalette();
 		}
