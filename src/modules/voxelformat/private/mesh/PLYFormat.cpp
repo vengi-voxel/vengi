@@ -450,19 +450,19 @@ bool PLYFormat::parsePointCloud(const core::String &filename, io::SeekableReadSt
 	return voxelizePointCloud(filename, sceneGraph, pointCloud);
 }
 
-void PLYFormat::convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &vertices,
+void PLYFormat::convertToTris(MeshTriCollection &tris, core::DynamicArray<Vertex> &vertices,
 							  core::DynamicArray<Face> &faces) const {
 	tris.reserve(tris.size() + faces.size());
 	for (int i = 0; i < (int)faces.size(); ++i) {
 		const Face &face = faces[i];
-		voxelformat::MeshTri tri;
+		voxelformat::MeshTri meshTri;
 		for (int j = 0; j < 3; ++j) {
 			const Vertex &vertex = vertices[face.indices[j]];
-			tri.vertices[j] = vertex.position;
-			tri.uv[j] = vertex.texCoord;
-			tri.color[j] = vertex.color;
+			meshTri.vertices[j] = vertex.position;
+			meshTri.uv[j] = vertex.texCoord;
+			meshTri.color[j] = vertex.color;
 		}
-		tris.push_back(tri);
+		tris.push_back(meshTri);
 	}
 }
 
@@ -654,7 +654,7 @@ bool PLYFormat::skipElementBinary(const Element &element, io::SeekableReadStream
 
 bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-								TriCollection &tris) const {
+								MeshTriCollection &tris) const {
 	core::DynamicArray<Vertex> vertices;
 	core::DynamicArray<Face> faces;
 	core::DynamicArray<Polygon> polygons;
@@ -685,7 +685,7 @@ bool PLYFormat::parseMeshBinary(const core::String &filename, io::SeekableReadSt
 
 bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-							   TriCollection &tris) const {
+							   MeshTriCollection &tris) const {
 	core::DynamicArray<Vertex> vertices;
 	core::DynamicArray<Face> faces;
 	core::DynamicArray<Polygon> polygons;
@@ -716,7 +716,7 @@ bool PLYFormat::parseMeshAscii(const core::String &filename, io::SeekableReadStr
 
 bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &stream,
 						  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) {
-	TriCollection tris;
+	MeshTriCollection tris;
 	if (header.format == PlyFormatType::Ascii) {
 		if (!parseMeshAscii(filename, stream, sceneGraph, ctx, header, tris)) {
 			return false;
@@ -728,10 +728,10 @@ bool PLYFormat::parseMesh(const core::String &filename, io::SeekableReadStream &
 	}
 
 	const glm::vec3 scale = getInputScale();
-	for (voxelformat::MeshTri &tri : tris) {
-		tri.vertices[0] *= scale;
-		tri.vertices[1] *= scale;
-		tri.vertices[2] *= scale;
+	for (voxelformat::MeshTri &meshTri : tris) {
+		meshTri.vertices[0] *= scale;
+		meshTri.vertices[1] *= scale;
+		meshTri.vertices[2] *= scale;
 	}
 
 	if (!header.comment.empty()) {

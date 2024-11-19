@@ -147,7 +147,7 @@ static bool isSupportModelFormat(const core::String &modelFormat) {
 }
 
 static bool parseMesh(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
+					  const nlohmann::json &elementJson, const BlockbenchFormat::Materials &materials,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("vertices") == elementJson.end()) {
 		Log::error("Element is missing vertices in json file: %s", filename.c_str());
@@ -195,11 +195,11 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 			return false;
 		}
 
-		const int textureIdx = priv::toNumber(faceData, "texture", -1);
-		const bool textureIdxValid = textureIdx >= 0 && textureIdx < (int)textureArray.size();
+		const int materialIdx = priv::toNumber(faceData, "texture", -1);
+		const bool materialIdxValid = materialIdx >= 0 && materialIdx < (int)materials.size();
 		Polygon polygon;
-		if (textureIdxValid) {
-			polygon.setMaterial(createMaterial(textureArray[textureIdx]));
+		if (materialIdxValid) {
+			polygon.setMaterial(materials[materialIdx]);
 		}
 		for (const auto &vertex : faceVertices) {
 			const std::string &vertexName = vertex;
@@ -214,9 +214,9 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 				return false;
 			}
 			const glm::vec3 pos(vertexIter.value()[0], vertexIter.value()[1], vertexIter.value()[2]);
-			const glm::vec2 uvCoords =
-				textureIdxValid ? textureArray[textureIdx]->uv(uvIter.value()[0], uvIter.value()[1]) : glm::vec2(0.0f);
-
+			const int x = uvIter.value()[0];
+			const int y = uvIter.value()[1];
+			const glm::vec2 &uvCoords = polygon.uv(x, y);
 			polygon.addVertex(pos, uvCoords);
 		}
 		polygon.toTris(element.mesh.tris);
@@ -226,7 +226,7 @@ static bool parseMesh(const glm::vec3 &scale, const core::String &filename, cons
 }
 
 static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-					  const nlohmann::json &elementJson, const BlockbenchFormat::Textures &textureArray,
+					  const nlohmann::json &elementJson, const BlockbenchFormat::Materials &materials,
 					  BlockbenchFormat::Element &element) {
 	if (elementJson.find("from") == elementJson.end() || elementJson.find("to") == elementJson.end()) {
 		Log::error("Element is missing from or to in json file: %s", filename.c_str());
@@ -286,30 +286,30 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 			return false;
 		}
 
-		int textureIdx = -1;
-		if (!textureArray.empty()) {
-			textureIdx = priv::toNumber(faceData, "texture", -1);
-			if (textureIdx >= (int)textureArray.size()) {
-				Log::error("Invalid texture index: %d", textureIdx);
+		int materialIdx = -1;
+		if (!materials.empty()) {
+			materialIdx = priv::toNumber(faceData, "texture", -1);
+			if (materialIdx >= (int)materials.size()) {
+				Log::error("Invalid material index: %d", materialIdx);
 				return false;
 			}
 		}
 
-		Log::debug("faceName: %s, textureIdx: %d", faceName.c_str(), textureIdx);
+		Log::debug("faceName: %s, materialIdx: %d", faceName.c_str(), materialIdx);
 		int uvs[4]{uv[0], uv[1], uv[2], uv[3]};
-		if (textureIdx >= 0) {
-			const glm::vec2 uv0 = textureArray[textureIdx]->uv(uvs[0], uvs[1]);
-			const glm::vec2 uv1 = textureArray[textureIdx]->uv(uvs[2] - 1, uvs[3] - 1);
+		if (materialIdx >= 0 && materials[materialIdx]->texture) {
+			const glm::vec2 uv0 = materials[materialIdx]->texture->uv(uvs[0], uvs[1]);
+			const glm::vec2 uv1 = materials[materialIdx]->texture->uv(uvs[2] - 1, uvs[3] - 1);
 			element.cube.faces[(int)faceType].uvs[0] = uv0;
 			element.cube.faces[(int)faceType].uvs[1] = uv1;
 		}
-		element.cube.faces[(int)faceType].textureIndex = textureIdx;
+		element.cube.faces[(int)faceType].textureIndex = materialIdx;
 	}
 	return true;
 }
 
 static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::Meta &meta,
-						  const nlohmann::json &elementsJson, const BlockbenchFormat::Textures &textureArray,
+						  const nlohmann::json &elementsJson, const BlockbenchFormat::Materials &textureArray,
 						  BlockbenchFormat::ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
 		BlockbenchFormat::Element element;
@@ -388,7 +388,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 
 } // namespace priv
 
-bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const Textures &textureArray,
+bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, const Materials &textureArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Mesh &mesh = element.mesh;
 	const int nodeIdx = voxelizeNode(element.uuid, element.name, sceneGraph, mesh.tris, parent);
@@ -404,7 +404,7 @@ bool BlockbenchFormat::generateMesh(const Node &node, const Element &element, co
 	return true;
 }
 
-bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const Textures &textureArray,
+bool BlockbenchFormat::generateCube(const Node &node, const Element &element, const Materials &textureArray,
 									scenegraph::SceneGraph &sceneGraph, int parent) const {
 	const Cube &cube = element.cube;
 
@@ -444,8 +444,8 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 		const CubeFace &face = cube.faces[(int)order[i]];
 		const voxel::FaceNames faceName = order[i];
 		image::ImagePtr image;
-		if (face.textureIndex >= 0) {
-			image = textureArray[face.textureIndex];
+		if (face.textureIndex >= 0 && textureArray[face.textureIndex]->texture) {
+			image = textureArray[face.textureIndex]->texture;
 		}
 		voxel::RawVolumeWrapper wrapper(model.volume());
 		voxelutil::importFace(wrapper, wrapper.region(), model.palette(), faceName, image, face.uvs[0], face.uvs[1],
@@ -456,7 +456,7 @@ bool BlockbenchFormat::generateCube(const Node &node, const Element &element, co
 }
 
 bool BlockbenchFormat::addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
-							   const Textures &textureArray, int parent) const {
+							   const Materials &textureArray, int parent) const {
 	Log::debug("node: %s with %i children", node.name.c_str(), (int)node.children.size());
 	for (const core::String &uuid : node.referenced) {
 		auto elementIter = elementMap.find(uuid);
@@ -643,8 +643,8 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	Textures textureArray;
-	textureArray.reserve(textures.size());
+	Materials materials;
+	materials.reserve(textures.size());
 
 	for (const auto &texture : textures) {
 		const core::String &name = json::toStr(texture, "name");
@@ -678,7 +678,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			io::Base64ReadStream base64Stream(dataStream);
 			const image::ImagePtr &image = image::loadImage(name, base64Stream, data.size());
 			if (image->isLoaded()) {
-				textureArray.emplace_back(image);
+				materials.emplace_back(createMaterial(image));
 			}
 		}
 	}
@@ -691,7 +691,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 
 	const glm::vec3 scale = getInputScale();
 	ElementMap elementMap;
-	if (!priv::parseElements(scale, filename, meta, elementsJson, textureArray, elementMap, sceneGraph)) {
+	if (!priv::parseElements(scale, filename, meta, elementsJson, materials, elementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
 		return false;
 	}
@@ -715,7 +715,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 	}
 
-	if (!addNode(root, elementMap, sceneGraph, textureArray, 0)) {
+	if (!addNode(root, elementMap, sceneGraph, materials, 0)) {
 		Log::error("Failed to add node");
 		return false;
 	}

@@ -5,8 +5,6 @@
 #pragma once
 
 #include "voxelformat/private/mesh/MeshFormat.h"
-#include "core/collection/StringMap.h"
-#include "image/Image.h"
 
 namespace voxelformat {
 /**
@@ -56,7 +54,7 @@ private:
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
 	bool loadFrame(const core::String &filename, io::SeekableReadStream &stream, int64_t startOffset,
 				   const MD2Header &hdr, uint32_t frameIndex, scenegraph::SceneGraph &sceneGraph,
-				   const core::StringMap<image::ImagePtr> &textures);
+				   const MeshMaterialMap &meshMaterials);
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,

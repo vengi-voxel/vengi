@@ -9,6 +9,7 @@
 #include "core/collection/StringMap.h"
 #include "image/Image.h"
 #include "palette/PaletteLookup.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxelformat {
 
@@ -111,7 +112,7 @@ private:
 	};
 
 	struct Texture : public BspTexture {
-		image::ImagePtr image;
+		MeshMaterialPtr material;
 	};
 
 	bool voxelize(const core::DynamicArray<Texture> &textures, const core::DynamicArray<Face> &faces,
@@ -124,7 +125,7 @@ private:
 	bool loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					   const BspHeader &header);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
-							core::DynamicArray<Texture> &textures, core::StringMap<image::ImagePtr> &textureMap);
+							core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials);
 	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<Face> &faces,
 						 const core::DynamicArray<Texture> &textures);
 	bool loadQuake1Edges(io::SeekableReadStream &stream, const BspHeader &header, core::DynamicArray<BspEdge> &edges,
@@ -136,7 +137,7 @@ private:
 								 scenegraph::SceneGraph &sceneGraph, const BspHeader &header);
 	bool loadUFOAlienInvasionTextures(const core::String &filename, io::SeekableReadStream &stream,
 									  const BspHeader &header, core::DynamicArray<Texture> &textures,
-									  core::StringMap<image::ImagePtr> &textureMap);
+									  MeshMaterialMap &meshMaterials);
 	bool loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
 								   core::DynamicArray<Face> &faces);
 	bool loadUFOAlienInvasionEdges(io::SeekableReadStream &stream, const BspHeader &header,

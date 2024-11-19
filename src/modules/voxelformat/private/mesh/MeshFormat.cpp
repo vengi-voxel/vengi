@@ -66,22 +66,22 @@ glm::vec3 MeshFormat::getInputScale() {
 	return {scaleX, scaleY, scaleZ};
 }
 
-void MeshFormat::subdivideTri(const voxelformat::MeshTri &tri, TriCollection &tinyTris) {
+void MeshFormat::subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris) {
 	if (stopExecution()) {
 		return;
 	}
-	const glm::vec3 &mins = tri.mins();
-	const glm::vec3 &maxs = tri.maxs();
+	const glm::vec3 &mins = meshTri.mins();
+	const glm::vec3 &maxs = meshTri.maxs();
 	const glm::vec3 size = maxs - mins;
 	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
 		voxelformat::MeshTri out[4];
-		tri.subdivide(out);
+		meshTri.subdivide(out);
 		for (int i = 0; i < lengthof(out); ++i) {
 			subdivideTri(out[i], tinyTris);
 		}
 		return;
 	}
-	tinyTris.push_back(tri);
+	tinyTris.push_back(meshTri);
 }
 
 static void convertToVoxelGrid(glm::vec3 &v) {
@@ -116,22 +116,22 @@ void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uin
 	}
 }
 
-void MeshFormat::transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 							   const palette::NormalPalette &normalPalette) {
 	Log::debug("subdivided into %i triangles", (int)tris.size());
-	for (const voxelformat::MeshTri &tri : tris) {
+	for (const voxelformat::MeshTri &meshTri : tris) {
 		if (stopExecution()) {
 			return;
 		}
-		const core::RGBA rgba = tri.centerColor();
+		const core::RGBA rgba = meshTri.centerColor();
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
-		const uint32_t area = (uint32_t)(tri.area() * 1000.0f);
-		glm::vec3 c = tri.center();
+		const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
+		glm::vec3 c = meshTri.center();
 		convertToVoxelGrid(c);
 
-		const uint8_t normalIdx = normalPalette.getClosestMatch(tri.normal());
+		const uint8_t normalIdx = normalPalette.getClosestMatch(meshTri.normal());
 
 		const glm::ivec3 p(c);
 		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
@@ -140,21 +140,21 @@ void MeshFormat::transformTris(const voxel::Region &region, const TriCollection 
 	}
 }
 
-void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap, const palette::NormalPalette &normalPalette) {
+void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap, const palette::NormalPalette &normalPalette) {
 	Log::debug("axis aligned %i triangles", (int)tris.size());
-	for (const voxelformat::MeshTri &tri : tris) {
+	for (const voxelformat::MeshTri &meshTri : tris) {
 		if (stopExecution()) {
 			return;
 		}
-		const core::RGBA rgba = tri.centerColor();
+		const core::RGBA rgba = meshTri.centerColor();
 		if (rgba.a <= AlphaThreshold) {
 			continue;
 		}
-		const uint32_t area = (uint32_t)(tri.area() * 1000.0f);
-		const glm::vec3 &normal = glm::normalize(tri.normal());
+		const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
+		const glm::vec3 &normal = glm::normalize(meshTri.normal());
 		const glm::ivec3 sideDelta(normal.x <= 0 ? 0 : -1, normal.y <= 0 ? 0 : -1, normal.z <= 0 ? 0 : -1);
-		const glm::ivec3 mins = tri.roundedMins();
-		const glm::ivec3 maxs = tri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
+		const glm::ivec3 mins = meshTri.roundedMins();
+		const glm::ivec3 maxs = meshTri.roundedMaxs() + glm::ivec3(glm::round(glm::abs(normal)));
 		Log::trace("mins: %i:%i:%i", mins.x, mins.y, mins.z);
 		Log::trace("maxs: %i:%i:%i", maxs.x, maxs.y, maxs.z);
 		Log::trace("normal: %f:%f:%f", normal.x, normal.y, normal.z);
@@ -176,16 +176,16 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Tri
 	}
 }
 
-bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
-	for (const voxelformat::MeshTri &tri : tris) {
-		if (!tri.flat()) {
+bool MeshFormat::isVoxelMesh(const MeshTriCollection &tris) {
+	for (const voxelformat::MeshTri &meshTri : tris) {
+		if (!meshTri.flat()) {
 			Log::debug("No axis aligned mesh found");
 #ifdef DEBUG
 			for (int i = 0; i < 3; ++i) {
-				const glm::vec3 &v = tri.vertices[i];
+				const glm::vec3 &v = meshTri.vertices[i];
 				Log::debug("tri.vertices[%i]: %f:%f:%f", i, v.x, v.y, v.z);
 			}
-			const glm::vec3 &n = tri.normal();
+			const glm::vec3 &n = meshTri.normal();
 			Log::debug("tri.normal: %f:%f:%f", n.x, n.y, n.z);
 #endif
 			return false;
@@ -196,14 +196,14 @@ bool MeshFormat::isVoxelMesh(const TriCollection &tris) {
 }
 
 template<class FUNC>
-static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshTri &tri, FUNC &&func) {
+static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshTri &meshTri, FUNC &&func) {
 	const glm::vec3 voxelHalf(0.5f);
 	const glm::vec3 shiftedTrisMins = trisMins + voxelHalf;
-	const glm::vec3 &v0 = tri.vertices[0];
-	const glm::vec3 &v1 = tri.vertices[1];
-	const glm::vec3 &v2 = tri.vertices[2];
-	const glm::vec3 mins = tri.mins();
-	const glm::vec3 maxs = tri.maxs();
+	const glm::vec3 &v0 = meshTri.vertices[0];
+	const glm::vec3 &v1 = meshTri.vertices[1];
+	const glm::vec3 &v2 = meshTri.vertices[2];
+	const glm::vec3 mins = meshTri.mins();
+	const glm::vec3 maxs = meshTri.maxs();
 	const glm::ivec3 imins(glm::floor(mins - shiftedTrisMins));
 	const glm::ivec3 size(glm::round(maxs - mins));
 	const glm::ivec3 imaxs = 2 + imins + size;
@@ -217,17 +217,17 @@ static void voxelizeTriangle(const glm::vec3 &trisMins, const voxelformat::MeshT
 				center.z = trisMins.z + z;
 				if (glm::intersectTriangleAABB(center, voxelHalf, v0, v1, v2)) {
 					glm::vec2 uv;
-					if (!tri.calcUVs(center, uv)) {
+					if (!meshTri.calcUVs(center, uv)) {
 						continue;
 					}
-					func(tri, uv, shiftedTrisMins.x + x, shiftedTrisMins.y + y, shiftedTrisMins.z + z);
+					func(meshTri, uv, shiftedTrisMins.x + x, shiftedTrisMins.y + y, shiftedTrisMins.z + z);
 				}
 			}
 		}
 	}
 }
 
-int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
+int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris,
 							 int parent, bool resetOrigin) const {
 	if (tris.empty()) {
 		Log::warn("Empty volume - no triangles given");
@@ -284,9 +284,9 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		if (shouldCreatePalette) {
 			RGBAMaterialMap colorMaterials;
 			Log::debug("create palette");
-			for (const voxelformat::MeshTri &triangle : tris) {
+			for (const voxelformat::MeshTri &meshTri : tris) {
 #if 1
-				voxelizeTriangle(trisMins, triangle, [this, &colorMaterials] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+				voxelizeTriangle(trisMins, meshTri, [this, &colorMaterials] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 					const core::RGBA rgba = flattenRGB(tri.colorAt(uv));
 					colorMaterials.put(rgba, tri.material ? &tri.material->material : nullptr);
 				});
@@ -302,8 +302,8 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 
 		Log::debug("create voxels from %i tris", (int)tris.size());
 		palette::PaletteLookup palLookup(palette);
-		for (const voxelformat::MeshTri &triangle : tris) {
-			voxelizeTriangle(trisMins, triangle, [&] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
+		for (const voxelformat::MeshTri &meshTri : tris) {
+			voxelizeTriangle(trisMins, meshTri, [&] (const voxelformat::MeshTri &tri, const glm::vec2 &uv, int x, int y, int z) {
 				const core::RGBA color = flattenRGB(tri.colorAt(uv));
 				const glm::vec3 &normal = tri.normal();
 				const uint8_t normalIndex = normalPalette.getClosestMatch(normal);
@@ -327,18 +327,18 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 		}
 	} else {
 		Log::debug("Subdivide %i triangles", (int)tris.size());
-		core::DynamicArray<std::future<TriCollection>> futures;
+		core::DynamicArray<std::future<MeshTriCollection>> futures;
 		futures.reserve(tris.size());
-		for (const voxelformat::MeshTri &tri : tris) {
-			futures.emplace_back(app::async([tri]() {
-				TriCollection subdivided;
-				subdivideTri(tri, subdivided);
+		for (const voxelformat::MeshTri &meshTri : tris) {
+			futures.emplace_back(app::async([meshTri]() {
+				MeshTriCollection subdivided;
+				subdivideTri(meshTri, subdivided);
 				return subdivided;
 			}));
 		}
-		TriCollection subdivided;
-		for (std::future<TriCollection> &future : futures) {
-			const TriCollection &sub = future.get();
+		MeshTriCollection subdivided;
+		for (std::future<MeshTriCollection> &future : futures) {
+			const MeshTriCollection &sub = future.get();
 			subdivided.append(sub);
 		}
 
@@ -364,7 +364,7 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	return sceneGraph.emplace(core::move(node), parent);
 }
 
-bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
+bool MeshFormat::calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs) {
 	if (tris.empty()) {
 		mins = maxs = glm::vec3(0.0f);
 		return false;
@@ -373,9 +373,9 @@ bool MeshFormat::calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::
 	maxs = tris[0].mins();
 	mins = tris[0].maxs();
 
-	for (const voxelformat::MeshTri &tri : tris) {
-		maxs = glm::max(maxs, tri.maxs());
-		mins = glm::min(mins, tri.mins());
+	for (const voxelformat::MeshTri &meshTri : tris) {
+		maxs = glm::max(maxs, meshTri.maxs());
+		mins = glm::min(mins, meshTri.mins());
 	}
 	return true;
 }

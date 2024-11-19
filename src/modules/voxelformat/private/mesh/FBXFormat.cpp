@@ -314,7 +314,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 	const size_t numTriIndices = mesh->max_face_triangles * 3;
 	core::Buffer<uint32_t> triIndices(numTriIndices);
 
-	TriCollection tris;
+	MeshTriCollection tris;
 	tris.reserve(numTriIndices);
 
 	Log::debug("There are %i materials in the mesh", (int)mesh->materials.count);
@@ -393,25 +393,25 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 			const size_t numTris = ufbx_triangulate_face(triIndices.data(), numTriIndices, mesh, face);
 
 			for (size_t vi = 0; vi < numTris; vi++) {
-				voxelformat::MeshTri tri;
+				voxelformat::MeshTri meshTri;
 				for (int ti = 0; ti < 3; ++ti) {
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
 						const glm::vec4 &vertexColor =
 							priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
-						tri.color[ti] = core::Color::getRGBA(vertexColor);
+						meshTri.color[ti] = core::Color::getRGBA(vertexColor);
 					}
 					if (mesh->vertex_uv.exists) {
 						const ufbx_vec2 &uv = ufbx_get_vertex_vec2(&mesh->vertex_uv, ix);
-						tri.uv[ti] = priv::_ufbx_to_vec2(uv);
+						meshTri.uv[ti] = priv::_ufbx_to_vec2(uv);
 					}
 					// TODO: VOXELFORMAT: transform here - see issue
 					// https://github.com/vengi-voxel/vengi/issues/227
-					tri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
+					meshTri.vertices[ti] = priv::_ufbx_to_vec3(pos) * scale;
 				}
-				tri.material = mat;
-				tris.emplace_back(core::move(tri));
+				meshTri.material = mat;
+				tris.emplace_back(core::move(meshTri));
 			}
 		}
 	}

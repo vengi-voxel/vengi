@@ -104,12 +104,12 @@ protected:
 
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-						 TriCollection &tris) const;
-	void convertToTris(TriCollection &tris, core::DynamicArray<Vertex> &vertices,
+						 MeshTriCollection &tris) const;
+	void convertToTris(MeshTriCollection &tris, core::DynamicArray<Vertex> &vertices,
 					   core::DynamicArray<Face> &faces) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
-						TriCollection &tris) const;
+						MeshTriCollection &tris) const;
 	bool parseMesh(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				   const LoadContext &ctx, const Header &header);
 

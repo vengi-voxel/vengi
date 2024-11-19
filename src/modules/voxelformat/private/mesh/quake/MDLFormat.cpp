@@ -106,8 +106,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	}
 
 	// skins
-	core::DynamicArray<image::ImagePtr> textures;
-	textures.reserve(hdr.numSkins);
+	MeshMaterialMap meshMaterials;
 	for (uint32_t i = 0; i < hdr.numSkins; ++i) {
 		uint32_t group;
 		wrap(stream->readUInt32(group))
@@ -137,7 +136,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				return false;
 			}
 
-			textures.emplace_back(image);
+			meshMaterials.put(core::string::toString(j), createMaterial(image));
 		}
 	}
 
@@ -307,7 +306,7 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	for (uint32_t p = 0; p < poses.size(); ++p) {
 		const MDLPose &pose = poses[p];
 		for (const MDLFrame &frame : pose.frames) {
-			TriCollection triangles;
+			MeshTriCollection triangles;
 			for (uint32_t i = 0; i < hdr.numTris; ++i) {
 				const MDLTriangle &tri = tris[i];
 				voxelformat::MeshTri meshTri;
@@ -324,7 +323,9 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 						meshTri.uv[j] = texCoords[tri.ra.uv[j]];
 					}
 				}
-				meshTri.material = createMaterial(textures[0]);
+				if (!meshMaterials.empty()) {
+					meshTri.material = meshMaterials.begin()->second;
+				}
 				triangles.emplace_back(meshTri);
 			}
 			const int nodeId = voxelizeNode(frame.name, sceneGraph, triangles);

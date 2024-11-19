@@ -18,7 +18,7 @@ namespace priv {
 static constexpr const size_t BinaryHeaderSize = 80;
 }
 
-bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) {
+bool STLFormat::parseAscii(io::SeekableReadStream &stream, MeshTriCollection &tris) {
 	char line[512];
 	const glm::vec3 &scale = getInputScale();
 	stream.seek(0);
@@ -33,7 +33,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 					break;
 				}
 				if (!strncmp(ptr, "facet normal ", 13)) {
-					voxelformat::MeshTri tri;
+					voxelformat::MeshTri meshTri;
 					glm::vec3 norm;
 					ptr += 13;
 					core::string::parseReal3(&norm.x, &norm.y, &norm.z, &ptr);
@@ -57,7 +57,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 							if (vi >= 3) {
 								return false;
 							}
-							glm::vec3 &vert = tri.vertices[vi];
+							glm::vec3 &vert = meshTri.vertices[vi];
 							ptr += 7; // "vertex "
 							core::string::parseReal3(&vert.x, &vert.y, &vert.z, &ptr);
 							vert *= scale;
@@ -66,7 +66,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 						if (vi != 3) {
 							return false;
 						}
-						tris.push_back(tri);
+						tris.push_back(meshTri);
 					}
 				}
 			}
@@ -81,7 +81,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, TriCollection &tris) 
 		return false;                                                                                                  \
 	}
 
-bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris) {
+bool STLFormat::parseBinary(io::SeekableReadStream &stream, MeshTriCollection &tris) {
 	const glm::vec3 &scale = getInputScale();
 	if (stream.seek(priv::BinaryHeaderSize) == -1) {
 		Log::error("Failed to seek after the binary stl header");
@@ -96,16 +96,16 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, TriCollection &tris)
 	}
 	tris.resize(numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
-		voxelformat::MeshTri &tri = tris[fn];
+		voxelformat::MeshTri &meshTri = tris[fn];
 		glm::vec3 normal;
 		wrap(stream.readFloat(normal.x))
 		wrap(stream.readFloat(normal.y))
 		wrap(stream.readFloat(normal.z))
 		for (int i = 0; i < 3; ++i) {
-			wrap(stream.readFloat(tri.vertices[i].x))
-			wrap(stream.readFloat(tri.vertices[i].y))
-			wrap(stream.readFloat(tri.vertices[i].z))
-			tri.vertices[i] *= scale;
+			wrap(stream.readFloat(meshTri.vertices[i].x))
+			wrap(stream.readFloat(meshTri.vertices[i].y))
+			wrap(stream.readFloat(meshTri.vertices[i].z))
+			meshTri.vertices[i] *= scale;
 		}
 		if (stream.skip(2) == -1) {
 			Log::error("Failed to seek while parsing the frames");
@@ -127,7 +127,7 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	wrap(stream->readUInt32(magic));
 	const bool ascii = FourCC('s', 'o', 'l', 'i') == magic;
 
-	TriCollection tris;
+	MeshTriCollection tris;
 	if (ascii) {
 		Log::debug("found ascii format");
 		if (!parseAscii(*stream, tris)) {

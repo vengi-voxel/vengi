@@ -44,7 +44,14 @@ public:
 		return *this;
 	}
 
-	bool toTris(MeshFormat::TriCollection &tris) const;
+	glm::vec2 uv(int x, int y) const {
+		if (_material && _material->texture) {
+			return _material->texture->uv(x, y);
+		}
+		return {0.0f, 0.0f};
+	}
+
+	bool toTris(MeshFormat::MeshTriCollection &tris) const;
 };
 
 } // namespace voxelformat

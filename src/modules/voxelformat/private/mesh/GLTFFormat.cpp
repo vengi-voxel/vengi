@@ -1594,7 +1594,7 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 	Log::debug("Mesh node %i", gltfNodeIdx);
 
 	const glm::vec3 &scale = getInputScale();
-	TriCollection tris;
+	MeshTriCollection tris;
 
 	const tinygltf::Mesh &gltfMesh = gltfModel.meshes[gltfNode.mesh];
 	Log::debug("Primitives: %i in mesh %i", (int)gltfMesh.primitives.size(), gltfNode.mesh);
@@ -1669,17 +1669,17 @@ bool GLTFFormat::loadNode_r(const core::String &filename, scenegraph::SceneGraph
 		const size_t maxIndices = indices.size();
 		tris.reserve(tris.size() + maxIndices / 3);
 		for (size_t indexOffset = 0; indexOffset < maxIndices; indexOffset += 3) {
-			voxelformat::MeshTri tri;
+			voxelformat::MeshTri meshTri;
 			for (size_t i = 0; i < 3; ++i) {
 				const size_t idx = indices[i + indexOffset];
-				tri.vertices[i] = vertices[idx].pos * scale;
-				tri.uv[i] = vertices[idx].uv;
-				tri.color[i] = vertices[idx].color;
+				meshTri.vertices[i] = vertices[idx].pos * scale;
+				meshTri.uv[i] = vertices[idx].uv;
+				meshTri.color[i] = vertices[idx].color;
 			}
 			const size_t textureIdx = indices[indexOffset];
 			const GltfVertex &v = vertices[textureIdx];
-			tri.material = v.material;
-			tris.push_back(tri);
+			meshTri.material = v.material;
+			tris.push_back(meshTri);
 		}
 	}
 

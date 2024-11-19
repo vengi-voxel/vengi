@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "core/collection/StringMap.h"
-#include "image/Image.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 
 namespace voxelformat {

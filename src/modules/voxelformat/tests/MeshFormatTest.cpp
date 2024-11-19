@@ -21,12 +21,12 @@ namespace voxelformat {
 class MeshFormatTest : public AbstractFormatTest {};
 
 TEST_F(MeshFormatTest, testSubdivide) {
-	MeshFormat::TriCollection tinyTris;
-	voxelformat::MeshTri tri;
-	tri.vertices[0] = glm::vec3(-8.77272797, -11.43335, -0.154544264);
-	tri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
-	tri.vertices[2] = glm::vec3(8.77272701, 11.1000004, -0.154543981);
-	MeshFormat::subdivideTri(tri, tinyTris);
+	MeshFormat::MeshTriCollection tinyTris;
+	voxelformat::MeshTri meshTri;
+	meshTri.vertices[0] = glm::vec3(-8.77272797, -11.43335, -0.154544264);
+	meshTri.vertices[1] = glm::vec3(-8.77272701, 11.1000004, -0.154543981);
+	meshTri.vertices[2] = glm::vec3(8.77272701, 11.1000004, -0.154543981);
+	MeshFormat::subdivideTri(meshTri, tinyTris);
 	EXPECT_EQ(1024u, tinyTris.size());
 }
 
@@ -39,11 +39,11 @@ TEST_F(MeshFormatTest, testColorAt) {
 	palette::Palette pal;
 	pal.nippon();
 
-	voxelformat::MeshTri tri;
-	tri.material = createMaterial(texture);
+	voxelformat::MeshTri meshTri;
+	meshTri.material = createMaterial(texture);
 	for (int i = 0; i < 256; ++i) {
-		tri.uv[0] = tri.uv[1] = tri.uv[2] = texture->uv(i, 0);
-		const core::RGBA color = tri.colorAt(tri.centerUV());
+		meshTri.uv[0] = meshTri.uv[1] = meshTri.uv[2] = texture->uv(i, 0);
+		const core::RGBA color = meshTri.colorAt(meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
 	}
@@ -58,21 +58,21 @@ TEST_F(MeshFormatTest, testLookupTexture) {
 }
 
 TEST_F(MeshFormatTest, testCalculateAABB) {
-	MeshFormat::TriCollection tris;
-	voxelformat::MeshTri tri;
+	MeshFormat::MeshTriCollection tris;
+	voxelformat::MeshTri meshTri;
 
 	{
-		tri.vertices[0] = glm::vec3(0, 0, 0);
-		tri.vertices[1] = glm::vec3(10, 0, 0);
-		tri.vertices[2] = glm::vec3(10, 0, 10);
-		tris.push_back(tri);
+		meshTri.vertices[0] = glm::vec3(0, 0, 0);
+		meshTri.vertices[1] = glm::vec3(10, 0, 0);
+		meshTri.vertices[2] = glm::vec3(10, 0, 10);
+		tris.push_back(meshTri);
 	}
 
 	{
-		tri.vertices[0] = glm::vec3(0, 0, 0);
-		tri.vertices[1] = glm::vec3(-10, 0, 0);
-		tri.vertices[2] = glm::vec3(-10, 0, -10);
-		tris.push_back(tri);
+		meshTri.vertices[0] = glm::vec3(0, 0, 0);
+		meshTri.vertices[1] = glm::vec3(-10, 0, 0);
+		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		tris.push_back(meshTri);
 	}
 
 	glm::vec3 mins, maxs;
@@ -86,30 +86,30 @@ TEST_F(MeshFormatTest, testCalculateAABB) {
 }
 
 TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
-	MeshFormat::TriCollection tris;
-	voxelformat::MeshTri tri;
+	MeshFormat::MeshTriCollection tris;
+	voxelformat::MeshTri meshTri;
 
 	{
-		tri.vertices[0] = glm::vec3(0, 0, 0);
-		tri.vertices[1] = glm::vec3(10, 0, 0);
-		tri.vertices[2] = glm::vec3(10, 0, 10);
-		tris.push_back(tri);
+		meshTri.vertices[0] = glm::vec3(0, 0, 0);
+		meshTri.vertices[1] = glm::vec3(10, 0, 0);
+		meshTri.vertices[2] = glm::vec3(10, 0, 10);
+		tris.push_back(meshTri);
 	}
 
 	{
-		tri.vertices[0] = glm::vec3(0, 0, 0);
-		tri.vertices[1] = glm::vec3(-10, 0, 0);
-		tri.vertices[2] = glm::vec3(-10, 0, -10);
-		tris.push_back(tri);
+		meshTri.vertices[0] = glm::vec3(0, 0, 0);
+		meshTri.vertices[1] = glm::vec3(-10, 0, 0);
+		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		tris.push_back(meshTri);
 	}
 
 	EXPECT_TRUE(MeshFormat::isVoxelMesh(tris));
 
 	{
-		tri.vertices[0] = glm::vec3(0, 0, 0);
-		tri.vertices[1] = glm::vec3(-10, 1, 0);
-		tri.vertices[2] = glm::vec3(-10, 0, -10);
-		tris.push_back(tri);
+		meshTri.vertices[0] = glm::vec3(0, 0, 0);
+		meshTri.vertices[1] = glm::vec3(-10, 1, 0);
+		meshTri.vertices[2] = glm::vec3(-10, 0, -10);
+		tris.push_back(meshTri);
 	}
 
 	EXPECT_FALSE(MeshFormat::isVoxelMesh(tris));
@@ -122,14 +122,14 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
 			return false;
 		}
-		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::TriCollection &tris) {
+		void voxelize(scenegraph::SceneGraph &sceneGraph, const MeshFormat::MeshTriCollection &tris) {
 			voxelizeNode("test", sceneGraph, tris);
 			sceneGraph.updateTransforms();
 		}
 	};
 
 	TestMesh mesh;
-	MeshFormat::TriCollection tris;
+	MeshFormat::MeshTriCollection tris;
 
 	video::ShapeBuilder b;
 	scenegraph::SceneGraph sceneGraph;
@@ -153,12 +153,12 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 
 	const int n = (int)indices.size();
 	for (int i = 0; i < n; i += 3) {
-		voxelformat::MeshTri tri;
+		voxelformat::MeshTri meshTri;
 		for (int j = 0; j < 3; ++j) {
-			tri.vertices[j] = vertices[indices[i + j]];
-			tri.color[j] = core::Color::getRGBA(colors[indices[i + j]]);
+			meshTri.vertices[j] = vertices[indices[i + j]];
+			meshTri.color[j] = core::Color::getRGBA(colors[indices[i + j]]);
 		}
-		tris.push_back(tri);
+		tris.push_back(meshTri);
 	}
 	mesh.voxelize(sceneGraph, tris);
 	scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("test");

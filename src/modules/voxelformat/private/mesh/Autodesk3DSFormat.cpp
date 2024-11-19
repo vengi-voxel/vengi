@@ -668,15 +668,15 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	for (const Node3ds &node : nodes) {
 		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
 		for (const Mesh3ds &mesh : node.meshes) {
-			TriCollection tris;
+			MeshTriCollection tris;
 			for (const Face3ds &face : mesh.faces) {
-				MeshTri tri;
+				MeshTri meshTri;
 				for (int i = 0; i < 3; ++i) {
-					tri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[face.indices[i]] * scale, 1.0f);
+					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[face.indices[i]] * scale, 1.0f);
 				}
-				tri.uv[0] = mesh.texcoords[face.indices[0]];
-				tri.uv[1] = mesh.texcoords[face.indices[1]];
-				tri.uv[2] = mesh.texcoords[face.indices[2]];
+				meshTri.uv[0] = mesh.texcoords[face.indices[0]];
+				meshTri.uv[1] = mesh.texcoords[face.indices[1]];
+				meshTri.uv[2] = mesh.texcoords[face.indices[2]];
 				auto matIter = node.materials.find(face.material);
 				if (matIter == node.materials.end()) {
 					Log::error("Material '%s' not found (%i total)", face.material.c_str(), (int)node.materials.size());
@@ -686,11 +686,15 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 					return false;
 				} else {
 					Material3ds &material = matIter->value;
-					tri.color[0] = tri.color[1] = tri.color[2] = material.diffuseColor;
-					tri.material = createMaterial(material.diffuse.texture);
+					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = material.diffuseColor;
+					if (material.transparency > 0.0f) {
+						meshTri.color[3] = (float)(meshTri.color[3]) * (1.0f - material.transparency);
+					}
+					meshTri.material = createMaterial(material.name);
+					meshTri.material->texture = material.diffuse.texture;
 					// TODO: MATERIAL: convert to MeshMaterial
 				}
-				tris.emplace_back(tri);
+				tris.emplace_back(meshTri);
 			}
 			// TODO: VOXELFORMAT: node parent
 			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());

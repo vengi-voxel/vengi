@@ -9,6 +9,7 @@
 #include "util/Version.h"
 #include "voxel/Face.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -42,7 +43,7 @@ public:
 	};
 
 	struct Mesh {
-		MeshFormat::TriCollection tris;
+		MeshFormat::MeshTriCollection tris;
 	};
 
 	struct Node {
@@ -96,7 +97,7 @@ public:
 	// map via uuid
 	using ElementMap = core::StringMap<Element>;
 
-	using Textures = core::DynamicArray<image::ImagePtr>;
+	using Materials = core::DynamicArray<MeshMaterialPtr>;
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Blockbench", {"bbmodel"}, {}, VOX_FORMAT_FLAG_MESH};
@@ -105,10 +106,10 @@ public:
 
 private:
 	bool addNode(const Node &node, const ElementMap &elementMap, scenegraph::SceneGraph &sceneGraph,
-				 const Textures &textureArray, int parent) const;
-	bool generateCube(const Node &node, const Element &element, const Textures &textureArray,
+				 const Materials &materials, int parent) const;
+	bool generateCube(const Node &node, const Element &element, const Materials &materials,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
-	bool generateMesh(const Node &node, const Element &element, const Textures &textureArray,
+	bool generateMesh(const Node &node, const Element &element, const Materials &materials,
 					  scenegraph::SceneGraph &sceneGraph, int parent) const;
 
 protected:

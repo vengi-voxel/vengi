@@ -278,7 +278,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
-	core::StringMap<image::ImagePtr> textures;
+	MeshMaterialMap meshMaterials;
 	Log::debug("%i materials", (int)materials.size());
 
 	for (tinyobj::material_t &material : materials) {
@@ -298,7 +298,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			continue;
 		}
 
-		if (textures.hasKey(name)) {
+		if (meshMaterials.hasKey(name)) {
 			Log::debug("texture for material '%s' is already loaded", name.c_str());
 			continue;
 		}
@@ -307,7 +307,9 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		image::ImagePtr tex = image::loadImage(name);
 		if (tex->isLoaded()) {
 			Log::debug("Use image %s", name.c_str());
-			textures.put(material.diffuse_texname.c_str(), tex);
+			MeshMaterialPtr mat = createMaterial(material.diffuse_texname.c_str());
+			mat->texture = tex;
+			meshMaterials.put(mat->name, mat);
 		} else {
 			Log::warn("Failed to load image %s from %s", name.c_str(), material.name.c_str());
 		}
@@ -321,26 +323,26 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		for (const tinyobj::tag_t &tag : mesh.tags) {
 			Log::debug("tag: %s", tag.name.c_str());
 		}
-		TriCollection tris;
+		MeshTriCollection tris;
 		tris.reserve(mesh.num_face_vertices.size());
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
 			const int faceVertices = mesh.num_face_vertices[faceNum];
 			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
-			voxelformat::MeshTri tri;
+			voxelformat::MeshTri meshTri;
 			for (int i = 0; i < faceVertices; ++i) {
 				const tinyobj::index_t &idx = mesh.indices[indexOffset + i];
-				tri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
-				tri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
-				tri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
+				meshTri.vertices[i].x = attrib.vertices[3 * idx.vertex_index + 0] * scale.x;
+				meshTri.vertices[i].y = attrib.vertices[3 * idx.vertex_index + 1] * scale.y;
+				meshTri.vertices[i].z = attrib.vertices[3 * idx.vertex_index + 2] * scale.z;
 				if (!attrib.colors.empty()) {
 					const float r = attrib.colors[3 * idx.vertex_index + 0];
 					const float g = attrib.colors[3 * idx.vertex_index + 1];
 					const float b = attrib.colors[3 * idx.vertex_index + 2];
-					tri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
+					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
 				}
 				if (idx.texcoord_index >= 0) {
-					tri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
-					tri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
+					meshTri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
+					meshTri.uv[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
 				}
 			}
 			const int materialIndex = mesh.material_ids[faceNum];
@@ -348,21 +350,21 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			if (material != nullptr) {
 				const core::String diffuseTexture = material->diffuse_texname.c_str();
 				if (!diffuseTexture.empty()) {
-					auto textureIter = textures.find(diffuseTexture);
-					if (textureIter != textures.end()) {
-						tri.material = createMaterial(textureIter->second);
+					auto meshMaterialIter = meshMaterials.find(diffuseTexture);
+					if (meshMaterialIter != meshMaterials.end()) {
+						meshTri.material = meshMaterialIter->second;
 					} else {
 						Log::warn("Failed to look up texture %s", diffuseTexture.c_str());
-						textures.put(diffuseTexture, image::ImagePtr());
+						meshMaterials.put(diffuseTexture, MeshMaterialPtr());
 					}
 				}
 				if (attrib.colors.empty()) {
 					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2],
 												 1.0f);
-					tri.color[0] = tri.color[1] = tri.color[2] = core::Color::getRGBA(diffuseColor);
+					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = core::Color::getRGBA(diffuseColor);
 				}
 			}
-			tris.push_back(tri);
+			tris.push_back(meshTri);
 
 			indexOffset += faceVertices;
 		}

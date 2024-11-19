@@ -25,17 +25,17 @@ namespace voxelformat {
 class MeshFormat : public Format {
 public:
 	static constexpr const uint8_t FillColorIndex = 2;
-	using TriCollection = core::DynamicArray<voxelformat::MeshTri, 512>;
+	using MeshTriCollection = core::DynamicArray<voxelformat::MeshTri, 512>;
 
 	/**
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
-	static void subdivideTri(const voxelformat::MeshTri &tri, TriCollection &tinyTris);
-	static bool calculateAABB(const TriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
+	static void subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris);
+	static bool calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
 	/**
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
 	 */
-	static bool isVoxelMesh(const TriCollection &tris);
+	static bool isVoxelMesh(const MeshTriCollection &tris);
 
 protected:
 	/**
@@ -89,8 +89,8 @@ protected:
 	 * @see voxelizeGroups()
 	 */
 	int voxelizeNode(const core::String &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
-					 const TriCollection &tris, int parent = 0, bool resetOrigin = true) const;
-	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const TriCollection &tris,
+					 const MeshTriCollection &tris, int parent = 0, bool resetOrigin = true) const;
+	int voxelizeNode(const core::String &name, scenegraph::SceneGraph &sceneGraph, const MeshTriCollection &tris,
 					 int parent = 0, bool resetOrigin = true) const {
 		return voxelizeNode("", name, sceneGraph, tris, parent, resetOrigin);
 	}
@@ -109,7 +109,7 @@ protected:
 	 * @sa transformTrisAxisAligned()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTris(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+	static void transformTris(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 							  const palette::NormalPalette &normalPalette);
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at. This version is for
@@ -120,7 +120,7 @@ protected:
 	 * @sa transformTris()
 	 * @sa voxelizeTris()
 	 */
-	static void transformTrisAxisAligned(const voxel::Region &region, const TriCollection &tris, PosMap &posMap,
+	static void transformTrisAxisAligned(const voxel::Region &region, const MeshTriCollection &tris, PosMap &posMap,
 										 const palette::NormalPalette &normalPalette);
 	/**
 	 * @brief Convert the given @c PosMap into a volume
