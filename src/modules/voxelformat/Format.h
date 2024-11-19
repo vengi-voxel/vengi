@@ -13,6 +13,7 @@
 #include "io/Archive.h"
 #include "io/FormatDescription.h"
 #include "io/Stream.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/FormatThumbnail.h"
 #include <glm/fwd.hpp>
@@ -40,6 +41,7 @@ namespace voxelformat {
  * the colors later on)
  */
 using RGBAMap = core::DynamicMap<core::RGBA, bool, 1031, core::RGBAHasher>;
+using RGBAMaterialMap = core::DynamicMap<core::RGBA, const palette::Material*, 1031, core::RGBAHasher>;
 
 typedef void (*ProgressMonitor)(const char *name, int cur, int max);
 
@@ -119,6 +121,7 @@ protected:
 	 * @sa palette::Palette::createPalette()
 	 */
 	int createPalette(const RGBAMap &colors, palette::Palette &palette) const;
+	int createPalette(const RGBAMaterialMap &colors, palette::Palette &palette) const;
 
 	/**
 	 * Some formats are running loop that the user might want to interrupt with CTRL+c or the like. Long lasting loops
