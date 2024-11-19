@@ -539,7 +539,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	ufbx_scene *ufbxscene = ufbx_load_stream(&ufbxstream, &ufbxopts, &ufbxerror);
 	if (!ufbxscene) {
-		Log::error("Failed to load: %s", ufbxerror.description.data);
+		Log::error("Failed to load fbx scene: %s", ufbxerror.description.data);
 		return false;
 	}
 	if (ufbxerror.type != UFBX_ERROR_NONE) {
