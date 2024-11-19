@@ -306,6 +306,8 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		MeshMaterialPtr meshMaterial = createMaterial(materialName);
 		palette::Material &paletteMaterial = meshMaterial->material;
 		paletteMaterial.setValue(palette::MaterialProperty::MaterialIndexOfRefraction, material.ior);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness, material.roughness);
+		paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, material.metallic);
 		// TODO: MATERIAL: should be average these values?
 		paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, material.emission[0]);
 		// TODO: MATERIAL: is this maybe shininess? (Ns) material specular exponent is multiplied by the texture value

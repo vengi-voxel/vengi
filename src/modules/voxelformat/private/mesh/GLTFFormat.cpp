@@ -1324,9 +1324,10 @@ bool GLTFFormat::loadMaterial(const core::String &filename, const tinygltf::Mode
 							 gltfMaterial.pbrMetallicRoughness.roughnessFactor);
 	paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal,
 							 gltfMaterial.pbrMetallicRoughness.metallicFactor);
-	// TODO: MATERIAL
-	// const glm::vec4 color = glm::make_vec4(&gltfMaterial->pbrMetallicRoughness.baseColorFactor[0]);
+	// TODO: MATERIAL: load baseColor
+	// const glm::vec4 color = glm::make_vec4(&gltfMaterial.pbrMetallicRoughness.baseColorFactor[0]);
 	// meshMaterial->baseColor = core::Color::getRGBA(color);
+	// meshMaterial->baseColorFactor = gltfMaterial.pbrMetallicRoughness.baseColorFactor[0];
 	// TODO: MATERIAL: load emissiveTexture
 	// TODO: MATERIAL: maybe load it as average - there is no 1:1 mapping here
 	paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial.emissiveFactor[0]);
