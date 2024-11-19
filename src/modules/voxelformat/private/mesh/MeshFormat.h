@@ -100,7 +100,7 @@ protected:
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
-	static void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos);
+	static void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos, const MeshMaterialPtr &material);
 
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at

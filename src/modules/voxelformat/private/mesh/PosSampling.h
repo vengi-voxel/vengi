@@ -4,6 +4,7 @@
 
 #include "core/RGBA.h"
 #include "core/collection/Array.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 
 #define MaxTriangleColorContributions 4
 #define AlphaThreshold 0
@@ -15,14 +16,15 @@ namespace voxelformat {
  * during voxelization
  */
 struct PosSamplingEntry {
-	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal)
-		: area(_area), normal(_normal), color(_color) {
+	inline PosSamplingEntry(uint32_t _area, core::RGBA _color, uint8_t _normal, const MeshMaterialPtr &_material)
+		: area(_area), normal(_normal), color(_color), material(_material) {
 	}
 	PosSamplingEntry() : area(0) {
 	}
 	uint32_t area : 24;
 	uint8_t normal = 0u;
 	core::RGBA color;
+	MeshMaterialPtr material;
 };
 
 /**
@@ -34,13 +36,14 @@ private:
 	core::Array<PosSamplingEntry, MaxTriangleColorContributions> entries;
 
 public:
-	PosSampling(uint32_t area, core::RGBA color, uint8_t normal) {
+	PosSampling(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material) {
 		entries[0].area = area;
 		entries[0].color = color;
 		entries[0].normal = normal;
+		entries[0].material = material;
 	}
 
-	bool add(uint32_t area, core::RGBA color, uint8_t normal);
+	bool add(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material);
 	/**
 	 * @brief Computes the color based on the position sampling entries.
 	 *
@@ -59,6 +62,7 @@ public:
 	 */
 	core::RGBA getColor(uint8_t flattenFactor, bool weightedAverage) const;
 	uint8_t getNormal() const;
+	const MeshMaterialPtr &getMaterial() const;
 };
 
 } // namespace voxelformat

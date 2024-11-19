@@ -27,6 +27,8 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
+#include "voxelformat/Format.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelutil/VoxelUtil.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
@@ -106,16 +108,16 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 	return {u, v};
 }
 
-void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos) {
+void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos, const MeshMaterialPtr &material) {
 	if (rgba.a <= AlphaThreshold) {
 		return;
 	}
 	auto iter = posMap.find(pos);
 	if (iter == posMap.end()) {
-		posMap.emplace(pos, {area, rgba, normalIdx});
+		posMap.emplace(pos, {area, rgba, normalIdx, material});
 	} else {
 		PosSampling &posSampling = iter->value;
-		posSampling.add(area, rgba, normalIdx);
+		posSampling.add(area, rgba, normalIdx, material);
 	}
 }
 
@@ -139,7 +141,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 		const glm::ivec3 p(c);
 		core_assert_msg(region.containsPoint(p), "Failed to transform tri %i:%i:%i (region: %s)", p.x, p.y, p.z,
 						region.toString().c_str());
-		addToPosMap(posMap, rgba, area, normalIdx, p);
+		addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
 	}
 }
 
@@ -172,7 +174,7 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 								   p.z, region.toString().c_str(), sideDelta.x, sideDelta.y, sideDelta.z);
 						continue;
 					}
-					addToPosMap(posMap, rgba, area, normalIdx, p);
+					addToPosMap(posMap, rgba, area, normalIdx, p, meshTri.material);
 				}
 			}
 		}
@@ -388,7 +390,7 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 	palette::Palette palette;
 	const bool shouldCreatePalette = core::Var::getSafe(cfg::VoxelCreatePalette)->boolVal();
 	if (shouldCreatePalette) {
-		RGBAMap colors;
+		RGBAMaterialMap colorMaterials;
 		Log::debug("create palette");
 		for (const auto &entry : posMap) {
 			if (stopExecution()) {
@@ -399,9 +401,10 @@ void MeshFormat::voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &po
 			if (rgba.a <= AlphaThreshold) {
 				continue;
 			}
-			colors.put(rgba, true);
+			const MeshMaterialPtr &material = pos.getMaterial();
+			colorMaterials.put(rgba, material ? &material->material : nullptr);
 		}
-		createPalette(colors, palette);
+		createPalette(colorMaterials, palette);
 	} else {
 		palette = voxel::getPalette();
 	}

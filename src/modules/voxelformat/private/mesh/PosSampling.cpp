@@ -22,7 +22,23 @@ uint8_t PosSampling::getNormal() const {
 	return normal;
 }
 
-bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
+const MeshMaterialPtr &PosSampling::getMaterial() const {
+	if (entries[1].area == 0) {
+		return entries[0].material;
+	}
+	uint32_t area = 0;
+	const MeshMaterialPtr *material = nullptr;
+	for (const PosSamplingEntry &pe : entries) {
+		if (pe.area > area) {
+			area = pe.area;
+			material = &pe.material;
+		}
+	}
+	return *material;
+
+}
+
+bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal, const MeshMaterialPtr &material) {
 	// TODO: VOXELFORMAT: why?
 	if (entries[0].color == color) {
 		return false;
@@ -48,6 +64,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
 			entries[i].area = area;
 			entries[i].color = color;
 			entries[i].normal = normal;
+			entries[i].material = material;
 			return true;
 		}
 	}
@@ -60,6 +77,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
 			entries[i].area = area;
 			entries[i].color = color;
 			entries[i].normal = normal;
+			entries[i].material = material;
 			return true;
 		}
 		if (smallestArea > entries[i].area) {
@@ -72,6 +90,7 @@ bool PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
 		entries[index].area = area;
 		entries[index].color = color;
 		entries[index].normal = normal;
+		entries[index].material = material;
 		return true;
 	}
 #endif
