@@ -41,7 +41,6 @@ protected:
 	/**
 	 * @brief Color flatten factor - see @c PosSampling::getColor()
 	 */
-	uint8_t _flattenFactor;
 	bool _weightedAverage = true;
 
 	struct PointCloudVertex {

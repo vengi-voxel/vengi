@@ -35,7 +35,6 @@
 namespace voxelformat {
 
 MeshFormat::MeshFormat() {
-	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
 	_weightedAverage = core::Var::getSafe(cfg::VoxformatRGBWeightedAverage)->boolVal();
 }
 
