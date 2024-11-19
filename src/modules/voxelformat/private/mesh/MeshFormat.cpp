@@ -107,6 +107,9 @@ glm::vec2 MeshFormat::paletteUV(int colorIndex) {
 }
 
 void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos) {
+	if (rgba.a <= AlphaThreshold) {
+		return;
+	}
 	auto iter = posMap.find(pos);
 	if (iter == posMap.end()) {
 		posMap.emplace(pos, {area, rgba, normalIdx});
