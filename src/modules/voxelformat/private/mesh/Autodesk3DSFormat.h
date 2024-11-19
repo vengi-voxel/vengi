@@ -60,8 +60,8 @@ private:
 		core::RGBA diffuseColor{0, 0, 0};
 		core::RGBA ambientColor{0, 0, 0};
 		core::RGBA specularColor{0, 0, 0};
-		float shininess = 0.0f;
-		float shininess2 = 0.0f;
+		float shininess = 0.0f; // Specular intensity (specular factor)
+		float shininess2 = 0.0f; // controls the size/shape of the specular highlight
 		float transparency = 0.0f;
 		float blur = 0.0f;
 		MaterialTexture3ds diffuse;

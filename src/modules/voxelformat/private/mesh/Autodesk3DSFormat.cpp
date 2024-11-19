@@ -8,7 +8,9 @@
 #include "core/collection/DynamicArray.h"
 #include "image/Image.h"
 #include "io/Stream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/MeshTri.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
@@ -55,8 +57,8 @@ enum ChunkIds {
 	CHUNK_ID_MATERIAL_AMBIENT = 0xA010,
 	CHUNK_ID_MATERIAL_DIFFUSE = 0xA020,
 	CHUNK_ID_MATERIAL_SPECULAR = 0xA030,
-	CHUNK_ID_MATERIAL_SHININESS = 0xA040,
-	CHUNK_ID_MATERIAL_SHININESS_2 = 0xA041,
+	CHUNK_ID_MATERIAL_SHININESS = 0xA040, // Specular intensity (specular factor)
+	CHUNK_ID_MATERIAL_SHININESS_2 = 0xA041, // controls the size/shape of the specular highlight
 	CHUNK_ID_MATERIAL_TRANSPARENCY = 0xA050,
 	CHUNK_ID_MATERIAL_FALLTHROUGH = 0xA052,
 	CHUNK_ID_MATERIAL_FALLIN = 0xA08A,
@@ -663,6 +665,19 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	// 3dsmax is using z-up axis - so let's correct this
 	const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
+	MeshMaterialMap materials;
+	for (const Node3ds &node : nodes) {
+		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
+		for (const auto &entry : node.materials) {
+			const Material3ds &material3ds = entry->value;
+			MeshMaterialPtr material = createMaterial(material3ds.name);
+			material->baseColor = material3ds.diffuseColor;
+			material->transparency = material3ds.transparency;
+			material->material.setValue(palette::MaterialProperty::MaterialSpecular, material3ds.shininess);
+			// TODO: MATERIAL: convert to MeshMaterial
+			materials.put(material->name, material);
+		}
+	}
 	const glm::vec3 scale = getInputScale();
 	Log::debug("Import %i nodes", (int)nodes.size());
 	for (const Node3ds &node : nodes) {
@@ -677,22 +692,11 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				meshTri.uv[0] = mesh.texcoords[face.indices[0]];
 				meshTri.uv[1] = mesh.texcoords[face.indices[1]];
 				meshTri.uv[2] = mesh.texcoords[face.indices[2]];
-				auto matIter = node.materials.find(face.material);
-				if (matIter == node.materials.end()) {
-					Log::error("Material '%s' not found (%i total)", face.material.c_str(), (int)node.materials.size());
-					for (const auto &mat : node.materials) {
-						Log::error("Material: '%s'", mat->first.c_str());
-					}
-					return false;
+				auto matIter = materials.find(face.material);
+				if (matIter != materials.end()) {
+					meshTri.material = matIter->second;
 				} else {
-					Material3ds &material = matIter->value;
-					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = material.diffuseColor;
-					if (material.transparency > 0.0f) {
-						meshTri.color[3] = (float)(meshTri.color[3]) * (1.0f - material.transparency);
-					}
-					meshTri.material = createMaterial(material.name);
-					meshTri.material->texture = material.diffuse.texture;
-					// TODO: MATERIAL: convert to MeshMaterial
+					Log::warn("Failed to look up material %s", face.material.c_str());
 				}
 				tris.emplace_back(meshTri);
 			}
