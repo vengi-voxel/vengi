@@ -1312,12 +1312,14 @@ bool GLTFFormat::loadMaterial(const core::String &filename,
 		} else {
 			Log::debug("Invalid texture index given %i", gltfTextureInfo.index);
 		}
-		const glm::vec4 color = glm::make_vec4(&gltfMaterial->pbrMetallicRoughness.baseColorFactor[0]);
-		meshMaterial.baseColor = core::Color::getRGBA(color);
+		// TODO: MATERIAL
+		// const glm::vec4 color = glm::make_vec4(&gltfMaterial->pbrMetallicRoughness.baseColorFactor[0]);
+		// meshMaterial.baseColor = core::Color::getRGBA(color);
 		palette::Material &paletteMaterial = meshMaterial.material;
 		paletteMaterial.setValue(palette::MaterialProperty::MaterialRoughness,
 							 gltfMaterial->pbrMetallicRoughness.roughnessFactor);
 		paletteMaterial.setValue(palette::MaterialProperty::MaterialMetal, gltfMaterial->pbrMetallicRoughness.metallicFactor);
+		// TODO: MATERIAL
 		// paletteMaterial.setValue(palette::MaterialProperty::MaterialEmit, gltfMaterial->emissiveFactor);
 		load_KHR_materials_emissive_strength(paletteMaterial, *gltfMaterial);
 		load_KHR_materials_pbrSpecularGlossiness(paletteMaterial, *gltfMaterial);

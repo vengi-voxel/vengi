@@ -35,7 +35,6 @@
 namespace voxelformat {
 
 #define AlphaThreshold 0
-#define MaxTriangleColorContributions 4
 
 MeshFormat::MeshFormat() {
 	_flattenFactor = core::Var::getSafe(cfg::VoxformatRGBFlattenFactor)->intVal();
@@ -89,6 +88,9 @@ void MeshFormat::subdivideTri(const voxelformat::MeshTri &tri, TriCollection &ti
 }
 
 uint8_t MeshFormat::PosSampling::getNormal() const {
+	if (entries[1].area == 0) {
+		return entries[0].normal;
+	}
 	uint8_t normal = 0;
 	uint32_t area = 0;
 	for (const PosSamplingEntry &pe : entries) {
@@ -100,8 +102,65 @@ uint8_t MeshFormat::PosSampling::getNormal() const {
 	return normal;
 }
 
+bool MeshFormat::PosSampling::add(uint32_t area, core::RGBA color, uint8_t normal) {
+	// TODO: VOXELFORMAT: why?
+	if (entries[0].color == color) {
+		return false;
+	}
+	if (area == 0) {
+		// nothing to contribute
+		return false;
+	}
+#if 0
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// same values only increase the area of contribution and thus the weighting influence for this color
+		if (entries[i].area > 0 && entries[i].color == color && entries[i].normal == normal) {
+			entries[i].area += area;
+			return true;
+		}
+	}
+#endif
+
+#if 1
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// free slot
+		if (entries[i].area == 0) {
+			entries[i].area = area;
+			entries[i].color = color;
+			entries[i].normal = normal;
+			return true;
+		}
+	}
+#else
+	int smallestArea = 0xffffffff;
+	int index = 0;
+	for (int i = 0; i < MaxTriangleColorContributions; ++i) {
+		// free slot
+		if (entries[i].area == 0) {
+			entries[i].area = area;
+			entries[i].color = color;
+			entries[i].normal = normal;
+			return true;
+		}
+		if (smallestArea > entries[i].area) {
+			smallestArea = entries[i].area;
+			index = i;
+		}
+	}
+	// check if this contribution should have a higher impact
+	if (entries[index].area < area) {
+		entries[index].area = area;
+		entries[index].color = color;
+		entries[index].normal = normal;
+		return true;
+	}
+#endif
+
+	return false;
+}
+
 core::RGBA MeshFormat::PosSampling::getColor(uint8_t flattenFactor, bool weightedAverage) const {
-	if (entries.size() == 1) {
+	if (entries[1].area == 0) {
 		return core::Color::flattenRGB(entries[0].color.r, entries[0].color.g, entries[0].color.b, entries[0].color.a,
 									   flattenFactor);
 	}
@@ -115,6 +174,9 @@ core::RGBA MeshFormat::PosSampling::getColor(uint8_t flattenFactor, bool weighte
 			return color;
 		}
 		for (const PosSamplingEntry &pe : entries) {
+			if (pe.area == 0) {
+				break;
+			}
 			color = core::RGBA::mix(color, pe.color, (float)pe.area / (float)sumArea);
 		}
 		return core::Color::flattenRGB(color.r, color.g, color.b, color.a, flattenFactor);
@@ -122,6 +184,9 @@ core::RGBA MeshFormat::PosSampling::getColor(uint8_t flattenFactor, bool weighte
 	core::RGBA color(0, 0, 0, AlphaThreshold);
 	uint32_t area = 0;
 	for (const PosSamplingEntry &pe : entries) {
+		if (pe.area == 0) {
+			break;
+		}
 		if (pe.area > area) {
 			area = pe.area;
 			color = pe.color;
@@ -156,9 +221,9 @@ void MeshFormat::addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uin
 	auto iter = posMap.find(pos);
 	if (iter == posMap.end()) {
 		posMap.emplace(pos, {area, rgba, normalIdx});
-	} else if (iter->value.entries.size() < MaxTriangleColorContributions && iter->value.entries[0].color != rgba) {
+	} else {
 		PosSampling &posSampling = iter->value;
-		posSampling.entries.emplace_back(area, rgba, normalIdx);
+		posSampling.add(area, rgba, normalIdx);
 	}
 }
 

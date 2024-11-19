@@ -25,6 +25,9 @@ public:
 	float baseColorFactor = 0.0f;
 
 	core::RGBA blendWithBaseColor(core::RGBA color) const {
+		if (baseColorFactor <= 0.0f) {
+			return color;
+		}
 		const float contribution = (1.0f - baseColorFactor);
 		return core::RGBA((float)color.r * contribution + baseColor.r * baseColorFactor,
 						  (float)color.g * contribution + baseColor.g * baseColorFactor,

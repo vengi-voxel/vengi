@@ -290,7 +290,9 @@ static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform
 
 static core::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 	glm::vec4 color(1.0f);
-	if (materialMap.value_components == 3) {
+	if (materialMap.value_components == 1) {
+		color = glm::vec4(materialMap.value_real, materialMap.value_real, materialMap.value_real, 1.0f);
+	} else if (materialMap.value_components == 3) {
 		color = glm::vec4(_ufbx_to_vec3(materialMap.value_vec3), 1.0f);
 	} else if (materialMap.value_components == 4) {
 		color = _ufbx_to_vec4(materialMap.value_vec4);
