@@ -27,4 +27,30 @@ MeshMaterialPtr cloneMaterial(const MeshMaterial &material) {
 	return core::make_shared<MeshMaterial>(material);
 }
 
+core::RGBA MeshMaterial::apply(core::RGBA color) const {
+	if (baseColorFactor > 0.0f) {
+		const float contribution = (1.0f - baseColorFactor);
+		color = core::RGBA((float)color.r * contribution + baseColor.r * baseColorFactor,
+						   (float)color.g * contribution + baseColor.g * baseColorFactor,
+						   (float)color.b * contribution + baseColor.b * baseColorFactor, color.a);
+	}
+	if (transparency > 0.0f) {
+		color.a = color.a * (1.0f - transparency);
+	}
+	return color;
+}
+
+bool MeshMaterial::colorAt(core::RGBA &color, const glm::vec2 &uv, bool originUpperLeft) const {
+	if (!texture || !texture->isLoaded()) {
+		if (baseColorFactor <= 0.0f) {
+			return false;
+		}
+		color = core::RGBA(0, 0, 0);
+	} else {
+		color = texture->colorAt(uv, wrapS, wrapT, originUpperLeft);
+	}
+	color = apply(color);
+	return true;
+}
+
 } // namespace voxelformat

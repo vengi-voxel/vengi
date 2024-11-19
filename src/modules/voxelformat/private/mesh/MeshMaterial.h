@@ -25,15 +25,8 @@ public:
 	float baseColorFactor = 0.0f;
 	float transparency = 0.0f;
 
-	[[nodiscard]] core::RGBA blendWithBaseColor(core::RGBA color) const {
-		if (baseColorFactor <= 0.0f) {
-			return color;
-		}
-		const float contribution = (1.0f - baseColorFactor);
-		return core::RGBA((float)color.r * contribution + baseColor.r * baseColorFactor,
-						  (float)color.g * contribution + baseColor.g * baseColorFactor,
-						  (float)color.b * contribution + baseColor.b * baseColorFactor, color.a);
-	}
+	[[nodiscard]] core::RGBA apply(core::RGBA color) const;
+	[[nodiscard]] bool colorAt(core::RGBA &color, const glm::vec2 &uv, bool originUpperLeft = false) const;
 };
 
 using MeshMaterialPtr = core::SharedPtr<MeshMaterial>;

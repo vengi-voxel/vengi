@@ -49,7 +49,6 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	wrapBool(stream.writeString("Kd 1.000000 1.000000 1.000000\n", false))
 	// TODO: MATERIAL: Ks is specular
 	wrapBool(stream.writeString("Ks 0.000000 0.000000 0.000000\n", false))
-	wrapBool(stream.writeString("Tr 1.000000\n", false))
 	wrapBool(stream.writeString("illum 1\n", false))
 	// TODO: MATERIAL: Ns is shininess
 	wrapBool(stream.writeString("Ns 0.000000\n", false))
@@ -359,7 +358,6 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		for (size_t faceNum = 0; faceNum < mesh.num_face_vertices.size(); ++faceNum) {
 			const int materialIndex = mesh.material_ids[faceNum];
 			const tinyobj::material_t *material = materialIndex < 0 ? nullptr : &materials[materialIndex];
-			const float dissolve = material ? material->dissolve : 1.0f;
 			const int faceVertices = mesh.num_face_vertices[faceNum];
 			core_assert_msg(faceVertices == 3, "Unexpected indices for triangulated mesh: %i", faceVertices);
 			voxelformat::MeshTri meshTri;
@@ -372,7 +370,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 					const float r = attrib.colors[3 * idx.vertex_index + 0];
 					const float g = attrib.colors[3 * idx.vertex_index + 1];
 					const float b = attrib.colors[3 * idx.vertex_index + 2];
-					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f * dissolve));
+					meshTri.color[i] = core::Color::getRGBA(glm::vec4(r, g, b, 1.0f));
 				}
 				if (idx.texcoord_index >= 0) {
 					meshTri.uv[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
@@ -391,8 +389,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 					}
 				}
 				if (attrib.colors.empty()) {
-					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2],
-												 1.0f * dissolve);
+					const glm::vec4 diffuseColor(material->diffuse[0], material->diffuse[1], material->diffuse[2], 1.0f);
 					meshTri.color[0] = meshTri.color[1] = meshTri.color[2] = core::Color::getRGBA(diffuseColor);
 				}
 			}

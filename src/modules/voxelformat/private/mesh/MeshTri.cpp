@@ -21,27 +21,25 @@ glm::vec2 MeshTri::centerUV() const {
 
 core::RGBA MeshTri::blendedColor() const {
 	if (material) {
-		const core::RGBA c1 = material->blendWithBaseColor(color[0]);
-		const core::RGBA c2 = material->blendWithBaseColor(color[1]);
-		const core::RGBA c3 = material->blendWithBaseColor(color[2]);
+		const core::RGBA c1 = material->apply(color[0]);
+		const core::RGBA c2 = material->apply(color[1]);
+		const core::RGBA c3 = material->apply(color[2]);
 		return core::RGBA::mix(core::RGBA::mix(c1, c2), c3);
 	}
 	return core::RGBA::mix(core::RGBA::mix(color[0], color[1]), color[2]);
 }
 
 core::RGBA MeshTri::centerColor() const {
-	if (material && material->texture && material->texture->isLoaded()) {
-		const glm::vec2 &c = centerUV();
-		return material->texture->colorAt(c, material->wrapS, material->wrapT);
-	}
-	return blendedColor();
+	const glm::vec2 &c = centerUV();
+	return colorAt(c);
 }
 
 core::RGBA MeshTri::colorAt(const glm::vec2 &inputuv, bool originUpperLeft) const {
-	if (material && material->texture && material->texture->isLoaded()) {
-		return material->texture->colorAt(inputuv, material->wrapS, material->wrapT, originUpperLeft);
+	core::RGBA rgba;
+	if (!material || !material->colorAt(rgba, inputuv, originUpperLeft)) {
+		rgba = blendedColor();
 	}
-	return blendedColor();
+	return rgba;
 }
 
 // Sierpinski gasket with keeping the middle

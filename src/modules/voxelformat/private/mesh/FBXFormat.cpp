@@ -398,10 +398,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
-						glm::vec4 vertexColor = priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
-						if (mat) {
-							vertexColor[3] = vertexColor[3] * (1.0f - mat->transparency);
-						}
+						const glm::vec4 &vertexColor = priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
 						meshTri.color[ti] = core::Color::getRGBA(vertexColor);
 					}
 					if (mesh->vertex_uv.exists) {
