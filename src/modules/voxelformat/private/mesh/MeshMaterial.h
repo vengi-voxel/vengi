@@ -23,6 +23,7 @@ public:
 	core::RGBA baseColor{255, 255, 255, 255};
 	core::RGBA emitColor{0, 0, 0, 0};
 	float baseColorFactor = 0.0f;
+	float transparency = 0.0f;
 
 	[[nodiscard]] core::RGBA blendWithBaseColor(core::RGBA color) const {
 		if (baseColorFactor <= 0.0f) {
