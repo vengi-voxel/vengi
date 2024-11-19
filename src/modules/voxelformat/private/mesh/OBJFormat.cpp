@@ -36,18 +36,39 @@ namespace voxelformat {
 		return false;                                                                                                  \
 	}
 
+// TODO: MATERIAL: one material entry per palette color
 bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId,
 							 const core::String &mapKd) const {
 	if (!stream.writeStringFormat(false, "\nnewmtl %s\n", mtlId.c_str())) {
 		Log::error("Failed to write obj newmtl");
 		return false;
 	}
+	// TODO: MATERIAL: Ka is ambient
 	wrapBool(stream.writeString("Ka 1.000000 1.000000 1.000000\n", false))
+	// TODO: MATERIAL: Kd is diffuse
 	wrapBool(stream.writeString("Kd 1.000000 1.000000 1.000000\n", false))
+	// TODO: MATERIAL: Ks is specular
 	wrapBool(stream.writeString("Ks 0.000000 0.000000 0.000000\n", false))
 	wrapBool(stream.writeString("Tr 1.000000\n", false))
 	wrapBool(stream.writeString("illum 1\n", false))
+	// TODO: MATERIAL: Ns is shininess
 	wrapBool(stream.writeString("Ns 0.000000\n", false))
+	// TODO: MATERIAL: d is dissolve (don't define both d and Tr)
+	// wrapBool(stream.writeString("d 1.000000\n", false))
+	// TODO: MATERIAL: Tr is transparency (don't define both d and Tr)
+	// wrapBool(stream.writeString("Tr 0.000000\n", false))
+	// TODO: MATERIAL: Ni is ior
+	// wrapBool(stream.writeString("Ni 0.000000\n", false))
+	// TODO: MATERIAL: Ke is emissive
+	// wrapBool(stream.writeString("Ke 0.000000\n", false))
+	// TODO: MATERIAL: Kt or Tf is transmission filter
+	// wrapBool(stream.writeString("Kt 0.000000\n", false))
+	// wrapBool(stream.writeString("Tf 0.000000\n", false))
+	// TODO: MATERIAL: Pr is roughness
+	// wrapBool(stream.writeString("Pr 0.000000\n", false))
+	// TODO: MATERIAL: Pm is metallic
+	// wrapBool(stream.writeString("Pm 0.000000\n", false))
+
 	if (!stream.writeStringFormat(false, "map_Kd %s\n", mapKd.c_str())) {
 		Log::error("Failed to write obj map_Kd");
 		return false;
