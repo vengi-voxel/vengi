@@ -311,6 +311,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		// TODO: MATERIAL: is this maybe shininess? (Ns) material specular exponent is multiplied by the texture value
 		// see https://www.fileformat.info/format/material/
 		paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, material.specular[0]);
+		meshMaterial->transparency = 1.0f - material.dissolve;
 
 		if (!material.diffuse_texname.empty()) {
 			const core::String &diffuseTextureName = lookupTexture(filename, material.diffuse_texname.c_str());
@@ -379,9 +380,14 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 			indexOffset += faceVertices;
 		}
-		if (voxelizeNode(shape.name.c_str(), sceneGraph, tris) < 0) {
+		const int nodeId = voxelizeNode(shape.name.c_str(), sceneGraph, tris);
+		if (nodeId == InvalidNodeId) {
 			Log::error("Failed to voxelize shape %s", shape.name.c_str());
 			return false;
+		}
+		scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+		for (const tinyobj::tag_t &tag : mesh.tags) {
+			node.setProperty(tag.name.c_str(), "");
 		}
 	}
 	return !sceneGraph.empty();
