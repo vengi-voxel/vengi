@@ -57,7 +57,7 @@ enum ChunkIds {
 	CHUNK_ID_MATERIAL_AMBIENT = 0xA010,
 	CHUNK_ID_MATERIAL_DIFFUSE = 0xA020,
 	CHUNK_ID_MATERIAL_SPECULAR = 0xA030,
-	CHUNK_ID_MATERIAL_SHININESS = 0xA040, // Specular intensity (specular factor)
+	CHUNK_ID_MATERIAL_SHININESS = 0xA040,	// Specular intensity (specular factor)
 	CHUNK_ID_MATERIAL_SHININESS_2 = 0xA041, // controls the size/shape of the specular highlight
 	CHUNK_ID_MATERIAL_TRANSPARENCY = 0xA050,
 	CHUNK_ID_MATERIAL_FALLTHROUGH = 0xA052,
@@ -352,8 +352,9 @@ bool Autodesk3DSFormat::readDataFactor(io::SeekableReadStream *stream, Chunk3ds 
 	return true;
 }
 
-bool Autodesk3DSFormat::readMaterialTexture(const io::ArchivePtr &archive, io::SeekableReadStream *stream,
-											Chunk3ds &parent, MaterialTexture3ds &texture) const {
+bool Autodesk3DSFormat::readMaterialTexture(const core::String &filename, const io::ArchivePtr &archive,
+											io::SeekableReadStream *stream, Chunk3ds &parent,
+											MaterialTexture3ds &texture) const {
 	const int64_t currentPos = stream->pos();
 	const int64_t endOfChunk = currentPos + parent.length - 6;
 
@@ -366,7 +367,7 @@ bool Autodesk3DSFormat::readMaterialTexture(const io::ArchivePtr &archive, io::S
 		case priv::CHUNK_ID_TEXTURE_MAP_NAME: {
 			wrapBool(stream->readString(64, texture.name, true))
 			Log::debug("texture name: %s", texture.name.c_str());
-			texture.name = lookupTexture("", texture.name);
+			texture.name = lookupTexture(filename, texture.name);
 			texture.texture = image::loadImage(texture.name);
 			if (!texture.texture || !texture.texture->isLoaded()) {
 				Log::warn("Failed to load texture %s", texture.name.c_str());
@@ -411,8 +412,8 @@ bool Autodesk3DSFormat::readMaterialTexture(const io::ArchivePtr &archive, io::S
 	return true;
 }
 
-bool Autodesk3DSFormat::readMaterial(const io::ArchivePtr &archive, io::SeekableReadStream *stream, Chunk3ds &parent,
-									 Material3ds &material) const {
+bool Autodesk3DSFormat::readMaterial(const core::String &filename, const io::ArchivePtr &archive,
+									 io::SeekableReadStream *stream, Chunk3ds &parent, Material3ds &material) const {
 	const int64_t currentPos = stream->pos();
 	const int64_t endOfChunk = currentPos + parent.length - 6;
 
@@ -467,7 +468,7 @@ bool Autodesk3DSFormat::readMaterial(const io::ArchivePtr &archive, io::Seekable
 			break;
 		}
 		case priv::CHUNK_ID_MATERIAL_DIFFUSE_TEXTURE: {
-			wrapBool(readMaterialTexture(archive, stream, scoped.chunk, material.diffuse))
+			wrapBool(readMaterialTexture(filename, archive, stream, scoped.chunk, material.diffuse))
 			break;
 		}
 		case priv::CHUNK_ID_MATERIAL_SHADING: {
@@ -510,8 +511,8 @@ bool Autodesk3DSFormat::readNodeChildren(io::SeekableReadStream *stream, Chunk3d
 	return true;
 }
 
-bool Autodesk3DSFormat::readNode(const io::ArchivePtr &archive, io::SeekableReadStream *stream, Chunk3ds &parent,
-								 Node3ds &node) const {
+bool Autodesk3DSFormat::readNode(const core::String &filename, const io::ArchivePtr &archive,
+								 io::SeekableReadStream *stream, Chunk3ds &parent, Node3ds &node) const {
 	const int64_t currentPos = stream->pos();
 	const int64_t endOfChunk = currentPos + parent.length - 6;
 
@@ -538,7 +539,7 @@ bool Autodesk3DSFormat::readNode(const io::ArchivePtr &archive, io::SeekableRead
 		}
 		case priv::CHUNK_ID_NODE_MATERIAL: {
 			Material3ds material;
-			wrapBool(readMaterial(archive, stream, scoped.chunk, material))
+			wrapBool(readMaterial(filename, archive, stream, scoped.chunk, material))
 			if (material.name.empty()) {
 				Log::error("Material without name");
 				return false;
@@ -652,7 +653,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		}
 		case priv::CHUNK_ID_NODE: {
 			Node3ds node;
-			wrapBool(readNode(archive, stream, scoped.chunk, node))
+			wrapBool(readNode(filename, archive, stream, scoped.chunk, node))
 			nodes.emplace_back(node);
 			break;
 		}
@@ -671,6 +672,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		for (const auto &entry : node.materials) {
 			const Material3ds &material3ds = entry->value;
 			MeshMaterialPtr material = createMaterial(material3ds.name);
+			material->texture = material3ds.diffuse.texture;
 			material->baseColor = material3ds.diffuseColor;
 			material->transparency = material3ds.transparency;
 			material->material.setValue(palette::MaterialProperty::MaterialSpecular, material3ds.shininess);

@@ -60,7 +60,7 @@ private:
 		core::RGBA diffuseColor{0, 0, 0};
 		core::RGBA ambientColor{0, 0, 0};
 		core::RGBA specularColor{0, 0, 0};
-		float shininess = 0.0f; // Specular intensity (specular factor)
+		float shininess = 0.0f;	 // Specular intensity (specular factor)
 		float shininess2 = 0.0f; // controls the size/shape of the specular highlight
 		float transparency = 0.0f;
 		float blur = 0.0f;
@@ -101,12 +101,13 @@ private:
 
 	bool readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;
 	bool readMesh(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;
-	bool readMaterial(const io::ArchivePtr &archive, io::SeekableReadStream *stream, Chunk3ds &parent,
-					  Material3ds &material) const;
-	bool readNode(const io::ArchivePtr &archive, io::SeekableReadStream *stream, Chunk3ds &parent, Node3ds &node) const;
+	bool readMaterial(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream *stream,
+					  Chunk3ds &parent, Material3ds &material) const;
+	bool readNode(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream *stream,
+				  Chunk3ds &parent, Node3ds &node) const;
 	bool readNodeChildren(io::SeekableReadStream *stream, Chunk3ds &parent, Node3ds &node) const;
-	bool readMaterialTexture(const io::ArchivePtr &archive, io::SeekableReadStream *stream, Chunk3ds &parent,
-							 MaterialTexture3ds &texture) const;
+	bool readMaterialTexture(const core::String &filename, const io::ArchivePtr &archive,
+							 io::SeekableReadStream *stream, Chunk3ds &parent, MaterialTexture3ds &texture) const;
 
 protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
@@ -116,6 +117,7 @@ protected:
 					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override {
 		return false;
 	}
+
 public:
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Autodesk 3D Studio", {"3ds"}, {}, VOX_FORMAT_FLAG_MESH};
