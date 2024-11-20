@@ -77,6 +77,19 @@ protected:
 	 */
 	virtual bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
 								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx);
+	/**
+	 * @brief Voxelizes a point cloud and adds it to the scene graph.
+	 *
+	 * This function takes a collection of point cloud vertices and voxelizes them into a volume. The resulting
+	 * volume is then added as a node to the scene graph. The function scales the input vertices, calculates the
+	 * bounding box, and creates voxels for each point in the point cloud. It also supports setting the size of
+	 * each point in the voxel grid.
+	 *
+	 * @param filename The name of the file from which the point cloud was loaded.
+	 * @param sceneGraph The scene graph to which the new node will be added.
+	 * @param vertices The collection of point cloud vertices to be voxelized.
+	 * @return True if the node was successfully added to the scene graph, false otherwise.
+	 */
 	bool voxelizePointCloud(const core::String &filename, scenegraph::SceneGraph &sceneGraph,
 							const PointCloud &vertices) const;
 
@@ -117,7 +130,8 @@ protected:
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
 	typedef core::Map<glm::ivec3, PosSampling, 64, glm::hash<glm::ivec3>> PosMap;
-	static void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos, const MeshMaterialPtr &material);
+	static void addToPosMap(PosMap &posMap, core::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+							const MeshMaterialPtr &material);
 
 	/**
 	 * @brief Convert the given input triangles into a list of positions to place the voxels at
