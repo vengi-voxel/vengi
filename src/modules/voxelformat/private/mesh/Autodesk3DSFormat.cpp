@@ -674,6 +674,9 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			MeshMaterialPtr material = createMaterial(material3ds.name);
 			material->texture = material3ds.diffuse.texture;
 			material->baseColor = material3ds.diffuseColor;
+			if (!material->texture) {
+				material->baseColorFactor = 1.0f;
+			}
 			material->transparency = material3ds.transparency;
 			material->material.setValue(palette::MaterialProperty::MaterialSpecular, material3ds.shininess);
 			// TODO: MATERIAL: convert to MeshMaterial
