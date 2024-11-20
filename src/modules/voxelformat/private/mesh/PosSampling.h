@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/RGBA.h"
 #include "core/collection/Array.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
