@@ -46,6 +46,8 @@ private:
 
 	struct MaterialTexture3ds {
 		core::String name;
+		// 0x2 means mirror, 0x10 is cut off (clamped)
+		// TODO: MATERIAL: image::TextureWrap
 		int16_t tiling = 0;
 		float blur = 0.0f;
 		float scaleU = 1.0f;
@@ -74,7 +76,7 @@ private:
 		core::String instanceName;
 		glm::vec3 pivot{0.0f};
 		uint32_t meshVersion = 0;
-		float scale = 1.0f;
+		float scale = 1.0f; // global scaling factor
 		uint16_t flags1 = 0;
 		uint16_t flags2 = 0;
 		glm::vec3 min{0.0f};

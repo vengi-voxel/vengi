@@ -52,6 +52,7 @@ enum ChunkIds {
 	CHUNK_ID_MESH_FACES = 0x4120,
 	CHUNK_ID_MESH_NORMALS = 0x4152,
 	CHUNK_ID_MESH_UV = 0x4140,
+	CHUNK_ID_MESH_COLOR = 0x4165,
 
 	CHUNK_ID_MATERIAL_NAME = 0xA000,
 	CHUNK_ID_MATERIAL_AMBIENT = 0xA010,
@@ -82,6 +83,9 @@ enum ChunkIds {
 	CHUNK_ID_TEXTURE_MAP_UOFFSET = 0xA358,
 	CHUNK_ID_TEXTURE_MAP_VOFFSET = 0xA35A,
 	CHUNK_ID_KEYFRAME_HEADER = 0xB00A,
+
+	CHUNK_ID_CAMERA = 0x4700,
+	CHUNK_ID_LIGHT = 0x4600,
 
 	CHUNK_ID_FACE_MATERIAL_GROUP = 0x4130,
 	CHUNK_ID_FACE_SMOOTH_GROUP = 0x4150,
@@ -288,6 +292,26 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 					wrap(stream->readFloat(mesh.matrix[i][j]))
 				}
 			}
+			break;
+		}
+		case priv::CHUNK_ID_MESH_COLOR: {
+#if 0
+			const uint32_t remainingBytes = scoped.chunk.length - 6; // header length and flags
+			const uint32_t vertexCount = remainingBytes / (3 * sizeof(float)); // rgb as float values
+			uint16_t flags;
+			wrap(stream->readUInt16(flags))
+			if (flags & 0x01) { // vertex colors are available
+				for (uint32_t i = 0; i < vertexCount; ++i) {
+					glm::vec3 color;
+					wrap(stream->readFloat(color.r))
+					wrap(stream->readFloat(color.g))
+					wrap(stream->readFloat(color.b))
+					mesh.colors.push_back(color);
+				}
+			}
+#else
+			skipUnknown(stream, scoped.chunk, "vertex colors");
+#endif
 			break;
 		}
 		default:
@@ -502,7 +526,15 @@ bool Autodesk3DSFormat::readNodeChildren(io::SeekableReadStream *stream, Chunk3d
 			node.meshes.emplace_back(mesh);
 			break;
 		}
-		// TODO: VOXELFORMAT: camera
+		case priv::CHUNK_ID_CAMERA: {
+			// TODO: VOXELFORMAT: camera
+			skipUnknown(stream, scoped.chunk, "Camera");
+			break;
+		}
+		case priv::CHUNK_ID_LIGHT: {
+			skipUnknown(stream, scoped.chunk, "Light");
+			break;
+		}
 		default:
 			skipUnknown(stream, scoped.chunk, "Child");
 			break;
@@ -707,7 +739,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				}
 				tris.emplace_back(meshTri);
 			}
-			// TODO: VOXELFORMAT: node parent
+			// TODO: VOXELFORMAT: node parent (looks like there is no hierarchy in 3ds)
 			int parent = 0;
 			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());
 			const int nodeId = voxelizeNode(mesh.name, sceneGraph, tris, parent);
