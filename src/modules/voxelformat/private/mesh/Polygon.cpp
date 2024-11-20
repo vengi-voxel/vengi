@@ -8,6 +8,35 @@
 
 namespace voxelformat {
 
+Polygon &Polygon::setMaterial(const MeshMaterialPtr &material) {
+	_material = material;
+	return *this;
+}
+
+Polygon &Polygon::setWrapS(image::TextureWrap wrapS) {
+	_wrapS = wrapS;
+	return *this;
+}
+
+Polygon &Polygon::setWrapT(image::TextureWrap wrapT) {
+	_wrapT = wrapT;
+	return *this;
+}
+
+Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color) {
+	_vertices.push_back(vertex);
+	_uvs.push_back(uv);
+	_colors.push_back(color);
+	return *this;
+}
+
+glm::vec2 Polygon::uv(int x, int y) const {
+	if (_material && _material->texture) {
+		return _material->texture->uv(x, y);
+	}
+	return {0.0f, 0.0f};
+}
+
 bool Polygon::toTris(MeshFormat::MeshTriCollection &tris) const {
 	// TODO: VOXELFORMAT: mapbox::earcut
 	if (_vertices.size() < 3) {

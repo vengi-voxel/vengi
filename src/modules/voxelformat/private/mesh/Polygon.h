@@ -22,35 +22,11 @@ private:
 	image::TextureWrap _wrapT = image::TextureWrap::Repeat;
 
 public:
-	Polygon &setMaterial(const MeshMaterialPtr &material) {
-		_material = material;
-		return *this;
-	}
-
-	Polygon &setWrapS(image::TextureWrap wrapS) {
-		_wrapS = wrapS;
-		return *this;
-	}
-
-	Polygon &setWrapT(image::TextureWrap wrapT) {
-		_wrapT = wrapT;
-		return *this;
-	}
-
-	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0)) {
-		_vertices.push_back(vertex);
-		_uvs.push_back(uv);
-		_colors.push_back(color);
-		return *this;
-	}
-
-	glm::vec2 uv(int x, int y) const {
-		if (_material && _material->texture) {
-			return _material->texture->uv(x, y);
-		}
-		return {0.0f, 0.0f};
-	}
-
+	Polygon &setMaterial(const MeshMaterialPtr &material);
+	Polygon &setWrapS(image::TextureWrap wrapS);
+	Polygon &setWrapT(image::TextureWrap wrapT);
+	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0));
+	glm::vec2 uv(int x, int y) const;
 	bool toTris(MeshFormat::MeshTriCollection &tris) const;
 };
 
