@@ -691,9 +691,11 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 				for (int i = 0; i < 3; ++i) {
 					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[face.indices[i]] * scale, 1.0f);
 				}
-				meshTri.uv[0] = mesh.texcoords[face.indices[0]];
-				meshTri.uv[1] = mesh.texcoords[face.indices[1]];
-				meshTri.uv[2] = mesh.texcoords[face.indices[2]];
+				if (!mesh.texcoords.empty()) {
+					meshTri.uv[0] = mesh.texcoords[face.indices[0]];
+					meshTri.uv[1] = mesh.texcoords[face.indices[1]];
+					meshTri.uv[2] = mesh.texcoords[face.indices[2]];
+				}
 				auto matIter = materials.find(face.material);
 				if (matIter != materials.end()) {
 					meshTri.material = matIter->second;
