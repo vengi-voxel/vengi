@@ -721,6 +721,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
 		for (const Mesh3ds &mesh : node.meshes) {
 			MeshTriCollection tris;
+			tris.reserve(mesh.faces.size());
 			for (const Face3ds &face : mesh.faces) {
 				MeshTri meshTri;
 				for (int i = 0; i < 3; ++i) {
