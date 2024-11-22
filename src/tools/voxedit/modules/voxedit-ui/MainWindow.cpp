@@ -78,8 +78,8 @@ namespace voxedit {
 #define TM_ENTRY(name, id) {name, id##_data, id##_png_data, id##_size, id##_png_size}
 static const struct TemplateModel {
 	const char *name;
-	const unsigned int *data;
-	const unsigned int *imageData;
+	const unsigned char *data;
+	const unsigned char *imageData;
 	const unsigned int size;
 	const unsigned int imageSize;
 } TEMPLATEMODELS[] = {

@@ -39,7 +39,7 @@ set(SRCS
 	dearimgui/ImGuizmo.cpp dearimgui/ImGuizmo.h
 )
 
-set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO)
+set(DEFINITIONS -DIMGUI_DISABLE_OBSOLETE_FUNCTIONS -DIMGUI_DISABLE_OBSOLETE_KEYIO -DIMGUI_DISABLE_DEFAULT_FONT -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS -DIMGUI_ENABLE_WIN32_DEFAULT_IME_FUNCTIONS)
 set(LIBS)
 
 if (USE_OPENGLES)
@@ -55,6 +55,9 @@ endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES render app ${LIBS})
 target_compile_definitions(${LIB} PUBLIC ${DEFINITIONS})
+if (APPLE)
+	target_link_libraries(${LIB} PRIVATE "-framework ApplicationServices")
+endif()
 
 engine_generated_library(ui-fonts)
 engine_compressed_file_to_header(ui-fonts FontLucide ${ROOT_DIR}/data/ui/lucide.ttf ${GENERATE_DIR}/ui/FontLucide.h)
