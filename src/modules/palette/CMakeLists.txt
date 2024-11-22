@@ -12,6 +12,7 @@ set(SRCS
 	private/RGBPalette.cpp private/RGBPalette.h
 	private/PixeloramaPalette.cpp private/PixeloramaPalette.h
 
+	Material.cpp Material.h
 	NormalPalette.cpp NormalPalette.h
 
 	PaletteFormatDescription.cpp PaletteFormatDescription.h
