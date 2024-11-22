@@ -9,7 +9,9 @@
 #include "image/Image.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/MeshTri.h"
 #include <glm/mat4x4.hpp>
@@ -82,15 +84,18 @@ enum ChunkIds {
 	CHUNK_ID_TEXTURE_MAP_VSCALE = 0xA356,
 	CHUNK_ID_TEXTURE_MAP_UOFFSET = 0xA358,
 	CHUNK_ID_TEXTURE_MAP_VOFFSET = 0xA35A,
-	CHUNK_ID_KEYFRAME_HEADER = 0xB00A,
 
 	CHUNK_ID_CAMERA = 0x4700,
+	CHUNK_ID_CAMERA_NEAR_FAR = 0x4720,
 	CHUNK_ID_LIGHT = 0x4600,
 
 	CHUNK_ID_FACE_MATERIAL_GROUP = 0x4130,
 	CHUNK_ID_FACE_SMOOTH_GROUP = 0x4150,
 
 	CHUNK_ID_KEYFRAMES = 0xB000,
+	CHUNK_ID_KEYFRAME_HEADER = 0xB00A,
+	CHUNK_ID_KEYFRAME_FRAME_RANGE = 0xB008,
+	CHUNK_ID_KEYFRAME_CURRENT_FRAME = 0xB009,
 
 	// generic data types
 	CHUNK_ID_DATA_COLOR_FLOAT = 0x0010,
@@ -108,7 +113,6 @@ static const struct {
 	uint16_t chunkId;
 	const char *name;
 } Names[] = {TO_STR(CHUNK_ID_VERSION),
-			 TO_STR(CHUNK_ID_VERSION),
 			 TO_STR(CHUNK_ID_NODE_VERSION),
 			 TO_STR(CHUNK_ID_NODE_PIVOT),
 			 TO_STR(CHUNK_ID_NODE_ID),
@@ -144,6 +148,7 @@ static const struct {
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_NAME),
 			 TO_STR(CHUNK_ID_FACE_MATERIAL_GROUP),
 			 TO_STR(CHUNK_ID_MESH_UV),
+			 TO_STR(CHUNK_ID_MESH_COLOR),
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_UOFFSET),
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_VOFFSET),
 			 TO_STR(CHUNK_ID_NODE_MATRIX),
@@ -151,12 +156,17 @@ static const struct {
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_TEXBLUR),
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_USCALE),
 			 TO_STR(CHUNK_ID_TEXTURE_MAP_VSCALE),
-			 TO_STR(CHUNK_ID_KEYFRAME_HEADER),
 			 TO_STR(CHUNK_ID_NODE_HEADER),
 			 TO_STR(CHUNK_ID_NODE_INSTANCE_NAME),
 			 TO_STR(CHUNK_ID_NODE_BOUNDING_BOX),
 			 TO_STR(CHUNK_ID_NODE_ROTATION),
 			 TO_STR(CHUNK_ID_KEYFRAMES),
+			 TO_STR(CHUNK_ID_KEYFRAME_HEADER),
+			 TO_STR(CHUNK_ID_KEYFRAME_FRAME_RANGE),
+			 TO_STR(CHUNK_ID_KEYFRAME_CURRENT_FRAME),
+			 TO_STR(CHUNK_ID_CAMERA),
+			 TO_STR(CHUNK_ID_CAMERA_NEAR_FAR),
+			 TO_STR(CHUNK_ID_LIGHT),
 			 TO_STR(CHUNK_ID_MATERIAL_SHADING),
 			 TO_STR(CHUNK_ID_MATERIAL_SELF_ILLUMINATION),
 			 TO_STR(CHUNK_ID_MATERIAL_WIREFRAME_SIZE),
@@ -237,6 +247,37 @@ bool Autodesk3DSFormat::readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &
 		// TODO: VOXELFORMAT: face normals? 0x4154
 		default:
 			skipUnknown(stream, scoped.chunk, "Face");
+			break;
+		}
+	}
+	return true;
+}
+
+bool Autodesk3DSFormat::readCamera(io::SeekableReadStream *stream, Chunk3ds &parent, Camera3ds &camera) const {
+	const int64_t currentPos = stream->pos();
+	const int64_t endOfChunk = currentPos + parent.length - 6;
+
+	wrap(stream->readFloat(camera.position.x))
+	wrap(stream->readFloat(camera.position.y))
+	wrap(stream->readFloat(camera.position.z))
+
+	wrap(stream->readFloat(camera.target.x))
+	wrap(stream->readFloat(camera.target.y))
+	wrap(stream->readFloat(camera.target.z))
+
+	wrap(stream->readFloat(camera.roll))
+	wrap(stream->readFloat(camera.fieldOfView))
+
+	while (stream->pos() < endOfChunk) {
+		ScopedChunk scoped(stream);
+		switch (scoped.chunk.id) {
+		case priv::CHUNK_ID_CAMERA_NEAR_FAR: {
+			wrap(stream->readFloat(camera.nearPlane))
+			wrap(stream->readFloat(camera.farPlane))
+			break;
+		}
+		default:
+			skipUnknown(stream, scoped.chunk, "Camera");
 			break;
 		}
 	}
@@ -523,12 +564,14 @@ bool Autodesk3DSFormat::readNodeChildren(io::SeekableReadStream *stream, Chunk3d
 			Mesh3ds mesh;
 			mesh.name = name;
 			wrapBool(readMesh(stream, scoped.chunk, mesh))
-			node.meshes.emplace_back(mesh);
+			node.meshes.emplace_back(core::move(mesh));
 			break;
 		}
 		case priv::CHUNK_ID_CAMERA: {
-			// TODO: VOXELFORMAT: camera
-			skipUnknown(stream, scoped.chunk, "Camera");
+			Camera3ds camera;
+			camera.name = name;
+			wrapBool(readCamera(stream, scoped.chunk, camera))
+			node.cameras.emplace_back(core::move(camera));
 			break;
 		}
 		case priv::CHUNK_ID_LIGHT: {
@@ -537,6 +580,46 @@ bool Autodesk3DSFormat::readNodeChildren(io::SeekableReadStream *stream, Chunk3d
 		}
 		default:
 			skipUnknown(stream, scoped.chunk, "Child");
+			break;
+		}
+	}
+	return true;
+}
+
+bool Autodesk3DSFormat::readKeyFrames(io::SeekableReadStream *stream, Chunk3ds &parent) const {
+	const int64_t currentPos = stream->pos();
+	const int64_t endOfChunk = currentPos + parent.length - 6;
+
+	while (stream->pos() < endOfChunk) {
+		ScopedChunk scoped(stream);
+		switch (scoped.chunk.id) {
+		case priv::CHUNK_ID_KEYFRAME_HEADER: {
+			uint16_t version;
+			wrap(stream->readUInt16(version))
+			char name[13];
+			wrapBool(stream->readString(sizeof(name), name, true))
+			uint32_t frames;
+			wrap(stream->readUInt32(frames))
+			Log::debug("name: %s, version %d, frames: %d", name, (int)version, (int)frames);
+			break;
+		}
+		case priv::CHUNK_ID_KEYFRAME_CURRENT_FRAME: {
+			uint32_t frame;
+			wrap(stream->readUInt32(frame))
+			Log::debug("frame: %d", frame);
+			break;
+		}
+		case priv::CHUNK_ID_KEYFRAME_FRAME_RANGE: {
+			uint32_t start;
+			wrap(stream->readUInt32(start))
+			uint32_t end;
+			wrap(stream->readUInt32(end))
+			Log::debug("frame range: %d:%d", start, end);
+			break;
+		}
+		// TODO: VOXELFORMAT: tags
+		default:
+			skipUnknown(stream, scoped.chunk, "Keyframe");
 			break;
 		}
 	}
@@ -646,7 +729,7 @@ bool Autodesk3DSFormat::readNode(const core::String &filename, const io::Archive
 }
 
 void Autodesk3DSFormat::skipUnknown(io::SeekableReadStream *stream, const Chunk3ds &chunk, const char *section) const {
-	Log::debug("%s: Unknown 3ds chunk 0X%04x (%s) of size %d", section, chunk.id, priv::chunkToString(chunk.id),
+	Log::debug("%s: Unimplemented 3ds chunk 0X%04x (%s) of size %d", section, chunk.id, priv::chunkToString(chunk.id),
 			   chunk.length);
 	stream->skip(chunk.length - 6);
 }
@@ -689,6 +772,10 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			nodes.emplace_back(node);
 			break;
 		}
+		case priv::CHUNK_ID_KEYFRAMES: {
+			wrapBool(readKeyFrames(stream, scoped.chunk))
+			break;
+		}
 		default:
 			skipUnknown(stream, scoped.chunk, "Main");
 			break;
@@ -696,6 +783,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	}
 
 	// 3dsmax is using z-up axis - so let's correct this
+	// TODO: SCENEGRAPH: Use scenegraph::convertCoordinateSystem()
 	const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 	MeshMaterialMap materials;
@@ -742,11 +830,33 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			}
 			// TODO: VOXELFORMAT: node parent (looks like there is no hierarchy in 3ds)
 			int parent = 0;
-			Log::debug("Mesh %s has %i tris", mesh.name.c_str(), (int)tris.size());
-			const int nodeId = voxelizeNode(mesh.name, sceneGraph, tris, parent);
+			core::String nodeName = node.instanceName;
+			if (nodeName.empty()) {
+				nodeName = node.name;
+			}
+			if (nodeName.empty()) {
+				nodeName = mesh.name;
+			}
+			Log::debug("Node %s has %i tris", nodeName.c_str(), (int)tris.size());
+			const int nodeId = voxelizeNode(nodeName, sceneGraph, tris, parent);
 			if (nodeId == InvalidNodeId) {
 				return false;
 			}
+		}
+
+		for (const Camera3ds &c : node.cameras) {
+			Log::debug("Import camera %s", c.name.c_str());
+			scenegraph::SceneGraphNodeCamera camera;
+			camera.setName(c.name);
+			camera.setFarPlane(c.farPlane);
+			camera.setNearPlane(c.nearPlane);
+			camera.setFieldOfView(c.fieldOfView);
+			const scenegraph::KeyFrameIndex keyFrameIdx = 0;
+			scenegraph::SceneGraphTransform transform;
+			transform.setLocalTranslation(c.position);
+			// TODO: VOXELFORMAT: c.target
+			camera.setTransform(keyFrameIdx, transform);
+			sceneGraph.emplace(core::move(camera));
 		}
 	}
 

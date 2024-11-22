@@ -69,6 +69,17 @@ private:
 		MaterialTexture3ds diffuse;
 	};
 
+	struct Camera3ds {
+		core::String name;
+		glm::vec3 position;
+		glm::vec3 target;
+		float roll;
+		float fieldOfView;
+		uint8_t unknown;
+		float nearPlane;
+		float farPlane;
+	};
+
 	struct Node3ds {
 		int16_t id = -1;
 		int16_t parentId = -1;
@@ -83,6 +94,7 @@ private:
 		glm::vec3 max{0.0f};
 		core::StringMap<Material3ds> materials;
 		core::DynamicArray<Mesh3ds> meshes;
+		core::DynamicArray<Camera3ds> cameras;
 	};
 
 	class ScopedChunk {
@@ -103,6 +115,8 @@ private:
 
 	bool readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;
 	bool readMesh(io::SeekableReadStream *stream, Chunk3ds &parent, Mesh3ds &mesh) const;
+	bool readCamera(io::SeekableReadStream *stream, Chunk3ds &parent, Camera3ds &camera) const;
+	bool readKeyFrames(io::SeekableReadStream *stream, Chunk3ds &parent) const;
 	bool readMaterial(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream *stream,
 					  Chunk3ds &parent, Material3ds &material) const;
 	bool readNode(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream *stream,
