@@ -55,7 +55,7 @@ public:
 
 	TYPE pop() {
 		TYPE tmp = top();
-		_stack.erase(_stack.size() - 1);
+		_stack.pop();
 		return tmp;
 	}
 
