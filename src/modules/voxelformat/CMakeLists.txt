@@ -17,6 +17,11 @@ set(SRCS
 	private/benvoxel/BenBinary.h             private/benvoxel/BenBinary.cpp
 	private/benvoxel/BenJson.h               private/benvoxel/BenJson.cpp
 	private/benvoxel/BenShared.h             private/benvoxel/BenShared.cpp
+	private/benvoxel/SparseVoxelOctree.h     private/benvoxel/SparseVoxelOctree.cpp
+	private/benvoxel/Node.h                  private/benvoxel/Node.cpp
+	private/benvoxel/Branch.h                private/benvoxel/Branch.cpp
+	private/benvoxel/Leaf.h                  private/benvoxel/Leaf.cpp
+	private/benvoxel/SeekableReadStreamAdapter.hpp
 
 	private/binvox/BinVoxFormat.h            private/binvox/BinVoxFormat.cpp
 	private/chronovox/CSMFormat.h            private/chronovox/CSMFormat.cpp
