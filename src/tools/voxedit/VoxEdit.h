@@ -57,8 +57,8 @@ public:
 
 	void onRenderUI() override;
 
-	void onDropFile(void *window, const core::String &file) override;
-
+	void onDropFile(void *windowHandle, const core::String &file) override;
+	void onDropText(void *windowHandle, const core::String& text) override;
 	bool allowedToQuit() override;
 
 	app::AppState onConstruct() override;

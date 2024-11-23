@@ -68,7 +68,7 @@ app::AppState VoxEdit::onCleanup() {
 	return Super::onCleanup();
 }
 
-void VoxEdit::onDropFile(void *window, const core::String &file) {
+void VoxEdit::onDropFile(void *, const core::String &file) {
 	if (_mainWindow == nullptr) {
 		return;
 	}
@@ -83,6 +83,10 @@ void VoxEdit::onDropFile(void *window, const core::String &file) {
 		return;
 	}
 	Log::warn("Failed to handle %s as drop file event", file.c_str());
+}
+
+void VoxEdit::onDropText(void *, const core::String& text) {
+	onDropFile(nullptr, text);
 }
 
 void VoxEdit::toggleScene() {
