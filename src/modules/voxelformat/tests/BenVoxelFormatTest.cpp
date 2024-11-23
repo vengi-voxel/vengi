@@ -8,7 +8,7 @@ namespace voxelformat {
 
 class BenVoxelFormatTest : public AbstractFormatTest {};
 
-TEST_F(BenVoxelFormatTest, DISABLED_testLoadJSON) {
+TEST_F(BenVoxelFormatTest, testLoadJSON) {
 	testLoad("sora.ben.json");
 }
 

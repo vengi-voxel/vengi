@@ -9,6 +9,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
+#include "voxelformat/private/benvoxel/SparseVoxelOctree.h"
 
 namespace voxelformat {
 namespace benv {
@@ -48,64 +49,6 @@ bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, 
 	return sceneGraph.emplace(core::move(pointNode), parent) != InvalidNodeId;
 }
 
-// static bool loadLeaf(io::SeekableReadStream &stream, scenegraph::SceneGraphNode &node, const voxel::Voxel &voxel) {
-// 	return false;
-// }
-
-static bool loadBranch(io::SeekableReadStream &stream, scenegraph::SceneGraphNode &node, int depth) {
-	uint8_t header;
-	if (stream.readUInt8(header) != 0) {
-		Log::error("Failed to read header");
-		return InvalidNodeId;
-	}
-	// const uint8_t octant = header & 7;
-	const uint8_t type = (header >> 6) & 3;
-	switch (type) {
-	case 0: { // regular branch
-		const uint8_t children = (header >> 3 & 7) + 1;
-		for (uint8_t i = 0; i < children; ++i) {
-			uint8_t childHeader;
-			if (stream.peekUInt8(childHeader) != 0) {
-				Log::error("Failed to read child header");
-				return InvalidNodeId;
-			}
-			// const uint8_t childOctant = childHeader & 7;
-			if ((childHeader & 0b10000000) > 0) {
-				// TODO: VOXELFORMAT: load the Sparse Voxel Octree
-				// if (!loadLeaf(stream, node)) {
-				// 	return false;
-				// }
-			} else {
-				if (!loadBranch(stream, node, depth++)) {
-					return false;
-				}
-			}
-		}
-		break;
-	}
-	case 1: { // collapsed branch
-		uint8_t color;
-		if (stream.readUInt8(color) != 0) {
-			Log::error("Failed to read color for collapsed branch");
-			return InvalidNodeId;
-		}
-		// TODO: VOXELFORMAT: load the Sparse Voxel Octree
-		// voxel::Voxel voxel = color == 0 ? voxel::Voxel() : voxel::createVoxel(node.palette(), color);
-		if (depth == 15) {
-			for (uint8_t c_octant = 0u; c_octant < 8u; c_octant++) {
-				// loadLeafVoxels(stream, node, c_octant, voxel);
-			}
-		} else {
-			for (uint8_t c_octant = 0u; c_octant < 8u; c_octant++) {
-				loadBranch(stream, node, /*voxel, */ depth);
-			}
-		}
-		break;
-	}
-	}
-	return true;
-}
-
 int createModelNode(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const core::String &name,
 					int width, int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
 					const Metadata &metadata) {
@@ -116,12 +59,10 @@ int createModelNode(scenegraph::SceneGraph &sceneGraph, const palette::Palette &
 	node.setPalette(palette);
 	node.setVolume(v, true);
 
-	int svoDepth = 0;
-	while (!stream.eos()) {
-		if (!loadBranch(stream, node, svoDepth)) {
-			Log::error("Failed to load branch");
-			return InvalidNodeId;
-		}
+	BenVoxel::SparseVoxelOctree svo(stream, (uint16_t)width, (uint16_t)depth, (uint16_t)height);
+	for (const BenVoxel::Voxel &voxel : svo.voxels()) {
+		v->setVoxel((int32_t)voxel.position.x, (int32_t)voxel.position.z, (int32_t)voxel.position.y,
+					voxel::createVoxel(voxel::VoxelType::Generic, voxel.index));
 	}
 
 	int nodeId = sceneGraph.emplace(core::move(node));
