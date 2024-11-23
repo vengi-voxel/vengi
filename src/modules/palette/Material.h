@@ -2,6 +2,8 @@
  * @file
  */
 
+#pragma once
+
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
 
