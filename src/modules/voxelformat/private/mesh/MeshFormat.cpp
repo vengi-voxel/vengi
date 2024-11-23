@@ -16,6 +16,7 @@
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
+#include "io/Filesystem.h"
 #include "io/FormatDescription.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteLookup.h"
@@ -496,28 +497,31 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	const core::String &meshPath = core::string::extractDir(meshFilename);
 	core::String name = in;
 	io::normalizePath(name);
+
+	const io::FilesystemPtr &fs = io::filesystem();
 	if (!core::string::isAbsolutePath(name)) {
 		name = core::string::path(meshPath, name);
 	}
-	if (io::filesystem()->exists(name)) {
+
+	if (fs->exists(name)) {
 		Log::debug("Found image %s in path %s", in.c_str(), name.c_str());
 		return name;
 	}
 
 	if (!meshPath.empty()) {
-		io::filesystem()->sysPushDir(meshPath);
+		fs->sysPushDir(meshPath);
 	}
 	core::String filename = core::string::extractFilenameWithExtension(name);
 	const core::String &path = core::string::extractDir(name);
-	core::String fullpath = io::searchPathFor(io::filesystem(), path, filename);
+	core::String fullpath = io::searchPathFor(fs, path, filename);
 	if (fullpath.empty() && path != meshPath) {
-		fullpath = io::searchPathFor(io::filesystem(), meshPath, filename);
+		fullpath = io::searchPathFor(fs, meshPath, filename);
 	}
 	if (fullpath.empty()) {
-		fullpath = io::searchPathFor(io::filesystem(), "texture", filename);
+		fullpath = io::searchPathFor(fs, "texture", filename);
 	}
 	if (fullpath.empty()) {
-		fullpath = io::searchPathFor(io::filesystem(), "textures", filename);
+		fullpath = io::searchPathFor(fs, "textures", filename);
 	}
 
 	// if not found, loop over all supported image formats and repeat the search
@@ -530,19 +534,19 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 					if (f == filename) {
 						continue;
 					}
-					fullpath = io::searchPathFor(io::filesystem(), path, f);
+					fullpath = io::searchPathFor(fs, path, f);
 					if (fullpath.empty() && path != meshPath) {
-						fullpath = io::searchPathFor(io::filesystem(), meshPath, f);
+						fullpath = io::searchPathFor(fs, meshPath, f);
 					}
 					if (fullpath.empty()) {
-						fullpath = io::searchPathFor(io::filesystem(), "texture", f);
+						fullpath = io::searchPathFor(fs, "texture", f);
 					}
 					if (fullpath.empty()) {
-						fullpath = io::searchPathFor(io::filesystem(), "textures", f);
+						fullpath = io::searchPathFor(fs, "textures", f);
 					}
 					if (!fullpath.empty()) {
 						if (!meshPath.empty()) {
-							io::filesystem()->sysPopDir();
+							fs->sysPopDir();
 						}
 						return fullpath;
 					}
@@ -555,7 +559,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		Log::error("Failed to perform texture lookup for '%s' (filename: '%s')", name.c_str(), filename.c_str());
 	}
 	if (!meshPath.empty()) {
-		io::filesystem()->sysPopDir();
+		fs->sysPopDir();
 	}
 	return fullpath;
 }
