@@ -232,7 +232,7 @@ bool Autodesk3DSFormat::readMeshFaces(io::SeekableReadStream *stream, Chunk3ds &
 			wrapBool(stream->readString(64, material, true))
 			uint16_t count;
 			wrap(stream->readUInt16(count))
-			Log::debug("count: %d", count);
+			Log::debug("material group '%s': %d", material.c_str(), count);
 			for (uint16_t i = 0; i < count; ++i) {
 				uint16_t faceIndex;
 				wrap(stream->readUInt16(faceIndex))
@@ -342,13 +342,16 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 			uint16_t flags;
 			wrap(stream->readUInt16(flags))
 			if (flags & 0x01) { // vertex colors are available
+				Log::debug("Found vertex colors in 3ds file");
 				for (uint32_t i = 0; i < vertexCount; ++i) {
-					glm::vec3 color;
-					wrap(stream->readFloat(color.r))
-					wrap(stream->readFloat(color.g))
-					wrap(stream->readFloat(color.b))
-					mesh.colors.push_back(color);
+					core::RGBA rgba(0, 0, 0, 255);
+					wrap(stream->readUInt8(rgba.r))
+					wrap(stream->readUInt8(rgba.g))
+					wrap(stream->readUInt8(rgba.b))
+					mesh.colors.push_back(rgba);
 				}
+			} else {
+				Log::debug("No vertex colors found in 3ds file");
 			}
 #else
 			skipUnknown(stream, scoped.chunk, "vertex colors");
@@ -756,12 +759,12 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	const int64_t endOfChunk = currentPos + numberOfBytes - 6;
 
 	core::DynamicArray<Node3ds> nodes;
+	uint32_t version = 0;
 	while (stream->pos() < endOfChunk) {
 		ScopedChunk scoped(stream);
 
 		switch (scoped.chunk.id) {
 		case priv::CHUNK_ID_VERSION: {
-			uint32_t version;
 			wrap(stream->readUInt32(version))
 			Log::debug("version: %d", version);
 			break;
@@ -859,6 +862,8 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			sceneGraph.emplace(core::move(camera));
 		}
 	}
+
+	sceneGraph.node(0).setProperty("version", version);
 
 	return true;
 }
