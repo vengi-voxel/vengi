@@ -336,7 +336,6 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 			break;
 		}
 		case priv::CHUNK_ID_MESH_COLOR: {
-#if 0
 			const uint32_t remainingBytes = scoped.chunk.length - 6; // header length and flags
 			const uint32_t vertexCount = remainingBytes / (3 * sizeof(float)); // rgb as float values
 			uint16_t flags;
@@ -353,9 +352,6 @@ bool Autodesk3DSFormat::readMesh(io::SeekableReadStream *stream, Chunk3ds &paren
 			} else {
 				Log::debug("No vertex colors found in 3ds file");
 			}
-#else
-			skipUnknown(stream, scoped.chunk, "vertex colors");
-#endif
 			break;
 		}
 		default:
@@ -809,25 +805,31 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 	const glm::vec3 scale = getInputScale();
 	Log::debug("Import %i nodes", (int)nodes.size());
 	for (const Node3ds &node : nodes) {
-		Log::debug("Import %i meshes for node %s", (int)node.meshes.size(), node.name.c_str());
+		Log::debug("Import %i meshes for node '%s'", (int)node.meshes.size(), node.name.c_str());
 		for (const Mesh3ds &mesh : node.meshes) {
 			MeshTriCollection tris;
 			tris.reserve(mesh.faces.size());
 			for (const Face3ds &face : mesh.faces) {
 				MeshTri meshTri;
 				for (int i = 0; i < 3; ++i) {
-					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[face.indices[i]] * scale, 1.0f);
+					const uint16_t idx = face.indices[i];
+					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[idx] * scale, 1.0f);
+					if (mesh.colors.size() > idx) {
+						meshTri.color[i] = mesh.colors[idx];
+					}
 				}
 				if (!mesh.texcoords.empty()) {
 					meshTri.uv[0] = mesh.texcoords[face.indices[0]];
 					meshTri.uv[1] = mesh.texcoords[face.indices[1]];
 					meshTri.uv[2] = mesh.texcoords[face.indices[2]];
 				}
-				auto matIter = materials.find(face.material);
-				if (matIter != materials.end()) {
-					meshTri.material = matIter->second;
-				} else {
-					Log::warn("Failed to look up material %s", face.material.c_str());
+				if (!face.material.empty()) {
+					auto matIter = materials.find(face.material);
+					if (matIter != materials.end()) {
+						meshTri.material = matIter->second;
+					} else {
+						Log::warn("Failed to look up material '%s'", face.material.c_str());
+					}
 				}
 				tris.emplace_back(meshTri);
 			}

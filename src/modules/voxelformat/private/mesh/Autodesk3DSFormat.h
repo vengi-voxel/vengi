@@ -37,6 +37,7 @@ private:
 		core::DynamicArray<glm::vec3> normals;
 		core::DynamicArray<glm::vec2> texcoords;
 		core::DynamicArray<Face3ds> faces;
+		core::DynamicArray<core::RGBA> colors;
 	};
 
 	struct Chunk3ds {
