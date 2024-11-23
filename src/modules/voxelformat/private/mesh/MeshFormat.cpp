@@ -499,7 +499,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	io::normalizePath(name);
 
 	const io::FilesystemPtr &fs = io::filesystem();
-	if (!core::string::isAbsolutePath(name)) {
+	if (!core::string::isAbsolutePath(name) && !fs->exists(name)) {
 		name = core::string::path(meshPath, name);
 	}
 
