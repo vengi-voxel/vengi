@@ -16,6 +16,10 @@
 
 namespace voxelformat {
 
+int BenVoxelFormat::emptyPaletteIndex() const {
+	return 0;
+}
+
 bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 									   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 									   const LoadContext &ctx) {

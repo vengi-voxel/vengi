@@ -26,10 +26,10 @@ struct MVModelToNode;
  * @ingroup Formats
  */
 class VoxFormat : public PaletteFormat {
-private:
+protected:
 	glm::ivec3 maxSize() const override;
 	int emptyPaletteIndex() const override;
-
+private:
 	void saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx,
 					 uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette);

@@ -22,6 +22,7 @@ namespace voxelformat {
  */
 class BenVoxelFormat : public PaletteFormat {
 protected:
+	int emptyPaletteIndex() const override;
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
