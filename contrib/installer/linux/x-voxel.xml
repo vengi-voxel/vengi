@@ -16,6 +16,11 @@
 		<comment>Qubicle Binary</comment>
 		<glob pattern="*.qb"/>
 	</mime-type>
+	<mime-type type="application/x-benvoxel">
+		<comment>BenVoxel</comment>
+		<glob pattern="*.ben.json"/>
+		<glob pattern="*.ben"/>
+	</mime-type>
 	<mime-type type="application/x-magicavoxel">
 		<comment>MagicaVoxel</comment>
 		<glob pattern="*.vox"/>

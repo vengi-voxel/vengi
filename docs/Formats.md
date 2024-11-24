@@ -10,6 +10,7 @@
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
 | AnimaToon                  | scn         | X       |        |            |         | X          |
 | aseprite                   | aseprite    | X       |        |            | X       |            |
+| BenVoxel                   | ben.json    | X       |        |            | X       |            |
 | BinVox                     | binvox      | X       | X      |            |         |            |
 | Build engine               | kvx         | X       | X      |            | X       |            |
 | Chronovox                  | csm         | X       |        |            |         |            |

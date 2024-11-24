@@ -25,6 +25,12 @@
 		<RegistryKey Root="HKCR" Key=".qb">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".ben.json">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".ben">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vox">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -243,6 +249,24 @@
 		<RegistryValue Root="HKCR" Key=".qb\OpenWithProgids" Name="vengi-voxedit.qb" Value="" Type="string" />
 		<ProgId Id="vengi-voxedit.qb" Description="Qubicle Binary" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
 			<Extension Id="qb" ContentType="application/x-qubicle-binary">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ben.json" Value="vengi-voxedit.ben.json" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ben.json" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".ben.json\OpenWithProgids" Name="vengi-voxedit.ben.json" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.ben.json" Description="BenVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ben.json" ContentType="application/x-benvoxel">
+				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
+			</Extension>
+		</ProgId>
+
+		<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ben" Value="vengi-voxedit.ben" Type="string" />
+		<RegistryValue Root="HKCR" Key="Applications\vengi_voxedit.exe\SupportedTypes" Name=".ben" Value="" Type="string" />
+		<RegistryValue Root="HKCR" Key=".ben\OpenWithProgids" Name="vengi-voxedit.ben" Value="" Type="string" />
+		<ProgId Id="vengi-voxedit.ben" Description="BenVoxel" Icon="CM_FP_voxedit.voxedit.vengi_voxedit.exe">
+			<Extension Id="ben" ContentType="application/x-benvoxel-ben-json">
 				<Verb Id="open" TargetFile="CM_FP_voxedit.voxedit.vengi_voxedit.exe" Argument="&quot;%1&quot;" />
 			</Extension>
 		</ProgId>

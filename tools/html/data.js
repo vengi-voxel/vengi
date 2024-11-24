@@ -217,6 +217,17 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "BenVoxel",
+      "extensions": [
+        "ben.json",
+        "ben"
+      ],
+      "magics": [],
+      "mimetype": "application/x-benvoxel",
+      "animation": false,
+      "save": false
+    },
+    {
       "name": "MagicaVoxel",
       "extensions": [
         "vox"
