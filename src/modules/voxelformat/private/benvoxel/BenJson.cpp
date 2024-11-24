@@ -160,6 +160,10 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 	return true;
 }
 
+bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
+	return false;
+}
+
 } // namespace benv
 
 } // namespace voxelformat

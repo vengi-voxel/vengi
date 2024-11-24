@@ -196,6 +196,10 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 	return true;
 }
 
+bool saveBinary(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
+	return false;
+}
+
 } // namespace benv
 
 } // namespace voxelformat

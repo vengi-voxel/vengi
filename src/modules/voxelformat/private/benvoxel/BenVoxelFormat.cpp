@@ -72,7 +72,29 @@ bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::A
 
 bool BenVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								const io::ArchivePtr &archive, const SaveContext &ctx) {
-	return false;
+	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
+	if (!stream) {
+		Log::error("Failed to open stream for file: %s", filename.c_str());
+		return false;
+	}
+	if (core::string::endsWith(filename, "ben.json")) {
+		if (!benv::saveJson(sceneGraph, *stream)) {
+			Log::error("Failed to save json");
+			return false;
+		}
+	} else {
+		uint32_t magic = FourCC('B', 'E', 'N', 'V');
+		if (stream->writeUInt32(magic) != 0) {
+			Log::error("Failed to write magic");
+			return false;
+		}
+		if (!benv::saveBinary(sceneGraph, *stream)) {
+			Log::error("Failed to save binary");
+			return false;
+		}
+	}
+
+	return true;
 }
 
 } // namespace voxelformat
