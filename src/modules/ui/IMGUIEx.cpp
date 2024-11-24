@@ -129,6 +129,23 @@ bool InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags fl
 	return v;
 }
 
+bool InputFolderVar(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags) {
+	core::String folder = var->strVal();
+	if (InputFolder(label, &folder, flags)) {
+		var->setVal(folder);
+		return true;
+	}
+	if (var->help()) {
+		TooltipText("%s", var->help());
+	}
+	return false;
+}
+
+bool InputFolderVar(const char *label, const char *varName, ImGuiInputTextFlags flags) {
+	const core::VarPtr &var = core::Var::getSafe(varName);
+	return InputFolderVar(label, var, flags);
+}
+
 bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
 	float v = var->floatVal();
 	if (InputFloat(label, &v, step, step_fast, "%.3f", extra_flags)) {
