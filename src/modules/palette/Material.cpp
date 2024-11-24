@@ -49,7 +49,7 @@ void Material::setValue(MaterialProperty n, float value) {
 		return;
 	}
 	*(&metal + (n - 1)) = value;
-	Log::debug("Material: Set %s to %f", MaterialPropertyNames[n - 1], value);
+	Log::trace("Material: Set %s to %f", MaterialPropertyNames[n - 1], value);
 	if (value > 0.0f) {
 		mask |= (1 << n);
 	} else {
