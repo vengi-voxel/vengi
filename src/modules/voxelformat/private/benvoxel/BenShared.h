@@ -41,8 +41,8 @@ struct Metadata {
 bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const glm::vec3 &pointPos,
 				  int parent = -1);
 
-int createModelNode(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const core::String &name,
-					int width, int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
+int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &name, int width,
+					int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
 					const Metadata &metadata);
 
 } // namespace benv

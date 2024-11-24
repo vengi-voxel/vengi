@@ -49,13 +49,16 @@ bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, 
 	return sceneGraph.emplace(core::move(pointNode), parent) != InvalidNodeId;
 }
 
-int createModelNode(scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const core::String &name,
-					int width, int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
+int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &name, int width,
+					int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
 					const Metadata &metadata) {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName(name);
 	voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
+	if (!metadata.palettes.get("", palette)) {
+		globalMetadata.palettes.get("", palette);
+	}
 	node.setPalette(palette);
 	node.setVolume(v, true);
 
