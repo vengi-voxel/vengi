@@ -340,15 +340,18 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 				texture = fbxmaterial->pbr.base_color.texture;
 			}
 
-			const core::String &relativeFilename =
-				priv::_ufbx_to_string(texture ? texture->relative_filename : fbxmaterial->name);
-			const core::String &textureName = lookupTexture(filename, relativeFilename);
-			const image::ImagePtr &tex = image::loadImage(textureName);
-			if (tex->isLoaded()) {
-				Log::debug("Use image %s", textureName.c_str());
-				mat->texture = tex;
-			} else {
-				Log::debug("Failed to load image %s", relativeFilename.c_str());
+			if (texture) {
+				const core::String &fbxTextureFilename = priv::_ufbx_to_string(texture->relative_filename);
+				const core::String &textureName = lookupTexture(filename, fbxTextureFilename);
+				if (!textureName.empty()) {
+					const image::ImagePtr &tex = image::loadImage(textureName);
+					if (tex->isLoaded()) {
+						Log::debug("Use image %s", textureName.c_str());
+						mat->texture = tex;
+					}
+				} else {
+					Log::debug("Failed to load image %s for material %s", fbxTextureFilename.c_str(), matname.c_str());
+				}
 			}
 			if (fbxmaterial->features.pbr.enabled) {
 				if (fbxmaterial->pbr.base_factor.has_value) {
