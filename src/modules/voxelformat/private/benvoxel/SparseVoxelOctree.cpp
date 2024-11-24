@@ -51,7 +51,7 @@ static int toIndex(int level, uint16_t x, uint16_t y, uint16_t z) {
 }
 
 uint8_t SparseVoxelOctree::get(uint16_t x, uint16_t y, uint16_t z) const {
-	const Branch *branch = const_cast<Branch *>(&_root);
+	const Branch *branch = &_root;
 	for (uint8_t level = 15; level > 1; level--) {
 		const int idx = toIndex(level, x, y, z);
 		const Node *node = (*branch)[idx];
@@ -70,7 +70,7 @@ uint8_t SparseVoxelOctree::get(uint16_t x, uint16_t y, uint16_t z) const {
 core::DynamicArray<Voxel> SparseVoxelOctree::voxels() const {
 	core::DynamicArray<Voxel> list = {};
 	core::DynamicStack<const Branch *> stack = {};
-	fillStack(stack, const_cast<Branch *>(&_root));
+	fillStack(stack, &_root);
 	while (!stack.empty()) {
 		const Branch *branch = stack.pop();
 		if (stack.size() == 14) {
