@@ -23,7 +23,7 @@
 #include "Node.h"
 #include "Branch.h"
 #include "core/Log.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStack.h"
 #include "io/Stream.h"
 
 namespace BenVoxel {
@@ -57,17 +57,16 @@ uint8_t Node::depth() const {
 }
 
 Position Node::position() const {
-	core::DynamicArray<const Node *> stack = {};
+	core::DynamicStack<const Node *> stack = {};
 	const Node *node = this;
 	while (node) {
-		stack.push_back(node);
+		stack.push(node);
 		node = node->_parent;
 	}
 	uint8_t count = 17 - (uint8_t)stack.size();
 	uint16_t x = 0, y = 0, z = 0;
 	while (!stack.empty()) {
-		node = stack.front();
-		stack.erase(stack.begin());
+		node = stack.pop();
 		x = (x << 1) | (node->getOctant() & 1);
 		y = (y << 1) | ((node->getOctant() >> 1) & 1);
 		z = (z << 1) | ((node->getOctant() >> 2) & 1);
