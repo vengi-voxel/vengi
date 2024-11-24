@@ -120,7 +120,7 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 		} else if (chunk.id != FourCC('S', 'V', 'O', 'G')) {
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			uint16_t width, height, depth;
-			if (stream.readUInt16(width) != 0 || stream.readUInt16(height) != 0 || stream.readUInt16(depth) != 0) {
+			if (dataStream.readUInt16(width) != 0 || dataStream.readUInt16(height) != 0 || dataStream.readUInt16(depth) != 0) {
 				Log::error("Failed to read size of model");
 				return false;
 			}

@@ -22,7 +22,6 @@
 
 #include "SparseVoxelOctree.h"
 #include "Leaf.h"
-#include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
 #include "voxelformat/private/benvoxel/Node.h"
 
@@ -66,22 +65,21 @@ uint8_t SparseVoxelOctree::get(uint16_t x, uint16_t y, uint16_t z) const {
 
 core::DynamicArray<Voxel> SparseVoxelOctree::voxels() const {
 	core::DynamicArray<Voxel> list = {};
-	core::DynamicArray<const Branch *> stack = {};
+	core::DynamicStack<const Branch *> stack = {};
 	fillStack(stack, const_cast<Branch *>(&_root));
 	while (!stack.empty()) {
-		const Branch *branch = stack.front();
-		stack.erase(stack.begin());
+		const Branch *branch = stack.pop();
 		if (stack.size() == 14) {
 			for (uint8_t octant = 0; octant < 8; octant++) {
 				const Node *node = (*branch)[octant];
 				if (isLeaf(node)) {
 					const Leaf *leaf = (const Leaf *)node;
 					const Position &position = leaf->position();
-					for (uint8_t octant2 = 0; octant2 < 8; octant2++) {
-						const uint8_t index = (*leaf)[octant2];
+					for (uint8_t childOctant = 0; childOctant < 8; childOctant++) {
+						const uint8_t index = (*leaf)[childOctant];
 						if (index) {
-							list.push_back(Voxel(position.x + (octant2 & 1), position.y + ((octant2 >> 1) & 1),
-												 position.z + ((octant2 >> 2) & 1), index));
+							list.push_front(Voxel(position.x + (childOctant & 1), position.y + ((childOctant >> 1) & 1),
+												  position.z + ((childOctant >> 2) & 1), index));
 						}
 					}
 				}
@@ -98,9 +96,9 @@ core::DynamicArray<Voxel> SparseVoxelOctree::voxels() const {
 	return list;
 }
 
-void SparseVoxelOctree::fillStack(core::DynamicArray<const Branch *> &stack, const Branch *branch) {
+void SparseVoxelOctree::fillStack(core::DynamicStack<const Branch *> &stack, const Branch *branch) {
 	while (branch) {
-		stack.push_back(branch);
+		stack.push(branch);
 		branch = isBranch(branch->first()) ? (Branch *)branch->first() : nullptr;
 	}
 }

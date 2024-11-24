@@ -23,7 +23,7 @@
 #pragma once
 
 #include "Branch.h"
-#include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicStack.h"
 #include "io/Stream.h"
 
 namespace BenVoxel {
@@ -40,7 +40,7 @@ protected:
 	uint16_t _sizeX;
 	uint16_t _sizeY;
 	uint16_t _sizeZ;
-	static void fillStack(core::DynamicArray<const Branch *> &stack, const Branch *branch);
+	static void fillStack(core::DynamicStack<const Branch *> &stack, const Branch *branch);
 
 public:
 	SparseVoxelOctree(io::SeekableReadStream &in, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ);
