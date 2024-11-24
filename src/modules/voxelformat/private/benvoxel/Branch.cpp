@@ -183,7 +183,7 @@ uint8_t Branch::tryCollapsing(uint8_t color) const {
 		if (isLeaf(child)) {
 			Leaf *leaf = (Leaf *)child;
 			for (uint8_t i = 0; i < 8; i++) {
-				if (leaf->operator[](i) != color) {
+				if ((*leaf)[i] != color) {
 					return 0;
 				}
 			}
@@ -202,7 +202,7 @@ uint8_t Branch::tryCollapseGetColor() const {
 		return 0;
 	}
 	if (isLeaf(_children[0])) {
-		return ((Leaf *)_children[0])->operator[](0);
+		return (*(Leaf *)_children[0])[0];
 	}
 	if (isBranch(_children[0])) {
 		return ((Branch *)_children[0])->tryCollapseGetColor();

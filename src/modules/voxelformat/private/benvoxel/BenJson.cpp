@@ -120,8 +120,8 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 		}
 
 		const int width = sizeJson[0];
-		const int height = sizeJson[1];
-		const int depth = sizeJson[2];
+		const int depth = sizeJson[1];
+		const int height = sizeJson[2];
 		Log::debug("Model: '%s', size: %dx%dx%d", name.c_str(), width, height, depth);
 
 		if (geometryJson.find("z85") == geometryJson.end()) {
