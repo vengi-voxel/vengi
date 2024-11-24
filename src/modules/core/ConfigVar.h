@@ -106,5 +106,6 @@ constexpr const char *VoxFormatGLTF_KHR_materials_specular = "voxformat_gltf_khr
 constexpr const char *VoxformatImageVolumeMaxDepth = "voxformat_imagevolumemaxdepth";
 constexpr const char *VoxformatImageVolumeBothSides = "voxformat_imagevolumebothsides";
 constexpr const char *VoxformatImageImportType = "voxformat_imageimporttype";
+constexpr const char *VoxformatTexturePath = "voxformat_texturepath";
 
 }

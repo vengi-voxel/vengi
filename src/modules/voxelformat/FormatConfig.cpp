@@ -108,6 +108,8 @@ bool FormatConfig::init() {
 				   core::Var::minMaxValidator<1, 255>);
 	core::Var::get(cfg::VoxformatImageVolumeBothSides, "true", core::CV_NOPERSIST,
 				   _("Import the image as volume for both sides"), core::Var::boolValidator);
+	core::Var::get(cfg::VoxformatTexturePath, "", core::CV_NOPERSIST,
+				   _("Register an additional search path for texture lookups"));
 	core::Var::get(cfg::VoxformatImageImportType, PNGFormat::ImportType::Plane, core::CV_NOPERSIST,
 				   _("0 = plane, 1 = heightmap, 2 = volume"),
 				   core::Var::minMaxValidator<PNGFormat::ImportType::Plane, PNGFormat::ImportType::Volume>);

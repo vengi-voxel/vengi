@@ -186,6 +186,7 @@ static void loadOptionsPng(const io::FilesystemEntry &entry) {
 }
 
 static void loadOptionsMesh() {
+	ImGui::InputFolderVar(_("Texture search path"), cfg::VoxformatTexturePath);
 	ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
 

@@ -508,6 +508,8 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 		return name;
 	}
 
+	const core::String &additionalSearchPath = core::Var::getSafe(cfg::VoxformatTexturePath)->strVal();
+
 	if (!meshPath.empty()) {
 		fs->sysPushDir(meshPath);
 	}
@@ -516,6 +518,10 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	core::String fullpath = io::searchPathFor(fs, path, filename);
 	if (fullpath.empty() && path != meshPath) {
 		fullpath = io::searchPathFor(fs, meshPath, filename);
+	}
+	if (!additionalSearchPath.empty() && fullpath.empty()) {
+		fullpath = io::searchPathFor(fs, additionalSearchPath, filename);
+		Log::debug("Searching for texture %s in %s", filename.c_str(), additionalSearchPath.c_str());
 	}
 	if (fullpath.empty()) {
 		fullpath = io::searchPathFor(fs, "texture", filename);
@@ -538,6 +544,9 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 					if (fullpath.empty() && path != meshPath) {
 						fullpath = io::searchPathFor(fs, meshPath, f);
 					}
+					if (!additionalSearchPath.empty() && fullpath.empty()) {
+						fullpath = io::searchPathFor(fs, additionalSearchPath, filename);
+					}
 					if (fullpath.empty()) {
 						fullpath = io::searchPathFor(fs, "texture", f);
 					}
@@ -556,7 +565,7 @@ core::String MeshFormat::lookupTexture(const core::String &meshFilename, const c
 	}
 
 	if (fullpath.empty()) {
-		Log::error("Failed to perform texture lookup for '%s' (filename: '%s')", name.c_str(), filename.c_str());
+		Log::error("Failed to perform texture lookup for '%s' (filename: '%s', register additional search paths with the cvar %s)", name.c_str(), filename.c_str(), cfg::VoxformatTexturePath);
 	}
 	if (!meshPath.empty()) {
 		fs->sysPopDir();

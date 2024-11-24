@@ -14,6 +14,7 @@ General:
 
    - Added support for BenVoxel `ben` and `ben.json` format
    - Added support for loading vertex colors for `3ds`
+   - New cvar to define additional texture search paths for voxelization (`voxformat_texturepath`)
 
 VoxEdit:
 
