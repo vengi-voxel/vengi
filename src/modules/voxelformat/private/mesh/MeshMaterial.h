@@ -7,7 +7,7 @@
 #include "core/SharedPtr.h"
 #include "core/collection/StringMap.h"
 #include "image/Image.h"
-#include "palette/Palette.h"
+#include "palette/Material.h"
 
 namespace voxelformat {
 

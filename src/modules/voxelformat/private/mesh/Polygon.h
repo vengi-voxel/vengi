@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "MeshFormat.h"
+#include "MeshMaterial.h"
 #include "core/collection/DynamicArray.h"
-#include "voxelformat/private/mesh/MeshFormat.h"
-#include "voxelformat/private/mesh/MeshMaterial.h"
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 

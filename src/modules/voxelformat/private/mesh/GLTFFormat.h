@@ -5,10 +5,9 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "MeshMaterial.h"
 #include "core/Pair.h"
-#include "core/collection/StringMap.h"
 #include "palette/Palette.h"
-#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace tinygltf {
 class Model;

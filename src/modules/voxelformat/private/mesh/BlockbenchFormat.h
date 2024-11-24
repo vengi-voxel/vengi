@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include "MeshFormat.h"
+#include "MeshMaterial.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
 #include "util/Version.h"
 #include "voxel/Face.h"
-#include "voxelformat/private/mesh/MeshFormat.h"
-#include "voxelformat/private/mesh/MeshMaterial.h"
 
 namespace voxel {
 class RawVolumeWrapper;

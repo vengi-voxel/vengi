@@ -3,6 +3,8 @@
  */
 
 #include "BlockbenchFormat.h"
+#include "MeshMaterial.h"
+#include "Polygon.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -20,13 +22,11 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
-#include "voxelformat/private/mesh/MeshMaterial.h"
-#include "voxelformat/private/mesh/Polygon.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VoxelUtil.h"
 
-#include <glm/trigonometric.hpp>
 #include "json/JSON.h"
+#include <glm/trigonometric.hpp>
 
 namespace voxelformat {
 

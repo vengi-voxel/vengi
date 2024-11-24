@@ -5,7 +5,6 @@
 #pragma once
 
 #include "MeshFormat.h"
-#include "core/collection/StringMap.h"
 
 struct ufbx_node;
 struct ufbx_scene;

@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "MeshMaterial.h"
 #include "core/RGBA.h"
 #include "core/collection/Array.h"
-#include "voxelformat/private/mesh/MeshMaterial.h"
 
 #define MaxTriangleColorContributions 4
 #define AlphaThreshold 0
