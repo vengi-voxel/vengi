@@ -111,13 +111,13 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 	int nodeId = InvalidNodeId;
 	while (!stream.eos()) {
 		ScopedChunkCheck chunk(stream);
-		if (chunk.id != FourCC('D', 'A', 'T', 'A')) {
+		if (chunk.id == FourCC('D', 'A', 'T', 'A')) {
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			if (!loadMetadataBinary(dataStream, metadata)) {
 				Log::error("Failed to load metadata");
 				return false;
 			}
-		} else if (chunk.id != FourCC('S', 'V', 'O', 'G')) {
+		} else if (chunk.id == FourCC('S', 'V', 'O', 'G')) {
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			uint16_t width, height, depth;
 			if (dataStream.readUInt16(width) != 0 || dataStream.readUInt16(height) != 0 || dataStream.readUInt16(depth) != 0) {
@@ -144,18 +144,10 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 	Metadata globalMetadata;
 
 	while (!stream.eos()) {
-		uint32_t chunkId;
-		if (stream.readUInt32(chunkId) != 0) {
-			Log::error("Failed to read chunk id");
-			return false;
-		}
-		uint32_t length;
-		if (stream.readUInt32(length) != 0) {
-			Log::error("Failed to read length of riff header");
-			return false;
-		}
-		if (chunkId == FourCC('D', 'A', 'T', 'A')) {
-			io::BufferedReadWriteStream dataStream(stream, length);
+		ScopedChunkCheck chunk(stream);
+		if (chunk.id == FourCC('D', 'A', 'T', 'A')) {
+			Log::debug("Found metadata chunk");
+			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			if (!loadMetadataBinary(dataStream, globalMetadata)) {
 				Log::error("Failed to load metadata");
 				return false;
@@ -172,32 +164,26 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 			return false;
 		}
 
+		Log::debug("%d entries", amount);
+
 		for (uint16_t i = 0; i < amount; ++i) {
 			core::String name;
 			if (!stream.readPascalStringUInt8(name)) {
 				Log::error("Failed to read model name");
 				return false;
 			}
-			if (stream.readUInt32(chunkId) != 0) {
-				Log::error("Failed to read chunk id");
-				return false;
-			}
-			if (stream.readUInt32(length) != 0) {
-				Log::error("Failed to read length of riff header");
-				return false;
-			}
-
-			if (chunkId == FourCC('M', 'O', 'D', 'L')) {
-				io::BufferedReadWriteStream modelStream(stream, length);
+			ScopedChunkCheck subChunk(stream);
+			if (subChunk.id == FourCC('M', 'O', 'D', 'L')) {
+				io::BufferedReadWriteStream modelStream(stream, subChunk.length);
 				if (!loadModelBinary(sceneGraph, name, palette, modelStream, globalMetadata)) {
 					Log::error("Failed to load model");
 					return false;
 				}
 			} else {
 				uint8_t buf[4];
-				FourCCRev(buf, chunkId);
-				Log::error("Unknown riff id with length %u: %c%c%c%c", length, buf[0], buf[1], buf[2], buf[3]);
-				stream.skipDelta(length);
+				FourCCRev(buf, subChunk.id);
+				Log::error("Unknown riff id with length %u: %c%c%c%c", subChunk.length, buf[0], buf[1], buf[2], buf[3]);
+				stream.skipDelta(subChunk.length);
 			}
 		}
 	}

@@ -12,8 +12,8 @@ TEST_F(BenVoxelFormatTest, testLoadJSON) {
 	testLoad("sora.ben.json");
 }
 
-TEST_F(BenVoxelFormatTest, DISABLED_testLoadBinary) {
-	testLoad("sora.ben");
+TEST_F(BenVoxelFormatTest, testLoadBinary) {
+	testLoad("sora.ben", 2);
 }
 
 } // namespace voxelformat

@@ -46,19 +46,23 @@ uint8_t SparseVoxelOctree::operator[](Position &position) const {
 	return get(position.x, position.y, position.z);
 }
 
+static int toIndex(int level, uint16_t x, uint16_t y, uint16_t z) {
+	return (z >> level & 1) << 2 | (y >> level & 1) << 1 | (x >> level & 1);
+}
+
 uint8_t SparseVoxelOctree::get(uint16_t x, uint16_t y, uint16_t z) const {
 	const Branch *branch = const_cast<Branch *>(&_root);
 	for (uint8_t level = 15; level > 1; level--) {
-		const int idx = (z >> level & 1) << 2 | (y >> level & 1) << 1 | (x >> level & 1);
+		const int idx = toIndex(level, x, y, z);
 		const Node *node = (*branch)[idx];
 		if (!isBranch(node)) {
 			return 0;
 		}
 		branch = (const Branch *)node;
 	}
-	const Node *leaf = (*branch)[((z >> 1 & 1) << 2 | (y >> 1 & 1) << 1 | (x >> 1 & 1))];
+	const Node *leaf = (*branch)[toIndex(1, x, y, z)];
 	if (isLeaf(leaf)) {
-		return (*(const Leaf *)leaf)[(z & 1) << 2 | (y & 1) << 1 | (x & 1)];
+		return (*(const Leaf *)leaf)[toIndex(0, x, y, z)];
 	}
 	return 0;
 }
@@ -111,7 +115,7 @@ void SparseVoxelOctree::set(uint16_t x, uint16_t y, uint16_t z, uint8_t index) {
 	Branch *branch = &_root;
 	uint8_t octant;
 	for (uint8_t level = 15; level > 1; level--) {
-		octant = (z >> level & 1) << 2 | (y >> level & 1) << 1 | (x >> level & 1);
+		octant = toIndex(level, x, y, z);
 		Node *node = (*branch)[octant];
 		if (isBranch(node)) {
 			branch = (Branch *)node;
@@ -123,7 +127,7 @@ void SparseVoxelOctree::set(uint16_t x, uint16_t y, uint16_t z, uint8_t index) {
 			branch = isBranch((*branch)[octant]) ? (Branch *)(*branch)[octant] : nullptr;
 		}
 	}
-	octant = (z >> 1 & 1) << 2 | (y >> 1 & 1) << 1 | (x >> 1 & 1);
+	octant = toIndex(1, x, y, z);
 	Node *node = (*branch)[octant];
 	Leaf *leaf = nullptr;
 	if (isLeaf(node)) {
@@ -135,7 +139,7 @@ void SparseVoxelOctree::set(uint16_t x, uint16_t y, uint16_t z, uint8_t index) {
 	} else {
 		leaf = isLeaf(node) ? (Leaf *)node : nullptr;
 	}
-	leaf->set((z & 1) << 2 | (y & 1) << 1 | (x & 1), index);
+	leaf->set(toIndex(0, x, y, z), index);
 }
 
 SparseVoxelOctree::~SparseVoxelOctree() {
