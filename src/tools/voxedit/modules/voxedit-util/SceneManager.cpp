@@ -479,6 +479,7 @@ bool SceneManager::load(const io::FileDescription& file) {
 		return core::move(newSceneGraph);
 	});
 	_lastFilename.set(file.name, &file.desc);
+	core::Var::get(cfg::VoxEditLastFile)->setVal(file.name);
 	return true;
 }
 

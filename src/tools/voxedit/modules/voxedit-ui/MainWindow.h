@@ -124,7 +124,7 @@ private:
 	 * called directly after loading a file. But the loading is async and might not yet have finished
 	 * @sa onNewScene()
 	 */
-	void afterLoad(const core::String &file);
+	void afterLoad();
 	void checkPossibleVolumeSplit();
 	void newSceneTemplates();
 	void popupNewScene();

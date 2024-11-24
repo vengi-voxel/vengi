@@ -281,7 +281,7 @@ bool MainWindow::init() {
 	if (!_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
 		return false;
 	}
-	afterLoad("");
+	afterLoad();
 	return true;
 }
 
@@ -317,7 +317,6 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 		return false;
 	}
 	Log::info("Saved the model to %s", fd.c_str());
-	_lastOpenedFile->setVal(fd.name);
 	return true;
 }
 
@@ -332,7 +331,7 @@ bool MainWindow::load(const core::String &file, const io::FormatDescription *for
 		io::FileDescription fd;
 		fd.set(file, formatDesc);
 		if (_sceneMgr->load(fd)) {
-			afterLoad(file);
+			afterLoad();
 			return true;
 		}
 		return false;
@@ -353,8 +352,7 @@ void MainWindow::onNewPaletteImport(const core::String &paletteName, bool setAct
 	_palettePanel.onNewPaletteImport(paletteName, setActive, searchBestColors);
 }
 
-void MainWindow::afterLoad(const core::String &file) {
-	_lastOpenedFile->setVal(file);
+void MainWindow::afterLoad() {
 	resetCamera();
 }
 
@@ -641,7 +639,7 @@ void MainWindow::popupNewScene() {
 			ImGui::CloseCurrentPopup();
 			const voxel::Region &region = _modelNodeSettings.region();
 			if (_sceneMgr->newScene(true, _modelNodeSettings.name, region)) {
-				afterLoad("");
+				afterLoad();
 			}
 		}
 		ImGui::SetItemDefaultFocus();
@@ -692,7 +690,7 @@ void MainWindow::popupUnsavedDiscard() {
 			ImGui::CloseCurrentPopup();
 			if (!_loadFile.empty()) {
 				_sceneMgr->load(_loadFile);
-				afterLoad(_loadFile.name);
+				afterLoad();
 			} else {
 				createNew(true);
 			}
