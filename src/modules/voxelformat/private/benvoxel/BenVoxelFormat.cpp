@@ -70,11 +70,6 @@ bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::A
 	return false;
 }
 
-size_t BenVoxelFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive,
-								   palette::Palette &palette, const LoadContext &ctx) {
-	return 0;
-}
-
 bool BenVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								const io::ArchivePtr &archive, const SaveContext &ctx) {
 	return false;
