@@ -145,7 +145,7 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 		}
 	}
 	for (const PointNode &pointNode : metadata.points) {
-		if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos)) {
+		if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos, nodeId)) {
 			Log::error("Failed to add point node");
 			return false;
 		}
