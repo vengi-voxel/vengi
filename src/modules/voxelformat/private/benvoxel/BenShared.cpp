@@ -65,7 +65,7 @@ int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palett
 	BenVoxel::SparseVoxelOctree svo(stream, (uint16_t)width, (uint16_t)depth, (uint16_t)height);
 	Log::debug("Found %i voxels in volume with size: %d:%d:%d", (int)svo.voxels().size(), width, height, depth);
 	for (const BenVoxel::Voxel &voxel : svo.voxels()) {
-		v->setVoxel((int32_t)voxel.position.x, (int32_t)voxel.position.z, (int32_t)voxel.position.y,
+		v->setVoxel(width - 1 - (int32_t)voxel.position.x, (int32_t)voxel.position.z, (int32_t)voxel.position.y,
 					voxel::createVoxel(voxel::VoxelType::Generic, voxel.index));
 	}
 
