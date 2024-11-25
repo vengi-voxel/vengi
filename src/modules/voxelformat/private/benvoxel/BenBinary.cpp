@@ -78,7 +78,7 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 				const int colors = (int)entries + 1;
 				palette.setSize(colors);
 
-				Log::warn("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
+				Log::debug("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
 						   name.c_str(), entries);
 				for (int j = 0; j < colors; ++j) {
 					core::RGBA color;
