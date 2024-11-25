@@ -339,6 +339,10 @@ bool SceneGraphNode::isGroupNode() const {
 	return _type == SceneGraphNodeType::Group;
 }
 
+bool SceneGraphNode::isPointNode() const {
+	return _type == SceneGraphNodeType::Point;
+}
+
 bool SceneGraphNode::isRootNode() const {
 	return _type == SceneGraphNodeType::Root;
 }

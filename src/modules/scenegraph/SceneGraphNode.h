@@ -126,6 +126,7 @@ public:
 	bool isModelNode() const;
 	bool isGroupNode() const;
 	bool isRootNode() const;
+	bool isPointNode() const;
 
 	void fixErrors();
 	bool validate() const;
