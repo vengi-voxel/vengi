@@ -7,6 +7,8 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 
 namespace voxelformat {
 
@@ -133,7 +135,8 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 		} else if (chunk.id == FourCC('S', 'V', 'O', 'G')) {
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			uint16_t width, height, depth;
-			if (dataStream.readUInt16(width) != 0 || dataStream.readUInt16(depth) != 0 || dataStream.readUInt16(height) != 0) {
+			if (dataStream.readUInt16(width) != 0 || dataStream.readUInt16(depth) != 0 ||
+				dataStream.readUInt16(height) != 0) {
 				Log::error("Failed to read size of model");
 				return false;
 			}
@@ -145,7 +148,19 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 		}
 	}
 	for (const PointNode &pointNode : metadata.points) {
-		if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos, nodeId)) {
+		// an empty name means that the volume is translated - this allows negative positions that are not directly
+		// allowed in the svog chunk. We are not adding this point node to the scenegraph but instead we are shifting the
+		// volume of the model node - when writing back we are also adding back the point node to the metadata for any
+		// region that is not aligned at 0,0,0
+		if (pointNode.name.empty()) {
+			scenegraph::SceneGraphNode &modelNode = sceneGraph.node(nodeId);
+			if (modelNode.isModelNode()) {
+				voxel::RawVolume *volume = modelNode.volume();
+				volume->region().shift(pointNode.pointPos);
+				Log::debug("Shifted model '%s' by %f %f %f", name.c_str(), pointNode.pointPos.x, pointNode.pointPos.y,
+						   pointNode.pointPos.z);
+			}
+		} else if (!addPointNode(sceneGraph, pointNode.name, pointNode.pointPos, nodeId)) {
 			Log::error("Failed to add point node");
 			return false;
 		}
