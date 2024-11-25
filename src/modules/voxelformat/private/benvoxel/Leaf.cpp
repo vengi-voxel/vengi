@@ -38,27 +38,39 @@ Leaf::Leaf(Branch *parent, uint8_t octant, uint8_t color) : Node(NodeType::Leaf,
 }
 
 Leaf::Leaf(Branch *parent, io::SeekableReadStream &in) : Node(NodeType::Leaf, parent, in), _data{} {
-	uint8_t header = readByte(in, "Failed to read leaf header byte from input stream.");
+	uint8_t header;
+	if (in.readUInt8(header) == -1) {
+		Log::error("Failed to read leaf header byte from input stream.");
+	}
 	switch (header & TYPE_MASK) {
 	case LEAF_2BYTE: {
-		uint8_t foreground = readByte(in, "Failed to read foreground voxel from input stream."),
-				background = readByte(in, "Failed to read background voxel from input stream.");
-		uint8_t where = (header >> 3) & 0b111;
+		uint8_t foreground;
+		uint8_t background;
+		if (in.readUInt8(foreground) == -1) {
+			Log::error("Failed to read foreground voxel from input stream.");
+		}
+		if (in.readUInt8(background) == -1) {
+			Log::error("Failed to read background voxel from input stream.");
+		}
+		const uint8_t where = (header >> 3) & 0b111;
 		for (uint8_t i = 0; i < 8; i++) {
 			_data[i] = (i == where) ? foreground : background;
 		}
 		break;
 	}
 	case LEAF_8BYTE: {
-		in.read(reinterpret_cast<char *>(_data.data()), 8);
+		for (int i = 0; i < 8; ++i) {
+			in.readUInt8(_data[i]);
+		}
 		break;
 	}
 	default:
 		Log::error("Invalid leaf node header type. Expected 10xxxxxx or 11xxxxxx");
+		break;
 	}
 }
 
-void Leaf::write(io::SeekableWriteStream &out) const {
+void Leaf::write(io::WriteStream &out) const {
 	core::Array<core::Pair<uint8_t, uint8_t>, 8> occurrences;
 	uint8_t uniqueCount = 0;
 	for (uint8_t value : _data) {
@@ -83,9 +95,11 @@ void Leaf::write(io::SeekableWriteStream &out) const {
 		out.writeUInt8(LEAF_2BYTE | (uniqueIndex & 0b111) << 3 | (_octant & 0b111)); // Header
 		out.writeUInt8(occurrences[0].first);										 // Foreground (unique)
 		out.writeUInt8(occurrences[1].first);										 // Background (repeated)
-	} else {														// Multiple colors - use 8-byte payload leaf
-		out.writeUInt8(LEAF_8BYTE | (_octant & 0b111));				// Header
-		out.write(reinterpret_cast<const char *>(_data.data()), 8); // Data
+	} else {											// Multiple colors - use 8-byte payload leaf
+		out.writeUInt8(LEAF_8BYTE | (_octant & 0b111)); // Header
+		for (int i = 0; i < 8; ++i) {
+			out.writeUInt8(_data[i]); // Data
+		}
 	}
 }
 

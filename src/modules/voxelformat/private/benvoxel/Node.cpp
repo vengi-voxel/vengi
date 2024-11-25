@@ -77,20 +77,4 @@ Position Node::position() const {
 	return Position(x, y, z);
 }
 
-uint8_t Node::readByte(io::SeekableReadStream &in, const char *errorMessage) {
-	uint8_t value;
-	if (in.readUInt8(value) == -1) {
-		Log::error("%s", errorMessage);
-	}
-	return static_cast<uint8_t>(value);
-}
-
-uint8_t Node::peekByte(io::SeekableReadStream &in, const char *errorMessage) {
-	uint8_t value;
-	if (in.peekUInt8(value) == -1) {
-		Log::error("%s", errorMessage);
-	}
-	return static_cast<uint8_t>(value);
-}
-
 } // namespace BenVoxel

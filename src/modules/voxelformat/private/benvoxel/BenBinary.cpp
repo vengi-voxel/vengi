@@ -150,9 +150,9 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 	}
 	for (const PointNode &pointNode : metadata.points) {
 		// an empty name means that the volume is translated - this allows negative positions that are not directly
-		// allowed in the svog chunk. We are not adding this point node to the scenegraph but instead we are shifting the
-		// volume of the model node - when writing back we are also adding back the point node to the metadata for any
-		// region that is not aligned at 0,0,0
+		// allowed in the svog chunk. We are not adding this point node to the scenegraph but instead we are shifting
+		// the volume of the model node - when writing back we are also adding back the point node to the metadata for
+		// any region that is not aligned at 0,0,0
 		if (pointNode.name.empty()) {
 			scenegraph::SceneGraphNode &modelNode = sceneGraph.node(nodeId);
 			if (modelNode.isModelNode()) {

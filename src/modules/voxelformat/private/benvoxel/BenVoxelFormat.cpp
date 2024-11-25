@@ -83,11 +83,6 @@ bool BenVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 			return false;
 		}
 	} else {
-		uint32_t magic = FourCC('B', 'E', 'N', 'V');
-		if (stream->writeUInt32(magic) != 0) {
-			Log::error("Failed to write magic");
-			return false;
-		}
 		if (!benv::saveBinary(sceneGraph, *stream)) {
 			Log::error("Failed to save binary");
 			return false;

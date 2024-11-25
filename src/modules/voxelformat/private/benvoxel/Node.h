@@ -47,16 +47,12 @@ public:
 	virtual ~Node() = default;
 	Node(const Node &) = delete;
 	Node &operator=(const Node &) = delete;
-	virtual void write(io::SeekableWriteStream &out) const = 0;
+	virtual void write(io::WriteStream &out) const = 0;
 	NodeType type() const;
 	uint8_t getOctant() const;
 	Branch *getParent() const;
 	uint8_t depth() const;
 	Position position() const;
-	static uint8_t readByte(io::SeekableReadStream &in,
-							const char *errorMessage = "Failed to read byte from input stream.");
-	static uint8_t peekByte(io::SeekableReadStream &in,
-							const char *errorMessage = "Failed to peek at byte from input stream.");
 };
 
 inline NodeType Node::type() const {

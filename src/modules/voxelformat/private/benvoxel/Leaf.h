@@ -37,7 +37,7 @@ public:
 	Leaf(Branch *parent, uint8_t octant);
 	Leaf(Branch *parent, uint8_t octant, uint8_t color);
 	Leaf(Branch *parent, io::SeekableReadStream &in);
-	void write(io::SeekableWriteStream &out) const override;
+	void write(io::WriteStream &out) const override;
 	uint8_t operator[](uint8_t octant) const;
 	void set(uint8_t octant, uint8_t index);
 };

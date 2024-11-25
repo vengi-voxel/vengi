@@ -11,13 +11,14 @@
 #include "io/Z85.h"
 #include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
 #include "json/JSON.h"
 
 namespace voxelformat {
 
 namespace benv {
 
-static bool loadMetadataJson(nlohmann::json &json, Metadata &metadata) {
+static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
 	// metadata is optional
 	if (json.find("metadata") == json.end()) {
 		return true;
@@ -109,6 +110,14 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 			return false;
 		}
 
+		Metadata metadata;
+		if (modelJson.find("metadata") != modelJson.end()) {
+			if (!loadMetadataJson(modelJson, metadata)) {
+				Log::error("Failed to load metadata for model");
+				return false;
+			}
+		}
+
 		const nlohmann::json &geometryJson = modelJson["geometry"];
 		if (geometryJson.find("size") == geometryJson.end()) {
 			Log::error("Size not found in json file");
@@ -145,7 +154,6 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 		}
 		io::ZipReadStream zipStream(z85Stream, z85Stream.size());
 		io::BufferedReadWriteStream wrapper(zipStream);
-		Metadata metadata; // TODO: VOXELFORMAT: metadata per model?
 		int nodeId =
 			createModelNode(sceneGraph, palette, name, width, height, depth, wrapper, globalMetadata, metadata);
 		if (nodeId == InvalidNodeId) {

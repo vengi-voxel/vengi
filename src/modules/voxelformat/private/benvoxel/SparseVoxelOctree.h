@@ -28,10 +28,10 @@
 
 namespace BenVoxel {
 
-struct Voxel {
+struct SVOVoxel {
 	const Position position;
 	const uint8_t index;
-	Voxel(uint16_t x, uint16_t y, uint16_t z, uint8_t index);
+	SVOVoxel(uint16_t x, uint16_t y, uint16_t z, uint8_t index);
 };
 
 class SparseVoxelOctree {
@@ -43,14 +43,15 @@ protected:
 	static void fillStack(core::DynamicStack<const Branch *> &stack, const Branch *branch);
 
 public:
+	SparseVoxelOctree(uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ);
 	SparseVoxelOctree(io::SeekableReadStream &in, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ);
 	~SparseVoxelOctree();
-	void write(io::SeekableWriteStream &out, bool includeSizes = true) const;
+	void write(io::WriteStream &out, bool includeSizes = true) const;
 	uint8_t operator[](Position &position) const;
 	uint8_t get(uint16_t x, uint16_t y, uint16_t z) const;
-	void set(Voxel voxel);
+	void set(SVOVoxel voxel);
 	void set(uint16_t x, uint16_t y, uint16_t z, uint8_t index);
-	core::DynamicArray<Voxel> voxels() const;
+	core::DynamicArray<SVOVoxel> voxels() const;
 	void clear();
 };
 

@@ -27,17 +27,22 @@
 
 namespace BenVoxel {
 
-Voxel::Voxel(uint16_t x, uint16_t y, uint16_t z, uint8_t _index) : position(x, y, z), index(_index) {
+SVOVoxel::SVOVoxel(uint16_t x, uint16_t y, uint16_t z, uint8_t _index) : position(x, y, z), index(_index) {
+}
+
+SparseVoxelOctree::SparseVoxelOctree(uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ)
+	: _root(), _sizeX(sizeX), _sizeY(sizeY), _sizeZ(sizeZ) {
 }
 
 SparseVoxelOctree::SparseVoxelOctree(io::SeekableReadStream &in, uint16_t sizeX, uint16_t sizeY, uint16_t sizeZ)
 	: _root(nullptr, in), _sizeX(sizeX), _sizeY(sizeY), _sizeZ(sizeZ) {
 }
 
-void SparseVoxelOctree::write(io::SeekableWriteStream &out, bool includeSizes) const {
+void SparseVoxelOctree::write(io::WriteStream &out, bool includeSizes) const {
 	if (includeSizes) {
-		uint16_t dimensions[3] = {_sizeX, _sizeY, _sizeZ};
-		out.write(reinterpret_cast<const char *>(dimensions), sizeof(dimensions));
+		out.writeUInt16(_sizeX);
+		out.writeUInt16(_sizeY);
+		out.writeUInt16(_sizeZ);
 	}
 	_root.write(out);
 }
@@ -67,8 +72,8 @@ uint8_t SparseVoxelOctree::get(uint16_t x, uint16_t y, uint16_t z) const {
 	return 0;
 }
 
-core::DynamicArray<Voxel> SparseVoxelOctree::voxels() const {
-	core::DynamicArray<Voxel> list = {};
+core::DynamicArray<SVOVoxel> SparseVoxelOctree::voxels() const {
+	core::DynamicArray<SVOVoxel> list = {};
 	core::DynamicStack<const Branch *> stack = {};
 	fillStack(stack, &_root);
 	while (!stack.empty()) {
@@ -82,7 +87,7 @@ core::DynamicArray<Voxel> SparseVoxelOctree::voxels() const {
 					for (uint8_t childOctant = 0; childOctant < 8; childOctant++) {
 						const uint8_t index = (*leaf)[childOctant];
 						if (index) {
-							list.push_front(Voxel(position.x + (childOctant & 1), position.y + ((childOctant >> 1) & 1),
+							list.push_front(SVOVoxel(position.x + (childOctant & 1), position.y + ((childOctant >> 1) & 1),
 												  position.z + ((childOctant >> 2) & 1), index));
 						}
 					}
@@ -107,7 +112,7 @@ void SparseVoxelOctree::fillStack(core::DynamicStack<const Branch *> &stack, con
 	}
 }
 
-void SparseVoxelOctree::set(Voxel voxel) {
+void SparseVoxelOctree::set(SVOVoxel voxel) {
 	return set(voxel.position.x, voxel.position.y, voxel.position.z, voxel.index);
 }
 

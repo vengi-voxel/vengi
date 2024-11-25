@@ -38,7 +38,7 @@ public:
 	Branch(Branch *parent, uint8_t octant, uint8_t color);
 	Branch(Branch *parent, io::SeekableReadStream &in);
 	virtual ~Branch();
-	void write(io::SeekableWriteStream &out) const override;
+	void write(io::WriteStream &out) const override;
 	uint8_t count() const;
 	Node *first() const;
 	Node *nextValidChild(uint8_t previous) const;

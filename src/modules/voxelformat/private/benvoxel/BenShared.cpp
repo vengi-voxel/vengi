@@ -26,7 +26,8 @@ ScopedChunkCheck::ScopedChunkCheck(io::SeekableReadStream &stream, bool check) :
 	_chunkPos = stream.pos();
 	uint8_t buf[4];
 	FourCCRev(buf, id);
-	Log::debug("benv chunk of size %i (remaining %i): %c%c%c%c", (int)length, (int)stream.remaining(), buf[0], buf[1], buf[2], buf[3]);
+	Log::debug("benv chunk of size %i (remaining %i): %c%c%c%c", (int)length, (int)stream.remaining(), buf[0], buf[1],
+			   buf[2], buf[3]);
 }
 
 ScopedChunkCheck::~ScopedChunkCheck() {
@@ -67,7 +68,7 @@ int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palett
 
 	BenVoxel::SparseVoxelOctree svo(stream, (uint16_t)width, (uint16_t)depth, (uint16_t)height);
 	Log::debug("Found %i voxels in volume with size: %d:%d:%d", (int)svo.voxels().size(), width, height, depth);
-	for (const BenVoxel::Voxel &voxel : svo.voxels()) {
+	for (const BenVoxel::SVOVoxel &voxel : svo.voxels()) {
 		v->setVoxel(width - 1 - (int32_t)voxel.position.x, (int32_t)voxel.position.z, (int32_t)voxel.position.y,
 					voxel::createVoxel(voxel::VoxelType::Generic, voxel.index));
 	}

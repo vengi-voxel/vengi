@@ -39,22 +39,35 @@ Branch::Branch(Branch *parent, uint8_t octant, uint8_t color) : Node(NodeType::B
 }
 
 Branch::Branch(Branch *parent, io::SeekableReadStream &in) : Node(NodeType::Branch, parent, in) {
-	const uint8_t header = readByte(in, "Failed to read branch header byte from input stream.");
+	uint8_t header = 0;
+	if (in.readUInt8(header) == -1) {
+		Log::error("Failed to read branch header byte from input stream.");
+	}
 	switch (header & TYPE_MASK) {
 	case BRANCH_REGULAR: {
 		uint8_t count = ((header >> 3) & 0b111) + 1;
-		for (uint8_t child = 0; child < count; child++)
-			if (peekByte(in) >> 7) {
+		for (uint8_t child = 0; child < count; child++) {
+			uint8_t val = 0;
+			if (in.peekUInt8(val) == -1) {
+				Log::error("Failed to peek at byte from input stream.");
+			}
+			if (val >> 7) {
 				// Check if it's a leaf (both 2-byte and 8-byte start with 1)
 				set(new Leaf(this, in));
 			} else {
 				set(new Branch(this, in));
 			}
+		}
 		break;
 	}
-	case BRANCH_COLLAPSED:
-		expandCollapsed(readByte(in, "Failed to read collapsed branch value from input stream."));
+	case BRANCH_COLLAPSED: {
+		uint8_t color = 0;
+		if (in.readUInt8(color) == -1) {
+			Log::error("Failed to read collapsed branch value from input stream.");
+		}
+		expandCollapsed(color);
 		break;
+	}
 	default:
 		Log::error("Invalid branch type in header");
 		break;
@@ -82,10 +95,12 @@ void Branch::expandCollapsed(uint8_t color) {
 	}
 }
 
-void Branch::write(io::SeekableWriteStream &out) const {
+void Branch::write(io::WriteStream &out) const {
 	if (!_parent && !first()) { // Empty model case
-		char branchHeaders[15] = {};
-		out.write(branchHeaders, sizeof(branchHeaders));
+		// branch header
+		for (int i = 0; i < 15; ++i) {
+			out.writeUInt8(0);
+		}
 		out.writeUInt8(LEAF_2BYTE); // 2-byte payload leaf header
 		out.writeUInt8(0);			// Both foreground and background zero
 		out.writeUInt8(0);
