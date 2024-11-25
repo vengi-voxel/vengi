@@ -136,13 +136,13 @@ void SparseVoxelOctree::set(uint16_t x, uint16_t y, uint16_t z, uint8_t index) {
 	Node *node = (*branch)[octant];
 	Leaf *leaf = nullptr;
 	if (isLeaf(node)) {
+		leaf = (Leaf *)node;
+	} else {
 		if (index == 0) {
 			return;
 		}
 		branch->set(new Leaf(branch, octant));
-		leaf = isLeaf((*branch)[octant]) ? (Leaf *)(*branch)[octant] : nullptr;
-	} else {
-		leaf = isLeaf(node) ? (Leaf *)node : nullptr;
+		leaf = (Leaf *)(*branch)[octant];
 	}
 	leaf->set(toIndex(0, x, y, z), index);
 }
