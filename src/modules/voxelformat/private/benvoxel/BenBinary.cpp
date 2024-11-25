@@ -76,16 +76,29 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 				// 1 off so that it could fit the range of valid palette lengths (1-256) inside the valid range of byte
 				// values (0-255)
 				const int colors = (int)entries + 1;
+				palette.setSize(colors);
 
-				Log::debug("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
+				Log::warn("Palette %i/%i with name: '%s' and %i entries", (int)(i + 1), (int)amountPalettes,
 						   name.c_str(), entries);
 				for (int j = 0; j < colors; ++j) {
 					core::RGBA color;
-					if (stream.readUInt32(color.rgba) != 0) {
+					if (stream.readUInt8(color.a) != 0) {
 						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
 						return false;
 					}
-					palette.tryAdd(color, false);
+					if (stream.readUInt8(color.b) != 0) {
+						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
+						return false;
+					}
+					if (stream.readUInt8(color.g) != 0) {
+						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
+						return false;
+					}
+					if (stream.readUInt8(color.r) != 0) {
+						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
+						return false;
+					}
+					palette.setColor(j, color);
 				}
 				const bool hasDescriptions = stream.readBool();
 				if (hasDescriptions) {

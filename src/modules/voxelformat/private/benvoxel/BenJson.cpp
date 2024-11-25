@@ -31,6 +31,7 @@ static bool loadMetadataJson(nlohmann::json &json, Metadata &metadata) {
 			palette.setName(name);
 			const nlohmann::json &paletteJson = paletteJsonEntry.value();
 			if (paletteJson.is_array()) {
+				int idx = 0;
 				for (const auto &paletteColorJson : paletteJson) {
 					if (paletteColorJson.find("rgba") == paletteColorJson.end()) {
 						Log::error("RGBA not found in json file");
@@ -38,7 +39,8 @@ static bool loadMetadataJson(nlohmann::json &json, Metadata &metadata) {
 					}
 					const std::string &rgba = paletteColorJson["rgba"];
 					core::RGBA colorRGBA = core::Color::fromHex(rgba.c_str());
-					palette.tryAdd(colorRGBA, false);
+					palette.setColor(idx, colorRGBA);
+					++idx;
 				}
 			}
 			metadata.palettes.emplace(name, core::move(palette));
