@@ -17,11 +17,12 @@ class ScopedChunkCheck {
 private:
 	io::SeekableReadStream &_stream;
 	int64_t _chunkPos;
+	bool _check;
 
 public:
 	uint32_t id;
 	uint32_t length;
-	ScopedChunkCheck(io::SeekableReadStream &stream);
+	ScopedChunkCheck(io::SeekableReadStream &stream, bool check = true);
 	~ScopedChunkCheck();
 };
 

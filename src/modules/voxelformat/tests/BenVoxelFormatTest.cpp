@@ -13,7 +13,7 @@ TEST_F(BenVoxelFormatTest, testLoadJSON) {
 }
 
 TEST_F(BenVoxelFormatTest, testLoadBinary) {
-	testLoad("sora.ben", 2);
+	testLoad("sora.ben");
 }
 
 } // namespace voxelformat

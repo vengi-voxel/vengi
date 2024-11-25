@@ -127,9 +127,10 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 	while (!stream.eos()) {
 		ScopedChunkCheck chunk(stream);
 		if (chunk.id == FourCC('D', 'A', 'T', 'A')) {
+			Log::debug("Found model metadata");
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			if (!loadMetadataBinary(dataStream, metadata)) {
-				Log::error("Failed to load metadata");
+				Log::error("Failed to load model metadata");
 				return false;
 			}
 		} else if (chunk.id == FourCC('S', 'V', 'O', 'G')) {
@@ -172,12 +173,12 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 	Metadata globalMetadata;
 
 	while (!stream.eos()) {
-		ScopedChunkCheck chunk(stream);
+		ScopedChunkCheck chunk(stream, false);
 		if (chunk.id == FourCC('D', 'A', 'T', 'A')) {
-			Log::debug("Found metadata chunk");
+			Log::debug("Found global metadata chunk");
 			io::BufferedReadWriteStream dataStream(stream, chunk.length);
 			if (!loadMetadataBinary(dataStream, globalMetadata)) {
-				Log::error("Failed to load metadata");
+				Log::error("Failed to load global metadata");
 				return false;
 			}
 			// empty name is default palette

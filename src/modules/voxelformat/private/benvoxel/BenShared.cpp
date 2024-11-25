@@ -14,7 +14,7 @@
 namespace voxelformat {
 namespace benv {
 
-ScopedChunkCheck::ScopedChunkCheck(io::SeekableReadStream &stream) : _stream(stream) {
+ScopedChunkCheck::ScopedChunkCheck(io::SeekableReadStream &stream, bool check) : _stream(stream), _check(check) {
 	if (_stream.readUInt32(id) != 0) {
 		Log::error("Failed to read chunk id");
 		return;
@@ -30,6 +30,9 @@ ScopedChunkCheck::ScopedChunkCheck(io::SeekableReadStream &stream) : _stream(str
 }
 
 ScopedChunkCheck::~ScopedChunkCheck() {
+	if (!_check) {
+		return;
+	}
 	int64_t expectedPos = _chunkPos + length;
 	if (_stream.pos() != expectedPos) {
 		uint8_t buf[4];
