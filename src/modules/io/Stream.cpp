@@ -3,6 +3,7 @@
  */
 
 #include "Stream.h"
+#include "core/Log.h"
 #include "core/String.h"
 #include "core/Assert.h"
 #include "core/UTF8.h"
@@ -19,12 +20,15 @@ bool WriteStream::writeStream(ReadStream &stream) {
 	while (!stream.eos()) {
 		int l = stream.read(buf, sizeof(buf));
 		if (l == -1) {
+			Log::error("Failed to read from source stream");
 			return false;
 		}
 		if (l == 0) {
 			return true;
 		}
-		if (!write(buf, l)) {
+		int written = write(buf, l);
+		if (written == -1) {
+			Log::error("Failed to write to destination stream %i vs %i", written, l);
 			return false;
 		}
 	}
