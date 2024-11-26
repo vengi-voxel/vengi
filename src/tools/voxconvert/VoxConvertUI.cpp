@@ -189,9 +189,12 @@ void VoxConvertUI::onRenderUI() {
 			voxelui::saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
 		}
 
+		// TODO: VOXCONVERT: add script execution support
+
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {
 			if (_source.empty()) {
 				_output = "No source file selected";
+				Log::warn("No source file selected");
 			} else {
 				io::BufferedReadWriteStream stream;
 				core::DynamicArray<core::String> arguments{"--input", _source, "--output", _targetFile};
@@ -215,6 +218,7 @@ void VoxConvertUI::onRenderUI() {
 				} else {
 					Log::info("Converted successfully");
 					_targetFileExists = _filesystem->exists(_targetFile);
+					Log::info("%s", _output.c_str());
 				}
 			}
 		}
