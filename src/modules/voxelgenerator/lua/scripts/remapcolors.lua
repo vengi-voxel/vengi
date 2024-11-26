@@ -84,12 +84,15 @@ function main(node, region, _, palettename)
 	local newpalette = g_palette.new()
 	newpalette:load(palettename)
 
-	local visitor = function (volume, x, y, z)
-		local voxel = volume:voxel(x, y, z)
-		local color = colormap[voxel]
+	for voxel, color in pairs(colormap) do
 		local from = node:palette():colorString(voxel)
 		local to = newpalette:colorString(color)
 		g_log.info("change color from " .. from .. " " .. voxel .. " to color " .. to .. " " .. color)
+	end
+
+	local visitor = function (volume, x, y, z)
+		local voxel = volume:voxel(x, y, z)
+		local color = colormap[voxel]
 		volume:setVoxel(x, y, z, color)
 	end
 
