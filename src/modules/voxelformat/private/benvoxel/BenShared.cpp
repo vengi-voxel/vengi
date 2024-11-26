@@ -89,7 +89,7 @@ Metadata createMetadata(const scenegraph::SceneGraph &sceneGraph, const scenegra
 		if (cnode.isPointNode()) {
 			const core::String &name = node.name();
 			const glm::vec3 &pointPos = node.transform(0).localTranslation();
-			metadata.points.emplace_back(name, glm::ivec3{pointPos.x, pointPos.z, pointPos.y});
+			metadata.points.emplace_back(name, glm::ivec3{pointPos.x, pointPos.y, pointPos.z});
 		}
 	}
 

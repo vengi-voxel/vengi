@@ -50,8 +50,8 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 					return false;
 				}
 				glm::ivec3 pointPos;
-				if (stream.readInt32(pointPos.x) != 0 || stream.readInt32(pointPos.y) != 0 ||
-					stream.readInt32(pointPos.z) != 0) {
+				if (stream.readInt32(pointPos.x) != 0 || stream.readInt32(pointPos.z) != 0 ||
+					stream.readInt32(pointPos.y) != 0) {
 					Log::error("Failed to read point position");
 					return false;
 				}

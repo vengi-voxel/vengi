@@ -67,7 +67,7 @@ static bool loadMetadataJson(const nlohmann::json &json, Metadata &metadata) {
 			const core::String &name = pointJson.key().c_str();
 			const nlohmann::json &valueJson = pointJson.value();
 			if (valueJson.is_array() && valueJson.size() == 3) {
-				const glm::vec3 pointPos(valueJson[0], valueJson[1], valueJson[2]);
+				const glm::vec3 pointPos(valueJson[0], valueJson[2], valueJson[1]);
 				metadata.points.emplace_back(name, pointPos);
 			} else {
 				Log::error("Invalid format for vec3 property: %s", name.c_str());
@@ -199,8 +199,8 @@ static bool writeMetadataJson(nlohmann::json &json, const scenegraph::SceneGraph
 	for (const PointNode &pointNode : metadata.points) {
 		nlohmann::json &pointJson = pointsJson[pointNode.name.c_str()];
 		pointJson.push_back(pointNode.pointPos.x);
-		pointJson.push_back(pointNode.pointPos.y);
 		pointJson.push_back(pointNode.pointPos.z);
+		pointJson.push_back(pointNode.pointPos.y);
 	}
 
 	return true;
