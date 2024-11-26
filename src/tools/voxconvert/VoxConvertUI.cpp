@@ -47,14 +47,19 @@ app::AppState VoxConvertUI::onInit() {
 
 	if (_filterFormatTextWidth < 0.0f) {
 		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-			_filterEntries.push_back(*desc);
+			_filterLoadEntries.push_back(*desc);
 		}
-		_filterEntries.sort(core::Greater<io::FormatDescription>());
+		_filterLoadEntries.sort(core::Greater<io::FormatDescription>());
+
+		for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
+			_filterSaveEntries.push_back(*desc);
+		}
+		_filterSaveEntries.sort(core::Greater<io::FormatDescription>());
 	}
-	if (_lastTarget->intVal() < 0 || _lastTarget->intVal() >= (int)_filterEntries.size()) {
+	if (_lastTarget->intVal() < 0 || _lastTarget->intVal() >= (int)_filterSaveEntries.size()) {
 		_lastTarget->setVal(0);
 	}
-	if (_lastSource->intVal() < 0 || _lastSource->intVal() >= (int)_filterEntries.size()) {
+	if (_lastSource->intVal() < 0 || _lastSource->intVal() >= (int)_filterLoadEntries.size()) {
 		_lastSource->setVal(0);
 	}
 
@@ -70,7 +75,7 @@ void VoxConvertUI::onRenderUI() {
 	ImGui::SetNextWindowViewport(viewport->ID);
 
 	if (_filterFormatTextWidth < 0.0f) {
-		for (const io::FormatDescription &desc : _filterEntries) {
+		for (const io::FormatDescription &desc : _filterLoadEntries) {
 			const core::String &str = io::convertToFilePattern(desc);
 			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
 			_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
@@ -117,21 +122,16 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndMenuBar();
 		}
 
-		io::FormatDescription entries[] = {_filterEntries[_lastSource->intVal()], {"", {}, {}, 0u}};
-		if (ImGui::InputFile(_("Source"), &_source, entries)) {
-			_dirtyTargetFile = true;
-		}
-
 		ImGui::PushItemWidth(_filterFormatTextWidth);
-		const core::String sourceStr = io::convertToFilePattern(_filterEntries[_lastSource->intVal()]);
+		const core::String sourceStr = io::convertToFilePattern(_filterLoadEntries[_lastSource->intVal()]);
 		if (ImGui::BeginCombo(_("Source format"), sourceStr.c_str())) {
-			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+			for (int i = 0; i < (int)_filterLoadEntries.size(); ++i) {
 				const bool selected = i == _lastSource->intVal();
-				const io::FormatDescription &format = _filterEntries[i];
+				const io::FormatDescription &format = _filterLoadEntries[i];
 				const core::String &text = io::convertToFilePattern(format);
 				if (ImGui::Selectable(text.c_str(), selected)) {
 					_lastSource->setVal(i);
-					_source = "";
+					_sourceFile = "";
 					_dirtyTargetFile = true;
 				}
 				if (selected) {
@@ -140,12 +140,21 @@ void VoxConvertUI::onRenderUI() {
 			}
 			ImGui::EndCombo();
 		}
+		ImGui::PopItemWidth();
 
-		const core::String targetStr = io::convertToFilePattern(_filterEntries[_lastTarget->intVal()]);
+		io::FormatDescription sourceEntries[] = {_filterLoadEntries[_lastSource->intVal()], {"", {}, {}, 0u}};
+		ImGui::InputFile(_("Source"), &_sourceFile, sourceEntries);
+		if (_lastSourceFile != _sourceFile) {
+			_lastSourceFile = _sourceFile;
+			_dirtyTargetFile = true;
+		}
+
+		ImGui::PushItemWidth(_filterFormatTextWidth);
+		const core::String targetStr = io::convertToFilePattern(_filterSaveEntries[_lastTarget->intVal()]);
 		if (ImGui::BeginCombo(_("Target format"), targetStr.c_str())) {
-			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
+			for (int i = 0; i < (int)_filterSaveEntries.size(); ++i) {
 				const bool selected = i == _lastTarget->intVal();
-				const io::FormatDescription &format = _filterEntries[i];
+				const io::FormatDescription &format = _filterSaveEntries[i];
 				const core::String &text = io::convertToFilePattern(format);
 				if (ImGui::Selectable(text.c_str(), selected)) {
 					_lastTarget->setVal(i);
@@ -159,13 +168,16 @@ void VoxConvertUI::onRenderUI() {
 		}
 		ImGui::PopItemWidth();
 
+		ImGui::Text(_("Target file: %s"), _targetFile.c_str());
+
 		if (_dirtyTargetFile) {
-			if (_source.empty()) {
+			if (_sourceFile.empty()) {
 				_targetFile = "";
 				_targetFileExists = false;
 			} else {
 				_targetFile =
-					core::string::replaceExtension(_source, _filterEntries[_lastTarget->intVal()].mainExtension());
+					core::string::replaceExtension(_sourceFile, _filterSaveEntries[_lastTarget->intVal()].mainExtension());
+				Log::error("Target file: %s", _targetFile.c_str());
 				_targetFileExists = _filesystem->exists(_targetFile);
 			}
 			_dirtyTargetFile = false;
@@ -176,28 +188,31 @@ void VoxConvertUI::onRenderUI() {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
 				ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
 			}
-			voxelui::genericOptions(&_filterEntries[_lastSource->intVal()]);
+			voxelui::genericOptions(&_filterLoadEntries[_lastSource->intVal()]);
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_source), _source};
-			voxelui::loadOptions(&_filterEntries[_lastSource->intVal()], entry, _paletteCache);
+			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_sourceFile), _sourceFile};
+			voxelui::loadOptions(&_filterLoadEntries[_lastSource->intVal()], entry, _paletteCache);
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
-			voxelui::saveOptions(&_filterEntries[_lastTarget->intVal()], entry);
+			voxelui::saveOptions(&_filterSaveEntries[_lastTarget->intVal()], entry);
 		}
 
 		// TODO: VOXCONVERT: add script execution support
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {
-			if (_source.empty()) {
+			if (_sourceFile.empty()) {
 				_output = "No source file selected";
 				Log::warn("No source file selected");
+			} else if (_targetFile.empty()) {
+				_output = "No target file selected";
+				Log::warn("No target file selected");
 			} else {
 				io::BufferedReadWriteStream stream;
-				core::DynamicArray<core::String> arguments{"--input", _source, "--output", _targetFile};
+				core::DynamicArray<core::String> arguments{"--input", _sourceFile, "--output", _targetFile};
 				// only dirty and non-default variables are set for the voxconvert call
 				core::Var::visit([&](const core::VarPtr &var) {
 					if (var->isDirty()) {
@@ -209,6 +224,8 @@ void VoxConvertUI::onRenderUI() {
 				if (_overwriteTargetFile) {
 					arguments.push_back("-f");
 				}
+				const core::String args =  core::string::join(arguments.begin(), arguments.end(), " ");
+				Log::info("%s %s", _voxconvertBinary.c_str(), args.c_str());
 				const int exitCode = core::Process::exec(_voxconvertBinary, arguments, nullptr, &stream);
 				stream.seek(0);
 				stream.readString(stream.size(), _output);

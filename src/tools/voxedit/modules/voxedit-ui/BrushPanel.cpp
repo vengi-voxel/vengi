@@ -388,7 +388,9 @@ void BrushPanel::updateTextBrushPanel(command::CommandExecutionListener &listene
 	ImGui::Separator();
 	addBrushClampingOption(brush);
 
-	if (ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly)) {
+	ImGui::InputFile(_("Font"), &brush.font(), io::format::fonts(), ImGuiInputTextFlags_ReadOnly);
+	if (brush.font() != _lastFont) {
+		_lastFont = brush.font();
 		brush.markDirty();
 	}
 }

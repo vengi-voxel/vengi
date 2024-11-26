@@ -25,6 +25,7 @@ class BrushPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	core::String _stamp;
+	core::String _lastFont;
 	int _stampPaletteIndex = 0;
 	SceneManagerPtr _sceneMgr;
 	video::TexturePoolPtr _texturePool;

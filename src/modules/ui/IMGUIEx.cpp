@@ -106,44 +106,25 @@ bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFl
 	return false;
 }
 
-bool InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions,
+void InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions,
 			   ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
-	const bool v = InputText(label, file, flags);
+	InputText(label, file, flags);
 	SameLine();
 	if (Button(ICON_LC_FILE)) {
 		imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
 			*file = filename;
 		}, options, descriptions);
 	}
-	return v;
 }
 
-bool InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags) {
-	const bool v = InputText(label, folder, flags);
+void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags) {
+	InputText(label, folder, flags);
 	SameLine();
 	if (Button(ICON_LC_FOLDER)) {
 		imguiApp()->directoryDialog([folder] (const core::String &folderName, const io::FormatDescription *desc) {
 			*folder = folderName;
 		}, {});
 	}
-	return v;
-}
-
-bool InputFolderVar(const char *label, const core::VarPtr &var, ImGuiInputTextFlags flags) {
-	core::String folder = var->strVal();
-	if (InputFolder(label, &folder, flags)) {
-		var->setVal(folder);
-		return true;
-	}
-	if (var->help()) {
-		TooltipText("%s", var->help());
-	}
-	return false;
-}
-
-bool InputFolderVar(const char *label, const char *varName, ImGuiInputTextFlags flags) {
-	const core::VarPtr &var = core::Var::getSafe(varName);
-	return InputFolderVar(label, var, flags);
 }
 
 bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
