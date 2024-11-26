@@ -303,9 +303,9 @@ void App::onFrame() {
 				if (messageboxdata.numbuttons == 3) {
 					messageboxdata.message = "Please upload the crash logs."
 						"\n"
-						"If the error persists, reset the configuration";
+						"If the error persists, reset the configuration\n\n";
 				} else {
-					messageboxdata.message = "If the error persists, reset the configuration";
+					messageboxdata.message = "If the error persists, reset the configuration\n\n";
 				}
 				SDL_MessageBoxButtonData buttons[3];
 				core_memset(&buttons, 0, sizeof(buttons));
