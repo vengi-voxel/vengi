@@ -238,6 +238,9 @@ MVModelToNode::~MVModelToNode() {
 }
 
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+	if (instance.layer_index >= scene->num_layers) {
+		return "";
+	}
 	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
 	const char *name = instance.name == nullptr ? layer.name : instance.name;
 	if (name == nullptr) {
@@ -247,6 +250,9 @@ const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &ins
 }
 
 core::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance) {
+	if (instance.layer_index >= scene->num_layers) {
+		return core::RGBA(255, 255, 255, 255);
+	}
 	const ogt_vox_layer &layer = scene->layers[instance.layer_index];
 	const core::RGBA col(layer.color.r, layer.color.g, layer.color.b, layer.color.a);
 	return col;
@@ -257,9 +263,11 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 	if (instance.hidden) {
 		return true;
 	}
-	// check if this instance is part of a hidden layer in the .vox file
-	if (scene->layers[instance.layer_index].hidden) {
-		return true;
+	if (instance.layer_index < scene->num_layers) {
+		// check if this instance is part of a hidden layer in the .vox file
+		if (scene->layers[instance.layer_index].hidden) {
+			return true;
+		}
 	}
 	// check if this instance is part of a hidden group
 	if (instance.group_index != k_invalid_group_index && instance.group_index < scene->num_groups &&
