@@ -77,22 +77,27 @@ int64_t ZipReadStream::remaining() const {
 }
 
 int64_t ZipReadStream::skip(int64_t delta) {
-	for (int64_t i = 0; i < delta; ++i) {
-		uint8_t b = 0;
-		if (readUInt8(b) == -1) {
+	int64_t bytesSkipped = 0;
+	uint8_t tempBuffer[1024];
+	while (bytesSkipped < delta) {
+		int64_t chunk = core_min(delta - bytesSkipped, (int64_t)sizeof(tempBuffer));
+		if (read(tempBuffer, chunk) < chunk) {
 			_err = true;
 			return -1;
 		}
+		bytesSkipped += chunk;
 	}
-	return delta;
+	return bytesSkipped;
 }
 
 int ZipReadStream::read(void *buf, size_t size) {
+	if (_err) {
+		return -1;
+	}
 	if (_eos) {
 		return 0;
 	}
 	uint8_t *targetPtr = (uint8_t *)buf;
-	const size_t originalSize = size;
 	z_stream* stream = (z_stream*)_stream;
 	size_t readCnt = 0;
 	while (size > 0) {
@@ -114,6 +119,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 				if (_size >= 0) {
 					_remaining -= bytes;
 				}
+				stream->avail_in = bytes;
 			}
 		}
 
@@ -139,10 +145,10 @@ int ZipReadStream::read(void *buf, size_t size) {
 
 		if (retval == Z_STREAM_END) {
 			_eos = true;
-			return readCnt;
+			return (int)readCnt;
 		}
 	}
-	return (int)originalSize;
+	return (int)readCnt;
 }
 
 } // namespace io
