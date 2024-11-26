@@ -263,6 +263,8 @@ The functions are:
 
 * `color(paletteIndex)`: Pushes the vec4 of the color behind the palette index (`0-255`) as float values between `0.0` and `1.0`.
 
+* `colorString(paletteIndex)`: Return a color string for logging to the console (includes ansi color escape sequences).
+
 * `rgba(paletteIndex)`: Pushes the four values of the color behind the palette index (`0-255`).
 
 * `colors()`: Returns the palette RGBA colors as vec4 values between `0.0` and `1.0`.
