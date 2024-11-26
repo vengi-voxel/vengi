@@ -32,7 +32,7 @@ set(SRCS
 	concurrent/Thread.cpp concurrent/Thread.h
 
 	Algorithm.h
-	Alphanumeric.h
+	Alphanumeric.cpp Alphanumeric.h
 	ArrayLength.h
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
