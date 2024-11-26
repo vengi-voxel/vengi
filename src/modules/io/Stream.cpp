@@ -423,17 +423,25 @@ bool ReadStream::readPascalStringUInt16BE(core::String &str) {
 	return readString(length, str, false);
 }
 
-bool ReadStream::readPascalStringUInt32LE(core::String &str) {
+bool ReadStream::readPascalStringUInt32LE(core::String &str, uint32_t maxLength) {
 	uint32_t length;
 	if (readUInt32(length) != 0) {
+		return false;
+	}
+	if (length >= maxLength) {
+		Log::error("String length %u exceeds max length %u", length, maxLength);
 		return false;
 	}
 	return readString((int)length, str, false);
 }
 
-bool ReadStream::readPascalStringUInt32BE(core::String &str) {
+bool ReadStream::readPascalStringUInt32BE(core::String &str, uint32_t maxLength) {
 	uint32_t length;
 	if (readUInt32BE(length) != 0) {
+		return false;
+	}
+	if (length >= maxLength) {
+		Log::error("String length %u exceeds max length %u", length, maxLength);
 		return false;
 	}
 	return readString((int)length, str, false);
