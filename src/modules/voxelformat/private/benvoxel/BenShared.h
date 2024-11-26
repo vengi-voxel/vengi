@@ -27,6 +27,17 @@ public:
 	~ScopedChunkCheck();
 };
 
+class Chunk {
+private:
+	uint32_t _id;
+	io::SeekableWriteStream &_stream;
+	int64_t _lengthPos = 0;
+
+public:
+	Chunk(io::SeekableWriteStream &stream, uint32_t id);
+	~Chunk();
+};
+
 struct PointNode {
 	PointNode(const core::String &n, const glm::vec3 &pos) : name(n), pointPos(pos) {
 	}
@@ -46,6 +57,10 @@ bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, 
 int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &name, int width,
 					int height, int depth, io::SeekableReadStream &stream, const Metadata &globalMetadata,
 					const Metadata &metadata);
+
+bool saveModel(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+			   io::WriteStream &stream, bool includeSizes);
+Metadata createMetadata(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 
 } // namespace benv
 } // namespace voxelformat

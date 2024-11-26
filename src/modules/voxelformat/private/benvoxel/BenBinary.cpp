@@ -7,6 +7,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 
@@ -225,8 +226,182 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 	return true;
 }
 
+static bool saveMetadataBinary(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							   io::SeekableWriteStream &stream) {
+	Metadata metadata = createMetadata(sceneGraph, node);
+	if (!metadata.points.empty()) {
+		Chunk chunk(stream, FourCC('P', 'T', '3', 'D'));
+		if (!stream.writeUInt16((uint16_t)metadata.points.size())) {
+			Log::error("Failed to write amount of points");
+			return false;
+		}
+		for (const PointNode &pointNode : metadata.points) {
+			if (!stream.writePascalStringUInt8(pointNode.name)) {
+				Log::error("Failed to write point name");
+				return false;
+			}
+			if (!stream.writeInt32(pointNode.pointPos.x) || !stream.writeInt32(pointNode.pointPos.y) ||
+				!stream.writeInt32(pointNode.pointPos.z)) {
+				Log::error("Failed to write point position");
+				return false;
+			}
+		}
+	}
+	if (!metadata.properties.empty()) {
+		Chunk chunk(stream, FourCC('P', 'R', 'O', 'P'));
+		if (!stream.writeUInt16((uint16_t)metadata.properties.size())) {
+			Log::error("Failed to write amount of properties");
+			return false;
+		}
+		for (const auto &entry : metadata.properties) {
+			if (!stream.writePascalStringUInt8(entry->first)) {
+				Log::error("Failed to write property name");
+				return false;
+			}
+			if (!stream.writePascalStringUInt32LE(entry->second)) {
+				Log::error("Failed to write property value");
+				return false;
+			}
+		}
+	}
+	if (!metadata.palettes.empty()) {
+		Chunk chunk(stream, FourCC('P', 'A', 'L', 'C'));
+		if (!stream.writeUInt16((uint16_t)metadata.palettes.size())) {
+			Log::error("Failed to write amount of palettes");
+			return false;
+		}
+		for (const auto &entry : metadata.palettes) {
+			const core::String &name = entry->first;
+			const palette::Palette &palette = entry->second;
+			if (!stream.writePascalStringUInt8(name)) {
+				Log::error("Failed to write palette name");
+				return false;
+			}
+			const int colors = palette.size();
+			// 1 off so that it could fit the range of valid palette lengths (1-256) inside the valid range of byte
+			// values (0-255)
+			const int entries = colors - 1;
+			if (!stream.writeUInt8((uint8_t)entries)) {
+				Log::error("Failed to write amount of colors for palette %s", name.c_str());
+				return false;
+			}
+			Log::debug("Palette '%s' with %i entries", name.c_str(), entries);
+			for (int i = 0; i < colors; ++i) {
+				const core::RGBA &color = palette.color(i);
+				if (!stream.writeUInt8(color.a) || !stream.writeUInt8(color.b) ||
+					!stream.writeUInt8(color.g) || !stream.writeUInt8(color.r)) {
+					Log::error("Failed to write color %i for palette %s", i, name.c_str());
+					return false;
+				}
+			}
+			// TODO: VOXELFORMAT: You can't give names or descriptions to palette colors in vengi yet
+			if (!stream.writeBool(false)) {
+				Log::error("Failed to write description flag for palette %s", name.c_str());
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+static bool saveModelBinary(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							io::SeekableWriteStream &stream) {
+	if (!stream.writePascalStringUInt8(node.name())) {
+		Log::error("Failed to write model name");
+		return false;
+	}
+	Chunk chunk(stream, FourCC('M', 'O', 'D', 'L'));
+	{
+		Chunk subChunk(stream, FourCC('D', 'A', 'T', 'A'));
+		if (!saveMetadataBinary(sceneGraph, node, stream)) {
+			Log::error("Failed to write metadata");
+			return false;
+		}
+	}
+	{
+		Chunk subChunk(stream, FourCC('S', 'V', 'O', 'G'));
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		if (volume == nullptr) {
+			Log::error("No volume found for model node %i", node.id());
+			return false;
+		}
+		const glm::ivec3 &dim = volume->region().getDimensionsInVoxels();
+		if (!stream.writeUInt16(dim.x) || !stream.writeUInt16(dim.z) || !stream.writeUInt16(dim.y)) {
+			Log::error("Failed to write size of model");
+			return false;
+		}
+		if (!saveModel(sceneGraph, node, stream, true)) {
+			Log::error("Failed to save binary model for node %s", node.name().c_str());
+			return false;
+		}
+	}
+	return true;
+}
+
 bool saveBinary(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
-	return false;
+	uint32_t magic = FourCC('B', 'E', 'N', 'V');
+	if (!stream.writeUInt32(magic)) {
+		Log::error("Failed to write magic");
+		return false;
+	}
+
+	int64_t totalLengthPos = stream.pos();
+	if (!stream.writeUInt32(0)) {
+		Log::error("Failed to read total length");
+		return false;
+	}
+
+	core::String version = "0.0";
+	if (!stream.writePascalStringUInt8(version)) {
+		Log::error("Failed to read version");
+		return false;
+	}
+
+	io::BufferedReadWriteStream wrapper;
+	saveMetadataBinary(sceneGraph, sceneGraph.root(), wrapper);
+
+	uint16_t amount = sceneGraph.size(scenegraph::SceneGraphNodeType::AllModels);
+	if (!wrapper.writeUInt16(amount)) {
+		Log::error("Failed to write amount of models");
+		return false;
+	}
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		if (!saveModelBinary(sceneGraph, node, wrapper)) {
+			Log::error("Failed to write model");
+			return false;
+		}
+	}
+
+	if (wrapper.seek(0, SEEK_SET) == -1) {
+		Log::error("Failed to seek to start of stream");
+		return false;
+	}
+	const bool rawDeflate = true;
+	io::ZipWriteStream zipStream(stream, 6, rawDeflate);
+	if (!zipStream.writeStream(wrapper)) {
+		Log::error("Failed to write zip stream");
+		return false;
+	}
+	zipStream.flush();
+
+	const int64_t totalLength = stream.pos() - totalLengthPos;
+	if (stream.seek(totalLengthPos, SEEK_SET) == -1) {
+		Log::error("Failed to seek to total length");
+		return false;
+	}
+	if (!stream.writeUInt32((uint32_t)totalLength)) {
+		Log::error("Failed to write total length");
+		return false;
+	}
+	if (stream.seek(0, SEEK_END) == -1) {
+		Log::error("Failed to seek to end");
+		return false;
+	}
+	return true;
 }
 
 } // namespace benv

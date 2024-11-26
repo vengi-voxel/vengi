@@ -2,6 +2,7 @@
  * @file
  */
 
+#include "voxelformat/private/benvoxel/BenVoxelFormat.h"
 #include "AbstractFormatTest.h"
 
 namespace voxelformat {
@@ -14,6 +15,16 @@ TEST_F(BenVoxelFormatTest, testLoadJSON) {
 
 TEST_F(BenVoxelFormatTest, testLoadBinary) {
 	testLoad("sora.ben");
+}
+
+TEST_F(BenVoxelFormatTest, DISABLED_testSaveSmallVolumeBinary) {
+	BenVoxelFormat f;
+	testSaveSmallVolume("testSaveSmallVolume.ben", &f);
+}
+
+TEST_F(BenVoxelFormatTest, DISABLED_testSaveSmallVolumeJSON) {
+	BenVoxelFormat f;
+	testSaveSmallVolume("testSaveSmallVolume.ben.json", &f);
 }
 
 } // namespace voxelformat

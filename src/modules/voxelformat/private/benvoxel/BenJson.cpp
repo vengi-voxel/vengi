@@ -10,6 +10,7 @@
 #include "io/MemoryReadStream.h"
 #include "io/Z85.h"
 #include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "json/JSON.h"
@@ -170,8 +171,96 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 	return true;
 }
 
+static bool writeMetadataJson(nlohmann::json &json, const scenegraph::SceneGraph &sceneGraph,
+							  const scenegraph::SceneGraphNode &node) {
+	Metadata metadata = createMetadata(sceneGraph, node);
+	nlohmann::json &metadataJson = json["metadata"];
+	nlohmann::json &palettesJson = metadataJson["palettes"];
+	for (const auto &entry : metadata.palettes) {
+		const core::String &name = entry->first;
+		const palette::Palette &palette = entry->second;
+		nlohmann::json &paletteJson = palettesJson[name.c_str()];
+		nlohmann::json &colorsJson = paletteJson["colors"];
+		for (int i = 0; i < (int)palette.size(); ++i) {
+			const core::RGBA &color = palette.color(i);
+			nlohmann::json &colorJson = colorsJson[i];
+			colorJson["rgba"] = core::Color::toHex(color);
+		}
+	}
+
+	nlohmann::json &propertiesJson = metadataJson["properties"];
+	for (const auto &entry : metadata.properties) {
+		const core::String &name = entry->first;
+		const core::String &value = entry->second;
+		propertiesJson[name.c_str()] = value.c_str();
+	}
+
+	nlohmann::json &pointsJson = metadataJson["points"];
+	for (const PointNode &pointNode : metadata.points) {
+		nlohmann::json &pointJson = pointsJson[pointNode.name.c_str()];
+		pointJson.push_back(pointNode.pointPos.x);
+		pointJson.push_back(pointNode.pointPos.y);
+		pointJson.push_back(pointNode.pointPos.z);
+	}
+
+	return true;
+}
+
 bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
-	return false;
+	const Metadata &globalMetadata = createMetadata(sceneGraph, sceneGraph.root());
+	nlohmann::json json;
+	json["version"] = "0.0";
+
+	writeMetadataJson(json, sceneGraph, sceneGraph.root());
+
+	nlohmann::json &modelsJson = json["models"];
+	for (const auto &entry : sceneGraph.nodes()) {
+		const scenegraph::SceneGraphNode &node = entry->value;
+		if (!node.isAnyModelNode()) {
+			continue;
+		}
+		const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+		nlohmann::json &modelJson = modelsJson[node.name().c_str()];
+
+		nlohmann::json &metadataJson = modelJson["metadata"];
+		if (!writeMetadataJson(metadataJson, sceneGraph, node)) {
+			Log::error("Failed to write metadata");
+			return false;
+		}
+
+		nlohmann::json &geometryJson = modelJson["geometry"];
+
+		nlohmann::json &sizeJson = geometryJson["size"];
+		const voxel::Region &region = volume->region();
+		const glm::ivec3 &dim = region.getDimensionsInVoxels();
+		sizeJson.push_back(dim.x);
+		sizeJson.push_back(dim.z);
+		sizeJson.push_back(dim.y);
+
+		io::BufferedReadWriteStream wrapper;
+		io::ZipWriteStream zipStream(wrapper, 6, true);
+		if (!saveModel(sceneGraph, node, zipStream, false)) {
+			Log::error("Failed to save model binary");
+			return false;
+		}
+		if (!zipStream.flush()) {
+			Log::error("Failed to flush zip stream");
+			return false;
+		}
+		if (wrapper.seek(0) == -1) {
+			Log::error("Failed to seek to start of stream");
+			return false;
+		}
+		const core::String &z85 = io::Z85::encode(wrapper);
+		geometryJson["z85"] = z85.c_str();
+	}
+
+	const auto &jsonString = json.dump();
+	if (!stream.writeString(jsonString.c_str(), false)) {
+		Log::error("Failed to write json file");
+		return false;
+	}
+	return true;
 }
 
 } // namespace benv

@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/private/benvoxel/SparseVoxelOctree.h"
+#include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
 namespace benv {
@@ -44,6 +45,34 @@ ScopedChunkCheck::~ScopedChunkCheck() {
 	}
 }
 
+Chunk::Chunk(io::SeekableWriteStream &stream, uint32_t id) : _id(id), _stream(stream) {
+	if (!stream.writeUInt32(_id)) {
+		Log::error("Failed to write chunk id");
+		return;
+	}
+	_lengthPos = stream.pos();
+	if (!stream.writeUInt32(0)) {
+		Log::error("Failed to write length of riff header");
+		return;
+	}
+	uint8_t buf[4];
+	FourCCRev(buf, _id);
+	Log::debug("save benv chunk: %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
+}
+
+Chunk::~Chunk() {
+	int64_t endPos = _stream.pos();
+	_stream.seek(_lengthPos);
+	const uint32_t length = (uint32_t)(endPos - _lengthPos - 4);
+	if (!_stream.writeUInt32(length)) {
+		Log::error("Failed to write length of riff header");
+	}
+	uint8_t buf[4];
+	FourCCRev(buf, _id);
+	Log::debug("saved benv chunk of size %i: %c%c%c%c", (int)length, buf[0], buf[1], buf[2], buf[3]);
+	_stream.seek(endPos);
+}
+
 bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const glm::vec3 &pointPos, int parent) {
 	scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
 	pointNode.setName(name);
@@ -51,6 +80,56 @@ bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, 
 	transform.setLocalTranslation(pointPos);
 	pointNode.setTransform(0, transform);
 	return sceneGraph.emplace(core::move(pointNode), parent) != InvalidNodeId;
+}
+
+Metadata createMetadata(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+	Metadata metadata;
+	for (int child : node.children()) {
+		const scenegraph::SceneGraphNode &cnode = sceneGraph.node(child);
+		if (cnode.isPointNode()) {
+			const core::String &name = node.name();
+			const glm::vec3 &pointPos = node.transform(0).localTranslation();
+			metadata.points.emplace_back(name, glm::ivec3{pointPos.x, pointPos.z, pointPos.y});
+		}
+	}
+
+	// point nodes are used to model negative space
+	if (node.isModelNode()) {
+		const voxel::Region &region = sceneGraph.resolveRegion(node);
+		if (region.getLowerCorner() != glm::ivec3(0)) {
+			// empty name is for modelling a region offset
+			metadata.points.emplace_back("", region.getLowerCorner());
+		}
+	}
+
+	metadata.properties = node.properties();
+	// default palette has empty name
+	if (node.hasPalette()) {
+		metadata.palettes.put("", node.palette());
+	}
+	return metadata;
+}
+
+bool saveModel(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+			   io::WriteStream &stream, bool includeSizes) {
+	const voxel::RawVolume *volume = sceneGraph.resolveVolume(node);
+	if (!volume) {
+		Log::error("No volume found for model node %i", node.id());
+		return false;
+	}
+
+	const voxel::Region &region = volume->region();
+	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	Log::debug("Saving model with size: %d:%d:%d", dim.x, dim.y, dim.z);
+
+	BenVoxel::SparseVoxelOctree svo(dim.x, dim.z, dim.y);
+	voxelutil::visitVolume(*volume, [&svo, dim](int x, int y, int z, const voxel::Voxel &voxel) {
+		BenVoxel::SVOVoxel foo(dim.x - 1 - x, z, y, voxel.getColor() + 1);
+		svo.set(foo);
+	});
+
+	svo.write(stream, includeSizes);
+	return true;
 }
 
 int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &name, int width,
