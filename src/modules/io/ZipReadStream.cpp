@@ -98,6 +98,10 @@ int ZipReadStream::read(void *buf, size_t size) {
 	while (size > 0) {
 		if (stream->avail_in == 0) {
 			int64_t remainingSize = remaining();
+			if (remainingSize < 0) {
+				_err = true;
+				return readCnt;
+			}
 			stream->next_in = _buf;
 			stream->avail_in = (unsigned int)core_min(remainingSize, (int64_t)sizeof(_buf));
 			if (remainingSize > 0) {
