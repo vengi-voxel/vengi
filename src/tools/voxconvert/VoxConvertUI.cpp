@@ -102,6 +102,7 @@ void VoxConvertUI::onRenderUI() {
 																				  _("Light"), _("Classic")};
 					ImGui::ComboVar(_("Color theme"), cfg::UIStyle, uiStyles);
 					ImGui::InputVarFloat(_("Notifications"), cfg::UINotifyDismissMillis);
+					ImGui::Checkbox(_("Show console"), &_showConsole);
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
