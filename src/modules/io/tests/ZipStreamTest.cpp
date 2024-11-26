@@ -53,6 +53,14 @@ TEST_F(ZipStreamTest, testZipStreamWriteAndRead) {
 			ASSERT_EQ(n, i + 3) << "unexpected extracted value for step: " << i;
 		}
 	}
+	stream.seek(0);
+	{
+		ZipReadStream r(stream, size);
+		uint8_t buffer[64 * 4 * 4 + 10]; // bigger
+		ASSERT_EQ(64 * 4 * 4, r.read(buffer, sizeof(buffer)));
+		ASSERT_EQ(0, r.read(buffer, sizeof(buffer)));
+		ASSERT_EQ(0, r.read(buffer, sizeof(buffer)));
+	}
 }
 
 TEST_F(ZipStreamTest, testZipStreamWriteAndReadDeflate) {
@@ -82,6 +90,14 @@ TEST_F(ZipStreamTest, testZipStreamWriteAndReadDeflate) {
 			ASSERT_EQ(0, r.readInt32(n)) << "unexpected read failure for step: " << i;
 			ASSERT_EQ(n, i + 3) << "unexpected extracted value for step: " << i;
 		}
+	}
+	stream.seek(0);
+	{
+		ZipReadStream r(stream, size);
+		uint8_t buffer[64 * 4 * 4 + 10]; // bigger
+		ASSERT_EQ(64 * 4 * 4, r.read(buffer, sizeof(buffer)));
+		ASSERT_EQ(0, r.read(buffer, sizeof(buffer)));
+		ASSERT_EQ(0, r.read(buffer, sizeof(buffer)));
 	}
 }
 
