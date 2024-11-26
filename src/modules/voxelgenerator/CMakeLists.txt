@@ -23,6 +23,7 @@ set(LUA_SRCS
 	scripts/noise-builtin.lua
 	scripts/planet.lua
 	scripts/pyramid.lua
+	scripts/remapcolors.lua
 	scripts/replacecolor.lua
 	scripts/replacepalette.lua
 	scripts/resize.lua
