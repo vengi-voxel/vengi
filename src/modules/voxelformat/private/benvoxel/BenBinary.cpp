@@ -7,6 +7,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "io/BufferedReadWriteStream.h"
+#include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
@@ -171,13 +172,42 @@ static bool loadModelBinary(scenegraph::SceneGraph &sceneGraph, const core::Stri
 }
 
 bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, io::SeekableReadStream &stream) {
+	uint32_t magic = 0;
+	if (stream.readUInt32(magic) != 0) {
+		Log::error("Failed to read magic");
+		return false;
+	}
+	if (magic != FourCC('B', 'E', 'N', 'V')) {
+		uint8_t buf[4];
+		FourCCRev(buf, magic);
+		Log::error("Invalid magic found - no binary benv file: %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
+		return false;
+	}
+
+	uint32_t totalLength;
+	if (stream.readUInt32(totalLength) != 0) {
+		Log::error("Failed to read total length");
+		return false;
+	}
+
+	core::String version;
+	if (!stream.readPascalStringUInt8(version)) {
+		Log::error("Failed to read version");
+		return false;
+	}
+	scenegraph::SceneGraphNode &root = sceneGraph.node(0);
+	root.setProperty("version", version.c_str());
+
+	io::ZipReadStream zipStream(stream, stream.remaining());
+	io::BufferedReadWriteStream wrapper(zipStream);
+
 	Metadata globalMetadata;
 
-	while (!stream.eos()) {
-		ScopedChunkCheck chunk(stream, false);
+	while (!wrapper.eos()) {
+		ScopedChunkCheck chunk(wrapper, false);
 		if (chunk.id == FourCC('D', 'A', 'T', 'A')) {
 			Log::debug("Found global metadata chunk");
-			io::BufferedReadWriteStream dataStream(stream, chunk.length);
+			io::BufferedReadWriteStream dataStream(wrapper, chunk.length);
 			if (!loadMetadataBinary(dataStream, globalMetadata)) {
 				Log::error("Failed to load global metadata");
 				return false;
@@ -185,11 +215,11 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 			// empty name is default palette
 			globalMetadata.palettes.get("", palette);
 		} else {
-			stream.seek(-8, SEEK_CUR);
+			wrapper.seek(-8, SEEK_CUR);
 		}
 
 		uint16_t amount;
-		if (stream.readUInt16(amount) != 0) {
+		if (wrapper.readUInt16(amount) != 0) {
 			Log::error("Failed to read amount of models");
 			return false;
 		}
@@ -198,13 +228,13 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 
 		for (uint16_t i = 0; i < amount; ++i) {
 			core::String name;
-			if (!stream.readPascalStringUInt8(name)) {
+			if (!wrapper.readPascalStringUInt8(name)) {
 				Log::error("Failed to read model name");
 				return false;
 			}
-			ScopedChunkCheck subChunk(stream);
+			ScopedChunkCheck subChunk(wrapper);
 			if (subChunk.id == FourCC('M', 'O', 'D', 'L')) {
-				io::BufferedReadWriteStream modelStream(stream, subChunk.length);
+				io::BufferedReadWriteStream modelStream(wrapper, subChunk.length);
 				if (!loadModelBinary(sceneGraph, name, palette, modelStream, globalMetadata)) {
 					Log::error("Failed to load model");
 					return false;
@@ -213,7 +243,7 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 				uint8_t buf[4];
 				FourCCRev(buf, subChunk.id);
 				Log::error("Unknown riff id with length %u: %c%c%c%c", subChunk.length, buf[0], buf[1], buf[2], buf[3]);
-				stream.skipDelta(subChunk.length);
+				wrapper.skipDelta(subChunk.length);
 			}
 		}
 	}
@@ -228,6 +258,7 @@ bool loadBinary(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, i
 
 static bool saveMetadataBinary(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							   io::SeekableWriteStream &stream) {
+	Chunk dataChunk(stream, FourCC('D', 'A', 'T', 'A'));
 	Metadata metadata = createMetadata(sceneGraph, node);
 	if (!metadata.points.empty()) {
 		Chunk chunk(stream, FourCC('P', 'T', '3', 'D'));
@@ -288,8 +319,8 @@ static bool saveMetadataBinary(const scenegraph::SceneGraph &sceneGraph, const s
 			Log::debug("Palette '%s' with %i entries", name.c_str(), entries);
 			for (int i = 0; i < colors; ++i) {
 				const core::RGBA &color = palette.color(i);
-				if (!stream.writeUInt8(color.a) || !stream.writeUInt8(color.b) ||
-					!stream.writeUInt8(color.g) || !stream.writeUInt8(color.r)) {
+				if (!stream.writeUInt8(color.a) || !stream.writeUInt8(color.b) || !stream.writeUInt8(color.g) ||
+					!stream.writeUInt8(color.r)) {
 					Log::error("Failed to write color %i for palette %s", i, name.c_str());
 					return false;
 				}

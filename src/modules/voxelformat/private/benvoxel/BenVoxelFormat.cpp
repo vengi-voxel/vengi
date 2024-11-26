@@ -37,35 +37,7 @@ bool BenVoxelFormat::loadGroupsPalette(const core::String &filename, const io::A
 		}
 		return benv::loadJson(sceneGraph, palette, jsonStr);
 	} else if (core::string::endsWith(filename, "ben")) {
-		uint32_t magic = 0;
-		if (stream->readUInt32(magic) != 0) {
-			Log::error("Failed to read magic");
-			return false;
-		}
-		if (magic != FourCC('B', 'E', 'N', 'V')) {
-			uint8_t buf[4];
-			FourCCRev(buf, magic);
-			Log::error("Invalid magic found - no binary benv file: %c%c%c%c", buf[0], buf[1], buf[2], buf[3]);
-			return false;
-		}
-
-		uint32_t totalLength;
-		if (stream->readUInt32(totalLength) != 0) {
-			Log::error("Failed to read total length");
-			return false;
-		}
-
-		core::String version;
-		if (!stream->readPascalStringUInt8(version)) {
-			Log::error("Failed to read version");
-			return false;
-		}
-		scenegraph::SceneGraphNode &root = sceneGraph.node(0);
-		root.setProperty("version", version.c_str());
-
-		io::ZipReadStream zipStream(*stream, stream->remaining());
-		io::BufferedReadWriteStream wrapper(zipStream);
-		return benv::loadBinary(sceneGraph, palette, wrapper);
+		return benv::loadBinary(sceneGraph, palette, *stream);
 	}
 	return false;
 }

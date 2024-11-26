@@ -142,6 +142,10 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 		}
 
 		const std::string &z85 = geometryJson["z85"];
+		if (z85.empty()) {
+			Log::error("Empty z85 encoded data");
+			return false;
+		}
 		io::MemoryReadStream z85InStream(z85.data(), z85.size());
 
 		io::BufferedReadWriteStream z85Stream;
@@ -150,11 +154,15 @@ bool loadJson(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, con
 			return false;
 		}
 		if (z85Stream.seek(0) != 0) {
-			Log::error("Failed to seek to start of stream");
+			Log::error("Failed to seek to start of z85 stream");
 			return false;
 		}
 		io::ZipReadStream zipStream(z85Stream, z85Stream.size());
 		io::BufferedReadWriteStream wrapper(zipStream);
+		if (wrapper.empty()) {
+			Log::error("Could not load deflated z85 data of size %i", (int)z85Stream.size());
+			return false;
+		}
 		int nodeId =
 			createModelNode(sceneGraph, palette, name, width, height, depth, wrapper, globalMetadata, metadata);
 		if (nodeId == InvalidNodeId) {
