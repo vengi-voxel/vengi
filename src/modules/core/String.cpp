@@ -206,10 +206,11 @@ void String::erase(size_t index, size_t length) {
 		return;
 	}
 
-	for (; index + length <= _data._size; ++index) {
-		_data._str[index] = _data._str[index + length];
+	for (size_t i = index; i + length < _data._size; ++i) {
+		_data._str[i] = _data._str[i + length];
 	}
 	_data._size -= length;
+	_data._str[_data._size] = '\0';
 }
 
 bool String::contains(const char *str, size_t len) const {
