@@ -51,4 +51,14 @@ TEST(AlphanumericTest, testSort2) {
 	EXPECT_LT(a1, a3);
 }
 
+TEST(AlphanumericTest, testUnicode) {
+	Alphanumeric a2("1abc2 öäß");
+	Alphanumeric a3("1abc3 äöß");
+	Alphanumeric a1("1abc1 Ü");
+
+	EXPECT_LT(a1, a2);
+	EXPECT_LT(a2, a3);
+	EXPECT_LT(a1, a3);
+}
+
 } // namespace core
