@@ -215,7 +215,6 @@ static bool writeMetadataJson(nlohmann::json &json, const scenegraph::SceneGraph
 }
 
 bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream) {
-	const Metadata &globalMetadata = createMetadata(sceneGraph, sceneGraph.root());
 	nlohmann::json json;
 	json["version"] = "0.0";
 
