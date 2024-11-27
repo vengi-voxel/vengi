@@ -297,7 +297,7 @@ core::String Filesystem::sysAbsolutePath(const core::String &path) const {
 				return abspath;
 			}
 		}
-		Log::error("Failed to get absolute path for '%s'", path.c_str());
+		Log::debug("Failed to get absolute path for '%s'", path.c_str());
 		return "";
 	}
 	normalizePath(abspath);
