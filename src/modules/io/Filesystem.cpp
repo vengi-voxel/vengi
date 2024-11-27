@@ -15,7 +15,9 @@
 #include "io/FilesystemEntry.h"
 #include "system/System.h"
 #include <SDL.h>
-#ifndef __WINDOWS__
+#ifdef __WINDOWS__
+#include <locale>
+#else
 #include <unistd.h>
 #endif
 #ifdef __EMSCRIPTEN__
@@ -29,6 +31,10 @@ Filesystem::~Filesystem() {
 }
 
 bool Filesystem::init(const core::String &organisation, const core::String &appname) {
+#ifdef __WINDOWS__
+	// https://github.com/tronkko/dirent/issues/39
+	std::locale::global(std::locale("LC_CTYPE=.utf8"));
+#endif
 	_organisation = organisation;
 	_appname = appname;
 
