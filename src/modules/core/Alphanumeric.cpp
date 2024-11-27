@@ -15,11 +15,11 @@ int Alphanumeric::ndigits(const char *s) {
 
 	int nd = 0;
 	for (int i = 0; i < n; i++) {
-		int n = utf8::next(&s);
-		if (n < 0) {
+		int c = utf8::next(&s);
+		if (c < 0) {
 			break;
 		}
-		if (n >= '0' && n <= '9') {
+		if (c >= '0' && c <= '9') {
 			++nd;
 		}
 	}

@@ -37,7 +37,6 @@ void NormalPalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, s
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 v1(globalCursorPos.x + borderWidth, globalCursorPos.y + borderWidth);
 	const ImVec2 v2(globalCursorPos.x + colorButtonSize.x, globalCursorPos.y + colorButtonSize.y);
-	const bool usableColor = normalPalette.normal(paletteColorIdx).a > 0;
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 	if (existingColor) {
 		const core::RGBA color = normalPalette.normal(paletteColorIdx);
