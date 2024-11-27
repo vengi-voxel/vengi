@@ -37,7 +37,7 @@ public:
 	/**
 	 * @note The given volume must still get freed by the caller - the renderer is not taking overship.
 	 *
-	 * But it is keep a pointer to the volume!
+	 * But it is keeping a pointer to the volume!
 	 */
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette) override;
 	void updateReferencePosition(const glm::ivec3 &pos) override;
