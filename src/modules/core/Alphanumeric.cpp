@@ -35,13 +35,13 @@ bool Alphanumeric::operator<(const Alphanumeric &other) const {
 
 	/* presence of digits */
 	if (!sd && !td) {
-		return core_strcasecmp(s, t);
+		return core_strcasecmp(s, t) < 0;
 	}
 	if (!sd) {
-		return 1;
+		return false;
 	}
 	if (!td) {
-		return -1;
+		return true;
 	}
 
 	/* value of digits */
@@ -63,14 +63,14 @@ bool Alphanumeric::operator<(const Alphanumeric &other) const {
 
 	/* number of digits */
 	if (i < sd) {
-		return 1;
+		return false;
 	}
 	if (j < td) {
-		return -1;
+		return true;
 	}
 
 	/* value of string after last digit */
-	return core_strcasecmp(s, t);
+	return core_strcasecmp(s, t) < 0;
 }
 
 } // namespace core
