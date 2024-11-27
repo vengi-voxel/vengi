@@ -411,6 +411,10 @@ update-cute:
 	$(call UPDATE_GIT,cute_headers,https://github.com/RandyGaul/cute_headers)
 	cp $(UPDATEDIR)/cute_headers.sync/cute_aseprite.h src/modules/voxelformat/external
 
+update-dirent:
+	$(call UPDATE_GIT,dirent,https://github.com/tronkko/dirent)
+	cp $(UPDATEDIR)/dirent.sync/include/dirent.h src/modules/io/system/windirent.h
+
 update-icons:
 	$(call UPDATE_GIT,iconfontcppheaders,https://github.com/juliettef/IconFontCppHeaders)
 	cp $(UPDATEDIR)/iconfontcppheaders.sync/IconsLucide.h src/modules/ui/
