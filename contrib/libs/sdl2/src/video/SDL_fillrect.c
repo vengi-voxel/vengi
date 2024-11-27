@@ -64,6 +64,13 @@ static void SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w
  \
     SSE_BEGIN; \
  \
+    /* If the number of bytes per row is equal to the pitch, treat */ \
+    /* all rows as one long continuous row (for better performance) */ \
+    if ((w) * (bpp) == pitch) { \
+        w = w * h; \
+        h = 1; \
+    } \
+ \
     while (h--) { \
         n = w * bpp; \
         p = pixels; \
