@@ -360,9 +360,9 @@ bool ReadStream::readLine(core::String &str) {
 					return false;
 				}
 			}
-			return true;
+			break;
 		} else if (chr == '\n' || chr == '\0') {
-			return true;
+			break;
 		}
 		str += (char)chr;
 	}
