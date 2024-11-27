@@ -215,7 +215,7 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 				continue;
 			}
 			if (!requestState) {
-				Log::error("Failed to send request with error %d", GetLastError());
+				Log::error("Failed to send request with error %d", (int)GetLastError());
 				break;
 			}
 		}
