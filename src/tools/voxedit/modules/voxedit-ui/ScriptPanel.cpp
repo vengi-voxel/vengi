@@ -150,7 +150,7 @@ bool ScriptPanel::updateScriptExecutionPanel(command::CommandExecutionListener &
 			}
 			case voxelgenerator::LUAParameterType::File: {
 				core::String &str = _scriptParameters[i];
-				ImGui::InputFile(p.name.c_str(), &str, nullptr);
+				ImGui::InputFile(p.name.c_str(), true, &str, nullptr);
 				break;
 			}
 			case voxelgenerator::LUAParameterType::Enum: {

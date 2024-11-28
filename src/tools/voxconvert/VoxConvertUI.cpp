@@ -92,8 +92,8 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::InputFile(_("Source"), &_sourceFile, voxelformat::voxelLoad());
-		ImGui::InputFile(_("Target"), &_targetFile, voxelformat::voxelSave());
+		ImGui::InputFile(_("Source"), true, &_sourceFile, voxelformat::voxelLoad());
+		ImGui::InputFile(_("Target"), false, &_targetFile, voxelformat::voxelSave());
 
 		const io::FormatDescription *sourceDesc = nullptr;
 		if (!_sourceFile.empty()) {

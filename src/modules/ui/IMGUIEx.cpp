@@ -106,15 +106,21 @@ bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFl
 	return false;
 }
 
-void InputFile(const char *label, core::String *file, const io::FormatDescription *descriptions,
+void InputFile(const char *label, bool load, core::String *file, const io::FormatDescription *descriptions,
 			   ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
 	InputText(label, file, flags);
 	SameLine();
 	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
 	if (Button(id.c_str())) {
-		imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
-			*file = filename;
-		}, options, descriptions);
+		if (load) {
+			imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
+				*file = filename;
+			}, options, descriptions);
+		} else {
+			imguiApp()->saveDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
+				*file = filename;
+			}, options, descriptions);
+		}
 	}
 }
 
