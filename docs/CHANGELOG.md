@@ -17,6 +17,12 @@ General:
    - New cvar to define additional texture search paths for voxelization (`voxformat_texturepath`)
    - Fixed an error with loading magicavoxel files without layers
    - New lua script to remap colors
+   - Prevent files from being opened twice (windows doesn't like this)
+   - Fixed unicode related errors on windows for path handling
+
+VoxConvert:
+
+   - Updated the voxconvert ui - removed the file type selection for source and target files
 
 VoxEdit:
 
