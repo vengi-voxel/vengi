@@ -119,7 +119,7 @@ public:
 	bool owns() const;
 
 	bool isLocked() const;
-	bool isReference() const;
+	bool isReferenceNode() const;
 	bool isReferenceable() const;
 	bool isAnyModelNode() const;
 	bool isCameraNode() const;

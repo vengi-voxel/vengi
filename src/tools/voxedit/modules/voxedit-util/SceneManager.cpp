@@ -229,7 +229,7 @@ bool SceneManager::saveNode(int nodeId, const core::String& file) {
 	scenegraph::SceneGraph newSceneGraph;
 	scenegraph::SceneGraphNode newNode;
 	scenegraph::copyNode(*node, newNode, false);
-	if (node->isReference()) {
+	if (node->isReferenceNode()) {
 		newNode.setVolume(_sceneGraph.resolveVolume(*node));
 	}
 	newSceneGraph.emplace(core::move(newNode));
@@ -848,7 +848,7 @@ bool SceneManager::mementoStateToNode(const memento::MementoState &s) {
 		}
 	}
 	newNode.setPalette(s.palette);
-	if (newNode.isReference()) {
+	if (newNode.isReferenceNode()) {
 		if (scenegraph::SceneGraphNode* referenceNode = sceneGraphNodeByUUID(s.referenceUUID)) {
 			newNode.setReference(referenceNode->id());
 		} else {
@@ -3174,7 +3174,7 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 
 int SceneManager::nodeReference(int nodeId) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
-		if (node->isReference()) {
+		if (node->isReferenceNode()) {
 			return nodeReference(node->reference());
 		}
 		return nodeReference(*node);

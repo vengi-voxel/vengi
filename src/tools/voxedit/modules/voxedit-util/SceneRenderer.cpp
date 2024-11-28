@@ -215,7 +215,7 @@ void SceneRenderer::updateAABBMesh(bool sceneMode, const scenegraph::SceneGraph 
 			continue;
 		} else if (activeNodeLocked && node.isLocked()) {
 			_shapeBuilder.setColor(style::color(style::ColorLockedNode));
-		} else if (node.isReference()) {
+		} else if (node.isReferenceNode()) {
 			_shapeBuilder.setColor(style::color(style::ColorReferenceNode));
 		} else {
 			_shapeBuilder.setColor(style::color(style::ColorInactiveNode));

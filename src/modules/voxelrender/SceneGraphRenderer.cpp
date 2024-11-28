@@ -296,7 +296,7 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 	if (renderContext.renderMode == RenderMode::Scene) {
 		for (auto entry : sceneGraph.nodes()) {
 			const scenegraph::SceneGraphNode &node = entry->second;
-			if (!node.isReference()) {
+			if (!node.isReferenceNode()) {
 				continue;
 			}
 			const int idx = getVolumeIdx(node);

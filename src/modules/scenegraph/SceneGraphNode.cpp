@@ -319,7 +319,7 @@ bool SceneGraphNode::isLocked() const {
 	return _flags & Locked;
 }
 
-bool SceneGraphNode::isReference() const {
+bool SceneGraphNode::isReferenceNode() const {
 	return _type == SceneGraphNodeType::ModelReference;
 }
 

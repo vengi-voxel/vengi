@@ -93,7 +93,7 @@ bool SceneGraphPanel::isFiltered(const scenegraph::SceneGraphNode &node) const {
 		if (_filterType == 3 && node.type() != scenegraph::SceneGraphNodeType::Camera) {
 			return true;
 		}
-		if (_filterType == 4 && !node.isReference()) {
+		if (_filterType == 4 && !node.isReferenceNode()) {
 			return true;
 		}
 	}

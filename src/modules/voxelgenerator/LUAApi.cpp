@@ -1266,7 +1266,7 @@ static int luaVoxel_scenegraphnode_is_model(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_is_modelref(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	lua_pushboolean(s, node->node->isReference() ? 1 : 0);
+	lua_pushboolean(s, node->node->isReferenceNode() ? 1 : 0);
 	return 1;
 }
 

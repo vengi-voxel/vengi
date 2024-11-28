@@ -370,7 +370,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
-	} else if (node.isReference()) {
+	} else if (node.isReferenceNode()) {
 		auto iter = ctx.nodeToModel.find(node.reference());
 		if (iter == ctx.nodeToModel.end()) {
 			Log::error("Could not find model reference for node %i (references: %i)", node.id(), node.reference());

@@ -30,7 +30,7 @@ struct ReferenceNodeCommandInterceptor : public command::CommandExecutionListene
 		: _node(node), _listener(listener) {
 	}
 	bool allowed(const core::String &cmd, const core::DynamicArray<core::String> &args) override {
-		if (_node->isReference()) {
+		if (_node->isReferenceNode()) {
 			MainWindow::_popupModelUnreference = true;
 			return false;
 		}
