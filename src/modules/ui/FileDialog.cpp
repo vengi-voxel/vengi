@@ -138,10 +138,10 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		} else if (type == video::OpenFileMode::Directory) {
 			continue;
 		}
-		if (_currentFilterEntry != -1) {
+		if (_currentFilterFormat) {
 			// this is "all-supported files"
 			const bool showAll = !_filterAll.empty() && _currentFilterEntry == 0;
-			const core::String &filter = showAll ? _filterAll : _filterEntries[_currentFilterEntry].wildCard();
+			const core::String &filter = showAll ? _filterAll : _currentFilterFormat->wildCard();
 			if (!core::string::fileMatchesMultiple(_entities[i].name.c_str(), filter.c_str())) {
 				continue;
 			}
@@ -151,8 +151,8 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 
 	_needsSorting = true;
 
-	if (_currentFilterEntry != -1 && type == video::OpenFileMode::Save) {
-		const io::FormatDescription &desc = _filterEntries[_currentFilterEntry];
+	if (_currentFilterFormat && type == video::OpenFileMode::Save) {
+		const io::FormatDescription &desc = *_currentFilterFormat;
 		const core::String &extension = core::string::extractExtension(_selectedEntry.name);
 		if (!desc.exts.empty() && !desc.matchesExtension(extension)) {
 			_selectedEntry.setExtension(desc.exts[0]);
@@ -695,7 +695,7 @@ void FileDialog::filter(video::OpenFileMode type) {
 		ImGui::SetCursorPosX(contentRegionWidth - _filterTextWidth - ImGui::GetScrollX() - size.x - 2 * ImGui::GetStyle().ItemSpacing.x);
 		ImGui::PushItemWidth(_filterTextWidth);
 		int currentlySelected = _currentFilterEntry == -1 ? 0 : _currentFilterEntry;
-		const core::String &selectedEntry = io::convertToFilePattern(_filterEntries[currentlySelected]);
+		const core::String &selectedEntry = _currentFilterFormat ? io::convertToFilePattern(*_currentFilterFormat) : "";
 
 		if (ImGui::BeginCombo(label, selectedEntry.c_str(), ImGuiComboFlags_HeightLargest)) {
 			for (int i = 0; i < (int)_filterEntries.size(); ++i) {
