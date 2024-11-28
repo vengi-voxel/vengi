@@ -26,6 +26,8 @@ protected:
 		core::Var::get(cfg::VoxEditShowlockedaxis, "true");
 		core::Var::get(cfg::VoxEditRendershadow, "true");
 		core::Var::get(cfg::VoxEditGridsize, "1");
+		core::Var::get(cfg::VoxEditPlaneSize, "0");
+		core::Var::get(cfg::VoxEditShowPlane, "false");
 		core::Var::get(cfg::VoxelMeshMode, core::string::toString((int)voxel::SurfaceExtractionType::Cubic));
 		core::Var::get(cfg::VoxEditShowaabb, "");
 		core::Var::get(cfg::VoxEditShowBones, "");
