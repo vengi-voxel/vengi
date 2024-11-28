@@ -281,14 +281,14 @@ void VoxFormat::saveInstance(const scenegraph::SceneGraph &sceneGraph, scenegrap
 void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 						 MVSceneContext &ctx, uint32_t parentGroupIdx, uint32_t layerIdx) {
 	Log::debug("Save node '%s' with parent group %u and layer %u", node.name().c_str(), parentGroupIdx, layerIdx);
-	if (node.type() == scenegraph::SceneGraphNodeType::Root || node.type() == scenegraph::SceneGraphNodeType::Group) {
-		if (node.type() == scenegraph::SceneGraphNodeType::Root) {
+	if (node.isRootNode() || node.isGroupNode()) {
+		if (node.isRootNode()) {
 			Log::debug("Add root node");
 		} else {
 			Log::debug("Add group node");
 		}
 		const bool addLayers = core::Var::getSafe(cfg::VoxformatVOXCreateLayers)->boolVal();
-		if (node.type() == scenegraph::SceneGraphNodeType::Root || addLayers) {
+		if (node.isRootNode() || addLayers) {
 			// TODO: VOXELFORMAT: only add the layer if there are models in this group?
 			// https://github.com/vengi-voxel/vengi/issues/186
 			ogt_vox_layer ogt_layer;
@@ -304,7 +304,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		}
 		const uint32_t ownLayerId = (int)ctx.layers.size() - 1;
 		const bool addGroups = core::Var::getSafe(cfg::VoxformatVOXCreateGroups)->boolVal();
-		if (node.type() == scenegraph::SceneGraphNodeType::Root || addGroups) {
+		if (node.isRootNode() || addGroups) {
 			ogt_vox_group ogt_group;
 			core_memset(&ogt_group, 0, sizeof(ogt_group));
 			ogt_group.hidden = !node.visible();
@@ -319,7 +319,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, ownGroupId, ownLayerId);
 		}
-	} else if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
+	} else if (node.isCameraNode()) {
 		Log::debug("Add camera node");
 		const scenegraph::SceneGraphNodeCamera &camera = toCameraNode(node);
 		const scenegraph::SceneGraphTransform &transform = camera.transform(0);
@@ -370,7 +370,7 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 		for (int childId : node.children()) {
 			saveNode(sceneGraph, sceneGraph.node(childId), ctx, parentGroupIdx, layerIdx);
 		}
-	} else if (node.type() == scenegraph::SceneGraphNodeType::ModelReference) {
+	} else if (node.isReference()) {
 		auto iter = ctx.nodeToModel.find(node.reference());
 		if (iter == ctx.nodeToModel.end()) {
 			Log::error("Could not find model reference for node %i (references: %i)", node.id(), node.reference());
