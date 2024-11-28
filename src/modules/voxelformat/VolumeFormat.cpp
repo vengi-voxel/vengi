@@ -252,14 +252,19 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 	return {};
 }
 
-image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx) {
-	core_trace_scoped(LoadVolumeScreenshot);
+static uint32_t loadMagic(const core::String &filename, const io::ArchivePtr &archive) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
-		Log::warn("Failed to open file for %s", filename.c_str());
-		return image::ImagePtr();
+		Log::warn("Failed to open file at %s", filename.c_str());
+		return false;
 	}
 	const uint32_t magic = loadMagic(*stream);
+	return magic;
+}
+
+image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx) {
+	core_trace_scoped(LoadVolumeScreenshot);
+	const uint32_t magic = loadMagic(filename, archive);
 
 	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
@@ -300,12 +305,7 @@ bool importPalette(const core::String &filename, palette::Palette &palette) {
 size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 				   const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumePalette);
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::warn("Failed to open palette file at %s", filename.c_str());
-		return 0;
-	}
-	const uint32_t magic = loadMagic(*stream);
+	const uint32_t magic = loadMagic(filename, archive);
 	const io::FormatDescription *desc = io::getDescription(filename, magic, voxelLoad());
 	if (desc == nullptr) {
 		Log::warn("Format %s isn't supported", filename.c_str());
@@ -325,12 +325,7 @@ size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, 
 bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archive,
 				scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
 	core_trace_scoped(LoadVolumeFormat);
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(fileDesc.name));
-	if (!stream) {
-		Log::warn("Failed to open file at %s", fileDesc.name.c_str());
-		return false;
-	}
-	const uint32_t magic = loadMagic(*stream);
+	const uint32_t magic = loadMagic(fileDesc.name, archive);
 	const io::FormatDescription *desc = io::getDescription(fileDesc, magic, voxelLoad());
 	if (desc == nullptr) {
 		return false;
@@ -428,17 +423,18 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 		}
 	}
 	for (desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-		if (desc->matchesExtension(ext)) {
-			core::SharedPtr<Format> f = getFormat(*desc, 0u);
-			if (f) {
-				if (f->save(sceneGraph, filename, archive, ctx)) {
-					Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
-					metric::count("save", 1, {{"type", ext.toLower()}});
-					return true;
-				}
-				Log::error("Failed to save %s file", desc->name.c_str());
-				return false;
+		if (!desc->matchesExtension(ext)) {
+			continue;
+		}
+		core::SharedPtr<Format> f = getFormat(*desc, 0u);
+		if (f) {
+			if (f->save(sceneGraph, filename, archive, ctx)) {
+				Log::debug("Saved file for format '%s' (ext: '%s')", desc->name.c_str(), ext.c_str());
+				metric::count("save", 1, {{"type", ext.toLower()}});
+				return true;
 			}
+			Log::error("Failed to save %s file", desc->name.c_str());
+			return false;
 		}
 	}
 	return false;

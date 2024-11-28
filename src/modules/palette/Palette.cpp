@@ -534,7 +534,8 @@ bool Palette::save(const char *name) const {
 	return palette::savePalette(*this, name, stream);
 }
 
-bool Palette::load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
+bool Palette::
+load(const uint8_t *rgbaBuf, size_t bufsize, const char *name) {
 	if (bufsize % 4 != 0) {
 		Log::warn("Buf size doesn't match expectation: %i", (int)bufsize);
 	}
