@@ -599,8 +599,7 @@ static void printProgress(const char *name, int cur, int max) {
 bool VoxConvert::handleInputFile(const core::String &infile, const io::ArchivePtr &archive,
 								 scenegraph::SceneGraph &sceneGraph, bool multipleInputs) {
 	Log::info("-- current input file: %s", infile.c_str());
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(infile));
-	if (!stream) {
+	if (!archive->exists(infile)) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		_exitCode = 127;
 		return false;
