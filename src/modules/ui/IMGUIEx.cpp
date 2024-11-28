@@ -110,7 +110,8 @@ void InputFile(const char *label, core::String *file, const io::FormatDescriptio
 			   ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
 	InputText(label, file, flags);
 	SameLine();
-	if (Button(ICON_LC_FILE)) {
+	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
+	if (Button(id.c_str())) {
 		imguiApp()->openDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
 			*file = filename;
 		}, options, descriptions);
@@ -120,7 +121,8 @@ void InputFile(const char *label, core::String *file, const io::FormatDescriptio
 void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags) {
 	InputText(label, folder, flags);
 	SameLine();
-	if (Button(ICON_LC_FOLDER)) {
+	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
+	if (Button(id.c_str())) {
 		imguiApp()->directoryDialog([folder] (const core::String &folderName, const io::FormatDescription *desc) {
 			*folder = folderName;
 		}, {});
