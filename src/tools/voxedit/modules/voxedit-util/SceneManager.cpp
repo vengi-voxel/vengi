@@ -144,7 +144,7 @@ bool SceneManager::importPalette(const core::String& file, bool setActive, bool 
 
 	const core::String paletteName(core::string::extractFilename(file));
 	const core::String &paletteFilename = core::string::format("palette-%s.png", paletteName.c_str());
-	const core::String &pngFile = _filesystem->open(paletteFilename, io::FileMode::Write)->name();
+	const core::String &pngFile = _filesystem->homeWritePath(paletteFilename);
 	if (palette.save(pngFile.c_str())) {
 		core::Var::getSafe(cfg::VoxEditLastPalette)->setVal(paletteName);
 	}
