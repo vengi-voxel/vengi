@@ -34,34 +34,12 @@ VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::Time
 app::AppState VoxConvertUI::onConstruct() {
 	app::AppState state = Super::onConstruct();
 	voxelformat::FormatConfig::init();
-
-	_lastTarget = core::Var::get("ui_lasttarget", "0", "Last selected target format");
-	_lastSource = core::Var::get("ui_lastsource", "0", "Last selected target format");
-
 	return state;
 }
 
 app::AppState VoxConvertUI::onInit() {
 	app::AppState state = Super::onInit();
 	_voxconvertBinary = _filesystem->sysFindBinary("vengi-voxconvert");
-
-	if (_filterFormatTextWidth < 0.0f) {
-		for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-			_filterLoadEntries.push_back(*desc);
-		}
-		_filterLoadEntries.sort(core::Greater<io::FormatDescription>());
-
-		for (const io::FormatDescription *desc = voxelformat::voxelSave(); desc->valid(); ++desc) {
-			_filterSaveEntries.push_back(*desc);
-		}
-		_filterSaveEntries.sort(core::Greater<io::FormatDescription>());
-	}
-	if (_lastTarget->intVal() < 0 || _lastTarget->intVal() >= (int)_filterSaveEntries.size()) {
-		_lastTarget->setVal(0);
-	}
-	if (_lastSource->intVal() < 0 || _lastSource->intVal() >= (int)_filterLoadEntries.size()) {
-		_lastSource->setVal(0);
-	}
 
 	_paletteCache.detectPalettes();
 
@@ -73,14 +51,6 @@ void VoxConvertUI::onRenderUI() {
 	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
-
-	if (_filterFormatTextWidth < 0.0f) {
-		for (const io::FormatDescription &desc : _filterLoadEntries) {
-			const core::String &str = io::convertToFilePattern(desc);
-			const ImVec2 filterTextSize = ImGui::CalcTextSize(str.c_str());
-			_filterFormatTextWidth = core_max(_filterFormatTextWidth, filterTextSize.x);
-		}
-	}
 
 	if (ImGui::Begin("##main", nullptr,
 					 ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
@@ -122,65 +92,17 @@ void VoxConvertUI::onRenderUI() {
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::PushItemWidth(_filterFormatTextWidth);
-		const core::String sourceStr = io::convertToFilePattern(_filterLoadEntries[_lastSource->intVal()]);
-		if (ImGui::BeginCombo(_("Source format"), sourceStr.c_str())) {
-			for (int i = 0; i < (int)_filterLoadEntries.size(); ++i) {
-				const bool selected = i == _lastSource->intVal();
-				const io::FormatDescription &format = _filterLoadEntries[i];
-				const core::String &text = io::convertToFilePattern(format);
-				if (ImGui::Selectable(text.c_str(), selected)) {
-					_lastSource->setVal(i);
-					_sourceFile = "";
-					_dirtyTargetFile = true;
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
+		ImGui::InputFile(_("Source"), &_sourceFile, voxelformat::voxelLoad());
+		ImGui::InputFile(_("Target"), &_targetFile, voxelformat::voxelSave());
 
-		io::FormatDescription sourceEntries[] = {_filterLoadEntries[_lastSource->intVal()], {"", {}, {}, 0u}};
-		ImGui::InputFile(_("Source"), &_sourceFile, sourceEntries);
-		if (_lastSourceFile != _sourceFile) {
-			_lastSourceFile = _sourceFile;
-			_dirtyTargetFile = true;
+		const io::FormatDescription *sourceDesc = nullptr;
+		if (!_sourceFile.empty()) {
+			sourceDesc = io::getDescription(_sourceFile, 0, voxelformat::voxelLoad());
 		}
 
-		ImGui::PushItemWidth(_filterFormatTextWidth);
-		const core::String targetStr = io::convertToFilePattern(_filterSaveEntries[_lastTarget->intVal()]);
-		if (ImGui::BeginCombo(_("Target format"), targetStr.c_str())) {
-			for (int i = 0; i < (int)_filterSaveEntries.size(); ++i) {
-				const bool selected = i == _lastTarget->intVal();
-				const io::FormatDescription &format = _filterSaveEntries[i];
-				const core::String &text = io::convertToFilePattern(format);
-				if (ImGui::Selectable(text.c_str(), selected)) {
-					_lastTarget->setVal(i);
-					_dirtyTargetFile = true;
-				}
-				if (selected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::PopItemWidth();
-
-		ImGui::Text(_("Target file: %s"), _targetFile.c_str());
-
-		if (_dirtyTargetFile) {
-			if (_sourceFile.empty()) {
-				_targetFile = "";
-				_targetFileExists = false;
-			} else {
-				_targetFile =
-					core::string::replaceExtension(_sourceFile, _filterSaveEntries[_lastTarget->intVal()].mainExtension());
-				Log::error("Target file: %s", _targetFile.c_str());
-				_targetFileExists = _filesystem->exists(_targetFile);
-			}
-			_dirtyTargetFile = false;
+		const io::FormatDescription *targetDesc = nullptr;
+		if (!_targetFile.empty()) {
+			targetDesc = io::getDescription(_targetFile, 0, voxelformat::voxelSave());
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -188,17 +110,23 @@ void VoxConvertUI::onRenderUI() {
 				ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("File already exists"));
 				ImGui::Checkbox(_("Overwrite existing target file"), &_overwriteTargetFile);
 			}
-			voxelui::genericOptions(&_filterLoadEntries[_lastSource->intVal()]);
+			if (sourceDesc) {
+				voxelui::genericOptions(sourceDesc);
+			}
 		}
 
 		if (ImGui::CollapsingHeader(_("Source options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_sourceFile), _sourceFile};
-			voxelui::loadOptions(&_filterLoadEntries[_lastSource->intVal()], entry, _paletteCache);
+			if (sourceDesc) {
+				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_sourceFile), _sourceFile};
+				voxelui::loadOptions(sourceDesc, entry, _paletteCache);
+			}
 		}
 
 		if (ImGui::CollapsingHeader(_("Target options"), ImGuiTreeNodeFlags_DefaultOpen)) {
-			const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
-			voxelui::saveOptions(&_filterSaveEntries[_lastTarget->intVal()], entry);
+			if (targetDesc) {
+				const io::FilesystemEntry entry{core::string::extractFilenameWithExtension(_targetFile), _targetFile};
+				voxelui::saveOptions(targetDesc, entry);
+			}
 		}
 
 		// TODO: VOXCONVERT: add script execution support
