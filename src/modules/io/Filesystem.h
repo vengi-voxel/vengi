@@ -11,6 +11,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Stack.h"
 #include "core/Common.h"
+#include "core/collection/StringMap.h"
 #include "io/Stream.h"
 
 namespace io {

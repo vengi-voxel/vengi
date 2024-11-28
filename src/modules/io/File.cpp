@@ -3,15 +3,57 @@
  */
 
 #include "File.h"
+#include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
+#include "io/system/System.h"
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include "system/emscripten_browser_file.h"
 #endif
 
 namespace io {
+
+namespace priv {
+// windows can only open a file once - we are tracking opened files here to get
+// error logs on other systems to be able to debug and fix the issues that otherwise
+// would only be visible to windows users
+core::StringMap<FileMode> _openedFiles;
+
+void trackOpenedFile(const core::String &path, FileMode mode) {
+	core::String absPath = fs_realpath(path.c_str());
+	normalizePath(absPath);
+	if (absPath.empty()) {
+		Log::debug("Failed to track opened file %s", path.c_str());
+		return;
+	}
+	const bool alreadyOpened = _openedFiles.hasKey(absPath);
+	core_assert_msg(!alreadyOpened, "File %s is already opened in mode %i - this will produce problems on windows", path.c_str(), (int)mode);
+	if (alreadyOpened) {
+		Log::error("File %s is already opened in mode %i", path.c_str(), (int)mode);
+		return;
+	}
+	Log::debug("open file: %s", absPath.c_str());
+	_openedFiles.put(absPath, mode);
+}
+
+void untrackOpenedFile(const core::String &path, FileMode mode) {
+	core::String absPath = fs_realpath(path.c_str());
+	normalizePath(absPath);
+	if (absPath.empty()) {
+		Log::debug("Failed to track opened file %s", path.c_str());
+		return;
+	}
+	if (!_openedFiles.hasKey(absPath)) {
+		Log::debug("File %s is not tracked as being opened", path.c_str());
+		return;
+	}
+	Log::debug("close file: %s", absPath.c_str());
+	_openedFiles.remove(absPath);
+}
+
+}
 
 void normalizePath(core::String& str) {
 	core::string::replaceAllChars(str, '\\', '/');
@@ -62,7 +104,7 @@ bool File::exists() const {
 	// try to open in read mode
 	SDL_RWops* ops = createRWops(FileMode::SysRead);
 	if (ops != nullptr) {
-		SDL_RWclose(ops);
+		closeRWops(ops);
 		return true;
 	}
 	return false;
@@ -98,6 +140,13 @@ void File::error(const char *msg, ...) const {
 	Log::debug("path: '%s' (mode: %i): %s", _rawPath.c_str(), (int)_mode, _error.c_str());
 }
 
+void File::closeRWops(SDL_RWops *handle) const {
+	if (handle != nullptr) {
+		SDL_RWclose(handle);
+		priv::untrackOpenedFile(_rawPath, _mode);
+	}
+}
+
 SDL_RWops* File::createRWops(FileMode mode) const {
 	if (_rawPath.empty()) {
 		error("Can't open file - no path given");
@@ -112,6 +161,8 @@ SDL_RWops* File::createRWops(FileMode mode) const {
 	SDL_RWops *rwops = SDL_RWFromFile(_rawPath.c_str(), fmode);
 	if (rwops == nullptr) {
 		error("%s", SDL_GetError());
+	} else {
+		priv::trackOpenedFile(_rawPath, mode);
 	}
 	return rwops;
 }
@@ -267,7 +318,8 @@ int File::read(void *buf, size_t size, size_t maxnum) {
 
 bool File::flush() {
 	if (_file != nullptr) {
-		SDL_RWclose(_file);
+		closeRWops(_file);
+
 		if (_mode == FileMode::Write || _mode == FileMode::SysWrite) {
 			_mode = FileMode::Append;
 		}
@@ -279,7 +331,7 @@ bool File::flush() {
 
 void File::close() {
 	if (_file != nullptr) {
-		SDL_RWclose(_file);
+		closeRWops(_file);
 		_file = nullptr;
 #ifdef __EMSCRIPTEN__
 		if (_mode == FileMode::SysWrite) {
@@ -294,7 +346,7 @@ void File::close() {
 					emscripten_browser_file::download(_rawPath.c_str(), "application/octet-stream", buf, (size_t)len);
 				}
 				delete[] buf;
-				SDL_RWclose(_file);
+				closeRWops(_file);
 				_file = nullptr;
 			}
 			_mode = FileMode::SysWrite;

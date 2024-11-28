@@ -45,6 +45,8 @@ protected:
 	FileMode _mode;
 	mutable core::String _error;
 
+	void closeRWops(SDL_RWops *handle) const;
+
 	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
 public:
