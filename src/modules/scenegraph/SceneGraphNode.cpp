@@ -312,7 +312,7 @@ void SceneGraphNode::setVolume(const voxel::RawVolume *volume) {
 	core_assert_msg(_type == SceneGraphNodeType::Model, "Expected to get a model node, but got a node with type %i",
 					(int)_type);
 	release();
-	_volume = (voxel::RawVolume *)volume;
+	_volume = const_cast<voxel::RawVolume *>(volume);
 }
 
 bool SceneGraphNode::isLocked() const {
