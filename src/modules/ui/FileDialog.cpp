@@ -129,7 +129,7 @@ void FileDialog::applyFilter(video::OpenFileMode type) {
 		_filteredEntities.push_back(&_parentDir);
 	}
 	for (size_t i = 0; i < _entities.size(); ++i) {
-		if (hide(_entities[i].name)) {
+		if (hide(_entities[i].fullPath)) {
 			continue;
 		}
 		if (_entities[i].type == io::FilesystemEntry::Type::dir) {

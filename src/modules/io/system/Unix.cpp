@@ -329,6 +329,10 @@ bool fs_hidden(const char *path) {
 	if (path == nullptr) {
 		return false;
 	}
+	const char *p = strrchr(path, '/');
+	if (p == nullptr) {
+		p = path;
+	}
 	return path[0] == '.';
 }
 
