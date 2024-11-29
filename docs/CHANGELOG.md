@@ -19,6 +19,8 @@ General:
    - New lua script to remap colors
    - Prevent files from being opened twice (windows doesn't like this)
    - Fixed unicode related errors on windows for path handling
+   - Fixed case-sensitivity in pattern matching. We couldn't find files that had upper-case extensions
+   - Implemented symlink handling on windows
 
 VoxConvert:
 
