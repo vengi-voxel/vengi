@@ -511,7 +511,9 @@ bool FileDialog::entitiesPanel(video::OpenFileMode type, int height) {
 				const core::String &humanSize = core::string::humanSize(entry.size);
 				ImGui::TextUnformatted(humanSize.c_str());
 				ImGui::TableNextColumn();
-				if (entry.isDirectory()) {
+				if (entry.isLink()) {
+					ImGui::TextUnformatted(_("link"));
+				} else if (entry.isDirectory()) {
 					ImGui::TextUnformatted(_("directory"));
 				} else {
 					const core::String &fileExt = core::string::extractExtension(entry.name);

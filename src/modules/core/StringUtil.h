@@ -294,10 +294,10 @@ core::String join(const ITER& begin, const ITER& end, const char *delimiter, FUN
  * @param[in] pattern The pattern can deal with wildcards like * and ?
  * @param[in] text The text to match against the pattern
  */
-bool matches(const char* text, const char* pattern);
-bool matches(const char* text, const core::String& pattern);
-inline bool matches(const core::String& text, const core::String& pattern) {
-	return matches(text.c_str(), pattern);
+bool matches(const char* text, const char* pattern, bool ignoreCase = true);
+bool matches(const char* text, const core::String& pattern, bool ignoreCase = true);
+inline bool matches(const core::String& text, const core::String& pattern, bool ignoreCase = true) {
+	return matches(text.c_str(), pattern, ignoreCase);
 }
 
 /**
@@ -305,7 +305,7 @@ inline bool matches(const core::String& text, const core::String& pattern) {
  * @note Only for file extensions
  * @return @c true if any of the given patterns matched with the given input text
  */
-bool fileMatchesMultiple(const char* text, const char* patterns);
+bool fileMatchesMultiple(const char* text, const char* patterns, bool ignoreCase = true);
 
 /**
  * @param[in,out] str Converts a string into UpperCamelCase.

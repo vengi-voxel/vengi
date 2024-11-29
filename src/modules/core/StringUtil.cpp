@@ -523,8 +523,8 @@ static double cosineSimilarity(const core::String &s1, const core::String &s2) {
 }
 #endif
 
-static bool patternMatch(const char *text, const char *pattern);
-static bool patternMatchMulti(const char *text, const char *pattern) {
+static bool patternMatch(const char *text, const char *pattern, bool ignoreCase);
+static bool patternMatchMulti(const char *text, const char *pattern, bool ignoreCase) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -545,7 +545,7 @@ static bool patternMatchMulti(const char *text, const char *pattern) {
 
 	const size_t l = SDL_strlen(t);
 	for (size_t i = 0; i < l; ++i) {
-		if (*t == c && patternMatch(p - 1, t)) {
+		if (*t == c && patternMatch(p - 1, t, ignoreCase)) {
 			return true;
 		}
 		if (*t++ == '\0') {
@@ -555,7 +555,7 @@ static bool patternMatchMulti(const char *text, const char *pattern) {
 	return false;
 }
 
-static bool patternMatch(const char *text, const char *pattern) {
+static bool patternMatch(const char *text, const char *pattern, bool ignoreCase) {
 	const char *p = pattern;
 	const char *t = text;
 	char c;
@@ -563,7 +563,7 @@ static bool patternMatch(const char *text, const char *pattern) {
 	while ((c = *p++) != '\0') {
 		switch (c) {
 		case '*':
-			return patternMatchMulti(t, p);
+			return patternMatchMulti(t, p, ignoreCase);
 		case '?':
 			if (*t == '\0') {
 				return false;
@@ -571,7 +571,11 @@ static bool patternMatch(const char *text, const char *pattern) {
 			++t;
 			break;
 		default:
-			if (c != *t++) {
+			if (ignoreCase) {
+				if (toLower(c) != toLower(*t++)) {
+					return false;
+				}
+			} else if (c != *t++) {
 				return false;
 			}
 			break;
@@ -580,28 +584,29 @@ static bool patternMatch(const char *text, const char *pattern) {
 	return *t == '\0';
 }
 
-bool matches(const char *text, const core::String &pattern) {
+bool matches(const char *text, const core::String &pattern, bool ignoreCase) {
 	if (pattern.empty()) {
 		return true;
 	}
-	return patternMatch(text, pattern.c_str());
+	return patternMatch(text, pattern.c_str(), ignoreCase);
 }
 
-bool matches(const char *text, const char *pattern) {
+bool matches(const char *text, const char *pattern, bool ignoreCase) {
 	if (pattern == nullptr || pattern[0] == '\0') {
 		return true;
 	}
-	return patternMatch(text, pattern);
+	return patternMatch(text, pattern, ignoreCase);
 }
 
-bool fileMatchesMultiple(const char *text, const char *patterns) {
+bool fileMatchesMultiple(const char *text, const char *patterns, bool ignoreCase) {
 	char buf[4096];
 	SDL_strlcpy(buf, patterns, sizeof(buf));
+
 	buf[sizeof(buf) - 1] = '\0';
 
 	char *sep = SDL_strstr(buf, ",");
 	if (sep == nullptr) {
-		return core::string::matches(text, buf);
+		return matches(text, buf, ignoreCase);
 	}
 
 	char *f = buf;
@@ -609,7 +614,7 @@ bool fileMatchesMultiple(const char *text, const char *patterns) {
 		*sep = '\0';
 		char patternBuf[32];
 		SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
-		if (core::string::matches(text, patternBuf)) {
+		if (matches(text, patternBuf, ignoreCase)) {
 			return true;
 		}
 		f = ++sep;
@@ -620,7 +625,7 @@ bool fileMatchesMultiple(const char *text, const char *patterns) {
 	}
 	char patternBuf[32];
 	SDL_strlcpy(patternBuf, f, sizeof(patternBuf));
-	return core::string::matches(text, patternBuf);
+	return matches(text, patternBuf, ignoreCase);
 }
 
 static void camelCase(core::String &str, bool upperCamelCase) {
