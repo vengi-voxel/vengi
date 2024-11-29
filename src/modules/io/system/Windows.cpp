@@ -204,7 +204,51 @@ core::String fs_realpath(const char *path) {
 	return str;
 }
 
+core::String fs_readlink(const char *path) {
+	WCHAR *wpath = io_UTF8ToStringW(path);
+	priv::denormalizePath(wpath);
+
+	// Open the symbolic link file
+	HANDLE hFile = CreateFileW(
+		wpath,                      // Link path
+		GENERIC_READ,               // Desired access
+		FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+		nullptr,                    // Security attributes
+		OPEN_EXISTING,              // Creation disposition
+		FILE_FLAG_BACKUP_SEMANTICS, // Flags (allows directory handles)
+		nullptr                     // Template file
+	);
+	SDL_free(wpath);
+
+	if (hFile == INVALID_HANDLE_VALUE) {
+		Log::debug("Failed to open symbolic link %s: %s", path, strerror(errno));
+		return "";
+	}
+
+	// Get the target path of the symbolic link
+	WCHAR buffer[MAX_PATH];
+	DWORD result = GetFinalPathNameByHandleW(hFile, buffer, MAX_PATH, FILE_NAME_NORMALIZED);
+
+	CloseHandle(hFile);
+
+	if (result == 0 || result >= MAX_PATH) {
+		Log::debug("Failed to resolve symbolic link %s: %s", path, strerror(errno));
+		return "";
+	}
+
+	priv::denormalizePath(buffer);
+	char *full = io_StringToUTF8W(buffer);
+	const core::String target(full);
+	SDL_free(full);
+	return target;
+}
+
 bool fs_stat(const char *path, FilesystemEntry &entry) {
+	if (entry.type == FilesystemEntry::Type::link) {
+		const core::String linkPath = fs_readlink(path);
+		entry.type = FilesystemEntry::Type::unknown;
+		return fs_stat(linkPath.c_str(), entry);
+	}
 	struct _stat s;
 	WCHAR *wpath = io_UTF8ToStringW(path);
 	priv::denormalizePath(wpath);
@@ -220,10 +264,6 @@ bool fs_stat(const char *path, FilesystemEntry &entry) {
 	}
 	Log::debug("Failed to stat %s: %s", path, strerror(errno));
 	return false;
-}
-
-core::String fs_readlink(const char *path) {
-	return "";
 }
 
 static int fs_scandir_filter(const struct dirent *dent) {
