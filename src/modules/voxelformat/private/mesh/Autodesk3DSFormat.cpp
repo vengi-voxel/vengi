@@ -811,14 +811,24 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 			tris.reserve(mesh.faces.size());
 			for (const Face3ds &face : mesh.faces) {
 				MeshTri meshTri;
+				bool faceError = false;
 				for (int i = 0; i < 3; ++i) {
 					const uint16_t idx = face.indices[i];
+					if (idx >= mesh.vertices.size()) {
+						Log::error("Invalid vertex index %d/%d", idx, (int)mesh.vertices.size());
+						faceError = true;
+						break;
+					}
 					meshTri.vertices[i] = rotationMatrix * glm::vec4(mesh.vertices[idx] * scale, 1.0f);
 					if (mesh.colors.size() > idx) {
 						meshTri.color[i] = mesh.colors[idx];
 					}
 				}
-				if (!mesh.texcoords.empty()) {
+				if (faceError) {
+					// try to continue and skip the broken face
+					continue;
+				}
+				if (face.indices[0] < mesh.texcoords.size() && face.indices[1] < mesh.texcoords.size() && face.indices[2] < mesh.texcoords.size()) {
 					meshTri.uv[0] = mesh.texcoords[face.indices[0]];
 					meshTri.uv[1] = mesh.texcoords[face.indices[1]];
 					meshTri.uv[2] = mesh.texcoords[face.indices[2]];
