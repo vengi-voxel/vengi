@@ -86,11 +86,7 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 						   name.c_str(), entries);
 				for (int j = 0; j < colors; ++j) {
 					core::RGBA color;
-					if (stream.readUInt8(color.a) != 0) {
-						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
-						return false;
-					}
-					if (stream.readUInt8(color.b) != 0) {
+					if (stream.readUInt8(color.r) != 0) {
 						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
 						return false;
 					}
@@ -98,7 +94,11 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
 						return false;
 					}
-					if (stream.readUInt8(color.r) != 0) {
+					if (stream.readUInt8(color.b) != 0) {
+						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
+						return false;
+					}
+					if (stream.readUInt8(color.a) != 0) {
 						Log::error("Failed to read color %u from %u for palette %u", j, entries, i);
 						return false;
 					}
