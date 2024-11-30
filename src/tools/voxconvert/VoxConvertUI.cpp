@@ -103,6 +103,7 @@ void VoxConvertUI::onRenderUI() {
 		const io::FormatDescription *targetDesc = nullptr;
 		if (!_targetFile.empty()) {
 			targetDesc = io::getDescription(_targetFile, 0, voxelformat::voxelSave());
+			_targetFileExists = _filesystem->exists(_targetFile);
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {
