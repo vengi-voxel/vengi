@@ -24,7 +24,8 @@ General:
 
 VoxConvert:
 
-   - Updated the voxconvert ui - removed the file type selection for source and target files
+   - Removed the file type selection for source and target files in the ui
+   - Added script support to the ui
 
 VoxEdit:
 
