@@ -6,6 +6,8 @@
 
 #include "palette/PaletteCache.h"
 #include "ui/IMGUIApp.h"
+#include "voxelgenerator/LUAApi.h"
+#include "voxelui/LUAApiWidget.h"
 
 /**
  * @brief This is a basic ui for voxconvert
@@ -23,9 +25,24 @@ private:
 	bool _overwriteTargetFile = false;
 	palette::PaletteCache _paletteCache;
 
+	struct ScriptExecutorContext : public voxelui::LUAApiExecutorContext {
+		core::String _scriptFilename;
+		core::DynamicArray<core::String> _args;
+
+		void notify(const core::String &scriptFilename, const core::DynamicArray<core::String> &args) override {
+			_scriptFilename = scriptFilename;
+			_args = args;
+		}
+	};
+	ScriptExecutorContext _luaApiCtx;
+	voxelui::LUAApiWidget _luaApiWidget;
+	voxelgenerator::LUAApi _luaApi;
+
 protected:
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
+	app::AppState onCleanup() override;
+
 	void onRenderUI() override;
 
 public:
