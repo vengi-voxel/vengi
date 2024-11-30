@@ -53,6 +53,12 @@ app::AppState VoxConvertUI::onInit() {
 
 	_paletteCache.detectPalettes();
 
+	if (_argc >= 2) {
+		_sourceFile = _argv[_argc - 1];
+	} else {
+		_sourceFile = loadingDocument();
+	}
+
 	return state;
 }
 
