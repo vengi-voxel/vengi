@@ -108,6 +108,7 @@ bool InputVarString(const char *label, const core::VarPtr &var, ImGuiInputTextFl
 
 void InputFile(const char *label, bool load, core::String *file, const io::FormatDescription *descriptions,
 			   ImGuiInputTextFlags flags, const video::FileDialogOptions &options) {
+	BeginGroup();
 	InputText(label, file, flags);
 	SameLine();
 	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
@@ -122,9 +123,11 @@ void InputFile(const char *label, bool load, core::String *file, const io::Forma
 			}, options, descriptions);
 		}
 	}
+	EndGroup();
 }
 
 void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags flags) {
+	BeginGroup();
 	InputText(label, folder, flags);
 	SameLine();
 	const core::String id = core::string::format(ICON_LC_FILE "##%s", label);
@@ -133,6 +136,7 @@ void InputFolder(const char *label, core::String *folder, ImGuiInputTextFlags fl
 			*folder = folderName;
 		}, {});
 	}
+	EndGroup();
 }
 
 bool InputVarFloat(const char* label, const core::VarPtr& var, float step, float step_fast, ImGuiInputTextFlags extra_flags) {
