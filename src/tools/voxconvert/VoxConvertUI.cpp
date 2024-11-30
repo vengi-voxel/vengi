@@ -68,6 +68,10 @@ app::AppState VoxConvertUI::onCleanup() {
 	return state;
 }
 
+void VoxConvertUI::onDropFile(void *windowHandle, const core::String &file) {
+	_droppedFile = file;
+}
+
 void VoxConvertUI::onRenderUI() {
 	ImGuiViewport *viewport = ImGui::GetMainViewport();
 	ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -115,7 +119,19 @@ void VoxConvertUI::onRenderUI() {
 		}
 
 		ImGui::InputFile(_("Source"), true, &_sourceFile, voxelformat::voxelLoad());
+		if (ImGui::IsItemHovered()) {
+			if (!_droppedFile.empty()) {
+				_sourceFile = _droppedFile;
+				_droppedFile.clear();
+			}
+		}
 		ImGui::InputFile(_("Target"), false, &_targetFile, voxelformat::voxelSave());
+		if (ImGui::IsItemHovered()) {
+			if (!_droppedFile.empty()) {
+				_targetFile = _droppedFile;
+				_droppedFile.clear();
+			}
+		}
 
 		const io::FormatDescription *sourceDesc = nullptr;
 		if (!_sourceFile.empty()) {

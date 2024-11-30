@@ -38,10 +38,17 @@ private:
 	voxelui::LUAApiWidget _luaApiWidget;
 	voxelgenerator::LUAApi _luaApi;
 
+	core::String _droppedFile;
+
 protected:
 	app::AppState onConstruct() override;
 	app::AppState onInit() override;
 	app::AppState onCleanup() override;
+
+	void onDropFile(void *windowHandle, const core::String &file) override;
+	void onDropText(void *windowHandle, const core::String& text) override {
+		onDropFile(nullptr, text);
+	}
 
 	void onRenderUI() override;
 
