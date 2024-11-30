@@ -91,7 +91,7 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 									 palette::Palette &palette) {
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			const uint8_t dragPalIdx = *(const uint8_t *)payload->Data;
 			if (dragAndDropSortColors()) {
 				palette.exchangeUIIndices(paletteColorIdx, dragPalIdx);
@@ -100,12 +100,12 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 			}
 			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::RGBAPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::RGBAPayload)) {
 			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
 			_sceneMgr->nodeSetColor(node.id(), paletteColorIdx, core::Color::getRGBA(color));
 		}
 
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
 			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 			_importPalette = image->name();
 		}
@@ -166,7 +166,7 @@ void PalettePanel::addColor(float startingPosX, uint8_t paletteColorIdx, scenegr
 				ImGui::TextUnformatted(_("Press CTRL to re-order"));
 			}
 
-			ImGui::SetDragDropPayload(dragdrop::PaletteIndexPayload, (const void *)&paletteColorIdx, sizeof(uint8_t),
+			ImGui::SetDragDropPayload(voxelui::dragdrop::PaletteIndexPayload, (const void *)&paletteColorIdx, sizeof(uint8_t),
 									  ImGuiCond_Always);
 			static_assert(sizeof(paletteColorIdx) == sizeof(uint8_t), "Unexpected palette index size");
 			ImGui::EndDragDropSource();

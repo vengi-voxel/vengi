@@ -138,6 +138,9 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
+msgid "link"
+msgstr ""
+
 msgid "directory"
 msgstr ""
 
@@ -388,9 +391,6 @@ msgstr ""
 msgid "Help"
 msgstr ""
 
-msgid "Twitter"
-msgstr ""
-
 msgid "Mastodon"
 msgstr ""
 
@@ -571,6 +571,9 @@ msgstr ""
 msgid "Import the image as volume for both sides"
 msgstr ""
 
+msgid "Register an additional search path for texture lookups"
+msgstr ""
+
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
@@ -707,6 +710,9 @@ msgstr ""
 msgid "Depth map not found: %s"
 msgstr ""
 
+msgid "Texture search path"
+msgstr ""
+
 msgid "Fill hollow"
 msgstr ""
 
@@ -735,6 +741,18 @@ msgid "Map colors to palette"
 msgstr ""
 
 msgid "6 bit colors"
+msgstr ""
+
+msgid "LUA scripts for manipulating the voxel volumes"
+msgstr ""
+
+msgid "Run"
+msgstr ""
+
+msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+
+msgid "Script parameters"
 msgstr ""
 
 msgid "Quit"
@@ -767,16 +785,16 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
+msgid "Show console"
+msgstr ""
+
 msgid "About"
 msgstr ""
 
 msgid "Source"
 msgstr ""
 
-msgid "Source format"
-msgstr ""
-
-msgid "Target format"
+msgid "Target"
 msgstr ""
 
 msgid "Overwrite existing target file"
@@ -834,6 +852,12 @@ msgid ""
 msgstr ""
 
 msgid "The size of the voxel grid"
+msgstr ""
+
+msgid "The size of the plane"
+msgstr ""
+
+msgid "Show the plane"
 msgstr ""
 
 msgid "Render the inactive nodes in gray scale mode"
@@ -1163,9 +1187,6 @@ msgid "Nearplane"
 msgstr ""
 
 msgid "FOV"
-msgstr ""
-
-msgid "Target"
 msgstr ""
 
 msgid "Target distance"
@@ -1503,6 +1524,9 @@ msgid "Bounding box"
 msgstr ""
 
 msgid "Bones"
+msgstr ""
+
+msgid "Plane size"
 msgstr ""
 
 msgid "Outlines"
@@ -2023,18 +2047,6 @@ msgid "Merge %s onto %s"
 msgstr ""
 
 msgid "Move below"
-msgstr ""
-
-msgid "LUA scripts for manipulating the voxel volumes"
-msgstr ""
-
-msgid "Run"
-msgstr ""
-
-msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr ""
-
-msgid "Script parameters"
 msgstr ""
 
 msgid "Scripts"

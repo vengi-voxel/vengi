@@ -63,7 +63,7 @@ struct LUAParameterDescription {
 
 struct LUAScript {
 	core::String filename;
-	bool valid; // main() was found
+	bool valid = false; // main() was found
 
 	const char *c_str() const {
 		return filename.c_str();

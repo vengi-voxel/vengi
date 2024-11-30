@@ -91,7 +91,7 @@ void AssetPanel::update(const char *id, command::CommandExecutionListener &liste
 					}
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
 						ImGui::ImageButton(imgId.c_str(), handle, ImVec2(50, 50));
-						ImGui::SetDragDropPayload(dragdrop::ImagePayload, (const void *)&image, sizeof(image),
+						ImGui::SetDragDropPayload(voxelui::dragdrop::ImagePayload, (const void *)&image, sizeof(image),
 												  ImGuiCond_Always);
 						ImGui::EndDragDropSource();
 					}

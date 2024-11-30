@@ -113,7 +113,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	ImGui::InputTextWithHint(_("Model"), _("Select a model from the asset panel or scene graph panel"), &_stamp,
 							 ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
 			if (brush.load(filename)) {
 				_stamp = filename;
@@ -150,7 +150,7 @@ void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Pa
 	}
 	ImGui::InputInt("##colorstampbrush", &_stampPaletteIndex, 0, 0, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			_stampPaletteIndex = *(const uint8_t *)payload->Data;
 		}
 		ImGui::EndDragDropTarget();
@@ -215,7 +215,7 @@ void BrushPanel::updateTextureBrushPanel(command::CommandExecutionListener &list
 	core::String name = brush.image() ? core::string::extractFilenameWithExtension(brush.image()->name()) : _("None");
 	ImGui::InputText(_("Texture"), &name, ImGuiInputTextFlags_ReadOnly);
 	if (ImGui::BeginDragDropTarget()) {
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
 			const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 			brush.setImage(image);
 		}

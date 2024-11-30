@@ -160,6 +160,9 @@ msgstr "Typ"
 msgid "Date"
 msgstr "Datum"
 
+msgid "link"
+msgstr ""
+
 msgid "directory"
 msgstr "Verzeichnis"
 
@@ -418,9 +421,6 @@ msgstr "Fehlerberichte"
 msgid "Help"
 msgstr "Hilfe"
 
-msgid "Twitter"
-msgstr "Twitter"
-
 msgid "Mastodon"
 msgstr "Mastodon"
 
@@ -601,6 +601,9 @@ msgstr ""
 msgid "Import the image as volume for both sides"
 msgstr ""
 
+msgid "Register an additional search path for texture lookups"
+msgstr ""
+
 msgid "0 = plane, 1 = heightmap, 2 = volume"
 msgstr ""
 
@@ -737,6 +740,9 @@ msgstr ""
 msgid "Depth map not found: %s"
 msgstr ""
 
+msgid "Texture search path"
+msgstr ""
+
 msgid "Fill hollow"
 msgstr "Hohlraum füllen"
 
@@ -766,6 +772,19 @@ msgstr "Mappe Farben auf Palette"
 
 msgid "6 bit colors"
 msgstr "6-Bit Farbwerte"
+
+msgid "LUA scripts for manipulating the voxel volumes"
+msgstr "LUA-Skripte zur Manipulation der Voxelvolumen"
+
+msgid "Run"
+msgstr "Ausführen"
+
+msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+"Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
+
+msgid "Script parameters"
+msgstr "Skriptparameter"
 
 msgid "Quit"
 msgstr "Beenden"
@@ -797,17 +816,17 @@ msgstr "Farbthema"
 msgid "Notifications"
 msgstr "Benachrichtigungen"
 
+msgid "Show console"
+msgstr "Konsole anzeigen"
+
 msgid "About"
 msgstr "Über"
 
 msgid "Source"
 msgstr "Quelle"
 
-msgid "Source format"
-msgstr "Quellformat"
-
-msgid "Target format"
-msgstr "Zielformat"
+msgid "Target"
+msgstr "Ziel"
 
 msgid "Overwrite existing target file"
 msgstr "Überschreibe existierende Zieldatei"
@@ -872,6 +891,12 @@ msgstr ""
 
 msgid "The size of the voxel grid"
 msgstr "Die Größe des Voxelgitters"
+
+msgid "The size of the plane"
+msgstr "Die Größe der Ebene"
+
+msgid "Show the plane"
+msgstr "Ebene anzeigen"
 
 msgid "Render the inactive nodes in gray scale mode"
 msgstr "Die inaktiven Knoten in grau darstellen"
@@ -1203,9 +1228,6 @@ msgstr "Nearplane"
 
 msgid "FOV"
 msgstr "FOV"
-
-msgid "Target"
-msgstr "Ziel"
 
 msgid "Target distance"
 msgstr "Entfernung zum Ziel"
@@ -1590,6 +1612,9 @@ msgstr "Begrenzungsrahmen"
 
 msgid "Bones"
 msgstr "Bones"
+
+msgid "Plane size"
+msgstr "Ebenengröße"
 
 msgid "Outlines"
 msgstr "Umrisslinien"
@@ -2134,19 +2159,6 @@ msgstr "%s auf %s zusammenführen"
 
 msgid "Move below"
 msgstr "Unterhalb verschieben"
-
-msgid "LUA scripts for manipulating the voxel volumes"
-msgstr "LUA-Skripte zur Manipulation der Voxelvolumen"
-
-msgid "Run"
-msgstr "Ausführen"
-
-msgid "Execute the selected script for the currently loaded voxel volumes"
-msgstr ""
-"Das ausgewählte Skript für die aktuell geladenen Voxelvolumen ausführen"
-
-msgid "Script parameters"
-msgstr "Skriptparameter"
 
 msgid "Scripts"
 msgstr "Skripte"
@@ -2849,3 +2861,12 @@ msgstr ""
 
 msgid "Reset the uv coordinates"
 msgstr "Zurücksetzen der Texturkoordinaten"
+
+#~ msgid "Twitter"
+#~ msgstr "Twitter"
+
+#~ msgid "Source format"
+#~ msgstr "Quellformat"
+
+#~ msgid "Target format"
+#~ msgstr "Zielformat"

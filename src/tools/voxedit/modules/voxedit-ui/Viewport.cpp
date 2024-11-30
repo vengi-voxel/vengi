@@ -135,13 +135,13 @@ void Viewport::updateViewportTrace(float headerSize) {
 void Viewport::dragAndDrop(float headerSize) {
 	if (ImGui::BeginDragDropTarget()) {
 		if (!isSceneMode()) {
-			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ImagePayload)) {
+			if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ImagePayload)) {
 				const image::ImagePtr &image = *(const image::ImagePtr *)payload->Data;
 				updateViewportTrace(headerSize);
 				_sceneMgr->fillPlane(image);
 			}
 		}
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::PaletteIndexPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::PaletteIndexPayload)) {
 			const int dragPalIdx = (int)(intptr_t)payload->Data;
 			const int nodeId = _sceneMgr->sceneGraph().activeNode();
 			if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId)) {
@@ -160,7 +160,7 @@ void Viewport::dragAndDrop(float headerSize) {
 				}
 			}
 		}
-		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(dragdrop::ModelPayload)) {
+		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::ModelPayload)) {
 			const core::String &filename = *(core::String *)payload->Data;
 			_sceneMgr->import(filename);
 		}

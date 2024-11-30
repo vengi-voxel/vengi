@@ -6,7 +6,7 @@
 
 #include "ui/Panel.h"
 #include "ui/TextEditor.h"
-#include "voxelgenerator/LUAApi.h"
+#include "voxelui/LUAApiWidget.h"
 
 namespace command {
 struct CommandExecutionListener;
@@ -25,20 +25,10 @@ private:
 	using Super = ui::Panel;
 
 	TextEditor _textEditor;
-	core::String _activeScript;
-	core::String _activeScriptFilename;
-	int _currentScript = -1;
-	core::DynamicArray<voxelgenerator::LUAScript> _scripts;
-	core::DynamicArray<voxelgenerator::LUAParameterDescription> _scriptParameterDescription;
-	core::DynamicArray<core::String> _enumValues;
-	core::DynamicArray<core::String> _scriptParameters;
 	SceneManagerPtr _sceneMgr;
+	voxelui::LUAApiWidget _luaApiWidget;
 	bool _scriptEditor = false;
-
-	bool updateScriptExecutionPanel(command::CommandExecutionListener &listener);
-	void updateScriptPanel(command::CommandExecutionListener &listener);
-	void reloadScriptParameters(const core::String &script);
-	void reloadScript();
+	core::String _activeScriptFilename;
 
 public:
 	ScriptPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "script"), _sceneMgr(sceneMgr) {
