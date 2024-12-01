@@ -641,10 +641,18 @@ static int clua_http_requestexec(lua_State *s, http::Request &request) {
 	int status = 0;
 	core::StringMap<core::String> outheaders;
 	if (!request.execute(*outStream, &status, &outheaders)) {
+		outStream->seek(0);
+		core::String error;
+		outStream->readString(outStream->size(), error, true);
+		Log::error("%s", error.c_str());
 		delete outStream;
 		return 0;
 	}
 	if (!http::isValidStatusCode(status)) {
+		outStream->seek(0);
+		core::String error;
+		outStream->readString(outStream->size(), error, true);
+		Log::error("%s", error.c_str());
 		delete outStream;
 		return 0;
 	}
