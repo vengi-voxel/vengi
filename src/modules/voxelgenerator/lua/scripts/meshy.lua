@@ -17,21 +17,27 @@ function arguments()
 	return {
 		{name = 'prompt', desc = '', type = 'string', default = 'A cute cat'},
 		{name = 'negative_prompt', desc = '', type = 'string', default = ''},
-		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,cartoon,low-poly,sculpture,pbr', default = 'low-poly'}
+		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,cartoon,low-poly,sculpture,pbr', default = 'low-poly'},
+		{name = "api_key", desc = "The Meshy API key (cvar meshy_api_key)", type = "string", default = ""}
 	}
 end
 
-function main(_, _, _, prompt, negative_prompt, art_style)
+function main(_, _, _, prompt, negative_prompt, art_style, api_key)
 	local body =
 		JSON:encode({mode = 'preview', prompt = prompt, art_style = art_style, negative_prompt = negative_prompt})
 	g_var.create('meshy_api_key', '', 'meshy ai api key', false, true)
-	local apiKey = g_var.str('meshy_api_key')
-	if apiKey == nil or apiKey == '' then
-		error('Please set the meshy_api_key variable')
+	local apiKeyVar = g_var.str('meshy_api_key')
+	if apiKeyVar == nil or apiKeyVar == '' then
+		if api_key ~= nil and api_key ~= '' then
+			apiKeyVar = api_key
+			g_var.setStr('meshy_api_key', apiKeyVar)
+		else
+			error('Please set the meshy_api_key variable')
+		end
 	end
 
 	local headers = {}
-	headers['Authorization'] = 'Bearer ' .. apiKey
+	headers['Authorization'] = 'Bearer ' .. apiKeyVar
 	headers['Content-Type'] = 'application/json'
 	local stream, _ = g_http.post('https://api.meshy.ai/v2/text-to-3d', body, headers)
 	local str = stream:readString()
