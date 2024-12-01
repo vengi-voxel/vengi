@@ -639,7 +639,7 @@ void FileDialog::popupNewFolder() {
 		}
 		ImGui::SetItemDefaultFocus();
 		ImGui::SameLine();
-		if (ImGui::CancelButton() || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+		if (ImGui::CancelButton()) {
 			_newFolderName = io::FilesystemEntry();
 			_newFolderError = TimedString();
 			ImGui::CloseCurrentPopup();
@@ -847,7 +847,7 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 	const ImVec2 available = ImGui::GetContentRegionAvail();
 	const float contentRegionWidth = available.x + ImGui::GetCursorPosX();
 	ImGui::SetCursorPosX(contentRegionWidth - cancelTextSize.x - chooseTextSize.x - iconSize.x - 40.0f);
-	if (ImGui::CancelButton() || ImGui::IsKeyDown(ImGuiKey_Escape)) {
+	if (ImGui::CancelButton()) {
 		resetState();
 		return true;
 	}
