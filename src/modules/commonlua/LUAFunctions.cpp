@@ -1088,6 +1088,15 @@ static int clua_stream_writedoublebe(lua_State *s) {
 	return 0;
 }
 
+static int clua_stream_writestream(lua_State *s) {
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
+	io::SeekableReadWriteStream *other = clua_tostream(s, 2);
+	if (!stream->writeStream(*other)) {
+		return clua_error(s, "Failed to write stream");
+	}
+	return 0;
+}
+
 static int clua_stream_eos(lua_State *s) {
 	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushboolean(s, stream->eos());
@@ -1187,6 +1196,7 @@ void clua_streamregister(lua_State *s) {
 		{"writeInt64BE", clua_stream_writeint64be},
 		{"writeFloatBE", clua_stream_writefloatbe},
 		{"writeDoubleBE", clua_stream_writedoublebe},
+		{"writeStream", clua_stream_writestream},
 		{"eos", clua_stream_eos},
 		{"seek", clua_stream_seek},
 		{"tell", clua_stream_tell},
