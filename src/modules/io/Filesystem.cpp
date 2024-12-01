@@ -317,10 +317,8 @@ bool Filesystem::sysIsHidden(const core::String &name) {
 
 bool Filesystem::sysIsWriteable(const core::Path& path) const {
 	if (!fs_exists(path.c_str())) {
-		Log::error("Path %s does not exist", path.c_str());
 		core::Path parent = path.dirname();
 		if (!fs_exists(parent.c_str())) {
-			Log::error("Parent path %s does not exist", parent.c_str());
 			return false;
 		}
 		return fs_writeable(parent.c_str());

@@ -78,6 +78,7 @@ private:
 	bool buttons(core::String &entityPath, video::OpenFileMode type, bool doubleClickedFile);
 	void popupNewFolder();
 	bool popupAlreadyExists();
+	void popupNotWriteable();
 	bool popupOptions(video::FileDialogOptions &options, core::String &entityPath, video::OpenFileMode type,
 								const io::FormatDescription **formatDesc);
 

@@ -603,6 +603,17 @@ void FileDialog::resetState() {
 	_error = TimedString();
 }
 
+void FileDialog::popupNotWriteable() {
+	const core::String title = makeTitle(_("Not writeable"), FILE_NOT_WRITEABLE_POPUP);
+	if (ImGui::BeginPopupModal(title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::IconDialog(ICON_LC_TRIANGLE_ALERT, _("The selected file or directory is not writeable"));
+		if (ImGui::OkButton()) {
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
 void FileDialog::popupNewFolder() {
 	const ImVec2 &windowPos = ImGui::GetWindowPos();
 	const ImVec2 &windowSize = ImGui::GetWindowSize();
@@ -802,6 +813,7 @@ bool FileDialog::showFileDialog(video::FileDialogOptions &options, core::String 
 			applyFilter(type);
 		}
 		popupNewFolder();
+		popupNotWriteable();
 		if (popupAlreadyExists()) {
 			ImGui::OpenPopup(OPTIONS_POPUP);
 		}
