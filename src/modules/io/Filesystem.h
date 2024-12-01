@@ -6,6 +6,7 @@
 
 #include "File.h"
 #include "FilesystemEntry.h"
+#include "core/Path.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
@@ -137,6 +138,11 @@ public:
 
 	core::String sysSpecialDir(FilesystemDirectories dir) const;
 	const core::DynamicArray<ThisPCEntry> sysOtherPaths() const;
+
+	inline bool sysIsWriteable(const core::String& path) const {
+		return sysIsWriteable(core::Path(path));
+	}
+	bool sysIsWriteable(const core::Path& path) const;
 
 	core::String sysFindBinary(const core::String &binaryName) const;
 
