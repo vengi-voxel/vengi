@@ -318,16 +318,17 @@ int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& sha
 
 	const char *shaderNameC = shaderName.c_str();
 	for (int i = 0; i < numUniforms; i++) {
-		int location;
+		Uniform uniform;
 		if (block) {
 			core_assert(glGetActiveUniformBlockName != nullptr);
 			glGetActiveUniformBlockName(program, i, uniformNameSize, nullptr, name);
 			core_assert(glGetUniformBlockIndex != nullptr);
-			location = glGetUniformBlockIndex(program, name);
-			if (location < 0) {
+			uint32_t location = glGetUniformBlockIndex(program, name);
+			if (location == GL_INVALID_INDEX) {
 				Log::debug("Could not get uniform block location for %s is %i (shader %s)", name, location, shaderNameC);
 				continue;
 			}
+			uniform.location = location;
 			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 		} else {
 			GLint size = 0;
@@ -335,25 +336,24 @@ int fillUniforms(Id program, ShaderUniforms& uniformMap, const core::String& sha
 			core_assert(glGetActiveUniform != nullptr);
 			glGetActiveUniform(program, i, uniformNameSize, nullptr, &size, &type, name);
 			core_assert(glGetUniformLocation != nullptr);
-			location = glGetUniformLocation(program, name);
+			int32_t location = glGetUniformLocation(program, name);
 			if (location < 0) {
 				Log::debug("Could not get uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 				continue;
 			}
+			uniform.location = location;
 			Log::debug("Got uniform location for %s is %i (shader %s)", name, location, shaderNameC);
 		}
 		char* array = SDL_strchr(name, '[');
 		if (array != nullptr) {
 			*array = '\0';
 		}
-		Uniform uniform;
-		uniform.location = location;
 		uniform.block = block;
 		if (block) {
 			core_assert(glGetUniformBlockIndex != nullptr);
 			uniform.blockIndex = glGetUniformBlockIndex(program, name);
 			core_assert(glGetActiveUniformBlockiv != nullptr);
-			glGetActiveUniformBlockiv(program, location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
+			glGetActiveUniformBlockiv(program, uniform.location, GL_UNIFORM_BLOCK_DATA_SIZE, &uniform.size);
 			uniform.blockBinding = i;
 		}
 		uniformMap.put(core::String(name), uniform);
