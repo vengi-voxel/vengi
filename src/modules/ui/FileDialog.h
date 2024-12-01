@@ -23,6 +23,7 @@ struct FormatDescription;
 namespace ui {
 
 #define FILE_ALREADY_EXISTS_POPUP "###fileoverwritepopup"
+#define FILE_NOT_WRITEABLE_POPUP "###filenotwriteable"
 #define OPTIONS_POPUP "###optionspopup"
 #define NEW_FOLDER_POPUP "###newfolderpopup"
 

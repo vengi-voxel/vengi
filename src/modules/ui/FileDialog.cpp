@@ -880,6 +880,8 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 				}
 				if (type == video::OpenFileMode::Save && _app->filesystem()->exists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
+				} else if (type == video::OpenFileMode::Save && !_app->filesystem()->sysIsWriteable(fullPath)) {
+					ImGui::OpenPopup(FILE_NOT_WRITEABLE_POPUP);
 				} else {
 					entityPath = fullPath;
 					ImGui::OpenPopup(OPTIONS_POPUP);
