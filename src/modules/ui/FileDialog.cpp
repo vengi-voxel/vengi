@@ -614,13 +614,16 @@ void FileDialog::popupNewFolder() {
 		ImGui::TextUnformatted(_("Enter a name for the new folder"));
 		ImGui::InputText("##newfoldername", &_newFolderName.name);
 		if (ImGui::Button(_("Create"))) {
+			const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 			if (_newFolderName.name.empty()) {
-				const core::TimeProviderPtr &timeProvider = _app->timeProvider();
 				_newFolderError = TimedString(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				_app->filesystem()->sysCreateDir(newFilePath);
-				ImGui::CloseCurrentPopup();
+				if (_app->filesystem()->sysCreateDir(newFilePath)) {
+					ImGui::CloseCurrentPopup();
+				} else {
+					_newFolderError = TimedString(_("Folder creation failed"), timeProvider->tickNow(), 1500UL);
+				}
 			}
 		}
 		ImGui::SetItemDefaultFocus();
