@@ -261,6 +261,7 @@ bool MementoHandler::init() {
 }
 
 void MementoHandler::shutdown() {
+	_groupState = 0;
 	clearStates();
 }
 

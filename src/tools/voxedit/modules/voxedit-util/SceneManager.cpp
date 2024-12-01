@@ -2585,7 +2585,6 @@ void SceneManager::shutdown() {
 		_sceneGraph.unregisterListener(&_luaApiListener);
 	}
 	_sceneGraph.clear();
-	_mementoHandler.clearStates();
 
 	_movement.shutdown();
 	_modifierFacade.shutdown();
