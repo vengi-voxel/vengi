@@ -272,7 +272,7 @@ jobs:
           if: ${{ failure() }}
           with:
             name: nsis-error-logs
-            path: build/_CPack_Packages/Windows/NSIS/NSISOutput.log
+            path: build/_CPack_Packages/Windows/
 
         - name: Upload the vengi msi
           uses: actions/upload-artifact@v4
