@@ -12,6 +12,7 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Camera.h"
+#include "video/Renderer.h"
 #include "video/RendererInterface.h"
 #include "video/ScopedState.h"
 #include "video/Shader.h"
@@ -37,6 +38,7 @@ bool GridRenderer::init() {
 	}
 	core_assert_always(_uniformBlock.create(_uniformBlockData));
 	core_assert_always(_planeShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+	_planeVAO = video::genVertexArray();
 
 	return true;
 }
@@ -202,19 +204,19 @@ void GridRenderer::renderPlane(const video::Camera &camera) {
 	if (!_renderPlane) {
 		return;
 	}
+
+	video::ScopedState facecull(video::State::CullFace, false);
+	video::ScopedState depthdepth(video::State::DepthTest, true);
 	video::ScopedShader scopedShader(_planeShader);
-	_uniformBlockData.cameraPos = camera.eye();
+	video::bindVertexArray(_planeVAO);
+
+	_uniformBlockData.cameraPos = camera.worldPosition();
 	_uniformBlockData.proj = camera.projectionMatrix();
 	_uniformBlockData.view = camera.viewMatrix();
+	// video::bindBuffer(video::BufferType::UniformBuffer, _uniformBlock.getUniformblockUniformBuffer().handle());
 	core_assert_always(_uniformBlock.update(_uniformBlockData));
 	core_assert_always(_planeShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 
-	video::bindVertexArray(video::InvalidId);
-	core_assert(video::boundVertexArray() == video::InvalidId);
-	video::unbindBuffer(video::BufferType::IndexBuffer);
-	core_assert(video::boundBuffer(video::BufferType::IndexBuffer) == video::InvalidId);
-	video::unbindBuffer(video::BufferType::ArrayBuffer);
-	core_assert(video::boundBuffer(video::BufferType::ArrayBuffer) == video::InvalidId);
 	video::drawArrays(video::Primitive::TriangleStrip, 4);
 }
 
@@ -239,6 +241,7 @@ void GridRenderer::shutdown() {
 	_shapeBuilder.shutdown();
 	_planeShader.shutdown();
 	_uniformBlock.shutdown();
+	video::deleteVertexArray(_planeVAO);
 }
 
 } // namespace render
