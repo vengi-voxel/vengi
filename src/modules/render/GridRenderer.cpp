@@ -3,6 +3,7 @@
  */
 
 #include "GridRenderer.h"
+#include "PlanegridShader.h"
 #include "core/Color.h"
 #include "core/GLM.h"
 #include "core/GLMConst.h"
@@ -11,12 +12,17 @@
 #include "math/AABB.h"
 #include "math/Plane.h"
 #include "video/Camera.h"
+#include "video/RendererInterface.h"
 #include "video/ScopedState.h"
+#include "video/Shader.h"
+#include "video/Types.h"
+#include "video/gl/GLTypes.h"
 
 namespace render {
 
 GridRenderer::GridRenderer(bool renderAABB, bool renderGrid, bool renderPlane)
-	: _renderAABB(renderAABB), _renderGrid(renderGrid), _renderPlane(renderPlane) {
+	: _planeShader(shader::PlanegridShader::getInstance()), _renderAABB(renderAABB), _renderGrid(renderGrid),
+	  _renderPlane(renderPlane) {
 }
 
 bool GridRenderer::init() {
@@ -24,6 +30,13 @@ bool GridRenderer::init() {
 		Log::error("Failed to initialize the shape renderer");
 		return false;
 	}
+
+	if (!_planeShader.setup()) {
+		Log::error("Failed to setup color shader");
+		return false;
+	}
+	core_assert_always(_uniformBlock.create(_uniformBlockData));
+	core_assert_always(_planeShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 
 	return true;
 }
@@ -189,13 +202,20 @@ void GridRenderer::renderPlane(const video::Camera &camera) {
 	if (!_renderPlane) {
 		return;
 	}
-	if (_dirtyPlane) {
-		createPlane();
-		_dirtyPlane = false;
-	}
-	_shapeRenderer.hide(_plane, false);
-	_shapeRenderer.render(_plane, camera);
-	_shapeRenderer.hide(_plane, true);
+	video::ScopedShader scopedShader(_planeShader);
+	_uniformBlockData.cameraPos = camera.eye();
+	_uniformBlockData.proj = camera.projectionMatrix();
+	_uniformBlockData.view = camera.viewMatrix();
+	core_assert_always(_uniformBlock.update(_uniformBlockData));
+	core_assert_always(_planeShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
+
+	video::bindVertexArray(video::InvalidId);
+	core_assert(video::boundVertexArray() == video::InvalidId);
+	video::unbindBuffer(video::BufferType::IndexBuffer);
+	core_assert(video::boundBuffer(video::BufferType::IndexBuffer) == video::InvalidId);
+	video::unbindBuffer(video::BufferType::ArrayBuffer);
+	core_assert(video::boundBuffer(video::BufferType::ArrayBuffer) == video::InvalidId);
+	video::drawArrays(video::Primitive::TriangleStrip, 4);
 }
 
 void GridRenderer::renderForwardArrow(const video::Camera &camera) {
@@ -217,6 +237,8 @@ void GridRenderer::shutdown() {
 	_plane = -1;
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
+	_planeShader.shutdown();
+	_uniformBlock.shutdown();
 }
 
 } // namespace render
