@@ -3,12 +3,12 @@
  */
 
 #include "LUAFunctions.h"
+#include "app/App.h"
+#include "command/CommandHandler.h"
 #include "core/GLMConst.h"
 #include "core/Log.h"
-#include "command/CommandHandler.h"
 #include "core/String.h"
 #include "core/Var.h"
-#include "app/App.h"
 #include "core/collection/StringSet.h"
 #include "http/Http.h"
 #include "http/Request.h"
@@ -174,6 +174,18 @@ static core::String clua_stackdump(lua_State *L) {
 	}
 
 	return dump;
+}
+
+void clua_error_prepare(lua_State *s, const char *fmt, ...) {
+	core::String stackdump = clua_stackdump(s);
+	Log::error("%s", stackdump.c_str());
+	stackdump = core::String();
+	va_list argp;
+	va_start(argp, fmt);
+	luaL_where(s, 1);
+	lua_pushvfstring(s, fmt, argp);
+	va_end(argp);
+	lua_concat(s, 2);
 }
 
 int clua_error(lua_State *s, const char *fmt, ...) {
@@ -624,22 +636,22 @@ static void clua_http_headers(lua_State *&s, int n, http::Request &request) {
 	}
 }
 
-static int clua_http_requestexec(lua_State *&s, const char *&url, http::Request &request) {
+static int clua_http_requestexec(lua_State *s, http::Request &request) {
 	io::BufferedReadWriteStream *outStream = new io::BufferedReadWriteStream();
 	int status = 0;
 	core::StringMap<core::String> outheaders;
 	if (!request.execute(*outStream, &status, &outheaders)) {
 		delete outStream;
-		return clua_error(s, "Failed to execute request for url: %s", url);
+		return 0;
 	}
 	if (!http::isValidStatusCode(status)) {
 		delete outStream;
-		return clua_error(s, "Invalid status code %d for request %s", status, url);
+		return 0;
 	}
 	outStream->seek(0);
 	clua_pushstream(s, outStream);
 	lua_newtable(s);
-	for (const auto& it : outheaders) {
+	for (const auto &it : outheaders) {
 		lua_pushstring(s, it->first.c_str());
 		lua_pushstring(s, it->second.c_str());
 		lua_settable(s, -3);
@@ -651,7 +663,22 @@ static int clua_http_get(lua_State *s) {
 	const char *url = luaL_checkstring(s, 1);
 	http::Request request(url, http::RequestType::GET);
 	clua_http_headers(s, 2, request);
-	return clua_http_requestexec(s, url, request);
+	const int ret = clua_http_requestexec(s, request);
+	if (ret == 0) {
+		const core::StringMap<core::String> &headers = request.headers();
+		core::String headersStr;
+		for (const auto &it : headers) {
+			if (!headersStr.empty()) {
+				headersStr += ", ";
+			}
+			headersStr += core::string::format("'%s: %s'", it->first.c_str(), it->second.c_str());
+		}
+		clua_error_prepare(s, "Failed to execute get request for url: %s (headers: %s)", request.url().c_str(),
+						  headersStr.c_str());
+		request.~Request();
+		return lua_error(s);
+	}
+	return ret;
 }
 
 static int clua_stream_gc(lua_State *s) {
@@ -675,7 +702,22 @@ static int clua_http_post(lua_State *s) {
 	const char *body = luaL_checkstring(s, 2);
 	request.setBody(body);
 	clua_http_headers(s, 3, request);
-	return clua_http_requestexec(s, url, request);
+	const int ret = clua_http_requestexec(s, request);
+	if (ret == 0) {
+		const core::StringMap<core::String> &headers = request.headers();
+		core::String headersStr;
+		for (const auto &it : headers) {
+			if (!headersStr.empty()) {
+				headersStr += ", ";
+			}
+			headersStr += core::string::format("'%s: %s'", it->first.c_str(), it->second.c_str());
+		}
+		clua_error_prepare(s, "Failed to execute post request for url: %s and body '%s' (headers: %s)", request.url().c_str(),
+						  request.body().c_str(), headersStr.c_str());
+		request.~Request();
+		return lua_error(s);
+	}
+	return ret;
 }
 
 void clua_httpregister(lua_State *s) {

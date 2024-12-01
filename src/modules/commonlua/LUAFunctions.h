@@ -85,6 +85,10 @@ inline T clua_getudata(lua_State* s, int n, const char *name) {
 
 int clua_error(lua_State *s, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(2);
 
+// call lua_error afterwards - allows you to call destructors or do cleanup
+void clua_error_prepare(lua_State *s, CORE_FORMAT_STRING const char *fmt, ...) CORE_PRINTF_VARARG_FUNC(2);
+
+
 template<class T>
 bool clua_istype(lua_State *s, int n) {
 	using RAWTYPE = typename core::remove_pointer<T>::type;
