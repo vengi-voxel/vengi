@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "PlanegridShader.h"
 #include "core/Log.h"
 #include "render/ShapeRenderer.h"
 #include "video/ShapeBuilder.h"
@@ -26,6 +27,9 @@ class GridRenderer {
 protected:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
+	shader::PlanegridShader &_planeShader;
+	alignas(16) mutable shader::PlanegridData::UniformblockData _uniformBlockData;
+	mutable shader::PlanegridData _uniformBlock;
 	math::AABB<float> _aabb;
 
 	int32_t _aabbMeshIndex = -1;
