@@ -17,7 +17,7 @@ function arguments()
 	return {
 		{name = 'prompt', desc = '', type = 'string', default = 'A cute cat'},
 		{name = 'negative_prompt', desc = '', type = 'string', default = ''},
-		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,cartoon,low-poly,sculpture,pbr', default = 'low-poly'},
+		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,sculpture,pbr', default = 'realistic'},
 		{name = "api_key", desc = "The Meshy API key (cvar meshy_api_key)", type = "string", default = ""}
 	}
 end
@@ -58,9 +58,14 @@ function main(_, _, _, prompt, negative_prompt, art_style, api_key)
 		if retrievalJson.status == 'PENDING' or retrievalJson.status == 'IN_PROGRESS' then
 			g_log.info("Model is not yet ready, waiting with status " .. retrievalJson.status .. " progress: " .. retrievalJson.progress)
 			g_sys.sleep(4000)
+			coroutine.yield();
 		elseif retrievalJson.status == 'SUCCEEDED' then
 			local modelUrl = retrievalJson.model_urls.glb
 			local modelStream, _ = g_http.get(modelUrl, headers)
+			-- write a backup
+			-- g_log.info("download model from: " .. modelUrl)
+			-- g_io.open('model.glb', 'wb'):writeStream(modelStream)
+			-- modelStream:seek(0)
 			g_import.scene(retrievalJson.id .. ".glb", modelStream)
 			break
 		else
