@@ -217,10 +217,16 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 
 	WaitForSingleObject(processInfo.hProcess, INFINITE);
 
+	// Process finished
+	DWORD exitCode;
+	if (GetExitCodeProcess(processInfo.hProcess, &exitCode)) {
+		Log::debug("Child process exited with code %d", (int)exitCode);
+	}
+
 	CloseHandle(processInfo.hProcess);
 	CloseHandle(processInfo.hThread);
 
-	return 0;
+	return (int)exitCode == 0;
 #else
 	Log::error("Process::exec is not implemented for this platform");
 	return 1;
