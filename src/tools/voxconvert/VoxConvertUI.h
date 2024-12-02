@@ -21,6 +21,7 @@ private:
 	core::String _sourceFile;
 	core::String _voxconvertBinary = "vengi-voxconvert";
 	core::String _targetFile;
+	core::String _oldTargetFile;
 	bool _targetFileExists = false;
 	bool _overwriteTargetFile = false;
 	palette::PaletteCache _paletteCache;

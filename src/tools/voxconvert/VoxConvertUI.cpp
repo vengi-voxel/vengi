@@ -141,6 +141,9 @@ void VoxConvertUI::onRenderUI() {
 		const io::FormatDescription *targetDesc = nullptr;
 		if (!_targetFile.empty()) {
 			targetDesc = io::getDescription(_targetFile, 0, voxelformat::voxelSave());
+		}
+		if (_oldTargetFile != _targetFile) {
+			_oldTargetFile = _targetFile;
 			_targetFileExists = _filesystem->exists(_targetFile);
 		}
 
