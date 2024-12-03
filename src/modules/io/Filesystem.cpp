@@ -159,7 +159,7 @@ core::String Filesystem::sysSpecialDir(FilesystemDirectories dir) const {
 	return _state._directories[dir];
 }
 
-bool Filesystem::sysRemoveFile(const core::String &file) const {
+bool Filesystem::sysRemoveFile(const core::String &file) {
 	if (file.empty()) {
 		Log::error("Can't delete file: No path given");
 		return false;
@@ -167,7 +167,7 @@ bool Filesystem::sysRemoveFile(const core::String &file) const {
 	return fs_unlink(file.c_str());
 }
 
-bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) const {
+bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) {
 	if (dir.empty()) {
 		Log::error("Can't delete dir: No path given");
 		return false;
@@ -180,7 +180,7 @@ bool Filesystem::sysRemoveDir(const core::String &dir, bool recursive) const {
 	return false;
 }
 
-bool Filesystem::sysCreateDir(const core::String &dir, bool recursive) const {
+bool Filesystem::sysCreateDir(const core::String &dir, bool recursive) {
 	if (dir.empty()) {
 		return false;
 	}
@@ -315,10 +315,14 @@ bool Filesystem::sysIsHidden(const core::String &name) {
 	return fs_hidden(name.c_str());
 }
 
-bool Filesystem::sysIsWriteable(const core::Path& path) const {
-	if (!fs_exists(path.c_str())) {
+bool Filesystem::sysExists(const core::Path& path) {
+	return fs_exists(path.c_str());
+}
+
+bool Filesystem::sysIsWriteable(const core::Path& path) {
+	if (!sysExists(path)) {
 		core::Path parent = path.dirname();
-		if (!fs_exists(parent.c_str())) {
+		if (!sysExists(parent)) {
 			return false;
 		}
 		return fs_writeable(parent.c_str());
@@ -370,7 +374,7 @@ bool Filesystem::registerPath(const core::String &path) {
 	return true;
 }
 
-core::String Filesystem::sysCurrentDir() const {
+core::String Filesystem::sysCurrentDir() {
 	core::String cwd = fs_cwd();
 	normalizePath(cwd);
 	return cwd;
@@ -405,6 +409,13 @@ bool Filesystem::sysPushDir(const core::String &directory) {
 	return true;
 }
 
+bool Filesystem::exists(const core::String& filename) const {
+	if (sysIsReadableDir(filename)) {
+		return true;
+	}
+	return open(filename)->exists();
+}
+
 // TODO: case insensitive search should be possible - see searchPathFor()
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
@@ -436,7 +447,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		}
 		core::String fullpath = core::string::path(p, filename);
 		if (fs_exists(fullpath.c_str())) {
-			Log::debug("loading file %s from %s", filename.c_str(), p.c_str());
+			Log::debug("loading file %s from %s for mode %i", filename.c_str(), p.c_str(), (int)openmode);
 			return core::make_shared<io::File>(core::move(fullpath), openmode);
 		}
 		if (sysIsRelativePath(p)) {
@@ -446,7 +457,7 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 				}
 				core::String fullrelpath = core::string::path(s, p, filename);
 				if (fs_exists(fullrelpath.c_str())) {
-					Log::debug("loading file %s from %s%s", filename.c_str(), s.c_str(), p.c_str());
+					Log::debug("loading file %s from %s%s for mode %i", filename.c_str(), s.c_str(), p.c_str(), (int)openmode);
 					return core::make_shared<io::File>(core::move(fullrelpath), openmode);
 				}
 			}
@@ -457,10 +468,10 @@ io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const 
 		return core::make_shared<io::File>(filename, openmode);
 	}
 	if (!sysIsRelativePath(filename)) {
-		Log::debug("'%s' not found", filename.c_str());
+		Log::debug("'%s' not found for mode %i", filename.c_str(), (int)openmode);
 		return core::make_shared<io::File>("", openmode);
 	}
-	Log::debug("Use %s from %s", filename.c_str(), _basePath.c_str());
+	Log::debug("Use %s from %s for mode %i", filename.c_str(), _basePath.c_str(), (int)openmode);
 	return core::make_shared<io::File>(core::string::path(_basePath, filename), openmode);
 }
 
@@ -509,7 +520,7 @@ bool Filesystem::homeWrite(const core::String &filename, const core::String &str
 	return homeWrite(filename, buf, string.size());
 }
 
-bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, size_t length) const {
+bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, size_t length) {
 	io::File f(filename, FileMode::SysWrite);
 	if (!sysCreateDir(f.dir())) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
@@ -519,7 +530,7 @@ bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, 
 	return f.write(content, length) == static_cast<long>(length);
 }
 
-long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) const {
+long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) {
 	io::File f(filename, FileMode::SysWrite);
 	if (!sysCreateDir(f.dir())) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
@@ -529,7 +540,7 @@ long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) 
 	return f.write(stream);
 }
 
-bool Filesystem::sysWrite(const core::String &filename, const core::String &string) const {
+bool Filesystem::sysWrite(const core::String &filename, const core::String &string) {
 	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return sysWrite(filename, buf, string.size());
 }
@@ -542,7 +553,7 @@ core::String searchPathFor(const FilesystemPtr &filesystem, const core::String &
 	core::DynamicArray<core::String> tokens;
 	core::string::splitString(path, tokens, "/");
 	while (!tokens.empty()) {
-		if (filesystem->sysIsReadableDir(tokens[0])) {
+		if (io::Filesystem::sysIsReadableDir(tokens[0])) {
 			Log::trace("readable dir: %s", tokens[0].c_str());
 			break;
 		}

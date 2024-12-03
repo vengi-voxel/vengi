@@ -387,7 +387,7 @@ app::AppState VoxConvert::onInit() {
 		if (shouldQuit()) {
 			break;
 		}
-		if (filesystem()->sysIsReadableDir(infile)) {
+		if (io::Filesystem::sysIsReadableDir(infile)) {
 			core::DynamicArray<io::FilesystemEntry> entities;
 			filesystem()->list(infile, entities, getArgVal("--wildcard", ""));
 			Log::info("Found %i entries in dir %s", (int)entities.size(), infile.c_str());

@@ -120,7 +120,7 @@ void InputFile(const char *label, bool load, core::String *file, const io::Forma
 		} else {
 			imguiApp()->saveDialog([file] (const core::String &filename, const io::FormatDescription *desc) {
 				*file = filename;
-			}, options, descriptions);
+			}, options, descriptions, *file);
 		}
 	}
 	EndGroup();

@@ -259,7 +259,7 @@ void App::deletePid() {
 	if (oldPid.toInt() != _pid) {
 		return;
 	}
-	_filesystem->sysRemoveFile(_filesystem->homeWritePath("app.pid"));
+	io::Filesystem::sysRemoveFile(_filesystem->homeWritePath("app.pid"));
 }
 
 void App::onFrame() {
@@ -338,7 +338,7 @@ void App::onFrame() {
 						if (!request.execute(stream, &statusCode)) {
 							Log::error("Failed to upload crash log with status: %i", statusCode);
 						} else {
-							_filesystem->sysRemoveFile(crashlogFilename);
+							io::Filesystem::sysRemoveFile(crashlogFilename);
 						}
 					}
 				}

@@ -139,17 +139,22 @@ public:
 	core::String sysSpecialDir(FilesystemDirectories dir) const;
 	const core::DynamicArray<ThisPCEntry> sysOtherPaths() const;
 
-	inline bool sysIsWriteable(const core::String& path) const {
+	static bool sysIsWriteable(const core::String& path) {
 		return sysIsWriteable(core::Path(path));
 	}
-	bool sysIsWriteable(const core::Path& path) const;
+	static bool sysIsWriteable(const core::Path& path);
+
+	static bool sysExists(const core::String& path) {
+		return sysExists(core::Path(path));
+	}
+	static bool sysExists(const core::Path& path);
 
 	core::String sysFindBinary(const core::String &binaryName) const;
 
 	/**
 	 * @brief The current working directory without a tailing /
 	 */
-	core::String sysCurrentDir() const;
+	static core::String sysCurrentDir();
 
 	static bool sysIsReadableDir(const core::String& name);
 	static bool sysIsHidden(const core::String &name);
@@ -167,42 +172,35 @@ public:
 	 * @note The difference to the usual write() methods is that the given path is not put into the
 	 * known file system structure of the application. It just uses the given name.
 	 */
-	bool sysWrite(const core::String& filename, const uint8_t* content, size_t length) const;
-	long sysWrite(const core::String& filename, io::ReadStream &stream) const;
+	static bool sysWrite(const core::String& filename, const uint8_t* content, size_t length);
+	static long sysWrite(const core::String& filename, io::ReadStream &stream);
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the
 	 * known file system structure of the application. It just uses the given name.
 	 */
-	bool sysWrite(const core::String& filename, const core::String& string) const;
+	static bool sysWrite(const core::String& filename, const core::String& string);
 
 	/**
 	 * @brief This will create the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	bool sysCreateDir(const core::String& dir, bool recursive = true) const;
+	static bool sysCreateDir(const core::String& dir, bool recursive = true);
 
 	/**
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	bool sysRemoveDir(const core::String& dir, bool recursive = false) const;
+	static bool sysRemoveDir(const core::String& dir, bool recursive = false);
 	/**
 	 * @brief This will remove the file without taking the write path into account. BEWARE!
 	 * @param file The full path to the file or relative to the current working dir of your app.
 	 */
-	bool sysRemoveFile(const core::String& file) const;
+	static bool sysRemoveFile(const core::String& file);
 };
 
 inline const Paths& Filesystem::registeredPaths() const {
 	return _paths;
-}
-
-inline bool Filesystem::exists(const core::String& filename) const {
-	if (sysIsReadableDir(filename)) {
-		return true;
-	}
-	return open(filename)->exists();
 }
 
 inline const core::String& Filesystem::basePath() const {

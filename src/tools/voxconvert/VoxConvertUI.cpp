@@ -144,7 +144,7 @@ void VoxConvertUI::onRenderUI() {
 		}
 		if (_oldTargetFile != _targetFile) {
 			_oldTargetFile = _targetFile;
-			_targetFileExists = _filesystem->exists(_targetFile);
+			_targetFileExists = io::Filesystem::sysExists(_targetFile);
 		}
 
 		if (ImGui::CollapsingHeader(_("Options"), ImGuiTreeNodeFlags_DefaultOpen)) {

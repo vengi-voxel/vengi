@@ -614,7 +614,7 @@ static int clua_io_sysopen(lua_State *s) {
 		return clua_error(s, "Invalid mode %s", modeStr);
 	}
 	if (mode == io::FileMode::SysWrite) {
-		if (!io::filesystem()->sysIsWriteable(path)) {
+		if (!io::Filesystem::sysIsWriteable(path)) {
 			return clua_error(s, "Could not open file %s for writing with mode %s", path, modeStr);
 		}
 	} else if (!io::filesystem()->exists(path)) {

@@ -11,17 +11,16 @@ namespace app {
 class CommandCompleterTest: public app::AbstractTest {
 public:
 	bool onInitApp() override{
-		const io::FilesystemPtr& fs = io::filesystem();
-		fs->sysCreateDir("commandcompletertest/dir1");
-		fs->sysWrite("commandcompletertest/dir1/ignored", "ignore");
-		fs->sysWrite("commandcompletertest/dir1/ignoredtoo", "ignore");
-		fs->sysWrite("commandcompletertest/dir1/foo1.foo", "foo1");
-		fs->sysWrite("commandcompletertest/file1", "1");
-		fs->sysWrite("commandcompletertest/file2", "2");
-		fs->sysWrite("commandcompletertest/foo1.foo", "foo1");
-		fs->sysWrite("commandcompletertest/foo2.foo", "foo2");
-		fs->sysWrite("commandcompletertest/foo3.foo", "foo3");
-		fs->sysWrite("commandcompletertest/foo4.foo", "foo4");
+		io::Filesystem::sysCreateDir("commandcompletertest/dir1");
+		io::Filesystem::sysWrite("commandcompletertest/dir1/ignored", "ignore");
+		io::Filesystem::sysWrite("commandcompletertest/dir1/ignoredtoo", "ignore");
+		io::Filesystem::sysWrite("commandcompletertest/dir1/foo1.foo", "foo1");
+		io::Filesystem::sysWrite("commandcompletertest/file1", "1");
+		io::Filesystem::sysWrite("commandcompletertest/file2", "2");
+		io::Filesystem::sysWrite("commandcompletertest/foo1.foo", "foo1");
+		io::Filesystem::sysWrite("commandcompletertest/foo2.foo", "foo2");
+		io::Filesystem::sysWrite("commandcompletertest/foo3.foo", "foo3");
+		io::Filesystem::sysWrite("commandcompletertest/foo4.foo", "foo4");
 		return AbstractTest::onInitApp();
 	}
 };

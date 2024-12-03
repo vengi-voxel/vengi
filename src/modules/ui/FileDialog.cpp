@@ -630,7 +630,7 @@ void FileDialog::popupNewFolder() {
 				_newFolderError = TimedString(_("Folder name can't be empty"), timeProvider->tickNow(), 1500UL);
 			} else {
 				const core::String &newFilePath = assemblePath(_currentPath, _newFolderName);
-				if (_app->filesystem()->sysCreateDir(newFilePath)) {
+				if (io::Filesystem::sysCreateDir(newFilePath)) {
 					ImGui::CloseCurrentPopup();
 				} else {
 					_newFolderError = TimedString(_("Folder creation failed"), timeProvider->tickNow(), 1500UL);
@@ -878,9 +878,9 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 						fullPath.append(_currentFilterFormat->mainExtension(true));
 					}
 				}
-				if (type == video::OpenFileMode::Save && _app->filesystem()->exists(fullPath)) {
+				if (type == video::OpenFileMode::Save && io::Filesystem::sysExists(fullPath)) {
 					ImGui::OpenPopup(FILE_ALREADY_EXISTS_POPUP);
-				} else if (type == video::OpenFileMode::Save && !_app->filesystem()->sysIsWriteable(fullPath)) {
+				} else if (type == video::OpenFileMode::Save && !io::Filesystem::sysIsWriteable(fullPath)) {
 					ImGui::OpenPopup(FILE_NOT_WRITEABLE_POPUP);
 				} else {
 					entityPath = fullPath;

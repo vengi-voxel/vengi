@@ -22,7 +22,7 @@ TEST_F(HttpCacheStreamTest, DISABLED_testGetRequest) {
 	const core::String filename = "testGetRequest.json";
 
 	if (io::filesystem()->exists(filename)) {
-		ASSERT_TRUE(io::filesystem()->sysRemoveFile(io::filesystem()->homeWritePath(filename)));
+		ASSERT_TRUE(io::Filesystem::sysRemoveFile(io::filesystem()->homeWritePath(filename)));
 	}
 	{
 		http::HttpCacheStream stream(io::openFilesystemArchive(_testApp->filesystem()), filename,
