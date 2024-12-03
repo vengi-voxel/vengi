@@ -171,7 +171,7 @@ function M.buildQuery(tab, sep, key)
 		return tostring(a):gsub("(%d+)(%.)",padnum) < tostring(b):gsub("(%d+)(%.)",padnum)
 	end)
 	for _,name in ipairs(keys) do
-		local value = tab[name]
+		local tabvalue = tab[name]
 		name = encode(tostring(name), {["-"] = true, ["_"] = true, ["."] = true})
 		if key then
 			if M.options.cumulative_parameters and string.find(name, '^%d+$') then
@@ -180,10 +180,10 @@ function M.buildQuery(tab, sep, key)
 				name = string.format('%s[%s]', tostring(key), tostring(name))
 			end
 		end
-		if type(value) == 'table' then
-			query[#query+1] = M.buildQuery(value, sep, name)
+		if type(tabvalue) == 'table' then
+			query[#query+1] = M.buildQuery(tabvalue, sep, name)
 		else
-			local value = encode(tostring(value), M.options.legal_in_query)
+			local value = encode(tostring(tabvalue), M.options.legal_in_query)
 			if value ~= "" then
 				query[#query+1] = string.format('%s=%s', name, value)
 			else
@@ -207,8 +207,8 @@ function M.parseQuery(str, sep)
 	end
 
 	local values = {}
-	for key,val in str:gmatch(string.format('([^%q=]+)(=*[^%q=]*)', sep, sep)) do
-		local key = decodeValue(key)
+	for inkey,val in str:gmatch(string.format('([^%q=]+)(=*[^%q=]*)', sep, sep)) do
+		local key = decodeValue(inkey)
 		local keys = {}
 		key = key:gsub('%[([^%]]*)%]', function(v)
 				-- extract keys between balanced brackets
@@ -260,10 +260,10 @@ function M.parseQuery(str, sep)
 end
 
 --- set the url query
--- @param query Can be a string to parse or a table of key/value pairs
+-- @param inquery Can be a string to parse or a table of key/value pairs
 -- @return a table representing the query key/value pairs
-function M:setQuery(query)
-	local query = query
+function M:setQuery(inquery)
+	local query = inquery
 	if type(query) == 'table' then
 		query = M.buildQuery(query)
 	end
@@ -295,9 +295,9 @@ function M:setAuthority(authority)
 
 	local function getIP(str)
 		-- ipv4
-		local chunks = { str:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$") }
-		if #chunks == 4 then
-			for _, v in pairs(chunks) do
+		local chunks4 = { str:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$") }
+		if #chunks4 == 4 then
+			for _, v in pairs(chunks4) do
 				if tonumber(v) > 255 then
 					return false
 				end
@@ -305,10 +305,10 @@ function M:setAuthority(authority)
 			return str
 		end
 		-- ipv6
-		local chunks = { str:match("^%["..(("([a-fA-F0-9]*):"):rep(8):gsub(":$","%%]$"))) }
-		if #chunks == 8 or #chunks < 8 and
+		local chunks6 = { str:match("^%["..(("([a-fA-F0-9]*):"):rep(8):gsub(":$","%%]$"))) }
+		if #chunks6 == 8 or #chunks6 < 8 and
 			str:match('::') and not str:gsub("::", "", 1):match('::') then
-			for _,v in pairs(chunks) do
+			for _,v in pairs(chunks6) do
 				if #v > 0 and tonumber(v, 16) > 65535 then
 					return false
 				end
@@ -357,14 +357,14 @@ end
 -- Depending on the url, the following parts can be available:
 -- scheme, userinfo, user, password, authority, host, port, path,
 -- query, fragment
--- @param url Url string
+-- @param inurl Url string
 -- @return a table with the different parts and a few other functions
-function M.parse(url)
+function M.parse(inurl)
 	local comp = {}
 	M.setAuthority(comp, "")
 	M.setQuery(comp, "")
 
-	local url = tostring(url or '')
+	local url = tostring(inurl or '')
 	url = url:gsub('#(.*)$', function(v)
 		comp.fragment = v
 		return ''
@@ -426,7 +426,7 @@ function M.removeDotSegments(path)
 			new[j] = c
 		end
 	end
-	local ret = ""
+	local ret
 	if #new > 0 and j > 0 then
 		ret = table.concat(new, '/', 1, j)
 	else
@@ -465,10 +465,10 @@ local function reducePath(base_path, relative_path)
 	path = string.gsub(path, "([^/]*/%.%.?)$", function (s)
 		if s ~= "../.." then return "" else return s end
 	end)
-	local reduced
-	while reduced ~= path do
-		reduced = path
-		path = string.gsub(reduced, '^/?%.%./', '')
+	local reduced2
+	while reduced2 ~= path do
+		reduced2 = path
+		path = string.gsub(reduced2, '^/?%.%./', '')
 	end
 	return (startslash and '' or '/') .. path
 end
