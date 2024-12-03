@@ -8,6 +8,7 @@
 #include "core/ConfigVar.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/private/image/PNGFormat.h"
@@ -84,6 +85,8 @@ bool FormatConfig::init() {
 					   const int type = var.toInt();
 					   return type >= -1 && type <= 255;
 				   });
+	core::Var::get(cfg::NormalPalette, palette::NormalPalette::builtIn[0], core::CV_NOPERSIST,
+				   _("The normal palette to use for voxelization"));
 	core::Var::get(cfg::VoxformatVOXCreateGroups, "true", core::CV_NOPERSIST, _("Merge compounds on load"),
 				   core::Var::boolValidator);
 	core::Var::get(cfg::VoxformatVOXCreateLayers, "true", core::CV_NOPERSIST, _("Merge compounds on load"),

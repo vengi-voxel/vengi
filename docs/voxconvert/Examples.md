@@ -135,6 +135,8 @@ Voxelize an obj and save as magicavoxel (including colors):
 
 > See the [supported formats](../Formats.md) for a few more details.
 
+If you also need normals you can specify the used palette with the cvar `normalpalette` - similar to the `palette` cvar given in the example above.
+
 ## Generate from heightmap
 
 Just specify the heightmap as input file like this:

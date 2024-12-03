@@ -190,6 +190,17 @@ static void loadOptionsMesh() {
 	ImGui::CheckboxVar(_("Fill hollow"), cfg::VoxformatFillHollow);
 	ImGui::InputVarInt(_("Point cloud size"), cfg::VoxformatPointCloudSize);
 
+	const core::VarPtr &normalPaletteVar = core::Var::getSafe(cfg::NormalPalette);
+	if (ImGui::BeginCombo(_("Normal palette"), normalPaletteVar->strVal().c_str(), 0)) {
+		for (const char *palette : palette::NormalPalette::builtIn) {
+			if (ImGui::Selectable(palette, palette == normalPaletteVar->strVal())) {
+				normalPaletteVar->setVal(palette);
+			}
+		}
+		ImGui::EndCombo();
+		// TODO: allow other normal palettes to be loaded
+	}
+
 	const char *voxelizationModes[] = {_("high quality"), _("faster and less memory")};
 	static_assert(voxelformat::MeshFormat::VoxelizeMode::HighQuality == 0, "HighQuality must be at index 0");
 	static_assert(voxelformat::MeshFormat::VoxelizeMode::Fast == 1, "Fast must be at index 1");

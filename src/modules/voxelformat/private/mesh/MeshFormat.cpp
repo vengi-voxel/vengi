@@ -271,7 +271,14 @@ int MeshFormat::voxelizeNode(const core::String &uuid, const core::String &name,
 	node.setVolume(new voxel::RawVolume(region), true);
 	node.setName(name);
 	palette::NormalPalette normalPalette;
-	normalPalette.redAlert2();
+	const core::VarPtr &normalPaletteVar = core::Var::getSafe(cfg::NormalPalette);
+	if (!normalPalette.load(normalPaletteVar->strVal().c_str())) {
+		Log::debug("Failed to load normal palette %s - use redalert2 as default", normalPaletteVar->strVal().c_str());
+		normalPalette.redAlert2();
+	} else {
+		Log::debug("Loaded normal palette %s", normalPaletteVar->strVal().c_str());
+	}
+	// TODO: VOXELFORMAT: auto generate the normal palette from the input tris?
 	node.setNormalPalette(normalPalette);
 
 	const int voxelizeMode = core::Var::getSafe(cfg::VoxformatVoxelizeMode)->intVal();

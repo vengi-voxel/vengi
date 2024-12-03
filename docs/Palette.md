@@ -35,3 +35,12 @@ You can find the detailed description and more cvars by using e.g. the [voxconve
 ## Normals
 
 Command & Conquer supports voxel normals. `vengi-voxedit` got a few features to support this. Change the view mode to __Command & Conquer__ to see a normal palette panel and to be able to render the normals for the voxels.
+
+There is also a cvar called `normalpalette` that is used to set the normal palette when importing from meshes.
+
+There are several built-in palettes available that can also be used as an identifier.
+
+* `built-in:redalert2`
+* `built-in:tiberiansun`
+
+You can also specify a filename to a support palette format to load it.

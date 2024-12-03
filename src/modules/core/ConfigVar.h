@@ -70,6 +70,7 @@ constexpr const char *MetricFlavor = "metric_flavor";
 constexpr const char *MetricUUID = "metric_uuid";
 
 constexpr const char *VoxelPalette = "palette";
+constexpr const char *NormalPalette = "normalpalette";
 constexpr const char *PalformatRGB6Bit = "palformat_rgb6bit";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
