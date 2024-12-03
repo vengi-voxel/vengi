@@ -12,6 +12,8 @@
 -- To use the api key with an env variable you should add MESHY_API_KEY=XXX to your environment variables.
 
 local JSON = require 'modules.JSON'
+local url = require 'modules.url'
+local util = require 'modules.util'
 
 function arguments()
 	return {
@@ -20,6 +22,31 @@ function arguments()
 		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,sculpture,pbr', default = 'realistic'},
 		{name = "api_key", desc = "The Meshy API key (cvar meshy_api_key)", type = "string", default = ""}
 	}
+end
+
+function downloadFiles(retrievalJson, headers)
+	local modelUrl = retrievalJson.model_urls.glb
+	local textures = retrievalJson.texture_urls
+	if textures ~= nil then
+		g_log.info("Textures: " .. #textures)
+		for _, v in pairs(textures) do
+			local baseColorUrl = url.parse(v.base_color)
+			local baseColorFile = util.getFileFromPath(baseColorUrl.path)
+			local texture = g_io.open(baseColorFile, 'w')
+			local textureStream, _ = g_http.get(v.base_color, headers)
+			texture:writeStream(textureStream)
+			texture:close()
+			g_log.info("Downloaded texture: " .. baseColorFile)
+		end
+	else
+		g_log.info("No textures found")
+	end
+	local modelStream, _ = g_http.get(modelUrl, headers)
+	local glbFile = retrievalJson.id .. ".glb"
+	local file = g_io.open(glbFile, 'w')
+	file:writeStream(modelStream)
+	file:close()
+	g_log.info("Downloaded glb: " .. glbFile)
 end
 
 function main(_, _, _, prompt, negative_prompt, art_style, api_key)
@@ -60,13 +87,8 @@ function main(_, _, _, prompt, negative_prompt, art_style, api_key)
 			g_sys.sleep(4000)
 			coroutine.yield();
 		elseif retrievalJson.status == 'SUCCEEDED' then
-			local modelUrl = retrievalJson.model_urls.glb
-			local modelStream, _ = g_http.get(modelUrl, headers)
-			-- write a backup
-			-- g_log.info("download model from: " .. modelUrl)
-			-- g_io.open('model.glb', 'wb'):writeStream(modelStream)
-			-- modelStream:seek(0)
-			g_import.scene(retrievalJson.id .. ".glb", modelStream)
+			downloadFiles(retrievalJson, headers)
+			g_import.scene(retrievalJson.id .. ".glb")
 			break
 		else
 			error('Failed to generate 3D model: ' .. retrievalJson.status)
