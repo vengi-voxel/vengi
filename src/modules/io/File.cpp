@@ -101,13 +101,7 @@ bool File::exists() const {
 		return _file != nullptr;
 	}
 
-	// try to open in read mode
-	SDL_RWops* ops = createRWops(FileMode::SysRead);
-	if (ops != nullptr) {
-		closeRWops(ops);
-		return true;
-	}
-	return false;
+	return fs_exists(_rawPath.c_str());
 }
 
 const core::String& File::name() const {
