@@ -1349,7 +1349,8 @@ bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Mo
 	if (gltfPrimitive.material >= 0 && gltfPrimitive.material < (int)materials.size()) {
 		gltfMaterial = materials[gltfPrimitive.material];
 	}
-	bool foundPosition = false;
+	int foundPositions = 0;
+	bool foundColor = false;
 	size_t verticesOffset = vertices.size();
 	for (auto &attrIter : gltfPrimitive.attributes) {
 		const std::string &attrType = attrIter.first;
@@ -1374,7 +1375,7 @@ bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Mo
 				Log::debug("Skip non float type for %s", attrType.c_str());
 				continue;
 			}
-			foundPosition = true;
+			foundPositions = gltfAttributeAccessor->count;
 			core_assert(gltfAttributeAccessor->type == TINYGLTF_TYPE_VEC3);
 			for (size_t i = 0; i < gltfAttributeAccessor->count; i++) {
 				io::MemoryReadStream posStream(buf, stride);
@@ -1408,11 +1409,17 @@ bool GLTFFormat::loadAttributes(const core::String &filename, const tinygltf::Mo
 				vertices[verticesOffset + i].color = _priv::toColor(gltfAttributeAccessor, buf);
 				buf += stride;
 			}
+			foundColor |= gltfAttributeAccessor->count > 0;
 		} else {
 			Log::debug("Skip unhandled attribute %s", attrType.c_str());
 		}
 	}
-	return foundPosition;
+	if (!foundColor) {
+		for (int i = 0; i < foundPositions; i++) {
+			vertices[verticesOffset + i].color = core::RGBA(127, 127, 127, 255);
+		}
+	}
+	return foundPositions > 0;
 }
 
 bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
