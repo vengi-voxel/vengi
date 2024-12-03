@@ -8,6 +8,7 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/String.h"
+#include "core/TimeProvider.h"
 #include "core/Var.h"
 #include "core/collection/StringSet.h"
 #include "http/Http.h"
@@ -546,9 +547,50 @@ void clua_quatregister(lua_State* s) {
 	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
 }
 
+#if 0
+struct SleepState {
+	uint64_t wakeupTime;
+};
+
+static int clua_yield_sleep(lua_State *s) {
+	SleepState *sleepState = (SleepState *)lua_touserdata(s, lua_upvalueindex(1));
+	app::App *app = app::App::getInstance();
+	const core::TimeProviderPtr &timeProvider = app->timeProvider();
+
+	if (timeProvider->systemMillis() >= sleepState->wakeupTime) {
+		// Time is up, resume the coroutine
+		return 0;
+	}
+
+	// Not yet ready, re-yield
+	return lua_yield(s, 0);
+}
+#endif
+
 static int clua_syssleep(lua_State *s) {
 	const int ms = luaL_checkinteger(s, 1);
-	app::App::getInstance()->wait(ms);
+	app::App* app = app::App::getInstance();
+	if (!lua_isyieldable(s)) {
+		app->wait(ms);
+		return 0;
+	}
+#if 0
+	// TODO: implement me
+	const core::TimeProviderPtr &timeProvider = app->timeProvider();
+	const uint64_t currentMillis = timeProvider->systemMillis();
+
+	if (ms > 0) {
+		// Calculate when the coroutine should wake up
+		SleepState *sleepState = (SleepState *)lua_newuserdata(s, sizeof(SleepState));
+		sleepState->wakeupTime = currentMillis + ms;
+
+		// Register a continuation for this coroutine with the userdata as an upvalue
+		lua_pushcclosure(s, clua_yield_sleep, 1);  // Set 1 upvalue (userdata)
+
+		return lua_yield(s, 0);
+	}
+#endif
+	app->wait(ms);
 	return 0;
 }
 
