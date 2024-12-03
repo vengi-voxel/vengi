@@ -33,6 +33,7 @@ public:
 	 */
 	virtual int read(void *dataPtr, size_t dataSize) = 0;
 	virtual bool eos() const = 0;
+	virtual void close() {}
 
 	/**
 	 * @brief Skips bytes
@@ -242,6 +243,7 @@ public:
 	 * @return -1 on error - written bytes on success
 	 */
 	virtual int write(const void *buf, size_t size) = 0;
+	virtual void close() {}
 
 	virtual bool flush() {
 		return true;
@@ -335,6 +337,10 @@ public:
 	virtual ~SeekableReadWriteStream() {
 	}
 
+	void close() override {
+		SeekableReadStream::close();
+		SeekableWriteStream::close();
+	}
 	virtual int64_t size() const override = 0;
 	virtual int64_t pos() const override = 0;
 	virtual int64_t seek(int64_t position, int whence = SEEK_SET) override = 0;

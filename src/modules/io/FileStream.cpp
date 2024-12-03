@@ -24,6 +24,11 @@ FileStream::FileStream(const FilePtr &file) : _file(file) {
 FileStream::~FileStream() {
 }
 
+void FileStream::close() {
+	_rwops = nullptr;
+	_file = {};
+}
+
 bool FileStream::valid() const {
 	return _file && _file->validHandle();
 }

@@ -36,6 +36,7 @@ public:
 	FileStream(const FilePtr &file);
 	virtual ~FileStream();
 
+	void close() override;
 	bool valid() const;
 	int64_t size() const override;
 	int64_t pos() const override;
