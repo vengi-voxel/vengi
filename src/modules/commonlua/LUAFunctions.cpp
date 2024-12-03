@@ -564,12 +564,14 @@ static int clua_io_open(lua_State *s) {
 	const char *path = luaL_checkstring(s, 1);
 	const char *modeStr = luaL_optstring(s, 2, "r");
 	io::FileMode mode = modeStr[0] == 'r' ? io::FileMode::SysRead : io::FileMode::SysWrite;
-	io::FilePtr file = io::filesystem()->open(path, mode);
-	if (!file->exists()) {
-		file.release();
-		return clua_error(s, "Could not open file %s", path);
+	if (mode == io::FileMode::SysWrite || mode == io::FileMode::Append || mode == io::FileMode::Write) {
+		if (!io::filesystem()->sysIsWriteable(path)) {
+			return clua_error(s, "Could not open file %s for writing with mode %s", path, modeStr);
+		}
+	} else if (!io::filesystem()->exists(path)) {
+		return clua_error(s, "Could not open file %s in mode %s", path, modeStr);
 	}
-	clua_pushstream(s, new io::FileStream(file));
+	clua_pushstream(s, new io::FileStream(io::filesystem()->open(path, mode)));
 	return 1;
 }
 
