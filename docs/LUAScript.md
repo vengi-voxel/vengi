@@ -546,6 +546,8 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 
 * `writeDouble(value)`: Writes a 64-bit floating-point number to the stream.
 
+* `writeStream(stream)`: Write the data of the given stream to the current stream.
+
 * `eos()`: returns whether the stream has reached its end
 
 * `seek(offset, mode)`: change the position in the stream
@@ -554,7 +556,17 @@ When using e.g. the `g_http` requests, you get stream objects as return values.
 
 * `pos()`: alias for `tell()`
 
+* `close()`: close the stream and garbage collect (also closes the file - important on windows if you are going to continue to use the same file again)
+
 * `size()`: returns the size of the stream
+
+## IO
+
+`g_io` can open files for reading and writing and will return a stream instance.
+
+* `sysopen(path, mode)`: Can be used to open either an absolute path or a path relative to the current working directory. Modes are `r` and `w`
+
+* `open(path, mode)`: Will open the file in the home path of the user to read and write files. Modes are `r` and `w`
 
 ## Cvar
 

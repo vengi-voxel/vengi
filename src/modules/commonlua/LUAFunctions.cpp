@@ -602,11 +602,18 @@ static void clua_sysregister(lua_State *s) {
 	clua_registerfuncsglobal(s, funcs, "_metasys", "g_sys");
 }
 
-static int clua_io_open(lua_State *s) {
+static int clua_io_sysopen(lua_State *s) {
 	const char *path = luaL_checkstring(s, 1);
 	const char *modeStr = luaL_optstring(s, 2, "r");
-	io::FileMode mode = modeStr[0] == 'r' ? io::FileMode::SysRead : io::FileMode::SysWrite;
-	if (mode == io::FileMode::SysWrite || mode == io::FileMode::Append || mode == io::FileMode::Write) {
+	io::FileMode mode;
+	if (modeStr[0] == 'r') {
+		mode = io::FileMode::SysRead;
+	} else if (modeStr[0] == 'w') {
+		mode = io::FileMode::SysWrite;
+	} else {
+		return clua_error(s, "Invalid mode %s", modeStr);
+	}
+	if (mode == io::FileMode::SysWrite) {
 		if (!io::filesystem()->sysIsWriteable(path)) {
 			return clua_error(s, "Could not open file %s for writing with mode %s", path, modeStr);
 		}
@@ -617,8 +624,29 @@ static int clua_io_open(lua_State *s) {
 	return 1;
 }
 
+static int clua_io_open(lua_State *s) {
+	const char *path = luaL_checkstring(s, 1);
+	const char *modeStr = luaL_optstring(s, 2, "r");
+	io::FileMode mode;
+	if (modeStr[0] == 'r') {
+		mode = io::FileMode::Read;
+	} else if (modeStr[0] == 'w') {
+		mode = io::FileMode::Write;
+	} else {
+		return clua_error(s, "Invalid mode %s", modeStr);
+	}
+	if (mode == io::FileMode::Read) {
+		if (!io::filesystem()->exists(path)) {
+			return clua_error(s, "Could not open file %s in mode %s", path, modeStr);
+		}
+	}
+	clua_pushstream(s, new io::FileStream(io::filesystem()->open(path, mode)));
+	return 1;
+}
+
 void clua_ioregister(lua_State *s) {
 	static const luaL_Reg funcs[] = {
+		{"sysopen", clua_io_sysopen},
 		{"open", clua_io_open},
 		{nullptr, nullptr}
 	};
