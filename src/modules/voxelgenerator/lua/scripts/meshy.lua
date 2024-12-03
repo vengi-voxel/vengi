@@ -19,6 +19,7 @@ function arguments()
 	return {
 		{name = 'prompt', desc = '', type = 'string', default = 'A cute cat'},
 		{name = 'negative_prompt', desc = '', type = 'string', default = ''},
+		{name = 'scale', desc = '', type = 'float', default = '10.0'},
 		{name = 'art_style', desc = '', type = 'enum', enum = 'realistic,sculpture,pbr', default = 'realistic'},
 		{name = "api_key", desc = "The Meshy API key (cvar meshy_api_key)", type = "string", default = ""}
 	}
@@ -49,7 +50,7 @@ function downloadFiles(retrievalJson, headers)
 	g_log.info("Downloaded glb: " .. glbFile)
 end
 
-function main(_, _, _, prompt, negative_prompt, art_style, api_key)
+function main(_, _, _, prompt, negative_prompt, scale, art_style, api_key)
 	local body =
 		JSON:encode({mode = 'preview', prompt = prompt, art_style = art_style, negative_prompt = negative_prompt})
 	g_var.create('meshy_api_key', '', 'meshy ai api key', false, true)
@@ -88,7 +89,10 @@ function main(_, _, _, prompt, negative_prompt, art_style, api_key)
 			coroutine.yield();
 		elseif retrievalJson.status == 'SUCCEEDED' then
 			downloadFiles(retrievalJson, headers)
+			local oldVal = g_var.float('voxformat_scale')
+			g_var.setFloat('voxformat_scale', scale)
 			g_import.scene(retrievalJson.id .. ".glb")
+			g_var.setFloat('voxformat_scale', oldVal)
 			break
 		else
 			error('Failed to generate 3D model: ' .. retrievalJson.status)
