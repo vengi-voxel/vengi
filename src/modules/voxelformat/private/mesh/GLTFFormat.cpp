@@ -1433,6 +1433,8 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 		interpolation = scenegraph::InterpolationType::Instant;
 	} else if (gltfAnimSampler.interpolation == "CUBICSPLINE") {
 		interpolation = scenegraph::InterpolationType::CubicBezier;
+	} else {
+		Log::debug("Unsupported interpolation type: %s", gltfAnimSampler.interpolation.c_str());
 	}
 
 	// get the key frame seconds (float)
@@ -1484,22 +1486,33 @@ bool GLTFFormat::loadAnimationChannel(const tinygltf::Model &gltfModel, const ti
 		}
 		for (scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			 keyFrameIdx < (scenegraph::KeyFrameIndex)gltfTransformAccessor->count; ++keyFrameIdx) {
-			const float *buf = (const float *)transformBuf;
+			io::MemoryReadStream stream(transformBuf, gltfBufferView.byteLength);
 			transformBuf += stride;
 			scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 			keyFrame.interpolation = interpolation;
 			scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 			if (gltfAnimChannel.target_path == "translation") {
 				core_assert(gltfTransformAccessor->type == TINYGLTF_TYPE_VEC3);
-				glm::vec3 v(buf[0], buf[1], buf[2]);
+				glm::vec3 v{0.0f};
+				stream.readFloat(v.x);
+				stream.readFloat(v.y);
+				stream.readFloat(v.z);
 				transform.setLocalTranslation(v);
 			} else if (gltfAnimChannel.target_path == "rotation") {
 				core_assert(gltfTransformAccessor->type == TINYGLTF_TYPE_VEC4);
-				glm::quat orientation(buf[3], buf[0], buf[1], buf[2]);
+				float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f;
+				stream.readFloat(w);
+				stream.readFloat(x);
+				stream.readFloat(y);
+				stream.readFloat(z);
+				glm::quat orientation(w, x, y, z);
 				transform.setLocalOrientation(orientation);
 			} else if (gltfAnimChannel.target_path == "scale") {
 				core_assert(gltfTransformAccessor->type == TINYGLTF_TYPE_VEC3);
-				glm::vec3 v(buf[0], buf[1], buf[2]);
+				glm::vec3 v{0.0f};
+				stream.readFloat(v.x);
+				stream.readFloat(v.y);
+				stream.readFloat(v.z);
 				transform.setLocalScale(v);
 			} else {
 				Log::debug("Unsupported target path %s", gltfAnimChannel.target_path.c_str());
