@@ -1126,6 +1126,12 @@ static int clua_stream_tell(lua_State *s) {
 	return 1;
 }
 
+static int clua_stream_close(lua_State *s) {
+	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
+	stream->close();
+	return 0;
+}
+
 static int clua_stream_size(lua_State *s) {
 	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	lua_pushinteger(s, stream->size());
@@ -1209,6 +1215,7 @@ void clua_streamregister(lua_State *s) {
 		{"tell", clua_stream_tell},
 		{"pos", clua_stream_tell},
 		{"size", clua_stream_size},
+		{"close", clua_stream_close},
 		{"__gc", clua_stream_gc},
 		{nullptr, nullptr}
 	};
