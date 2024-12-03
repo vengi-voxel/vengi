@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/UTF8.h"
 #include "image/Image.h"
+#include "io/FilesystemArchive.h"
 #include "io/Stream.h"
 #include "io/StreamArchive.h"
 #include "lua.h"
@@ -619,14 +620,17 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 
 static int luaVoxel_import_scene(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
-	io::SeekableReadStream *readStream = clua_tostream(s, 2);
+	io::SeekableReadStream *readStream = nullptr;
+	if (clua_isstream(s, 2)) {
+		readStream = clua_tostream(s, 2);
+	}
 	io::FileDescription fileDesc;
 	fileDesc.set(filename);
 	voxelformat::LoadContext ctx;
 	scenegraph::SceneGraph newSceneGraph;
 	bool ret;
 	{
-		auto archive = core::make_shared<io::StreamArchive>(readStream);
+		auto archive = readStream ? core::make_shared<io::StreamArchive>(readStream) : io::openFilesystemArchive(io::filesystem());
 		ret = voxelformat::loadFormat(fileDesc, archive, newSceneGraph, ctx);
 	}
 	if (!ret) {
