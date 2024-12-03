@@ -96,6 +96,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 			Log::error("No smd3 or smd2 files found in %s", filename.c_str());
 			return false;
 		}
+		// TODO: VOXELFORMAT: load meta data to get possible attachments (meta.smbpm)
 		for (const io::FilesystemEntry &e : files) {
 			const core::String &fileExt = core::string::extractExtension(e.name);
 			const bool isSmd3 = fileExt == "smd3";
