@@ -46,8 +46,7 @@ namespace voxelformat {
 	}
 
 bool VXLFormat::writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, int x,
-									int y, int z, uint8_t skipCount, uint8_t voxelCount,
-									const palette::NormalPalette &normalPalette) const {
+									int y, int z, uint8_t skipCount, uint8_t voxelCount) const {
 	Log::trace("skipCount: %i voxelCount: %i for (x/y/z: %i:%i:%i)", skipCount, voxelCount, x, y, z);
 
 	wrapBool(stream.writeUInt8(skipCount))
@@ -131,7 +130,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 			for (int y = region.getLowerY(); y <= region.getUpperY();) {
 				int voxelCount = calculateSpanLength(v, x, y, z);
 				if (voxelCount > 0) {
-					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount, node.normalPalette()))
+					wrapBool(writeLayerBodyEntry(stream, v, x, y, z, skipCount, voxelCount))
 					y += voxelCount;
 					skipCount = 0;
 				} else {
@@ -140,7 +139,7 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 				}
 			}
 			if (skipCount > 0) {
-				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0, node.normalPalette()))
+				wrapBool(writeLayerBodyEntry(stream, v, 0, 0, 0, skipCount, 0))
 			}
 			spanEndPos = stream.pos();
 			const int64_t spanDelta = spanEndPos - spanStartPos;

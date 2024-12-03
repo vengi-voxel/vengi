@@ -5,7 +5,6 @@
 #pragma once
 
 #include "VXLShared.h"
-#include "palette/NormalPalette.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -26,7 +25,7 @@ private:
 
 	// writing
 	bool writeLayerBodyEntry(io::SeekableWriteStream &stream, const voxel::RawVolume *volume, int x, int y,
-							 int z, uint8_t skipCount, uint8_t voxelCount, const palette::NormalPalette &normalPalette) const;
+							 int z, uint8_t skipCount, uint8_t voxelCoun) const;
 	bool writeLayer(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 					uint64_t nodeSectionOffset) const;
