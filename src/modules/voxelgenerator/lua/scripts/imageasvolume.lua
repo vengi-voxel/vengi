@@ -1,3 +1,5 @@
+local util = require('modules.util')
+
 function arguments()
 	return {
 		{name = "nametexture", desc = "the image name for the color texture", type = "file"},
@@ -7,13 +9,9 @@ function arguments()
 	}
 end
 
-local function GetFileExtension(url)
-	return url:match("^.+(%..+)$")
-end
-
 function main(node, _, _, nametexture, namedepthmap, thickness, bothsides)
 	if namedepthmap == "" then
-		local ext = GetFileExtension(nametexture)
+		local ext = util.getFileExtension(nametexture)
 		namedepthmap = nametexture:sub(1, #nametexture - #ext) .. "-dm" .. ext
 	end
 	node:volume():importImageAsVolume(nametexture, namedepthmap, node:palette(), thickness, bothsides)
