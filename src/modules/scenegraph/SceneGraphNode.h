@@ -149,6 +149,7 @@ public:
 	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
 	bool removeUnusedColors(bool updateVoxels);
+	int findUnusedPaletteIndex(bool startFromEnd) const;
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);

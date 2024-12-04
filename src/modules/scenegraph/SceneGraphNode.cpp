@@ -198,7 +198,6 @@ bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
 	palette::Palette &pal = palette();
 	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
 		usedColors[voxel.getColor()] = true;
-		return true;
 	});
 	int unused = 0;
 	for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
@@ -230,7 +229,6 @@ bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
 		pal = newPalette;
 		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
 			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
-			return true;
 		});
 		pal.markDirty();
 		pal.markSave();
@@ -244,6 +242,45 @@ bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
 		pal.markSave();
 	}
 	return true;
+}
+
+int SceneGraphNode::findUnusedPaletteIndex(bool startFromEnd) const {
+	const palette::Palette &pal = palette();
+	if (startFromEnd) {
+		for (int i = palette::PaletteMaxColors - 1; i >= 0; --i) {
+			if (pal.color(i).a == 0) {
+				return i;
+			}
+		}
+
+		if (const voxel::RawVolume *v = volume()) {
+			for (int i = palette::PaletteMaxColors - 1; i >= 0; --i) {
+				if (voxelutil::visitVolume(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
+					return true;
+				}, voxelutil::VisitColor(i)) == 0) {
+					return i;
+				}
+			}
+		}
+	} else {
+		for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+			if (pal.color(i).a == 0) {
+				return i;
+			}
+		}
+
+		if (const voxel::RawVolume *v = volume()) {
+			for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+				if (voxelutil::visitVolume(*v, [] (int x, int y, int z, const voxel::Voxel& voxel) {
+					return true;
+				}, voxelutil::VisitColor(i)) == 0) {
+					return i;
+				}
+			}
+		}
+	}
+
+	return -1;
 }
 
 void SceneGraphNode::fixErrors() {

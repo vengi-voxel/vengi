@@ -21,6 +21,7 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
@@ -264,18 +265,31 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 							}
 						});
 				} else {
-					Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
-							   "them. We need to find a replacement for %i",
-							   palette::PaletteMaxColors, emptyIndex);
-					uint8_t replacement = palette.findReplacement(emptyIndex);
-					Log::debug("Looking for a similar color in the palette: %d", replacement);
-					if (replacement != emptyIndex) {
-						Log::debug("Replace %i with %i", emptyIndex, replacement);
+					int unused = node.findUnusedPaletteIndex(emptyIndex == 0);
+					if (unused < 0) {
+						Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
+								"them. We need to find a replacement for %i",
+								palette::PaletteMaxColors, emptyIndex);
+						uint8_t replacement = palette.findReplacement(emptyIndex);
+						Log::debug("Looking for a similar color in the palette: %d", replacement);
+						if (replacement != emptyIndex) {
+							Log::debug("Replace %i with %i", emptyIndex, replacement);
+							voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
+							voxelutil::visitVolume(
+								*v, [v, replaceFrom = emptyIndex, replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
+									if (voxel.getColor() == replaceFrom) {
+										v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
+									}
+								});
+						}
+					} else {
+						Log::debug("Replace %i with unused slot %i", emptyIndex, unused);
 						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
+						const voxel::Voxel replacement = voxel::createVoxel(palette, unused);
 						voxelutil::visitVolume(
-							*v, [v, replaceFrom = emptyIndex, replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
-								if (voxel.getColor() == replaceFrom) {
-									v->setVoxel(x, y, z, voxel::createVoxel(pal, replaceTo));
+							*v, [v, emptyIndex, replacement](int x, int y, int z, const voxel::Voxel &voxel) {
+								if (voxel.getColor() == emptyIndex) {
+									v->setVoxel(x, y, z, replacement);
 								}
 							});
 					}
