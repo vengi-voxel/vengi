@@ -17,3 +17,4 @@ autosave-*
 compile_commands.json
 /.cache
 /*.AppImage
+/update_dir
