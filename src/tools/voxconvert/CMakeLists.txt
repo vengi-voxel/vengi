@@ -11,7 +11,8 @@ set(UI_SRCS
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME}ui SRCS ${UI_SRCS} WINDOWED DESCRIPTION "UI voxel tool")
-engine_target_link_libraries(TARGET ${PROJECT_NAME}ui DEPENDENCIES voxelui voxelgenerator)
+# voxelgenerator is needed to get the scripts - but see https://github.com/vengi-voxel/vengi/issues/557
+engine_target_link_libraries(TARGET ${PROJECT_NAME}ui DEPENDENCIES voxelui)
 
 enable_testing()
 configure_file(tests/tests.sh.in ${PROJECT_NAME}-tests.sh @ONLY)
