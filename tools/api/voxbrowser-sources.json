@@ -1,6 +1,15 @@
 {
 	"sources": [
 		{
+			"name": "Floooh voxel-data",
+			"license": "MIT",
+			"github": {
+				"repo": "floooh/voxel-data",
+				"commit": "master",
+				"license": "LICENSE"
+			}
+		},
+		{
 			"name": "Duke3D Voxel Pack for EDuke32",
 			"license": "Voxel Pack Art License",
 			"thumbnail": "https://i.imgur.com/WSQIXnS.png",
