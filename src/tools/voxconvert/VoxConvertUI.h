@@ -26,6 +26,7 @@ private:
 	bool _overwriteTargetFile = false;
 	palette::PaletteCache _paletteCache;
 
+#if 0
 	struct ScriptExecutorContext : public voxelui::LUAApiExecutorContext {
 		core::String _scriptFilename;
 		core::DynamicArray<core::String> _args;
@@ -38,7 +39,7 @@ private:
 	ScriptExecutorContext _luaApiCtx;
 	voxelui::LUAApiWidget _luaApiWidget;
 	voxelgenerator::LUAApi _luaApi;
-
+#endif
 	core::String _droppedFile;
 
 protected:
