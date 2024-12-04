@@ -5,13 +5,10 @@
 #include "BenVoxelFormat.h"
 #include "BenBinary.h"
 #include "BenJson.h"
-#include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "io/Archive.h"
-#include "io/BufferedReadWriteStream.h"
-#include "io/ZipReadStream.h"
 #include "scenegraph/SceneGraph.h"
 
 namespace voxelformat {
