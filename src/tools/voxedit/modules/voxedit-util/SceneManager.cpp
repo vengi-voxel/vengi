@@ -2269,63 +2269,12 @@ void SceneManager::construct() {
 
 void SceneManager::nodeRemoveUnusedColors(int nodeId, bool updateVoxels) {
 	scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
-	voxel::RawVolume *v = node.volume();
-	if (v == nullptr) {
-		return;
-	}
-	core::Array<bool, palette::PaletteMaxColors> usedColors;
-	usedColors.fill(false);
-
-	palette::Palette &pal = node.palette();
-	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
-		usedColors[voxel.getColor()] = true;
-		return true;
-	});
-	int unused = 0;
-	for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
-		if (!usedColors[i]) {
-			++unused;
-		}
-	}
-	if (unused >= palette::PaletteMaxColors) {
-		Log::warn("Removing all colors from the palette is not allowed");
-		return;
-	}
-	Log::debug("Unused colors: %i", unused);
+	node.removeUnusedColors(updateVoxels);
 	if (updateVoxels) {
-		int newMappingPos = 0;
-		core::Array<uint8_t, palette::PaletteMaxColors> newMapping;
-		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
-			if (usedColors[i]) {
-				newMapping[i] = newMappingPos++;
-			}
-		}
-		palette::Palette newPalette;
-		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
-			if (usedColors[i]) {
-				newPalette.setColor(newMapping[i], pal.color(i));
-				newPalette.setMaterial(newMapping[i], pal.material(i));
-			}
-		}
-		core_assert(newPalette.colorCount() > 0);
-		pal = newPalette;
-		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
-			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
-			return true;
-		});
-		pal.markDirty();
-		pal.markSave();
 		memento::ScopedMementoGroup mementoGroup(_mementoHandler, "removeunusedcolors");
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
-		modified(nodeId, v->region());
+		modified(nodeId, _sceneGraph.resolveRegion(node));
 	} else {
-		for (size_t i = 0; i < pal.size(); ++i) {
-			if (!usedColors[i]) {
-				pal.setColor(i, core::RGBA(127, 127, 127, 255));
-			}
-		}
-		pal.markDirty();
-		pal.markSave();
 		_mementoHandler.markPaletteChange(_sceneGraph, node);
 	}
 }

@@ -16,6 +16,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
 namespace scenegraph {
@@ -184,6 +185,65 @@ palette::Palette &SceneGraphNode::palette() const {
 		_palette.setValue(palette);
 	}
 	return *_palette.value();
+}
+
+bool SceneGraphNode::removeUnusedColors(bool updateVoxels) {
+	voxel::RawVolume *v = volume();
+	if (v == nullptr) {
+		return false;
+	}
+	core::Array<bool, palette::PaletteMaxColors> usedColors;
+	usedColors.fill(false);
+
+	palette::Palette &pal = palette();
+	voxelutil::visitVolume(*v, [&usedColors] (int x, int y, int z, const voxel::Voxel& voxel) {
+		usedColors[voxel.getColor()] = true;
+		return true;
+	});
+	int unused = 0;
+	for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
+		if (!usedColors[i]) {
+			++unused;
+		}
+	}
+	if (unused >= palette::PaletteMaxColors) {
+		Log::warn("Removing all colors from the palette is not allowed");
+		return false;
+	}
+	Log::debug("Unused colors: %i", unused);
+	if (updateVoxels) {
+		int newMappingPos = 0;
+		core::Array<uint8_t, palette::PaletteMaxColors> newMapping;
+		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
+			if (usedColors[i]) {
+				newMapping[i] = newMappingPos++;
+			}
+		}
+		palette::Palette newPalette;
+		for (size_t i = 0; i < palette::PaletteMaxColors; ++i) {
+			if (usedColors[i]) {
+				newPalette.setColor(newMapping[i], pal.color(i));
+				newPalette.setMaterial(newMapping[i], pal.material(i));
+			}
+		}
+		core_assert(newPalette.colorCount() > 0);
+		pal = newPalette;
+		voxelutil::visitVolume(*v, [v, &newMapping, &pal] (int x, int y, int z, const voxel::Voxel& voxel) {
+			v->setVoxel(x, y, z, voxel::createVoxel(pal, newMapping[voxel.getColor()]));
+			return true;
+		});
+		pal.markDirty();
+		pal.markSave();
+	} else {
+		for (size_t i = 0; i < pal.size(); ++i) {
+			if (!usedColors[i]) {
+				pal.setColor(i, core::RGBA(127, 127, 127, 255));
+			}
+		}
+		pal.markDirty();
+		pal.markSave();
+	}
+	return true;
 }
 
 void SceneGraphNode::fixErrors() {

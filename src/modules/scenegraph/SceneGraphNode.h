@@ -148,6 +148,8 @@ public:
 	palette::NormalPalette &normalPalette() const;
 	void setNormalPalette(const palette::NormalPalette &normalPalette);
 
+	bool removeUnusedColors(bool updateVoxels);
+
 	// normalized pivot of [0-1] to be somewhere inside the volume region
 	bool setPivot(const glm::vec3 &pivot);
 	const glm::vec3 &pivot() const;
