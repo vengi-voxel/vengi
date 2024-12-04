@@ -256,7 +256,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 					if (emptyIndex <= palette.colorCount()) {
 						palette.changeSize(1);
 					}
-					voxel::RawVolume *v = node.volume();
+					voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
 					voxelutil::visitVolume(
 						*v, [v, skip = emptyIndex, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 							if (voxel.getColor() >= skip) {
@@ -268,7 +268,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 					Log::debug("Looking for a similar color in the palette: %d", replacement);
 					if (replacement != emptyIndex) {
 						Log::debug("Replace %i with %i", emptyIndex, replacement);
-						voxel::RawVolume *v = node.volume();
+						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
 						voxelutil::visitVolume(
 							*v, [v, replaceFrom = emptyIndex, replaceTo = replacement, pal = node.palette()](int x, int y, int z, const voxel::Voxel &voxel) {
 								if (voxel.getColor() == replaceFrom) {
