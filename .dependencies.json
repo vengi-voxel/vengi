@@ -1,0 +1,23 @@
+{
+    "emscripten-browser-file": "d21dec772050d581c02aa9820e4d877fdb060dc8",
+    "SOIL2": "0823470d7fbddca4c2b130264d14b6294227be2c",
+    "stb": "5c205738c191bcb0abc65c4febfa9bd25ff35234",
+    "googletest": "35d0c365609296fa4730d62057c487e3cfa030ff",
+    "benchmark": "b2b0aab464b1d5be3cf1728d36bb03f8b84f246f",
+    "imguizmo": "b10e91756d32395f5c1fefd417899b657ed7cb88",
+    "implot": "419a8a0f5fcb77e1e7c19ab540441686bfe21bca",
+    "backward-cpp": "51f0700452cf71c57d43c2d028277b24cde32502",
+    "im-neo-sequencer": "3b7930d4894408f655eefceb9f76e2ca15f1db24",
+    "imgui": "14d213ca851b399fd54f4c6593a1235bfdb5c0c3",
+    "glm": "33b4a621a697a305bc3a7610d290677b96beb181",
+    "sdl2": "91bb1bb6fd042677c2725a1c9e6e99cb71dda247",
+    "tinygltf": "116d0030f9a55151eb1890b7b7131e4c0602de96",
+    "tinyobjloader": "fe9e7130a0eee720a28f39b33852108217114076",
+    "simplecpp": "0ab783c7d6c208ac9f83550fc1f1ab9de3280d03",
+    "simplexnoise": "83b576feea873a9ab4f2d3bb5da394c0b0b18e7f",
+    "flextgl": "bc3d4da8fc087cba17d64e9d908ae35b7e40f4fe",
+    "libvxl": "2d482be6e738f0befdbb4f63d740c51eef9970a3",
+    "meshoptimizer": "20787cc054fa0e46584c2791139c1878aa899d78",
+    "yocto-gl": "7e35c631b5ee29f1a7ee1010c5dcf0879aa3dcf3",
+    "ufbx": "defefcbb8fe02967e5f937bc6a6300a8533c998d"
+}
