@@ -12,6 +12,14 @@
 namespace voxelcollection {
 namespace github {
 
+static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+	const core::String json = http::HttpCacheStream::string(archive, file, url);
+	if (json.empty()) {
+		return {};
+	}
+	return nlohmann::json::parse(json, nullptr, false, true);
+}
+
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
 						 const core::String &path) {
 	core_assert(!path.empty());
@@ -19,17 +27,13 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 	const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + path + "?ref=" + branchEnc;
 	core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
 	core::string::replaceAllChars(file, '/', '-');
-	const core::String json = http::HttpCacheStream::string(archive, file, url);
-	if (!json.empty()) {
-		nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
-		if (jsonResponse.contains("download_url")) {
-			auto dlurl = jsonResponse.value("download_url", "");
-			return dlurl.c_str();
-		} else {
-			const core::String str = jsonResponse.dump().c_str();
-			Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
-		}
+	const auto &json = cachedJson(archive, file, url);
+	if (json.contains("download_url")) {
+		const auto &dlurl = json.value("download_url", "");
+		return dlurl.c_str();
 	}
+	const core::String &str = json.dump().c_str();
+	Log::debug("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
@@ -40,21 +44,17 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 	core::String file = "github-" + repository + "-" + branch + ".json";
 	core::string::replaceAllChars(file, '/', '-');
 	core::DynamicArray<TreeEntry> entries;
-	const core::String json = http::HttpCacheStream::string(archive, file, url);
-	if (json.empty()) {
-		return entries;
-	}
-	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
-	if (!jsonResponse.contains("tree")) {
-		const core::String str = jsonResponse.dump().c_str();
+	const auto &json = cachedJson(archive, file, url);
+	if (!json.contains("tree")) {
+		const core::String str = json.dump().c_str();
 		Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 		return entries;
 	}
-	nlohmann::json treeJson = jsonResponse["tree"];
+	const nlohmann::json &treeJson = json["tree"];
 	Log::debug("Found json for repository %s with %i entries", repository.c_str(), (int)treeJson.size());
 
 	for (const auto &entry : treeJson) {
-		const auto type = entry.value("type", "");
+		const auto &type = entry.value("type", "");
 		if (type != "blob") {
 			Log::debug("No blob entry, but %s", type.c_str());
 			continue;
