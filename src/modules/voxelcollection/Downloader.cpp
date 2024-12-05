@@ -108,18 +108,35 @@ static bool supportedFileExtension(const core::String &path) {
 	return io::isA(path, voxelformat::voxelLoad());
 }
 
-template<class Entry>
-static core::String findThumbnailUrl(const core::DynamicArray<Entry> &entries, const Entry &current,
+static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::DynamicArray<github::TreeEntry> &entries, const github::TreeEntry &current,
 									 const VoxelSource &source, core::AtomicBool &shouldQuit) {
 	const core::String &pathNoExt = core::string::stripExtension(current.path);
-	for (auto &entry : entries) {
+	for (const github::TreeEntry &entry : entries) {
 		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
 			for (const core::String &ext : desc->exts) {
 				if (shouldQuit) {
 					return "";
 				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
-					return github::downloadUrl(source.github.repo, source.github.commit, entry.path);
+					return github::downloadUrl(archive, source.github.repo, source.github.commit, entry.path);
+				}
+			}
+		}
+	}
+	return "";
+}
+
+static core::String findThumbnailUrl(const core::DynamicArray<gitlab::TreeEntry> &entries, const gitlab::TreeEntry &current,
+									 const VoxelSource &source, core::AtomicBool &shouldQuit) {
+	const core::String &pathNoExt = core::string::stripExtension(current.path);
+	for (const gitlab::TreeEntry &entry : entries) {
+		for (const io::FormatDescription *desc = io::format::images(); desc->valid(); ++desc) {
+			for (const core::String &ext : desc->exts) {
+				if (shouldQuit) {
+					return "";
+				}
+				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
+					return gitlab::downloadUrl(source.gitlab.repo, source.gitlab.commit, entry.path);
 				}
 			}
 		}
@@ -239,7 +256,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 														 core::AtomicBool &shouldQuit) const {
 	core::DynamicArray<VoxelFile> files;
 	const core::String &licenseDownloadUrl =
-		github::downloadUrl(source.github.repo, source.github.commit, source.github.license);
+		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license);
 	const core::String cleanSource = core::string::cleanPath(source.name);
 	for (const auto &entry : entries) {
 		if (shouldQuit) {
@@ -252,7 +269,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 		if (!source.github.license.empty()) {
 			file.licenseUrl = licenseDownloadUrl;
 		}
-		file.thumbnailUrl = findThumbnailUrl(entries, entry, source, shouldQuit);
+		file.thumbnailUrl = findThumbnailUrl(archive, entries, entry, source, shouldQuit);
 		file.url = entry.url;
 		file.fullPath = entry.path;
 		handleFile(archive, shouldQuit, files, file, source.github.enableMeshes);

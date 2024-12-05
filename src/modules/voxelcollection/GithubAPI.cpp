@@ -12,7 +12,8 @@
 namespace voxelcollection {
 namespace github {
 
-core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
+core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
+						 const core::String &path) {
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
@@ -48,7 +49,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 			Log::debug("Ignore entry %s - not in path %s", treeEntry.path.c_str(), path.c_str());
 			continue;
 		}
-		treeEntry.url = downloadUrl(repository, branch, treeEntry.path);
+		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path);
 		entries.push_back(treeEntry);
 	}
 

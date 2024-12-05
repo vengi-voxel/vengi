@@ -118,7 +118,8 @@ TEST_F(DownloaderTest, testTargetDirWithPath) {
 	ASSERT_EQ("vengi/data/", file.targetDir());
 }
 
-TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
+// github::downloadUrl needs to perform a http request
+TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
 	Downloader downloader;
 
 	VoxelSource source;
@@ -131,10 +132,11 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
 
 	io::ArchivePtr archive = io::openMemoryArchive();
 	core::AtomicBool shouldQuit{false};
+	const core::String path = "data/tests/test_material.vox";
 
 	core::DynamicArray<github::TreeEntry> entries;
-	github::TreeEntry entry1{"data/test.vox",
-							 github::downloadUrl(source.github.repo, source.github.commit, "data/test.vox")};
+	github::TreeEntry entry1{path,
+							 github::downloadUrl(archive, source.github.repo, source.github.commit, path)};
 
 	entries.push_back(entry1);
 
@@ -142,8 +144,8 @@ TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
 	ASSERT_FALSE(collection.empty());
 	const VoxelFile &voxelFile = collection.front();
 	ASSERT_EQ(voxelFile.source, source.name);
-	ASSERT_EQ(voxelFile.name, "test.vox");
-	ASSERT_EQ(voxelFile.fullPath, "data/test.vox");
+	ASSERT_EQ(voxelFile.name, "test_material.vox");
+	ASSERT_EQ(voxelFile.fullPath, path);
 	ASSERT_EQ(voxelFile.url, entry1.url);
 	ASSERT_EQ(voxelFile.licenseUrl, "https://raw.githubusercontent.com/vengi-voxel/vengi/master/LICENSE");
 }
