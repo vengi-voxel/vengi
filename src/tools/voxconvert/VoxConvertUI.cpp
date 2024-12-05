@@ -15,12 +15,15 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "voxel/MaterialColor.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelgenerator/LUAApi.h"
 #include "voxelui/FileDialogOptions.h"
+#include "voxelui/LUAApiWidget.h"
 
 VoxConvertUI::VoxConvertUI(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider), _paletteCache(filesystem) /*, _luaApi(filesystem) */ {
+	: Super(filesystem, timeProvider), _paletteCache(filesystem), _luaApi(filesystem) {
 	// use the same config as voxconvert
 	init(ORGANISATION, "voxconvert");
 	_allowRelativeMouseMode = false;
@@ -37,17 +40,15 @@ app::AppState VoxConvertUI::onConstruct() {
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
 	}
-	// _luaApi.construct();
+	_luaApi.construct();
 	return state;
 }
 
 app::AppState VoxConvertUI::onInit() {
 	app::AppState state = Super::onInit();
-#if 0
 	if (!_luaApi.init()) {
 		Log::error("Failed to initialize LUA API");
 	}
-#endif
 	_voxconvertBinary = _filesystem->sysFindBinary("vengi-voxconvert");
 
 	_paletteCache.detectPalettes();
@@ -63,7 +64,7 @@ app::AppState VoxConvertUI::onInit() {
 
 app::AppState VoxConvertUI::onCleanup() {
 	app::AppState state = Super::onCleanup();
-	// _luaApi.shutdown();
+	_luaApi.shutdown();
 	return state;
 }
 
@@ -170,12 +171,10 @@ void VoxConvertUI::onRenderUI() {
 			}
 		}
 
-#if 0
 		if (ImGui::CollapsingHeader(_("Script options"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			_luaApiWidget.updateScriptExecutionPanel(_luaApi, voxel::getPalette(), _luaApiCtx,
 													 voxelui::LUAAPI_WIDGET_FLAG_NOTIFY);
 		}
-#endif
 
 		if (ImGui::IconButton(ICON_LC_CHECK, _("Convert"))) {
 			if (_sourceFile.empty()) {
@@ -198,7 +197,7 @@ void VoxConvertUI::onRenderUI() {
 				if (_overwriteTargetFile) {
 					arguments.push_back("-f");
 				}
-#if 0
+
 				if (!_luaApiCtx._scriptFilename.empty()) {
 					arguments.push_back("--script");
 					const core::String scriptArgs =
@@ -206,7 +205,7 @@ void VoxConvertUI::onRenderUI() {
 					arguments.push_back(
 						core::string::format("\"%s %s\"", _luaApiCtx._scriptFilename.c_str(), scriptArgs.c_str()));
 				}
-#endif
+
 				const core::String args = core::string::join(arguments.begin(), arguments.end(), " ");
 				Log::info("%s %s", _voxconvertBinary.c_str(), args.c_str());
 				const int exitCode = core::Process::exec(_voxconvertBinary, arguments, nullptr, &stream);
