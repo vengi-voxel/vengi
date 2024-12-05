@@ -400,7 +400,11 @@ function(engine_add_module)
 	cmake_parse_arguments(_LIB "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
 
 	set(${_LIB_TARGET}_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "${_LIB_TARGET} module source directory")
-	add_library(${_LIB_TARGET} ${_LIB_SRCS})
+	if (_LIB_SRCS)
+		add_library(${_LIB_TARGET} ${_LIB_SRCS})
+	else()
+		add_library(${_LIB_TARGET} INTERFACE)
+	endif()
 
 	if (_LIB_LUA_SRCS)
 		check_lua_files(${_LIB_TARGET} ${_LIB_LUA_SRCS})
