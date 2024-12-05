@@ -27,7 +27,13 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 	Log::debug("try to download %s from %s", file.c_str(), url.c_str());
 	io::BufferedReadWriteStream bufStream(1024 * 1024);
 	int statusCode = 0;
-	if (http::download(url, bufStream, &statusCode)) {
+	core::StringMap<core::String> outheaders;
+	if (http::download(url, bufStream, &statusCode, &outheaders)) {
+		// TODO: HTTP: handle these headers https://www.ietf.org/archive/id/draft-polli-ratelimit-headers-02.html
+		// x-ratelimit-remaining "<number>"
+		// x-ratelimit-limit "<number>"
+		// x-ratelimit-used "<number>"
+		// x-ratelimit-reset "<timestamp utc>"
 		if (http::isValidStatusCode(statusCode)) {
 			write(archive, file, bufStream);
 		} else if (statusCode == 429) {
