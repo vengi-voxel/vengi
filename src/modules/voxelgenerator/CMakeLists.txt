@@ -36,6 +36,7 @@ set(LUA_SRCS
 	scripts/splitobjects.lua
 	scripts/thicken.lua
 )
+engine_add_module(TARGET ${LIB}-lua LUA_SRCS ${LUA_SRCS})
 
 set(SRCS
 	Spiral.h
@@ -69,5 +70,5 @@ gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_files(tests-${LIB} ${TEST_FILES})
 gtest_suite_lua_sources(tests-${LIB} ${LUA_SRCS})
-gtest_suite_deps(tests-${LIB} ${LIB} voxelformat test-app)
+gtest_suite_deps(tests-${LIB} ${LIB} voxelformat ${LIB}-lua test-app)
 gtest_suite_end(tests-${LIB})

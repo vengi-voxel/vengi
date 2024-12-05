@@ -11,7 +11,7 @@ set(UI_SRCS
 )
 
 engine_add_executable(TARGET ${PROJECT_NAME}ui SRCS ${UI_SRCS} WINDOWED DESCRIPTION "UI voxel tool")
-engine_target_link_libraries(TARGET ${PROJECT_NAME}ui DEPENDENCIES voxelui voxelgenerator)
+engine_target_link_libraries(TARGET ${PROJECT_NAME}ui DEPENDENCIES voxelui voxelgenerator-lua)
 
 enable_testing()
 configure_file(tests/tests.sh.in ${PROJECT_NAME}-tests.sh @ONLY)
