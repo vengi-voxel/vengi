@@ -265,8 +265,11 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 							}
 						});
 				} else {
+#if 0
 					int unused = node.findUnusedPaletteIndex(emptyIndex == 0);
-					if (unused < 0) {
+					if (unused < 0)
+#endif
+					{
 						Log::debug("The palette has %i color slots defined but the target format doesn't support storing "
 								"them. We need to find a replacement for %i",
 								palette::PaletteMaxColors, emptyIndex);
@@ -282,7 +285,9 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 									}
 								});
 						}
-					} else {
+					}
+#if 0
+					else {
 						Log::debug("Replace %i with unused slot %i", emptyIndex, unused);
 						voxel::RawVolume *v = newSceneGraph.resolveVolume(node);
 						const voxel::Voxel replacement = voxel::createVoxel(palette, unused);
@@ -293,6 +298,7 @@ bool PaletteFormat::save(const scenegraph::SceneGraph &sceneGraph, const core::S
 								}
 							});
 					}
+#endif
 				}
 				node.setPalette(palette);
 			} else {
