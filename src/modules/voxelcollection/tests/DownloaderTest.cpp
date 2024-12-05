@@ -118,8 +118,7 @@ TEST_F(DownloaderTest, testTargetDirWithPath) {
 	ASSERT_EQ("vengi/data/", file.targetDir());
 }
 
-// github::downloadUrl needs to perform a http request
-TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
+TEST_F(DownloaderTest, testConvertTreeEntryToVoxelFileGithub) {
 	Downloader downloader;
 
 	VoxelSource source;
@@ -136,7 +135,7 @@ TEST_F(DownloaderTest, DISABLED_testConvertTreeEntryToVoxelFileGithub) {
 
 	core::DynamicArray<github::TreeEntry> entries;
 	github::TreeEntry entry1{path,
-							 github::downloadUrl(archive, source.github.repo, source.github.commit, path)};
+							 github::downloadUrl(archive, source.github.repo, source.github.commit, path, 999999)};
 
 	entries.push_back(entry1);
 

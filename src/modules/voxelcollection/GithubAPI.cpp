@@ -26,7 +26,8 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 	if (size < 150) {
 		core_assert(!path.empty());
 		const core::String &branchEnc = core::string::urlPathEncode(branch);
-		const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + path + "?ref=" + branchEnc;
+		const core::String &pathEnc = core::string::urlPathEncode(path);
+		const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + pathEnc + "?ref=" + branchEnc;
 		core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
 		core::string::replaceAllChars(file, '/', '-');
 		const auto &json = cachedJson(archive, file, url);
