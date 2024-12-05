@@ -21,19 +21,22 @@ static nlohmann::json cachedJson(const io::ArchivePtr &archive, const core::Stri
 }
 
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
-						 const core::String &path) {
-	core_assert(!path.empty());
-	const core::String &branchEnc = core::string::urlPathEncode(branch);
-	const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + path + "?ref=" + branchEnc;
-	core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
-	core::string::replaceAllChars(file, '/', '-');
-	const auto &json = cachedJson(archive, file, url);
-	if (json.contains("download_url")) {
-		const auto &dlurl = json.value("download_url", "");
-		return dlurl.c_str();
+						 const core::String &path, int size) {
+	// the git lfs stuff is usually not larger than 150 bytes because it's just a reference
+	if (size < 150) {
+		core_assert(!path.empty());
+		const core::String &branchEnc = core::string::urlPathEncode(branch);
+		const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + path + "?ref=" + branchEnc;
+		core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
+		core::string::replaceAllChars(file, '/', '-');
+		const auto &json = cachedJson(archive, file, url);
+		if (json.contains("download_url")) {
+			const auto &dlurl = json.value("download_url", "");
+			return dlurl.c_str();
+		}
+		const core::String &str = json.dump().c_str();
+		Log::debug("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 	}
-	const core::String &str = json.dump().c_str();
-	Log::debug("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
@@ -65,7 +68,8 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 			Log::debug("Ignore entry %s - not in path %s", treeEntry.path.c_str(), path.c_str());
 			continue;
 		}
-		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path);
+		treeEntry.size = entry.value("size", -1);
+		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path, treeEntry.size);
 		entries.push_back(treeEntry);
 	}
 

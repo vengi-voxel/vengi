@@ -118,7 +118,7 @@ static core::String findThumbnailUrl(const io::ArchivePtr &archive, const core::
 					return "";
 				}
 				if (entry.path == current.path + "." + ext || entry.path == pathNoExt + "." + ext) {
-					return github::downloadUrl(archive, source.github.repo, source.github.commit, entry.path);
+					return github::downloadUrl(archive, source.github.repo, source.github.commit, entry.path, entry.size);
 				}
 			}
 		}
@@ -256,7 +256,7 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 														 core::AtomicBool &shouldQuit) const {
 	core::DynamicArray<VoxelFile> files;
 	const core::String &licenseDownloadUrl =
-		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license);
+		github::downloadUrl(archive, source.github.repo, source.github.commit, source.github.license, 0);
 	const core::String cleanSource = core::string::cleanPath(source.name);
 	for (const auto &entry : entries) {
 		if (shouldQuit) {
