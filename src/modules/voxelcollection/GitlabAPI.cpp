@@ -49,12 +49,10 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 			encoded.c_str(), branch.c_str(), page, path.c_str());
 		core::String file = core::string::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
 		core::string::replaceAllChars(file, '/', '-');
-		http::HttpCacheStream stream(archive, file, url);
-		if (!stream.valid()) {
+		const core::String &json = http::HttpCacheStream::string(archive, file, url);
+		if (json.empty()) {
 			return entries;
 		}
-		core::String json;
-		stream.readString((int)stream.size(), json);
 		nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 		if (!jsonResponse.is_array()) {
 			const core::String str = jsonResponse.dump().c_str();

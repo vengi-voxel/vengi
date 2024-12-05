@@ -22,13 +22,11 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
 	core::String file = "github-" + repository + "-" + branch + ".json";
 	core::string::replaceAllChars(file, '/', '-');
-	http::HttpCacheStream stream(archive, file, url);
 	core::DynamicArray<TreeEntry> entries;
-	if (!stream.valid()) {
+	const core::String json = http::HttpCacheStream::string(archive, file, url);
+	if (json.empty()) {
 		return entries;
 	}
-	core::String json;
-	stream.readString((int)stream.size(), json);
 	nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
 	if (!jsonResponse.contains("tree")) {
 		const core::String str = jsonResponse.dump().c_str();

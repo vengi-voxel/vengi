@@ -204,6 +204,7 @@ void CollectionManager::loadThumbnail(const VoxelFile &voxelFile) {
 				return;
 			}
 			http::HttpCacheStream stream(archive, voxelFile.targetFile(), voxelFile.url);
+			stream.close();
 			voxelformat::LoadContext loadCtx;
 			image::ImagePtr thumbnailImage = voxelformat::loadScreenshot(voxelFile.targetFile(), archive, loadCtx);
 			if (!thumbnailImage || !thumbnailImage->isLoaded()) {

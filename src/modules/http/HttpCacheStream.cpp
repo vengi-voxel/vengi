@@ -19,12 +19,12 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 		return;
 	}
 	if (archive->exists(file)) {
-		Log::debug("Use cached file at %s", file.c_str());
+		Log::debug("Use cached file at %s for %s", file.c_str(), url.c_str());
 		_readStream = archive->readStream(file);
 		core_assert(_readStream != nullptr);
 		return;
 	}
-	Log::debug("try to download %s", file.c_str());
+	Log::debug("try to download %s from %s", file.c_str(), url.c_str());
 	io::BufferedReadWriteStream bufStream(1024 * 1024);
 	int statusCode = 0;
 	if (http::download(url, bufStream, &statusCode)) {
@@ -46,6 +46,21 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 
 HttpCacheStream::~HttpCacheStream() {
 	delete _readStream;
+}
+
+core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+	HttpCacheStream stream(archive, file, url);
+	if (!stream.valid()) {
+		return "";
+	}
+	core::String str;
+	stream.readString((int)stream.size(), str);
+	return str;
+}
+
+void HttpCacheStream::close() {
+	delete _readStream;
+	_readStream = nullptr;
 }
 
 void HttpCacheStream::write(const io::ArchivePtr &archive, const core::String &file,

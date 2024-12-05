@@ -36,12 +36,15 @@ public:
 	HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
 	virtual ~HttpCacheStream();
 
+	void close() override;
 	bool valid() const;
 	int read(void *dataPtr, size_t dataSize) override;
 	int64_t seek(int64_t position, int whence = SEEK_SET) override;
 	int64_t size() const override;
 	int64_t pos() const override;
 	bool isNewInCache() const;
+
+	static core::String string(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
 };
 
 inline bool HttpCacheStream::isNewInCache() const {
