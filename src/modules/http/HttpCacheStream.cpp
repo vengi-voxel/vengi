@@ -41,6 +41,8 @@ HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::Stri
 		} else {
 			Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 		}
+	} else {
+		Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 	}
 }
 
