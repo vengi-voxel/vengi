@@ -36,4 +36,12 @@ TEST_F(GithubAPITest, DISABLED_testReposGitTrees) {
 			 "https://raw.githubusercontent.com/vengi-voxel/vengi/master/data/voxel/plants/plant4.qb", sources);
 }
 
+// disabled because it requires network access
+TEST_F(GithubAPITest, DISABLED_testReposGitTreesLFS) {
+	const io::ArchivePtr &archive = io::openFilesystemArchive(_testApp->filesystem(), "", false);
+	const auto &sources = github::reposGitTrees(archive, "floooh/voxel-data", "master");
+	ASSERT_FALSE(sources.empty());
+	validate("kc85.vox", "https://media.githubusercontent.com/media/floooh/voxel-data/master/kc85.vox", sources);
+}
+
 } // namespace voxelcollection

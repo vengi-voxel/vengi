@@ -14,6 +14,22 @@ namespace github {
 
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
 						 const core::String &path) {
+	core_assert(!path.empty());
+	const core::String &branchEnc = core::string::urlPathEncode(branch);
+	const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + path + "?ref=" + branchEnc;
+	core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
+	core::string::replaceAllChars(file, '/', '-');
+	const core::String json = http::HttpCacheStream::string(archive, file, url);
+	if (!json.empty()) {
+		nlohmann::json jsonResponse = nlohmann::json::parse(json, nullptr, false, true);
+		if (jsonResponse.contains("download_url")) {
+			auto dlurl = jsonResponse.value("download_url", "");
+			return dlurl.c_str();
+		} else {
+			const core::String str = jsonResponse.dump().c_str();
+			Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
+		}
+	}
 	return "https://raw.githubusercontent.com/" + repository + "/" + branch + "/" + core::string::urlPathEncode(path);
 }
 
