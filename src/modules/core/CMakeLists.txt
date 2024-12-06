@@ -31,6 +31,8 @@ set(SRCS
 	concurrent/ThreadPool.cpp concurrent/ThreadPool.h
 	concurrent/Thread.cpp concurrent/Thread.h
 
+	external/strnatcmp.c external/strnatcmp.h
+
 	Algorithm.h
 	Alphanumeric.cpp Alphanumeric.h
 	ArrayLength.h

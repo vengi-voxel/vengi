@@ -329,6 +329,16 @@ def update_ufbx():
         ]
     )
 
+def update_natsort():
+    update_target(
+        "natsort",
+        "https://github.com/sourcefrog/natsort.git",
+        [
+            (f"strnatcmp.c", "src/modules/core/external"),
+            (f"strnatcmp.h", "src/modules/core/external")
+        ]
+    )
+
 # Main function to run all updates
 def main():
     update_emscripten_browser_file()
@@ -351,6 +361,7 @@ def main():
     update_meshoptimizer()
     update_yocto()
     update_ufbx()
+    update_natsort()
 
 if __name__ == "__main__":
     main()

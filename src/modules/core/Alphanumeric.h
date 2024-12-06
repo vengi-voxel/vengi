@@ -8,8 +8,6 @@ class Alphanumeric {
 private:
 	const char *_value;
 
-	static int ndigits(const char *s);
-
 public:
 	Alphanumeric(const char *str) : _value(str) {
 	}
