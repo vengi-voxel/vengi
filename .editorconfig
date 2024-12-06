@@ -23,3 +23,6 @@ indent_style = space
 
 [src/modules/voxelformat/external/tiny_obj_loader.h]
 indent_style = space
+
+[src/modules/core/external/strnatcmp.*]
+indent_style = space
