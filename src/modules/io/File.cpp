@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "core/concurrent/Lock.h"
 #include "io/FormatDescription.h"
 #include "io/system/System.h"
 #include <SDL.h>
@@ -20,8 +21,10 @@ namespace priv {
 // error logs on other systems to be able to debug and fix the issues that otherwise
 // would only be visible to windows users
 core::StringMap<FileMode> _openedFiles;
+core_trace_mutex(core::Lock, _openedFileLock, "openedFileLock");
 
 void trackOpenedFile(const core::String &path, FileMode mode) {
+	core::ScopedLock lock(_openedFileLock);
 	core::String absPath = fs_realpath(path.c_str());
 	normalizePath(absPath);
 	if (absPath.empty()) {
@@ -39,6 +42,7 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 }
 
 void untrackOpenedFile(const core::String &path, FileMode mode) {
+	core::ScopedLock lock(_openedFileLock);
 	core::String absPath = fs_realpath(path.c_str());
 	normalizePath(absPath);
 	if (absPath.empty()) {
