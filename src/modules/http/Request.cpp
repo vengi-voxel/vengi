@@ -301,7 +301,7 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 	core::string::strncpyz(method.c_str(), method.size(), attr.requestMethod, sizeof(attr.requestMethod));
 
 	core::DynamicArray<const char*> headers;
-	headers.reserve(_headers.size() + 1);
+	headers.reserve((_headers.size() + (_userAgent.empty() ? 0 : 2)) * 2 + 1);
 	if (!_userAgent.empty()) {
 		headers.push_back("User-Agent");
 		headers.push_back(_userAgent.c_str());
@@ -317,6 +317,9 @@ bool Request::execute(io::WriteStream &stream, int *statusCode, core::StringMap<
 	if (!_body.empty()) {
 		attr.requestData = _body.c_str();
 		attr.requestDataSize = _body.size();
+	} else {
+		attr.requestData = nullptr;
+		attr.requestDataSize = 0;
 	}
 
 	emscripten_fetch_t* fetch = emscripten_fetch(&attr, _url.c_str());
