@@ -1524,6 +1524,7 @@ void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
 	voxel::Region region = v->region();
 	v->translate(m);
 	region.accumulate(v->region());
+	_dirtyRenderer = DirtyRendererLockedAxis | DirtyRendererGridRenderer;
 	modified(nodeId, region);
 }
 
