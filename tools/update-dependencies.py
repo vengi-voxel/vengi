@@ -344,12 +344,13 @@ def update_natsort():
     )
 
 def update_miniz():
+    # TODO: call ./amalgamate.sh
     update_target(
         "miniz",
         "https://github.com/richgel999/miniz.git",
         [
-            (f"miniz.h", "src/modules/io/external/miniz.h"),
-            (f"miniz.c", "src/modules/io/external/miniz.c")
+            (f"amalgamation/miniz.h", "src/modules/io/external/miniz.h"),
+            (f"amalgamation/miniz.c", "src/modules/io/external/miniz.c")
         ]
     )
 
