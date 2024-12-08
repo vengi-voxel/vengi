@@ -30,9 +30,10 @@ private:
 	TYPE* _buffer = nullptr;
 	size_t _capacity = 0u;
 	size_t _size = 0u;
+	size_t _increase = INCREASE;
 
-	static inline constexpr size_t align(size_t val) {
-		const size_t len = INCREASE - 1u;
+	inline constexpr size_t align(size_t val) {
+		const size_t len = _increase - 1u;
 		return (size_t)((val + len) & ~len);
 	}
 
@@ -85,6 +86,10 @@ public:
 
 	~DynamicArray() {
 		release();
+	}
+
+	void setIncrease(size_t increase) {
+		_increase = increase;
 	}
 
 	DynamicArray &operator=(const DynamicArray &other) {

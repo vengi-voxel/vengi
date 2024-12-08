@@ -109,9 +109,9 @@ void Console::cursorDown() {
 
 void Console::autoComplete() {
 	core::DynamicArray<core::String> matches;
-	const core::DynamicArray<core::String> allCommands = core::Tokenizer(_commandLine, ";").tokens();
+	const core::Tokens allCommands = core::Tokenizer(_commandLine, ";").tokens();
 	const core::String& lastCmd = allCommands.empty() ? "" : allCommands.back();
-	const core::DynamicArray<core::String> strings = core::Tokenizer(lastCmd, " ").tokens();
+	const core::Tokens strings = core::Tokenizer(lastCmd, " ").tokens();
 	core::String baseSearchString = "";
 	bool parameter = _commandLine.last() == ' ' || strings.size() > 1;
 	if (parameter) {

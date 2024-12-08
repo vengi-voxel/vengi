@@ -12,6 +12,7 @@ Tokenizer::Tokenizer(const TokenizerConfig &cfg_, const char* s, size_t len, con
 		_posIndex(0u), _size(0), _len((int32_t)len), _skipComments(cfg_.skipComments) {
 	bool lastCharIsSep = false;
 	bool lastCharWasQuoteEnd = false;
+	_tokens.setIncrease(4096u);
 	for (;;) {
 		char c = skip(&s);
 		if (c == '\0') {

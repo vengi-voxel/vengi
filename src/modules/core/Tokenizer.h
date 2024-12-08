@@ -16,9 +16,11 @@ struct TokenizerConfig {
 	bool removeQuotes = true; // parse everything in the quotes as one token, but remove the quotes afterwards
 };
 
+using Tokens = core::DynamicArray<core::String>;
+
 class Tokenizer {
 protected:
-	core::DynamicArray<core::String> _tokens;
+	Tokens _tokens;
 	size_t _posIndex;
 	size_t _size;
 	int32_t _len;
@@ -66,7 +68,7 @@ public:
 		return _tokens[_posIndex++];
 	}
 
-	inline const core::DynamicArray<core::String>& tokens() const {
+	inline const Tokens& tokens() const {
 		return _tokens;
 	}
 

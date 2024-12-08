@@ -31,8 +31,8 @@ inline std::ostream &operator<<(::std::ostream &os, const DynamicArray<String> &
 
 }
 
-template<class T>
-core::String toString(const core::DynamicArray<T>& v) {
+template<class T, size_t SIZE>
+core::String toString(const core::DynamicArray<T, SIZE>& v) {
 	core::String str;
 	str.reserve(4096);
 	for (auto i = v.begin(); i != v.end();) {

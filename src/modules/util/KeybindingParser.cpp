@@ -22,7 +22,7 @@ void KeybindingParser::parseKeyAndCommand(core::String key, const core::String& 
 	if (key.size() > 1 && key.contains(COMMAND_PRESSED)) {
 		core::TokenizerConfig cfg;
 		core::Tokenizer tok(cfg, key, COMMAND_PRESSED);
-		const core::DynamicArray<core::String>& line = tok.tokens();
+		const core::Tokens& line = tok.tokens();
 		if (line.size() > 1) {
 			for (const core::String& token : line) {
 				const core::String& lower = token.toLower();
