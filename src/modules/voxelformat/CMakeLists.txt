@@ -50,6 +50,7 @@ set(SRCS
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
 	private/mesh/quake/QuakeBSPFormat.h      private/mesh/quake/QuakeBSPFormat.cpp
+	private/mesh/quake/MapFormat.h           private/mesh/quake/MapFormat.cpp
 	private/mesh/quake/MD2Format.h           private/mesh/quake/MD2Format.cpp
 	private/mesh/quake/MDLFormat.h           private/mesh/quake/MDLFormat.cpp
 	private/mesh/FBXFormat.h                 private/mesh/FBXFormat.cpp
