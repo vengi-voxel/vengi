@@ -35,7 +35,7 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 		}
 		glm::vec3 target = camera.target();
 		if (ImGui::InputFloat3(_("Target"), &target.x)) {
-			camera.setTarget(pos);
+			camera.setTarget(target);
 		}
 		float targetDistance = camera.targetDistance();
 		if (ImGui::InputFloat(_("Target distance"), &targetDistance)) {
