@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
+
 import os
 import subprocess
 import shutil
 import json
 import glob
+import argparse
+import fnmatch
 
 UPDATEDIR = "./update_dir"
 HASHFILE = ".dependencies.json"
@@ -339,29 +343,60 @@ def update_natsort():
         ]
     )
 
+def update_libmap():
+    update_target(
+        "libmap",
+        "https://github.com/QodotPlugin/libmap.git",
+        [
+            (f"src/h/*.h", "src/modules/voxelformat/external/libmap"),
+            (f"src/c/*.c", "src/modules/voxelformat/external/libmap")
+        ]
+    )
+
 # Main function to run all updates
 def main():
-    update_emscripten_browser_file()
-    update_stb()
-    update_googletest()
-    update_benchmark()
-    update_imguizmo()
-    update_implot()
-    update_backward()
-    update_im_neo_sequencer()
-    update_dearimgui()
-    update_glm()
-    update_sdl2()
-    update_tinygltf()
-    update_tinyobjloader()
-    update_simplecpp()
-    update_simplexnoise()
-    update_flextgl()
-    update_libvxl()
-    update_meshoptimizer()
-    update_yocto()
-    update_ufbx()
-    update_natsort()
+    parser = argparse.ArgumentParser(description="Update dependencies")
+    parser.add_argument('--filter', help='Wildcard filter for updates (e.g., "sd*")', default="*")
+    args = parser.parse_args()
+
+
+    # Get the parent directory of the script's directory
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    parent_directory = os.path.dirname(script_directory)
+    os.chdir(parent_directory)
+
+    updates = [
+        update_emscripten_browser_file,
+        update_stb,
+        update_googletest,
+        update_benchmark,
+        update_imguizmo,
+        update_implot,
+        update_backward,
+        update_im_neo_sequencer,
+        update_dearimgui,
+        update_glm,
+        update_sdl2,
+        update_tinygltf,
+        update_tinyobjloader,
+        update_simplecpp,
+        update_simplexnoise,
+        update_flextgl,
+        update_libvxl,
+        update_meshoptimizer,
+        update_yocto,
+        update_ufbx,
+        update_natsort,
+        update_libmap,
+    ]
+
+    # Filter updates based on the provided filter
+    filter_pattern = args.filter
+    for update_function in updates:
+        function_name = update_function.__name__  # Get the function name
+        if fnmatch.fnmatch(function_name, f"update_{filter_pattern}"):
+            print(f"Running update for {function_name}")
+            update_function()
 
 if __name__ == "__main__":
     main()
