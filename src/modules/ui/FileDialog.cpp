@@ -179,7 +179,6 @@ void FileDialog::selectFilter(video::OpenFileMode type, int index) {
 #ifdef __EMSCRIPTEN__
 void FileDialog::uploadHandler(std::string const& filename, std::string const& mimetype, std::string_view buffer, void* userdata) {
 	io::MemoryReadStream stream(buffer.data(), buffer.size());
-	const core::String *path = (const core::String*)userdata;
 	FileDialog *fileDialog = (FileDialog*)userdata;
 	io::filesystem()->homeWrite(filename.c_str(), stream);
 	fileDialog->readDir(video::OpenFileMode::Open);
@@ -246,7 +245,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 
 #ifdef __EMSCRIPTEN__
 	if (type == video::OpenFileMode::Open) {
-		emscripten_browser_file::upload("", uploadHandler, &_currentPath);
+		emscripten_browser_file::upload("", uploadHandler, this);
 	}
 #endif
 
