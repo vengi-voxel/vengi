@@ -81,6 +81,8 @@ void popupAbout(const std::function<void()> &customTabs, bool isNewVersionAvaila
 					ImGui::URLItem("Yocto/GL", "https://github.com/xelatihy/yocto-gl", urlIconWidth);
 #ifdef USE_ZLIB
 					ImGui::Text("zlib");
+#else
+					ImGui::Text("miniz");
 #endif
 					ImGui::EndTabItem();
 				}
