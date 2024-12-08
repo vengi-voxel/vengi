@@ -5,11 +5,23 @@
 #include "voxelformat/private/mesh/TextureLookup.h"
 #include "app/App.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
 #include "io/FilesystemArchive.h"
 
 namespace voxelformat {
 
-class TextureLookupTest : public app::AbstractTest {};
+class TextureLookupTest : public app::AbstractTest {
+private:
+	using Super = app::AbstractTest;
+
+public:
+	bool onInitApp() override {
+		Super::onInitApp();
+		core::Var::get(cfg::VoxformatTexturePath, "");
+		return true;
+	}
+};
 
 TEST_F(TextureLookupTest, testLookupTexture) {
 	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
