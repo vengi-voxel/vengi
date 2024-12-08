@@ -26,7 +26,7 @@ foreach ($i in $array){
 The thumbnailer is able to generate scene turntables with 16 images.
 
 ```sh
-./vengi-thumbnailer -s 128 --turntable --input somevoxel.vox --output somevoxel.png
+./vengi-thumbnailer -s 128 --turntable 16 --input somevoxel.vox --output somevoxel.png
 ```
 
 ## Render top view

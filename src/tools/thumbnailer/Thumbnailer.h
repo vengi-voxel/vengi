@@ -22,7 +22,6 @@ class Thumbnailer: public video::WindowedApp {
 private:
 	using Super = video::WindowedApp;
 
-	io::FilePtr _infile;
 	core::String _outfile;
 
 protected:

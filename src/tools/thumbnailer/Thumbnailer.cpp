@@ -49,7 +49,7 @@ app::AppState Thumbnailer::onConstruct() {
 		.setDescription("Size of the thumbnail in pixels")
 		.setDefaultValue("128")
 		.addFlag(ARGUMENT_FLAG_MANDATORY);
-	registerArg("--turntable").setShort("-t").setDescription("Render in different angles");
+	registerArg("--turntable").setShort("-t").setDescription("Render in different angles (16 by default)");
 	registerArg("--fallback").setShort("-f").setDescription("Create a fallback thumbnail if an error occurs");
 	registerArg("--use-scene-camera")
 		.setShort("-c")
@@ -154,8 +154,7 @@ app::AppState Thumbnailer::onRunning() {
 	Log::debug("infile: %s", infile.c_str());
 	Log::debug("outfile: %s", _outfile.c_str());
 
-	_infile = filesystem()->open(infile, io::FileMode::SysRead);
-	if (!_infile->exists()) {
+	if (!io::Filesystem::sysExists(infile)) {
 		Log::error("Given input file '%s' does not exist", infile.c_str());
 		return app::AppState::InitFailure;
 	}
@@ -183,16 +182,16 @@ app::AppState Thumbnailer::onRunning() {
 		Log::info("Use euler angles %f:%f:%f", ctx.pitch, ctx.yaw, ctx.roll);
 	}
 
-	const bool renderTurntable = hasArg("--turntable");
-	if (renderTurntable) {
-		volumeTurntable(_infile->name(), _outfile, ctx, 16);
+	const int renderTurntableLoops = hasArg("--turntable") ? getArgVal("--turntable", "16").toInt() : 0;
+	if (renderTurntableLoops > 0) {
+		volumeTurntable(infile, _outfile, ctx, renderTurntableLoops);
 	} else {
 		const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 		if (!archive) {
-			Log::error("Failed to open %s for reading", _infile->name().c_str());
+			Log::error("Failed to open %s for reading", infile.c_str());
 			return app::AppState::Cleanup;
 		}
-		const image::ImagePtr &image = volumeThumbnail(_infile->name(), archive, ctx);
+		const image::ImagePtr &image = volumeThumbnail(infile, archive, ctx);
 		saveImage(image);
 	}
 
@@ -215,7 +214,7 @@ bool Thumbnailer::saveImage(const image::ImagePtr &image) {
 		}
 		return true;
 	}
-	Log::error("Failed to create thumbnail for %s", _infile->name().c_str());
+	Log::error("Failed to create thumbnail");
 	return false;
 }
 
