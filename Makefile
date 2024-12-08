@@ -247,7 +247,7 @@ emscripten-%: $(BUILDDIR)/CMakeCache.txt build/emsdk/emsdk_env.sh
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten
-	$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
+	$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
 	$(Q)$(CMAKE) --build build/emscripten --target $(subst emscripten-,,$@)
 
 run-emscripten-%: emscripten-%
