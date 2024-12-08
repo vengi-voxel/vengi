@@ -222,13 +222,4 @@ TEST_F(FilesystemTest, testCreateDirNonRecursiveFail) {
 	fs.shutdown();
 }
 
-TEST_F(FilesystemTest, testSearchPathFor) {
-	io::FilesystemPtr fs = core::make_shared<io::Filesystem>();
-	EXPECT_TRUE(fs->init("test", "test")) << "Failed to initialize the filesystem";
-	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir(), "iotest.txt"), searchPathFor(fs, "foobar/does/not/exist", "iotest.txt"));
-	ASSERT_TRUE(io::Filesystem::sysWrite("dir123/testfile", "123")) << "Failed to write content to testfile in dir123";
-	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir(), "dir123/testfile"), searchPathFor(fs, "/foobar/does/not/dir123", "TestFile"));
-	fs->shutdown();
-}
-
 } // namespace io

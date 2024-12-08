@@ -416,7 +416,6 @@ bool Filesystem::exists(const core::String& filename) const {
 	return open(filename)->exists();
 }
 
-// TODO: case insensitive search should be possible - see searchPathFor()
 io::FilePtr Filesystem::open(const core::String &filename, FileMode mode) const {
 	core_assert_msg(!_homePath.empty(), "Filesystem is not yet initialized");
 	if (sysIsReadableDir(filename)) {
@@ -543,47 +542,6 @@ long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) 
 bool Filesystem::sysWrite(const core::String &filename, const core::String &string) {
 	const uint8_t *buf = reinterpret_cast<const uint8_t *>(string.c_str());
 	return sysWrite(filename, buf, string.size());
-}
-
-core::String searchPathFor(const FilesystemPtr &filesystem, const core::String &path, const core::String &filename) {
-	if (filename.empty()) {
-		Log::warn("No filename given to perform lookup in '%s'", path.c_str());
-		return "";
-	}
-	core::DynamicArray<core::String> tokens;
-	core::string::splitString(path, tokens, "/");
-	while (!tokens.empty()) {
-		if (io::Filesystem::sysIsReadableDir(tokens[0])) {
-			Log::trace("readable dir: %s", tokens[0].c_str());
-			break;
-		}
-		Log::trace("not a readable dir: %s", tokens[0].c_str());
-		tokens.erase(0);
-		if (tokens.empty()) {
-			break;
-		}
-	}
-	core::String relativePath;
-	for (const core::String &t : tokens) {
-		relativePath = core::string::path(relativePath, t);
-	}
-	core::DynamicArray<io::FilesystemEntry> entities;
-	const core::String abspath = filesystem->sysAbsolutePath(relativePath);
-	filesystem->list(abspath, entities);
-	Log::trace("Found %i entries in %s", (int)entities.size(), abspath.c_str());
-	auto predicate = [&] (const io::FilesystemEntry &e) {
-		return core::string::iequals(e.name, filename);
-	};
-	auto iter = core::find_if(entities.begin(), entities.end(), predicate);
-	if (iter == entities.end()) {
-		Log::debug("Could not find %s in '%s'", filename.c_str(), abspath.c_str());
-		for (const auto &e : entities) {
-			Log::trace("* %s", e.name.c_str());
-		}
-		return "";
-	}
-	Log::debug("Found %s in %s", iter->name.c_str(), relativePath.c_str());
-	return core::string::path(abspath, iter->name);
 }
 
 } // namespace io
