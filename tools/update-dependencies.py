@@ -343,16 +343,6 @@ def update_natsort():
         ]
     )
 
-def update_libmap():
-    update_target(
-        "libmap",
-        "https://github.com/QodotPlugin/libmap.git",
-        [
-            (f"src/h/*.h", "src/modules/voxelformat/external/libmap"),
-            (f"src/c/*.c", "src/modules/voxelformat/external/libmap")
-        ]
-    )
-
 # Main function to run all updates
 def main():
     parser = argparse.ArgumentParser(description="Update dependencies")
@@ -386,8 +376,7 @@ def main():
         update_meshoptimizer,
         update_yocto,
         update_ufbx,
-        update_natsort,
-        update_libmap,
+        update_natsort
     ]
 
     # Filter updates based on the provided filter
