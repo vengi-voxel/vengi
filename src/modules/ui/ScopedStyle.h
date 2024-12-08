@@ -28,6 +28,10 @@ public:
 		ImGui::PushStyleColor(idx, col);
 		++_color;
 	}
+	inline void resetColors(int n = 1) {
+		ImGui::PopStyleColor(n);
+		_color -= n;
+	}
 	inline void darker(ImGuiCol idx, float f = 1.0f) {
 		setColor(idx, core::Color::darker(ImGui::GetStyle().Colors[idx], f));
 	}
