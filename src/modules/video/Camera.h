@@ -43,6 +43,7 @@ enum class CameraMode {
  *
  * @ingroup Video
  * @par Coordinate spaces
+ * There are several coordinate spaces in which the camera can be used:
  * @li object coordinates (the raw coordinates passed to glVertex, glVertexPointer etc)
  * @li eye coordinates (after the model-view matrix has been applied)
  * @li clip coordinates (after the projection matrix has been applied)

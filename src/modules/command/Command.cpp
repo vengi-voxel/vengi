@@ -8,6 +8,7 @@
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include <SDL_stdinc.h>
 
 namespace command {
 

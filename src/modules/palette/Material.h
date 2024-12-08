@@ -6,6 +6,7 @@
 
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
+#include <stdint.h>
 
 namespace palette {
 

@@ -20,7 +20,6 @@ struct ChunkMesh;
  * The CubicSurfaceExtractor creates a mesh in which each voxel appears to be rendered as a cube
  *
  * @par Introduction
- *
  * Games such as Minecraft and Voxatron have a unique graphical style in which each voxel in the world appears to be rendered
  * as a single cube. Actually rendering a cube for each voxel would be very expensive, but in practice the only faces which need
  * to be drawn are those which lie on the boundary between solid and empty voxels. The CubicSurfaceExtractor can be used to create
@@ -34,7 +33,6 @@ struct ChunkMesh;
  * principles of allowing dynamic terrain are also common to all surface extractors and are described here (ADD LINK).
  *
  * @par Basic Operation
- *
  * At its core, the CubicSurfaceExtractor works by by looking at pairs of adjacent voxels and determining whether a quad should be
  * placed between then. The most simple situation to imagine is a binary volume where every voxel is either solid or empty. In this
  * case a quad should be generated whenever a solid voxel is next to an empty voxel as this represents part of the surface of the
@@ -55,7 +53,6 @@ struct ChunkMesh;
  * shape of the underlying voxel data.
  *
  * @par Working with Regions
- *
  * So far the behaviour is easy to understand, but let's look at what happens when the extraction is limited to a particular region of
  * the volume. The figure below shows the same data set as the previous figure, but the extraction region (still marked in pink) has
  * been limited to 13 to 16 in x and 47 to 51 in y:
