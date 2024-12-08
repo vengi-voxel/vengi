@@ -1,10 +1,14 @@
 set(LIB voxelformat)
-set(SRCS
+set(EXTERNAL_SRCS
 	external/ogt_vox.h
 	external/tiny_obj_loader.h
 	external/tiny_gltf.h
 	external/ufbx.h external/ufbx.c
 	external/libvxl.h external/libvxl.c
+
+)
+set(SRCS
+	${EXTERNAL_SRCS}
 
 	Format.h Format.cpp
 	FormatConfig.h FormatConfig.cpp
@@ -87,6 +91,19 @@ set(SRCS
 	private/voxelmax/VMaxFormat.h            private/voxelmax/VMaxFormat.cpp
 )
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric)
+
+check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
+if (C_NO_SHADOW)
+	foreach (src ${EXTERNAL_SRCS})
+		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-shadow)
+	endforeach()
+endif()
+check_c_compiler_flag("-Wno-unused-variable" C_NO_UNUSED_VARIABLE)
+if (C_NO_UNUSED_VARIABLE)
+	foreach (src ${EXTERNAL_SRCS})
+		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-unused-variable)
+	endforeach()
+endif()
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
