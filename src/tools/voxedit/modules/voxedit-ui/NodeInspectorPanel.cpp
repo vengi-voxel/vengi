@@ -3,10 +3,10 @@
  */
 
 #include "NodeInspectorPanel.h"
+#include "Gizmo.h"
 #include "Util.h"
 #include "core/ArrayLength.h"
 #include "core/Color.h"
-#include "Gizmo.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
