@@ -87,6 +87,7 @@ public:
 	static core::String toHex(const RGBA rgba, bool hashPrefix = true);
 
 	static RGBA getRGBA(const glm::vec4&);
+	static RGBA getRGBA(const glm::vec3&);
 	/**
 	 * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
 	 */

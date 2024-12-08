@@ -901,6 +901,11 @@ RGBA Color::getRGBA(const glm::vec4 &color) {
 				(uint8_t)(color.a * magnitude)};
 }
 
+RGBA Color::getRGBA(const glm::vec3 &color) {
+	return RGBA{(uint8_t)(color.r * magnitude), (uint8_t)(color.g * magnitude), (uint8_t)(color.b * magnitude),
+				255u};
+}
+
 void Color::getHSB(core::RGBA color, float &chue, float &csaturation, float &cbrightness) {
 	getHSB(fromRGBA(color), chue, csaturation, cbrightness);
 }
