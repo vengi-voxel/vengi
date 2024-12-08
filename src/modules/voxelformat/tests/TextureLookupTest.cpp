@@ -25,7 +25,12 @@ public:
 
 TEST_F(TextureLookupTest, testLookupTexture) {
 	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
-	EXPECT_NE(lookupTexture("glTF/cube/chr_knight.gox", "glTF/cube/Cube_BaseColor.png", archive), "");
+
+	EXPECT_EQ(lookupTexture("glTF/cube/Cube.gltf", "Cube_BaseColor.png", archive), "glTF/cube/Cube_BaseColor.png")
+		<< "Failed to find the texture in the directory of the model";
+	EXPECT_EQ(lookupTexture("glTF/cube/Cube.gltf", "./Cube_BaseColor.png", archive), "glTF/cube/./Cube_BaseColor.png")
+		<< "Failed to search the current directory";
+
 	EXPECT_NE(lookupTexture("glTF/cube/chr_knight.gox", "Cube_BaseColor.png", archive), "");
 	EXPECT_NE(lookupTexture("glTF/chr_knight.gox", "./cube/Cube_BaseColor.png", archive), "");
 	EXPECT_NE(lookupTexture("glTF/chr_knight.gox", "cube/Cube_BaseColor.png", archive), "");
