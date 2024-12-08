@@ -28,7 +28,8 @@ enum class FileMode {
 /**
  * @sa core::string::sanitizeDirPath()
  */
-extern void normalizePath(core::String& str);
+void normalizePath(core::String& str);
+core::String normalizePath(const core::String& str);
 
 /**
  * @brief Wrapper for file based io.

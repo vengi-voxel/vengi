@@ -59,6 +59,12 @@ void untrackOpenedFile(const core::String &path, FileMode mode) {
 
 }
 
+core::String normalizePath(const core::String& str) {
+	core::String s = str;
+	normalizePath(s);
+	return s;
+}
+
 void normalizePath(core::String& str) {
 	core::string::replaceAllChars(str, '\\', '/');
 #ifndef __WINDOWS__
