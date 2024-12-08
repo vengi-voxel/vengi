@@ -27,6 +27,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelformat/private/mesh/TextureLookup.h"
 #include "voxelutil/VoxelUtil.h"
 
 #include <glm/ext/matrix_transform.hpp>

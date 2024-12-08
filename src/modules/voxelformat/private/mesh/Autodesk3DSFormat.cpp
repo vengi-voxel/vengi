@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/MeshTri.h"
+#include "voxelformat/private/mesh/TextureLookup.h"
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 

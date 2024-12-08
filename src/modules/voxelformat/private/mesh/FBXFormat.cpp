@@ -17,6 +17,7 @@
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelformat/private/mesh/TextureLookup.h"
 
 #define ufbx_assert core_assert
 #include "voxelformat/external/ufbx.h"
@@ -361,27 +362,31 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					mat->baseColor = priv::_ufbx_to_rgba(fbxmaterial->pbr.base_color);
 				}
 				if (fbxmaterial->pbr.metalness.has_value) {
-					mat->material.setValue(palette::MaterialProperty::MaterialMetal, fbxmaterial->pbr.metalness.value_real);
+					mat->material.setValue(palette::MaterialProperty::MaterialMetal,
+										   fbxmaterial->pbr.metalness.value_real);
 				}
 				if (fbxmaterial->pbr.roughness.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialRoughness,
-											fbxmaterial->pbr.roughness.value_real);
+										   fbxmaterial->pbr.roughness.value_real);
 				}
 				if (fbxmaterial->pbr.specular_ior.has_value) {
 					mat->material.setValue(palette::MaterialProperty::MaterialIndexOfRefraction,
-											fbxmaterial->pbr.specular_ior.value_real);
+										   fbxmaterial->pbr.specular_ior.value_real);
 				}
 				if (fbxmaterial->pbr.opacity.has_value) {
 					mat->transparency = 1.0f - fbxmaterial->pbr.opacity.value_real;
 				}
 				if (fbxmaterial->pbr.glossiness.has_value) {
-					mat->material.setValue(palette::MaterialProperty::MaterialGlossiness, fbxmaterial->pbr.glossiness.value_real);
+					mat->material.setValue(palette::MaterialProperty::MaterialGlossiness,
+										   fbxmaterial->pbr.glossiness.value_real);
 				}
 				if (fbxmaterial->pbr.specular_factor.has_value) {
-					mat->material.setValue(palette::MaterialProperty::MaterialSpecular, fbxmaterial->pbr.specular_factor.value_real);
+					mat->material.setValue(palette::MaterialProperty::MaterialSpecular,
+										   fbxmaterial->pbr.specular_factor.value_real);
 				}
 				if (fbxmaterial->pbr.emission_factor.has_value) {
-					mat->material.setValue(palette::MaterialProperty::MaterialEmit, fbxmaterial->pbr.emission_factor.value_real);
+					mat->material.setValue(palette::MaterialProperty::MaterialEmit,
+										   fbxmaterial->pbr.emission_factor.value_real);
 				}
 				if (fbxmaterial->pbr.emission_color.has_value) {
 					mat->emitColor = priv::_ufbx_to_rgba(fbxmaterial->pbr.emission_color);
@@ -401,7 +406,8 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 					const uint32_t ix = triIndices[vi * 3 + ti];
 					const ufbx_vec3 &pos = ufbx_get_vertex_vec3(&mesh->vertex_position, ix);
 					if (mesh->vertex_color.exists) {
-						const glm::vec4 &vertexColor = priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
+						const glm::vec4 &vertexColor =
+							priv::_ufbx_to_vec4(ufbx_get_vertex_vec4(&mesh->vertex_color, ix));
 						meshTri.color[ti] = core::Color::getRGBA(vertexColor);
 					}
 					if (mesh->vertex_uv.exists) {

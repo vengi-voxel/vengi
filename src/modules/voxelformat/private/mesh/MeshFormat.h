@@ -165,8 +165,6 @@ protected:
 	void voxelizeTris(scenegraph::SceneGraphNode &node, const PosMap &posMap, bool fillHollow) const;
 
 public:
-	static core::String lookupTexture(const core::String &meshFilename, const core::String &in);
-
 	MeshFormat();
 	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 					const LoadContext &ctx) override;

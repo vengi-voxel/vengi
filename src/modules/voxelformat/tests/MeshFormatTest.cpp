@@ -14,6 +14,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelformat/private/mesh/TextureLookup.h"
 #include "voxelformat/tests/AbstractFormatTest.h"
 
 namespace voxelformat {
@@ -47,14 +48,6 @@ TEST_F(MeshFormatTest, testColorAt) {
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << core::Color::print(pal.color(i)) << " vs "
 									   << core::Color::print(color);
 	}
-}
-
-TEST_F(MeshFormatTest, testLookupTexture) {
-	EXPECT_NE(MeshFormat::lookupTexture("glTF/cube/chr_knight.gox", "glTF/cube/Cube_BaseColor.png"), "");
-	EXPECT_NE(MeshFormat::lookupTexture("glTF/cube/chr_knight.gox", "Cube_BaseColor.png"), "");
-	EXPECT_NE(MeshFormat::lookupTexture("glTF/chr_knight.gox", "./cube/Cube_BaseColor.png"), "");
-	EXPECT_NE(MeshFormat::lookupTexture("glTF/chr_knight.gox", "cube/Cube_BaseColor.png"), "");
-	// TODO: VOXELFORMAT: EXPECT_NE(MeshFormat::lookupTexture("glTF/foo/bar/chr_knight.gox", "../../cube/Cube_BaseColor.png"), "");
 }
 
 TEST_F(MeshFormatTest, testCalculateAABB) {

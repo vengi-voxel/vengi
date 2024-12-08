@@ -20,6 +20,7 @@
 #include "voxel/VoxelVertex.h"
 #include "palette/Palette.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelformat/private/mesh/TextureLookup.h"
 
 #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #define TINYOBJLOADER_DONOT_INCLUDE_MAPBOX_EARCUT
