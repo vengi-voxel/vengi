@@ -13,7 +13,6 @@
 #endif
 #include <zlib.h>
 #else
-#define MINIZ_NO_STDIO
 #include "io/external/miniz.h"
 #endif
 #include "core/Assert.h"

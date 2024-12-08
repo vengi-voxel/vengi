@@ -46,6 +46,7 @@ endif()
 set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression" FORCE)
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
+target_compile_definitions(${LIB} PRIVATE MINIZ_NO_STDIO)
 
 set(TEST_FILES
 	testio/iotest.txt
