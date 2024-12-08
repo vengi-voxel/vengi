@@ -343,6 +343,16 @@ def update_natsort():
         ]
     )
 
+def update_miniz():
+    update_target(
+        "miniz",
+        "https://github.com/richgel999/miniz.git",
+        [
+            (f"miniz.h", "src/modules/io/external/miniz.h"),
+            (f"miniz.c", "src/modules/io/external/miniz.c")
+        ]
+    )
+
 # Main function to run all updates
 def main():
     parser = argparse.ArgumentParser(description="Update dependencies")
@@ -376,7 +386,8 @@ def main():
         update_meshoptimizer,
         update_yocto,
         update_ufbx,
-        update_natsort
+        update_natsort,
+        update_miniz
     ]
 
     # Filter updates based on the provided filter
