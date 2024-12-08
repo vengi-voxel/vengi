@@ -304,7 +304,7 @@ static core::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
 } // namespace priv
 
 int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-						   scenegraph::SceneGraph &sceneGraph, int parent) const {
+						   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	Log::debug("Add model node");
 	const glm::vec3 &scale = getInputScale();
 	ufbx_vec2 defaultUV;
@@ -343,7 +343,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const
 
 			if (texture) {
 				const core::String &fbxTextureFilename = priv::_ufbx_to_string(texture->relative_filename);
-				const core::String &textureName = lookupTexture(filename, fbxTextureFilename);
+				const core::String &textureName = lookupTexture(filename, fbxTextureFilename, archive);
 				if (!textureName.empty()) {
 					const image::ImagePtr &tex = image::loadImage(textureName);
 					if (tex->isLoaded()) {
@@ -473,10 +473,10 @@ int FBXFormat::addCameraNode(const ufbx_scene *scene, const ufbx_node *node, sce
 }
 
 int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-						 scenegraph::SceneGraph &sceneGraph, int parent) const {
+						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const {
 	int nodeId = parent;
 	if (node->mesh != nullptr) {
-		nodeId = addMeshNode(scene, node, filename, sceneGraph, parent);
+		nodeId = addMeshNode(scene, node, filename, archive, sceneGraph, parent);
 	} else if (node->camera != nullptr) {
 		nodeId = addCameraNode(scene, node, sceneGraph, parent);
 	} else if (node->light != nullptr) {
@@ -491,7 +491,7 @@ int FBXFormat::addNode_r(const ufbx_scene *scene, const ufbx_node *node, const c
 		return nodeId;
 	}
 	for (const ufbx_node *c : node->children) {
-		const int newNodeId = addNode_r(scene, c, filename, sceneGraph, nodeId);
+		const int newNodeId = addNode_r(scene, c, filename, archive, sceneGraph, nodeId);
 		if (newNodeId < 0) {
 			const core::String name = priv::_ufbx_to_string(node->name);
 			Log::error("Failed to add child node '%s'", name.c_str());
@@ -559,7 +559,7 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	const ufbx_node *root = ufbxscene->root_node;
 	for (const ufbx_node *c : root->children) {
-		if (addNode_r(ufbxscene, c, filename, sceneGraph, sceneGraph.root().id()) < 0) {
+		if (addNode_r(ufbxscene, c, filename, archive, sceneGraph, sceneGraph.root().id()) < 0) {
 			const core::String name = priv::_ufbx_to_string(c->name);
 			Log::error("Failed to add root child node '%s'", name.c_str());
 			ufbx_free_scene(ufbxscene);

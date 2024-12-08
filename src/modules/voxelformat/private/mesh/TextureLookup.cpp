@@ -7,13 +7,14 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "io/Archive.h"
 #include "io/File.h"
 #include "io/FormatDescription.h"
 
 namespace voxelformat {
 
 // TODO: VOXELFORMAT: use io::Archive here, too
-core::String lookupTexture(const core::String &meshFilename, const core::String &in) {
+core::String lookupTexture(const core::String &meshFilename, const core::String &in, const io::ArchivePtr &) {
 	const core::String &meshPath = core::string::extractDir(meshFilename);
 	core::String name = in;
 	io::normalizePath(name);

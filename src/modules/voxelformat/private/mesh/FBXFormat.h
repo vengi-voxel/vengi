@@ -27,14 +27,12 @@ private:
 	bool saveMeshesAscii(const Meshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
 						 const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
 						 const scenegraph::SceneGraph &sceneGraph);
-	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-				  scenegraph::SceneGraph &sceneGraph,
-				  int parent) const;
+				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
-					scenegraph::SceneGraph &sceneGraph,
-					int parent) const;
+					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
 					  int parent) const;
 

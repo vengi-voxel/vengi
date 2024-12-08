@@ -337,7 +337,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		meshMaterial->transparency = 1.0f - material.dissolve;
 
 		if (!material.diffuse_texname.empty()) {
-			const core::String &diffuseTextureName = lookupTexture(filename, material.diffuse_texname.c_str());
+			const core::String &diffuseTextureName = lookupTexture(filename, material.diffuse_texname.c_str(), archive);
 			image::ImagePtr diffuseTexture = image::loadImage(diffuseTextureName);
 			if (diffuseTexture->isLoaded()) {
 				Log::debug("Use image %s", diffuseTextureName.c_str());

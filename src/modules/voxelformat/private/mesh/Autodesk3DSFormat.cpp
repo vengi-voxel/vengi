@@ -432,7 +432,7 @@ bool Autodesk3DSFormat::readMaterialTexture(const core::String &filename, const 
 		case priv::CHUNK_ID_TEXTURE_MAP_NAME: {
 			wrapBool(stream->readString(64, texture.name, true))
 			Log::debug("texture name: %s", texture.name.c_str());
-			texture.name = lookupTexture(filename, texture.name);
+			texture.name = lookupTexture(filename, texture.name, archive);
 			texture.texture = image::loadImage(texture.name);
 			if (!texture.texture || !texture.texture->isLoaded()) {
 				Log::warn("Failed to load texture %s", texture.name.c_str());

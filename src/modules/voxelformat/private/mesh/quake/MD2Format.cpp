@@ -92,7 +92,7 @@ bool MD2Format::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			skinname = skinname.substr(1);
 		}
 
-		const core::String &imageName = lookupTexture(filename, skinname);
+		const core::String &imageName = lookupTexture(filename, skinname, archive);
 		const image::ImagePtr &image = image::loadImage(imageName);
 		meshMaterials.put(skinname, createMaterial(image));
 	}

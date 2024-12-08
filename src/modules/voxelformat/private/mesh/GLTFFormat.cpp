@@ -175,7 +175,7 @@ static bool validateCamera(const tinygltf::Camera &camera) {
 
 } // namespace _priv
 
-GLTFFormat::GltfMaterialData::GltfMaterialData() : meshMaterial(core::make_shared<MeshMaterial>("")){
+GLTFFormat::GltfMaterialData::GltfMaterialData() : meshMaterial(core::make_shared<MeshMaterial>("")) {
 }
 
 void GLTFFormat::createPointMesh(tinygltf::Model &gltfModel, const scenegraph::SceneGraphNode &node) const {
@@ -1120,9 +1120,9 @@ bool GLTFFormat::loadIndices(const tinygltf::Model &gltfModel, const tinygltf::P
 	return true;
 }
 
-void GLTFFormat::loadTexture(const core::String &filename, const tinygltf::Model &gltfModel,
-							 GltfMaterialData &materialData, const tinygltf::TextureInfo &gltfTextureInfo,
-							 const int textureIndex) const {
+void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr &archive,
+							 const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
+							 const tinygltf::TextureInfo &gltfTextureInfo, const int textureIndex) const {
 	int texCoordIndex = 0;
 	const tinygltf::Texture &gltfTexture = gltfModel.textures[textureIndex];
 	MeshMaterialPtr &meshMaterial = materialData.meshMaterial;
@@ -1179,7 +1179,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const tinygltf::Model
 			core::String name = gltfImage.uri.c_str();
 			meshMaterial->texture = image::loadImage(name);
 			if (!meshMaterial->texture->isLoaded()) {
-				name = lookupTexture(filename, name);
+				name = lookupTexture(filename, name, archive);
 				meshMaterial->texture = image::loadImage(name);
 				if (meshMaterial->texture->isLoaded()) {
 					Log::debug("Use image %s", name.c_str());
@@ -1310,13 +1310,14 @@ void GLTFFormat::load_KHR_materials_emissive_strength(palette::Material &materia
 					  material.value(palette::MaterialProperty::MaterialEmit) * strength);
 }
 
-bool GLTFFormat::loadMaterial(const core::String &filename, const tinygltf::Model &gltfModel,
-							  const tinygltf::Material &gltfMaterial, GltfMaterialData &materialData) const {
+bool GLTFFormat::loadMaterial(const core::String &filename, const io::ArchivePtr &archive,
+							  const tinygltf::Model &gltfModel, const tinygltf::Material &gltfMaterial,
+							  GltfMaterialData &materialData) const {
 	MeshMaterialPtr &meshMaterial = materialData.meshMaterial;
 	meshMaterial->name = gltfMaterial.name.c_str();
 	const tinygltf::TextureInfo &gltfTextureInfo = gltfMaterial.pbrMetallicRoughness.baseColorTexture;
 	if (gltfTextureInfo.index != -1 && gltfTextureInfo.index < (int)gltfModel.textures.size()) {
-		loadTexture(filename, gltfModel, materialData, gltfTextureInfo, gltfTextureInfo.index);
+		loadTexture(filename, archive, gltfModel, materialData, gltfTextureInfo, gltfTextureInfo.index);
 	} else {
 		Log::debug("Invalid texture index given %i", gltfTextureInfo.index);
 	}
@@ -1794,7 +1795,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 	materials.resize(gltfModel.materials.size());
 	for (size_t i = 0; i < gltfModel.materials.size(); ++i) {
 		const tinygltf::Material &gltfMaterial = gltfModel.materials[i];
-		loadMaterial(filename, gltfModel, gltfMaterial, materials[i]);
+		loadMaterial(filename, archive, gltfModel, gltfMaterial, materials[i]);
 	}
 
 	scenegraph::SceneGraphNode &root = sceneGraph.node(parentNodeId);

@@ -75,8 +75,9 @@ static bool parseInt(core::Tokenizer &tok, int &val) {
 	return true;
 }
 
-bool MapFormat::parseBrush(const core::String &filename, core::Tokenizer &tok, MeshMaterialMap &materials,
-						   MeshFormat::MeshTriCollection &tris, const glm::vec3 &scale) const {
+bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
+						   MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
+						   const glm::vec3 &scale) const {
 	while (tok.hasNext()) {
 		core::String t = tok.next();
 		if (t == "}") {
@@ -183,7 +184,7 @@ bool MapFormat::parseBrush(const core::String &filename, core::Tokenizer &tok, M
 		auto iter = materials.find(texture);
 		MeshMaterialPtr material;
 		if (iter == materials.end()) {
-			const core::String &imageName = lookupTexture(filename, texture);
+			const core::String &imageName = lookupTexture(filename, texture, archive);
 			const image::ImagePtr &image = image::loadImage(imageName);
 			material = createMaterial(image);
 			materials.put(texture, material);
@@ -200,9 +201,9 @@ bool MapFormat::parseBrush(const core::String &filename, core::Tokenizer &tok, M
 	return true;
 }
 
-bool MapFormat::parseEntity(const core::String &filename, core::Tokenizer &tok, MeshMaterialMap &materials,
-							MeshFormat::MeshTriCollection &tris, core::StringMap<core::String> &props,
-							const glm::vec3 &scale) const {
+bool MapFormat::parseEntity(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
+							MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
+							core::StringMap<core::String> &props, const glm::vec3 &scale) const {
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
 		if (t == "}") {
@@ -213,7 +214,7 @@ bool MapFormat::parseEntity(const core::String &filename, core::Tokenizer &tok, 
 		}
 		if (t == "{") {
 			Log::debug("Found brush");
-			if (!parseBrush(filename, tok, materials, tris, scale)) {
+			if (!parseBrush(filename, archive, tok, materials, tris, scale)) {
 				Log::error("Failed to parse brush");
 				return false;
 			}
@@ -258,7 +259,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		if (t == "{") {
 			MeshFormat::MeshTriCollection tris;
 			core::StringMap<core::String> props;
-			if (!parseEntity(filename, tok, materials, tris, props, scale)) {
+			if (!parseEntity(filename, archive, tok, materials, tris, props, scale)) {
 				Log::error("Failed to parse entity");
 				return false;
 			}

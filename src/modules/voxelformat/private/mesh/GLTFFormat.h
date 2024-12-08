@@ -43,19 +43,21 @@ private:
 	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_emissive_strength
 	 */
-	void save_KHR_materials_emissive_strength(const palette::Material &material,
-											  tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void save_KHR_materials_emissive_strength(const palette::Material &material, tinygltf::Material &gltfMaterial,
+											  tinygltf::Model &gltfModel) const;
 	void load_KHR_materials_emissive_strength(palette::Material &material,
 											  const tinygltf::Material &gltfMaterial) const;
 	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_ior
 	 */
-	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void save_KHR_materials_ior(const palette::Material &material, tinygltf::Material &gltfMaterial,
+								tinygltf::Model &gltfModel) const;
 	void load_KHR_materials_ior(palette::Material &material, const tinygltf::Material &gltfMaterial) const;
 	/**
 	 * https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_volume
 	 */
-	void save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color, tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
+	void save_KHR_materials_volume(const palette::Material &material, const core::RGBA &color,
+								   tinygltf::Material &gltfMaterial, tinygltf::Model &gltfModel) const;
 	/**
 	 * https://kcoley.github.io/glTF/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
 	 */
@@ -113,12 +115,14 @@ private:
 		core::String texCoordAttribute;
 		MeshMaterialPtr meshMaterial;
 	};
-	void loadTexture(const core::String &filename, const tinygltf::Model &gltfModel, GltfMaterialData &materialData,
-					 const tinygltf::TextureInfo &gltfTextureInfo, int textureIndex) const;
-	bool loadMaterial(const core::String &filename, const tinygltf::Model &gltfModel,
+	void loadTexture(const core::String &filename, const io::ArchivePtr &archive, const tinygltf::Model &gltfModel,
+					 GltfMaterialData &materialData, const tinygltf::TextureInfo &gltfTextureInfo,
+					 int textureIndex) const;
+	bool loadMaterial(const core::String &filename, const io::ArchivePtr &archive, const tinygltf::Model &gltfModel,
 					  const tinygltf::Material &gltfMaterial, GltfMaterialData &materialData) const;
-	bool loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel, const core::DynamicArray<GltfMaterialData> &materials,
-						const tinygltf::Primitive &gltfPrimitive, core::DynamicArray<GltfVertex> &vertices) const;
+	bool loadAttributes(const core::String &filename, const tinygltf::Model &gltfModel,
+						const core::DynamicArray<GltfMaterialData> &materials, const tinygltf::Primitive &gltfPrimitive,
+						core::DynamicArray<GltfVertex> &vertices) const;
 
 	bool loadAnimationChannel(const tinygltf::Model &gltfModel, const tinygltf::Animation &gltfAnimation,
 							  const tinygltf::AnimationChannel &gltfAnimChannel,
@@ -133,8 +137,8 @@ private:
 	size_t accessorSize(const tinygltf::Accessor &gltfAccessor) const;
 	const tinygltf::Accessor *getAccessor(const tinygltf::Model &gltfModel, int id) const;
 
-	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
@@ -143,9 +147,9 @@ public:
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"GL Transmission Format",
-									{"gltf", "glb", "vrm"},
-									{},
-									VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
+									   {"gltf", "glb", "vrm"},
+									   {},
+									   VOX_FORMAT_FLAG_MESH | VOX_FORMAT_FLAG_ANIMATION | FORMAT_FLAG_SAVE};
 		return f;
 	}
 };
