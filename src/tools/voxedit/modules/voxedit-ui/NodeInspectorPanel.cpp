@@ -27,55 +27,6 @@
 
 namespace voxedit {
 
-static bool xyzValues(const char *title, glm::ivec3 &v) {
-	bool retVal = false;
-	const float width = ImGui::CalcTextSize("10000").x + ImGui::GetStyle().FramePadding.x * 2.0f;
-
-	char buf[64];
-	core::String id = "##";
-	id.append(title);
-	id.append("0");
-
-	id.c_str()[id.size() - 1] = '0';
-	core::string::formatBuf(buf, sizeof(buf), "%i", v.x);
-	{
-		ui::ScopedStyle style;
-		style.setColor(ImGuiCol_Text, core::Color::Red());
-		ImGui::PushItemWidth(width);
-		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-			retVal = true;
-			v.x = core::string::toInt(buf);
-		}
-		ImGui::SameLine(0.0f, 2.0f);
-
-		id.c_str()[id.size() - 1] = '1';
-		core::string::formatBuf(buf, sizeof(buf), "%i", v.y);
-		style.setColor(ImGuiCol_Text, core::Color::Green());
-		ImGui::PushItemWidth(width);
-		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-			retVal = true;
-			v.y = core::string::toInt(buf);
-		}
-		ImGui::SameLine(0.0f, 2.0f);
-
-		id.c_str()[id.size() - 1] = '2';
-		core::string::formatBuf(buf, sizeof(buf), "%i", v.z);
-		style.setColor(ImGuiCol_Text, core::Color::Blue());
-		ImGui::PushItemWidth(width);
-		if (ImGui::InputText(id.c_str(), buf, sizeof(buf),
-							 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-			retVal = true;
-			v.z = core::string::toInt(buf);
-		}
-	}
-	ImGui::SameLine();
-	ImGui::TextUnformatted(title);
-
-	return retVal;
-}
-
 bool NodeInspectorPanel::init() {
 	_regionSizes = core::Var::getSafe(cfg::VoxEditRegionSizes);
 	_localSpace = core::Var::getSafe(cfg::VoxEditLocalSpace);
@@ -124,7 +75,10 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 				const voxel::Region &region = v->region();
 				glm::ivec3 mins = region.getLowerCorner();
 				glm::ivec3 maxs = region.getDimensionsInVoxels();
-				if (xyzValues(_("pos"), mins)) {
+				const float wPos = ImGui::CalcTextWidth(_("Pos"));
+				const float wSize = ImGui::CalcTextWidth(_("Size"));
+				const float xyzWidth = core_max(wPos, wSize);
+				if (ImGui::XYZValues(_("Pos"), xyzWidth, mins, false)) {
 					const glm::ivec3 &f = mins - region.getLowerCorner();
 					_sceneMgr->nodeShift(nodeId, f);
 				}
@@ -137,7 +91,7 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 					}
 					ImGui::TooltipTextUnformatted(_("Convert the region offset into the keyframe transforms"));
 				}
-				if (xyzValues(_("Size"), maxs)) {
+				if (ImGui::XYZValues(_("Size"), xyzWidth, maxs, false)) {
 					voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + maxs - 1);
 					_sceneMgr->nodeResize(nodeId, newRegion);
 				}

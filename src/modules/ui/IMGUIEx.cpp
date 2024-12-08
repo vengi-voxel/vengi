@@ -689,4 +689,116 @@ bool DisabledIconButton(const char *icon, const char *label, bool disabled, cons
 	return DisabledButton(labelWithIcon.c_str(), disabled, size);
 }
 
+static bool axisValue(int &value, const char *label, const ImVec2 &buttonSize, const glm::vec4 &color, bool showNames) {
+	const uint32_t flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
+	char buf[64];
+	bool retVal = false;
+
+	ui::ScopedStyle style;
+	style.setColor(ImGuiCol_Button, color);
+	style.setColor(ImGuiCol_ButtonHovered, color);
+	style.setColor(ImGuiCol_ButtonActive, color);
+
+	ImGui::PushID(label);
+
+	if (showNames) {
+		ImGui::Button(label, buttonSize);
+	} else {
+		ImGui::Button("##btn", buttonSize);
+	}
+	ImGui::SameLine();
+	core::string::formatBuf(buf, sizeof(buf), "%i", value);
+	if (ImGui::InputText("##val", buf, sizeof(buf), flags)) {
+		retVal = true;
+		value = core::string::toInt(buf);
+	}
+	ImGui::SameLine();
+	ImGui::PopID();
+	return retVal;
+}
+
+static bool axisValue(float &value, const char *label, const ImVec2 &buttonSize, const glm::vec4 &color, bool showNames) {
+	const uint32_t flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
+	char buf[64];
+	bool retVal = false;
+
+	ui::ScopedStyle style;
+	style.setColor(ImGuiCol_Button, color);
+	style.setColor(ImGuiCol_ButtonHovered, color);
+	style.setColor(ImGuiCol_ButtonActive, color);
+
+	ImGui::PushID(label);
+
+	if (showNames) {
+		ImGui::Button(label, buttonSize);
+	} else {
+		ImGui::Button("##btn", buttonSize);
+	}
+	ImGui::SameLine();
+	core::string::formatBuf(buf, sizeof(buf), "%.3f", value);
+	if (ImGui::InputText("##val", buf, sizeof(buf), flags)) {
+		retVal = true;
+		value = core::string::toInt(buf);
+	}
+	ImGui::SameLine();
+	ImGui::PopID();
+	return retVal;
+}
+
+bool XYZValues(const char *title, float width, glm::ivec3 &v, bool showNames) {
+	bool retVal = false;
+
+	ImGui::PushID(title);
+
+	ImGui::Columns(2);
+	ImGui::SetColumnWidth(0, width);
+	ImGui::TextUnformatted(title);
+	ImGui::NextColumn();
+
+	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+
+	ui::ScopedStyle style;
+	style.setItemSpacing({0, 0});
+	style.setFrameRounding(3.5f);
+	style.setFrameBorderSize(0.0f);
+
+	const ImVec2 buttonSize = {showNames ? ImGui::Size(3.0f) : ImGui::Size(1.0f), 0.0f};
+	retVal |= axisValue(v.x, _("X"), buttonSize, core::Color::Red(), showNames);
+	retVal |= axisValue(v.y, _("Y"), buttonSize, core::Color::Green(), showNames);
+	retVal |= axisValue(v.z, _("Z"), buttonSize, core::Color::Blue(), showNames);
+	ImGui::Columns(1);
+
+	ImGui::PopID();
+
+	return retVal;
+}
+
+bool XYZValues(const char *title, float width, glm::vec3 &v, bool showNames) {
+	bool retVal = false;
+
+	ImGui::PushID(title);
+
+	ImGui::Columns(2);
+	ImGui::SetColumnWidth(0, width);
+	ImGui::TextUnformatted(title);
+	ImGui::NextColumn();
+
+	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+
+	ui::ScopedStyle style;
+	style.setItemSpacing({0, 0});
+	style.setFrameRounding(3.5f);
+	style.setFrameBorderSize(0.0f);
+
+	const ImVec2 buttonSize = {showNames ? ImGui::Size(3.0f) : ImGui::Size(1.0f), 0.0f};
+	retVal |= axisValue(v.x, _("X"), buttonSize, core::Color::Red(), showNames);
+	retVal |= axisValue(v.y, _("Y"), buttonSize, core::Color::Green(), showNames);
+	retVal |= axisValue(v.z, _("Z"), buttonSize, core::Color::Blue(), showNames);
+	ImGui::Columns(1);
+
+	ImGui::PopID();
+
+	return retVal;
+}
+
 } // namespace ImGui

@@ -169,6 +169,9 @@ IMGUI_API bool IconTreeNodeEx(const char *icon, const char *label, ImGuiTreeNode
 
 IMGUI_API void TooltipCommand(const char *command);
 
+IMGUI_API bool XYZValues(const char *title, float width, glm::ivec3 &v, bool showNames = true);
+IMGUI_API bool XYZValues(const char *title, float width, glm::vec3 &v, bool showNames = true);
+
 inline float Size(float size) {
 	return ImGui::CalcTextSize("#").x * size;
 }
