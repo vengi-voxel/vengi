@@ -15,7 +15,7 @@ else
 ALLTARGET      ?= all
 endif
 CMAKE          ?= cmake
-EMSDK_DIR      ?= $(HOME)/dev/oss/emsdk
+EMSDK_DIR      ?= $(BUILDDIR)/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
 EMCMAKE        ?= $(EMSDK_UPSTREAM)/emcmake
 EMRUN          ?= $(EMSDK_UPSTREAM)/emrun
@@ -237,12 +237,17 @@ appimage: voxedit
 	$(Q)chmod +x $(BUILDDIR)/linuxdeploy-x86_64.AppImage
 	$(Q)$(BUILDDIR)/linuxdeploy-x86_64.AppImage --output=appimage --appdir $(BUILDDIR)/install-voxedit
 
-emscripten-%: $(BUILDDIR)/CMakeCache.txt
+build/emsdk/emsdk_env.sh:
+	git clone https://github.com/emscripten-core/emsdk.git $(BUILDDIR)/emsdk
+	$(BUILDDIR)/emsdk/emsdk install latest
+	$(BUILDDIR)/emsdk/emsdk activate latest
+
+emscripten-%: $(BUILDDIR)/CMakeCache.txt build/emsdk/emsdk_env.sh
 	$(Q)$(CMAKE) --build $(BUILDDIR) --target codegen
 	$(Q)mkdir -p build/emscripten
 	$(Q)rm -rf build/emscripten/generated
 	$(Q)cp -r $(BUILDDIR)/generated build/emscripten
-	$(Q)$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
+	$(EMCMAKE) $(CMAKE) -H$(CURDIR) -Bbuild/emscripten $(CMAKE_INTERNAL_OPTIONS) $(CMAKE_OPTIONS) -DCMAKE_BUILD_TYPE=Release -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DUSE_LINK_TIME_OPTIMIZATION=Off
 	$(Q)$(CMAKE) --build build/emscripten --target $(subst emscripten-,,$@)
 
 run-emscripten-%: emscripten-%
