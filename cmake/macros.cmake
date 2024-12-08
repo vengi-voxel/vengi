@@ -558,3 +558,13 @@ function(engine_target_optimize TARGET)
 		target_compile_definitions(${TARGET} PRIVATE -DNDEBUG)
 	endif()
 endfunction()
+
+function(engine_source_optimize SRC)
+	# http://christian-seiler.de/projekte/fpmath/
+	if (MSVC)
+		# Errors out with RTC1 and Ox are incompatible
+		#set_property(SOURCE ${SRC} APPEND_STRING PROPERTY COMPILE_FLAGS " /Ox")
+	else()
+		set_property(SOURCE ${SRC} APPEND_STRING PROPERTY COMPILE_FLAGS " -O3")
+	endif()
+endfunction()

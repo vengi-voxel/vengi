@@ -95,15 +95,18 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES scenegraph json metric
 check_c_compiler_flag("-Wno-shadow" C_NO_SHADOW)
 if (C_NO_SHADOW)
 	foreach (src ${EXTERNAL_SRCS})
-		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-shadow)
+		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-shadow")
 	endforeach()
 endif()
 check_c_compiler_flag("-Wno-unused-variable" C_NO_UNUSED_VARIABLE)
 if (C_NO_UNUSED_VARIABLE)
 	foreach (src ${EXTERNAL_SRCS})
-		set_source_files_properties(${src} PROPERTIES COMPILE_FLAGS -Wno-unused-variable)
+		set_property(SOURCE ${src} APPEND_STRING PROPERTY COMPILE_FLAGS " -Wno-unused-variable")
 	endforeach()
 endif()
+foreach (src ${EXTERNAL_SRCS})
+	engine_source_optimize(${src})
+endforeach()
 
 set(TEST_SRCS
 	tests/AbstractFormatTest.h tests/AbstractFormatTest.cpp
