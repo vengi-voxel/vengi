@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <title>Console Application</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f4;
+        color: #333;
+      }
+      #output {
+        white-space: pre-wrap; /* Preserve line breaks */
+        background: #222;
+        color: #0f0;
+        padding: 10px;
+        border-radius: 5px;
+        overflow-y: auto;
+        max-height: 400px;
+      }
+    </style>
+    <script>
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: function(text) {
+          var outputElement = document.getElementById('output');
+          outputElement.textContent += text + '\n'; // Append the text to the output div
+        },
+        printErr: function(text) {
+          var outputElement = document.getElementById('output');
+          outputElement.textContent += 'ERROR: ' + text + '\n'; // Highlight errors in output
+        }
+      };
+      window.onerror = function(event) {
+        var outputElement = document.getElementById('output');
+        outputElement.textContent += 'Unhandled Error: ' + event.message + '\n';
+      };
+    </script>
+    {{{ SCRIPT }}}
+  </head>
+  <body>
+    <h1>Console Application</h1>
+    <p>Output:</p>
+    <div id="output"></div>
+  </body>
+</html>
