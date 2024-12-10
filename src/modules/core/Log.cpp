@@ -103,7 +103,7 @@ const char* Log::toLogLevel(Log::Level level) {
 }
 
 void Log::setLevel(Level level) {
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)level);
+	priv::_logLevel = level;
 }
 
 void Log::init(const char *logfile) {
@@ -112,7 +112,7 @@ void Log::init(const char *logfile) {
 		rawLogLevel = (int)Log::Level::Error;
 	}
 	priv::_logLevel = (Log::Level)rawLogLevel;
-	setLevel(Log::Level::Trace);
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)Log::Level::Trace);
 
 	if (priv::_logfile == nullptr && logfile != nullptr) {
 		priv::_logfile = fopen(logfile, "w");
