@@ -1781,7 +1781,7 @@ namespace simplecpp {
             while (sameline(lpar, tok)) {
                 if (tok->op == '#' && sameline(tok,tok->next) && tok->next->op == '#' && sameline(tok,tok->next->next)) {
                     // A##B => AB
-                    tok = expandHashHash(tokens, rawloc, tok, macros, expandedmacros, parametertokens);
+                    tok = expandHashHash(tokens, rawloc, tok, macros, expandedmacros, parametertokens, false);
                 } else if (tok->op == '#' && sameline(tok, tok->next) && tok->next->op != '#') {
                     tok = expandHash(tokens, rawloc, tok, expandedmacros, parametertokens);
                 } else {
@@ -2168,9 +2168,10 @@ namespace simplecpp {
          * @param macros  all macros
          * @param expandedmacros   set with expanded macros, with this macro
          * @param parametertokens  parameters given when expanding this macro
+         * @param expandResult     expand ## result i.e. "AB"?
          * @return token after B
          */
-        const Token *expandHashHash(TokenList *output, const Location &loc, const Token *tok, const MacroMap &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens) const {
+        const Token *expandHashHash(TokenList *output, const Location &loc, const Token *tok, const MacroMap &macros, const std::set<TokenString> &expandedmacros, const std::vector<const Token*> &parametertokens, bool expandResult=true) const {
             Token *A = output->back();
             if (!A)
                 throw invalidHashHash(tok->location, name(), "Missing first argument");
@@ -2260,7 +2261,10 @@ namespace simplecpp {
                                 nextTok = tok2->next;
                         }
                     }
-                    expandToken(output, loc, tokens.cfront(), macros, expandedmacros, parametertokens);
+                    if (expandResult)
+                        expandToken(output, loc, tokens.cfront(), macros, expandedmacros, parametertokens);
+                    else
+                        output->takeTokens(tokens);
                     for (Token *b = tokensB.front(); b; b = b->next)
                         b->location = loc;
                     output->takeTokens(tokensB);
