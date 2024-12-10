@@ -204,6 +204,16 @@
 				"license": "LICENSE",
 				"enableMeshes": true
 			}
+		},
+		{
+			"name": "Bonsai engine data",
+			"license": "WTFPL",
+			"github": {
+				"repo": "scallyw4g/bonsai",
+				"commit": "master",
+				"path": "models",
+				"license": "LICENSE"
+			}
 		}
 	]
 }
