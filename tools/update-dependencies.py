@@ -34,12 +34,12 @@ def get_git_revision(directory):
 def update_git(name, repo_url, branch=None):
     sync_dir = os.path.join(UPDATEDIR, f"{name}")
     if not os.path.exists(sync_dir):
-        clone_cmd = ["git", "clone", "--recursive", "--depth=1", repo_url, sync_dir]
+        clone_cmd = ["git", "clone", "--recursive", "--depth=10", repo_url, sync_dir]
         if branch:
             clone_cmd += ["-b", branch]
         subprocess.run(clone_cmd, check=True)
     else:
-        pull_cmd = ["git", "-C", sync_dir, "pull", "--depth=1", "--rebase"]
+        pull_cmd = ["git", "-C", sync_dir, "pull", "--depth=10", "--rebase", "--allow-unrelated-histories"]
         subprocess.run(pull_cmd, check=True)
     return get_git_revision(sync_dir)
 
