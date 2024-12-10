@@ -23,7 +23,7 @@ TEST_F(RequestTest, DISABLED_testGetRequest) {
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
 	ASSERT_TRUE(request.execute(stream));
-	ASSERT_NE(0, stream.size());
+	ASSERT_FALSE(stream.empty());
 	stream.seek(0);
 	core::String response;
 	stream.readString((int)stream.size(), response);
