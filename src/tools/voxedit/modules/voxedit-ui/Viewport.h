@@ -88,7 +88,7 @@ private:
 	core::VarPtr _gizmoSnap;
 	core::VarPtr _modelGizmo;
 	core::VarPtr _viewDistance;
-	core::VarPtr _simplifiedView;
+	core::VarPtr _viewMode;
 	core::VarPtr _rotationSpeed;
 	core::VarPtr _cursorDetails;
 	core::VarPtr _pivotMode;

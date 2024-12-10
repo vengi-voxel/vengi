@@ -5,7 +5,7 @@
 #include "Viewport.h"
 #include "Gizmo.h"
 #include "DragAndDropPayload.h"
-#include "imgui.h"
+#include "ViewMode.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "ui/IconsLucide.h"
@@ -74,7 +74,7 @@ bool Viewport::init() {
 	_gizmoSnap = core::Var::getSafe(cfg::VoxEditGizmoSnap);
 	_modelGizmo = core::Var::getSafe(cfg::VoxEditModelGizmo);
 	_viewDistance = core::Var::getSafe(cfg::VoxEditViewdistance);
-	_simplifiedView = core::Var::getSafe(cfg::VoxEditViewMode);
+	_viewMode = core::Var::getSafe(cfg::VoxEditViewMode);
 	_pivotMode = core::Var::getSafe(cfg::VoxEditGizmoPivot);
 	_hideInactive = core::Var::getSafe(cfg::VoxEditHideInactive);
 	_gridSize = core::Var::getSafe(cfg::VoxEditGridsize);
@@ -347,7 +347,7 @@ bool Viewport::isSceneMode() const {
 }
 
 void Viewport::toggleScene() {
-	if (_simplifiedView->boolVal()) {
+	if (_viewMode->intVal() == (int)ViewMode::Simple) {
 		return;
 	}
 	if (isSceneMode()) {
@@ -460,7 +460,7 @@ void Viewport::menuBarView(command::CommandExecutionListener *listener) {
 }
 
 void Viewport::menuBarRenderModeToggle() {
-	if (_simplifiedView->boolVal()) {
+	if (_viewMode->intVal() == (int)ViewMode::Simple) {
 		return;
 	}
 	bool sceneMode = isSceneMode();
