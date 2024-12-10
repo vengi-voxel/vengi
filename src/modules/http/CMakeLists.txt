@@ -6,17 +6,23 @@ set(SRCS
 
 set(LIB http)
 set(LIBS core io)
-if (UNIX)
+if (EMSCRIPTEN)
+	list(APPEND SRCS system/Emscripten.h system/Emscripten.cpp)
+elseif (UNIX)
 	find_package(CURL)
 
 	if(CURL_FOUND)
 		list(APPEND LIBS CURL::libcurl)
+		list(APPEND SRCS system/Curl.h system/Curl.cpp)
 		message(STATUS "Found libcurl")
 	else()
+		list(APPEND SRCS system/Null.h system/Null.cpp)
 		message(WARNING "No libcurl found")
 	endif()
 
 	set(USE_CURL ${CURL_FOUND} CACHE BOOL "Use curl for https requests" FORCE)
+elseif (WINDOWS)
+	list(APPEND SRCS system/WinHttp.h system/WinHttp.cpp)
 endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
