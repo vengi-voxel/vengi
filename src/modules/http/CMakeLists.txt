@@ -16,7 +16,7 @@ elseif (UNIX)
 		list(APPEND SRCS system/Curl.h system/Curl.cpp)
 		message(STATUS "Found libcurl")
 	else()
-		list(APPEND SRCS system/Null.h system/Null.cpp)
+		list(APPEND SRCS system/Null.h)
 		message(WARNING "No libcurl found")
 	endif()
 
