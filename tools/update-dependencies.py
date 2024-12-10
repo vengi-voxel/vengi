@@ -139,10 +139,10 @@ def update_googletest():
         "googletest",
         "https://github.com/google/googletest.git",
         [
-            (f"googletest/src", "contrib/libs/gtest/src"),
-            (f"googletest/include", "contrib/libs/gtest/include"),
-            (f"googlemock/src", "contrib/libs/gtest/src"),
-            (f"googlemock/include", "contrib/libs/gtest/include")
+            (f"googletest/src/*", "contrib/libs/gtest/src"),
+            (f"googletest/include/gtest", "contrib/libs/gtest/include/gtest"),
+            (f"googlemock/src/*", "contrib/libs/gtest/src"),
+            (f"googlemock/include/gmock", "contrib/libs/gtest/include/gmock")
         ]
     )
 
@@ -151,8 +151,8 @@ def update_benchmark():
         "benchmark",
         "https://github.com/google/benchmark.git",
         [
-            (f"src", "contrib/libs/benchmark/src"),
-            (f"include", "contrib/libs/benchmark/include")
+            (f"src/*", "contrib/libs/benchmark/src"),
+            (f"include/benchmark/*.h", "contrib/libs/benchmark/include")
         ]
     )
 
