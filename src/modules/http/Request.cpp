@@ -10,7 +10,7 @@
 #include "engine-config.h"
 
 #if __WINDOWS__
-#include "system/Windows.h"
+#include "system/WinHttp.h"
 #elif EMSCRIPTEN
 #include "system/Emscripten.h"
 #elif USE_CURL
