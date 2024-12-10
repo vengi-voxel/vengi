@@ -5,11 +5,11 @@
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
 #include "command/CommandHandler.h"
-#include "core/Algorithm.h"
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
+#include "imgui.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -124,12 +124,11 @@ void SceneGraphPanel::recursiveAddNodes(video::Camera &camera, const scenegraph:
 			bool visible = node.visible();
 			{
 				ui::ScopedStyle style;
-				if (_hideInactive->boolVal()) {
-					style.disableItem();
-				}
+				ImGui::BeginDisabled(_hideInactive->boolVal());
 				if (ImGui::Checkbox(visibleId.c_str(), &visible)) {
 					command::executeCommands("nodetogglevisible " + core::string::toString(nodeId), &listener);
 				}
+				ImGui::EndDisabled();
 			}
 			if (_hideInactive->boolVal()) {
 				ImGui::TooltipTextUnformatted(_("Disabled because inactive nodes are hidden and the active node is always visible"));

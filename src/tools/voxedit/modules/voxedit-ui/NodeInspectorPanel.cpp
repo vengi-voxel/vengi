@@ -3,10 +3,7 @@
  */
 
 #include "NodeInspectorPanel.h"
-#include "Gizmo.h"
-#include "Util.h"
 #include "core/ArrayLength.h"
-#include "core/Color.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -102,10 +99,7 @@ void NodeInspectorPanel::modelView(command::CommandExecutionListener &listener) 
 
 void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNode &node,
 												   scenegraph::KeyFrameIndex keyFrameIdx) {
-	ui::ScopedStyle style;
-	if (node.type() == scenegraph::SceneGraphNodeType::Camera) {
-		style.disableItem();
-	}
+	ImGui::BeginDisabled(node.type() == scenegraph::SceneGraphNodeType::Camera);
 	const scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	const int currentInterpolation = (int)keyFrame.interpolation;
 	if (ImGui::BeginCombo(_("Interpolation"), scenegraph::InterpolationTypeStr[currentInterpolation])) {
@@ -139,6 +133,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 			ImPlot::EndPlot();
 		}
 	}
+	ImGui::EndDisabled();
 }
 
 void NodeInspectorPanel::keyFrameActionsAndOptions(const scenegraph::SceneGraph &sceneGraph,

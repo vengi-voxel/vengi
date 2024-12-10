@@ -4,7 +4,6 @@
 
 #include "MementoPanel.h"
 #include "command/CommandHandler.h"
-#include "core/collection/DynamicArray.h"
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"

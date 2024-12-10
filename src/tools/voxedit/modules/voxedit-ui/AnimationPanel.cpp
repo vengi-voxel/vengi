@@ -3,7 +3,6 @@
  */
 
 #include "AnimationPanel.h"
-#include "ScopedStyle.h"
 #include "core/Log.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -56,11 +55,8 @@ void AnimationPanel::popupCreateAnimation() {
 			}
 		}
 
-		ui::ScopedStyle style;
 		const bool animAlreadyExists = _sceneMgr->sceneGraph().hasAnimation(_newAnimation);
-		if (animAlreadyExists) {
-			style.disableItem();
-		}
+		ImGui::BeginDisabled(animAlreadyExists);
 		bool close = false;
 		if (ImGui::OkButton() || renamed) {
 			if (_copyExistingAnimation) {
@@ -79,8 +75,8 @@ void AnimationPanel::popupCreateAnimation() {
 			_animationTimeline->resetFrames();
 			close = true;
 		}
+		ImGui::EndDisabled();
 		if (animAlreadyExists) {
-			style.enableItem();
 			ImGui::TooltipTextUnformatted(_("Animation already exists"));
 		}
 		ImGui::SameLine();

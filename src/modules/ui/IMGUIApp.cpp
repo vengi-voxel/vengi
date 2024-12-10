@@ -7,10 +7,10 @@
 #include "Panel.h"
 #include "Style.h"
 #include "app/i18n/Language.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "dearimgui/imgui.h"
+#include "dearimgui/imgui_internal.h"
 #ifdef IMGUI_ENABLE_FREETYPE
-#include "misc/freetype/imgui_freetype.h"
+#include "dearimgui/misc/freetype/imgui_freetype.h"
 #endif
 
 #include "command/Command.h"

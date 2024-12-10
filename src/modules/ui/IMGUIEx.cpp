@@ -11,8 +11,8 @@
 #include "command/CommandHandler.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
+#include "dearimgui/imgui_internal.h"
 #include "io/FormatDescription.h"
-#include "video/Camera.h"
 #include "video/FileDialogOptions.h"
 #include "video/WindowedApp.h"
 #include <SDL_stdinc.h>

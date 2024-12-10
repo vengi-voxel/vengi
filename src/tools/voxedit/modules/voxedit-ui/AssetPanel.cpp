@@ -3,7 +3,6 @@
  */
 
 #include "AssetPanel.h"
-#include "DragAndDropPayload.h"
 #include "ui/IconsLucide.h"
 #include "app/Async.h"
 #include "core/StringUtil.h"
@@ -16,6 +15,7 @@
 #include "video/Texture.h"
 #include "video/gl/GLTypes.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxelui/DragAndDropPayload.h"
 
 namespace voxedit {
 

@@ -3,12 +3,11 @@
  */
 
 #include "PalettePanel.h"
-#include "DragAndDropPayload.h"
 #include "core/Color.h"
 #include "core/StringUtil.h"
 #include "io/FormatDescription.h"
-#include "palette/PaletteFormatDescription.h"
 #include "palette/Palette.h"
+#include "palette/PaletteFormatDescription.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIApp.h"
@@ -18,6 +17,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"
+#include "voxelui/DragAndDropPayload.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {

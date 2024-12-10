@@ -3,7 +3,7 @@
  */
 
 #include "CameraPanel.h"
-#include "../voxedit-util/SceneManager.h"
+#include "voxedit-util/SceneManager.h"
 #include "ui/IconsLucide.h"
 #include "command/CommandHandler.h"
 #include "app/I18N.h"

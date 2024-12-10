@@ -12,6 +12,7 @@
 #include "core/Bits.h"
 #include "core/Enum.h"
 #include "core/StringUtil.h"
+#include "dearimgui/imgui_internal.h"
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -98,10 +99,9 @@ void BrushPanel::stampBrushUseSelection(scenegraph::SceneGraphNode &node, palett
 										command::CommandExecutionListener &listener) {
 	Modifier &modifier = _sceneMgr->modifier();
 	ui::ScopedStyle selectionStyle;
-	if (!modifier.selectionMgr().hasSelection()) {
-		selectionStyle.disableItem();
-	}
+	ImGui::BeginDisabled(!modifier.selectionMgr().hasSelection());
 	ImGui::CommandButton(_("Use selection"), "stampbrushuseselection", listener);
+	ImGui::EndDisabled();
 }
 
 void BrushPanel::stampBrushOptions(scenegraph::SceneGraphNode &node, palette::Palette &palette,
@@ -289,9 +289,9 @@ void BrushPanel::updateStampBrushPanel(command::CommandExecutionListener &listen
 	Modifier &modifier = _sceneMgr->modifier();
 	if (!modifier.stampBrush().active()) {
 		ImGui::TextWrappedUnformatted(_("Select a model from the asset panel or scene graph panel"));
-		ui::ScopedStyle style;
-		style.disableItem();
+		ImGui::BeginDisabled();
 		stampBrushOptions(node, palette, listener);
+		ImGui::EndDisabled();
 	} else {
 		stampBrushOptions(node, palette, listener);
 	}
