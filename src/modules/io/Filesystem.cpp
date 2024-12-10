@@ -40,13 +40,24 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 	_appname = appname;
 
 #ifdef __EMSCRIPTEN__
-	EM_ASM(
-		FS.mkdir('/libsdl');
-		FS.mount(IDBFS, {}, '/libsdl');
-		FS.syncfs(true, function (err) {
-			assert(!err);
-		});
-	);
+	EM_ASM({
+		try {
+			// Try to create the directory
+			if (!FS.analyzePath('/libsdl').exists) {
+				FS.mkdir('/libsdl');
+			}
+			// Mount the filesystem
+			FS.mount(IDBFS, {}, '/libsdl');
+			// Synchronize the filesystem
+			FS.syncfs(true, function (err) {
+				if (err) {
+					console.error('Filesystem sync error:', err);
+				}
+			});
+		} catch (e) {
+			console.error('Filesystem initialization error:', e);
+		}
+	});
 #endif
 
 	char *path = SDL_GetBasePath();
@@ -286,10 +297,20 @@ bool Filesystem::sysChdir(const core::String &directory) {
 
 void Filesystem::shutdown() {
 #ifdef __EMSCRIPTEN__
-	EM_ASM(
-		FS.syncfs(true, function (err) {
-		});
-	);
+	EM_ASM({
+		try {
+			// Synchronize changes before unmounting
+			FS.syncfs(function (err) {
+				if (err) {
+					console.error('Filesystem sync error:', err);
+				}
+			});
+			// Unmount the filesystem
+			FS.unmount('/libsdl');
+		} catch (e) {
+			console.error('Filesystem shutdown error:', e);
+		}
+	});
 #endif
 }
 
