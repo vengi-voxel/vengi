@@ -5,7 +5,6 @@
 #include "AoSVXLFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
-#include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
