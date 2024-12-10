@@ -8,7 +8,6 @@ function(engine_add_perf TARGET)
 				$<TARGET_FILE:${TARGET}>
 			USES_TERMINAL
 			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${TARGET}
-			DEPENDS ${TARGET}
 		)
 	endif()
 endfunction()
