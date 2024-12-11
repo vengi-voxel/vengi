@@ -115,6 +115,7 @@ char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetS
  * @sa io::normalizePath()
  */
 core::String sanitizeDirPath(core::String str);
+core::String sanitizePath(const core::String &path);
 
 /**
  * @brief Assembles a string with path separators between the given values

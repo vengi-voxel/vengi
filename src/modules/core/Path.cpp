@@ -153,6 +153,38 @@ Path Path::append(const core::Path &component) const {
 	return Path(core::string::path(_path, component.str()));
 }
 
+core::String Path::lexicallyNormal() const {
+	core::DynamicArray<core::String> parts;
+	const bool is_absolute = isAbsolutePath();
+	for (const core::String &component : components()) {
+		if (component.empty() || component == ".") {
+			continue;
+		}
+		if (component == "..") {
+			if (!parts.empty() && parts.back() != "..") {
+				parts.pop();
+			} else if (!is_absolute) {
+				// Keep ".." if it's at the beginning of a relative path
+				parts.push_back("..");
+			}
+		} else {
+			parts.push_back(component);
+		}
+	}
+	core::String newPath;
+	if (is_absolute) {
+		newPath += "/";
+	}
+
+	for (size_t i = 0; i < parts.size(); ++i) {
+		if (i > 0) {
+			newPath += "/";
+		}
+		newPath += parts[i];
+	}
+	return newPath;
+}
+
 Path &Path::operator+=(const core::String &other) {
 	_path = core::string::path(_path, other);
 	return *this;

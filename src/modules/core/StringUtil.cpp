@@ -5,6 +5,7 @@
 #include "StringUtil.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
+#include "core/Path.h"
 #include "core/StandardLib.h"
 #include "core/collection/Map.h"
 #include <SDL_stdinc.h>
@@ -1017,6 +1018,11 @@ core::String sanitizeDirPath(core::String str) {
 		str.erase(str.size() - 1, 1);
 	}
 	return str.append("/");
+}
+
+core::String sanitizePath(const core::String& path) {
+	core::Path p(path);
+	return p.lexicallyNormal();
 }
 
 core::String extractDir(const core::String &str) {

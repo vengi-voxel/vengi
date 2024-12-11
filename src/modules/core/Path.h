@@ -34,6 +34,8 @@ public:
 	 */
 	Path basename() const;
 
+	core::String lexicallyNormal() const;
+
 	/**
 	 * Returns the extension part of the path.
 	 */

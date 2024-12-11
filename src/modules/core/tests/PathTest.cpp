@@ -37,6 +37,22 @@ TEST_F(PathTest, testOperators) {
 	EXPECT_EQ(path1, path2);
 }
 
+TEST_F(PathTest, testLexicallyNormal) {
+	core::String path1 = "/foo/././bar";
+	core::String path2 = "/foo/../bar";
+	core::String path3 = "./../foo/bar";
+	core::String path4 = "/../..";
+
+	Path p1(path1);
+	EXPECT_EQ(p1.lexicallyNormal(), "/foo/bar") << p1.lexicallyNormal();
+	Path p2(path2);
+	EXPECT_EQ(p2.lexicallyNormal(), "/bar") << p2.lexicallyNormal();
+	Path p3(path3);
+	EXPECT_EQ(p3.lexicallyNormal(), "../foo/bar") << p3.lexicallyNormal();
+	Path p4(path4);
+	EXPECT_EQ(p4.lexicallyNormal(), "/") << p4.lexicallyNormal();
+}
+
 TEST_F(PathTest, testWindows) {
 	Path path1("C:\\Program Files\\");
 	EXPECT_EQ(path1.driveLetter(), 'C');
