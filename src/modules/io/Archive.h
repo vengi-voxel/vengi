@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Path.h"
 #include "core/SharedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FilesystemEntry.h"
@@ -37,6 +38,7 @@ public:
 	virtual void list(const core::String &filter, ArchiveFiles &out) const;
 
 	virtual ~Archive() = default;
+	virtual bool exists(const core::Path &file) const;
 	virtual bool exists(const core::String &file) const;
 
 	/**

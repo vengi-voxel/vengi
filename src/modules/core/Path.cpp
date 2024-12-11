@@ -14,6 +14,11 @@ Path::Path(const core::String &path) : _path(path) {
 	core::string::replaceAllChars(_path, '\\', '/');
 }
 
+Path::Path(const core::String &path1, const core::String &path2) {
+	_path = core::string::path(path1, path2);
+	core::string::replaceAllChars(_path, '\\', '/');
+}
+
 Path::Path(core::String &&path) : _path(core::move(path)) {
 	core::string::replaceAllChars(_path, '\\', '/');
 }
@@ -45,6 +50,13 @@ char Path::driveLetter() const {
 #else
 	return '/';
 #endif
+}
+
+bool Path::hasParentDirectory() const {
+	if (isRootPath()) {
+		return false;
+	}
+	return _path.find("/") != core::String::npos;
 }
 
 Path Path::dirname() const {
@@ -153,10 +165,41 @@ Path Path::append(const core::Path &component) const {
 	return Path(core::string::path(_path, component.str()));
 }
 
+Path Path::popFront() const {
+	const core::String &p = lexicallyNormal();
+	const size_t pos = p.find_first_of("/");
+	if (pos == core::String::npos) {
+		return Path();
+	}
+	return Path(p.substr(pos + 1));
+}
+
+Path Path::popBack() const {
+	const core::String &p = lexicallyNormal();
+	const size_t pos = p.find_last_of("/");
+	if (pos == core::String::npos) {
+		return Path();
+	}
+	return Path(p.substr(0, pos));
+}
+
 core::String Path::lexicallyNormal() const {
 	core::DynamicArray<core::String> parts;
 	const bool is_absolute = isAbsolutePath();
-	for (const core::String &component : components()) {
+
+	core::String driveLetter;
+
+	// Handle drive letters for Windows paths
+	const core::DynamicArray<core::String> &c = components();
+	if (is_absolute && c.size() > 0) {
+		const core::String &firstComponent = c[0];
+		// Detect drive letter (e.g., "C:")
+		if (firstComponent.size() == 2 && firstComponent[1] == ':') {
+			driveLetter = firstComponent;
+		}
+	}
+
+	for (const core::String &component : c) {
 		if (component.empty() || component == ".") {
 			continue;
 		}
@@ -167,12 +210,16 @@ core::String Path::lexicallyNormal() const {
 				// Keep ".." if it's at the beginning of a relative path
 				parts.push_back("..");
 			}
-		} else {
+		} else if (component != driveLetter) { // Avoid re-adding the drive letter
 			parts.push_back(component);
 		}
 	}
 	core::String newPath;
-	if (is_absolute) {
+	// Append drive letter if present (Windows absolute paths)
+	if (!driveLetter.empty()) {
+		newPath += driveLetter;
+		newPath += "/";
+	} else if (is_absolute) {
 		newPath += "/";
 	}
 

@@ -22,29 +22,33 @@ private:
 public:
 	Path() = default;
 	explicit Path(const core::String &path);
+	Path(const core::String &path1, const core::String &path2);
 	explicit Path(core::String &&path);
 
 	/**
 	 * Returns the directory part of the path.
 	 */
-	Path dirname() const;
+	[[nodiscard]] Path dirname() const;
 
 	/**
 	 * Returns the file name part of the path.
 	 */
-	Path basename() const;
+	[[nodiscard]] Path basename() const;
 
-	core::String lexicallyNormal() const;
+	[[nodiscard]] Path popFront() const;
+	[[nodiscard]] Path popBack() const;
+
+	[[nodiscard]] core::String lexicallyNormal() const;
 
 	/**
 	 * Returns the extension part of the path.
 	 */
-	core::String extension() const;
+	[[nodiscard]] core::String extension() const;
 
 	/**
 	 * Returns the path without the extension part.
 	 */
-	Path removeExtension() const;
+	[[nodiscard]] Path removeExtension() const;
 
 	/**
 	 * Returns the path with the extension part replaced.
@@ -52,21 +56,22 @@ public:
 	 * @param newExtension The new extension to replace the old extension with.
 	 * @return The path with the extension part replaced.
 	 */
-	Path replaceExtension(const core::String &newExtension) const;
+	[[nodiscard]] Path replaceExtension(const core::String &newExtension) const;
 
-	char separator() const;
-	core::String toNativePath() const;
+	[[nodiscard]] char separator() const;
+	[[nodiscard]] core::String toNativePath() const;
 
-	core::DynamicArray<core::String> components() const;
+	[[nodiscard]] core::DynamicArray<core::String> components() const;
 
 	bool isRelativePath() const;
 	bool isAbsolutePath() const;
 	bool isRootPath() const;
+	bool hasParentDirectory() const;
 
 	char driveLetter() const;
 
-	Path append(const core::String &component) const;
-	Path append(const core::Path &component) const;
+	[[nodiscard]] Path append(const core::String &component) const;
+	[[nodiscard]] Path append(const core::Path &component) const;
 
 	Path &operator+=(const core::String &other);
 	Path &operator+=(const core::Path &other);
@@ -76,6 +81,10 @@ public:
 
 	bool operator==(const core::String &other) const;
 	bool operator!=(const core::String &other) const;
+
+	inline bool valid() const {
+		return !_path.empty();
+	}
 
 	inline const char *c_str() const {
 		return _path.c_str();
