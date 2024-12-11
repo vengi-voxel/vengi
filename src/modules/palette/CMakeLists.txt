@@ -11,6 +11,7 @@ set(SRCS
 	private/QBCLPalette.cpp private/QBCLPalette.h
 	private/RGBPalette.cpp private/RGBPalette.h
 	private/PixeloramaPalette.cpp private/PixeloramaPalette.h
+	private/VPLPalette.cpp private/VPLPalette.h
 
 	Material.cpp Material.h
 	NormalPalette.cpp NormalPalette.h
@@ -34,6 +35,7 @@ set(TEST_FILES
 	tests/test-palette-in.png
 	tests/paint.net.txt
 	tests/test.aco
+	tests/test.vpl
 	tests/pixelorama.json
 )
 

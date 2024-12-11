@@ -79,6 +79,12 @@ TEST_F(PaletteTest, testASEPalette) {
 	EXPECT_EQ(pal.colorCount(), cnt);
 }
 
+TEST_F(PaletteTest, testVPLPalette) {
+	Palette pal;
+	ASSERT_TRUE(pal.load("test.vpl"));
+	EXPECT_EQ(pal.colorCount(), palette::PaletteMaxColors);
+}
+
 TEST_F(PaletteTest, testCSVPalette) {
 	Palette pal;
 	pal.nippon();

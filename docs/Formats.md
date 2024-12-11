@@ -10,7 +10,7 @@
 | AceOfSpades                | vxl         | X       | X      |            | X       |            |
 | AnimaToon                  | scn         | X       |        |            |         | X          |
 | aseprite                   | aseprite    | X       |        |            | X       |            |
-| BenVoxel                   | ben.json    | X       |        |            | X       |            |
+| BenVoxel                   | ben.json    | X       | X      |            | X       |            |
 | BinVox                     | binvox      | X       | X      |            |         |            |
 | Build engine               | kvx         | X       | X      |            | X       |            |
 | Chronovox                  | csm         | X       |        |            |         |            |
@@ -59,6 +59,7 @@
 | Quake 1                    | bsp       | X       |           |            |
 | Quake 1 Model              | mdl       | X       |           |            |
 | Quake 2 Model              | md2       | X       |           |            |
+| Quake Map                  | map       | X       |           |            |
 | Standard Triangle Language | stl       | X       | X         |            |
 | UFO:Alien Invasion         | bsp       | X       |           |            |
 | Wavefront Object           | obj       | X       | X         |            |
@@ -79,6 +80,7 @@ Point cloud support for `ply` and `gtlf` is implemented, too.
 | Portable Network Graphics       | png       | X       | X      |
 | Qubicle Palette                 | qsm       | X       |        |
 | RGB Palette                     | pal       | X       | X      |
+| Tiberian Sun Palette            | vpl       | X       |        |
 
 > The `gpl` format also supports the [Aseprite extension](https://github.com/aseprite/aseprite/blob/main/docs/gpl-palette-extension.md) for alpha values
 

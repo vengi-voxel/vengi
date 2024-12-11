@@ -61,6 +61,13 @@ const jsonData = {
       "magics": []
     },
     {
+      "name": "Tiberian Sun Palette",
+      "extensions": [
+        "vpl"
+      ],
+      "magics": []
+    },
+    {
       "name": "CSV Palette",
       "extensions": [
         "csv"
@@ -225,7 +232,7 @@ const jsonData = {
       "magics": [],
       "mimetype": "application/x-benvoxel",
       "animation": false,
-      "save": false
+      "save": true
     },
     {
       "name": "MagicaVoxel",
@@ -502,6 +509,17 @@ const jsonData = {
       ],
       "magics": [],
       "mimetype": "application/x-minecraft-schematic",
+      "animation": false,
+      "save": false
+    },
+    {
+      "name": "Quake Map",
+      "extensions": [
+        "map"
+      ],
+      "magics": [],
+      "mimetype": "application/x-quake-map",
+      "mesh": true,
       "animation": false,
       "save": false
     },

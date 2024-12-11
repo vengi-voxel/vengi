@@ -167,6 +167,10 @@
 		<glob pattern="*.nbt"/>
 		<glob pattern="*.litematic"/>
 	</mime-type>
+	<mime-type type="application/x-quake-map">
+		<comment>Quake Map</comment>
+		<glob pattern="*.map"/>
+	</mime-type>
 	<mime-type type="application/x-ufo-alien-invasion">
 		<comment>UFO:Alien Invasion</comment>
 		<glob pattern="*.bsp"/>

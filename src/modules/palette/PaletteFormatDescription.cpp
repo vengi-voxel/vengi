@@ -12,6 +12,7 @@
 #include "palette/private/PixeloramaPalette.h"
 #include "palette/private/QBCLPalette.h"
 #include "palette/private/RGBPalette.h"
+#include "palette/private/VPLPalette.h"
 
 namespace palette {
 
@@ -25,6 +26,7 @@ const io::FormatDescription *palettes() {
 		PhotoshopPalette::format(),
 		RGBPalette::format(),
 		PixeloramaPalette::format(),
+		VPLPalette::format(),
 		CSVPalette::format(),
 		PaintNetPalette::format(),
 		io::format::png(),
