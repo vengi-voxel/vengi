@@ -865,7 +865,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 				}
 			}
 			if (nodePalette.hasEmit(i)) {
-				palette.setEmit(index, 1.0f);
+				palette.setEmit(index, nodePalette.material(i).emit);
 			}
 		}
 		if (tooManyColors) {
@@ -900,7 +900,7 @@ palette::Palette SceneGraph::mergePalettes(bool removeUnused, int emptyIndex) co
 				int skipIndex = rgba.a == 0 ? -1 : emptyIndex;
 				if (palette.tryAdd(rgba, true, &index, true, skipIndex)) {
 					if (nodePalette.hasEmit(i)) {
-						palette.setEmit(index, 1.0f);
+						palette.setEmit(index, nodePalette.material(i).emit);
 					}
 				}
 			}
