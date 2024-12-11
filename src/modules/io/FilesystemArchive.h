@@ -27,6 +27,7 @@ public:
 	bool init(const core::String &path, io::SeekableReadStream *stream = nullptr) override;
 	bool add(const core::String &path, const core::String &filter = "", int depth = 0);
 	bool exists(const core::String &file) const override;
+	bool exists(const core::Path &file) const override;
 	void list(const core::String &basePath, ArchiveFiles &out, const core::String &filter) const override;
 
 	SeekableReadStream *readStream(const core::String &filePath) override;
