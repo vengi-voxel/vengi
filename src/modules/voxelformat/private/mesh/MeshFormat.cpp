@@ -16,8 +16,6 @@
 #include "core/collection/Map.h"
 #include "core/concurrent/Lock.h"
 #include "io/Archive.h"
-#include "io/Filesystem.h"
-#include "io/FormatDescription.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
