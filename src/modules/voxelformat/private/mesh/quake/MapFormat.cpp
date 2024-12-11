@@ -3,9 +3,11 @@
  */
 
 #include "MapFormat.h"
+#include "core/ArrayLength.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
+#include "core/StringUtil.h"
 #include "core/Tokenizer.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
@@ -73,6 +75,18 @@ static bool parseInt(core::Tokenizer &tok, int &val) {
 	const core::String &t = tok.next();
 	val = t.toInt();
 	return true;
+}
+
+static bool skipFace(const core::String &texture) {
+	const char *skipTextures[] = {"NULL",	   "noshader", "nodraw", "clip",	"lightclip",
+								  "actorclip", "hint",	   "skip",	 "trigger", "origin"};
+	for (int i = 0; i < lengthof(skipTextures); ++i) {
+		if (core::string::extractFilename(texture) == skipTextures[i]) {
+			Log::debug("Skipping face with texture %s", texture.c_str());
+			return true;
+		}
+	}
+	return false;
 }
 
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
@@ -152,6 +166,10 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		if (!tok.hasNext()) {
 			Log::error("Invalid plane line end detected");
 			return false;
+		}
+
+		if (skipFace(texture)) {
+			continue;
 		}
 
 		// Generate vertices
