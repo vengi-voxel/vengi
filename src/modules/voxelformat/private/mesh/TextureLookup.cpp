@@ -72,7 +72,8 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 	const core::String &additionalSearchPath = core::Var::getSafe(cfg::VoxformatTexturePath)->strVal();
 
 	const core::String &referencePath = core::string::extractDir(referenceFile);
-	core::String textureName = notFoundTexture;
+	const core::String cleanNotFoundTexture = core::string::sanitizePath(notFoundTexture);
+	core::String textureName = cleanNotFoundTexture;
 	io::normalizePath(textureName);
 
 	if (!core::string::isAbsolutePath(textureName) && !archive->exists(textureName)) {
@@ -81,7 +82,7 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 
 	if (archive->exists(textureName)) {
 		Log::debug("Found image %s in path %s", notFoundTexture.c_str(), textureName.c_str());
-		return textureName;
+		return core::string::sanitizePath(textureName);
 	}
 
 	const io::FilesystemPtr &fs = io::filesystem();
@@ -125,7 +126,8 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 						fullpath = searchPathFor(fs, referencePath, f);
 					}
 					if (!additionalSearchPath.empty() && fullpath.empty()) {
-						const core::String &nfext = core::string::format("%s.%s", notFoundTexture.c_str(), ext.c_str());
+						const core::String &nfext =
+							core::string::format("%s.%s", cleanNotFoundTexture.c_str(), ext.c_str());
 						fullpath = searchPathFor(fs, additionalSearchPath, nfext);
 					}
 					if (fullpath.empty()) {
@@ -138,7 +140,7 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 						if (!referencePath.empty()) {
 							fs->sysPopDir();
 						}
-						return fullpath;
+						return core::string::sanitizePath(fullpath);
 					}
 				}
 			}
@@ -153,7 +155,7 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 	if (!referencePath.empty()) {
 		fs->sysPopDir();
 	}
-	return fullpath;
+	return core::string::sanitizePath(fullpath);
 }
 
 } // namespace voxelformat

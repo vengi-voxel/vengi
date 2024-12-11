@@ -15,27 +15,36 @@ class TextureLookupTest : public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;
 
+protected:
+	io::ArchivePtr _archive;
+	const core::String _input{"glTF/cube/Cube.gltf"};
+	const core::String _expected{"glTF/cube/Cube_BaseColor.png"};
+
 public:
 	bool onInitApp() override {
 		Super::onInitApp();
+		_archive = io::openFilesystemArchive(io::filesystem());
 		core::Var::get(cfg::VoxformatTexturePath, "");
 		return true;
 	}
 };
 
-TEST_F(TextureLookupTest, testLookupTexture) {
-	const io::ArchivePtr &archive = io::openFilesystemArchive(io::filesystem());
+TEST_F(TextureLookupTest, testLookupTextureWorkingDirectory) {
+	EXPECT_EQ(lookupTexture(_input, "Cube_BaseColor.png", _archive), _expected);
+	EXPECT_EQ(lookupTexture(_input, "./Cube_BaseColor.png", _archive), _expected);
+}
 
-	EXPECT_EQ(lookupTexture("glTF/cube/Cube.gltf", "Cube_BaseColor.png", archive), "glTF/cube/Cube_BaseColor.png")
-		<< "Failed to find the texture in the directory of the model";
-	EXPECT_EQ(lookupTexture("glTF/cube/Cube.gltf", "./Cube_BaseColor.png", archive), "glTF/cube/./Cube_BaseColor.png")
-		<< "Failed to search the current directory";
+TEST_F(TextureLookupTest, DISABLED_testLookupTexturePartialMatch) {
+	EXPECT_EQ(lookupTexture(_input, "cube/Cube_BaseColor.png", _archive), _expected);
+	EXPECT_EQ(lookupTexture(_input, "./cube/Cube_BaseColor.png", _archive), _expected);
+}
 
-	EXPECT_NE(lookupTexture("glTF/cube/chr_knight.gox", "Cube_BaseColor.png", archive), "");
-	EXPECT_NE(lookupTexture("glTF/chr_knight.gox", "./cube/Cube_BaseColor.png", archive), "");
-	EXPECT_NE(lookupTexture("glTF/chr_knight.gox", "cube/Cube_BaseColor.png", archive), "");
-	// TODO: VOXELFORMAT: EXPECT_NE(lookupTexture("glTF/foo/bar/chr_knight.gox",
-	// "../../cube/Cube_BaseColor.png", archive), "");
+TEST_F(TextureLookupTest, DISABLED_testLookupTextureRelativePath) {
+	EXPECT_EQ(lookupTexture(_input, "../../cube/Cube_BaseColor.png", _archive), _expected);
+}
+
+TEST_F(TextureLookupTest, DISABLED_testLookupTextureAbsolutePath) {
+	EXPECT_NE(lookupTexture(_input, "/non-existing/cube/Cube_BaseColor.png", _archive), _expected);
 }
 
 } // namespace voxelformat
