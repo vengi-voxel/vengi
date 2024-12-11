@@ -409,20 +409,20 @@ bool Filesystem::sysPopDir() {
 	if (_dirStack.empty()) {
 		return false;
 	}
-	const core::String &directory = _dirStack.top();
+	const core::Path &directory = _dirStack.top();
 	Log::trace("change current dir to %s", directory.c_str());
-	if (!sysChdir(directory)) {
+	if (!sysChdir(directory.toNativePath())) {
 		return false;
 	}
 	return true;
 }
 
-bool Filesystem::sysPushDir(const core::String &directory) {
+bool Filesystem::sysPushDir(const core::Path &directory) {
 	if (_dirStack.empty()) {
-		core::String cwd = sysCurrentDir();
+		core::Path cwd(sysCurrentDir());
 		_dirStack.push(cwd);
 	}
-	if (!sysChdir(directory)) {
+	if (!sysChdir(directory.toNativePath())) {
 		return false;
 	}
 	Log::trace("change current dir to %s", directory.c_str());

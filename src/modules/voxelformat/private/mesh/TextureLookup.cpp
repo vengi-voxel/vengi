@@ -86,10 +86,6 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 	}
 
 	const io::FilesystemPtr &fs = io::filesystem();
-	if (!referencePath.empty()) {
-		// change the current working dir to the reference path to let relative paths work
-		fs->sysPushDir(referencePath);
-	}
 	const core::String &filenameWithExt = core::string::extractFilenameWithExtension(textureName);
 	const core::String &path = core::string::extractDir(textureName);
 	core::String fullpath = searchPathFor(fs, path, filenameWithExt);
@@ -151,9 +147,6 @@ core::String lookupTexture(const core::String &referenceFile, const core::String
 		Log::error("Failed to perform texture lookup for '%s' (filename: '%s', register additional search paths with "
 				   "the cvar %s)",
 				   textureName.c_str(), filenameWithExt.c_str(), cfg::VoxformatTexturePath);
-	}
-	if (!referencePath.empty()) {
-		fs->sysPopDir();
 	}
 	return core::string::sanitizePath(fullpath);
 }

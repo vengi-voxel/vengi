@@ -161,7 +161,7 @@ TEST_F(FilesystemTest, testPushPopDir) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(io::Filesystem::sysCreateDir("testdir"));
-	EXPECT_TRUE(fs.sysPushDir("testdir"));
+	EXPECT_TRUE(fs.sysPushDir(core::Path("testdir")));
 	EXPECT_TRUE(fs.sysPopDir());
 	fs.shutdown();
 }
