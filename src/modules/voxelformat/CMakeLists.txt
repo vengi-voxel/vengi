@@ -130,6 +130,7 @@ set(TEST_SRCS
 	tests/GoxFormatTest.cpp
 	tests/KVXFormatTest.cpp
 	tests/KV6FormatTest.cpp
+	tests/MapFormatTest.cpp
 	tests/MeshFormatTest.cpp
 	tests/MCRFormatTest.cpp
 	tests/MD2FormatTest.cpp
@@ -207,6 +208,7 @@ set(TEST_FILES
 	tests/cubictest.vox
 	tests/testao.vox
 	tests/test.gox
+	tests/test.map
 	tests/test.plist
 	tests/palette.settings.vmaxpsb
 	tests/0voxel.vmax.zip
