@@ -34,17 +34,17 @@ TEST_F(TextureLookupTest, testLookupTextureWorkingDirectory) {
 	EXPECT_EQ(lookupTexture(_input, "./Cube_BaseColor.png", _archive), _expected);
 }
 
-TEST_F(TextureLookupTest, DISABLED_testLookupTexturePartialMatch) {
+TEST_F(TextureLookupTest, testLookupTexturePartialMatch) {
 	EXPECT_EQ(lookupTexture(_input, "cube/Cube_BaseColor.png", _archive), _expected);
 	EXPECT_EQ(lookupTexture(_input, "./cube/Cube_BaseColor.png", _archive), _expected);
 }
 
-TEST_F(TextureLookupTest, DISABLED_testLookupTextureRelativePath) {
+TEST_F(TextureLookupTest, testLookupTextureRelativePath) {
 	EXPECT_EQ(lookupTexture(_input, "../../cube/Cube_BaseColor.png", _archive), _expected);
 }
 
-TEST_F(TextureLookupTest, DISABLED_testLookupTextureAbsolutePath) {
-	EXPECT_NE(lookupTexture(_input, "/non-existing/cube/Cube_BaseColor.png", _archive), _expected);
+TEST_F(TextureLookupTest, testLookupTextureNonExistingAbsolutePath) {
+	EXPECT_EQ(lookupTexture(_input, "/non-existing/cube/Cube_BaseColor.png", _archive), _expected);
 }
 
 } // namespace voxelformat
