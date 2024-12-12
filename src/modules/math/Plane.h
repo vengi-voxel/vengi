@@ -29,6 +29,8 @@ public:
 	void set(const glm::vec3& norm, const glm::vec3& point);
 	void set(const glm::vec3& point1, const glm::vec3& point2, const glm::vec3& point3);
 
+	static bool intersectPlanes(const math::Plane& p1, const math::Plane& p2, const math::Plane& p3, glm::vec3 &intersection);
+
 	void transform(const glm::mat4& mat);
 
 	void normalize();
