@@ -25,6 +25,8 @@ public:
 	float baseColorFactor = 0.0f;
 	float transparency = 0.0f;
 
+	int width() const;
+	int height() const;
 	[[nodiscard]] core::RGBA apply(core::RGBA color) const;
 	[[nodiscard]] bool colorAt(core::RGBA &color, const glm::vec2 &uv, bool originUpperLeft = false) const;
 };

@@ -27,6 +27,14 @@ MeshMaterialPtr cloneMaterial(const MeshMaterial &material) {
 	return core::make_shared<MeshMaterial>(material);
 }
 
+int MeshMaterial::width() const {
+	return texture ? texture->width() : 0;
+}
+
+int MeshMaterial::height() const {
+	return texture ? texture->width() : 0;
+}
+
 core::RGBA MeshMaterial::apply(core::RGBA color) const {
 	if (baseColorFactor > 0.0f) {
 		const float contribution = (1.0f - baseColorFactor);
