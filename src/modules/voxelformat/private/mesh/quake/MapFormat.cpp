@@ -95,7 +95,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 	while (tok.hasNext()) {
 		core::String t = tok.next();
 		if (t == "}") {
-			return true;
+			break;
 		}
 		if (t == "\n") {
 			continue;
