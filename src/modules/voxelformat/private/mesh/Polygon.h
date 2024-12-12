@@ -18,16 +18,17 @@ private:
 	core::DynamicArray<glm::vec3> _vertices;
 	core::DynamicArray<core::RGBA> _colors;
 	MeshMaterialPtr _material;
-	image::TextureWrap _wrapS = image::TextureWrap::Repeat;
-	image::TextureWrap _wrapT = image::TextureWrap::Repeat;
 
 public:
 	Polygon &setMaterial(const MeshMaterialPtr &material);
-	Polygon &setWrapS(image::TextureWrap wrapS);
-	Polygon &setWrapT(image::TextureWrap wrapT);
 	Polygon &addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color = core::RGBA(0, 0, 0));
 	glm::vec2 uv(int x, int y) const;
 	bool toTris(MeshFormat::MeshTriCollection &tris) const;
+
+	glm::vec3 center() const;
+	size_t size() const;
+	glm::vec3 vertex(int idx) const;
+	void setVertex(int idx, const glm::vec3 &vertex);
 };
 
 } // namespace voxelformat

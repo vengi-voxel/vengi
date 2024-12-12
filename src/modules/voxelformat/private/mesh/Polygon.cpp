@@ -13,16 +13,6 @@ Polygon &Polygon::setMaterial(const MeshMaterialPtr &material) {
 	return *this;
 }
 
-Polygon &Polygon::setWrapS(image::TextureWrap wrapS) {
-	_wrapS = wrapS;
-	return *this;
-}
-
-Polygon &Polygon::setWrapT(image::TextureWrap wrapT) {
-	_wrapT = wrapT;
-	return *this;
-}
-
 Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, core::RGBA color) {
 	_vertices.push_back(vertex);
 	_uvs.push_back(uv);
@@ -38,7 +28,7 @@ glm::vec2 Polygon::uv(int x, int y) const {
 }
 
 bool Polygon::toTris(MeshFormat::MeshTriCollection &tris) const {
-	// TODO: VOXELFORMAT: mapbox::earcut
+	// TODO: VOXELFORMAT: mapbox::earcut - see PLYFormat::triangulatePolygons
 	if (_vertices.size() < 3) {
 		return false;
 	}
@@ -64,6 +54,31 @@ bool Polygon::toTris(MeshFormat::MeshTriCollection &tris) const {
 		tris.push_back(meshTri);
 	}
 	return true;
+}
+
+size_t Polygon::size() const {
+	return _vertices.size();
+}
+
+glm::vec3 Polygon::vertex(int idx) const {
+	return _vertices[idx];
+}
+
+void Polygon::setVertex(int idx, const glm::vec3 &vertex) {
+	_vertices[idx] = vertex;
+}
+
+glm::vec3 Polygon::center() const {
+	if (_vertices.empty()) {
+		return glm::vec3(0.0f);
+	}
+
+	glm::vec3 center = _vertices[0];
+	for (int i = 1; i < (int)_vertices.size(); ++i) {
+		center += _vertices[i];
+	}
+	center /= glm::vec3(_vertices.size());
+	return center;
 }
 
 } // namespace voxelformat
