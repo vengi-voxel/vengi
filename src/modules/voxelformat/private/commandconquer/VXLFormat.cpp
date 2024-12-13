@@ -231,10 +231,10 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	wrapBool(stream.writeUInt8(size.z))
 	wrapBool(stream.writeUInt8(size.y))
 
-	if (node.hasNormalPalette() && node.normalPalette().isRedAlert2()) {
-		wrapBool(stream.writeUInt8(4))
-	} else {
+	if (node.hasNormalPalette() && (node.normalPalette().size() == 36 || node.normalPalette().isTiberianSun())) {
 		wrapBool(stream.writeUInt8(2))
+	} else {
+		wrapBool(stream.writeUInt8(4))
 	}
 
 	return true;
