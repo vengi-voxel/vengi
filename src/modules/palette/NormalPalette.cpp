@@ -136,10 +136,12 @@ void NormalPalette::loadNormalMap(const core::RGBA *normals, uint8_t size) {
 
 void NormalPalette::tiberianSun() {
 	loadNormalMap(priv::tsnormals, (uint8_t)lengthof(priv::tsnormals));
+	_name = builtIn[1];
 }
 
 void NormalPalette::redAlert2() {
 	loadNormalMap(priv::ra2normals, (uint8_t)lengthof(priv::ra2normals));
+	_name = builtIn[0];
 }
 
 bool NormalPalette::isTiberianSun() const {
