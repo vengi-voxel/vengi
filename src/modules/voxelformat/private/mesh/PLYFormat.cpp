@@ -491,9 +491,7 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 			const glm::vec3 &point2 = vertices[i0_2].position;
 			const glm::vec3 a(point1 - point2);
 			const glm::vec3 b(point1 + point2);
-			norm.x += (a.y * b.z);
-			norm.y += (a.z * b.x);
-			norm.z += (a.x * b.y);
+			norm += glm::dot(a, b);
 		}
 		const float len = glm::length(norm);
 		if (len <= 0.0f) {
@@ -502,7 +500,7 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 		const float invLength = -1.0f / len;
 		norm *= invLength;
 
-		const glm::vec3 axis_w = norm;
+		const glm::vec3 &axis_w = norm;
 		glm::vec3 a;
 		if (glm::abs(axis_w.x) > 0.9999999f) {
 			a = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -511,19 +509,21 @@ void PLYFormat::triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygo
 		}
 		const glm::vec3 axis_v = glm::normalize(glm::cross(axis_w, a));
 		const glm::vec3 axis_u = glm::cross(axis_w, axis_v);
+		// TODO: VOXELFORMAT: reduce code duplication with Polygon class
 		using Point = std::array<float, 2>;
+		using Points = std::vector<Point>;
+		Points polyline;
+		std::vector<Points> polygon;
 
-		std::vector<std::vector<Point>> polygon;
-		std::vector<Point> polyline;
 		for (size_t k = 0; k < nPolygons; k++) {
-			const glm::vec3 polypoint = vertices[p.indices[k]].position;
+			const glm::vec3 &polypoint = vertices[p.indices[k]].position;
 			const glm::vec3 loc(glm::dot(polypoint, axis_u), glm::dot(polypoint, axis_v), glm::dot(polypoint, axis_w));
 			polyline.push_back({loc.x, loc.y});
 		}
 
 		polygon.push_back(polyline);
 
-		std::vector<int> indices = mapbox::earcut<int>(polygon);
+		std::vector<voxel::IndexType> indices = mapbox::earcut<voxel::IndexType>(polygon);
 		core_assert((int)indices.size() % 3 == 0);
 		Log::debug("triangulated %i tris", (int)indices.size() / 3);
 
