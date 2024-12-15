@@ -8,6 +8,7 @@
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include <glm/geometric.hpp>
+#include <array>
 
 namespace voxelformat {
 
