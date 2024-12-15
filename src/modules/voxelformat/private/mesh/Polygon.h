@@ -18,6 +18,7 @@ private:
 	core::DynamicArray<glm::vec3> _vertices;
 	core::DynamicArray<core::RGBA> _colors;
 	MeshMaterialPtr _material;
+	void addTriangle(MeshFormat::MeshTriCollection &tris, int idx0, int idx1, int idx2) const;
 
 public:
 	Polygon &setMaterial(const MeshMaterialPtr &material);
