@@ -62,17 +62,16 @@ public:
 		core::String comment;
 	};
 
-	struct Vertex {
+	struct PLYVertex {
 		glm::vec3 position{0.0f};
 		glm::vec3 normal{0.0f};
 		glm::vec2 texCoord{0.0f};
 		core::RGBA color{0, 0, 0, 255};
 	};
-
-	struct Face {
+	struct PLYFace {
 		int indices[3]{0, 0, 0};
 	};
-	struct Polygon {
+	struct PLYPolygon {
 		core::DynamicArray<int> indices;
 	};
 
@@ -82,39 +81,39 @@ protected:
 	static DataType dataType(const core::String &in);
 	static PropertyUse use(const core::String &in);
 	static bool parseHeader(io::SeekableReadStream &stream, Header &header);
-	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces,
-						 core::DynamicArray<Polygon> &polygons) const;
+	bool parseFacesAscii(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<PLYFace> &faces,
+						 core::DynamicArray<PLYPolygon> &polygons) const;
 	bool parseVerticesAscii(const Element &element, io::SeekableReadStream &stream,
-							core::DynamicArray<Vertex> &vertices) const;
-	void triangulatePolygons(const core::DynamicArray<Polygon> &polygons, const core::DynamicArray<Vertex> &vertices,
-							 core::DynamicArray<Face> &faces) const;
-	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<Face> &faces,
-						  core::DynamicArray<Polygon> &polygons, const Header &header) const;
+							core::DynamicArray<PLYVertex> &vertices) const;
+	void triangulatePolygons(const core::DynamicArray<PLYPolygon> &polygons,
+							 const core::DynamicArray<PLYVertex> &vertices, core::DynamicArray<PLYFace> &faces) const;
+	bool parseFacesBinary(const Element &element, io::SeekableReadStream &stream, core::DynamicArray<PLYFace> &faces,
+						  core::DynamicArray<PLYPolygon> &polygons, const Header &header) const;
 	bool parseVerticesBinary(const Element &element, io::SeekableReadStream &stream,
-							 core::DynamicArray<Vertex> &vertices, const Header &header) const;
+							 core::DynamicArray<PLYVertex> &vertices, const Header &header) const;
 
 	bool parsePointCloudBinary(const core::String &filename, io::SeekableReadStream &stream,
 							   scenegraph::SceneGraph &sceneGraph, const Header &header,
-							   core::DynamicArray<Vertex> &vertices) const;
+							   core::DynamicArray<PLYVertex> &vertices) const;
 	bool parsePointCloudAscii(const core::String &filename, io::SeekableReadStream &stream,
 							  scenegraph::SceneGraph &sceneGraph, const Header &header,
-							  core::DynamicArray<Vertex> &vertices) const;
+							  core::DynamicArray<PLYVertex> &vertices) const;
 	bool parsePointCloud(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header) const;
 
 	bool parseMeshBinary(const core::String &filename, io::SeekableReadStream &stream,
 						 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						 MeshTriCollection &tris) const;
-	void convertToTris(MeshTriCollection &tris, core::DynamicArray<Vertex> &vertices,
-					   core::DynamicArray<Face> &faces) const;
+	void convertToTris(MeshTriCollection &tris, core::DynamicArray<PLYVertex> &vertices,
+					   core::DynamicArray<PLYFace> &faces) const;
 	bool parseMeshAscii(const core::String &filename, io::SeekableReadStream &stream,
 						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx, const Header &header,
 						MeshTriCollection &tris) const;
 	bool parseMesh(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 				   const LoadContext &ctx, const Header &header);
 
-	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) override;
+	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const Meshes &meshes,
