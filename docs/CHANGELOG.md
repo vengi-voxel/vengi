@@ -21,6 +21,7 @@ General:
    - Fixed unicode related errors on windows for path handling
    - Fixed case-sensitivity in pattern matching. We couldn't find files that had upper-case extensions
    - Implemented symlink handling on windows
+   - Added public domain Ace Of Spades map generator code
 
 VoxConvert:
 

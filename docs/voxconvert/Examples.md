@@ -22,6 +22,16 @@ The model should have the correct parent and child relationships (a hand or arm 
 
 > You can extend that script to transfer your own animations to all your characters.
 
+## Generate a map with lua
+
+There are several map generators available.
+
+`./vengi-voxconvert --script aos_forest_river --output aos_forest_river.vengi`
+
+They are generating for the Ace of Spades map size (based on the public domain code from [https://silverspaceship.com/aosmap/](aoemap)) - so we can also directly create the `vxl` for Ace of Spades.
+
+`./vengi-voxconvert --script aos_forest_river --output aos_forest_river.vxl`
+
 ## Level of detail (LOD)
 
 Generate a lod scaled by 50% from the input model.
