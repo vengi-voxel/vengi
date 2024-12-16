@@ -1837,6 +1837,8 @@ ScriptState LUAApi::update(double nowSeconds) {
 			lua_gc(_lua, LUA_GCCOLLECT, 0);
 			return ScriptState::Finished;
 		} else if (error != LUA_YIELD) {
+			const char *msg = lua_tostring(_lua, -1);
+			luaL_traceback(_lua, _lua, msg, 1);
 			Log::error("Error running script: %s", lua_tostring(_lua, -1));
 			_scriptStillRunning = false;
 			lua_gc(_lua, LUA_GCCOLLECT, 0);
