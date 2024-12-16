@@ -594,9 +594,16 @@ static int clua_syssleep(lua_State *s) {
 	return 0;
 }
 
+static int clua_sysshouldquit(lua_State *s) {
+	app::App* app = app::App::getInstance();
+	lua_pushboolean(s, app->shouldQuit());
+	return 1;
+}
+
 static void clua_sysregister(lua_State *s) {
 	const luaL_Reg funcs[] = {
 		{"sleep", clua_syssleep},
+		{"shouldQuit", clua_sysshouldquit},
 		{nullptr, nullptr}
 	};
 	clua_registerfuncsglobal(s, funcs, "_metasys", "g_sys");
