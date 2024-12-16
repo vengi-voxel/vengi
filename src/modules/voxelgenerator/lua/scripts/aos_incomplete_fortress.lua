@@ -195,7 +195,7 @@ end
 
 function main(node, _, _)
 	build_ground()
-	stb_aos.place_trees()
+	stb_aos.place_trees(-0.05, 0.7)
 
 	local OUTER_WALL_HEIGHT = 5
 	local MOAT_SIZE = 6

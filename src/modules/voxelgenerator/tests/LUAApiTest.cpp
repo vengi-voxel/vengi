@@ -418,6 +418,18 @@ TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesIncompleteFortress) {
 	runFile(sceneGraph, "aos_incomplete_fortress.lua");
 }
 
+// long runtime - thus disabled
+TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesSlope) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "aos_slope.lua");
+}
+
+// long runtime - thus disabled
+TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesCaves) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "aos_caves.lua");
+}
+
 TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	{
 		scenegraph::SceneGraph sceneGraph;

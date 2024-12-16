@@ -37,19 +37,6 @@ for i = 0, module.MAP_X - 1 do
 	end
 end
 
--- pillar data
-module.pillar = {}
-module.num_pillars = 0
-
--- Define the pillar_data structure (using a table in Lua)
-module.pillar_data = {
-	x = 0,
-	y = 0,
-	h = 0,
-	c = {0, 0, 0},
-	type = 0
-}
-
 -- water data
 module.water = {}
 for i = 0, module.MAP_X - 1 do
@@ -207,17 +194,51 @@ function module.match_edges(x)
 	return x
 end
 
+function module.is_surface(x, y, z)
+	if module.map[x][y][z] == 0 then
+		return 0
+	end
+	if x > 0 and module.map[x - 1][y][z] == 0 then
+		return 1
+	end
+	if x + 1 < module.MAP_X and module.map[x + 1][y][z] == 0 then
+		return 1
+	end
+	if y > 0 and module.map[x][y - 1][z] == 0 then
+		return 1
+	end
+	if y + 1 < module.MAP_Y and module.map[x][y + 1][z] == 0 then
+		return 1
+	end
+	if z > 0 and module.map[x][y][z - 1] == 0 then
+		return 1
+	end
+	if z + 1 < module.MAP_Z and module.map[x][y][z + 1] == 0 then
+		return 1
+	end
+	return 0
+end
+
+function module.perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap)
+	return g_noise.noise3(x, y, z) * 0.5 + 0.5
+end
+
+-- generate perlin noise into a grid
+-- samples is the "number of samples" if you imagined subdividing it to a grid, must be power of two
+-- w is a 'peakiness' factor that from 0 to 1 weights between the noise value being linear, and being cubed
 function module.grid_random(dest, x_samples, y_samples, r0, r1, w, x_origin, y_origin, z)
 	local x_wrap = x_samples
 	local y_wrap = y_samples
 	local x_scale = x_wrap / module.MAP_X
 	local y_scale = y_wrap / module.MAP_Y
 
+	-- now go back through and bilerp them
 	for i = 0, module.MAP_X - 1 do
 		for j = 0, module.MAP_Y - 1 do
 			local x = x_scale * i + x_origin
 			local y = y_scale * j + y_origin
-			local p = g_noise.noise3(x, y, z) * 0.5 + 0.5
+			local p = module.perlin_noise3(x, y, z, x_wrap, y_wrap, 0)
+			-- p is a bit larger than -1 to 1
 			p = p / 1.2
 			p = (p + 1) / 2
 			p = module.stb_lerp(w, p, p * p * p)
@@ -374,10 +395,11 @@ function module.draw_rotated_ellipse(x, y, z, theta, rx, ry, rz, c)
 
 				if dx * dx + dy * dy + dz * dz < 1 then
 					if z + k >= 0 and z + k < module.MAP_Z then
-						local a = (x + i) & module.MASK_X
-						local b = (y + j) & module.MASK_Y
-						module.map[a][b][z + k] = solid
-						module.color[a][b][z + k] = c
+						local a = (x + math.floor(i)) & module.MASK_X
+						local b = (y + math.floor(j)) & module.MASK_Y
+						local c0 = math.floor(k + z)
+						module.map[a][b][c0] = solid
+						module.color[a][b][c0] = c
 					end
 				end
 			end
@@ -403,6 +425,7 @@ function module.draw_partial_sphere_line(x0, y0, z0, x1, y1, z1, rad, k0, k1, c0
 	end
 end
 
+-- like photoshop "offset" filter
 function module.translate(dest, src, dx, dy)
 	for i = 0, module.MAP_X - 1 do
 		for j = 0, module.MAP_Y - 1 do
@@ -457,33 +480,6 @@ function module.compute_ground_lighting(green_height, white_height)
 	end
 end
 
--- Function to create a pillar
-function module.make_pillar(x, y, type)
-	local colors = {
-		{255, 0, 0},
-		{255, 165, 0},
-		{255, 255, 0},
-		{0, 192, 0},
-		{64, 64, 255},
-		{120, 40, 255},
-		{200, 0, 255}
-	}
-
-	local h = module.height[x][y] + 32
-	if h > 60 then
-		h = 60
-	end
-
-	module.pillar[module.num_pillars + 1] = {
-		type = type,
-		x = x,
-		y = y,
-		h = h,
-		c = colors[module.num_pillars + 1]
-	}
-	module.num_pillars = module.num_pillars + 1
-end
-
 -- Function to adjust color brightness
 function module.light_color(color, brightness)
 	local r = (color >> 16) & 0xff
@@ -497,96 +493,10 @@ function module.light_color(color, brightness)
 	return (color & 0xFF000000) + r * 65536 + g * 256 + b
 end
 
--- Function to draw a pillar (stubbed out for illustration)
-function module.draw_pillar(x, y, z, col)
-	local r = 6
-	local r2 = math.floor((36 + 49) / 2)
-
-	-- Draw a larger base (using a stubbed function for illustration)
-	module.draw_sphere(x, y, module.height[x][y], 12, col)
-
-	-- Draw the main support
-	for i = -r, r do
-		for j = -r, r do
-			if i * i + j * j <= r2 then
-				local k = module.height[x + i][y + j] + 1
-				module.draw_column(x + i, y + j, k, z, col)
-			end
-		end
-	end
-
-	-- Draw the platform
-	module.draw_sphere_slice(x, y, z, 9, col, -3, 0)
-
-	-- Draw a little thing to hide behind
-	module.draw_sphere_slice(x, y, z + 1, 8, col, 0, 0)
-	module.draw_sphere_slice(x, y, z + 1, 7, 0, 0, 0)
-
-	-- Adjust lighting based on distance
-	for i = -9, 9 do
-		for j = -9, 9 do
-			local bright1 = module.stb_linear_remap(i, -9, 9, 0.5, 1)
-			local bright2 = math.sqrt(i * i + j * j)
-			bright1 = module.stb_clamp(bright1, 0.5, 1)
-			bright2 = module.stb_linear_remap(bright2, 0, 9, 0.5, 1)
-			bright2 = module.stb_clamp(bright2, 0.5, 1)
-			module.color[x + i][y + j][z] = module.light_color(col, module.stb_clamp(bright1 * bright2, 0.35, 1))
-		end
-	end
-end
-
--- Function to place pillars while avoiding proximity to existing ones
-function module.place_pillars(max_pillars)
-	local num_attempts = 0
-	while num_attempts < 5000 and module.num_pillars < max_pillars do
-		local i = math.floor(module.stb_lerp(module.stb_frand(), 128 + 32, 384 + 32))
-
-		-- Pillars are more likely to be near the center vertically
-		local j
-		if (module.stb_rand() % 100) < ((i < 256 - 64 or i > 256 + 64) and 90 or 70) then
-			j = module.rnd(128 + 48, 384 - 48)
-		else
-			j = module.rnd(128 - 32, 384 + 32)
-		end
-
-		-- Check if the new pillar is too close to any existing pillars
-		local too_close = false
-		for k = 1, module.num_pillars do
-			local pillar = module.pillar[k]
-			local dx = pillar.x - i
-			local dy = pillar.y - j
-			if dx * dx + dy * dy < 100 * 100 then
-				too_close = true
-				break
-			end
-		end
-
-		if not too_close then
-			module.make_pillar(i, j, 0)
-		end
-
-		num_attempts = num_attempts + 1
-	end
-end
-
--- Function to draw all the pillars
-function module.add_pillars(max_pillars)
-	module.place_pillars(max_pillars)
-	for n = 1, module.num_pillars do
-		-- Combine the RGB components into a 32-bit color
-		local pillar = module.pillar[n]
-		local c = (pillar.c[1] * 65536) + (pillar.c[2] * 256) + pillar.c[3] + 0x80000000
-		local i = pillar.x
-		local j = pillar.y
-		local k = pillar.h
-		module.draw_pillar(i, j, k, c)
-	end
-end
-
-function module.place_trees()
+function module.place_trees(density_max, density_factor)
 	for i = 6, module.MAP_X - 7, 7 do
-		local density = module.stb_linear_remap(i, 0, module.MAP_X, 1.5, -0.5)
-		density = module.smoothstep(density) * 0.75
+		local density = module.stb_linear_remap(i, 0, module.MAP_X, 1.5, density_max)
+		density = module.smoothstep(density) * density_factor
 		for j = 6, module.MAP_Y - 7, 7 do
 			if module.stb_frand() < density then
 				-- Place something
@@ -594,9 +504,9 @@ function module.place_trees()
 				local y = j + (module.stb_rand() % 4)
 				local dx = module.data[x][y] - module.data[x + 1][y]
 				local dy = module.data[x][y] - module.data[x][y - 1]
-				if dx * dx + dy * dy < 0.35 and module.height[x][y] > 1 and module.height[x][y] < 63 - 4 then
+				if dx * dx + dy * dy < 0.35 and module.height[x][y] > 1 and module.height[x][y] < (module.MAP_Z - 1) - 4 then
 					local z = module.height[x][y] + 1
-					if module.stb_frand() < density * 0.75 and z + 7 < 64 then
+					if module.stb_frand() < density * 0.75 and z + 7 < module.MAP_Z then
 						-- Tree trunk
 						local trunk_color = 0x80604020
 						module.draw_column(x, y, z, z + 3, trunk_color)

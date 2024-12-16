@@ -131,7 +131,7 @@ end
 
 function main(node, _, _)
 	build_ground()
-	stb_aos.place_trees()
+	stb_aos.place_trees(-0.5, 0.75)
 
 	stb_aos.generate_voxels(node)
 end

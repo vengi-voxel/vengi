@@ -9,9 +9,12 @@ set(LUA_SRCS
 	scripts/modules/util.lua
 	scripts/align.lua
 	scripts/animate.lua
+	scripts/aos_caves.lua
 	scripts/aos_forest_river.lua
 	scripts/aos_incomplete_fortress.lua
 	scripts/aos_rainbow_towers.lua
+	scripts/aos_sinc.lua
+	scripts/aos_slope.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
 	scripts/erode.lua
