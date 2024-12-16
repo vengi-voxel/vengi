@@ -4,10 +4,14 @@ set(LUA_SRCS
 	scripts/modules/perlin.lua
 	scripts/modules/volume.lua
 	scripts/modules/JSON.lua
+	scripts/modules/stb_aos.lua
 	scripts/modules/url.lua
 	scripts/modules/util.lua
 	scripts/align.lua
 	scripts/animate.lua
+	scripts/aos_forest_river.lua
+	scripts/aos_incomplete_fortress.lua
+	scripts/aos_rainbow_towers.lua
 	scripts/cover.lua
 	scripts/delete-rgb.lua
 	scripts/erode.lua

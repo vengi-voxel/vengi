@@ -400,6 +400,24 @@ TEST_F(LUAApiTest, testScriptGameoflife) {
 	runFile(sceneGraph, "gameoflife.lua");
 }
 
+// long runtime - thus disabled
+TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesRainbowTowers) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "aos_rainbow_towers.lua");
+}
+
+// long runtime - thus disabled
+TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesForestRiver) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "aos_forest_river.lua");
+}
+
+// long runtime - thus disabled
+TEST_F(LUAApiTest, DISABLED_testScriptAceOfSpadesIncompleteFortress) {
+	scenegraph::SceneGraph sceneGraph;
+	runFile(sceneGraph, "aos_incomplete_fortress.lua");
+}
+
 TEST_F(LUAApiTest, testScriptImageAsVolume) {
 	{
 		scenegraph::SceneGraph sceneGraph;
