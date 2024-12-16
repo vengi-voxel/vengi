@@ -13,6 +13,7 @@ function module.conditionYXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for y = mins.y, maxs.y do
+		coroutine.yield()
 		for x = mins.x, maxs.x do
 			for z = mins.z, maxs.z do
 				if condition(volume, x, y, z) then
@@ -32,6 +33,7 @@ function module.conditionXZ(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for x = mins.x, maxs.x do
+		coroutine.yield()
 		for z = mins.z, maxs.z do
 			if condition(volume, x, z) then
 				visitor(volume, x, z)
@@ -47,6 +49,7 @@ function module.conditionYXZDown(volume, region, visitor, condition)
 	local mins = region:mins()
 	local maxs = region:maxs()
 	for y = maxs.y, mins.y, -1 do
+		coroutine.yield()
 		for x = mins.x, maxs.x do
 			for z = mins.z, maxs.z do
 				if condition(volume, x, y, z) then
@@ -63,6 +66,7 @@ end
 function module.countEmptyAround(volume, x, y, z, size)
 	local adjacent = 0
 	for sx = -size, size, 1 do
+		coroutine.yield()
 		for sy = -size, size, 1 do
 			for sz = -size, size, 1 do
 				if (sx ~= 0 or sy ~= 0 or sz ~= 0) then
@@ -81,6 +85,7 @@ end
 function module.countEmptyAroundOnY(volume, x, y, z, size)
 	local adjacent = 0
 	for sx = -size, size, 1 do
+		coroutine.yield()
 		for sz = -size, size, 1 do
 			if (sx ~= 0 or sz ~= 0) then
 				local color = volume:voxel(x + sx, y, z + sz)
