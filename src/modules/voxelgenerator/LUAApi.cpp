@@ -906,7 +906,6 @@ static glm::vec2 to_vec2(lua_State*s, int &n) {
 	}
 	const float x = (float)lua_tonumber(s, n++);
 	const float y = (float)luaL_optnumber(s, n++, x);
-	n += 1;
 	return glm::vec2(x, y);
 }
 
@@ -917,7 +916,6 @@ static glm::vec3 to_vec3(lua_State*s, int &n) {
 	const float x = (float)lua_tonumber(s, n++);
 	const float y = (float)luaL_optnumber(s, n++, x);
 	const float z = (float)luaL_optnumber(s, n++, y);
-	n += 2;
 	return glm::vec3(x, y, z);
 }
 
@@ -929,7 +927,6 @@ static glm::vec4 to_vec4(lua_State*s, int &n) {
 	const float y = (float)luaL_optnumber(s, n++, x);
 	const float z = (float)luaL_optnumber(s, n++, y);
 	const float w = (float)luaL_optnumber(s, n++, z);
-	n += 3;
 	return glm::vec4(x, y, z, w);
 }
 
