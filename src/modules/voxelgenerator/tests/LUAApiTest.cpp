@@ -65,6 +65,10 @@ protected:
 		ASSERT_TRUE(g.init());
 		EXPECT_TRUE(g.exec(script, sceneGraph, nodeId, _region, voxel, args));
 		while (g.scriptStillRunning()) {
+			_testApp->onFrame();
+			if (_testApp->shouldQuit()) {
+				break;
+			}
 			const ScriptState state = g.update(0.0001);
 			EXPECT_NE(ScriptState::Error, state);
 			EXPECT_NE(ScriptState::Inactive, state);
