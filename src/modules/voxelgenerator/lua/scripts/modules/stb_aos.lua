@@ -59,15 +59,6 @@ for i = 0, module.MAP_X - 1 do
 	end
 end
 
--- building data
-
-module.OUTER_WALL_HEIGHT = 5
-module.OUTER_WALL_COLOR = 0x80404040
-module.STORY1_HEIGHT = 12
-module.STORY2_HEIGHT = 28
-module.CATWALK_COLOR = 0x80c0a060
-module.MOAT_SIZE = 6
-
 function module.generate_voxels(node)
 	local region = g_region.new(0, 0, 0, module.MAP_X - 1, module.MAP_Z - 1, module.MAP_Y - 1)
 	local newLayer = g_scenegraph.new("aos", region)
@@ -860,15 +851,15 @@ function module.draw_pile(x, y, z, color)
 	module.draw_box(x - 2, y - 2, x + 2, y + 2, z, z + 3, color)
 end
 
-function module.make_building(x0, y0, x1, y1, type)
+function module.make_building(x0, y0, x1, y1, type, story1_height, story2_height, catwalk_color, building_color)
 	-- make foundation
-	module.draw_box(x0 - 1, y0 - 1, x1 + 2, y1 + 2, 0, 4, module.BUILDING_COLOR)
-	module.draw_box(x0, y0, x1 + 1, y1 + 1, 0, 5, module.BUILDING_COLOR)
+	module.draw_box(x0 - 1, y0 - 1, x1 + 2, y1 + 2, 0, 4, building_color)
+	module.draw_box(x0, y0, x1 + 1, y1 + 1, 0, 5, building_color)
 	module.draw_box(x0, y0, x1 + 1, y1 + 1, 6, 32, 0)
 
 	-- make wall
-	module.draw_rect_wall(x0, y0, x1 + 1, y1 + 1, module.STORY1_HEIGHT, module.BUILDING_COLOR)
-	module.draw_rect_wall(x0 + 1, y0 + 1, x1, y1, module.STORY1_HEIGHT, module.BUILDING_COLOR)
+	module.draw_rect_wall(x0, y0, x1 + 1, y1 + 1, story1_height, building_color)
+	module.draw_rect_wall(x0 + 1, y0 + 1, x1, y1, story1_height, building_color)
 
 	if type == 0 then
 		-- split it up 3x3, and make the central region a tower
@@ -881,17 +872,17 @@ function module.make_building(x0, y0, x1, y1, type)
 		local ypos = {y0, y2, y3, y1}
 
 		-- build the internal walls
-		module.draw_hwall(x0, x1, y2, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
-		module.draw_hwall(x0, x1, y2 + 1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
+		module.draw_hwall(x0, x1, y2, 5, story1_height, building_color)
+		module.draw_hwall(x0, x1, y2 + 1, 5, story1_height, building_color)
 
-		module.draw_hwall(x0, x1, y3, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
-		module.draw_hwall(x0, x1, y3 + 1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
+		module.draw_hwall(x0, x1, y3, 5, story1_height, building_color)
+		module.draw_hwall(x0, x1, y3 + 1, 5, story1_height, building_color)
 
-		module.draw_vwall(x2, y0, y1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
-		module.draw_vwall(x2 + 1, y0, y1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
+		module.draw_vwall(x2, y0, y1, 5, story1_height, building_color)
+		module.draw_vwall(x2 + 1, y0, y1, 5, story1_height, building_color)
 
-		module.draw_vwall(x3, y0, y1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
-		module.draw_vwall(x3 + 1, y0, y1, 5, module.STORY1_HEIGHT, module.BUILDING_COLOR)
+		module.draw_vwall(x3, y0, y1, 5, story1_height, building_color)
+		module.draw_vwall(x3 + 1, y0, y1, 5, story1_height, building_color)
 
 		-- build a doorway in every direction
 		for i = 1, 4 do
@@ -935,15 +926,7 @@ function module.make_building(x0, y0, x1, y1, type)
 				if not (i == 2 and j == 2) then
 					if math.random(0, 100) < 40 then
 						-- build a roof
-						module.draw_box(
-							xpos[i],
-							ypos[j],
-							xpos[i + 1],
-							ypos[j + 1],
-							module.STORY1_HEIGHT - 1,
-							module.STORY1_HEIGHT,
-							module.BUILDING_COLOR
-						)
+						module.draw_box(xpos[i], ypos[j], xpos[i + 1], ypos[j + 1], story1_height - 1, story1_height, building_color)
 					else
 						-- build catwalks
 						local xm = module.rnd(-1, 0)
@@ -955,18 +938,18 @@ function module.make_building(x0, y0, x1, y1, type)
 							ypos[j] + 2,
 							x_catwalk[i] + xw,
 							ypos[j + 1] - 1,
-							module.STORY1_HEIGHT,
-							module.STORY1_HEIGHT,
-							module.CATWALK_COLOR
+							story1_height,
+							story1_height,
+							catwalk_color
 						)
 						module.draw_box(
 							xpos[i] + 2,
 							y_catwalk[j] + ym,
 							xpos[i + 1] - 1,
 							y_catwalk[j] + yw,
-							module.STORY1_HEIGHT,
-							module.STORY1_HEIGHT,
-							module.CATWALK_COLOR
+							story1_height,
+							story1_height,
+							catwalk_color
 						)
 					end
 				end
@@ -974,37 +957,29 @@ function module.make_building(x0, y0, x1, y1, type)
 		end
 
 		-- build very thick walls around the center thing
-		module.draw_box(x2 - 2, y2 - 2, x3 + 3, y3 + 3, module.STORY1_HEIGHT, module.STORY1_HEIGHT + 1, module.BUILDING_COLOR)
-		module.draw_box(
-			x2 - 1,
-			y2 - 1,
-			x3 + 2,
-			y3 + 2,
-			module.STORY1_HEIGHT + 2,
-			module.STORY1_HEIGHT + 4,
-			module.BUILDING_COLOR
-		)
-		module.draw_box(x2, y2, x3 + 1, y3 + 1, module.STORY1_HEIGHT + 5, module.STORY1_HEIGHT + 7, module.BUILDING_COLOR)
-		module.draw_box(x2 + 1, y2 + 1, x3, y3, module.STORY1_HEIGHT + 8, module.STORY2_HEIGHT, module.BUILDING_COLOR)
+		module.draw_box(x2 - 2, y2 - 2, x3 + 3, y3 + 3, story1_height, story1_height + 1, building_color)
+		module.draw_box(x2 - 1, y2 - 1, x3 + 2, y3 + 2, story1_height + 2, story1_height + 4, building_color)
+		module.draw_box(x2, y2, x3 + 1, y3 + 1, story1_height + 5, story1_height + 7, building_color)
+		module.draw_box(x2 + 1, y2 + 1, x3, y3, story1_height + 8, story2_height, building_color)
 
 		-- dig out the interior of the tower
-		module.draw_box(x2 + 2, y2 + 2, x3 - 1, y3 - 1, module.STORY1_HEIGHT - 2, module.STORY2_HEIGHT, 0)
+		module.draw_box(x2 + 2, y2 + 2, x3 - 1, y3 - 1, story1_height - 2, story2_height, 0)
 		-- draw the tower floor
-		module.draw_box(x2 + 1, y2 + 1, x3, y3, module.STORY1_HEIGHT + 9, module.STORY1_HEIGHT + 11, module.BUILDING_COLOR)
+		module.draw_box(x2 + 1, y2 + 1, x3, y3, story1_height + 9, story1_height + 11, building_color)
 
 		-- dig a hole in the floor or build stairs
 		local x  --  = math.floor((x0 + x1) / 2)
 		local y = math.floor((y0 + y1) / 2)
 
 		x = x2 + module.rnd(2, 5)
-		module.draw_hstair(x - 1, y, 5, module.STORY1_HEIGHT + 11, 1, 0, 0x8060c060)
+		module.draw_hstair(x - 1, y, 5, story1_height + 11, 1, 0, 0x8060c060)
 	else
 		-- create building materials
 		for i = 1, 4 do
 			for j = 1, 4 do
 				module.draw_pile(
-					module.stb_linear_remap(i - 1, -0.5, 3.5, x0, x1) + module.rnd(-1, 1),
-					module.stb_linear_remap(j - 1, -0.5, 3.5, y0, y1) + module.rnd(-1, 1),
+					math.floor(module.stb_linear_remap(i - 1, -0.5, 3.5, x0, x1) + module.rnd(-1, 1)),
+					math.floor(module.stb_linear_remap(j - 1, -0.5, 3.5, y0, y1) + module.rnd(-1, 1)),
 					6,
 					0x8060c020
 				)
@@ -1013,64 +988,80 @@ function module.make_building(x0, y0, x1, y1, type)
 
 		-- draw partial roof
 		for i = 1, 4 do
-			local x = module.stb_linear_remap(i - 1, -0.5, 3.5, x0, x1) + module.rnd(-1, 1)
-			local y = module.stb_linear_remap(i - 1, -0.5, 3.5, y0, y1) + module.rnd(-1, 1)
-			module.draw_box(
-				x,
-				y0 + 1,
-				x + module.rnd(0, 1),
-				y1 + 1,
-				module.STORY1_HEIGHT,
-				module.STORY1_HEIGHT,
-				module.CATWALK_COLOR
-			)
-			module.draw_box(
-				x0 + 1,
-				y,
-				x1,
-				y + module.rnd(0, 1),
-				module.STORY1_HEIGHT,
-				module.STORY1_HEIGHT,
-				module.CATWALK_COLOR
-			)
+			local x = math.floor(module.stb_linear_remap(i - 1, -0.5, 3.5, x0, x1) + module.rnd(-1, 1))
+			local y = math.floor(module.stb_linear_remap(i - 1, -0.5, 3.5, y0, y1) + module.rnd(-1, 1))
+			module.draw_box(x, y0 + 1, x + module.rnd(0, 1), y1 + 1, story1_height, story1_height, catwalk_color)
+			module.draw_box(x0 + 1, y, x1, y + module.rnd(0, 1), story1_height, story1_height, catwalk_color)
 		end
 	end
 end
 
-function module.make_fortress()
-	local x0 = 384 + module.MOAT_SIZE + 8
-	local x1 = module.MAP_X - module.MOAT_SIZE - 8
-	local y0 = 128 + module.MOAT_SIZE + 8
-	local y1 = 384 - module.MOAT_SIZE - 8
+function module.make_fortress(
+	outer_wall_height,
+	outer_wall_color,
+	moat_size,
+	story1_height,
+	story2_height,
+	catwalk_color,
+	building_color)
+	local x0 = 384 + moat_size + 8
+	local x1 = module.MAP_X - moat_size - 8
+	local y0 = 128 + moat_size + 8
+	local y1 = 384 - moat_size - 8
 	local y_split
 
 	-- make outer wall
-	module.draw_rect_wall(x0, y0, x1, y1, module.OUTER_WALL_HEIGHT, module.OUTER_WALL_COLOR)
+	module.draw_rect_wall(x0, y0, x1, y1, outer_wall_height, outer_wall_color)
 
 	-- make occasional higher walls
-	module.draw_rect_wall_partial(x0, y0, x1, y1, module.OUTER_WALL_HEIGHT + 4, module.OUTER_WALL_COLOR)
+	module.draw_rect_wall_partial(x0, y0, x1, y1, outer_wall_height + 4, outer_wall_color)
 
 	-- make back doors
 	module.draw_box(x1 - 1, 256 - 64, x1, 256 - 64, 1, 6, 0)
 	module.draw_box(x1 - 1, 256 + 64, x1, 256 + 64, 1, 6, 0)
 
 	-- make front door
-	module.draw_box(x0 - 2, 256 - 4, x0 + 2, 256 + 4, 1, 11, 0x80606060)
+	local front_door_color = 0x80606060
+	module.draw_box(x0 - 2, 256 - 4, x0 + 2, 256 + 4, 1, 11, front_door_color)
 	module.draw_box(x0 - 4, 256 - 1, x0 + 4, 256 + 1, 3, 6, 0)
 
 	-- make the three buildings
 	y_split = y0 + math.floor((y1 - y0) / 3) - 12
-	module.make_building(math.floor((x0 + x1) / 2) - 32, y0 + 16, x1 - 48, y_split, 0)
+	module.make_building(
+		math.floor((x0 + x1) / 2) - 32,
+		y0 + 16,
+		x1 - 48,
+		y_split,
+		0,
+		story1_height,
+		story2_height,
+		catwalk_color,
+		building_color
+	)
 
 	y_split = y0 + math.floor((y1 - y0) / 3 * 2) + 12
-	module.make_building(math.floor((x0 + x1) / 2) - 32, y_split, x1 - 48, y1 - 16, 0)
+	module.make_building(
+		math.floor((x0 + x1) / 2) - 32,
+		y_split,
+		x1 - 48,
+		y1 - 16,
+		0,
+		story1_height,
+		story2_height,
+		catwalk_color,
+		building_color
+	)
 
 	module.make_building(
 		math.floor((x0 + x1) / 2) - 16,
 		y0 + math.floor((y1 - y0) / 3) + 12,
 		x1 - 12,
 		y0 + math.floor((y1 - y0) / 3 * 2) - 12,
-		1
+		1,
+		story1_height,
+		story2_height,
+		catwalk_color,
+		building_color
 	)
 end
 

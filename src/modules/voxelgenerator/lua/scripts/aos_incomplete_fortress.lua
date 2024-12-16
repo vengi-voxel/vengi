@@ -196,7 +196,24 @@ end
 function main(node, _, _)
 	build_ground()
 	stb_aos.place_trees()
-	stb_aos.make_fortress()
+
+	local OUTER_WALL_HEIGHT = 5
+	local MOAT_SIZE = 6
+	local OUTER_WALL_COLOR = 0x80404040
+	local STORY1_HEIGHT = 12
+	local STORY2_HEIGHT = 28
+	local CATWALK_COLOR = 0x80c0a060
+	local BUILDING_COLOR = 0x80808080
+
+	stb_aos.make_fortress(
+		OUTER_WALL_HEIGHT,
+		OUTER_WALL_COLOR,
+		MOAT_SIZE,
+		STORY1_HEIGHT,
+		STORY2_HEIGHT,
+		CATWALK_COLOR,
+		BUILDING_COLOR
+	)
 
 	stb_aos.generate_voxels(node)
 end
