@@ -99,12 +99,13 @@ function module.countEmptyAroundOnY(volume, x, y, z, size)
 	return adjacent
 end
 
-
 ---
 --- See also the condition functions where you can also specify the condition
 ---
 function module.visitYXZDown(volume, region, visitor)
-	local condition = function (x, y, z) return true end
+	local condition = function(x, y, z)
+		return true
+	end
 	module.conditionYXZDown(volume, region, visitor, condition)
 end
 
@@ -112,7 +113,9 @@ end
 --- See also the condition functions where you can also specify the condition
 ---
 function module.visitYXZ(volume, region, visitor)
-	local condition = function (x, y, z) return true end
+	local condition = function(x, y, z)
+		return true
+	end
 	module.conditionYXZ(volume, region, visitor, condition)
 end
 
@@ -139,14 +142,14 @@ local function visitConnected6Internal(volume, x, y, z, visitor, visited)
 		return
 	end
 
-	for i=1,6 do
+	for i = 1, 6 do
 		local x2 = x + offset[i][1]
 		local y2 = y + offset[i][2]
 		local z2 = z + offset[i][3]
 		-- if voxel is not empty and not visited yet
 		if volume:voxel(x2, y2, z2) ~= -1 then
-			if visited[x2..':'..y2..':'..z2] == nil then
-				visited[x2..':'..y2..':'..z2] = 1
+			if visited[x2 .. ":" .. y2 .. ":" .. z2] == nil then
+				visited[x2 .. ":" .. y2 .. ":" .. z2] = 1
 				-- recurse into the connected voxels of this voxel, too
 				visitConnected6Internal(volume, x2, y2, z2, visitor, visited)
 				-- call the user given visitor
