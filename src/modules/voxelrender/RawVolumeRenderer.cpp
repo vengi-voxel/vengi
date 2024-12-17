@@ -473,11 +473,16 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_shapeBuilder.clear();
 			_shapeBuilder.setColor(core::Color::Red());
 			if (const voxel::RawVolume *v = meshState->volume(idx)) {
-				voxelutil::visitVolume(*v, [this, idx, &normalPalette, &meshState](int x, int y, int z, const voxel::Voxel &voxel) {
-					const glm::vec3 &center = meshState->centerPos(idx, x, y, z);
-					const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
-					_shapeBuilder.line(center, center + norm * 3.0f);
-				});
+				if (v->region().voxels() < 128 * 128 * 128) {
+					voxelutil::visitVolume(
+						*v, [this, idx, &normalPalette, &meshState](int x, int y, int z, const voxel::Voxel &voxel) {
+							const glm::vec3 &center = meshState->centerPos(idx, x, y, z);
+							const glm::vec3 &norm = normalPalette.normal3f(voxel.getNormal());
+							_shapeBuilder.line(center, center + norm * 3.0f);
+						});
+				} else {
+					Log::debug("Don't create normals for large volumes");
+				}
 			}
 			_shapeRenderer.createOrUpdate(_state[idx]._normalPreviewBufferIndex, _shapeBuilder);
 			_state[idx]._dirtyNormals = false;
