@@ -256,12 +256,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, uint8_t maxDepth,
 }
 
 core::String getDefaultDepthMapFile(const core::String &imageName, const core::String &postfix) {
-	const core::String &extinfile = core::string::extractExtension(imageName);
-	core::String dmFile = core::string::stripExtension(imageName);
-	dmFile.append(postfix);
-	dmFile.append(".");
-	dmFile.append(extinfile);
-	return dmFile;
+	return core::string::addPostfixToFile(imageName, postfix);
 }
 
 voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const palette::Palette &palette, uint8_t maxDepth,
