@@ -214,6 +214,16 @@
 				"path": "models",
 				"license": "LICENSE"
 			}
+		},
+		{
+			"name": "Rewire OpenRA",
+			"license": "GNU General Public License 3.0",
+			"github": {
+				"repo": "gangster-ppm/Rewire-OpenRA",
+				"commit": "bleed",
+				"license": "COPYING",
+				"path": "mods/ts/bits"
+			}
 		}
 	]
 }
