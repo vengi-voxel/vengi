@@ -107,6 +107,7 @@ bool isAlphaNum(int c);
 bool isAlpha(int c);
 bool isAbsolutePath(const core::String &in);
 bool isRootPath(const core::String &in);
+core::String addPostfixToFile(const core::String &filename, const core::String &postfix);
 
 char *strncpyz(const char *input, size_t inputSize, char *target, size_t targetSize);
 

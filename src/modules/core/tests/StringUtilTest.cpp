@@ -13,6 +13,13 @@ namespace core {
 class StringUtilTest: public testing::Test {
 };
 
+TEST_F(StringUtilTest, addPostfixToFile) {
+	EXPECT_EQ("foo-bar", core::string::addPostfixToFile("foo", "-bar"));
+	EXPECT_EQ("foo-bar-bar", core::string::addPostfixToFile("foo-bar", "-bar"));
+	EXPECT_EQ("foo-bar.baz", core::string::addPostfixToFile("foo.baz", "-bar"));
+	EXPECT_EQ("foo/bar-baz", core::string::addPostfixToFile("foo/bar", "-baz"));
+}
+
 TEST_F(StringUtilTest, testStrncpyz) {
 	char source[7] = "source";
 	char target[4] = "";

@@ -372,6 +372,17 @@ bool isRootPath(const core::String &in) {
 	return in.size() == 1U && (in[0] == '/' || in[0] == '\\');
 }
 
+core::String addPostfixToFile(const core::String &filename, const core::String &postfix) {
+	const core::String &ext = core::string::extractExtension(filename);
+	core::String path = core::string::stripExtension(filename);
+	path.append(postfix);
+	if (!ext.empty()) {
+		path.append(".");
+		path.append(ext);
+	}
+	return path;
+}
+
 // https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#C++
 // A specific algorithm for measuring the minimum number of single-character edits (insertions, deletions, or
 // substitutions) required to change one string into another.
