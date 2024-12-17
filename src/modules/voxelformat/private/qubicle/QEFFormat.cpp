@@ -7,6 +7,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/Voxel.h"
@@ -105,7 +106,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 

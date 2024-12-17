@@ -5,6 +5,7 @@
 #include "AoSVXLFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "palette/Palette.h"
@@ -107,7 +108,7 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 	libvxl_free(&map);
 	core_free(data);
 
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	return true;

@@ -5,6 +5,7 @@
 #include "CubFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/PaletteLookup.h"
 
@@ -106,7 +107,7 @@ bool CubFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 			}
 		}
 	}
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	return true;

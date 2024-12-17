@@ -353,7 +353,7 @@ bool CubzhFormat::loadShape5(const core::String &filename, const Header &header,
 		Log::error("No volume found in v5 file");
 		return false;
 	}
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	return sceneGraph.emplace(core::move(node)) != InvalidNodeId;
 }

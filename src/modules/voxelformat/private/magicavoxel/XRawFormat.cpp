@@ -6,6 +6,7 @@
 #include "core/FourCC.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -235,7 +236,7 @@ bool XRawFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	}
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	return true;

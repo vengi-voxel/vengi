@@ -6,6 +6,7 @@
 #include "SLABShared.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "core/collection/Vector.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
@@ -167,7 +168,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 	scenegraph::SceneGraphNode node;
 	node.setVolume(volume, true);
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	node.setPalette(palette);

@@ -5,6 +5,7 @@
 #include "SLAB6VoxFormat.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "SLABShared.h"
@@ -103,7 +104,7 @@ bool SLAB6VoxFormat::loadGroupsPalette(const core::String &filename, const io::A
 			}
 		}
 	}
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 

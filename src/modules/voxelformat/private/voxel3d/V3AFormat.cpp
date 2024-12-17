@@ -151,7 +151,7 @@ bool V3AFormat::loadFromStream(const core::String &filename, io::ReadStream *str
 		++y;
 		++lineCnt;
 	} while (stream->readLine(line));
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
 	sceneGraph.emplace(core::move(node));
 	return true;

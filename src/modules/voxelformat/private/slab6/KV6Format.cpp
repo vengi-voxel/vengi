@@ -363,7 +363,7 @@ bool KV6Format::loadKFA(const core::String &filename, const io::ArchivePtr &arch
 #endif
 		}
 		node.setVolume(v, true);
-		node.setName(filename);
+		node.setName(core::string::extractFilename(filename));
 		node.setPalette(palette);
 		// TODO: VOXELFORMAT: proper parenting
 		int parent = 0;
@@ -505,7 +505,7 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume, true);
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setPivot(normalizedPivot);
 	scenegraph::SceneGraphTransform transform;

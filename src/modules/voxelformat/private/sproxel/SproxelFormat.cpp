@@ -191,7 +191,7 @@ bool SproxelFormat::loadGroupsRGBA(const core::String &filename, const io::Archi
 			return false;
 		}
 	}
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palLookup.palette());
 	return sceneGraph.emplace(core::move(node)) > 0;
 }

@@ -193,7 +193,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 	if (sceneGraph.empty() && palette.colorCount() > 0) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setName(filename);
+		node.setName(core::string::extractFilename(filename));
 		node.setVolume(new voxel::RawVolume(voxel::Region(0, 31)), true);
 		node.setPalette(palette);
 		return sceneGraph.emplace(core::move(node), 0) != InvalidNodeId;

@@ -7,6 +7,7 @@
 #include "core/Color.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Voxel.h"
@@ -175,7 +176,7 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 		}
 	}
 #endif
-	node.setName(filename);
+	node.setName(core::string::extractFilename(filename));
 	node.setPalette(palette);
 	sceneGraph.emplace(core::move(node));
 	return true;
