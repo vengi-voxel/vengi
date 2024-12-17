@@ -186,6 +186,10 @@ This is executing the script in `./scripts/cover.lua` with a parameter of `2`.
 
 This is doing exactly the same as above - just with a full path.
 
+It's also possible to execute a lua script that is generating the voxels. Without any input file.
+
+`./vengi-voxconvert --script aos_rainbow_towers --output outfile.vox`
+
 See the [scripting](../LUAScript.md) documentation for further details.
 
 ## Extract palette png
