@@ -106,6 +106,8 @@ void NormalPalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, comman
 					ImGui::EndCombo();
 				}
 				ImGui::Checkbox(_("Recalculate all normals"), &_recalcAll);
+				ImGui::SetItemTooltipUnformatted(
+					_("If the model already has normals and you want to replace them"));
 				ImGui::Checkbox(_("Model is hollow"), &_onlySurfaceVoxels);
 				ImGui::SetItemTooltipUnformatted(
 					_("Fill hollows to re-calculate the normals and\nhollow the model afterwards again.\n\n"
