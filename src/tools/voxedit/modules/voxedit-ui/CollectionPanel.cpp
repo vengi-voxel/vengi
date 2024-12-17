@@ -275,6 +275,7 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 			ImGui::TableNextColumn();
 			const bool selected = _selected == *voxelFile;
 
+			ImGui::PushID(row);
 			if (_thumbnails) {
 				video::Id handle;
 				if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
@@ -282,9 +283,8 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 				} else {
 					handle = video::InvalidId;
 				}
-				core::String id = core::string::format("%i", row);
-				// TODO: dpi awareness
-				if (ImGui::ImageButton(id.c_str(), handle, ImVec2(64, 64))) {
+				const float w = core_max(64, ImGui::Size(8));
+				if (ImGui::ImageButton("##thumbnail", handle, ImVec2(w, w))) {
 					if (!voxelFile->downloaded) {
 						_collectionMgr->download(*voxelFile);
 					}
@@ -315,6 +315,8 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 			}
 
 			contextMenu(voxelFile);
+			ImGui::PopID();
+
 			ImGui::TableNextColumn();
 			ImGui::TextUnformatted(voxelFile->license.c_str());
 		}
@@ -328,8 +330,9 @@ int CollectionPanel::buildVoxelTree(const voxelcollection::VoxelFiles &voxelFile
 
 video::TexturePtr CollectionPanel::thumbnailLookup(const voxelcollection::VoxelFile &voxelFile) {
 	static video::TexturePtr empty;
-	if (_texturePool->has(voxelFile.name)) {
-		return _texturePool->get(voxelFile.name);
+	const core::String &id = voxelFile.id();
+	if (_texturePool->has(id)) {
+		return _texturePool->get(id);
 	}
 	return empty;
 }

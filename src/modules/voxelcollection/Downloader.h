@@ -72,6 +72,8 @@ public:
 	// filename
 	core::String targetDir() const;
 
+	core::String id() const;
+
 	inline bool isLocal() const {
 		return source == "local";
 	}

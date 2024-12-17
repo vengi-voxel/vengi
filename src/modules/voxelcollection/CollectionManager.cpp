@@ -6,6 +6,7 @@
 #include "app/Async.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "http/HttpCacheStream.h"
 #include "image/Image.h"
@@ -239,7 +240,7 @@ bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 		Log::error("Failed to create thumbnail for %s", fileName.c_str());
 		return false;
 	}
-	image->setName(voxelFile.name);
+	image->setName(voxelFile.id());
 	_imageQueue.push(image);
 	const core::String &targetImageFile = voxelFile.targetFile() + ".png";
 	core::ScopedPtr<io::SeekableWriteStream> writeStream(_archive->writeStream(targetImageFile));

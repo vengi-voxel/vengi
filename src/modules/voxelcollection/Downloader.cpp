@@ -32,6 +32,12 @@ core::String VoxelFile::targetFile() const {
 	return core::string::path(cleanSource, fullPath);
 }
 
+core::String VoxelFile::id() const {
+	core::String copy = fullPath;
+	core::string::replaceAllChars(copy, '/', '-');
+	return copy;
+}
+
 core::String VoxelFile::targetDir() const {
 	if (isLocal()) {
 		return core::string::sanitizeDirPath(core::string::extractDir(fullPath));
