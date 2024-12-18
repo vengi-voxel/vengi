@@ -565,8 +565,10 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 #ifdef _WIN32
 	path = "";
 #endif
+	int i = 0;
 	for (const core::String &c : components) {
 		path = core::string::sanitizeDirPath(core::string::path(path, c));
+		ImGui::PushID(i);
 		ImGui::SameLine();
 		if (ImGui::Button(c.c_str())) {
 			setCurrentPath(type, path);
@@ -580,6 +582,9 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 			ImGui::EndDragDropSource();
 		}
 		ImGui::TooltipTextUnformatted(path.c_str());
+
+		ImGui::PopID();
+		++i;
 	}
 }
 
