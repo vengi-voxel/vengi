@@ -558,24 +558,24 @@ void FileDialog::currentPathPanel(video::OpenFileMode type) {
 
 	ImGui::SameLine();
 
-	core::DynamicArray<core::String> components;
-	core::string::splitString(_currentPath, components, "/");
+	core::Path p(_currentPath);
+	const core::DynamicArray<core::String> &components = p.components();
 	ImGui::TextUnformatted(">");
-	core::String path = "/";
+	core::Path path("/");
 #ifdef _WIN32
 	path = "";
 #endif
 	int i = 0;
 	for (const core::String &c : components) {
-		path = core::string::sanitizeDirPath(core::string::path(path, c));
+		path = path.append(c);
 		ImGui::PushID(i);
 		ImGui::SameLine();
 		if (ImGui::Button(c.c_str())) {
-			setCurrentPath(type, path);
+			setCurrentPath(type, path.str());
 		}
 
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-			_dragAndDropName = path;
+			_dragAndDropName = path.str();
 			ImGui::TextUnformatted(_dragAndDropName.c_str());
 			ImGui::SetDragDropPayload(dragdrop::FileDialogDirectoryPayload, &_dragAndDropName, sizeof(core::String),
 									  ImGuiCond_Always);
