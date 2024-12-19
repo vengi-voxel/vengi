@@ -19,6 +19,8 @@ namespace voxelformat {
  *
  * https://en.wikipedia.org/wiki/Wavefront_.obj_file
  *
+ * https://paulbourke.net/dataformats/mtl/
+ *
  * @ingroup Formats
  */
 class OBJFormat : public MeshFormat {

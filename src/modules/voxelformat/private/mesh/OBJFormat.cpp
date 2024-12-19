@@ -8,7 +8,6 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "core/collection/StringMap.h"
 #include "engine-config.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -38,6 +37,7 @@ namespace voxelformat {
 	}
 
 // TODO: MATERIAL: one material entry per palette color
+// https://paulbourke.net/dataformats/mtl/
 bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String &mtlId,
 							 const core::String &mapKd) const {
 	if (!stream.writeStringFormat(false, "\nnewmtl %s\n", mtlId.c_str())) {
@@ -50,10 +50,28 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	wrapBool(stream.writeString("Kd 1.000000 1.000000 1.000000\n", false))
 	// TODO: MATERIAL: Ks is specular
 	wrapBool(stream.writeString("Ks 0.000000 0.000000 0.000000\n", false))
+	//  0 Color on and Ambient off
+	//  1 Color on and Ambient on
+	//  2 Highlight on
+	//  3 Reflection on and Ray trace on
+	//  4 Transparency: Glass on
+	//    Reflection: Ray trace on
+	//  5 Reflection: Fresnel on and Ray trace on
+	//  6 Transparency: Refraction on
+	//    Reflection: Fresnel off and Ray trace on
+	//  7 Transparency: Refraction on
+	//    Reflection: Fresnel on and Ray trace on
+	//  8 Reflection on and Ray trace off
+	//  9 Transparency: Glass on
+	//    Reflection: Ray trace off
+	// 10 Casts shadows onto invisible surfaces
 	wrapBool(stream.writeString("illum 1\n", false))
 	// TODO: MATERIAL: Ns is shininess
+	// glm::pow(2, 10.0f * m->shininess + 1) (3ds)
 	wrapBool(stream.writeString("Ns 0.000000\n", false))
 	// TODO: MATERIAL: d is dissolve (don't define both d and Tr)
+	// factor of 1.0 is fully opaque - 0.0 is fully dissolved (completely transparent)
+	// 1.0 - transparency (3ds)
 	// wrapBool(stream.writeString("d 1.000000\n", false))
 	// TODO: MATERIAL: Tr is transparency (don't define both d and Tr)
 	// wrapBool(stream.writeString("Tr 0.000000\n", false))
@@ -69,6 +87,10 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 	// TODO: MATERIAL: Pm is metallic
 	// wrapBool(stream.writeString("Pm 0.000000\n", false))
 
+	// map_KS is specular map
+	// map_d is opacity map
+	// map_bump is bump map
+	// refl is reflection map
 	if (!stream.writeStringFormat(false, "map_Kd %s\n", mapKd.c_str())) {
 		Log::error("Failed to write obj map_Kd");
 		return false;
