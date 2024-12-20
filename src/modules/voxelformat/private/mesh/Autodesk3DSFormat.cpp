@@ -58,16 +58,16 @@ enum ChunkIds {
 	CHUNK_ID_MESH_COLOR = 0x4165,
 
 	CHUNK_ID_MATERIAL_NAME = 0xA000,
-	CHUNK_ID_MATERIAL_AMBIENT = 0xA010,
-	CHUNK_ID_MATERIAL_DIFFUSE = 0xA020,
-	CHUNK_ID_MATERIAL_SPECULAR = 0xA030,
-	CHUNK_ID_MATERIAL_SHININESS = 0xA040,	// Specular intensity (specular factor)
-	CHUNK_ID_MATERIAL_SHININESS_2 = 0xA041, // controls the size/shape of the specular highlight
-	CHUNK_ID_MATERIAL_TRANSPARENCY = 0xA050,
+	CHUNK_ID_MATERIAL_AMBIENT = 0xA010, // Material ambient light color. Defaults to black (0.0, 0.0, 0.0).
+	CHUNK_ID_MATERIAL_DIFFUSE = 0xA020, // Material diffuse light color. Defaults to black (0.0, 0.0, 0.0).
+	CHUNK_ID_MATERIAL_SPECULAR = 0xA030, // Material specular highlight color. Defaults to black (0.0, 0.0, 0.0).
+	CHUNK_ID_MATERIAL_SHININESS = 0xA040,	// Specular intensity (specular factor) - Material shininess. Valid range is from 0.0 to 1.0. Defaults to 0.0.
+	CHUNK_ID_MATERIAL_SHININESS_2 = 0xA041, // controls the size/shape of the specular highlight - Material shininess strength. Valid range is from 0.0 to 1.0. Defaults to 0.0.
+	CHUNK_ID_MATERIAL_TRANSPARENCY = 0xA050, // Material transparency. Valid range is from 0.0 to 1.0. Defaults to 0.0.
 	CHUNK_ID_MATERIAL_FALLTHROUGH = 0xA052,
 	CHUNK_ID_MATERIAL_FALLIN = 0xA08A,
 
-	CHUNK_ID_MATERIAL_BLUR = 0xA053,
+	CHUNK_ID_MATERIAL_BLUR = 0xA053, // Reflection blur. Valid range is from 0.0 to 1.0. Defaults to 0.0.
 	CHUNK_ID_MATERIAL_TWO_SIDED = 0xA081,
 	CHUNK_ID_MATERIAL_DIFFUSE_TEXTURE = 0xA200,
 	CHUNK_ID_MATERIAL_SPECULAR_TEXTURE = 0xA204,
