@@ -9,8 +9,10 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
+#include "math/Plane.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
@@ -18,6 +20,37 @@
 #include "voxelformat/private/mesh/TextureLookup.h"
 
 namespace voxelformat {
+
+// clip plane
+struct QFace {
+	glm::vec3 planePoints[3];
+	core::String texture;
+	glm::vec2 offset;
+	float rotation;
+	glm::vec2 texscale;
+	int contentFlags;
+	int surfaceFlags;
+	int value;
+
+	glm::vec3 edge1;
+	glm::vec3 edge2;
+	glm::vec3 normal;
+	float d;
+	math::Plane plane;
+
+	void finish() {
+		edge1 = planePoints[1] - planePoints[0];
+		edge2 = planePoints[2] - planePoints[0];
+		normal = glm::normalize(glm::cross(edge1, edge2));
+		d = glm::dot(normal, planePoints[0]);
+		// flip the normal because we want the back side
+		plane = math::Plane(-normal, d);
+	}
+};
+
+struct QBrush {
+	core::DynamicArray<QFace> faces;
+};
 
 static glm::vec3 parsePlane(core::Tokenizer &tok) {
 	if (!tok.hasNext()) {
@@ -92,6 +125,7 @@ static bool skipFace(const core::String &texture) {
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, core::Tokenizer &tok,
 						   MeshMaterialMap &materials, MeshFormat::MeshTriCollection &tris,
 						   const glm::vec3 &scale) const {
+	QBrush qbrush;
 	while (tok.hasNext()) {
 		core::String t = tok.next();
 		if (t == "}") {
@@ -110,13 +144,13 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		}
 		tok.prev();
 
-		glm::vec3 planePoints[3];
-		planePoints[0] = parsePlane(tok);
-		planePoints[1] = parsePlane(tok);
-		planePoints[2] = parsePlane(tok);
-		core::String texture;
+		QFace qface;
+
+		qface.planePoints[0] = parsePlane(tok);
+		qface.planePoints[1] = parsePlane(tok);
+		qface.planePoints[2] = parsePlane(tok);
 		if (tok.hasNext()) {
-			texture = tok.next();
+			qface.texture = tok.next();
 		}
 
 		if (tok.peekNext() == "[") {
@@ -124,74 +158,69 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 			return false;
 		}
 
-		glm::vec2 offset;
-		if (!parseFloat(tok, offset.x)) {
+		if (!parseFloat(tok, qface.offset.x)) {
 			Log::error("Failed to parse xoffset");
 			return false;
 		}
-		if (!parseFloat(tok, offset.y)) {
+		if (!parseFloat(tok, qface.offset.y)) {
 			Log::error("Failed to parse yoffset");
 			return false;
 		}
-		Log::trace("offset: %f:%f", offset.x, offset.y);
+		Log::trace("offset: %f:%f", qface.offset.x, qface.offset.y);
 
-		float rotation;
-		if (!parseFloat(tok, rotation)) {
+		if (!parseFloat(tok, qface.rotation)) {
 			Log::error("Failed to parse rotation");
 			return false;
 		}
-		Log::trace("rotation: %f", rotation);
+		Log::trace("rotation: %f", qface.rotation);
 
-		glm::vec2 texscale;
-		if (!parseFloat(tok, texscale.x)) {
+		if (!parseFloat(tok, qface.texscale.x)) {
 			Log::error("Failed to parse xscale");
 			return false;
 		}
-		if (!parseFloat(tok, texscale.y)) {
+		if (!parseFloat(tok, qface.texscale.y)) {
 			Log::error("Failed to parse yscale");
 			return false;
 		}
-		Log::trace("texscale: %f:%f", texscale.x, texscale.y);
+		Log::trace("texscale: %f:%f", qface.texscale.x, qface.texscale.y);
 
-		int contentFlags;
-		parseInt(tok, contentFlags);
-		Log::trace("Contentflags: %i", contentFlags);
-		int surfaceFlags;
-		parseInt(tok, surfaceFlags);
-		Log::trace("SurfaceFlags: %i", surfaceFlags);
-		int value;
-		parseInt(tok, value);
-		Log::trace("Value: %i", value);
+		parseInt(tok, qface.contentFlags);
+		Log::trace("Contentflags: %i", qface.contentFlags);
+		parseInt(tok, qface.surfaceFlags);
+		Log::trace("SurfaceFlags: %i", qface.surfaceFlags);
+		parseInt(tok, qface.value);
+		Log::trace("Value: %i", qface.value);
 
 		if (!tok.hasNext()) {
 			Log::error("Invalid plane line end detected");
 			return false;
 		}
 
-		if (skipFace(texture)) {
+		if (skipFace(qface.texture)) {
 			continue;
 		}
 
-		// Generate vertices
-		const glm::vec3 &edge1 = planePoints[1] - planePoints[0];
-		const glm::vec3 &edge2 = planePoints[2] - planePoints[0];
-		const glm::vec3 &normal = glm::normalize(glm::cross(edge1, edge2));
+		qface.finish();
+		qbrush.faces.emplace_back(core::move(qface));
+	}
 
+	// TODO: this is broken
+	for (const QFace &qface : qbrush.faces) {
 		// Generate a basis for the plane (u, v)
-		const glm::vec3 &u = glm::normalize(edge1);
-		const glm::vec3 &v = glm::normalize(glm::cross(normal, u));
+		const glm::vec3 &u = glm::normalize(qface.edge1);
+		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));
 
 		Polygon polygon;
 		// Create vertices with UV mapping
-		for (const glm::vec3 &point : planePoints) {
-			const glm::vec3 localPos = point - planePoints[0]; // Translate to local space
+		for (const glm::vec3 &point : qface.planePoints) {
+			const glm::vec3 localPos = point - qface.planePoints[0]; // Translate to local space
 			glm::vec2 uv;
-			uv.x = glm::dot(localPos, u) / texscale.x + offset.x;
-			uv.y = glm::dot(localPos, v) / texscale.y + offset.y;
+			uv.x = glm::dot(localPos, u) / qface.texscale.x + qface.offset.x;
+			uv.y = glm::dot(localPos, v) / qface.texscale.y + qface.offset.y;
 
 			// Apply rotation to UV coordinates
-			const float cosTheta = glm::cos(glm::radians(rotation));
-			const float sinTheta = glm::sin(glm::radians(rotation));
+			const float cosTheta = glm::cos(glm::radians(qface.rotation));
+			const float sinTheta = glm::sin(glm::radians(qface.rotation));
 			const float uRotated = uv.x * cosTheta - uv.y * sinTheta;
 			const float vRotated = uv.x * sinTheta + uv.y * cosTheta;
 
@@ -199,13 +228,13 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 			const glm::vec3 converted(point.x * scale.x, point.z * scale.y, point.y * scale.z);
 			polygon.addVertex(converted, glm::vec2(uRotated, vRotated));
 		}
-		auto iter = materials.find(texture);
+		auto iter = materials.find(qface.texture);
 		MeshMaterialPtr material;
 		if (iter == materials.end()) {
-			const core::String &imageName = lookupTexture(filename, texture, archive);
+			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
 			const image::ImagePtr &image = image::loadImage(imageName);
 			material = createMaterial(image);
-			materials.put(texture, material);
+			materials.put(qface.texture, material);
 		} else {
 			material = iter->value;
 		}
