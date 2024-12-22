@@ -210,7 +210,20 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		const glm::vec3 &u = glm::normalize(qface.edge1);
 		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));
 
+		auto iter = materials.find(qface.texture);
+		MeshMaterialPtr material;
+		if (iter == materials.end()) {
+			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
+			const image::ImagePtr &image = image::loadImage(imageName);
+			material = createMaterial(image);
+			materials.put(qface.texture, material);
+		} else {
+			material = iter->value;
+		}
+
 		Polygon polygon;
+		polygon.setMaterial(material);
+
 		// Create vertices with UV mapping
 		for (const glm::vec3 &point : qface.planePoints) {
 			const glm::vec3 localPos = point - qface.planePoints[0]; // Translate to local space
@@ -228,22 +241,8 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 			const glm::vec3 converted(point.x * scale.x, point.z * scale.y, point.y * scale.z);
 			polygon.addVertex(converted, glm::vec2(uRotated, vRotated));
 		}
-		auto iter = materials.find(qface.texture);
-		MeshMaterialPtr material;
-		if (iter == materials.end()) {
-			const core::String &imageName = lookupTexture(filename, qface.texture, archive);
-			const image::ImagePtr &image = image::loadImage(imageName);
-			material = createMaterial(image);
-			materials.put(qface.texture, material);
-		} else {
-			material = iter->value;
-		}
-		MeshFormat::MeshTriCollection localtris;
-		polygon.toTris(localtris);
-		for (auto &tri : localtris) {
-			tri.material = material;
-		}
-		tris.append(localtris);
+
+		polygon.toTris(tris);
 	}
 	return true;
 }
