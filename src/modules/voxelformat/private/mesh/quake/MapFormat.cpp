@@ -204,12 +204,7 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 		qbrush.faces.emplace_back(core::move(qface));
 	}
 
-	// TODO: this is broken
 	for (const QFace &qface : qbrush.faces) {
-		// Generate a basis for the plane (u, v)
-		const glm::vec3 &u = glm::normalize(qface.edge1);
-		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));
-
 		auto iter = materials.find(qface.texture);
 		MeshMaterialPtr material;
 		if (iter == materials.end()) {
@@ -223,6 +218,11 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 
 		Polygon polygon;
 		polygon.setMaterial(material);
+
+		// TODO: this is broken
+		// Generate a basis for the plane (u, v)
+		const glm::vec3 &u = glm::normalize(qface.edge1);
+		const glm::vec3 &v = glm::normalize(glm::cross(qface.normal, u));
 
 		// Create vertices with UV mapping
 		for (const glm::vec3 &point : qface.planePoints) {
