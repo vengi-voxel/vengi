@@ -57,25 +57,22 @@ if (NOT LUA54_FOUND)
 endif()
 
 if (NOT CMAKE_CROSSCOMPILING)
-find_program(LUAC_EXECUTABLE NAMES luac luac5.4)
+find_program(LUAC_EXECUTABLE NAMES luac5.4 luac)
 if (LUAC_EXECUTABLE)
 	execute_process(
 		COMMAND "${LUAC_EXECUTABLE}" -v
-		OUTPUT_VARIABLE LUAC_VERSION_LINE
+		OUTPUT_VARIABLE LUAC_VERSION_OUTPUT
+		ERROR_VARIABLE LUAC_VERSION_OUTPUT
 		OUTPUT_STRIP_TRAILING_WHITESPACE
+		ERROR_STRIP_TRAILING_WHITESPACE
 	)
-	separate_arguments(LUAC_VERSION_LINE)
-	if (LUAC_VERSION_LINE)
-		list(GET LUAC_VERSION_LINE 1 LUAC_VERSION)
-		if (LUAC_VERSION VERSION_LESS "5.4")
-			unset(LUAC_EXECUTABLE)
-			message(STATUS "luac version ${LUAC_VERSION} found - ignore this one")
-		else()
-			message(STATUS "luac version ${LUAC_VERSION} found")
-		endif()
+	# Parse the version number from the output
+	string(REGEX MATCH "5\\.[0-9]+" LUAC_VERSION ${LUAC_VERSION_OUTPUT})
+	if (LUAC_VERSION VERSION_LESS "5.4")
+		unset(LUAC_EXECUTABLE CACHE)
+		message(STATUS "luac version ${LUAC_VERSION} found - ignore this one")
 	else()
-		unset(LUAC_EXECUTABLE)
-		message(STATUS "Failed to parse luac version ${LUAC_VERSION_LINE}")
+		message(STATUS "luac version ${LUAC_VERSION} found")
 	endif()
 endif()
 
