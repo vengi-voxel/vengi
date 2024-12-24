@@ -97,6 +97,13 @@ enum ChunkIds {
 	CHUNK_ID_KEYFRAME_HEADER = 0xB00A,
 	CHUNK_ID_KEYFRAME_FRAME_RANGE = 0xB008,
 	CHUNK_ID_KEYFRAME_CURRENT_FRAME = 0xB009,
+	CHUNK_ID_KEYFRAME_INFO = 0xB002,
+	CHUNK_ID_KEYFRAME_OBJNAME = 0xB010,
+	CHUNK_ID_KEYFRAME_OBJNAME2 = 0xB011,
+	CHUNK_ID_KEYFRAME_PIVOT = 0xB013,
+	CHUNK_ID_KEYFRAME_POS = 0xB020,
+	CHUNK_ID_KEYFRAME_ROTATE = 0xB021,
+	CHUNK_ID_KEYFRAME_SCALE = 0xB022,
 
 	// generic data types
 	CHUNK_ID_DATA_COLOR_FLOAT = 0x0010,
@@ -165,6 +172,13 @@ static const struct {
 			 TO_STR(CHUNK_ID_KEYFRAME_HEADER),
 			 TO_STR(CHUNK_ID_KEYFRAME_FRAME_RANGE),
 			 TO_STR(CHUNK_ID_KEYFRAME_CURRENT_FRAME),
+			 TO_STR(CHUNK_ID_KEYFRAME_INFO),
+			 TO_STR(CHUNK_ID_KEYFRAME_OBJNAME),
+			 TO_STR(CHUNK_ID_KEYFRAME_OBJNAME2),
+			 TO_STR(CHUNK_ID_KEYFRAME_PIVOT),
+			 TO_STR(CHUNK_ID_KEYFRAME_POS),
+			 TO_STR(CHUNK_ID_KEYFRAME_ROTATE),
+			 TO_STR(CHUNK_ID_KEYFRAME_SCALE),
 			 TO_STR(CHUNK_ID_CAMERA),
 			 TO_STR(CHUNK_ID_CAMERA_NEAR_FAR),
 			 TO_STR(CHUNK_ID_LIGHT),
@@ -189,7 +203,7 @@ Autodesk3DSFormat::ScopedChunk::ScopedChunk(io::SeekableReadStream *stream) : _s
 	_chunkPos = stream->pos();
 	stream->readUInt16(chunk.id);
 	stream->readUInt32(chunk.length);
-	Log::debug("Found chunk %s with size %d", priv::chunkToString(chunk.id), chunk.length);
+	Log::debug("Found chunk %s with size %d (id: 0X%04x)", priv::chunkToString(chunk.id), chunk.length, chunk.id);
 }
 
 Autodesk3DSFormat::ScopedChunk::~ScopedChunk() {
