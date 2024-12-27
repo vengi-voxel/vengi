@@ -2634,6 +2634,9 @@ export namespace glm {
 		using glm::tanh;
 		using glm::third;
 		using glm::three_over_two_pi;
+		using glm::toMat3;
+		using glm::toMat4;
+		using glm::toQuat;
 		using glm::translate;
 		using glm::transpose;
 		using glm::triangleNormal;
