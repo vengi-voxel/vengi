@@ -128,10 +128,13 @@ const size_t kVertexBlockSizeBytes = 8192;
 const size_t kVertexBlockMaxSize = 256;
 const size_t kByteGroupSize = 16;
 const size_t kByteGroupDecodeLimit = 24;
-const size_t kTailMaxSize = 32;
+const size_t kTailMinSizeV0 = 32;
+const size_t kTailMinSizeV1 = 24;
 
 static const int kBitsV0[4] = {0, 2, 4, 8};
 static const int kBitsV1[5] = {0, 1, 2, 4, 8};
+
+const int kEncodeDefaultLevel = 2;
 
 static size_t getVertexBlockSize(size_t vertex_size)
 {
@@ -145,14 +148,21 @@ static size_t getVertexBlockSize(size_t vertex_size)
 	return (result < kVertexBlockMaxSize) ? result : kVertexBlockMaxSize;
 }
 
-inline unsigned char zigzag8(unsigned char v)
+inline unsigned int rotate(unsigned int v, int r)
 {
-	return ((signed char)(v) >> 7) ^ (v << 1);
+	return (v << r) | (v >> ((32 - r) & 31));
 }
 
-inline unsigned char unzigzag8(unsigned char v)
+template <typename T>
+inline T zigzag(T v)
 {
-	return -(v & 1) ^ (v >> 1);
+	return (0 - (v >> (sizeof(T) * 8 - 1))) ^ (v << 1);
+}
+
+template <typename T>
+inline T unzigzag(T v)
+{
+	return (0 - (v & 1)) ^ (v >> 1);
 }
 
 #if TRACE
@@ -241,10 +251,11 @@ static unsigned char* encodeBytesGroup(unsigned char* data, const unsigned char*
 
 	for (size_t i = 0; i < kByteGroupSize; ++i)
 	{
-		if (buffer[i] >= sentinel)
-		{
-			*data++ = buffer[i];
-		}
+		unsigned char v = buffer[i];
+
+		// branchless append of out-of-range values
+		*data = v;
+		data += v >= sentinel;
 	}
 
 	return data;
@@ -310,33 +321,179 @@ static unsigned char* encodeBytes(unsigned char* data, unsigned char* data_end, 
 	return data;
 }
 
-static size_t encodeBytesMeasure(const unsigned char* buffer, size_t buffer_size, const int bits[4])
+template <typename T, bool Xor>
+static void encodeDeltas1(unsigned char* buffer, const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, const unsigned char last_vertex[256], size_t k, int rot)
 {
-	assert(buffer_size % kByteGroupSize == 0);
+	size_t k0 = k & ~(sizeof(T) - 1);
+	int ks = (k & (sizeof(T) - 1)) * 8;
 
-	size_t result = 0;
+	T p = last_vertex[k0];
+	for (size_t j = 1; j < sizeof(T); ++j)
+		p |= T(last_vertex[k0 + j]) << (j * 8);
 
-	// round number of groups to 4 to get number of header bytes
-	size_t header_size = (buffer_size / kByteGroupSize + 3) / 4;
-	result += header_size;
+	const unsigned char* vertex = vertex_data + k0;
 
-	for (size_t i = 0; i < buffer_size; i += kByteGroupSize)
+	for (size_t i = 0; i < vertex_count; ++i)
 	{
-		size_t best_size = size_t(-1);
+		T v = vertex[0];
+		for (size_t j = 1; j < sizeof(T); ++j)
+			v |= vertex[j] << (j * 8);
 
-		for (int bitk = 0; bitk < 4; ++bitk)
-		{
-			size_t size = encodeBytesGroupMeasure(buffer + i, bits[bitk]);
-			best_size = (size < best_size) ? size : best_size;
-		}
+		T d = Xor ? T(rotate(v ^ p, rot)) : zigzag(T(v - p));
 
-		result += best_size;
+		buffer[i] = (unsigned char)(d >> ks);
+		p = v;
+		vertex += vertex_size;
 	}
-
-	return result;
 }
 
-static unsigned char* encodeVertexBlock(unsigned char* data, unsigned char* data_end, const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], int version)
+static void encodeDeltas(unsigned char* buffer, const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, const unsigned char last_vertex[256], size_t k, int channel)
+{
+	switch (channel & 3)
+	{
+	case 0:
+		return encodeDeltas1<unsigned char, false>(buffer, vertex_data, vertex_count, vertex_size, last_vertex, k, 0);
+	case 1:
+		return encodeDeltas1<unsigned short, false>(buffer, vertex_data, vertex_count, vertex_size, last_vertex, k, 0);
+	case 2:
+		return encodeDeltas1<unsigned int, true>(buffer, vertex_data, vertex_count, vertex_size, last_vertex, k, channel >> 4);
+	default:
+		assert(!"Unsupported channel encoding"); // unreachable
+	}
+}
+
+static int estimateBits(unsigned char v)
+{
+	return v <= 15 ? (v <= 3 ? (v == 0 ? 0 : 2) : 4) : 8;
+}
+
+static int estimateRotate(const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, size_t k, size_t group_size)
+{
+	size_t sizes[8] = {};
+
+	const unsigned char* vertex = vertex_data + k;
+	unsigned int last = vertex[0] | (vertex[1] << 8) | (vertex[2] << 16) | (vertex[3] << 24);
+
+	for (size_t i = 0; i < vertex_count; i += group_size)
+	{
+		unsigned int bitg = 0;
+
+		// calculate bit consistency mask for the group
+		for (size_t j = 0; j < group_size && i + j < vertex_count; ++j)
+		{
+			unsigned int v = vertex[0] | (vertex[1] << 8) | (vertex[2] << 16) | (vertex[3] << 24);
+			unsigned int d = v ^ last;
+
+			bitg |= d;
+			last = v;
+			vertex += vertex_size;
+		}
+
+		for (int j = 0; j < 8; ++j)
+		{
+			unsigned int bitr = rotate(bitg, j);
+
+			sizes[j] += estimateBits((unsigned char)(bitr >> 0)) + estimateBits((unsigned char)(bitr >> 8));
+			sizes[j] += estimateBits((unsigned char)(bitr >> 16)) + estimateBits((unsigned char)(bitr >> 24));
+		}
+	}
+
+	int best_rot = 0;
+	for (int rot = 1; rot < 8; ++rot)
+		best_rot = (sizes[rot] < sizes[best_rot]) ? rot : best_rot;
+
+	return best_rot;
+}
+
+static int estimateChannel(const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, size_t k, size_t vertex_block_size, size_t block_skip, int max_channel, int xor_rot)
+{
+	unsigned char block[kVertexBlockMaxSize];
+	assert(vertex_block_size <= kVertexBlockMaxSize);
+
+	unsigned char last_vertex[256] = {};
+
+	size_t sizes[3] = {};
+	assert(max_channel <= 3);
+
+	for (size_t i = 0; i < vertex_count; i += vertex_block_size * block_skip)
+	{
+		size_t block_size = i + vertex_block_size < vertex_count ? vertex_block_size : vertex_count - i;
+		size_t block_size_aligned = (block_size + kByteGroupSize - 1) & ~(kByteGroupSize - 1);
+
+		memcpy(last_vertex, vertex_data + (i == 0 ? 0 : i - 1) * vertex_size, vertex_size);
+
+		// we sometimes encode elements we didn't fill when rounding to kByteGroupSize
+		if (block_size < block_size_aligned)
+			memset(block + block_size, 0, block_size_aligned - block_size);
+
+		for (int channel = 0; channel < max_channel; ++channel)
+			for (size_t j = 0; j < 4; ++j)
+			{
+				encodeDeltas(block, vertex_data + i * vertex_size, block_size, vertex_size, last_vertex, k + j, channel | (xor_rot << 4));
+
+				for (size_t ig = 0; ig < block_size; ig += kByteGroupSize)
+				{
+					// to maximize encoding performance we only evaluate 1/2/4/8 bit groups
+					size_t size1 = encodeBytesGroupMeasure(block + ig, 1);
+					size_t size2 = encodeBytesGroupMeasure(block + ig, 2);
+					size_t size4 = encodeBytesGroupMeasure(block + ig, 4);
+					size_t size8 = encodeBytesGroupMeasure(block + ig, 8);
+
+					size_t best_size = size1 < size2 ? size1 : size2;
+					best_size = best_size < size4 ? best_size : size4;
+					best_size = best_size < size8 ? best_size : size8;
+
+					sizes[channel] += best_size;
+				}
+			}
+	}
+
+	int best_channel = 0;
+	for (int channel = 1; channel < max_channel; ++channel)
+		best_channel = (sizes[channel] < sizes[best_channel]) ? channel : best_channel;
+
+	return best_channel == 2 ? best_channel | (xor_rot << 4) : best_channel;
+}
+
+static int estimateControl(const unsigned char* buffer, size_t vertex_count, size_t vertex_count_aligned, int level)
+{
+	if (canEncodeZero(buffer, vertex_count))
+		return 2; // zero encoding
+
+	if (level == 0)
+		return 1; // 1248 encoding in level 0 for encoding speed
+
+	// round number of groups to 4 to get number of header bytes
+	size_t header_size = (vertex_count_aligned / kByteGroupSize + 3) / 4;
+
+	size_t est_bytes0 = header_size, est_bytes1 = header_size;
+
+	for (size_t i = 0; i < vertex_count_aligned; i += kByteGroupSize)
+	{
+		// assumes kBitsV1[] = {0, 1, 2, 4, 8} for performance
+		size_t size0 = encodeBytesGroupMeasure(buffer + i, 0);
+		size_t size1 = encodeBytesGroupMeasure(buffer + i, 1);
+		size_t size2 = encodeBytesGroupMeasure(buffer + i, 2);
+		size_t size4 = encodeBytesGroupMeasure(buffer + i, 4);
+		size_t size8 = encodeBytesGroupMeasure(buffer + i, 8);
+
+		// both control modes have access to 1/2/4 bit encoding
+		size_t size12 = size1 < size2 ? size1 : size2;
+		size_t size124 = size12 < size4 ? size12 : size4;
+
+		// each control mode has access to 0/8 bit encoding respectively
+		est_bytes0 += size124 < size0 ? size124 : size0;
+		est_bytes1 += size124 < size8 ? size124 : size8;
+	}
+
+	// pick shortest control entry but prefer literal encoding
+	if (est_bytes0 < vertex_count || est_bytes1 < vertex_count)
+		return est_bytes0 < est_bytes1 ? 0 : 1;
+	else
+		return 3; // literal encoding
+}
+
+static unsigned char* encodeVertexBlock(unsigned char* data, unsigned char* data_end, const unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], const unsigned char* channels, int version, int level)
 {
 	assert(vertex_count > 0 && vertex_count <= kVertexBlockMaxSize);
 	assert(vertex_size % 4 == 0);
@@ -360,18 +517,7 @@ static unsigned char* encodeVertexBlock(unsigned char* data, unsigned char* data
 
 	for (size_t k = 0; k < vertex_size; ++k)
 	{
-		size_t vertex_offset = k;
-
-		unsigned char p = last_vertex[k];
-
-		for (size_t i = 0; i < vertex_count; ++i)
-		{
-			buffer[i] = zigzag8(vertex_data[vertex_offset] - p);
-
-			p = vertex_data[vertex_offset];
-
-			vertex_offset += vertex_size;
-		}
+		encodeDeltas(buffer, vertex_data, vertex_count, vertex_size, last_vertex, k, version == 0 ? 0 : channels[k / 4]);
 
 #if TRACE
 		const unsigned char* olddata = data;
@@ -390,60 +536,32 @@ static unsigned char* encodeVertexBlock(unsigned char* data, unsigned char* data
 		}
 #endif
 
-		if (version == 0xe)
+		int ctrl = 0;
+
+		if (version != 0)
 		{
-			int best_ctrl = 3; // literal encoding
-			size_t best_bytes = vertex_count;
+			ctrl = estimateControl(buffer, vertex_count, vertex_count_aligned, level);
 
-			if (canEncodeZero(buffer, vertex_count))
-			{
-				// zero encoding
-				best_ctrl = 2;
-				best_bytes = 0;
-			}
-			else
-			{
-				// pick shortest control entry
-				for (int i = 0; i < 2; ++i)
-				{
-					size_t est_bytes = encodeBytesMeasure(buffer, vertex_count_aligned, kBitsV1 + i);
-
-					if (est_bytes < best_bytes)
-					{
-						best_ctrl = i;
-						best_bytes = est_bytes;
-					}
-				}
-			}
-
-			control[k / 4] |= best_ctrl << ((k % 4) * 2);
+			assert(unsigned(ctrl) < 4);
+			control[k / 4] |= ctrl << ((k % 4) * 2);
 
 #if TRACE
-			vertexstats[k].ctrl[best_ctrl]++;
+			vertexstats[k].ctrl[ctrl]++;
 #endif
-
-			if (best_ctrl == 3)
-			{
-				// literal encoding
-				if (size_t(data_end - data) < vertex_count)
-					return NULL;
-
-				memcpy(data, buffer, vertex_count);
-				data += vertex_count;
-			}
-			else if (best_ctrl != 2)
-			{
-				unsigned char* next = encodeBytes(data, data_end, buffer, vertex_count_aligned, kBitsV1 + best_ctrl);
-				if (!next)
-					return NULL;
-
-				assert(data + best_bytes == next);
-				data = next;
-			}
 		}
-		else
+
+		if (ctrl == 3)
 		{
-			data = encodeBytes(data, data_end, buffer, vertex_count_aligned, kBitsV0);
+			// literal encoding
+			if (size_t(data_end - data) < vertex_count)
+				return NULL;
+
+			memcpy(data, buffer, vertex_count);
+			data += vertex_count;
+		}
+		else if (ctrl != 2) // non-zero encoding
+		{
+			data = encodeBytes(data, data_end, buffer, vertex_count_aligned, version == 0 ? kBitsV0 : kBitsV1 + ctrl);
 			if (!data)
 				return NULL;
 		}
@@ -547,28 +665,43 @@ static const unsigned char* decodeBytes(const unsigned char* data, const unsigne
 	return data;
 }
 
-static void decodeDeltas1(const unsigned char* buffer, unsigned char* transposed, size_t vertex_count, size_t vertex_size, unsigned char last_vertex)
+template <typename T, bool Xor>
+static void decodeDeltas1(const unsigned char* buffer, unsigned char* transposed, size_t vertex_count, size_t vertex_size, const unsigned char* last_vertex, int rot)
 {
-	size_t vertex_offset = 0;
-
-	unsigned char p = last_vertex;
-
-	for (size_t i = 0; i < vertex_count; ++i)
+	for (size_t k = 0; k < 4; k += sizeof(T))
 	{
-		unsigned char v = unzigzag8(buffer[i]) + p;
+		size_t vertex_offset = k;
 
-		transposed[vertex_offset] = v;
-		p = v;
+		T p = last_vertex[0];
+		for (size_t j = 1; j < sizeof(T); ++j)
+			p |= last_vertex[j] << (8 * j);
 
-		vertex_offset += vertex_size;
+		for (size_t i = 0; i < vertex_count; ++i)
+		{
+			T v = buffer[i];
+			for (size_t j = 1; j < sizeof(T); ++j)
+				v |= buffer[i + vertex_count * j] << (8 * j);
+
+			v = Xor ? T(rotate(v, rot)) ^ p : unzigzag(v) + p;
+
+			for (size_t j = 0; j < sizeof(T); ++j)
+				transposed[vertex_offset + j] = (unsigned char)(v >> (j * 8));
+
+			p = v;
+
+			vertex_offset += vertex_size;
+		}
+
+		buffer += vertex_count * sizeof(T);
+		last_vertex += sizeof(T);
 	}
 }
 
-static const unsigned char* decodeVertexBlock(const unsigned char* data, const unsigned char* data_end, unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], int version)
+static const unsigned char* decodeVertexBlock(const unsigned char* data, const unsigned char* data_end, unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], const unsigned char* channels, int version)
 {
 	assert(vertex_count > 0 && vertex_count <= kVertexBlockMaxSize);
 
-	unsigned char buffer[kVertexBlockMaxSize];
+	unsigned char buffer[kVertexBlockMaxSize * 4];
 	unsigned char transposed[kVertexBlockSizeBytes];
 
 	size_t vertex_count_aligned = (vertex_count + kByteGroupSize - 1) & ~(kByteGroupSize - 1);
@@ -581,32 +714,52 @@ static const unsigned char* decodeVertexBlock(const unsigned char* data, const u
 	const unsigned char* control = data;
 	data += control_size;
 
-	for (size_t k = 0; k < vertex_size; ++k)
+	for (size_t k = 0; k < vertex_size; k += 4)
 	{
-		int ctrl = version == 0 ? 0 : (control[k / 4] >> ((k % 4) * 2)) & 3;
+		unsigned char ctrl_byte = version == 0 ? 0 : control[k / 4];
 
-		if (ctrl == 3)
+		for (size_t j = 0; j < 4; ++j)
 		{
-			// literal encoding
-			if (size_t(data_end - data) < vertex_count)
-				return NULL;
+			int ctrl = (ctrl_byte >> (j * 2)) & 3;
 
-			memcpy(buffer, data, vertex_count);
-			data += vertex_count;
-		}
-		else if (ctrl == 2)
-		{
-			// zero encoding
-			memset(buffer, 0, vertex_count);
-		}
-		else
-		{
-			data = decodeBytes(data, data_end, buffer, vertex_count_aligned, version == 0 ? kBitsV0 : kBitsV1 + ctrl);
-			if (!data)
-				return NULL;
+			if (ctrl == 3)
+			{
+				// literal encoding
+				if (size_t(data_end - data) < vertex_count)
+					return NULL;
+
+				memcpy(buffer + j * vertex_count, data, vertex_count);
+				data += vertex_count;
+			}
+			else if (ctrl == 2)
+			{
+				// zero encoding
+				memset(buffer + j * vertex_count, 0, vertex_count);
+			}
+			else
+			{
+				data = decodeBytes(data, data_end, buffer + j * vertex_count, vertex_count_aligned, version == 0 ? kBitsV0 : kBitsV1 + ctrl);
+				if (!data)
+					return NULL;
+			}
 		}
 
-		decodeDeltas1(buffer, transposed + k, vertex_count, vertex_size, last_vertex[k]);
+		int channel = version == 0 ? 0 : channels[k / 4];
+
+		switch (channel & 3)
+		{
+		case 0:
+			decodeDeltas1<unsigned char, false>(buffer, transposed + k, vertex_count, vertex_size, last_vertex + k, 0);
+			break;
+		case 1:
+			decodeDeltas1<unsigned short, false>(buffer, transposed + k, vertex_count, vertex_size, last_vertex + k, 0);
+			break;
+		case 2:
+			decodeDeltas1<unsigned int, true>(buffer, transposed + k, vertex_count, vertex_size, last_vertex + k, (32 - (channel >> 4)) & 31);
+			break;
+		default:
+			return NULL; // invalid channel type
+		}
 	}
 
 	memcpy(vertex_data, transposed, vertex_count * vertex_size);
@@ -711,7 +864,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		unsigned char mask1 = (unsigned char)(mask16 >> 8);
 
 		__m128i shuf = decodeShuffleMask(mask0, mask1);
-
 		__m128i result = _mm_or_si128(_mm_shuffle_epi8(rest, shuf), _mm_andnot_si128(mask, sel));
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(buffer), result);
@@ -748,7 +900,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		unsigned char mask1 = (unsigned char)(mask16 >> 8);
 
 		__m128i shuf = decodeShuffleMask(mask0, mask1);
-
 		__m128i result = _mm_or_si128(_mm_shuffle_epi8(rest, shuf), _mm_andnot_si128(mask, sel));
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(buffer), result);
@@ -778,7 +929,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		unsigned char mask1 = data[1];
 
 		__m128i shuf = decodeShuffleMask(mask0, mask1);
-
 		__m128i result = _mm_shuffle_epi8(rest, shuf);
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(buffer), result);
@@ -787,33 +937,21 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 	}
 
 	default:
-		SIMD_UNREACHABLE();
+		SIMD_UNREACHABLE(); // unreachable
 	}
 }
 #endif
 
 #ifdef SIMD_AVX
-static const __m128i decodeBytesGroupConfig[2][8] = {
-    {
-        _mm_setzero_si128(),
-        _mm_set1_epi8(3),
-        _mm_set1_epi8(15),
-        _mm_setzero_si128(),
-        _mm_setzero_si128(),
-        _mm_set1_epi8(1),
-        _mm_set1_epi8(3),
-        _mm_set1_epi8(15),
-    },
-    {
-        _mm_setzero_si128(),
-        _mm_setr_epi8(6, 4, 2, 0, 14, 12, 10, 8, 22, 20, 18, 16, 30, 28, 26, 24),
-        _mm_setr_epi8(4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56),
-        _mm_setzero_si128(),
-        _mm_setzero_si128(),
-        _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
-        _mm_setr_epi8(6, 4, 2, 0, 14, 12, 10, 8, 22, 20, 18, 16, 30, 28, 26, 24),
-        _mm_setr_epi8(4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56),
-    },
+static const __m128i kDecodeBytesGroupConfig[8][2] = {
+    {_mm_setzero_si128(), _mm_setzero_si128()},
+    {_mm_set1_epi8(3), _mm_setr_epi8(6, 4, 2, 0, 14, 12, 10, 8, 22, 20, 18, 16, 30, 28, 26, 24)},
+    {_mm_set1_epi8(15), _mm_setr_epi8(4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56)},
+    {_mm_setzero_si128(), _mm_setzero_si128()},
+    {_mm_setzero_si128(), _mm_setzero_si128()},
+    {_mm_set1_epi8(1), _mm_setr_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)},
+    {_mm_set1_epi8(3), _mm_setr_epi8(6, 4, 2, 0, 14, 12, 10, 8, 22, 20, 18, 16, 30, 28, 26, 24)},
+    {_mm_set1_epi8(15), _mm_setr_epi8(4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56)},
 };
 
 SIMD_TARGET
@@ -842,8 +980,8 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		__m128i selb = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(data));
 		__m128i rest = _mm_loadu_si128(reinterpret_cast<const __m128i*>(skip));
 
-		__m128i sent = decodeBytesGroupConfig[0][hbits];
-		__m128i ctrl = decodeBytesGroupConfig[1][hbits];
+		__m128i sent = kDecodeBytesGroupConfig[hbits][0];
+		__m128i ctrl = kDecodeBytesGroupConfig[hbits][1];
 
 		__m128i selw = _mm_shuffle_epi32(selb, 0x44);
 		__m128i sel = _mm_and_si128(sent, _mm_multishift_epi64_epi8(ctrl, selw));
@@ -867,7 +1005,7 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 	}
 
 	default:
-		SIMD_UNREACHABLE();
+		SIMD_UNREACHABLE(); // unreachable
 	}
 }
 #endif
@@ -1011,8 +1149,7 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 	}
 
 	default:
-		SIMD_UNREACHABLE();
-		return data;
+		SIMD_UNREACHABLE(); // unreachable
 	}
 }
 #endif
@@ -1024,9 +1161,7 @@ inline v128_t decodeShuffleMask(unsigned char mask0, unsigned char mask1)
 	v128_t sm0 = wasm_v128_load(&kDecodeBytesGroupShuffle[mask0]);
 	v128_t sm1 = wasm_v128_load(&kDecodeBytesGroupShuffle[mask1]);
 
-	v128_t sm1off = wasm_v128_load(&kDecodeBytesGroupCount[mask0]);
-	sm1off = wasm_i8x16_shuffle(sm1off, sm1off, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-
+	v128_t sm1off = wasm_v128_load8_splat(&kDecodeBytesGroupCount[mask0]);
 	v128_t sm1r = wasm_i8x16_add(sm1, sm1off);
 
 	return wasmx_unpacklo_v64x2(sm0, sm1r);
@@ -1073,7 +1208,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		wasmMoveMask(mask, mask0, mask1);
 
 		v128_t shuf = decodeShuffleMask(mask0, mask1);
-
 		v128_t result = wasm_v128_bitselect(wasm_i8x16_swizzle(rest, shuf), sel, mask);
 
 		wasm_v128_store(buffer, result);
@@ -1096,7 +1230,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		wasmMoveMask(mask, mask0, mask1);
 
 		v128_t shuf = decodeShuffleMask(mask0, mask1);
-
 		v128_t result = wasm_v128_bitselect(wasm_i8x16_swizzle(rest, shuf), sel, mask);
 
 		wasm_v128_store(buffer, result);
@@ -1122,7 +1255,6 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 		unsigned char mask1 = data[1];
 
 		v128_t shuf = decodeShuffleMask(mask0, mask1);
-
 		v128_t result = wasm_i8x16_swizzle(rest, shuf);
 
 		wasm_v128_store(buffer, result);
@@ -1131,7 +1263,7 @@ inline const unsigned char* decodeBytesGroupSimd(const unsigned char* data, unsi
 	}
 
 	default:
-		SIMD_UNREACHABLE();
+		SIMD_UNREACHABLE(); // unreachable
 	}
 }
 #endif
@@ -1159,6 +1291,21 @@ inline __m128i unzigzag8(__m128i v)
 
 	return _mm_xor_si128(xl, xr);
 }
+
+SIMD_TARGET
+inline __m128i unzigzag16(__m128i v)
+{
+	__m128i xl = _mm_sub_epi16(_mm_setzero_si128(), _mm_and_si128(v, _mm_set1_epi16(1)));
+	__m128i xr = _mm_srli_epi16(v, 1);
+
+	return _mm_xor_si128(xl, xr);
+}
+
+SIMD_TARGET
+inline __m128i rotate32(__m128i v, int r)
+{
+	return _mm_or_si128(_mm_slli_epi32(v, r), _mm_srli_epi32(v, 32 - r));
+}
 #endif
 
 #ifdef SIMD_NEON
@@ -1185,6 +1332,51 @@ inline uint8x16_t unzigzag8(uint8x16_t v)
 
 	return veorq_u8(xl, xr);
 }
+
+SIMD_TARGET
+inline uint8x16_t unzigzag16(uint8x16_t v)
+{
+	uint16x8_t vv = vreinterpretq_u16_u8(v);
+	uint8x16_t xl = vreinterpretq_u8_s16(vnegq_s16(vreinterpretq_s16_u16(vandq_u16(vv, vdupq_n_u16(1)))));
+	uint8x16_t xr = vreinterpretq_u8_u16(vshrq_n_u16(vv, 1));
+
+	return veorq_u8(xl, xr);
+}
+
+SIMD_TARGET
+inline uint8x16_t rotate32(uint8x16_t v, int r)
+{
+	uint32x4_t v32 = vreinterpretq_u32_u8(v);
+	return vreinterpretq_u8_u32(vorrq_u32(vshlq_u32(v32, vdupq_n_s32(r)), vshlq_u32(v32, vdupq_n_s32(r - 32))));
+}
+
+template <int Channel>
+SIMD_TARGET inline uint8x8_t rebase(uint8x8_t npi, uint8x16_t r0, uint8x16_t r1, uint8x16_t r2, uint8x16_t r3)
+{
+	switch (Channel)
+	{
+	case 0:
+	{
+		uint8x16_t rsum = vaddq_u8(vaddq_u8(r0, r1), vaddq_u8(r2, r3));
+		uint8x8_t rsumx = vadd_u8(vget_low_u8(rsum), vget_high_u8(rsum));
+		return vadd_u8(vadd_u8(npi, rsumx), vext_u8(rsumx, rsumx, 4));
+	}
+	case 1:
+	{
+		uint16x8_t rsum = vaddq_u16(vaddq_u16(vreinterpretq_u16_u8(r0), vreinterpretq_u16_u8(r1)), vaddq_u16(vreinterpretq_u16_u8(r2), vreinterpretq_u16_u8(r3)));
+		uint16x4_t rsumx = vadd_u16(vget_low_u16(rsum), vget_high_u16(rsum));
+		return vreinterpret_u8_u16(vadd_u16(vadd_u16(npi, rsumx), vext_u16(rsumx, rsumx, 2)));
+	}
+	case 2:
+	{
+		uint8x16_t rsum = veorq_u8(veorq_u8(r0, r1), veorq_u8(r2, r3));
+		uint8x8_t rsumx = veor_u8(vget_low_u8(rsum), vget_high_u8(rsum));
+		return veor_u8(veor_u8(npi, rsumx), vext_u8(rsumx, rsumx, 4));
+	}
+	default:
+		return npi;
+	}
+}
 #endif
 
 #ifdef SIMD_WASM
@@ -1209,6 +1401,21 @@ inline v128_t unzigzag8(v128_t v)
 	v128_t xr = wasm_u8x16_shr(v, 1);
 
 	return wasm_v128_xor(xl, xr);
+}
+
+SIMD_TARGET
+inline v128_t unzigzag16(v128_t v)
+{
+	v128_t xl = wasm_i16x8_neg(wasm_v128_and(v, wasm_i16x8_splat(1)));
+	v128_t xr = wasm_u16x8_shr(v, 1);
+
+	return wasm_v128_xor(xl, xr);
+}
+
+SIMD_TARGET
+inline v128_t rotate32(v128_t v, int r)
+{
+	return wasm_v128_or(wasm_i32x4_shl(v, r), wasm_i32x4_shr(v, 32 - r));
 }
 #endif
 
@@ -1256,15 +1463,16 @@ static const unsigned char* decodeBytesSimd(const unsigned char* data, const uns
 	return data;
 }
 
-SIMD_TARGET
-static void decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transposed, size_t vertex_count_aligned, size_t vertex_size, unsigned char last_vertex[4])
+template <int Channel>
+SIMD_TARGET static void
+decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transposed, size_t vertex_count_aligned, size_t vertex_size, unsigned char last_vertex[4], int rot)
 {
 #if defined(SIMD_SSE) || defined(SIMD_AVX)
 #define TEMP __m128i
 #define PREP() __m128i pi = _mm_cvtsi32_si128(*reinterpret_cast<const int*>(last_vertex))
 #define LOAD(i) __m128i r##i = _mm_loadu_si128(reinterpret_cast<const __m128i*>(buffer + j + i * vertex_count_aligned))
-#define GRP4(i) t0 = _mm_shuffle_epi32(r##i, 0), t1 = _mm_shuffle_epi32(r##i, 1), t2 = _mm_shuffle_epi32(r##i, 2), t3 = _mm_shuffle_epi32(r##i, 3)
-#define FIXD(i) t##i = pi = _mm_add_epi8(pi, t##i)
+#define GRP4(i) t0 = r##i, t1 = _mm_shuffle_epi32(r##i, 1), t2 = _mm_shuffle_epi32(r##i, 2), t3 = _mm_shuffle_epi32(r##i, 3)
+#define FIXD(i) t##i = pi = Channel == 0 ? _mm_add_epi8(pi, t##i) : (Channel == 1 ? _mm_add_epi16(pi, t##i) : _mm_xor_si128(pi, t##i))
 #define SAVE(i) *reinterpret_cast<int*>(savep) = _mm_cvtsi128_si32(t##i), savep += vertex_size
 #endif
 
@@ -1273,7 +1481,7 @@ static void decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transp
 #define PREP() uint8x8_t pi = vreinterpret_u8_u32(vld1_lane_u32(reinterpret_cast<uint32_t*>(last_vertex), vdup_n_u32(0), 0))
 #define LOAD(i) uint8x16_t r##i = vld1q_u8(buffer + j + i * vertex_count_aligned)
 #define GRP4(i) t0 = vget_low_u8(r##i), t1 = vreinterpret_u8_u32(vdup_lane_u32(vreinterpret_u32_u8(t0), 1)), t2 = vget_high_u8(r##i), t3 = vreinterpret_u8_u32(vdup_lane_u32(vreinterpret_u32_u8(t2), 1))
-#define FIXD(i) t##i = pi = vadd_u8(pi, t##i)
+#define FIXD(i) t##i = pi = Channel == 0 ? vadd_u8(pi, t##i) : (Channel == 1 ? vreinterpret_u8_u16(vadd_u16(vreinterpret_u16_u8(pi), vreinterpret_u16_u8(t##i))) : veor_u8(pi, t##i))
 #define SAVE(i) vst1_lane_u32(reinterpret_cast<uint32_t*>(savep), vreinterpret_u32_u8(t##i), 0), savep += vertex_size
 #endif
 
@@ -1281,10 +1489,12 @@ static void decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transp
 #define TEMP v128_t
 #define PREP() v128_t pi = wasm_v128_load(last_vertex)
 #define LOAD(i) v128_t r##i = wasm_v128_load(buffer + j + i * vertex_count_aligned)
-#define GRP4(i) t0 = wasmx_splat_v32x4(r##i, 0), t1 = wasmx_splat_v32x4(r##i, 1), t2 = wasmx_splat_v32x4(r##i, 2), t3 = wasmx_splat_v32x4(r##i, 3)
-#define FIXD(i) t##i = pi = wasm_i8x16_add(pi, t##i)
-#define SAVE(i) *reinterpret_cast<int*>(savep) = wasm_i32x4_extract_lane(t##i, 0), savep += vertex_size
+#define GRP4(i) t0 = r##i, t1 = wasmx_splat_v32x4(r##i, 1), t2 = wasmx_splat_v32x4(r##i, 2), t3 = wasmx_splat_v32x4(r##i, 3)
+#define FIXD(i) t##i = pi = Channel == 0 ? wasm_i8x16_add(pi, t##i) : (Channel == 1 ? wasm_i16x8_add(pi, t##i) : wasm_v128_xor(pi, t##i))
+#define SAVE(i) wasm_v128_store32_lane(savep, t##i, 0), savep += vertex_size
 #endif
+
+#define UNZR(i) r##i = Channel == 0 ? unzigzag8(r##i) : (Channel == 1 ? unzigzag16(r##i) : rotate32(r##i, rot))
 
 	PREP();
 
@@ -1297,31 +1507,39 @@ static void decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transp
 		LOAD(2);
 		LOAD(3);
 
-		r0 = unzigzag8(r0);
-		r1 = unzigzag8(r1);
-		r2 = unzigzag8(r2);
-		r3 = unzigzag8(r3);
-
 		transpose8(r0, r1, r2, r3);
 
 		TEMP t0, t1, t2, t3;
+		TEMP npi = pi;
 
+		UNZR(0);
 		GRP4(0);
 		FIXD(0), FIXD(1), FIXD(2), FIXD(3);
 		SAVE(0), SAVE(1), SAVE(2), SAVE(3);
 
+		UNZR(1);
 		GRP4(1);
 		FIXD(0), FIXD(1), FIXD(2), FIXD(3);
 		SAVE(0), SAVE(1), SAVE(2), SAVE(3);
 
+		UNZR(2);
 		GRP4(2);
 		FIXD(0), FIXD(1), FIXD(2), FIXD(3);
 		SAVE(0), SAVE(1), SAVE(2), SAVE(3);
 
+		UNZR(3);
 		GRP4(3);
 		FIXD(0), FIXD(1), FIXD(2), FIXD(3);
 		SAVE(0), SAVE(1), SAVE(2), SAVE(3);
 
+#if defined(SIMD_LATENCYOPT) && defined(SIMD_NEON) && (defined(__APPLE__) || defined(_WIN32))
+		// instead of relying on accumulated pi, recompute it from scratch from r0..r3; this shortens dependency between loop iterations
+		pi = rebase<Channel>(npi, r0, r1, r2, r3);
+#else
+		(void)npi;
+#endif
+
+#undef UNZR
 #undef TEMP
 #undef PREP
 #undef LOAD
@@ -1332,7 +1550,7 @@ static void decodeDeltas4Simd(const unsigned char* buffer, unsigned char* transp
 }
 
 SIMD_TARGET
-static const unsigned char* decodeVertexBlockSimd(const unsigned char* data, const unsigned char* data_end, unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], int version)
+static const unsigned char* decodeVertexBlockSimd(const unsigned char* data, const unsigned char* data_end, unsigned char* vertex_data, size_t vertex_count, size_t vertex_size, unsigned char last_vertex[256], const unsigned char* channels, int version)
 {
 	assert(vertex_count > 0 && vertex_count <= kVertexBlockMaxSize);
 
@@ -1381,7 +1599,22 @@ static const unsigned char* decodeVertexBlockSimd(const unsigned char* data, con
 			}
 		}
 
-		decodeDeltas4Simd(buffer, transposed + k, vertex_count_aligned, vertex_size, last_vertex + k);
+		int channel = version == 0 ? 0 : channels[k / 4];
+
+		switch (channel & 3)
+		{
+		case 0:
+			decodeDeltas4Simd<0>(buffer, transposed + k, vertex_count_aligned, vertex_size, last_vertex + k, 0);
+			break;
+		case 1:
+			decodeDeltas4Simd<1>(buffer, transposed + k, vertex_count_aligned, vertex_size, last_vertex + k, 0);
+			break;
+		case 2:
+			decodeDeltas4Simd<2>(buffer, transposed + k, vertex_count_aligned, vertex_size, last_vertex + k, (32 - (channel >> 4)) & 31);
+			break;
+		default:
+			return NULL; // invalid channel type
+		}
 	}
 
 	memcpy(vertex_data, transposed, vertex_count * vertex_size);
@@ -1409,12 +1642,13 @@ static unsigned int cpuid = getCpuFeatures();
 
 } // namespace meshopt
 
-size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size)
+size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size, int level)
 {
 	using namespace meshopt;
 
 	assert(vertex_size > 0 && vertex_size <= 256);
 	assert(vertex_size % 4 == 0);
+	assert(level >= 0 && level <= 9); // only a subset of this range is used right now
 
 #if TRACE
 	memset(vertexstats, 0, sizeof(vertexstats));
@@ -1425,7 +1659,7 @@ size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, con
 	unsigned char* data = buffer;
 	unsigned char* data_end = buffer + buffer_size;
 
-	if (size_t(data_end - data) < 1 + vertex_size)
+	if (size_t(data_end - data) < 1)
 		return 0;
 
 	int version = gEncodeVertexVersion;
@@ -1441,33 +1675,51 @@ size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, con
 
 	size_t vertex_block_size = getVertexBlockSize(vertex_size);
 
+	unsigned char channels[64] = {};
+	if (version != 0 && level > 1 && vertex_count > 1)
+		for (size_t k = 0; k < vertex_size; k += 4)
+		{
+			int rot = level >= 3 ? estimateRotate(vertex_data, vertex_count, vertex_size, k, /* group_size= */ 16) : 0;
+			int channel = estimateChannel(vertex_data, vertex_count, vertex_size, k, vertex_block_size, /* block_skip= */ 3, /* max_channels= */ level >= 3 ? 3 : 2, rot);
+
+			assert(unsigned(channel) < 2 || ((channel & 3) == 2 && unsigned(channel >> 4) < 8));
+			channels[k / 4] = (unsigned char)channel;
+		}
+
 	size_t vertex_offset = 0;
 
 	while (vertex_offset < vertex_count)
 	{
 		size_t block_size = (vertex_offset + vertex_block_size < vertex_count) ? vertex_block_size : vertex_count - vertex_offset;
 
-		data = encodeVertexBlock(data, data_end, vertex_data + vertex_offset * vertex_size, block_size, vertex_size, last_vertex, version);
+		data = encodeVertexBlock(data, data_end, vertex_data + vertex_offset * vertex_size, block_size, vertex_size, last_vertex, channels, version, level);
 		if (!data)
 			return 0;
 
 		vertex_offset += block_size;
 	}
 
-	size_t tail_size = vertex_size < kTailMaxSize ? kTailMaxSize : vertex_size;
+	size_t tail_size = vertex_size + (version == 0 ? 0 : vertex_size / 4);
+	size_t tail_size_min = version == 0 ? kTailMinSizeV0 : kTailMinSizeV1;
+	size_t tail_size_pad = tail_size < tail_size_min ? tail_size_min : tail_size;
 
-	if (size_t(data_end - data) < tail_size)
+	if (size_t(data_end - data) < tail_size_pad)
 		return 0;
 
-	// write first vertex to the end of the stream and pad it to 32 bytes; this is important to simplify bounds checks in decoder
-	if (vertex_size < kTailMaxSize)
+	if (tail_size < tail_size_pad)
 	{
-		memset(data, 0, kTailMaxSize - vertex_size);
-		data += kTailMaxSize - vertex_size;
+		memset(data, 0, tail_size_pad - tail_size);
+		data += tail_size_pad - tail_size;
 	}
 
 	memcpy(data, first_vertex, vertex_size);
 	data += vertex_size;
+
+	if (version != 0)
+	{
+		memcpy(data, channels, vertex_size / 4);
+		data += vertex_size / 4;
+	}
 
 	assert(data >= buffer + tail_size);
 	assert(data <= buffer + buffer_size);
@@ -1484,7 +1736,17 @@ size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, con
 		size_t total_k = vsk.header + vsk.bitg[1] + vsk.bitg[2] + vsk.bitg[4] + vsk.bitg[8];
 		double total_kr = total_k ? 1.0 / double(total_k) : 0;
 
-		printf(" |\thdr [%5.1f%%] bitg [1 %4.1f%% 2 %4.1f%% 4 %4.1f%% 8 %4.1f%%]",
+		if (version != 0)
+		{
+			int channel = channels[k / 4];
+
+			if ((channel & 3) == 2 && k % 4 == 0)
+				printf(" | ^%d", channel >> 4);
+			else
+				printf(" | %2s", channel == 0 ? "1" : (channel == 1 && k % 2 == 0 ? "2" : "."));
+		}
+
+		printf(" | hdr [%5.1f%%] bitg [1 %4.1f%% 2 %4.1f%% 4 %4.1f%% 8 %4.1f%%]",
 		    double(vsk.header) * total_kr * 100,
 		    double(vsk.bitg[1]) * total_kr * 100, double(vsk.bitg[2]) * total_kr * 100,
 		    double(vsk.bitg[4]) * total_kr * 100, double(vsk.bitg[8]) * total_kr * 100);
@@ -1493,21 +1755,29 @@ size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, con
 
 		if (total_ctrl)
 		{
-			printf(" |\tctrl %3.0f%% %3.0f%% %3.0f%% %3.0f%%",
+			printf(" | ctrl %3.0f%% %3.0f%% %3.0f%% %3.0f%%",
 			    double(vsk.ctrl[0]) / double(total_ctrl) * 100, double(vsk.ctrl[1]) / double(total_ctrl) * 100,
 			    double(vsk.ctrl[2]) / double(total_ctrl) * 100, double(vsk.ctrl[3]) / double(total_ctrl) * 100);
 		}
 
-		printf(" |\tbitc [%3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%%]",
+#if TRACE > 1
+		printf(" | bitc [%3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%% %3.0f%%]",
 		    double(vsk.bitc[0]) / double(vertex_count) * 100, double(vsk.bitc[1]) / double(vertex_count) * 100,
 		    double(vsk.bitc[2]) / double(vertex_count) * 100, double(vsk.bitc[3]) / double(vertex_count) * 100,
 		    double(vsk.bitc[4]) / double(vertex_count) * 100, double(vsk.bitc[5]) / double(vertex_count) * 100,
 		    double(vsk.bitc[6]) / double(vertex_count) * 100, double(vsk.bitc[7]) / double(vertex_count) * 100);
+#endif
+
 		printf("\n");
 	}
 #endif
 
 	return data - buffer;
+}
+
+size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size)
+{
+	return meshopt_encodeVertexBufferLevel(buffer, buffer_size, vertices, vertex_count, vertex_size, meshopt::kEncodeDefaultLevel);
 }
 
 size_t meshopt_encodeVertexBufferBound(size_t vertex_count, size_t vertex_size)
@@ -1524,15 +1794,17 @@ size_t meshopt_encodeVertexBufferBound(size_t vertex_count, size_t vertex_size)
 	size_t vertex_block_header_size = (vertex_block_size / kByteGroupSize + 3) / 4;
 	size_t vertex_block_data_size = vertex_block_size;
 
-	size_t tail_size = vertex_size < kTailMaxSize ? kTailMaxSize : vertex_size;
+	size_t tail_size = vertex_size + (vertex_size / 4);
+	size_t tail_size_min = kTailMinSizeV0 > kTailMinSizeV1 ? kTailMinSizeV0 : kTailMinSizeV1;
+	size_t tail_size_pad = tail_size < tail_size_min ? tail_size_min : tail_size;
+	assert(tail_size_pad >= kByteGroupDecodeLimit);
 
-	return 1 + vertex_block_count * vertex_size * (vertex_block_control_size + vertex_block_header_size + vertex_block_data_size) + tail_size;
+	return 1 + vertex_block_count * vertex_size * (vertex_block_control_size + vertex_block_header_size + vertex_block_data_size) + tail_size_pad;
 }
 
 void meshopt_encodeVertexVersion(int version)
 {
-	// note: this version is experimental and the binary format is not finalized; this should not be used in production!
-	assert(unsigned(version) <= 0 || version == 0xe);
+	assert(unsigned(version) <= 1);
 
 	meshopt::gEncodeVertexVersion = version;
 }
@@ -1544,7 +1816,7 @@ int meshopt_decodeVertexBuffer(void* destination, size_t vertex_count, size_t ve
 	assert(vertex_size > 0 && vertex_size <= 256);
 	assert(vertex_size % 4 == 0);
 
-	const unsigned char* (*decode)(const unsigned char*, const unsigned char*, unsigned char*, size_t, size_t, unsigned char[256], int) = NULL;
+	const unsigned char* (*decode)(const unsigned char*, const unsigned char*, unsigned char*, size_t, size_t, unsigned char[256], const unsigned char*, int) = NULL;
 
 #if defined(SIMD_SSE) && defined(SIMD_FALLBACK)
 	decode = (cpuid & (1 << 9)) ? decodeVertexBlockSimd : decodeVertexBlock;
@@ -1564,7 +1836,7 @@ int meshopt_decodeVertexBuffer(void* destination, size_t vertex_count, size_t ve
 	const unsigned char* data = buffer;
 	const unsigned char* data_end = buffer + buffer_size;
 
-	if (size_t(data_end - data) < 1 + vertex_size)
+	if (size_t(data_end - data) < 1)
 		return -2;
 
 	unsigned char data_header = *data++;
@@ -1573,11 +1845,22 @@ int meshopt_decodeVertexBuffer(void* destination, size_t vertex_count, size_t ve
 		return -1;
 
 	int version = data_header & 0x0f;
-	if (version > 0 && version != 0xe)
+	if (version > 1)
 		return -1;
 
+	size_t tail_size = vertex_size + (version == 0 ? 0 : vertex_size / 4);
+	size_t tail_size_min = version == 0 ? kTailMinSizeV0 : kTailMinSizeV1;
+	size_t tail_size_pad = tail_size < tail_size_min ? tail_size_min : tail_size;
+
+	if (size_t(data_end - data) < tail_size_pad)
+		return -2;
+
+	const unsigned char* tail = data_end - tail_size;
+
 	unsigned char last_vertex[256];
-	memcpy(last_vertex, data_end - vertex_size, vertex_size);
+	memcpy(last_vertex, tail, vertex_size);
+
+	const unsigned char* channels = version == 0 ? NULL : tail + vertex_size;
 
 	size_t vertex_block_size = getVertexBlockSize(vertex_size);
 
@@ -1587,16 +1870,14 @@ int meshopt_decodeVertexBuffer(void* destination, size_t vertex_count, size_t ve
 	{
 		size_t block_size = (vertex_offset + vertex_block_size < vertex_count) ? vertex_block_size : vertex_count - vertex_offset;
 
-		data = decode(data, data_end, vertex_data + vertex_offset * vertex_size, block_size, vertex_size, last_vertex, version);
+		data = decode(data, data_end, vertex_data + vertex_offset * vertex_size, block_size, vertex_size, last_vertex, channels, version);
 		if (!data)
 			return -2;
 
 		vertex_offset += block_size;
 	}
 
-	size_t tail_size = vertex_size < kTailMaxSize ? kTailMaxSize : vertex_size;
-
-	if (size_t(data_end - data) != tail_size)
+	if (size_t(data_end - data) != tail_size_pad)
 		return -3;
 
 	return 0;
