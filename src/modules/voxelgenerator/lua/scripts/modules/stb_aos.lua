@@ -914,11 +914,15 @@ function module.make_fortress(
 	story2_height,
 	catwalk_color,
 	building_color)
-	local x0 = 384 + moat_size + 8
+	local x_half = module.MAP_X / 2
+	local y_half = module.MAP_Y / 2
+	local x_quarter = x_half / 2
+	local y_quarter = y_half / 2
+
+	local x0 = x_half + x_quarter + moat_size + 8
 	local x1 = module.MAP_X - moat_size - 8
-	local y0 = 128 + moat_size + 8
-	local y1 = 384 - moat_size - 8
-	local y_split
+	local y0 = y_quarter + moat_size + 8
+	local y1 = y_half + y_quarter - moat_size - 8
 
 	-- make outer wall
 	module.draw_rect_wall(x0, y0, x1, y1, outer_wall_height, outer_wall_color)
@@ -927,16 +931,16 @@ function module.make_fortress(
 	module.draw_rect_wall_partial(x0, y0, x1, y1, outer_wall_height + 4, outer_wall_color)
 
 	-- make back doors
-	module.draw_box(x1 - 1, 256 - 64, x1, 256 - 64, 1, 6, 0)
-	module.draw_box(x1 - 1, 256 + 64, x1, 256 + 64, 1, 6, 0)
+	module.draw_box(x1 - 1, y_half - 64, x1, y_half - 64, 1, 6, 0)
+	module.draw_box(x1 - 1, y_half + 64, x1, y_half + 64, 1, 6, 0)
 
 	-- make front door
 	local front_door_color = 0x80606060
-	module.draw_box(x0 - 2, 256 - 4, x0 + 2, 256 + 4, 1, 11, front_door_color)
-	module.draw_box(x0 - 4, 256 - 1, x0 + 4, 256 + 1, 3, 6, 0)
+	module.draw_box(x0 - 2, y_half - 4, x0 + 2, y_half + 4, 1, 11, front_door_color)
+	module.draw_box(x0 - 4, y_half - 1, x0 + 4, y_half + 1, 3, 6, 0)
 
 	-- make the three buildings
-	y_split = y0 + math.floor((y1 - y0) / 3) - 12
+	local y_split = y0 + math.floor((y1 - y0) / 3) - 12
 	module.make_building(
 		math.floor((x0 + x1) / 2) - 32,
 		y0 + 16,
