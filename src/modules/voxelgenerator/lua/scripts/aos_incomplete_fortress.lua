@@ -9,9 +9,9 @@ local function build_ground()
 		0,
 		20,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_random(
 		stb_aos.data,
@@ -20,9 +20,9 @@ local function build_ground()
 		0,
 		8,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -32,9 +32,9 @@ local function build_ground()
 		0,
 		12,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -44,9 +44,9 @@ local function build_ground()
 		0,
 		12,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -56,9 +56,9 @@ local function build_ground()
 		0,
 		6,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.data = stb_aos.temp
@@ -71,9 +71,9 @@ local function build_ground()
 		0,
 		10,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_random(
 		stb_aos.temp2,
@@ -82,9 +82,9 @@ local function build_ground()
 		0,
 		6,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
 	stb_aos.grid_random(
@@ -94,9 +94,9 @@ local function build_ground()
 		0,
 		4,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
 
@@ -150,9 +150,9 @@ local function build_ground()
 		-1,
 		1,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_random(
 		stb_aos.temp2,
@@ -161,9 +161,9 @@ local function build_ground()
 		0,
 		1,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
 	stb_aos.grid_random(
@@ -173,9 +173,9 @@ local function build_ground()
 		-1,
 		0,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
 

@@ -5,12 +5,52 @@ local function build_ground()
 	local rx, ry
 
 	-- Generate the "forest" data into 'data'
-	stb_aos.grid_random(stb_aos.temp, 2, 2, 0, 20, 0, math.random() * 256, math.random() * 256, math.random() * 64)
-	stb_aos.grid_random(stb_aos.data, 4, 4, 0, 20, 0, math.random() * 256, math.random() * 256, math.random() * 64)
+	stb_aos.grid_random(
+		stb_aos.temp,
+		2,
+		2,
+		0,
+		20,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
+	stb_aos.grid_random(
+		stb_aos.data,
+		4,
+		4,
+		0,
+		20,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
-	stb_aos.grid_random(stb_aos.data, 8, 8, 0, 16, 0, math.random() * 256, math.random() * 256, math.random() * 64)
+	stb_aos.grid_random(
+		stb_aos.data,
+		8,
+		8,
+		0,
+		16,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
-	stb_aos.grid_random(stb_aos.data, 16, 16, 0, 14, 0, math.random() * 256, math.random() * 256, math.random() * 64)
+	stb_aos.grid_random(
+		stb_aos.data,
+		16,
+		16,
+		0,
+		14,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 
 	-- Copy 'temp' into 'data'
@@ -21,10 +61,40 @@ local function build_ground()
 	end
 
 	-- Generate the "river" terrain into 'temp'
-	stb_aos.grid_random(stb_aos.temp, 8, 8, 0, 10, 0, math.random() * 256, math.random() * 256, math.random() * 64)
-	stb_aos.grid_random(stb_aos.temp2, 16, 16, 0, 10, 0, math.random() * 256, math.random() * 256, math.random() * 64)
+	stb_aos.grid_random(
+		stb_aos.temp,
+		8,
+		8,
+		0,
+		10,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
+	stb_aos.grid_random(
+		stb_aos.temp2,
+		16,
+		16,
+		0,
+		10,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
-	stb_aos.grid_random(stb_aos.temp2, 32, 32, 0, 8, 0, math.random() * 256, math.random() * 256, math.random() * 64)
+	stb_aos.grid_random(
+		stb_aos.temp2,
+		32,
+		32,
+		0,
+		8,
+		0,
+		math.random() * stb_aos.MAP_X,
+		math.random() * stb_aos.MAP_Y,
+		math.random() * stb_aos.MAP_Z
+	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.temp2, 1)
 
 	stb_aos.grid_minimize(stb_aos.data)
