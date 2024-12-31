@@ -11,9 +11,9 @@ local function build_ground()
 		-4,
 		4,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_random(
 		stb_aos.data,
@@ -22,9 +22,9 @@ local function build_ground()
 		-4,
 		4,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -34,9 +34,9 @@ local function build_ground()
 		-8,
 		8,
 		1,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -46,9 +46,9 @@ local function build_ground()
 		-10,
 		10,
 		1,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -58,9 +58,9 @@ local function build_ground()
 		-6,
 		6,
 		0,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -70,9 +70,9 @@ local function build_ground()
 		-1.5,
 		1.5,
 		1,
-		256 * stb_aos.stb_frand(),
-		256 * stb_aos.stb_frand(),
-		64 * stb_aos.stb_frand()
+		stb_aos.MAP_X * stb_aos.stb_frand(),
+		stb_aos.MAP_Y * stb_aos.stb_frand(),
+		stb_aos.MAP_Z * stb_aos.stb_frand()
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 

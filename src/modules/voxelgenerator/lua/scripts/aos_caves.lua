@@ -23,9 +23,9 @@ local function build_ground()
 		0,
 		24,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_random(
 		stb_aos.data,
@@ -34,9 +34,9 @@ local function build_ground()
 		0,
 		12,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -46,9 +46,9 @@ local function build_ground()
 		0,
 		12,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.grid_random(
@@ -58,9 +58,9 @@ local function build_ground()
 		0,
 		8,
 		0,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 256,
-		stb_aos.stb_frand() * 64
+		stb_aos.stb_frand() * stb_aos.MAP_X,
+		stb_aos.stb_frand() * stb_aos.MAP_Y,
+		stb_aos.stb_frand() * stb_aos.MAP_Z
 	)
 	stb_aos.grid_addeq_scale(stb_aos.temp, stb_aos.data, 1)
 	stb_aos.data = stb_aos.temp
@@ -86,7 +86,7 @@ local function build_ground()
 
 	stb_aos.compute_water_height(water_squares_desired)
 
-	stb_aos.grid_random(stb_aos.temp, 64, 64, -1, 1, 0, 0, 0, stb_aos.stb_frand() * 64)
+	stb_aos.grid_random(stb_aos.temp, 64, 64, -1, 1, 0, 0, 0, stb_aos.stb_frand() * stb_aos.MAP_Z)
 	for i = 0, stb_aos.MAP_X - 1 do
 		for j = 0, stb_aos.MAP_Y - 1 do
 			local w_raw = stb_aos.stb_linear_remap(stb_aos.data[i][j], 0, 4, 1, 0)
