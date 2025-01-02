@@ -78,8 +78,15 @@ local function place_pillars(max_pillars)
 		local i = math.floor(stb_aos.stb_lerp(stb_aos.stb_frand(), 128 + 32, 384 + 32))
 
 		-- Pillars are more likely to be near the center vertically
+		local t
+		if (i < 256 - 64 or i > 256 + 64) then
+			t = 90
+		else
+			t = 70
+		end
+
 		local j
-		if (stb_aos.stb_rand() % 100) < ((i < 256 - 64 or i > 256 + 64) and 90 or 70) then
+		if ((stb_aos.stb_rand() % 100) < t) then
 			j = stb_aos.rnd(128 + 48, 384 - 48)
 		else
 			j = stb_aos.rnd(128 - 32, 384 + 32)
