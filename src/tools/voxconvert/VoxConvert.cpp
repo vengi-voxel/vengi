@@ -92,6 +92,7 @@ app::AppState VoxConvert::onConstruct() {
 						"side of your mesh.");
 	registerArg("--translate").setShort("-t").setDescription("Translate the models by x (right), y (up), z (back)");
 	registerArg("--print-formats").setDescription("Print supported formats as json for easier parsing in other tools");
+	registerArg("--print-scripts").setDescription("Print found lua scripts as json for easier parsing in other tools");
 
 	voxelformat::FormatConfig::init();
 
@@ -148,6 +149,26 @@ void VoxConvert::usage() const {
 	for (int i = 0; i < lengthof(palette::Palette::builtIn); ++i) {
 		Log::info(" * %s", palette::Palette::builtIn[i]);
 	}
+	Log::info("Scripts:");
+	voxelgenerator::LUAApi scriptApi(filesystem());
+	for (const voxelgenerator::LUAScript &script : scriptApi.listScripts()) {
+		Log::info(" * %s%s", script.filename.c_str(), script.valid ? "" : " (invalid)");
+		if (!script.valid) {
+			continue;
+		}
+		core::DynamicArray<voxelgenerator::LUAParameterDescription> params;
+		if (!scriptApi.argumentInfo(scriptApi.load(script.filename), params)) {
+			continue;
+		}
+		if (params.empty()) {
+			continue;
+		}
+		for (const voxelgenerator::LUAParameterDescription &param : params) {
+			Log::info("   * %s: %s (default: '%s')", param.name.c_str(), param.description.c_str(),
+					param.defaultValue.c_str());
+		}
+	}
+
 	Log::info("Links:");
 	Log::info(" * Bug reports: https://github.com/vengi-voxel/vengi");
 	Log::info(" * Mastodon: https://mastodon.social/@mgerhardy");
@@ -251,6 +272,21 @@ app::AppState VoxConvert::onInit() {
 		printFormatDetails(io::format::images(), {{"save", FORMAT_FLAG_SAVE}});
 		Log::printf("],\"palettes\":[");
 		printFormatDetails(palette::palettes(), {{"save", FORMAT_FLAG_SAVE}});
+		Log::printf("]}\n");
+		return state;
+	}
+
+	if (hasArg("--print-scripts")) {
+		Log::printf("{\"scripts\":[");
+		voxelgenerator::LUAApi scriptApi(filesystem());
+		const core::DynamicArray<voxelgenerator::LUAScript> &scripts = scriptApi.listScripts();
+		for (size_t i = 0; i < scripts.size(); ++i) {
+			if (i > 0) {
+				Log::printf(",");
+			}
+			Log::printf("{\"name\":\"%s\",\"valid\":%s}", scripts[i].filename.c_str(),
+						(scripts[i].valid ? "true" : "false"));
+		}
 		Log::printf("]}\n");
 		return state;
 	}
