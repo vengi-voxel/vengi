@@ -47,7 +47,15 @@ AceOfSpades (*.vxl)
 .TP
 AnimaToon (*.scn)
 .TP
+aseprite (*.aseprite, *.ase)
+.TP
+Autodesk 3D Studio (*.3ds)
+.TP
+BenVoxel (*.ben.json, *.ben)
+.TP
 BinVox (*.binvox)
+.TP
+Blockbench (*.bbmodel)
 .TP
 Build engine (*.kvx)
 .TP
@@ -56,6 +64,8 @@ Chronovox (*.csm)
 CubeWorld (*.cub)
 .TP
 Cubzh (*.3zh)
+.TP
+Cubzh World (*.b64)
 .TP
 FBX (*.fbx)
 .TP
@@ -71,7 +81,7 @@ Minecraft level dat (*.dat)
 .TP
 Minecraft region (*.mca, *.mcr)
 .TP
-Minecraft schematic (*.schematic, *.schem, *.nbt)
+Minecraft schematic (*.schematic, *.schem, *.nbt, *.litematic)
 .TP
 Minetest (*.mts)
 .TP
@@ -81,9 +91,15 @@ Particubes (*.pcubes, *.particubes)
 .TP
 Polygon File Format (*.ply)
 .TP
+Portable Network Graphics (*.png)
+.TP
 Quake 1 (*.bsp)
 .TP
+Quake 1 Model (*.mdl)
+.TP
 Quake 2 Model (*.md2)
+.TP
+Quake Map (*.map)
 .TP
 Qubicle Binary (*.qb)
 .TP
@@ -93,7 +109,9 @@ Qubicle Exchange (*.qef)
 .TP
 Qubicle Project (*.qbcl)
 .TP
-SLAB6 vox (*.vox)
+Rooms.xyz Thing (*.thing)
+.TP
+Sandbox VoxEdit Block (*.vxb)
 .TP
 Sandbox VoxEdit Collection (*.vxc)
 .TP
@@ -103,11 +121,15 @@ Sandbox VoxEdit Model (*.vxm)
 .TP
 Sandbox VoxEdit Tilemap (*.vxt)
 .TP
+SLAB6 vox (*.vox)
+.TP
 Sproxel csv (*.csv)
 .TP
 Standard Triangle Language (*.stl)
 .TP
-StarMade (*.sment)
+StarMade Blueprint (*.sment, *.smd2, *.smd3)
+.TP
+StarMade Template (*.smtpl)
 .TP
 Tiberian Sun (*.vxl)
 .TP
@@ -115,7 +137,7 @@ UFO:Alien Invasion (*.bsp)
 .TP
 Vengi (*.vengi)
 .TP
-Voxel3D (*.v3a)
+Voxel3D (*.v3a, *.v3b)
 .TP
 VoxelBuilder (*.vbx)
 .TP
