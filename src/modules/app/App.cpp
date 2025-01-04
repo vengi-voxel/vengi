@@ -551,7 +551,7 @@ AppState App::onConstruct() {
 
 	registerArg("--version").setShort("-v").setDescription(_("Print the version and quit"));
 	registerArg("--help").setShort("-h").setDescription(_("Print this help and quit"));
-	registerArg("--completion").setDescription(_("Generate completion for bash"));
+	registerArg("--completion").setDescription(_("Generate completion for bash and zsh"));
 	registerArg("--loglevel").setShort("-l").setDescription(_("Change log level from 1 (trace) to 6 (only critical)"));
 	const core::String &logLevelVal = getArgVal("--loglevel");
 	if (!logLevelVal.empty()) {

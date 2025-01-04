@@ -16,7 +16,9 @@ private:
 	void printJson(bool palette, bool image, bool voxel);
 	void printMimeInfo();
 	void printMarkdownTables();
-	void printManPageLoadSaveFormats();
+	void addManPageOption(const core::String &option, const core::String &description);
+	void printManPageFormats(bool save);
+	void printManPage(const core::String &app);
 	void printApplicationPlist();
 	void printInstallerWix();
 	void printMagic();

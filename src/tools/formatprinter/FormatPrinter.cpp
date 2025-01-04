@@ -103,7 +103,8 @@ app::AppState FormatPrinter::onRunning() {
 	} else if (hasArg("--magic")) {
 		printMagic();
 	} else if (hasArg("--manpage")) {
-		printManPageLoadSaveFormats();
+		const core::String app = getArgVal("--manpage", "");
+		printManPage(app);
 	} else if (hasArg("--plist")) {
 		printApplicationPlist();
 	} else if (hasArg("--wix")) {
@@ -137,7 +138,255 @@ core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
 	return mt;
 }
 
-void FormatPrinter::printManPageLoadSaveFormats() {
+void FormatPrinter::addManPageOption(const core::String &option, const core::String &description) {
+	Log::printf(".TP\n");
+	if (core::string::startsWith(option, "-")) {
+		Log::printf("\\fB\\%s\\fR\n", option.c_str());
+	} else {
+		Log::printf("\\fB%s\\fR\n", option.c_str());
+	}
+	Log::printf("%s\n\n", description.c_str());
+}
+
+void FormatPrinter::printManPage(const core::String &app) {
+	const bool save = app == "voxconvert";
+	const bool commandLineApp = app == "thumbnailer" || app == "voxconvert";
+	Log::printf(".\\\" This man page was written by Martin Gerhardy in @COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@. It is provided\n");
+	Log::printf(".\\\" under the GNU General Public License 3 or (at your option) any later version.\n");
+	Log::printf(".TH @COMMANDLINE@ \"1\" \"@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@\" \"@COMMANDLINE@\"\n");
+	Log::printf(".SH NAME\n");
+	if (app == "voxconvert") {
+		Log::printf("@COMMANDLINE@ \\- convert, export or modify voxel volumes\n");
+	} else {
+		Log::printf("@COMMANDLINE@ \\- create or extract thumbnail images from voxel models\n");
+	}
+	Log::printf("\n");
+
+	Log::printf(".SH SYNOPSIS\n");
+	Log::printf(".PP\n");
+	if (app == "thumbnailer") {
+		Log::printf("\\fB@NAME@\\fR [\\fIoption\\fR] -s <size> --input infile --output outfile\n");
+		Log::printf(".SH DESCRIPTION\n");
+		Log::printf("\\fB@COMMANDLINE@\\fP is a command line application that can create thumbnails from\n");
+		Log::printf("voxel models.\n");
+	} else if (app == "voxconvert") {
+		Log::printf("\\fB@NAME@\\fR [\\fIoption\\fR] --input infile --output outfile\n");
+		Log::printf(".SH DESCRIPTION\n");
+		Log::printf("\\fB@COMMANDLINE@\\fP is a command line application that can convert several voxel\n");
+		Log::printf("volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt\n");
+		Log::printf("(Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), kv6 (SLAB6),\n");
+		Log::printf("binvox and others. It can also export to mesh formats like obj, gltf, stl and ply with\n");
+		Log::printf("a number of options.\n");
+	}
+	Log::printf("\n");
+
+	Log::printf(".SH GENERAL OPTIONS\n");
+	addManPageOption("--completion bash|zsh", "Generate a bash or zsh-completion script");
+	addManPageOption("--help|-h", "Print usage information with a a full list of cvars");
+	addManPageOption("--loglevel|-l", "Set the log level to trace, debug, info, warn, error or fatal");
+	if (commandLineApp) {
+		addManPageOption("--trace|--debug|--info|--warn|--error", "Enable error, warn, trace, debug or info logging");
+	}
+	addManPageOption("--version|-v", "Print the version of the application.");
+
+	if (app == "thumbnailer") {
+		Log::printf(".SH OPTIONS\n");
+		addManPageOption("--camera-mode", "Allow to specify the camera mode to render the scene with. Valid values are top, left, right, back, bottom and free");
+		addManPageOption("--distance distance", "Set the camera distance to the target");
+		addManPageOption("--angles|-a x:y:z", "Set the camera angles (pitch:yaw:roll))");
+		addManPageOption("--input infile", "Specify the input file to read from.");
+		addManPageOption("--output outfile", "Specify the output file to write to.");
+		addManPageOption("--position|-p x:y:z", "Set the camera position");
+		addManPageOption("--size|-s size", "Specify the size (same width and height) of the thumbnail.");
+		addManPageOption("--turntable|-t", "Render in different angles (16 by default)");
+		addManPageOption("--fallback|-f", "Create a fallback thumbnail if an error occurs");
+		addManPageOption("--use-scene-camera|-c", "Use a camera that is available in the scene. Not all formats are supporting this feature.");
+	} else if (app == "voxconvert") {
+		Log::printf(".SH OPTIONS\n");
+		addManPageOption("--crop", "Crop the models to the smallest possible size.");
+		addManPageOption("--export-models", "Export all the models of a scene into single files");
+		addManPageOption("--export-palette", "Export the palette data into the given output file format");
+		addManPageOption("--filter 1-4,6", "Model filter. For example '1-4,6'.");
+		addManPageOption("--filter-property name:foo", "Model filter by property. For example 'name:foo'.");
+		addManPageOption("--force|-f", "Overwrite existing files.");
+		addManPageOption("--input|-i infile", "Specify the input file to read from.");
+		addManPageOption("--json", "Dump the scene graph of the input file. Use \\fBfull\\fR as parameter to also print mesh details");
+		addManPageOption("--merge|-m", "Merge models into one volume.");
+		addManPageOption("--mirror axis", "Mirror by the given axis (x, y or z)");
+		addManPageOption("--output|-o outfile", "Specify the output file to write to.");
+		addManPageOption("--print-formats", "Print supported formats as json for easier parsing in other tools.");
+		addManPageOption("--print-scripts", "Print found lua scripts as json for easier parsing in other tools.");
+		addManPageOption("--rotate axis", "Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.");
+		addManPageOption("--resize x:y:z", "Resize the volume by the given x (right), y (up) and z (back) values.");
+		addManPageOption("--scale|-s", "Scale model to 50% of its original size.");
+		addManPageOption("--script script.lua scriptparameter1 scriptparameter2", "Apply the given lua script to the output volume.");
+		addManPageOption("--scriptcolor 1", "Set the palette index that is given to the color script parameters of the main function.");
+		addManPageOption("--split x:y:z", "Slices the models into pieces of the given size.");
+		addManPageOption("--surface-only", "Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.");
+		addManPageOption("--translate|-t x:y:z", "Translate the models by x (right), y (up), z (back).");
+		addManPageOption("--wildcard|-w", "Allow to specify input file filter if --input is a directory.");
+
+		Log::printf(".SH ORDER OF EXECUTION\n");
+		Log::printf("\n");
+		Log::printf(".TP\n");
+		Log::printf("filter\n");
+		Log::printf(".TP\n");
+		Log::printf("merge\n");
+		Log::printf(".TP\n");
+		Log::printf("scale\n");
+		Log::printf(".TP\n");
+		Log::printf("mirror\n");
+		Log::printf(".TP\n");
+		Log::printf("rotate\n");
+		Log::printf(".TP\n");
+		Log::printf("translate\n");
+		Log::printf(".TP\n");
+		Log::printf("script\n");
+		Log::printf(".TP\n");
+		Log::printf("pivot\n");
+		Log::printf(".TP\n");
+		Log::printf("crop\n");
+		Log::printf(".TP\n");
+		Log::printf("split\n");
+		Log::printf("\n");
+		Log::printf("\n");
+
+		Log::printf(".SH MODELS\n");
+		Log::printf("\n");
+		Log::printf("Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each\n");
+		Log::printf("model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel\n");
+		Log::printf("file, you should load it once in voxedit and check the model panel or use \\fB--json\\fR to get a list.\n");
+		Log::printf("\n");
+		Log::printf("Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for\n");
+		Log::printf("voxconvert.\n");
+		Log::printf("\n");
+		Log::printf(".SH EXAMPLES\n");
+		Log::printf("\n");
+		Log::printf(".SS Level of detail (LOD)\n");
+		Log::printf("Generate a lod scaled by 50%% from the input model:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ -s --input infile.vengi output.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf(".SS Merge several models\n");
+		Log::printf("Merge several models into one:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --input one.vengi --input two.vengi --output onetwo.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf(".SS Generate from heightmap\n");
+		Log::printf("Just specify the heightmap as input file like this:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --input heightmap.png --output outfile.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf(".SS Translate the voxels\n");
+		Log::printf("You can translate the voxels in the world like this:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf("This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.\n");
+		Log::printf("\n");
+		Log::printf(".SS Execute lua script\n");
+		Log::printf("Use the \\fB--script\\fP parameter:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --script \"cover 2\" --input infile.vengi --output outfile.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf("This is executing the script in \\fB./scripts/cover.lua\\fP with a parameter of \\fB2\\fP.\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --script \"./scripts/cover.lua 2\" --input infile.vengi --output outfile.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf("This is doing exactly the same as above - just with a full path.\n");
+		Log::printf("\n");
+		Log::printf("The scripting docs are available at https://vengi-voxel.github.io/vengi/LUAScript/.\n");
+		Log::printf("\n");
+		Log::printf(".SS Extract palette png\n");
+		Log::printf("Saves the png in the same dir as the vox file:\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --export-palette --input infile.vengi --output outfile-palette.png\\fP\n");
+		Log::printf("\n");
+		Log::printf("There will be an \\fBinfile.png\\fP now.\n");
+		Log::printf("\n");
+		Log::printf(".SS Extract single models\n");
+		Log::printf("Extract just a few models from the input file.\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --filter 1-2,4 --input infile.vengi --output outfile.vengi\\fP\n");
+		Log::printf("\n");
+		Log::printf("This will export models 1, 2 and 4.\n");
+		Log::printf("\n");
+		Log::printf(".SS Convert to mesh\n");
+		Log::printf("You can export your volume model into a obj or ply.\n");
+		Log::printf("\n");
+		Log::printf("\\fB@NAME@ --input infile.vengi --output outfile.obj\\fP\n");
+		Log::printf("\n");
+		Log::printf("Config vars to control the meshing:\n");
+		Log::printf("\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_ambientocclusion\\fP: Don't export extra quads for ambient occlusion voxels\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_colorasfloat\\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_gltf_khr_materials_specular\\fP: Apply KHR_materials_specular extension on saving gltf files\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_mergequads\\fP: Merge similar quads to optimize the mesh\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_reusevertices\\fP: Reuse vertices or always create new ones\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale\\fP: Scale the vertices on all axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_x\\fP: Scale the vertices on X axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_y\\fP: Scale the vertices on Y axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_z\\fP: Scale the vertices on Z axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_quads\\fP: Export to quads\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_withcolor\\fP: Export vertex colors\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_withnormals\\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_withtexcoords\\fP: Export texture coordinates\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_transform_mesh\\fP: Apply the keyframe transforms to the mesh\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_createpalette\\fP: Setting this to false will use use the palette configured by \\fBpalette\\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_rgbflattenfactor\\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_rgbweightedaverage\\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxel_meshmode\\fP: Set to 1 to use the marching cubes algorithm to produce the mesh\n");
+		Log::printf("\n");
+		Log::printf("Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:\n");
+		Log::printf("\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_fillhollow\\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale\\fP: Scale the vertices on all axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_x\\fP: Scale the vertices on X axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_y\\fP: Scale the vertices on Y axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_scale_z\\fP: Scale the vertices on Z axis by the given factor\n");
+		Log::printf(".PP\n");
+		Log::printf("\\fBvoxformat_voxelizemode\\fP: 0 = high quality, 1 = faster and less memory\n");
+		Log::printf("\n");
+	}
+
+	printManPageFormats(save);
+
+	Log::printf(".SH HOMEPAGE\n");
+	Log::printf("https://github.com/vengi-voxel/vengi\n");
+	Log::printf("\n");
+	Log::printf(".SH COPYRIGHT\n");
+	Log::printf("Copyright \\[co] 2015\\-@COPYRIGHT_YEAR@ by Martin Gerhardy.\n");
+	Log::printf("\n");
+	Log::printf(".SH BUGS\n");
+	Log::printf("If you find a bug, please report it at https://github.com/vengi-voxel/vengi/issues\n");
+}
+
+void FormatPrinter::printManPageFormats(bool save) {
 	core::DynamicArray<io::FormatDescription> formatDescriptions;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		formatDescriptions.push_back(*desc);
@@ -160,6 +409,9 @@ void FormatPrinter::printManPageLoadSaveFormats() {
 	}
 	Log::printf("\n");
 
+	if (!save) {
+		return;
+	}
 	Log::printf(".SH SAVE\n");
 	for (const io::FormatDescription &desc : formatDescriptions) {
 		if (!voxelSaveSupported(desc)) {
