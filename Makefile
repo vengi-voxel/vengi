@@ -205,11 +205,11 @@ contrib/installer/linux/x-voxel.xml: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --mimeinfo > $@
 	$(Q)contrib/installer/linux/mimetypes.sh
 
-contrib/installer/osx/voxedit.plist.in: formatprinter
+contrib/installer/osx/%.plist.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --plist > $@
 
-%.man.in: formatprinter
-	$(Q)$(call EXEC_PATH,formatprinter) --manpage $< > $@
+contrib/installer/linux/%.man.in: formatprinter
+	$(Q)$(call EXEC_PATH,formatprinter) --manpage $* > $@
 
 formats: tools/html/data.js contrib/installer/linux/x-voxel.xml contrib/installer/osx/application.plist.in docs/Formats.md contrib/installer/windows/wixpatch.xml contrib/installer/linux/voxconvert.man.in contrib/installer/linux/thumbnailer.man.in
 
