@@ -2,42 +2,76 @@
 .\" under the GNU General Public License 3 or (at your option) any later version.
 .TH @COMMANDLINE@ "1" "@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@" "@COMMANDLINE@"
 .SH NAME
-@COMMANDLINE@ \- create thumbnail images from voxel models
+@COMMANDLINE@ \- create or extract thumbnail images from voxel models
 
 .SH SYNOPSIS
 .PP
 \fB@NAME@\fR [\fIoption\fR] -s <size> --input infile --output outfile
 .SH DESCRIPTION
 \fB@COMMANDLINE@\fP is a command line application that can create thumbnails from
-voxel models. .
-.SH OPTIONS
-.TP
-\fB\-s\fR
-Specify the size (same width and height) of the thumbnail.
+voxel models.
 
+.SH GENERAL OPTIONS
 .TP
-\fB\--camera-mode\fR
-Allow to specify the camera mode to render the scene with. Valid values are top, left, right, back, bottom and free
-
-.TP
-\fB\--completion bash\fR
-Generate a bash-completion script
+\fB\--completion bash|zsh\fR
+Generate a bash or zsh-completion script
 
 .TP
 \fB\--help|-h\fR
 Print usage information with a a full list of cvars
 
 .TP
-\fB\--trace|--debug|--info\fR
-Enable trace, debug or info logging
+\fB\--loglevel|-l\fR
+Set the log level to trace, debug, info, warn, error or fatal
 
 .TP
-\fB\--use-scene-camera\fR
-Use a camera that is available in the scene. Not all formats are supporting this feature.
+\fB\--trace|--debug|--info|--warn|--error\fR
+Enable error, warn, trace, debug or info logging
 
 .TP
 \fB\--version|-v\fR
 Print the version of the application.
+
+.SH OPTIONS
+.TP
+\fB\--camera-mode\fR
+Allow to specify the camera mode to render the scene with. Valid values are top, left, right, back, bottom and free
+
+.TP
+\fB\--distance distance\fR
+Set the camera distance to the target
+
+.TP
+\fB\--angles|-a x:y:z\fR
+Set the camera angles (pitch:yaw:roll))
+
+.TP
+\fB\--input infile\fR
+Specify the input file to read from.
+
+.TP
+\fB\--output outfile\fR
+Specify the output file to write to.
+
+.TP
+\fB\--position|-p x:y:z\fR
+Set the camera position
+
+.TP
+\fB\--size|-s size\fR
+Specify the size (same width and height) of the thumbnail.
+
+.TP
+\fB\--turntable|-t\fR
+Render in different angles (16 by default)
+
+.TP
+\fB\--fallback|-f\fR
+Create a fallback thumbnail if an error occurs
+
+.TP
+\fB\--use-scene-camera|-c\fR
+Use a camera that is available in the scene. Not all formats are supporting this feature.
 
 .SH LOAD
 .TP
