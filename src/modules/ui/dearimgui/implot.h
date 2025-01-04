@@ -289,7 +289,8 @@ enum ImPlotInfLinesFlags_ {
 enum ImPlotPieChartFlags_ {
     ImPlotPieChartFlags_None         = 0,       // default
     ImPlotPieChartFlags_Normalize    = 1 << 10, // force normalization of pie chart values (i.e. always make a full circle if sum < 0)
-    ImPlotPieChartFlags_IgnoreHidden = 1 << 11  // ignore hidden slices when drawing the pie chart (as if they were not there)
+    ImPlotPieChartFlags_IgnoreHidden = 1 << 11, // ignore hidden slices when drawing the pie chart (as if they were not there)
+    ImPlotPieChartFlags_Exploding    = 1 << 12  // Explode legend-hovered slice
 };
 
 // Flags for PlotHeatmap
@@ -830,7 +831,7 @@ IMPLOT_API void SetNextAxesToFit();
 //    an ImPlot function post-fixed with a G (e.g. PlotScatterG). This has a slight performance
 //    cost, but probably not enough to worry about unless your data is very large. Examples:
 //
-//    ImPlotPoint MyDataGetter(void* data, int idx) {
+//    ImPlotPoint MyDataGetter(int idx, void* data) {
 //        MyData* my_data = (MyData*)data;
 //        ImPlotPoint p;
 //        p.x = my_data->GetTime(idx);

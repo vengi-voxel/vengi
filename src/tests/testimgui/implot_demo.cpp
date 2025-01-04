@@ -44,6 +44,8 @@
 
 #define CHECKBOX_FLAG(flags, flag) ImGui::CheckboxFlags(#flag, (unsigned int*)&flags, flag)
 
+#if !defined(IMGUI_DISABLE_DEMO_WINDOWS)
+
 // Encapsulates examples for customizing ImPlot.
 namespace MyImPlot {
 
@@ -613,6 +615,7 @@ void Demo_PieCharts() {
     ImGui::DragFloat4("Values", data1, 0.01f, 0, 1);
     CHECKBOX_FLAG(flags, ImPlotPieChartFlags_Normalize);
     CHECKBOX_FLAG(flags, ImPlotPieChartFlags_IgnoreHidden);
+    CHECKBOX_FLAG(flags, ImPlotPieChartFlags_Exploding);
 
     if (ImPlot::BeginPlot("##Pie1", ImVec2(250,250), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
         ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
@@ -2478,5 +2481,11 @@ void PlotCandlestick(const char* label_id, const double* xs, const double* opens
 }
 
 } // namespace MyImplot
+
+#else
+
+void ImPlot::ShowDemoWindow(bool* p_open) {}
+
+#endif
 
 #endif // #ifndef IMGUI_DISABLE
