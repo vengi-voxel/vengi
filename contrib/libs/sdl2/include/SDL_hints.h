@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -2283,7 +2283,7 @@ extern "C" {
 
 /**
  * A variable controlling whether the libdecor Wayland backend is preferred
- * over native decrations.
+ * over native decorations.
  *
  * When this hint is set, libdecor will be used to provide window decorations,
  * even if xdg-decoration is available. (Note that, by default, libdecor will
