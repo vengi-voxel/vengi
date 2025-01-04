@@ -13,113 +13,116 @@ volume formats into others. Supported formats are e.g. cub (CubeWorld), qb/qbt
 (Qubicle), vox (MagicaVoxel), vmx (VoxEdit Sandbox), kvx (Build engine), kv6 (SLAB6),
 binvox and others. It can also export to mesh formats like obj, gltf, stl and ply with
 a number of options.
-.SH OPTIONS
 
+.SH GENERAL OPTIONS
 .TP
-\fB\--completion bash\fR
-Generate a bash-completion script
-
-.TP
-\fB\--crop\fR
-Reduces the volume sizes to their voxel boundaries.
-
-.TP
-\fB\--json\fR
-Dump the scene graph of the input file. Use \fBfull\fR as parameter to also print mesh details
-
-.TP
-\fB\--export-palette\fR
-Export the used palette data into the specified output palette format.
-
-.TP
-\fB\--export-models\fR
-Export all the models of a scene into single files. It is suggested to name the models
-properly to get reasonable file names.
-
-.TP
-\fB\--filter <filter>\fR
-Will filter out models not mentioned in the expression. E.g. \fB1-2,4\fR will handle model
-1, 2 and 4. It is the same as \fB1,2,4\fR. The first model is 0.
-
-.TP
-\fB\--force|-f\fR
-Overwrite existing files.
+\fB\--completion bash|zsh\fR
+Generate a bash or zsh-completion script
 
 .TP
 \fB\--help|-h\fR
 Print usage information with a a full list of cvars
 
 .TP
-The \fB\--input\fR with e.g. \fBsomeimage.png\fR will pick the depth map next to
-the image path called \fBsomeimage-dm.png\fR as depth map.
+\fB\--loglevel|-l\fR
+Set the log level to trace, debug, info, warn, error or fatal
 
 .TP
-\fB\--input|-i <file>\fR
-Allow one to specify input files.
+\fB\--trace|--debug|--info|--warn|--error\fR
+Enable error, warn, trace, debug or info logging
+
+.TP
+\fB\--version|-v\fR
+Print the version of the application.
+
+.SH OPTIONS
+.TP
+\fB\--crop\fR
+Crop the models to the smallest possible size.
+
+.TP
+\fB\--export-models\fR
+Export all the models of a scene into single files
+
+.TP
+\fB\--export-palette\fR
+Export the palette data into the given output file format
+
+.TP
+\fB\--filter 1-4,6\fR
+Model filter. For example '1-4,6'.
+
+.TP
+\fB\--filter-property name:foo\fR
+Model filter by property. For example 'name:foo'.
+
+.TP
+\fB\--force|-f\fR
+Overwrite existing files.
+
+.TP
+\fB\--input|-i infile\fR
+Specify the input file to read from.
+
+.TP
+\fB\--json\fR
+Dump the scene graph of the input file. Use \fBfull\fR as parameter to also print mesh details
 
 .TP
 \fB\--merge|-m\fR
-Merge all models into one. Some destination formats only support one model - for
-those formats this is an explicit parameter. If you are going to export to a mesh
-format like wavefront obj, this option changes the behaviour of the exporter, too.
+Merge models into one volume.
 
 .TP
-\fB\--mirror <x|y|z>\fR
-Mirror by the given axis (x, y or z).
+\fB\--mirror axis\fR
+Mirror by the given axis (x, y or z)
 
 .TP
-\fB\--output|-o <file>\fR
-Allow one to specify the output file.
+\fB\--output|-o outfile\fR
+Specify the output file to write to.
 
 .TP
-\fB\--resize <x:y:z>\fR
+\fB\--print-formats\fR
+Print supported formats as json for easier parsing in other tools.
+
+.TP
+\fB\--print-scripts\fR
+Print found lua scripts as json for easier parsing in other tools.
+
+.TP
+\fB\--rotate axis\fR
+Rotate by 90 degree at the given axis (x, y or z), specify e.g. x:180 to rotate around x by 180 degree.
+
+.TP
+\fB\--resize x:y:z\fR
 Resize the volume by the given x (right), y (up) and z (back) values.
 
 .TP
-\fB\--rotate <x|y|z>\fR
-Rotate by 90 degree at the given axis (x, y or z).
-
-.TP
-\fB\-set <varname> <value>\fR
-Change the value of a config variable. \fB-set palette /path/to/palette.png\fR is
-going to use a different palette for importing and exporting the voxels. It should
-have the dimensions 1x256.
-
-.TP
 \fB\--scale|-s\fR
-Save the target volume with a down-sampled version of the input volume.
+Scale model to 50% of its original size.
 
 .TP
-\fB\--script "<script> <args>"\fR
+\fB\--script script.lua scriptparameter1 scriptparameter2\fR
 Apply the given lua script to the output volume.
 
 .TP
-\fB\--scriptcolor <palette-index>\fR
-Set the palette index that is given to the script parameters. This is the palette index from 0 to 255.
+\fB\--scriptcolor 1\fR
+Set the palette index that is given to the color script parameters of the main function.
 
 .TP
-\fB\--split <x:y:z>\fR
-Slices the volumes into pieces of the given size
+\fB\--split x:y:z\fR
+Slices the models into pieces of the given size.
 
 .TP
 \fB\--surface-only\fR
 Remove any non surface voxel. If you are meshing with this, you get also faces on the inner side of your mesh.
 
 .TP
-\fB\--translate|-t <x:y:z>\fR
-Translate the volumes by x (right), y (up), z (back).
+\fB\--translate|-t x:y:z\fR
+Translate the models by x (right), y (up), z (back).
 
 .TP
-\fB\--trace|--debug|--info\fR
-Enable trace, debug or info logging
-
-.TP
-\fB\--version|-v\fR
-Print the version of the application.
-
-.TP
-\fB\--wildcard|-v\fR
-Allow one to specify the wildcard that is used in cases where the \fB\--input\fR value is a directory
+\fB\--wildcard|-w\fR
+Allow to specify input file filter if --input is a directory.
 
 .SH ORDER OF EXECUTION
 
@@ -143,6 +146,128 @@ pivot
 crop
 .TP
 split
+
+
+.SH MODELS
+
+Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each
+model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel
+file, you should load it once in voxedit and check the model panel or use \fB--json\fR to get a list.
+
+Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for
+voxconvert.
+
+.SH EXAMPLES
+
+.SS Level of detail (LOD)
+Generate a lod scaled by 50% from the input model:
+
+\fB@NAME@ -s --input infile.vengi output.vengi\fP
+
+.SS Merge several models
+Merge several models into one:
+
+\fB@NAME@ --input one.vengi --input two.vengi --output onetwo.vengi\fP
+
+.SS Generate from heightmap
+Just specify the heightmap as input file like this:
+
+\fB@NAME@ --input heightmap.png --output outfile.vengi\fP
+
+.SS Translate the voxels
+You can translate the voxels in the world like this:
+
+\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\fP
+
+This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.
+
+.SS Execute lua script
+Use the \fB--script\fP parameter:
+
+\fB@NAME@ --script "cover 2" --input infile.vengi --output outfile.vengi\fP
+
+This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \fB2\fP.
+
+\fB@NAME@ --script "./scripts/cover.lua 2" --input infile.vengi --output outfile.vengi\fP
+
+This is doing exactly the same as above - just with a full path.
+
+The scripting docs are available at https://vengi-voxel.github.io/vengi/LUAScript/.
+
+.SS Extract palette png
+Saves the png in the same dir as the vox file:
+
+\fB@NAME@ --export-palette --input infile.vengi --output outfile-palette.png\fP
+
+There will be an \fBinfile.png\fP now.
+
+.SS Extract single models
+Extract just a few models from the input file.
+
+\fB@NAME@ --filter 1-2,4 --input infile.vengi --output outfile.vengi\fP
+
+This will export models 1, 2 and 4.
+
+.SS Convert to mesh
+You can export your volume model into a obj or ply.
+
+\fB@NAME@ --input infile.vengi --output outfile.obj\fP
+
+Config vars to control the meshing:
+
+.PP
+\fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
+.PP
+\fBvoxformat_colorasfloat\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)
+.PP
+\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files
+.PP
+\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular extension on saving gltf files
+.PP
+\fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
+.PP
+\fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
+.PP
+\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
+.PP
+\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
+.PP
+\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
+.PP
+\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
+.PP
+\fBvoxformat_quads\fP: Export to quads
+.PP
+\fBvoxformat_withcolor\fP: Export vertex colors
+.PP
+\fBvoxformat_withnormals\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)
+.PP
+\fBvoxformat_withtexcoords\fP: Export texture coordinates
+.PP
+\fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
+.PP
+\fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
+.PP
+\fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
+.PP
+\fBvoxformat_rgbweightedaverage\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution
+.PP
+\fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
+
+Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
+
+.PP
+\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
+.PP
+\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
+.PP
+\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
+.PP
+\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
+.PP
+\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
+.PP
+\fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 
 .SH LOAD
 .TP
@@ -311,127 +436,6 @@ Vengi (*.vengi)
 Voxel3D (*.v3a, *.v3b)
 .TP
 Wavefront Object (*.obj)
-
-.SH MODELS
-
-Some formats also have multiple model support. Our models are maybe not the models you know from your favorite editor. Each
-model can currently only have one object or volume in it. To get the proper model ids (starting from 0) for your voxel
-file, you should load it once in voxedit and check the model panel or use \fB--json\fR to get a list.
-
-Especially magicavoxel supports more objects in one model. This might be confusing to get the right numbers for
-voxconvert.
-
-.SH EXAMPLES
-
-.SS Level of detail (LOD)
-Generate a lod scaled by 50% from the input model:
-
-\fB@NAME@ -s --input infile.vengi output.vengi\fP
-
-.SS Merge several models
-Merge several models into one:
-
-\fB@NAME@ --input one.vengi --input two.vengi --output onetwo.vengi\fP
-
-.SS Generate from heightmap
-Just specify the heightmap as input file like this:
-
-\fB@NAME@ --input heightmap.png --output outfile.vengi\fP
-
-.SS Translate the voxels
-You can translate the voxels in the world like this:
-
-\fB@NAME@ --translate 0:10:0 --input heightmap.png --output outfile.vengi\fP
-
-This would move the voxels 10 units upwards. But keep in mind that not every format supports to store a translation offset.
-
-.SS Execute lua script
-Use the \fB--script\fP parameter:
-
-\fB@NAME@ --script "cover 2" --input infile.vengi --output outfile.vengi\fP
-
-This is executing the script in \fB./scripts/cover.lua\fP with a parameter of \fB2\fP.
-
-\fB@NAME@ --script "./scripts/cover.lua 2" --input infile.vengi --output outfile.vengi\fP
-
-This is doing exactly the same as above - just with a full path.
-
-The scripting docs are available at https://vengi-voxel.github.io/vengi/LUAScript/.
-
-.SS Extract palette png
-Saves the png in the same dir as the vox file:
-
-\fB@NAME@ --export-palette --input infile.vengi --output outfile-palette.png\fP
-
-There will be an \fBinfile.png\fP now.
-
-.SS Extract single models
-Extract just a few models from the input file.
-
-\fB@NAME@ --filter 1-2,4 --input infile.vengi --output outfile.vengi\fP
-
-This will export models 1, 2 and 4.
-
-.SS Convert to mesh
-You can export your volume model into a obj or ply.
-
-\fB@NAME@ --input infile.vengi --output outfile.obj\fP
-
-Config vars to control the meshing:
-
-.PP
-\fBvoxformat_ambientocclusion\fP: Don't export extra quads for ambient occlusion voxels
-.PP
-\fBvoxformat_colorasfloat\fP: Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)
-.PP
-\fBvoxformat_gltf_khr_materials_pbrspecularglossiness\fP: Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files
-.PP
-\fBvoxformat_gltf_khr_materials_specular\fP: Apply KHR_materials_specular extension on saving gltf files
-.PP
-\fBvoxformat_mergequads\fP: Merge similar quads to optimize the mesh
-.PP
-\fBvoxformat_reusevertices\fP: Reuse vertices or always create new ones
-.PP
-\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
-.PP
-\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
-.PP
-\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
-.PP
-\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
-.PP
-\fBvoxformat_quads\fP: Export to quads
-.PP
-\fBvoxformat_withcolor\fP: Export vertex colors
-.PP
-\fBvoxformat_withnormals\fP: Export smoothed normals for cubic surface meshes (marching cubes always uses normals)
-.PP
-\fBvoxformat_withtexcoords\fP: Export texture coordinates
-.PP
-\fBvoxformat_transform_mesh\fP: Apply the keyframe transforms to the mesh
-.PP
-\fBvoxformat_createpalette\fP: Setting this to false will use use the palette configured by \fBpalette\fP cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats.
-.PP
-\fBvoxformat_rgbflattenfactor\fP: To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats
-.PP
-\fBvoxformat_rgbweightedaverage\fP: If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution
-.PP
-\fBvoxel_meshmode\fP: Set to 1 to use the marching cubes algorithm to produce the mesh
-
-Basic voxelization is supported for ply, gltf, stl, bsp, fbx and obj files, too. The following cvars can be modified here:
-
-.PP
-\fBvoxformat_fillhollow\fP: Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script.
-.PP
-\fBvoxformat_scale\fP: Scale the vertices on all axis by the given factor
-.PP
-\fBvoxformat_scale_x\fP: Scale the vertices on X axis by the given factor
-.PP
-\fBvoxformat_scale_y\fP: Scale the vertices on Y axis by the given factor
-.PP
-\fBvoxformat_scale_z\fP: Scale the vertices on Z axis by the given factor
-.PP
-\fBvoxformat_voxelizemode\fP: 0 = high quality, 1 = faster and less memory
 
 .SH HOMEPAGE
 https://github.com/vengi-voxel/vengi
