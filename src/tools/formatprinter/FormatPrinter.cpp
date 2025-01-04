@@ -155,11 +155,7 @@ void FormatPrinter::printManPage(const core::String &app) {
 	Log::printf(".\\\" under the GNU General Public License 3 or (at your option) any later version.\n");
 	Log::printf(".TH @COMMANDLINE@ \"1\" \"@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@\" \"@COMMANDLINE@\"\n");
 	Log::printf(".SH NAME\n");
-	if (app == "voxconvert") {
-		Log::printf("@COMMANDLINE@ \\- convert, export or modify voxel volumes\n");
-	} else {
-		Log::printf("@COMMANDLINE@ \\- create or extract thumbnail images from voxel models\n");
-	}
+	Log::printf("@COMMANDLINE@ \\- @DESCRIPTION@\n");
 	Log::printf("\n");
 
 	Log::printf(".SH SYNOPSIS\n");

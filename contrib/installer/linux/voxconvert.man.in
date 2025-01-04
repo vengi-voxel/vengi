@@ -2,7 +2,7 @@
 .\" under the GNU General Public License 3 or (at your option) any later version.
 .TH @COMMANDLINE@ "1" "@COPYRIGHT_MONTH@ @COPYRIGHT_YEAR@" "@COMMANDLINE@"
 .SH NAME
-@COMMANDLINE@ \- convert, export or modify voxel volumes
+@COMMANDLINE@ \- @DESCRIPTION@
 
 .SH SYNOPSIS
 .PP
