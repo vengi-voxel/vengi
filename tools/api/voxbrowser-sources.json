@@ -224,6 +224,16 @@
 				"license": "COPYING",
 				"path": "mods/ts/bits"
 			}
+		},
+		{
+			"name": "OpenHV",
+			"license": "Creative Commons Attribution ShareAlike 4.0 International",
+			"github": {
+				"repo": "Dzierzan/OpenHV",
+				"commit": "master-placeholder",
+				"license": "sources/voxels/README.md",
+				"path": "sources/voxels"
+			}
 		}
 	]
 }
