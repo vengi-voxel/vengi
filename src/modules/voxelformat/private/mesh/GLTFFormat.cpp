@@ -1154,6 +1154,7 @@ void GLTFFormat::loadTexture(const core::String &filename, const io::ArchivePtr 
 					} else {
 						Log::debug("Loaded embedded image %s", name.c_str());
 					}
+					meshMaterial->texture = tex;
 				} else {
 					Log::warn("Invalid buffer index for image: %i", gltfImgBufferView.buffer);
 				}
